@@ -72,9 +72,9 @@ fig.Position = [1,1,1095,800];
 % Fill panel 1: B vector components
 %===================================
 if ~isempty(data.B)
-    irf_plot(h(1),data.B.tlim(Tint_24h),'linewidth',LWIDTH);
-    hold(h(1),'on');
-    irf_plot(h(1),data.B.abs.tlim(Tint_24h),'linewidth',LWIDTH);
+  irf_plot(h(1),data.B.tlim(Tint_24h),'linewidth',LWIDTH);
+  hold(h(1),'on');
+  irf_plot(h(1),data.B.abs.tlim(Tint_24h),'linewidth',LWIDTH);
 end
 irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE);
 ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
@@ -88,10 +88,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 %=======================
 hold(h(2),'on');
 if ~isempty(data.Ne)
-    irf_plot(h(2),data.Ne.tlim(Tint_24h),'-','color',COLORS(1,:),'linewidth',LWIDTH);
+  irf_plot(h(2),data.Ne.tlim(Tint_24h),'-','color',COLORS(1,:),'linewidth',LWIDTH);
 end
 if ~isempty(data.Npas)
-    irf_plot(h(2),data.Npas.tlim(Tint_24h),'-','color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(2),data.Npas.tlim(Tint_24h),'-','color',COLORS(2,:),'linewidth',LWIDTH);
 end
 ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FSIZE);
 h(2).ColorOrder=COLORS;
@@ -99,18 +99,18 @@ irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',LEG_SIZE)
 
 yyaxis(h(2),'right');
 if ~isempty(data.B)
-    fci = qe*data.B.abs*10^-9/mp/(2*pi);
-    irf_plot(h(2),data.B.abs.tlim(Tint_24h),'color',COLORS(3,:),'linewidth',LWIDTH);
-    %Bnan = rmmissing(data.B.abs.data);
-    %if ~isempty(Bnan)
-    %    h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
-    %end
-    minAbsB = min(data.B.tlim(Tint_24h).abs.data);
-    maxAbsB = max(data.B.tlim(Tint_24h).abs.data);
-    if ~isnan(minAbsB) && ~isnan(maxAbsB)
-        % Only zoom if min & max are not NaN (==> Avoid crash).
-        irf_zoom(h(2),'y',[minAbsB-1, maxAbsB+1]);
-    end
+  fci = qe*data.B.abs*10^-9/mp/(2*pi);
+  irf_plot(h(2),data.B.abs.tlim(Tint_24h),'color',COLORS(3,:),'linewidth',LWIDTH);
+  %Bnan = rmmissing(data.B.abs.data);
+  %if ~isempty(Bnan)
+  %    h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
+  %end
+  minAbsB = min(data.B.tlim(Tint_24h).abs.data);
+  maxAbsB = max(data.B.tlim(Tint_24h).abs.data);
+  if ~isnan(minAbsB) && ~isnan(maxAbsB)
+    % Only zoom if min & max are not NaN (==> Avoid crash).
+    irf_zoom(h(2),'y',[minAbsB-1, maxAbsB+1]);
+  end
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 h(2).YColor=[1,0,0];
@@ -123,72 +123,72 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 % Fill panel 3 & 4: Spectra
 %===========================
 if ~isempty(data.B) && SPECTRA_ENABLED
-    if  ~isempty(rmmissing(data.B.data))
-        bb = data.B;
-        if median(diff((bb.time.epochUnix))) < 0.1250*0.95
-            fMag = 128; fMax = 7;
-        else
-            fMag =   8; fMax = 3;
-        end
-        b0 = bb.filt(0, 0.01,fMag, 5);
-
-        % IMPORTANT NOTE: The call to irf_ebsp() is very time-consuming.
-        tBeginSec = solo.qli.utils.log_time('irf_ebsp(): Begin call', tBeginSec);
-        ebsp = irf_ebsp([],bb,[],b0,[],[0.05 fMax],'fullB=dB', 'polarization', 'fac');
-        tBeginSec = solo.qli.utils.log_time('irf_ebsp(): End call', tBeginSec);
-
-        frequency = ebsp.f;
-        time = ebsp.t;
-        Bsum = ebsp.bb_xxyyzzss(:,:,4);
-        ellipticity = ebsp.ellipticity;
-        dop = ebsp.dop;
-
-        % Remove points with very low degree of polarization
-        dopthresh = 0.7;
-        removepts = find(dop < dopthresh);
-        ellipticity(removepts) = NaN;
-
-        % Remove "lonely" pixels
-        msk = ellipticity;
-        msk(~isnan(msk)) = 1;
-        msk(isnan(msk)) = 0;
-        msk_denoise = bwareaopen(msk,8);
-        ellipticity(msk_denoise==0) = NaN;
-
-        % Plot
-        specrec=struct('t',time);
-        specrec.f=frequency;
-        specrec.p=Bsum;
-        specrec.f_label='';
-        specrec.p_label={'log_{10}B^{2}','nT^2 Hz^{-1}'};
-        irf_spectrogram(h(3),specrec,'log','donotfitcolorbarlabel');
-        set(h(3),'yscale','log');
-        % set(h(1),'ytick',[1e1 1e2 1e3]);
-        % caxis(h(3),[-8 -1])
-        hold(h(3),'on');
-        irf_plot(h(3),fci,'k','linewidth',LWIDTH);
-        text(h(3),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
-        colormap(h(3),'jet');
-
-        specrec=struct('t',time);
-        specrec.f=frequency;
-        specrec.p=ellipticity;
-        specrec.f_label='';
-        specrec.p_label={'Ellipticity','DOP>0.7'};
-        irf_spectrogram(h(4),specrec,'log','donotfitcolorbarlabel');
-        set(h(4),'yscale','log');
-        % set(h(1),'ytick',[1e1 1e2 1e3]);
-        caxis(h(4),[-1 1])
-        hold(h(4),'on');
-        irf_plot(h(4),fci,'k','linewidth',LWIDTH);
-        text(h(4),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
-
-        crr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
-        cgg = interp1([1 64 128 192 256],[0.0  0.5 0.75 0.5 0.00],1:256);
-        cbb = interp1([1 64 128 192 256],[0.75 1.0 0.75 0.5 0.00],1:256);
-        bgrcmap = [crr' cgg' cbb'];
-        colormap(h(4),bgrcmap);
+  if  ~isempty(rmmissing(data.B.data))
+    bb = data.B;
+    if median(diff((bb.time.epochUnix))) < 0.1250*0.95
+      fMag = 128; fMax = 7;
+    else
+      fMag =   8; fMax = 3;
     end
+    b0 = bb.filt(0, 0.01,fMag, 5);
+
+    % IMPORTANT NOTE: The call to irf_ebsp() is very time-consuming.
+    tBeginSec = solo.qli.utils.log_time('irf_ebsp(): Begin call', tBeginSec);
+    ebsp = irf_ebsp([],bb,[],b0,[],[0.05 fMax],'fullB=dB', 'polarization', 'fac');
+    tBeginSec = solo.qli.utils.log_time('irf_ebsp(): End call', tBeginSec);
+
+    frequency = ebsp.f;
+    time = ebsp.t;
+    Bsum = ebsp.bb_xxyyzzss(:,:,4);
+    ellipticity = ebsp.ellipticity;
+    dop = ebsp.dop;
+
+    % Remove points with very low degree of polarization
+    dopthresh = 0.7;
+    removepts = find(dop < dopthresh);
+    ellipticity(removepts) = NaN;
+
+    % Remove "lonely" pixels
+    msk = ellipticity;
+    msk(~isnan(msk)) = 1;
+    msk(isnan(msk)) = 0;
+    msk_denoise = bwareaopen(msk,8);
+    ellipticity(msk_denoise==0) = NaN;
+
+    % Plot
+    specrec=struct('t',time);
+    specrec.f=frequency;
+    specrec.p=Bsum;
+    specrec.f_label='';
+    specrec.p_label={'log_{10}B^{2}','nT^2 Hz^{-1}'};
+    irf_spectrogram(h(3),specrec,'log','donotfitcolorbarlabel');
+    set(h(3),'yscale','log');
+    % set(h(1),'ytick',[1e1 1e2 1e3]);
+    % caxis(h(3),[-8 -1])
+    hold(h(3),'on');
+    irf_plot(h(3),fci,'k','linewidth',LWIDTH);
+    text(h(3),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
+    colormap(h(3),'jet');
+
+    specrec=struct('t',time);
+    specrec.f=frequency;
+    specrec.p=ellipticity;
+    specrec.f_label='';
+    specrec.p_label={'Ellipticity','DOP>0.7'};
+    irf_spectrogram(h(4),specrec,'log','donotfitcolorbarlabel');
+    set(h(4),'yscale','log');
+    % set(h(1),'ytick',[1e1 1e2 1e3]);
+    caxis(h(4),[-1 1])
+    hold(h(4),'on');
+    irf_plot(h(4),fci,'k','linewidth',LWIDTH);
+    text(h(4),0.01,0.3,'f_{ci}','units','normalized','fontsize',18);
+
+    crr = interp1([1 64 128 192 256],[0.0  0.5 0.75 1.0 0.75],1:256);
+    cgg = interp1([1 64 128 192 256],[0.0  0.5 0.75 0.5 0.00],1:256);
+    cbb = interp1([1 64 128 192 256],[0.75 1.0 0.75 0.5 0.00],1:256);
+    bgrcmap = [crr' cgg' cbb'];
+    colormap(h(4),bgrcmap);
+  end
 end
 ylabel(h(3),{'f';'(Hz)'},'fontsize',FSIZE);
 ylabel(h(4),{'f';'(Hz)'},'fontsize',FSIZE);
@@ -200,7 +200,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 3 & 4', tBeginSec);
 % Fill panel 5: Ion temperature
 %===============================
 if ~isempty(data.Tpas)
-    irf_plot(h(5),data.Tpas.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(5),data.Tpas.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
 irf_zoom(h(5),'y');
 ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
@@ -213,9 +213,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 % Fill panel 6: y,z PAS velocities
 %==================================
 if ~isempty(data.Vpas)
-    irf_plot(h(6),data.Vpas.y.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
-    hold(h(6),'on');
-    irf_plot(h(6),data.Vpas.z.tlim(Tint_24h),'color',COLORS(3,:),'linewidth',LWIDTH);
+  irf_plot(h(6),data.Vpas.y.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
+  hold(h(6),'on');
+  irf_plot(h(6),data.Vpas.z.tlim(Tint_24h),'color',COLORS(3,:),'linewidth',LWIDTH);
 end
 irf_legend(h(6),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
 irf_zoom(h(6),'y');
@@ -230,10 +230,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 %=====================================
 hold(h(7),'on');
 if ~isempty(data.Vrpw)
-    irf_plot(h(7),-data.Vrpw,'o-','color',COLORS(1,:));
+  irf_plot(h(7),-data.Vrpw,'o-','color',COLORS(1,:));
 end
 if ~isempty(data.Vpas)
-    irf_plot(h(7),data.Vpas.x.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(7),data.Vpas.x.tlim(Tint_24h),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
 irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',LEG_SIZE);
 irf_zoom(h(7),'y');
@@ -247,15 +247,15 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 % Fill panel 8: Electric field
 %==============================
 if ~isempty(data.E)
-    irf_plot(h(8),data.E.y,'color',COLORS(2,:),'linewidth',LWIDTH)
-    hold(h(8),'on');
-    %irf_plot(h(8),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
+  irf_plot(h(8),data.E.y,'color',COLORS(2,:),'linewidth',LWIDTH)
+  hold(h(8),'on');
+  %irf_plot(h(8),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
 
-    minEy = min(rmmissing(data.E.y.data));
-    maxEy = max(rmmissing(data.E.y.data));
-    if ~isempty(minEy) && ~isempty(maxEy)
-        irf_zoom(h(8),'y',[minEy-5 maxEy+5]);
-    end
+  minEy = min(rmmissing(data.E.y.data));
+  maxEy = max(rmmissing(data.E.y.data));
+  if ~isempty(minEy) && ~isempty(maxEy)
+    irf_zoom(h(8),'y',[minEy-5 maxEy+5]);
+  end
 end
 irf_legend(h(8),{'','E_y'},[0.98 0.20],'Fontsize',LEG_SIZE);
 ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',FSIZE);
@@ -268,27 +268,27 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 % Fill panel 9: Ion energy spectrum
 %===================================
 if ~isempty(data.ieflux)
-    myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint_24h);
-    iDEF   = struct('t',  data.ieflux.tlim(Tint_24h).time.epochUnix);
-    % for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-    for ii = 1:length(myFile)
-        iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
-        iEnergy = iEnergy{1};
-        iDEF.p = data.ieflux.data;
-    end
-    iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
-    iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
-    irf_spectrogram(h(9),iDEF,'log','donotfitcolorbarlabel');
-    % set(h(1),'ytick',[1e1 1e2 1e3]);
-    %caxis(h(9),[-1 1])
-    hold(h(9),'on');
-    h9_clims = h(9).CLim;
-    % Fix color axis
-    h9_medp = mean(iDEF.p);
-    h9_medp = min(h9_medp(h9_medp>0));
-    if h9_medp > 0 && h9_medp > h9_clims(1) && log10(h9_medp)+2<(max(max(log10(iDEF.p))))
-        caxis(h(9),[log10(h9_medp)+2 (max(max(log10(iDEF.p))))])
-    end
+  myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint_24h);
+  iDEF   = struct('t',  data.ieflux.tlim(Tint_24h).time.epochUnix);
+  % for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
+  for ii = 1:length(myFile)
+    iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
+    iEnergy = iEnergy{1};
+    iDEF.p = data.ieflux.data;
+  end
+  iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
+  iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
+  irf_spectrogram(h(9),iDEF,'log','donotfitcolorbarlabel');
+  % set(h(1),'ytick',[1e1 1e2 1e3]);
+  %caxis(h(9),[-1 1])
+  hold(h(9),'on');
+  h9_clims = h(9).CLim;
+  % Fix color axis
+  h9_medp = mean(iDEF.p);
+  h9_medp = min(h9_medp(h9_medp>0));
+  if h9_medp > 0 && h9_medp > h9_clims(1) && log10(h9_medp)+2<(max(max(log10(iDEF.p))))
+    caxis(h(9),[log10(h9_medp)+2 (max(max(log10(iDEF.p))))])
+  end
 end
 set(h(9), 'YScale', 'log');
 colormap(h(9),jet)
@@ -306,37 +306,37 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 % ==> Other panels become wider.
 % ==> Moves the IRF logo to the right, and partially outside image.
 if ~isempty(data.Etnr)    % && false
-    try
-        [TNR] = solo.read_TNR(Tint_24h);
-    catch Exc
-        if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
-            TNR = [];
-        end
+  try
+    [TNR] = solo.read_TNR(Tint_24h);
+  catch Exc
+    if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
+      TNR = [];
     end
-    if isa(TNR,'struct')
-        sz_tnr = size(TNR.p);
-        if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-            irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
-            hold(h(10),'on');
-            if ~isempty(data.Ne)
-                % Electron plasma frequency
-                wpe_sc = (sqrt(((data.Ne.tlim(Tint_24h)*1000000)*qe^2)/(Me*epso)));
-                fpe_sc = (wpe_sc/2/pi)/1000;
-                irf_plot(h(10),fpe_sc,'r','linewidth',LWIDTH);
-                fpe_sc.units = 'kHz';
-                fpe_sc.name = 'f [kHz]';
-            end
-            hold(h(10),'off');
-            text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
-            set(h(10), 'YScale', 'log');
-            %set(h(10),'ColorScale','log')
-            %caxis(h(10),[.01 1]*10^-12)
-            ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
-            colormap(h(10),jet)
-            %yticks(h(10),[10^1 10^2]);
-            %irf_zoom(h(10),'y',[10^1 10^2])
-        end
+  end
+  if isa(TNR,'struct')
+    sz_tnr = size(TNR.p);
+    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
+      irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
+      hold(h(10),'on');
+      if ~isempty(data.Ne)
+        % Electron plasma frequency
+        wpe_sc = (sqrt(((data.Ne.tlim(Tint_24h)*1000000)*qe^2)/(Me*epso)));
+        fpe_sc = (wpe_sc/2/pi)/1000;
+        irf_plot(h(10),fpe_sc,'r','linewidth',LWIDTH);
+        fpe_sc.units = 'kHz';
+        fpe_sc.name = 'f [kHz]';
+      end
+      hold(h(10),'off');
+      text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
+      set(h(10), 'YScale', 'log');
+      %set(h(10),'ColorScale','log')
+      %caxis(h(10),[.01 1]*10^-12)
+      ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
+      colormap(h(10),jet)
+      %yticks(h(10),[10^1 10^2]);
+      %irf_zoom(h(10),'y',[10^1 10^2])
     end
+  end
 end
 ylabel(h(10), {'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
 yticks(h(10),      [10^1 10^2]);
@@ -345,13 +345,13 @@ yticks(h(10),      [10^1 10^2]);
 irf_zoom(h(10),'y',[9, 110])    % Not overwritten later.
 
 if isempty(data.Vrpw) ...
-        && isempty(data.E)    && isempty(data.Ne)   && isempty(data.B) ...
-        && isempty(data.Tpas) && isempty(data.Npas) && isempty(data.ieflux) ...
-        && isempty(data.Etnr)
-    nanPlot = irf.ts_scalar(Tint_24h,ones(1,2)*NaN);
-    irf_plot(h(10),nanPlot);    % No LWIDTH?
-    grid(h(10),'off');
-    ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
+    && isempty(data.E)    && isempty(data.Ne)   && isempty(data.B) ...
+    && isempty(data.Tpas) && isempty(data.Npas) && isempty(data.ieflux) ...
+    && isempty(data.Etnr)
+  nanPlot = irf.ts_scalar(Tint_24h,ones(1,2)*NaN);
+  irf_plot(h(10),nanPlot);    % No LWIDTH?
+  grid(h(10),'off');
+  ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
 end
 
 tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
@@ -391,8 +391,8 @@ logopos(4)=logopos(3)*1095/800;
 ha2=axes('position',logopos);
 
 if ~isempty(logoPath)
-    [x, map]=imread(logoPath);
-    image(x)
+  [x, map]=imread(logoPath);
+  image(x)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
@@ -468,11 +468,11 @@ h(5).YTick  = oldticks5;
 I_6H = 0:3;
 I_2H = 0:11;
 if ~ALL_PLOTS_ENABLED
-    % For debugging/testing.
-    %I_6H = [0];
-    %I_2H = [0];
-    I_6H = [1];
-    I_2H = [5];
+  % For debugging/testing.
+  %I_6H = [0];
+  %I_2H = [0];
+  I_6H = [1];
+  I_2H = [5];
 end
 
 %===========================
@@ -480,8 +480,8 @@ end
 %===========================
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 6 h intervals', tBeginSec);
 for i6h = I_6H
-    Tint_6h = Tint_24h(1) + 6*60*60*(i6h+[0, 1]);
-    modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_6h, paths.path_6h)
+  Tint_6h = Tint_24h(1) + 6*60*60*(i6h+[0, 1]);
+  modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_6h, paths.path_6h)
 end
 
 %===========================
@@ -489,8 +489,8 @@ end
 %===========================
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 2 h intervals', tBeginSec);
 for i2h = I_2H
-    Tint_2h = Tint_24h(1) + 2*60*60*(i2h+[0, 1]);
-    modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_2h, paths.path_2h)
+  Tint_2h = Tint_24h(1) + 2*60*60*(i2h+[0, 1]);
+  modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_2h, paths.path_2h)
 end
 
 
@@ -508,30 +508,30 @@ end
 % Presumes pre-existing figure with specific axes. Uses customized code to zoom
 % in on the sub-time interval and adjusts the y limits for that interval.
 function modify_save_subinterval_plot(hAxesArray, hCisText1, hCisText2, data, Tint, parentDirPath)
-    assert(isa(hCisText1,  'matlab.graphics.primitive.Text'))
-    assert(isa(hCisText2,  'matlab.graphics.primitive.Text'))
-    assert(isstruct(data))
-    assert(isa(Tint,       'EpochTT') && (length(Tint) == 2))
+assert(isa(hCisText1,  'matlab.graphics.primitive.Text'))
+assert(isa(hCisText2,  'matlab.graphics.primitive.Text'))
+assert(isstruct(data))
+assert(isa(Tint,       'EpochTT') && (length(Tint) == 2))
 
-    irf_zoom(hAxesArray, 'x', Tint);
+irf_zoom(hAxesArray, 'x', Tint);
 
-    %irf_zoom(hAxesArray(1), 'y');
-    %adjust_panel_ylimits_N_B(  hAxesArray(2), data,      Tint)
-    %adjust_panel_ylimits_Ti(   hAxesArray(5), data.Tpas, Tint)
-    %adjust_panel_ylimits_VT_VN(hAxesArray(6), data.Vpas, Tint)
-    %adjust_panel_ylimits_ESRF( hAxesArray(8), data.E,    Tint)
-    %irf_zoom(hAxesArray(7), 'y');
+%irf_zoom(hAxesArray(1), 'y');
+%adjust_panel_ylimits_N_B(  hAxesArray(2), data,      Tint)
+%adjust_panel_ylimits_Ti(   hAxesArray(5), data.Tpas, Tint)
+%adjust_panel_ylimits_VT_VN(hAxesArray(6), data.Vpas, Tint)
+%adjust_panel_ylimits_ESRF( hAxesArray(8), data.E,    Tint)
+%irf_zoom(hAxesArray(7), 'y');
 
-    % NOTE: Different from for 24h plots.
-    yyaxis(hAxesArray(2), 'right');
-    set_YLim_YTick(hAxesArray(1:9), hAxesArray([]), hAxesArray([10]))
-    yyaxis(hAxesArray(2), 'left');
-    set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
+% NOTE: Different from for 24h plots.
+yyaxis(hAxesArray(2), 'right');
+set_YLim_YTick(hAxesArray(1:9), hAxesArray([]), hAxesArray([10]))
+yyaxis(hAxesArray(2), 'left');
+set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
 
-    % Update text
-    [hCisText1.String, hCisText2.String] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);
+% Update text
+[hCisText1.String, hCisText2.String] = solo.qli.context_info_strings(data.solopos, data.earthpos, Tint);
 
-    solo.qli.utils.save_figure_to_file(parentDirPath, Tint)
+solo.qli.utils.save_figure_to_file(parentDirPath, Tint)
 end
 
 
@@ -560,69 +560,69 @@ end
 %   (2) keep YTick as is.
 %
 function set_YLim_YTick(hAxesAutoYLimYTickArray, hAxesAutoYLimArray, hAxesMarginYLimArray)
-    % PROPOSAL: Automatically (not MATLAB) set YTick for logarithmic axis to
-    %           ensure one tick per power of ten, 10^n.
-    % PROPOSAL: Set YLimMode=manual for YLimYTick axes.
+% PROPOSAL: Automatically (not MATLAB) set YTick for logarithmic axis to
+%           ensure one tick per power of ten, 10^n.
+% PROPOSAL: Set YLimMode=manual for YLimYTick axes.
 
-    assert(isa(hAxesAutoYLimYTickArray, 'matlab.graphics.axis.Axes'))
-    assert(isa(hAxesAutoYLimArray,      'matlab.graphics.axis.Axes'))
-    assert(isa(hAxesMarginYLimArray,    'matlab.graphics.axis.Axes'))
+assert(isa(hAxesAutoYLimYTickArray, 'matlab.graphics.axis.Axes'))
+assert(isa(hAxesAutoYLimArray,      'matlab.graphics.axis.Axes'))
+assert(isa(hAxesMarginYLimArray,    'matlab.graphics.axis.Axes'))
 
-    hAxesArray = unique([...
-        hAxesAutoYLimYTickArray(:); ...
-        hAxesAutoYLimArray(:); ...
-        hAxesMarginYLimArray(:) ...
-    ]);
+hAxesArray = unique([...
+  hAxesAutoYLimYTickArray(:); ...
+  hAxesAutoYLimArray(:); ...
+  hAxesMarginYLimArray(:) ...
+  ]);
 
-    % Assert that all axes are unique (no overlap/intersection).
-    assert(numel(hAxesArray) == (...
-        numel(hAxesAutoYLimYTickArray) + ...
-        numel(hAxesAutoYLimArray) + ...
-        numel(hAxesMarginYLimArray)...
-    ))
+% Assert that all axes are unique (no overlap/intersection).
+assert(numel(hAxesArray) == (...
+  numel(hAxesAutoYLimYTickArray) + ...
+  numel(hAxesAutoYLimArray) + ...
+  numel(hAxesMarginYLimArray)...
+  ))
 
-    %=======================================================================
-    % Automatically set preliminary YLim (y limits) and final YTick (y tick
-    % positions) for selected axes.
-    %=======================================================================
-    % Set axes y range (YLim) to only cover the data (plus rounding outwards
-    % to ticks).
-    set(hAxesAutoYLimYTickArray, 'YLimMode', 'auto')
-    % Auto-generate ticks (YTick; y values at which there should be ticks).
-    set(hAxesAutoYLimYTickArray, 'YTickMode', 'auto')
-    %---------------------------------------------------------------------------
-    % IMPORTANT: Read YLim without using the return result ("do nothing")
-    % --------------------------------------------------------------------
-    % IMPLEMENTATION NOTE: THIS COMMAND SHOULD THEORETICALLY NOT BE NEEDED,
-    % BUT IS NEEDED FOR THE YLim VALUES TO BE SET PROPERLY. MATLAB BUG?!
-    % This behaviour has been observed on Erik P G Johansson's laptop
-    % "irony" (MATLAB R2019b, Ubuntu Linux) as of 2023-05-25.
-    % Ex: (Re-)scaling of panel 5, 2022-02-23T10-12 (2h plot).
-    get(hAxesAutoYLimYTickArray, 'YLim');
-    %---------------------------------------------------------------------------
-    % Prevent later setting of YLim (next command) from generating new ticks.
-    set(hAxesAutoYLimYTickArray, 'YTickMode', 'manual')
+%=======================================================================
+% Automatically set preliminary YLim (y limits) and final YTick (y tick
+% positions) for selected axes.
+%=======================================================================
+% Set axes y range (YLim) to only cover the data (plus rounding outwards
+% to ticks).
+set(hAxesAutoYLimYTickArray, 'YLimMode', 'auto')
+% Auto-generate ticks (YTick; y values at which there should be ticks).
+set(hAxesAutoYLimYTickArray, 'YTickMode', 'auto')
+%---------------------------------------------------------------------------
+% IMPORTANT: Read YLim without using the return result ("do nothing")
+% --------------------------------------------------------------------
+% IMPLEMENTATION NOTE: THIS COMMAND SHOULD THEORETICALLY NOT BE NEEDED,
+% BUT IS NEEDED FOR THE YLim VALUES TO BE SET PROPERLY. MATLAB BUG?!
+% This behaviour has been observed on Erik P G Johansson's laptop
+% "irony" (MATLAB R2019b, Ubuntu Linux) as of 2023-05-25.
+% Ex: (Re-)scaling of panel 5, 2022-02-23T10-12 (2h plot).
+get(hAxesAutoYLimYTickArray, 'YLim');
+%---------------------------------------------------------------------------
+% Prevent later setting of YLim (next command) from generating new ticks.
+set(hAxesAutoYLimYTickArray, 'YTickMode', 'manual')
 
-    %=========================================================================
-    % Automatically set YLim (y limits) but keep old YTick (y tick positions)
-    % for selected axes.
-    %=========================================================================
-    set(hAxesAutoYLimArray, 'YTickMode', 'manual')
-    %get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
-    set(hAxesAutoYLimArray, 'YLimMode',  'auto')
-    %get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
+%=========================================================================
+% Automatically set YLim (y limits) but keep old YTick (y tick positions)
+% for selected axes.
+%=========================================================================
+set(hAxesAutoYLimArray, 'YTickMode', 'manual')
+%get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
+set(hAxesAutoYLimArray, 'YLimMode',  'auto')
+%get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
 
-    %===========================================================================
-    % If needed, adjust YLim (but not YTick) to ensure there are margins between
-    % YLim and YTick = No ticks on the panel edges/corners.
-    %===========================================================================
-    %i = 10;
-    %h = hAxesArray(i);
-    %fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(h.YLim))
-    %fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(h.YTick))
-    solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray)
-    %fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(h.YLim))
-    %fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(h.YTick))
+%===========================================================================
+% If needed, adjust YLim (but not YTick) to ensure there are margins between
+% YLim and YTick = No ticks on the panel edges/corners.
+%===========================================================================
+%i = 10;
+%h = hAxesArray(i);
+%fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(h.YLim))
+%fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(h.YTick))
+solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray)
+%fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(h.YLim))
+%fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(h.YTick))
 end
 
 

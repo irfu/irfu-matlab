@@ -72,73 +72,73 @@
 %
 function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_ZV_to_current(t1, zvIBIASx1)
 
-    % ASSERTIONS
-    irf.assert.sizes(...
-        t1,        [-1, 1], ...
-        zvIBIASx1, [-1, 1]);
-    % Require current datatype that can store NaN.
-    assert(isfloat(zvIBIASx1))
-    % IMPLEMENTATION NOTE: Do not check for STRICT increase (yet) since it might
-    % not be so because of duplicate bias settings anomaly. Checking for
-    % NON-STRICT incrementation is still a useful check since it is global.
-    assert(issorted(t1), 'Argument t1 does not increase, is not sorted.')
+% ASSERTIONS
+irf.assert.sizes(...
+  t1,        [-1, 1], ...
+  zvIBIASx1, [-1, 1]);
+% Require current datatype that can store NaN.
+assert(isfloat(zvIBIASx1))
+% IMPLEMENTATION NOTE: Do not check for STRICT increase (yet) since it might
+% not be so because of duplicate bias settings anomaly. Checking for
+% NON-STRICT incrementation is still a useful check since it is global.
+assert(issorted(t1), 'Argument t1 does not increase, is not sorted.')
 
-    % NOTE: return value has to be float to store NaN anyway.
+% NOTE: return value has to be float to store NaN anyway.
 %     t1        = double(t1);
 %     zvIBIASx1 = double(zvIBIASx1);
 
-    % Remove indices at which CURRENTS (not Epoch) are NOT NaN, i.e. which
-    % provide actual bias values on this antenna.
-    % NOTE: Antenna is determined by the data in zvIBIASx1.
-    % NOTE: Need to specify row index to ensure correct size for empty
-    % result variables.
-    bKeep     = ~isnan(zvIBIASx1);
-    t1        = t1       (bKeep, 1);
-    zvIBIASx1 = zvIBIASx1(bKeep, 1);
+% Remove indices at which CURRENTS (not Epoch) are NOT NaN, i.e. which
+% provide actual bias values on this antenna.
+% NOTE: Antenna is determined by the data in zvIBIASx1.
+% NOTE: Need to specify row index to ensure correct size for empty
+% result variables.
+bKeep     = ~isnan(zvIBIASx1);
+t1        = t1       (bKeep, 1);
+zvIBIASx1 = zvIBIASx1(bKeep, 1);
 
-    %============================================================================
-    % CDF ASSERTION
-    % Handle non-strictly increasing Epoch
-    % ------------------------------------
-    % NOTE: This handling is driven by
-    % (1) wanting to check input data
-    % (2) interp1 does not permit having identical x values/timestamps, not even
-    %     with identical y values.
-    %============================================================================
-    if ~issorted(t1, 'strictascend')
-        % CASE: Timestamps do NOT increase strictly.
+%============================================================================
+% CDF ASSERTION
+% Handle non-strictly increasing Epoch
+% ------------------------------------
+% NOTE: This handling is driven by
+% (1) wanting to check input data
+% (2) interp1 does not permit having identical x values/timestamps, not even
+%     with identical y values.
+%============================================================================
+if ~issorted(t1, 'strictascend')
+  % CASE: Timestamps do NOT increase strictly.
 
-        % Set bDupl = whether component (timestamp) is followed by identical
-        % value (duplicate).
-        bDupl = (diff(t1) == 0);
-        % Add last component to maintain same vector length.
-        bDupl = [bDupl(:); false];
-        iDupl = find(bDupl);
+  % Set bDupl = whether component (timestamp) is followed by identical
+  % value (duplicate).
+  bDupl = (diff(t1) == 0);
+  % Add last component to maintain same vector length.
+  bDupl = [bDupl(:); false];
+  iDupl = find(bDupl);
 
-        % ASSERTION: Successive duplicate timestamps correspond to identical
-        % bias settings.
-        assert(all(zvIBIASx1(iDupl) == zvIBIASx1(iDupl+1)), ...
-            'TC_to_current:Assertion', ...
-            ['Bias currents contain non-equal current values on equal', ...
-            ' timestamps on the same antenna.']);
+  % ASSERTION: Successive duplicate timestamps correspond to identical
+  % bias settings.
+  assert(all(zvIBIASx1(iDupl) == zvIBIASx1(iDupl+1)), ...
+    'TC_to_current:Assertion', ...
+    ['Bias currents contain non-equal current values on equal', ...
+    ' timestamps on the same antenna.']);
 
-        %=============================
-        % Mitigate: Remove duplicates
-        %=============================
-        t1        = t1(~bDupl);
-        zvIBIASx1 = zvIBIASx1(~bDupl);
-        duplicatesAnomaly = 1;
+  %=============================
+  % Mitigate: Remove duplicates
+  %=============================
+  t1        = t1(~bDupl);
+  zvIBIASx1 = zvIBIASx1(~bDupl);
+  duplicatesAnomaly = 1;
 
-        % ASSERTION: Epoch strictly increases (after mitigation)
-        assert(issorted(t1, 'strictascend'), ...
-            'CURRENT_ZV_to_current:Assertion', ...
-            ['Bias current timestamps do not strictly increase after', ...
-            ' removing duplicate bias settings.'])
-    else
-        % CASE: Timestamps do increase strictly.
-        duplicatesAnomaly = 0;
-    end
+  % ASSERTION: Epoch strictly increases (after mitigation)
+  assert(issorted(t1, 'strictascend'), ...
+    'CURRENT_ZV_to_current:Assertion', ...
+    ['Bias current timestamps do not strictly increase after', ...
+    ' removing duplicate bias settings.'])
+else
+  % CASE: Timestamps do increase strictly.
+  duplicatesAnomaly = 0;
+end
 
-    t2        = t1;
-    zvIBIASx2 = zvIBIASx1;
+t2        = t1;
+zvIBIASx2 = zvIBIASx1;
 end

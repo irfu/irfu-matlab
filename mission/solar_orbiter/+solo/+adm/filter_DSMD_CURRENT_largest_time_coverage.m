@@ -40,24 +40,24 @@
 % First created 2020-06-10.
 %
 function DsmdArray2 = filter_DSMD_CURRENT_largest_time_coverage(DsmdArray1)
-    % NOTE: 2020-07-16: ROC generated
-    %   solo_L1_rpw-bia-current-cdag_20200501-20200531_V01.cdf
-    % after
-    %   former_versions/solo_L1_rpw-bia-current-cdag_20200501T000000-20200601T000000_V02.cdf
+% NOTE: 2020-07-16: ROC generated
+%   solo_L1_rpw-bia-current-cdag_20200501-20200531_V01.cdf
+% after
+%   former_versions/solo_L1_rpw-bia-current-cdag_20200501T000000-20200601T000000_V02.cdf
 
-    CURRENT_DSI = 'SOLO_L1_RPW-BIA-CURRENT';
+CURRENT_DSI = 'SOLO_L1_RPW-BIA-CURRENT';
 
-    DsmdArray1 = DsmdArray1(:);   % Algorithm requires(?) 1D array.
+DsmdArray1 = DsmdArray1(:);   % Algorithm requires(?) 1D array.
 
-    bCurrent = ismember({DsmdArray1.datasetId}, CURRENT_DSI);
-    bKeep    = ~bCurrent;
+bCurrent = ismember({DsmdArray1.datasetId}, CURRENT_DSI);
+bKeep    = ~bCurrent;
 
-    iCurrentArray   = find(bCurrent);
-    iLvArray        = find_largest_time_coverages(DsmdArray1(iCurrentArray));
-    iLvArray        = iCurrentArray(iLvArray);
-    bKeep(iLvArray) = true;
+iCurrentArray   = find(bCurrent);
+iLvArray        = find_largest_time_coverages(DsmdArray1(iCurrentArray));
+iLvArray        = iCurrentArray(iLvArray);
+bKeep(iLvArray) = true;
 
-    DsmdArray2 = DsmdArray1(bKeep);
+DsmdArray2 = DsmdArray1(bKeep);
 end
 
 
@@ -66,42 +66,42 @@ end
 % ASSUMPTION: Only CURRENT DSMDs.
 function iLvArray = find_largest_time_coverages(DsmdArray)
 
-    % For each DSMD, find
-    % (1) length of time coverage
-    % (2) calender month
-    DurArray           = duration.empty(0,1);
-    monthBeginDtArray = datetime.empty(0,1);
-    monthBeginDtArray.TimeZone = 'UTCLeapSeconds';
-    for iCurDsmd = 1:numel(DsmdArray)
-        Dt1 = vertcat(DsmdArray(iCurDsmd).dt1);
-        Dt2 = vertcat(DsmdArray(iCurDsmd).dt2);
+% For each DSMD, find
+% (1) length of time coverage
+% (2) calender month
+DurArray           = duration.empty(0,1);
+monthBeginDtArray = datetime.empty(0,1);
+monthBeginDtArray.TimeZone = 'UTCLeapSeconds';
+for iCurDsmd = 1:numel(DsmdArray)
+  Dt1 = vertcat(DsmdArray(iCurDsmd).dt1);
+  Dt2 = vertcat(DsmdArray(iCurDsmd).dt2);
 
-        MonthBeginDt = dateshift(Dt1, 'start', 'month');
+  MonthBeginDt = dateshift(Dt1, 'start', 'month');
 
-        % ASSERTION: DSMD does not cover/overlap with more than one CALENDER month.
-        assert(Dt2 <= MonthBeginDt + calmonths(1), ...
-            'Dataset covers more than one calender month. Can not handle this case. "%s"', ...
-            DsmdArray(iCurDsmd).path);
+  % ASSERTION: DSMD does not cover/overlap with more than one CALENDER month.
+  assert(Dt2 <= MonthBeginDt + calmonths(1), ...
+    'Dataset covers more than one calender month. Can not handle this case. "%s"', ...
+    DsmdArray(iCurDsmd).path);
 
-        % Use timestamp for beginning of month as unique ID for calender month.
-        DurArray(          iCurDsmd, 1) = Dt2 - Dt1;
-        monthBeginDtArray(iCurDsmd, 1)  = MonthBeginDt;
-    end
+  % Use timestamp for beginning of month as unique ID for calender month.
+  DurArray(          iCurDsmd, 1) = Dt2 - Dt1;
+  monthBeginDtArray(iCurDsmd, 1)  = MonthBeginDt;
+end
 
 
 
-    % For every calender month, find DSMD with greatest time coverage.
-    uniqueMonthBeginDtArray = unique(monthBeginDtArray);
-    nSets = numel(uniqueMonthBeginDtArray);
-    iLvArray = zeros(0, 1);
-    % Iterate over sets (months) of datasets. Find one latest version dataset in
-    % each set.
-    for iSet = 1:nSets
-        iSetDsmd = find(monthBeginDtArray == uniqueMonthBeginDtArray(iSet));
+% For every calender month, find DSMD with greatest time coverage.
+uniqueMonthBeginDtArray = unique(monthBeginDtArray);
+nSets = numel(uniqueMonthBeginDtArray);
+iLvArray = zeros(0, 1);
+% Iterate over sets (months) of datasets. Find one latest version dataset in
+% each set.
+for iSet = 1:nSets
+  iSetDsmd = find(monthBeginDtArray == uniqueMonthBeginDtArray(iSet));
 
-        iSetLvArray = find_largest_time_coverage(DsmdArray(iSetDsmd), DurArray(iSetDsmd));
-        iLvArray = [iLvArray; iSetDsmd(iSetLvArray)];
-    end
+  iSetLvArray = find_largest_time_coverage(DsmdArray(iSetDsmd), DurArray(iSetDsmd));
+  iLvArray = [iLvArray; iSetDsmd(iSetLvArray)];
+end
 
 end
 
@@ -112,13 +112,13 @@ end
 % ASSUMPTION: DsmdArray only contains CURRENT DSMDs for one and same calender
 % month.
 function iLvArray = find_largest_time_coverage(DsmdArray, DurArray)
-    % ASSERTION
-    assert(numel(DsmdArray) == numel(DurArray))
+% ASSERTION
+assert(numel(DsmdArray) == numel(DurArray))
 
-    MaxDur   = max(DurArray);
-    iLvArray = find(DurArray == MaxDur);
+MaxDur   = max(DurArray);
+iLvArray = find(DurArray == MaxDur);
 
-    % ASSERTION: Nore more than one maximum duration dataset.
+% ASSERTION: Nore more than one maximum duration dataset.
 %     if numel(iLvArray) ~= 1
 %         errorMsg = sprintf(...
 %             ['Found multiple comparable datasets with the equivalent greatest duration (time coverage) %s', ...

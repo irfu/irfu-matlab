@@ -31,9 +31,9 @@ fig.Position = [1,1,1095,800];
 % Fill panel 1: B vector components
 %===================================
 if ~isempty(data.B)
-    irf_plot(h(1),data.B.tlim(Tint),'linewidth',LWIDTH);
-    hold(h(1),'on');
-    irf_plot(h(1),data.B.abs.tlim(Tint),'linewidth',LWIDTH);
+  irf_plot(h(1),data.B.tlim(Tint),'linewidth',LWIDTH);
+  hold(h(1),'on');
+  irf_plot(h(1),data.B.abs.tlim(Tint),'linewidth',LWIDTH);
 end
 irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE);
 ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
@@ -47,8 +47,8 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 % Fill panel 2: abs(B)
 %======================
 if ~isempty(data.B)
-    %fci = qe*data.B.abs*10^-9/mp/(2*pi);
-    irf_plot(h(2),data.B.abs.tlim(Tint),'linewidth',LWIDTH);
+  %fci = qe*data.B.abs*10^-9/mp/(2*pi);
+  irf_plot(h(2),data.B.abs.tlim(Tint),'linewidth',LWIDTH);
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 h(2).YScale='log';
@@ -64,10 +64,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 %=========================
 hold(h(3),'on');
 if ~isempty(data.Ne)
-    irf_plot(h(3),data.Ne.tlim(Tint),'color',COLORS(1,:),'linewidth',LWIDTH);
+  irf_plot(h(3),data.Ne.tlim(Tint),'color',COLORS(1,:),'linewidth',LWIDTH);
 end
 if ~isempty(data.Npas)
-    irf_plot(h(3),data.Npas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(3),data.Npas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
 ylabel(h(3),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FSIZE);
 irf_legend(h(3),{'N_{e,RPW} ',' N_{i,PAS}'},[0.98 0.16],'Fontsize',LEG_SIZE);
@@ -83,7 +83,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 3', tBeginSec);
 % Fill panel 4: Ion temperature
 %===============================
 if ~isempty(data.Tpas)
-    irf_plot(h(4),data.Tpas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(4),data.Tpas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
 ylabel(h(4),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
 h(4).YScale='log';
@@ -99,9 +99,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 4', tBeginSec);
 %==============
 % y,z PAS velocities
 if ~isempty(data.Vpas)
-    irf_plot(h(5),data.Vpas.y.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
-    hold(h(5),'on');
-    irf_plot(h(5),data.Vpas.z.tlim(Tint),'color',COLORS(3,:),'linewidth',LWIDTH);
+  irf_plot(h(5),data.Vpas.y.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
+  hold(h(5),'on');
+  irf_plot(h(5),data.Vpas.z.tlim(Tint),'color',COLORS(3,:),'linewidth',LWIDTH);
 end
 irf_legend(h(5),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
 irf_zoom(h(5),'y');
@@ -116,10 +116,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 %==============
 hold(h(6),'on');
 if ~isempty(data.Vrpw)
-    irf_plot(h(6),-data.Vrpw,'o','color',COLORS(1,:));
+  irf_plot(h(6),-data.Vrpw,'o','color',COLORS(1,:));
 end
 if ~isempty(data.Vpas)
-    irf_plot(h(6),data.Vpas.x.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(6),data.Vpas.x.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
 irf_legend(h(6),{'V_{RPW}','V_{PAS}'},[0.98 0.15],'Fontsize',LEG_SIZE);
 %h(6).YLim=[150,950];
@@ -133,9 +133,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 % Fill panel 7
 %==============
 if ~isempty(data.E)
-    irf_plot(h(7),data.E.y,'color',COLORS(2,:),'linewidth',LWIDTH)
-    hold(h(7),'on');
-    %irf_plot(h(7),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
+  irf_plot(h(7),data.E.y,'color',COLORS(2,:),'linewidth',LWIDTH)
+  hold(h(7),'on');
+  %irf_plot(h(7),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
 end
 irf_legend(h(7),{'','E_y'},[0.98 0.20],'Fontsize',LEG_SIZE);
 irf_zoom(h(7),'y');
@@ -149,29 +149,29 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 % Fill panel 8: Ion energy spectrum
 %===================================
 if ~isempty(data.ieflux)
-    myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
-    iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
-    %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-    for ii = 1:length(myFile)
-        iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
-        iEnergy = iEnergy{1};
-        iDEF.p = data.ieflux.data;
-    end
-    iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
-    iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
-    irf_spectrogram(h(8),iDEF,'log','donotfitcolorbarlabel');
-    % set(h(1),'ytick',[1e1 1e2 1e3]);
-    hold(h(8),'on');
-    h8_clims = h(8).CLim;
-    % Fix color axis
-    h8_medp = mean(iDEF.p);
-    h8_medp = min(h8_medp(h8_medp>0));
-    if h8_medp > 0 && h8_medp > h8_clims(1) && log10(h8_medp)+2<(max(max(log10(iDEF.p))))
-        caxis(h(8),[log10(h8_medp)+2 (max(max(log10(iDEF.p))))])
-    end
-    set(h(8), 'YScale', 'log');
-    colormap(h(8),jet)
-    ylabel(h(8),'[eV]')
+  myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
+  iDEF   = struct('t',  data.ieflux.tlim(Tint).time.epochUnix);
+  %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
+  for ii = 1:length(myFile)
+    iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
+    iEnergy = iEnergy{1};
+    iDEF.p = data.ieflux.data;
+  end
+  iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
+  iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
+  irf_spectrogram(h(8),iDEF,'log','donotfitcolorbarlabel');
+  % set(h(1),'ytick',[1e1 1e2 1e3]);
+  hold(h(8),'on');
+  h8_clims = h(8).CLim;
+  % Fix color axis
+  h8_medp = mean(iDEF.p);
+  h8_medp = min(h8_medp(h8_medp>0));
+  if h8_medp > 0 && h8_medp > h8_clims(1) && log10(h8_medp)+2<(max(max(log10(iDEF.p))))
+    caxis(h(8),[log10(h8_medp)+2 (max(max(log10(iDEF.p))))])
+  end
+  set(h(8), 'YScale', 'log');
+  colormap(h(8),jet)
+  ylabel(h(8),'[eV]')
 end
 
 tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
@@ -183,54 +183,54 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 %======================================
 % NOTE: Panel takes much more time than other panels.
 if ~isempty(data.Etnr)
-    % Electron plasma frequency
-    myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
-    tp =[];pp=[];
-    warning('off', 'fuzzy:general:warnDeprecation_Combine');
-    TNR = [];
-    %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
-    for iii = 1:length(myFile2)
-        tt = [myFile2(iii).start myFile2(iii).stop];
-        [TNRp] =  solo.read_TNR(tt);
-        if isa(TNRp,'struct')
-            % NOTE: MATLAB documentation (R2019b):
-            % "combine will be removed in a future release"
-            TNR.t = combine(tp,TNRp.t);
-            tp    = TNR.t;
-            TNR.p = combine(pp,TNRp.p);
-            pp    = TNR.p;
+  % Electron plasma frequency
+  myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
+  tp =[];pp=[];
+  warning('off', 'fuzzy:general:warnDeprecation_Combine');
+  TNR = [];
+  %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
+  for iii = 1:length(myFile2)
+    tt = [myFile2(iii).start myFile2(iii).stop];
+    [TNRp] =  solo.read_TNR(tt);
+    if isa(TNRp,'struct')
+      % NOTE: MATLAB documentation (R2019b):
+      % "combine will be removed in a future release"
+      TNR.t = combine(tp,TNRp.t);
+      tp    = TNR.t;
+      TNR.p = combine(pp,TNRp.p);
+      pp    = TNR.p;
 
-            % IMPLEMENTATION NOTE: Only read from TNRp from within this if
-            % clause, since it might not be a struct if read from elsewhere,
-            % even if it in principle means overwriting the value multiple
-            % times as for TNRp.f and TNRp.p_label.
-            TNR.f       = TNRp.f;
-            TNR.p_label = TNRp.p_label;
-        end
+      % IMPLEMENTATION NOTE: Only read from TNRp from within this if
+      % clause, since it might not be a struct if read from elsewhere,
+      % even if it in principle means overwriting the value multiple
+      % times as for TNRp.f and TNRp.p_label.
+      TNR.f       = TNRp.f;
+      TNR.p_label = TNRp.p_label;
     end
-    if isstruct(TNR)
-        % TNR.f       = TNRp.f;
-        % TNR.p_label = TNRp.p_label;
-        sz_tnr = size(TNR.p);
-        if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-            irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
-            hold(h(9),'on');
-        end
-        if ~isempty(data.Ne)
-            wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));
-            fpe_sc = (wpe_sc/2/pi)/1000;
-            fpe_sc.units = 'kHz';
-            fpe_sc.name  = 'f [kHz]';
-            irf_plot(h(9),fpe_sc,'r','linewidth',LWIDTH);
-        end
-        text(h(9),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
-        %set(h(9), 'YScale', 'log');
-        colormap(h(9),jet)
-        %ylabel(h(9),'f [kHz]')
-        set(h(9),'ColorScale','log')
-        %caxis([.01 10]*10^-12)
-        yticks(h(9),[10^1 10^2]);
+  end
+  if isstruct(TNR)
+    % TNR.f       = TNRp.f;
+    % TNR.p_label = TNRp.p_label;
+    sz_tnr = size(TNR.p);
+    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
+      irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
+      hold(h(9),'on');
     end
+    if ~isempty(data.Ne)
+      wpe_sc = (sqrt(((data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));
+      fpe_sc = (wpe_sc/2/pi)/1000;
+      fpe_sc.units = 'kHz';
+      fpe_sc.name  = 'f [kHz]';
+      irf_plot(h(9),fpe_sc,'r','linewidth',LWIDTH);
+    end
+    text(h(9),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
+    %set(h(9), 'YScale', 'log');
+    colormap(h(9),jet)
+    %ylabel(h(9),'f [kHz]')
+    set(h(9),'ColorScale','log')
+    %caxis([.01 10]*10^-12)
+    yticks(h(9),[10^1 10^2]);
+  end
 end
 
 tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
@@ -269,8 +269,8 @@ logopos(4)=logopos(3)*1095/800;
 ha2=axes('position',logopos);
 
 if ~isempty(logoPath)
-    [x, map]=imread(logoPath);
-    image(x)
+  [x, map]=imread(logoPath);
+  image(x)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')

@@ -83,29 +83,29 @@
 % First created 2022-08-30.
 %
 function quicklooks_main_cron(...
-        logoPath, vhtDataDir, outputDir, ...
-        runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
+  logoPath, vhtDataDir, outputDir, ...
+  runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
 
-    runNonweeklyPlots = interpret_argument_flag(runNonweeklyPlots);
-    runWeeklyPlots    = interpret_argument_flag(runWeeklyPlots);
+runNonweeklyPlots = interpret_argument_flag(runNonweeklyPlots);
+runWeeklyPlots    = interpret_argument_flag(runWeeklyPlots);
 
-    % IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
-    % bash.
-    irf
+% IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
+% bash.
+irf
 
-    %=================================
-    % Configure Solar Orbiter database
-    %=================================
-    % NOTE: System-dependent configuration!
-    solo.db_init('local_file_db', '/data/solo/');
-    solo.db_init('local_file_db', '/data/solo/data_irfu');
-    % Setup cache
-    solo.db_init('db_cache_size_max', 4096)
-    solo.db_cache('on', 'save')
+%=================================
+% Configure Solar Orbiter database
+%=================================
+% NOTE: System-dependent configuration!
+solo.db_init('local_file_db', '/data/solo/');
+solo.db_init('local_file_db', '/data/solo/data_irfu');
+% Setup cache
+solo.db_init('db_cache_size_max', 4096)
+solo.db_cache('on', 'save')
 
-    solo.qli.quicklooks_main(...
-        logoPath, vhtDataDir, outputDir, ...
-        runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
+solo.qli.quicklooks_main(...
+  logoPath, vhtDataDir, outputDir, ...
+  runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
 end
 
 
@@ -116,13 +116,13 @@ end
 % (2) bash script-friendly (strings).
 %
 function value = interpret_argument_flag(arg)
-    assert(isscalar(arg), 'Flag argument is not scalar.')
+assert(isscalar(arg), 'Flag argument is not scalar.')
 
-    if ischar(arg) && arg=='0'
-        value = false;
-    elseif ischar(arg) && arg=='1'
-        value = true;
-    else
-        error('Can not interpret argument flag. Illegal format.')
-    end
+if ischar(arg) && arg=='0'
+  value = false;
+elseif ischar(arg) && arg=='1'
+  value = true;
+else
+  error('Can not interpret argument flag. Illegal format.')
+end
 end

@@ -8,8 +8,8 @@
 %
 function DsmdArray = convert_DSMD_DATASET_ID_to_SOLO(DsmdArray)
 
-    for i = 1:numel(DsmdArray)
-        DsmdArray(i).datasetId = ...
-            solo.adm.convert_DATASET_ID_to_SOLO(DsmdArray(i).datasetId);
-    end
+for i = 1:numel(DsmdArray)
+  DsmdArray(i).datasetId = ...
+    solo.adm.convert_DATASET_ID_to_SOLO(DsmdArray(i).datasetId);
+end
 end
