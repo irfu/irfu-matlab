@@ -4,14 +4,14 @@
 % NOTE: Example s/w descriptor is outdated, but that does not really matter.
 %
 function JSON_object_str___MTEST
-    
+
     obj = define_descriptor1();
     str = bicas.utils.JSON_object_str(obj, 4);
     fprintf('-------------------------------------------\n');
     fprintf(str);
-    
-    
-    
+
+
+
     %==========================================================================
     function obj = define_descriptor3()
         obj = struct('output_cdf1', 'output_filename1.cdf', 'output_cdf2', 'output_filename2.cdf');
@@ -25,15 +25,15 @@ function JSON_object_str___MTEST
     %==========================================================================
     function obj = define_descriptor1()
         ERIK_P_G_JOHANSSON = 'Erik P G Johansson';
-        
+
         obj = struct();
-        
+
         identification.project     = 'ROC-SGSE';
         identification.name        = 'BICAS (temporary name)';
         identification.identifier  = 'ROC-SGSE-BICAS';    % Temporary
         identification.description = 'BIAS calibration software (temporary description)';
         obj.identification = identification;
-        
+
         release.version = '0.0.1';
         release.date         = '2016-05-19';
         release.author       = ERIK_P_G_JOHANSSON;
@@ -41,12 +41,12 @@ function JSON_object_str___MTEST
         release.institute    = 'IRF-U';
         release.modification = 'None (Initial release)';
         obj.release = release;
-        
+
         environment.executable = 'bin/bicas';
         obj.environment = environment;
-        
+
         obj.modes = [];
-        
+
         mode = [];
         mode.name = 'testmode1';
         mode.purpose =  'Mode 1 (temporary purpose description)';
@@ -54,7 +54,7 @@ function JSON_object_str___MTEST
         mode.inputs.input_SCI.version    = '01';
         mode.inputs.input_HK.identifier  = 'ROC-SGSE_HK_RPW-BIA';
         mode.inputs.input_HK.version     = '01';
-        
+
         mode.outputs.output_SCI.identifier  = 'ROC-SGSE_L2S_RPW-BIA-xxxxx';
         mode.outputs.output_SCI.name        = 'xxxxx (temporary name)';
         mode.outputs.output_SCI.description = 'Contains xxxxx (temporary description)';
@@ -66,7 +66,7 @@ function JSON_object_str___MTEST
         mode.outputs.output_SCI.release.institute    = 'IRF-U';
         mode.outputs.output_SCI.release.modification = 'None (initial release)';
         obj.modes{end+1} = mode;
-        
+
         mode = [];
         mode.name = 'testmode2';
         mode.purpose =  'Mode 2 (temporary purpose description)';

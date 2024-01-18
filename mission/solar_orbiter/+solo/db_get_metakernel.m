@@ -9,7 +9,7 @@ function db_get_metakernel(flown_or_predicted)
 % flown_or_predicted = 'flown' return metakernel of actually
 %                       flown orbit only
 % flown_or_predicted = 'predicted' return metakernel of latest orbit
-%                      prediction (while still using reconstructed flown 
+%                      prediction (while still using reconstructed flown
 %                      orbit information as much as possible).
 narginchk(1,2)
 global SOLO_DB; if isempty(SOLO_DB), solo.db_init(), end

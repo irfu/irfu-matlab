@@ -251,7 +251,7 @@ classdef Saturation
                 dlrFpa,                   [-1], ...
                 lrx,                      [-1]);
             assert(AsrSamplesAVoltSrm.nRows == nRows)
-            
+
 
 
             %===================================================================
@@ -355,7 +355,7 @@ classdef Saturation
                 Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
                 L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
             end
-            
+
         end    % function
 
 

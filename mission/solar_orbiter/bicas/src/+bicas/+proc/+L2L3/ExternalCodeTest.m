@@ -13,7 +13,7 @@ classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
     %   PROPOSAL: Specify cell arrays of return data.
     %       CON: Difficult to distinguish which RV is which.
     %   PROPOSAL: Struct argument.
-    
+
     %#####################
     %#####################
     % INSTANCE PROPERTIES
@@ -25,7 +25,7 @@ classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
     end
 
 
-    
+
     methods
         %function obj = ExternalCodeTest(vdccalOutputCa, psp2neOuotputCa)
         function obj = ExternalCodeTest(VdccalRv, Psp2neRv)
@@ -33,9 +33,9 @@ classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
             obj.Psp2neRv = Psp2neRv;
         end
     end
-    
 
-    
+
+
     %##########################################################
     %##########################################################
     % PUBLIC INSTANCE METHODS THAT OVERRIDE SUPERCLASS METHODS
@@ -55,7 +55,7 @@ classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
                 obj.VdccalRv.matVerStr ...
             };
         end
-        
+
         function varargout = psp2ne(obj, varargin)
             % function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
             assert(nargin  == 1)

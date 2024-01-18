@@ -10,7 +10,7 @@ classdef get_bin_indices___UTEST < matlab.unittest.TestCase
 
 
     properties(TestParameter)
-        % NOTE: Thresholds chosen to overlap with lengths of 
+        % NOTE: Thresholds chosen to overlap with lengths of
         N_BB_THRESHOLD = {3,4,5,6,10};
     end
 
@@ -23,8 +23,8 @@ classdef get_bin_indices___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         function test0(testCase, N_BB_THRESHOLD)
             % TODO: Data in zero-length bins.
             % TODO: Vary N_BB_MAX
@@ -53,7 +53,7 @@ classdef get_bin_indices___UTEST < matlab.unittest.TestCase
             end
 
             %===================================================================
-            
+
             A1x0 = zeros(1,0);
             C1x0 = cell( 1,0);
 

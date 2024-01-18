@@ -30,7 +30,7 @@ classdef qual
         % zvUfv
         %       Logical array. UFV records.
         % QUALITY_FLAG
-        %       Cap for output dataset ZV QUALITY_FLAG (cap for input dataset 
+        %       Cap for output dataset ZV QUALITY_FLAG (cap for input dataset
         %       QUALITY_FLAG).
         % L2_QUALITY_BITMASK
         %       Quality ZV to use.
@@ -45,7 +45,7 @@ classdef qual
                 InZv.bdmFpa,           [-1], ...
                 InZv.isFullSaturation, [-1]);
             assert(isscalar(isLfr) && islogical(isLfr))
-            
+
             Epoch            = InZv.Epoch;
             BdmFpa           = InZv.bdmFpa;
             isFullSaturation = InZv.isFullSaturation;
@@ -65,9 +65,9 @@ classdef qual
             [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
                 bicas.const.QRC_SETTINGS_L2, NsoTable, Epoch, isFullSaturation, L);
         end
-        
-        
-        
+
+
+
         % Derive QUALITY_FLAG *cap* and L2_QUALITY_FLAG *bits*. Return values
         % are then supposed to be used for creating global versions of the
         % actual ZVs.
@@ -85,10 +85,10 @@ classdef qual
         function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
                 get_quality_ZVs(QrcSettingsL2Map, NsoTable, Epoch, isFullSaturation, L)
             assert(islogical(isFullSaturation))
-            
+
             QrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
                 fieldnames(bicas.const.QRCID), NsoTable, Epoch, L);
-            
+
             % Remove QRCIDs which this function can not handle (and should not
             % need to) since they are not intended for L2_QUALITY_BITMASK.
             QrcFlagsMap.remove(bicas.const.QRCID.BAD_DENSITY);
@@ -104,7 +104,7 @@ classdef qual
         end
 
 
-        
+
         % Overwrite selected records of voltage & current with FVs.
         %
         % ARGUMENTS
@@ -117,7 +117,7 @@ classdef qual
         function zvCurrentAAmpere = set_voltage_current_FV(...
                 zv_Epoch, zvAsrSamplesAVoltSrm, zvCurrentAAmpere, zvUfv, L)
             % PROPOSAL: Separate functions for ASR samples and bias currents.
-            
+
             assert(islogical(zvUfv))
             assert(isa(zvAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
 
@@ -224,7 +224,7 @@ classdef qual
         % IMPORTANT NOTE: The function's performance (speed) is not great for
         % large datasets (several millions of samples) with mostly saturation
         % (TSF=1) and length greater than the window. See
-        % bicas.proc.L1L2.qual___sliding_window_over_fraction_speedTest. 
+        % bicas.proc.L1L2.qual___sliding_window_over_fraction_speedTest.
         % This has been observed to make up almost half of the execution time.
         % Ex: solo_L2_rpw-lfr-surv-cwf-e_20231116_V01.cdf.2024-01-05T22.26.49.log
         % Based on understanding as of 2024-01-08:
@@ -356,7 +356,7 @@ classdef qual
             else
                 % CASE: (1) There is at least one flagged sample, and
                 %       (2) There are at least two samples.
-                
+
                 timeSecAr = double(tt2000Ar) / 1e9;
 
                 bFlag2ForwardAr = bicas.proc.L1L2.qual.sliding_window_over_fraction_forward_pass(...
@@ -371,13 +371,13 @@ classdef qual
                     minFlaggedFraction, windowLengthSec);
 
                 bFlag2BackwardAr = bFlag2BackwardAr(end:-1:1);
-                
+
                 bFlag2Ar = bFlag2ForwardAr | bFlag2BackwardAr;
             end
         end    % function
-        
-        
-        
+
+
+
         % Effectively internal function to
         % bicas.proc.L1L2.qual.sliding_window_over_fraction() to simplify its
         % implementation. Runs one "pass" in the forward direction.
@@ -387,7 +387,7 @@ classdef qual
             % PROPOSAL: Better name
             %   algorithm
             %   pass
-            % 
+            %
             % PROPOSAL: Use smallest window length that is equal to or greater than
             %           the specified one (instead of the largest window length
             %           that is equal to or less than the specified one).
@@ -397,7 +397,7 @@ classdef qual
             %           fraction.
             %   PRO: Prevents window from becoming too small before a data gap
             %        that is longer than the argument window length.
-            
+
             % Naming conventions
             % ==================
             % STL  = Sample Time Length. Length of time assigned to each sample.
@@ -406,7 +406,7 @@ classdef qual
             %        rate, and (2) for including half in the window length for
             %        samples at the beginning and end of window.
             % STLW = STL-Weighted
-            
+
             DEBUG_ENABLED = 0;
 
             % DEBUG
@@ -452,7 +452,7 @@ classdef qual
                         break
                     end
                     % CASE: i1+1 <= n (i.e. one can safely use i1+1 as an index)
-                    
+
                     % If a one sample larger window is too large, then keep the
                     % current window size.
                     % PROPOSAL: Derive arrays of time of beginnings and end of
@@ -512,7 +512,7 @@ classdef qual
                     fprintf('    fractionStlwFlag    = %g\n', fractionStlwFlag)
                     fprintf('    ==> setWindowFlags = %d\n', setWindowFlags)
                 end
-                
+
                 % If future windows can not be larger due to lack of
                 % samples, then exit function.
                 % IMPLEMENTATION NOTE: This prevents the algorithm from
@@ -520,7 +520,7 @@ classdef qual
                 % windows at the high timestamps end.
                 if i1+1 > n
                     return
-                end                
+                end
             end    % for
 
         end    % function
@@ -549,7 +549,7 @@ classdef qual
             %   Ex: UFVs due to excluding BDMs.
             %   Ex: UFVs due to automatically detected sweeps.
             %   Ex: UFVs due to detected sweeps via QUALITY_BITMASK (future).
-            
+
             LL = 'info';    % LL = Log Level
 
             [i1Array, i2Array] = irf.utils.split_by_false(zvUfv);

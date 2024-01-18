@@ -15,10 +15,10 @@ classdef utils___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         function test_object_sets_isequaln(testCase)
-            
+
             % One output variable.
             function test(keysCa1, keysCa2, expEqual)
                 actEqual = bicas.utils.object_sets_isequaln(keysCa1, keysCa2);
@@ -30,7 +30,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
             test({'1'}, {'1'}, true)
             test({ 1 }, { 2 }, false)
             test({'1'}, {'2'}, false)
-            
+
             test({'asd', 1}, {'asd', 1}, true)
             test({'asd', 1}, {'asd', 2}, false)
             test({'asd', 1}, {'ASD', 1}, false)
@@ -39,7 +39,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
     end    % methods(Test)
-        
-        
-    
+
+
+
 end

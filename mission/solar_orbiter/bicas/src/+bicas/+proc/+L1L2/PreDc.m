@@ -41,7 +41,7 @@ classdef PreDc
     %        data channels.
     %       Ex: New abbreviation/name.
     %       Ex: Convention for indexing individual channels.
-    %   
+    %
     %   PROPOSAL: Split BLTSs into two separate groups (variables):
     %       (1) Always BLTS 1:                   Zv.blts1Sampmles   (Nx1)
     %       (2) Shifts between BLTS 2-3 and 4-5: Zv.blts2345Samples (Nx2)
@@ -62,9 +62,9 @@ classdef PreDc
     %   PROPOSAL: Variable for unused data is empty, e.g. 0x0.
     %       CON: Violates convention/assumption that all Zv.* variables have
     %            same number of rows.
-    
-    
-    
+
+
+
     %#####################
     %#####################
     % INSTANCE PROPERTIES

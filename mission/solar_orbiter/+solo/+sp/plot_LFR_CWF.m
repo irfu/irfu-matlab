@@ -9,7 +9,7 @@
 % NOTE: CAN BE VERY SLOW DUE TO SPECTROGRAMS.
 % NOTE: Color scale is log. Therefore colors represent negative values (probably).
 %
-% 
+%
 % SELECTED BUGFIXES
 % =================
 % NOTE: List is kept for now to keep track of fixed bugs, since not all
@@ -37,7 +37,7 @@
 % should be averaged before plotting.
 % --
 % EJ 2020-09-01: Run implies/hints that wall time increases much faster than dataset size.
-% erjo@brain /home/erjo/temp/sp/2020-08-31> grep cwf.*Wall  so_sp_batch.2020-08-31_12.52.27.log 
+% erjo@brain /home/erjo/temp/sp/2020-08-31> grep cwf.*Wall  so_sp_batch.2020-08-31_12.52.27.log
 %     solo_L3_rpw-lfr-surv-cwf-e_20200808_V01.png: Wall time used for plotting: 38127.7 [s]
 %     solo_L3_rpw-lfr-surv-cwf-e_20200809_V01.png: Wall time used for plotting: 37890.2 [s]
 %     solo_L3_rpw-lfr-surv-cwf-e_20200810_V01.png: Wall time used for plotting: 136.988 [s]
@@ -87,7 +87,7 @@ function hAxesArray = plot_LFR_CWF(filePath)
     %   Ex: Disable spectrograms.
     %
     % PROPOSAL: Settings for disabling spectrum etc.
-    
+
     D = dataobj(filePath);
     zvEpoch       = D.data.Epoch.data;
     zvDc1         = get_CDF_ZV_data(D, 'VDC', 1);
@@ -97,26 +97,26 @@ function hAxesArray = plot_LFR_CWF(filePath)
     zvAc23        = get_CDF_ZV_data(D, 'EAC', 3);
     zvSamplFreqHz = D.data.SAMPLING_RATE.data;
     clear D    % To prove that D will not be used later.
-    
+
     zvAc12 = remove_mean(zvAc12);
     zvAc23 = remove_mean(zvAc23);
-    
+
     zvDcAc12 = solo.sp.utils.merge_zvs(zvDc12, zvAc12);
     zvDcAc23 = solo.sp.utils.merge_zvs(zvDc23, zvAc23);
-    
+
     Sp = solo.sp.summary_plot();
-    
+
     Sp.add_panel_spectrogram_CWF( 'V1 DC spectrogram',    zvEpoch, zvDc1,    zvSamplFreqHz, 'V1\_DC',     [-7, -3]);
     Sp.add_panel_spectrogram_CWF('V12 DC/AC spectrogram', zvEpoch, zvDcAc12, zvSamplFreqHz, 'V12\_DC/AC', [-8, -4]);
     % Good color scale? Which use?
     % Was [-9, -5] for DC only till YK suggested adding AC. /2021-03-15
     % Ex: 2020-08-06, 2020-06-29: high intensities ==> max
     Sp.add_panel_spectrogram_CWF('V23 DC/AC spectrogram', zvEpoch, zvDcAc23, zvSamplFreqHz, 'V23\_DC/AC', [-8.5, -6.0]);
-    
+
     Sp.add_panel_time_series_CWF( 'V1 DC time series',    zvEpoch,  zvDc1,           'V1_DC [V]');
     Sp.add_panel_time_series_CWF('V12 DC/AC time series', zvEpoch, [zvDc12, zvAc12], 'V12_DC/AC [V]', 'trLegend', {'DC', 'AC'});
     Sp.add_panel_time_series_CWF('V23 DC/AC time series', zvEpoch, [zvDc23, zvAc23], 'V23_DC/AC [V]', 'trLegend', {'DC', 'AC'});
-    
+
     hAxesArray = Sp.finalize('LFR CWF L2', filePath);
 
 end
@@ -132,14 +132,14 @@ end
 
 
 function zv = get_CDF_ZV_data(D, zvName, i2)
-    
+
     % TEMPORARY: For backward compatibility.
     if strcmp(zvName, 'VDC') && isfield(D.data, 'V')
         zvName = 'V';
     elseif strcmp(zvName, 'EDC') && isfield(D.data, 'E')
         zvName = 'E';
     end
-    
+
     fv = getfillval(D, zvName);
     zv = D.data.(zvName).data(:, i2);
     zv = changem(zv, NaN, fv);

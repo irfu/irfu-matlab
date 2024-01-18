@@ -7,7 +7,7 @@
 % First created 2016-08-05
 %
 function stdout_printf(pattern, varargin)
-    
+
     bicas.stdout_print( sprintf(pattern, varargin{:}) );
-    
+
 end

@@ -7,9 +7,9 @@
 %
 classdef const
     % PROPOSAL: Collect functions too.
-    
 
-    
+
+
     %#####################
     %#####################
     % INSTANCE PROPERTIES
@@ -44,7 +44,7 @@ classdef const
             'TARGET_CLASS', 'TARGET_NAME', 'TARGET_REGION', 'TEXT', ...
             'TEXT_supplement_1', 'TIME_MAX', ...
             'TIME_MIN', 'Validate'};
-        
+
         MANDATORY_L2_ZV_NAMES = {...
             'VDC', 'EDC', 'EAC', ...
             'VDC_LABEL', 'EDC_LABEL', 'EAC_LABEL', ...
@@ -52,12 +52,12 @@ classdef const
             'Epoch', ...
             'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
             'SAMPLING_RATE', 'SYNCHRO_FLAG'};
-        
+
         % ACQUISITON_TIME* temporary. Should be abolished.
         SOMETIMES_L2_ZV_NAMES = {...
             'ACQUISITION_TIME', 'ACQUISITION_TIME_LABEL', ...
             'ACQUISITION_TIME_UNITS', 'BW'};
-        
+
         % NOTE: Does not seem to be very many truly mandatory attribute fields.
         % 2020-03-25: Values are empirical.
         % NOTE: All but Epoch require DEPEND_0.
@@ -72,8 +72,8 @@ classdef const
             'LABL_PTR_1', 'UNIT_PTR', 'UCD', ...
             'DELTA_PLUS_VAR', 'DELTA_MINUS_VAR', ...
             'SI_CONVERSION'};
-        
+
     end
-    
-    
+
+
 end

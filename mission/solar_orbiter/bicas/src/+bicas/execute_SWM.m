@@ -80,7 +80,7 @@ function execute_SWM(...
         % Read dataset CDF file
         %=======================
         InputDataset = bicas.read_dataset_CDF(inputFilePath, Bso, L);
-        
+
         InputDatasetsMap(prodFuncInputKey) = InputDataset;
 
 
@@ -132,7 +132,7 @@ function execute_SWM(...
     else
         L.logf('warning', ...
             'Disabled processing due to setting %s.', settingNpefKey)
-        
+
         % IMPLEMENTATION NOTE: Needed for passing assertion. Maybe to be
         % considered a hack?!
         OutputDatasetsMap = struct(...

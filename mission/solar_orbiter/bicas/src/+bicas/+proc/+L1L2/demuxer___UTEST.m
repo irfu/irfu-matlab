@@ -8,11 +8,11 @@
 % First created 2021-09-08, using older test code.
 %
 classdef demuxer___UTEST < matlab.unittest.TestCase
-    
-    
-    
+
+
+
     methods(Static, Access=private)
-        
+
         function [channelIdStringsCa, testSamplesCa] = create_channel_test_data(sampleSize)
             % (iChannel, 1) = ASID ID string.
             % (iChannel, 2) = Sample value (that is consistent with other
@@ -29,18 +29,18 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 A.AC_V13.s, 45-69; ...
                 A.AC_V23.s, 56-69 ...
             };
-            
+
             % Multiply the sample values with matrix to test multiple records
             % with "snapshots" (SPR>1).
             TEST_DATA_CA(:, 2) = cellfun(@(x) (x * ones(sampleSize)), TEST_DATA_CA(:, 2), 'UniformOutput', false);
-            
+
             channelIdStringsCa = TEST_DATA_CA(:, 1);
             testSamplesCa      = TEST_DATA_CA(:, 2);
-        
+
         end
 
     end
-    
+
 
 
     %##############
@@ -49,9 +49,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %##############
     %##############
     methods(Test)
-        
-        
-        
+
+
+
         % Test two functions in combination.
         %
         % IMPLEMENTATION NOTE: The design is for historical reasons before the
@@ -66,52 +66,52 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             % =========
             TEST_DATA_UNKNOWN = [999];   % Data from unknown source.
             SAMPLES_SIZE      = [3,2];
-            
+
             nRows = SAMPLES_SIZE(1);
             [channelIdStringsCa, testSamplesCa] = bicas.proc.L1L2.demuxer___UTEST.create_channel_test_data(SAMPLES_SIZE);
-            
+
             AsidTestSamplesSrm = containers.Map(channelIdStringsCa, testSamplesCa);
-            
-            
-            
+
+
+
             % Test any BDM.
             function test(bdmFloatNan, dlrFloatNan, bltsSamplesAVolt, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
                 assert(numel(ExpRoutingArray) == 5)
-                
+
                 dlrFpa = bicas.utils.FPArray.floatNan2logical(dlrFloatNan);
                 bdmFpa = bicas.utils.FPArray.floatNan2int(bdmFloatNan, 'uint8');
-                
+
                 % CALL FUNCTIONS
                 ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
                     bdmFpa, dlrFpa);
                 ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
                     [ActRoutingArray.Sdid], bltsSamplesAVolt);
-                
+
                 % ASSERTIONS
                 testCase.assertEqual(ActRoutingArray, ExpRoutingArray)
                 testCase.assertTrue(ActAsrSamplesAVoltSrm == ExpAsrSamplesAVoltSrm)
             end
 
-            
+
 
             % Function for testing BDM 0-4. All those all those map (route) ASR
             % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
             function test_BDM01234(bdmFloatNan, dlrFloatNan, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
                 assert(isa(ExpAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
                 assert(ismember(bdmFloatNan, [0:4]))
-                
+
                 % Autogenerate bltsSamplesCa (test argument) using
                 % ExpRoutingArray (only possible for BDM 0-4.
                 tempBltsSamplesAVolt = gen_BLTS_samples(ExpRoutingArray);
-                
+
                 test(bdmFloatNan, dlrFloatNan, tempBltsSamplesAVolt, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
             end
-            
-            
-            
+
+
+
             function tempBltsSamplesAVolt = gen_BLTS_samples(RoutingArray)
                 tempBltsSamplesAVolt = zeros(SAMPLES_SIZE);
-                
+
                 for i = 1:numel(RoutingArray)
                     Routing = RoutingArray(i);
                     if Routing.Ssid.is_ASR()
@@ -131,7 +131,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             % be used.
             function AsSrm = get_ASR_samples(varargin)
                 assert(nargin == 9)
-                
+
                 % Define which varargin{i} corresponds to which ASID.
                 ASID_CA = {...
                     A.DC_V1,  A.DC_V2,  A.DC_V3,  ...
@@ -139,7 +139,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                     A.AC_V12, A.AC_V13, A.AC_V23 ...
                 };
                 AsSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
-                
+
                 for iAsid = 1:9
                     asidName = ASID_CA{iAsid}.s;
 
@@ -208,7 +208,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 bltsSamplesAVolt, ...
                 [R.REF25V_TO_DC_V1, R.REF25V_TO_DC_V2, R.REF25V_TO_DC_V3, R.AC_V13, R.AC_V23], ...
                 get_ASR_samples(1,1,1, 1,1,1, 1,1,1))
-            
+
             % ==============
             % BDM = 6, DLR 0
             % ==============
@@ -221,7 +221,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 bltsSamplesAVolt, ...
                 [R.GND_TO_DC_V1, R.GND_TO_DC_V2, R.GND_TO_DC_V3, R.AC_V12, R.AC_V23], ...
                 get_ASR_samples(1,1,1, 1,1,1, 1,1,1))
-            
+
             % ==============
             % BDM = Unknwon, DLR Unknown
             % ==============
@@ -235,15 +235,15 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 [R.UNKNOWN_TO_NOWHERE, R.UNKNOWN_TO_NOWHERE, R.UNKNOWN_TO_NOWHERE, R.UNKNOWN_TO_NOWHERE, R.AC_V23], ...
                 get_ASR_samples(0,0,0, 0,0,0, 0,0,1))
         end
-        
-        
-        
+
+
+
         function test_complement_ASR(testCase)
-            
+
             C = bicas.proc.L1L2.AntennaSignalId.C;
 
 
-            
+
             % Local utility function.
             function assert_relation(A, B, C)
                 % NOTE: Uses testCase. ==> Do not make static function.
@@ -253,7 +253,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             end
 
 
-        
+
             % NOTE: Only verifies the correct relationships between the return
             % results. Does not verify entire return results.
             % BUG/NOTE: Will fail if function returns NaN when it should not!
@@ -265,7 +265,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                     sample = inputFieldsCa{2*i  };
                     AsSrm.add(Asid.s, sample)
                 end
-                
+
                 % RUN FUNCTION TO BE TESTED
                 bicas.proc.L1L2.demuxer.complement_ASR(AsSrm);
                 ActAsSrm = AsSrm;
@@ -278,10 +278,10 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
                 assert_relation(ActAsSrm(C.DC_V1.s),  ActAsSrm(C.DC_V12.s), ActAsSrm(C.DC_V2.s))
                 assert_relation(ActAsSrm(C.DC_V2.s),  ActAsSrm(C.DC_V23.s), ActAsSrm(C.DC_V3.s))
                 assert_relation(ActAsSrm(C.DC_V1.s),  ActAsSrm(C.DC_V13.s), ActAsSrm(C.DC_V3.s))
-                
+
                 % DC. All diffs
                 assert_relation(ActAsSrm(C.DC_V13.s), ActAsSrm(C.DC_V12.s), ActAsSrm(C.DC_V23.s))
-                
+
                 % AC. All diffs
                 assert_relation(ActAsSrm(C.AC_V13.s), ActAsSrm(C.AC_V12.s), ActAsSrm(C.AC_V23.s))
             end
@@ -294,9 +294,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
             test({C.DC_V1,  2, C.DC_V2,   7, C.DC_V3,  32,    C.AC_V12, 74, C.AC_V23, 85});    % bdm=4
 
         end
-        
-        
-        
+
+
+
     end    % methods(Test)
 
 

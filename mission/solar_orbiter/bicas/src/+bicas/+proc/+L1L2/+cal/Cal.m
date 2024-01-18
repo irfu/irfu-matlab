@@ -339,7 +339,7 @@ classdef Cal < handle
         %
         % ARGUMENTS
         % =========
-        % RctDataMap        
+        % RctDataMap
         %       containers.Map with keys RCTTID --> values = 1D cell array of
         %       RCT data. Must include BIAS RCT data.
         %       The content in non-empty indices {iRct} come from the RCT which
@@ -472,7 +472,7 @@ classdef Cal < handle
         %
         function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
                 biasCurrentTm, iAntenna, iCalibTimeL)
-            
+
             assert(isscalar(iAntenna))
             assert(isequaln(...
                 size(biasCurrentTm), ...
@@ -790,7 +790,7 @@ classdef Cal < handle
         %
         function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
                 dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
-            
+
 %             irf.assert.struct(CalSettings, {...
 %                 'iBlts', 'Ssid', 'isAchg', ...
 %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
@@ -1197,7 +1197,7 @@ classdef Cal < handle
                     ' Largest found value is %g.'], ...
                     currentSAmpere(iMax))
             end
-            
+
             biasCurrentTm = currentSAmpere * solo.hwzv.const.TM_PER_SAMPERE;
         end
 

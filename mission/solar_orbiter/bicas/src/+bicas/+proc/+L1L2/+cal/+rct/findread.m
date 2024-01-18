@@ -49,7 +49,7 @@ classdef findread
     %#####################
     %#####################
     properties(Access=private, Constant)
-        
+
         READING_RCT_PATH_LL = 'info';
     end
 
@@ -106,28 +106,28 @@ classdef findread
         %       constructor even if there is no zVar CALIBRATION_TABLE.
         %       One key per specified RCTTID in argument rcttidCa.
         %       Exactly one RCT per RCT type.
-        % 
+        %
         function RctDataMap = find_read_RCTs_by_regexp(...
                 rcttidCa, rctDir, Bso, L)
-            
+
             assert(iscell(rcttidCa))
-            
+
             RctDataMap = containers.Map();
-            
+
             for i = 1:numel(rcttidCa)
                 rcttid = rcttidCa{i};
-                
+
                 % Find path to RCT.
                 settingKey     = bicas.proc.L1L2.cal.rct.findread.RCTT_MAP(...
                     rcttid).filenameRegexpSettingKey;
                 filenameRegexp = Bso.get_fv(settingKey);
                 filePath       = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                     rctDir, filenameRegexp, L);
-                
+
                 % Read RCT file.
                 RctDataList    = {bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
                     rcttid, filePath, L)};
-                
+
                 % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so
                 % that they are stored analogously with when using ga.
                 % CALIBRATION_TABLE.
@@ -179,13 +179,13 @@ classdef findread
                 nonBiasRcttid, rctDir, ...
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
-                zv_BW, Bso, L)            
-            
+                zv_BW, Bso, L)
+
             % Read BIAS RCT, IN ADDITION TO what argument "nonBiasRcttid".
             % specifies.
             BiasRctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
                 {'BIAS'}, rctDir, Bso, L);
-            
+
             % NOTE: Reads potentially MULTIPLE NON-BIAS RCTs as specified by
             % argument "nonBiasRcttid".
             NonBiasRctDataList = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
@@ -193,13 +193,13 @@ classdef findread
                 ga_CALIBRATION_TABLE, ...
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, L);
-            
+
             RctDataMap                = containers.Map();
             RctDataMap('BIAS')        = BiasRctDataMap('BIAS');
             RctDataMap(nonBiasRcttid) = NonBiasRctDataList;
         end
-                
-        
+
+
 
         % Determine the path to the RCT that should be used according to
         % algorithm specified in the documentation(?). If there are multiple
@@ -230,7 +230,7 @@ classdef findread
             filenameList = {dirObjectList.name};
             % Eliminate non-matching filenames.
             filenameList(~irf.str.regexpf(filenameList, filenameRegexp)) = [];
-            
+
             % ASSERTION / WARNING
             if numel(filenameList) == 0
                 % ERROR
@@ -240,11 +240,11 @@ classdef findread
                     filenameRegexp, rctDir);
             end
             % CASE: There is at least one candidate file.
-            
+
             filenameList = sort(filenameList);
             filename     = filenameList{end};    % NOTE: Selects one file out of many.
             path         = fullfile(rctDir, filename);
-            
+
             if numel(filenameList) > 1
                 % WARNING/INFO/NOTICE
                 msg = sprintf(...
@@ -258,27 +258,27 @@ classdef findread
                 end
                 L.log('debug', msg)
             end
-            
+
             % IMPLEMENTATION NOTE: Not logging which calibration file is
             % selected, since this function is not supposed to actually load the
             % content.
         end
-        
 
-        
+
+
     end    % methods(Static)
 
-    
-    
+
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
+
+
+
         % Reads potentially MULTIPLE NON-BIAS RCTs (of the same type) from
         % filenames indirectly specified by arguments ga_CALIBRATION_TABLE, and
         % zv_CALIBRATION_TABLE_INDEX.
@@ -296,10 +296,10 @@ classdef findread
                 zv_CALIBRATION_TABLE_INDEX, ...
                 zv_BW, L)
             % PROPOSAL: Separate function for extracting filenames from ZVs.
-            
+
             % CT = glob.attr. CALIBRATION_TABLE
-            
-            % ASSERTION            
+
+            % ASSERTION
             assert(iscell(ga_CALIBRATION_TABLE))
             nCt = irf.assert.sizes(...
                 ga_CALIBRATION_TABLE,       [-1, 1], ...
@@ -312,11 +312,11 @@ classdef findread
             % NOTE: May exclude some in zv_CALIBRATION_TABLE_INDEX due to zv_BW.
             iCtArray = unique(zv_CALIBRATION_TABLE_INDEX(logical(zv_BW), 1));
 
-            
-            
+
+
             % Cell array of paths to RCTs of the same RCT type.
             RctDataList = cell(nCt, 1);
-            
+
             % IMPLEMENTATION NOTE: Iterate over those entries in
             % CALIBRATION_TABLE that should be CONSIDERED, i.e. NOT all indices.
             % May therefore legitimately leave some cells in cell array empty.
@@ -327,11 +327,11 @@ classdef findread
                 RctDataList{j} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
                     nonBiasRcttid, filePath, L);
             end
-            
+
         end
-        
-        
-        
+
+
+
         % For a given RCT file, do the following operations, customized for the
         % type of RCT:
         %   (1) read RCT file,
@@ -339,7 +339,7 @@ classdef findread
         %       and
         %   (3) log the modified RCT content.
         % Effectively wraps the different RCT-reading functions.
-        % 
+        %
         %
         % IMPLEMENTATION NOTES
         % ====================
@@ -350,18 +350,18 @@ classdef findread
         %     code can read RCTs without BICAS.
         %
         function RctData = read_RCT_modify_log(rcttid, filePath, L)
-            
+
             L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
                 'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
-            
+
             Rctt = bicas.proc.L1L2.cal.rct.findread.RCTT_MAP(rcttid);
-            
+
             RctDataTemp = Rctt.read_RCT(filePath);
             RctData     = Rctt.modify_RCT_data(RctDataTemp);
             Rctt.log_RCT(RctData, L);
         end
-        
-        
+
+
 
         % Code to initialize hard-coded static constant (map of singleton
         % RCTTs).
@@ -379,6 +379,6 @@ classdef findread
 
     end    % methods(Static, Access=private)
 
-    
-    
+
+
 end

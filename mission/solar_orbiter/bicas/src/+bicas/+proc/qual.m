@@ -172,7 +172,7 @@ classdef qual
         %
         function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
                 nRec, QrcFlagsMap, QrcSettingsMap)
-            
+
 %             % ASSERTION: Same QRCID is not specified twice.
 %             assert(isempty(intersect(QrcSettingsMap.keys, ignoredQrcidCa)))
 %             % ASSERTION: The QRCIDs in QrcFlagsMap have been specified (no more,
@@ -184,7 +184,7 @@ classdef qual
             irf.assert.castring_sets_equal(...
                 QrcFlagsMap.keys, ...
                 QrcSettingsMap.keys)
-            
+
             % Create "empty" arrays
             QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
             Lx_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');

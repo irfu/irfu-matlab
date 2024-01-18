@@ -1,6 +1,6 @@
 %
 % Class that stores metadata for one SWD input dataset.
-% 
+%
 % NOTE: Not to be confused with bicas.InputDataset.
 %
 %

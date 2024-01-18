@@ -7,7 +7,7 @@
 % First created 2017-02-22
 %
 function str = sprint_BSO(Bso)
-    
+
     % PROPOSAL: Make hierarchy visually clearer?!!! Should then have help from data structure itself.
     %
     % PROPOSAL: Print more information.
@@ -24,7 +24,7 @@ function str = sprint_BSO(Bso)
     %           CLI argument = ...
     %       CON: Slightly less clear when not having a separat column for overriding.
     %       PRO: Can handle any situation of overriding.
-    
+
     % IMPLEMENTATION NOTE: Only prints "Settings" as a header (not "constants")
     % to indicate/hint that it is only the content of the "Bso" variables,
     % and not of bicas.const.
@@ -32,17 +32,17 @@ function str = sprint_BSO(Bso)
         '\n', ...
         'BICAS SETTINGS\n', ...
         '==============\n']);
-    
+
     % Values seem sorted from the method, but sort again just to be sure.
-    keyCa        = sort(Bso.get_keys());   
+    keyCa        = sort(Bso.get_keys());
     lengthMaxKey = max(cellfun(@length, keyCa));
-    
-    
-    
+
+
+
     for iKey = 1:length(keyCa)
         key = keyCa{iKey};
         Skv = Bso.get_SKV(key);
-        
+
         %======================================================================
         % Derive value strings for all historical values: present and previous
         % ones
@@ -62,7 +62,7 @@ function str = sprint_BSO(Bso)
             end
             strValueCa{iVs} = displayStr;
         end
-        
+
         valueStatusStr = irf.utils.translate({...
             {'default'},            '  --';
             {'configuration file'}, '(conf)';
@@ -70,19 +70,19 @@ function str = sprint_BSO(Bso)
             Skv.valueSourcesCa{end}, ...
             'BICAS:Assertion', ...
             'Illegal setting value source');
-        
+
         str = [str, sprintf(...
             ['%-6s  %-', int2str(lengthMaxKey),'s = %s\n'], ...
             valueStatusStr, key, strValueCa{end})];
-        
+
     end
-    
+
     str = [str, newline];
     str = [str, sprintf('Explanations for leftmost column above:\n')];
     str = [str, sprintf('---------------------------------------\n')];
     str = [str, sprintf('  --   = Default value\n')];
     str = [str, sprintf('(conf) = Value comes from configuration file\n')];
     str = [str, sprintf('(CLI)  = Value comes from CLI argument\n')];
-    
+
     str = [str, newline];
 end

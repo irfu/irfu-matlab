@@ -22,7 +22,7 @@
 % t2
 %       Nx1 vector. Time. Same type of time as t1.
 %
-% 
+%
 % RETURN VALUES
 % =============
 % zvIBIASx2
@@ -44,12 +44,12 @@ function [zvIBIASx2, duplicatesAnomaly] = CURRENT_ZV_to_current_interpolate(t1, 
     % PROPOSAL: Configurable to accept exact CDF format.
     %   PRO: More useful outside BICAS.
     %   NOTE: Function would still need to know fill value.
-    
+
     % NOTE: interp1 requires double.
     %t2 = double(t2);
-    
+
     [t1b, zvIBIASx1b, duplicatesAnomaly] = solo.hwzv.CURRENT_ZV_to_current(t1, zvIBIASx1);
-    
+
     % IMPLEMENTATION NOTE: Bias currents are set VERY RARELY. Must therefore use
     % interpolation method 'previous'.
     % NOTE: interp1 does NOT require t1 to be sorted.
@@ -60,12 +60,12 @@ function [zvIBIASx2, duplicatesAnomaly] = CURRENT_ZV_to_current_interpolate(t1, 
     % "previous".
     % NOTE: MATLAB typecasts to the type of the array when indexing.
 %     zvIBIASx2 = interp1(t1b, zvIBIASx1b, t2, 'previous');
-    
+
     % NOTE: interp1(... 'previous') returns NaN also for t2 > max(t1)!! Must
     % therefore do this oneself.
 %     zvIBIASx2(t2 > t1b(end)) = zvIBIASx1b(end);
-    
-    
+
+
     zvIBIASx2 = interpolate(t1b, zvIBIASx1b, t2);
 end
 
@@ -81,12 +81,12 @@ function y2 = interpolate(x1, y1, x2)
     assert(isvector(x1), 'x1 is not a vector.')
     assert(isvector(y1), 'y1 is not a vector.')
     % x2 should not need to have any particular size.
-    
+
     % NOTE: x1 must be sorted for algorithm to work.
-    
+
     % Pre-allocate. Set default value for timestamps before first timestamp.
     y2 = NaN(size(x2));   % NOTE: Always double.
-    
+
     if numel(x1) >= 1
         for i = 1:numel(x1)-1
             b = (x1(i) <= x2) & (x2 < x1(i+1));

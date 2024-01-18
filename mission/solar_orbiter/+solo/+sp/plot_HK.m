@@ -81,16 +81,16 @@ function hAxesArray = plot_HK(filePath)
     %
     % BUG: Multiple dates below shared x axis, after zooming (automatic global re-setting of x axis?).
     %
-    % 
+    %
     % PROPOSAL: Return hAxesArray like other plot_* functions.
     %
     % PROPOSAL: ylabel [TM], [TM units].
-    
 
-    
+
+
     BIT_PANEL_HEIGHT = 0.011;
     %BIT_PANEL_HEIGHT = 0.03;   % DEBUG
-    
+
     ZV_EXCLUDED_LIST = {...
         'Epoch', ...
         'HK_BIA_MODE_VERSION_NR', ...
@@ -100,7 +100,7 @@ function hAxesArray = plot_HK(filePath)
         'HK_BIA_CUR_SELECTED_PAGE', ...
         'HK_BIA_DUMMY', ...
         'PA_RPW_HK_SPARE8_1'};
-    
+
     ZV_SINGLE_SCALAR_LIST = {
         'HK_BIA_MODE_MUX_SET', ...
         'HK_BIA_REF_VOLTAGE_H', ...
@@ -109,12 +109,12 @@ function hAxesArray = plot_HK(filePath)
         'HK_BIA_NHV', ...
         'HK_BIA_PHV', ...
         'HK_BIA_REF2_VOLT'};
-    
+
     ZV_TRIPLET_SCALAR_LIST = {
         ZV_name_triplet('HK_BIA_BIAS%i'), ...
         ZV_name_triplet('HK_BIA_TEMP_ANT%i_LF_PA'), ...
         ZV_name_triplet('HK_BIA_M%i')};
-    
+
     % zVariables that are (presumably) bit flags.
     ZV_BIT_FLAG_LIST = {...
         'SYNCHRO_FLAG', ...
@@ -130,14 +130,14 @@ function hAxesArray = plot_HK(filePath)
         'HK_BIA_MODE_BIAS3_ENABLED', ...
         'HK_BIA_DIFF_GAIN' ...
         };
-    
+
     % ASSERTION
     ZV_ALL_LIST = irf.utils.union(...
         ZV_EXCLUDED_LIST, ...
         ZV_SINGLE_SCALAR_LIST, ...
         unpack(ZV_TRIPLET_SCALAR_LIST), ...
         ZV_BIT_FLAG_LIST);
-    
+
     assert(...
         numel(ZV_ALL_LIST) == ...
         numel(ZV_EXCLUDED_LIST) + ...
@@ -145,16 +145,16 @@ function hAxesArray = plot_HK(filePath)
         numel(unpack(ZV_TRIPLET_SCALAR_LIST)) + ...
         numel(ZV_BIT_FLAG_LIST), ...
         'Separate sets of specified ZVs overlap.')
-    
+
     D = dataobj(filePath);
     Epoch = D.data.Epoch.data;
 
-    
+
 
     Sp = solo.sp.summary_plot();
-    
-    
-    
+
+
+
     %=====================================
     % Add panels for scalar numeric ZVs
     %=====================================
@@ -163,7 +163,7 @@ function hAxesArray = plot_HK(filePath)
         if strcmp(ZV_SINGLE_SCALAR_LIST{i}, 'HK_BIA_MODE_MUX_SET')
             lineWidth = 5.0;
         end
-        
+
         axesPropCa = {};
         if strcmp(ZV_SINGLE_SCALAR_LIST{i}, 'HK_BIA_MODE_MUX_SET')
             % IMPLEMENTATION NOTE: Skip lowest tick/label value (YTick), so that the label does not overlap with the
@@ -172,7 +172,7 @@ function hAxesArray = plot_HK(filePath)
         end
         Sp.add_panel_time_series1_HK(D, ZV_SINGLE_SCALAR_LIST{i}, {'LineWidth', lineWidth}, axesPropCa)
     end
-    
+
     %==================================================================
     % Add panels for triplets of numeric ZVs (one zVar per antenna).
     %==================================================================
@@ -190,7 +190,7 @@ function hAxesArray = plot_HK(filePath)
     end
 
 
-    
+
     hAxesArray = Sp.finalize('BIAS HK', filePath);
 
 end

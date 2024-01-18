@@ -97,7 +97,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
                 Bso.make_read_only()
 
                 L = bicas.Logger('none', false);
-                
+
                 actZvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
                     zv_Epoch, zvBdmFpa, isLfr, Bso, L);
             end

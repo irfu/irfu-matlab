@@ -25,7 +25,7 @@ classdef dsr___UTEST < matlab.unittest.TestCase
 
 
         function test_get_downsampling_bins(testCase)
-            
+
             function add_test(...
                     zvAllUtcCa, ...
                     boundaryRefUtc, ...
@@ -46,13 +46,13 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                     spdfparsett2000(zvIntervalsUtcCa), ...
                     iRecordsCa(:), ...
                     int64(binSizeArrayNs(:))};
-                
+
                 % Pre-allocate correct size for later assignment via function
                 actOutputs = cell(size(expOutputsCa));
-                
+
                 [actOutputs{:}] = bicas.proc.dsr.get_downsampling_bins(inputsCa{:});
                 testCase.verifyEqual(actOutputs, expOutputsCa)
-                
+
             end
             %===================================================================
 
@@ -103,28 +103,28 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 }, {[1,2]', [3,4,5,6]', ECA, ECA, [7]}, [10e9, 11e9, 10e9, 10e9, 10e9]);
 
         end
-        
-        
-        
+
+
+
         function test_downsample_sci_ZV(testCase)
-            
+
             function test(...
                     OsrAr, nMinNfpSamplesPerBin, iRecordsInBinCa, L, ...
                     expMedianDsrAr, expMstdDsrAr)
-                
+
                 % NOTE: bicas.proc.dsr.downsample_sci_ZV() only accepts
                 % double-typed FPAs. Therefore only needs to test such.
                 OsrFpa          = bicas.utils.FPArray(OsrAr,          'FILL_VALUE', NaN);
                 ExpMedianDsrFpa = bicas.utils.FPArray(expMedianDsrAr, 'FILL_VALUE', NaN);
                 ExpMstdDsrFpa   = bicas.utils.FPArray(expMstdDsrAr,   'FILL_VALUE', NaN);
-                
+
                 [ActMedianDsrFpa, ActMstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
                     OsrFpa, nMinNfpSamplesPerBin, iRecordsInBinCa, L);
-                
+
                 testCase.assertEqual(ActMedianDsrFpa, ExpMedianDsrFpa)
                 testCase.assertEqual(ActMstdDsrFpa,   ExpMstdDsrFpa)
             end
-            
+
 
 
             % Create test with exactly ONE BIN.
@@ -209,7 +209,7 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                  NaN, NaN; ...
                  4,   5], ...
                 [sqrt(2*0.5^2)/1 * [1,1]; ...
-                 NaN, NaN; 
+                 NaN, NaN;
                  sqrt(4*1^2  )/2 * [1,1]])
 
             % Higher threshold
@@ -223,12 +223,12 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                  NaN, NaN; ...
                  4, 5], ...
                 [NaN, NaN; ...
-                 NaN, NaN; 
+                 NaN, NaN;
                  [1,1] * sqrt(4*1^2  )/2])
         end
-        
-        
-        
+
+
+
         function test_downsample_ZV_minimum(testCase)
 
             % Function handle to function to be tested, so that one can easiy
@@ -238,20 +238,20 @@ classdef dsr___UTEST < matlab.unittest.TestCase
 %             FH_CA{end+1} = @bicas.proc.dsr.downsample_ZV_minimum_W_FPAs;
 %             FH_CA{end+1} = @bicas.proc.dsr.downsample_ZV_minimum_W_INNER_ARRAYS;
             FH_CA{end+1} = @bicas.proc.dsr.downsample_ZV_minimum;
-            
+
             function test(inAr, inFv, iRecordsInBinCa, expDsrAr, expDsrFv)
                 Fpa       = bicas.utils.FPArray(inAr,     'FILL_VALUE', inFv);
                 ExpDsrFpa = bicas.utils.FPArray(expDsrAr, 'FILL_VALUE', expDsrFv);
                 ActDsrFpa = fh(Fpa, iRecordsInBinCa);
-                
+
                 testCase.assertEqual(ActDsrFpa, ExpDsrFpa)
             end
-            
+
             for iFh = 1:numel(FH_CA)
                 fh = FH_CA{iFh};
-            
+
                 % Empty
-                test(ones(0, 1), NaN,        cell(0, 1), ones(0, 1), NaN)            
+                test(ones(0, 1), NaN,        cell(0, 1), ones(0, 1), NaN)
                 % One sample, non-double type
                 test(uint8(3),   uint8(255), {1},        uint8(3),   uint8(255))
                 % Three, different sized bins
@@ -265,12 +265,12 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 % Size-zero bin.
                 test(ones(0, 1),   NaN,  {1:0},         [NaN],         NaN)
                 test([2;3; NaN],   NaN,  {1:2; 1:0; 3}, [2; NaN; NaN], NaN)
-            
+
             end
         end
-        
-        
-        
+
+
+
         function downsample_ZV_bitmask(testCase)
             % Function handle to function to be tested, so that one can easiy
             % switch to other implementations of the same function for testing.
@@ -278,7 +278,7 @@ classdef dsr___UTEST < matlab.unittest.TestCase
             %FH_CA{end+1} = @bicas.proc.dsr.downsample_ZV_bitmask_W_FPAs;
             %FH_CA{end+1} = @bicas.proc.dsr.downsample_ZV_bitmask_W_INNER_ARRAYS;
             FH_CA{end+1} = @bicas.proc.dsr.downsample_ZV_bitmask;
-            
+
             function test(inAr, iRecordsInBinCa, expDsrAr)
                 inAr     = uint8(inAr);
                 inFv     = uint8(255);
@@ -289,15 +289,15 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 ExpDsrFpa = bicas.utils.FPArray(expDsrAr, 'FILL_VALUE', expDsrFv);
 
                 ActDsrFpa = fh(Fpa, iRecordsInBinCa);
-                
+
                 testCase.assertEqual(ActDsrFpa, ExpDsrFpa)
             end
-            
+
             for iFh = 1:numel(FH_CA)
                 fh = FH_CA{iFh};
-            
+
                 % Zero samples, zero bins
-                test(ones(0, 1), cell(0, 1), ones(0, 1))            
+                test(ones(0, 1), cell(0, 1), ones(0, 1))
                 % One sample
                 test(3,          {1},        3)
 
@@ -317,22 +317,22 @@ classdef dsr___UTEST < matlab.unittest.TestCase
                 test([2;3; 255],   {1:2; 1:0; 3}, [3; 255; 255])
             end
         end
-        
-        
-        
+
+
+
     end    % methods(Test)
-        
-        
-    
+
+
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
+
+
+
         % Internal utility function
         function assert_iRecordsDsrCa(iRecordsDsrCa, zv)
 
@@ -346,11 +346,11 @@ classdef dsr___UTEST < matlab.unittest.TestCase
 
             assert(all(unique(iRecordsArray) == 1:size(zv, 1)))
         end
-        
-        
-        
+
+
+
     end    % methods(Static, Access=private)
 
-    
-    
+
+
 end

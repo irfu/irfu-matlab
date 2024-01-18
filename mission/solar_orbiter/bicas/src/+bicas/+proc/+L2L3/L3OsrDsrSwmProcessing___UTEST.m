@@ -18,8 +18,8 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         function test_process_L2_to_L3(testCase)
             % Conceivable special cases for bins to test, including combinations
             % thereof
@@ -30,7 +30,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
             % QUALITY_FLAG < min value
             % QUALITY_FLAG = FV
             % #samples < bicas.const.N_MIN_OSR_SAMPLES_PER_BIN
-            % 
+            %
             % Unclear how much testing is meaningful. Could add more tests.
             %
             % PROPOSITION: The complexity of the test code implies that the
@@ -145,7 +145,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
                 100, 255,     0,     0, 1; ...
             ];
             bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, DATA_OSR, DATA_DSR)
-            
+
             % Normal bin
             % Test merging QUALITY_BITMASK bits.
             bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, ...
@@ -159,9 +159,9 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
             )
 
         end
-        
-        
-        
+
+
+
     end    % methods(Test)
 
 
@@ -203,8 +203,8 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
             InLfrCwf.Ga.OBS_ID    = {' '};
             InLfrCwf.Ga.SOOP_TYPE = {' '};
 
-            
-            
+
+
             BASE_TT2000 = spdfparsett2000('2020-03-14T00:00:00');
 
             InLfrCwf.Zv.Epoch                 = int64( DATA_OSR(:, 1)*1e9) + BASE_TT2000;
@@ -254,9 +254,9 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
                 EpochTT(InLfrCwf.Zv.Epoch), scalarAr, ...
                 'TensorOrder', 0);
             Psp2neRv.codeVerStr      = '2023-08-11T10:11:00';
-            
+
             Ec = bicas.proc.L2L3.ExternalCodeImplementation();
-            
+
             %##################################################################
             % CALL CODE TO BE TESTED
             %##################################################################
@@ -283,7 +283,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
                 testCase.assertEqual(OutDsr.QUALITY_BITMASK,    ExpDsr.Zv.QUALITY_BITMASK)
                 testCase.assertEqual(OutDsr.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
             end
-            
+
             testCase.assertEqual(all(OutEfieldDsr.Zv.EDC_SRF.fpAr,    2),   ExpDsr.nanData);
             testCase.assertEqual(all(OutEfieldDsr.Zv.EDCSTD_SRF.fpAr, 2),   ExpDsr.nanData);
             testCase.assertEqual(    OutDensityDsr.Zv.DENSITY.fpAr        , ExpDsr.nanData);
@@ -295,9 +295,9 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         end
 
 
-    
+
     end    % methods(Static)
 
 
-    
+
 end

@@ -4,7 +4,7 @@
 %
 classdef bitops
     % PROPOSAL: Automatic test code.
-    
+
     methods(Static)
 
         % Repeated bit-wise OR on all values in vector.
@@ -21,11 +21,11 @@ classdef bitops
             % PROPOSAL: Can be replaced by any().
             %   CON: No it can't. any() operates on logical, not the multiple
             %        bits in integers.
-            
+
             assert(~isempty(a))
-            
+
             b = a(1);
-            for i = 2:numel(a) 
+            for i = 2:numel(a)
                 b = bitor(b, a(i));
             end
         end
@@ -33,5 +33,5 @@ classdef bitops
 
 
     end
-    
+
 end

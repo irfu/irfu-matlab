@@ -105,7 +105,7 @@ if ~isempty(vdc)
 
 if vxb_dat~=4
 
-        
+
         if vxb_dat == 1 || vxb_dat == 3
             B = solo.get_data('b_srf_norm',tint);
         else
@@ -184,7 +184,7 @@ if vxb_dat~=4
                 params = [params;cc_y,cc_z];
             end
 
-            
+
         else
             E_vxb = irf.ts_vec_xyz(DCE_SRF.time,DCE_SRF.data*0);
             B_str = 'n/a';

@@ -45,7 +45,7 @@ classdef SameRowsMap < handle
 % TODO-DEC: How handle ~indexing (overload)? What should it be used for?
 %   PROBLEM: Would like to use indexing for (1) specifying variables, and
 %            (2) specifying rows.
-%       NOTE: Variable keys can both be strings and numbers, but never ranges or "end". 
+%       NOTE: Variable keys can both be strings and numbers, but never ranges or "end".
 %             Rows can be any 1D-numerical index.
 %   TODO-NI: How does this impact implementing SameSizeTypeMap using
 %            (composition) SameRowsMap?
@@ -186,7 +186,7 @@ classdef SameRowsMap < handle
         % =========
         % varargin
         %       initType == 'EMPTY':    Zero length.
-        %       initType == 'CONSTANT': 
+        %       initType == 'CONSTANT':
         %           varargin{1} = array
         %           varargin{2} = Cell array of keys which should have this
         %                         value.
@@ -195,16 +195,16 @@ classdef SameRowsMap < handle
         %       constructor and method "add".
         function obj = SameRowsMap(keyType, nRows, initType, varargin)
             assert(isnumeric(nRows) && nRows >= 0)
-            
+
             obj.nRows2 = nRows;
             obj.Map    = containers.Map('KeyType', keyType, 'ValueType', 'any');
-            
+
             switch(initType)
                 case 'EMPTY'
                     % Zero initial keys and values.
 
                     assert(numel(varargin) == 0)
-                    
+
                 case 'CONSTANT'
                     % Same (constant) initial value for all keys.
 
@@ -228,7 +228,7 @@ classdef SameRowsMap < handle
         end
 
 
-        
+
         % Number of variables inside object. Unrelated to their size (e.g.
         % rows).
         function n = length(obj)
@@ -236,15 +236,15 @@ classdef SameRowsMap < handle
         end
 
 
-        
+
         % NOTE: Method name chosen to be identical with containers.Map.keys().
         function keysCa = keys(obj)
             keysCa = obj.Map.keys();
             keysCa = keysCa(:);
         end
-        
-        
-        
+
+
+
         % Mostly for debugging.
         function valuesCa = values(obj)
             hwCa     = obj.Map.values();
@@ -253,7 +253,7 @@ classdef SameRowsMap < handle
         end
 
 
-        
+
         % NOTE: Method name chosen to be identical with containers.Map.isKey().
         function isKey = isKey(obj, key)
             bicas.utils.SameRowsMap.assert_legal_key(key)
@@ -262,7 +262,7 @@ classdef SameRowsMap < handle
         end
 
 
-        
+
         % Add NEW key-value pair. Disallow overwriting.
         function add(obj, key, value)
             bicas.utils.SameRowsMap.assert_legal_key(key)
@@ -270,12 +270,12 @@ classdef SameRowsMap < handle
             assert(obj.nRows2 == size(value, 1), ...
                 'The argument''s number of rows (%i) is not equal to the objects number of rows (%i).', ...
                 obj.nRows2, size(value, 1))
-            
+
             obj.Map(key) = bicas.utils.HandleWrapper(value);
         end
-        
-        
-        
+
+
+
         % Use another map to overwrite selected rows in this map.
         %
         % IMPLEMENTATION NOTE: Method is important for speeding up LFR-SWF which
@@ -307,16 +307,16 @@ classdef SameRowsMap < handle
             assert(isa(Map2, 'bicas.utils.SameRowsMap'))
             assert(isnumeric(iRowsArray) && iscolumn(iRowsArray))
             assert(size(iRowsArray, 1) == Map2.nRows)
-            
+
             assert(bicas.utils.object_sets_isequaln(obj.keys, Map2.keys))
-            
+
             keysCa = obj.keys();
             for keyCa = keysCa(:)'
                 key = keyCa{1};
-                
+
                 hw1 = obj.Map(key);
                 hw2 = Map2.Map(key);
-                
+
                 size1 = size(hw1.v);
                 size2 = size(hw2.v);
                 % IMPLEMENTATION NOTE: Using num2str(key) since it can handle
@@ -331,7 +331,7 @@ classdef SameRowsMap < handle
                 % dimensionalities (assuming that dimensionalities and sizes are
                 % consistent).
                 hw1.v(iRowsArray, :) = hw2.v(:, :);
-                
+
                 % IMPLEMENTATION NOTE: Does not need to set obj.Map(key) since
                 % using handle classes.
             end
@@ -347,11 +347,11 @@ classdef SameRowsMap < handle
                 case '()'
                     assert(isscalar(S))
                     assert(isscalar(S.subs), 'Illegal index. Must be exactly one argument.')
-                    
+
                     if isnumeric(S.subs{1})
                         assert(isscalar(S.subs{1}), 'Illegal index. Value must be scalar.')
                     end
-                    
+
                     % IMPLEMENTATION NOTE: Only intended for singular values,
                     % whether strings or numbers. Should not support indices
                     % like "1,2", colons, or "end".
@@ -359,7 +359,7 @@ classdef SameRowsMap < handle
 
                 otherwise
                     % CASE: {} or .
-                    
+
                     % Fail for {}. % Call method/property.
                     [varargout{1:nargout}] = builtin('subsref', obj, S);
             end
@@ -370,14 +370,14 @@ classdef SameRowsMap < handle
         function nRows = nRows(obj)
             nRows = obj.nRows2;
         end
-        
-        
-        
+
+
+
         function equals = eq(obj1, obj2)
             assert(isa(obj2, 'bicas.utils.SameRowsMap'))
-            
+
             % IMPLEMENTATION NOTE: Must support the case of zero keys.
-            
+
             if ~bicas.utils.object_sets_isequaln(obj1.keys, obj2.keys)
                 equals = false;
                 return
@@ -388,26 +388,26 @@ classdef SameRowsMap < handle
                 equals = false;
                 return
             end
-            
+
             keysCa = obj1.Map.keys;
             for i = 1:numel(keysCa)
                 key = keysCa{i};
-                
+
                 value1 = obj1.Map(key).v;
                 value2 = obj2.Map(key).v;
-                
+
                 % NOTE: NaN == NaN ==> Use isequaln().
                 if ~isequaln(value1, value2) || ~isequaln(class(value1), class(value2))
                     equals = false;
                     return
                 end
             end
-            
+
             equals = true;
         end
-        
-        
-        
+
+
+
         function unequal = ne(obj, other)
             unequal = ~obj.eq(other);
         end
@@ -424,10 +424,10 @@ classdef SameRowsMap < handle
             for i = 1:numel(keysCa)
                 key = keysCa{i};
                 value = subsref(obj, substruct('()', {key}));
-                
+
                 sCa{end+1} = sprintf('%s : %s (%s)', num2str(key), mat2str(value), class(value));
             end
-            
+
             s = strjoin(sCa, '\n');
         end
 
@@ -443,15 +443,15 @@ classdef SameRowsMap < handle
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
+
+
+
         function assert_legal_key(key)
             assert(isnumeric(key) || ischar(key))
         end
-        
-        
-        
+
+
+
     end    % methods
 
 

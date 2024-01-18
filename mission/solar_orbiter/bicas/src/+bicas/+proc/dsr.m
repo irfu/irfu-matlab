@@ -17,7 +17,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-05-18
 %
-classdef dsr    
+classdef dsr
     %
     % PROPOSAL: Test code for code that downsamples.
     %   Ex: bicas.proc.dsr.downsample_ZV_bitmask()
@@ -69,19 +69,19 @@ classdef dsr
         %
         function [TemplateDsrZv, iRecordsInBinCa] = get_LFR_CWF_DSR_ZVs_template(...
                 InLfrCwfOsr, binLengthWolsNs, binTimestampPosWolsNs, L)
-            
+
             % NOTE: Function argument InLfrCwfOsr contains too much information!
             % PROPOSAL: Only take argument for the needed variables.
             %   PROPOSAL: Wait until only using FPAs.
             %       PRO: Can abolish .ZvFv.
-            
+
             Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template', L);
 
 
 
             assert(isscalar(binLengthWolsNs))
             assert(isscalar(binTimestampPosWolsNs))
-            
+
             %================
             % Calculate bins
             %================
@@ -106,9 +106,9 @@ classdef dsr
                     L);
             nRecordsOsr = numel(InLfrCwfOsr.Zv.Epoch);
             nRecordsDsr = numel(iRecordsInBinCa);
-            
-            
-            
+
+
+
             %====================================================================
             % Derive downsampled versions of quality zVariables
             % -------------------------------------------------
@@ -162,11 +162,11 @@ classdef dsr
             % therefore TYPECAST.
             % 2021-05-06: L2 zVar "QUALITY_BITMASK" type was changed from
             %   SOLO_L2_RPW-LFR-SURV-CWF-E_V11.skt: CDF_UTIN1
-            % to 
+            % to
             %   SOLO_L2_RPW-LFR-SURV-CWF-E_V12.skt: CDF_UINT2
             %   (SKELETON_MODS: V12=Feb 2021)
             % .
-            
+
             zv_QUALITY_FLAG_FpaDsr    = bicas.proc.dsr.downsample_ZV_minimum(...
                 InLfrCwfOsr.ZvFpa.QUALITY_FLAG,    iRecordsInBinCa);
 
@@ -175,7 +175,7 @@ classdef dsr
 
             zv_L2_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
                 InLfrCwfOsr.ZvFpa.L2_QUALITY_BITMASK, iRecordsInBinCa);
-            
+
             %============================================================
             % Shared zVariables between all DOWNSAMPLED datasets
             %
@@ -193,16 +193,16 @@ classdef dsr
             % go outside/inside the bin boundaries for leap seconds. The same
             % problem exists for both positive and negative leap seconds.
             Zv.DELTA_PLUS_MINUS   = bicas.utils.FPArray(binSizeArrayNs / 2);
-            
+
             TemplateDsrZv = Zv;
 
 
 
             Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
         end
-        
-        
-        
+
+
+
         % Utility function to help downsampling data by grouping together
         % adjacent time intervals that have the same length when discounting
         % leap seconds.
@@ -250,7 +250,7 @@ classdef dsr
             get_downsampling_bins(...
                 zvAllTt2000, boundaryRefTt2000, ...
                 binLengthWolsNs, binTimestampPosWolsNs, L)
-            
+
             % PROPOSAL: Return boundariesTt2000 instead of binSizeArrayNs.
             %   PRO: More information.
             %   PRO: Easy to derive binSizeArrayNs = diff(boundariesTt2000);
@@ -273,12 +273,12 @@ classdef dsr
             %            multiple days.
             %
             % PROPOSAL: Separate function for generating boundaries.
-            
+
             tTicToc = tic();
             Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.get_downsampling_bins', L);
-            
 
-            
+
+
             % ASSERTIONS
             % ----------
             % Function does not assert strict increase.
@@ -293,29 +293,29 @@ classdef dsr
             assert(isa(binTimestampPosWolsNs, 'int64'))
             assert((0 <= binTimestampPosWolsNs)...
                 && (binTimestampPosWolsNs <= binLengthWolsNs))
-            
-            
-            
+
+
+
             if isempty(zvAllTt2000)
                 % CASE: zvAllTt2000 is empty.
-                
+
                 % NOTE: Later calls to
                 % irf.cdf.time.TT2000_to_TT2000WOLS() are not applicable
                 % if there is no timestamp. Must therefore have special case.
-                
+
                 zvBinsTt2000    = int64(ones(0,1));
                 iRecordsInBinCa = cell(0,1);
                 binSizeArrayNs  = int64(zeros(0,1));
                 return
             end
             % CASE: zvAllTt2000 is not empty.
-            
-            
-            
+
+
+
             ttw1           = irf.cdf.time.TT2000_to_TT2000WOLS(zvAllTt2000(1));
             ttw2           = irf.cdf.time.TT2000_to_TT2000WOLS(zvAllTt2000(end));
             boundaryRefTtw = irf.cdf.time.TT2000_to_TT2000WOLS(boundaryRefTt2000);
-            
+
             %======================================
             % Find bin boundaries & bin timestamps
             %======================================
@@ -324,18 +324,18 @@ classdef dsr
             ttw1Floor = ...
                 idivide(ttw1 - boundaryRefTtw, binLengthWolsNs, 'floor') ...
                 * binLengthWolsNs + boundaryRefTtw;
-            
+
             % Find smallest number of time intervals that will cover (and exceed
             % if necessary) ttw1 to ttw2.
             nBins         = idivide(ttw2 - ttw1Floor, binLengthWolsNs, 'ceil');
-            
+
             boundariesTtw = (ttw1Floor + [0:nBins] * binLengthWolsNs)';
             zvBinsTtw     = boundariesTtw(1:end-1) + binTimestampPosWolsNs;
-            
+
             boundariesTt2000 = irf.cdf.time.TT2000WOLS_to_TT2000(boundariesTtw);
             zvBinsTt2000     = irf.cdf.time.TT2000WOLS_to_TT2000(zvBinsTtw);
             binSizeArrayNs   = diff(boundariesTt2000);
-            
+
             %===================================================================
             % Assign iRecordCa
             % ----------------
@@ -351,9 +351,9 @@ classdef dsr
 
             Tmk.stop_log(numel(zvAllTt2000), 'OSR record', nBins, 'DSR record')
         end
-        
-        
-        
+
+
+
         % Downsample a single NxM science ZV.
         %
         % Use bins and for every bin, derive median and MSTD over dimension 1
@@ -396,12 +396,12 @@ classdef dsr
         %
         function [MedianDsrFpa, MstdDsrFpa] = downsample_sci_ZV(...
                 OsrFpa, nMinNfpSamplesPerBin, iRecordsInBinCa, L)
-            
+
             % PROPOSAL: Require nMinNfpSamplesPerBin >= 1? Code can handle 0, though it gives NaN.
-            
+
             % IMPLEMENTATION NOTE: Not using bicas.proc.dsr.downsample() since
             % it is not designed for returning two values per bin.
-            
+
             Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.downsample_sci_ZV', L);
 
             % ASSERTIONS
@@ -412,8 +412,8 @@ classdef dsr
                 OsrFpa,          [-1, -3], ...
                 iRecordsInBinCa, [-2]);
             nRecordsDsr = numel(iRecordsInBinCa);
-            
-            
+
+
 
             % FPA --> OSR arrays
             % ------------------
@@ -421,17 +421,17 @@ classdef dsr
             % works with (MSTD, really).
             dataOsr = OsrFpa.array(NaN);
             fpOsr   = OsrFpa.fpAr();
-            
+
             % Pre-allocate DSR arrays.
             medianDsr = zeros(nBins, nSpr, OsrFpa.mc);
             mstdDsr   = zeros(nBins, nSpr, OsrFpa.mc);
-            
+
             % Pre-allocate DSR bin arrays.
             binDsrSize    = size(dataOsr);
             binDsrSize(1) = 1;
             binMedian = zeros(binDsrSize);
             binMstd   = zeros(binDsrSize);
-            
+
             for iBin = 1:nBins
                 % OSR bin arrays
                 kBin = iRecordsInBinCa{iBin};
@@ -455,12 +455,12 @@ classdef dsr
                             binChannelDataNfp, ...
                             medianScalarData, ...
                             1);
-                        
+
                         binMedian(1, iChannel) = medianScalarData;   % May be NaN.
                         binMstd  (1, iChannel) = mstdScalarData;     % May be NaN.
                     end
                 end
-                
+
                 medianDsr(iBin, :) = binMedian;
                 mstdDsr  (iBin, :) = binMstd;
             end    % for
@@ -472,7 +472,7 @@ classdef dsr
 
 
             Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
-            
+
         end    % downsample_sci_ZV
 
 
@@ -490,18 +490,18 @@ classdef dsr
         %       [binSamplesDsrAr, binFpAr] = fhBinToRecord(samplesOsrAr, fpOsrAr);
         function DsrFpa = downsample(OsrFpa, iRecordsInBinCa, fhBinToRecord)
             % PROPOSAL: Abolish
-            
+
             assert(isa(OsrFpa, 'bicas.utils.FPArray'), ...
                 'Argument is not an instance of bicas.utils.FPArray.')
             assert(ismatrix(OsrFpa))
-            assert(iscell(iRecordsInBinCa))            
+            assert(iscell(iRecordsInBinCa))
             assert(iscolumn(iRecordsInBinCa))
-            
+
             nRecordsDsr = numel(iRecordsInBinCa);
-            
+
             samplesOsrAr   = OsrFpa.array();
             fpOsrAr        = OsrFpa.fpAr;
-            
+
             samplesDsrArCa = cell(nRecordsDsr, 1);    % Preallocate
             fpDsrArCa      = cell(nRecordsDsr, 1);    % Preallocate
 
@@ -509,7 +509,7 @@ classdef dsr
                 iAr = iRecordsInBinCa{iBin};
 
                 [binSamplesDsrAr, binFpAr] = fhBinToRecord(samplesOsrAr(iAr), fpOsrAr(iAr));
-                
+
 %                 if 0
 %                     % DEBUG: Verify the return values from function.
 %                     assert(isa(      binSamplesDsrAr, OsrFpa.mc))
@@ -519,14 +519,14 @@ classdef dsr
 %                         size(binSamplesDsrAr), ...
 %                         size(binFpAr        )))
 %                 end
-                
+
                 samplesDsrArCa{iBin} = binSamplesDsrAr;
                 fpDsrArCa{     iBin} = binFpAr;
             end
 
             samplesDsrAr = cat(1, zeros(0, 1, OsrFpa.mc), samplesDsrArCa{:});
             fpDsrAr      = cat(1, false(0, 1),            fpDsrArCa{     :});
-            
+
             DsrFpa = bicas.utils.FPArray(samplesDsrAr, 'FILL_POSITIONS', fpDsrAr);
         end
 
@@ -536,7 +536,7 @@ classdef dsr
         %
         function [DsrFpa] = downsample_ZV_minimum( OsrFpa, iRecordsInBinCa )
             assert(isa(OsrFpa, 'bicas.utils.FPArray'))
-           
+
             function [binSamplesDsrAr, binFpDsrAr] = bin_to_record(binSamplesOsrAr, binFpOsrAr)
 
                 binSamplesOsrAr(binFpOsrAr, :) = [];   % Delete rows with FPs.
@@ -559,15 +559,15 @@ classdef dsr
                     end
                 end
             end
-            
+
             assert(iscolumn(OsrFpa))
             fv = zeros(1,1, OsrFpa.mc);   % Used by inner function.
-            
+
             DsrFpa = bicas.proc.dsr.downsample(OsrFpa, iRecordsInBinCa, @bin_to_record);
         end
 
 
-        
+
         % Downsample a zVariable (FPA) using pre-defined bins to the "logical OR
         % value" each OSR bin.
         %
@@ -602,11 +602,11 @@ classdef dsr
 
             DsrFpa = bicas.proc.dsr.downsample(OsrFpa, iRecordsInBinCa, @bin_to_record);
         end
-        
-        
-        
+
+
+
     end
 
 
-    
+
 end

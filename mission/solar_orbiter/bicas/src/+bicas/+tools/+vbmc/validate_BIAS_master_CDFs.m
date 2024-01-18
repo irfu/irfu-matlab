@@ -55,7 +55,7 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     % PROPOSAL: Check fill values & pad values vs. zVar data type
     %   Ex: CDF_UINT2: fill value=65535 /ISTP
     %   Ex: CDF_UINT2: pad  value=65534 /CDF User's Guide
-    % 
+    %
     % PROPOSAL: Check for ISTP compliance.
     %   PROPOSAL: Check length of variable attributes.
     %       FIELD_NAM: Max 30 chars (ISTP)
@@ -102,8 +102,8 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     %       zVar attributes. ==> Can not (strictly) check their data types, e.g.
     %       that they match the zVar itself.
 
-    
-    
+
+
     % ASSERTION
     % IMPLEMENTATION NOTE: Natural mistake to assume that there is only one
     % argument for a single path.
@@ -114,8 +114,8 @@ function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
     % NOTE: Might run automatically run as part of user-configured MATLAB
     % initialization.
     irf('check_path');
-    
-    
+
+
 
     %=====================================
     % Iterate over all files in directory
@@ -198,8 +198,8 @@ function Do = validate_file(filePath)
 
 
 
-    
-    
+
+
     fprintf('--------\nValidating %s\n', filePath)
 
     [~, fileBasename, filenameSuffix] = fileparts(filePath);
@@ -209,9 +209,9 @@ function Do = validate_file(filePath)
     Ga         = Do.GlobalAttributes;
     Zmd        = irf.cdf.get_zvs_metadata_struct(Do.Variables, Do.VariableAttributes);
     zvNameList = fieldnames(Zmd);
-    
-    
-    
+
+
+
     if PRINT_LATEST_GA_MODS
         %=========================
         % Print latest MOD record
@@ -223,13 +223,13 @@ function Do = validate_file(filePath)
             fprintf('   Last MODS = "%s"\n', Ga.MODS{end});
         end
     end
-    
-    
-    
+
+
+
     %############################
     % Validate global attributes
     %############################
-    
+
     %===================================
     % Validate set of global attributes
     %===================================
@@ -240,9 +240,9 @@ function Do = validate_file(filePath)
         validation_warning_list(missingDisallowedGlobAttributes, ...
             'Found missing/disallowed global attributes:\n')
     end
-    
 
-    
+
+
     %=================================================
     % Retrieve various global attributes (later used)
     %=================================================
@@ -256,7 +256,7 @@ function Do = validate_file(filePath)
     CDF_DATASET_ID_descriptor         = splitstr(CDF_DATASET_ID,            '_', 3, [3],     'Can not split DATASET_ID.');
     [receiver, mode, dataProduct]     = splitstr(CDF_DATASET_ID_descriptor, '-', 5, [2 3 4], 'Can not split DATASET_ID descriptor.');
     derived_CDF_DATASET_ID_descriptor = splitstr(CDF_Descriptor,            '>', 2, [1],     'Can not split Descriptor.');
-    
+
     % Receivers     : LFR, TDS
     % Data products : CWF, SWF, RSWF
     % Modes         : SBM1, SBM2, SURV, LFM
@@ -264,35 +264,35 @@ function Do = validate_file(filePath)
         derived_CDF_DATASET_ID_descriptor, ...
         get_map_value(      RECEIVER_TEXT_MAP,     receiver), ...
         get_map_value(      DATA_PRODUCT_TEXT_MAP, dataProduct), ...
-        lower(get_map_value(MODE_TEXT_MAP,         mode))   );    
-    
+        lower(get_map_value(MODE_TEXT_MAP,         mode))   );
+
     derived_CDF_TEXT = sprintf('This file contains RPW %s level 2 %s of electric data in %s.', ...
         receiver, ...
         lower(get_map_value(DATA_PRODUCT_TEXT_MAP, dataProduct)), ...
         lower(get_map_value(MODE_TEXT_MAP, mode)));
-    
+
     derived_Logical_source_description = sprintf('Solar Orbiter Radio/Plasma Wave, %s L2 electric parameters', ...
         receiver);
-    
+
     %===================================
     % Validate global attributes values
     %===================================
     validate_value(CDF_DATASET_ID_descriptor, derived_CDF_DATASET_ID_descriptor, 'DATASET_ID descriptor');
     validate_glob_attr(Ga, 'Descriptor', derived_CDF_Descriptor);
-    
+
     % NOTE: Documentation seems to require version in SKELETON_PARENT, but in
     % reality no dataset has it.
     %derived_CDF_SKELETON_PARENT = sprintf('%s_V%s', CDF_DATASET_ID, CDF_Skeleton_version);
     derived_CDF_SKELETON_PARENT = sprintf('%s', CDF_DATASET_ID);
     validate_glob_attr(Ga, 'SKELETON_PARENT', derived_CDF_SKELETON_PARENT);
-    
+
     validate_glob_attr(Ga, 'LEVEL', 'L2>Level 2 data processing');
     validate_glob_attr(Ga, 'TEXT',  derived_CDF_TEXT)
-    
+
     derived_Logical_source = strrep(lower(CDF_DATASET_ID), '_l2_', '_L2_');
     validate_glob_attr(Ga, 'Logical_source',             derived_Logical_source)
     validate_glob_attr(Ga, 'Logical_source_description', derived_Logical_source_description);
-    
+
     if ~ismember(CDF_DATASET_ID, {...
             'SOLO_L2_RPW-LFR-SBM1-CWF-E', ...
             'SOLO_L2_RPW-LFR-SBM2-CWF-E', ...
@@ -302,13 +302,13 @@ function Do = validate_file(filePath)
             'SOLO_L2_RPW-TDS-LFM-RSWF-E'})
         validation_warning('Does not recognize DATASET_ID="%s"', CDF_DATASET_ID)
     end
-    
 
-    
+
+
     %#####################
     % Validate zVariables
     %#####################
-    
+
     %============================
     % Validate set of zVariables
     %============================
@@ -323,9 +323,9 @@ function Do = validate_file(filePath)
     if ~isempty(forbiddenZvNames)
         validation_warning_list(forbiddenZvNames, 'Found disallowed zVariables names:\n')
     end
-    
-    
-    
+
+
+
     %===================================================================
     % Check Epoch
     % -----------
@@ -361,9 +361,9 @@ function Do = validate_file(filePath)
             zv_EPOCH_attributes{i,1}, ...
             zv_EPOCH_attributes{i,2})
     end
-    
 
-    
+
+
     %========================================
     % Validate "non-emptiness" of zVariables
     %========================================
@@ -373,11 +373,11 @@ function Do = validate_file(filePath)
     end
 
 
-    
+
     %###############################
     % Validate zVariable attributes
     %###############################
-    
+
     %======================================
     % Validate set of zVariable attributes
     %======================================
@@ -391,10 +391,10 @@ function Do = validate_file(filePath)
     for iZv = 1:length(zvNameList)
         zvName         = zvNameList{iZv};
         zvAttrNameList = fieldnames(Zmd.(zvName).Attributes);
-        
+
         missingZvAttrList   = setdiff(...
             bicas.tools.vbmc.const.MANDATORY_ZV_ATTRIBUTES, ...
-            zvAttrNameList);        
+            zvAttrNameList);
         forbiddenZvAttrList = setdiff(zvAttrNameList, union(...
             bicas.tools.vbmc.const.MANDATORY_ZV_ATTRIBUTES, ...
             bicas.tools.vbmc.const.SOMETIMES_ZV_ATTRIBUTES));
@@ -404,14 +404,14 @@ function Do = validate_file(filePath)
         if ~isempty(forbiddenZvAttrList)
             validation_warning_list(forbiddenZvAttrList, 'zVariable "%s" has forbidden attributes:\n', zvName)
         end
-        
+
         % Check that FORMAT is uppercase.
         if isfield(Zmd.(zvName).Attributes, 'FORMAT')
             FORMAT = Zmd.(zvName).Attributes.FORMAT;
             validate_value(FORMAT, upper(FORMAT), sprintf('zVariable attribute "%s":FORMAT', zvName))
         end
     end
-    
+
     % Validate DELTA_PLUS_MINUS:CATDESC value.
     validate_ZV_attribute_value(...
         Zmd, 'DELTA_PLUS_MINUS', 'CATDESC', ...
@@ -426,7 +426,7 @@ function Do = validate_file(filePath)
     ZV_FILLVAL_CHECK = {'VDC', 'EDC', 'EAC', 'IBIAS1', 'IBIAS2', 'IBIAS3'};
     ZV_FILLVAL = single(-1e31);
     for i = 1:length(ZV_FILLVAL_CHECK)
-        
+
         zvName = ZV_FILLVAL_CHECK{i};
         validate_ZV_presence(Do, zvName, 0)
         iZv = find(strcmp(Do.Variables(:,1), zvName));
@@ -434,19 +434,19 @@ function Do = validate_file(filePath)
             validate_ZV_attribute_value(Zmd, zvName, 'FILLVAL', ZV_FILLVAL, 0.0000)
         end
     end
-    
-    
-    
+
+
+
     %==============================
     % Check filename (file system)
     %==============================
-    % NOTE: Forces lower case filename suffix.    
+    % NOTE: Forces lower case filename suffix.
     % NOTE: Does not compare with skeleton parent, but does indirectly. Is that appropriate?
     derivedFilename = sprintf('%s_V%s.cdf', CDF_DATASET_ID, CDF_Skeleton_version);
     if ~strcmp(filename, derivedFilename)
         validate_value(filename, derivedFilename, 'Filename (file system)')
     end
-    
+
 end
 
 
@@ -454,7 +454,7 @@ end
 function validate_ZV_attribute_value(ZvsMetadata, zvName, zvAttrName, comparisonValue, varargin)
     % TODO-DEC: How handle comparing different data types (MATLAB classes)?
     %   PROPOSAL: Act differently depending zVar data type (TT2000 or not).
-    
+
     if ~isfield(ZvsMetadata, zvName)
         validation_warning('Can not find zVariable "%s"', zvName)
         return
@@ -463,7 +463,7 @@ function validate_ZV_attribute_value(ZvsMetadata, zvName, zvAttrName, comparison
         validation_warning('Can not find zVariable attribute "%s":"%s"', zvName, zvAttrName)
         return
     end
-    
+
     value = ZvsMetadata.(zvName).Attributes.(zvAttrName);
     validate_value(value, comparisonValue, [zvName, ':', zvAttrName], varargin{:})
 end
@@ -480,7 +480,7 @@ end
 function validate_ZV_presence(Do, zvName, validateNonempty)
     % PROPOSAL: Separate validate empty.
     %   PRO: Iterate over ZVs that should be present.
-    
+
     if ~any(strcmp(Do.Variables(:,1), zvName))
         validation_warning('Can not find zVariable "%s".', zvName);
         return
@@ -489,19 +489,19 @@ function validate_ZV_presence(Do, zvName, validateNonempty)
     if validateNonempty && isempty(Do.data.(zvName).data)
         validation_warning('Can not find any expected data/values for zVariable "%s".', zvName)
     end
-    
+
     % Checks one variable attribute as a proxy for all variable attributes.
     zvWithAttributeCa = Do.VariableAttributes.FIELDNAM(:,1);
     if ~any(strcmp(zvWithAttributeCa, zvName))
         validation_warning('Can not find any FIELDNAM variable attribute for zVariable "%s".', zvName);
-    end    
+    end
 end
 
 
 
 % Validate a specific value by comparing it to another value that should be
 % identical.
-% 
+%
 % NOTE: Special case for comparing zero.
 % NOTE: Approximate comparison of numbers which can permit error even for
 % permitted error zero (example: compare pad value -1e30 with -1e30). This is an
@@ -519,24 +519,24 @@ function validate_value(value, comparisonValue, varName, varargin)
 
     if ischar(value) && ischar(comparisonValue)
         % CASE: Comparing strings
-        
+
         if numel(varargin) ~= 0
             error('Wrong number of arguments')
         end
         if ~strcmp(value, comparisonValue)
             validate_value___warning(msg, sprintf('"%s"', value), sprintf('"%s"', comparisonValue))
         end
-        
+
     elseif isnumeric(value) && isnumeric(comparisonValue)
         %=========================
         % CASE: Comparing numbers
         %=========================
-        
+
         if numel(varargin) ~= 1
             error('Wrong number of arguments when comparing numeric values.')
         end
         permittedError = varargin{1};
-        
+
         if value == 0 && comparisonValue == 0
             return
         elseif value ~= 0 && comparisonValue ~= 0
@@ -546,13 +546,13 @@ function validate_value(value, comparisonValue, varName, varargin)
         else
             validate_value___warning(msg, sprintf('%f', value), sprintf('%f', comparisonValue))
         end
-        
+
     else
         error('Can not compare these types of variables.')
     end
-    
-    
-    
+
+
+
     %----------------------------------------------------------------------------------------------
     % Print standardized warning when comparing two values.
     % Printed line 1-N : Message string
@@ -578,15 +578,15 @@ end
 
 
 function validate_glob_attr(Ga, gaName, comparisonValue)
-    
+
     if ~isfield(Ga, gaName)
         validation_warning('There is no global attribute "%s".', gaName)
         return
     end
     gaValue = Ga.(gaName);
-    
+
     assert(isscalar(gaValue), 'Can not handle non-scalar global attribute value.')
-    
+
     gaValue = gaValue{1};
     validate_value(gaValue, comparisonValue, sprintf('Global attribute "%s"', gaName))
 end
@@ -595,9 +595,9 @@ end
 
 function validation_warning_list(strList, varargin)
     titleMsg = sprintf(varargin{:});
-    
+
     assert(titleMsg(end) == newline)
-    
+
     % NOTE: Submitting one string without formatting.
     validation_warning([titleMsg, '   "', strjoin(strList, ['"', newline, '   "']), newline])
 end
@@ -627,7 +627,7 @@ function value = get_map_value(map, key)
         % Best to return something so that something is inserted into strings.
         % Absence can be ambiguous, e.g. when deriving Descriptor or TEXT.
         % NOTE: The caller might change the case.
-        value = '<Unknown>';   
+        value = '<Unknown>';
     end
 end
 
@@ -644,7 +644,7 @@ end
 % iParts    : The substrings to be returned (numeric array).
 %
 function varargout = splitstr(str, delimiter, nParts, iParts, valWarningMsg)
-    
+
     if nargout ~= length(iParts)
         error('Number of return values does not match input. This indicates a pure bug.')
     end
@@ -654,7 +654,7 @@ function varargout = splitstr(str, delimiter, nParts, iParts, valWarningMsg)
         validation_warning([valWarningMsg, '. str="', str, '"'])
         parts = [parts, cell(1, nParts-length(parts))];   % Extend ROW vector.
     end
-    
+
     for iOut = 1:length(iParts)
         varargout{iOut} = parts{iParts(iOut)};
     end

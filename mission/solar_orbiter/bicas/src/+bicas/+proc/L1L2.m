@@ -64,8 +64,8 @@ classdef L1L2
             %
             % NOTE: Function only uses InSci fields InSci.Zv.Epoch and InSci.Zv.ACQUISITION_TIME
             %   PROPOSAL: Replace argument InSci --> SciEpoch and Sci_ACQUISITION_TIME
-            
-            
+
+
 
             % ASSERTIONS
             assert(isa(InSci, 'bicas.InputDataset'))
@@ -131,7 +131,7 @@ classdef L1L2
                     ['HK timestamps do not increase monotonically', ...
                     ' (USE_ZV_ACQUISITION_TIME_HK=%g).'], ...
                     USE_ZV_ACQUISITION_TIME_HK)
-                
+
             end
             if ~irf.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
                 %---------------------------------------
@@ -146,7 +146,7 @@ classdef L1L2
                     settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', ...
                     'BICAS:SWMProcessing')
-                
+
             elseif ~irf.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
                 %-------------------------------------------------
                 % CASE: SCI does not cover a subset of HK in time
@@ -169,7 +169,7 @@ classdef L1L2
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
                     anomalyDescrMsg, 'BICAS:DatasetFormat:SWMProcessing')
-                
+
             end
 
 
@@ -186,8 +186,8 @@ classdef L1L2
             %         that mode() will not necessarily identify the de facto
             %         most common time difference.
             hkEpochExtrapMargin = mode(diff(hkEpoch)) / 2;
-            
-            
+
+
 
             %=============================================================
             % Derive BDM
@@ -282,9 +282,9 @@ classdef L1L2
 
             irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
         end
-        
-        
-        
+
+
+
         % Try to autodetect sweeps.
         %
         % NOTE: This function should be temporary functionality while waiting
@@ -322,7 +322,7 @@ classdef L1L2
         function isSweepingFpa = autodetect_sweeps(tt2000, bdmFpa, hkBiasCurrentFpa, Bso)
             % TODO-DEC: Does having argument and return value FPAs make sense?
             %           Should caller convert?
-            
+
             % The only BDM which sweeps use, but there may be other data too.
             BDM_SWEEP_POSSIBLE = 4;
 
@@ -338,16 +338,16 @@ classdef L1L2
                 hkBiasCurrentFpa, [-1, 3]);
             assert(windowLengthPts              >= 1)
             assert(currentMinMaxDiffThresholdTm >= 0)
-        
+
             hkBiasCurrent    = hkBiasCurrentFpa.int2doubleNan();
             bdm              = bdmFpa.int2doubleNan();
             bdm4TrickApplies = tt2000 < bdm4TrickEndTt2000;
-            
+
             %===========================
             % Detect sweeps using BDM=4
             %===========================
             isSweeping1 = bdm4TrickApplies & (bdm == BDM_SWEEP_POSSIBLE);
-            
+
             %====================================
             % Detect sweeps using sliding window
             %====================================
@@ -355,21 +355,21 @@ classdef L1L2
             for i1 = 1:(nCdfRecs-(windowLengthPts-1))
                 i2 = i1 + (windowLengthPts-1);
                 iAr = i1:i2;
-                
+
                 % NOTE: Treating all data in window combined, both in time AND
                 % over channels/antennas.
                 hkBiasCurrentWindow = hkBiasCurrent(i1:i2, :);
-                
+
                 hkBiasCurrentWindow(bdm(iAr) ~= BDM_SWEEP_POSSIBLE, :) = NaN;
                 minWindow = min(hkBiasCurrentWindow, [], 'all');
                 maxWindow = max(hkBiasCurrentWindow, [], 'all');
                 mmDiff    = maxWindow - minWindow;
-                
+
                 if mmDiff > currentMinMaxDiffThresholdTm
                     isSweeping2(iAr) = (bdm(iAr) == BDM_SWEEP_POSSIBLE) & ~bdm4TrickApplies(iAr);
                 end
             end
-            
+
             isSweeping           = isSweeping1 | isSweeping2;
             isSweepingWithMargin = irf.utils.true_with_margin(tt2000, isSweeping, windowMarginSec * 1e9);
 
@@ -378,7 +378,7 @@ classdef L1L2
 
 
 
-        % Convert PreDc+PostDc to something that 
+        % Convert PreDc+PostDc to something that
         % (1) represents a TDS dataset (hence the name), and
         % (2) ALMOST REPRESENTS an LFR dataset (the rest is done in a wrapper).
         %

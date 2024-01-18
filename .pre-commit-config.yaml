@@ -22,4 +22,4 @@ repos:
       # In Matlab files remove trailing whitespace, excluding contributed code and solar_orbiter
       - id: trailing-whitespace
         files: '.*.m$'
-        exclude: 'contrib/|mission/solar_orbiter|plots/solo/'
+        exclude: 'contrib/|plots/solo/'

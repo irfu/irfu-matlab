@@ -19,7 +19,7 @@
 % GaSubset
 %       Struct with fields representing a subset of the CDF global attributes. A
 %       specific set of fields is required.
-% 
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24 as a separate file, by moving the function out from
@@ -37,7 +37,7 @@ function write_dataset_CDF(...
     % PROBLEM: Too many arguments.
     % TODO-DEC: Should function find the master CDF file itself?
     %===========================================================================
-    
+
     %============
     % ASSERTIONS
     %============
@@ -53,16 +53,16 @@ function write_dataset_CDF(...
     if exist(outputFile, 'file')
         [settingValue, settingKey] = Bso.get_fv(...
             'OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY');
-        
+
         anomalyDescrMsg = sprintf(...
             'Intended output dataset file path "%s" matches a pre-existing file.', ...
             outputFile);
         bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
             anomalyDescrMsg, 'BICAS:PathNotAvailable')
     end
-    
-    
-    
+
+
+
     %===========================
     % Create (modified) dataobj
     %===========================
@@ -70,7 +70,7 @@ function write_dataset_CDF(...
     [settingNpefValue, settingNpefKey] = Bso.get_fv(...
         'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
     if ~settingNpefValue
-        
+
         DataObj = init_modify_dataobj(...
             ZvsSubset, GaSubset, masterCdfPath, outputFile, Bso, L);
         % IMPLEMENTATION NOTE: This call will fail if setting
@@ -78,13 +78,13 @@ function write_dataset_CDF(...
         % therefore ZvsSubset=[] (can not be generated). Must therefore check
         % for this first.
     end
-    
-    
-    
+
+
+
     %===========================================
     % ASSERTIONS / Checks before writing to CDF
     %===========================================
-    
+
     % Check if file writing is deliberately disabled.
     % NOTE: Do this as late as possible, in order to be able to test as much
     % code as possible without writing file.
@@ -94,7 +94,7 @@ function write_dataset_CDF(...
             'Writing output CDF file is disabled via setting %s.', settingKey)
         return
     end
-    
+
     if ~settingNpefValue
         %=====================================
         % CASE: ACTUALLY WRITE OUTPUT DATASET
@@ -128,7 +128,7 @@ end
 function DataObj = init_modify_dataobj(...
         ZvsSubset, GaSubset, ...
         masterCdfPath, outputFile, Bso, L)
-    
+
     %============
     % ASSERTIONS
     %============
@@ -148,15 +148,15 @@ function DataObj = init_modify_dataobj(...
             ' that does not increase monotonically.'], ...
             outputFile)
     end
-    
-    
-    
+
+
+
     %======================
     % Read master CDF file
     %======================
     L.logf('info', 'Reading master CDF file: "%s"', masterCdfPath)
     DataObj = dataobj(masterCdfPath);
-        
+
 
 
     % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
@@ -176,7 +176,7 @@ function DataObj = init_modify_dataobj(...
         assert(bicas.utils.validate_ZV_QUALITY_FLAG(qfMax), ...
             'BICAS:Assertion:ConfigurationBug', ...
             'Illegal BICAS setting "%s"=%i.', key, qfMax)
-        
+
         if qfMax < bicas.const.QUALITY_FLAG_MAX
             L.logf('warning', ...
                 ['Using setting %s = %i to set global max value for', ...
@@ -184,16 +184,16 @@ function DataObj = init_modify_dataobj(...
                 key, qfMax);
         end
         QfFpa = ZvsSubset.QUALITY_FLAG;   % Temporary variable to make algorithm clearer.
-        
+
         TooHighQfFpa                     = (QfFpa >= qfMax);
         QfFpa(TooHighQfFpa.array(false)) = bicas.utils.FPArray(uint8(qfMax));
 
         ZvsSubset.QUALITY_FLAG = QfFpa;
         clear QfFpa
     end
-    
-    
-    
+
+
+
     %==================================================================
     % Iterate over all OUTPUT PD field names
     % Set corresponding dataobj zVariables
@@ -207,7 +207,7 @@ function DataObj = init_modify_dataobj(...
     for iPdFieldName = 1:length(pdFieldNameList)
         zvName    = pdFieldNameList{iPdFieldName};
         zvValuePd = ZvsSubset.(zvName);
-        
+
         % HACK: Normalize for the purpose of (old) ZV logging
         % FPA --> Array.
         % Use Master CDF FVs, except floats use NaN.
@@ -219,19 +219,19 @@ function DataObj = init_modify_dataobj(...
             %------------------------------
             % CASE: ZV is stored as an FPA
             %------------------------------
-            
+
             % Normalize FPA --> array with CDF FV.
             [fv, ~, masterMc] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
             assert(...
                 strcmp(masterMc, zvValuePd.mc), ...
                 'Mismatching MATLAB classes for ZV "%s" between master CDF ("%s") and MATLAB (FPA) variable ("%s"). Master CDF: %s', ...
                 zvName, masterMc, zvValuePd.mc, masterCdfPath)
-            
+
             if ismember(zvValuePd.mc, {'single', 'double'})
                 fv = cast(NaN, zvValuePd.mc);
             end
             assert(all(~ismember(fv, zvValuePd.NFP_1D_array())))
-            
+
             zvValueLog = zvValuePd.array(fv);
         else
             %--------------------------------
@@ -239,57 +239,57 @@ function DataObj = init_modify_dataobj(...
             %--------------------------------
             zvValueLog = zvValuePd;
         end
-        
+
         ZvsLog.(zvName) = zvValueLog;
 
         DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L);
     end
-    
-    
-    
+
+
+
     % Log data to be written to CDF file.
     bicas.utils.log_ZVs(ZvsLog, Bso, L)
 
 
-    
+
     %======================================================================
     % Use GaSubset to overwrite pre-existing (assertion) global attributes
     %======================================================================
     fnList = fieldnames(GaSubset);
     for iFn = 1:numel(fnList)
         fn = fnList{iFn};
-        
+
         assert(isfield(DataObj.GlobalAttributes, fn), ...
             'BICAS:DatasetFormat', ...
             ['Master CDF does not appear to contain global attribute', ...
             ' "%s" which the BICAS processing has produced/set.'], fn)
-        
+
         DataObj.GlobalAttributes.(fn) = GaSubset.(fn);
     end
-    
-    
-    
+
+
+
     %================================================================
     % Handle still-empty zVariables (zero records; always anomalies)
     %================================================================
     for fn = fieldnames(DataObj.data)'
         zvName = fn{1};
-        
+
         if isempty(DataObj.data.(zvName).data)
-            
+
             DataObj = handle_empty_ZV_anomaly(DataObj, zvName, ...
                 masterCdfPath, Bso, L);
-            
+
         end    % if isempty(DataObj.data.(zvName).data)
     end    % for
-    
+
 end    % init_modify_dataobj
 
 
 
 % Function used by init_modify_dataobj() for using ZVs from processing, to
 % overwrite ZVs in dataobj (from master CDF).
-% 
+%
 % ARGUMENTS
 % =========
 % zvValuePd
@@ -301,16 +301,16 @@ end    % init_modify_dataobj
 % ZVA = zVariable Attribute
 %
 function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
-    
+
     % ASSERTION: Master CDF already contains the zVariable.
     if ~isfield(DataObj.data, zvName)
         error('BICAS:Assertion:SWMProcessing', ...
             ['Trying to write to zVariable "%s" that does not exist', ...
             ' in the master CDF file.'], zvName)
     end
-    
-    
-    
+
+
+
     %======================================================================
     % Prepare PDV zVariable value to save to CDF:
     % (1a) FPAs --> array
@@ -337,9 +337,9 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     cdfMc = irf.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
     zvValueCdf = cast(zvValueTemp, cdfMc);
-    
-    
-    
+
+
+
     %===========================================================================
     % Set zVar attrs. SCALEMIN, SCALEMAX according to zVar data
     % ---------------------------------------------------------
@@ -370,7 +370,7 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
     if isnumeric(zvValueCdf)
         iZv = find(strcmp(DataObj.VariableAttributes.SCALEMAX(:,1), zvName));
         assert(isscalar(iZv))
-        
+
         % Derive 1D array without fill values for inspection and derivation of
         % ZVAs.
         zvValueCdfLin = zvValueCdf(:);
@@ -379,25 +379,25 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
             'BICAS:Assertion', ...
             'zvValueCdfLin for zvName="%s" contains NaN despite being expected not to.', ...
             zvName)
-        
+
         % SCALEMIN/-MAX from master CDFs.
         SCALEMIN_zvaMaster = DataObj.VariableAttributes.SCALEMIN{iZv, 2};
         SCALEMAX_zvaMaster = DataObj.VariableAttributes.SCALEMAX{iZv, 2};
-        
+
         % NOTE: Epoch SCALEMAX is string (dataset bug?) /2021-02-05
         % ==> SCALEMAX_master not numeric when zvValue is.
         if isnumeric(SCALEMIN_zvaMaster) && isnumeric(SCALEMAX_zvaMaster)
-            
+
             % SCALEMIN/-MAX from processed data.
             SCALEMIN_zvaPd = min(zvValueCdfLin, [], 'all');
             SCALEMAX_zvaPd = max(zvValueCdfLin, [], 'all');
-            
+
             %L.logf('debug', 'zvName             = %s', zvName)
             %L.logf('debug', 'SCALEMIN_zvaMaster = %g', SCALEMIN_zvaMaster)
             %L.logf('debug', 'SCALEMIN_zvaPd     = %g', SCALEMIN_zvaPd)
             %L.logf('debug', 'SCALEMAX_zvaMaster = %g', SCALEMAX_zvaMaster)
             %L.logf('debug', 'SCALEMAX_zvaPd     = %g', SCALEMAX_zvaPd)
-            
+
             %===============================================================
             % DECISION POINT: Set/update SCALEMIN & SCALEMAX used in actual
             % output CDF.
@@ -406,7 +406,7 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
                 % CASE: There is a min & max.
                 assert(~isempty(SCALEMIN_zvaPd))
                 assert(~isempty(SCALEMAX_zvaPd))
-                
+
                 SCALEMIN_zvaCdf = SCALEMIN_zvaPd;
                 SCALEMAX_zvaCdf = SCALEMAX_zvaPd;
             else
@@ -415,19 +415,19 @@ function DataObj = overwrite_dataobj_ZV(DataObj, zvName, zvValuePd, L)
                 SCALEMIN_zvaCdf = 0;    % NOTE: Must later be typecast.
                 SCALEMAX_zvaCdf = 0;
             end
-            
+
             % NOTE: zvValue has already been typecast to CDF type, but any
             % (future?) algorithm (above) for setting values may cancel that
             % (e.g. for constants). Must therefore typecast again, just to be
             % sure.
             SCALEMIN_zvaCdf = cast(SCALEMIN_zvaCdf, cdfMc);
             SCALEMAX_zvaCdf = cast(SCALEMAX_zvaCdf, cdfMc);
-            
+
             DataObj.VariableAttributes.SCALEMIN{iZv,2} = SCALEMIN_zvaCdf;
             DataObj.VariableAttributes.SCALEMAX{iZv,2} = SCALEMAX_zvaCdf;
         end
     end
-    
+
     % Set zVariable.
     DataObj.data.(zvName).data = zvValueCdf;
 end
@@ -440,15 +440,15 @@ end
 % =========
 % masterCdfPath
 %       NOTE: Only needed for anomaly description message.
-% 
+%
 function DataObj = handle_empty_ZV_anomaly(...
         DataObj, zvName, masterCdfPath, Bso, L)
-    
+
     %==============================================================
     % CASE: zVariable has zero records.
     % This indicates that it should have been set using PDV field.
     %==============================================================
-    
+
     % NOTE: Useful to specify master CDF path in the case of having
     % multiple output datasets. Will otherwise not know which output
     % dataset is referred to. Note: Can still read master CDF from
@@ -458,11 +458,11 @@ function DataObj = handle_empty_ZV_anomaly(...
         ' set (i.e. it has zero records) after adding ', ...
         'processing data. This should only happen for incomplete processing.'], ...
         masterCdfPath, zvName);
-    
+
     mc = irf.cdf.convert_CDF_type_to_MATLAB_class(...
         DataObj.data.(zvName).type, 'Permit MATLAB classes');
     isNumericZVar = isnumeric(cast(0.0, mc));
-    
+
     if isNumericZVar
         %====================
         % CASE: Numeric zVar
@@ -470,7 +470,7 @@ function DataObj = handle_empty_ZV_anomaly(...
         [settingValue, settingKey] = Bso.get_fv(...
             'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
         switch(settingValue)
-            
+
             case 'USE_FILLVAL'
                 %=========================================================
                 % Create correctly-sized zVariable using only fill values
@@ -483,22 +483,22 @@ function DataObj = handle_empty_ZV_anomaly(...
                     ' "%s" to presumed correct size using fill', ...
                     ' values due to setting "%s" = "%s".'], ...
                     zvName, settingKey, settingValue)
-                
+
                 nEpochRecords  = size(ZvsSubset.Epoch, 1);
                 [fv, ~, ~] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
                 zvSize      = [nEpochRecords, DataObj.data.(fn{1}).dim];
                 zvValueTemp = cast(zeros(zvSize), mc);
                 zvValueCdf  = irf.utils.replace_value(zvValueTemp, 0, fv);
-                
+
                 DataObj.data.(zvName).data = zvValueCdf;
-                
+
             otherwise
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, ...
                     'E+W+illegal', anomalyDescrMsg, ...
                     'BICAS:SWMProcessing:DatasetFormat')
         end
-        
+
     else
         %========================
         % CASE: Non-numeric zVar
@@ -510,7 +510,7 @@ function DataObj = handle_empty_ZV_anomaly(...
             'E+W+illegal', anomalyDescrMsg, ...
             'BICAS:SWMProcessing:DatasetFormat')
     end    % if isNumericZVar
-    
+
 end
 
 
@@ -521,7 +521,7 @@ function write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
     %===========================================
     % Write to CDF file using write_CDF_dataobj
     %===========================================
-    
+
     [strictNumericZvSizePerRecord, settingKey] = Bso.get_fv(...
         'OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord');
     if ~strictNumericZvSizePerRecord
@@ -532,7 +532,7 @@ function write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
             '========================================================================================================\n'], ...
             settingKey, strictNumericZvSizePerRecord);
     end
-    
+
     L.logf('info', 'Writing dataset CDF file: %s', outputFile)
     irf.cdf.write_dataobj( ...
         outputFile, ...
@@ -551,8 +551,8 @@ end
 % NOTE: Should always overwrite any pre-existing file.
 %
 function write_empty_file(filePath)
-    fileId = fopen(filePath, 'w');    
-    
+    fileId = fopen(filePath, 'w');
+
     % ~ASSERTION
     if fileId == -1
         % NOTE: Technically non-BICAS error ID.
@@ -560,7 +560,7 @@ function write_empty_file(filePath)
             'BICAS:CanNotOpenFile', ...
             'Can not open file: "%s"', filePath)
     end
-    
+
     % NOTE: Does not have to write any data to create empty file.
     fclose(fileId);
 end

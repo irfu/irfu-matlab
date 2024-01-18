@@ -30,7 +30,7 @@ classdef Database___UTEST < matlab.unittest.TestCase
             % ==========
             % add_GMVE()
             % ==========
-            
+
             % Add GMVE to zero DSIs.
             Gmve0 = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment for zero DSIs.'});
             Gmdb.add_GMVE({}, Gmve0)
@@ -50,7 +50,7 @@ classdef Database___UTEST < matlab.unittest.TestCase
             % =====================
             % get_MODS_strings_CA()
             % =====================
-            
+
             actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSI_1');
             expGaModsStrCa = {Gmve1.get_str(); Gmve2.get_str()};
             testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
@@ -58,7 +58,7 @@ classdef Database___UTEST < matlab.unittest.TestCase
             actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSI_2');
             expGaModsStrCa = {Gmve2.get_str()};
             testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
-            
+
             testCase.assertError(...
                 @() Gmdb.get_MODS_strings_CA('DSI_UNKNOWN'), ...
                 ?MException)

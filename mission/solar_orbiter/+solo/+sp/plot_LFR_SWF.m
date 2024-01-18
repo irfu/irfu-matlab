@@ -45,7 +45,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %   PROPOSAL: Submit one big TSeries and have the function split up the data based on gaps.
     %   PROPOSAL: Submit one TSeries per snapshot.
     %       PRO: Works for TDS snapshots.
-    %       PRO: Splits up the 
+    %       PRO: Splits up the
     %   PROPOSAL: Submit ~zVar with one snapshot per row.
     %       CON: Does not work per snapshot.
     %   PROPOSAL: Always let the caller split up the time series in segments, snapshots or otherwise.
@@ -80,8 +80,8 @@ function hAxesArray = plot_LFR_SWF(filePath)
     %   2020-10-13: Should already have been implemented.
     %
     % PROPOSAL: Rename. Not (MATLAB) plot, but (MATLAB) figure.
-    
-    
+
+
     % Constants for how to handle certain special cases (unusual datasets)
     % --------------------------------------------------------------------
     % YK 2020-04-16: Officially only either DC or AC diffs.
@@ -91,9 +91,9 @@ function hAxesArray = plot_LFR_SWF(filePath)
     PERMIT_SIMULTANEOUS_DC_AC_DIFFS       = 1;
     ENABLE_SPECTROGRAMS                   = 1;   % DEFAULT 1. Useful for debugging non-spectrogram code.
     PERMIT_NEITHER_DC_AC_DIFFS            = 1;   % DEFAULT 1?
-    
+
     D = dataobj(filePath);
-    
+
     zvEpoch       = D.data.Epoch.data;
     zvSamplRateHz = get_CDF_ZV_data(D, 'SAMPLING_RATE', 1);
     zvDc1         = get_CDF_ZV_data(D, 'VDC', 1);
@@ -102,10 +102,10 @@ function hAxesArray = plot_LFR_SWF(filePath)
     zvAc12        = get_CDF_ZV_data(D, 'EAC', 1);
     zvAc23        = get_CDF_ZV_data(D, 'EAC', 3);
     clear D
-    
+
     hasDcDiffs = any(~isnan(zvDc12(:))) || any(~isnan(zvDc23(:)));
     hasAcDiffs = any(~isnan(zvAc12(:))) || any(~isnan(zvAc23(:)));
-    
+
     % ASSERTIONS
     if      hasDcDiffs && hasAcDiffs && ~PERMIT_SIMULTANEOUS_DC_AC_DIFFS
         error('Dataset (CDF file) contains both DC diff and AC diff data. Can not handle this case.')
@@ -120,7 +120,7 @@ function hAxesArray = plot_LFR_SWF(filePath)
 
     zvDcAc12 = solo.sp.utils.merge_zvs(zvDc12, zvAc12);
     zvDcAc23 = solo.sp.utils.merge_zvs(zvDc23, zvAc23);
-    
+
     %=================================================================
     % Determine whether DC diffs, AC diffs, or both should be plotted
     %=================================================================
@@ -128,13 +128,13 @@ function hAxesArray = plot_LFR_SWF(filePath)
         displayDcDiffs = 1;
         displayAcDiffs = 1;
     else
-        
+
         displayDcDiffs = hasDcDiffs;
         displayAcDiffs = hasAcDiffs;
     end
-    
-    
-    
+
+
+
     Sp = solo.sp.summary_plot();
 
 
@@ -164,9 +164,9 @@ function hAxesArray = plot_LFR_SWF(filePath)
         Sp.add_panel_spectrogram_SWF_LSF('V12 DC/AC', zvEpoch, zvDcAc12, zvSamplRateHz, 3, 'V12\_DC/AC', [-10,-7]);
         Sp.add_panel_spectrogram_SWF_LSF('V23 DC/AC', zvEpoch, zvDcAc23, zvSamplRateHz, 3, 'V23\_DC/AC', [-10,-7]);
     end
-    
-    
-    
+
+
+
     %===========================================================================
     % F0-F2 time series
     % -----------------
@@ -208,13 +208,13 @@ function hAxesArray = plot_LFR_SWF(filePath)
     end
 
     hAxesArray = Sp.finalize('LFR SWF L2', filePath);
-    
+
 end
 
 
 
 function zv = get_CDF_ZV_data(D, zvName, i3)
-    
+
     % TEMPORARY: For backward compatibility.
     if strcmp(zvName, 'SAMPLING_RATE') && isfield(D.data, 'F_SAMPLE')
         zvName = 'F_SAMPLE';
@@ -223,7 +223,7 @@ function zv = get_CDF_ZV_data(D, zvName, i3)
     elseif strcmp(zvName, 'EDC') && isfield(D.data, 'E')
         zvName = 'E';
     end
-    
+
     fv = getfillval(D, zvName);
     zv = D.data.(zvName).data(:, :, i3);
     zv = changem(zv, NaN, fv);

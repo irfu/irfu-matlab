@@ -6,7 +6,7 @@
 %     output datasets organize output data sorted as if they were physical
 %     signals (though the actual values/samples might actually be e.g. GND, 2.5V
 %     Ref, or unknown).
-% 
+%
 %
 % NOTE: The constant field names used in bicas.proc.L1L2.AntennaSignalId.C
 % auto-propagate(!) to constant field names in bicas.proc.L1L2.SignalSourceId.C
@@ -47,7 +47,7 @@ classdef AntennaSignalId
         % is to be used as a replacement for objects as keys in containers.Map
         % objects. containers.Map does not accept objects as keys.
         s
-        
+
         % String constant that represents the type of signal (single/diff,
         % DC/AC).
         category
@@ -70,7 +70,7 @@ classdef AntennaSignalId
         % Constructor
         function obj = AntennaSignalId(name, category, antennas)
             assert(ischar(name))
-            
+
             % ASSERTIONS: antennas
             assert(isnumeric(antennas))
             % NOTE: Assertion permits empty value, []. Assert vector length
@@ -123,9 +123,9 @@ classdef AntennaSignalId
         function isAc = is_AC(obj)
             isAc = strcmp(obj.category, 'AC diff');
         end
-        
-        
-        
+
+
+
         % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
         %
         function isDiff = is_diff(obj)
@@ -168,26 +168,26 @@ classdef AntennaSignalId
 
         function C = init_const()
             C = struct();
-            
+
             function add(name, asidCategory, asidAntennas)
                 C.(name) = bicas.proc.L1L2.AntennaSignalId(name, asidCategory, asidAntennas);
             end
-            
+
             % =====================================
             % Add every possible unique ASID object
             % =====================================
             add('DC_V1',  'DC single', [1  ]);
             add('DC_V2',  'DC single', [2  ]);
             add('DC_V3',  'DC single', [3  ]);
-            
+
             add('DC_V12', 'DC diff',   [1, 2]);
             add('DC_V13', 'DC diff',   [1, 3]);
             add('DC_V23', 'DC diff',   [2, 3]);
-            
+
             add('AC_V12', 'AC diff',   [1, 2]);
             add('AC_V13', 'AC diff',   [1, 3]);
             add('AC_V23', 'AC diff',   [2, 3]);
-        
+
             % =======================================
             % Create lists of all unique ASID objects
             % =======================================
@@ -200,9 +200,9 @@ classdef AntennaSignalId
             C.ALL_ASID_NAMES_CA = ALL_ASID_NAMES_CA;
             C.ALL_ASID_CA       = ALL_ASID_CA;
         end
-        
-        
-        
+
+
+
     end
 
 

@@ -13,10 +13,10 @@ function out =  read_TNR(tint)
 %     ----------
 %     path : str
 %         String of the filename in .cdf containing the L2 data
-% 
+%
 %     tint : EpochTT (2x1)
 %         Time interval
-% 
+%
 %     sensor : int
 %         TNR sensor to be read:
 %             * 1: V1
@@ -26,19 +26,19 @@ function out =  read_TNR(tint)
 %             * 5: V2 - V3
 %             * 6: V3 - V1
 %             * 7: B
-% 
+%
 %     Returns
 %     -------
 %     out : strcut
 %         Spectrum of the measured signals.
-% 
+%
 %     Notes
 %     -----
 %     The script check if there are data from the two channel and put them
 %     together.
 %
 
-%% 
+%%
 
 %tint = irf.tint('2021-05-18T00:00:00Z','2021-05-19T00:00:00Z');
 date_vector = irf_time(tint,'epochTT>vector');
@@ -56,16 +56,16 @@ sensor = 5;
 sensor2 = 4;
 %IMPLEMENTATION NOTE: solo.get_db_ts does not work to get the zVariable
 %TNR_BAND_FREQ from the TNR cdf file, therefore the dataobj(x) function
-%is used instead, which requires giving the full path of the file. 
+%is used instead, which requires giving the full path of the file.
 %The solo.get_db_ts function seems to fail to create the TSeries object
 %because the DEPEND_0 field is of diferent size from the data.
-path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];    
+path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
 
     data_l2 = rcdf(path, tint);
 
     n_freqs = size(data_l2.tnr_band_freq.data, 2) * 4;
     freq_tnr = reshape(data_l2.tnr_band_freq.data', n_freqs, 1);
-    
+
 
     puntical_ = find(data_l2.front_end.data == 1);
 
@@ -93,7 +93,7 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
         for inswn = 1:numel(xdelta_sw) - 1
             idx_l = xdelta_sw(inswn) + 1;
             idx_r = xdelta_sw(inswn + 1);
-            sweep_num(idx_l:idx_r) = sweep_num(idx_l:idx_r) ... 
+            sweep_num(idx_l:idx_r) = sweep_num(idx_l:idx_r) ...
                                         + sweep_num(xdelta_sw(inswn));
         end
     end
@@ -104,11 +104,11 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
   sens0_1 = find(confg_(:, 1) == sensor)';
   sens0_2 = find(confg_(:, 1) == sensor2)';
   sens0_ = sort([sens0_1 sens0_2]);
-  
+
   sens1_1 = find(confg_(:, 2) == sensor)';
   sens1_2 = find(confg_(:, 2) == sensor2)';
   sens1_ = sort([sens1_1 sens1_2]);
-   
+
 
 
     if ~isempty(sens0_) && ~isempty(sens1_)
@@ -128,7 +128,7 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
         return;
         %irf.log('critical', 'no data at all ?!?')
     end
-    
+
     [~, ord_time] = sort(timet_ici);
     time_rr = timet_ici(ord_time);
     sens_ = sens_(ord_time);
@@ -138,11 +138,11 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
     max_sweep = max(sweep_num(sens_));
     min_sweep = min(sweep_num(sens_));
     sweep_num = sweep_num(sens_);
-    
+
     v_ = zeros(128, 1);
     sweep_tnr = zeros(1, 1);
     time_ = zeros(1, 1);
-    
+
     for ind_sweep = min_sweep:max_sweep
         v1_ = zeros(128, 1);
         p_punt = find(sweep_num == ind_sweep);
@@ -162,43 +162,43 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
             v_ = [v_, v1_];
             sweepn_tnr = [sweep_tnr, sweep_num(p_punt(1))];
         end
-        
+
         if ~isempty(p_punt)
             time_ = [time_, time_rr(min(p_punt))];
         end
     end
-    
+
     time_ = EpochTT(time_(2:end));
-    
-    
-    
+
+
+
    %select frequencies lower than 100 kHz
     freq_tnr=freq_tnr(freq_tnr<100000);
     f100_ind = length(freq_tnr);
     vp = v_(1:f100_ind, 2:end)';
-  
+
   %==============Integration %needs more testing
 %   for ii = 1:f100_ind
 %         itg(ii) = trapz(vp(:,ii))/length(vp(:,1));
 %   end
-%       
+%
 %    vp = vp-itg;
 %   %===============
-%   
-%   
-%   %==============Moving Window 
+%
+%
+%   %==============Moving Window
 %    for i = 1:f100_ind
-%        movm(:,i) = movmean(vp(:,i),5); 
+%        movm(:,i) = movmean(vp(:,i),5);
 %    end
 %    vp = vp-movm;
 %    vp(vp<0)=0;
-   %=============   
-   
+   %=============
+
     out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
     out.p_label={'dB'};
 
-    
-%For ploting    
+
+%For ploting
 %         h(10)=irf_panel('tnr');
 %         irf_spectrogram(h(10),out,'log','donotfitcolorbarlabel')
 %         %fpe_sc.units = 'kHz';
@@ -209,11 +209,11 @@ path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag
 %         text(h(10),0.01,0.3,'f_{pe,RPW}','units','normalized','fontsize',18,'Color','r');
 %         irf_legend(h(10),'(a)',[0.99 0.98],'color','k','fontsize',12)
 %         irf_legend(h(10),'f_{pe}',[0.15 0.60],'color','k','fontsize',12)
-%         set(h(10), 'YScale', 'log'); 
+%         set(h(10), 'YScale', 'log');
 %         %set(h(10),'ColorScale','log')
 %         %caxis(h(10),[.01 1]*10^-12)
 %         ylabel(h(10),{'f';'(kHz)'},'interpreter','tex');
-%         colormap(h(10),jet)  
+%         colormap(h(10),jet)
 %         yticks(h(10),[10^1 10^2]);
 %         irf_zoom(h(10),'y',[10^1 10^2])
 end
@@ -221,22 +221,22 @@ end
 %%
 function out_struct = rcdf(path, tint)
 %     Reads required field from TNR .cdf file.
-%     
+%
 %     @author: Louis Richard
-%     
+%
 %     Parameters
 %     ----------
 %     path : str
-%       Filename in .cdf containing the L2 data. 
-%     
+%       Filename in .cdf containing the L2 data.
+%
 %     tint : EpochTT (2x1)
 %       Time interval
-%     
+%
 %     Returns
 %     -------
 %     out_struct : struct
 %       L2 data structure.
-    
+
     try
         data_obj = dataobj(path);
     catch CauseExc
@@ -268,6 +268,6 @@ function out_struct = rcdf(path, tint)
     for i_key = 1:numel(tseries_keys)
        key_upper = tseries_keys{i_key};
        out_struct.(lower(key_upper)) = get_ts(data_obj, key_upper).tlim(tint);
-    end 
+    end
 end
-    
+

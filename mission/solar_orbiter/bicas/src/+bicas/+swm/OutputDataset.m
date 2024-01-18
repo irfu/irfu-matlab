@@ -21,7 +21,7 @@ classdef OutputDataset
         dsi
         datasetLevel
         prodFuncOutputKey
-        
+
         % "name" in SWD: Human-readable name, but shorter than swdDescription.
         swdName
         % "description in SWD: Human-readable description.

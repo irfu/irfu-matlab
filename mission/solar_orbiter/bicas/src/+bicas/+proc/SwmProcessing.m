@@ -11,7 +11,7 @@
 classdef(Abstract) SwmProcessing
     % PROPOSAL: Naming convention for subclasses: *Swmp
     %   PRO: Shortens names of implementations.
-    %       Ex: 
+    %       Ex:
     %         bicas.proc.L1L2.LfrSwmProcessing
     %         bicas.proc.L1L2.TdsSwmProcessing
     %         bicas.proc.L2L2.LfrDsrSwmProcessing
@@ -29,7 +29,7 @@ classdef(Abstract) SwmProcessing
     methods(Abstract)
 
 
-        
+
         % ARGUMENTS
         % =========
         % InputsMap

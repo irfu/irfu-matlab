@@ -109,7 +109,7 @@
 %       (e.g. using "interp1") and submit it as argument.
 %       NOTE: Transfer function is permitted to return NaN. This will set y2 to
 %       NaN.
-% 
+%
 %
 % RETURN VALUES
 % =============
@@ -158,7 +158,7 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 
     % EMID = Error Message ID
     EMID_ARG = 'BICAS:Assertion:IllegalArgument';
-    
+
     %============
     % ASSERTIONS
     %============
@@ -187,16 +187,16 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 
 
     nSamples = length(y1);
-    
+
 
 
     %#############
     % Compute DFT
     %#############
     yDft1 = fft(y1);
-    
-    
-    
+
+
+
     %============================================================================
     % Define the frequencies used to interpret the DFT components X_k (yDft1)
     % -----------------------------------------------------------------------
@@ -235,14 +235,14 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     % Indicies for which omega_k should be replaced by omega_(k-N).
     %i = (tfOmegaLookups >= pi/dt);
     %tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
-    
+
     % Modified k values (~indices) used to calculate omega_k for every X_k.
     kOmegaLookup   = [1:ceil(nSamples/2), (ceil(nSamples/2)+1-nSamples):0 ];
-    
+
     tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / double(nSamples*dt);
-    
-    
-    
+
+
+
     %======================================================================
     % Find complex TF values, i.e. complex factors to multiply every DFT
     % component with
@@ -265,9 +265,9 @@ function [y2] = apply_TF_freq(dt, y1, tf)
             ['Transfer function "tf" returned non-finite value (not NaN)', ...
             ' for at least one frequency.'])
     end
-    
-    
-    
+
+
+
     %##################
     % Apply TF to data
     %##################
@@ -277,9 +277,9 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     % negate the imaginary part. Transposing with ' (apostrophe) negates the
     % imaginary part.
     yDft2 = yDft1 .* transpose(tfZLookups);
-    
-    
-    
+
+
+
     %##############
     % Compute IDFT
     %##############
@@ -294,8 +294,8 @@ function [y2] = apply_TF_freq(dt, y1, tf)
     %     symmetry."
     y2 = ifft(yDft2, 'symmetric');
     %y2p = ifft(yDft2);    % TEST
-    
-    
+
+
     % ASSERTION: Real (numbers) output.
     % IMPLEMENTATION NOTE: Will react sometimes if "ifft" with 'symmetric' is
     % not used.

@@ -22,14 +22,14 @@ classdef DsiEntry___UTEST < matlab.unittest.TestCase
 
             Gmve = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment1.'});
             Gmde.add_GMVE(Gmve)
-            
+
             actStrCa = Gmde.get_MODS_strings_CA();
             expStrCa = {...
                 '2020-01-01 -- V1.0.0 -- Comment1.'; ...
             };
             testCase.assertEqual(actStrCa, expStrCa)
         end
-        
+
 
 
         function test_add_GMVE___reuse_date(testCase)
@@ -56,8 +56,8 @@ classdef DsiEntry___UTEST < matlab.unittest.TestCase
             Gmde = bicas.gamods.DsiEntry();
 
             Gmve = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment 1.'});
-            Gmde.add_GMVE(Gmve)            
-            
+            Gmde.add_GMVE(Gmve)
+
             % Add entry with reused BICAS version (different date).
             Gmve = bicas.gamods.VersionEntry('2021-01-01', '1.0.0', {'Comment 2.'});
             Gmde.add_GMVE(Gmve)
@@ -69,7 +69,7 @@ classdef DsiEntry___UTEST < matlab.unittest.TestCase
             };
             testCase.assertEqual(actStrCa, expStrCa)
         end
-        
+
 
 
         % First and second GMDE have identical dates and BICAS version.
@@ -79,7 +79,7 @@ classdef DsiEntry___UTEST < matlab.unittest.TestCase
             % Add entry.
             Gmve = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment 1.'});
             Gmde.add_GMVE(Gmve)
-            
+
             % Add entry with reused date and BICAS version.
             Gmve = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment 2.'});
             Gmde.add_GMVE(Gmve)
@@ -102,7 +102,7 @@ classdef DsiEntry___UTEST < matlab.unittest.TestCase
             Gmde.add_GMVE(Gmve)
             Gmve = bicas.gamods.VersionEntry('2021-01-01', '2.0.0', {'Comment 2.'});
             Gmde.add_GMVE(Gmve)
-            
+
             % Add entry with reused date and BICAS version.
             Gmve = bicas.gamods.VersionEntry('2021-01-01', '2.0.0', {'Comment 3.'});
             Gmde.add_GMVE(Gmve)

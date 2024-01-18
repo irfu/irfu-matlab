@@ -38,12 +38,12 @@ function handle_struct_name_change(...
     % PROBLEM: Concept of changing fieldnames of actual struct is bad when struct is so large that it may cause memory
     %          problems. May want to avoid modifying struct in order to help MATLAB's code optimization (prevent
     %          temporary copies).
-    
+
     while numel(varargin) >= 2    % Iterate over pairs of varargin components.
         newFn      = varargin{1};
         settingKey = varargin{2};
         varargin   = varargin(3:end);
-        
+
         % NOTE: i==0 <==> no match.
         [~, i] = ismember(newFn, {fnChangeList(:).newFieldname});
         if i > 0
@@ -52,17 +52,17 @@ function handle_struct_name_change(...
             anomalyDescrMsg = anomalyDescrMsgFunc(...
                 fnChangeList(i).oldFieldname, ...
                 fnChangeList(i).newFieldname);
-            
+
             assert(...
                 isempty(fnChangeList(i).ignoredCandidateFieldnames), ...
                 ['Function not designed for handling non-empty', ...
                 ' .ignoredCandidateFieldnames.'])
-            
+
             bicas.default_anomaly_handling(L, ...
                 settingValue, settingKey, ...
                 'E+W+illegal', anomalyDescrMsg, 'BICAS:Assertion')
         end
     end
-    
+
     assert(numel(varargin) == 0)
 end

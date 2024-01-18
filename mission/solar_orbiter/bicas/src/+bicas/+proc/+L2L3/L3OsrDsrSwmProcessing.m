@@ -55,7 +55,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         % OVERRIDE
         function OutputDatasetsMap = production_function(obj, ...
             InputDatasetsMap, rctDir, NsoTable, Bso, L)
-            
+
             InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
             Ec = bicas.proc.L2L3.ExternalCodeImplementation();
@@ -154,7 +154,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             % NS = Nanoseconds
             BIN_LENGTH_WOLS_NS        = int64(10e9);
             BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
-            
+
 
 
             %=======================================
@@ -198,8 +198,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             gaDensity_Misc_calibration_versions     = ...
                 [gaEfieldScpot_Misc_calibration_versions, {psp2neStr}];
 
-            
-            
+
+
             %================================================================
             % Misc. variables shared between datasets and later modified for
             % specific datasets
@@ -218,7 +218,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
             %=======================================
             % Generate data structures for datasets
-            %=======================================            
+            %=======================================
             OutEfieldOsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_efield( TemplateOsr, R.EdcSrfMvpmFpa,                       gaEfieldScpot_Misc_calibration_versions);
             OutScpotOsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_scpot(  TemplateOsr, R.ScpotVoltFpa,  R.PspVoltFpa,         gaEfieldScpot_Misc_calibration_versions);
             OutDensityOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_density(TemplateOsr, R.NeScpCm3Fpa,   R.NeScpQualityBitFpa, gaDensity_Misc_calibration_versions);
@@ -249,7 +249,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-        % Starting template for OSR datasets. Return value is modified 
+        % Starting template for OSR datasets. Return value is modified
         function TemplateOsr = get_OSR_template(InLfrCwf)
             Ga = struct();
             Ga.OBS_ID             = InLfrCwf.Ga.OBS_ID;
@@ -264,15 +264,15 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
             TemplateOsr = struct('Ga', Ga, 'Zv', Zv);
         end
-        
-        
-        
+
+
+
         function Out = OSR_efield(TemplateOsr, EdcSrfMvpmFpa, gaMisc_calibration_versions)
             Out = TemplateOsr;
             Out.Ga.Misc_calibration_versions = gaMisc_calibration_versions;
-            
+
             Out.Zv.EDC_SRF                   = EdcSrfMvpmFpa.cast('single');
-            
+
             bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
             Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
         end
@@ -307,7 +307,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
             [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(NeScpQualityBitFpa.array(false));
             Out.Zv.QUALITY_FLAG              = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
             Out.Zv.L3_QUALITY_BITMASK        = bicas.utils.FPArray(L3_QUALITY_FLAG);
-            
+
             bFp = Out.Zv.DENSITY.fpAr;
             Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
             Out.Zv.L3_QUALITY_BITMASK(bFp)   = bicas.utils.FPArray.FP_UINT16;

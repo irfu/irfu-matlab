@@ -69,32 +69,32 @@ function generate_VHT_dataset(...
 %
 % TEST CALL:
 % bicas.vht.generate_VHT_dataset('/home/erjo/temp/L3/V_RPW.mat', '/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master', [2020,07], '/home/erjo/temp/L3', 2, 'ignore empty')
-    
+
 %     DSI                  = 'SOLO_L3_RPW-BIA-VHT';
 %     MASTER_CDF_VERSION_STR      = '01';
     EXPECTED_SAMPLE_INTERVAL_NS = int64(10*60*1e9);    % For assertion.
     DELTA_PLUS_MINUS_NS         = int64(1800*1e9);
-    
+
     % Used for assertion on data.
     % NOTE: Velocity is negative due to coordinate system.
     VX_SRF_MIN_KMPS = -1500;
     VX_SRF_MAX_KMPS =  0;
-    
-    
-    
+
+
+
     % ASSERTIONS
     assert(ischar(matFilePath))
     assert((length(yearMonth) == 2) && isnumeric(yearMonth))
     assert(isa(InputDatasetsMap, 'containers.Map'))
-    
-    
-    
+
+
+
     Bso     = bicas.create_default_BSO();
     Bso.make_read_only();
     BICAS_L = bicas.Logger('human-readable', false);
-    
-    
-    
+
+
+
     %================
     % READ .mat FILE
     %================
@@ -112,7 +112,7 @@ function generate_VHT_dataset(...
     % be surprising if it contained NaN.
     assert(all(~isnan(V_RPW.data)), 'Found NaN in V_RPW.data.')
     assert(all((VX_SRF_MIN_KMPS <= V_RPW.data) & (V_RPW.data <= VX_SRF_MAX_KMPS)))
-    
+
 
     %==============================================
     % Only keep data for the specified time period
@@ -126,9 +126,9 @@ function generate_VHT_dataset(...
         '%04i-%02i-01T00:00:00/%04i-%02i-01T00:00:00', ...
         dv1(1:2), dv2(1:2));
     V_RPW = V_RPW.tlim(irf.tint(timeIntStr));
-    
-    
-    
+
+
+
     %========================================
     % Handle datasets/months with empty data
     %========================================
@@ -138,20 +138,20 @@ function generate_VHT_dataset(...
                 error(['Trying to create empty dataset.', ...
                     ' There is no data for yearMonth=[%d, %d]'], ...
                     yearMonth(:))
-                
+
             case 'ignore empty'
                 fprintf(...
                     'There is no data for yearMonth=[%d, %d]. Ignoring.\n', ...
                     yearMonth(:))
                 return
-                
+
             otherwise
                 error('Illegal argument="%s".', emptyDatasetPolicy)
         end
     end
-    
-    
-    
+
+
+
     %==========================
     % CONSTRUCT DATASET STRUCT
     %==========================
@@ -163,7 +163,7 @@ function generate_VHT_dataset(...
     Ga = [];
     Ga.OBS_ID    = ' ';
     Ga.SOOP_TYPE = ' ';
-    
+
     OutputDataset    = [];
     OutputDataset.Zv = Zv;
     OutputDataset.Ga = Ga;
@@ -173,9 +173,9 @@ function generate_VHT_dataset(...
     %=====================
     % Create dataset file
     %=====================
-    
+
     %InputDatasetsMap = containers.Map();    % NO PARENT DATASETS! -- TEMP
-    
+
     %---------------------------------------------------------------------------
     % IMPORTANT NOTE: BICAS uses
     % execute_SWM:derive_output_dataset_GAs() to derive many
@@ -183,12 +183,12 @@ function generate_VHT_dataset(...
     %   NOTE: OutGaSubset = derive_output_dataset_GAs(...
     %       InputDatasetsMap, OutputDataset, outputFilename, Bso, L)
     %   Ex: Generation_date, Parents, Software_name (BICAS), Datetime (time
-    %   interval string from filename)    
+    %   interval string from filename)
     %---------------------------------------------------------------------------
     GaSubset = bicas.derive_output_dataset_GAs(...
         InputDatasetsMap, OutputDataset, ...
         irf.fs.get_name(outputFile), Bso, BICAS_L);
-    
+
     bicas.write_dataset_CDF(...
         Zv, GaSubset, outputFile, masterCdfPath, ...
         Bso, BICAS_L)

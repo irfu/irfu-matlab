@@ -14,9 +14,9 @@ classdef SettingsKeyValue___UTEST < matlab.unittest.TestCase
     %##############
     %##############
     methods(Test)
-        
-        
-        
+
+
+
         function test_constructor(testCase)
             Skv = bicas.SettingsKeyValue(99, 'default');
 
@@ -29,7 +29,7 @@ classdef SettingsKeyValue___UTEST < matlab.unittest.TestCase
         function test_override(testCase)
             Skv = bicas.SettingsKeyValue(99,  'default');
             Skv = Skv.override(          123, 'override');
-            
+
             % NOTE: Column arrays.
             testCase.assertEqual(Skv.valuesCa,       {99;        123})
             testCase.assertEqual(Skv.valueSourcesCa, {'default'; 'override'})

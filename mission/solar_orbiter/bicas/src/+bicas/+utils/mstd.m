@@ -28,7 +28,7 @@
 %       be NaN.
 % iDim
 %       Scalar value. Dimension along which to calculate MSTD.
-%        
+%
 %
 % RETURN VALUES
 % =============
@@ -46,13 +46,13 @@
 % First created 2020-10-22.
 %
 function mstd = mstd(v, ref, iDim)
-    
+
     % Permit ref=NaN.
     assert(isscalar(ref))
     assert(isscalar(iDim))
     assert(isa(v,   'double'))
     assert(isa(ref, 'double'))
-    
+
     N = size(v, iDim);
     if N == 0 || N == 1
         % NOTE:
@@ -60,7 +60,7 @@ function mstd = mstd(v, ref, iDim)
         % N==1 ==> MSTD is undefined / ill-defined.
         %   ref<>v ==> mstd ~ 1/0        (       1 / (N-1) )
         %   ref==v ==> mstd ~ 1/0 or 0/0 ( (v-ref) / (N-1) )
-        
+
         mstdSize       = size(v);
         mstdSize(iDim) = 1;
         mstd           = NaN(mstdSize);

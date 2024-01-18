@@ -76,7 +76,7 @@
 %
 function default_anomaly_handling(L, settingValue, settingKey, ...
         casesHandled, anomalyDescriptionMsg, errorId)
-    
+
     % PROPOSAL: Accept one struct "AnomalyHandlingInfo" for settingValue/Key, msg, errorId).
     %   PROPOSAL: Combine with Bso.get_fvs which returns struct with key+value.
     %   PRO: Shorter to call function repeatedly.
@@ -149,11 +149,11 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
     %       bicas.default_anomaly_handling(..., casesHandled, ...)
     %       L.log(mitigationDescrMsg)
     %   end
-    
-    
-            
+
+
+
     assert(ischar(settingKey), 'Argument settingKey is not a string.')
-    
+
     setting1RowMsg = sprintf(...
         ['The behaviour when encountering this anomaly is', ...
         ' determined by setting %s = "%s".'], ...
@@ -162,14 +162,14 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
         ['The behaviour when encountering this anomaly/error is', ...
         ' determined by setting\n    %s = "%s"\n'], ...
         settingKey, settingValue);   % 2 rows.
-    
-    
+
+
     PREFIX   = 'ANOMALY: ';
     N_INDENT = 4;
     ILLEGAL_SETTING_MSG = ...
         ['The setting value is illegal.', ...
         ' Can therefore not handle the error/anomaly.'];
-    
+
     anomalyDescriptionMsg = irf.str.indent(...
         anomalyDescriptionMsg, numel(PREFIX));
     anomalyDescriptionMsg(1:numel(PREFIX)) = PREFIX;
@@ -179,26 +179,26 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
             L.log('warning', anomalyDescriptionMsg)
             logi( 'warning', setting2RowMsg)
             return    % NOTE: RETURN
-            
+
         case 'E+illegal'
             handleWarning = 0;
-            
+
         case {'E+W+illegal', 'W+E+illegal'}
             handleWarning = 1;
-            
+
         otherwise
             error('BICAS:Assertion', ...
                 'Illegal argument caseshandled="%s"', casesHandled)
     end
-    
-    
-    
+
+
+
     switch(settingValue)
         case 'ERROR'
             L.log('error', anomalyDescriptionMsg)
             logi( 'error', setting2RowMsg)
             error(errorId, '%s %s', anomalyDescriptionMsg, setting1RowMsg)
-            
+
         case 'WARNING'
             if handleWarning
                 L.log('warning', anomalyDescriptionMsg)
@@ -212,7 +212,7 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
         otherwise
             handle_illegal_settingValue()
     end
-    
+
     %===========================================================================
     function handle_illegal_settingValue()
         L.log('error', anomalyDescriptionMsg)

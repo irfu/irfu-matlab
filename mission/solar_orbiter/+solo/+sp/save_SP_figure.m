@@ -1,6 +1,6 @@
 %
 % Save summary plot that has already been created as a MATLAB plot figure.
-% 
+%
 % NOTE: Assumes that
 %   * figure already exists
 %   * filename has already been chosen
@@ -16,7 +16,7 @@
 function save_SP_figure(spPath, hFig)
     %saveas(hFig, spPath)
     %print(spPath, '-r300')
-    
+
     % IMPLEMENTATION NOTE: Need to set some properties to ensure producing the
     % same image on both irony and brain (at least set PaperPosition).
     %set(hFig, 'PaperPosition', [0,0, 27.94, 72.2683])

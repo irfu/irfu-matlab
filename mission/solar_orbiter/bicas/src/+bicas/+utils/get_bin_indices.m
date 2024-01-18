@@ -77,35 +77,35 @@ function iInBinCa = get_bin_indices(t, bb, nBbThreshold)
     % output2 : parfor
     % ==> output1/solo_L2_rpw-lfr-surv-cwf-e-1-second_20200704_V01.cdf.2021-05-19T19.55.50.log <==
     % 2021-05-19T19:58:18 -- DEBUG -- SPEED -- main_without_error_handling: 146.251 [s] (wall time)
-    % 
+    %
     % ==> output1/solo_L3_rpw-bia-efield_20200704_V01.cdf.2021-05-19T19.58.18.log <==
     % 2021-05-19T19:58:38 -- DEBUG -- SPEED -- main_without_error_handling: 19.87 [s] (wall time)
-    % 
+    %
     % ==> output2/solo_L2_rpw-lfr-surv-cwf-e-1-second_20200704_V01.cdf.2021-05-19T20.02.53.log <==
     % 2021-05-19T20:05:27 -- DEBUG -- SPEED -- main_without_error_handling: 152.514 [s] (wall time)
-    % 
+    %
     % ==> output2/solo_L3_rpw-bia-efield_20200704_V01.cdf.2021-05-19T20.05.27.log <==
     % 2021-05-19T20:05:45 -- DEBUG -- SPEED -- main_without_error_handling: 18.5625 [s] (wall time)
     % --------------------------------------------------------------
-    
+
 
     % BB = Bin Boundaries
-    
+
     % ASSERTIONS
     assert(iscolumn(t),  'Argument t is not a column vector.')
     assert(iscolumn(bb), 'Argument binBoundaries is not a column vector.')
-    
+
     % NOTE: REQUIRED by recursive implementation for adding back index offsets
     % when merging results from recursive calls.
     assert(issorted(t,  'ascend'), 'Argument t is not sorted and increasing.')
-    
+
     % Does not need to check for STRICTLY ascending bin boundaries.
     % Algorithm works for non-strictly increasing values.
     assert(issorted(bb, 'ascend'), 'Argument bb is not sorted and increasing.')
-    
+
     % Going below threshold leads to infinite recursion.
     assert(isscalar(nBbThreshold) && (nBbThreshold >= 3))
-    
+
     % Slow for large vectors.
     % iInBinCa = implementation_RAW(t, binBoundaries);
     % Faster
@@ -123,26 +123,26 @@ end
 % arbitrary.
 %
 function iInBinCa = implementation_RECURSIVE(t, bb, nBbThreshold)
-    
+
     nBb = numel(bb);
-    
+
     if nBb >= nBbThreshold
         i = round((1+nBb) / 2);
-        
+
         % Group bins into two large bins.
         iInBinCa  = implementation_RAW(t, bb([1,i,end]));
-        
+
         % NOTE: Separate variables which are useful for debugging (inspecting
         % values).
         t1  = t(iInBinCa{1});
         t2  = t(iInBinCa{2});
         bb1 = bb([1:i  ]);
         bb2 = bb([i:end]);
-        
+
         % NOTE: RECURSIVE CALL
         iInBinCa1 = implementation_RECURSIVE(t1, bb1, nBbThreshold);
         iInBinCa2 = implementation_RECURSIVE(t2, bb2, nBbThreshold);
-        
+
         % Add offset to the resulting indices from the SECOND recursive call
         % ------------------------------------------------------------------
         % ASSUMES: t is (non-strictly) increasing. Can otherwise not adjust
@@ -150,7 +150,7 @@ function iInBinCa = implementation_RECURSIVE(t, bb, nBbThreshold)
         % not constitute a continuous range of indices starting at 1. Relaxing
         % the assumption would require more index magic.
         iInBinCa2 = cellfun(@(x) (x+numel(t1)), iInBinCa2, 'UniformOutput', false);
-        
+
         iInBinCa = [iInBinCa1; iInBinCa2];
     else
         iInBinCa = implementation_RAW(t, bb);
@@ -162,7 +162,7 @@ end
 
 function iInBinCa = implementation_RAW(t, bb)
     % PROPOSAL: Special case for bb small: if-then
-    
+
     nBins = numel(bb) - 1;
 
     % NOTE: Empty xBoundaries
@@ -178,10 +178,10 @@ function iInBinCa = implementation_RAW(t, bb)
         % find(zeros(0,1)) == <0x1>
         % find(zeros(1,1)) == <0x0>  (sic!)
         % find(zeros(2,1)) == <0x1>
-        
+
         iInBin = find(bInBin);
         %iInBin = find([b; 0; 0]);   % Not a speed improvement.
-        
+
         % Normalize result to always be a column vector.
         % One can also use
         %   b = [b; 0; 0];
@@ -190,7 +190,7 @@ function iInBinCa = implementation_RAW(t, bb)
         if isempty(iInBin)
             iInBin = zeros(0,1);
         end
-        
+
         iInBinCa{iBin} = iInBin;
     end
 end

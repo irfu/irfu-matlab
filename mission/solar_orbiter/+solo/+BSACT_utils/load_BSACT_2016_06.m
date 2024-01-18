@@ -12,17 +12,17 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_06(bsactRootPath)
     %
     % TODO-NI: What does TC (in variable names) stand for?
     %
-    
+
     % NOTE 2017-12-12: The MEB temperature used for this calibration test is not
     % yet known
     % NOTE 2020-03-05: Table files seem to contain measured temperature:
     %   Ex: "mheader.reg2 24.11   :Ambient temperature in C"
-    
+
     %MEB_TEMPERATURE_CELSIUS = 22;  % Guessing ~room temperature. /Erik P G Johansson 2017-12-12.
     MEB_TEMPERATURE_CELSIUS = NaN;
-    
-    
-    
+
+
+
     %=================================
     % Register DCC calibration tables
     %=================================
@@ -36,7 +36,7 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_06(bsactRootPath)
         fullfile(bsactRootPath, '4-3_BIAS_DC_CURRENT', 'SO_BIAS_DC_CURRENT_ID%03i_Ver_00_FS0_PAFM.txt'), ...
         fullfile(bsactRootPath, '4-3_BIAS_DC_CURRENT', 'Log', 'testlogbook_2016-06-22 _15-04-36__FS.txt'), ...
         MEB_TEMPERATURE_CELSIUS);
-    
+
     %=================================
     % Register DCV calibration tables
     %=================================
@@ -46,7 +46,7 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_06(bsactRootPath)
         fullfile(bsactRootPath, '4-4_BIAS_DC_VOLTAGE', 'SO_BIAS_DC_VOLTAGE_ID%03i_Ver_00_FS0_PAFM.txt'), ...
         fullfile(bsactRootPath, '4-4_BIAS_DC_VOLTAGE', 'Log', 'testlogbook_2016-06-21 _16-06-21__VER_FS.txt'), ...
         MEB_TEMPERATURE_CELSIUS);
-    
+
     %================================
     % Register TF calibration tables
     %================================
@@ -56,7 +56,7 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_06(bsactRootPath)
         fullfile(bsactRootPath, '4-5_TRANSFER_FUNCTION', 'SO_BIAS_AC_VOLTAGE_ID%02i_Ver_00_FS0_PAFM.txt'), ...
         fullfile(bsactRootPath, '4-5_TRANSFER_FUNCTION', 'Log', 'testlogbook_2016-06-22 _09-19-38__VER_FS.txt'), ...
         MEB_TEMPERATURE_CELSIUS);
-    
+
     %================================
     % Register IC calibration tables
     %================================
@@ -66,5 +66,5 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_06(bsactRootPath)
         fullfile(bsactRootPath, '4-8_BIAS_DC_INTERNAL_CAL', 'SO_BIAS_INT_CAL_ID%03i_Ver_00_FS0_PAFM.txt'), ...
         fullfile(bsactRootPath, '4-8_BIAS_DC_INTERNAL_CAL', 'Log', 'testlogbook_2016-06-22 _10-42-30__VER_FS.txt'), ...
         MEB_TEMPERATURE_CELSIUS);
-    
+
 end

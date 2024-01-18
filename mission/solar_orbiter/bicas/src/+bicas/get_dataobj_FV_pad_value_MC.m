@@ -26,16 +26,16 @@ function [fv, padValue, mc] = get_dataobj_FV_pad_value_MC(Do, zvName)
     % PROPOSAL: Use irfu-matlab's getfillval() instead.
     %   CON: This function also returns pad value. There is no known getpadval().
     %   CON: Can not handle TT2000 (?)
-    
+
     % ===========================
     % Fill value and MATLAB class
     % ===========================
-    
+
     % Obtain tentative values
     % NOTE: Special function for dataobj.
     fv = getfillval(Do, zvName);
     mc = Do.data.(zvName).type;
-    
+
     % NOTE: For unknown reasons, the fill value for tt2000 zVariables (or at
     %       least "Epoch") is stored as a UTC(?) string.
     % NOTE: dataobj (probably) has a special case for "type" for "Epoch" or
@@ -45,7 +45,7 @@ function [fv, padValue, mc] = get_dataobj_FV_pad_value_MC(Do, zvName)
         fv = spdfparsett2000(fv);
         mc = 'int64';
     end
-    
+
     % =========
     % Pad value
     % =========

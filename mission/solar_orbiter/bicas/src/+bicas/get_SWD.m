@@ -55,10 +55,10 @@ function JsonSwd = get_SWD(SwmList)
     %   NOTE: Already implicitly checks that all the needed fields exist (since they are read here).
     %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if
     %         the S/W as a whole is (by default).
-    
+
     assert(isvector(SwmList))
     assert(isa(SwmList, 'bicas.swm.SoftwareMode'))
-    
+
     % Variable naming convention:
     % ---------------------------
     % Swd = S/W descriptor
@@ -67,14 +67,14 @@ function JsonSwd = get_SWD(SwmList)
     %   variable naming conventions since they determine the JSON object string
     %   which must follow the RCS ICD.
     SwdMetadataMap = bicas.const.SWD_METADATA;
-    
+
     JsonSwd = [];
     JsonSwd.identification.project     = SwdMetadataMap('SWD.identification.project');
     JsonSwd.identification.name        = SwdMetadataMap('SWD.identification.name');
     JsonSwd.identification.identifier  = SwdMetadataMap('SWD.identification.identifier');
     JsonSwd.identification.description = SwdMetadataMap('SWD.identification.description');
     JsonSwd.identification.icd_version = SwdMetadataMap('SWD.identification.icd_version');
-    
+
     JsonSwd.release.version            = SwdMetadataMap('SWD.release.version');
     JsonSwd.release.date               = SwdMetadataMap('SWD.release.date');
     JsonSwd.release.author             = SwdMetadataMap('SWD.release.author');
@@ -83,39 +83,39 @@ function JsonSwd = get_SWD(SwmList)
     JsonSwd.release.modification       = SwdMetadataMap('SWD.release.modification');
     % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
     JsonSwd.release.source             = SwdMetadataMap('SWD.release.source');
-    
+
     JsonSwd.environment.executable     = SwdMetadataMap('SWD.environment.executable');
     % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
     JsonSwd.environment.configuration  = bicas.const.DEFAULT_CONFIG_FILE_RELATIVE_PATH;
-    
+
     JsonSwd.modes = {};
     for i = 1:length(SwmList)
         JsonSwd.modes{end+1} = generate_SWD_mode(SwmList(i));
     end
-    
+
 end
 
 
 
 function JsonSwdMode = generate_SWD_mode(Swm)
     assert(isa(Swm, 'bicas.swm.SoftwareMode'))
-    
+
     JsonSwdMode.name    = Swm.cliOption;
     JsonSwdMode.purpose = Swm.swdPurpose;
 
     JsonSwdMode.inputs = [];
     for i = 1:length(Swm.inputsList)
         InputDataset = Swm.inputsList(i);
-        
+
         JsonInput = [];
         JsonInput.identifier = InputDataset.dsi;
         JsonSwdMode.inputs.(InputDataset.cliOptionHeaderBody) = JsonInput;
     end
-    
+
     JsonSwdMode.outputs = {};
     for i = 1:length(Swm.outputsList)
         OutputDataset = Swm.outputsList(i);
-        
+
         JsonOutput = [];
         JsonOutput.identifier  = OutputDataset.dsi;
         JsonOutput.name        = OutputDataset.swdName;
@@ -126,5 +126,5 @@ function JsonSwdMode = generate_SWD_mode(Swm)
             OutputDataset.skeletonVersion);    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
         JsonSwdMode.outputs.(OutputDataset.cliOptionHeaderBody) = JsonOutput;
     end
-    
+
 end

@@ -91,11 +91,11 @@ end
 
 
 function [RctZvL, RctZvH] = set_RCT_content()
-    
+
     ADD_DEBUG_RECORD_L = 0;
     ADD_DEBUG_RECORD_H = 0;
     C.N_ZV_COEFF     = 8;
-    
+
     %===================================================================
     % Create EMPTY (not zero-valued) variables representing zVariables.
     %===================================================================
@@ -103,13 +103,13 @@ function [RctZvL, RctZvH] = set_RCT_content()
     RctZvL.BIAS_CURRENT_OFFSET      = zeros(0, 3);
     RctZvL.BIAS_CURRENT_GAIN        = zeros(0, 3);
     RctZvL.TRANSFER_FUNCTION_COEFFS = zeros(0, 2, C.N_ZV_COEFF, 4);
-    
+
     RctZvH.Epoch_H  = int64( zeros(0,1) );
     RctZvH.E_OFFSET = zeros(0,3);
     RctZvH.V_OFFSET = zeros(0,3);
-    
-    
-    
+
+
+
     %===================================================================================================================
     % --------------------
     % DC single
@@ -160,7 +160,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
     %   SOLO_CAL_RPW_BIAS_V202004062127.cdf
     %   SOLO_CAL_RPW_BIAS_V202003101607.cdf
     %===================================================================================================================
-    
+
     %===================================================================================================================
     % SC = Sign Changed
     TF_DC_single_2017_12_13_SC = {-[-5.009e20,  8.148e14, -1.041e10],                      [8.556e21, 2.578e17, 2.042e12, 8.238e05, 1]};
@@ -188,7 +188,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
         TF_AC_HG_2020_11_18 = {...
             fliplr([3.89496e+32, 2.13364e+37, 6.91633e+41, 0]), ...
             fliplr([1, 1.71685e+20, 9.97355e+25, 1.05546e+31, 4.33219e+35, 7.05355e+39, 3.4202e+41])};
-        
+
         RctZvL = add_RCT_ZVs_L(RctZvL, int64(0), ...
             [2.60316e-09, -4.74234e-08, -4.78828e-08]', [1.98008e-09, 1.97997e-09, 1.98021e-09]', ...
             create_tfc_ZV_record(C, ...
@@ -211,9 +211,9 @@ function [RctZvL, RctZvH] = set_RCT_content()
             );
         warning('Creating RCT with added test data.')
     end
-    
-    
-    
+
+
+
     %========================================================================================
     % Values from 20160621_FS0_EG_Test_Flight_Harness_Preamps.
     % V_OFFSET values from mheader.reg6 for tests with stimuli=1e5 Ohm.
@@ -232,7 +232,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
             RctZvH.V_OFFSET(end, :)');
         warning('Creating RCT with added test data.')
     end
-    
+
 end
 
 
@@ -249,10 +249,10 @@ function [destFilename, gaCALIBRATION_VERSION] = create_RCT_filename()
     % IMPLEMENTATION NOTE: The official filenaming convention is not followed
     % here!! Not sure how to comply with it either (which receiver should the
     % BIAS RCT specify?).
-    
+
     % NOTE: Should not contain seconds.
     gaCALIBRATION_VERSION = char(datetime("now","Format","uuuuMMddHHmm"));
-    
+
     % NOTE: Minus in "RPW-BIAS".
     destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', gaCALIBRATION_VERSION);
 end
@@ -276,7 +276,7 @@ end
 %
 function zvRecord = create_tfc_ZV_record(C, varargin)
     % PROPOSAL: Convert varargin to struct directly.
-    
+
     zvRecord = double(zeros(1, 2, C.N_ZV_COEFF, 4));
     INDEX_LABEL_LIST = {'DC_single', 'DC_diff', 'AC_lg', 'AC_hg'};
     for i=1:4
@@ -286,19 +286,19 @@ function zvRecord = create_tfc_ZV_record(C, varargin)
             error('Illegal argument string constant.')
         end
     end
-    
+
     % ASSERTIONS
     assert(all(isfinite(zvRecord), 'all'), ...
         'create_RCT:Assertion', 'zvRecord contains non-finite values.')
     irf.assert.sizes(zvRecord, [1, 2, C.N_ZV_COEFF, 4])
-    
+
     %###########################################################################
-    
+
     % Convert TF format
     % Convert 1x2 cell array of 1D arrays --> "2D" array, size 1x2xN
     function na = ca2na(ca)
         % ASSERTIONS
-        assert(iscell(ca))        
+        assert(iscell(ca))
         assert(numel(ca) == 2)
         irf.assert.sizes(...
             ca{1}, [1, NaN], ...
@@ -307,14 +307,14 @@ function zvRecord = create_tfc_ZV_record(C, varargin)
             ['Submitted TF does not have a coefficient 1 for the highest', ...
             ' order denominator term. This assertion should be satisified', ...
             ' if the TF comes from a MATLAB fit, but is otherwise not required.'])
-        
+
         % Convert cell array to numeric array.
         na = [...
             padarray(ca{1}, [0, C.N_ZV_COEFF-numel(ca{1})], 'post'); ...
             padarray(ca{2}, [0, C.N_ZV_COEFF-numel(ca{2})], 'post') ...
             ];    % 2 x N_ZV_COEFF
         na = permute(na, [3,1,2]);    % 1 x 2 x N_ZV_COEFF
-        
+
         % ASSERTIONS
         irf.assert.sizes(na, [1, 2, C.N_ZV_COEFF])
     end
@@ -329,7 +329,7 @@ function RctZvL = add_RCT_ZVs_L(...
         BIAS_CURRENT_OFFSET, ...
         BIAS_CURRENT_GAIN, ...
         TRANSFER_FUNCTION_COEFFS)
-    
+
     RctZvL.Epoch_L                 (end+1, 1)       = Epoch_L;
     RctZvL.BIAS_CURRENT_OFFSET     (end+1, :)       = BIAS_CURRENT_OFFSET;
     RctZvL.BIAS_CURRENT_GAIN       (end+1, :)       = BIAS_CURRENT_GAIN;
@@ -353,16 +353,16 @@ function create_RCT_file(rctMasterCdfFile, destPath, RctL, RctH, gaCALIBRATION_V
     % PROPOSAL: Assertion for matching number of records Epoch_L+data, Epoch_H+data.
     %   PROPOSAL: Read from master file which should match.
     % TODO-DEC: Require correct MATLAB classes (via write_CDF_dataobj)?
-    
+
     assert(ischar(gaCALIBRATION_VERSION))
-    
+
     DataObj = dataobj(rctMasterCdfFile);
-    
+
     DataObj.GlobalAttributes.CALIBRATION_VERSION = {gaCALIBRATION_VERSION};
-    
+
     DataObj.data.Epoch_L.data = RctL.Epoch_L;
     DataObj.data.Epoch_H.data = RctH.Epoch_H;
-    
+
     DataObj.data.BIAS_CURRENT_OFFSET.data      = RctL.BIAS_CURRENT_OFFSET;         % Epoch_L
     DataObj.data.BIAS_CURRENT_GAIN.data        = RctL.BIAS_CURRENT_GAIN;           % Epoch_L
     DataObj.data.TRANSFER_FUNCTION_COEFFS.data = RctL.TRANSFER_FUNCTION_COEFFS;    % Epoch_L

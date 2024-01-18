@@ -86,7 +86,7 @@ function errorCode = main( varargin )
     %   PROBLEM: Not obvious which order of precedence makes sense. Complicated to use order among settings arguments.
     %       PROPOSAL: Applies setting BEFORE CLI settings args.
     %       PROPOSAL: Applies setting AFTER CLI settings args.
-    % 
+    %
     % PROPOSAL: Log some kind of indicator of de facto code version.
     %   PROBLEM: How handle if runs outside git repo?
     %   PROPOSAL: git commit (latest)
@@ -95,15 +95,15 @@ function errorCode = main( varargin )
     %
     % PROPOSAL: Use irf.str.assist_print_table more.
     %   Ex: Logging settings, CLI arguments(?), error codes & messages(?)
-    
+
     try
-        
+
         % NOTE: Permitting logging to file from MATLAB instead of bash wrapper
         % in case of using unofficial option.
         L = bicas.Logger('bash wrapper', true);
-        
-        
-        
+
+
+
         %========================================================================
         % Initialize irfu-matlab "library"
         % --------------------------------
@@ -121,7 +121,7 @@ function errorCode = main( varargin )
         %     bicas.Logger.log/logf.
         %========================================================================
         irf('check_path');
-        
+
         %=======================================================================
         % IMPLEMENTATION NOTE: Disabling irf(...) commands that produce file
         %   ~/.matlab_datastore_<hostname>
@@ -156,22 +156,22 @@ function errorCode = main( varargin )
         % Default error code (i.e. no error).
         errorCode = bicas.const.EMIDP_2_INFO('NoError').errorCode;
         main_without_error_handling(varargin, L);
-        
+
     catch Exception1
         %================================================================
         % CASE: Caught an error in the regular execution of the software
         %================================================================
         try
             msg = sprintf('Main function caught an exception. Starting error handling.\n');
-        
+
             [msgRecursive, errorCode] = recursive_exception_msg(Exception1);
             msg = [msg, msgRecursive];
-            
+
             msg = [msg, sprintf('Exiting MATLAB application with error code %i.\n', errorCode)];
             L.log('error', msg)
 
             return
-            
+
         % Deliberately use different variable name to distinguish the exception
         % from the previous one.
         catch Exception2
@@ -181,25 +181,25 @@ function errorCode = main( varargin )
             % NOTE: Only use very, very error-safe code here.
             %       Does not use bicas.Logger or similar.
             % NOTE: Prints to stderr (not stdout).
-            
+
             fprintf(2, 'Error in the MATLAB code''s error handling.\n');
             fprintf(2, 'exception2.identifier = "%s"\n', Exception2.identifier);
             fprintf(2, 'exception2.message    = "%s"\n', Exception2.message);
-            
+
             % NOTE: The RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section
             % 3.4.3 specifies
             %   error code 0 : No error
             %   error code 1 : Every kind of error (!)
             errorCode = 1;
-            
+
             fprintf(2, ...
                 'Exiting MATLAB application with error code %i.\n', errorCode);
             return
         end
     end
-    
-    
-    
+
+
+
 end    % main
 
 
@@ -208,7 +208,7 @@ end    % main
 % Exception.cause.
 %
 function [msg, errorCode] = recursive_exception_msg(Exception)
-    
+
     CAUSES_RECURSIVE_INDENTATION_LENGTH = 8;
 
     % IMPLEMENTATION NOTE: The error handling collects one long string with
@@ -219,7 +219,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
     msg = '';
     msg = [msg, sprintf('Exception.identifier = "%s"\n', Exception.identifier)];
     msg = [msg, sprintf('Exception.message    = "%s"\n', Exception.message)];
-    
+
     %=========================================================================
     % Use MATLAB error message identifiers to identify one or multiple "error
     % types".
@@ -230,7 +230,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
     if isempty(emidpList)
         emidpList = {'UntranslatableErrorMsgId'};
     end
-    
+
     %===================================
     % Print all identified error types.
     %===================================
@@ -245,7 +245,7 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
     % NOTE: Choice - Uses the last part of the message ID for determining error
     % code to return.
     errorCode = bicas.const.EMIDP_2_INFO(emidpList{end}).errorCode;
-    
+
     %======================
     % Print the call stack
     %======================
@@ -256,26 +256,26 @@ function [msg, errorCode] = recursive_exception_msg(Exception)
             stackCall = Exception.stack(i);
             temp      = strsplit(stackCall.file, filesep);
             filename  = temp{end};
-            
+
             msg = [msg, sprintf('    row %4i, %-27s %-52s\n', ...
                 stackCall.line, [filename, ','], stackCall.name)];
         end
     end
-    
+
     for iCause = 1:numel(Exception.cause)
         msg = [msg, sprintf('Logging Exception.cause{%i}:\n', iCause)];
-        
+
         %================
         % RECURSIVE CALL
         %================
         % NOTE: Does not capture return value errorCode.
         recursiveMsg = recursive_exception_msg(Exception.cause{iCause});
-        
+
         recursiveMsg = irf.str.indent(recursiveMsg, ...
             CAUSES_RECURSIVE_INDENTATION_LENGTH);
         msg = [msg, recursiveMsg];
     end
-    
+
 end
 
 
@@ -283,11 +283,11 @@ end
 % BICAS's de facto main function, without error handling.
 %
 function main_without_error_handling(cliArgumentsList, L)
-    
+
     Tmk = bicas.utils.Timekeeper('main_without_error_handling', L);
-    
-    
-    
+
+
+
     %==================================
     % ~ASSERTION: Check MATLAB version
     %==================================
@@ -300,9 +300,9 @@ function main_without_error_handling(cliArgumentsList, L)
         strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS, ', '))
     end
     L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
-    
-    
-    
+
+
+
     % Log that BICAS (the MATLAB code) has started running.
     % RATIONALE: This is useful when one manually looks through the log file and
     % tries to identify the beginning of a particular run. The BICAS log is
@@ -322,21 +322,21 @@ function main_without_error_handling(cliArgumentsList, L)
     % ROC:roc2-dev.
     L.logf('debug', 'OS environment variable PATH                 = "%s"', ...
         getenv('PATH'));
-    
+
     % NOTE: Useful for seeing which leap second table was actually used, e.g. at
     % ROC.
     L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', ...
         getenv('CDF_LEAPSECONDSTABLE'));
-    
 
-    
+
+
     %===============================
     % Derive BICAS's directory root
     %===============================
     bicasRootPath = bicas.utils.get_BICAS_root_path();
-    
-    
-    
+
+
+
     %=======================================
     % Log misc. paths and all CLI arguments
     %=======================================
@@ -357,7 +357,7 @@ function main_without_error_handling(cliArgumentsList, L)
         if ~ischar(cliArgumentsList{i})
             error('BICAS:CLISyntax', 'Argument %i is not a string.', i)
         end
-        
+
         L.logf('info', '%2i: "%s"', i, cliArgumentsList{i})
         cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
     end
@@ -372,23 +372,23 @@ function main_without_error_handling(cliArgumentsList, L)
     L.logf('info', 'Single-quoted, whitespace-separated: %s\n\n', cliArgStrWhSpaceSep)
     L.logf('info', 'Single-quoted, comma-separated:      %s\n\n', cliArgStrCommaSep)
     L.logf('info', '\n\n')
-    
-    
-    
+
+
+
     %========================================
     % Initialize global settings & constants
     %========================================
     Bso  = bicas.create_default_BSO();
-    
-    
-    
+
+
+
     %=============================================
     % First-round interpretation of CLI arguments
     %=============================================
     CliData = bicas.interpret_CLI_args(cliArgumentsList);
-    
-    
-    
+
+
+
     %==============================================================
     % Configure unofficial log file, written to from within MATLAB
     %==============================================================
@@ -400,9 +400,9 @@ function main_without_error_handling(cliArgumentsList, L)
         % There should be no log file, (generated from within MATLAB).
         L.set_log_file([]);
     end
-    
-    
-    
+
+
+
     %=================================================
     % Modify settings according to configuration file
     %=================================================
@@ -416,9 +416,9 @@ function main_without_error_handling(cliArgumentsList, L)
     L.logf('info', 'configFile = "%s"', configFile)
     L.log('info', 'Overriding subset of in-memory settings using config file.')
     bicas.override_settings_from_config_file(configFile, Bso, L)
-    
-    
-    
+
+
+
     %=========================================================
     % Modify settings according to (unofficial) CLI arguments
     %=========================================================
@@ -427,40 +427,40 @@ function main_without_error_handling(cliArgumentsList, L)
         ' (optional, unofficial) CLI arguments, if any.'])
     Bso.override_values_from_strings(...
         CliData.ModifiedSettingsMap, 'CLI arguments');
-    
-    
-    
+
+
+
     Bso.make_read_only();
     % CASE: BSO has now been finalized and is read-only (by assertion)
     % after this.
-    
-    
-    
+
+
+
     % Print/log the content of Bso.
     L.log('info', bicas.sprint_BSO(Bso))
-    
+
     % Print/log selected parts of bicas.const.
     L.log('info', sprint_constants())
-    
-    
-    
+
+
+
     Swml = bicas.swm.get_SWML(Bso);
-    
-    
-    
+
+
+
     switch(CliData.functionalityMode)
         case 'version'
             print_version(Swml, Bso)
-            
+
         case 'identification'
             print_identification(Swml, Bso)
-            
+
         case 'S/W descriptor'
             print_SWD(Swml, Bso)
-            
+
         case 'help'
             print_help(Bso)
-            
+
         case 'S/W mode'
             %============================
             % CASE: Should be a S/W mode
@@ -475,26 +475,26 @@ function main_without_error_handling(cliArgumentsList, L)
                     ' (or any other legal first argument).'], ...
                     CliData.swmArg);
             end
-            
-            
-            
+
+
+
             %=================================================================
             % Parse CliData.SpecInputParametersMap arguments depending on S/W
             % mode
             %=================================================================
-            
+
             % Extract INPUT dataset files from SIP arguments.
             InputFilesMap = extract_rename_Map_keys(...
                 CliData.SpecInputParametersMap, ...
                 {Swm.inputsList(:).cliOptionHeaderBody}, ...
                 {Swm.inputsList(:).prodFuncInputKey});
-            
+
             % Extract OUTPUT dataset files from SIP arguments.
             OutputFilesMap = extract_rename_Map_keys(...
                 CliData.SpecInputParametersMap, ...
                 {Swm.outputsList(:).cliOptionHeaderBody}, ...
                 {Swm.outputsList(:).prodFuncOutputKey});
-            
+
             % ASSERTION: Assume correct number of arguments (the only thing not
             % implicitly checked by extract_rename_Map_keys above).
             nSipExpected = numel(Swm.inputsList) + numel(Swm.outputsList);
@@ -505,9 +505,9 @@ function main_without_error_handling(cliArgumentsList, L)
                     ' (input & output datasets). Expected %i, but got %i.'], ...
                     nSipExpected, nSipActual)
             end
-            
-            
-            
+
+
+
             %==========================
             % Set rctDir, masterCdfDir
             %==========================
@@ -522,9 +522,9 @@ function main_without_error_handling(cliArgumentsList, L)
 
             irf.assert.dir_exists(rctDir)
             irf.assert.dir_exists(masterCdfDir)
-            
-            
-            
+
+
+
             %=====================
             % Read NSO table file
             %=====================
@@ -535,7 +535,7 @@ function main_without_error_handling(cliArgumentsList, L)
             else
                 nsoTablePath = nsoTableOverridePath;
             end
-            
+
             %L.logf('info', 'nsoTablePath = "%s"', nsoTablePath);
             L.logf('info', 'Loading NSO table XML file "%s"', nsoTablePath)
             NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath);
@@ -548,14 +548,14 @@ function main_without_error_handling(cliArgumentsList, L)
             bicas.execute_SWM(...
                 Swm, InputFilesMap, OutputFilesMap, ...
                 masterCdfDir, rctDir, NsoTable, Bso, L )
-            
+
         otherwise
             error('BICAS:Assertion', ...
                 'Illegal value functionalityMode="%s"', functionalityMode)
     end    % if ... else ... / switch
-    
-    
-    
+
+
+
     Tmk.stop_log()
 end    % main_without_error_handling
 
@@ -564,10 +564,10 @@ end    % main_without_error_handling
 function NewMap = extract_rename_Map_keys(SrcMap, srcKeysList, newKeysList)
     assert(numel(srcKeysList) == numel(newKeysList))
     NewMap = containers.Map();
-    
+
     for i = 1:numel(srcKeysList)
         srcKey = srcKeysList{i};
-        
+
         if ~SrcMap.isKey(srcKey)
             error('BICAS:Assertion', 'Can not find source key "%s"', srcKey)
         end
@@ -587,17 +587,17 @@ end
 % First created <<2019-08-05
 %
 function print_version(Swml, Bso)
-    
+
     % IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor
     % rather than the in the BICAS constants since the RCS ICD specifies that it
     % should be that specific version. This is in principle inefficient but also
     % "precise".
-    
+
     JsonSwd = bicas.get_SWD(Swml.List);
-    
+
     JsonVersion = [];
     JsonVersion.version = JsonSwd.release.version;
-    
+
     strVersion = bicas.utils.JSON_object_str(JsonVersion, ...
         Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strVersion);
@@ -613,12 +613,12 @@ end
 % First created 2016-06-07
 %
 function print_identification(Swml, Bso)
-    
+
     JsonSwd = bicas.get_SWD(Swml.List);
     strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
         Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
-    
+
 end
 
 
@@ -631,12 +631,12 @@ end
 % First created 2016-06-07/2019-09-24
 %
 function print_SWD(Swml, Bso)
-    
+
     JsonSwd = bicas.get_SWD(Swml.List);
     strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
         Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
     bicas.stdout_print(strSwd);
-    
+
 end
 
 
@@ -650,12 +650,12 @@ end
 function print_help(Bso)
     %
     % PROPOSAL: Print CLI syntax incl. for all modes? More easy to parse than the S/W descriptor.
-    
-    
-    
+
+
+
     % Print software name & description
     bicas.stdout_print(sprint_constants());
-    
+
     %==========================
     % Print error codes & types
     %==========================
@@ -673,10 +673,10 @@ function print_help(Bso)
         bicas.stdout_printf(['    %1i : %s\n', ...
             '        %s\n'], errorType.errorCode, empidList{i}, errorType.description)
     end
-    
+
     % Print settings
     bicas.stdout_print(bicas.sprint_BSO(Bso))   % Includes title
-    
+
     bicas.stdout_printf('See "readme.txt" and user manual for more help.\n')
 end
 
@@ -686,7 +686,7 @@ end
 % variable.
 function v = read_env_variable(Bso, L, envVarName, overrideSettingKey)
     settingsOverrideValue = Bso.get_fv(overrideSettingKey);
-    
+
     if isempty(settingsOverrideValue)
         v = getenv(envVarName);
     else
@@ -695,7 +695,7 @@ function v = read_env_variable(Bso, L, envVarName, overrideSettingKey)
             envVarName, overrideSettingKey, settingsOverrideValue)
         v = settingsOverrideValue;
     end
-    
+
     % UI ASSERTION
     if isempty(v)
         error('BICAS:Assertion', ...
@@ -718,23 +718,23 @@ function s = sprint_constants()
     %
     % NOTE: Does not print error codes (bicas.const), but print_help() does.
     % PROPOSAL: PERMITTED_MATLAB_VERSIONS
-    
+
     s = sprintf([...
         '\n', ...
         'SELECTED (HARD-CODED) INTERNAL BICAS CONSTANTS\n', ...
         '==============================================\n']);
-    
+
     keysCa = bicas.const.SWD_METADATA.keys;   % Always row vector.
     keysCa = sort(keysCa)';   % Column vector.
     nKeys  = numel(keysCa);
-    
+
     valuesCa = cell(nKeys, 1);
     for i = 1:nKeys
         valuesCa{i, 1} = bicas.const.SWD_METADATA(keysCa{i});
     end
     [~, dataCa, ~] = irf.str.assist_print_table(...
         {'Constant', 'Value'}, [keysCa, valuesCa], {'left', 'left'});
-    
+
     for iRow = 1:size(dataCa, 1)
         s = [s, sprintf('%s = %s\n', dataCa{iRow, 1}, dataCa{iRow, 2})];
     end

@@ -6,7 +6,7 @@
 %
 classdef TdsSwmProcessing < bicas.proc.SwmProcessing
     % PROPOSAL: Automatic test code.
-    
+
 
 
     %#####################
@@ -28,9 +28,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
     %#########################
     %#########################
     methods(Access=public)
-        
 
-        
+
+
         % ARGUMENTS
         % =========
         % inputSciDsi
@@ -54,13 +54,13 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         % OVERRIDE
         function OutputDatasetsMap = production_function(obj, ...
             InputDatasetsMap, rctDir, NsoTable, Bso, L)
-            
+
             InputHkCdf  = InputDatasetsMap('HK_cdf');
             InputCurCdf = InputDatasetsMap('CUR_cdf');
             InputSciCdf = InputDatasetsMap('SCI_cdf');
-            
-            
-            
+
+
+
             %==========================================
             % Configure bicas.proc.L1L2.cal.Cal object
             %==========================================
@@ -74,7 +74,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
             end
             useCtRcts = obj.inputSci.isL1r && Bso.get_fv(settingUseCt);
             useCti2   = false;    % Always false for TDS.
-            
+
             if useCtRcts
                 % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
                 % NOTE: This should not be regarded as a hack but as
@@ -82,7 +82,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
                 zv_BW = uint8(ones(...
                     size(InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, 1), ...
                     1));
-                
+
                 RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
                     tdsRcttid, rctDir, ...
                     InputSciCdf.Ga.CALIBRATION_TABLE, ...
@@ -93,11 +93,11 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
                 RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
                     {'BIAS', tdsRcttid}, rctDir, Bso, L);
             end
-            
+
             Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, Bso);
-            
-            
-            
+
+
+
             %==============
             % Process data
             %==============
@@ -112,7 +112,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
             OutputDatasetsMap = containers.Map();
             OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
         end
-        
+
 
 
     end    % methods(Access=public)
@@ -184,7 +184,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
                 if obj.inputSci.isTdsRswf
                     switch(settingValue)
-                        
+
                         case 'CORRECT'
                             %===================================================
                             % IMPLEMENTATION NOTE: Has observed test file
@@ -248,7 +248,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
                     [settingValue, settingKey] = Bso.get_fv(...
                         'PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY');
                     switch(settingValue)
-                        
+
                         case 'ROUND'
                             bicas.default_anomaly_handling(...
                                 L, settingValue, settingKey, 'other', ...
@@ -413,7 +413,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
             % Only set because the code shared with LFR requires it.
             Zv.iLsf           = nan(nRecords, 1);
             Zv.lrx            = ones(nRecords, 1);
-            
+
             PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
         end    % process_CDF_to_PreDc
 

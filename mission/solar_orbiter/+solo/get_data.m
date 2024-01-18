@@ -1,6 +1,6 @@
 function res = get_data(varStr,Tint)
 % res = solo.get_data(varStr, Tint)
-%  
+%
 % Read Solar Orbiter data from the IRF server
 %
 % varStr is one of the following (note aliases can also be used):

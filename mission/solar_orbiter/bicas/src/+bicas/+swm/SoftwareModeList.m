@@ -27,13 +27,13 @@
 % -- mistakenly confused arguments with each other.
 % Assertions are located at the place where "values are placed in their final
 % location".
-% 
+%
 % NOTE: To implement compatibility with L1 input datasets, the code must be able
 % to handle
 % -- changing input dataset levels: L1 (unofficial support), L1R (official
 %    support). It implements support for L1 input datasets via separate S/W
 %    modes.
-% 
+%
 %
 % RATIONALE
 % =========
@@ -98,19 +98,19 @@ classdef SoftwareModeList
 
     % PUBLIC, IMMUTABLE
     properties(SetAccess=immutable)
-        
+
         % NOTE: Implicit that it is a list of SWMs (since it is not in the
         % variable name).
         % NOTE: Public property.
         List
     end
-    
-    
-    
+
+
+
     methods(Access=public)
-        
-        
-        
+
+
+
         % Constructor
         %
         % ARGUMENTS
@@ -121,12 +121,12 @@ classdef SoftwareModeList
         % compatibility). That functionality has now been now removed, although
         % the implementation has not been entirely updated to take advantage of
         % this (not simplified of this).
-        % 
+        %
         function obj = SoftwareModeList(SwmList)
             assert(isvector(SwmList))
             assert(isa(SwmList, 'bicas.swm.SoftwareMode'))
             irf.assert.castring_set({SwmList(:).cliOption})
-            
+
             obj.List = SwmList;
         end
 
@@ -137,11 +137,11 @@ classdef SoftwareModeList
             irf.assert.scalar(i)
             swm = obj.List(i);
         end
-        
-        
-        
+
+
+
     end    % methods(Access=public)
 
 
-    
+
 end

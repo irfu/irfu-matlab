@@ -25,7 +25,7 @@ classdef utils
         % Whether two sets (arrays) of arbitrary objects are set equal.
         %
         % NOTE: Compare objects, not handles. NaN == NaN.
-        % NOTE: Ignores duplicated objects within arrays.        
+        % NOTE: Ignores duplicated objects within arrays.
         function equal = object_sets_isequaln(Ar1, Ar2)
             % PROPOSAL: Better name
 
@@ -190,9 +190,9 @@ classdef utils
             assert(all(  ACQUISITION_TIME(:, 2) < 65536), ...
                 EMID, 'ACQUISITION_TIME subseconds out of range.')
         end
-        
-        
-        
+
+
+
         % NOTE: Not implemented as assertion function in order to make it
         % possible to return proper error message on fail.
         function success = validate_ZV_QUALITY_FLAG(QUALITY_FLAG)
@@ -224,10 +224,10 @@ classdef utils
         % Whether Ar1 is a subset of Ar2.
         %
         % NOTE: Compare objects, not handles. NaN == NaN.
-        % NOTE: Ignores duplicated objects within arrays.        
+        % NOTE: Ignores duplicated objects within arrays.
         function isSubset = is_subset_isequaln(Ar1, Ar2)
             % PROPOSAL: Convert into generic function.
-            
+
             for i = 1:numel(Ar1)
                 if isempty(bicas.utils.find_first_isequaln(Ar1(i), Ar2))
                     % CASE: Ar1(i) not found in Ar2
@@ -235,12 +235,12 @@ classdef utils
                     return
                 end
             end
-            
+
             isSubset = true;
         end
-        
-        
-        
+
+
+
         % First index into Ar for which isequaln(x, Ar(i)).
         function i = find_first_isequaln(x, Ar)
             for i = 1:numel(Ar)
@@ -252,7 +252,7 @@ classdef utils
         end
 
 
-        
+
         function ColumnStrs = get_array_statistics_strings(...
                 varName, varValue, varType, Bso)
         %

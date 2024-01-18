@@ -1,7 +1,7 @@
 %
 % Class that represents the GA "MODS" information for one DSI.
 % Contains list of instances of bicas.gamods.VersionEntry.
-% 
+%
 %
 % MUTABLE. HANDLE CLASS.
 %
@@ -12,8 +12,8 @@ classdef DsiEntry < handle
 % PROPOSAL: Assert than all comment strings (separate ones in VersionEntry)
 %           are unique.
 
-    
-    
+
+
     %#####################
     %#####################
     % INSTANCE PROPERTIES
@@ -57,7 +57,7 @@ classdef DsiEntry < handle
         %       if there is one.
         %       NOTE: There is no constraint on the BICAS version number(!).
         function add_GMVE(obj, GmveNew)
-            
+
             assert(isa(GmveNew, 'bicas.gamods.VersionEntry'))
 
             if isempty(obj.GmveAr)

@@ -197,7 +197,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
         function test_get_voltage_saturation_quality_bit(testCase)
-            
+
             function test(V, expIsSaturatedAr)
                 % Modify/normalize arguments.
                 V.tt2000Ar     = int64(V.tt2000Ar);
@@ -205,9 +205,9 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
                 V.bdmFpa       = bicas.utils.FPArray(uint8(V.bdm),      'FILL_POSITIONS', isnan(V.bdm));
                 V.isAchgFpa    = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
                 V.hasSwfFormat = logical(V.hasSwfFormat);
-                
+
                 expIsSaturatedAr = logical(expIsSaturatedAr);
-                
+
                 L = bicas.Logger('none', false);
                 S = bicas.proc.L1L2.Saturation___UTEST.init_object(...
                     V.cwfSlidingWindowLengthSec, ...
@@ -216,7 +216,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
                     V.thresholdAVoltDcDiff, ...
                     V.thresholdAVoltAclg, ...
                     V.thresholdAVoltAchg);
-                
+
                 % CALL FUNCTION
                 actIsSaturatedAr = S.get_voltage_saturation_quality_bit(...
                     V.tt2000Ar, V.AsrSamplesAVoltSrm, V.zvNValidSamplesPerRecord, ...
@@ -224,7 +224,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
                 testCase.assertEqual(actIsSaturatedAr, expIsSaturatedAr)
             end
-            
+
             C = bicas.proc.L1L2.SignalSourceId.C;
             ALL_ENABLED = true;
             %ALL_ENABLED = false;
@@ -255,7 +255,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
                     test(V, false(0,1));
                 end
             end
-            
+
             %#####
             % CWF
             %#####
@@ -284,7 +284,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
                 test(V, [1 1 1]');
             end
-            
+
             % One subsequence
             % Separate episodes of saturation on different channels.
             % CWF, BDM=0, LRX=1/AC diff.
@@ -311,7 +311,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
                 test(V, [1 1 0 1 1 0 1 1 0 0]');
             end
-            
+
             % Multiple subsequences
             % Separate episodes of saturation on different channels.
             % CWF, BDM=0, LRX=1/AC diff.

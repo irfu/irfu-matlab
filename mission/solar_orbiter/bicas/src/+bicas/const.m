@@ -150,20 +150,20 @@ classdef const
         QRC_SETTINGS_L3_DENSITY = bicas.const.init_QRC_SETTINGS_L3_DENSITY();
 
 
-            
+
         % Minimum number of non-FV OSR records per bin/DSR record.
         %
         % NOTE: Currently used for both L2 downsampled and L3 downsampled.
         % /2021-05-24
         N_MIN_OSR_SAMPLES_PER_BIN = 3;
-        
-        
-        
+
+
+
         % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
         % external metadata standards.
         QUALITY_FLAG_MIN = uint8(0);
         QUALITY_FLAG_MAX = uint8(4);
-        
+
         % Number of BLTSs.
         N_BLTS = 5;
 
@@ -328,7 +328,7 @@ classdef const
             % NOTE: Since BICAS supports some unofficial processing, this
             % description should maybe not describe modifications related to
             % such unofficial processing.
-            %   
+            %
 %             SWD.release.modification = ...
 %             ['Modified default settings: inverted transfer function', ...
 %             ' cutoff at 0.8*omega_Nyquist, duplicate bias current gives error'];
@@ -417,12 +417,12 @@ classdef const
         % Function for initializing constant.
         function QrcSettingsL2Map = init_QRC_SETTINGS_L2()
             QrcSettingsL2Map = containers.Map();
-            
+
             QrcSettingsL2Map(bicas.const.QRCID.PARTIAL_SATURATION) = ...
                 bicas.proc.QrcSetting(...
                     uint8(1), ...
                     bicas.const.L2QBM_PARTIAL_SATURATION);
-                
+
             % NOTE: Also set PARTIAL saturation bit when FULL
             % saturation. /YK 2020-10-02.
             QrcSettingsL2Map(bicas.const.QRCID.FULL_SATURATION) = ...
@@ -430,7 +430,7 @@ classdef const
                     uint8(0), ...
                     bicas.const.L2QBM_FULL_SATURATION + ...
                     bicas.const.L2QBM_PARTIAL_SATURATION);
-            
+
             % NOTE: There will be an L1 QUALITY_BITMASK bit for
             % thruster firings in the future according to
             % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
@@ -447,7 +447,7 @@ classdef const
         % Function for initializing constant.
         function QrcSettingsL3Map = init_QRC_SETTINGS_L3_DENSITY()
             QrcSettingsL3Map = containers.Map();
-            
+
             QrcSettingsL3Map(bicas.const.QRCID.BAD_DENSITY) = ...
                 bicas.proc.QrcSetting(...
                     uint8(1), ...
@@ -533,8 +533,8 @@ classdef const
             ]';
             Gmdb = bicas.gamods.Database(ALL_DSI_CA);
 
-            
-            
+
+
             %##############################################################
             % ACTUAL MODS ENTRIES, ADDED FOR ONLY THE RELEVANT DSIs
             %##############################################################
@@ -585,7 +585,7 @@ classdef const
             Gmdb.add_GMVE(L2_LFR_DSIs, GmveLfr)
             Gmdb.add_GMVE(L2_TDS_DSIs, GmveTds)
             clear GmveLfr GmveTds
-            
+
 
 
             GmveTds = bicas.gamods.VersionEntry('2020-09-01', '3.1.0', {...

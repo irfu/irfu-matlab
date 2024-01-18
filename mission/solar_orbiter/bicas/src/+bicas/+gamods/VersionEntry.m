@@ -13,8 +13,8 @@
 %
 classdef VersionEntry
 
-    
-    
+
+
     %#####################
     %#####################
     % INSTANCE PROPERTIES
@@ -67,17 +67,17 @@ classdef VersionEntry
             s = sprintf('%s -- V%s -- %s', ...
                 obj.dateStr, obj.bicasVersionStr, commentsStr);
         end
-        
-        
-        
+
+
+
         % Merge two GMVEs with the same date strings and BICAS version number.
-        % 
+        %
         % NOTE: Syntactic sugar.
         %
         function obj = plus(obj1, obj2)
             assert(strcmp(obj1.dateStr,         obj2.dateStr))
             assert(strcmp(obj1.bicasVersionStr, obj2.bicasVersionStr))
-            
+
             obj = bicas.gamods.VersionEntry(obj1.dateStr, obj1.bicasVersionStr, ...
                 [obj1.commentsCa; obj2.commentsCa]);
         end

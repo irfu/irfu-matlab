@@ -286,7 +286,7 @@ function Bso = create_default_BSO()
     % Whether to enable setting glob.attr. MODS.
     % 2021-05-05: Disabled on request by ROC, until next full reprocessing at
     % ROC.
-    % """"""""    
+    % """"""""
     % Using MODS attribute has been indeed in « standby » for a while. It is
     % true that we are very in late on the LESIA side from the initial planning
     % concerning the « big L1 data re-processing ». Especially, the
@@ -294,7 +294,7 @@ function Bso = create_default_BSO()
     % setting has been several times delayed the last few months due to more
     % urgent activities. This implementation is now done, but I still need to
     % find time to check everything works well before passing to the next step.
-    %    
+    %
     % I would like to plan a new RCS telecon before the summer to discuss about
     % the remaining activities on RPW data processing. I will let you know.
     % """""""" /Xavier Bonnin, e-mail 2022-04-20
@@ -375,17 +375,17 @@ function Bso = create_default_BSO()
     %============================================================================
     %S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
     S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
-    
-    % Unit: S = Seconds    
+
+    % Unit: S = Seconds
     % Lower number since using LFR BDM (mux mode; unless configured not to),
     % which has same cadence as science data.
     % See PROCESSING.LFR.MUX_MODE_SOURCE.
     S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)
-    
+
     % Higher number since using BIAS HK for TDS, which means that the BDM is
     % known with a lower time resolution.
     S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
-    
+
     % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
     % EFIELD, and SCPOT data. Affects both OSR and DSR.
     S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
@@ -408,7 +408,7 @@ function Bso = create_default_BSO()
     % If non-empty, then it overrides PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH.
     % Can be set to absolute path. Intended for testing.
     S.define_setting('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH', '')
-    
+
     % Configuration parameters for the automatic detection of saturation
     % performed for L1R-->L2 processing.
     % TODO-DEC: Too high AC diff thresholds?
@@ -427,7 +427,7 @@ function Bso = create_default_BSO()
     % still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
     % data.
     %--------------------------------------------------------------------------
-    % PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC: 
+    % PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC:
     % Before this time: BDM=4 is interpreted as equivalent to sweep.
     % After this time:  A sliding window autodetection algorithm is used for
     %                   detecting sweeps from measured HK currents.
@@ -457,7 +457,7 @@ function Bso = create_default_BSO()
     % lower time resolution, and may therefore be incorrect at the beginning and
     % end of a labelled region.
     S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC', 120)
-    
+
 
 
     %============================================================================

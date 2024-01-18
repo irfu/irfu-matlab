@@ -3,7 +3,7 @@
 % size. Only meant to contain static methods.
 %
 % Selected functions in bicas.proc.L1L2.cal.Cal are meant to be moved here.
-% 
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-11-05.
@@ -17,9 +17,9 @@ classdef utils
 
 
     methods(Static)
-        
-        
-        
+
+
+
         % Given a sequence of Epoch values, determine for each value which
         % calibration time index should be used. The caller will have to decide
         % which sequence of data that should be calibrated together (e.g. if
@@ -39,14 +39,14 @@ classdef utils
         %       Array. iCalibList(i) = calibration time index for Epoch(i).
         %
         function [iCalib] = get_calibration_time(Epoch, CalibEpochList)
-            
+
             % ASSERTIONS
             bicas.utils.assert_ZV_Epoch(Epoch)
             bicas.utils.assert_ZV_Epoch(CalibEpochList)
             % IMPLEMENTATION NOTE: Does not work if CalibEpochList is empty,
             % since discretize behaves differently for scalar second argument.
             assert(~isempty(CalibEpochList))
-            
+
             % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for Epoch
             % values outside the outermost edges. Therefore (1) must add upper
             % edge "Inf", (2) asserts non-Nan afterwards.
@@ -85,15 +85,15 @@ classdef utils
                 ['Can not extrapolate tabulated inverse transfer function', ...
                 ' (ITF) to zero Hz due to ambiguity. real(Z(1)) = 0.'])
             Z0       = abs(Z1) * signZ0;   % Z value at 0 Hz.
-            
+
             omegaRps = [0;  TabTf.omegaRps(:)];
             Z        = [Z0; TabTf.Z(:)       ];
-            
+
             ModifTabTf = irf.utils.tabulated_transform(omegaRps, Z);
         end
 
-        
-        
+
+
         % ~Modify TF to have constant gain for all frequencies below specified
         % frequency (LF=Low Frequency).
         %
@@ -116,23 +116,23 @@ classdef utils
         %       anonymous functions/function handles (e.g. as a wrapper around a
         %       tf), this avoids calling argument tf every time this function is
         %       called.
-        % 
+        %
         function Z = TF_LF_constant_abs_Z(tf, omegaRps, omegaLimitRps, zLimit)
-            
+
             % ASSERTIONS
             assert(isa(tf, 'function_handle'))
             assert(isscalar(omegaLimitRps) && ~isnan(omegaLimitRps))
             % IMPLEMENTATION NOTE: Must be able to handle zLimit==NaN in order
             % to be applied to that NaN (BIAS) TF function.
             assert(isscalar(zLimit))
-            
-            
-            
+
+
+
             % NOTE: May evaluate 1/0 at 0 Hz (for e.g. BIAS AC TF), but that
             % should be overwritten afterwards.
             Z = tf(omegaRps);
             b = omegaRps < (omegaLimitRps);
-            
+
             % Handling of special case
             % ========================
             % Z(0 Hz) non-finite (e.g. for BIAS AC ITF).
@@ -142,14 +142,14 @@ classdef utils
             % to be sure that condition stems from input data, not normalization
             % bugs.
             b2 = ~isfinite(Z(b)) & omegaRps(b)==0;
-            
+
             Z(b) = Z(b) ./ abs(Z(b)) * abs(zLimit);
-            
+
             Z(b(b2)) = 0;
         end
-        
-        
-        
+
+
+
         % EXPERIMENTAL
         %
         % Interpolate tabulated TF.
@@ -172,67 +172,67 @@ classdef utils
 %             %
 %             % PROPOSAL: Interpolate over log(omega)
 %             %   CON: Can not do for omega=0.
-%             
+%
 %             absZ = abs(Z);
 %             argZ = unwrap(angle(Z));
-%             
+%
 %             assert(all(absZ >= 0))
 % %             assert(all((min(omegaRps) <= omegaEvalRps) & (omegaEvalRps <= max(omegaRps))), ...
 % %                 'Trying to extrapolate outside frequency range of tabulated transfer function.')
-%             
+%
 %             switch(2)
 %                 case 1
 %                     Zp = interp1(omegaRps, Z, omegaEvalRps, 'linear');
 %                 case 2
 %                     bInRange = (min(omegaRps) <= omegaEvalRps) & (omegaEvalRps <= max(omegaRps));
-%                     
+%
 %                     %absZ = smooth(absZ, 2);
 %                     %argZ = smooth(argZ, 2);
-%                     
+%
 %                     % NOTE:
 %                     % ** interp1() returns NaN outside of tabulated range (by
 %                     %    default).
 %                     % ** spline() extrapolates outside of tabulated range (at
 %                     %    least by default).
-%                     
+%
 %                     absZp = interp1(omegaRps, absZ, omegaEvalRps, 'linear');
 %                     %absZp = spline(omegaRps, absZ, omegaPRps);
-%                     
-%                     argZp = interp1(omegaRps, argZ, omegaEvalRps, 'linear');                   
+%
+%                     argZp = interp1(omegaRps, argZ, omegaEvalRps, 'linear');
 %                     %argZp = spline(omegaRps, argZ, omegaPRps);
-%                     
+%
 %                     Zp = absZp .* exp(1i*argZp);
-%                     
+%
 %                     % Remove extrapolation (from e.g. spline()).
 %                     Zp(~bInRange) = NaN;
 %             end
 %         end
-        
-        
-        
+
+
+
         % Manual test code for bicas.proc.L1L2.cal.utils.interpolate_TF().
         %
 %         function interpolate_TF___MTEST()
 %             % IMPORTANT NOTE: Tranposing with apostrophe in MATLAB also complex
 %             % conjugates the values. Use transpose() to NOT change the complex
 %             % values.
-%                         
+%
 %             close all
-%             
+%
 %             %Z      = [1,1+1i, 2i, -2+2i, -3i];
 %             %omega  = 1:numel(Z);
-%             
+%
 %             omega  = 1:10;
 %             Z = exp((1i+0.2)*omega);
-%             
+%
 %             %omegaP = [-1:0.1:5];
 %             omegaP = [min(omega):0.1:max(omega)];
 %             %omegaP = [-2+min(omega):0.1:max(omega)+2];
-%             
-%             
-%             
+%
+%
+%
 %             Zp = bicas.proc.L1L2.cal.utils.interpolate_TF(omega, Z, omegaP);
-%             
+%
 %             %=====================
 %             % Plot input & output
 %             %=====================
@@ -244,7 +244,7 @@ classdef utils
 %             title('Zp (complex plane)')
 %             grid on
 %             axis square
-%             
+%
 %             subplot(1,3, 2)
 %             plot(omega, abs(Z), 'o')
 %             hold on
@@ -252,7 +252,7 @@ classdef utils
 %             grid on
 %             xlabel('omega')
 %             ylabel('|Zp|')
-%             
+%
 %             subplot(1,3, 3)
 %             plot(omega, unwrap(angle(Z)), 'o')
 %             hold on
@@ -260,13 +260,13 @@ classdef utils
 %             grid on
 %             xlabel('omega')
 %             ylabel('unwrapped arg(Zp)')
-%             
+%
 %             % Print result
 %             %transpose(Zp)
 %         end
 
-        
-        
+
+
         % Evaluate a tabulated transfer function.
         %
         % NOTE: This function is effectively meant to specify how tabulated
@@ -293,24 +293,24 @@ classdef utils
             % OLD COMMENTS: """"Intended specifically for INVERSE transfer
             % functions. Therefore setting Z=0 for frequencies lower than the
             % table covers.""""
-            
+
             % PROPOSAL: valueOutsideTable only applies within some specified margins (not to infinity).
-            % PROPOSAL: Automatic test code. 
-            
+            % PROPOSAL: Automatic test code.
+
             assert(isa(TabTf, 'irf.utils.tabulated_transform'))
             assert(isfinite(valueOutsideTable))
-            
+
             % NOTE: interp1 returns NaN for values outside range.
             Z = interp1(TabTf.omegaRps, TabTf.Z, omegaRps, 'linear');
             % CASE: Z == NaN for omegaRps not covered by tabulated TF.
-            
+
             % Set to zero (overwrite) for values above highest tabulated
-            % frequency.            
+            % frequency.
             %bUseTabTf = (omegaRps <= Tf.omegaRps(end));
             %Z(~bUseTabTf) = 0;
-            
+
             Z(~isfinite(Z)) = valueOutsideTable;
-            
+
 %             if 0
 %                 % ASSERTION
 %                 if ~all(isfinite(Z))
@@ -330,34 +330,34 @@ classdef utils
 %                         max(Tf.omegaRps), ...
 %                         min(omegaRps), ...
 %                         max(omegaRps));
-%                     
+%
 %                     error('BICAS:Assertion', errorMsg)
 %                 end
 %             end
 
         end
-        
-        
-        
+
+
+
         function itf = create_LFR_BIAS_ITF(...
                 itfLfr, itfBias, isAc, acConstGainLowFreqRps)
             % PROPOSAL: Re-purpose into function only for combining BIAS and
             % non-BIAS TFs.
-            
+
             assert(isscalar(isAc), islogical(isAc))
-            
-            itf = @(omegaRps) (TF_product(omegaRps));            
-            
+
+            itf = @(omegaRps) (TF_product(omegaRps));
+
             if isAc()
-                % NOTE: Modifies combined LFR+BIAS TF.                
-                
+                % NOTE: Modifies combined LFR+BIAS TF.
+
                 zLimit = itf(acConstGainLowFreqRps);
 
                 itf = @(omegaRps) (bicas.proc.L1L2.cal.utils.TF_LF_constant_abs_Z(...
                     itf, omegaRps, acConstGainLowFreqRps, zLimit));
             end
-            
-            
+
+
             %###################################################################
             % IMPLEMENTATION NOTE: In principle, this function is quite
             % unnecessary for multiplying TFs, but it is useful for putting
@@ -369,14 +369,14 @@ classdef utils
                     itfBias(omegaRps);
             end
         end
-        
-        
-        
+
+
+
         function log_TF_tabulated(logLevel, tfName, Tf, L)
             % PROPOSAL: Somehow prevent printing unnecessary trailing zeros.
-            
+
             assert(isa(Tf, 'irf.utils.tabulated_transform'))
-            
+
             assert(numel(tfName) <= 38, ...
                 'String argument "tfName" is too long. numel(tfName)=%i.', ...
                 numel(tfName))
@@ -385,9 +385,9 @@ classdef utils
                 Tf.omegaRps(1  )/(2*pi), ...
                 Tf.omegaRps(end)/(2*pi));
         end
-        
-        
-        
+
+
+
         % ARGUMENTS
         % =========
         % freqHzArray  : Array of frequencies for which the TF Z value should be
@@ -398,14 +398,14 @@ classdef utils
         function log_TF_function_handle(...
                 logLevel, tfName, tfUnit, freqHzArray, tfFuncHandle, L)
             assert(isa(tfFuncHandle, 'function_handle'))
-            
+
             zArray = tfFuncHandle(freqHzArray * 2*pi);
             for i=1:numel(freqHzArray)
                 freqHz = freqHzArray(i);
                 Z      = zArray(i);
-                
+
                 inverseZValueStr = sprintf('1/%10.5f', 1/abs(Z));
-                
+
                 %======================================================================================================
                 % NOTE 2020-04-30: Execution at ROC fails due to not finding
                 % function "phase" for unknown reason.
@@ -436,7 +436,7 @@ classdef utils
                     % Do not print name except on first row.
                     tfName = '';
                 end
-                
+
                 % Check that string is not too long for neat printouts (all
                 % calls from BICAS).
                 assert(numel(tfName) <= 46, ...
@@ -450,9 +450,9 @@ classdef utils
                     tfUnit, rad2deg(angle(Z)))
             end    % for
         end
-        
-        
-        
+
+
+
         % Utility function for creating string representing 1D vector.
         % Ex: '(3.1416, 2.7183, 1.6180)'
         function s = vector_string(pattern, v)
@@ -462,27 +462,27 @@ classdef utils
                 '(%s)', ...
                 strjoin(irf.str.sprintf_many(pattern, v), ', '));
         end
-        
-        
-        
+
+
+
         function assert_iBlts(iBlts)
             assert(ismember(iBlts, [1:bicas.const.N_BLTS]), ...
                 'BICAS:IllegalArgument:Assertion', ...
                 'Illegal value iBlts=%g', iBlts)
         end
-        
-        
-        
+
+
+
         function assert_iLsf(iLsf)
             assert(ismember(iLsf,  [1:4]), ...
                 'BICAS:IllegalArgument:Assertion', ...
                 'Illegal value iLsf=%g.', iLsf)
         end
-        
-        
-        
+
+
+
     end    % methods(Static)
-    
-    
-    
+
+
+
 end    % classdef utils

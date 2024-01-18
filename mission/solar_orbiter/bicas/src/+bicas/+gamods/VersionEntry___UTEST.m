@@ -64,9 +64,9 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
             expStr = '2020-01-01 -- V1.2.3 -- A first comment. | A second comment.';
             testCase.verifyEqual(actStr, expStr)
         end
-        
-        
-        
+
+
+
         function test_plus_legal(testCase)
             % NOTE: Class has assertions against duplicated comment strings and
             % submitting zero comment strings. Can therefore not that in tests.
@@ -77,8 +77,8 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
                 'Comment 2.'});
             GMVE_3 = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {...
                 'Comment 3a.', 'Comment 3b.'});
-            
-            GMVE_4 = GMVE_1 + GMVE_2;            
+
+            GMVE_4 = GMVE_1 + GMVE_2;
             testCase.assertEqual(...
                 GMVE_4.get_str(), ...
                 '2020-01-01 -- V1.2.3 -- Comment 1. | Comment 2.')
@@ -95,7 +95,7 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
         end
 
 
-            
+
         % Test incompatible date strings and BICAS version numbers.
         function test_plus_compatibility(testCase)
             function test_exc(GmveA, GmveB)
@@ -103,7 +103,7 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
                     @() (GmveA + GmveB), ...
                     ?MException)
             end
-            
+
             % Incompatible date strings.
             GMVE_1 = bicas.gamods.VersionEntry('2020-01-01', '1.2.3', {...
                 'Comment 1.'});

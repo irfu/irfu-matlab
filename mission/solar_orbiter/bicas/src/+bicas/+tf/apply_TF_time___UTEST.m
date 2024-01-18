@@ -15,14 +15,14 @@
 %
 classdef apply_TF_time___UTEST < matlab.unittest.TestCase
     % PROPOSAL: Odd-length kernels/HWs.
-    
-    
-    
+
+
+
     properties(TestParameter)
     end
-    
-    
-    
+
+
+
     %##############
     %##############
     % TEST METHODS
@@ -43,65 +43,65 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
         %
         % PROPOSAL: Detrending/retrending.
 
-        
-        
+
+
         % No HW, no detrending.
         %
         function test0(testCase)
             % PROPOSITION: Almost unnecessary since bicas.tf.apply_TF_kernel() tests for same.
             %   CON: Tests conversion TF-->kernel.
-            
+
             dt          = 0.1;
             N           = 100;
             nDelaySmpls = 10;
             tf = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
-            
+
             t  = [0:N-1]' * dt;
             y1 = 3 + 2*t - exp(-t);    % Arbitrary input signal.
-            
+
             %=====================
             % edgePolicy == ZEROS
             %=====================
             % Manually shift/delay signal.
             y2_exp = [zeros(nDelaySmpls, 1); y1(1:end-nDelaySmpls)];
-            
+
             y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'zeros');
-            
+
             testCase.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
-            
+
             %======================
             % edgePolicy == MIRROR
             %======================
             % Manually pad with mirrored samples and shift.
             y2_exp = [y1(nDelaySmpls:-1:1); y1(1:end-nDelaySmpls)];
-            
+
             y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'mirror');
-            
+
             testCase.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
         end
-        
-        
-        
+
+
+
         % Constant delay+HW. ==> Constant scaling due to HW.
         % Even-length kernel/HW.
         %
         function test_HW0(testCase)
             dt     = 0.1;
             nSmpls = 100;
-            
+
             t      = [0:nSmpls-1]' * dt;
             y1     = 2 + 3*t - exp(-t);    % Arbitrary input signal.
 
             % NOTE: Use both even and odd numbers.
             for lenKernel = [7, 17, 32]
-                
+
                 nds0 = 3;
                 nds1 = floor(lenKernel / 8);
                 % NOTE: Yields hwFactor=0 for even lenKernel!
-                nds2 = floor(lenKernel / 2);   
+                nds2 = floor(lenKernel / 2);
 
                 for nDelaySmpls = [nds0, nds1, nds2]
-            
+
                     %============================================================
                     % Factor by which the signal will be weakened/multiplied due
                     % to the Hann window.
@@ -112,7 +112,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
                     % --
                     if mod(lenKernel, 2) == 0
                         % CASE: EVEN-numbered length kernel
-                        % Normalized delay: -1 <= x <= 1                
+                        % Normalized delay: -1 <= x <= 1
                         xHw      = nDelaySmpls/lenKernel;
                         hwFactor = 0.5 * (1 + cos(xHw*2*pi));
                     else
@@ -121,8 +121,8 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
                         xHw      = (nDelaySmpls-0.5)/lenKernel;
                         hwFactor = 0.5 * (1 + cos(xHw*2*pi));
                     end
-                    
-                    tf = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);                    
+
+                    tf = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
 
                     %=====================
                     % edgePolicy == ZEROS
@@ -149,15 +149,15 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
 
                 end    % for
             end    % for
-            
+
         end    % function
 
-        
-        
+
+
     end    % methods(Test)
-        
-        
-    
+
+
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
@@ -166,6 +166,6 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
     methods(Static, Access=private)
     end    % methods(Static, Access=private)
 
-    
-    
+
+
 end

@@ -57,7 +57,7 @@ classdef SettingsKeyValue
 %                 is legal and not. Can have set of pre-defined functions.
 %           TODO-NI: How relates to how values are converted to display strings?
 %           TODO-NI: How relates to how values are converted from strings (config file, CLI argument)?
-%           
+%
 %       PROPOSAL: Value type (MATLAB class)
 %           Ex: Logical
 %           CON: Not necessary since initial/default value specifies it.
@@ -111,7 +111,7 @@ classdef SettingsKeyValue
         function obj = override(obj, newValue, valueSource)
             assert(ischar(valueSource))
             assert(~ismember(valueSource, obj.valueSourcesCa))
-            
+
             oldValueType = obj.get_value_type();
             newValueType = bicas.SettingsKeyValue.assert_legal_value_get_type(newValue);
             if ~strcmp(oldValueType, newValueType)
@@ -123,15 +123,15 @@ classdef SettingsKeyValue
             obj.valuesCa{end+1, 1}       = newValue;
             obj.valueSourcesCa{end+1, 1} = valueSource;
         end
-        
-        
-        
+
+
+
         function n = N_values(obj)
             n = numel(obj.valuesCa);
         end
 
 
-        
+
         % NOTE: Is a public function so that
         % bicas.Settings.override_values_from_strings() can use value type to
         % convert strings to MATLAB values.
@@ -173,9 +173,9 @@ classdef SettingsKeyValue
                 error('BICAS:Assertion:IllegalArgument', 'Argument "value" is illegal.')
             end
         end
-        
-        
-        
+
+
+
     end
 
 

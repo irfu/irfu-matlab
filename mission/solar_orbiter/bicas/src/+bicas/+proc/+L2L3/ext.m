@@ -11,9 +11,9 @@ classdef ext
     % PROPOSAL: Automatic test code.
     %   NOTE: Should take advantage of bicas.proc.L2L3.ExternalCodeAbstract.
     % PROPOSAL: Move constants to bicas.const.
-    
-    
-    
+
+
+
     properties(GetAccess=private, Constant)
         % Regular expression for the format of version strings from
         % BICAS-external code.
@@ -30,23 +30,23 @@ classdef ext
     %#######################
     %#######################
     methods(Static, Access=public)
-        
-        
-        
+
+
+
         % Indirectly call BICAS-external code to calculate
         % (1) EFIELD, SCPOT (solo.vdccal), and from that
         % (2) DENSITY       (solo.psp2ne).
         function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, Bso)
             assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
-            
+
             QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
                 'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
-            
+
             % =================================
             % Call wrapper around solo.vdccal()
             % =================================
             R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(LfrCwfZv, QUALITY_FLAG_minForUse, Ec);
-            
+
             % =================================
             % Call wrapper around solo.psp2ne()
             % =================================
@@ -60,7 +60,7 @@ classdef ext
             assert(strcmp(R1.PspTs.units,   'V'))
             assert(strcmp(R1.ScpotTs.units, 'V'))
             assert(strcmp(NeScpTs.units,    'cm^-3'))
-            
+
             R = [];
             R.PspVoltFpa         = bicas.utils.FPArray(R1.PspTs.data,    'FILL_VALUE', NaN);
             R.ScpotVoltFpa       = bicas.utils.FPArray(R1.ScpotTs.data,  'FILL_VALUE', NaN);
@@ -80,7 +80,7 @@ classdef ext
     end    % methods(Access=public)
 
 
-        
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
@@ -114,7 +114,7 @@ classdef ext
             % PROPOSAL: Take bNotUsed as an argument.
             %   PRO: Can be used also for bicas.proc.L2L3.ext.calc_DENSITY()
             %        (which it is currently not).
-            
+
             irf.assert.struct(Zv, {'Epoch', 'VDC_Fpa', 'EDC_Fpa', 'QUALITY_FLAG_Fpa'}, {})
 
 
@@ -218,7 +218,7 @@ classdef ext
         % inside irfu-matlab).
         %
         % Essentially a wrapper around solo.psp2ne().
-        % 
+        %
         % NOTE: One needs to be careful with units and incompatible updates to
         % solo.vdccal() without the knowledge of the BICAS author. Therefore
         % uses extra assertions to detect such changes.
@@ -237,7 +237,7 @@ classdef ext
             %##################################################################
             [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = Ec.psp2ne(PspTs);
             %##################################################################
-            
+
             %===============================================
             % ASSERTIONS: Check solo.psp2ne() return values
             %===============================================

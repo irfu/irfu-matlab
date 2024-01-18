@@ -4,7 +4,7 @@ function TSout = coordinate_transformation(TSin,from,to)
 %supported coordinate systems: 'VSO' , 'SRF', 'SUN_RTN','SOLAR_MHP','GSE','HEE','HCI','GEORTN','HEEQ'
 
 %
-%   
+%
 %      SOLO_VSO                    Venus solar orbiter
 %      SOLO_SRF                    S/C-reference frame
 %      SOLO_SUN_RTN                Sun Solar Orbiter Radial-Tangential-Normal

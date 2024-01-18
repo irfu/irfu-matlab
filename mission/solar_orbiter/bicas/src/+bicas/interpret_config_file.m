@@ -30,37 +30,37 @@
 % First created 2018-01-24
 %
 function settingsVsMap = interpret_config_file(configFileRowsCa, L)
-    
+
     SETTINGS_KEY_REGEXP          = '[a-zA-Z0-9._-]+';
     SETTINGS_VALUE_STRING_REGEXP = '[^"]*';
-    
+
     ASSIGNMENT_RE_LIST = {...
         SETTINGS_KEY_REGEXP, ' *= *', '"', ...
         SETTINGS_VALUE_STRING_REGEXP, '" *', '(#.*)?'};
-    
 
-    
+
+
     % IMPLEMENTATION NOTE: Well-defined keyType and valueType good for (1)
     % comparisons in automated tests, and (2) for restricting values.
     settingsVsMap = containers.Map('KeyType', 'char', 'ValueType', 'char');
-    
+
     for iRow = 1:numel(configFileRowsCa)
         row = configFileRowsCa{iRow};
-        
+
         if ~isempty(regexp(row, '^#.*$', 'once'))
             % CASE: Row with only comments, beginning at first character of row!
             % Do nothing
-            
+
         elseif ~isempty(regexp(row, '^ *$', 'emptymatch'))
             % CASE: Row contains only whitespace (or is empty).
             % Do nothing
-            
+
         else
             % CASE: Row is a setting key assignment.
             [subStrList, ~, isPerfectMatch] = ...
                 irf.str.regexp_str_parts(...
                     row, ASSIGNMENT_RE_LIST, 'permit non-match');
-            
+
             % ASSERTION
             if ~isPerfectMatch
                 error(...
@@ -70,9 +70,9 @@ function settingsVsMap = interpret_config_file(configFileRowsCa, L)
             end
             key      = subStrList{1};
             valueStr = subStrList{4};
-            
+
             if settingsVsMap.isKey(key)
-                
+
                 % NOTE: Log message is annoying when running automatic testing
                 % code.
                 L.logf('warning', ...
@@ -83,5 +83,5 @@ function settingsVsMap = interpret_config_file(configFileRowsCa, L)
             settingsVsMap(key) = valueStr;
         end
     end
-    
+
 end

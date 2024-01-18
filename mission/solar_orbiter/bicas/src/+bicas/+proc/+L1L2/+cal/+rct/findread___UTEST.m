@@ -21,7 +21,7 @@ classdef findread___UTEST < matlab.unittest.TestCase
     %       CON-PROPOSAL: Move find_RCT_regexp() test code to separate file.
     % PROPOSAL: Use TestClassSetup and TestClassTeardown for logger object.
     %   PRO: Can share logger object.
-    %   
+    %
 
 
 
@@ -32,99 +32,99 @@ classdef findread___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         function test_find_RCT_regexp_empty(testCase)
             [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(testCase, {});
-            
+
             testCase.verifyError(...
                 @() bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, '20[0-9][0-9]\.cdf', L), ...
-                'BICAS:CannotFindRegexMatchingRCT')            
-            
+                'BICAS:CannotFindRegexMatchingRCT')
+
         end
-        
-        
-        
+
+
+
         function test_find_RCT_regexp_no_match(testCase)
             [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
                 testCase, {'20201.cdf', '2020.CDF'});
-            
+
             testCase.verifyError(...
                 @() bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, '20[0-9][0-9]\.cdf', L), ...
                 'BICAS:CannotFindRegexMatchingRCT')
         end
-        
-        
-        
+
+
+
         function test_find_RCT_regexp_1_match(testCase)
             [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
                 testCase, {'2020.cdf', 'asdsf'});
-            
+
             path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, '20[0-9][0-9]\.cdf', L);
-            
+
             testCase.verifyEqual(...
                 path, ...
-                fullfile(tempDir, '2020.cdf'))            
+                fullfile(tempDir, '2020.cdf'))
         end
-        
-        
-        
+
+
+
         function test_find_RCT_regexp_2_match(testCase)
             [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
                 testCase, {'2020.cdf', '2021.cdf'});
-            
+
             path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, '20[0-9][0-9]\.cdf', L);
-            
+
             testCase.verifyEqual(...
                 path, ...
-                fullfile(tempDir, '2021.cdf'))            
+                fullfile(tempDir, '2021.cdf'))
         end
-        
-        
-        
+
+
+
         function test_find_RCT_regexp_realistic(testCase)
             FN_1 = 'SOLO_CAL_RPW-BIAS_V202111191204.cdf';
             FN_2 = 'SOLO_CAL_RPW-BIAS_V202011191204.cdf';
-            
+
             [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
                 testCase, {FN_1, FN_2});
-            
+
             path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
                 tempDir, 'SOLO_CAL_RPW-BIAS_V20[0-9]{10,10}.cdf', L);
-            
+
             testCase.verifyEqual(...
                 path, ...
                 fullfile(tempDir, FN_1))
         end
-        
-        
-        
+
+
+
     end    % methods(Test)
-        
-        
-    
+
+
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
+
+
+
         % Create (temporary) directory with specified empty files.
         %
         function [tempDir, L] = setup_files(testCase, filenamesCa)
             L = bicas.Logger('none', false);
-            
+
             DirFixture = testCase.applyFixture(...
                 matlab.unittest.fixtures.TemporaryFolderFixture(...
                     'WithSuffix', ['.', mfilename()]));
-            
+
             tempDir = DirFixture.Folder;
             %fprintf('tempDir = %s\n', tempDir)
 
@@ -136,11 +136,11 @@ classdef findread___UTEST < matlab.unittest.TestCase
             end
 
         end
-   
-        
-        
+
+
+
     end    % methods(Static, Access=private)
 
-    
-    
+
+
 end

@@ -34,7 +34,7 @@ classdef CURRENT_ZV_to_current___UTEST < matlab.unittest.TestCase
 
                     % CALL TESTED FUNCTION
                     [actT2, actZvIBIASx2, actDuplicatesAnomaly] = solo.hwzv.CURRENT_ZV_to_current(t1, zvIBIASx1);
-                    
+
                     testCase.assertEqual(actT2,                expT2)
                     testCase.assertEqual(actZvIBIASx2,         expZvIBIASx2)
                     testCase.assertEqual(expDuplicatesAnomaly, actDuplicatesAnomaly)
@@ -45,7 +45,7 @@ classdef CURRENT_ZV_to_current___UTEST < matlab.unittest.TestCase
             function test_exc(t1_zvIBIASx1)
                 t1        = t1_zvIBIASx1(:,1);
                 zvIBIASx1 = t1_zvIBIASx1(:,2);
-                
+
                 testCase.verifyError(...
                     @() solo.hwzv.CURRENT_ZV_to_current(t1, zvIBIASx1), ...
                     ?MException)
@@ -88,7 +88,7 @@ classdef CURRENT_ZV_to_current___UTEST < matlab.unittest.TestCase
                 2,  NaN ...
                 ],  ...
                 zeros(0,2), ...
-                0);    
+                0);
 
             % Real + nonreal. No anomaly.
             test([...

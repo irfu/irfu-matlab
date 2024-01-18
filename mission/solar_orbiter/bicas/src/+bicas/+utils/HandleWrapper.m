@@ -9,11 +9,11 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef HandleWrapper < handle
-    
+
     properties(Access=public)
         v
     end
-    
+
     methods
         function obj = HandleWrapper(v)
             obj.v = v;

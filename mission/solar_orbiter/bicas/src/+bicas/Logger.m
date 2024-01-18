@@ -68,11 +68,11 @@ classdef Logger < handle
         % BSO) to make sure that it is error-safe and always initialized.
         % Needed for early initialization and error handling (try-catch).
         %LOG_PREFIX = 'LOG FILE: ';
-        
+
         LINE_FEED      = newline;
-        
+
         stdoutOption   = 'none';
-        
+
         logFileEnabled = false;
         logFileId      = [];
         logFileBuffer  = {};
@@ -106,7 +106,7 @@ classdef Logger < handle
         function obj = Logger(stdoutOption, logFileEnabled)
             % PROPOSAL: Separate arguments for stdout and log file behaviour
             %   CON: Want short call for no logging.
-            
+
             % ASSERTIONS
             % IMPLEMENTATION NOTE: Assertion for number of arguments, since this
             % used to be variable.
@@ -114,21 +114,21 @@ classdef Logger < handle
             assert(isscalar(logFileEnabled) && islogical(logFileEnabled), ...
                 'Argument logFileEnabled is not a scalar logical.')
             logFileEnabled = logical(logFileEnabled);
-            
+
             switch(stdoutOption)
                 case 'none'
                     obj.stdoutOption = 'none';
-                    
+
                 case 'human-readable'
                     obj.stdoutOption = 'human-readable';
-                    
+
                 case 'bash wrapper'
                     obj.stdoutOption = 'bash wrapper';
-                    
+
                 otherwise
                     error('BICAS:Assertion', 'Illegal argument "%s".', stdoutOption)
             end
-            
+
             obj.logFileEnabled = logFileEnabled;
         end
 
@@ -137,7 +137,7 @@ classdef Logger < handle
         % Specify the log file to use, if logging to file has been enabled
         % (assertion). Previous log messages have been buffered.
         %
-        % 
+        %
         % RATIONALE: NOT USING CONSTRUCTOR
         % ================================
         % It is useful to be able to specify log file AFTER that some logging
@@ -152,7 +152,7 @@ classdef Logger < handle
         %       useful if it is not known at the time of calling the constructor
         %       whether a log file should be used or not. This way the log
         %       message buffer can be cleared to potentially conserve RAM.
-        % 
+        %
         function obj = set_log_file(obj, logFile)
             assert(obj.logFileEnabled, ...
                 ['Trying to specify log file without having enabled', ...
@@ -163,7 +163,7 @@ classdef Logger < handle
 
             if ~isempty(logFile)
                 % CASE: Set log file.
-                
+
                 %===============
                 % Open log file
                 %===============
@@ -178,7 +178,7 @@ classdef Logger < handle
                     % NOTE: Does not alter the object properties.
                 end
                 obj.logFileId = fileId;
-                
+
                 %=============================
                 % Write buffered log messages
                 %=============================
@@ -186,11 +186,11 @@ classdef Logger < handle
                     obj.write_to_log_file(obj.logFileBuffer{i});
                 end
                 obj.logFileBuffer = {};
-                
+
             else
                 % CASE: There should be no log file (despite constructor saying
                 % there should/could be one).
-                
+
                 obj.logFileEnabled = false;
                 obj.logFileBuffer  = {};
             end
@@ -222,9 +222,9 @@ classdef Logger < handle
         function log(obj, logLevel, msg)
             % PROPOSAL: Be able to read "debug mode" flag so can choose whether to print or not.
             %   NOTE: Apropos RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.4 table.
-            
+
             % RCS ICD compliant string.
-            rcsIcdLogMsg = obj.ICD_log_msg(logLevel, msg);            
+            rcsIcdLogMsg = obj.ICD_log_msg(logLevel, msg);
 
             %=================
             % Print to stdout
@@ -232,30 +232,30 @@ classdef Logger < handle
             switch(obj.stdoutOption)
                 case 'none'
                     % Do nothing
-                    
+
                 case 'human-readable'
                     obj.write_to_stdout(rcsIcdLogMsg)
-                    
+
                 case 'bash wrapper'
                     % String that is intended to be read by BICAS bash wrapper
                     % as stdout.
                     bashWrapperRecipientStr = irf.str.add_prefix_on_every_row(...
                         rcsIcdLogMsg, ...
                         bicas.const.LOG_FILE_PREFIX_TBW);
-                    
+
                     obj.write_to_stdout(bashWrapperRecipientStr)
-                    
+
                 otherwise
                     error('BICAS:Assertion', ...
                         'Illegal property value obj.stdoutOption="%s".', ...
                         obj.stdoutOption)
             end
-            
+
             %===================
             % Write to log file
             %===================
             if obj.logFileEnabled
-                
+
                 if isempty(obj.logFileId)
                     % CASE: Has not yet specified log file
                     obj.logFileBuffer{end+1} = rcsIcdLogMsg;
@@ -264,12 +264,12 @@ classdef Logger < handle
                     obj.write_to_log_file(rcsIcdLogMsg);
                 end
             end
-            
+
             %=========================================================
             % Print error messages to stderr (regardless of settings)
             %=========================================================
             if strcmp(logLevel, 'error')
-                
+
                 % Make sure string ends with line feed
                 % ------------------------------------
                 % IMPLEMENTATION NOTE: Necessary for stderr messages to end up
@@ -305,38 +305,38 @@ classdef Logger < handle
         % First created 2019-07-26
         %
         function logf(obj, logLevel, msgStr, varargin)
-            
+
             obj.log( logLevel, sprintf(msgStr, varargin{:}) );
-            
+
         end
 
 
 
     end    % methods(Access=public)
-    
-    
-    
+
+
+
     methods(Access=private)
-        
-        
-        
+
+
+
         function write_to_stdout(obj, str)
             % NOTE: Must print using function that reacts to trailing line feed.
             fwrite(1, str);
         end
-        
+
         function write_to_stderr(obj, str)
             % NOTE: Must print using function that reacts to trailing line feed.
             fwrite(2, str);
         end
-        
+
         function write_to_log_file(obj, str)
             % NOTE: Must print using function that reacts to trailing line feed.
             fwrite(obj.logFileId, str);
         end
-        
-        
-        
+
+
+
         % NOTE: Partly defined by RCS ICD 00037, iss1/rev2, draft 2019-07-11,
         %       Section 4.2.3.
         % NOTE: RCS ICD 00037, iss1/rev2, draft 2019-07-11, Section 4.2.3 speaks
@@ -357,7 +357,7 @@ classdef Logger < handle
         %       logs specified by the RCS ICD.
         %
         function rcsIcdLogMsg = ICD_log_msg(obj, logLevel, logMsg)
-            
+
             switch(logLevel)
                 case 'debug'   ; logLevelStr = 'DEBUG';
                 case 'info'    ; logLevelStr = 'INFO';
@@ -367,11 +367,11 @@ classdef Logger < handle
                     error('BICAS:Assertion:IllegalArgument', ...
                         'Illegal logLevel="%s"', logLevel)
             end
-            
+
             rcsIcdRowTimestamp = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
             rcsIcdRowPrefix    = sprintf('%s -- %s -- ', ...
                 rcsIcdRowTimestamp, logLevelStr);
-            
+
             rcsIcdLogMsg = irf.str.add_prefix_on_every_row(...
                 logMsg, rcsIcdRowPrefix);
         end
@@ -379,7 +379,7 @@ classdef Logger < handle
 
 
     end    % methods(Access=private)
-    
-    
-    
+
+
+
 end

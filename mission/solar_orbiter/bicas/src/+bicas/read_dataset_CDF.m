@@ -34,7 +34,7 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
     %       NOTE: bicas.get_dataobj_FV_pad_value_MC() takes DO as
     %             argument.
     %   PROPOSAL: Write CDF file as part of test(!).
-    
+
     % List of ZVs that should be represented as FPAs (and not as plain arrays)
     % ------------------------------------------------------------------------
     % NOTE: All BIAS HK ZVs that are actually used have probably already been
@@ -48,7 +48,7 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
         'HK_BIA_BIAS3'};
     FPA_ZV_NAME_LFR_SCI_CA = {'BIAS_MODE_MUX_SET', 'QUALITY_FLAG', 'QUALITY_BITMASK', 'L2_QUALITY_BITMASK'};
     FPA_ZV_NAME_L2_CA = {'VDC', 'EDC', 'DELTA_PLUS_MINUS'};
-    
+
     FPA_ZV_NAME_CA = [FPA_ZV_NAME_BIAS_HK_CA, FPA_ZV_NAME_LFR_SCI_CA, FPA_ZV_NAME_L2_CA];
 
     % Only including filename (not entire path) to shorten log rows.
@@ -63,9 +63,9 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
     %===========
     L.logf('info', 'Reading CDF file: "%s"', filePath)
     DataObj = dataobj(filePath);
-    
-    
-    
+
+
+
     %=========================================================================
     % Copy zVariables (only the data) into analogous fields in smaller struct
     %=========================================================================
@@ -80,9 +80,9 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
         zvName    = zVariableNameList{iZv};
         zvValueDo = DataObj.data.(zvName).data;
         ZvsLog.(zvName) = zvValueDo;    % NOTE: Do = As found in dataobj (before typecasting & replacing FV-->NaN)).
-        
+
         [fv, ~, mc] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
-        
+
         % =========================
         % Normalize ZV MATLAB class
         % =========================
@@ -106,14 +106,14 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
         %    Ex: Epoch, ACQUISITION_TIME.
         zvValueTypedNan = zvValueTyped;
         if isfloat(zvValueTypedNan)
-            
+
             if ~isempty(fv)
                 % CASE: There is a fill value.
-                
+
                 zvValueTypedNan = irf.utils.replace_value(zvValueTypedNan, fv, NaN);
             end
         end
-        
+
         if ismember(zvName, FPA_ZV_NAME_CA)
             % ===============================
             % Derive FPA representation of ZV
@@ -123,7 +123,7 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
             else
                 Fpa = bicas.utils.FPArray(zvValueTyped, 'FILL_VALUE', fv);
             end
-            
+
             ZvFpa.(zvName) = Fpa;
         else
             Zvs.(zvName)   = zvValueTypedNan;
@@ -134,13 +134,13 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
         ZvFv.(zvName) = fv;
     end
 
-    
-    
+
+
     % Log data read from CDF file
     bicas.utils.log_ZVs(ZvsLog, Bso, L)
-    
-    
-    
+
+
+
     %=================================================================================
     % Normalize the field/zVar names
     % ------------------------------
@@ -163,9 +163,9 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
         filePath, oldFn, newFn));
     bicas.handle_struct_name_change(fnChangeList, Bso, L, ...
         msgFunc, 'Dataset_ID', 'INPUT_CDF.USING_GA_NAME_VARIANT_POLICY')
-    
-    
-    
+
+
+
     %===================
     % ASSERTIONS: Epoch
     %===================
@@ -177,9 +177,9 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
         error('BICAS:DatasetFormat', ...
             'Input dataset "%s" contains an empty zVariable Epoch.', filePath)
     end
-    
-    
-    
+
+
+
     %=========================================================================
     % ASSERTION: Increasing Epoch values
     % ----------------------------------
@@ -195,25 +195,25 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
     %
     % Check for increasing values, but NOT monotonically increasing.
     if ~issorted(Zvs.Epoch)
-        
+
         anomalyDescrMsg = sprintf(...
             ['Input dataset "%s"\ncontains an Epoch zVariable', ...
             ' which values do not monotonically increment.\n'], ...
             filePath);
-        
+
         [settingValue, settingKey] = Bso.get_fv(...
             'INPUT_CDF.NON-INCREMENTING_ZV_EPOCH_POLICY');
         switch(settingValue)
-            
+
             case 'SORT'
                 bicas.default_anomaly_handling(...
                     L, settingValue, settingKey, 'other', ...
                     anomalyDescrMsg)
-                
+
                 % Sort (data) zVariables according to Epoch.
                 [~, iSort] = sort(Zvs.Epoch);
                 Zvs = select_ZVS_indices(Zvs, iSort);
-                
+
                 % % NOTE: Sorting Epoch does not remove identical values. Must therefore check again.
                 % if ~issorted(Zvs.Epoch, 'strictascend')
                 %     error('BICAS:DatasetFormat', ...
@@ -229,9 +229,9 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
                     anomalyDescrMsg, 'BICAS:DatasetFormat')
         end
     end
-    
-    
-    
+
+
+
     L.logf('info', 'File''s Global attribute: Dataset_ID       = "%s"', ...
         GlobalAttributes.Dataset_ID{1})
     L.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', ...
@@ -241,9 +241,9 @@ function Dataset = read_dataset_CDF(filePath, Bso, L)
 
     % Create return value.
     Dataset = bicas.InputDataset(ZvFpa, Zvs, ZvFv, GlobalAttributes, filePath);
-    
-    
-    
+
+
+
     Tmk.stop_log()
 end
 
@@ -271,19 +271,19 @@ function Zvs = select_ZVS_indices(Zvs, iArray)
     % NOTE: Can not use
     % bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(S); since want
     % to ignore but permit fields/ZVs with other number of records.
-    
+
     fnList = fieldnames(Zvs);
-    
+
     for iZv = 1:numel(fnList)
         fn = fnList{iZv};
         Zv = Zvs.(fn);
-        
+
         % IMPLEMENTATION NOTE: Using size to distinguish data & metadata
         % zVariables.
         if size(Zv, 1) == size(Zvs.Epoch, 1)
             Zv = Zv(iArray, :,:,:,:,:,:,:);
         end
         Zvs.(fn) = Zv;
-    end    
-    
+    end
+
 end

@@ -83,9 +83,9 @@ classdef utils
                 fnChangeList, ...
                 Bso, L, anomalyDescrMsgFunc, varargin{:})
         end
-        
-        
-        
+
+
+
         function assert_increasing(v, isMonotonic, errorId, msg)
             assert(isnumeric(v) && isvector(v))
             assert(islogical(isMonotonic) && isscalar(isMonotonic))
@@ -198,9 +198,9 @@ classdef utils
                 zv(iRecord, (snapshotLengths(iRecord)+1):end) = NaN;
             end
         end
-        
-        
-        
+
+
+
         % Interpret LRX flag as available BLTS's.
         %
         % IMPLEMENTATION NOTE: Function partly exists so that it can be extended
@@ -229,7 +229,7 @@ classdef utils
             %           TDS L1R datasets effecitvely do.
             % PROPOSAL: Return variables describing conversion in "both
             %           directions" between 3 data channels and 5 BLTS's.
-            %           LRX (1xN) --> 
+            %           LRX (1xN) -->
             %               iBltsArray=[iBltsA, iBltsB, iBltsC]
             %                   iBltsX = 1,2,3,4,5,NaN/FP
             %               hasBltsData=[blts1HasData, ..., blts5HasData]
@@ -441,7 +441,7 @@ classdef utils
         %       {i}=Length of ca{i}=Number of elements copied to M{i,:}.
         function [M, nCopyColsPerRowVec] = ...
                 convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
-            
+
             assert(iscell(ca))
             assert(iscolumn(ca))
             assert(isscalar(nMatrixColumns))
@@ -471,7 +471,7 @@ classdef utils
         % ARGUMENTS
         % =========
         % ca
-        %       N-dim cell array.        
+        %       N-dim cell array.
         %       size(ca{i}, 1) for all "i" must evaluate to the same value for
         %       assertion to pass.
         %
@@ -491,10 +491,10 @@ classdef utils
         %       ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
         %
 %         function ca2 = select_row_range_from_cell_comps(ca1, iFirst, iLast)
-% 
+%
 %             % ASSERTIONS
 %             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(ca1)
-% 
+%
 %             for i = 1:numel(ca1)
 %                 ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
 %             end
@@ -565,7 +565,7 @@ classdef utils
 
 %                 elseif iscell(fieldValue)
 %                     % CASE: Cell array
-% 
+%
 %                     for iCc = 1:numel(fieldValue)
 %                         nRowsArray(end+1) = size(fieldValue{iCc}, 1);
 %                     end
@@ -573,7 +573,7 @@ classdef utils
 %                 elseif isstruct(fieldValue)
 %                     % CASE: Struct
 %                     % Check number of rows in every field (regardless of type).
-% 
+%
 %                     fieldNamesList2 = fieldnames(fieldValue);
 %                     for iFn2 = 1:length(fieldNamesList2)
 %                         nRowsArray(end+1) = size(...
@@ -583,7 +583,7 @@ classdef utils
 
                 elseif isa(fieldValue, 'bicas.utils.SameRowsMap')
                     nRowsArray(end+1) = fieldValue.nRows();
-                    
+
                 else
                     % CASE: Other field value type.
                     error('BICAS:Assertion', ...

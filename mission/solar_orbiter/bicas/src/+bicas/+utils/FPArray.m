@@ -106,9 +106,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % PROPOSAL: Replace constants for scalar FPs (FP_UINT8, FP_SINGLE etc.) with
     %           static method: scalar_FP(mc)
     %   NOTE: Public such function really already exists: get_scalar_FP(mc)
-    
-    
-    
+
+
+
     %##############################
     %##############################
     % "STATIC" CONSTANT PROPERTIES
@@ -121,7 +121,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             'int8', 'uint8', 'int16', 'uint16', ...
             'int32', 'uint32', 'int64', 'uint64' ...
         };
-    
+
         % Constant that are useful for setting FPA elements to be FPs (either one
         % or many elements using indexing).
         FP_UINT8  = bicas.utils.FPArray.get_scalar_FP('uint8');
@@ -143,14 +143,14 @@ classdef FPArray < matlab.mixin.CustomDisplay
         % write-protected though. Update test w.r.t. to this if fixed.
         dataAr
     end
-    
+
     properties(GetAccess=public, SetAccess=private)
         % Logical array of same size as dataAr. True<=>The corresponding
         % position in dataAr is a fill position where the value is irrelevant
         % and must be hidden from the user.
         fpAr
     end
-    
+
     properties(GetAccess=public, SetAccess=immutable)
         % MATLAB class for the internal data.
         % NOTE: Immutable.
@@ -187,7 +187,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         %       'FILL_POSITIONS'
         %           Fill positions array. Logical. Same size as dataAr.
         %           True == Fill position.
-        %       
+        %
         function obj = FPArray(dataAr, varargin)
 
             % IMPLEMENTATION NOTE: Limiting the data types to those for which
@@ -197,15 +197,15 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % NOTE: Needs to permit char arrays for metadata ZVs.
             assert(isnumeric(dataAr) || ischar(dataAr) || islogical(dataAr), ...
                 'dataAr has disallowed MATLAB class="%s".', class(dataAr))
-            
-            
+
+
             if numel(varargin) == 0
                 fpDescriptionType = 'NO_FILL_POSITIONS';
             elseif numel(varargin) >= 1
                 fpDescriptionType = varargin{1};
                 varargin = varargin(2:end);
             end
-            
+
             irf.assert.castring(fpDescriptionType)
 
             % ===========
@@ -270,7 +270,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % identical non-FP elements. Must therefore not forbid it.
             %
             % PROPOSAL: Optionally return second value: fpAr
-            
+
             switch(nargin)
                 case 1
                     fv = bicas.utils.FPArray.get_cast_FV(obj.mc, obj.mc);
@@ -287,9 +287,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = fv;
         end
-        
-        
-        
+
+
+
         % Convert FPA to other FPA using a specified ARRAY operation for its
         % data (array-->array).
         %
@@ -321,18 +321,18 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % since the array operation might trigger error for some values,
             % e.g. ~NaN (negating NaN, but NaN can not be interpreted as
             % logical/boolean).
-            
+
             assert(isa(fhArrayOperation, 'function_handle'))
-            
+
             inputAr  = obj.array(fvBefore);
             outputAr = fhArrayOperation(inputAr);
-            
+
             Fpa = bicas.utils.FPArray(...
                 outputAr, 'FILL_POSITIONS', obj.fpAr);
         end
-        
-        
-        
+
+
+
         % Convert FPA to FPA with other MATLAB class.
         %
         % ARGUMENTS
@@ -342,7 +342,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         %       FV (before cast) that can survive the cast.
         %
         function Fpa = cast(obj, outputMc, fvBefore)
-            
+
             % Determine which "fvBefore" value to use.
             switch(nargin)
                 case 2
@@ -353,13 +353,13 @@ classdef FPArray < matlab.mixin.CustomDisplay
                 otherwise
                     error('BICAS:Assertion', 'Illegal number of arguments')
             end
-            
+
             Fpa = obj.convert(...
                 @(x) (cast(x, outputMc)), fvBefore);
         end
-        
-        
-        
+
+
+
         % Set fill positions using NFP values from another FPA, unless those
         % elements are also fill positions.
         %
@@ -373,16 +373,16 @@ classdef FPArray < matlab.mixin.CustomDisplay
             %   PROPOSAL: Reverse roles of FPAs. Name it ~override, ~overlay.
 
             assert(strcmp(obj.mc, class(Fpa1.dataAr)))
-            
+
             dataAr           = obj.dataAr;
             dataAr(obj.fpAr) = Fpa1.dataAr(obj.fpAr);
             fpAr             = obj.fpAr & Fpa1.fpAr;
-            
+
             Fpa2 = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
         end
-        
-        
-        
+
+
+
         % Return all elements which are not fill positions.
         %
         % RETURN VALUE
@@ -396,40 +396,40 @@ classdef FPArray < matlab.mixin.CustomDisplay
             dataAr = obj.dataAr(:);    % Convert to column array.
             ar = dataAr(~obj.fpAr(:));
         end
-        
-        
-        
+
+
+
         % Create new FPA but with FPs replaced with specified NFP fill value.
         function Fpa = ensure_NFP(obj, fv)
             % PROPOSAL: Better name.
             %   PROBLEM: Unclear that new instance is created.
             %   PROPOSAL: all_NFP, only_NFP
-            
+
             Fpa = bicas.utils.FPArray(obj.array(fv));
         end
-        
-        
-        
+
+
+
         % Utility function: Convert integer FPA to double-NaN array.
         function ar = int2doubleNan(obj)
             assert(isinteger(obj.dataAr), 'FPA is not integer. It is of MATLAB class "%s".', obj.mc)
-            
+
             Fpa = obj.cast('double');
             ar  = Fpa.array(NaN);
         end
-        
-        
-        
+
+
+
         % Utility function: Convert logical FPA to double-NaN array.
         function ar = logical2doubleNan(obj)
             assert(islogical(obj.dataAr))
-            
+
             Fpa = obj.cast('double');
             ar  = Fpa.array(NaN);
         end
-        
-        
-        
+
+
+
         % ======================================================
         % ======================================================
         % Overloading: Syntactic sugar and customizing behaviour
@@ -457,17 +457,17 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % best behaviour.
             if ~strcmp(class(obj1), class(obj2))
                 r = false;
-                
+
             elseif ~strcmp(class(obj1.dataAr), class(obj2.dataAr))
                 r = false;
-                
+
             elseif ~isequaln(obj1.fpAr, obj2.fpAr)
                 % NOTE: Indirectly checks equal .dataAr sizes.
                 r = false;
-                
+
             else
                 % CASE: .fpAr, sizes and types are equal.
-                
+
                 if isempty(obj1.dataAr)
                     r = true;
                 else
@@ -485,9 +485,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
         function r = ne(obj1, obj2)
             r = ~obj1.eq(obj2);
         end
-        
-        
-        
+
+
+
         function r = isequaln(obj1, obj2)
             r = obj1.eq(obj2);
         end
@@ -510,7 +510,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
 
                 case '.'
                     % Call method (sic!)
-                    
+
                     % NOTE/BUG: This seems to prevent methods from modifying the
                     % (value) object for unknown reason. Can for example not
                     % implement a method that mutates obj.
@@ -528,9 +528,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
                     error('BICAS:Assertion', 'Does not support operation.')
             end
         end
-        
-        
-        
+
+
+
         % Indexing overloading: Array indexing for writing: Fpa(i, j, ...) = ...
         %
         % Supports assigning from (1) either a (1) FPA, or (2) array, either of
@@ -550,7 +550,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % TODO-DEC: Is it appropriate that non-FPAs can be used to assign
             %           FPAs? Could lead to bugs in transition from non-FPAs to
             %           FPAs.
-            
+
             switch S(1).type
                 case '()'
                     assert(isscalar(S))
@@ -561,7 +561,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
                         x = S.subs{i};
                         assert(isnumeric(x) || islogical(x) || strcmp(x, ':'))
                     end
-                    
+
                     if isa(obj2, 'bicas.utils.FPArray')
                         assert(strcmp(Fpa1.mc, obj2.mc), ...
                             'FPA to be assigned has a MATLAB class "%s" that incompatible with the assigned FPA''s MATLAB class "%s".', ...
@@ -578,7 +578,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
                     else
                         error('BICAS:Assertion', 'Assigning FPA elements with non-FPA.')
                     end
-                    
+
                     Fpa1.dataAr = subsasgn(Fpa1.dataAr, S, dataAr2);
                     Fpa1.fpAr   = subsasgn(Fpa1.fpAr,   S, fpAr2);
 
@@ -673,7 +673,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             end
             mcCa = cellfun(@(Fpa) Fpa.mc, FpaCa, 'UniformOutput', false);
             assert(numel(unique(mcCa)) == 1)
-            
+
             % "ALGORITHM"
             dataArCa = cellfun(@(Fpa) Fpa.dataAr, FpaCa, 'UniformOutput', false);
             dataAr   = cat(iDim, dataArCa{:});
@@ -692,14 +692,14 @@ classdef FPArray < matlab.mixin.CustomDisplay
         function Fpa = horzcat(varargin)
             Fpa = cat(2, varargin{:});
         end
-        
-        
-        
+
+
+
         function Fpa3 = min(Fpa1, Fpa2)
             % IMPLEMENTATION NOTE: Does not appear that MATLAB allows one to
             % override the behaviour of min(). Might not be easy either w.r.t.
             % to deriving new fill positions.
-            
+
             % PROPOSAL: Better name.
             %   ~minimum of two FPAs
             %       as opposed to "minimum value inside one array/FPA".
@@ -737,10 +737,10 @@ classdef FPArray < matlab.mixin.CustomDisplay
             % PROPOSAL: Separate properties for MATLAB class and size.
             %   PRO: Avoids repetition.
             %   CON: Less good for debugging class itself.
-            
+
             % IMPLEMENTATION NOTE: It appear that one can only represent
             % "properties" using single-row strings.
-            
+
             properties = struct(...
                 'dataAr', bicas.utils.FPArray.value_to_single_row_string(obj.dataAr, obj.fpAr), ...
                 'fpAr',   bicas.utils.FPArray.value_to_single_row_string(obj.fpAr), ...
@@ -753,9 +753,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
         end
 
 
-        
+
     end
-    
+
 
 
     %##########################
@@ -764,7 +764,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %##########################
     %##########################
     methods(Access=private)
-        
+
 
 
         % Helper function to make it easier to implement operator overloading
@@ -788,7 +788,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
         %
         %
         % NOTE: Always outputs an FPA.
-        % 
+        %
         function Fpa3 = elementwise_binary_operation_to_FPA(...
                 Fpa1, obj2, fhBinaryArrayOperation)
             % Concerning potential names for method:
@@ -815,7 +815,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
             %           arguments.
             %   PRO: Not generic.
             %   CON: Has proven true for all cases so far.
-            
+
             if isa(obj2, 'bicas.utils.FPArray')
                 assert(strcmp(Fpa1.mc, obj2.mc), 'FPA (%s) and FPA obj2 (%s) have different MATLAB classes.', Fpa1.mc, obj2.mc)
 
@@ -836,13 +836,13 @@ classdef FPArray < matlab.mixin.CustomDisplay
 
             Fpa3 = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
         end
-        
-        
-        
+
+
+
     end
-    
-    
-    
+
+
+
     %#######################
     %#######################
     % PUBLIC STATIC METHODS
@@ -858,36 +858,36 @@ classdef FPArray < matlab.mixin.CustomDisplay
             fv = bicas.utils.FPArray.get_cast_FV(mc, mc);
             Fpa = bicas.utils.FPArray(fv, 'ONLY_FILL_POSITIONS');
         end
-        
-        
-        
+
+
+
         % Wrapper around constructor. Effectively custom constructor.
         %
         % NOTE: Requires input values to be [0, 1, NaN].
         function Fpa = floatNan2logical(ar)
-            assert(isfloat(ar))            
+            assert(isfloat(ar))
             assert(all(ismember(ar, [0,1]) | isnan(ar)))   % All elements are [0,1,NaN].
-            
+
             floatNaN  = cast(NaN, class(ar));
-            
+
             Fpa = bicas.utils.FPArray(...
                 ar, 'FILL_VALUE', floatNaN).cast('logical');
         end
-        
-        
-        
+
+
+
         function Fpa = floatNan2int(ar, fpaMc)
             assert(isfloat(ar))
             assert(isinteger(cast(0, fpaMc)))
 
             floatNan  = cast(NaN, class(ar));
-            
+
             Fpa = bicas.utils.FPArray(...
                 ar, 'FILL_VALUE', floatNan).cast(fpaMc);
         end
-        
-        
-        
+
+
+
         % Convert an "arbitrary" value to a human-readable string for debugging.
         % Depending on the value, it may or may not be expanded into
         % representing the entire value.
@@ -898,9 +898,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
         function s = value_to_single_row_string(x, fp)
             % PROPOSAL: Convert to generic function.
             %   CON: This class has special needs for metadata (class, size).
-            
+
             N_MAX_ELEMENTS = 20;
-            
+
             assert(isnumeric(x) || islogical(x))
             switch(nargin)
                 case 1
@@ -909,7 +909,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
                     assert(islogical(fp))
                     assert(isequaln(size(x), size(fp)))
             end
-            
+
             tt = tic();
             if (numel(x) >= 1) && (ndims(x) <= 2) && (numel(x) < N_MAX_ELEMENTS)
                 % CASE: Non-empty 2D array that is not "too large"
@@ -922,13 +922,13 @@ classdef FPArray < matlab.mixin.CustomDisplay
                         else
                             sElem = num2str(x(iRow, iCol));
                         end
-                        
+
                         sElemCa{end+1} = sElem;
                     end
                     sRowCa{end+1} = strjoin(sElemCa, ',');
                 end
                 s = sprintf('[%s]', strjoin(sRowCa, '; '));
-                
+
             else
                 % NOTE: num2str() does print all elements for nDims > 2, but it
                 % is hard to read. Therefore not using.
@@ -940,32 +940,32 @@ classdef FPArray < matlab.mixin.CustomDisplay
                     s = '[...]';
                 else
                     % CASE: Empty
-                    
+
                     s = num2str(x);
                 end
 
             end
-            
+
             toc(tt)
         end
-        
-        
-        
+
+
+
     end
-    
-    
-    
+
+
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
+
+
+
         % Return FV which will survive a cast from MATLAB class mc1 to mc2, for
-        % some pre-defined MATLAB classes. 
+        % some pre-defined MATLAB classes.
         %
         % NOTE: FPAs as such can handle more classes than specified here.
         %
@@ -990,9 +990,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
                     'Can not derive value that survives typecasting from "%s" to "%s".', mc1, mc2)
             end
         end
-        
-        
-        
+
+
+
     end
 
 

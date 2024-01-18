@@ -31,9 +31,9 @@ function freqHz = get_LFR_frequency(iLsf)
     %           CON: Already used in argument name, solo.hwzv.const.LSF_HZ,
     %                function documentation.
     %   get_LFR_sampling_frequency()
-    
+
     LSF_HZ = solo.hwzv.const.LSF_HZ;
-    
+
     % ASSERTION
     uniqueValues = unique(iLsf);
     if ~all(ismember(uniqueValues, [1:4]))
@@ -42,13 +42,13 @@ function freqHz = get_LFR_frequency(iLsf)
         %uniqueValuesStr = sprintf('%d ', uniqueValues);
         uniqueValuesStr = strjoin(...
             irf.str.sprintf_many('%d', uniqueValues), ', ');
-        
+
         error(...
             ['Found unexpected values in LSF index (corresponding to', ...
             ' LFR FREQ+1). Unique values: %s.'], ...
             uniqueValuesStr)
     end
-    
+
     % NOTE: Implementation that works for arrays of any size.
     freqHz = nan(size(iLsf));        % Allocate array and set default values.
     freqHz(iLsf==1) = LSF_HZ(1);

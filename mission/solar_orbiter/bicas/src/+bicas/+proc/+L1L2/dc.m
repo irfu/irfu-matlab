@@ -12,7 +12,7 @@ classdef dc
     % PROPOSAL: Better name.
     %   PRO: Processing includes quality "processing" which is not in "DC".
     %   PROPOSAL: dcq = Demux, Calibrate, Quality
-    
+
     % PROPOSAL: Automatic test code.
     %
     % PROPOSAL:   process_calibrate_demux()
@@ -29,9 +29,9 @@ classdef dc
     %#######################
     %#######################
     methods(Static)
-        
-        
-        
+
+
+
         % Derive PostDc from PreDc, i.e. demux, calibrate data, and set quality
         % variables.
         %
@@ -115,18 +115,18 @@ classdef dc
                 bicas.proc.L1L2.qual.get_UFV_quality_ZVs(...
                     ZvIn, PreDc.isLfr, NsoTable, Bso, L);
             clear ZvIn
-            
+
             Zv.QUALITY_FLAG = PreDc.Zv.QUALITY_FLAG.min(bicas.utils.FPArray(QUALITY_FLAG));
             zvUfv           = PreDc.Zv.ufv | zvUfv;
-            
+
             % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
             Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
                 PreDc.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
             Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
             clear AsrSamplesAVoltSrm
-            
 
-            
+
+
             % ############
             % END FUNCTION
             % ############
@@ -148,9 +148,9 @@ classdef dc
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
+
+
+
         % Demultiplex and calibrate VOLTAGES (not e.g. currents).
         %
         % NOTE: Can handle arrays of any size if the sizes are consistent.
@@ -210,7 +210,7 @@ classdef dc
                 PreDc.Zv.freqHz, ...
                 PreDc.Zv.iLsf, ...
                 PreDc.Zv.CALIBRATION_TABLE_INDEX, ...
-                PreDc.Zv.ufv, ...                
+                PreDc.Zv.ufv, ...
                 PreDc.Zv.dlrFpa.logical2doubleNan(), ...
                 PreDc.Zv.lrx, ...
                 iCalibLZv, ...
@@ -222,7 +222,7 @@ classdef dc
             for iSs = 1:nSs
                 iRec1 = iRec1Ar(iSs);
                 iRec2 = iRec2Ar(iSs);
-                
+
                 % ==============================================================
                 % IMPLEMENTATION NOTE: Below extraction of data from PreDc etc.
                 % may seem awkward but actually clarifies the code associated
@@ -239,7 +239,7 @@ classdef dc
                 %      variables version for (a) entire interval of time and (b)
                 %      the selected interval of time.
                 % ==============================================================
-                
+
                 % CV = Constant Values = Values which are constant for the
                 %      entire subsequence of records.
                 Cv = [];
@@ -248,7 +248,7 @@ classdef dc
                 Cv.freqHz                  = PreDc.Zv.freqHz(                 iRec1);
                 Cv.iLsf                    = PreDc.Zv.iLsf(                   iRec1);
                 Cv.CALIBRATION_TABLE_INDEX = PreDc.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
-                Cv.ufv                     = PreDc.Zv.ufv(                    iRec1);                
+                Cv.ufv                     = PreDc.Zv.ufv(                    iRec1);
                 Cv.dlrFpa                  = PreDc.Zv.dlrFpa(                 iRec1);
                 % NOTE: Excluding PreDc.Zv.lrx since it is only need for
                 %       splitting time/CDF record intervals, not for calibration
@@ -259,7 +259,7 @@ classdef dc
                 Cv.hasSwfFormat            = PreDc.hasSwfFormat;
                 Cv.isLfr                   = PreDc.isLfr;
                 Cv.isTdsCwf                = PreDc.isTdsCwf;
-                
+
                 % VV = (Record-)Varying Values
                 Vv = [];
                 Vv.Epoch                    = PreDc.Zv.Epoch(                  iRec1:iRec2);
@@ -294,7 +294,7 @@ classdef dc
                         Cv.CALIBRATION_TABLE_INDEX(1), ...
                         Cv.CALIBRATION_TABLE_INDEX(2))
                 end
-                
+
                 SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(...
                     Cv, Vv, Cal);
 
@@ -312,7 +312,7 @@ classdef dc
             % PROPOSAL: Rename "subsequence".
             %   ~time interval
             %   ~constant settings time interval
-            
+
             nRows = numel(Vv.Epoch);
 
             %=======================================
@@ -378,7 +378,7 @@ classdef dc
             %       CON: cal does not seem to use more values.
             % PROPOSAL: Reorder arguments to group them.
             %   PROPOSAL: Group arguments from PreDc.
-            
+
             % IMPLEMENTATION NOTE: It seems that data processing submits
             % different types of floats for LFR and TDS. This difference in
             % processing is unintended and should probably ideally be
@@ -459,7 +459,7 @@ classdef dc
 
         function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
                 sciEpoch, InCur, Bso, L)
-            
+
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
             % ASSERTIONS
@@ -514,9 +514,9 @@ classdef dc
 
             currentSAmpere = 1e-9 * currentNanoSAmpere;
         end
-        
-        
-        
+
+
+
         % Wrapper around solo.hwzv.CURRENT_ZV_to_current_interpolate for
         % anomaly handling.
         function sciZv_IBIASx = zv_TC_to_current(...

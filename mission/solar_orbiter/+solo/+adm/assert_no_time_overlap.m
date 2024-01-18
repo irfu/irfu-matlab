@@ -10,7 +10,7 @@
 % First created 2020-05-15.
 %
 function assert_no_time_overlap(DsmdArray)
-    
+
     assert(isa(DsmdArray, 'solo.adm.DSMD'))
 
     datasetIdCa = unique({DsmdArray.datasetId});    % Unique DATASET_IDs.

@@ -6,7 +6,7 @@
 % First created 2017-12-12
 %
 function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)
-    
+
     %=================================
     % Register DCC calibration tables
     %=================================
@@ -16,7 +16,7 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)
     add_DCC_dir(25,  '4_3_AC_CURRENT_TEST', 'SO_BIAS_DC_CURRENT_ID%03i_Ver_00_FM1_+25C.txt',    'testlogbook_2016-07-23 _13-11-53__FM1.txt');
     add_DCC_dir(50,  '4_3_AC_CURRENT_TEST', 'SO_BIAS_DC_CURRENT_ID%03i_Ver_00_FM1_+50c.txt',    'testlogbook_2016-07-24 _18-08-22__FM1_+50C.txt');
     add_DCC_dir(70,  '4_3_AC_CURRENT_TEST', 'SO_BIAS_DC_CURRENT_ID%03i_Ver_00_FM1.txt',         'testlogbook_2016-07-24 _13-38-12__FM1.txt');
-    
+
     %=================================
     % Register DCV calibration tables
     %=================================
@@ -26,7 +26,7 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)
     add_DCV_dir(25,  'SO_BIAS_DC_VOLTAGE_ID%i_Ver_00_FM1_+25C.txt',    'testlogbook_2016-07-23 _12-00-09__VER_FM1.txt');
     add_DCV_dir(50,  'SO_BIAS_DC_VOLTAGE_ID%i_Ver_00_FM1_+50c.txt',    'testlogbook_2016-07-24 _16-26-18__VER_FM1_+50C.txt');
     add_DCV_dir(70,  'SO_BIAS_DC_VOLTAGE_ID%i_Ver_00_FM1.txt',         'testlogbook_2016-07-24 _12-26-06__VER_FM1.txt');
-    
+
     %================================
     % Register TF calibration tables
     %================================
@@ -36,7 +36,7 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)
     add_TF_dir( 25, 'SO_BIAS_AC_VOLTAGE_ID%02i_Ver_00_FM1_+25C.txt',    'testlogbook_2016-07-23 _10-46-54__VER_FM1.txt');
     add_TF_dir( 50, 'SO_BIAS_AC_VOLTAGE_ID%02i_Ver_00_FM1_+50c.txt',    'testlogbook_2016-07-24 _15-14-42__VER_Fm1.txt');
     add_TF_dir( 70, 'SO_BIAS_AC_VOLTAGE_ID%02i_Ver_00_FM1.txt',         'testlogbook_2016-07-24 _11-13-26__VER_FM1.txt');
-    
+
     %================================
     % Register IC calibration tables
     %================================
@@ -45,9 +45,9 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)
     add_IC_dir( 25, 'SO_BIAS_INT_CAL_ID%03i_Ver_00_FM1_+25C.txt',    'testlogbook_2016-07-23 _17-10-23__VER_FM1.txt');
     add_IC_dir( 50, 'SO_BIAS_INT_CAL_ID%03i_Ver_00_FM1_+50c.txt',    'testlogbook_2016-07-24 _17-41-02__VER_FM1_+50C.txt');
     add_IC_dir( 70, 'SO_BIAS_INT_CAL_ID%03i_Ver_00_FM1.txt',         'testlogbook_2016-07-24 _13-56-06__VER_FM1.txt');
-    
-    
-    
+
+
+
     % Function to compress the code. (Use bsactRootPath, TcDcc as "global variables".)
     % Needs argument "testDirName" since it can be both 4_3_DC_CURRENT_TEST and 4_3_AC_CURRENT_TEST (a misspelling:
     % DC-->AC).
@@ -60,9 +60,9 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)
             mebTempCelsius ...
             );
     end
-    
-    
-    
+
+
+
     % Function to compress the code. (Use bsactRootPath, TcDcv as "global variables".)
     function add_DCV_dir(mebTempCelsius, cTableFilesPattern, testlogbookFilename)
         subdir = sprintf('TEMP%dC', mebTempCelsius);
@@ -73,9 +73,9 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)
             mebTempCelsius ...
             );
     end
-    
-    
-    
+
+
+
     % Function to compress the code. (Use bsactRootPath, TcTf as "global variables".)
     function add_TF_dir(mebTempCelsius, cTableFilesPattern, testlogbookFilename)
         subdir = sprintf('TEMP%dC', mebTempCelsius);
@@ -86,7 +86,7 @@ function [TcDcc, TcDcv, TcTf, TcIc] = load_BSACT_2016_07(bsactRootPath)
             mebTempCelsius ...
             );
     end
-    
+
     % Function to compress the code. (Use bsactRootPath, TcTf as "global variables".)
     function add_IC_dir(mebTempCelsius, cTableFilesPattern, testlogbookFilename)
         subdir = sprintf('TEMP%dC', mebTempCelsius);

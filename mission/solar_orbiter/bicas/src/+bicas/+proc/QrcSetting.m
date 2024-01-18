@@ -29,7 +29,7 @@ classdef QrcSetting
     % PROPOSAL: Include UFV.
     %   PRO: Can redefine excluding data using BDM using this class.
     %       CON: Name Quality-Related Condition becomes a misnomer
-    
+
     properties(SetAccess=immutable)
         % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.
         %

@@ -25,9 +25,9 @@
 % First created 2019-11-18
 %
 classdef demuxer
-    
-    
-    
+
+
+
     methods(Static, Access=public)
 
 
@@ -50,7 +50,7 @@ classdef demuxer
         % EDGE CASES
         % ==========
         % Function must be able to handle:
-        % ** bdm = NaN                                   
+        % ** bdm = NaN
         %    Unknown BDM, e.g. due to insufficient HK time coverage.
         % ** BLTS 1-3 signals labelled as "GND" or "2.5V Ref" in BDMs 5-7.
         %
@@ -89,14 +89,14 @@ classdef demuxer
                 R.DC_V1x = R.DC_V12;
                 R.AC_V1x = R.AC_V12;
             end
-            
+
             % IMPLEMENTATION NOTE: switch-case statement does not work
             % for NaN. Therefore not using NaN for
             bdmInt = bdmFpa.array(uint8(255));
             switch(bdmInt)
-                
+
                 case 0   % "Standard operation" : We have all information.
-                    
+
                     % Summarize the routing.
                     RoutingArray(1) = R.DC_V1;
                     RoutingArray(2) = R.DC_V1x;
@@ -107,16 +107,16 @@ classdef demuxer
                     RoutingArray(1) = R.DC_V2;
                     RoutingArray(2) = R.DC_V3;
                     RoutingArray(3) = R.DC_V23;
-                    
+
                     % NOTE: Can not derive anything extra for DC. BLTS 1-3
                     % contain redundant data (regardless of DLR).
-                    
+
                 case 2   % Probe 2 fails
-                    
+
                     RoutingArray(1) = R.DC_V1;
                     RoutingArray(2) = R.DC_V3;
                     RoutingArray(3) = R.DC_V1x;
-                    
+
                 case 3   % Probe 3 fails
 
                     RoutingArray(1) = R.DC_V1;
@@ -124,7 +124,7 @@ classdef demuxer
                     RoutingArray(3) = R.DC_V1x;
 
                 case 4   % Calibration mode 0
-                    
+
                     RoutingArray(1) = R.DC_V1;
                     RoutingArray(2) = R.DC_V2;
                     RoutingArray(3) = R.DC_V3;
@@ -141,7 +141,7 @@ classdef demuxer
                             RoutingArray(2) = R.GND_TO_DC_V2;
                             RoutingArray(3) = R.GND_TO_DC_V3;
                     end
-                    
+
                 case 255
                     % NOTE: Could route unknown DC signals to V1-V3, but
                     % since this behaviour is probably not very obvious to
@@ -154,18 +154,18 @@ classdef demuxer
                     % NOTE: The routing of BLTS 4 & 5 is identical for all BDMs
                     % (but does depend on the DLR). Can therefore route them
                     % also when the BDM is unknown.
-                    
+
                 otherwise
                     error('BICAS:Assertion:IllegalArgument:DatasetFormat', ...
                         'Illegal argument value bdm=%g.', bdm)
             end    % switch
-            
+
             RoutingArray(4) = R.AC_V1x;
             RoutingArray(5) = R.AC_V23;
         end
-        
-        
-        
+
+
+
         % (1) Given demultiplexer routings, convert the (already calibrated)
         %     BLTSs to (subset of) ASRs.
         % (2) Derive the remaining ASRs (samples) from those ASRs which have
@@ -182,8 +182,8 @@ classdef demuxer
         % multiplication of the BLTS signal (alpha, beta, gamma in the BIAS
         % specification). It is assumed that the supplied BLTS samples have been
         % calibrated to account for this already.
-        % 
-        % 
+        %
+        %
         % ARGUMENTS
         % =========
         % SdidArray
@@ -207,24 +207,24 @@ classdef demuxer
         %
         function AsrSamplesAVoltSrm = calibrated_BLTSs_to_all_ASRs(SdidArray, bltsSamplesAVolt)
             % PROPOSAL: Log message for BDM=NaN.
-            
+
             % ASSERTIONS
             assert(numel(SdidArray) == bicas.const.N_BLTS)
             assert(isa(SdidArray, 'bicas.proc.L1L2.SignalDestinationId'))
             assert(isnumeric(bltsSamplesAVolt))
             irf.assert.sizes(bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS])
-            
+
             % Set only those ASRs for which there is data.
             AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
                 bltsSamplesAVolt, SdidArray);
-            
+
             % Set those ASRs for which there is NO data.
             % NOTE: Argument (handle object) is modified.
             bicas.proc.L1L2.demuxer.complement_ASR(AsrSamplesAVoltSrm);
         end
-        
-        
-        
+
+
+
         % Given an incomplete SRM of ASID-labelled samples, derive the missing
         % ASRs.
         %
@@ -247,11 +247,11 @@ classdef demuxer
         %
         function complement_ASR(AsrSamplesAVoltSrm)
             assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
-            
+
             % Shorten variable names.
             C     = bicas.proc.L1L2.AntennaSignalId.C;
             AsSrm = AsrSamplesAVoltSrm;
-            
+
             %================
             % Derive AC ASRs
             %================
@@ -270,12 +270,12 @@ classdef demuxer
                 % (initially available) diffs rather than singles, directly or
                 % indirectly, if possible.
                 AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V13, C.DC_V12, C.DC_V23);
-                
+
                 AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V1,  C.DC_V12, C.DC_V2);
                 AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V1,  C.DC_V13, C.DC_V3);
                 AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V2,  C.DC_V23, C.DC_V3);
                 nAsidAfter = AsSrm.length;
-                
+
                 if (nAsidBefore == nAsidAfter) || (nAsidAfter == 9)
                     break
                 end
@@ -288,8 +288,8 @@ classdef demuxer
             % IMPLEMENTATION NOTE: This is needed to handle for situations when
             % the supplied fields can not be used to determine all nine fields.
             %   Ex: bdm=1,2,3
-            %===================================================================            
-            
+            %===================================================================
+
             keysCa = AsSrm.keys;
 
             % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
@@ -304,23 +304,23 @@ classdef demuxer
                     AsSrm.add(asidName, tempNaN);
                 end
             end
-            
-        end
-        
-        
-        
-    end    % methods(Static, Access=public)
-    
-    
-    
-    %###########################################################################
-    
-    
-    
-    methods(Static, Access=private)
-    
 
-    
+        end
+
+
+
+    end    % methods(Static, Access=public)
+
+
+
+    %###########################################################################
+
+
+
+    methods(Static, Access=private)
+
+
+
         % Given FIVE BLTS sample arrays, copy those which correspond to ASRs
         % (five or fewer!) into a bicas.utils.SameRowsMap.
         function AsrSamplesSrm = assign_ASR_samples_from_BLTS(...
@@ -341,9 +341,9 @@ classdef demuxer
                 end
             end
         end
-        
 
-        
+
+
         % Utility function. Derive missing ASR fields from other fields. If
         % exactly two of the Map keys exist in S, then derive the third using
         % the relationship AsMap(Asid1.s) == AsMap(Asid2.s) + AsMap(Asid3.s).
@@ -359,7 +359,7 @@ classdef demuxer
         %
         function AsSrm = complete_relation(AsSrm, Asid1, Asid2, Asid3)
             assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))
-            
+
             e1 = AsSrm.isKey(Asid1.s);
             e2 = AsSrm.isKey(Asid2.s);
             e3 = AsSrm.isKey(Asid3.s);

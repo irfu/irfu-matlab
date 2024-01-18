@@ -16,17 +16,17 @@ classdef mstd___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         function test0(testCase)
-            
+
             function test(v, ref, iDim, mstd)
                 actOutput = bicas.utils.mstd(v, ref, iDim);
                 assert(isa(actOutput, 'double'))
                 testCase.verifyEqual(actOutput, mstd)
             end
             %===================================================================
-            
+
             % Function declaration: mstd = mstd(v, ref, iDim)
 
             % Empty data.
@@ -60,11 +60,11 @@ classdef mstd___UTEST < matlab.unittest.TestCase
             test([5,6,7; 2,3,4], NaN, 3, NaN(2,3,1));
 
         end
-        
-        
-        
+
+
+
     end    % methods(Test)
 
-    
-    
+
+
 end

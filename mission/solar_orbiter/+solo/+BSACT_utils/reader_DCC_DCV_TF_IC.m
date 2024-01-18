@@ -61,7 +61,7 @@
 %                   table/CTable, e.g. MUX mode, input channels,
 %                   AC low/high gain, diff/single, stimuli.
 %
-% Input channel     One or two integers (row vector; values 1-3), signifying a 
+% Input channel     One or two integers (row vector; values 1-3), signifying a
 % (inputChNbrs)     single-probe "channel" or a diff-probe "channel", i.e. which
 %                   signal is coming from the ANTENNA(S).
 %                       Example: [2] refers to V2_LF.
@@ -70,7 +70,7 @@
 %                   which channel out of several.
 %                   NOTE: The probe order is always increasing.
 %
-% Output channel    Integer (1-5) representing one of the "channels" at 
+% Output channel    Integer (1-5) representing one of the "channels" at
 % (outputChNbr)     the BIAS-to-LFR/TDS boundary., Also known as LFR_1...LFR_5,
 %                   TDS_1...TDS_3, and BIAS_1...BIAS_5.
 %                   NOTE: Does NOT refer to the signal itself (voltage), only
@@ -122,7 +122,7 @@ classdef reader_DCC_DCV_TF_IC < handle
 %
 % PROPOSAL: Split into multiple classes, one per calibration data type.
 %   NOTE: Want to reuse "add_test_directory".
-% 
+%
 % PROPOSAL: Rename to exclude "DCC_DCV_TF_IC".
 %   PRO: Already includes all data types so mentioning them is superfluous.
 %
@@ -130,7 +130,7 @@ classdef reader_DCC_DCV_TF_IC < handle
 %           wants functionality for loading all calibration data at once (and
 %           saving it memory), or caching, then that should be done by other
 %           function/class which calls those functions.
-%      
+%
 % PROPOSAL: Change shortening: EOO-->OOR (Output offset removed), IOO-->OOK (Output offset kept)
 %
 % PROPOSAL: Read temperature which seems contained in all (?) calibration table files.
@@ -172,15 +172,15 @@ classdef reader_DCC_DCV_TF_IC < handle
 %             if nargin > 1
 %                 error('BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', 'Illegal number of arguments')
 %             end
-%             
+%
 %             obj.doPreload = ismember('preload', varargin);
         end
 
 
-        
+
         function metadataList = add_test_directory(obj, ...
                 dataType, cTableFilesPattern, testLogbookFile, mebTemperatureCelsius)
-            
+
         % Add directory with tests (calibration tables). Automatically parse the
         % test logbook and associate each calibration table file with the
         % corresponding metadata, mostly from the logbook.
@@ -199,12 +199,12 @@ classdef reader_DCC_DCV_TF_IC < handle
         %       files referred to by cTableFilesPattern.
         % mebTemperatureCelsius
         %       The MEB temperature at which the tests are made.
-            
+
             testLogbookRowList = irf.fs.read_text_file(...
                 testLogbookFile, '\r?\n');
             metadataList = solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(...
                 testLogbookRowList, dataType);
-            
+
             % TODO-NI: Necessary to use special function here? Can replace call with one-liner?
             metadataList = irf.ds.merge_structs(...
                 metadataList, struct('mebTempCelsius', mebTemperatureCelsius));
@@ -216,24 +216,24 @@ classdef reader_DCC_DCV_TF_IC < handle
             [metadataList.filePath] = deal([]);
             for i = 1:numel(metadataList)
                 filePath = sprintf(cTableFilesPattern, metadataList(i).testIdNbr);
-                
+
                 % ASSERTION: Check that files exist.
                 if ~exist(filePath, 'file')
                     error('BICAS:read_text_file:Assertion', ...
                         'Can not find file "%s".', filePath)
                 end
-                
+
                 % NOTE: Adding field to metadataList.
                 metadataList(i).filePath = filePath;
             end
-            
-            
-            
+
+
+
             obj.metadataList = [obj.metadataList, metadataList];
         end
-        
-        
-        
+
+
+
         function metadataList = get_metadataList(obj)
         % Return the internal list of metadata for every calibration table file
         % that has been registered by this instance of this class.
@@ -242,8 +242,8 @@ classdef reader_DCC_DCV_TF_IC < handle
 
     end    % methods(Access=public)
 
-    
-    
+
+
     %###########################################################################
 
 
@@ -252,11 +252,11 @@ classdef reader_DCC_DCV_TF_IC < handle
 
         function Data = read_DCC_calib_file(filePath)
         % Read one BSACT DCC table (text file) into a struct.
-        
+
             assert(ischar(filePath), ...
                 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', ...
                 'Argument is not a string.');
-        
+
             Data = solo.BSACT_utils.read_BSACT_file(filePath, {...
                 'currentMicroSAmpere', ...     % Set current/design current. Exactly proportional to digital current.
                 'currentDigital', ...          % Signed integer value representing current. If not identical to TM,
@@ -272,15 +272,15 @@ classdef reader_DCC_DCV_TF_IC < handle
         function Data = read_DCV_calib_file(filePath)
         % Read one BSACT DCV table (text file) into a struct.
         %
-        % 
+        %
         % Column naming convention to distinguish columns with very similar
         % meanings (and values):
         % See comments at top of file.
-            
+
             assert(ischar(filePath), ...
                 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', ...
                 'Argument is not a string.')
-            
+
             Data = solo.BSACT_utils.read_BSACT_file(filePath, {...
                 'inputBstVolt', ...
                 'outputIooVolt', ...
@@ -291,21 +291,21 @@ classdef reader_DCC_DCV_TF_IC < handle
                 'hkInput2AstVolt', ...
                 'hkInput3AstVolt'});
         end
-        
-        
-        
+
+
+
         function [Data] = read_TF_calib_file(filePath)
         % Read one BSACT TF table (text file) into a struct.
-        
+
             assert(ischar(filePath), ...
                 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', ...
                 'Argument is not a string.')
-            
+
             Data = solo.BSACT_utils.read_BSACT_file(filePath, {...
                 'freqHz', ...
                 'gainEnergyDb', ...
                 'phaseShiftDeg'});
-            
+
             % IMPLEMENTATION NOTE: Not returning information in same struct
             % since information redundancy can be dangerous.
 %             % Add fields to Data, fields which are likely to be used for
@@ -315,16 +315,16 @@ classdef reader_DCC_DCV_TF_IC < handle
 %                 Data.gainEnergyDb, ...
 %                 Data.phaseShiftDeg);
         end
-        
-        
+
+
 
         function Data = read_IC_calib_file(filePath)
         % Read one BSACT IC table (text file) into a struct.
-        
+
             assert(ischar(filePath), ...
                 'BICAS:reader_DCC_DCV_TF_IC:IllegalArgument', ...
                 'Argument is not a string.')
-        
+
             Data = solo.BSACT_utils.read_BSACT_file(filePath, {...
                 'currentMicroSAmpere', ...   % Set current/design current. Exactly proportional to digital current.
                 'currentDigital', ...        % Signed integer value representing current. If not identical to TM,
@@ -339,7 +339,7 @@ classdef reader_DCC_DCV_TF_IC < handle
 
     end    % methods(Static, Access=public)
 
-    
+
 
     %###########################################################################
 end

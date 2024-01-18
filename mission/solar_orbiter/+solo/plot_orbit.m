@@ -1,6 +1,6 @@
  function [soloPosition, bepiPosition, mercuryPosition, venusPosition, marsPosition, earthPosition]= plot_orbit(tint,ttime,varargin);
 % A function to plot and get the position of Solar Orbiter [and Mars, Venus, Earth, Mercury, BepiColombo] for a given time interval
-% and a given time. Output: TSeries with position(s). 
+% and a given time. Output: TSeries with position(s).
 %
 % Example
 % tint = irf.tint('2020-02-11T00:00:00Z/2020-12-01T15:00:00Z'); % time interval in TT2000 UTC
@@ -128,7 +128,7 @@ axis('square')
 ylim([-1.7,1.7])
 xlim([-1.7,1.7])
 text(0.03,0.03,frame, 'Units', 'Normalized', 'fontsize', 8)
-str=[datestr(irf_time(tint(1),'epochtt>date'),'YYYY-mm-dd'),' - ',datestr(irf_time(tint(end),'epochtt>date'),'YYYY-mm-dd')]; 
+str=[datestr(irf_time(tint(1),'epochtt>date'),'YYYY-mm-dd'),' - ',datestr(irf_time(tint(end),'epochtt>date'),'YYYY-mm-dd')];
 title(str)
 
 irf_subplot(1,2,2)

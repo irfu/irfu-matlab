@@ -23,13 +23,13 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                     tt2000, bdm, hkBiasCurrentFpa, ...
                     bdm4TrickEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, windowMarginSec, ...
                     expIsSweeping)
-                
+
                 assert(issorted(tt2000), 'ascend')
                 assert(isa(expIsSweeping, 'double'))
                 bdmFpa           = bicas.utils.FPArray.floatNan2int(bdm, 'uint8');
                 hkBiasCurrentFpa = bicas.utils.FPArray.floatNan2int(hkBiasCurrentFpa, 'uint16');
-                
-                Bso = bicas.create_default_BSO();                
+
+                Bso = bicas.create_default_BSO();
                 Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC',              spdfbreakdowntt2000(bdm4TrickEndTt2000), 'test');
                 Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS',               windowLengthPts,                         'test');
                 Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM', currentMinMaxDiffThresholdTm,            'test');
@@ -38,19 +38,19 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
 
                 % CALL TESTED FUNCTION
                 actIsSweepingFpa = bicas.proc.L1L2.autodetect_sweeps(tt2000, bdmFpa, hkBiasCurrentFpa, Bso);
-                
+
                 actIsSweeping = actIsSweepingFpa.logical2doubleNan();
                 %[actIsSweeping, expIsSweeping]
                 testCase.verifyEqual(actIsSweeping, expIsSweeping)
             end
 
             %===================================================================
-            
+
             function test2(bdm, bdm4TrickEndTt2000, currentMinMaxDiffThresholdTm, expIsSweeping)
                 % NOTE: Only test window lengths equal or shorter than length of
                 % data.
                 % Constant BDM over time.
-                % 
+                %
                 for windowLengthPts = [1, 3, 6]
                     test(...
                         [0:1000:5000]', ...       % tt2000
@@ -70,9 +70,9 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                         [1 1 1 1 1 1]' * expIsSweeping)
                 end
             end
-            
+
             ALL_ENABLED = true;
-            
+
             if ALL_ENABLED
                 test2(4,  10000, 3, 1)
                 test2(4,  10000, 1, 1)
@@ -86,7 +86,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                 test2(0, -10000, 3, 0)
                 test2(0, -10000, 1, 0)
             end
-            
+
             if ALL_ENABLED
                 % Window longer than data. ==> No sweep.
                 test(...
@@ -103,7 +103,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                     0, ...   % windowMarginSec
                     [0, 0, 0]')
             end
-            
+
             if ALL_ENABLED
                 DATA = [ ...
                      6, 4,   1, 2, 3,   0; ...
@@ -145,7 +145,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                     0, ...   % windowMarginSec
                     expIsSweeping)
             end
-            
+
             if ALL_ENABLED
                 % Test window margin
                 DATA = [ ...
@@ -171,7 +171,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
                     1.1e-9, ...   % windowMarginSec
                     expIsSweeping)
             end
-            
+
             if ALL_ENABLED
                 % Complex test
                 DATA = [ ...

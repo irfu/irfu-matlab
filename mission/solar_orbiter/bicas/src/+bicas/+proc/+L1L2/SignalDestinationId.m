@@ -20,7 +20,7 @@ classdef SignalDestinationId
     properties(SetAccess=immutable, GetAccess=public)
         % ASID object or empty.
         Asid
-        
+
         % Whether destination is "nowhere", i.e. the signal does not have a
         % destination and should be ignored.
         isNowhere

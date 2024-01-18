@@ -17,10 +17,10 @@ classdef parse_testlogbook_DCC_DCV_TF_IC___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         function test_DCC(testCase)
-            
+
             function Record = create_CTR_DCC(testIdNbr, inputVoltageLogbookVolt)
                 %
                 % Convenience function for assigning components in struct array.
@@ -36,15 +36,15 @@ classdef parse_testlogbook_DCC_DCV_TF_IC___UTEST < matlab.unittest.TestCase
                     'testIdNbr',               testIdNbr, ...
                     'inputVoltageLogbookVolt', inputVoltageLogbookVolt);
             end
-            
+
             function test(inputsCa, expOutputsCa)
                 % Pre-allocate correct size for later assignment via function
                 actOutputs = cell(size(expOutputsCa));
-                
+
                 [actOutputs{:}] = solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(inputsCa{:});
                 testCase.verifyEqual(actOutputs, expOutputsCa)
             end
-            
+
             import solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC___UTEST.set_field
             %###################################################################
             exp = irf.ds.empty_struct([0,1], ...
@@ -110,14 +110,14 @@ classdef parse_testlogbook_DCC_DCV_TF_IC___UTEST < matlab.unittest.TestCase
                 }];
 
 
-            
+
             test({rowList, 'DCC'}, {exp});
         end
-        
-        
-        
+
+
+
         function test_DCV_TF(testCase)
-            
+
             function Record = create_CTR_DCV_TF(...
                     testIdNbr, muxMode, outputChNbr, inputChNbr, acGain, ...
                     invertedInput, commonModeInput)
@@ -146,15 +146,15 @@ classdef parse_testlogbook_DCC_DCV_TF_IC___UTEST < matlab.unittest.TestCase
             function test(inputsCa, expOutputsCa)
                 % Pre-allocate correct size for later assignment via function
                 actOutputs = cell(size(expOutputsCa));
-                
+
                 [actOutputs{:}] = solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(inputsCa{:});
                 testCase.verifyEqual(actOutputs, expOutputsCa)
             end
-            
+
             import solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC___UTEST.set_field
             %###################################################################
-            
-            
+
+
             exp = irf.ds.empty_struct([0,1], ...
                 'antennaSignals', ...
                 'stimuliOhm',     ...
@@ -271,20 +271,20 @@ classdef parse_testlogbook_DCC_DCV_TF_IC___UTEST < matlab.unittest.TestCase
 
             test({rowList, 'DCV'}, {exp});
         end
-        
-        
-        
+
+
+
         function test_IC(testCase)
-            
+
             function test(inputsCa, expOutputsCa)
                 % Pre-allocate correct size for later assignment via function
                 actOutputs = cell(size(expOutputsCa));
-                
+
                 [actOutputs{:}] = solo.BSACT_utils.parse_testlogbook_DCC_DCV_TF_IC(inputsCa{:});
                 testCase.verifyEqual(actOutputs, expOutputsCa)
             end
             %###################################################################
-            
+
             % NOTE: In a sense, kind of silly test since it contains all the data in
             % 20160621_FS0_EG_Test_Flight_Harness_Preamps/4-8_BIAS_DC_INTERNAL_CAL> k Log/testlogbook_2016-06-22\ _10-42-30__VER_FS.txt
 
@@ -323,22 +323,22 @@ classdef parse_testlogbook_DCC_DCV_TF_IC___UTEST < matlab.unittest.TestCase
             test({rowList, 'IC'}, {exp})
 
         end
-        
-        
-        
+
+
+
     end    % methods(Test)
-        
-        
-    
+
+
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
+
+
+
         function StructArray = set_field(StructArray, nLastIndices, fieldName, fieldValue)
             % Utility function for assigning a specified field in the last N components
             % in a 1D struct array.
@@ -348,11 +348,11 @@ classdef parse_testlogbook_DCC_DCV_TF_IC___UTEST < matlab.unittest.TestCase
             end
 
         end
-        
-        
+
+
 
     end    % methods(Static, Access=private)
 
-    
-    
+
+
 end

@@ -66,7 +66,7 @@
 %               same constant value.
 %   If dataType == "DCV" or "TF":
 %       .testIdNbr
-%       .antennaSignals 
+%       .antennaSignals
 %           Length 3 vector. [i] = Value for antenna i. Values: 0=GND (ground),
 %           1=Signal.
 %       .stimuliOhm
@@ -109,7 +109,7 @@
 %
 
 function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
-    
+
     %==============================================================================================
     % BOGIQ
     % -----
@@ -136,16 +136,16 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
     % PROPOSAL: Reimplement string parsing parts using irf.str, probably
     %           irf.str.regexp_str_parts.
     %==============================================================================================
-    
-    
-    
+
+
+
     % Same for derive_extra_cTable_metadata_DCV_TF?
     switch dataType
         case 'DCC'
             parseHeader2RowFuncPtr           = @parse_header2_row_DCC_DCV_TF;
             parseTestRowFuncPtr              = @parse_test_row_DCC;
             deriveExtraCTableMetaDataFuncPtr = @derive_extra_cTable_metadata_DCC_IC;
-            
+
         case {'DCV', 'TF'}
             % NOTE: No distinction is made between DCV and TF since it is not
             % needed but it may be needed in the future so it is still useful to
@@ -153,21 +153,21 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
             parseHeader2RowFuncPtr           = @parse_header2_row_DCC_DCV_TF;
             parseTestRowFuncPtr              = @parse_test_row_DCV_TF_IC;
             deriveExtraCTableMetaDataFuncPtr = @derive_extra_cTable_metadata_DCV_TF;
-            
+
         case 'IC'
             % EXPERIMENTAL
             parseHeader2RowFuncPtr           = @parse_header2_row_IC;
             parseTestRowFuncPtr              = @parse_test_row_DCV_TF_IC;
             deriveExtraCTableMetaDataFuncPtr = @derive_extra_cTable_metadata_DCC_IC;
-            
+
         otherwise
             error(...
                 'Argument dataType="%s" has an illegal value.', ...
                 dataType)
     end
-    
-    
-    
+
+
+
     %=====================================================================
     % State machine as the rows are interpreted
     % -----------------------------------------
@@ -189,14 +189,14 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
     expectedRowType = 'NoDataPrefix_or_Header2';
     while iRow <= numel(rowStrList)    % Check if reached end of file.
         % CASE: Row iRow exists.
-        
+
         rowStr = rowStrList{iRow};
-        
+
         %    fprintf('expectedRowType = %s\n', expectedRowType);   % DEBUG
         %    fprintf('rowStr = "%s"\n', rowStr);
-        
+
         switch expectedRowType
-            
+
             case 'NoDataPrefix_or_Header2'
                 expectedRowType = 'Test';
                 try
@@ -207,7 +207,7 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
                     end
                     expectedRowType = 'NoDataPrefix_or_Header2';
                 end
-                
+
             case 'NoDataSuffix_or_Header2'
                 expectedRowType = 'Test';
                 try
@@ -218,9 +218,9 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
                     end
                     expectedRowType = 'NoDataSuffix';
                 end
-                
+
             case 'Test'
-                
+
                 try
                     RowCTableMetadata = parseTestRowFuncPtr(rowStr);
                     % NOTE: Works with metadataList==[];
@@ -237,20 +237,20 @@ function metadataList = parse_testlogbook_DCC_DCV_TF_IC(rowStrList, dataType)
                     % Do nothing - Simply skip row since it should be a Header1
                     % row from which no information should be extracted.
                 end
-                
+
             case 'NoDataSuffix'
                 break   % NOTE: Stop iterating over rows, end state machine.
-                
+
             otherwise
                 error('State machine reached unexpected state.');
-                
+
         end    % switch
-        
+
         iRow = iRow + 1;
     end    % while
-    
-    
-    
+
+
+
     metadataList = deriveExtraCTableMetaDataFuncPtr(metadataList);
 end     % main function
 
@@ -259,12 +259,12 @@ end     % main function
 function Settings = parse_header2_row_DCC_DCV_TF(rowStr)
     % Parse testlogbook "header 2 row", e.g. "Ant 1 = GND, Ant 2 = GND, Ant 3 =
     % Signal, Stimuli = 1Mohm".
-    
+
     Settings.antennaSignals = [...
         map_regex_to_values(rowStr, 'Ant 1 = GND', 0, 'Ant 1 = Signal', 1), ...
         map_regex_to_values(rowStr, 'Ant 2 = GND', 0, 'Ant 2 = Signal', 1), ...
         map_regex_to_values(rowStr, 'Ant 3 = GND', 0, 'Ant 3 = Signal', 1)];
-    
+
     Settings.stimuliOhm = map_regex_to_values(rowStr, ...
         '100kohm', 1e5, '1Mohm', 1e6);
 end
@@ -274,7 +274,7 @@ end
 function Settings = parse_header2_row_IC(rowStr)
     % Parse testlogbook "header 2 row", e.g. "Ant 1 = GND, Ant 2 = GND, Ant 3 =
     % Signal, Stimuli = 1Mohm".
-    
+
     % Should not be relevant for IC tests, but is there.
     Settings.stimuliOhm = map_regex_to_values(rowStr, ...
         '100kohm', 1e5, '1Mohm', 1e6);
@@ -285,13 +285,13 @@ end
 function CTableMetadata = parse_test_row_DCC(rowStr)
     % Interpret a row with information about a specific test, e.g. "ID100 =
     % input voltage = -30V".
-    
+
     CTableMetadata.testIdNbr = find_parse_nbr(rowStr, 'ID[0-9]*', 'ID%d', 1);
     if isnan(CTableMetadata.testIdNbr)
         % CASE: (Assumption) This row is not a test settings row.
         CTableMetadata = [];
     end
-    
+
     CTableMetadata.inputVoltageLogbookVolt = find_parse_nbr(rowStr, ...
         'input voltage = [-+0-9]*V', 'input voltage = %dV', 0);
 end
@@ -314,8 +314,8 @@ function CTableMetadata = parse_test_row_DCV_TF_IC(rowStr)
     % "ID01 = Mode 0 (std operation), LFR_2 = V12_DC*"
     % "ID02 = Mode 0 (std operation), LFR_4 = V12_AC*, Gain = 5"
     % "ID43 = Mode 4 (cal mode 0), TDS_1 = V1_DC"
-    
-    
+
+
     %==========================================================================
     % IMPLEMENTATION NOTE: Must use %d, not %i which can be interpreted as
     % octal. Therefore, use 'ID%d'. """"%i    Base determined from the values.
@@ -331,7 +331,7 @@ function CTableMetadata = parse_test_row_DCV_TF_IC(rowStr)
         %return
         error('RowParsing:CanNotParse', 'Can not interpret row as test settings.')
     end
-    
+
     CTableMetadata.muxMode     = find_parse_nbr(rowStr, ...
         'Mode [0-7]*', 'Mode %d',   0);
     CTableMetadata.outputChNbr = map_regex_to_values(rowStr, ...
@@ -372,26 +372,26 @@ function x = map_regex_to_values(str, varargin)
     %       Pairs of arguments: (regex pattern) + (value).
     %
     % NOTE: Error if not exactly one match.
-    
+
     nbrOfMatchesFound = 0;
     iArg              = 1;
     while iArg <= numel(varargin)
         regexPattern = varargin{iArg};
         patternValue = varargin{iArg+1};
-        
+
         if regexp(str, regexPattern, 'start')
             nbrOfMatchesFound = nbrOfMatchesFound + 1;
             x = patternValue;
         end
         iArg = iArg + 2;
     end
-    
+
     if nbrOfMatchesFound ~= 1
         error('RowParsing:CanNotParse', ...
             'Did not find exactly one match as expected. nbrOfMatchesFound=%g', ...
             nbrOfMatchesFound)
     end
-    
+
 end
 
 
@@ -412,7 +412,7 @@ function x = find_parse_nbr(...
     % regexMatchSscanfFormat
     %       sscanf pattern which is to be applied to substring found. Should
     %       contain exactly one variable and maybe fixed characters around it.
-    % canBeNonExistent       
+    % canBeNonExistent
     %       If a value was not found, then
     %       if true  ==> Return NaN
     %       if false ==> Error
@@ -423,9 +423,9 @@ function x = find_parse_nbr(...
     % x
     %       The numeric value in regexMatchSscanfFormat. NaN if there was no
     %       regex match and canBeNonExistent==true.
-    
+
     regexStrMatch = regexp(str, regexPattern, 'match');
-    
+
     if isempty(regexStrMatch)
         if canBeNonExistent
             x = NaN;
@@ -470,23 +470,23 @@ function metadataList = derive_extra_cTable_metadata_DCV_TF(metadataList)
     % ARGUMENTS
     % =========
     % metadataList : Calibration table metadata struct array.
-    
+
     % PROPOSAL: Add latchingRelay, isDiff.
-    
-    
+
+
     % Create empty new fields.
     [metadataList.invertedInput]   = deal([]);
     [metadataList.commonModeInput] = deal([]);
-    
+
     for i = 1:numel(metadataList)
         isDiff         = numel(metadataList(i).inputChNbr) == 2;
         inputChSignals = metadataList(i).antennaSignals(metadataList(i).inputChNbr);
-        
+
         % True iff diff and input is inverted due to choice of which antenna a
         % diff is taken.
         % [GND, Signal]
         metadataList(i).invertedInput   = isDiff && all(inputChSignals == [0,1]);
-        
+
         % True iff diff and signal on both antennas.
         % NOTE: Relies on inputChNbr(1) < inputChNbr(2).
         % [Signal, Signal]

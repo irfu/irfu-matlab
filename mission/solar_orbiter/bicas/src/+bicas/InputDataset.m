@@ -18,7 +18,7 @@ classdef InputDataset
     % INSTANCE PROPERTIES
     %#####################
     %#####################
-    
+
     %====================
     % Mutable properties
     %====================
@@ -31,20 +31,20 @@ classdef InputDataset
         % Struct with zVariables stored as plain arrays.
         Zv
     end
-    
+
     %======================
     % Immutable properties
     %======================
     properties(SetAccess=immutable)
-    
+
         % Struct with zVariable fill values.
         ZvFv
-        
+
         % Struct with global attributes.
         Ga
-        
+
         filePath
-        
+
     end    % properties(SetAccess=immutable)
 
 
@@ -55,9 +55,9 @@ classdef InputDataset
     %#########################
     %#########################
     methods(Access=public)
-        
-        
-        
+
+
+
         function obj = InputDataset(ZvFpa, Zv, ZvFv, Ga, filePath)
             obj.ZvFpa    = ZvFpa;
             obj.Zv       = Zv;
@@ -65,9 +65,9 @@ classdef InputDataset
             obj.Ga       = Ga;
             obj.filePath = filePath;
         end
-        
-        
-        
+
+
+
     end    % methods(Access=public)
 
 

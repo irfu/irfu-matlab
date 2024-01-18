@@ -69,7 +69,7 @@ for i=1:outTime.length
   v2 = double(Vtmp.y.data(idxNan)); % V2
   e12 = double(Etmp.x.data(idxNan)); % E12
   e23 = double(Etmp.z.data(idxNan)); % E23
-  
+
   d12 = median(e12); out(i,5) = d12;
   if flagD23
     D23 = d23R.tlim(Tint); d23 = D23.data(idxNan);
@@ -89,21 +89,21 @@ for i=1:outTime.length
     v23 = (v3 + k23*v2 +d23)/2; % V23 = (V2+V3)/2
     out(i,1) = d23;
   end
-  
+
   V2_scaled = v2.*k23+d23; % Scale V2 to V3.
   V23 = (V2_scaled + v3)/2; % (V2 + V3) /2
   d123 = median(v1) - median(V23); % V1 - V23
   out(i,2) = d123;
-  if flagK123 
+  if flagK123
     K123 = k123R.tlim(Tint); k123 = K123.data(idxNan);
     del123 = median(v1) - median(V23.*k123); % V1 - V23
-    
+
   else %Find the scaling between V23 and V1
     [k123,del123] = lsqfitgm(V23(idxOk),v1(idxOk));
     out(i,3) = k123;
   end
   out(i,4) = del123;
-  
+
 end
 
 OutTS.d23 = irf.ts_scalar(outTime,out(:,1));

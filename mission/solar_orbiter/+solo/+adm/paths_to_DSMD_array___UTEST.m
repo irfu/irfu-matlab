@@ -30,7 +30,7 @@ classdef paths_to_DSMD_array___UTEST < matlab.unittest.TestCase
                 actDsmdArray = solo.adm.paths_to_DSMD_array(filePathList);
                 testCase.assertEqual(expDsmdArray, actDsmdArray)
             end
-            
+
             function dt = dtu(varargin)
                  dt = datetime(varargin{:}, 'TimeZone', 'UTCLeapSeconds');
             end

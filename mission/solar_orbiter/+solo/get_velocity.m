@@ -1,5 +1,5 @@
 function soloVelocity = get_velocity(Tint, varargin)
-%SOLO.GET_VELOCITY  Get the velocity of Solar Orbiter 
+%SOLO.GET_VELOCITY  Get the velocity of Solar Orbiter
 %
 % soloVelocity = solo.get_velocity(tint, PARAMS)
 %
@@ -11,7 +11,7 @@ function soloVelocity = get_velocity(Tint, varargin)
 % Options:
 %    'predicted' - get predicted position instead of flown
 %    'frame' - frame of the data (see below, default: ECLIPJ2000)
-% 
+%
 % The following generic frames are defined:
 %
 %      SPICE Frame Name            Long-name
@@ -51,11 +51,11 @@ function soloVelocity = get_velocity(Tint, varargin)
 %      EARTH_MECL_MEQX_J2000       Earth Mean Ecliptic and Equinox at J2000
 %                                  frame (Auxiliary frame for SOLO_GSE and
 %                                  SOLO_HEE)
-% 
+%
 % Example:
 % tint = irf.tint('2020-02-11T00:00:00Z/2020-08-01T15:00:00Z'); % time interval in TT2000 UTC
 % %Get velocity in GSE
-% soloVelocity = solo.get_velocity(Tint,'frame','SOLO_GSE'); 
+% soloVelocity = solo.get_velocity(Tint,'frame','SOLO_GSE');
 % irf_plot(soloVelocity, '.');
 
 

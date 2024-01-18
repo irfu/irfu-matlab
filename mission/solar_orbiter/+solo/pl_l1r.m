@@ -7,7 +7,7 @@ function hout = pl_l1r(fName)
 d =dataobj(fName);
 
 muxSet = get_ts(d,'BIAS_MODE_MUX_SET');
-El1 = get_ts(d,'E'); 
+El1 = get_ts(d,'E');
 Vl1 = get_ts(d,'V');
 
 Tint = irf.tint(El1.time);
@@ -30,4 +30,4 @@ ylabel(h(3),'mux')
 
 irf_zoom(h,'x',Tint)
 
-if nargout, hout = h; end 
+if nargout, hout = h; end

@@ -57,25 +57,25 @@ function OutGaSubset = derive_output_dataset_GAs(...
     % PROPOSAL: Automatic test code.
     % PROPOSAL: Create class for GAs.
     %   PRO: Can detect accidental overwriting/reuse of keys.
-    
+
     % ASSERTIONS
     irf.assert.struct(OutputDataset.Ga, ...
         {'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
 
-    
-    
+
+
     OutGaSubset = OutputDataset.Ga;
 
     OutGaSubset.Parent_version = {};
     OutGaSubset.Parents        = {};
     OutGaSubset.Provider       = {};
-    
+
     %=============================
     % Iterate over INPUT datasets
     %=============================
     keysCa = InputDatasetsMap.keys;
     for i = 1:numel(keysCa)
-        
+
         InputDatasetInfo = InputDatasetsMap(keysCa{i});
         InputGa          = InputDatasetInfo.Ga;
 
@@ -138,7 +138,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
         % Ex: SOLO_L2_RPW-LFR-SBM1-CWF-E_V11.skt:
         %   "Parent_version"      1:    CDF_CHAR     { " " }
         %-----------------------------------------------------------------------
-        
+
         if isfield(InputGa, 'Provider')
             OutGaSubset.Provider = union(OutGaSubset.Provider, InputGa.Provider);
         else
@@ -150,7 +150,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
                 'Input dataset "%s"\ndoes not have CDF global attribute "Provider".\n', ...
                 InputDatasetInfo.filePath)
         end
-        
+
         % NOTE: Parsing INPUT dataset filename to set some GAs.
         [logicalFileId, ~, dataVersionStr, ~] = parse_dataset_filename(...
             irf.fs.get_name(InputDatasetInfo.filePath));
@@ -164,10 +164,10 @@ function OutGaSubset = derive_output_dataset_GAs(...
 
     OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.name');
     OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
-    
+
     % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
     OutGaSubset.Generation_date  = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
-    
+
     % NOTE: Parsing OUTPUT dataset filename to set some GAs.
     [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] = parse_dataset_filename(outputFilename);
 
@@ -237,7 +237,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
     gaTimeMaxNbr = juliandate(irf.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(end)));
     OutGaSubset.TIME_MIN = sprintf(TIME_MINMAX_FORMAT, gaTimeMinNbr);
     OutGaSubset.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
-    
+
 
 
     enableMods = Bso.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
@@ -245,15 +245,15 @@ function OutGaSubset = derive_output_dataset_GAs(...
         MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
         OutGaSubset.MODS = MODS;
     end
-    
-    
-    
+
+
+
     % ROC DFMD hints that value should not be set dynamically. (See meaning of
     % non-italic black text for GA name in table.)
     %DataObj.GlobalAttribute.CAVEATS = ?!!
 
-    
-    
+
+
     % ~ASSERTION
     if ~isscalar(OutGaSubset.Parents)
         [settingValue, settingKey] = Bso.get_fv(...

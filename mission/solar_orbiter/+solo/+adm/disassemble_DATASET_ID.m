@@ -32,17 +32,17 @@
 %
 function [sourceName, level, descriptor] = disassemble_DATASET_ID(datasetId)
     % PROPOSAL: Automatic test code.
-    
+
     subStrList = irf.str.regexp_str_parts(...
         datasetId, { ...
         '(ROC-SGSE|SOLO)', '_', ...
         '[^_]*',   '_', ...
         '[A-Z0-2-]*'}, ...
         'assert match');
-    
+
     sourceName = subStrList{1};
     level      = subStrList{3};
     descriptor = subStrList{5};
-    
+
     solo.adm.assert_dataset_level(level)
 end

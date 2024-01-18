@@ -16,20 +16,20 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         function test0(testCase)
 
             % NOTE: Arguments OptionsConfigMap, inputStr switch places to make
             %       test code look better.
             function test(OptionsConfigMap, inputStr, outputMapKeys, outputMapValues)
                 cliArgumentsList = strsplit(inputStr);
-                
+
                 expOutput = containers.Map(outputMapKeys, outputMapValues);
-                
+
                 actOutput = bicas.utils.parse_CLI_options(...
                     cliArgumentsList, OptionsConfigMap);
-                
+
                 testCase.verifyEqual(actOutput, expOutput)
             end
 
@@ -39,19 +39,19 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
             %       test code look better.
             function test_exc(OptionsConfigMap, inputStr)
                 cliArgumentsList = strsplit(inputStr);
-                
+
                 testCase.verifyError(...
                     @() bicas.utils.parse_CLI_options(...
                         cliArgumentsList, OptionsConfigMap), ...
                         ?MException)
             end
-            
+
             %===================================================================
             import bicas.utils.parse_CLI_options___UTEST.ocme
             import bicas.utils.parse_CLI_options___UTEST.oo
-            
-            
-            
+
+
+
             % OCM = Options Config Map
             OCM1 = containers.Map(...
                 {'a', 'b', 'c'}, ...
@@ -80,15 +80,15 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
 
             % Missing option -b.
             test_exc(OCM1, '-a')
-            
-            
-            
+
+
+
             test(OCM1, '-b 123',           {'a', 'b', 'c'}, {EOO,               oo(1, '-b', {'123'}),   EOO});
             test(OCM1, '-a -b 123',        {'a', 'b', 'c'}, {oo(1, '-a', {}),   oo(2, '-b', {'123'}),   EOO});
             test(OCM1, '-a -b 123 -c 8 9', {'a', 'b', 'c'}, {oo(1, '-a', {}),   oo(2, '-b', {'123'}),   oo(4, '-c', {'8', '9'})});
 
-            
-            
+
+
             % Test multiple occurrences of the same option.
             test(OCM1, '-c 6 7 -a -b 123 -c 8 9', ...
                 {'a', 'b', 'c'}, ...
@@ -134,13 +134,13 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
                   oo(7, '--setDEBUG', {'ON'})});
 
         end
-        
-        
-        
+
+
+
     end    % methods(Test)
-        
-        
-    
+
+
+
     %########################
     %########################
     % PRIVATE STATIC METHODS
@@ -163,11 +163,11 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
             Ocme = struct(args{:});
         end
 
-            
-            
+
+
         function OptionOccurrence = oo(...
                 iOptionHeaderCliArgument, optionHeader, optionValues)
-            
+
             assert(iscell(optionValues))
             if isempty(optionValues)
                 % CASE: Option was never used.
@@ -182,9 +182,9 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
         end
 
 
-        
+
     end    % methods(Static, Access=private)
 
-    
-    
+
+
 end

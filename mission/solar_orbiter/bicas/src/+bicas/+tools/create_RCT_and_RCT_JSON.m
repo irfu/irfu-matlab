@@ -18,7 +18,7 @@ function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir)
 
     rctPath     = bicas.tools.create_RCT(rctMasterCdfFile, destDir);
     fprintf(1, 'Created RCT file      "%s"\n', rctPath);
-    
+
     rctJsonPath = bicas.tools.create_RCT_JSON(destDir, irf.fs.get_name(rctPath));
     fprintf(1, 'Created RCT JSON file "%s"\n', rctJsonPath);
 end

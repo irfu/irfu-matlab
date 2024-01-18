@@ -19,8 +19,8 @@ classdef Database < handle
 %   PRO: Can use for asserting that it equals the current BICAS version.
 %   PROBLEM: Version string (x.y.z) is stored as string in code.
 
-    
-    
+
+
     %#####################
     %#####################
     % INSTANCE PROPERTIES

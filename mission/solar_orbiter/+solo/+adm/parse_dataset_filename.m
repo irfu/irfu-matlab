@@ -216,7 +216,7 @@ function R = parse_dataset_filename(filename)
     %
     % PROPOSAL: Replace date vectors with datetime.
     %   CON: Currently using the length of date vectors to specify the filename
-    %        format (time interval format). 
+    %        format (time interval format).
     %        In particular, with datetime only, create_dataset_filename() would
     %        not know which time interval format to use!
     %        YYYYMMDD, YYYYMMDD-YYYYMMDD, or YYYYMMDThhmmss-YYYYMMDThhmmss.
@@ -226,7 +226,7 @@ function R = parse_dataset_filename(filename)
     %         format.
     %
     % PROPOSAL: Always use two timestamps.
-    %   NOTE: How handle YYYYMMDD time interval format? 
+    %   NOTE: How handle YYYYMMDD time interval format?
     %       PROPOSAL: Assertion on hour=minute=second=0 for beginning and end?
     %           CON: Not consistent with boundaries if reading time boundaries
     %                from file content.
@@ -382,7 +382,7 @@ function dateVec = date_time_str_2_dateVec6(s)
     dateVec = str2double({s(1:4), s(5:6), s(7:8), s(10:11), s(12:13), s(14:15)});
 
     % NOTE: Is not a check on filename, but on implementation. read_token()
-    % should guarantee that strings can be parsed as numbers.    
+    % should guarantee that strings can be parsed as numbers.
     %assert(~any(isnan(dateVec)))
 end
 
