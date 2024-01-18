@@ -333,23 +333,23 @@ classdef solo_local_file_db < solo_file_db
         %==================================
         rDir = fullfile(obj.dbRoot, 'soar', instr);
         if exist(rDir, 'dir')
-            % CASE: obj.dbRoot has subdirectory "soar".
-            %       ==> Use (presumed) SOAR mirror.
-            %
-            % Ex: obj.dbRoot == /data/solo/
-            %               ==> /data/solo/soar/<instr>/
-            return
+          % CASE: obj.dbRoot has subdirectory "soar".
+          %       ==> Use (presumed) SOAR mirror.
+          %
+          % Ex: obj.dbRoot == /data/solo/
+          %               ==> /data/solo/soar/<instr>/
+          return
         end
 
         rDir = fullfile(obj.dbRoot, instr);
         if exist(rDir, 'dir')
-            % CASE: obj.dbRoot has subdirectory named after instrument.
-            %       ==> obj.dbRoot is general folder for (multiple) non-RPW
-            %           instruments.
-            %
-            % Ex: obj.dbRoot == /data/solo/data_manual/
-            %               ==> /data/solo/data_manual/<instr>/
-            return
+          % CASE: obj.dbRoot has subdirectory named after instrument.
+          %       ==> obj.dbRoot is general folder for (multiple) non-RPW
+          %           instruments.
+          %
+          % Ex: obj.dbRoot == /data/solo/data_manual/
+          %               ==> /data/solo/data_manual/<instr>/
+          return
         end
       end
     end % get_remotePrefix
@@ -389,10 +389,10 @@ classdef solo_local_file_db < solo_file_db
           case {'rpw-tnr-fp'}
             subDir = 'tnr_fp';
 
-          % Official directory names used by ROC and that IRFU should therefore
-          % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
-          % Erik P G Johansson 2020-11-27.
-          % /Erik P G Johansson 2020-12-15.
+            % Official directory names used by ROC and that IRFU should therefore
+            % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
+            % Erik P G Johansson 2020-11-27.
+            % /Erik P G Johansson 2020-12-15.
           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
             subDir = 'lfr_density';
           case {'rpw-bia-efield',  'rpw-bia-efield-10-seconds'}

@@ -123,12 +123,12 @@ classdef solo_db < handle
         % Bug or feature? /EJ 2023-07-06
         if iscell(res), res = [res {v}]; return, end
         if ~comp_struct(res,v)
-            % CASE: zVariable data "v" appears to be/might be different from the
-            %       previous datasets.
+          % CASE: zVariable data "v" appears to be/might be different from the
+          %       previous datasets.
 
-            % Switch from res=TSeries, to cell array of multiple TSeries.
-            res = [{res}, {v}];
-            return
+          % Switch from res=TSeries, to cell array of multiple TSeries.
+          res = [{res}, {v}];
+          return
         end
         if res.variance(1)=='F' % not varying in time
           if isequal(res.data,v.data), return, end
@@ -201,7 +201,7 @@ classdef solo_db < handle
 
           fields1 = fields(s1); fields2 = fields(s2);
           if ~comp_cell(fields1,fields2)
-              return
+            return
           end
 
           % "data", nrec, and the global attributes (in GlobalAttributes) named
@@ -255,7 +255,7 @@ classdef solo_db < handle
               elseif iscell(c1{iN, iM}) && iscell(c2{iN,iM})
                 % NOTE: RECURSIVE CALL
                 if ~comp_cell(c1{iN, iM},c2{iN,iM})
-                    return
+                  return
                 end
               else
                 irf.log('warning','can only compare chars')
