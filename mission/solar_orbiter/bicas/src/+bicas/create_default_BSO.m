@@ -54,6 +54,12 @@ function Bso = create_default_BSO()
 %   PROPOSAL: Do every time settings are set, i.e. for default values,
 %       config file values, CLI argument values.
 %
+% PROPOSAL: Abolish settings
+%   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
+%   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
+%   PRO: Functionality appears to be obsolete.
+%   PRO: Default ERROR has been used for a long time without raising exception.
+%
 %
 %
 % =========================

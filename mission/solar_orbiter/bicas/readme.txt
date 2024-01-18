@@ -28,15 +28,27 @@ see RCS ICD and RUM documents (see below).
 The naming conventions are partly inconsistent for historical reasons.
 The code should however converge on the following:
 - Use the defined abbreviations in identifiers.
-- Variable names should use camelCase. Initial in lowercase.
-- Classes:
-  - Class names for classes which are actually instantiated (which are not
-    merely a collection of static methods) should be CamelCase. Initial in
-    uppercase.
-  - Classes which are not instantiated should be named using lowercase without
-    underscore.
+- Variables names: Should use camelCase.
+    - Variables containing structs or instances of classes: Should have an
+      uppercase initial.
+    - All other variables: Should use a lowercase initial.
+    - Exception: Variables which are direct analogues to zVariables are named
+      as the corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of
+      the time.
+- Classes (not instances of classes):
+  - Classes which are actually instantiated (which are not merely a collection
+    of static methods): Should be CamelCase. Initial in uppercase.
+  - Classes which are not instantiated: Should have short names and use
+    lowercase without underscore.
 - Functions should be named using snake_case but with abbreviations in
   uppercase.
+- Special types of variables:
+    b    = Logical (boolean) values, often logical arrays used for logical
+           indexing.
+    i, j = Indices into arrays (linear indexing).
+    L    = Singleton instance of class bicas.Logger.
+--
+Unit tests (classes) have suffix "___UTEST".
 
 
 
@@ -327,23 +339,6 @@ WOLS
 ZV
     CDF zVariable, or MATLAB variable that is analogous to one. First dimension
     corresponds to CDF record.
-
-
-
-####################
- Naming conventions
-####################
-Variables are camelCase.
-Structs and objects use an uppercase initial, and other variables use a
-lowercase initial.
-Exception: Variables which are direct analogues to zVariables are named as the
-corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of the time.
-
-b    = Logical (boolean) values, often logical arrays used for logical indexing.
-i, j = Indices into arrays.
-L    = Singleton instance of class bicas.Logger.
-
-Unit tests (classes) have suffix "___UTEST".
 
 
 
