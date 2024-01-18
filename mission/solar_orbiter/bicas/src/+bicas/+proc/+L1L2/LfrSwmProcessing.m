@@ -129,6 +129,19 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
+            % NOTE: Very old L1R LFR-SBM1/2 (test) data datasets have been
+            % observed to have QUALITY_BITMASK with illegal data type
+            % CDF_UINT1/uint8 while newer ones do not. Could normalize for this
+            % but it should be better to simply not support (and thus not use)
+            % such datasets.
+            % Ex: QUALITY_BITMASK uses CDF_UINT1/uint8 in 
+            %     
+            if ~strcmp(InSciNorm.ZvFpa.QUALITY_BITMASK.mc, 'uint16')
+                error('BICAS:DatasetFormat', 'zVariable QUALITY_BITMASK is not uint16 (MATLAB class).')
+            end
+
+
+
             %===================================
             % Normalize CALIBRATION_TABLE_INDEX
             %===================================
@@ -225,11 +238,6 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
                 L, settingValue, settingKey, nRecords, ...
                 InSci.ZvFpa.QUALITY_FLAG,    'QUALITY_FLAG');
             
-            % NOTE: Very old L1R LFR-SBM1/2 (test) data datasets have been
-            % observed to have QUALITY_BITMASK with illegal data type
-            % CDF_UINT1/uint8 while newer ones do not. This is not mitigated in
-            % the code since it does not seem to be needed.
-
             % ASSERTIONS
             irf.assert.sizes(...
                 InSciNorm.ZvFpa.QUALITY_BITMASK, [nRecords, 1], ...
