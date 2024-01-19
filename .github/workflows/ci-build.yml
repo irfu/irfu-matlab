@@ -63,7 +63,7 @@ jobs:
     if: github.ref == 'refs/heads/SOdevel'
     steps:
       # Check-out repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
