@@ -28,8 +28,8 @@ times_epoch = tint.epoch;
 split_epoch = split_times.epoch;
 split_flag=zeros(size(split_epoch));
 for ii=1:length(split_epoch)
-    split_flag(ii) = logical((split_epoch(ii)>times_epoch(1))*...
-        (split_epoch(ii)<times_epoch(2)));
+  split_flag(ii) = logical((split_epoch(ii)>times_epoch(1))*...
+    (split_epoch(ii)<times_epoch(2)));
 end
 use_splits = 1:length(split_flag);
 use_splits(~split_flag)=[];

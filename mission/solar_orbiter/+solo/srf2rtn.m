@@ -27,9 +27,9 @@ et=irf_time(TSin.time,'EpochTT>tt')';
 % The rotation matrix M (note that this is time dependent so it should be a
 % 3x3xlength(time) matrix)
 if direction==1
-    M=cspice_pxform('SOLO_SRF','SOLO_SUN_RTN',et);
+  M=cspice_pxform('SOLO_SRF','SOLO_SUN_RTN',et);
 elseif direction==-1
-    M=cspice_pxform('SOLO_SUN_RTN','SOLO_SRF',et);
+  M=cspice_pxform('SOLO_SUN_RTN','SOLO_SRF',et);
 else
   error('DIRECTION MUST 1 or -1')
 end

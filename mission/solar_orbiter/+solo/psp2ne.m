@@ -61,7 +61,7 @@ AddEntry('2021-03-20T01:30:00Z/2021-03-22T19:29:59Z',... %6
   [0.6460 + 3.5047i   0.3899 + 3.7683i],1.0297);
 AddEntry('2021-03-22T19:30:00Z/2021-04-04T03:59:59Z',[0.7884  3.3714]); %7
 AddEntry('2021-04-04T04:00:00Z/2021-07-25T23:59:59Z',...%8
-      [0.7125 + 3.0114i   0.4926 +  3.2371i], 1.050);
+  [0.7125 + 3.0114i   0.4926 +  3.2371i], 1.050);
 AddEntry('2021-07-26T00:00:00Z/2021-08-02T23:59:59Z',[0.7396  3.2209]); %9
 AddEntry('2021-08-03T00:00:00Z/2021-08-05T07:59:59Z',[0.7694  3.3844]); %10
 AddEntry('2021-08-05T08:00:00Z/2021-08-08T23:59:59Z',[0.6615  3.1782]); %11
@@ -170,70 +170,70 @@ NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
 NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%% Help function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    function AddEntry(TintS, calData, PSPintersection)
-        %Add new calibration entry
-        % For two-fit calibration use three input arguments
+  function AddEntry(TintS, calData, PSPintersection)
+    %Add new calibration entry
+    % For two-fit calibration use three input arguments
 
-        if ~isreal(calData(1)) && (nargin<3 || isempty(PSPintersection))
-            errS = ['Invalid two-fit cal entry at: ' TintS];
-            irf.log('critical',errS)
-            error(errS)
-        end
-
-        CalEntry = irf.ts_vec_xy(irf.tint(TintS),repmat(calData,2,1));
-
-        if nargin>2 && ~isempty(PSPintersection)
-
-            checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
-
-            if ~isempty(checkInterval)
-                [CalEntry] = TwoFitCalibration(checkInterval,PSPintersection,CalEntry);
-            else
-                CalEntry.data(1:end,2) = imag(CalEntry.x.data);
-                CalEntry.data(1:end,1) = real(CalEntry.x.data);
-            end
-        end
-
-        if isempty(Cal), Cal = CalEntry;
-        else, Cal = Cal.combine(CalEntry);
-        end
-
-        function [C] = TwoFitCalibration(PSPint,y_eq,CalData)
-            CalData = CalData.resample(PSPint);
-
-            %Identify the data points corresponding to each fit
-            CalR1 = CalData(PSPint.data<y_eq).x;
-            CalR2 = CalData(PSPint.data>=y_eq).y;
-            %Identify NaNs
-            CalRnan= CalData(isnan(PSPint.data));
-
-            %Create a TSeries with the data points of each fit
-            C1 = irf.ts_vec_xy(CalR1.time,[real(CalR1.data) imag(CalR1.data)]);
-            C2 = irf.ts_vec_xy(CalR2.time,[real(CalR2.data) imag(CalR2.data)]);
-            Cnan = irf.ts_vec_xy(CalRnan.time,[ones(length(CalRnan.data),1) ones(length(CalRnan.data),1)]);
-
-
-            %Merge both fits and NaNs to keep the same length as the input
-            %If statements added for robustness. An error will be send if
-            %combining empty objects.
-            if ~isempty(C1) && ~isempty(C2)
-                C = C1.combine(C2);
-            elseif ~isempty(C1) && isempty(C2)
-                C = C1;
-            elseif ~isempty(C2) && isempty(C1)
-                C = C2;
-            elseif isempty(C1) && isempty(C2) && ~isempty(Cnan)
-                C = Cnan;
-            elseif isempty(C1) && isempty(C2) && isempty(Cnan)
-                C = CalData;
-                irf.log('critical', 'no data at all ?!?')
-            end
-
-            if ~isempty(Cnan)
-                C = C.combine(Cnan);
-            end
-
-
-        end
+    if ~isreal(calData(1)) && (nargin<3 || isempty(PSPintersection))
+      errS = ['Invalid two-fit cal entry at: ' TintS];
+      irf.log('critical',errS)
+      error(errS)
     end
+
+    CalEntry = irf.ts_vec_xy(irf.tint(TintS),repmat(calData,2,1));
+
+    if nargin>2 && ~isempty(PSPintersection)
+
+      checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
+
+      if ~isempty(checkInterval)
+        [CalEntry] = TwoFitCalibration(checkInterval,PSPintersection,CalEntry);
+      else
+        CalEntry.data(1:end,2) = imag(CalEntry.x.data);
+        CalEntry.data(1:end,1) = real(CalEntry.x.data);
+      end
+    end
+
+    if isempty(Cal), Cal = CalEntry;
+    else, Cal = Cal.combine(CalEntry);
+    end
+
+    function [C] = TwoFitCalibration(PSPint,y_eq,CalData)
+      CalData = CalData.resample(PSPint);
+
+      %Identify the data points corresponding to each fit
+      CalR1 = CalData(PSPint.data<y_eq).x;
+      CalR2 = CalData(PSPint.data>=y_eq).y;
+      %Identify NaNs
+      CalRnan= CalData(isnan(PSPint.data));
+
+      %Create a TSeries with the data points of each fit
+      C1 = irf.ts_vec_xy(CalR1.time,[real(CalR1.data) imag(CalR1.data)]);
+      C2 = irf.ts_vec_xy(CalR2.time,[real(CalR2.data) imag(CalR2.data)]);
+      Cnan = irf.ts_vec_xy(CalRnan.time,[ones(length(CalRnan.data),1) ones(length(CalRnan.data),1)]);
+
+
+      %Merge both fits and NaNs to keep the same length as the input
+      %If statements added for robustness. An error will be send if
+      %combining empty objects.
+      if ~isempty(C1) && ~isempty(C2)
+        C = C1.combine(C2);
+      elseif ~isempty(C1) && isempty(C2)
+        C = C1;
+      elseif ~isempty(C2) && isempty(C1)
+        C = C2;
+      elseif isempty(C1) && isempty(C2) && ~isempty(Cnan)
+        C = Cnan;
+      elseif isempty(C1) && isempty(C2) && isempty(Cnan)
+        C = CalData;
+        irf.log('critical', 'no data at all ?!?')
+      end
+
+      if ~isempty(Cnan)
+        C = C.combine(Cnan);
+      end
+
+
+    end
+  end
 end

@@ -209,7 +209,7 @@ if cal_param_plot
   irf_plot(h(5),BLL)
   ylabel(h(5),'B [nT] LL ','interpreter','tex');
 
-    irf_plot(h(6),VLL)
+  irf_plot(h(6),VLL)
   ylabel(h(6),'V [km/s] LL ','interpreter','tex');
 
   irf_zoom(h(1:6),'x',Tint);
@@ -244,7 +244,7 @@ if cal_param_plot
     markTint = BIAS_current.time(ii)+[-10,10]*30*60;
     irf_pl_mark(h(1:6),markTint,[0,0,1]);
   end
- irf_timeaxis(h(4), 'nodate' );
+  irf_timeaxis(h(4), 'nodate' );
 end
 
 

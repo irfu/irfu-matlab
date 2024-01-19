@@ -67,15 +67,15 @@ TIME_PSP_BEGIN_SINGLE_PROBE = EpochTT('2022-12-15T00:00:00.000000000Z');
 
 % Normalize "calFilename": Always contain filename.
 if isempty(calFilename)
-    % Caller did not specify calibration file.
-    % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
-    % OFFICIAL DATASETS.
-    calFilename = 'd23K123_20230707.mat'; % parameters up to end of 2023-05-27
+  % Caller did not specify calibration file.
+  % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
+  % OFFICIAL DATASETS.
+  calFilename = 'd23K123_20230707.mat'; % parameters up to end of 2023-05-27
 else
-    % Caller specified calibration file. Useful for debugging/testing new
-    % calibrations.
+  % Caller specified calibration file. Useful for debugging/testing new
+  % calibrations.
 
-    % (Do nothing.)
+  % (Do nothing.)
 end
 a = load(calFilename);
 
@@ -125,87 +125,87 @@ ScPot_out   = irf.ts_scalar(EpochTT([]),[]);
 
 for iSub = 1:length(sub_int_times)-1
 
-    subTint = sub_int_times(iSub:iSub+1);
-    % Find the closest discontinuities.
-    prev_discont = EpochTT(max(discontTimes.epoch(subTint(1).epoch   >= discontTimes.epoch)));
-    next_discont = EpochTT(min(discontTimes.epoch(subTint(end).epoch <= discontTimes.epoch)));
+  subTint = sub_int_times(iSub:iSub+1);
+  % Find the closest discontinuities.
+  prev_discont = EpochTT(max(discontTimes.epoch(subTint(1).epoch   >= discontTimes.epoch)));
+  next_discont = EpochTT(min(discontTimes.epoch(subTint(end).epoch <= discontTimes.epoch)));
 
-    % ======================================
-    % Optionally modify the time subinterval
-    % ======================================
-    % Extend the time interval to the closest discontinuities (this is to avoid
-    % problems that occur if VDC contains very little data).
-    if ~isempty(prev_discont) && ~isempty(next_discont)
-        subTint = irf.tint(prev_discont, next_discont);
-    elseif isempty(prev_discont)
-        % If there are no discontinuities BEFORE the specified time,
-        % increase interval by 2 days before.
-        subTint = irf.tint(subTint(1)+(-2*24*60*60), next_discont);
-    elseif isempty(next_discont)
-        % If there are no discontinuities AFTER the specified time,
-        % increase interval by 2 days after.
-        subTint = irf.tint(prev_discont, subTint(end)+(2*24*60*60));
-    end
+  % ======================================
+  % Optionally modify the time subinterval
+  % ======================================
+  % Extend the time interval to the closest discontinuities (this is to avoid
+  % problems that occur if VDC contains very little data).
+  if ~isempty(prev_discont) && ~isempty(next_discont)
+    subTint = irf.tint(prev_discont, next_discont);
+  elseif isempty(prev_discont)
+    % If there are no discontinuities BEFORE the specified time,
+    % increase interval by 2 days before.
+    subTint = irf.tint(subTint(1)+(-2*24*60*60), next_discont);
+  elseif isempty(next_discont)
+    % If there are no discontinuities AFTER the specified time,
+    % increase interval by 2 days after.
+    subTint = irf.tint(prev_discont, subTint(end)+(2*24*60*60));
+  end
 
-    %%
-    % =======================
-    % Prepare for calibration
-    % =======================
-    VDC = VDC_inp.tlim(subTint);
+  %%
+  % =======================
+  % Prepare for calibration
+  % =======================
+  VDC = VDC_inp.tlim(subTint);
 
-    % Indices/samples for which which should be treated as single probe.
-    bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
-    bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
+  % Indices/samples for which which should be treated as single probe.
+  bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
+  bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
 
-    % Resample calibration parameters
-    d23R  = a.d23.tlim(subTint).resample(VDC);
-    k23R  = a.k23.tlim(subTint).resample(VDC);
-    K123R = a.K123.tlim(subTint).resample(VDC);
+  % Resample calibration parameters
+  d23R  = a.d23.tlim(subTint).resample(VDC);
+  k23R  = a.k23.tlim(subTint).resample(VDC);
+  K123R = a.K123.tlim(subTint).resample(VDC);
 
-    % =================
-    % Begin calibration
-    % =================
+  % =================
+  % Begin calibration
+  % =================
 
-    V1         = double(VDC.x.data);
-    % Remove potential offset between probes 2 & 3.
-    V2_scaled  = double(VDC.y.data).*k23R.data + double(d23R.data);
-    V3         = double(VDC.z.data);
-    % V23: Corresponds to a measurement point between antennas 2 & 3.
-    V23        = (V2_scaled+V3)/2;
+  V1         = double(VDC.x.data);
+  % Remove potential offset between probes 2 & 3.
+  V2_scaled  = double(VDC.y.data).*k23R.data + double(d23R.data);
+  V3         = double(VDC.z.data);
+  % V23: Corresponds to a measurement point between antennas 2 & 3.
+  V23        = (V2_scaled+V3)/2;
 
-    V23_scaled = (V23.*K123R.data(:,1) + K123R.data(:,2)); % Correcting V23 to V1.
+  V23_scaled = (V23.*K123R.data(:,1) + K123R.data(:,2)); % Correcting V23 to V1.
 
-    % Assume all probe data available: Compute PSP from corrected quantities.
-    PSP = irf.ts_scalar(VDC.time, (V23_scaled + V1)/2);
-    % Single-probe data: Use alternate, simpler "calculation" for some
-    %                    timestamps.
-    PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
-    PSP.units = 'V';
-    PSP_out   = PSP_out.combine(PSP);
+  % Assume all probe data available: Compute PSP from corrected quantities.
+  PSP = irf.ts_scalar(VDC.time, (V23_scaled + V1)/2);
+  % Single-probe data: Use alternate, simpler "calculation" for some
+  %                    timestamps.
+  PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
+  PSP.units = 'V';
+  PSP_out   = PSP_out.combine(PSP);
 
-    PLASMA_POT = 1.5; SHORT_FACTOR = 2.5; % XXX: these are just ad hoc numbers.
+  PLASMA_POT = 1.5; SHORT_FACTOR = 2.5; % XXX: these are just ad hoc numbers.
 
-    ScPot = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
-    ScPot.units = PSP.units;
-    ScPot_out   = ScPot_out.combine(ScPot);
+  ScPot = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
+  ScPot.units = PSP.units;
+  ScPot_out   = ScPot_out.combine(ScPot);
 
-    % Ey_SRF = V3 - V2, 6.99 - 1/2 of distance between the antennas
-    V_d23  = V2_scaled-V3;    % Fixed V2-V3.
-    Ey_SRF = -V_d23*1e3/6.99;
+  % Ey_SRF = V3 - V2, 6.99 - 1/2 of distance between the antennas
+  V_d23  = V2_scaled-V3;    % Fixed V2-V3.
+  Ey_SRF = -V_d23*1e3/6.99;
 
-    % Here we use the effective antenna length of 11.2 m, which correponds to
-    % the distance between the center of ANT1 and a symmetric antenna on the
-    % other side having voltage V23_scaled (see above).
+  % Here we use the effective antenna length of 11.2 m, which correponds to
+  % the distance between the center of ANT1 and a symmetric antenna on the
+  % other side having voltage V23_scaled (see above).
 
-    % For non-scaled V23, the effective length would be L_123 = 6.97m, as shown
-    % in Steinvall et al., 2021.
-    Ez_SRF = (V23_scaled - V1)*1e3/11.2;
+  % For non-scaled V23, the effective length would be L_123 = 6.97m, as shown
+  % in Steinvall et al., 2021.
+  Ez_SRF = (V23_scaled - V1)*1e3/11.2;
 
-    DCE_SRF = irf.ts_vec_xyz(VDC.time, [Ey_SRF*0 Ey_SRF Ez_SRF]);
-    DCE_SRF.units            = 'mV/m';
-    DCE_SRF.coordinateSystem = 'SRF';
+  DCE_SRF = irf.ts_vec_xyz(VDC.time, [Ey_SRF*0 Ey_SRF Ez_SRF]);
+  DCE_SRF.units            = 'mV/m';
+  DCE_SRF.coordinateSystem = 'SRF';
 
-    DCE_SRF_out = DCE_SRF_out.combine(DCE_SRF);
+  DCE_SRF_out = DCE_SRF_out.combine(DCE_SRF);
 
 end % for
 
