@@ -93,6 +93,10 @@ BDM, "mux mode"
     "mux mode", "demux mode", "demultiplexer mode", "bias mux mode", etc.)
     and to distinguish it from "muxing" as a verb. Mostly used internally,
     not in the interface.
+BFM
+    BICAS Functionality Mode. One of the basic modes of BICAS operations:
+    Print version, print identifiction, print version, print help, or process
+    datasets. Exactly one of these must apply every time BICAS is run.
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
     Specification".
