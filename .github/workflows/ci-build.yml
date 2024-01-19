@@ -78,7 +78,7 @@ jobs:
           command: tests_before_release_R2020a;
 
       # Upload artifact (pdf report with plots, etc.)
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: test_report_R2020a.pdf
           path: ciPath/report_R2020a.pdf
