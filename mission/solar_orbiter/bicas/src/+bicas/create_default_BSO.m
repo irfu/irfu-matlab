@@ -398,9 +398,10 @@ S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
 
 % Maximum value for zVar QUALITY_FLAG in output datasets.
 % YK 2020-08-31: Use 2=Survey data, possibly not publication-quality
+% YK 2024-01-19: Use 3=Good for publication, subject to PI approval
 %
-% TODO-NI/DEC: Temporary? Use for all output datasets (L2, L3)?
-S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 2)
+% NOTE: Used for both L2 and L3 datasets.
+S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 3)
 
 % Path to NSO table file. Relative to BICAS root.
 S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', fullfile('data', 'solo_ns_ops.xml'))

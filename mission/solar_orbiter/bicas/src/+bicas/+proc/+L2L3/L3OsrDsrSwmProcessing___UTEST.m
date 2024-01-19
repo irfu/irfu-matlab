@@ -191,6 +191,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
     function test(testCase, DATA_OSR, DATA_DSR)
       L        = bicas.Logger('none', false);
       Bso = bicas.create_default_BSO();
+      Bso.override_value('PROCESSING.ZV_QUALITY_FLAG_MAX', 2, mfilename)
       Bso.make_read_only();
 
       % Tests are designed for this value.
