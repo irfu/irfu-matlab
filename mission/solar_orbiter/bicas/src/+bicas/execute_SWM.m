@@ -112,7 +112,7 @@ for i = 1:length(SwmInfo.inputsList)
       inputFilePath, cdfDsi, SwmInfo.inputsList(i).dsi);
     bicas.default_anomaly_handling(L, ...
       settingValue, settingKey, ...
-      'E+W+illegal', anomalyDescrMsg, 'BICAS:DatasetFormat')
+      'ERROR_WARNING_ILLEGAL_SETTING', anomalyDescrMsg, 'BICAS:DatasetFormat')
   end
 end
 
