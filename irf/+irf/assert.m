@@ -622,12 +622,4 @@ classdef assert
 
 
 
-  %     methods(Static, Access=private)
-  %
-  %         function assert(cond, )
-  %
-  %     end
-
-
-
 end    % classdef

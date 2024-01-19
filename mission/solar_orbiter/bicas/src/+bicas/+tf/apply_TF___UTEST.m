@@ -181,7 +181,7 @@ classdef apply_TF___UTEST < matlab.unittest.TestCase
             y1_2   = sin(omega2*t);
             y1     = y1_1 + y1_2;
 
-            tf     = bicas.tf.utest_utils.get_tf_delay(1*dt);
+            tf     = bicas.tf.utest_utils.get_TF_delay(1*dt);
 
             if 1
 
@@ -268,7 +268,7 @@ classdef apply_TF___UTEST < matlab.unittest.TestCase
 
                 dt = 0.1;
                 y1 = [1:100]';
-                tf = bicas.tf.utest_utils.get_tf_constant(C, C);
+                tf = bicas.tf.utest_utils.get_TF_constant(C, C);
 
                 y1(Td.iFvArray) = NaN;
 

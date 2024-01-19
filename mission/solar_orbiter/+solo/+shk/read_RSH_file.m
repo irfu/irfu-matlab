@@ -61,109 +61,109 @@
 % First created 2020-12-01.
 %
 function D = read_RSH_file(xmlFilePath, namesCa)
-    % PROPOSAL: Move to irfu-matlab +solo/+shk/.
-    %
-    % TODO-DEC: Return format?
-    %   NEED: Easy to use if one wants to merge the content from multiple files.
-    %   PROPOSAL: Struct array.
-    %       CON: Inefficient?
-    %   PROPOSAL: Struct with array fields.
-    %   PROPOSAL: Sort data by "Name".
-    %       CON: Wrapper should do that?
-    %           CON: Since specifying namesCa, maybe not. It is a ~universal
-    %                operation.
-    %
-    % PROPOSAL: Only read data for specified elements (specified tag names).
-    %   Ex: EngineeringValue, RawValue, Unit
-    %   PRO: Speeds up if future implementation includes many elements.
-    %
-    % PROPOSAL: Convert raw/engineering values to numeric when the type indicates it.
-    %   CON-PROPOSAL: Wrapper should do that.
-    %   PROPOSAL: Use Type=DOUBLE or RawValueType
-    %       CON: No longer included in XML files.
+% PROPOSAL: Move to irfu-matlab +solo/+shk/.
+%
+% TODO-DEC: Return format?
+%   NEED: Easy to use if one wants to merge the content from multiple files.
+%   PROPOSAL: Struct array.
+%       CON: Inefficient?
+%   PROPOSAL: Struct with array fields.
+%   PROPOSAL: Sort data by "Name".
+%       CON: Wrapper should do that?
+%           CON: Since specifying namesCa, maybe not. It is a ~universal
+%                operation.
+%
+% PROPOSAL: Only read data for specified elements (specified tag names).
+%   Ex: EngineeringValue, RawValue, Unit
+%   PRO: Speeds up if future implementation includes many elements.
+%
+% PROPOSAL: Convert raw/engineering values to numeric when the type indicates it.
+%   CON-PROPOSAL: Wrapper should do that.
+%   PROPOSAL: Use Type=DOUBLE or RawValueType
+%       CON: No longer included in XML files.
 
-    % Variable naming convention
-    % PSLE = <ParamSampleListElement> ("List" is included in XML tag name)
+% Variable naming convention
+% PSLE = <ParamSampleListElement> ("List" is included in XML tag name)
 
-    % XML elements to always copy, except "Name".
-    XML_ELEMENT_TAG_WO_NAME_CA = {'EngineeringValue', 'TimeStampAsciiA'};
-    % XML elements to always copy.
-    XML_ELEMENT_TAG_CA         = [{'Name'}, XML_ELEMENT_TAG_WO_NAME_CA];
+% XML elements to always copy, except "Name".
+XML_ELEMENT_TAG_WO_NAME_CA = {'EngineeringValue', 'TimeStampAsciiA'};
+% XML elements to always copy.
+XML_ELEMENT_TAG_CA         = [{'Name'}, XML_ELEMENT_TAG_WO_NAME_CA];
 
-    % Validate namesCa.
-    % Set "allNameValues".
-    if isnumeric(namesCa) && isempty(namesCa)
-        % CASE: Special value: []
-        allNameValues = true;
-    else
-        % CASE: List of "Name" values.
-        allNameValues = false;
-        assert(iscell(namesCa), 'Argument "namesCa" is not a cell array.')
+% Validate namesCa.
+% Set "allNameValues".
+if isnumeric(namesCa) && isempty(namesCa)
+  % CASE: Special value: []
+  allNameValues = true;
+else
+  % CASE: List of "Name" values.
+  allNameValues = false;
+  assert(iscell(namesCa), 'Argument "namesCa" is not a cell array.')
+end
+
+RootXmlElem = xmlread(xmlFilePath);
+
+ResponsePartXmlElem    = getXmlUniqChildElem(RootXmlElem,         'ns2:ResponsePart');
+ResponseXmlElem        = getXmlUniqChildElem(ResponsePartXmlElem, 'Response');
+ParamSampleListXmlElem = getXmlUniqChildElem(ResponseXmlElem,     'ParamResponse');
+
+PsleXmlList = ParamSampleListXmlElem.getElementsByTagName(        'ParamSampleListElement');
+n           = PsleXmlList.getLength();
+
+
+
+%=======================
+% Pre-allocate D, bKeep
+%=======================
+D = struct();
+for tagNameCa = XML_ELEMENT_TAG_CA
+  D.(tagNameCa{1}) = cell(n, 1);
+end
+bKeep = false(n, 1);
+
+%==============================================
+% Iterate over main array/list of XML elements
+%==============================================
+% X = "XML index convention" (as used by functions; i.e. 0=first)
+for iX = 0 : n-1
+  PsleXmlElem = PsleXmlList.item(iX);
+
+  name = getXmlUniqChildElemStr(PsleXmlElem, 'Name');
+
+  if allNameValues || ismember(name, namesCa)
+
+    % M = MATLAB index convention (i.e. 1=first).
+    iM = iX + 1;
+    bKeep(iM) = true;
+    D.Name{iM, 1} = name;
+    for tagNameCa = XML_ELEMENT_TAG_WO_NAME_CA
+      value = getXmlUniqChildElemStr(PsleXmlElem, tagNameCa{1});
+      D.(tagNameCa{1}){iM, 1} = value;
     end
 
-    RootXmlElem = xmlread(xmlFilePath);
+  end
 
-    ResponsePartXmlElem    = getXmlUniqChildElem(RootXmlElem,         'ns2:ResponsePart');
-    ResponseXmlElem        = getXmlUniqChildElem(ResponsePartXmlElem, 'Response');
-    ParamSampleListXmlElem = getXmlUniqChildElem(ResponseXmlElem,     'ParamResponse');
+end
 
-    PsleXmlList = ParamSampleListXmlElem.getElementsByTagName(        'ParamSampleListElement');
-    n           = PsleXmlList.getLength();
+% Compress arrays: Remove indices without data.
+for i = 1:numel(XML_ELEMENT_TAG_CA)
+  tagName = XML_ELEMENT_TAG_CA{i};
+  D.(tagName) = D.(tagName)(bKeep);
 
-
-
-    %=======================
-    % Pre-allocate D, bKeep
-    %=======================
-    D = struct();
-    for tagNameCa = XML_ELEMENT_TAG_CA
-        D.(tagNameCa{1}) = cell(n, 1);
-    end
-    bKeep = false(n, 1);
-
-    %==============================================
-    % Iterate over main array/list of XML elements
-    %==============================================
-    % X = "XML index convention" (as used by functions; i.e. 0=first)
-    for iX = 0 : n-1
-        PsleXmlElem = PsleXmlList.item(iX);
-
-        name = getXmlUniqChildElemStr(PsleXmlElem, 'Name');
-
-        if allNameValues || ismember(name, namesCa)
-
-            % M = MATLAB index convention (i.e. 1=first).
-            iM = iX + 1;
-            bKeep(iM) = true;
-            D.Name{iM, 1} = name;
-            for tagNameCa = XML_ELEMENT_TAG_WO_NAME_CA
-                value = getXmlUniqChildElemStr(PsleXmlElem, tagNameCa{1});
-                D.(tagNameCa{1}){iM, 1} = value;
-            end
-
-        end
-
-    end
-
-    % Compress arrays: Remove indices without data.
-    for i = 1:numel(XML_ELEMENT_TAG_CA)
-        tagName = XML_ELEMENT_TAG_CA{i};
-        D.(tagName) = D.(tagName)(bKeep);
-
-        % Normalize to coumn vector.
-        % IMPLEMENTATION NOTE: Above creates 0x0 (not 0x1) cell array when
-        % all(bKeep == false) which is inconsistent behaviour.
-        D.(tagName) = D.(tagName)(:);
-    end
+  % Normalize to coumn vector.
+  % IMPLEMENTATION NOTE: Above creates 0x0 (not 0x1) cell array when
+  % all(bKeep == false) which is inconsistent behaviour.
+  D.(tagName) = D.(tagName)(:);
+end
 
 end
 
 
 
 function s = getXmlUniqChildElemStr(XmlElem, childTagName)
-    XmlElem = getXmlUniqChildElem(XmlElem, childTagName);
+XmlElem = getXmlUniqChildElem(XmlElem, childTagName);
 
-    s = char(XmlElem.getTextContent());
+s = char(XmlElem.getTextContent());
 end
 
 
@@ -173,18 +173,18 @@ end
 %   with the specified tag name.
 %
 function ChildXmlElem = getXmlUniqChildElem(XmlElem, childTagName)
-    % NOTE: Exact same function as in bicas.NSO_table.
-    % PROPOSAL: Turn into separate generic function?
+% NOTE: Exact same function as in bicas.NsoTable.
+% PROPOSAL: Turn into separate generic function?
 
-    ChildXmlElemList = XmlElem.getElementsByTagName(childTagName);
+ChildXmlElemList = XmlElem.getElementsByTagName(childTagName);
 
-    % ASSERTION
-    if ~(ChildXmlElemList.getLength() == 1)
-        error( ...
-            ['XML element (tag name "%s") does not have exactly, ', ...
-            ' one child element with tag name "%s" as expected.'], ...
-            XmlElem.getNodeName(), childTagName)
-    end
+% ASSERTION
+if ~(ChildXmlElemList.getLength() == 1)
+  error( ...
+    ['XML element (tag name "%s") does not have exactly, ', ...
+    ' one child element with tag name "%s" as expected.'], ...
+    XmlElem.getNodeName(), childTagName)
+end
 
-    ChildXmlElem = ChildXmlElemList.item(0);
+ChildXmlElem = ChildXmlElemList.item(0);
 end

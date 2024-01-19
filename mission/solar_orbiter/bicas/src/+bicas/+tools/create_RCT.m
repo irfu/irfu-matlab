@@ -45,7 +45,7 @@
 % =======================
 % See implementation for comments.
 % See comments for settings PROCESSING.RCT_REGEXP.* (all RCTs), in
-% bicas.create_default_SETTINGS.
+% bicas.create_default_BSO.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -91,25 +91,25 @@ end
 
 
 function [RctZvL, RctZvH] = set_RCT_content()
-    
+
     ADD_DEBUG_RECORD_L = 0;
     ADD_DEBUG_RECORD_H = 0;
-    C.N_ZVAR_COEFF     = 8;
-    
+    C.N_ZV_COEFF     = 8;
+
     %===================================================================
     % Create EMPTY (not zero-valued) variables representing zVariables.
     %===================================================================
     RctZvL.Epoch_L                  = int64( zeros(0,1) );
     RctZvL.BIAS_CURRENT_OFFSET      = zeros(0, 3);
     RctZvL.BIAS_CURRENT_GAIN        = zeros(0, 3);
-    RctZvL.TRANSFER_FUNCTION_COEFFS = zeros(0, 2, C.N_ZVAR_COEFF, 4);
-    
+    RctZvL.TRANSFER_FUNCTION_COEFFS = zeros(0, 2, C.N_ZV_COEFF, 4);
+
     RctZvH.Epoch_H  = int64( zeros(0,1) );
     RctZvH.E_OFFSET = zeros(0,3);
     RctZvH.V_OFFSET = zeros(0,3);
-    
-    
-    
+
+
+
     %===================================================================================================================
     % --------------------
     % DC single
@@ -160,7 +160,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
     %   SOLO_CAL_RPW_BIAS_V202004062127.cdf
     %   SOLO_CAL_RPW_BIAS_V202003101607.cdf
     %===================================================================================================================
-    
+
     %===================================================================================================================
     % SC = Sign Changed
     TF_DC_single_2017_12_13_SC = {-[-5.009e20,  8.148e14, -1.041e10],                      [8.556e21, 2.578e17, 2.042e12, 8.238e05, 1]};
@@ -170,9 +170,9 @@ function [RctZvL, RctZvH] = set_RCT_content()
     %===================================================================================================================
     if 0
         % Version used up until 2020-11-19, ~internally.
-        RctZvL = add_RCT_zvars_L(RctZvL, int64(0), ...
+        RctZvL = add_RCT_ZVs_L(RctZvL, int64(0), ...
             [2.60316e-09, -4.74234e-08, -4.78828e-08]', [1.98008e-09, 1.97997e-09, 1.98021e-09]', ...
-            create_tfc_zv_record(C, ...
+            create_tfc_ZV_record(C, ...
             'DC_single', TF_DC_single_2017_12_13_SC, ...
             'DC_diff',   TF_DC_diff_2017_12_13_SC, ...
             'AC_lg',     TF_AC_LG_2017_12_13_SC, ...
@@ -188,10 +188,10 @@ function [RctZvL, RctZvH] = set_RCT_content()
         TF_AC_HG_2020_11_18 = {...
             fliplr([3.89496e+32, 2.13364e+37, 6.91633e+41, 0]), ...
             fliplr([1, 1.71685e+20, 9.97355e+25, 1.05546e+31, 4.33219e+35, 7.05355e+39, 3.4202e+41])};
-        
-        RctZvL = add_RCT_zvars_L(RctZvL, int64(0), ...
+
+        RctZvL = add_RCT_ZVs_L(RctZvL, int64(0), ...
             [2.60316e-09, -4.74234e-08, -4.78828e-08]', [1.98008e-09, 1.97997e-09, 1.98021e-09]', ...
-            create_tfc_zv_record(C, ...
+            create_tfc_ZV_record(C, ...
                 'DC_single', TF_DC_single_2017_12_13_SC, ...
                 'DC_diff',   TF_DC_diff_2017_12_13_SC, ...
                 'AC_lg',     TF_AC_LG_2020_11_18, ...
@@ -203,7 +203,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
 
     if ADD_DEBUG_RECORD_L
         % TEST: Add another record for Epoch_L.
-        RctZvL = add_RCT_zvars_L(RctZvL, ...
+        RctZvL = add_RCT_ZVs_L(RctZvL, ...
             RctZvL.Epoch_L(end) + 1e9, ...
             RctZvL.BIAS_CURRENT_OFFSET(end)', ...
             RctZvL.BIAS_CURRENT_GAIN(end)', ...
@@ -211,9 +211,9 @@ function [RctZvL, RctZvH] = set_RCT_content()
             );
         warning('Creating RCT with added test data.')
     end
-    
-    
-    
+
+
+
     %========================================================================================
     % Values from 20160621_FS0_EG_Test_Flight_Harness_Preamps.
     % V_OFFSET values from mheader.reg6 for tests with stimuli=1e5 Ohm.
@@ -222,17 +222,17 @@ function [RctZvL, RctZvH] = set_RCT_content()
     % Uncertain whether it is correct to use value for stimuli=1e5 Ohm instead 1e6 Ohm.
     % Uncertain whether it is correct to use the reg6 value instead of own fit.
     %========================================================================================
-    RctZvH = add_RCT_zvars_H(RctZvH, int64(0), -[0.001307, 0.0016914, 0.0030156]', -[0.015384, 0.01582, 0.017215]');
+    RctZvH = add_RCT_ZVs_H(RctZvH, int64(0), -[0.001307, 0.0016914, 0.0030156]', -[0.015384, 0.01582, 0.017215]');
     if ADD_DEBUG_RECORD_H
         RECORD_DELAY_NS = 2e9;
         % TEST: Add another record for Epoch_H.
-        RctZvH = add_RCT_zvars_H(RctZvH, ...
+        RctZvH = add_RCT_ZVs_H(RctZvH, ...
             RctZvH.Epoch_H(end) + RECORD_DELAY_NS, ...
             RctZvH.V_OFFSET(end, :)', ...
             RctZvH.V_OFFSET(end, :)');
         warning('Creating RCT with added test data.')
     end
-    
+
 end
 
 
@@ -242,17 +242,17 @@ end
 %
 % OFFICIAL DOCUMENTATION ON RCT FILENAMING CONVENTION
 % ===================================================
-% See comments for bicas.create_default_SETTINGS, settings
+% See comments for bicas.create_default_BSO, settings
 % PROCESSING.RCT_REGEXP.* (all RCTs).
 %
 function [destFilename, gaCALIBRATION_VERSION] = create_RCT_filename()
     % IMPLEMENTATION NOTE: The official filenaming convention is not followed
     % here!! Not sure how to comply with it either (which receiver should the
     % BIAS RCT specify?).
-    
+
     % NOTE: Should not contain seconds.
     gaCALIBRATION_VERSION = char(datetime("now","Format","uuuuMMddHHmm"));
-    
+
     % NOTE: Minus in "RPW-BIAS".
     destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', gaCALIBRATION_VERSION);
 end
@@ -274,31 +274,31 @@ end
 %                   NOTE: Unusual "syntax" for argument list. String constants
 %                   must be the same every time. Only there for safety.
 %
-function zVarRecord = create_tfc_zv_record(C, varargin)
+function zvRecord = create_tfc_ZV_record(C, varargin)
     % PROPOSAL: Convert varargin to struct directly.
-    
-    zVarRecord = double(zeros(1, 2, C.N_ZVAR_COEFF, 4));
+
+    zvRecord = double(zeros(1, 2, C.N_ZV_COEFF, 4));
     INDEX_LABEL_LIST = {'DC_single', 'DC_diff', 'AC_lg', 'AC_hg'};
     for i=1:4
         if strcmp(varargin{2*i-1}, INDEX_LABEL_LIST{i})
-            zVarRecord(1,:,:,i) = ca2na(varargin{2*i});
+            zvRecord(1,:,:,i) = ca2na(varargin{2*i});
         else
             error('Illegal argument string constant.')
         end
     end
-    
+
     % ASSERTIONS
-    assert(all(isfinite(zVarRecord), 'all'), ...
-        'create_RCT:Assertion', 'zVarRecord contains non-finite values.')
-    irf.assert.sizes(zVarRecord, [1, 2, C.N_ZVAR_COEFF, 4])
-    
+    assert(all(isfinite(zvRecord), 'all'), ...
+        'create_RCT:Assertion', 'zvRecord contains non-finite values.')
+    irf.assert.sizes(zvRecord, [1, 2, C.N_ZV_COEFF, 4])
+
     %###########################################################################
-    
+
     % Convert TF format
     % Convert 1x2 cell array of 1D arrays --> "2D" array, size 1x2xN
     function na = ca2na(ca)
         % ASSERTIONS
-        assert(iscell(ca))        
+        assert(iscell(ca))
         assert(numel(ca) == 2)
         irf.assert.sizes(...
             ca{1}, [1, NaN], ...
@@ -307,29 +307,29 @@ function zVarRecord = create_tfc_zv_record(C, varargin)
             ['Submitted TF does not have a coefficient 1 for the highest', ...
             ' order denominator term. This assertion should be satisified', ...
             ' if the TF comes from a MATLAB fit, but is otherwise not required.'])
-        
+
         % Convert cell array to numeric array.
         na = [...
-            padarray(ca{1}, [0, C.N_ZVAR_COEFF-numel(ca{1})], 'post'); ...
-            padarray(ca{2}, [0, C.N_ZVAR_COEFF-numel(ca{2})], 'post') ...
-            ];    % 2 x N_ZVAR_COEFF
-        na = permute(na, [3,1,2]);    % 1 x 2 x N_ZVAR_COEFF
-        
+            padarray(ca{1}, [0, C.N_ZV_COEFF-numel(ca{1})], 'post'); ...
+            padarray(ca{2}, [0, C.N_ZV_COEFF-numel(ca{2})], 'post') ...
+            ];    % 2 x N_ZV_COEFF
+        na = permute(na, [3,1,2]);    % 1 x 2 x N_ZV_COEFF
+
         % ASSERTIONS
-        irf.assert.sizes(na, [1, 2, C.N_ZVAR_COEFF])
+        irf.assert.sizes(na, [1, 2, C.N_ZV_COEFF])
     end
 end
 
 
 
 % Add 1 record to zVariables associated with Epoch_L.
-function RctZvL = add_RCT_zvars_L(...
+function RctZvL = add_RCT_ZVs_L(...
         RctZvL, ...
         Epoch_L, ...
         BIAS_CURRENT_OFFSET, ...
         BIAS_CURRENT_GAIN, ...
         TRANSFER_FUNCTION_COEFFS)
-    
+
     RctZvL.Epoch_L                 (end+1, 1)       = Epoch_L;
     RctZvL.BIAS_CURRENT_OFFSET     (end+1, :)       = BIAS_CURRENT_OFFSET;
     RctZvL.BIAS_CURRENT_GAIN       (end+1, :)       = BIAS_CURRENT_GAIN;
@@ -339,7 +339,7 @@ end
 
 
 % Add 1 record to zVariables associated with Epoch_H.
-function RctZvH = add_RCT_zvars_H(RctZvH, Epoch_H, V_OFFSET, E_OFFSET)
+function RctZvH = add_RCT_ZVs_H(RctZvH, Epoch_H, V_OFFSET, E_OFFSET)
     RctZvH.Epoch_H (end+1, 1) = Epoch_H;
     RctZvH.V_OFFSET(end+1, :) = V_OFFSET;
     RctZvH.E_OFFSET(end+1, :) = E_OFFSET;
@@ -347,22 +347,22 @@ end
 
 
 
-% rctL : Struct with zVars associated with Epoch_L.
-% rctH : Struct with zVars associated with Epoch_H.
+% rctL : Struct with ZVs associated with Epoch_L.
+% rctH : Struct with ZVs associated with Epoch_H.
 function create_RCT_file(rctMasterCdfFile, destPath, RctL, RctH, gaCALIBRATION_VERSION)
     % PROPOSAL: Assertion for matching number of records Epoch_L+data, Epoch_H+data.
     %   PROPOSAL: Read from master file which should match.
     % TODO-DEC: Require correct MATLAB classes (via write_CDF_dataobj)?
-    
+
     assert(ischar(gaCALIBRATION_VERSION))
-    
+
     DataObj = dataobj(rctMasterCdfFile);
-    
+
     DataObj.GlobalAttributes.CALIBRATION_VERSION = {gaCALIBRATION_VERSION};
-    
+
     DataObj.data.Epoch_L.data = RctL.Epoch_L;
     DataObj.data.Epoch_H.data = RctH.Epoch_H;
-    
+
     DataObj.data.BIAS_CURRENT_OFFSET.data      = RctL.BIAS_CURRENT_OFFSET;         % Epoch_L
     DataObj.data.BIAS_CURRENT_GAIN.data        = RctL.BIAS_CURRENT_GAIN;           % Epoch_L
     DataObj.data.TRANSFER_FUNCTION_COEFFS.data = RctL.TRANSFER_FUNCTION_COEFFS;    % Epoch_L

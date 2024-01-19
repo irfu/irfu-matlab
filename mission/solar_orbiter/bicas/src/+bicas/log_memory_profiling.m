@@ -17,9 +17,8 @@
 function log_memory_profiling(L, locationName)
     % PROPOSAL: Automatic test code.
     %
-    % PROPOSAL: Use generic code for creating tables. irf.str.assist_print_table.
-    % PROPOSAL: Convert to kiB, MiB.
-    %   PROPOSAL: Different for different variables.
+    % PROPOSAL: Use generic code for creating tables.
+    %   NOTE: Already using irf.str.assist_print_table().
     % PROPOSAL: Make more grep-friendly.
     %   Ex: Sums, specific code locations.
     %
@@ -42,7 +41,7 @@ function log_memory_profiling(L, locationName)
     INDENT_SIZE        = 4;
     DIVIDER_LINE_1_CHAR = '=';
     DIVIDER_LINE_2_CHAR = '-';
-    
+
     dataStrs = cell(0,3);
     for i = 1:numel(M)
         [valueStr, unit] = select_unit(M(i).bytes);
@@ -55,14 +54,14 @@ function log_memory_profiling(L, locationName)
     dataStrs{i+1, 2} = valueStr;
     dataStrs{i+1, 3} = sprintf('[%s]', unit);
     nDataRows = size(dataStrs, 1);
-    
-    
-    
+
+
+
     [headerStrs, dataStrs, ~] = irf.str.assist_print_table(...
         HEADER_STRS, dataStrs, COLUMN_ADJUSTMENTS);
 
-    
-    
+
+
     headerDataCa = {strjoin(headerStrs, COLUMN_SEPARATOR)};
     dividerStr1  = irf.str.repeat(DIVIDER_LINE_1_CHAR, numel(headerDataCa{1}));
     dividerStr2  = irf.str.repeat(DIVIDER_LINE_2_CHAR, numel(headerDataCa{1}));
@@ -96,6 +95,6 @@ function [valueStr, unit] = select_unit(valueBytes)
     else
         % NOTE: Adds whitespace instead of decimals.
         valueStr = sprintf('%.0f  ', valueBytes);
-        unit  = 'bytes';
+        unit     = 'bytes';
     end
 end

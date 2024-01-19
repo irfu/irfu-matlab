@@ -34,44 +34,44 @@
 % First created 2021-10-12.
 %
 function [HgaElevation, HgaAzimuth] = read_RSH_HGA_angles(xmlFilePathsCa)
-    % PROPOSAL: Automatic test code.
-    %
-    % PROPOSAL: Refactor into reading arbitrary element tags
-    %           (e.g. EngineeringValue) for arbitrary list of mnemonics.
-    % PROPOSAL: Save ~mnemonics in data structures.
-    %   CON: Structs are no longer same size in all fields.
+% PROPOSAL: Automatic test code.
+%
+% PROPOSAL: Refactor into reading arbitrary element tags
+%           (e.g. EngineeringValue) for arbitrary list of mnemonics.
+% PROPOSAL: Save ~mnemonics in data structures.
+%   CON: Structs are no longer same size in all fields.
 
 
-    % HK mnemonics
-    % ------------
-    % https://confluence-lesia.obspm.fr/display/ROC/SOLO+HK+Parameter+data
-    % NCFT29T0 = HGA Acquired Elevation in degrees
-	% NCFT29S0 = HGA Acquired Azimuth in degrees
-    NAME_ELEVATION = 'NCFT29T0';
-    NAME_AZIMUTH   = 'NCFT29S0';
+% HK mnemonics
+% ------------
+% https://confluence-lesia.obspm.fr/display/ROC/SOLO+HK+Parameter+data
+% NCFT29T0 = HGA Acquired Elevation in degrees
+% NCFT29S0 = HGA Acquired Azimuth in degrees
+NAME_ELEVATION = 'NCFT29T0';
+NAME_AZIMUTH   = 'NCFT29S0';
 
 
 
-    %t = tic();
-    D = solo.shk.read_RSH_file_many(xmlFilePathsCa, {NAME_ELEVATION, NAME_AZIMUTH});
-    %toc(t)    % TEMP
+%t = tic();
+D = solo.shk.read_RSH_file_many(xmlFilePathsCa, {NAME_ELEVATION, NAME_AZIMUTH});
+%toc(t)    % TEMP
 
-    Dt = datetime(...
-        D.TimeStampAsciiA, ...
-        'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS');
+Dt = datetime(...
+  D.TimeStampAsciiA, ...
+  'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS');
 
-    % Sort arrays by time.
-    % IMPLEMENTATION NOTE: Does this before separating arrays.
-    [Dt, iSort] = sort(Dt);
-    D.Name             = D.Name(iSort);
-    D.EngineeringValue = D.EngineeringValue(iSort);
+% Sort arrays by time.
+% IMPLEMENTATION NOTE: Does this before separating arrays.
+[Dt, iSort] = sort(Dt);
+D.Name             = D.Name(iSort);
+D.EngineeringValue = D.EngineeringValue(iSort);
 
-    % Sort data by HK Name.
-    bElevation = strcmp(D.Name, NAME_ELEVATION);
-    bAzimuth   = strcmp(D.Name, NAME_AZIMUTH);
+% Sort data by HK Name.
+bElevation = strcmp(D.Name, NAME_ELEVATION);
+bAzimuth   = strcmp(D.Name, NAME_AZIMUTH);
 
-    HgaElevation.Dt = Dt(bElevation);
-    HgaAzimuth.Dt   = Dt(bAzimuth);
-    HgaElevation.angleDeg = str2double(D.EngineeringValue(bElevation));
-    HgaAzimuth.angleDeg   = str2double(D.EngineeringValue(bAzimuth));
+HgaElevation.Dt = Dt(bElevation);
+HgaAzimuth.Dt   = Dt(bAzimuth);
+HgaElevation.angleDeg = str2double(D.EngineeringValue(bElevation));
+HgaAzimuth.angleDeg   = str2double(D.EngineeringValue(bAzimuth));
 end

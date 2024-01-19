@@ -24,80 +24,80 @@
 % First created 2020-05-08.
 %
 function DsmdArray = paths_to_DSMD_array(filePathCa)
-    % PROPOSAL: Rename
-    %   PROPOSAL: DSMD_from_paths()
-    %   PROPOSAL: paths_to_DSMDs().
-    %       CON: Information mostly from filename, not path.
-    %   PROPOSAL: paths_to_DSMD_array().
-    %
-    % PROPOSAL: Refactor to static method for DSMD class.
-    %   PRO: Is like secondary constructor.
-    %       CON: Can handle many paths.
-    %   CON: Function's/method's identifier path becomes long if replaces DSMD-->DatasetMetadata.
-    %       Ex: solo.adm.DatasetMetadata.DSMD_from_paths().
-    %       Ex: solo.adm.DSMD.array_from_paths().
-    %       Ex: solo.adm.DSMD_from_paths().
-    %   CON: Ties class to filenaming convention.
-    %       CON: Weak argument (but valid).
-    %
-    % PROPOSAL: Policy for how to handle not being able to recognize filenaming
-    %           convention for a .cdf file (as could be expected).
-    %   CON: Do not want to recognize RCTs if applying to entire ROC data/ dir.
-    %   NOTE: Needs support in parse_dataset_filename(_many).
-    % PROPOSAL: Policy for how to handle not being able to derive time interval
-    %           from parsable filename: ignore, warning, error.
+% PROPOSAL: Rename
+%   PROPOSAL: DSMD_from_paths()
+%   PROPOSAL: paths_to_DSMDs().
+%       CON: Information mostly from filename, not path.
+%   PROPOSAL: paths_to_DSMD_array().
+%
+% PROPOSAL: Refactor to static method for DSMD class.
+%   PRO: Is like secondary constructor.
+%       CON: Can handle many paths.
+%   CON: Function's/method's identifier path becomes long if replaces DSMD-->DatasetMetadata.
+%       Ex: solo.adm.DatasetMetadata.DSMD_from_paths().
+%       Ex: solo.adm.DSMD.array_from_paths().
+%       Ex: solo.adm.DSMD_from_paths().
+%   CON: Ties class to filenaming convention.
+%       CON: Weak argument (but valid).
+%
+% PROPOSAL: Policy for how to handle not being able to recognize filenaming
+%           convention for a .cdf file (as could be expected).
+%   CON: Do not want to recognize RCTs if applying to entire ROC data/ dir.
+%   NOTE: Needs support in parse_dataset_filename(_many).
+% PROPOSAL: Policy for how to handle not being able to derive time interval
+%           from parsable filename: ignore, warning, error.
 
-    % FI = File Info
-    fiCa = solo.adm.parse_dataset_filename_many(filePathCa);
+% FI = File Info
+fiCa = solo.adm.parse_dataset_filename_many(filePathCa);
 
-    DsmdArray = solo.adm.DSMD.empty(0,1);
-    for i = 1:numel(fiCa)
-        Fi = fiCa{i};
+DsmdArray = solo.adm.DSMD.empty(0,1);
+for i = 1:numel(fiCa)
+  Fi = fiCa{i};
 
-        %===========================================
-        % Interpret file info from parsing filename
-        % (mostly begin & end time)
-        %===========================================
-        hasDv12 = isfield(Fi, 'dateVec1') && isfield(Fi, 'dateVec2');
-        hasDv   = isfield(Fi, 'dateVec');
+  %===========================================
+  % Interpret file info from parsing filename
+  % (mostly begin & end time)
+  %===========================================
+  hasDv12 = isfield(Fi, 'dateVec1') && isfield(Fi, 'dateVec2');
+  hasDv   = isfield(Fi, 'dateVec');
 
-        if hasDv12 && ~hasDv
-            dv1Len = numel(Fi.dateVec1);
-            dv2Len = numel(Fi.dateVec2);
-            if (dv1Len == 6) && (dv2Len == 6)
-                dv1 = Fi.dateVec1;
-                dv2 = Fi.dateVec2;
-            elseif (dv1Len == 3) && (dv2Len == 3)
-                dv1 = [Fi.dateVec1, 0, 0, 0];
-                % NOTE: Adding one day since length-3 dateVec2 specifies
-                % midnight, not just day.
-                dv2 = datevec(datenum(Fi.dateVec2) + 1);
-            else
-                error(...
-                    ['Can not interpret parsed filename for "s".', ...
-                    ' Illegal date vector lengths.'], ...
-                    filePathCa)
-            end
-
-        elseif ~hasDv12 && hasDv
-            assert(numel(Fi.dateVec) == 3)
-
-            dv1 = [Fi.dateVec, 0, 0, 0];
-            dv2 = datevec(datenum(Fi.dateVec)+1);
-        else
-            % Skip file since can not derive any time from it.
-            continue
-        end
-
-        assert(numel(dv1) == 6)
-        assert(numel(dv2) == 6)
-
-        Dsmd = solo.adm.DSMD(...
-            Fi.path, Fi.datasetId, str2double(Fi.versionStr), Fi.isCdag, ...
-            datetime(dv1, 'TimeZone', 'UTCLeapSeconds'), ...
-            datetime(dv2, 'TimeZone', 'UTCLeapSeconds') ...
-        );
-
-        DsmdArray(end+1, 1) = Dsmd;
+  if hasDv12 && ~hasDv
+    dv1Len = numel(Fi.dateVec1);
+    dv2Len = numel(Fi.dateVec2);
+    if (dv1Len == 6) && (dv2Len == 6)
+      dv1 = Fi.dateVec1;
+      dv2 = Fi.dateVec2;
+    elseif (dv1Len == 3) && (dv2Len == 3)
+      dv1 = [Fi.dateVec1, 0, 0, 0];
+      % NOTE: Adding one day since length-3 dateVec2 specifies
+      % midnight, not just day.
+      dv2 = datevec(datenum(Fi.dateVec2) + 1);
+    else
+      error(...
+        ['Can not interpret parsed filename for "s".', ...
+        ' Illegal date vector lengths.'], ...
+        filePathCa)
     end
+
+  elseif ~hasDv12 && hasDv
+    assert(numel(Fi.dateVec) == 3)
+
+    dv1 = [Fi.dateVec, 0, 0, 0];
+    dv2 = datevec(datenum(Fi.dateVec)+1);
+  else
+    % Skip file since can not derive any time from it.
+    continue
+  end
+
+  assert(numel(dv1) == 6)
+  assert(numel(dv2) == 6)
+
+  Dsmd = solo.adm.DSMD(...
+    Fi.path, Fi.datasetId, str2double(Fi.versionStr), Fi.isCdag, ...
+    datetime(dv1, 'TimeZone', 'UTCLeapSeconds'), ...
+    datetime(dv2, 'TimeZone', 'UTCLeapSeconds') ...
+    );
+
+  DsmdArray(end+1, 1) = Dsmd;
+end
 end

@@ -20,7 +20,10 @@
             2021-05-24, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2023-11-03, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2023-10-20 (inclusive). Only contains manually identified thuster firings.
+            2023-12-13, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2024-01-11 (inclusive). Only contains manually identified thuster firings.
+        </note>
+        <note>
+            2024-01-17, Erik P G Johansson: BICAS now detects saturation itself and labels it as full saturation. One should therefore not need to add more FULL_SATURATION entries to this list.
         </note>
         <note>
             Note that since data gaps may be filled in after that a time interval has been manually searched for thruster firings etc., this list still might not label all such thruster firings (etc.) in the time period(s) that has/have been stated to be searched.
@@ -377,6 +380,12 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2020-07-27T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2020-07-27T01:14:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Note: Thruster firing occurs during a period when data is labelled as saturated, which means that the data is deleted in L3 SCPOT and can not be seen there anyway, even if it is not labelled as a thruster firing.</description>
+        </event>
+        <event>
             <startTimeUtc>2020-08-01T12:39:46</startTimeUtc>
             <stopTimeUtc> 2020-08-01T12:49:43</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
@@ -389,7 +398,7 @@
             <startTimeUtc>2020-08-06T00:00:00</startTimeUtc>
             <stopTimeUtc> 2020-08-09T02:35:00</stopTimeUtc>
             <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
-            <description> Beginning of time period is set quite arbitrarily. /EJ</description>
+            <description>Beginning of time period is set quite arbitrarily. /EJ</description>
         </event>
 
 
@@ -2079,6 +2088,12 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2023-10-08T22:59:24</startTimeUtc>
+            <stopTimeUtc> 2023-10-08T23:32:05</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
             <startTimeUtc>2023-10-11T14:29:20</startTimeUtc>
             <stopTimeUtc> 2023-10-11T14:56:08</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
@@ -2090,9 +2105,82 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+        <event>
+            <startTimeUtc>2023-10-22T22:04:30</startTimeUtc>
+            <stopTimeUtc> 2023-10-22T22:38:33</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-03T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2023-11-03T01:23:38</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-06T06:53:46</startTimeUtc>
+            <stopTimeUtc> 2023-11-06T07:06:16</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unclear if really is thruster firing. 3-4 cycles with 90 s/cycle. First "cycle" is odd.</description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-13T01:04:23</startTimeUtc>
+            <stopTimeUtc> 2023-11-13T01:15:32</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-20T01:04:18</startTimeUtc>
+            <stopTimeUtc> 2023-11-20T01:14:20</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Looks different but is still unambiguous. 5 cycles.</description>
+        </event>
+        <event>
+            <startTimeUtc>2023-11-27T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2023-11-27T01:15:12</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-12-04T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2023-12-04T01:16:34</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-12-11T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2023-12-11T01:13:37</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-12-18T01:04:26</startTimeUtc>
+            <stopTimeUtc> 2023-12-18T01:17:18</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2023-12-25T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2023-12-25T01:16:05</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-01-01T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2024-01-01T01:15:08</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-01-08T01:04:23</startTimeUtc>
+            <stopTimeUtc> 2024-01-08T01:16:58</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
 
 
 
     </eventsTable>
 
 </main>
+    

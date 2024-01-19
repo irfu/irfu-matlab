@@ -15,7 +15,8 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a job called "matlab"
+
+  # Job called "matlab" which runs selected tests for the latest version of MATLAB.
   matlab:
     # Runs Matlab
     #runs-on: ubuntu-latest
@@ -37,16 +38,48 @@ jobs:
           sudo apt-get update
           sudo apt-get install libgfortran5
 
-      # setup irfu-matlab and run tests_before_release
+      # Run MATLAB code
       - name: Run commands
         uses: matlab-actions/run-command@v1
         with:
           command: tests_before_release;
 
       # upload artifact (pdf report with plots, etc.)
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: test_report.pdf
           path: ciPath/report.pdf
           retention-days: 1
 
+  # Job which runs selected tests for MATLAB R2020a.
+  matlab_R2020a:
+    # Runs Matlab
+    #runs-on: ubuntu-latest
+    ## Specify ubuntu-20.04 (as per 2022-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
+    # which does not appear to have "libgfortran4" (used for tests of +whamp/) in its repo.
+    runs-on: ubuntu-20.04
+
+    # Only run job on SOdevel to reduce amount of run time at GitHub (limited resource).
+    if: github.ref == 'refs/heads/SOdevel'
+    steps:
+      # Check-out repository
+      - uses: actions/checkout@v4
+
+      # Install MATLAB (GitHub action provided by MathWorks)
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          release: R2020a
+
+      # Run MATLAB code
+      - name: Run commands
+        uses: matlab-actions/run-command@v1
+        with:
+          command: tests_before_release_R2020a;
+
+      # Upload artifact (pdf report with plots, etc.)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test_report_R2020a.pdf
+          path: ciPath/report_R2020a.pdf
+          retention-days: 1

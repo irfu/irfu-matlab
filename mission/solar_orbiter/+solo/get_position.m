@@ -1,5 +1,5 @@
 function soloPosition = get_position(Tint, varargin)
-%SOLO.GET_POSITION  Get the position of Solar Orbiter 
+%SOLO.GET_POSITION  Get the position of Solar Orbiter
 %
 % soloPosition = solo.get_position(tint, PARAMS)
 %
@@ -10,7 +10,7 @@ function soloPosition = get_position(Tint, varargin)
 % Options:
 %    'predicted' - get predicted position instead of flown
 %    'frame' - frame of the data (see below, default: ECLIPJ2000)
-% 
+%
 % The following generic frames are defined:
 %
 %      SPICE Frame Name            Long-name
@@ -50,12 +50,12 @@ function soloPosition = get_position(Tint, varargin)
 %      EARTH_MECL_MEQX_J2000       Earth Mean Ecliptic and Equinox at J2000
 %                                  frame (Auxiliary frame for SOLO_GSE and
 %                                  SOLO_HEE)
-% 
+%
 % Example:
 %
 % Tint = irf.tint('2020-07-31T00:00:00Z/2020-08-01T15:00:00Z'); % time interval in TT2000 UTC
 % %Get predicted position in SOLO_GSE frame
-% soloPosition = solo.get_position(Tint, 'predicted','frame','SOLO_GSE'); 
+% soloPosition = solo.get_position(Tint, 'predicted','frame','SOLO_GSE');
 % irf_plot(soloPosition, '.');
 
 

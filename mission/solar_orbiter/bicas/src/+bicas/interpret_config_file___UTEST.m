@@ -23,8 +23,8 @@ classdef interpret_config_file___UTEST < matlab.unittest.TestCase
     %##############
     methods(Test)
 
-        
-        
+
+
         function test0(testCase)
 
             % One output variable.
@@ -53,11 +53,11 @@ classdef interpret_config_file___UTEST < matlab.unittest.TestCase
                 }, containers.Map({'key_1', 'key_2'}, {'value1_new', 'value2'}));
 
         end
-        
-        
-        
+
+
+
     end    % methods(Test)
 
-    
-    
+
+
 end

@@ -1,13 +1,13 @@
 classdef solo_db < handle
   %SOLO_DB Summary of this class goes here
   %   Detailed explanation goes here
-  
+
   properties
     databases
     cache
     index
   end
-  
+
   methods
 
 
@@ -88,14 +88,14 @@ classdef solo_db < handle
       res = [];
       fileList = list_files(obj,filePrefix,tint,varName);
       if isempty(fileList), return, end
-      
+
       loadedFiles = obj.load_list(fileList,varName);
       if numel(loadedFiles)==0, return, end
-      
+
       for iFile = 1:length(loadedFiles)
         append_sci_var(loadedFiles{iFile})
       end
-      
+
       % ========================================================================
 
       function append_sci_var(sciData)
@@ -114,7 +114,7 @@ classdef solo_db < handle
         if ~isstruct(v) || ~(isfield(v,'data') && isfield(v,'DEPEND_0'))
           error('Data does not contain DEPEND_0 or DATA')
         end
-        
+
         if isempty(res), res = v; return, end
 
         % NOTE: If "res" is a cell array, then always add next time series in
@@ -123,31 +123,31 @@ classdef solo_db < handle
         % Bug or feature? /EJ 2023-07-06
         if iscell(res), res = [res {v}]; return, end
         if ~comp_struct(res,v)
-            % CASE: zVariable data "v" appears to be/might be different from the
-            %       previous datasets.
+          % CASE: zVariable data "v" appears to be/might be different from the
+          %       previous datasets.
 
-            % Switch from res=TSeries, to cell array of multiple TSeries.
-            res = [{res}, {v}];
-            return
+          % Switch from res=TSeries, to cell array of multiple TSeries.
+          res = [{res}, {v}];
+          return
         end
         if res.variance(1)=='F' % not varying in time
           if isequal(res.data,v.data), return, end
           error('Static (variance=F/) variable changing between files')
         end
-        
+
         % append data
-        res.data = [res.data; v.data]; 
+        res.data = [res.data; v.data];
         % append depend variables
         n_dep = sum(contains(fields(res),'DEPEND_'))-1;
         for idep = 0:n_dep
-          DEP_str = ['DEPEND_' num2str(idep)];         
+          DEP_str = ['DEPEND_' num2str(idep)];
           if v.(DEP_str).nrec == v.nrec % check if depend is a timeseries, if yes, then append
             res.(DEP_str).data = [res.(DEP_str).data; v.(DEP_str).data];
           end
         end
-       
+
         % check for overlapping time records
-        [~,idxUnique] = unique(res.DEPEND_0.data); 
+        [~,idxUnique] = unique(res.DEPEND_0.data);
         idxDuplicate = setdiff(1:length(res.DEPEND_0.data), idxUnique);
         res.data(idxDuplicate, :, :, :, :, :, :, :, :, :, :, :) = [];
         for idep = 0:n_dep
@@ -155,14 +155,14 @@ classdef solo_db < handle
           if v.(DEP_str).nrec == v.nrec
             res.(DEP_str).data(idxDuplicate, :, :, :, :, :, :, :, :, :, :, :) = [];
           end
-        end   
+        end
         nDuplicate = length(idxDuplicate);
         if nDuplicate
           irf.log('warning',sprintf('Discarded %d data points',nDuplicate))
-        end    
+        end
 
         % update number of records, nrec
-        res.nrec = length(res.DEPEND_0.data); 
+        res.nrec = length(res.DEPEND_0.data);
         res.DEPEND_0.nrec = res.nrec;
         for idep = 1:n_dep
           DEP_str = ['DEPEND_' num2str(idep)];
@@ -193,17 +193,17 @@ classdef solo_db < handle
           % Default return value. Assume structs are different until (almost)
           % proven to be equal.
           res = false;
-          
+
           if ~isstruct(s1) || ~isstruct(s2), error('expecting STRUCT input'), end
           if isempty(s1) && isempty(s2), res = true; return
           elseif xor(isempty(s1),isempty(s2)), return
           end
-          
+
           fields1 = fields(s1); fields2 = fields(s2);
           if ~comp_cell(fields1,fields2)
-              return
+            return
           end
-          
+
           % "data", nrec, and the global attributes (in GlobalAttributes) named
           % Generation_date, Logical_file_id, Data_version, and Parents will
           % almost always differ between files. Therefore not comparing those
@@ -236,7 +236,7 @@ classdef solo_db < handle
           % Default return value. Assume cells are different until (almost)
           % proven to be equal.
           res = false;
-          
+
           if ~iscell(c1) || ~iscell(c2), error('expecting CELL input'), end
           if isempty(c1) && isempty(c2), res = true; return
           elseif xor(isempty(c1),isempty(c2)), return
@@ -245,7 +245,7 @@ classdef solo_db < handle
             % CASE: Different number of zVariable attributes.
             return
           end
-          
+
           [n,m] = size(c1);
           if(m==1), c1=sort(c1); c2=sort(c2); end
           for iN = 1:n
@@ -255,13 +255,13 @@ classdef solo_db < handle
               elseif iscell(c1{iN, iM}) && iscell(c2{iN,iM})
                 % NOTE: RECURSIVE CALL
                 if ~comp_cell(c1{iN, iM},c2{iN,iM})
-                    return
+                  return
                 end
               else
                 irf.log('warning','can only compare chars')
                 res = true; return
               end
-              
+
             end
           end
           res = true;
@@ -281,7 +281,7 @@ classdef solo_db < handle
       narginchk(2,3), res = {};
       if isempty(fileList), return, end
       if nargin==2, mustHaveVar = ''; end
-      
+
       for iFile=1:length(fileList)
         fileToLoad = fileList(iFile);
         if solo.db_index

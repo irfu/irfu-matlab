@@ -4,7 +4,8 @@
 *.swp
 fort.6
 .caa.log
-# Path for report (created by tests_before_release.m)
+
+# Path for automatically generated test reports (created by tests_before_release*.m).
 ciPath/
 
 # IRF logo needed by mission/solar_orbiter/+solo/quicklook_main.m etc.

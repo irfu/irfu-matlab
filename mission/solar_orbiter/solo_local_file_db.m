@@ -1,11 +1,11 @@
 classdef solo_local_file_db < solo_file_db
   %SOLO_LOCAL_FILE_DB  Local file database for SOLO
   %   Class handling a database of local SOLO files
-  
+
   properties (SetAccess = immutable)
     dbRoot
   end
-  
+
   methods
     function obj = solo_local_file_db(rootPath)
       % Create local database for SOLO data located in rootPath.
@@ -13,7 +13,7 @@ classdef solo_local_file_db < solo_file_db
       %   SOLO_DB = SOLO_LOCAL_FILE_DB('/data/solo');
       if nargin == 0, rootPath = pwd; end
       if (rootPath(end)==filesep), rootPath(end)=[]; end % path only, excluding last filesep
-      
+
       obj@solo_file_db(rootPath); obj.dbRoot = rootPath;
       if nargin == 0, return, end
       if ~ischar(rootPath)
@@ -24,7 +24,7 @@ classdef solo_local_file_db < solo_file_db
         irf.log('critical',errStr), error(errStr)
       end
     end
-    
+
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
       % fileList = list_files(obj, filePrefix, [tint]);
@@ -62,7 +62,7 @@ classdef solo_local_file_db < solo_file_db
         end
       end
       % END LIST_FILES
-      
+
       %% LIST_SCI_TINT
       function list_sci_tint()
         rDir = get_remotePrefix(obj, C);
@@ -142,7 +142,7 @@ classdef solo_local_file_db < solo_file_db
           arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
         end    % limited_sci_list
       end    % list_sci_tint
-      
+
       %% LIST SCI
       %
       % What does this do? Combine all available time intervals?
@@ -203,7 +203,7 @@ classdef solo_local_file_db < solo_file_db
         end
         if isempty(fileList), fileList = Entry; return, end
         fName = name(1:end-7); % Name excl. 'Vxx.cdf'
-        
+
         hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)), fileList);
         if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
         iSame = find(hasFile);
@@ -255,22 +255,22 @@ classdef solo_local_file_db < solo_file_db
         end % ADD_SS
       end % ADD2LIST
     end % LIST_FILES
-    
+
     %% LOAD FILES
     function res = load_file(~, fullPathFilename)
       narginchk(2,3)
-      
+
       irf.log('notice',['loading ', fullPathFilename])
       res = dataobj(fullPathFilename);
     end % LOAD_FILES
-    
+
     %% FILE_HAS_VAR
     function res = file_has_var(obj,fullPathFilename,varName)
       % checks if fileName includes variable name varName
       % res = true/false
       narginchk(3,3)
       res = false; if isempty(varName) || isempty(fullPathFilename), return, end
-      
+
       entryTmp = obj.cache.get_by_key(fullPathFilename);
       if ~isempty(entryTmp)
         res = any(cellfun(@(x) strcmp(x,varName), entryTmp.vars(:,1)));
@@ -280,7 +280,7 @@ classdef solo_local_file_db < solo_file_db
         irf.log('warning', ['Fies does not exist: ' fullPathFilename])
         return
       end
-      
+
       % cdf
       if solo.db_index
         res = obj.index.file_has_var(fullPathFilename,varName);
@@ -296,17 +296,17 @@ classdef solo_local_file_db < solo_file_db
       end
     end
   end
-  
+
   methods (Access=private)
-      
+
     % Return ONE directory tree root depending on instrument.
     function rDir = get_remotePrefix(obj, C)
       % Descriptor contains instrument and data product descriptor part
       % separated by "-".
-      
+
       temp      = strsplit(C{3}, '-');
       instr     = temp{1};
-        
+
       if strcmp(instr, 'rpw')
         %==============================
         % CASE: Searching for RPW data
@@ -317,7 +317,7 @@ classdef solo_local_file_db < solo_file_db
           %
           % Ex: obj.dbRoot == /data/solo/data_irfu/
           %               ==> /data/solo/data_irfu/latest/rpw/
-          
+
           rDir = fullfile(obj.dbRoot, 'latest', 'rpw');
         else
           % CASE: obj.dbRoot DOES NOT have subdirectory "latest/".
@@ -330,33 +330,33 @@ classdef solo_local_file_db < solo_file_db
       else
         %==================================
         % CASE: Searching for non-RPW data
-        %==================================        
+        %==================================
         rDir = fullfile(obj.dbRoot, 'soar', instr);
         if exist(rDir, 'dir')
-            % CASE: obj.dbRoot has subdirectory "soar".
-            %       ==> Use (presumed) SOAR mirror.
-            %
-            % Ex: obj.dbRoot == /data/solo/
-            %               ==> /data/solo/soar/<instr>/
-            return
+          % CASE: obj.dbRoot has subdirectory "soar".
+          %       ==> Use (presumed) SOAR mirror.
+          %
+          % Ex: obj.dbRoot == /data/solo/
+          %               ==> /data/solo/soar/<instr>/
+          return
         end
-        
+
         rDir = fullfile(obj.dbRoot, instr);
         if exist(rDir, 'dir')
-            % CASE: obj.dbRoot has subdirectory named after instrument.
-            %       ==> obj.dbRoot is general folder for (multiple) non-RPW
-            %           instruments.
-            %
-            % Ex: obj.dbRoot == /data/solo/data_manual/
-            %               ==> /data/solo/data_manual/<instr>/
-            return
+          % CASE: obj.dbRoot has subdirectory named after instrument.
+          %       ==> obj.dbRoot is general folder for (multiple) non-RPW
+          %           instruments.
+          %
+          % Ex: obj.dbRoot == /data/solo/data_manual/
+          %               ==> /data/solo/data_manual/<instr>/
+          return
         end
       end
     end % get_remotePrefix
-    
+
     function fileDir = get_fileDir(~, C)
       levelDir = C{2}; % "L2" (or "L1R", "L1", "L3", "HK")
-      
+
       % Normalization. Remove '-cdag', if present.
       descr = regexprep(C{3}, '-cdag$', '');
 
@@ -389,17 +389,17 @@ classdef solo_local_file_db < solo_file_db
           case {'rpw-tnr-fp'}
             subDir = 'tnr_fp';
 
-          % Official directory names used by ROC and that IRFU should therefore
-          % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
-          % Erik P G Johansson 2020-11-27.
-          % /Erik P G Johansson 2020-12-15.
+            % Official directory names used by ROC and that IRFU should therefore
+            % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
+            % Erik P G Johansson 2020-11-27.
+            % /Erik P G Johansson 2020-12-15.
           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
             subDir = 'lfr_density';
           case {'rpw-bia-efield',  'rpw-bia-efield-10-seconds'}
             subDir = 'lfr_efield';
           case {'rpw-bia-scpot',   'rpw-bia-scpot-10-seconds'}
             subDir = 'lfr_scpot';
-            
+
           otherwise
             % Fallback to full descriptor (used for local SOAR copy at IRFU).
             subDir = descr;
@@ -410,7 +410,7 @@ classdef solo_local_file_db < solo_file_db
         fileDir = levelDir;
       end
     end % get_fileDir
-    
+
     % UNUSED FUNCTION?!
     function p = get_path_to_file(obj,fileName)
       C = strsplit(lower(fileName),'_');
@@ -421,6 +421,6 @@ classdef solo_local_file_db < solo_file_db
       end
     end % get_path_to_file
   end
-  
+
 end
 

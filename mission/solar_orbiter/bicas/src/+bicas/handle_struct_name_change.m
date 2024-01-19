@@ -1,6 +1,6 @@
 %
 % To be used to analyze the result of use of
-% irf.ds.normalize_struct_fieldnames(). React depending on SETTINGS.
+% irf.ds.normalize_struct_fieldnames(). React depending on BSO.
 %
 %
 % ARGUMENTS
@@ -14,7 +14,7 @@
 % varargin
 %       List of pairs of arguments.
 %       varargin{2*m + 1} : Fieldname (new/after change) for which to react.
-%       varargin{2*m + 2} : SETTINGS key which determines the policy. Must have
+%       varargin{2*m + 2} : BSO key which determines the policy. Must have
 %                           value WARNING or ERROR.
 %
 %
@@ -22,7 +22,7 @@
 % First created 2016-06-09
 %
 function handle_struct_name_change(...
-        fnChangeList, SETTINGS, L, anomalyDescrMsgFunc, varargin)
+        fnChangeList, Bso, L, anomalyDescrMsgFunc, varargin)
     %
     % PROPOSAL: Somehow generalize to something that can handle "all" fnChangeList returned from
     % normalize_struct_fieldnames.
@@ -38,31 +38,31 @@ function handle_struct_name_change(...
     % PROBLEM: Concept of changing fieldnames of actual struct is bad when struct is so large that it may cause memory
     %          problems. May want to avoid modifying struct in order to help MATLAB's code optimization (prevent
     %          temporary copies).
-    
+
     while numel(varargin) >= 2    % Iterate over pairs of varargin components.
         newFn      = varargin{1};
         settingKey = varargin{2};
         varargin   = varargin(3:end);
-        
+
         % NOTE: i==0 <==> no match.
         [~, i] = ismember(newFn, {fnChangeList(:).newFieldname});
         if i > 0
             % CASE: Found a fieldname change to react to.
-            [settingValue, settingKey] = SETTINGS.get_fv(settingKey);
+            [settingValue, settingKey] = Bso.get_fv(settingKey);
             anomalyDescrMsg = anomalyDescrMsgFunc(...
                 fnChangeList(i).oldFieldname, ...
                 fnChangeList(i).newFieldname);
-            
+
             assert(...
                 isempty(fnChangeList(i).ignoredCandidateFieldnames), ...
                 ['Function not designed for handling non-empty', ...
                 ' .ignoredCandidateFieldnames.'])
-            
+
             bicas.default_anomaly_handling(L, ...
                 settingValue, settingKey, ...
                 'E+W+illegal', anomalyDescrMsg, 'BICAS:Assertion')
         end
     end
-    
+
     assert(numel(varargin) == 0)
 end

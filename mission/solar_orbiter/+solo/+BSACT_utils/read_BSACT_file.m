@@ -42,78 +42,78 @@
 % First created 2017-xx-xx (or possibly earlier)
 %
 function Data = read_BSACT_file(filePath, columnFieldNamesList)
-    % PROPOSAL: Rewrite to read file once (not twice).
-    % PROPOSAL: Assertion for not using column name "mheader".
-    % PROPOSAL: Move columns to its own "sub-struct", e.g. ".columns".
-    % PROPOSAL: Re-design to interpret list of row strings; add test code.
-    
-    
-    %====================
-    % Read numeric table
-    %====================
-    fId = fopen(filePath, 'r');
-    % ASSERTION
-    if fId == -1
-        error(...
-            'BICAS:read_BSACT_file:PathNotFound', ...
-            'Can not open file "%s".', filePath)
-    end
-    % Format specification will read all numbers into one long 1D array.
-    fileContents = textscan(fId, '%f', 'CommentStyle', 'mheader');
-    fileContents = fileContents{1};
-    fclose(fId);
-    
-    nColumns = length(columnFieldNamesList);
-    
-    % ASSERTION. Tries to check for the number of columns, but is not a perfect
-    % test.
-    if mod(length(fileContents), nColumns) ~= 0
-        error(...
-            'BICAS:read_BSACT_file:UnexpectedFileFormat', ...
-            'Number of specificed columns does not match file contents.')
-    end
-    fileContents = reshape(fileContents, ...
-        [nColumns, length(fileContents)/nColumns])';
-    
-    Data = struct;
-    for iColumn = 1:nColumns
-        fieldName = columnFieldNamesList{iColumn};
-        Data.(fieldName) = fileContents(:, iColumn);
-    end
-    
-    
-    
-    %===========================
-    % Extract "register values"
-    %===========================
-    
-    % Read file a second time(!)
-    rowList = irf.fs.read_text_file(filePath, '\r?\n');
-    
-    % Find relevant rows.
-    temp = regexp(rowList, '^mheader\.reg[0-9]*');
-    iRowList = find(~cellfun(@isempty, temp));
-    
-    % Extract values from relevant rows.
-    mheader = [];
-    for iRow = iRowList(:)'
-        str = rowList{iRow};
-        
-        temp = regexp(str, 'reg[0-9]*', 'match');
-        regName = temp{1};
-        temp = regexp(str, ' [^:]*', 'match');
-        valueStr = temp{1};
-        temp = regexp(str, ':.*', 'match');
-        temp = temp{1};
-        comment = temp(2:end);
-        
-        s = [];
-        s.valueStr = valueStr;
-        s.comment  = comment;
-        
-        mheader.(regName) = s;
-    end
-    
-    Data.mheader = mheader;
-    
+% PROPOSAL: Rewrite to read file once (not twice).
+% PROPOSAL: Assertion for not using column name "mheader".
+% PROPOSAL: Move columns to its own "sub-struct", e.g. ".columns".
+% PROPOSAL: Re-design to interpret list of row strings; add test code.
+
+
+%====================
+% Read numeric table
+%====================
+fId = fopen(filePath, 'r');
+% ASSERTION
+if fId == -1
+  error(...
+    'BICAS:read_BSACT_file:PathNotFound', ...
+    'Can not open file "%s".', filePath)
+end
+% Format specification will read all numbers into one long 1D array.
+fileContents = textscan(fId, '%f', 'CommentStyle', 'mheader');
+fileContents = fileContents{1};
+fclose(fId);
+
+nColumns = length(columnFieldNamesList);
+
+% ASSERTION. Tries to check for the number of columns, but is not a perfect
+% test.
+if mod(length(fileContents), nColumns) ~= 0
+  error(...
+    'BICAS:read_BSACT_file:UnexpectedFileFormat', ...
+    'Number of specificed columns does not match file contents.')
+end
+fileContents = reshape(fileContents, ...
+  [nColumns, length(fileContents)/nColumns])';
+
+Data = struct;
+for iColumn = 1:nColumns
+  fieldName = columnFieldNamesList{iColumn};
+  Data.(fieldName) = fileContents(:, iColumn);
+end
+
+
+
+%===========================
+% Extract "register values"
+%===========================
+
+% Read file a second time(!)
+rowList = irf.fs.read_text_file(filePath, '\r?\n');
+
+% Find relevant rows.
+temp = regexp(rowList, '^mheader\.reg[0-9]*');
+iRowList = find(~cellfun(@isempty, temp));
+
+% Extract values from relevant rows.
+mheader = [];
+for iRow = iRowList(:)'
+  str = rowList{iRow};
+
+  temp = regexp(str, 'reg[0-9]*', 'match');
+  regName = temp{1};
+  temp = regexp(str, ' [^:]*', 'match');
+  valueStr = temp{1};
+  temp = regexp(str, ':.*', 'match');
+  temp = temp{1};
+  comment = temp(2:end);
+
+  s = [];
+  s.valueStr = valueStr;
+  s.comment  = comment;
+
+  mheader.(regName) = s;
+end
+
+Data.mheader = mheader;
+
 end

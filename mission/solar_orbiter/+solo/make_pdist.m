@@ -3,18 +3,18 @@ function PDout = make_pdist(varargin)
 %
 % PDist = mms.make_pdist(filename)
 %
-% Input: 
+% Input:
 %   file - filename and directory of cdf file, or loaded cdf file
 %
-% Output: 
+% Output:
 %   PDout - PDist skymap variable
 %
-% Examples: 
+% Examples:
 %   PDout = make_pdist('solo_L2_swa-pas-vdf_20200729_V01.cdf')
 %
 %   tmpD = dataobj('solo_L2_swa-pas-vdf_20200729_V01.cdf');
 %   PDout = solo.make_pdist(tmpD)
-% 
+%
 % Written by D. B. Graham
 %
 % TO DO: Add electron distributions
@@ -36,7 +36,7 @@ end
 
 if isempty(tmpDataObj); return; end
 
-% Identify variable type 
+% Identify variable type
 fname = tmpDataObj.GlobalAttributes.Logical_file_id{1};
 if ~isempty(regexp(fname,'swa-pas-vdf','once'))
   % Load ion data
@@ -60,9 +60,9 @@ if ~isempty(regexp(fname,'swa-pas-vdf','once'))
   time = vdf.DEPEND_0.data;
   time = EpochTT(time);
   dt = median(diff(time.epochUnix));
-  
+
   energymat = ones(size(time))*Energyarr';
-  
+
   PDout = PDist(time,vdfp,'skymap',energymat,-Azimuthangle.data,90-Polarangle.data); % Negative of azimuthal angle is used so Velocity moments agree
   PDout.species = 'ions';
   PDout.units = 's^3/m^6';
@@ -76,21 +76,21 @@ if ~isempty(regexp(fname,'swa-pas-vdf','once'))
   PDout.ancillary.delta_theta_minus = deltaPolar.data;
   PDout.ancillary.delta_phi_plus = deltaAzimuth.data;
   PDout.ancillary.delta_phi_minus = deltaAzimuth.data;
-  
+
   PDout.ancillary.dt_minus = dt/2; % Need to check if time tags are the beginning or middle of distributions
   PDout.ancillary.dt_plus = dt/2;
-  
-  
-  
+
+
+
   PDout.name = 'solo_L2_swa-pas-vdf'; % Temp fix
-  
+
   ud = [];
   ud.GlobalAttributes = tmpDataObj.GlobalAttributes;
   ud.VALIDMIN = tmpDataObj.VariableAttributes.VALIDMIN{13,2};
   ud.VALIDMAX = tmpDataObj.VariableAttributes.VALIDMAX{13,2};
   PDout.userData = ud;
-  
-  
+
+
 else
   PDout = NaN;
   error('Data Object not recognized.')

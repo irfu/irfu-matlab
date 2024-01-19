@@ -1,6 +1,6 @@
 %
-% Collection of processing function for demultiplexing and calibrating (DC), and
-% related code (except bicas.proc.L1L2.demuxer).
+% Collection of processing functions for demultiplexing and calibrating (DC),
+% and related code (except bicas.proc.L1L2.demuxer).
 %
 % DC = Demux (demultiplex) & Calibrate
 %
@@ -9,56 +9,48 @@
 % First created 2021-05-25
 %
 classdef dc
+    % PROPOSAL: Better name.
+    %   PRO: Processing includes quality "processing" which is not in "DC".
+    %   PROPOSAL: dcq = Demux, Calibrate, Quality
+
     % PROPOSAL: Automatic test code.
-    % PROPOSAL: Include bicas.proc.L1L2.demuxer.
-    %   CON: Too much code.
     %
     % PROPOSAL:   process_calibrate_demux()
     %           & calibrate_demux_voltages()
-    %           should only accept the needed zVars and variables.
-    %   NOTE: Needs some way of packaging/extracting only the relevant zVars/fields
+    %           should only accept the needed ZVs and variables.
+    %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
     %         from struct.
-    %
-    % PROPOSAL: Make AsrSamplesAVolt a class.
-    %   PRO: Can initialize right-sized empty fields in constructor.
 
-    
+
+
     %#######################
     %#######################
     % PUBLIC STATIC METHODS
     %#######################
     %#######################
     methods(Static)
-        
-        
-        
-        % Processing function. Derive PostDC from PreDc, i.e. demux and
-        % calibrate data. Function is in large part a wrapper around
-        % "calibrate_demux_voltages".
+
+
+
+        % Derive PostDc from PreDc, i.e. demux, calibrate data, and set quality
+        % variables.
         %
         % NOTE: Public function as opposed to the other demuxing/calibration
         % functions.
         %
-        function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, SETTINGS, L)
+        function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, NsoTable, Bso, L)
 
-            tTicToc = tic();
+            Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
             % ASSERTION
-            bicas.proc.L1L2.assert_PreDC(PreDc);
-
-
-
-            % IMPLEMENTATION NOTE: Only copy fields PreDc-->PostDc which are
-            % known to be needed in order to conserve memory (not sure if
-            % meaningful).
-            PostDc = [];
+            assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'));
 
 
 
             %############################
             % DEMUX & CALIBRATE VOLTAGES
             %############################
-            PostDc.Zv.DemuxerOutput = ...
+            AsrSamplesAVoltSrm = ...
                 bicas.proc.L1L2.dc.calibrate_demux_voltages(PreDc, Cal, L);
 
 
@@ -67,25 +59,25 @@ classdef dc
             % Calibrate bias CURRENTS
             %#########################
             currentSAmpere = bicas.proc.L1L2.dc.convert_CUR_to_CUR_on_SCI_TIME(...
-                PreDc.Zv.Epoch, InCurPd, SETTINGS, L);
-            currentTm      = bicas.proc.L1L2.cal.calibrate_current_sampere_to_TM(currentSAmpere);
+                PreDc.Zv.Epoch, InCurPd, Bso, L);
+            currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
-            currentAAmpere = nan(size(currentSAmpere));    % Variable to fill/set.
-            iCalibLZv      = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
-            [iFirstList, iLastList, nSs] = irf.utils.split_by_change(iCalibLZv);
+            currentAAmpere          = nan(size(currentSAmpere));    % Preallocate.
+            iCalibLZv               = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
+            [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
             L.logf('info', ...
                 ['Calibrating currents -', ...
                 ' One sequence of records with identical settings at a time.'])
             for iSs = 1:nSs
-                iFirst = iFirstList(iSs);
-                iLast  = iLastList(iSs);
+                iRec1 = iRec1Ar(iSs);
+                iRec2 = iRec2Ar(iSs);
 
-                iRecords = iFirst:iLast;
+                iRecords = iRec1:iRec2;
 
-                L.logf('info', 'Records %7i-%7i : %s -- %s', ...
-                    iFirst, iLast, ...
-                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)))
+                L.logf('info', 'Records %8i-%8i : %s -- %s', ...
+                    iRec1, iRec2, ...
+                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iRec1)), ...
+                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iRec2)))
 
                 for iAnt = 1:3
                     %--------------------
@@ -95,17 +87,53 @@ classdef dc
                         currentTm( iRecords, iAnt), iAnt, iCalibLZv(iRecords));
                 end
             end
-            PostDc.Zv.currentAAmpere = currentAAmpere;
 
 
 
-            % ASSERTION
-            bicas.proc.L1L2.assert_PostDC(PostDc)
+            % ##############################################
+            % Set quality variables, and apply UFV (to data)
+            % ##############################################
+            if 1
+                % AUTODETECT SATURATION.
+                Sat = bicas.proc.L1L2.Saturation(Bso);
+                isAutodetectedSaturation = Sat.get_voltage_saturation_quality_bit(...
+                    PreDc.Zv.Epoch, ...
+                    AsrSamplesAVoltSrm, ...
+                    PreDc.Zv.nValidSamplesPerRecord, ...
+                    PreDc.Zv.bdmFpa, PreDc.Zv.dlrFpa, ...
+                    PreDc.Zv.lrx,    PreDc.Zv.isAchgFpa, ...
+                    PreDc.hasSwfFormat, L);
+            else
+                isAutodetectedSaturation = false(size(PreDc.Zv.Epoch));
+            end
+
+            ZvIn = struct(...
+                'Epoch',            PreDc.Zv.Epoch, ...
+                'bdmFpa',           PreDc.Zv.bdmFpa, ...
+                'isFullSaturation', isAutodetectedSaturation);
+            [zvUfv, QUALITY_FLAG, Zv.L2_QUALITY_BITMASK] = ...
+                bicas.proc.L1L2.qual.get_UFV_quality_ZVs(...
+                    ZvIn, PreDc.isLfr, NsoTable, Bso, L);
+            clear ZvIn
+
+            Zv.QUALITY_FLAG = PreDc.Zv.QUALITY_FLAG.min(bicas.utils.FPArray(QUALITY_FLAG));
+            zvUfv           = PreDc.Zv.ufv | zvUfv;
+
+            % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
+            Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
+                PreDc.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
+            Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
+            clear AsrSamplesAVoltSrm
+
+
+
+            % ############
+            % END FUNCTION
+            % ############
+            PostDc = bicas.proc.L1L2.PostDc(Zv);
 
             nRecords = size(PreDc.Zv.Epoch, 1);
-            bicas.log_speed_profiling(L, ...
-                'bicas.proc.L1L2.dc.process_calibrate_demux', tTicToc, ...
-                nRecords, 'record')
+            Tmk.stop_log(nRecords, 'record')
         end    % process_calibrate_demux
 
 
@@ -120,79 +148,46 @@ classdef dc
     %########################
     %########################
     methods(Static, Access=private)
-        
-        
-        
-        % Demultiplex and calibrate voltages.
+
+
+
+        % Demultiplex and calibrate VOLTAGES (not e.g. currents).
         %
-        % NOTE: Can handle arrays of any size if the sizes are
-        % consistent.
+        % NOTE: Can handle arrays of any size if the sizes are consistent.
         %
-        function AsrSamplesAVolt = calibrate_demux_voltages(PreDc, Cal, L)
-        % PROPOSAL: Sequence of constant settings includes dt (for CWF)
-        %   PROBLEM: Not clear how to implement it since it is a property of two records, not one.
-        %       PROPOSAL: Use other utility function(s).
-        %           PROPOSAL: Function that finds changes in dt.
-        %           PROPOSAL: Function that further splits list of index intervals ~on the form iFirstList, iLastList.
-        %           PROPOSAL: Write functions such that one can detect suspicious jumps in dt (under some threshold).
-        %               PROPOSAL: Different policies/behaviours:
-        %                   PROPOSAL: Assertion on expected constant dt.
-        %                   PROPOSAL: Always split sequence at dt jumps.
-        %                   PROPOSAL: Never  split sequence at dt jumps.
-        %                   PROPOSAL: Have threshold on dt when expected constant dt.
-        %                       PROPOSAL: Below dt jump threshold, never split sequence
-        %                       PROPOSAL: Above dt jump threshold, split sequence
-        %                       PROPOSAL: Above dt jump threshold, assert never/give error
-        %
+        function AsrSamplesAVoltSrm = calibrate_demux_voltages(PreDc, Cal, L)
         % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN for CWF.
         %
         % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
         % NOTE: Calibration is really separate from the demultiplexer. Demultiplexer only needs to split into
-        %       subsequences based on mux mode and latching relay, nothing else.
+        %       subsequences based on BDM and DLR, nothing else.
         %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
         %
-        % PROPOSAL: Function for dtSec.
-        %     PROPOSAL: Some kind of assertion (assumption of) constant sampling frequency.
-        %
         % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
-        %
-        % PROPOSAL: Move processing of one subsequence (one for-loop iteration) into its own function.
-
-            %tTicToc  = tic();
 
             % ASSERTIONS
-            assert(isscalar(PreDc.hasSnapshotFormat))
-            assert(iscell(  PreDc.Zv.samplesCaTm))
-            irf.assert.vector(PreDc.Zv.samplesCaTm)
-            assert(numel(PreDc.Zv.samplesCaTm) == 5)
-            bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
-                PreDc.Zv.samplesCaTm)
+            assert(isscalar( PreDc.hasSwfFormat))
+            assert(isnumeric(PreDc.Zv.bltsSamplesTm))
+%             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
+%                 PreDc.Zv)
             [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
-                PreDc.Zv.MUX_SET,        [-1,  1], ...
-                PreDc.Zv.DIFF_GAIN,      [-1,  1], ...
-                PreDc.Zv.samplesCaTm{1}, [-1, -2]);
+                PreDc.Zv.bdmFpa,        [-1,  1], ...
+                PreDc.Zv.isAchgFpa,     [-1,  1], ...
+                PreDc.Zv.bltsSamplesTm, [-1, -2, bicas.const.N_BLTS]);
 
 
 
             % Pre-allocate
             % ------------
-            % IMPLEMENTATION NOTE: Very important for speeding up LFR-SWF which
-            % tends to be broken into subsequences of 1 record.
-            tempVoltageArray = nan(nRecords, nSamplesPerRecordChannel);
-            AsrSamplesAVolt = struct(...
-                'dcV1',  tempVoltageArray, ...
-                'dcV2',  tempVoltageArray, ...
-                'dcV3',  tempVoltageArray, ...
-                'dcV12', tempVoltageArray, ...
-                'dcV13', tempVoltageArray, ...
-                'dcV23', tempVoltageArray, ...
-                'acV12', tempVoltageArray, ...
-                'acV13', tempVoltageArray, ...
-                'acV23', tempVoltageArray);
+            % IMPLEMENTATION NOTE: Preallocation is very important for speeding
+            % up LFR-SWF which tends to be broken into subsequences of 1 record.
+            AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
+                'char', nRecords, 'CONSTANT', ...
+                nan(nRecords, nSamplesPerRecordChannel), ...
+                bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA);
 
-            dlrUsing12zv = bicas.proc.L1L2.demuxer_latching_relay(PreDc.Zv.Epoch);
-            iCalibLZv    = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
-            iCalibHZv    = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
+            iCalibLZv = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
+            iCalibHZv = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
 
 
 
@@ -209,15 +204,15 @@ classdef dc
             %
             % SS = Subsequence
             %===================================================================
-            [iFirstList, iLastList, nSs] = irf.utils.split_by_change(...
-                PreDc.Zv.MUX_SET, ...
-                PreDc.Zv.DIFF_GAIN, ...
+            [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+                PreDc.Zv.bdmFpa.int2doubleNan(), ...
+                PreDc.Zv.isAchgFpa.logical2doubleNan(), ...
                 PreDc.Zv.freqHz, ...
                 PreDc.Zv.iLsf, ...
                 PreDc.Zv.CALIBRATION_TABLE_INDEX, ...
-                PreDc.Zv.useFillValues, ...
-                PreDc.Zv.lfrRx, ...
-                dlrUsing12zv, ...
+                PreDc.Zv.ufv, ...
+                PreDc.Zv.dlrFpa.logical2doubleNan(), ...
+                PreDc.Zv.lrx, ...
                 iCalibLZv, ...
                 iCalibHZv);
 
@@ -225,135 +220,150 @@ classdef dc
                 ['Calibrating voltages -', ...
                 ' One sequence of records with identical settings at a time.'])
             for iSs = 1:nSs
-                iFirst = iFirstList(iSs);
-                iLast  = iLastList (iSs);
+                iRec1 = iRec1Ar(iSs);
+                iRec2 = iRec2Ar(iSs);
 
-                SsAsrSamplesAVolt = bicas.proc.L1L2.dc.calibrate_demux_subsequence(...
-                    PreDc, dlrUsing12zv, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L);
+                % ==============================================================
+                % IMPLEMENTATION NOTE: Below extraction of data from PreDc etc.
+                % may seem awkward but actually clarifies the code associated
+                % with bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence()
+                % as compared to earlier version before refactoring.
+                %
+                % PRO: Clearly divides the variables/arguments into (a) constant
+                %      and (2) varying variables.
+                % PRO: Clarifies the information which the function needs.
+                %      = Minimizes the amount of information that goes into the
+                %      function.
+                % PRO: Prevents the function from having to do the same.
+                % PRO: Prevents the function from simultaneously having
+                %      variables version for (a) entire interval of time and (b)
+                %      the selected interval of time.
+                % ==============================================================
+
+                % CV = Constant Values = Values which are constant for the
+                %      entire subsequence of records.
+                Cv = [];
+                Cv.bdmFpa                  = PreDc.Zv.bdmFpa(                 iRec1);
+                Cv.isAchgFpa               = PreDc.Zv.isAchgFpa(              iRec1);
+                Cv.freqHz                  = PreDc.Zv.freqHz(                 iRec1);
+                Cv.iLsf                    = PreDc.Zv.iLsf(                   iRec1);
+                Cv.CALIBRATION_TABLE_INDEX = PreDc.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
+                Cv.ufv                     = PreDc.Zv.ufv(                    iRec1);
+                Cv.dlrFpa                  = PreDc.Zv.dlrFpa(                 iRec1);
+                % NOTE: Excluding PreDc.Zv.lrx since it is only need for
+                %       splitting time/CDF record intervals, not for calibration
+                %       since calibration can handle sequences of only NaN.
+                Cv.iCalibL                 = iCalibLZv(                       iRec1);
+                Cv.iCalibH                 = iCalibHZv(                       iRec1);
+                % NOTE: Below variables do not vary over CDF records anyhow.
+                Cv.hasSwfFormat            = PreDc.hasSwfFormat;
+                Cv.isLfr                   = PreDc.isLfr;
+                Cv.isTdsCwf                = PreDc.isTdsCwf;
+
+                % VV = (Record-)Varying Values
+                Vv = [];
+                Vv.Epoch                    = PreDc.Zv.Epoch(                  iRec1:iRec2);
+                Vv.bltsSamplesTm            = PreDc.Zv.bltsSamplesTm(          iRec1:iRec2, :, :);
+                Vv.zvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord( iRec1:iRec2);
+
+                if ~(Cv.hasSwfFormat && Cv.isLfr)
+                    % IMPLEMENTATION NOTE: Do not log for LFR SWF since it
+                    % produces unnecessarily many log messages since sampling
+                    % frequencies change for every CDF record.
+                    %
+                    % PROPOSAL: Make into "proper" table with top rows with column names.
+                    %   NOTE: Can not use irf.str.assist_print_table() since
+                    %         it requires the entire table to pre-exist before execution.
+                    %   PROPOSAL: Print after all iterations.
+                    %
+                    % NOTE: DIFF_GAIN needs three characters to fit in "NaN".
+                    L.logf('info', ['Records %8i-%8i : %s -- %s', ...
+                        ' bdm/HK_BIA_MODE_MUX_SET=%i;', ...
+                        ' isAchg/DIFF_GAIN=%-3i;', ...
+                        ' dlr/HK_BIA_MODE_DIFF_PROBE=%i;', ...
+                        ' freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
+                        ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
+                        iRec1, iRec2, ...
+                        bicas.utils.TT2000_to_UTC_str(Vv.Epoch(1)), ...
+                        bicas.utils.TT2000_to_UTC_str(Vv.Epoch(end)), ...
+                        Cv.bdmFpa.int2doubleNan(), ...
+                        Cv.isAchgFpa.logical2doubleNan(), ...
+                        Cv.dlrFpa.logical2doubleNan(), ...
+                        Cv.freqHz, ...
+                        Cv.iCalibL, Cv.iCalibH, Cv.ufv, ...
+                        Cv.CALIBRATION_TABLE_INDEX(1), ...
+                        Cv.CALIBRATION_TABLE_INDEX(2))
+                end
+
+                SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(...
+                    Cv, Vv, Cal);
 
                 % Add demuxed sequence to the to-be complete set of records.
-                AsrSamplesAVolt = bicas.proc.utils.set_struct_field_rows(...
-                    AsrSamplesAVolt, SsAsrSamplesAVolt, iFirst:iLast);
+                AsrSamplesAVoltSrm.setRows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
             end
 
-
-
-            % NOTE: Assumes no "return" statement.
-            %bicas.log_speed_profiling(L, 'bicas.proc.L1L2.dc.calibrate_demux_voltages', tTicToc, nRecords, 'record')
-            %bicas.log_memory_profiling(L, 'bicas.proc.L1L2.dc.calibrate_demux_voltages:end')
         end    % calibrate_demux_voltages
 
 
 
-        % Calibrate and demux all BLTS channels for one subsequence.
-        function SsAsrSamplesAVolt = calibrate_demux_subsequence(...
-                PreDc, dlrUsing12zv, iCalibLZv, iCalibHZv, Cal, iFirst, iLast, L)
-            % IMPLEMENTATION NOTE: Function created to make loop in
-            % calibrate_demux_voltages() smaller and more easy-to-understand.
+        % Calibrate and demux all BLTS channels for one subsequence with various
+        % constant settings/values.
+        function AsrSamplesAVoltSrm = calibrate_demux_voltages_subsequence(Cv, Vv, Cal)
+            % PROPOSAL: Rename "subsequence".
+            %   ~time interval
+            %   ~constant settings time interval
 
-            % Extract SCALAR settings to use for entire subsequence of
-            % records.
-            MUX_SET_ss                 = PreDc.Zv.MUX_SET  (              iFirst);
-            DIFF_GAIN_ss               = PreDc.Zv.DIFF_GAIN(              iFirst);
-            freqHz_ss                  = PreDc.Zv.freqHz(                 iFirst);
-            iLsf_ss                    = PreDc.Zv.iLsf(                   iFirst);
-            CALIBRATION_TABLE_INDEX_ss = PreDc.Zv.CALIBRATION_TABLE_INDEX(iFirst, :);
-            ufv_ss                     = PreDc.Zv.useFillValues(          iFirst);
-            dlrUsing12_ss              = dlrUsing12zv(                    iFirst);
-            iCalibL_ss                 = iCalibLZv(                       iFirst);
-            iCalibH_ss                 = iCalibHZv(                       iFirst);
-
-            % Extract subsequence of DATA records to "demux".
-            ssSamplesCaTm = bicas.proc.utils.select_row_range_from_cell_comps(...
-                PreDc.Zv.samplesCaTm, iFirst, iLast);
-            % NOTE: "zVariable" (i.e. first index=record) for only the
-            % current subsequence.
-            ssZvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord(iFirst:iLast);
-
-            if ~(PreDc.hasSnapshotFormat && PreDc.isLfr)
-                % IMPLEMENTATION NOTE: Do not log for LFR SWF since it
-                % produces unnecessarily many log messages since sampling
-                % frequencies change for every CDF record.
-                %
-                % PROPOSAL: Make into "proper" table with top rows with column names.
-                %   NOTE: Can not use irf.str.assist_print_table() since
-                %         it requires the entire table to pre-exist before execution.
-                %   PROPOSAL: Print after all iterations.
-                %
-                % NOTE: DIFF_GAIN needs three characters to fit in "NaN".
-                L.logf('info', ['Records %8i-%8i : %s -- %s', ...
-                    ' MUX_SET=%i; DIFF_GAIN=%-3i; dlrUsing12=%i;', ...
-                    ' freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
-                    ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
-                    iFirst, iLast, ...
-                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iFirst)), ...
-                    bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iLast)), ...
-                    MUX_SET_ss, DIFF_GAIN_ss, dlrUsing12_ss, freqHz_ss, ...
-                    iCalibL_ss, iCalibH_ss, ufv_ss, ...
-                    CALIBRATION_TABLE_INDEX_ss(1), ...
-                    CALIBRATION_TABLE_INDEX_ss(2))
-            end
+            nRows = numel(Vv.Epoch);
 
             %=======================================
             % DEMULTIPLEXER: FIND ASR-BLTS ROUTINGS
             %=======================================
-            % NOTE: Call demultiplexer with no samples. Only for collecting
-            % information on which BLTS channels are connected to which
-            % ASRs.
-            [BltsSrcAsrArray, ~] = bicas.proc.L1L2.demuxer.main(...
-                MUX_SET_ss, dlrUsing12_ss, {[],[],[],[],[]});
+            DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
+                Cv.bdmFpa, Cv.dlrFpa);
 
-
-
-            if PreDc.hasSnapshotFormat
+            if Cv.hasSwfFormat
                 % NOTE: Vector of constant numbers (one per snapshot).
-                ssDtSec = 1 ./ PreDc.Zv.freqHz(iFirst:iLast);
+                dtSec = ones(nRows, 1) / Cv.freqHz;
             else
                 % NOTE: Scalar (one for entire sequence).
-                ssDtSec = double(...
-                    PreDc.Zv.Epoch(iLast) - PreDc.Zv.Epoch(iFirst)) ...
-                    / (iLast-iFirst) * 1e-9;   % TEMPORARY?
+                dtSec = double( Vv.Epoch(end) - Vv.Epoch(1) ) / (nRows-1) * 1e-9;
             end
-
-            biasHighGain = DIFF_GAIN_ss;
-
-
 
             %=====================
             % ITERATE OVER BLTS's
             %=====================
-            ssSamplesAVoltCa = cell(5,1);
-            for iBlts = 1:5
-                ssSamplesAVoltCa{iBlts} = bicas.proc.L1L2.dc.calibrate_BLTS(...
-                    BltsSrcAsrArray(iBlts), ...
-                    ssSamplesCaTm{iBlts}, ...
+            ssBltsSamplesAVolt = [];
+            for iBlts = 1:bicas.const.N_BLTS
+                ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
+                    DemuxerRoutingArray(iBlts).Ssid, ...
+                    Vv.bltsSamplesTm(:, :, iBlts), ...
                     iBlts, ...
-                    PreDc.hasSnapshotFormat, ...
-                    ssZvNValidSamplesPerRecord, ...
-                    biasHighGain, ...
-                    iCalibL_ss, ...
-                    iCalibH_ss, ...
-                    iLsf_ss, ...
-                    ssDtSec, ...
-                    PreDc.isLfr, PreDc.isTdsCwf, ...
-                    CALIBRATION_TABLE_INDEX_ss, ufv_ss, ...
+                    Cv.hasSwfFormat, ...
+                    Vv.zvNValidSamplesPerRecord, ...
+                    Cv.isAchgFpa.logical2doubleNan(), ...
+                    Cv.iCalibL, ...
+                    Cv.iCalibH, ...
+                    Cv.iLsf, ...
+                    dtSec, ...
+                    Cv.isLfr, Cv.isTdsCwf, ...
+                    Cv.CALIBRATION_TABLE_INDEX, Cv.ufv, ...
                     Cal);
             end
 
-            %====================================
-            % DEMULTIPLEXER: DERIVE MISSING ASRs
-            %====================================
-            [~, SsAsrSamplesAVolt] = bicas.proc.L1L2.demuxer.main(...
-                MUX_SET_ss, dlrUsing12_ss, ssSamplesAVoltCa);
-        end    % calibrate_demux_subsequence
+            %========================================================
+            % DEMULTIPLEXER: DERIVE AND COMPLEMENT WITH MISSING ASRs
+            %========================================================
+            AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
+                [DemuxerRoutingArray.Sdid], ssBltsSamplesAVolt);
+        end    % calibrate_demux_voltages_subsequence
 
 
 
         % Calibrate one BLTS channel.
         function samplesAVolt = calibrate_BLTS(...
-                BltsSrcAsr, samplesTm, iBlts, ...
-                hasSnapshotFormat, ...
-                zvNValidSamplesPerRecord, biasHighGain, ...
+                Ssid, samplesTm, iBlts, ...
+                hasSwfFormat, ...
+                zvNValidSamplesPerRecord, isAchg, ...
                 iCalibL, iCalibH, iLsf, dtSec, ...
                 isLfr, isTdsCwf, ...
                 CALIBRATION_TABLE_INDEX, ufv, ...
@@ -369,25 +379,39 @@ classdef dc
             % PROPOSAL: Reorder arguments to group them.
             %   PROPOSAL: Group arguments from PreDc.
 
-            if strcmp(BltsSrcAsr.category, 'Unknown')
-                % ==> Calibrated data == NaN.
+            % IMPLEMENTATION NOTE: It seems that data processing submits
+            % different types of floats for LFR and TDS. This difference in
+            % processing is unintended and should probably ideally be
+            % eliminated.
+            % NOTE: Storing TM units with floats!
+            if isLfr
+                assert(isa(samplesTm, 'single'))
+            else
+                assert(isa(samplesTm, 'double'))
+            end
+            irf.assert.sizes(samplesTm, [-1, -2])   % One BLTS channel.
+
+            if isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.UNKNOWN)
+                % ==> Calibrated data set to NaN.
                 samplesAVolt = nan(size(samplesTm));
 
-            elseif ismember(BltsSrcAsr.category, {'GND', '2.5V Ref'})
+            elseif isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.GND) || ...
+                    isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.REF25V)
                 % ==> No calibration.
-                samplesAVolt = ssSamplesTm;
+                % NOTE: samplesTm stores TM units using float!
+                samplesAVolt = samplesTm;
 
             else
-                assert(BltsSrcAsr.is_ASR())
+                assert(Ssid.is_ASR())
                 % ==> Calibrate (unless explicitly stated that should not)
 
-                if hasSnapshotFormat
-                    samplesCaTm = ...
+                if hasSwfFormat
+                    bltsSamplesTmCa = ...
                         bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
                             double(samplesTm), zvNValidSamplesPerRecord);
                 else
                     assert(all(zvNValidSamplesPerRecord == 1))
-                    samplesCaTm = {double(samplesTm)};
+                    bltsSamplesTmCa = {double(samplesTm)};
                 end
 
                 %######################
@@ -404,27 +428,29 @@ classdef dc
                 % This incidentally also potentially speeds up the code.
                 % Ex: LFR SWF 2020-02-25, 2020-02-28.
                 CalSettings = struct();
-                CalSettings.iBlts        = iBlts;
-                CalSettings.BltsSrc      = BltsSrcAsr;
-                CalSettings.biasHighGain = biasHighGain;
-                CalSettings.iCalibTimeL  = iCalibL;
-                CalSettings.iCalibTimeH  = iCalibH;
-                CalSettings.iLsf         = iLsf;
+                CalSettings.iBlts       = iBlts;
+                CalSettings.Ssid        = Ssid;
+                CalSettings.isAchg      = isAchg;
+                CalSettings.iCalibTimeL = iCalibL;
+                CalSettings.iCalibTimeH = iCalibH;
+                CalSettings.iLsf        = iLsf;
                 %#######################################################
-                ssSamplesCaAVolt = Cal.calibrate_voltage_all(...
-                    dtSec, samplesCaTm, ...
+                ssBltsSamplesAVoltCa = Cal.calibrate_voltage_all(...
+                    dtSec, bltsSamplesTmCa, ...
                     isLfr, isTdsCwf, CalSettings, ...
                     CALIBRATION_TABLE_INDEX, ufv);
                 %#######################################################
 
-                if hasSnapshotFormat
+                if hasSwfFormat
                     [samplesAVolt, ~] = ...
                         bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
-                            ssSamplesCaAVolt, ...
+                            ssBltsSamplesAVoltCa, ...
                             size(samplesTm, 2));
                 else
-                    % NOTE: Must be column array.
-                    samplesAVolt = ssSamplesCaAVolt{1};
+                    % Scalar cell array since not snapshot.
+                    assert(isscalar(ssBltsSamplesAVoltCa))
+                    % NOTE: Cell content must be column array.
+                    samplesAVolt = ssBltsSamplesAVoltCa{1};
                 end
             end
         end    % calibrate_BLTS
@@ -432,8 +458,8 @@ classdef dc
 
 
         function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
-                sciEpoch, InCur, SETTINGS, L)
-            
+                sciEpoch, InCur, Bso, L)
+
             % PROPOSAL: Change function name. process_* implies converting struct-->struct.
 
             % ASSERTIONS
@@ -450,7 +476,7 @@ classdef dc
                 sciEpochUtcStr    = irf.cdf.TT2000_to_UTC_str(min(sciEpoch));
                 curEpochMinUtcStr = irf.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
 
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
 
                 anomalyDescrMsg = sprintf(...
@@ -459,7 +485,7 @@ classdef dc
                     curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
 
                 bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
-                    anomalyDescrMsg, 'BICAS:SWModeProcessing')
+                    anomalyDescrMsg, 'BICAS:SWMProcessing')
             end
 
 
@@ -482,19 +508,19 @@ classdef dc
             % NOTE: bicas.proc.L1L2.dc.zv_TC_to_current() checks that Epoch
             % increases monotonically.
             currentNanoSAmpere = [];
-            currentNanoSAmpere(:,1) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, SETTINGS);
-            currentNanoSAmpere(:,2) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, SETTINGS);
-            currentNanoSAmpere(:,3) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, SETTINGS);
+            currentNanoSAmpere(:,1) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, Bso);
+            currentNanoSAmpere(:,2) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, Bso);
+            currentNanoSAmpere(:,3) = bicas.proc.L1L2.dc.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, Bso);
 
             currentSAmpere = 1e-9 * currentNanoSAmpere;
         end
-        
-        
-        
-        % Wrapper around solo.hwzv.CURRENT_zv_to_current_interpolate for
+
+
+
+        % Wrapper around solo.hwzv.CURRENT_ZV_to_current_interpolate for
         % anomaly handling.
         function sciZv_IBIASx = zv_TC_to_current(...
-                curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, SETTINGS)
+                curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, Bso)
 
 
 
@@ -502,7 +528,7 @@ classdef dc
             % Calibrate currents
             %====================
             [sciZv_IBIASx, duplicateAnomaly] = ...
-                solo.hwzv.CURRENT_zv_to_current_interpolate(...
+                solo.hwzv.CURRENT_ZV_to_current_interpolate(...
                     curZv_Epoch, ...
                     curZv_IBIAS_x, ...
                     sciZv_Epoch);
@@ -513,7 +539,7 @@ classdef dc
                 %====================================================
                 % Handle anomaly: Non-monotonically increasing Epoch
                 %====================================================
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY');
                 anomalyDescriptionMsg = [...
                     'Bias current data contain duplicate settings, with', ...
@@ -533,7 +559,7 @@ classdef dc
                         bicas.default_anomaly_handling(L, ...
                             settingValue, settingKey, 'E+illegal', ...
                             anomalyDescriptionMsg, ...
-                            'BICAS:SWModeProcessing:DatasetFormat')
+                            'BICAS:SWMProcessing:DatasetFormat')
                 end
             end
 

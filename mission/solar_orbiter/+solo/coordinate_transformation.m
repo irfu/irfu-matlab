@@ -4,7 +4,7 @@ function TSout = coordinate_transformation(TSin,from,to)
 %supported coordinate systems: 'VSO' , 'SRF', 'SUN_RTN','SOLAR_MHP','GSE','HEE','HCI','GEORTN','HEEQ'
 
 %
-%   
+%
 %      SOLO_VSO                    Venus solar orbiter
 %      SOLO_SRF                    S/C-reference frame
 %      SOLO_SUN_RTN                Sun Solar Orbiter Radial-Tangential-Normal
@@ -36,10 +36,10 @@ M=cspice_pxform(['SOLO_' upper(from)],['SOLO_' upper(to)],et);
 
 out = zeros(size(TSin.data));
 for idx=1:3
-    out (:,idx) = ...
-        squeeze(M(idx,1,:)).*TSin.data(:,1) + ...
-        squeeze(M(idx,2,:)).*TSin.data(:,2) + ...
-        squeeze(M(idx,3,:)).*TSin.data(:,3);
+  out (:,idx) = ...
+    squeeze(M(idx,1,:)).*TSin.data(:,1) + ...
+    squeeze(M(idx,2,:)).*TSin.data(:,2) + ...
+    squeeze(M(idx,3,:)).*TSin.data(:,3);
 end
 
 TSout=irf.ts_vec_xyz(TSin.time,out);

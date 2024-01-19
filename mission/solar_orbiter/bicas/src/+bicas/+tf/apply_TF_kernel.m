@@ -80,7 +80,7 @@ function y2 = apply_TF_kernel(y1, yKernel, iKernelOrigin, edgePolicy)
     %       Ex: Snapshots.
     %
     % TODO-DEC: Which functionality should be placed in
-    %   (1) this function, 
+    %   (1) this function,
     %   (2) wrapper(s)?
     %   PROPOSAL: Edge handling.
     %   PROPOSAL: Modify impulse response for stability.
@@ -124,10 +124,10 @@ function y2 = apply_TF_kernel(y1, yKernel, iKernelOrigin, edgePolicy)
     %   CON-PROPOSAL: Do in wrapper.
 
     EMID = 'BICAS:Assertion:IllegalArgument';
-    
+
     lenKernel = length(yKernel);
     lenY1     = length(y1);
-    
+
     %============
     % ASSERTIONS
     %============
@@ -138,16 +138,16 @@ function y2 = apply_TF_kernel(y1, yKernel, iKernelOrigin, edgePolicy)
         'Argument yKernel is empty.')
     assert(isscalar(iKernelOrigin) & isnumeric(iKernelOrigin))
     assert((1 <= iKernelOrigin) & (iKernelOrigin <= lenKernel))
-    
-    
-    
+
+
+
     %-----------------------------------------------------
     % Lengths of minimum necessary padding before & after
     %-----------------------------------------------------
     % Padding length BEFORE signal == Length of kernel AFTER origin.
-    nPad1 = lenKernel - iKernelOrigin; 
+    nPad1 = lenKernel - iKernelOrigin;
     % Padding length AFTER signal == Length of kernel BEFORE origin.
-    nPad2 = iKernelOrigin - 1;         
+    nPad2 = iKernelOrigin - 1;
 
     %====================================
     % Pad signal y1 depending on setting
@@ -160,10 +160,10 @@ function y2 = apply_TF_kernel(y1, yKernel, iKernelOrigin, edgePolicy)
             % NOTE: Due to how conv() and the algorithm works, padding with
             % zeros is equivalent to not padding at all, IF THERE ARE NO
             % NOT-A-NUMBER in the signal. Therefore paddign with zeros anyway.
-            
+
             yPad1 = zeros(nPad1, 1);
             yPad2 = zeros(nPad2, 1);
-            
+
         case 'cyclic'
             %==============================================
             % Pad with signal itself, as if it were cyclic
@@ -174,18 +174,18 @@ function y2 = apply_TF_kernel(y1, yKernel, iKernelOrigin, edgePolicy)
             % IMPLEMENTATION NOTE: Could (?) be implemented with MATLAB's
             % cconv(), but that would defeat the purpose of having this case for
             % testing (to test other code).
-            
+
             % ASSERTION
             % NOTE: Could update implementation to eliminate this constraint.
             assert(max(nPad1, nPad2) <= lenY1,...
                 EMID, ...
                 ['Kernel length implies padding with more mirrored signal', ...
                 ' samples than thera are samples available.'])
-            
+
             yPad1 = y1(end-nPad1+1 : end,   1);
             yPad2 = y1(1           : nPad2, 1);
-            
-        case 'mirror'    
+
+        case 'mirror'
             %=============================================================
             % Pad edges with mirrored signals (mirrored around the edges)
             %=============================================================
@@ -194,22 +194,22 @@ function y2 = apply_TF_kernel(y1, yKernel, iKernelOrigin, edgePolicy)
             % are mirrored (duplicated).
             % NOTE: One could also use symmetry around indices "1" and
             % "end" and not mirror the very first and last samples.
-            
+
             % ASSERTION
             assert(max(nPad1, nPad2) <= lenY1,...
                 EMID, ...
                 ['Kernel length implies padding with more mirrored signal', ...
                 ' samples than thera are samples available.'])
-            
+
             % NOTE: Y = wrev(X) reverses the 1D vector X.
             yPad1 = wrev(y1(1           : nPad1, 1));
             yPad2 = wrev(y1(end-nPad2+1 : end,   1));
-            
+
         otherwise
             error(EMID, 'Illegal argument edgePolicy="%s".', edgePolicy)
 
     end
-    
+
     % Pad signal.
     y1b   = [yPad1; y1; yPad2];
 
@@ -217,7 +217,7 @@ function y2 = apply_TF_kernel(y1, yKernel, iKernelOrigin, edgePolicy)
     % CONVOLVE PADDED SIGNAL USING MATLAB FUNCTION conv()
     %=====================================================
     y2b = conv(y1b, yKernel);
-    
+
     %================
     % Remove padding
     %================
@@ -228,15 +228,15 @@ end
 
 
 function assert_y(y, argName, EMID)
-    
+
     if ~iscolumn(y)
         error(EMID, 'Argument %s is not a column vector.', argName)
-        
+
     elseif ~isnumeric(y)
         error(EMID, 'Argument %s is not numeric.', argName)
-        
+
     elseif ~isreal(y)
         error(EMID, '%s is not real.', argName)
-        
+
     end
 end

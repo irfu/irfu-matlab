@@ -26,48 +26,48 @@
 % First created 2020-05-13.
 %
 function dsmdGroupsCa = find_overlapping_DSMD_groups(DsmdArray, datasetIdList)
-    % PROPOSAL: Better name
-    %   PROPOSAL: find_time_overlapping_groups, find_time_groups
-    %   PROPOSAL: Name find_overlapping_DSMD_groups
-    %   PROPOSAL: ~DSMD
-    % PROPOSAL: Assertion for identifying dataset groups with only unique DATASET_ID.
-    % PROPOSAL: Assertion for that datasets with the same DATASET_ID do not overlap in time.
-    %
-    % NEED: Be able to find overlapping datasets of same DATASET_ID.
-    %   Ex: Compare versions of datasets.
-    %       Ex: Sweeps.
-    %   PROBLEM: Not well defined problem. A+B, B+C may overlap while A+C d not overlap.
+% PROPOSAL: Better name
+%   PROPOSAL: find_time_overlapping_groups, find_time_groups
+%   PROPOSAL: Name find_overlapping_DSMD_groups
+%   PROPOSAL: ~DSMD
+% PROPOSAL: Assertion for identifying dataset groups with only unique DATASET_ID.
+% PROPOSAL: Assertion for that datasets with the same DATASET_ID do not overlap in time.
+%
+% NEED: Be able to find overlapping datasets of same DATASET_ID.
+%   Ex: Compare versions of datasets.
+%       Ex: Sweeps.
+%   PROBLEM: Not well defined problem. A+B, B+C may overlap while A+C d not overlap.
 
-    assert(isa(DsmdArray, 'solo.adm.DSMD'))
-    solo.adm.assert_no_time_overlap(DsmdArray);
+assert(isa(DsmdArray, 'solo.adm.DSMD'))
+solo.adm.assert_no_time_overlap(DsmdArray);
 
-    DsmdArray = solo.adm.filter_DSMD_DATASET_ID(DsmdArray, datasetIdList);
-    DsmdArray = DsmdArray(:);
+DsmdArray = solo.adm.filter_DSMD_DATASET_ID(DsmdArray, datasetIdList);
+DsmdArray = DsmdArray(:);
 
-    if isempty(DsmdArray)
-       dsmdGroupsCa = cell(0, 1);
-    else
-        % NOTE: Requires .dateVec1/2 to be ROW vector.
-        DT0 = datetime(2000, 1, 1, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
+if isempty(DsmdArray)
+  dsmdGroupsCa = cell(0, 1);
+else
+  % NOTE: Requires .dateVec1/2 to be ROW vector.
+  DT0 = datetime(2000, 1, 1, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
 
-        % IMPLEMENTATION NOTE: Does not work for empty DsmdArray in which case
-        % vertcat(DsmdArray.dt1) etc. does not produce a datetime array.
-        t1Array = seconds(vertcat(DsmdArray.dt1) - DT0);
-        t2Array = seconds(vertcat(DsmdArray.dt2) - DT0);
+  % IMPLEMENTATION NOTE: Does not work for empty DsmdArray in which case
+  % vertcat(DsmdArray.dt1) etc. does not produce a datetime array.
+  t1Array = seconds(vertcat(DsmdArray.dt1) - DT0);
+  t2Array = seconds(vertcat(DsmdArray.dt2) - DT0);
 
-        [setsCa, nArray, oiT1Array, oiT2Array] = irf.utils.find_interval_overlaps(...
-            t1Array, t2Array);
+  [setsCa, nArray, oiT1Array, oiT2Array] = irf.utils.find_interval_overlaps(...
+    t1Array, t2Array);
 
-        % Only keep overlaps with (1) the exact number of datasets, and (2) non-zero
-        % length overlap.
-        bKeep = (nArray == numel(datasetIdList)) & (oiT1Array ~= oiT2Array);
-        setCa = setsCa(bKeep);
+  % Only keep overlaps with (1) the exact number of datasets, and (2) non-zero
+  % length overlap.
+  bKeep = (nArray == numel(datasetIdList)) & (oiT1Array ~= oiT2Array);
+  setCa = setsCa(bKeep);
 
-        nGroups = numel(setCa);
+  nGroups = numel(setCa);
 
-        dsmdGroupsCa = cell(nGroups, 1);
-        for i = 1:nGroups
-            dsmdGroupsCa{i,1} = DsmdArray(setCa{i});
-        end
-    end
+  dsmdGroupsCa = cell(nGroups, 1);
+  for i = 1:nGroups
+    dsmdGroupsCa{i,1} = DsmdArray(setCa{i});
+  end
+end
 end

@@ -1,6 +1,5 @@
 %
-% Class that collects "processing functions" as public static methods. Only
-% covers processing L1/L1R-->L2.
+% Class that collects miscellaneous functions for processing L1/L1R-->L2.
 %
 % This class is not meant to be instantiated.
 %
@@ -11,19 +10,14 @@
 %   data, use the first MATLAB array index to represent CDF records.
 %
 %
-% DEFINITIONS, NAMING CONVENTIONS
-% ===============================
-% See readme.txt.
-%
-%
 % SOME INTERMEDIATE PROCESSING DATA FORMATS
 % =========================================
-% - PreDC = Pre-(Demuxing & Calibration) Data
+% - PreDc = Pre-(Demuxing & Calibration) Data
 %       Generic data format that can represent all forms of input datasets
 %       before demuxing and calibration. Can use an arbitrary number of samples
 %       per record. Some variables are therefore not used in CWF output
 %       datasets.
-% - PostDC = Post-(Demuxing & Calibration) Data
+% - PostDc = Post-(Demuxing & Calibration) Data
 %       Data format that includes calibrated currents & calibrated & demuxed
 %       voltages.
 %
@@ -34,34 +28,21 @@
 classdef L1L2
 %#######################################################################################################################
 %
-% PROPOSAL: POLICY: Include all functions which set "policy"/configure the output of datasets. -- ABANDONED?
+% PROPOSAL: Move normalize_CALIBRATION_TABLE_INDEX() to some collection of utils.
+%   PROPOSAL: bicas.proc.utils
+%       CON: Function is too specific. Has inputDsi as argument.
+%           CON: Could be less bad than this file.
 %
-% PROPOSAL: Split into smaller files.
-%   NOTE: All functions 2021-05-25:
-%         function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
-%         function [PreDc, PostDc] = process_quality_filter_L2(...
-%         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
-%         function assert_PreDC(PreDc)
-%         function assert_PostDC(PostDc)
-%         function zvUseFillValues = get_UFV_records_from_settings(...
-%         function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
-%
-% PROPOSAL: Submit zVar variable attributes.
+% PROPOSAL: Submit ZV attributes.
 %   PRO: Can interpret fill values.
 %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems
 %           to be bad).
 %
-% PROPOSAL: Return (to execute_sw_mode), global attributes.
+% PROPOSAL: Return (to execute_SWM), global attributes.
 %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
 %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
 %
-% PROPOSAL: Classes for PreDc, PostDc, PreDc.Zv, PostDc.Zv.
-%   PRO: Better documentation of formats.
-%   PRO: Can abolish
-%       bicas.proc.L1L2.assert_PreDC
-%       bicas.proc.L1L2.assert_PostDC
 % PROPOSAL: Class for HkSciTime.
-% PROPOSAL: Class for DemuxerOutput.
 %
 %#######################################################################################################################
 
@@ -75,15 +56,16 @@ classdef L1L2
 
 
 
-        % Processing function
-        %
-        % NOTE: Only converts relevant HK zVars to be on SCI Epoch. Later
-        % (other) code decides whether to use it (mux mode).
-        function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, SETTINGS, L)
+        % Only converts relevant HK ZVs to be on SCI Epoch. Other code later
+        % decides whether to actually use it (BDM).
+        function HkSciTime = process_HK_CDF_to_HK_on_SCI_TIME(InSci, InHk, Bso, L)
             % PROPOSAL: Separate function for the actual interpolation of data
             %           (changing time array HK-->SCI).
-            
-            
+            %
+            % NOTE: Function only uses InSci fields InSci.Zv.Epoch and InSci.Zv.ACQUISITION_TIME
+            %   PROPOSAL: Replace argument InSci --> SciEpoch and Sci_ACQUISITION_TIME
+
+
 
             % ASSERTIONS
             assert(isa(InSci, 'bicas.InputDataset'))
@@ -102,8 +84,8 @@ classdef L1L2
             % Epoch contains errors, but ACQUISITION_TIME seems OK. This should
             % be phased out eventually.
             %===================================================================
-            ACQUISITION_TIME_EPOCH_UTC = SETTINGS.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
-            USE_ZV_ACQUISITION_TIME_HK = SETTINGS.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
+            ACQUISITION_TIME_EPOCH_UTC = Bso.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
+            USE_ZV_ACQUISITION_TIME_HK = Bso.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
             if USE_ZV_ACQUISITION_TIME_HK
                 hkEpoch = bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                     InHk.Zv.ACQUISITION_TIME, ...
@@ -132,7 +114,7 @@ classdef L1L2
                     bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
                     InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
             end
-            bicas.utils.log_zVars(TimeVars, SETTINGS, L);
+            bicas.utils.log_ZVs(TimeVars, Bso, L);
 
 
 
@@ -149,6 +131,7 @@ classdef L1L2
                     ['HK timestamps do not increase monotonically', ...
                     ' (USE_ZV_ACQUISITION_TIME_HK=%g).'], ...
                     USE_ZV_ACQUISITION_TIME_HK)
+
             end
             if ~irf.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
                 %---------------------------------------
@@ -157,12 +140,13 @@ classdef L1L2
 
                 % NOTE: "WARNING" (rather than error) only makes sense if it is
                 % possible to later meaningfully permit non-intersection.
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
                     'SCI and HK time ranges do not overlap in time.', ...
-                    'BICAS:SWModeProcessing')
+                    'BICAS:SWMProcessing')
+
             elseif ~irf.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
                 %-------------------------------------------------
                 % CASE: SCI does not cover a subset of HK in time
@@ -180,271 +164,99 @@ classdef L1L2
                     hk1RelativeSec, ...
                     -hk2RelativeSec);
 
-                [settingValue, settingKey] = SETTINGS.get_fv(...
+                [settingValue, settingKey] = Bso.get_fv(...
                     'PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
                 bicas.default_anomaly_handling(L, ...
                     settingValue, settingKey, 'E+W+illegal', ...
-                    anomalyDescrMsg, 'BICAS:DatasetFormat:SWModeProcessing')
+                    anomalyDescrMsg, 'BICAS:DatasetFormat:SWMProcessing')
+
             end
 
 
 
             % Derive time margin within which the nearest HK value will be used.
-            % NOTE: Requires >=2 records.
+            % NOTE: Requires >=2 records. 0 or 1 records ==> NaN (and MATLAB
+            %       warning).
+            %
+            % BUG?: This looks as if it could yield bad results. If the margin
+            %       is small, then interpolation would yield too many NaN.
+            %   NOTE: HK nominally has a much lower "sampling rate" than science
+            %         data. ==> The derived margin tends to be higher.
+            %   NOTE: Time difference between HK samples varies, which means
+            %         that mode() will not necessarily identify the de facto
+            %         most common time difference.
             hkEpochExtrapMargin = mode(diff(hkEpoch)) / 2;
-            
-            
+
+
 
             %=============================================================
-            % Derive MUX_SET
-            % --------------
-            % NOTE: Only obtains one MUX_SET per record
-            %       ==> Can not change MUX_SET in the middle of a record.
-            % NOTE: Can potentially obtain MUX_SET from LFR SCI.
+            % Derive BDM
+            % ----------
+            % NOTE: Only obtains one BDM per record
+            %       ==> Can not change BDM in the middle of a record.
+            % NOTE: Can potentially also obtain BDM from LFR SCI, but that
+            %       decision should not be made here.
+            %       See bicas.proc.L1L2.lfr.process_CDF_to_PreDc().
             %=============================================================
-            HkSciTime.MUX_SET = bicas.utils.interpolate_nearest(...
-                hkEpochExtrapMargin, ...
-                hkEpoch, ...
-                InHk.Zv.HK_BIA_MODE_MUX_SET, ...
-                InSci.Zv.Epoch);
+            bdmDoubleNan = bicas.utils.interpolate_nearest(...
+                    hkEpochExtrapMargin, ...
+                    hkEpoch, ...
+                    InHk.ZvFpa.HK_BIA_MODE_MUX_SET.int2doubleNan(), ...
+                    InSci.Zv.Epoch);
+            HkSciTime.bdmFpa = bicas.utils.FPArray(bdmDoubleNan, 'FILL_VALUE', NaN).cast('uint8');
 
 
 
             %==================================================================
-            % Derive DIFF_GAIN
-            % ----------------
+            % Derive DIFF_GAIN / isAchgFpa
+            % ----------------------------
             % NOTE: Not perfect handling of time when 1 snapshot/record, since
             % one should ideally use time stamps for every LFR _sample_.
             %==================================================================
-            HkSciTime.DIFF_GAIN = bicas.utils.interpolate_nearest(...
-                hkEpochExtrapMargin, ...
+            HkSciTime.isAchgFpa = bicas.utils.FPArray.floatNan2logical(...
+                bicas.utils.interpolate_nearest(...
+                    hkEpochExtrapMargin, ...
+                    hkEpoch, ...
+                    InHk.ZvFpa.HK_BIA_DIFF_GAIN.int2doubleNan(), ...
+                    InSci.Zv.Epoch));
+
+
+
+            %=====================================
+            % Derive HK_BIA_MODE_DIFF_PROBE / DLR
+            %=====================================
+            % NOTE: FPA uint8 --> float-NaN --> FPA logical
+            HkSciTime.dlrFpa = bicas.utils.FPArray.floatNan2logical(...
+                bicas.utils.interpolate_nearest(...
+                    hkEpochExtrapMargin, ...
+                    hkEpoch, ...
+                    InHk.ZvFpa.HK_BIA_MODE_DIFF_PROBE.int2doubleNan(), ...
+                    InSci.Zv.Epoch));
+
+
+
+            %===================
+            % Derive isSweeping
+            %===================
+            isSweepingFpa = bicas.proc.L1L2.autodetect_sweeps(...
                 hkEpoch, ...
-                InHk.Zv.HK_BIA_DIFF_GAIN, ...
-                InSci.Zv.Epoch);
+                InHk.ZvFpa.HK_BIA_MODE_MUX_SET, ...
+                [InHk.ZvFpa.HK_BIA_BIAS1, ...
+                 InHk.ZvFpa.HK_BIA_BIAS2, ...
+                 InHk.ZvFpa.HK_BIA_BIAS3], ...
+                 Bso);
+            HkSciTime.isSweepingFpa = bicas.utils.FPArray.floatNan2logical(...
+                bicas.utils.interpolate_nearest(...
+                    hkEpochExtrapMargin, ...
+                    hkEpoch, ...
+                    isSweepingFpa.logical2doubleNan, ...
+                    InSci.Zv.Epoch));
 
 
 
             % ASSERTIONS
-            irf.assert.struct(HkSciTime, {'MUX_SET', 'DIFF_GAIN'}, {})
+            irf.assert.struct(HkSciTime, {'bdmFpa', 'isAchgFpa', 'dlrFpa', 'isSweepingFpa'}, {})
         end
-
-
-
-        % Processing function (L1/L1R-->L2; not L2-->L3).
-        %
-        % Overwrite selected data in selected CDF records with fill values/NaN.
-        % Modify quality zVariables.
-        %
-        % NOTE: Almost does not modify PreDc.
-        %   Exception: Modifies PreDc.Zv.QUALITY_FLAG
-        %
-        % Sets
-        %   PreDc.Zv.QUALITY_FLAG (modifies)
-        %   PostDc.Zv.L2_QUALITY_BITMASK
-        %   PostDc.Zv.DemuxerOutput
-        %   PostDc.Zv.currentAAmpere
-        %
-        %
-        % RATIONALE
-        % =========
-        % Does NOT want to operate on structs that mimic the input or output
-        % datasets, but on struct that are as similiar as possible for all forms
-        % of L1R-->L2 processing.
-        %
-        function [PreDc, PostDc] = process_quality_filter_L2(...
-                PreDc, PostDc, NsoTable, SETTINGS, L)
-
-            % NOTE: Adds zVar L2_QUALITY_FLAG to PostDc, technically altering the PostDc format.
-            %   NOTE: Also overwrites voltage with fill values.
-            %   PROPOSAL: Treat output PostDc as another format?
-            %   PROPOSAL: Initialize empty L2_QUALITY_FLAG when PostDc first created.
-            %   PROPOSAL: Keep as is. List as optional field in assert_PostDc
-            %
-            % PROPOSAL: Abolish test functionality. -- IMPLEMENTED
-            %   PRO: Test functionality can lead to bugs.
-            %   PRO: Can use alternative NSO table (using NSO table path override
-            %        setting).
-            %
-            % PROPOSAL: Generalize function to be used in L3.
-            %   CON: Can not be done since this function is meant to have access
-            %        to arbitrary L1/L1R and L2 data to make decisions, although
-            %        this is not much used yet.
-
-            % ASSERTION
-            bicas.proc.L1L2.assert_PreDC(PreDc)
-            bicas.proc.L1L2.assert_PostDC(PostDc)
-            nRecords = irf.assert.sizes(PreDc.Zv.Epoch, [-1]);
-
-
-
-            % NOTE: Preallocates and adds zVar to PostDc.
-            PostDc.Zv.L2_QUALITY_BITMASK = zeros(nRecords, 1, 'uint16');
-
-
-
-            %============================================
-            % Find CDF records to remove due to settings
-            %============================================
-            zvUfvSettings = bicas.proc.L1L2.get_UFV_records_from_settings(...
-                PreDc.Zv.Epoch, PreDc.Zv.MUX_SET, PreDc.isLfr, SETTINGS, L);
-
-            zvUfv = PreDc.Zv.useFillValues | zvUfvSettings;
-
-
-
-            %========================================
-            % Take actions based on NSO events table
-            %========================================
-            %testNsoIdsEnabled = SETTINGS.get_fv('PROCESSING.RCS_NSO.TEST_IDS_ENABLED');
-
-            % Variable naming convention:
-            % CDF event    = NSO event that overlaps with CDF records.
-            % Global event = NSO event in global NSO event table.
-
-            % NOTE: iCdfEventNa = CDF events as indices to global events.
-            [bCdfEventRecordsCa, cdfEventNsoIdCa, iCdfEventNa] = ...
-                NsoTable.get_NSO_timestamps(PreDc.Zv.Epoch);
-            nCdfEvents    = numel(cdfEventNsoIdCa);
-            nGlobalEvents = numel(NsoTable.evtNsoIdCa);
-            L.logf('info', ...
-                ['Searched non-standard operations (NSO) table.', ...
-                ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
-                nCdfEvents, nGlobalEvents);
-
-            % Index into LOCAL/CDF NSO events table.
-            for kCdfEvent = 1:nCdfEvents
-
-                % Index into GLOBAL NSO events table.
-                iGlobalEvent = iCdfEventNa(kCdfEvent);
-                eventNsoId   = cdfEventNsoIdCa{kCdfEvent};
-
-                %===========================================================
-                % Log the relevant NSO event in the GLOBAL NSO events table
-                %===========================================================
-                L.logf('info', '    %s -- %s %s', ...
-                    irf.cdf.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGlobalEvent)), ...
-                    irf.cdf.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGlobalEvent)), ...
-                    eventNsoId);
-
-
-
-                %==========================================================
-                % TEST FUNCTIONALITY
-                % ------------------
-                % Optionally translate (selected) TEST NSO IDs into actual
-                % NSO IDs.
-                %==========================================================
-%                 eventNsoIdTranslated = irf.utils.translate({...
-%                     {bicas.constants.NSOID.TEST_THRUSTER_FIRING}, ...
-%                      bicas.constants.NSOID.THRUSTER_FIRING}, ...
-%                     eventNsoId, eventNsoId);
-%                 if ~testNsoIdsEnabled && ~strcmp(eventNsoId, eventNsoIdTranslated)
-%                     % CASE:   (1) Not test mode
-%                     %       & (2) NSO ID was translated (changed).
-%                     % ==> Original NSO ID was a TEST NSO ID
-%                     % ==> NSO should be ignored.
-%                     eventNsoIdTranslated = 'nothing';   % Local constant.
-%                 end
-%                 eventNsoId = eventNsoIdTranslated;
-                %========================================================
-
-
-
-                %=================================
-                % Take action depending on NSO ID
-                %=================================
-                % Temporary shorter variable name.
-                zv_QUALITY_FLAG       = PreDc.Zv.QUALITY_FLAG       (bCdfEventRecordsCa{kCdfEvent});
-                zv_L2_QUALITY_BITMASK = PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent});
-
-                switch(eventNsoId)
-
-                    %=====================================================
-                    % TEST FUNCTIONALITY
-                    % Can test the setting of QUALITY_FLAG and zvUfv.
-%                     case bicas.constants.NSOID.TEST_QF0
-%                         if testNsoIdsEnabled
-%                             zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 0, ...
-%                                 'includeNaN');
-%                         end
-%                     case bicas.constants.NSOID.TEST_UFV
-%                         if testNsoIdsEnabled
-%                             zvUfv = zvUfv | bCdfEventRecordsCa{kCdfEvent};
-%                         end
-                    %=====================================================
-
-                    case bicas.constants.NSOID.PARTIAL_SATURATION
-                        zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 1, 'includeNaN');
-                        zv_L2_QUALITY_BITMASK = bitor(...
-                            zv_L2_QUALITY_BITMASK, ...
-                            bicas.constants.L2QBM_PARTIAL_SATURATION);
-
-                    case bicas.constants.NSOID.FULL_SATURATION
-                        zv_QUALITY_FLAG       = min(zv_QUALITY_FLAG, 0, 'includeNaN');
-                        zv_L2_QUALITY_BITMASK = bitor(...
-                            zv_L2_QUALITY_BITMASK, ...
-                            bicas.constants.L2QBM_FULL_SATURATION);
-                        zv_L2_QUALITY_BITMASK = bitor(...
-                            zv_L2_QUALITY_BITMASK, ...
-                            bicas.constants.L2QBM_PARTIAL_SATURATION);
-                        % NOTE: Also set PARTIAL saturation bit when FULL
-                        % saturation. /YK 2020-10-02.
-
-                    case bicas.constants.NSOID.THRUSTER_FIRING
-                        zv_QUALITY_FLAG = min(zv_QUALITY_FLAG, 1, 'includeNaN');
-                        % NOTE: There will be an L1 QUALITY_BITMASK bit for
-                        % thruster firings eventually according to
-                        % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
-                        % Therefore(?) not setting any bit in
-                        % L2_QUALITY_BITMASK. (YK 2020-11-03 did not ask for any
-                        % to be set.)
-
-%                     case 'nothing'
-%                         % CASE: Do nothing.
-%                         % This case is necessary so that test NSO IDs can be
-%                         % translated to something harmless when tests are
-%                         % disabled.
-
-                    otherwise
-                        % ASSERTION
-                        % NOTE: Not perfect assertion on legal NSO IDs since
-                        % code only checks those relevant for the data (time
-                        % interval) currently processed. (Therefore also checks
-                        % all NSO IDs when reads NSO table.)
-                        error('Can not interpret RCS NSO ID "%s".', ...
-                            cdfEventNsoIdCa{kCdfEvent})
-
-                end
-                PreDc.Zv.QUALITY_FLAG       (bCdfEventRecordsCa{kCdfEvent}) = zv_QUALITY_FLAG;
-                PostDc.Zv.L2_QUALITY_BITMASK(bCdfEventRecordsCa{kCdfEvent}) = zv_L2_QUALITY_BITMASK;
-
-            end    % for
-
-
-
-            %=================================================================
-            % Set zVariables for CURRENTS and VOLTAGES to NaN based on zvUfv.
-            %=================================================================
-            % Log
-            logHeaderStr = sprintf(...
-                ['All interval(s) of CDF records for which data should be set', ...
-                ' to fill values (i.e. removed), regardless of reason.\n']);
-            bicas.proc.L1L2.log_UFV_records(PreDc.Zv.Epoch, zvUfv, logHeaderStr, L)
-            %
-            PostDc.Zv.currentAAmpere(zvUfv, :) = NaN;
-            %
-            fnCa = fieldnames(PostDc.Zv.DemuxerOutput);
-            for iFn = 1:numel(fnCa)
-                PostDc.Zv.DemuxerOutput.(fnCa{iFn})(zvUfv, :, :) = NaN;
-            end
-
-
-
-            % ASSERTION
-            bicas.proc.L1L2.assert_PreDC(PreDc)
-            bicas.proc.L1L2.assert_PostDC(PostDc)
-
-        end    % process_quality_filter_L2
 
 
 
@@ -456,7 +268,7 @@ classdef L1L2
         function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
                 ZvStruct, nRecords, inputDsi)
 
-            C = bicas.classify_BICAS_L1_L1R_to_L2_DATASET_ID(inputDsi);
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputDsi);
 
             if C.isL1r
                 CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
@@ -465,7 +277,7 @@ classdef L1L2
             else
                 error(...
                     ['Can not normalize CALIBRATION_TABLE_INDEX', ...
-                    ' for this DATASET_ID classification.'])
+                    ' for this DSI classification.'])
             end
 
             irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
@@ -473,133 +285,240 @@ classdef L1L2
 
 
 
-        function assert_PreDC(PreDc)
-            irf.assert.struct(PreDc, ...
-                {'Zv', 'Ga', 'hasSnapshotFormat', 'isLfr', 'isTdsCwf'}, {});
+        % Try to autodetect sweeps.
+        %
+        % NOTE: This function should be temporary functionality while waiting
+        % for the long-term solution which is to use the relevant bit in L1/L1R
+        % QUALITY_BITMASK for detecting sweeps. Since it is a (hopefully)
+        % short-term solution, the functionality is also not as sophisticated
+        % (and presumably accurate) or configurable as it could be.
+        %
+        % NOTE: There is some unimportant "imprecision" in the window algorithm
+        % which can be seen as an unimportant bug. Records which are BDM<>4
+        % (i.e. definately not sweep) within a window with records currents
+        % exceeding the thresholds (for BDM=4) are labelled as sweeps.
+        %
+        %
+        % ALGORITHM
+        % =========
+        % PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC specifies a
+        % timestamps.
+        % Records before timestamp:
+        %   BDN=4 <=> sweep
+        % Records after timestamp:
+        %   Among records with BDN=4, check sliding windows for the min-max
+        %   difference for BIAS HK's measured bias current (within the entire
+        %   window). For windows for which the min-max difference exceeds a
+        %   threshold, label entire window (where BDM=4) as sweeping.
+        %
+        %
+        % ARGUMENTS
+        % =========
+        % Bso
+        %       NOTE: PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS: If
+        %       greater than the number of CDF records/rows of data, then no
+        %       record will be labelled as sweeping.
+        %
+        function isSweepingFpa = autodetect_sweeps(tt2000, bdmFpa, hkBiasCurrentFpa, Bso)
+            % TODO-DEC: Does having argument and return value FPAs make sense?
+            %           Should caller convert?
 
-            irf.assert.struct(PreDc.Zv, ...
-                {'Epoch', 'samplesCaTm', 'freqHz', 'nValidSamplesPerRecord', ...
-                'iLsf', 'DIFF_GAIN', ...
-                'MUX_SET', 'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
-                'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', ...
-                'useFillValues', 'lfrRx'}, ...
-                {'BW'});
+            % The only BDM which sweeps use, but there may be other data too.
+            BDM_SWEEP_POSSIBLE = 4;
 
-            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(PreDc.Zv);
+            % Time before which sweeps can be identified by BDM=4.
+            bdm4TrickEndTt2000           = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC'));
+            windowLengthPts              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS');
+            currentMinMaxDiffThresholdTm =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM');
+            windowMarginSec              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC');
 
-            assert(isa(PreDc.Zv.freqHz, 'double'))
+            nCdfRecs = irf.assert.sizes(...
+                tt2000,           [-1, 1], ...
+                bdmFpa,           [-1, 1], ...
+                hkBiasCurrentFpa, [-1, 3]);
+            assert(windowLengthPts              >= 1)
+            assert(currentMinMaxDiffThresholdTm >= 0)
+
+            hkBiasCurrent    = hkBiasCurrentFpa.int2doubleNan();
+            bdm              = bdmFpa.int2doubleNan();
+            bdm4TrickApplies = tt2000 < bdm4TrickEndTt2000;
+
+            %===========================
+            % Detect sweeps using BDM=4
+            %===========================
+            isSweeping1 = bdm4TrickApplies & (bdm == BDM_SWEEP_POSSIBLE);
+
+            %====================================
+            % Detect sweeps using sliding window
+            %====================================
+            isSweeping2 = false(size(isSweeping1));    % Preallocate
+            for i1 = 1:(nCdfRecs-(windowLengthPts-1))
+                i2 = i1 + (windowLengthPts-1);
+                iAr = i1:i2;
+
+                % NOTE: Treating all data in window combined, both in time AND
+                % over channels/antennas.
+                hkBiasCurrentWindow = hkBiasCurrent(i1:i2, :);
+
+                hkBiasCurrentWindow(bdm(iAr) ~= BDM_SWEEP_POSSIBLE, :) = NaN;
+                minWindow = min(hkBiasCurrentWindow, [], 'all');
+                maxWindow = max(hkBiasCurrentWindow, [], 'all');
+                mmDiff    = maxWindow - minWindow;
+
+                if mmDiff > currentMinMaxDiffThresholdTm
+                    isSweeping2(iAr) = (bdm(iAr) == BDM_SWEEP_POSSIBLE) & ~bdm4TrickApplies(iAr);
+                end
+            end
+
+            isSweeping           = isSweeping1 | isSweeping2;
+            isSweepingWithMargin = irf.utils.true_with_margin(tt2000, isSweeping, windowMarginSec * 1e9);
+
+            isSweepingFpa        = bicas.utils.FPArray(isSweepingWithMargin);
         end
 
 
 
-        function assert_PostDC(PostDc)
-            irf.assert.struct(PostDc, ...
-                {'Zv'}, {});
+        % Convert PreDc+PostDc to something that
+        % (1) represents a TDS dataset (hence the name), and
+        % (2) ALMOST REPRESENTS an LFR dataset (the rest is done in a wrapper).
+        %
+        % This function only changes the data format (and selects data to send
+        % to CDF).
+        %
+        % IMPLEMENTATION NOTE: This method is used by both LFR and TDS since the
+        % L2 output datasets are very similar, despite that the input L1/L1R LFR
+        % & TDS datasets are very dissimilar.
+        %
+        function [OutSci] = process_PostDc_to_CDF(SciPreDc, SciPostDc, outputDsi)
+            % PROPOSAL: Rename to something shared between LFR and TDS, then use
+            %           two wrappers.
+            %   PROPOSAL: process_PostDc_to_LFR_TDS_CDF_core
+            %   TODO-DEC: Put in which future file?
 
-            irf.assert.struct(PostDc.Zv, ...
-                {'DemuxerOutput', 'currentAAmpere'}, {'L2_QUALITY_BITMASK'});
+            % ASSERTIONS
+            assert(isa(SciPreDc,  'bicas.proc.L1L2.PreDc'))
+            assert(isa(SciPostDc, 'bicas.proc.L1L2.PostDc'))
 
-            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(PostDc.Zv);
-        end
+
+
+            nRecords                 = size(SciPreDc.Zv.Epoch, 1);
+            nSamplesPerRecordChannel = size(SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1'), 2);
+
+            OutSci = [];
+
+            OutSci.Zv.Epoch              = SciPreDc.Zv.Epoch;
+            OutSci.Zv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
+            OutSci.Zv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
+            OutSci.Zv.QUALITY_FLAG       = SciPostDc.Zv.QUALITY_FLAG;
+            OutSci.Zv.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
+            OutSci.Zv.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
+            OutSci.Zv.SAMPLING_RATE      = SciPreDc.Zv.freqHz;
+
+            % NOTE: Convert aampere --> nano-aampere
+            OutSci.Zv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
+            OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
+            OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
+
+            OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
+            OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
+
+
+
+            C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(outputDsi);
+
+            % NOTE: The two cases are different in the indexes they use for
+            % OutSciZv.
+            if C.isCwf
+
+                % ASSERTIONS
+                assert(nSamplesPerRecordChannel == 1, ...
+                    'BICAS:Assertion:IllegalArgument', ...
+                    ['Number of samples per CDF record is not 1, as expected.', ...
+                    ' Bad input CDF?'])
+                irf.assert.sizes(...
+                    OutSci.Zv.QUALITY_BITMASK, [nRecords, 1], ...
+                    OutSci.Zv.QUALITY_FLAG,    [nRecords, 1])
+
+                % Try to pre-allocate to save RAM/speed up.
+                tempNaN = nan(nRecords, 3);
+                OutSci.Zv.VDC = tempNaN;
+                OutSci.Zv.EDC = tempNaN;
+                OutSci.Zv.EAC = tempNaN;
+
+                OutSci.Zv.VDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
+                OutSci.Zv.VDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
+                OutSci.Zv.VDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
+
+                OutSci.Zv.EDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
+                OutSci.Zv.EDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
+                OutSci.Zv.EDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
+
+                OutSci.Zv.EAC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
+                OutSci.Zv.EAC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
+                OutSci.Zv.EAC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
+
+            elseif C.isSwf
+
+                if     C.isLfr
+                    SAMPLES_PER_RECORD_CHANNEL = ...
+                        solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH;
+                elseif C.isTds
+                    SAMPLES_PER_RECORD_CHANNEL = ...
+                        solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD;
+                else
+                    error(...
+                        'BICAS:Assertion', ...
+                        'Illegal DSI classification.')
+                end
+
+                % ASSERTION
+                assert(nSamplesPerRecordChannel == SAMPLES_PER_RECORD_CHANNEL, ...
+                    'BICAS:Assertion:IllegalArgument', ...
+                    ['Number of samples per CDF record (%i) is not', ...
+                    ' %i, as expected. Bad Input CDF?'], ...
+                    nSamplesPerRecordChannel, ...
+                    SAMPLES_PER_RECORD_CHANNEL)
+
+                % Try to pre-allocate to save RAM/speed up.
+                tempNaN = nan(nRecords, nSamplesPerRecordChannel, 3);
+                OutSci.Zv.VDC = tempNaN;
+                OutSci.Zv.EDC = tempNaN;
+                OutSci.Zv.EAC = tempNaN;
+
+                OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
+                OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
+                OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
+
+                OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
+                OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
+                OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
+
+                OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
+                OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
+                OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
+
+            else
+                error('BICAS:Assertion:IllegalArgument', ...
+                    'Function can not produce outputDsi=%s.', outputDsi)
+            end
+
+
+
+            % ASSERTION
+            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
+            % NOTE: Not really necessary since the list of ZVs will be checked
+            % against the master CDF?
+            irf.assert.struct(OutSci.Zv, {...
+                'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
+                'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
+                'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
+
+        end    % process_PostDc_to_CDF
 
 
 
     end    % methods(Static, Access=public)
 
 
-
-    %##############################
-    %##############################
-    methods(Static, Access=private)
-    %##############################
-    %##############################
-
-
-
-        % Find CDF records to remove based on settings (not data itself, almost,
-        % since MUX mode is data).
-        %
-        % Ex: Sweeps
-        %
-        function zvUseFillValues = get_UFV_records_from_settings(...
-                zvEpoch, zv_MUX_SET, isLfr, SETTINGS, L)
-            % PROPOSAL: Only derive UFV records based on settings. Not take
-            %           previously found UFV records (BW) into account. Merging UFV
-            %           records from settings and BW respectively can be done
-            %           outside (trivial).
-            % PROPOSAL: Separate function for logging which records that should be removed.
-
-            bicas.utils.assert_zv_Epoch(zvEpoch)
-            assert(islogical(isLfr));
-
-            %===============
-            % Read settings
-            %===============
-            [muxModesRemove, settingMuxModesKey] = SETTINGS.get_fv(...
-                'PROCESSING.L2.REMOVE_DATA.MUX_MODES');
-            if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
-            else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
-            end
-            [removeMarginSec, settingMarginKey] = SETTINGS.get_fv(settingMarginKey);
-
-            %==========================================
-            % Find exact indices/CDF records to remove
-            %==========================================
-            zvUseFillValues = irf.utils.true_with_margin(...
-                zvEpoch, ...
-                ismember(zv_MUX_SET, muxModesRemove), ...
-                removeMarginSec * 1e9);
-
-            %=====
-            % Log
-            %=====
-            logHeaderStr = sprintf(...
-                ['Found interval(s) of CDF records for which data should be set to', ...
-                ' fill values (i.e. removed) based on settings.\n', ...
-                '    NOTE: This may not be all CDF records which will be removed.\n', ...
-                '    Setting %s = [%s]\n', ...
-                '    Setting %s = %f\n'], ...
-                settingMuxModesKey, ...
-                strjoin(irf.str.sprintf_many('%g', muxModesRemove), ', '), ...
-                settingMarginKey, ...
-                removeMarginSec);
-            bicas.proc.L1L2.log_UFV_records(zvEpoch, zvUseFillValues, logHeaderStr, L)
-        end
-
-
-
-        % Log UFV records
-        %
-        % NOTE: Only logs (including header) if there are records to remove.
-        function log_UFV_records(zvEpoch, zvUfv, logHeaderStr, L)
-            LL = 'info';    % LL = Log Level
-
-            [i1Array, i2Array] = irf.utils.split_by_false(zvUfv);
-            nUfvIntervals = numel(i1Array);
-            if nUfvIntervals > 0
-
-                %==============
-                % Log settings
-                %==============
-                L.logf(LL, logHeaderStr)
-
-                %===============
-                % Log intervals
-                %===============
-                for iRi = 1:nUfvIntervals
-                    iCdfRecord1 = i1Array(iRi);
-                    iCdfRecord2 = i2Array(iRi);
-                    utc1  = irf.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord1));
-                    utc2  = irf.cdf.TT2000_to_UTC_str(zvEpoch(iCdfRecord2));
-                    L.logf(LL, '    Records %7i-%7i, %s -- %s', ...
-                        iCdfRecord1, iCdfRecord2, utc1, utc2);
-                end
-            end
-
-        end
-
-
-
-    end    % methods(Static, Access=private)
 
 end

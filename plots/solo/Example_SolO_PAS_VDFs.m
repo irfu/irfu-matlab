@@ -33,7 +33,7 @@ h(3)=axes('position',[0.72 0.18 xwidth ywidth]);
 ud=get(fn,'userdata');
 ud.subplot_handles=h;
 set(fn,'userdata',ud);
-set(fn,'defaultLineLineWidth',1);  
+set(fn,'defaultLineLineWidth',1);
 
 f2Dxy.plot_plane(h(1),'docolorbar',0);
 caxis(h(1),[-7   -1]);
@@ -79,6 +79,6 @@ ylabel(h(3),'V_{z} (km s^{-1})','interpreter','tex','fontsize',12)
 if nAverage>1, title(h(3),f2Dyz.time([1 nAverage]).toUtc)
 else, title(h(3),f2Dyz(1).time.toUtc)
 end
- 
+
 set(h(1:3),'fontsize',12)
-set(gcf,'color','w');    
+set(gcf,'color','w');

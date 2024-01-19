@@ -4,7 +4,7 @@ function TSout = srf2rtn(TSin,direction)
 %  TS_RTN = solo.srf2rtn(TS_SRF)
 %  TS_SRF = solo.srf2rtn(TS_RTN, -1)
 %
-% Transform coordinates from the Spacecraft Reference Frame(SRF) to a 
+% Transform coordinates from the Spacecraft Reference Frame(SRF) to a
 % Sun Radial-Tangential-Normal (RTN) frame (or from RTN -> SRF).
 
 %
@@ -13,7 +13,7 @@ function TSout = srf2rtn(TSin,direction)
 % file='/data/solo/soar/mag/L2/mag-srf-burst/2020/07/solo_L2_mag-srf-burst_20200731_V02.cdf';
 % dObj=dataobj(file);
 % t_srf=get_variable(dObj,'EPOCH'); b_srf=get_variable(dObj,'B_SRF');
-% TSin_srf=irf.ts_vec_xyz(t_srf.data(1:50),b_srf.data(1:50,:));  
+% TSin_srf=irf.ts_vec_xyz(t_srf.data(1:50),b_srf.data(1:50,:));
 
 %  TSout=srf2rtn(TSin,[direction]); %direction=1 for srf->rtn, direction=-1 for rtn->srf
 
@@ -27,9 +27,9 @@ et=irf_time(TSin.time,'EpochTT>tt')';
 % The rotation matrix M (note that this is time dependent so it should be a
 % 3x3xlength(time) matrix)
 if direction==1
-    M=cspice_pxform('SOLO_SRF','SOLO_SUN_RTN',et);
+  M=cspice_pxform('SOLO_SRF','SOLO_SUN_RTN',et);
 elseif direction==-1
-    M=cspice_pxform('SOLO_SUN_RTN','SOLO_SRF',et);
+  M=cspice_pxform('SOLO_SUN_RTN','SOLO_SRF',et);
 else
   error('DIRECTION MUST 1 or -1')
 end

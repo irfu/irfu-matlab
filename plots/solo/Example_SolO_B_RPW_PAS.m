@@ -15,7 +15,7 @@ QF = solo.get_data('pas_qf',Tint);
 b0 = irf_filt(B,0,0.01,[],3);
 fs_B = 1 / (B.time(2)-B.time(1));
 ebsp2 =irf_ebsp([],B,[],b0,[],[0.05 0.5*fs_B],...
-    'polarization','fac','fullB=dB');
+  'polarization','fac','fullB=dB');
 frequency = ebsp2.f;
 time = ebsp2.t;
 Bsum = ebsp2.bb_xxyyzzss(:,:,4);
@@ -58,13 +58,13 @@ irf_plot(h(3),E_hp)
 ylabel(h(3),'E_{rtn} [nT]','Interpreter','tex')
 irf_legend(h(3),{'E_r';'E_t';'E_n'},[1.02 0.98],'fontsize',15)
 
-irf_spectrogram(h(4),specrec_Bsum); 
+irf_spectrogram(h(4),specrec_Bsum);
 set(h(4), 'YScale', 'log')
 colormap(h(4),spacmap); ylabel(h(4),'f [Hz]')
 
-irf_spectrogram(h(5),spec_ellipticity,'log'); 
+irf_spectrogram(h(5),spec_ellipticity,'log');
 caxis(h(5),[-1 1])
-set(h(5), 'YScale', 'log'); 
+set(h(5), 'YScale', 'log');
 colormap(h(5),bgrcmap)
 
 irf_plot(h(6),Ni)
@@ -88,8 +88,8 @@ if size(Ti.data,2)>1
   irf_legend(h(9),{'T_{||}';'T_{\perp 1}';'T_{\perp 2}'},[1.02 0.98],'fontsize',15)
 end
 
-irf_spectrogram(h(10),Eiflux); 
-set(h(10), 'YScale', 'log'); 
+irf_spectrogram(h(10),Eiflux);
+set(h(10), 'YScale', 'log');
 ylabel(h(10),'E [eV]');
 colormap(h(10),spacmap);
 
@@ -99,7 +99,7 @@ axis(h,'tight')
 irf_zoom(h,'x',Tint)
 irf_plot_axis_align(h);
 
-set(h(10), 'YLim', [300 5000]); 
+set(h(10), 'YLim', [300 5000]);
 
 title(h(1),['SWA quality factor ' num2str(min(QF.data)) ' - ' num2str(max(QF.data))],'fontsize',15,'FontWeight','normal')
 h(1).TitleHorizontalAlignment = 'right';
