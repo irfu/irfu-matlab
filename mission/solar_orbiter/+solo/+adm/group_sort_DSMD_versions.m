@@ -316,13 +316,17 @@ end
 % submitted DSMDs.
 %
 function rankArray = rank_DSMDs_wrt_versionNbr(DsmdArray)
-% PROPOSAL: Remove function since simple.
 
 rankArray = [DsmdArray.versionNbr];
 end
 
 
 
+% rankArray
+%       Double. Same size as DsmdArray.
+%       0/1 or 1/0 = Whether DSMD filename contains CDAG. Selected algorithm can
+%       reverse the meaning of values.
+%
 function rankArray = rank_DSMDs_wrt_CDAG(DsmdArray, cdagAlgorithm)
 isCdagArray = [DsmdArray.isCdag];
 
@@ -341,6 +345,9 @@ end
 
 
 
+% rankArray
+%       Double. Same size as DsmdArray.
+%       0/1 = Whether DSMD parent path (directories) contains "former_versions".
 function rankArray = rank_DSMDs_wrt_former_versions_dir(DsmdArray)
 FVD_NAME = 'former_versions';
 
