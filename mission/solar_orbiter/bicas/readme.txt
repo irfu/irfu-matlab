@@ -323,11 +323,11 @@ TS
     irfu-matlab's TSeries object/class.
 TSF
     Threshold Saturation Flag. Bit for a sample that is set iff the sample
-    value exceeds thresholds, i.e. it does not take any context into account,
-    except for determining which thresholds to use. This is in contrast with
-    (1) saturation flags for snapshots, which may summarize the saturation of
-    the entire snapshot, or (2) saturation flags for CWF data which may take
-    saturation before or after into account.
+    value exceeds specified thresholds, i.e. it does not take any context
+    into account, except for determining which thresholds to use. This is in
+    contrast with (1) saturation flags for snapshots, which may summarize
+    the saturation of the entire snapshot, or (2) saturation flags for CWF
+    data which may take saturation before or after into account.
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV

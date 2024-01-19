@@ -167,6 +167,7 @@ if isfield(ZvsSubset, 'QUALITY_FLAG')
   % Enforce global max value for zVar QUALITY_FLAG
   % ----------------------------------------------
   % NOTE: Ignore fill positions/values.
+  % NOTE: Applies to both L2 and L3.
   %===================================================================
   assert(isa(ZvsSubset.QUALITY_FLAG, 'bicas.utils.FPArray'))
 

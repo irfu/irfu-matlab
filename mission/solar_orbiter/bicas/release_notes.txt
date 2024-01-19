@@ -127,6 +127,7 @@ Use automatic saturation detection for setting full saturation bit in L2_QUALITY
 Use measured BIAS HK currents for detecting sweeps for data beginning 2023-12-16. Use mux mode for detecting sweeps before this date.
     Note: This should be a temporary measure until BICAS can detect sweeps via QUALITY_BITMASK (L1).
 Add zVariable L3_QUALITY_BITMASK to L3 density datasets and set quality bit for bad density quality in it.
-Output datasets use CDF format version 3.9.0.
 Non-Standard Operations (NSO) table thruster firings updated for until 2024-01-11.
 Much refactoring (internal code reorganization).
+--
+NOTE: Generates datasets using CDF 3.7.1 as before. This was previously falsely described.
