@@ -11,67 +11,67 @@ classdef Timekeeper___UTEST < matlab.unittest.TestCase
 
 
 
-    %#####################
-    %#####################
-    % CONSTANT PROPERTIES
-    %#####################
-    %#####################
-    properties(Constant)
-        DELAY_SEC = 0.0
+  %#####################
+  %#####################
+  % CONSTANT PROPERTIES
+  %#####################
+  %#####################
+  properties(Constant)
+    DELAY_SEC = 0.0
+  end
+
+
+
+  %##############
+  %##############
+  % TEST METHODS
+  %##############
+  %##############
+  methods(Test)
+
+
+
+    % Zero quantities
+    function test_stop_log_0(testCase)
+      L = bicas.Logger('human-readable', false);
+
+      Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
+      pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
+      Tmk.stop_log()
     end
 
 
 
-    %##############
-    %##############
-    % TEST METHODS
-    %##############
-    %##############
-    methods(Test)
+    % One quantity
+    function test_stop_log_1(testCase)
+      L = bicas.Logger('human-readable', false);
+
+      Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
+      pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
+      Tmk.stop_log(10, 'gadget')
+
+      testCase.verifyError(...
+        @() Tmk.stop_log(), ...
+        ?MException)
+      testCase.verifyError(...
+        @() Tmk.stop_log(10, 'gadget'), ...
+        ?MException)
+    end
 
 
 
-        % Zero quantities
-        function test_stop_log_0(testCase)
-            L = bicas.Logger('human-readable', false);
+    % Multiple quantities
+    function test_stop_log_N(testCase)
+      L = bicas.Logger('human-readable', false);
 
-            Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
-            pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
-            Tmk.stop_log()
-        end
-
-
-
-        % One quantity
-        function test_stop_log_1(testCase)
-            L = bicas.Logger('human-readable', false);
-
-            Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
-            pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
-            Tmk.stop_log(10, 'gadget')
-
-            testCase.verifyError(...
-                @() Tmk.stop_log(), ...
-                ?MException)
-            testCase.verifyError(...
-                @() Tmk.stop_log(10, 'gadget'), ...
-                ?MException)
-        end
+      Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
+      pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
+      Tmk.stop_log(10, 'gadget', 20, 'bin', 1000, 'byte')
+    end
 
 
 
-        % Multiple quantities
-        function test_stop_log_N(testCase)
-            L = bicas.Logger('human-readable', false);
-
-            Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
-            pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
-            Tmk.stop_log(10, 'gadget', 20, 'bin', 1000, 'byte')
-        end
-
-
-
-    end    % methods(Test)
+  end    % methods(Test)
 
 
 

@@ -19,9 +19,9 @@
 %
 function stdout_print(msgStr)
 
-    printStr = irf.str.add_prefix_on_every_row(...
-        msgStr, bicas.const.STDOUT_PREFIX_TBW);
+printStr = irf.str.add_prefix_on_every_row(...
+  msgStr, bicas.const.STDOUT_PREFIX_TBW);
 
-    % NOTE: Must print using function that reacts to trailing line feed.
-    fwrite(1, printStr);
+% NOTE: Must print using function that reacts to trailing line feed.
+fwrite(1, printStr);
 end

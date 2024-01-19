@@ -10,14 +10,14 @@
 %
 classdef HandleWrapper < handle
 
-    properties(Access=public)
-        v
-    end
+  properties(Access=public)
+    v
+  end
 
-    methods
-        function obj = HandleWrapper(v)
-            obj.v = v;
-        end
+  methods
+    function obj = HandleWrapper(v)
+      obj.v = v;
     end
+  end
 
 end

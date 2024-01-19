@@ -16,94 +16,94 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef(Abstract) RctType
-% PROPOSAL: Classes for RCT data (not just RCT type).
-%   PRO: BIAS data has many fields.
-%   PRO: More well-defined data structs.
-%   PRO: Automatic assertions.
-%   CON: Structs are modified when cal.m uses them, i.e. one could just as well
-%        have classes for the format cal.m uses. ==> Too many classes.
-%   PROPOSAL: Convert subclasses to stores of RCT data too.
-%       CON: Can have multiple non-BIAS RCTs loaded. Multiple instances of same
-%            RCT type has no meaning.
-%
-% PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
-% PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
-% PROPOSAL: Assert CDF skeleton/master version number.
-% PROPOSAL: Assert skeleton/master.
-%   PRO: Can give better error message when reading the wrong RCT.
-%
-% PROPOSAL: Assert/warn (depending on setting?) when CDF metadata imply that the RCT zVariables have the wrong units.
-% PROPOSAL: Use utility function for reading every zVariable.
-%   PROPOSAL: Assert units from zVar attributes.
+  % PROPOSAL: Classes for RCT data (not just RCT type).
+  %   PRO: BIAS data has many fields.
+  %   PRO: More well-defined data structs.
+  %   PRO: Automatic assertions.
+  %   CON: Structs are modified when cal.m uses them, i.e. one could just as well
+  %        have classes for the format cal.m uses. ==> Too many classes.
+  %   PROPOSAL: Convert subclasses to stores of RCT data too.
+  %       CON: Can have multiple non-BIAS RCTs loaded. Multiple instances of same
+  %            RCT type has no meaning.
+  %
+  % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
+  % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
+  % PROPOSAL: Assert CDF skeleton/master version number.
+  % PROPOSAL: Assert skeleton/master.
+  %   PRO: Can give better error message when reading the wrong RCT.
+  %
+  % PROPOSAL: Assert/warn (depending on setting?) when CDF metadata imply that the RCT zVariables have the wrong units.
+  % PROPOSAL: Use utility function for reading every zVariable.
+  %   PROPOSAL: Assert units from zVar attributes.
 
 
 
-    %#####################
-    %#####################
-    % INSTANCE PROPERTIES
-    %#####################
-    %#####################
-    properties(Abstract, Constant, GetAccess=public)
-        % Settings key for value that defines the regular expression that is
-        % used for finding the corresponding RCT(s).
-        filenameRegexpSettingKey
-    end
-    properties(GetAccess=public, Constant)
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
+  properties(Abstract, Constant, GetAccess=public)
+    % Settings key for value that defines the regular expression that is
+    % used for finding the corresponding RCT(s).
+    filenameRegexpSettingKey
+  end
+  properties(GetAccess=public, Constant)
 
-        % Minimum number of expected entries in tabulated transfer functions in
-        % RCTs.
-        TF_TABLE_MIN_LENGTH = 10;
+    % Minimum number of expected entries in tabulated transfer functions in
+    % RCTs.
+    TF_TABLE_MIN_LENGTH = 10;
 
-        % LL = Log Level
-        RCT_DATA_LL = 'debug';
-    end
-
-
-
-    %#######################
-    %#######################
-    % PUBLIC STATIC METHODS
-    %#######################
-    %#######################
-    methods(Static, Abstract)
+    % LL = Log Level
+    RCT_DATA_LL = 'debug';
+  end
 
 
 
-        % Read RCT file.
-        %
-        %
-        % DESIGN INTENT
-        % =============
-        % Should be implemented so that no calibration data is modified/added
-        % to/removed from. The returned data structures reflect the content of
-        % the RCTs, not necessarily the data used by BICAS. Modification of data
-        % should be done elsewhere, in particular modifications of transfer
-        % functions, e.g. extrapolation, cut-offs, inversions.
-        % --
-        % NOTE: BIAS & LFR RCTs: contain FTFs which are not inverted in this code.
-        %       TDS RCTs:        contain ITFs.
-        % NOTE: Code still converts RCT TFs slightly:
-        %   frequency      : Hz    --> rad/s
-        %   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
-        %
-        [RctData] = read_RCT(filePath);
-
-        % Modify the data structure read by bicas.proc.L1L2.cal.rct.read_RCT()
-        % to a data structure that BICAS can use.
-        %
-        % IMPLEMENTATION NOTE: There is a need to distinguish between (1) the
-        % data structures in RCT files, which one may want to inspect manually,
-        % or log, and should be quite analogous to the RCT file content, and (2)
-        % the calibration data data structures which are convenient for BICAS to
-        % use.
-        [RctData] = modify_RCT_data(RctData);
-
-        % Custom logging of modified RCT data.
-        log_RCT(RctData, L);
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
+  methods(Static, Abstract)
 
 
 
-    end    % methods(Static)
+    % Read RCT file.
+    %
+    %
+    % DESIGN INTENT
+    % =============
+    % Should be implemented so that no calibration data is modified/added
+    % to/removed from. The returned data structures reflect the content of
+    % the RCTs, not necessarily the data used by BICAS. Modification of data
+    % should be done elsewhere, in particular modifications of transfer
+    % functions, e.g. extrapolation, cut-offs, inversions.
+    % --
+    % NOTE: BIAS & LFR RCTs: contain FTFs which are not inverted in this code.
+    %       TDS RCTs:        contain ITFs.
+    % NOTE: Code still converts RCT TFs slightly:
+    %   frequency      : Hz    --> rad/s
+    %   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
+    %
+    [RctData] = read_RCT(filePath);
+
+    % Modify the data structure read by bicas.proc.L1L2.cal.rct.read_RCT()
+    % to a data structure that BICAS can use.
+    %
+    % IMPLEMENTATION NOTE: There is a need to distinguish between (1) the
+    % data structures in RCT files, which one may want to inspect manually,
+    % or log, and should be quite analogous to the RCT file content, and (2)
+    % the calibration data data structures which are convenient for BICAS to
+    % use.
+    [RctData] = modify_RCT_data(RctData);
+
+    % Custom logging of modified RCT data.
+    log_RCT(RctData, L);
+
+
+
+  end    % methods(Static)
 
 
 

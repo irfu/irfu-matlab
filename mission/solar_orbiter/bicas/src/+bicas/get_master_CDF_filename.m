@@ -19,8 +19,8 @@
 %
 function masterCdfFilename = get_master_CDF_filename(dsi, skeletonVersionStr)
 
-    bicas.assert_BICAS_DSI(dsi)
-    bicas.assert_skeleton_version(skeletonVersionStr)
+bicas.assert_BICAS_DSI(dsi)
+bicas.assert_skeleton_version(skeletonVersionStr)
 
-    masterCdfFilename = [dsi, '_V', skeletonVersionStr, '.cdf'];
+masterCdfFilename = [dsi, '_V', skeletonVersionStr, '.cdf'];
 end

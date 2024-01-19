@@ -47,25 +47,25 @@
 %
 function mstd = mstd(v, ref, iDim)
 
-    % Permit ref=NaN.
-    assert(isscalar(ref))
-    assert(isscalar(iDim))
-    assert(isa(v,   'double'))
-    assert(isa(ref, 'double'))
+% Permit ref=NaN.
+assert(isscalar(ref))
+assert(isscalar(iDim))
+assert(isa(v,   'double'))
+assert(isa(ref, 'double'))
 
-    N = size(v, iDim);
-    if N == 0 || N == 1
-        % NOTE:
-        % N==0 ==> MSTD undefined.
-        % N==1 ==> MSTD is undefined / ill-defined.
-        %   ref<>v ==> mstd ~ 1/0        (       1 / (N-1) )
-        %   ref==v ==> mstd ~ 1/0 or 0/0 ( (v-ref) / (N-1) )
+N = size(v, iDim);
+if N == 0 || N == 1
+  % NOTE:
+  % N==0 ==> MSTD undefined.
+  % N==1 ==> MSTD is undefined / ill-defined.
+  %   ref<>v ==> mstd ~ 1/0        (       1 / (N-1) )
+  %   ref==v ==> mstd ~ 1/0 or 0/0 ( (v-ref) / (N-1) )
 
-        mstdSize       = size(v);
-        mstdSize(iDim) = 1;
-        mstd           = NaN(mstdSize);
-    else
-        % CASE: N>=2
-        mstd = sqrt( sum((v-ref).^2, iDim) / (N-1) );
-    end
+  mstdSize       = size(v);
+  mstdSize(iDim) = 1;
+  mstd           = NaN(mstdSize);
+else
+  % CASE: N>=2
+  mstd = sqrt( sum((v-ref).^2, iDim) / (N-1) );
+end
 end

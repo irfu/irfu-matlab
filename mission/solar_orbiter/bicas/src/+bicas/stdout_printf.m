@@ -8,6 +8,6 @@
 %
 function stdout_printf(pattern, varargin)
 
-    bicas.stdout_print( sprintf(pattern, varargin{:}) );
+bicas.stdout_print( sprintf(pattern, varargin{:}) );
 
 end

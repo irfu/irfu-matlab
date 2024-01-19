@@ -13,37 +13,37 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef ExternalCodeAbstract
-    % PROPOSAL: Name?
-    %   ~external
-    %   ~science
-    %   ~science calculations
-    %   ~science calibration
-    %   ~science processing
-    %   ~science data
-    %   ~call
-    %   ExternalCodeCall*
-    %   ExternalCall*
-    %   NOTE: Should fit with naming of subclasses.
-    %
-    % PROPOSAL: How implement interface?
-    %   PROPOSAL: nargout = func(varargin)
-    %       PRO: Avoids repeating function definitions.
-    %       CON: Must manually check that test code uses same interface as real
-    %            code.
-    %   PROPOSAL: Name all return values and arguments explicitly.
+  % PROPOSAL: Name?
+  %   ~external
+  %   ~science
+  %   ~science calculations
+  %   ~science calibration
+  %   ~science processing
+  %   ~science data
+  %   ~call
+  %   ExternalCodeCall*
+  %   ExternalCall*
+  %   NOTE: Should fit with naming of subclasses.
+  %
+  % PROPOSAL: How implement interface?
+  %   PROPOSAL: nargout = func(varargin)
+  %       PRO: Avoids repeating function definitions.
+  %       CON: Must manually check that test code uses same interface as real
+  %            code.
+  %   PROPOSAL: Name all return values and arguments explicitly.
 
 
-    %#########################
-    %#########################
-    % PUBLIC INSTANCE METHODS
-    %#########################
-    %#########################
-    methods(Abstract)
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Abstract)
 
-        varargout = vdccal(varargin);
+    varargout = vdccal(varargin);
 
-        varargout = psp2ne(varargin);
+    varargout = psp2ne(varargin);
 
-    end
+  end
 
 end

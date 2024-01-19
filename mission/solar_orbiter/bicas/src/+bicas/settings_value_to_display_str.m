@@ -24,59 +24,59 @@
 % First created 2021-08-12, by breaking out code from bicas.sprint_BSO().
 %
 function displayStr = settings_value_to_display_str(value)
-    % PROPOSAL: Shorter name.
+% PROPOSAL: Shorter name.
 
-    if ischar(value)
+if ischar(value)
 
-        displayStr = ['"', value, '"'];
+  displayStr = ['"', value, '"'];
 
-    elseif islogical(value)
+elseif islogical(value)
 
-        assert(isscalar(value))
-        if value
-            displayStr = 'true';
-        else
-            displayStr = 'false';
-        end
+  assert(isscalar(value))
+  if value
+    displayStr = 'true';
+  else
+    displayStr = 'false';
+  end
 
-    elseif isnumeric(value)
+elseif isnumeric(value)
 
-        assert(isvector(value))
+  assert(isvector(value))
 
-        if isscalar(value)
-            displayStr = sprintf('%g', value);
-        else
-            % RECURSIVE CALL
-            displayStr = sprintf('[%s]', many_display_str(num2cell(value)));
-        end
+  if isscalar(value)
+    displayStr = sprintf('%g', value);
+  else
+    % RECURSIVE CALL
+    displayStr = sprintf('[%s]', many_display_str(num2cell(value)));
+  end
 
-    elseif iscell(value)
+elseif iscell(value)
 
-        assert(isvector(value))
+  assert(isvector(value))
 
-        % RECURSIVE CALL
-        displayStr = sprintf('{%s}', many_display_str(value));
-    else
+  % RECURSIVE CALL
+  displayStr = sprintf('{%s}', many_display_str(value));
+else
 
-        error(...
-            'BICAS:Assertion', ...
-            ['can not convert BSO value (overriden or not)'])
-    end
+  error(...
+    'BICAS:Assertion', ...
+    ['can not convert BSO value (overriden or not)'])
+end
 end
 
 
 
 function displayStr = many_display_str(ca)
-    % PROPOSAL: Better name.
+% PROPOSAL: Better name.
 
-    assert(isvector(ca))
+assert(isvector(ca))
 
-    displayStrCa = cell(numel(ca), 1);
-    for i = 1:numel(ca)
+displayStrCa = cell(numel(ca), 1);
+for i = 1:numel(ca)
 
-        % RECURSIVE CALL
-        displayStrCa{i} = bicas.settings_value_to_display_str(ca{i});
-    end
+  % RECURSIVE CALL
+  displayStrCa{i} = bicas.settings_value_to_display_str(ca{i});
+end
 
-    displayStr = strjoin(displayStrCa, ', ');
+displayStr = strjoin(displayStrCa, ', ');
 end
