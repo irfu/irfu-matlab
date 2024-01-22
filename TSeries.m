@@ -932,6 +932,10 @@ classdef TSeries
     function Ts = mtimes(obj1,obj2)
       %MTIMES  Matrix and scalar multiplication '*'.
 
+      if any([isempty(obj1),isempty(obj2)])
+        Ts = TSeries([]);
+        return;
+      end
       % Check dimensions of input
       if isa(obj1,'TSeries')
         sizeData1 = obj1.datasize('dataonly');
@@ -1466,6 +1470,27 @@ classdef TSeries
       end
     end
 
+    function Ts = smooth(obj,varargin)
+      % SMOOTH Smooth TSeries.
+      %
+      %   Calls matlab function SMOOTH on each data column.
+      %
+      %   TsOut = smooth(Ts); % uses default smoothing span of 5
+      %   TsOut = smooth(Ts,inp)
+      %   TsOut = Ts.smooth;
+      %
+      % See also: TSERIES.FILT, SMOOTH
+      
+      if isempty(obj), error('Cannot smooth empty TSeries'), end
+      
+      data = obj.data;
+      size_data = size(data);
+      new_data = data*0;
+      for idata = 1:prod(size_data(2:end))
+        new_data(:,idata) = smooth(data(:,idata),varargin{:});
+      end
+      Ts = obj.clone(obj.time,new_data);
+    end
     function obj = tlim(obj,tint, mode)
       %TLIM  Returns data within specified time interval
       %
