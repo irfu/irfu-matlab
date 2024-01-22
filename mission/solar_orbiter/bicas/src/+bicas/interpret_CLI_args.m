@@ -7,17 +7,17 @@
 % RETURN VALUE
 % ============
 % CliData : struct with fields:
-%   .functionalityMode          : String constant
-%   .swmArg                  : String constant
-%   .icdLogFile                 : Empty if argument not given.
-%   .matlabLogFile              : Empty if argument not given.
-%   .configFile                 : Empty if argument not given.
-%   .SipMap                     : containers.Map with SIPs.
-%                                   key   = CLI argument without prefix
-%                                   value = file path (argument)
-%   .ModifiedSettingsMap        : containers.Map.
-%                                   key   = settings key (argument)
-%                                   value = settings value (argument)
+%   .bfm                 : String constant
+%   .swmArg              : String constant
+%   .icdLogFile          : Empty if argument not given.
+%   .matlabLogFile       : Empty if argument not given.
+%   .configFile          : Empty if argument not given.
+%   .SipMap              : containers.Map with SIPs.
+%                            key   = CLI argument without prefix
+%                            value = file path (argument)
+%   .ModifiedSettingsMap : containers.Map.
+%                            key   = settings key (argument)
+%                            value = settings value (argument)
 %
 %
 % IMPLEMENTATION NOTES
@@ -51,7 +51,7 @@ function CliData = interpret_CLI_args(cliArgumentList)
 %       exclusive (assertion) booleans into one unique value.
 %   Ex: Convert list of booleans for various argument flags (any
 %       application) into one variable value.
-%       Ex: Flags for BICAS functionality modes.
+%       Ex: Flags for BFMs.
 %
 % PROPOSAL: Include assertion for unique input and output dataset paths.
 %   NOTE: Assertion is presently in execute_SWM.
@@ -62,10 +62,10 @@ SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 
 %==================================================================================
 % Configure
-% (1) permitted RCS ICD CLI options COMMON for all BICAS functionality modes
+% (1) permitted RCS ICD CLI options COMMON for all BFMs
 % (2) RCS ICD CLI options for SIPs
 % (2) unofficial options
-% NOTE: Exclude the argument for functionality mode itself.
+% NOTE: Exclude the SWM argument.
 %==================================================================================
 OPTIONS_CONFIG_MAP = containers.Map();
 OPTIONS_CONFIG_MAP('VERSION_OPTION_ID')           = struct('optionHeaderRegexp', '--version',          'occurrenceRequirement', '0-1',   'nValues', 0);
@@ -112,7 +112,7 @@ CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
 % Parse RCS ICD arguments
 % -----------------------
 % NOTE: Interprets RCS ICD as permitting (official) arguments next to
-% non-s/w mode functionality mode arguments.
+% non-SWM BFM mode arguments.
 %=====================================================================
 CliData.SipMap = irf.ds.create_containers_Map(...
   'char', 'char', {}, {});
@@ -123,10 +123,9 @@ sipOptionValues = OptionValuesMap('SIP_OPTION_ID');
 
 
 
-% Convert presence of functionality mode flag (mutually exclusive) into the
-% correct constant.
+% Convert presence of BFM flag (mutually exclusive) into the correct constant.
 % {i, 1} = false/true
-% {i, 2} = functionality mode string constant
+% {i, 2} = BFM string constant
 tempTable = {
   ~isempty(OptionValuesMap('VERSION_OPTION_ID')),        'VERSION'; ...
   ~isempty(OptionValuesMap('IDENTIFICATION_OPTION_ID')), 'IDENTIFICATION'; ...
@@ -137,9 +136,9 @@ assert(...
   sum([tempTable{:,1}]) == 1, ...
   'BICAS:interpret_CLI_syntax:CLISyntax', ...
   'Illegal combination of arguments.')
-CliData.functionalityMode = tempTable{[tempTable{:, 1}], 2};
+CliData.bfm = tempTable{[tempTable{:, 1}], 2};
 
-switch CliData.functionalityMode
+switch CliData.bfm
 
   case {'VERSION', 'IDENTIFICATION', 'SW_DESCRIPTOR', 'HELP'}
 
@@ -173,7 +172,7 @@ switch CliData.functionalityMode
       sipOptionValues);
 
   otherwise
-    error('BICAS:Assertion', 'Illegal CliData.functionalityMode value.')
+    error('BICAS:Assertion', 'Illegal CliData.bfm value.')
 end
 
 
@@ -194,7 +193,7 @@ else               CliData.configFile = temp(end).optionValues{1};
 end
 
 irf.assert.struct(CliData, ...
-  {'functionalityMode', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
+  {'bfm', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
   'configFile', 'SipMap', ...
   'ModifiedSettingsMap'}, {})
 

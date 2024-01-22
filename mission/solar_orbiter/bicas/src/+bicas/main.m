@@ -448,7 +448,7 @@ Swml = bicas.swm.get_SWML(Bso);
 
 
 
-switch(CliData.functionalityMode)
+switch(CliData.bfm)
   case 'VERSION'
     print_version(Swml, Bso)
 
@@ -551,7 +551,7 @@ switch(CliData.functionalityMode)
 
   otherwise
     error('BICAS:Assertion', ...
-      'Illegal value functionalityMode="%s"', functionalityMode)
+      'Illegal value bfm="%s"', bfm)
 end    % if ... else ... / switch
 
 
