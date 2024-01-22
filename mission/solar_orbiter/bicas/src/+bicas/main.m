@@ -449,19 +449,19 @@ Swml = bicas.swm.get_SWML(Bso);
 
 
 switch(CliData.bfm)
-  case 'VERSION'
+  case 'VERSION_BFM'
     print_version(Swml, Bso)
 
-  case 'IDENTIFICATION'
+  case 'IDENTIFICATION_BFM'
     print_identification(Swml, Bso)
 
-  case 'SW_DESCRIPTOR'
+  case 'SWD_BFM'
     print_SWD(Swml, Bso)
 
-  case 'HELP'
+  case 'HELP_BFM'
     print_help(Bso)
 
-  case 'SW_MODE'
+  case 'SWM_BFM'
     %============================
     % CASE: Should be a S/W mode
     %============================
