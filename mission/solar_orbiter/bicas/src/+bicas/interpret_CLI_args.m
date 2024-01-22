@@ -12,7 +12,7 @@
 %   .icdLogFile                 : Empty if argument not given.
 %   .matlabLogFile              : Empty if argument not given.
 %   .configFile                 : Empty if argument not given.
-%   .SpecInputParametersMap     : containers.Map with
+%   .SipMap                     : containers.Map with SIPs.
 %                                   key   = CLI argument without prefix
 %                                   value = file path (argument)
 %   .ModifiedSettingsMap        : containers.Map.
@@ -23,16 +23,15 @@
 % IMPLEMENTATION NOTES
 % ====================
 % It is difficult to interpret BICAS arguments all in one go since some
-% arguments do, or might, influence which other arguments (at least what the RCS
-% ICD calls "specific inut parameters") are legal:
-% -- functionality mode
-% -- s/w mode
+% arguments do, or might, influence which other arguments (at least the SIPs)
+% are legal:
+% -- BICAS functionality mode (BFM)
+% -- s/w mode (SWM)
 % -- config file        (can enable/disable s/w modes)
 % -- settings arguments (can enable/disable s/w modes)
-% To keep the function agnostic about s/w modes and input and output datasets,
-% and settings, this function does not determine whether specific input
-% parameters or settings keys/values) are legal. The caller has to do those
-% checks.
+% To keep the function agnostic about SWMs and input and output datasets, and
+% settings, this function does not determine whether SIPs or settings
+% keys/values) are legal. The caller has to do those checks.
 %
 %
 % RATIONALE
@@ -56,13 +55,15 @@ function CliData = interpret_CLI_args(cliArgumentList)
 %
 % PROPOSAL: Include assertion for unique input and output dataset paths.
 %   NOTE: Assertion is presently in execute_SWM.
+%
+% PROPOSAL: Use classes instead of structs.
 
 SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 
 %==================================================================================
 % Configure
 % (1) permitted RCS ICD CLI options COMMON for all BICAS functionality modes
-% (2) RCS ICD CLI options for special input parameters
+% (2) RCS ICD CLI options for SIPs
 % (2) unofficial options
 % NOTE: Exclude the argument for functionality mode itself.
 %==================================================================================
@@ -113,7 +114,7 @@ CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
 % NOTE: Interprets RCS ICD as permitting (official) arguments next to
 % non-s/w mode functionality mode arguments.
 %=====================================================================
-CliData.SpecInputParametersMap = irf.ds.create_containers_Map(...
+CliData.SipMap = irf.ds.create_containers_Map(...
   'char', 'char', {}, {});
 
 
@@ -166,9 +167,9 @@ switch CliData.functionalityMode
         ' a S/W mode as expected.'])
     end
 
-    CliData.swmArg              = OptionValues.optionHeader;
+    CliData.swmArg = OptionValues.optionHeader;
 
-    CliData.SpecInputParametersMap = convert_SIP_OptionValues_2_Map(...
+    CliData.SipMap = convert_SIP_OptionValues_2_Map(...
       sipOptionValues);
 
   otherwise
@@ -194,7 +195,7 @@ end
 
 irf.assert.struct(CliData, ...
   {'functionalityMode', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
-  'configFile', 'SpecInputParametersMap', ...
+  'configFile', 'SipMap', ...
   'ModifiedSettingsMap'}, {})
 
 end
