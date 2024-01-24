@@ -1704,7 +1704,7 @@ classdef PDist < TSeries
     end
     function varargout = shift(pdist,v_nf,nMC,orient,sc,varargin)
       % PDIST.SHIFT  Rebin the distribution function to shifted reference
-      %              frame and a rotated coordinate system.      
+      %              frame and a rotated coordinate system.
       %
       %%%This function rebins the distribution function to shifted reference
       %%%frame and a rotated coordinate system.
@@ -1984,12 +1984,12 @@ classdef PDist < TSeries
       PDistn.units = pdist.units;
       PDistn.species = pdist.species;
       PDistn.ancillary.energy0 = En;
-      PDistn.ancillary.energy1 = En;        
+      PDistn.ancillary.energy1 = En;
       PDistn.ancillary.esteptable = 0;
       PDistn.ancillary.energy = En;
       PDistn.ancillary.delta_energy_plus = -En + Eedgesn(2:end);
       PDistn.ancillary.delta_energy_minus = En - Eedgesn(1:end-1);
-        
+
       if returndiff
 
         differentials.dV3 = dV3;

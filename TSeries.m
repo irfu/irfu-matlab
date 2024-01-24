@@ -1480,9 +1480,9 @@ classdef TSeries
       %   TsOut = Ts.smooth;
       %
       % See also: TSERIES.FILT, SMOOTH
-      
+
       if isempty(obj), error('Cannot smooth empty TSeries'), end
-      
+
       data = obj.data;
       size_data = size(data);
       new_data = data*0;
