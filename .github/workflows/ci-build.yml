@@ -30,7 +30,7 @@ jobs:
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab@v1
+        uses: matlab-actions/setup-matlab@v2
 
       # Install required runtime lib for Fortan (whamp mex file)
       - name: Install libgfortran5
@@ -67,7 +67,7 @@ jobs:
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab@v1
+        uses: matlab-actions/setup-matlab@v2
         with:
           release: R2020a
 
