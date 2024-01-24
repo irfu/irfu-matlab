@@ -40,7 +40,7 @@ jobs:
 
       # Run MATLAB code
       - name: Run commands
-        uses: matlab-actions/run-command@v1
+        uses: matlab-actions/run-command@v2
         with:
           command: tests_before_release;
 
@@ -73,7 +73,7 @@ jobs:
 
       # Run MATLAB code
       - name: Run commands
-        uses: matlab-actions/run-command@v1
+        uses: matlab-actions/run-command@v2
         with:
           command: tests_before_release_R2020a;
 
