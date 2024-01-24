@@ -230,6 +230,8 @@ Offset
     value during the calibration process.
 OSR
     Original Sampling Rate. Used in the context of downsampling. Cf DSR.
+QF
+    zVariable QUALITY_FLAG.
 QRC
     Quality-Related Condition. Condition that may influence quality ZVs.
     Ex: Thruster firing, saturation.
@@ -343,6 +345,9 @@ WOLS
 ZV
     CDF zVariable, or MATLAB variable that is analogous to one. First dimension
     corresponds to CDF record.
+ZVS
+    zVariable Struct. Struct where each field emulates the data content of a
+    zVariable (either as an array or an FPA).
 
 
 

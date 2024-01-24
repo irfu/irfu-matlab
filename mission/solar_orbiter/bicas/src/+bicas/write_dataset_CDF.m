@@ -28,6 +28,21 @@
 function write_dataset_CDF(...
   ZvsSubset, GaSubset, outputFile, masterCdfPath, Bso, L)
 
+% PROPOSAL: Automatic tests for sub-functions. ==> Make subfunctions public.
+%   NOTE: Uses irf.cdf.write_dataobj() for generic functionality for actual
+%         writing of CDF.
+%   PROPOSAL: Convert to class.
+%       TODO-DEC: Naming of class & main function?
+%           cdf
+%           out
+%           write
+%           dataset
+%           --
+%           cdfout.write_dataset()
+%   PROPOSAL: Convert bicas.write_dataset_CDF and bicas.read_dataset_CDF into
+%             combined package (class?!).
+%       CON: Read & write make up two distinct categories.
+%       TODO-NI: Is there any overlap in functionality?
 %===========================================================================
 % This function needs GlobalAttributes values from the input files:
 %    One value per file:      Data_version (for setting Parent_version).
@@ -186,11 +201,11 @@ if isfield(ZvsSubset, 'QUALITY_FLAG')
   end
   QfFpa = ZvsSubset.QUALITY_FLAG;   % Temporary variable to make algorithm clearer.
 
-  TooHighQfFpa                     = (QfFpa >= qfMax);
-  QfFpa(TooHighQfFpa.array(false)) = bicas.utils.FPArray(uint8(qfMax));
+  bTooHighQfFpa                     = (QfFpa >= qfMax);
+  QfFpa(bTooHighQfFpa.array(false)) = bicas.utils.FPArray(uint8(qfMax));
 
   ZvsSubset.QUALITY_FLAG = QfFpa;
-  clear QfFpa
+  clear QfFpa bTooHighQfFpa
 end
 
 

@@ -130,4 +130,4 @@ Add zVariable L3_QUALITY_BITMASK to L3 density datasets and set quality bit for 
 Non-Standard Operations (NSO) table thruster firings updated for until 2024-01-11.
 Much refactoring (internal code reorganization).
 --
-NOTE: Generates datasets using CDF 3.7.1 as before. This was previously falsely described.
+NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely stated that a later CDF format was used.

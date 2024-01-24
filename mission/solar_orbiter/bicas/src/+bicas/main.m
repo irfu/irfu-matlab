@@ -65,6 +65,12 @@
 %
 function errorCode = main( varargin )
 %
+% PROPOSAL: Split up file.
+%   PRO: File is large, 746 rows (2024-01-24).
+%   PRO: Mainly function (error handling) calling a function (without error handling).
+% PROPOSAL: Convert to class with static methods.
+%   PRO: Contains 9 functions (2024-01-24).
+%
 % PROPOSAL: Set option for MATLAB warnings. Disable?
 %   NOTE: TN claims warnings are sent to stdout.
 % TODO-NI: Is the application allowed to overwrite output files?
@@ -294,7 +300,7 @@ Tmk = bicas.utils.Timekeeper('main_without_error_handling', L);
 matlabVersionString = version('-release');
 if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS)
   error('BICAS:BadMatlabVersion', ...
-    ['Using bad MATLAB version. Found version "%s".', ...
+    ['Using unsupported MATLAB version. Found version "%s".', ...
     ' BICAS requires any of the following MATLAB versions: %s.\n'], ...
     matlabVersionString, ...
     strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS, ', '))
