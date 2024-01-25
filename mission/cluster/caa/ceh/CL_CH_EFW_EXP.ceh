@@ -25,7 +25,7 @@ END_META       =   EXPERIMENT_DESCRIPTION
 ! Name and coordinates of the PI, and possible earlier PIs
 !
 START_META     =   INVESTIGATOR_COORDINATES
-   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>PI>Yuri.Khotyaintsev@irfu.se"
 END_META       =   INVESTIGATOR_COORDINATES
 !
 ! List of standard reference documents for the experiment
@@ -38,9 +38,9 @@ END_META       =   EXPERIMENT_REFERENCES
 ! Name, role and coordinates of experiment key personnel
 !
 START_META     =   EXPERIMENT_KEY_PERSONNEL
-   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
-   ENTRY       =   "Yuri Khotyaintsev>Archive manager>Yuri.Khotyaintsev@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>PI>Yuri.Khotyaintsev@irfu.se"
    ENTRY       =   "Anders Eriksson>Operations manager>Anders.Eriksson@irfu.se"
+   ENTRY       =   "Mats Andre>former PI (2000-2023)>Mats.Andre@irfu.se"
    ENTRY       =   "Georg Gustafsson>former PI(-2000)>Georg.Gustafsson@irfu.se"
    ENTRY       =   "Chris Cully>Former archive scientist (2009-2012)>Chris.Cully@irfu.se"
    ENTRY       =   "Per-Arne Lindqvist>Former archive manager (-2009)>Per-Arne.Lindqvist@alfvenlab.kth.se"

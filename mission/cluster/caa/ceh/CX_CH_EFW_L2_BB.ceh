@@ -56,7 +56,7 @@ START_META     =   PROCESSING_LEVEL
 END_META       =   PROCESSING_LEVEL
 
 START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>PI>Yuri.Khotyaintsev@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
 START_META     =   ACKNOWLEDGEMENT
