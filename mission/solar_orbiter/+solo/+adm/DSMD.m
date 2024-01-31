@@ -41,6 +41,11 @@ classdef DSMD
   %
   % PROPOSAL: Add static function for extracting CA of dataset filenames from
   %           array of DSMDs.
+  %
+  % TODO-DEC: What constitutes equality between DSMDs?
+  %           Same DSI and time interval?
+  %           isCdag? Version number?
+  %           Path?
 
 
 

@@ -25,10 +25,9 @@
 %
 function DsmdArray = paths_to_DSMD_array(filePathCa)
 % PROPOSAL: Rename
-%   PROPOSAL: DSMD_from_paths()
+%   PROPOSAL: DSMDs_from_paths()
 %   PROPOSAL: paths_to_DSMDs().
 %       CON: Information mostly from filename, not path.
-%   PROPOSAL: paths_to_DSMD_array().
 %
 % PROPOSAL: Refactor to static method for DSMD class.
 %   PRO: Is like secondary constructor.

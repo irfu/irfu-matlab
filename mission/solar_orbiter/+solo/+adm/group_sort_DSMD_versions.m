@@ -171,9 +171,11 @@ end
 
 DsmdArray1 = DsmdArray1(:);    % Algorithm requires vector.
 
+
+
 %======================================================================
-% Find comparable datasets
-% ------------------------
+% Find groups of internally comparable datasets
+% ---------------------------------------------
 % Use subset of fields, including time, to identify sets of comparable
 % datasets.
 %======================================================================
@@ -204,6 +206,8 @@ fhArray = irf.utils.find_equalities(Inf, t1, t2, datasetIdCa);
 
 fhUniques = unique(fhArray);
 nSets     = numel(fhUniques);
+
+
 
 %======================================
 % Sort each set of comparable datasets
