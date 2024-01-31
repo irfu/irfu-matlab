@@ -347,22 +347,26 @@ classdef L1L2
       BDM_SWEEP_POSSIBLE = 4;
 
       % Time before which sweep <=> BDM=4.
-      sbdaEndTt2000                = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
-      windowLengthPts              =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
-      currentMinMaxDiffThresholdTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_THRESHOLD_TM');
-      windowMarginSec              =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
+      sbdaEndTt2000          = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));    % Inclusive threshold.
+      windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
+      currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');   % Minimum value for counting as sweep.
+      windowMarginSec        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
 
       nCdfRecs = irf.assert.sizes(...
         tt2000,           [-1, 1], ...
         bdmFpa,           [-1, 1], ...
         hkBiasCurrentFpa, [-1, 3]);
-      assert(windowLengthPts              >= 1)
-      assert(currentMinMaxDiffThresholdTm >= 0)
+      % NOTE: Can not use integer in settings.
+      assert(round(windowLengthPts) == windowLengthPts)
+      % NOTE: Must be at least two since SCDA requires comparison between
+      %       timestamps.
+      assert(windowLengthPts        >= 2)
+      assert(currentMmDiffMinimumTm >= 0)
 
       hkBiasCurrent = hkBiasCurrentFpa.int2doubleNan();
       bdm           = bdmFpa.int2doubleNan();
       % Whether SBDA applies to (should be used for) records.
-      bSbdaApplies  = tt2000 < sbdaEndTt2000;
+      bSbdaApplies  = tt2000 <= sbdaEndTt2000;
 
       %==========================
       % Detect sweeps using SBDA
@@ -384,12 +388,13 @@ classdef L1L2
         hkBiasCurrentWindow = hkBiasCurrent(i1:i2, :);
 
         hkBiasCurrentWindow(bdm(iWindowAr) ~= BDM_SWEEP_POSSIBLE, :) = NaN;
-        minWindow = min(hkBiasCurrentWindow, [], 'all');
-        maxWindow = max(hkBiasCurrentWindow, [], 'all');
+        minWindow = min(hkBiasCurrentWindow, [], 1);
+        maxWindow = max(hkBiasCurrentWindow, [], 1);
         mmDiff    = maxWindow - minWindow;
 
-        if mmDiff > currentMinMaxDiffThresholdTm
-          isSweepingScda(iWindowAr) = (bdm(iWindowAr) == BDM_SWEEP_POSSIBLE) & ~bSbdaApplies(iWindowAr);
+        % NOTE: Can not reduce Only labelling
+        if any(mmDiff >= currentMmDiffMinimumTm)
+          isSweepingScda(iWindowAr) = isSweepingScda(iWindowAr) | ((bdm(iWindowAr) == BDM_SWEEP_POSSIBLE) & ~bSbdaApplies(iWindowAr));
         end
       end
 

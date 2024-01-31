@@ -453,7 +453,7 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS', 3)
 % SCDA threshold for HK bias current difference between min and max within a
 % window. If the value exceeds this value, then the interval is labelled as
 % sweeping.
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_THRESHOLD_TM', 500)
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM', 500)
 % Amount of margin to add around regions labelled as sweeps by the SCDA. The
 % sweeps autodetection works on BIAS HK which has a lower time resolution, and
 % may therefore be incorrect at the beginning and end of a labelled region.
