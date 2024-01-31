@@ -4,7 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef L1L2_autodetect_sweeps___UTEST < matlab.unittest.TestCase
+classdef autodetect_sweeps___UTEST < matlab.unittest.TestCase
   % PROPOSAL: Abbreviation for currentMmDiffMinTm.
 
 
@@ -59,7 +59,7 @@ classdef L1L2_autodetect_sweeps___UTEST < matlab.unittest.TestCase
           mmDiff = max(S.hkBiasCurrent, [], 1) - min(S.hkBiasCurrent, [], 1);
           assert(all(mmDiff <= 2))
 
-          bicas.proc.L1L2_autodetect_sweeps___UTEST.test(testCase, S)
+          bicas.proc.L1L2.autodetect_sweeps___UTEST.test(testCase, S)
         end    % for
       end    % function
 
@@ -100,7 +100,7 @@ classdef L1L2_autodetect_sweeps___UTEST < matlab.unittest.TestCase
       S.currentMmDiffMinTm = 100;
       S.windowMarginSec    = 0;
       S.expIsSweeping      =       DATA(:, 6);
-      bicas.proc.L1L2_autodetect_sweeps___UTEST.test(testCase, S)
+      bicas.proc.L1L2.autodetect_sweeps___UTEST.test(testCase, S)
     end
 
 
@@ -129,7 +129,7 @@ classdef L1L2_autodetect_sweeps___UTEST < matlab.unittest.TestCase
       S.currentMmDiffMinTm = 3;
       S.windowMarginSec    = 0;
       S.expIsSweeping      =       DATA(:, 6);
-      bicas.proc.L1L2_autodetect_sweeps___UTEST.test(testCase, S)
+      bicas.proc.L1L2.autodetect_sweeps___UTEST.test(testCase, S)
     end
 
 
@@ -149,7 +149,7 @@ classdef L1L2_autodetect_sweeps___UTEST < matlab.unittest.TestCase
       S.currentMmDiffMinTm = 3;
       S.windowMarginSec    = 0;
       S.expIsSweeping      =       DATA(:, 6);
-      bicas.proc.L1L2_autodetect_sweeps___UTEST.test(testCase, S)
+      bicas.proc.L1L2.autodetect_sweeps___UTEST.test(testCase, S)
     end
 
 
@@ -176,7 +176,7 @@ classdef L1L2_autodetect_sweeps___UTEST < matlab.unittest.TestCase
       S.currentMmDiffMinTm = 2;
       S.windowMarginSec    = 1.1e-9;
       S.expIsSweeping      =       DATA(:, 6);
-      bicas.proc.L1L2_autodetect_sweeps___UTEST.test(testCase, S)
+      bicas.proc.L1L2.autodetect_sweeps___UTEST.test(testCase, S)
     end
 
 
@@ -205,7 +205,7 @@ classdef L1L2_autodetect_sweeps___UTEST < matlab.unittest.TestCase
       S.currentMmDiffMinTm = 3;
       S.windowMarginSec    = 0;
       S.expIsSweeping      =       DATA(:, 6);
-      bicas.proc.L1L2_autodetect_sweeps___UTEST.test(testCase, S)
+      bicas.proc.L1L2.autodetect_sweeps___UTEST.test(testCase, S)
     end
 
 
