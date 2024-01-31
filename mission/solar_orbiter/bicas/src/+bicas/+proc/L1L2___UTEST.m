@@ -19,15 +19,24 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
 
     function test_autodetect_sweeps(testCase)
 
+      % Generic test. All input and expected output is specified in arguments.
+      %
+      % ARGUMENTS
+      % =========
+      % expIsSweeping
+      %       logical FPA as double/NaN
+      % bdm, hkBiasCurrent
+      %       FPAs as float/NaN
+      %
       function test(...
-          tt2000, bdm, hkBiasCurrentFpa, ...
+          tt2000, bdm, hkBiasCurrent, ...
           bdm4TrickEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, windowMarginSec, ...
           expIsSweeping)
 
         assert(issorted(tt2000), 'ascend')
         assert(isa(expIsSweeping, 'double'))
         bdmFpa           = bicas.utils.FPArray.floatNan2int(bdm, 'uint8');
-        hkBiasCurrentFpa = bicas.utils.FPArray.floatNan2int(hkBiasCurrentFpa, 'uint16');
+        hkBiasCurrentFpa = bicas.utils.FPArray.floatNan2int(hkBiasCurrent, 'uint16');
 
         Bso = bicas.create_default_BSO();
         Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC',              spdfbreakdowntt2000(bdm4TrickEndTt2000), 'test');
@@ -44,18 +53,28 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
         testCase.verifyEqual(actIsSweeping, expIsSweeping)
       end
 
-      %===================================================================
-
+      % Test using hard-coded data except for specified arguments.
+      %
+      % Hardcoded arguments: tt2000, hkBiasCurrent, windowLengthPts
+      %
+      % ARGUMENTS
+      % =========
+      % bdm, expIsSweeping
+      %       Scalar constant values. FPAs as float/NaN.
+      %
       function test2(bdm, bdm4TrickEndTt2000, currentMinMaxDiffThresholdTm, expIsSweeping)
         % NOTE: Only test window lengths equal or shorter than length of
         % data.
-        % Constant BDM over time.
         %
+        assert(isfloat(bdm          ) && isscalar(bdm          ))
+        assert(isfloat(expIsSweeping) && isscalar(expIsSweeping))
+
+        % NOTE: Test window length up until exact number of records.
         for windowLengthPts = [1, 3, 6]
           test(...
             [0:1000:5000]', ...       % tt2000
             [1,1,1,1,1,1]' * bdm, ....
-            [                         % hkBiasCurrentFpa
+            [                         % hkBiasCurrent
             1, 2, 3; ...
             3, 1, 2; ...
             2, 3, 1; ...
@@ -70,6 +89,8 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
             [1 1 1 1 1 1]' * expIsSweeping)
         end
       end
+
+      %===================================================================
 
       ALL_ENABLED = true;
 
@@ -89,6 +110,11 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
 
       if ALL_ENABLED
         % Window longer than data. ==> No sweep.
+
+        % function test(...
+        %     tt2000, bdm, hkBiasCurrent, ...
+        %     bdm4TrickEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, windowMarginSec, ...
+        %     expIsSweeping)
         test(...
           [0:1000:2000]', ...
           [4 4 4]', ....

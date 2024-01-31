@@ -101,20 +101,20 @@ classdef L1L2
       %==================================================================
       % Log time intervals to enable comparing available SCI and HK data
       %==================================================================
-      TimeVars = [];    % Temporary struct only used for logging.
-      TimeVars.HK_Epoch  = InHk.Zv.Epoch;
-      TimeVars.SCI_Epoch = InSci.Zv.Epoch;
+      TimeZvs = [];    % Temporary struct only used for logging.
+      TimeZvs.HK_Epoch  = InHk.Zv.Epoch;
+      TimeZvs.SCI_Epoch = InSci.Zv.Epoch;
       if isfield(InHk.Zv, 'ACQUISITION_TIME')
-        TimeVars.HK_ACQUISITION_TIME_tt2000 = ...
+        TimeZvs.HK_ACQUISITION_TIME_tt2000 = ...
           bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
           InHk.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
       end
       if isfield(InSci.Zv, 'ACQUISITION_TIME') && ~isempty(InSci.Zv.ACQUISITION_TIME)
-        TimeVars.SCI_ACQUISITION_TIME_tt2000 = ...
+        TimeZvs.SCI_ACQUISITION_TIME_tt2000 = ...
           bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
           InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
       end
-      bicas.utils.log_ZVs(TimeVars, Bso, L);
+      bicas.utils.log_ZVs(TimeZvs, Bso, L);
 
 
 
@@ -235,15 +235,17 @@ classdef L1L2
 
 
 
-      %===================
-      % Derive isSweeping
-      %===================
+      %======================
+      % Derive isSweepingFpa
+      %======================
       isSweepingFpa = bicas.proc.L1L2.autodetect_sweeps(...
         hkEpoch, ...
         InHk.ZvFpa.HK_BIA_MODE_MUX_SET, ...
-        [InHk.ZvFpa.HK_BIA_BIAS1, ...
-        InHk.ZvFpa.HK_BIA_BIAS2, ...
-        InHk.ZvFpa.HK_BIA_BIAS3], ...
+        [...
+          InHk.ZvFpa.HK_BIA_BIAS1, ...
+          InHk.ZvFpa.HK_BIA_BIAS2, ...
+          InHk.ZvFpa.HK_BIA_BIAS3...
+        ], ...
         Bso);
       HkSciTime.isSweepingFpa = bicas.utils.FPArray.floatNan2logical(...
         bicas.utils.interpolate_nearest(...
@@ -294,9 +296,9 @@ classdef L1L2
     % (and presumably accurate) or configurable as it could be.
     %
     % NOTE: There is some unimportant "imprecision" in the window algorithm
-    % which can be seen as an unimportant bug. Records which are BDM<>4
-    % (i.e. definately not sweep) within a window with records currents
-    % exceeding the thresholds (for BDM=4) are labelled as sweeps.
+    % which can be seen as an unimportant bug. Records which are BDM<>4 (i.e.
+    % definately not sweep) within a window with currents exceeding the
+    % thresholds (for BDM=4) are labelled as sweeps.
     %
     %
     % ALGORITHM
@@ -322,11 +324,29 @@ classdef L1L2
     function isSweepingFpa = autodetect_sweeps(tt2000, bdmFpa, hkBiasCurrentFpa, Bso)
       % TODO-DEC: Does having argument and return value FPAs make sense?
       %           Should caller convert?
+      % PROPOSAL: Rename (and negate) BDM_SWEEP_POSSIBLE --> BDM_SWEEP_IMPOSSIBLE
+      %   CON: Unintuitive for time period when sweep can be deduced frmo BDM.
+      % PROPOSAL: Abbreviations for the two respective algorithms.
+      %   sweep
+      %   BDM, BDM=4
+      %   trick
+      %   autodetect
+      %   HK current, bias
+      %   algorithm, method
+      %   --
+      %   SBDA = Sweep(?) BDM Detection Algorithm
+      %   SCDA = Sweep Current Detection Algorithm
+      %   SADA = Sweep AutoDetection Algorithm
+      %   BSDA = BDM Sweep Detection Algorithm
+      %     CON: Analogue "Current Sweep Detection Algorithm" is bad.
 
       % The only BDM which sweeps use, but there may be other data too.
+      % I.e.
+      % BDM<>BDM_SWEEP_POSSIBLE ==> Not a sweep.
+      % BDM==BDM_SWEEP_POSSIBLE <== Sweep
       BDM_SWEEP_POSSIBLE = 4;
 
-      % Time before which sweeps can be identified by BDM=4.
+      % Time before which sweep <=> BDM=4.
       bdm4TrickEndTt2000           = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC'));
       windowLengthPts              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS');
       currentMinMaxDiffThresholdTm =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM');
@@ -354,19 +374,19 @@ classdef L1L2
       isSweeping2 = false(size(isSweeping1));    % Preallocate
       for i1 = 1:(nCdfRecs-(windowLengthPts-1))
         i2 = i1 + (windowLengthPts-1);
-        iAr = i1:i2;
+        iWindowAr = i1:i2;
 
         % NOTE: Treating all data in window combined, both in time AND
         % over channels/antennas.
         hkBiasCurrentWindow = hkBiasCurrent(i1:i2, :);
 
-        hkBiasCurrentWindow(bdm(iAr) ~= BDM_SWEEP_POSSIBLE, :) = NaN;
+        hkBiasCurrentWindow(bdm(iWindowAr) ~= BDM_SWEEP_POSSIBLE, :) = NaN;
         minWindow = min(hkBiasCurrentWindow, [], 'all');
         maxWindow = max(hkBiasCurrentWindow, [], 'all');
         mmDiff    = maxWindow - minWindow;
 
         if mmDiff > currentMinMaxDiffThresholdTm
-          isSweeping2(iAr) = (bdm(iAr) == BDM_SWEEP_POSSIBLE) & ~bdm4TrickApplies(iAr);
+          isSweeping2(iWindowAr) = (bdm(iWindowAr) == BDM_SWEEP_POSSIBLE) & ~bdm4TrickApplies(iWindowAr);
         end
       end
 
