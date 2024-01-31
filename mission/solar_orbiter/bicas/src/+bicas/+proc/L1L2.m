@@ -303,7 +303,7 @@ classdef L1L2
     %
     % ALGORITHM
     % =========
-    % PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC specifies a
+    % PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC specifies a
     % timestamps.
     % Records before timestamp:
     %   BDN=4 <=> sweep
@@ -317,7 +317,7 @@ classdef L1L2
     % ARGUMENTS
     % =========
     % Bso
-    %       NOTE: PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS: If
+    %       NOTE: PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS: If
     %       greater than the number of CDF records/rows of data, then no
     %       record will be labelled as sweeping.
     %
@@ -334,8 +334,8 @@ classdef L1L2
       %   HK current, bias
       %   algorithm, method
       %   --
-      %   SBDA = Sweep(?) BDM Detection Algorithm
-      %   SCDA = Sweep Current Detection Algorithm
+      %   SBDA = Sweep(?) BDM Detection Algorithm  -- IMPLEMENTED
+      %   SCDA = Sweep Current Detection Algorithm -- IMPLEMENTED
       %   SADA = Sweep AutoDetection Algorithm
       %   BSDA = BDM Sweep Detection Algorithm
       %     CON: Analogue "Current Sweep Detection Algorithm" is bad.
@@ -347,10 +347,10 @@ classdef L1L2
       BDM_SWEEP_POSSIBLE = 4;
 
       % Time before which sweep <=> BDM=4.
-      bdm4TrickEndTt2000           = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC'));
-      windowLengthPts              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS');
-      currentMinMaxDiffThresholdTm =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM');
-      windowMarginSec              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC');
+      sbdaEndTt2000                = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
+      windowLengthPts              =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
+      currentMinMaxDiffThresholdTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_THRESHOLD_TM');
+      windowMarginSec              =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
 
       nCdfRecs = irf.assert.sizes(...
         tt2000,           [-1, 1], ...
@@ -359,19 +359,22 @@ classdef L1L2
       assert(windowLengthPts              >= 1)
       assert(currentMinMaxDiffThresholdTm >= 0)
 
-      hkBiasCurrent    = hkBiasCurrentFpa.int2doubleNan();
-      bdm              = bdmFpa.int2doubleNan();
-      bdm4TrickApplies = tt2000 < bdm4TrickEndTt2000;
+      hkBiasCurrent = hkBiasCurrentFpa.int2doubleNan();
+      bdm           = bdmFpa.int2doubleNan();
+      % Whether SBDA applies to (should be used for) records.
+      bSbdaApplies  = tt2000 < sbdaEndTt2000;
 
-      %===========================
-      % Detect sweeps using BDM=4
-      %===========================
-      isSweeping1 = bdm4TrickApplies & (bdm == BDM_SWEEP_POSSIBLE);
+      %==========================
+      % Detect sweeps using SBDA
+      %==========================
+      isSweepingSbda = bSbdaApplies & (bdm == BDM_SWEEP_POSSIBLE);
 
       %====================================
       % Detect sweeps using sliding window
       %====================================
-      isSweeping2 = false(size(isSweeping1));    % Preallocate
+      isSweepingScda = false(size(isSweepingSbda));    % Preallocate
+      % NOTE: Will iterate zero times if window is longer than number of
+      %       records.
       for i1 = 1:(nCdfRecs-(windowLengthPts-1))
         i2 = i1 + (windowLengthPts-1);
         iWindowAr = i1:i2;
@@ -386,11 +389,11 @@ classdef L1L2
         mmDiff    = maxWindow - minWindow;
 
         if mmDiff > currentMinMaxDiffThresholdTm
-          isSweeping2(iWindowAr) = (bdm(iWindowAr) == BDM_SWEEP_POSSIBLE) & ~bdm4TrickApplies(iWindowAr);
+          isSweepingScda(iWindowAr) = (bdm(iWindowAr) == BDM_SWEEP_POSSIBLE) & ~bSbdaApplies(iWindowAr);
         end
       end
 
-      isSweeping           = isSweeping1 | isSweeping2;
+      isSweeping           = isSweepingSbda | isSweepingScda;
       isSweepingWithMargin = irf.utils.true_with_margin(tt2000, isSweeping, windowMarginSec * 1e9);
 
       isSweepingFpa        = bicas.utils.FPArray(isSweepingWithMargin);

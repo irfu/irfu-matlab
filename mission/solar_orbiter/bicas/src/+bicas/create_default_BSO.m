@@ -431,10 +431,10 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 % still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
 % data.
 %--------------------------------------------------------------------------
-% PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC:
-% Before this time: BDM=4 is interpreted as equivalent to sweep.
-% After this time:  A sliding window autodetection algorithm is used for
-%                   detecting sweeps from measured HK currents.
+% PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC:
+% Before this time: SBDA is used for detecting sweeps (BDM=4).
+% After this time:  SCDA is used for detecting sweeps
+%                   (moving window + varying HK currents).
 % Format: Year-month-day
 %         -hour-minute-second
 %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
@@ -446,21 +446,18 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
 %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
 % However, a test with multiple BDMs (mux modes) ran on 2023-12-16 so it is
-% worth not setting PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC to
-% after that.
-S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
-% Length of time interval which is considered at a time. Unit: Data
-% points/HK CDF records.
-S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS',  3)
-% Threshold for HK bias current difference between min and max within
-% interval. If the value exceeds this value, then the interval is labelled
-% as sweeping.
-S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM', 500)
-% Amount of margin to add around regions labelled as sweeps by the initial
-% window algorithm. The sweeps autodetection works on BIAS HK which has a
-% lower time resolution, and may therefore be incorrect at the beginning and
-% end of a labelled region.
-S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC', 120)
+% still worth NOT setting PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC to after that.
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
+% SCDA window length. Unit: Data points/HK CDF records.
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS', 3)
+% SCDA threshold for HK bias current difference between min and max within a
+% window. If the value exceeds this value, then the interval is labelled as
+% sweeping.
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_THRESHOLD_TM', 500)
+% Amount of margin to add around regions labelled as sweeps by the SCDA. The
+% sweeps autodetection works on BIAS HK which has a lower time resolution, and
+% may therefore be incorrect at the beginning and end of a labelled region.
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 
 
 

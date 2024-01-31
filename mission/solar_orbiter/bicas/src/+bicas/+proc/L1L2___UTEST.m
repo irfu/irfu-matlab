@@ -18,6 +18,16 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
 
 
     function test_autodetect_sweeps(testCase)
+      % PROPOSAL: Split up in multiple test functions.
+      %   CON: Needs to call static functions in test class which tests multiple
+      %        functions (though only one is tested right now).
+      %   CON: Long function names to distinguish test functions from test
+      %        functions for other tested functions.
+      %   PROPOSAL: Redefine as test class for
+      %             bicas.proc.L1L2.autodetect_sweeps() only.
+      %
+      % PROPOSAL: test() accepts one struct. ==> Named arguments.
+      % PROPOSAL: Abbreviation for currentMmDiffMinTm.
 
       % Generic test. All input and expected output is specified in arguments.
       %
@@ -30,7 +40,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
       %
       function test(...
           tt2000, bdm, hkBiasCurrent, ...
-          bdm4TrickEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, windowMarginSec, ...
+          sbdaEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, windowMarginSec, ...
           expIsSweeping)
 
         assert(issorted(tt2000), 'ascend')
@@ -39,10 +49,10 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
         hkBiasCurrentFpa = bicas.utils.FPArray.floatNan2int(hkBiasCurrent, 'uint16');
 
         Bso = bicas.create_default_BSO();
-        Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC',              spdfbreakdowntt2000(bdm4TrickEndTt2000), 'test');
-        Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS',               windowLengthPts,                         'test');
-        Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM', currentMinMaxDiffThresholdTm,            'test');
-        Bso.override_value('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC',               windowMarginSec,                         'test');
+        Bso.override_value('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC',                         spdfbreakdowntt2000(sbdaEndTt2000), 'test');
+        Bso.override_value('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS',               windowLengthPts,                    'test');
+        Bso.override_value('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_THRESHOLD_TM', currentMinMaxDiffThresholdTm,       'test');
+        Bso.override_value('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC',               windowMarginSec,                    'test');
         Bso.make_read_only()
 
         % CALL TESTED FUNCTION
@@ -50,7 +60,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
 
         actIsSweeping = actIsSweepingFpa.logical2doubleNan();
         %[actIsSweeping, expIsSweeping]
-        testCase.verifyEqual(actIsSweeping, expIsSweeping)
+        testCase.assertEqual(actIsSweeping, expIsSweeping)
       end
 
       % Test using hard-coded data except for specified arguments.
@@ -62,7 +72,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
       % bdm, expIsSweeping
       %       Scalar constant values. FPAs as float/NaN.
       %
-      function test2(bdm, bdm4TrickEndTt2000, currentMinMaxDiffThresholdTm, expIsSweeping)
+      function test2(bdm, sbdaEndTt2000, currentMinMaxDiffThresholdTm, expIsSweeping)
         % NOTE: Only test window lengths equal or shorter than length of
         % data.
         %
@@ -82,7 +92,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
             3, 1, 2; ...
             2, 3, 1; ...
             ], ...
-            bdm4TrickEndTt2000, ...
+            sbdaEndTt2000, ...
             windowLengthPts, ...      % Iterated over
             currentMinMaxDiffThresholdTm, ...
             0, ...                    % windowMarginSec
@@ -95,12 +105,14 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
       ALL_ENABLED = true;
 
       if ALL_ENABLED
+        % SBDA
         test2(4,  10000, 3, 1)
         test2(4,  10000, 1, 1)
 
         test2(0,  10000, 3, 0)
         test2(0,  10000, 1, 0)
 
+        % SCDA
         test2(4, -10000, 3, 0)
         test2(4, -10000, 1, 1)
 
@@ -113,7 +125,7 @@ classdef L1L2___UTEST < matlab.unittest.TestCase
 
         % function test(...
         %     tt2000, bdm, hkBiasCurrent, ...
-        %     bdm4TrickEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, windowMarginSec, ...
+        %     sbdaEndTt2000, windowLengthPts, currentMinMaxDiffThresholdTm, windowMarginSec, ...
         %     expIsSweeping)
         test(...
           [0:1000:2000]', ...
