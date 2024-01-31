@@ -69,32 +69,32 @@
 % First created 2020-06-24.
 %
 function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename)
-    % PROPOSAL: Other function name.
-    %   PROPOSAL: create_RCT_JSON(parentDirPath, biasRct)
-    %
-    % PROPOSAL: Use bicas.utils.JSON_object_str.
-    %   CON: Function interface requires using RCT filenames as struct field names which is disallowed by MATLAB.
-    %
-    % TODO-NI: Should the JSON file only include the teams own RCT? I.e. BIAS RCT, but not LFR & TDS RCTs?
-    %   NOTE: L1R files contain the filenames of the LFR/TDS RCTs.
-    %
-    % PROPOSAL: Move RCT_JSON_FILENAME to BSO.
-    %   CON: This code an additional tool. Not part of BICAS itself and is never launhed by BICAS.
+% PROPOSAL: Other function name.
+%   PROPOSAL: create_RCT_JSON(parentDirPath, biasRct)
+%
+% PROPOSAL: Use bicas.utils.JSON_object_str.
+%   CON: Function interface requires using RCT filenames as struct field names which is disallowed by MATLAB.
+%
+% TODO-NI: Should the JSON file only include the teams own RCT? I.e. BIAS RCT, but not LFR & TDS RCTs?
+%   NOTE: L1R files contain the filenames of the LFR/TDS RCTs.
+%
+% PROPOSAL: Move RCT_JSON_FILENAME to BSO.
+%   CON: This code an additional tool. Not part of BICAS itself and is never launhed by BICAS.
 
 
 
-    RCT_JSON_FILENAME = 'bias_rct_validity.json';
+RCT_JSON_FILENAME = 'bias_rct_validity.json';
 
-    % NOTE: Cell array of struct, to conform with XB's format above.
-    JsonObj = containers.Map();
-    JsonObj(biasRctFilename) = {struct(...
-        'validity_start', '2020-02-09T00:00:00Z', ...
-        'validity_end',   '9999-01-01T00:00:00Z')};
+% NOTE: Cell array of struct, to conform with XB's format above.
+JsonObj = containers.Map();
+JsonObj(biasRctFilename) = {struct(...
+  'validity_start', '2020-02-09T00:00:00Z', ...
+  'validity_end',   '9999-01-01T00:00:00Z')};
 
-    str = bicas.utils.JSON_object_str(JsonObj, 4);
-    %fprintf(str);    % DEBUG
+str = bicas.utils.JSON_object_str(JsonObj, 4);
+%fprintf(str);    % DEBUG
 
-    rctJsonPath = fullfile(destDir, RCT_JSON_FILENAME);
-    irf.fs.write_file(rctJsonPath, uint8(str));
+rctJsonPath = fullfile(destDir, RCT_JSON_FILENAME);
+irf.fs.write_file(rctJsonPath, uint8(str));
 
 end

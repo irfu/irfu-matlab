@@ -1702,7 +1702,10 @@ classdef PDist < TSeries
           PD.units = obj.units;
       end
     end
-    function Out = shift(pdist,v_nf,nMC,orient,sc,varargin)
+    function varargout = shift(pdist,v_nf,nMC,orient,sc,varargin)
+      % PDIST.SHIFT  Rebin the distribution function to shifted reference
+      %              frame and a rotated coordinate system.
+      %
       %%%This function rebins the distribution function to shifted reference
       %%%frame and a rotated coordinate system.
       %%% Input:
@@ -1968,9 +1971,9 @@ classdef PDist < TSeries
 
       end
       %%
-      fd3vn(fd3vn == 0 ) = nan;
+      % fd3vn(fd3vn == 0 ) = nan; % CN: nan not compatible with other PDist methods
       fn = fd3vn./d3vn;
-      Fn = nan*zeros([1,size(fn)]);
+      Fn = zeros([1,size(fn)]);
       Fn(1,:,:,:) = fn;
       PDistn = PDist(pdist.time,Fn,'skymap',En,phn,thn);
 
@@ -1980,16 +1983,23 @@ classdef PDist < TSeries
       PDistn.ancillary.base = 'sph';
       PDistn.units = pdist.units;
       PDistn.species = pdist.species;
+      PDistn.ancillary.energy0 = En;
+      PDistn.ancillary.energy1 = En;
+      PDistn.ancillary.esteptable = 0;
+      PDistn.ancillary.energy = En;
+      PDistn.ancillary.delta_energy_plus = -En + Eedgesn(2:end);
+      PDistn.ancillary.delta_energy_minus = En - Eedgesn(1:end-1);
+
       if returndiff
 
         differentials.dV3 = dV3;
         differentials.dcosTh = dcosTH;
         differentials.dPH = dPH;
         differentials.d3v = d3vn;
-        Out{1} = PDistn;
-        Out{2} = differentials;
+        varargout{1} = PDistn;
+        varargout{2} = differentials;
       else
-        Out{1} = PDistn;
+        varargout{1} = PDistn;
       end
 
     end

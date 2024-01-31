@@ -12,7 +12,8 @@
 % ARGUMENTS
 % =========
 % DsmdArray
-% datasetIdList : Cell array of unique DATASET_IDs.
+% datasetIdList
+%       Cell array of unique DATASET_IDs.
 %
 %
 % RETURN VALUE
@@ -30,6 +31,11 @@ function dsmdGroupsCa = find_overlapping_DSMD_groups(DsmdArray, datasetIdList)
 %   PROPOSAL: find_time_overlapping_groups, find_time_groups
 %   PROPOSAL: Name find_overlapping_DSMD_groups
 %   PROPOSAL: ~DSMD
+%
+% PROPOSAL: Convert to DSMD method.
+%   PROPOSAL: Instance method?
+%   PROPOSAL: Static method?
+%
 % PROPOSAL: Assertion for identifying dataset groups with only unique DATASET_ID.
 % PROPOSAL: Assertion for that datasets with the same DATASET_ID do not overlap in time.
 %
@@ -47,7 +53,6 @@ DsmdArray = DsmdArray(:);
 if isempty(DsmdArray)
   dsmdGroupsCa = cell(0, 1);
 else
-  % NOTE: Requires .dateVec1/2 to be ROW vector.
   DT0 = datetime(2000, 1, 1, 0, 0, 0, 'TimeZone', 'UTCLeapSeconds');
 
   % IMPLEMENTATION NOTE: Does not work for empty DsmdArray in which case

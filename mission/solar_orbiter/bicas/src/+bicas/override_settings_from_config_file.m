@@ -14,12 +14,12 @@
 %
 function override_settings_from_config_file(configFile, Bso, L)
 
-    rowList                 = irf.fs.read_text_file(...
-        configFile, '(\r\n|\r|\n)');
+rowList                 = irf.fs.read_text_file(...
+  configFile, '(\r\n|\r|\n)');
 
-    ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
+ConfigFileSettingsVsMap = bicas.interpret_config_file(rowList, L);
 
-    Bso.override_values_from_strings(...
-        ConfigFileSettingsVsMap, 'configuration file');
+Bso.override_values_from_strings(...
+  ConfigFileSettingsVsMap, 'configuration file');
 
 end

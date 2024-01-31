@@ -11,7 +11,7 @@
 % First created 2021-08-19.
 %
 function run_UTESTs()
-    tic
-    runtests('bicas', 'IncludeSubpackages', true);
-    toc
+tic
+runtests('bicas', 'IncludeSubpackages', true);
+toc
 end

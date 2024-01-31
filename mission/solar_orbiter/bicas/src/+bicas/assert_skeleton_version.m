@@ -4,5 +4,5 @@
 %
 function assert_skeleton_version(skeletonVersionStr)
 
-    irf.assert.castring_regexp(skeletonVersionStr, '[0-9][0-9]')
+irf.assert.castring_regexp(skeletonVersionStr, '[0-9][0-9]')
 end

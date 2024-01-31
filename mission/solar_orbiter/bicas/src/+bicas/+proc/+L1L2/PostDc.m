@@ -11,33 +11,33 @@
 %
 classdef PostDc
 
-    %#####################
-    %#####################
-    % INSTANCE PROPERTIES
-    %#####################
-    %#####################
-    properties(SetAccess=immutable)
-        Zv
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
+  properties(SetAccess=immutable)
+    Zv
+  end
+
+
+
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
+
+    function obj = PostDc(Zv)
+      irf.assert.struct(Zv, ...
+        {'AsrSamplesAVoltSrm', 'currentAAmpere', 'QUALITY_FLAG', 'L2_QUALITY_BITMASK'}, {});
+      bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
+
+      obj.Zv = Zv;
+
     end
 
-
-
-    %#########################
-    %#########################
-    % PUBLIC INSTANCE METHODS
-    %#########################
-    %#########################
-    methods(Access=public)
-
-        function obj = PostDc(Zv)
-            irf.assert.struct(Zv, ...
-                {'AsrSamplesAVoltSrm', 'currentAAmpere', 'QUALITY_FLAG', 'L2_QUALITY_BITMASK'}, {});
-            bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
-
-            obj.Zv = Zv;
-
-        end
-
-    end    % methods(Access=public)
+  end    % methods(Access=public)
 
 end

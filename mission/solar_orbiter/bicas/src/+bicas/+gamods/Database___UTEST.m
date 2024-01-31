@@ -8,65 +8,65 @@ classdef Database___UTEST < matlab.unittest.TestCase
 
 
 
-    %##############
-    %##############
-    % TEST METHODS
-    %##############
-    %##############
-    methods(Test)
+  %##############
+  %##############
+  % TEST METHODS
+  %##############
+  %##############
+  methods(Test)
 
 
 
-        function test0(testCase)
-            % ===========
-            % Constructor
-            % ===========
+    function test0(testCase)
+      % ===========
+      % Constructor
+      % ===========
 
-            Gmdb = bicas.gamods.Database({});
-            Gmdb = bicas.gamods.Database({'DSI_1', 'DSI_2'});
-
-
-
-            % ==========
-            % add_GMVE()
-            % ==========
-
-            % Add GMVE to zero DSIs.
-            Gmve0 = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment for zero DSIs.'});
-            Gmdb.add_GMVE({}, Gmve0)
-
-            % Add to one DSI.
-            Gmve1 = bicas.gamods.VersionEntry('2020-01-01', '3.0.0', {...
-                'Comment1.'});
-            Gmdb.add_GMVE({'DSI_1'}, Gmve1)
-
-            % Add to two DSIs.
-            Gmve2 = bicas.gamods.VersionEntry('2021-01-01', '4.0.0', {...
-                'Comment2.'});
-            Gmdb.add_GMVE({'DSI_1', 'DSI_2'}, Gmve2)
+      Gmdb = bicas.gamods.Database({});
+      Gmdb = bicas.gamods.Database({'DSI_1', 'DSI_2'});
 
 
 
-            % =====================
-            % get_MODS_strings_CA()
-            % =====================
+      % ==========
+      % add_GMVE()
+      % ==========
 
-            actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSI_1');
-            expGaModsStrCa = {Gmve1.get_str(); Gmve2.get_str()};
-            testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
+      % Add GMVE to zero DSIs.
+      Gmve0 = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment for zero DSIs.'});
+      Gmdb.add_GMVE({}, Gmve0)
 
-            actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSI_2');
-            expGaModsStrCa = {Gmve2.get_str()};
-            testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
+      % Add to one DSI.
+      Gmve1 = bicas.gamods.VersionEntry('2020-01-01', '3.0.0', {...
+        'Comment1.'});
+      Gmdb.add_GMVE({'DSI_1'}, Gmve1)
 
-            testCase.assertError(...
-                @() Gmdb.get_MODS_strings_CA('DSI_UNKNOWN'), ...
-                ?MException)
-        end
+      % Add to two DSIs.
+      Gmve2 = bicas.gamods.VersionEntry('2021-01-01', '4.0.0', {...
+        'Comment2.'});
+      Gmdb.add_GMVE({'DSI_1', 'DSI_2'}, Gmve2)
 
 
 
-    end    % methods(Test)
+      % =====================
+      % get_MODS_strings_CA()
+      % =====================
+
+      actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSI_1');
+      expGaModsStrCa = {Gmve1.get_str(); Gmve2.get_str()};
+      testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
+
+      actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSI_2');
+      expGaModsStrCa = {Gmve2.get_str()};
+      testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
+
+      testCase.assertError(...
+        @() Gmdb.get_MODS_strings_CA('DSI_UNKNOWN'), ...
+        ?MException)
+    end
+
+
+
+  end    % methods(Test)
 
 
 
