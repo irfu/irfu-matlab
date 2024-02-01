@@ -133,11 +133,11 @@ Much refactoring (internal code reorganization).
 NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely stated that a later CDF format was used.
 
 
-
 Version 8.0.1
 -------------
-Corrected documentation w.r.t. the CDF format version used in BICAS v8.0.0.
+Corrected documentation w.r.t. the CDF format version used in BICAS v8.0.0. This version still uses CDF 3.7.1.
 Changed source code style: Two whitespace indentation, no trailing whitespace.
 QUALITY_FLAG is now capped at 3 (previously 2).
 Non-Standard Operations (NSO) table thruster firings updated for until 2024-01-30.
 Bugfix: Automatic sweep detection (SCDA) no longer removes data due to labelling data as sweeps when constant BIAS HK currents are very different.
+Changed setting names relating to autodetection of sweeps.
