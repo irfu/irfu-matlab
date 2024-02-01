@@ -670,6 +670,7 @@ S.define_setting('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', 0)
 
 
 
+% --------------------------------------------
 % Frequency above which the ITF is set to zero
 % --------------------------------------------
 % Expressed as a fraction of the Nyquist frequency (half the sampling
