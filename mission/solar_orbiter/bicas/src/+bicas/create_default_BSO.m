@@ -413,8 +413,18 @@ S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', fullfile('data', 'so
 % Can be set to absolute path. Intended for testing.
 S.define_setting('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH', '')
 
-% Configuration parameters for the automatic detection of saturation
-% performed for L1R-->L2 processing.
+%-------------------------------------------------------------------------------
+% Configuration parameters for the automatic detection of saturation performed
+% for L1R-->L2 processing.
+% ------------------------------------------------------------------------------
+% NOTE: The measured VDC3 potential is stuck at 0.8 V due to apparent h/w
+% failure on 2023-11-13T23:35. This is relevant since the returned value is very
+% constant and falsely look like a regular saturated value, but at a much lower
+% value. Saturation detection is not supposed to detect this value, but the
+% existence of this constant VDC3, and its consequences for other reconstructed
+% values in datasets such as correlated diffs, may mistakenly be interpreted as
+% saturation if one is not careful.
+%-------------------------------------------------------------------------------
 % TODO-DEC: Too high AC diff thresholds?
 S.define_setting('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC',            60.0);
 S.define_setting('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD',                    0.5);
@@ -426,15 +436,15 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 %--------------------------------------------------------------------------
 % Settings for autodetecting sweeps (so that they can be excluded from L2)
 %--------------------------------------------------------------------------
-% NOTE: This is a temporary functionality. The long-term solution should be
-% to use L1/L1R QUALITY_BITMASK. It has been created so that sweeps can
-% still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
+% NOTE: This is intended as a temporary functionality. The long-term solution
+% should be to use L1/L1R QUALITY_BITMASK. It has been created so that sweeps
+% can still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
 % data.
 %--------------------------------------------------------------------------
-% PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC:
-% Before this time: BDM=4 is interpreted as equivalent to sweep.
-% After this time:  A sliding window autodetection algorithm is used for
-%                   detecting sweeps from measured HK currents.
+% PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC:
+% Before this time: SBDA is used for detecting sweeps (BDM=4).
+% After this time:  SCDA is used for detecting sweeps
+%                   (moving window + varying HK currents).
 % Format: Year-month-day
 %         -hour-minute-second
 %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
@@ -446,21 +456,29 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
 %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
 % However, a test with multiple BDMs (mux modes) ran on 2023-12-16 so it is
-% worth not setting PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC to
-% after that.
-S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
-% Length of time interval which is considered at a time. Unit: Data
-% points/HK CDF records.
-S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS',  3)
-% Threshold for HK bias current difference between min and max within
-% interval. If the value exceeds this value, then the interval is labelled
-% as sweeping.
-S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM', 500)
-% Amount of margin to add around regions labelled as sweeps by the initial
-% window algorithm. The sweeps autodetection works on BIAS HK which has a
-% lower time resolution, and may therefore be incorrect at the beginning and
-% end of a labelled region.
-S.define_setting('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC', 120)
+% still worth NOT setting PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC to after
+% that.
+%
+% NOTE: Might be that SCDA window length=3 pts is a bit too short (or possibly
+% diff minimum=500 TM is too large), but that it is saved by window margin 120
+% s. In combination, the SCDA settings seem to be good enough though.
+% /2024-02-01
+%
+% NOTE: Empirically, sweeps are surrounded by small data gaps, 1-4 min long(?).
+%-------------------------------------------------------------------------------
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
+% SCDA window length. Unit: Data points/HK CDF records.
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS', 3)
+% SCDA threshold for HK bias current difference between min and max within a
+% window. If the value exceeds this value, then the interval is labelled as
+% sweeping. Unit: TM units
+% NOTE: Empirically, fluctuations around constant bias current (on a single
+% channel) is on the order of 30-40 TM units (2024-01-01).
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM', 500)
+% Amount of margin to add around regions labelled as sweeps by the SCDA. The
+% sweeps autodetection works on BIAS HK which has a lower time resolution, and
+% may therefore be incorrect at the beginning and end of a labelled region.
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 
 
 
@@ -652,6 +670,7 @@ S.define_setting('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', 0)
 
 
 
+% --------------------------------------------
 % Frequency above which the ITF is set to zero
 % --------------------------------------------
 % Expressed as a fraction of the Nyquist frequency (half the sampling

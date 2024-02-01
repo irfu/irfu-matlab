@@ -279,6 +279,15 @@ RV
 sampere
     "Set current ampere". Simplified calibration value (in ampere) that is
     exactly proportional to bias current in TM.
+SBDA
+    Sweep BDM Detection Algorithm. BDM=4 is interpreted as equivalent to
+    sweeping.
+SCDA
+    Sweep Current Detection Algorithm.
+    A sliding window autodetection algorithm is used for detecting sweeps from
+    measured HK currents. If the max-min current difference within that window
+    exceeds a specified threshold, then the entire window is labeled as being
+    part of a sweep.
 SDID
     Class bicas.proc.L1L2.SignalDestinationId.
 Sec
