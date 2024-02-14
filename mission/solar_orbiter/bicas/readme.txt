@@ -93,6 +93,10 @@ BDM, "mux mode"
     "mux mode", "demux mode", "demultiplexer mode", "bias mux mode", etc.)
     and to distinguish it from "muxing" as a verb. Mostly used internally,
     not in the interface.
+BFM
+    BICAS Functionality Mode. One of the basic modes of BICAS operations:
+    Print version, print identifiction, print version, print help, or process
+    datasets. Exactly one of these must apply every time BICAS is run.
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
     Specification".
@@ -226,6 +230,8 @@ Offset
     value during the calibration process.
 OSR
     Original Sampling Rate. Used in the context of downsampling. Cf DSR.
+QF
+    zVariable QUALITY_FLAG.
 QRC
     Quality-Related Condition. Condition that may influence quality ZVs.
     Ex: Thruster firing, saturation.
@@ -273,6 +279,15 @@ RV
 sampere
     "Set current ampere". Simplified calibration value (in ampere) that is
     exactly proportional to bias current in TM.
+SBDA
+    Sweep BDM Detection Algorithm. BDM=4 is interpreted as equivalent to
+    sweeping.
+SCDA
+    Sweep Current Detection Algorithm.
+    A sliding window autodetection algorithm is used for detecting sweeps from
+    measured HK currents. If the max-min current difference within that window
+    exceeds a specified threshold, then the entire window is labeled as being
+    part of a sweep.
 SDID
     Class bicas.proc.L1L2.SignalDestinationId.
 Sec
@@ -323,11 +338,11 @@ TS
     irfu-matlab's TSeries object/class.
 TSF
     Threshold Saturation Flag. Bit for a sample that is set iff the sample
-    value exceeds thresholds, i.e. it does not take any context into account,
-    except for determining which thresholds to use. This is in contrast with
-    (1) saturation flags for snapshots, which may summarize the saturation of
-    the entire snapshot, or (2) saturation flags for CWF data which may take
-    saturation before or after into account.
+    value exceeds specified thresholds, i.e. it does not take any context
+    into account, except for determining which thresholds to use. This is in
+    contrast with (1) saturation flags for snapshots, which may summarize
+    the saturation of the entire snapshot, or (2) saturation flags for CWF
+    data which may take saturation before or after into account.
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
@@ -339,6 +354,9 @@ WOLS
 ZV
     CDF zVariable, or MATLAB variable that is analogous to one. First dimension
     corresponds to CDF record.
+ZVS
+    zVariable Struct. Struct where each field emulates the data content of a
+    zVariable (either as an array or an FPA).
 
 
 

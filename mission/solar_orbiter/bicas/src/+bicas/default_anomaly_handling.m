@@ -32,19 +32,19 @@
 % switch(settingValue)
 %     case 'USE_WORKAROUND_1'
 %         bicas.default_anomaly_handling(L, settingValue, settingKey, ...
-%           'other', anomalyDescrMsg)
+%           'OTHER', anomalyDescrMsg)
 %         L.log('warning', 'Description of mitigation/workaround 1.')
 %         % Code for mitigating/workaround 1.
 %
 %     case 'USE_WORKAROUND_2'
 %         bicas.default_anomaly_handling(L, settingValue, settingKey, ...
-%           'other', anomalyDescrMsg)
+%           'OTHER', anomalyDescrMsg)
 %         L.log('warning', 'Description of mitigation/workaround 2.')
 %         % Code for mitigating/workaround 2.
 %
 %     otherwise
 %         bicas.default_anomaly_handling(L, settingValue, settingKey, ...
-%           'E+illegal', ...
+%           'ERROR_ILLEGAL_SETTING', ...
 %           anomalyDescrMsg, 'BICAS:SWMProcessing')
 % end
 %
@@ -54,7 +54,7 @@
 % anomalyDescrMsg = 'Description of anomaly.';
 % [settingValue, settingKey] = Bso.get_fv(...
 %     'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
-% bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+% bicas.default_anomaly_handling(L, settingValue, settingKey, 'ERROR_WARNING_ILLEGAL_SETTING', ...
 %     anomalyDescrMsg, 'BICAS:SWMProcessing')
 %
 %
@@ -66,7 +66,7 @@
 % anomalyDescriptionMsg
 %       String.
 % errorId
-%       String. Optional for casesHandled == 'other'
+%       String. Optional for casesHandled == 'OTHER'
 % --
 % NOTE: Order of settingValue, settingKey.
 %
@@ -103,19 +103,19 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
 %       case 'MITIGATION_1'
 %           [y2, didMitigation1] = do_something(..., 'use mitigation 1');
 %           if didMitigation1
-%               bicas.default_anomaly_handling(...'other'...)
+%               bicas.default_anomaly_handling(...'OTHER'...)
 %               L.log('Did mitigation 1.')
 %           end
 %       case 'MITIGATION_2'
 %           [y2, didMitigation2] = do_something(..., 'use mitigation 2');
 %           if didMitigation2
-%               bicas.default_anomaly_handling(...'other'...)
+%               bicas.default_anomaly_handling(...'OTHER'...)
 %               L.log('Did mitigation 2.')
 %           end
 %       otherwise
 %           [y2, detectedAnomaly] = do_something(..., 'no mitigation');
 %           if detectedAnomaly
-%               bicas.default_anomaly_handling(...'E+W+illegal'...)
+%               bicas.default_anomaly_handling(...'ERROR_WARNING_ILLEGAL_SETTING'...)
 %           end
 %   end
 %   PROPOSAL: Set casesHandled, mitigation description in respective case
@@ -133,17 +133,17 @@ function default_anomaly_handling(L, settingValue, settingKey, ...
 %           [y2, detectedAnomaly] = do_something(..., 'use mitigation 1');
 %           % detectedAnomaly also covers whether mitigation 1 was done.
 %           mitigationDescrMsg = 'Mitigation 1 description.';
-%           casesHandled       = 'other';
+%           casesHandled       = 'OTHER';
 %
 %       case 'MITIGATION_2'
 %           [y2, detectedAnomaly] = do_something(..., 'use mitigation 2');
 %           % detectedAnomaly also covers whether mitigation 2 was done.
 %           mitigationDescrMsg = 'Mitigation 2 description.';
-%           casesHandled       = 'other';
+%           casesHandled       = 'OTHER';
 %
 %       otherwise
 %           [y2, detectedAnomaly] = do_something(..., 'no mitigation');
-%           casesHandled       = 'E+W+illegal';
+%           casesHandled       = 'ERROR_WARNING_ILLEGAL_SETTING';
 %   end
 %   if detectedAnomaly
 %       bicas.default_anomaly_handling(..., casesHandled, ...)
@@ -175,15 +175,15 @@ anomalyDescriptionMsg = irf.str.indent(...
 anomalyDescriptionMsg(1:numel(PREFIX)) = PREFIX;
 
 switch(casesHandled)
-  case 'other'
+  case 'OTHER'
     L.log('warning', anomalyDescriptionMsg)
     logi( 'warning', setting2RowMsg)
     return    % NOTE: RETURN
 
-  case 'E+illegal'
+  case 'ERROR_ILLEGAL_SETTING'
     handleWarning = 0;
 
-  case {'E+W+illegal', 'W+E+illegal'}
+  case {'ERROR_WARNING_ILLEGAL_SETTING', 'WARNING_ERROR_ILLEGAL_SETTING'}
     handleWarning = 1;
 
   otherwise

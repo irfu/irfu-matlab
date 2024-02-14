@@ -28,6 +28,21 @@
 function write_dataset_CDF(...
   ZvsSubset, GaSubset, outputFile, masterCdfPath, Bso, L)
 
+% PROPOSAL: Automatic tests for sub-functions. ==> Make subfunctions public.
+%   NOTE: Uses irf.cdf.write_dataobj() for generic functionality for actual
+%         writing of CDF.
+%   PROPOSAL: Convert to class.
+%       TODO-DEC: Naming of class & main function?
+%           cdf
+%           out
+%           write
+%           dataset
+%           --
+%           cdfout.write_dataset()
+%   PROPOSAL: Convert bicas.write_dataset_CDF and bicas.read_dataset_CDF into
+%             combined package (class?!).
+%       CON: Read & write make up two distinct categories.
+%       TODO-NI: Is there any overlap in functionality?
 %===========================================================================
 % This function needs GlobalAttributes values from the input files:
 %    One value per file:      Data_version (for setting Parent_version).
@@ -57,7 +72,7 @@ if exist(outputFile, 'file')
   anomalyDescrMsg = sprintf(...
     'Intended output dataset file path "%s" matches a pre-existing file.', ...
     outputFile);
-  bicas.default_anomaly_handling(L, settingValue, settingKey, 'E+W+illegal', ...
+  bicas.default_anomaly_handling(L, settingValue, settingKey, 'ERROR_WARNING_ILLEGAL_SETTING', ...
     anomalyDescrMsg, 'BICAS:PathNotAvailable')
 end
 
@@ -162,34 +177,7 @@ DataObj = dataobj(masterCdfPath);
 % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
 % /2023-08-10
 if isfield(ZvsSubset, 'QUALITY_FLAG')
-
-  %===================================================================
-  % Enforce global max value for zVar QUALITY_FLAG
-  % ----------------------------------------------
-  % NOTE: Ignore fill positions/values.
-  %===================================================================
-  assert(isa(ZvsSubset.QUALITY_FLAG, 'bicas.utils.FPArray'))
-
-  [qfMax, key] = Bso.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
-  assert(isfinite(qfMax))
-  qfMax = uint8(qfMax);
-  assert(bicas.utils.validate_ZV_QUALITY_FLAG(qfMax), ...
-    'BICAS:Assertion:ConfigurationBug', ...
-    'Illegal BICAS setting "%s"=%i.', key, qfMax)
-
-  if qfMax < bicas.const.QUALITY_FLAG_MAX
-    L.logf('warning', ...
-      ['Using setting %s = %i to set global max value for', ...
-      ' zVar QUALITY_FLAG.'], ...
-      key, qfMax);
-  end
-  QfFpa = ZvsSubset.QUALITY_FLAG;   % Temporary variable to make algorithm clearer.
-
-  TooHighQfFpa                     = (QfFpa >= qfMax);
-  QfFpa(TooHighQfFpa.array(false)) = bicas.utils.FPArray(uint8(qfMax));
-
-  ZvsSubset.QUALITY_FLAG = QfFpa;
-  clear QfFpa
+  ZvsSubset.QUALITY_FLAG = modify_QUALITY_FLAG(ZvsSubset.QUALITY_FLAG, Bso, L);
 end
 
 
@@ -284,6 +272,42 @@ for fn = fieldnames(DataObj.data)'
 end    % for
 
 end    % init_modify_dataobj
+
+
+
+% Enforce global max value for zVar QUALITY_FLAG specified in BSO.
+%
+% NOTE: Ignore fill positions/values.
+% NOTE: Applies to both L2 and L3.
+% NOTE: Using shortened zVariable name QF = QUALITY_FLAG to make algorithm
+%       clearer.
+function QfFpa = modify_QUALITY_FLAG(QfFpa, Bso, L)
+
+assert(isa(QfFpa, 'bicas.utils.FPArray'))
+
+% ============================================
+% Obtain global QUALITY_FLAG cap from settings
+% ============================================
+[qfMax, key] = Bso.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
+% ASSERT: Valid setting.
+assert(isfinite(qfMax))
+qfMax = uint8(qfMax);
+assert(bicas.utils.validate_ZV_QUALITY_FLAG(qfMax), ...
+'BICAS:Assertion:ConfigurationBug', ...
+'Illegal BICAS setting "%s"=%i.', key, qfMax)
+
+% Log if setting is lower than allowed ZV maximum.
+if qfMax < bicas.const.QUALITY_FLAG_MAX
+    L.logf('warning', ...
+      'Using setting %s = %i to set global max value for zVariable QUALITY_FLAG.', ...
+      key, qfMax);
+end
+
+% Enforce QUALITY_FLAG cap.
+bTooHighQfFpa                     = (QfFpa >= qfMax);
+QfFpa(bTooHighQfFpa.array(false)) = bicas.utils.FPArray(qfMax);
+
+end    % modify_QUALITY_FLAG
 
 
 
@@ -495,7 +519,7 @@ if isNumericZVar
     otherwise
       bicas.default_anomaly_handling(L, ...
         settingValue, settingKey, ...
-        'E+W+illegal', anomalyDescrMsg, ...
+        'ERROR_WARNING_ILLEGAL_SETTING', anomalyDescrMsg, ...
         'BICAS:SWMProcessing:DatasetFormat')
   end
 
@@ -507,7 +531,7 @@ else
     'OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
   bicas.default_anomaly_handling(L, ...
     settingValue, settingKey, ...
-    'E+W+illegal', anomalyDescrMsg, ...
+    'ERROR_WARNING_ILLEGAL_SETTING', anomalyDescrMsg, ...
     'BICAS:SWMProcessing:DatasetFormat')
 end    % if isNumericZVar
 
