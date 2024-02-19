@@ -4,6 +4,12 @@ function quicklooks_24_6_2_h(data,paths,Tint_24h,logoPath)
 % solo.qli.quicklooks_main). Computes spectrum of B, so takes a while to run.
 % Tint_24h should be a 24hour time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
+%
+% NOTE: Function uses solo.read_TNR() indirectly which in turns relies on a
+%       hardcoded path to "/data/solo/remote/data/L2/thr/" and selected
+%       subdirectories.
+
+
 
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
 %   /EJ 2023-05-10
@@ -33,6 +39,21 @@ function quicklooks_24_6_2_h(data,paths,Tint_24h,logoPath)
 % TODO-NI Panel 10 (log) is hardcoded to YLim~[10, 100] (because that is what
 %         it used to be). This does not cover the entire interval of data
 %         (there is more data at lower y). Should it be that way?
+%
+% PROPOSAL: Make function not directly call solo.read_TNR()
+%   PRO: Makes function testable.
+%   CON: Must understand the solo.read_TNR() return value.
+%     CON: Seems feasible.
+%       case 0:
+%         out = 0;
+%       case 1:
+%         out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
+%         out.p_label={'dB'};
+%
+%   PROPOSAL: Only call solo.read_TNR() via dependency injection.
+%     CON: Overkill.
+%   PROPOSAL: Submit the return value of solo.read_TNR() as argument instead of
+%             calling it.
 
 
 

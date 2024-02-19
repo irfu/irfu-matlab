@@ -1,4 +1,4 @@
-function out =  read_TNR(tint)
+function out = read_TNR(tint)
 %     Read L2 data from TNR.
 %
 %     @author: Louis Richard
@@ -29,7 +29,7 @@ function out =  read_TNR(tint)
 %
 %     Returns
 %     -------
-%     out : strcut
+%     out : struct
 %         Spectrum of the measured signals.
 %
 %     Notes
@@ -173,7 +173,7 @@ time_ = EpochTT(time_(2:end));
 
 
 %select frequencies lower than 100 kHz
-freq_tnr=freq_tnr(freq_tnr<100000);
+freq_tnr = freq_tnr(freq_tnr<100000);
 f100_ind = length(freq_tnr);
 vp = v_(1:f100_ind, 2:end)';
 
@@ -198,7 +198,7 @@ out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
 out.p_label={'dB'};
 
 
-%For ploting
+%For plotting
 %         h(10)=irf_panel('tnr');
 %         irf_spectrogram(h(10),out,'log','donotfitcolorbarlabel')
 %         %fpe_sc.units = 'kHz';

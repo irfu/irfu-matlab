@@ -5,17 +5,20 @@
 % Intended for batch processing, e.g. being called from bash script, e.g. cron
 % job via a MATLAB wrapper script.
 %
-% NOTE: Requires solo.db_init() to have been properly used to initialize dataset
-%       lookup.
-% NOTE: Uses SPICE implicitly, and therefore relies on some path convention. Not
-%       sure which, but presumably it does at least find /data/solo/SPICE/.
-% NOTE: Uses solo.read_TNR() indirectly which in turns relies on a hardcoded
-%       path to "/data/solo/remote/data/L2/thr/" and selected subdirectories.
-% NOTE: Creates subdirectories to the output directory if not pre-existing.
-% NOTE: 7-day plots will only cover that largest sub-time interval that is
-%       composed of full 7-day periods. Note: 7-day periods begin with a
-%       hardcoded weekday (Wednesday as of 2023-07-24).
-% NOTE: Overwrites pre-existing plot files without warning.
+%
+% NOTES
+% =====
+% * Requires solo.db_init() to have been properly used to initialize dataset
+%   lookup.
+% * Uses SPICE implicitly, and therefore relies on some path convention. Not
+%   sure which, but presumably it does at least find /data/solo/SPICE/.
+% * Uses solo.read_TNR() indirectly which in turns relies on a hardcoded
+%   path to "/data/solo/remote/data/L2/thr/" and selected subdirectories.
+% * Creates subdirectories to the output directory if not pre-existing.
+% * 7-day plots will only cover that largest sub-time interval that is
+%   composed of full 7-day periods. Note: 7-day periods begin with a
+%   hardcoded weekday (Wednesday as of 2023-07-24).
+% * Overwrites pre-existing plot files without warning.
 %
 %
 % ARGUMENTS
@@ -124,7 +127,7 @@ CATCH_PLOT_EXCEPTIONS_ENABLED = 1;    % 0 or 1.
 
 
 
-% NOTE: Usually found on solo/data_yuri.
+% NOTE: Usually found at /data/solo/data_yuri/.
 VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
 VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 
@@ -186,13 +189,13 @@ end
 if runNonweeklyPlots
   % Daily time-intervals
   Time1DayStepsArray = make_time_array(TimeIntervalNonWeeks, 1);
-  
+
   % Load data
   % This is the .mat file containing RPW speeds at 1h resolution.
   % The file should be in the current path. This file can be found in
   % brain:/solo/data/data_yuri/.
   vht1h = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
-  
+
   for iTint=1:length(Time1DayStepsArray)-1
     % Select time interval.
     Tint = irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
@@ -211,15 +214,15 @@ end
 % Run the code for weekly overviews
 %===================================
 if runWeeklyPlots
-  
+
   % Weekly time-intervals
   Time7DayStepsArray = make_time_array(TimeIntervalWeeks, 7);
-  
+
   % Load data
   % This is the .mat file containing RPW speeds at 6h resolution.
   % The file should be in the same folder as this script (quicklook_main).
   vht6h = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
-  
+
   for iTint=1:length(Time7DayStepsArray)-1
     % Select time interval.
     Tint = irf.tint(Time7DayStepsArray(iTint), Time7DayStepsArray(iTint+1));
@@ -436,7 +439,7 @@ spiceEarthPos = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
 if ~isempty(spiceEarthPos)
   [E_radius, E_lon, E_lat] = cspice_reclat(spiceEarthPos);
   earthPos = [E_radius', E_lon', E_lat'];
-  
+
   Tlength  = Tint(end)-Tint(1);
   dTimes   = 0:dt:Tlength;
   Times    = Tint(1)+dTimes;
@@ -487,11 +490,12 @@ end
 
 
 
-% Wrapper around solo.db_get_ts() that normalizes the output to a TSeries.
+% Wrapper around solo.db_get_ts() which normalizes the output to always return
+% one TSeries object.
 %
-% NOTE: solo.db_get_ts() may sometimes return cell array of TSeries instead of a
-% single TSeries when the underlying code thinks that the underlying CDFs do not
-% have consistent metadata. See solo.db_get_ts().
+% NOTE: solo.db_get_ts() returns a cell array of TSeries instead of a single
+% TSeries when the underlying code thinks that the underlying CDFs do not have
+% consistent metadata. See solo.db_get_ts().
 %
 function Ts = db_get_ts(varargin)
 
