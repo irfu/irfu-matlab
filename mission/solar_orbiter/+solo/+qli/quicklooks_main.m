@@ -14,7 +14,7 @@
 % NOTE: Creates subdirectories to the output directory if not pre-existing.
 % NOTE: 7-day plots will only cover that largest sub-time interval that is
 %       composed of full 7-day periods. Note: 7-day periods begin with a
-%       hardcoded weekday (Wednesday as of 2023-05-09).
+%       hardcoded weekday (Wednesday as of 2023-07-24).
 % NOTE: Overwrites pre-existing plot files without warning.
 %
 %
@@ -36,6 +36,9 @@
 %       Useful for testing and not re-running unnecessary time-consuming plots.
 % utcBegin, utcEnd : Strings.
 %       Defines time interval for which quicklooks should be generated.
+%       NOTE: Weekly plots will only be produced for those weeks which are
+%       contained entirely inside the specified time interval (?). Weekly plots
+%       always (as of 2023-07-24) begin on a Wednesday(!) at 00:00:00.
 %
 %
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
@@ -112,10 +115,12 @@ function quicklooks_main(...
 % IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
 % speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
 % Should be enabled by default.
-ENABLE_B                      = 1;
-% Whether to catch plotting exceptions (and continue) in order to produce as
-% many plots as possible. Should be enabled by default.
-CATCH_PLOT_EXCEPTIONS_ENABLED = 1;
+ENABLE_B                      = 1;    % 0 or 1.
+% Whether to catch plotting exceptions, continue plotting other days/weeks, and
+% then re-raise the last caught exception at the very end. This produces as many
+% plots as possible when one or some plots fail.
+% Should be enabled by default.
+CATCH_PLOT_EXCEPTIONS_ENABLED = 1;    % 0 or 1.
 
 
 
@@ -181,13 +186,13 @@ end
 if runNonweeklyPlots
   % Daily time-intervals
   Time1DayStepsArray = make_time_array(TimeIntervalNonWeeks, 1);
-
+  
   % Load data
   % This is the .mat file containing RPW speeds at 1h resolution.
   % The file should be in the current path. This file can be found in
   % brain:/solo/data/data_yuri/.
   vht1h = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
-
+  
   for iTint=1:length(Time1DayStepsArray)-1
     % Select time interval.
     Tint = irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
@@ -206,15 +211,15 @@ end
 % Run the code for weekly overviews
 %===================================
 if runWeeklyPlots
-
+  
   % Weekly time-intervals
   Time7DayStepsArray = make_time_array(TimeIntervalWeeks, 7);
-
+  
   % Load data
   % This is the .mat file containing RPW speeds at 6h resolution.
   % The file should be in the same folder as this script (quicklook_main).
   vht6h = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
-
+  
   for iTint=1:length(Time7DayStepsArray)-1
     % Select time interval.
     Tint = irf.tint(Time7DayStepsArray(iTint), Time7DayStepsArray(iTint+1));
@@ -277,7 +282,7 @@ end
 function handle_plot_exception(catchExceptionEnabled, Exc)
 if catchExceptionEnabled
   % Print stack trace without rethrowing exception.
-  % One wants that in log.
+  % One wants that in the log.
   % NOTE: fprintf(FID=2) => stderr
   fprintf(2, 'Caught plotting error without rethrowing it.\n')
   fprintf(2, 'Plot error/exception: "%s"\n', Exc.message)
@@ -431,7 +436,7 @@ spiceEarthPos = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
 if ~isempty(spiceEarthPos)
   [E_radius, E_lon, E_lat] = cspice_reclat(spiceEarthPos);
   earthPos = [E_radius', E_lon', E_lat'];
-
+  
   Tlength  = Tint(end)-Tint(1);
   dTimes   = 0:dt:Tlength;
   Times    = Tint(1)+dTimes;
@@ -484,11 +489,9 @@ end
 
 % Wrapper around solo.db_get_ts() that normalizes the output to a TSeries.
 %
-% NOTE: solo.db_get_ts() has been observed to return cell array of TSeries
-% (instead of TSeries) for Npas, Tpas and Vpas for
-% solo.qli.quicklooks_main('2020-10-21T00:00:00', '2020-10-28T00:00:00', '/data/solo/data_yuri', ...)
-% There might be other cases but those are as of yet unknown.
-% /Erik P G Johansson 2021-03-22
+% NOTE: solo.db_get_ts() may sometimes return cell array of TSeries instead of a
+% single TSeries when the underlying code thinks that the underlying CDFs do not
+% have consistent metadata. See solo.db_get_ts().
 %
 function Ts = db_get_ts(varargin)
 
@@ -504,7 +507,7 @@ end
 
 
 
-% Takes a cell-array of TSeries and merges them to one TSeries.
+% Take a cell array of TSeries and merges them into one TSeries.
 function OutputTs = cell_array_TS_to_TS(InputTs)
 assert(iscell(InputTs))
 
