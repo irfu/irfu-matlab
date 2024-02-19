@@ -1,4 +1,5 @@
 function quicklooks_24_6_2_h(data,paths,Tint_24h,logoPath)
+%
 % Given data in the struct 'data' (see solo.qli.quicklooks_main), generates
 % plots and saves them in the paths specified in the struct 'paths' (see
 % solo.qli.quicklooks_main). Computes spectrum of B, so takes a while to run.

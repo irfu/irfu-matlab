@@ -58,7 +58,7 @@ sensor2 = 4;
 %TNR_BAND_FREQ from the TNR cdf file, therefore the dataobj(x) function
 %is used instead, which requires giving the full path of the file.
 %The solo.get_db_ts function seems to fail to create the TSeries object
-%because the DEPEND_0 field is of diferent size from the data.
+%because the DEPEND_0 field is of different size from the data.
 path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
 
 data_l2 = rcdf(path, tint);

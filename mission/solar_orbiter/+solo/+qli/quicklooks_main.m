@@ -37,8 +37,8 @@
 %       Whether to run the resp. groups of plots.
 %       NOTE: Permits chars "0" and "1" for when calling from bash.
 %       Useful for testing and not re-running unnecessary time-consuming plots.
-% utcBegin, utcEnd : Strings.
-%       Defines time interval for which quicklooks should be generated.
+% utcBegin, utcEnd
+%       Strings. Defines time interval for which quicklooks should be generated.
 %       NOTE: Weekly plots will only be produced for those weeks which are
 %       contained entirely inside the specified time interval (?). Weekly plots
 %       always (as of 2023-07-24) begin on a Wednesday(!) at 00:00:00.
@@ -110,6 +110,8 @@ function quicklooks_main(...
 % --
 % 2022-03-12T07:22:03.090373000Z -- 2022-03-13T00
 %   Missing data.Tpas
+
+% ##############################################################################
 
 
 %============
