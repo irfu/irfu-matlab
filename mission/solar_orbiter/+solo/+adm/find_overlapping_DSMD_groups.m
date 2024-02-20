@@ -6,7 +6,8 @@
 %   NOTE: Overlap must have non-zero length.
 %
 % NOTE: Algorithm only works under the assumption that datasets with the same
-% DATASET_ID do not overlap (in time) (assertion).
+%       DATASET_ID do not overlap (in time) (assertion). Can thus not handle
+%       SOLO_L2_RPW-LFR-SBM1/2-CWF-E.
 %
 %
 % ARGUMENTS

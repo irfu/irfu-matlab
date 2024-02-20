@@ -162,9 +162,9 @@ NeScp.userData = '';
 % not yet used by BICAS (2023-08-10).
 % NOTE: Overwrite every value with zero in order to also overwrite Nan which
 % may otherwise inherited from NeScp.
-%NOTE: Density from TNR plasma line used to calibrate NeScp only measues up
-%to 122 cc, everything above that value is uncertain, therefore is flagged.
-%Low values of NeScp i.e <2 cc are also uncertain
+% NOTE: Density from TNR plasma line used to calibrate NeScp only measures up
+% to 122 cc, everything above that value is uncertain, therefore is flagged.
+% Low values of NeScp i.e <2 cc are also uncertain.
 NeScpQualityBit = TSeries(NeScp.time, ones(size(NeScp.data)));
 NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
 NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
