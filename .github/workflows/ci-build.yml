@@ -72,7 +72,7 @@ jobs:
         uses: matlab-actions/setup-matlab@v2
         with:
           release: R2021a
-          products: MATLAB Parallel_Computing_Toolbox Image_Processing_Toolbox Financial_Toolbox
+          products: MATLAB Parallel_Computing_Toolbox Image_Processing_Toolbox Financial_Toolbox Wavelet_Toolbox
 
       # Run MATLAB code
       - name: Run commands
