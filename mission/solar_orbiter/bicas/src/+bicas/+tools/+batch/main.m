@@ -135,244 +135,244 @@
 % Initially created 2020-03-02 by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function main(...
-        bicasConfigFile, outputIsCdag, modeStr, ...
-        outputDir, referenceDir, inputPathsCa, varargin)
-    % PROPOSAL: Better name
-    %   ~bicas
-    %       CON: Clashes with package name
-    %   ~batch
-    %       CON: Clashes with package name
-    %           CON: Is sort of in line with Python's convention of main module
-    %                in a package sharing name with the (leaf-most) package name.
-    %   ~main
-    %       NOTE: Cf. bicas.main (irfu-matlab)
-    %
-    % PROPOSAL: Move to irfu-matlab: ~bicas.tools.batch
-    %   NOTE: Requires dataset filenaming code, code for identifying datasets
-    %         that can be produced, BPCI, DSMD.
-    %       NOTE: Some dependencies have already been moved to irfu-matlab:
-    %           solo.adm.
-    %       NOTE: Some dependencies are duplicated in irfu-matlab:
-    %   TODO: Identify such dependencies.
-    %       2024-02-23: No such dependencies. Have been replaced with solo.adm
-    %       counterparts, or code has been moved to bicas.batch.
-    %   --
-    %   PRO: More natural to use bicas.Logger, bicas.utils.Timekeeper.
-    %
-    % PROPOSAL: Be able to optionally limit to specified SWM (several?).
-    %   PROPOSAL: Use settings.
-    %       CON: How handle from bash?
-    %   TODO-DEC: How specify set of SWMs?
-    %       PROPOSAL: Specify set of SWMs to permit (include)
-    %       PROPOSAL: Specify set of SWMs ignore (exclude)
-    %       TODO-DEC: Permit non-existent SWMs?
-    %           NOTE: The SWMs which BICAS sees depends on BICAS settings.
-    %           PROPOSAL: Not permit
-    %               PRO: More rigorous. Less change of misspelling.
-    %               CON: Can not write wrappers, aliases with permanent lists of
-    %                    SWMs.
-    %
-    % PROPOSAL: Filter DSIs (only keep those needed for SWMs) before sorting
-    %           by version and before searching for BPCIs.
-    %   PRO: Likely faster.
-    %
-    % PROPOSAL: Rename modeStr --> outputVersionModeStr
-    %   CON: modeStr does not only determine the output version algorithm. V01
-    %        only generates datasets not already in reference directory
-    %        whereas NEW_VERSION always generates new datasets.
-    %
-    % PROPOSAL: Redefine algorithm.
-    %   NOTE: Technically, the reference directory is used for two different
-    %       things:
-    %       (1) Determine output dataset versions.
-    %       (2) Determine whether to output datasets.
-    %           NOTE: modeStr=NEW_VERSION will always always produce output
-    %           dataset candidates which never collide with reference datasets.
-    %   --
-    %   PROPOSAL: Argument/flag for whether to permit overwriting datasets.
-    %       PROPOSAL: Not argument visible in outside interface. Could be a
-    %                 function of "mode" for at least the short term.
-    %       TODO-DEC: Would need policy on how to handle SWMs/BPCIs which
-    %           simultaneously output multiple files, but for which there is a
-    %           collision only for some.
-    %           NOTE: Always write all files or no file. + Overwrite disallowed.
-    %                 ==> Any collision implies writing no file.
-    %       PRO: Clarity.
-    %       PRO: Flexibility.
-    %           CON: More to test.
-    %   PROPOSAL:
-    %       Generate BPCIs with output dataset versions using reference
-    %       directory + versioning algorithm (as now).
-    %       Run every BPCI which does not only produce datasets pre-existing in
-    %       reference directory.
-    %
-    % NOTE/~BUG/~PROBLEM: Algorithm requires input datasets to not overlap in
-    %       time for each unique DSI separately. Can therefore not handle
-    %       SOLO_L2_RPW-LFR-SBM1-CWF-E.
-    %       NOTE: Implemented via
-    %             bicas.tools.batch.autocreate_input_BPCIs()
-    %             calling
-    %             bicas.tools.batch.autocreate_many_BPCIs().
-    %   PROPOSAL: Define (hardcoded) list of DSIs "main" input datasets.
-    %       There is one main DSI in every SWM (one main input dataset in evey
-    %       BPCI). Separately for every SWM, iterate over all main datasets. For
-    %       every main dataset, find those other datasets (with input DSIs in
-    %       the SWM) which overlap with the main dataset in time.
-    %       --
-    %       PROPOSAL: Same list as INPUT_DSI_FOR_OUTPUT_TIME in functions
-    %           bicas.tools.batch.get_BPCI_output_path2()
-    %           bicas.tools.batch.default_get_BPCI_output_filename()
-    %           (latter to be phased out).
-    %   PROPOSAL: Given a set of input DSIs specified by a SWM, find any group
-    %             of datasets with some shared overlap.
-    %       NOTE: Datasets may be used in multiple BPCIs (for same SWM). This is
-    %             legitimately expected for
-    %             (1) CURRENT datasets,
-    %             (2) non-SBM datasets in SBM SWMs.
-    %           NOTE: Since L1R SBM1s overlap in time, there should legitimately
-    %                 be L2 SBM1s overlapping in time.
-    %       PRO: Symmetric w.r.t. datasets. Does not need to define any "main"
-    %            dataset for every SWM.
-    %       CON: Having two DSIs with time overlapping datasets in the same SWM
-    %            leads to processing four different combinations of datasets for
-    %            producing data for the same time interval.
-    %           Ex: Extreme but clear case:
-    %               Datasets 1a and 1b: Almost same time interval. Same DSI_1.
-    %               Datasets 2a and 2b: Almost same time interval. Same DSI_2.
-    %               ==> Output dataset(s)
-    %                 1a+2a ==> 3a
-    %                 1a+2b ==> 3b
-    %                 1b+2a ==> 3c
-    %                 1b+2b ==> 3d
-    %                 If DSI_1 determines the output filename, then
-    %                 3a and 3b will have the same filename (except version),
-    %                 3c and 3d will have the same filename (except version).
-    %           CON: This should never happen with real datasets. SBM1 is the
-    %                only dataset known to be overlapping with itself. CURRENT
-    %                datasets overlap with many other datasets because they are
-    %                long, not because they overlap with themselves.
-    %       CON: Unclear what the algorithm should be.
+  bicasConfigFile, outputIsCdag, modeStr, ...
+  outputDir, referenceDir, inputPathsCa, varargin)
+% PROPOSAL: Better name
+%   ~bicas
+%       CON: Clashes with package name
+%   ~batch
+%       CON: Clashes with package name
+%           CON: Is sort of in line with Python's convention of main module
+%                in a package sharing name with the (leaf-most) package name.
+%   ~main
+%       NOTE: Cf. bicas.main (irfu-matlab)
+%
+% PROPOSAL: Move to irfu-matlab: ~bicas.tools.batch
+%   NOTE: Requires dataset filenaming code, code for identifying datasets
+%         that can be produced, BPCI, DSMD.
+%       NOTE: Some dependencies have already been moved to irfu-matlab:
+%           solo.adm.
+%       NOTE: Some dependencies are duplicated in irfu-matlab:
+%   TODO: Identify such dependencies.
+%       2024-02-23: No such dependencies. Have been replaced with solo.adm
+%       counterparts, or code has been moved to bicas.batch.
+%   --
+%   PRO: More natural to use bicas.Logger, bicas.utils.Timekeeper.
+%
+% PROPOSAL: Be able to optionally limit to specified SWM (several?).
+%   PROPOSAL: Use settings.
+%       CON: How handle from bash?
+%   TODO-DEC: How specify set of SWMs?
+%       PROPOSAL: Specify set of SWMs to permit (include)
+%       PROPOSAL: Specify set of SWMs ignore (exclude)
+%       TODO-DEC: Permit non-existent SWMs?
+%           NOTE: The SWMs which BICAS sees depends on BICAS settings.
+%           PROPOSAL: Not permit
+%               PRO: More rigorous. Less change of misspelling.
+%               CON: Can not write wrappers, aliases with permanent lists of
+%                    SWMs.
+%
+% PROPOSAL: Filter DSIs (only keep those needed for SWMs) before sorting
+%           by version and before searching for BPCIs.
+%   PRO: Likely faster.
+%
+% PROPOSAL: Rename modeStr --> outputVersionModeStr
+%   CON: modeStr does not only determine the output version algorithm. V01
+%        only generates datasets not already in reference directory
+%        whereas NEW_VERSION always generates new datasets.
+%
+% PROPOSAL: Redefine algorithm.
+%   NOTE: Technically, the reference directory is used for two different
+%       things:
+%       (1) Determine output dataset versions.
+%       (2) Determine whether to output datasets.
+%           NOTE: modeStr=NEW_VERSION will always always produce output
+%           dataset candidates which never collide with reference datasets.
+%   --
+%   PROPOSAL: Argument/flag for whether to permit overwriting datasets.
+%       PROPOSAL: Not argument visible in outside interface. Could be a
+%                 function of "mode" for at least the short term.
+%       TODO-DEC: Would need policy on how to handle SWMs/BPCIs which
+%           simultaneously output multiple files, but for which there is a
+%           collision only for some.
+%           NOTE: Always write all files or no file. + Overwrite disallowed.
+%                 ==> Any collision implies writing no file.
+%       PRO: Clarity.
+%       PRO: Flexibility.
+%           CON: More to test.
+%   PROPOSAL:
+%       Generate BPCIs with output dataset versions using reference
+%       directory + versioning algorithm (as now).
+%       Run every BPCI which does not only produce datasets pre-existing in
+%       reference directory.
+%
+% NOTE/~BUG/~PROBLEM: Algorithm requires input datasets to not overlap in
+%       time for each unique DSI separately. Can therefore not handle
+%       SOLO_L2_RPW-LFR-SBM1-CWF-E.
+%       NOTE: Implemented via
+%             bicas.tools.batch.autocreate_input_BPCIs()
+%             calling
+%             bicas.tools.batch.autocreate_many_BPCIs().
+%   PROPOSAL: Define (hardcoded) list of DSIs "main" input datasets.
+%       There is one main DSI in every SWM (one main input dataset in evey
+%       BPCI). Separately for every SWM, iterate over all main datasets. For
+%       every main dataset, find those other datasets (with input DSIs in
+%       the SWM) which overlap with the main dataset in time.
+%       --
+%       PROPOSAL: Same list as INPUT_DSI_FOR_OUTPUT_TIME in functions
+%           bicas.tools.batch.get_BPCI_output_path2()
+%           bicas.tools.batch.default_get_BPCI_output_filename()
+%           (latter to be phased out).
+%   PROPOSAL: Given a set of input DSIs specified by a SWM, find any group
+%             of datasets with some shared overlap.
+%       NOTE: Datasets may be used in multiple BPCIs (for same SWM). This is
+%             legitimately expected for
+%             (1) CURRENT datasets,
+%             (2) non-SBM datasets in SBM SWMs.
+%           NOTE: Since L1R SBM1s overlap in time, there should legitimately
+%                 be L2 SBM1s overlapping in time.
+%       PRO: Symmetric w.r.t. datasets. Does not need to define any "main"
+%            dataset for every SWM.
+%       CON: Having two DSIs with time overlapping datasets in the same SWM
+%            leads to processing four different combinations of datasets for
+%            producing data for the same time interval.
+%           Ex: Extreme but clear case:
+%               Datasets 1a and 1b: Almost same time interval. Same DSI_1.
+%               Datasets 2a and 2b: Almost same time interval. Same DSI_2.
+%               ==> Output dataset(s)
+%                 1a+2a ==> 3a
+%                 1a+2b ==> 3b
+%                 1b+2a ==> 3c
+%                 1b+2b ==> 3d
+%                 If DSI_1 determines the output filename, then
+%                 3a and 3b will have the same filename (except version),
+%                 3c and 3d will have the same filename (except version).
+%           CON: This should never happen with real datasets. SBM1 is the
+%                only dataset known to be overlapping with itself. CURRENT
+%                datasets overlap with many other datasets because they are
+%                long, not because they overlap with themselves.
+%       CON: Unclear what the algorithm should be.
 
 
-    % IMPLEMENTATION NOTE: bicas.tools.batch.main() calls
-    % bicas.create_default_BSO() directly which in turn uses irfu-matlab
-    % code (+irf/). This happens before BICAS is called, which itself
-    % initializes irfu-matlab paths using the same command, but then it is too
-    % late.
-    irf('check_path')
+% IMPLEMENTATION NOTE: bicas.tools.batch.main() calls
+% bicas.create_default_BSO() directly which in turn uses irfu-matlab
+% code (+irf/). This happens before BICAS is called, which itself
+% initializes irfu-matlab paths using the same command, but then it is too
+% late.
+irf('check_path')
 
-    %==========
-    % Settings
-    %==========
-    DEFAULT_SETTINGS = [];
-    % How many days to extend the time coverage of CURRENT datasets after last
-    % timestamp (bias current setting).
-    DEFAULT_SETTINGS.currentDatasetExtensionDays = 0;
-    %------------------------------------------------------------------------
-    % BICAS settings
-    % --------------
-    % NOTE: These settings are always set in this code, thus overwriting any
-    % setting in config file.
-    % NOTE: Capitalized since that is the BICAS naming convention for
-    % BICAS-internal settings.
-    %------------------------------------------------------------------------
-    %DEFAULT_SETTINGS.bicasSetting_SWM_L1_L2_ENABLED   = 1;
-    %DEFAULT_SETTINGS.bicasSetting_SWM_L2_L3_ENABLED   = 1;
-    %
-    Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
-    irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
-    clear DEFAULT_SETTINGS
-    assert(isnumeric(Settings.currentDatasetExtensionDays))
-
-
-
-    %======================================
-    % ASSERTIONS: Arguments (non-settings)
-    %======================================
-    % Useful to check existence of config file first since a faulty path will
-    % oterwise be found first much later.
-    irf.assert.file_exists(bicasConfigFile)
-    assert(isscalar(outputIsCdag) & islogical(outputIsCdag))
-    irf.assert.dir_exists(outputDir)
-    assert(iscell(inputPathsCa))
+%==========
+% Settings
+%==========
+DEFAULT_SETTINGS = [];
+% How many days to extend the time coverage of CURRENT datasets after last
+% timestamp (bias current setting).
+DEFAULT_SETTINGS.currentDatasetExtensionDays = 0;
+%------------------------------------------------------------------------
+% BICAS settings
+% --------------
+% NOTE: These settings are always set in this code, thus overwriting any
+% setting in config file.
+% NOTE: Capitalized since that is the BICAS naming convention for
+% BICAS-internal settings.
+%------------------------------------------------------------------------
+%DEFAULT_SETTINGS.bicasSetting_SWM_L1_L2_ENABLED   = 1;
+%DEFAULT_SETTINGS.bicasSetting_SWM_L2_L3_ENABLED   = 1;
+%
+Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
+irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+clear DEFAULT_SETTINGS
+assert(isnumeric(Settings.currentDatasetExtensionDays))
 
 
 
-    SwmArray = get_SWMs(bicasConfigFile);
+%======================================
+% ASSERTIONS: Arguments (non-settings)
+%======================================
+% Useful to check existence of config file first since a faulty path will
+% oterwise be found first much later.
+irf.assert.file_exists(bicasConfigFile)
+assert(isscalar(outputIsCdag) & islogical(outputIsCdag))
+irf.assert.dir_exists(outputDir)
+assert(iscell(inputPathsCa))
 
-    bicasSettingsArgsCa = {};
+
+
+SwmArray = get_SWMs(bicasConfigFile);
+
+bicasSettingsArgsCa = {};
 %     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L1-L2_ENABLED',         sprintf('%i', Settings.bicasSetting_SWM_L1_L2_ENABLED)};
 %     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L2-L3_ENABLED',         sprintf('%i', Settings.bicasSetting_SWM_L2_L3_ENABLED)};
 
 
 
-    switch(modeStr)
-        case 'V01'
-            fnVerAlgorithm = 'HIGHEST_USED';
+switch(modeStr)
+  case 'V01'
+    fnVerAlgorithm = 'HIGHEST_USED';
 
-            % IMPLEMENTATION NOTE: The filename version algorithm is more
-            % generic. This code only creates datasets for which there is no
-            % pre-existing dataset (ref.dir.). ==> All created datasets are V01,
-            % when using this filename version algorithm. ==> Name "V01".
+    % IMPLEMENTATION NOTE: The filename version algorithm is more
+    % generic. This code only creates datasets for which there is no
+    % pre-existing dataset (ref.dir.). ==> All created datasets are V01,
+    % when using this filename version algorithm. ==> Name "V01".
 
-        case 'NEW_VERSION'
-            fnVerAlgorithm = 'ABOVE_HIGHEST_USED';
+  case 'NEW_VERSION'
+    fnVerAlgorithm = 'ABOVE_HIGHEST_USED';
 
-        otherwise
-            error('Illegal argument modeStr="%s".', modeStr)
-    end
-
-
-
-    % 31 = Format: 2021-03-19 20:08:34
-    fprintf('%s: Starting BICAS passes.\n', datestr(now, 31))
-    t = tic();
-
-    %====================
-    % CALL MAIN FUNCTION
-    %====================
-    Bpa = bicas.tools.batch.BicasProcessingAccessImpl();
-
-    BpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
-        Bpa, bicasSettingsArgsCa, ...
-        bicasConfigFile, outputDir, referenceDir, inputPathsCa, ...
-        fnVerAlgorithm, outputIsCdag, SwmArray, Settings);
-
-    %=======================
-    % Log BICAS error codes
-    %=======================
-    becArray = [BpcsArray.errorCode];
-    nNonError = nnz(becArray == 0);
-    nError    = nnz(becArray ~= 0);
-    fprintf('#BICAS calls, no error: %i\n', nNonError);
-    fprintf('              error:    %i\n', nError);
-
-    %================
-    % Log time usage
-    %================
-    nTpd = sum(arrayfun(@(Bpcs) numel(Bpcs.Bpci.outputsArray), BpcsArray));
-    wallTimeSec = toc(t);
-    fprintf('%s: Finished BICAS passes.\n',            datestr(now, 31));
-    fprintf('SPEED: Wall time: %.3f [h] = %.0f [s]\n', wallTimeSec / 3600, wallTimeSec);
-    fprintf('SPEED:            %.2f [s/TPD]\n',        wallTimeSec / nTpd);
+  otherwise
+    error('Illegal argument modeStr="%s".', modeStr)
+end
 
 
 
-    if nError > 0
-        error('%i of %i BICAS calls returned error.', ...
-            nError, numel(becArray))
-    end
+% 31 = Format: 2021-03-19 20:08:34
+fprintf('%s: Starting BICAS passes.\n', datestr(now, 31))
+t = tic();
+
+%====================
+% CALL MAIN FUNCTION
+%====================
+Bpa = bicas.tools.batch.BicasProcessingAccessImpl();
+
+BpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
+  Bpa, bicasSettingsArgsCa, ...
+  bicasConfigFile, outputDir, referenceDir, inputPathsCa, ...
+  fnVerAlgorithm, outputIsCdag, SwmArray, Settings);
+
+%=======================
+% Log BICAS error codes
+%=======================
+becArray = [BpcsArray.errorCode];
+nNonError = nnz(becArray == 0);
+nError    = nnz(becArray ~= 0);
+fprintf('#BICAS calls, no error: %i\n', nNonError);
+fprintf('              error:    %i\n', nError);
+
+%================
+% Log time usage
+%================
+nTpd = sum(arrayfun(@(Bpcs) numel(Bpcs.Bpci.outputsArray), BpcsArray));
+wallTimeSec = toc(t);
+fprintf('%s: Finished BICAS passes.\n',            datestr(now, 31));
+fprintf('SPEED: Wall time: %.3f [h] = %.0f [s]\n', wallTimeSec / 3600, wallTimeSec);
+fprintf('SPEED:            %.2f [s/TPD]\n',        wallTimeSec / nTpd);
+
+
+
+if nError > 0
+  error('%i of %i BICAS calls returned error.', ...
+    nError, numel(becArray))
+end
 end
 
 
 
 function SwmArray = get_SWMs(bicasConfigFile)
-    BSO = bicas.create_default_BSO();
+BSO = bicas.create_default_BSO();
 
-    % ID string used to inform BICAS SETTINGS of who set the setting. Only
-    % relevant for inspecting logs.
-    % NOTE: Exact string not really important.
-    bicasSettingsSource = mfilename('fullpath');
+% ID string used to inform BICAS SETTINGS of who set the setting. Only
+% relevant for inspecting logs.
+% NOTE: Exact string not really important.
+bicasSettingsSource = mfilename('fullpath');
 
 %     BSO.override_value('SWM.L1-L2_ENABLED', ...
 %         Settings.bicasSetting_SWM_L1_L2_ENABLED, ...
@@ -381,11 +381,11 @@ function SwmArray = get_SWMs(bicasConfigFile)
 %         Settings.bicasSetting_SWM_L2_L3_ENABLED, ...
 %         bicasSettingsSource)
 
-    bicas.override_settings_from_config_file(...
-        bicasConfigFile, BSO, bicas.Logger('none', false));
+bicas.override_settings_from_config_file(...
+  bicasConfigFile, BSO, bicas.Logger('none', false));
 
-    BSO.make_read_only();
+BSO.make_read_only();
 
-    % NOTE: Converting SWML to array of SWMs.
-    SwmArray = bicas.swm.get_SWML(BSO).List;
+% NOTE: Converting SWML to array of SWMs.
+SwmArray = bicas.swm.get_SWML(BSO).List;
 end

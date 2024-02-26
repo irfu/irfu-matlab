@@ -15,74 +15,74 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function BpcsArray = try_run_BICAS_for_BPCIs(...
-        Bpa, BpciArray, configFile, bicasSettingsArgsCa)
+  Bpa, BpciArray, configFile, bicasSettingsArgsCa)
 
-    % PROPOSAL: Better name. Omit "try".
-    %   CON: "try" implies handling failure.
-    %       CON: Does imply catching exception, only that exception may occur.
+% PROPOSAL: Better name. Omit "try".
+%   CON: "try" implies handling failure.
+%       CON: Does imply catching exception, only that exception may occur.
 
-    assert(isa(Bpa,       'bicas.tools.batch.BicasProcessingAccessAbstract'))
-    assert(isa(BpciArray, 'bicas.tools.batch.BicasProcessingCallInfo'))
-    assert(iscolumn(BpciArray))
-    assert(iscell(bicasSettingsArgsCa))
+assert(isa(Bpa,       'bicas.tools.batch.BicasProcessingAccessAbstract'))
+assert(isa(BpciArray, 'bicas.tools.batch.BicasProcessingCallInfo'))
+assert(iscolumn(BpciArray))
+assert(iscell(bicasSettingsArgsCa))
 
-    BpcsArray = bicas.tools.batch.BicasProcessingCallSummary.empty(0, 1);
+BpcsArray = bicas.tools.batch.BicasProcessingCallSummary.empty(0, 1);
 
-    for iBpci = 1:numel(BpciArray)
-        Bpci = BpciArray(iBpci);
+for iBpci = 1:numel(BpciArray)
+  Bpci = BpciArray(iBpci);
 
-        assert(numel(Bpci.outputsArray) >= 1)
+  assert(numel(Bpci.outputsArray) >= 1)
 
-        argsCa = bicas.tools.batch.BPCI_to_BICAS_call_args(Bpci);
+  argsCa = bicas.tools.batch.BPCI_to_BICAS_call_args(Bpci);
 
-        % NOTE: Uses first output file (i.e. no other output files) to name the
-        %       log file.
-        outputPath   = Bpci.outputsArray(1).path;
-        timestampStr = datestr(now, 'YYYY-mm-ddTHH.MM.SS');
-        logFile      = sprintf('%s.%s.log', outputPath, timestampStr);
+  % NOTE: Uses first output file (i.e. no other output files) to name the
+  %       log file.
+  outputPath   = Bpci.outputsArray(1).path;
+  timestampStr = datestr(now, 'YYYY-mm-ddTHH.MM.SS');
+  logFile      = sprintf('%s.%s.log', outputPath, timestampStr);
 
-        % IMPLEMENTATION NOTE: Overriding BICAS settings wrt. SWMs used for
-        % identifying can NOT be done here only since the exact set of SWMs
-        % is needed earlier for grouping input datasets.
-        argsCa(end+1:end+2) = {'--config',     configFile};
-        argsCa(end+1:end+2) = {'--log-matlab', logFile};
-        argsCa              = [argsCa(:); bicasSettingsArgsCa(:)];
+  % IMPLEMENTATION NOTE: Overriding BICAS settings wrt. SWMs used for
+  % identifying can NOT be done here only since the exact set of SWMs
+  % is needed earlier for grouping input datasets.
+  argsCa(end+1:end+2) = {'--config',     configFile};
+  argsCa(end+1:end+2) = {'--log-matlab', logFile};
+  argsCa              = [argsCa(:); bicasSettingsArgsCa(:)];
 
-        %========================================
-        % Check if input datasets are available,
-        % otherwise skip and try the next BPCI
-        %========================================
-        [inputPathsValid, firstInvalidPath] = input_dataset_paths_valid(Bpci);
-        if ~inputPathsValid
-            warning([...
-                'Can not find previously identified input file needed for a call', ...
-                ' to BICAS. This may e.g. be due to that', ...
-                ' (1) it has been moved during the execution of this script, or', ...
-                ' (2) the disk was temporarily inaccessible (nas24 automount problem).', ...
-                ' It will', ...
-                ' be searched for again in the next pass.\n    firstInvalidPath="%s"'], ...
-                firstInvalidPath)
-            continue
-        end
+  %========================================
+  % Check if input datasets are available,
+  % otherwise skip and try the next BPCI
+  %========================================
+  [inputPathsValid, firstInvalidPath] = input_dataset_paths_valid(Bpci);
+  if ~inputPathsValid
+    warning([...
+      'Can not find previously identified input file needed for a call', ...
+      ' to BICAS. This may e.g. be due to that', ...
+      ' (1) it has been moved during the execution of this script, or', ...
+      ' (2) the disk was temporarily inaccessible (nas24 automount problem).', ...
+      ' It will', ...
+      ' be searched for again in the next pass.\n    firstInvalidPath="%s"'], ...
+      firstInvalidPath)
+    continue
+  end
 
-        %====================================
-        % Run BICAS
-        % Create BPCS for the completed call
-        %====================================
-        fprintf(...
-            'CALLING BICAS WITH THE FOLLOWING ARGUMENTS: %s\n', ...
-            ['"', strjoin(argsCa, sprintf('"\n    "')), '"'])
+  %====================================
+  % Run BICAS
+  % Create BPCS for the completed call
+  %====================================
+  fprintf(...
+    'CALLING BICAS WITH THE FOLLOWING ARGUMENTS: %s\n', ...
+    ['"', strjoin(argsCa, sprintf('"\n    "')), '"'])
 
-        %############
-        % CALL BICAS
-        %############
-        errorCode = Bpa.bicas_main(argsCa{:});
+  %############
+  % CALL BICAS
+  %############
+  errorCode = Bpa.bicas_main(argsCa{:});
 
-        Bpcs = bicas.tools.batch.BicasProcessingCallSummary(...
-            Bpci, errorCode);
+  Bpcs = bicas.tools.batch.BicasProcessingCallSummary(...
+    Bpci, errorCode);
 
-        BpcsArray(end+1, 1) = Bpcs;
-    end
+  BpcsArray(end+1, 1) = Bpcs;
+end
 end
 
 
@@ -105,15 +105,15 @@ end
 %       String. Path. Only set when valid==true.
 %
 function [valid, firstInvalidPath] = input_dataset_paths_valid(Bpci)
-    assert(isscalar(Bpci))
+assert(isscalar(Bpci))
 
-    valid            = true;    % Value until set to the opposite.
-    firstInvalidPath = [];
-    for i = 1:numel(Bpci.inputsArray)
-        path = Bpci.inputsArray(i).path;
-        if ~exist(path, 'file')
-            firstInvalidPath = path;
-            valid            = false;
-        end
-    end
+valid            = true;    % Value until set to the opposite.
+firstInvalidPath = [];
+for i = 1:numel(Bpci.inputsArray)
+  path = Bpci.inputsArray(i).path;
+  if ~exist(path, 'file')
+    firstInvalidPath = path;
+    valid            = false;
+  end
+end
 end

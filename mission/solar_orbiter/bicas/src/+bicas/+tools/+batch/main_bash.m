@@ -21,16 +21,16 @@
 %
 function main_bash(bicasConfigFile, isCdagOption, modeStr, outputDir, referenceDir, varargin)
 
-    switch(isCdagOption)
-        case '-n'    % N = normal/no CDAG
-            outputIsCdag = false;
-        case '-c'    % C = CDAG
-            outputIsCdag = true;
-        otherwise
-            error('Illegal isCdagOption="%s"', isCdagOption)
-    end
+switch(isCdagOption)
+  case '-n'    % N = normal/no CDAG
+    outputIsCdag = false;
+  case '-c'    % C = CDAG
+    outputIsCdag = true;
+  otherwise
+    error('Illegal isCdagOption="%s"', isCdagOption)
+end
 
-    bicas.tools.batch.main(...
-        bicasConfigFile, outputIsCdag, modeStr, outputDir, ...
-        referenceDir, varargin)
+bicas.tools.batch.main(...
+  bicasConfigFile, outputIsCdag, modeStr, outputDir, ...
+  referenceDir, varargin)
 end

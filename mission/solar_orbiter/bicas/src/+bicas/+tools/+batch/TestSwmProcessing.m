@@ -8,49 +8,49 @@ classdef TestSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    %#####################
-    %#####################
-    % INSTANCE PROPERTIES
-    %#####################
-    %#####################
-    properties(SetAccess=immutable)
-    end    % properties(SetAccess=immutable)
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
+  properties(SetAccess=immutable)
+  end    % properties(SetAccess=immutable)
 
 
 
-    %#########################
-    %#########################
-    % PUBLIC INSTANCE METHODS
-    %#########################
-    %#########################
-    methods(Access=public)
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
 
 
 
-        % ARGUMENTS
-        % =========
-        % InputsMap
-        %       containers.Map with
-        %       <keys>   : String defining a name of an input ("prodFuncInputKey" in
-        %                  bicas.swm.SoftwareModeList).
-        %       <values> : A struct with data corresponding to a CDF file
-        %                  (zVariables+global attributes).
-        % OutputsMap
-        %       containers.Map with
-        %       <keys>   : String defining a name of an output ("prodFuncOutputKey" in
-        %                  bicas.swm.SoftwareModeList).
-        %       <values> : A struct with data corresponding to a CDF file (zVariables).
-        %
-        % OVERRIDE
-        function OutputDatasetsMap = production_function(obj, ...
-            InputDatasetsMap, rctDir, NsoTable, Bso, L)
+    % ARGUMENTS
+    % =========
+    % InputsMap
+    %       containers.Map with
+    %       <keys>   : String defining a name of an input ("prodFuncInputKey" in
+    %                  bicas.swm.SoftwareModeList).
+    %       <values> : A struct with data corresponding to a CDF file
+    %                  (zVariables+global attributes).
+    % OutputsMap
+    %       containers.Map with
+    %       <keys>   : String defining a name of an output ("prodFuncOutputKey" in
+    %                  bicas.swm.SoftwareModeList).
+    %       <values> : A struct with data corresponding to a CDF file (zVariables).
+    %
+    % OVERRIDE
+    function OutputDatasetsMap = production_function(obj, ...
+        InputDatasetsMap, rctDir, NsoTable, Bso, L)
 
-            OutputDatasetsMap = containers.Map();
-        end
+      OutputDatasetsMap = containers.Map();
+    end
 
 
 
-    end    % methods(Access=public)
+  end    % methods(Access=public)
 
 
 
