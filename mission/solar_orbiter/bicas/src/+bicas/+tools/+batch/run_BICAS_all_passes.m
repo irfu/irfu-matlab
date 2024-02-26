@@ -83,7 +83,7 @@ function [BpcsAllArray] = run_BICAS_all_passes(...
         % Get reference DSMDs
         %=====================
         if ~isempty(referenceDir)
-            [RefDsmdArray, ~] = bicas.tools.batch.get_directory_DSMDs({referenceDir});
+            [RefDsmdArray, ~] = solo.adm.get_directory_DSMDs({referenceDir});
         else
             RefDsmdArray = solo.adm.DSMD.empty(0, 1);
         end
@@ -124,7 +124,7 @@ function [BpcsAllArray] = run_BICAS_all_passes(...
         %====================================================
         % Autocreate all possible BPCIs based on input paths
         %====================================================
-        [InputDsmdArray, ~] = bicas.tools.batch.get_directory_DSMDs(inputPathsCa);
+        [InputDsmdArray, ~] = solo.adm.get_directory_DSMDs(inputPathsCa);
         if DEBUG_ENABLED
             log_DSMD_array('Input directories (only recognized datasets)', InputDsmdArray)
         end

@@ -1,17 +1,17 @@
 %
-% Given a path to the reference directory, return DSMD array for it.
+% Given a path to a list of directories, return a combined DSMD array for them.
 %
 %
 % ARGUMENTS
 % =========
 % dirPathsCa
-%       Cell array of paths to directories.
+%       Column cell array of paths to directories.
 %
 %
 % RETURN VALUES
 % =============
 % DsmdArray
-%       1D array of DSMDs to datasets under the specified directories,
+%       Column array of DSMDs to datasets under the specified directories,
 %       recursively.
 % OiArray
 %       The combined result of the underlying calls to dir(), but only for the
@@ -21,7 +21,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function [DsmdArray, OiArray] = get_directory_DSMDs(dirPathsCa)
-% PROPOSAL: Make "generic": Move to solo.adm.
 
     t = tic();
 
@@ -32,7 +31,7 @@ function [DsmdArray, OiArray] = get_directory_DSMDs(dirPathsCa)
     OiArray = dir('~');
     OiArray = OiArray([], 1);    % Column array.
 
-    DsmdArray = solo.adm.DSMD.empty(0,1);
+    DsmdArray = solo.adm.DSMD.empty(0, 1);
     for i = 1:numel(dirPathsCa)
         % Assert that directory exists.
         % IMPLEMENTATION NOTE: dir(fullfile(dirPathsCa{i}, '**')) will NOT raise

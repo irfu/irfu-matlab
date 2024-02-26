@@ -1,6 +1,6 @@
 %
 % matlab.unittest automatic test code for
-% bicas.tools.batch.get_directory_DSMDs().
+% solo.adm.get_directory_DSMDs().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -19,7 +19,7 @@ classdef get_directory_DSMDs___UTEST < matlab.unittest.TestCase
 
 
         function test_zero_direcctories(testCase)
-            [ActDsmdArray, ActOiArray] = bicas.tools.batch.get_directory_DSMDs({});
+            [ActDsmdArray, ActOiArray] = solo.adm.get_directory_DSMDs({});
 
             ExpOiArray = dir('~');
             ExpOiArray = ExpOiArray([], 1);
@@ -43,7 +43,7 @@ classdef get_directory_DSMDs___UTEST < matlab.unittest.TestCase
             end
 
             function test(dirPathsCa, expDatasetPathsCa)
-                [ActDsmdArray, ActOiArray] = bicas.tools.batch.get_directory_DSMDs(dirPathsCa);
+                [ActDsmdArray, ActOiArray] = solo.adm.get_directory_DSMDs(dirPathsCa);
                 actPathCa = {ActDsmdArray.path}';
 
                 testCase.assertEqual(...
