@@ -58,6 +58,7 @@ function quicklooks_main(...
 %
 % PROPOSAL: Better name: quicklooks_main?
 %       ~main, ~plot, ~generate
+%       generate_quicklooks()
 %
 % PROPOSAL: Directly generate arrays of timestamps for iterating over, instead
 %           of via TimeIntervalNonWeeks and TimeIntervalWeeks.
@@ -89,6 +90,8 @@ function quicklooks_main(...
 %   PRO: Could (probably) simplify plot code a lot.
 %
 % PROPOSAL: Move quicklooks_24_6_2.m constants here. Submit values as arguments.
+%
+% PROPOSAL: Always round time up to full weeks for 7-day plots.
 %
 %
 % quicklooks_24_6_2_h.m(), quicklooks_7day()
@@ -390,15 +393,7 @@ Data.solopos = get_SolO_pos(Tint);
 
 % Earth position (also uses SPICE)
 dt       = 60*60;
-%     Tlength  = Tint(end)-Tint(1);
-%     dTimes   = 0:dt:Tlength;
-%     Times    = Tint(1)+dTimes;
 earthPosTSeries = get_Earth_pos(Tint, dt);
-%     if ~isempty(earthPos)
-%         Data.earthpos = irf.ts_vec_xyz(Times, earthPos);
-%     else
-%         Data.earthpos = TSeries();
-%     end
 Data.earthpos = earthPosTSeries;
 
 % Plot data and save figure
@@ -448,7 +443,7 @@ if ~isempty(spiceEarthPos)
   earthPosTSeries = irf.ts_vec_xyz(Times, earthPos);
 else
   % earthPos = [];
-  earthPosTSeries = TSeries();
+  earthPosTSeries = TSeries();   % Empty TSeries.
 end
 end
 
