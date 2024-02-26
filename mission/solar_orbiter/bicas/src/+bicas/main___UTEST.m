@@ -36,7 +36,7 @@ classdef main___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test_no_error(testCase)
       % IMPLEMENTATION NOTE: Code makes sure to always remove the created
       % default path config file so that it does not pollute the local
       % file system, if tests are run locally.
@@ -47,13 +47,6 @@ classdef main___UTEST < matlab.unittest.TestCase
         testCase.verifyEqual(errorCode, 0)
       end
 
-      % Test unsuccessful call (non-zero error code)
-      % NOTE: bicas.main() raises exception but catches it itself.
-      function test_error(varargin)
-        errorCode = bicas.main(varargin{:});
-
-        testCase.verifyEqual(errorCode, 1)
-      end
       %===================================================================
 
       % Use default path config file.
@@ -81,9 +74,21 @@ classdef main___UTEST < matlab.unittest.TestCase
       test('--version', '--log-matlab', logFilePath)
       testCase.verifyTrue(isfile(logFilePath))
       delete(configFileAPath)
+    end
+
+
+
+    function test_error(testCase)
+      % Test unsuccessful call (non-zero error code)
+      % NOTE: bicas.main() raises exception but catches it itself.
+      function test_error(varargin)
+        errorCode = bicas.main(varargin{:});
+
+        testCase.verifyEqual(errorCode, 1)
+      end
 
       configFileAPath = bicas.main___UTEST.setup_default_config_file();
-      test_error()    % No CLI argument.
+      test_error()    % Zero CLI arguments.
       test_error('illegal_argument')
       test_error('--illegal_argument')
       delete(configFileAPath)
