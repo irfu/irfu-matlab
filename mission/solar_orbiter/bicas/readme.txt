@@ -349,6 +349,8 @@ UFV
     Use Fill Values. Refers to CDF records for which science data should be
     overwritten with fill values. This refers to both bias currents and
     measured voltages.
+VBMC
+    Validate BICAS Master CDFs.
 WOLS
     WithOut Leap Seconds
 ZV
