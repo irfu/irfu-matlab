@@ -53,8 +53,8 @@ jobs:
           path: ciPath/report.pdf
           retention-days: 1
 
-  # Job which runs selected tests for MATLAB R2020a.
-  matlab_R2020a:
+  # Job which runs selected tests for MATLAB R2021a.
+  matlab_R2021a:
     # Runs Matlab
     #runs-on: ubuntu-latest
     ## Specify ubuntu-20.04 (as per 2022-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
@@ -71,18 +71,18 @@ jobs:
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
         with:
-          release: R2020a
+          release: R2021a
           products: MATLAB Parallel_Computing_Toolbox Image_Processing_Toolbox Financial_Toolbox
 
       # Run MATLAB code
       - name: Run commands
         uses: matlab-actions/run-command@v2
         with:
-          command: tests_before_release_R2020a;
+          command: tests_before_release_R2021a;
 
       # Upload artifact (pdf report with plots, etc.)
       - uses: actions/upload-artifact@v4
         with:
-          name: test_report_R2020a.pdf
-          path: ciPath/report_R2020a.pdf
+          name: test_report_R2021a.pdf
+          path: ciPath/report_R2021a.pdf
           retention-days: 1

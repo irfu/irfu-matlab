@@ -1,5 +1,5 @@
-function tests_before_release_R2020a
-% Function that runs multiple tests (matlab.unittest) under MATLAB R2020a
+function tests_before_release_R2021a
+% Function that runs multiple tests (matlab.unittest) under MATLAB R2021a
 % specifically.
 %
 % RATIONALE
@@ -8,8 +8,8 @@ function tests_before_release_R2020a
 % which must be able to run on MATLAB R2019b (sic!) per agreement with LESIA/ROC
 % which runs it. However, MATLAB's "Action for Setting Up MATLAB on
 % GitHub-Hosted Runner" (https://github.com/matlab-actions/setup-matlab/) only
-% supports MATLAB R2020a and later. Therefore, it is not possible to run CI test
-% under R2019b. Therefore running BICAS tests on GitHub under MATLAB R2020a,
+% supports MATLAB R2021a and later. Therefore, it is not possible to run CI test
+% under R2019b. Therefore running BICAS tests on GitHub under MATLAB R2021a,
 % despite it being suboptimal.
 
 % Setup paths etc.
@@ -35,7 +35,7 @@ if ~exist(ciPath, 'dir')
   mkdir(ciPath);
 end
 runner.addPlugin(TestReportPlugin.producingPDF(...
-  fullfile(ciPath, 'report_R2020a.pdf'), 'Verbosity', 3 ...
+  fullfile(ciPath, 'report_R2021a.pdf'), 'Verbosity', 3 ...
   ));
 
 % RUN TESTS
