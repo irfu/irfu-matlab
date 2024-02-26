@@ -34,10 +34,16 @@ function [DsmdArray, OiArray] = get_directory_DSMDs(dirPathsCa)
 
     DsmdArray = solo.adm.DSMD.empty(0,1);
     for i = 1:numel(dirPathsCa)
+        % Assert that directory exists.
+        % IMPLEMENTATION NOTE: dir(fullfile(dirPathsCa{i}, '**')) will NOT raise
+        % error for non-existing directory.
+        irf.assert.dir_exists(dirPathsCa{i})
+
         DirOiArray = dir(fullfile(dirPathsCa{i}, '**'));
         DirOiArray = DirOiArray(~[DirOiArray.isdir]);
-        dirFilesPathsCa = arrayfun(@(Oi) (fullfile(Oi.folder, Oi.name)), DirOiArray, 'UniformOutput', false);
+        DirOiArray = DirOiArray(:);
         % CASE: DirOiArray is a column array.
+        dirFilesPathsCa = arrayfun(@(Oi) (fullfile(Oi.folder, Oi.name)), DirOiArray, 'UniformOutput', false);
 
         [DirDsmdArray, bIsDataSetArray] = solo.adm.paths_to_DSMD_array(dirFilesPathsCa);
         DirOiArray = DirOiArray(bIsDataSetArray);
