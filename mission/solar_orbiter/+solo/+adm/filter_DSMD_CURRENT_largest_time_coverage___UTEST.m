@@ -18,12 +18,12 @@ classdef filter_DSMD_CURRENT_largest_time_coverage___UTEST < matlab.unittest.Tes
 
     function test0(testCase)
 
-      function test(inputFileList, expFileList)
-        inputDsmdArray = solo.adm.paths_to_DSMD_array( inputFileList);
-        expDsmdArray   = solo.adm.paths_to_DSMD_array(expFileList);
+      function test(inputFileCa, expFileCa)
+        InputDsmdArray = solo.adm.paths_to_DSMD_array(inputFileCa(:));
+        ExpDsmdArray   = solo.adm.paths_to_DSMD_array(expFileCa(:));
 
-        actDsmdArray = solo.adm.filter_DSMD_CURRENT_largest_time_coverage(inputDsmdArray);
-        testCase.assertEqual(actDsmdArray, expDsmdArray)
+        ActDsmdArray = solo.adm.filter_DSMD_CURRENT_largest_time_coverage(InputDsmdArray);
+        testCase.assertEqual(ActDsmdArray, ExpDsmdArray)
       end
 
       X1  = 'solo_L2_rpw-lfr-surv-swf-e-cdag_20200314_V01.cdf';

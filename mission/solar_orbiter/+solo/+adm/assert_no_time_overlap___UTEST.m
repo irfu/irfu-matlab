@@ -19,14 +19,14 @@ classdef assert_no_time_overlap___UTEST < matlab.unittest.TestCase
     function test0(testCase)
 
       function test(filePathCa)
-        DsmdArray = solo.adm.paths_to_DSMD_array(filePathCa);
+        DsmdArray = solo.adm.paths_to_DSMD_array(filePathCa(:));
 
         % Test that does not raise exception.
         solo.adm.assert_no_time_overlap(DsmdArray);
       end
 
       function test_exc(filePathCa)
-        DsmdArray = solo.adm.paths_to_DSMD_array(filePathCa);
+        DsmdArray = solo.adm.paths_to_DSMD_array(filePathCa(:));
         testCase.verifyError(...
           @() solo.adm.assert_no_time_overlap(DsmdArray), ...
           ?MException)

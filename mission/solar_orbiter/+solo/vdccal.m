@@ -153,7 +153,7 @@ for iSub = 1:length(sub_int_times)-1
   % =======================
   VDC = VDC_inp.tlim(subTint);
 
-  % Indices/samples for which which should be treated as single probe.
+  % Indices/samples for which data should be treated as single probe.
   bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
   bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
 
@@ -183,7 +183,9 @@ for iSub = 1:length(sub_int_times)-1
   PSP.units = 'V';
   PSP_out   = PSP_out.combine(PSP);
 
-  PLASMA_POT = 1.5; SHORT_FACTOR = 2.5; % XXX: these are just ad hoc numbers.
+  % XXX: these are just ad hoc numbers.
+  PLASMA_POT   = 1.5;
+  SHORT_FACTOR = 2.5;
 
   ScPot = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
   ScPot.units = PSP.units;
@@ -201,6 +203,8 @@ for iSub = 1:length(sub_int_times)-1
   % in Steinvall et al., 2021.
   Ez_SRF = (V23_scaled - V1)*1e3/11.2;
 
+  % NOTE: Ey_SRF may contain NaN. Therefore Ey_SRF*0 != zeros(size(Ey_SRF)).
+  % (Bug?!)
   DCE_SRF = irf.ts_vec_xyz(VDC.time, [Ey_SRF*0 Ey_SRF Ez_SRF]);
   DCE_SRF.units            = 'mV/m';
   DCE_SRF.coordinateSystem = 'SRF';
