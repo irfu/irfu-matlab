@@ -13,4 +13,5 @@
 %   cblabel  - Adds a label to the colorbar.                                 v2.2    (Jul 03, 2014)
 %   cbunits  - Adds units (and ISU prefixes) to the colorbar ticklabels.     v4.4    (Jul 03, 2014)
 %
+% SPDX-License-Identifier: BSD-2-Clause
 % Jul 03, 2014
