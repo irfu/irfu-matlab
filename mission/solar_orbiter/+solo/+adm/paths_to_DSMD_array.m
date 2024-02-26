@@ -17,18 +17,20 @@
 % RETURN VALUE
 % ============
 % DsmdArray
-%       Array of DSMD objects.
+%       Column array of DSMD objects.
+% bIsDatasetArray
+%       Logical column array. Same size as argument. True iff the corresponding
+%       input path was interpreted as a dataset (was translated into a DSMD).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-08.
 %
-function DsmdArray = paths_to_DSMD_array(filePathCa)
+function [DsmdArray, bIsDatasetArray] = paths_to_DSMD_array(filePathCa)
 % PROPOSAL: Rename
-%   PROPOSAL: DSMD_from_paths()
+%   PROPOSAL: DSMDs_from_paths()
 %   PROPOSAL: paths_to_DSMDs().
 %       CON: Information mostly from filename, not path.
-%   PROPOSAL: paths_to_DSMD_array().
 %
 % PROPOSAL: Refactor to static method for DSMD class.
 %   PRO: Is like secondary constructor.
@@ -48,9 +50,10 @@ function DsmdArray = paths_to_DSMD_array(filePathCa)
 %           from parsable filename: ignore, warning, error.
 
 % FI = File Info
-fiCa = solo.adm.parse_dataset_filename_many(filePathCa);
+[fiCa, bIsDatasetArray] = solo.adm.parse_dataset_filename_many(filePathCa);
 
-DsmdArray = solo.adm.DSMD.empty(0,1);
+DsmdArray = solo.adm.DSMD.empty(0, 1);
+
 for i = 1:numel(fiCa)
   Fi = fiCa{i};
 

@@ -60,7 +60,7 @@ while numel(varargin) >= 2    % Iterate over pairs of varargin components.
 
     bicas.default_anomaly_handling(L, ...
       settingValue, settingKey, ...
-      'E+W+illegal', anomalyDescrMsg, 'BICAS:Assertion')
+      'ERROR_WARNING_ILLEGAL_SETTING', anomalyDescrMsg, 'BICAS:Assertion')
   end
 end
 

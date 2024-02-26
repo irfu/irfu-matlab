@@ -7,32 +7,31 @@
 % RETURN VALUE
 % ============
 % CliData : struct with fields:
-%   .functionalityMode          : String constant
-%   .swmArg                  : String constant
-%   .icdLogFile                 : Empty if argument not given.
-%   .matlabLogFile              : Empty if argument not given.
-%   .configFile                 : Empty if argument not given.
-%   .SpecInputParametersMap     : containers.Map with
-%                                   key   = CLI argument without prefix
-%                                   value = file path (argument)
-%   .ModifiedSettingsMap        : containers.Map.
-%                                   key   = settings key (argument)
-%                                   value = settings value (argument)
+%   .bfm                 : String constant
+%   .swmArg              : String constant
+%   .icdLogFile          : Empty if argument not given.
+%   .matlabLogFile       : Empty if argument not given.
+%   .configFile          : Empty if argument not given.
+%   .SipMap              : containers.Map with SIPs.
+%                            key   = CLI argument without prefix
+%                            value = file path (argument)
+%   .ModifiedSettingsMap : containers.Map.
+%                            key   = settings key (argument)
+%                            value = settings value (argument)
 %
 %
 % IMPLEMENTATION NOTES
 % ====================
 % It is difficult to interpret BICAS arguments all in one go since some
-% arguments do, or might, influence which other arguments (at least what the RCS
-% ICD calls "specific inut parameters") are legal:
-% -- functionality mode
-% -- s/w mode
+% arguments do, or might, influence which other arguments (at least the SIPs)
+% are legal:
+% -- BICAS functionality mode (BFM)
+% -- s/w mode (SWM)
 % -- config file        (can enable/disable s/w modes)
 % -- settings arguments (can enable/disable s/w modes)
-% To keep the function agnostic about s/w modes and input and output datasets,
-% and settings, this function does not determine whether specific input
-% parameters or settings keys/values) are legal. The caller has to do those
-% checks.
+% To keep the function agnostic about SWMs and input and output datasets, and
+% settings, this function does not determine whether SIPs or settings
+% keys/values) are legal. The caller has to do those checks.
 %
 %
 % RATIONALE
@@ -44,14 +43,6 @@
 % -- Reduce size of BICAS main function.
 %
 %
-% TERMINOLOGY
-% ===========
-% FM = Functionality mode
-%       Whether BICAS is launched with --version, --help, --identification,
-%       --descriptor, or a s/w mode. (These alternatives are mutually
-%       exclusive.)
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-22.
 %
@@ -60,36 +51,37 @@ function CliData = interpret_CLI_args(cliArgumentList)
 %       exclusive (assertion) booleans into one unique value.
 %   Ex: Convert list of booleans for various argument flags (any
 %       application) into one variable value.
-%       Ex: Flags for BICAS functionality modes.
+%       Ex: Flags for BFMs.
 %
 % PROPOSAL: Include assertion for unique input and output dataset paths.
 %   NOTE: Assertion is presently in execute_SWM.
+%
+% PROPOSAL: Use classes instead of structs.
 
 SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 
 %==================================================================================
 % Configure
-% (1) permitted RCS ICD CLI options COMMON for all BICAS functionality modes
-% (2) RCS ICD CLI options for special input parameters
+% (1) permitted RCS ICD CLI options COMMON for all BFMs
+% (2) RCS ICD CLI options for SIPs
 % (2) unofficial options
-% NOTE: Exclude the argument for functionality mode itself.
+% NOTE: Exclude the SWM argument.
 %==================================================================================
 OPTIONS_CONFIG_MAP = containers.Map();
-OPTIONS_CONFIG_MAP('version_FM')        = struct('optionHeaderRegexp', '--version',          'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('identification_FM') = struct('optionHeaderRegexp', '--identification',   'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('SWD_FM')            = struct('optionHeaderRegexp', '--swdescriptor',     'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('help_FM')           = struct('optionHeaderRegexp', '--help',             'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('SWM')               = struct('optionHeaderRegexp', SWM_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('VERSION_OPTION_ID')           = struct('optionHeaderRegexp', '--version',          'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('IDENTIFICATION_OPTION_ID')    = struct('optionHeaderRegexp', '--identification',   'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('SWD_OPTION_ID')               = struct('optionHeaderRegexp', '--swdescriptor',     'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('HELP_OPTION_ID')              = struct('optionHeaderRegexp', '--help',             'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('SWM_OPTION_ID')               = struct('optionHeaderRegexp', SWM_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
 
-% NOTE: "specific_input_parameters" refers to the official RCS ICD term.
-% NOTE: ICD_log_file is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
-OPTIONS_CONFIG_MAP('specific_input_parameters') = struct('optionHeaderRegexp', '--(..*)',      'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
-OPTIONS_CONFIG_MAP('ICD_log_file')              = struct('optionHeaderRegexp', '--log',        'occurrenceRequirement', '0-1',   'nValues', 1);
-OPTIONS_CONFIG_MAP('MATLAB_log_file')           = struct('optionHeaderRegexp', '--log-matlab', 'occurrenceRequirement', '0-1',   'nValues', 1);
-OPTIONS_CONFIG_MAP('config_file')               = struct('optionHeaderRegexp', '--config',     'occurrenceRequirement', '0-1',   'nValues', 1);
+% NOTE: ICD_LOG_FILE_OPTION_ID is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
+OPTIONS_CONFIG_MAP('SIP_OPTION_ID')               = struct('optionHeaderRegexp', '--(..*)',      'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
+OPTIONS_CONFIG_MAP('ICD_LOG_FILE_OPTION_ID')      = struct('optionHeaderRegexp', '--log',        'occurrenceRequirement', '0-1',   'nValues', 1);
+OPTIONS_CONFIG_MAP('MATLAB_LOG_FILE_OPTION_ID')   = struct('optionHeaderRegexp', '--log-matlab', 'occurrenceRequirement', '0-1',   'nValues', 1);
+OPTIONS_CONFIG_MAP('CONFIG_FILE_OPTION_ID')       = struct('optionHeaderRegexp', '--config',     'occurrenceRequirement', '0-1',   'nValues', 1);
 
 % Unofficial arguments
-OPTIONS_CONFIG_MAP('modified_settings')         = struct('optionHeaderRegexp', '--set',        'occurrenceRequirement', '0-inf', 'nValues', 2);
+OPTIONS_CONFIG_MAP('MODIFIED_SETTINGS_OPTION_ID') = struct('optionHeaderRegexp', '--set',        'occurrenceRequirement', '0-inf', 'nValues', 2);
 
 
 
@@ -112,7 +104,7 @@ CliData = [];
 OptionValuesMap = bicas.utils.parse_CLI_options(...
   cliArgumentList, OPTIONS_CONFIG_MAP);
 CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
-  OptionValuesMap('modified_settings'));
+  OptionValuesMap('MODIFIED_SETTINGS_OPTION_ID'));
 
 
 
@@ -120,43 +112,44 @@ CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
 % Parse RCS ICD arguments
 % -----------------------
 % NOTE: Interprets RCS ICD as permitting (official) arguments next to
-% non-s/w mode functionality mode arguments.
+% non-SWM BFM mode arguments.
 %=====================================================================
-CliData.SpecInputParametersMap = irf.ds.create_containers_Map(...
+CliData.SipMap = irf.ds.create_containers_Map(...
   'char', 'char', {}, {});
 
 
 
-sipOptionValues = OptionValuesMap('specific_input_parameters');
+sipOptionValues = OptionValuesMap('SIP_OPTION_ID');
 
 
 
-% Convert presence of functionality mode flag (mutually exclusive) into the
-% correct constant.
+% Convert presence of BFM flag (mutually exclusive) into the correct constant.
+% {i, 1} = false/true
+% {i, 2} = BFM string constant
 tempTable = {
-  ~isempty(OptionValuesMap('version_FM')),        'version'; ...
-  ~isempty(OptionValuesMap('identification_FM')), 'identification'; ...
-  ~isempty(OptionValuesMap('SWD_FM')),   'S/W descriptor'; ...
-  ~isempty(OptionValuesMap('help_FM')),           'help'; ...
-  ~isempty(OptionValuesMap('SWM')),           'S/W mode'};
+  ~isempty(OptionValuesMap('VERSION_OPTION_ID')),        'VERSION_BFM'; ...
+  ~isempty(OptionValuesMap('IDENTIFICATION_OPTION_ID')), 'IDENTIFICATION_BFM'; ...
+  ~isempty(OptionValuesMap('SWD_OPTION_ID')),            'SWD_BFM'; ...
+  ~isempty(OptionValuesMap('HELP_OPTION_ID')),           'HELP_BFM'; ...
+  ~isempty(OptionValuesMap('SWM_OPTION_ID')),            'SWM_BFM'};
 assert(...
   sum([tempTable{:,1}]) == 1, ...
   'BICAS:interpret_CLI_syntax:CLISyntax', ...
   'Illegal combination of arguments.')
-CliData.functionalityMode = tempTable{[tempTable{:,1}], 2};
+CliData.bfm = tempTable{[tempTable{:, 1}], 2};
 
-switch CliData.functionalityMode
+switch CliData.bfm
 
-  case {'version', 'identification', 'S/W descriptor', 'help'}
+  case {'VERSION_BFM', 'IDENTIFICATION_BFM', 'SWD_BFM', 'HELP_BFM'}
 
     CliData.swmArg = [];
     assert(...
       isempty(sipOptionValues), ...
       'Specified illegal specific input parameters.')
 
-  case 'S/W mode'
+  case 'SWM_BFM'
 
-    OptionValues = OptionValuesMap('SWM');
+    OptionValues = OptionValuesMap('SWM_OPTION_ID');
 
     % ASSERTION
     % NOTE: Somewhat of a hack, since can not read out from using
@@ -173,35 +166,35 @@ switch CliData.functionalityMode
         ' a S/W mode as expected.'])
     end
 
-    CliData.swmArg              = OptionValues.optionHeader;
+    CliData.swmArg = OptionValues.optionHeader;
 
-    CliData.SpecInputParametersMap = convert_SIP_OptionValues_2_Map(...
+    CliData.SipMap = convert_SIP_OptionValues_2_Map(...
       sipOptionValues);
 
   otherwise
-    error('BICAS:Assertion', 'Illegal CliData.functionalityMode value.')
+    error('BICAS:Assertion', 'Illegal CliData.bfm value.')
 end
 
 
 
-temp = OptionValuesMap('ICD_log_file');
+temp = OptionValuesMap('ICD_LOG_FILE_OPTION_ID');
 if isempty(temp)   CliData.icdLogFile = [];
 else               CliData.icdLogFile = temp(end).optionValues{1};
 end
 
-temp = OptionValuesMap('MATLAB_log_file');
+temp = OptionValuesMap('MATLAB_LOG_FILE_OPTION_ID');
 if isempty(temp)   CliData.matlabLogFile = [];
 else               CliData.matlabLogFile = temp(end).optionValues{1};
 end
 
-temp = OptionValuesMap('config_file');
+temp = OptionValuesMap('CONFIG_FILE_OPTION_ID');
 if isempty(temp)   CliData.configFile = [];
 else               CliData.configFile = temp(end).optionValues{1};
 end
 
 irf.assert.struct(CliData, ...
-  {'functionalityMode', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
-  'configFile', 'SpecInputParametersMap', ...
+  {'bfm', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
+  'configFile', 'SipMap', ...
   'ModifiedSettingsMap'}, {})
 
 end

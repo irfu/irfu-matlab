@@ -65,6 +65,12 @@
 %
 function errorCode = main( varargin )
 %
+% PROPOSAL: Split up file.
+%   PRO: File is large, 746 rows (2024-01-24).
+%   PRO: Mainly function (error handling) calling a function (without error handling).
+% PROPOSAL: Convert to class with static methods.
+%   PRO: Contains 9 functions (2024-01-24).
+%
 % PROPOSAL: Set option for MATLAB warnings. Disable?
 %   NOTE: TN claims warnings are sent to stdout.
 % TODO-NI: Is the application allowed to overwrite output files?
@@ -294,7 +300,7 @@ Tmk = bicas.utils.Timekeeper('main_without_error_handling', L);
 matlabVersionString = version('-release');
 if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS)
   error('BICAS:BadMatlabVersion', ...
-    ['Using bad MATLAB version. Found version "%s".', ...
+    ['Using unsupported MATLAB version. Found version "%s".', ...
     ' BICAS requires any of the following MATLAB versions: %s.\n'], ...
     matlabVersionString, ...
     strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS, ', '))
@@ -448,20 +454,20 @@ Swml = bicas.swm.get_SWML(Bso);
 
 
 
-switch(CliData.functionalityMode)
-  case 'version'
+switch(CliData.bfm)
+  case 'VERSION_BFM'
     print_version(Swml, Bso)
 
-  case 'identification'
+  case 'IDENTIFICATION_BFM'
     print_identification(Swml, Bso)
 
-  case 'S/W descriptor'
+  case 'SWD_BFM'
     print_SWD(Swml, Bso)
 
-  case 'help'
+  case 'HELP_BFM'
     print_help(Bso)
 
-  case 'S/W mode'
+  case 'SWM_BFM'
     %============================
     % CASE: Should be a S/W mode
     %============================
@@ -479,26 +485,26 @@ switch(CliData.functionalityMode)
 
 
     %=================================================================
-    % Parse CliData.SpecInputParametersMap arguments depending on S/W
+    % Parse CliData.SipMap arguments depending on S/W
     % mode
     %=================================================================
 
     % Extract INPUT dataset files from SIP arguments.
     InputFilesMap = extract_rename_Map_keys(...
-      CliData.SpecInputParametersMap, ...
+      CliData.SipMap, ...
       {Swm.inputsList(:).cliOptionHeaderBody}, ...
       {Swm.inputsList(:).prodFuncInputKey});
 
     % Extract OUTPUT dataset files from SIP arguments.
     OutputFilesMap = extract_rename_Map_keys(...
-      CliData.SpecInputParametersMap, ...
+      CliData.SipMap, ...
       {Swm.outputsList(:).cliOptionHeaderBody}, ...
       {Swm.outputsList(:).prodFuncOutputKey});
 
     % ASSERTION: Assume correct number of arguments (the only thing not
     % implicitly checked by extract_rename_Map_keys above).
     nSipExpected = numel(Swm.inputsList) + numel(Swm.outputsList);
-    nSipActual   = numel(CliData.SpecInputParametersMap.keys);
+    nSipActual   = numel(CliData.SipMap.keys);
     if nSipExpected ~= nSipActual
       error('BICAS:CLISyntax', ...
         ['Illegal number of "specific input parameters"', ...
@@ -551,7 +557,7 @@ switch(CliData.functionalityMode)
 
   otherwise
     error('BICAS:Assertion', ...
-      'Illegal value functionalityMode="%s"', functionalityMode)
+      'Illegal value bfm="%s"', bfm)
 end    % if ... else ... / switch
 
 

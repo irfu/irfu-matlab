@@ -46,11 +46,6 @@
 % -- Possible need for backward compatibility.
 %
 %
-% DEFINITIONS
-% ===========
-% SIP = "Specific Input Parameters" (RCS ICD).
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-07-31
 %

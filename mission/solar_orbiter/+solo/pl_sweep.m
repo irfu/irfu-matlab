@@ -9,6 +9,9 @@ function [iPhoto_out] = pl_sweep(fName, hardcopyFlag)
 %
 % Output:
 %     iPhoto - photo-saturation current
+%
+% NOTE: This function is called by cron jobs for batch processing BIAS sweep
+% plots on brain/spis at IRFU.
 
 iPhoto = NaN(1,3);
 

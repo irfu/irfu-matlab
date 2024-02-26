@@ -101,20 +101,20 @@ classdef L1L2
       %==================================================================
       % Log time intervals to enable comparing available SCI and HK data
       %==================================================================
-      TimeVars = [];    % Temporary struct only used for logging.
-      TimeVars.HK_Epoch  = InHk.Zv.Epoch;
-      TimeVars.SCI_Epoch = InSci.Zv.Epoch;
+      TimeZvs = [];    % Temporary struct only used for logging.
+      TimeZvs.HK_Epoch  = InHk.Zv.Epoch;
+      TimeZvs.SCI_Epoch = InSci.Zv.Epoch;
       if isfield(InHk.Zv, 'ACQUISITION_TIME')
-        TimeVars.HK_ACQUISITION_TIME_tt2000 = ...
+        TimeZvs.HK_ACQUISITION_TIME_tt2000 = ...
           bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
           InHk.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
       end
       if isfield(InSci.Zv, 'ACQUISITION_TIME') && ~isempty(InSci.Zv.ACQUISITION_TIME)
-        TimeVars.SCI_ACQUISITION_TIME_tt2000 = ...
+        TimeZvs.SCI_ACQUISITION_TIME_tt2000 = ...
           bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
           InSci.Zv.ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC);
       end
-      bicas.utils.log_ZVs(TimeVars, Bso, L);
+      bicas.utils.log_ZVs(TimeZvs, Bso, L);
 
 
 
@@ -143,7 +143,7 @@ classdef L1L2
         [settingValue, settingKey] = Bso.get_fv(...
           'PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY');
         bicas.default_anomaly_handling(L, ...
-          settingValue, settingKey, 'E+W+illegal', ...
+          settingValue, settingKey, 'ERROR_WARNING_ILLEGAL_SETTING', ...
           'SCI and HK time ranges do not overlap in time.', ...
           'BICAS:SWMProcessing')
 
@@ -167,7 +167,7 @@ classdef L1L2
         [settingValue, settingKey] = Bso.get_fv(...
           'PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY');
         bicas.default_anomaly_handling(L, ...
-          settingValue, settingKey, 'E+W+illegal', ...
+          settingValue, settingKey, 'ERROR_WARNING_ILLEGAL_SETTING', ...
           anomalyDescrMsg, 'BICAS:DatasetFormat:SWMProcessing')
 
       end
@@ -235,15 +235,17 @@ classdef L1L2
 
 
 
-      %===================
-      % Derive isSweeping
-      %===================
+      %======================
+      % Derive isSweepingFpa
+      %======================
       isSweepingFpa = bicas.proc.L1L2.autodetect_sweeps(...
         hkEpoch, ...
         InHk.ZvFpa.HK_BIA_MODE_MUX_SET, ...
-        [InHk.ZvFpa.HK_BIA_BIAS1, ...
-        InHk.ZvFpa.HK_BIA_BIAS2, ...
-        InHk.ZvFpa.HK_BIA_BIAS3], ...
+        [...
+          InHk.ZvFpa.HK_BIA_BIAS1, ...
+          InHk.ZvFpa.HK_BIA_BIAS2, ...
+          InHk.ZvFpa.HK_BIA_BIAS3...
+        ], ...
         Bso);
       HkSciTime.isSweepingFpa = bicas.utils.FPArray.floatNan2logical(...
         bicas.utils.interpolate_nearest(...
@@ -281,99 +283,6 @@ classdef L1L2
       end
 
       irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
-    end
-
-
-
-    % Try to autodetect sweeps.
-    %
-    % NOTE: This function should be temporary functionality while waiting
-    % for the long-term solution which is to use the relevant bit in L1/L1R
-    % QUALITY_BITMASK for detecting sweeps. Since it is a (hopefully)
-    % short-term solution, the functionality is also not as sophisticated
-    % (and presumably accurate) or configurable as it could be.
-    %
-    % NOTE: There is some unimportant "imprecision" in the window algorithm
-    % which can be seen as an unimportant bug. Records which are BDM<>4
-    % (i.e. definately not sweep) within a window with records currents
-    % exceeding the thresholds (for BDM=4) are labelled as sweeps.
-    %
-    %
-    % ALGORITHM
-    % =========
-    % PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC specifies a
-    % timestamps.
-    % Records before timestamp:
-    %   BDN=4 <=> sweep
-    % Records after timestamp:
-    %   Among records with BDN=4, check sliding windows for the min-max
-    %   difference for BIAS HK's measured bias current (within the entire
-    %   window). For windows for which the min-max difference exceeds a
-    %   threshold, label entire window (where BDM=4) as sweeping.
-    %
-    %
-    % ARGUMENTS
-    % =========
-    % Bso
-    %       NOTE: PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS: If
-    %       greater than the number of CDF records/rows of data, then no
-    %       record will be labelled as sweeping.
-    %
-    function isSweepingFpa = autodetect_sweeps(tt2000, bdmFpa, hkBiasCurrentFpa, Bso)
-      % TODO-DEC: Does having argument and return value FPAs make sense?
-      %           Should caller convert?
-
-      % The only BDM which sweeps use, but there may be other data too.
-      BDM_SWEEP_POSSIBLE = 4;
-
-      % Time before which sweeps can be identified by BDM=4.
-      bdm4TrickEndTt2000           = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.END_MUX4_TRICK_UTC'));
-      windowLengthPts              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_LENGTH_PTS');
-      currentMinMaxDiffThresholdTm =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MINMAX_DIFF_THRESHOLD_TM');
-      windowMarginSec              =                   Bso.get_fv('PROCESSING.L2.AUTODETECT_SWEEPS.WINDOW_MARGIN_SEC');
-
-      nCdfRecs = irf.assert.sizes(...
-        tt2000,           [-1, 1], ...
-        bdmFpa,           [-1, 1], ...
-        hkBiasCurrentFpa, [-1, 3]);
-      assert(windowLengthPts              >= 1)
-      assert(currentMinMaxDiffThresholdTm >= 0)
-
-      hkBiasCurrent    = hkBiasCurrentFpa.int2doubleNan();
-      bdm              = bdmFpa.int2doubleNan();
-      bdm4TrickApplies = tt2000 < bdm4TrickEndTt2000;
-
-      %===========================
-      % Detect sweeps using BDM=4
-      %===========================
-      isSweeping1 = bdm4TrickApplies & (bdm == BDM_SWEEP_POSSIBLE);
-
-      %====================================
-      % Detect sweeps using sliding window
-      %====================================
-      isSweeping2 = false(size(isSweeping1));    % Preallocate
-      for i1 = 1:(nCdfRecs-(windowLengthPts-1))
-        i2 = i1 + (windowLengthPts-1);
-        iAr = i1:i2;
-
-        % NOTE: Treating all data in window combined, both in time AND
-        % over channels/antennas.
-        hkBiasCurrentWindow = hkBiasCurrent(i1:i2, :);
-
-        hkBiasCurrentWindow(bdm(iAr) ~= BDM_SWEEP_POSSIBLE, :) = NaN;
-        minWindow = min(hkBiasCurrentWindow, [], 'all');
-        maxWindow = max(hkBiasCurrentWindow, [], 'all');
-        mmDiff    = maxWindow - minWindow;
-
-        if mmDiff > currentMinMaxDiffThresholdTm
-          isSweeping2(iAr) = (bdm(iAr) == BDM_SWEEP_POSSIBLE) & ~bdm4TrickApplies(iAr);
-        end
-      end
-
-      isSweeping           = isSweeping1 | isSweeping2;
-      isSweepingWithMargin = irf.utils.true_with_margin(tt2000, isSweeping, windowMarginSec * 1e9);
-
-      isSweepingFpa        = bicas.utils.FPArray(isSweepingWithMargin);
     end
 
 

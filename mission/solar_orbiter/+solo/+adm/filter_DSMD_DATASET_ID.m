@@ -7,6 +7,8 @@
 %
 function DsmdArray2 = filter_DSMD_DATASET_ID(DsmdArray1, datasetIdCa)
 % PROPOSAL: Return indices instead.
+%   PRO: Experience from JUICE/RPWI pipeline implies that this is better
+%        long-term.
 %   CON: (Even more) trivial for the caller to do what function does.
 % PROPOSAL: Convert to DSMD method.
 %   PROPOSAL: Instance method?
