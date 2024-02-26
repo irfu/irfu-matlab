@@ -8,37 +8,37 @@ classdef BpciInput
 
 
 
-    %#####################
-    %#####################
-    % INSTANCE PROPERTIES
-    %#####################
-    %#####################
-    properties(SetAccess=immutable)
-        cohb
-        dsi
-        path
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
+  properties(SetAccess=immutable)
+    cohb
+    dsi
+    path
+  end
+
+
+
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
+
+
+
+    function obj = BpciInput(cohb, dsi, path)
+      obj.cohb = cohb;
+      obj.dsi  = dsi;
+      obj.path = path;
     end
 
 
 
-    %#########################
-    %#########################
-    % PUBLIC INSTANCE METHODS
-    %#########################
-    %#########################
-    methods(Access=public)
-
-
-
-        function obj = BpciInput(cohb, dsi, path)
-            obj.cohb = cohb;
-            obj.dsi  = dsi;
-            obj.path = path;
-        end
-
-
-
-    end    % methods(Access=public)
+  end    % methods(Access=public)
 
 
 

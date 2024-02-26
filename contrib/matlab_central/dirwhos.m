@@ -7,6 +7,7 @@ function out = dirwhos(file,varargin)
 %  OUT = DIRWHOS(dirname,varname) return output, same as whos
 
 % developed from http://stackoverflow.com/questions/4268044/deleting-variables-from-a-mat-file
+% SPDX-License-Identifier: CC-BY-SA-2.5
 
 if nargin < 1 || isempty(file); file = 'matlab'; end
 if nargin == 1

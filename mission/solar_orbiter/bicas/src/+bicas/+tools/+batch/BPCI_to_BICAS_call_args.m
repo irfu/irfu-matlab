@@ -11,21 +11,21 @@ function argsCa = BPCI_to_BICAS_call_args(Bpci)
 %   PROPOSAL: CLI_OPTION_PREFIX as argument.
 %   PROPOSAL: CLI_OPTION_PREFIX using BICAS constant.
 
-    CLI_OPTION_PREFIX = '--';
+CLI_OPTION_PREFIX = '--';
 
-    assert(isa(Bpci, 'bicas.tools.batch.BicasProcessingCallInfo'))
+assert(isa(Bpci, 'bicas.tools.batch.BicasProcessingCallInfo'))
 
-    argsCa = {Bpci.swmCliOption};
+argsCa = {Bpci.swmCliOption};
 
-    for i = 1:numel(Bpci.inputsArray)
-        In            = Bpci.inputsArray(i);
-        argsCa{end+1} = [CLI_OPTION_PREFIX, In.cohb];
-        argsCa{end+1} =                     In.path;
-    end
+for i = 1:numel(Bpci.inputsArray)
+  In            = Bpci.inputsArray(i);
+  argsCa{end+1} = [CLI_OPTION_PREFIX, In.cohb];
+  argsCa{end+1} =                     In.path;
+end
 
-    for i = 1:numel(Bpci.outputsArray)
-        Out           = Bpci.outputsArray(i);
-        argsCa{end+1} = [CLI_OPTION_PREFIX, Out.cohb];
-        argsCa{end+1} = Out.path;
-    end
+for i = 1:numel(Bpci.outputsArray)
+  Out           = Bpci.outputsArray(i);
+  argsCa{end+1} = [CLI_OPTION_PREFIX, Out.cohb];
+  argsCa{end+1} = Out.path;
+end
 end

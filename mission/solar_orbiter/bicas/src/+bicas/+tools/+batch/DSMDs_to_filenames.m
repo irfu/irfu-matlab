@@ -18,12 +18,12 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function filenamesCa = DSMDs_to_filenames(DsmdArray)
-    % PROPOSAL: Automatic test code.
-    % PROPOSAL: Move to DSMD class.
+% PROPOSAL: Automatic test code.
+% PROPOSAL: Move to DSMD class.
 
-    assert(isa(DsmdArray, 'solo.adm.DSMD'))
+assert(isa(DsmdArray, 'solo.adm.DSMD'))
 
-    filenamesCa = cellfun(...
-        @irf.fs.get_name, {DsmdArray.path}, ...
-        'UniformOutput', false);
+filenamesCa = cellfun(...
+  @irf.fs.get_name, {DsmdArray.path}, ...
+  'UniformOutput', false);
 end

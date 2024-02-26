@@ -27,28 +27,28 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function BpciArray = filter_BPCIs_to_run(BpciArray, doNotNeedToGenerateFilenamesCa)
-    % PROPOSAL: Better name.
-    %   Something more generic with filtering.
-    %   filter, keep, remove
-    %   output datasets
-    %   BPCI
+% PROPOSAL: Better name.
+%   Something more generic with filtering.
+%   filter, keep, remove
+%   output datasets
+%   BPCI
 
-    % ASSERTIONS
-    assert(isa(BpciArray, 'bicas.tools.batch.BicasProcessingCallInfo'))
-    assert(iscolumn(BpciArray))
-    assert(iscell(doNotNeedToGenerateFilenamesCa))
+% ASSERTIONS
+assert(isa(BpciArray, 'bicas.tools.batch.BicasProcessingCallInfo'))
+assert(iscolumn(BpciArray))
+assert(iscell(doNotNeedToGenerateFilenamesCa))
 
-    %============================================================
-    % Filter BpciArray:
-    % Only keep BPCIs for which at least one datasets is missing
-    %============================================================
-    bKeep = false(size(BpciArray));
-    for iBpci = 1:numel(BpciArray)
-        outputFilenameCa = BpciArray(iBpci).get_output_filenames();
+%============================================================
+% Filter BpciArray:
+% Only keep BPCIs for which at least one datasets is missing
+%============================================================
+bKeep = false(size(BpciArray));
+for iBpci = 1:numel(BpciArray)
+  outputFilenameCa = BpciArray(iBpci).get_output_filenames();
 
-        % Keep BPCI if at least one of its output datasets is missing.
-        bKeep(iBpci) = ~all(ismember(outputFilenameCa, doNotNeedToGenerateFilenamesCa));
-    end
+  % Keep BPCI if at least one of its output datasets is missing.
+  bKeep(iBpci) = ~all(ismember(outputFilenameCa, doNotNeedToGenerateFilenamesCa));
+end
 
-    BpciArray = BpciArray(bKeep, 1);
+BpciArray = BpciArray(bKeep, 1);
 end

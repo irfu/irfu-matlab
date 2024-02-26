@@ -39,59 +39,59 @@
 %
 function Bpci = autocreate_one_SWM_BPCI(Swm, DsmdArray, createOutputPathFh)
 
-    % ASSERTIONS
-    assert(isa(Swm, 'bicas.swm.SoftwareMode') && isscalar(Swm))
-    irf.assert.castring_set({Swm.inputsList.dsi })
-    irf.assert.castring_set({Swm.outputsList.dsi})
-    assert(isa(createOutputPathFh, 'function_handle'))
-    assert(numel(Swm.inputsList) == numel(DsmdArray))
+% ASSERTIONS
+assert(isa(Swm, 'bicas.swm.SoftwareMode') && isscalar(Swm))
+irf.assert.castring_set({Swm.inputsList.dsi })
+irf.assert.castring_set({Swm.outputsList.dsi})
+assert(isa(createOutputPathFh, 'function_handle'))
+assert(numel(Swm.inputsList) == numel(DsmdArray))
 
-    % t = tic();
+% t = tic();
 
-    % cohbCa      = cell(0, 1);
-    inputsArray = bicas.tools.batch.BpciInput.empty(0, 1);
-    for i = 1:numel(Swm.inputsList)
-        % Iterate over inputs
-        % ===================
-        % NOTE: Better to iterate over SWM inputs than DSMDs, since
-        % (1) Easier to permit irrelevant DSMDs (not implemented)
-        % (2) Check that there is exactly one matching DSMD (by DSI).
+% cohbCa      = cell(0, 1);
+inputsArray = bicas.tools.batch.BpciInput.empty(0, 1);
+for i = 1:numel(Swm.inputsList)
+  % Iterate over inputs
+  % ===================
+  % NOTE: Better to iterate over SWM inputs than DSMDs, since
+  % (1) Easier to permit irrelevant DSMDs (not implemented)
+  % (2) Check that there is exactly one matching DSMD (by DSI).
 
-        dsiToSearchFor = Swm.inputsList(i).dsi;
-        iDsmd          = find(strcmp(dsiToSearchFor, {DsmdArray.datasetId}));
+  dsiToSearchFor = Swm.inputsList(i).dsi;
+  iDsmd          = find(strcmp(dsiToSearchFor, {DsmdArray.datasetId}));
 
-        % ASSERTIONS
-        if numel(iDsmd) == 0
-            error('Can not find any dataset with DSI="%s".', dsiToSearchFor)
-        elseif numel(iDsmd) >= 2
-            error('Found more than one dataset with DSI="%s".', dsiToSearchFor)
-        end
+  % ASSERTIONS
+  if numel(iDsmd) == 0
+    error('Can not find any dataset with DSI="%s".', dsiToSearchFor)
+  elseif numel(iDsmd) >= 2
+    error('Found more than one dataset with DSI="%s".', dsiToSearchFor)
+  end
 
-        inputsArray(i, 1) = bicas.tools.batch.BpciInput(...
-            Swm.inputsList(i).cliOptionHeaderBody, ...
-            Swm.inputsList(i).dsi, ...
-        	DsmdArray(iDsmd).path);
+  inputsArray(i, 1) = bicas.tools.batch.BpciInput(...
+    Swm.inputsList(i).cliOptionHeaderBody, ...
+    Swm.inputsList(i).dsi, ...
+    DsmdArray(iDsmd).path);
 
-        % Prepare for calling output filenaming function.
-        % cohbCa{i}     = Swm.inputsList(iDsmd).cliOptionHeaderBody;
-        iDsmdArray(i) = iDsmd;
-    end
+  % Prepare for calling output filenaming function.
+  % cohbCa{i}     = Swm.inputsList(iDsmd).cliOptionHeaderBody;
+  iDsmdArray(i) = iDsmd;
+end
 
-    % Re-arrange order so that it is equal to that of cohbCa.
-    % DsmdArray = DsmdArray(iDsmdArray);
+% Re-arrange order so that it is equal to that of cohbCa.
+% DsmdArray = DsmdArray(iDsmdArray);
 
-    %fprintf('SPEED: autocreate_one_SWM_BPCI(): t=%.1f [s]\n', toc(t));
+%fprintf('SPEED: autocreate_one_SWM_BPCI(): t=%.1f [s]\n', toc(t));
 
-    outputsArray = bicas.tools.batch.BpciOutput.empty(0, 1);
-    for i = 1:numel(Swm.outputsList)
-        outputsArray(i, 1) = bicas.tools.batch.BpciOutput(...
-            Swm.outputsList(i).cliOptionHeaderBody, ...
-            Swm.outputsList(i).dsi, ...
-            createOutputPathFh(...
-                Swm.outputsList(i).dsi, DsmdArray)...
-        );
-    end
-    %fprintf('SPEED: autocreate_one_SWM_BPCI(): t=%.1f [s]\n', toc(t));
+outputsArray = bicas.tools.batch.BpciOutput.empty(0, 1);
+for i = 1:numel(Swm.outputsList)
+  outputsArray(i, 1) = bicas.tools.batch.BpciOutput(...
+    Swm.outputsList(i).cliOptionHeaderBody, ...
+    Swm.outputsList(i).dsi, ...
+    createOutputPathFh(...
+    Swm.outputsList(i).dsi, DsmdArray)...
+    );
+end
+%fprintf('SPEED: autocreate_one_SWM_BPCI(): t=%.1f [s]\n', toc(t));
 
-    Bpci = bicas.tools.batch.BicasProcessingCallInfo(Swm.cliOption, inputsArray, outputsArray);
+Bpci = bicas.tools.batch.BicasProcessingCallInfo(Swm.cliOption, inputsArray, outputsArray);
 end

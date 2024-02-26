@@ -9,21 +9,21 @@ classdef(Abstract) BicasProcessingAccessAbstract < handle
 
 
 
-    %#########################
-    %#########################
-    % PUBLIC INSTANCE METHODS
-    %#########################
-    %#########################
-    methods(Abstract)
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Abstract)
 
 
 
-        % Call bicas.main() with the exact same arguments and return value(s).
-        [varargout] = bicas_main(obj, varargin);
+    % Call bicas.main() with the exact same arguments and return value(s).
+    [varargout] = bicas_main(obj, varargin);
 
 
 
-    end    % methods(Access=public)
+  end    % methods(Access=public)
 
 
 

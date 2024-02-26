@@ -11,13 +11,14 @@
 % ARGUMENT
 % ========
 % filePathCa
-%       Cell array of file paths. All of them must follow naming conventions.
+%       Cell array of file paths.
 %
 %
 % RETURN VALUE
 % ============
 % DsmdArray
-%       Column array of DSMD objects.
+%       Column array of DSMD objects for those input filenames which follow
+%       naming conventions.
 % bIsDatasetArray
 %       Logical column array. Same size as argument. True iff the corresponding
 %       input path was interpreted as a dataset (was translated into a DSMD).
