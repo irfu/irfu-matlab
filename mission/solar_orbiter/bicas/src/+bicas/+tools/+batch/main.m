@@ -289,7 +289,7 @@ assert(isnumeric(Settings.currentDatasetExtensionDays))
 irf.assert.file_exists(bicasConfigFile)
 assert(isscalar(outputIsCdag) & islogical(outputIsCdag))
 irf.assert.dir_exists(outputDir)
-assert(iscell(inputPathsCa))
+assert(iscell(inputPathsCa) & iscolumn(inputPathsCa))
 
 
 
