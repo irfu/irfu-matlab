@@ -8,6 +8,9 @@
 % tests.
 %
 %
+% NLV = Not Latest (Dataset) Version
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
@@ -101,7 +104,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
 
       irf.fs.create_empty_file(fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'));
-      INPUT_2 =                            fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf');
+      INPUT_2 =                fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf');
       irf.fs.create_empty_file(INPUT_2);
 
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
@@ -276,13 +279,13 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
     % Call BICAS for predefined SWMs, but with datasets specified by caller.
     %
-    % SWMs:
-    %   1 L1 in --> 1 L2 out
-    %   1 L2 in --> 1 L3 out
+    % Hardcoded SWMs:
+    %   1x L1 in --> 1x L2 out
+    %   1x L2 in --> 1x L3 out
     %
-    % NOTE: DSIs.
-    % NOTE: Function does not verify result. The caller has to create input
-    %       files and verify output files and BPCSs.
+    % NOTE: Hardcoded DSIs.
+    % NOTE: The function does not verify the result. The caller has to create
+    %       input files and verify output files and BPCSs.
     %
     % NOTE: Test functions which use this function should be prefixed
     % "test1".
@@ -295,7 +298,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
         case 1
           callNonZeroErrorArray = varargin{1};
         otherwise
-          error('')
+          error('Wrong number of arguments.')
       end
 
       BICAS_SETTINGS_ARGS_CA = {};
@@ -334,8 +337,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % Call BICAS for predefined SWMs, but with datasets specified by caller.
     %
     % SWMs:
-    %   2 L1 in --> 1 L2 out
-    %   1 L2 in --> 2 L3 out
+    %   2x L1 in --> 1x L2 out
+    %   1x L2 in --> 2x L3 out
     %
     % NOTE: Test functions which use this function should be prefixed
     % "test2".
@@ -345,6 +348,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       BICAS_CONFIG_FILE      = 'NO_CONFIG_FILE.conf';
       SETTINGS = [];
       SETTINGS.currentDatasetExtensionDays = 0;
+
       DSI_1a = 'SOLO_L1R_RPW-LFR-SURV-CWF-E';
       DSI_1b = 'SOLO_L1_RPW-BIA-CURRENT';
       DSI_2  = 'SOLO_L2_RPW-LFR-SURV-CWF-E';

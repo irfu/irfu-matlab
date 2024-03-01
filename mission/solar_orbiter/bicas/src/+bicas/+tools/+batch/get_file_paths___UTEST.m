@@ -133,6 +133,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       %   PROPOSAL: Single varargin argument fed into fullfile().
       %     CON: Bad for extending function with more arguments in the future.
       %     CON-PROPOSAL: One or two arguments.
+      %   PROPOSAL: Single cell array argument --> fullfile().
 
       filePath = fullfile(parentDir, fileRPath);
       [parentDir, ~, ~] = fileparts(filePath);
