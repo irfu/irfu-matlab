@@ -51,7 +51,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       testDir  = f.Folder;
       dir1     = fullfile(testDir, 'dir1');
       emptyDir = bicas.tools.batch.get_file_paths___UTEST.create_directory( testDir, 'empty_dir');
-      file1    = bicas.tools.batch.get_file_paths___UTEST.create_empty_file(testDir, 'dir1/dir1/file1');
+      file1    = irf.fs.create_empty_file({testDir, 'dir1/dir1/file1'});
 
       function test(fileDirPathsCa)
         [actFilePathsCa1, ActFsoiArray1] = bicas.tools.batch.get_file_paths___UTEST.test_call(...
@@ -77,12 +77,12 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       dirE    = bicas.tools.batch.get_file_paths___UTEST.create_directory( testDir, 'empty_dir');
       [~]     = bicas.tools.batch.get_file_paths___UTEST.create_directory( testDir, 'empty_dir/dir1');
       dir1    =                                                   fullfile(testDir, 'dir1');
-      file11  = bicas.tools.batch.get_file_paths___UTEST.create_empty_file(testDir, 'dir1/file1');
-      file111 = bicas.tools.batch.get_file_paths___UTEST.create_empty_file(testDir, 'dir1/dir1/file11');
-      file112 = bicas.tools.batch.get_file_paths___UTEST.create_empty_file(testDir, 'dir1/dir1/file12');
+      file11  = irf.fs.create_empty_file({testDir, 'dir1/file1'});
+      file111 = irf.fs.create_empty_file({testDir, 'dir1/dir1/file11'});
+      file112 = irf.fs.create_empty_file({testDir, 'dir1/dir1/file12'});
 
-      file21  = bicas.tools.batch.get_file_paths___UTEST.create_empty_file(testDir, 'dir2/file1');
-      file211 = bicas.tools.batch.get_file_paths___UTEST.create_empty_file(testDir, 'dir2/dir1/file11');
+      file21  = irf.fs.create_empty_file({testDir, 'dir2/file1'});
+      file211 = irf.fs.create_empty_file({testDir, 'dir2/dir1/file11'});
 
       [actFilePathsCa1, ~] = bicas.tools.batch.get_file_paths___UTEST.test_call(...
         testCase, {dirE; dir1; file21; file211} ...
@@ -124,31 +124,9 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
 
 
-    function filePath = create_empty_file(parentDir, fileRPath)
-      % PROPOSAL: Make into generic function.
-      %   NOTE: Needs more rigorous controls.
-      %   PROPOSAL: Replace irf.fs.create_empty_file() with this.
-      %     NOTE: Changes behaviour: Creates parent directory (recursively) if
-      %           not pre-existing. Should not be problem since only used for tests.
-      %   PROPOSAL: Single varargin argument fed into fullfile().
-      %     CON: Bad for extending function with more arguments in the future.
-      %     CON-PROPOSAL: One or two arguments.
-      %   PROPOSAL: Single cell array argument --> fullfile().
-
-      filePath = fullfile(parentDir, fileRPath);
-      [parentDir, ~, ~] = fileparts(filePath);
-
-      if ~exist(parentDir, 'dir')
-        mkdir(parentDir)
-      end
-
-      irf.fs.create_empty_file(filePath)
-    end
-
-
-
     function dirPath = create_directory(parentDir, dirRpath)
       % PROPOSAL: Make into generic function.
+      %   Cf. irf.fs.create_empty_file().
 
       dirPath = fullfile(parentDir, dirRpath);
       mkdir(dirPath)
