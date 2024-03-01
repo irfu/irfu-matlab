@@ -58,9 +58,10 @@ function [BpcsAllArray] = run_BICAS_all_passes(...
 %           CON: BICAS own log messages include files in & out.
 
 DEBUG_ENABLED = false;
-%     DEBUG_ENABLED = true;
+% DEBUG_ENABLED = true;
 
 assert(isa(Bpa, 'bicas.tools.batch.BicasProcessingAccessAbstract'))
+assert(iscell(inputPathsCa) && iscolumn(inputPathsCa), 'inputPathsCa is not a column cell array.')
 
 % List of output datasets which BICAS has TRIED to create, successfully or
 % not. If BICAS failed to produce them, then the corresponding files do not
@@ -83,7 +84,8 @@ while true
   % Get reference DSMDs
   %=====================
   if ~isempty(referenceDir)
-    [RefDsmdArray, ~] = solo.adm.get_directory_DSMDs({referenceDir});
+    [filePathsCa,   ~] = bicas.tools.batch.get_file_paths({referenceDir});
+    [RefDsmdArray,  ~] = solo.adm.paths_to_DSMD_array(filePathsCa);
   else
     RefDsmdArray = solo.adm.DSMD.empty(0, 1);
   end
@@ -124,7 +126,13 @@ while true
   %====================================================
   % Autocreate all possible BPCIs based on input paths
   %====================================================
-  [InputDsmdArray, ~] = solo.adm.get_directory_DSMDs(inputPathsCa);
+  if isempty(referenceDir)
+    referenceDirCa = cell(0, 1);
+  else
+    referenceDirCa = {referenceDir};
+  end
+  [filePathsCa,    ~] = bicas.tools.batch.get_file_paths(inputPathsCa);
+  [InputDsmdArray, ~] = solo.adm.paths_to_DSMD_array(filePathsCa);
   if DEBUG_ENABLED
     log_DSMD_array('Input directories (only recognized datasets)', InputDsmdArray)
   end

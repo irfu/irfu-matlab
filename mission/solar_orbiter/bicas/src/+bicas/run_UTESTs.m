@@ -7,7 +7,7 @@
 % necessarily the irfu-matlab git repo used for running BICAS.
 %
 %
-% Author: Erik P G Johansson, Uppsala, Sweden
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-19.
 %
 function run_UTESTs()

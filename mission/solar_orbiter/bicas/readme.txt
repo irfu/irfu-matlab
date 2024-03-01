@@ -205,6 +205,8 @@ LRX
 LSF
     LFR Sampling Frequency (F0...F3).
     NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
+LV
+    Latest (Dataset) Version.
 MC
     MATLAB Class. MATLAB data type represented as a string constant.
     Return value from "class()".
