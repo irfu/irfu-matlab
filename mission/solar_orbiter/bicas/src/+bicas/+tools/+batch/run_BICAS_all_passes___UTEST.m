@@ -67,15 +67,27 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
 
 
-    % 0 (relevant) input files
-    function test1_0_input(testCase)
+    % Zero relevant input files
+    %
+    function test1_zero_relevant_input(testCase)
       [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
 
-      irf.fs.create_empty_file(fullfile(P.in, 'NOT_DATASET.cdf'));
-      irf.fs.create_empty_file(fullfile(P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'));
+      INPUT_1 = fullfile(P.in, 'NOT_DATASET.cdf');
+      INPUT_2 = fullfile(P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf');
+      irf.fs.create_empty_file(INPUT_1);
+      irf.fs.create_empty_file(INPUT_2);
 
+      % ===============================
+      % Test specifying input directory
+      % ===============================
       bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
         {P.in}, '', P.out, 'HIGHEST_USED');
+
+      % ====================================================
+      % Test specifying explicit (irrelevant) input datasets
+      % ====================================================
+      bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+        {INPUT_1, INPUT_2}, '', P.out, 'HIGHEST_USED');
     end
 
 
@@ -139,15 +151,29 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     %
     % NOTE: Output directory is also input directory.
     function test1_1_to_1_to_1(testCase, FN_VER_ALGO)
-      [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
-      irf.fs.create_empty_file(fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'));
+      function assert_actual_result()
+        assert(numel(ActBpcsArray) == 2)
+        irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
+        irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
+      end
 
+      [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
+      INPUT_1 = fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf');
+      irf.fs.create_empty_file(INPUT_1);
+
+      % ===============================
+      % Test specifying input directory
+      % ===============================
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
         {P.in, P.out}, '', P.out, FN_VER_ALGO);
+      assert_actual_result()
 
-      assert(numel(ActBpcsArray) == 2)
-      irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
-      irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
+      % =================================================
+      % Test specifying explicit (relevant) input dataset
+      % =================================================
+      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+        {INPUT_1, P.out}, '', P.out, FN_VER_ALGO);
+      assert_actual_result()
     end
 
 
@@ -299,7 +325,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       % CALL TESTED CODE
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
         BPA, BICAS_SETTINGS_ARGS_CA, ...
-        BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa, ...
+        BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa(:), ...
         fnVerAlgorithm, false, [SWM_1; SWM_2], SETTINGS);
     end
 
@@ -349,7 +375,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       % CALL TESTED CODE
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
         BPA, BICAS_SETTINGS_ARGS_CA, ...
-        BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa, ...
+        BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa(:), ...
         fnVerAlgorithm, false, [SWM_1; SWM_2], SETTINGS);
     end
 
