@@ -97,8 +97,15 @@ irf
 % Configure Solar Orbiter database from which data will be used
 %===============================================================
 % NOTE: System-dependent configuration!
+% IMPLEMENTATION NOTE: Only use /data/solo/remote/data/ and /data/solo/soar/
+% (and not /data/solo/data_irfu/) since data_irfu is (1) less reliable
+% ("bleeding edge" data) and (2) is (somewhat) ~frequently reprocessed in large
+% sets.
+% ==> Future automatic QLI processing would process a lot.
+
 solo.db_init('local_file_db', '/data/solo/');
-solo.db_init('local_file_db', '/data/solo/data_irfu');
+%solo.db_init('local_file_db', '/data/solo/data_irfu');
+
 % Setup cache
 solo.db_init('db_cache_size_max', 4096)
 solo.db_cache('on', 'save')
