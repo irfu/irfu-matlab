@@ -30,7 +30,8 @@ switch(isCdagOption)
     error('Illegal isCdagOption="%s"', isCdagOption)
 end
 
+% NOTE: Not submitting any settings (varargin == input paths).
 bicas.tools.batch.main(...
   bicasConfigFile, outputIsCdag, modeStr, outputDir, ...
-  referenceDir, varargin)
+  referenceDir, varargin(:))
 end

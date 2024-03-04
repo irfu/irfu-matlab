@@ -8,6 +8,9 @@
 % tests.
 %
 %
+% NLV = Not Latest (Dataset) Version
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
@@ -67,15 +70,27 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
 
 
-    % 0 (relevant) input files
-    function test1_0_input(testCase)
+    % Zero relevant input files
+    %
+    function test1_zero_relevant_input(testCase)
       [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
 
-      irf.fs.create_empty_file(fullfile(P.in, 'NOT_DATASET.cdf'));
-      irf.fs.create_empty_file(fullfile(P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'));
+      INPUT_1 = fullfile(P.in, 'NOT_DATASET.cdf');
+      INPUT_2 = fullfile(P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf');
+      irf.fs.create_empty_file(INPUT_1);
+      irf.fs.create_empty_file(INPUT_2);
 
+      % ===============================
+      % Test specifying input directory
+      % ===============================
       bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
         {P.in}, '', P.out, 'HIGHEST_USED');
+
+      % ====================================================
+      % Test specifying explicit (irrelevant) input datasets
+      % ====================================================
+      bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+        {INPUT_1, INPUT_2}, '', P.out, 'HIGHEST_USED');
     end
 
 
@@ -89,7 +104,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
 
       irf.fs.create_empty_file(fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'));
-      INPUT_2 =                            fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf');
+      INPUT_2 =                fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf');
       irf.fs.create_empty_file(INPUT_2);
 
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
@@ -139,15 +154,29 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     %
     % NOTE: Output directory is also input directory.
     function test1_1_to_1_to_1(testCase, FN_VER_ALGO)
-      [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
-      irf.fs.create_empty_file(fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'));
+      function assert_actual_result()
+        assert(numel(ActBpcsArray) == 2)
+        irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
+        irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
+      end
 
+      [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
+      INPUT_1 = fullfile(P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf');
+      irf.fs.create_empty_file(INPUT_1);
+
+      % ===============================
+      % Test specifying input directory
+      % ===============================
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
         {P.in, P.out}, '', P.out, FN_VER_ALGO);
+      assert_actual_result()
 
-      assert(numel(ActBpcsArray) == 2)
-      irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
-      irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
+      % =================================================
+      % Test specifying explicit (relevant) input dataset
+      % =================================================
+      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+        {INPUT_1, P.out}, '', P.out, FN_VER_ALGO);
+      assert_actual_result()
     end
 
 
@@ -250,13 +279,13 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
     % Call BICAS for predefined SWMs, but with datasets specified by caller.
     %
-    % SWMs:
-    %   1 L1 in --> 1 L2 out
-    %   1 L2 in --> 1 L3 out
+    % Hardcoded SWMs:
+    %   1x L1 in --> 1x L2 out
+    %   1x L2 in --> 1x L3 out
     %
-    % NOTE: DSIs.
-    % NOTE: Function does not verify result. The caller has to create input
-    %       files and verify output files and BPCSs.
+    % NOTE: Hardcoded DSIs.
+    % NOTE: The function does not verify the result. The caller has to create
+    %       input files and verify output files and BPCSs.
     %
     % NOTE: Test functions which use this function should be prefixed
     % "test1".
@@ -269,7 +298,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
         case 1
           callNonZeroErrorArray = varargin{1};
         otherwise
-          error('')
+          error('Wrong number of arguments.')
       end
 
       BICAS_SETTINGS_ARGS_CA = {};
@@ -299,7 +328,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       % CALL TESTED CODE
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
         BPA, BICAS_SETTINGS_ARGS_CA, ...
-        BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa, ...
+        BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa(:), ...
         fnVerAlgorithm, false, [SWM_1; SWM_2], SETTINGS);
     end
 
@@ -308,8 +337,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % Call BICAS for predefined SWMs, but with datasets specified by caller.
     %
     % SWMs:
-    %   2 L1 in --> 1 L2 out
-    %   1 L2 in --> 2 L3 out
+    %   2x L1 in --> 1x L2 out
+    %   1x L2 in --> 2x L3 out
     %
     % NOTE: Test functions which use this function should be prefixed
     % "test2".
@@ -319,6 +348,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       BICAS_CONFIG_FILE      = 'NO_CONFIG_FILE.conf';
       SETTINGS = [];
       SETTINGS.currentDatasetExtensionDays = 0;
+
       DSI_1a = 'SOLO_L1R_RPW-LFR-SURV-CWF-E';
       DSI_1b = 'SOLO_L1_RPW-BIA-CURRENT';
       DSI_2  = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
@@ -349,7 +379,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       % CALL TESTED CODE
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
         BPA, BICAS_SETTINGS_ARGS_CA, ...
-        BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa, ...
+        BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa(:), ...
         fnVerAlgorithm, false, [SWM_1; SWM_2], SETTINGS);
     end
 

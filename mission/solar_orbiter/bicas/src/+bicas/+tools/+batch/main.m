@@ -144,22 +144,10 @@ function main(...
 %       CON: Clashes with package name
 %           CON: Is sort of in line with Python's convention of main module
 %                in a package sharing name with the (leaf-most) package name.
-%   ~main
-%       NOTE: Cf. bicas.main (irfu-matlab)
 %
-% PROPOSAL: Move to irfu-matlab: ~bicas.tools.batch
-%   NOTE: Requires dataset filenaming code, code for identifying datasets
-%         that can be produced, BPCI, DSMD.
-%       NOTE: Some dependencies have already been moved to irfu-matlab:
-%           solo.adm.
-%       NOTE: Some dependencies are duplicated in irfu-matlab:
-%   TODO: Identify such dependencies.
-%       2024-02-23: No such dependencies. Have been replaced with solo.adm
-%       counterparts, or code has been moved to bicas.batch.
-%   --
-%   PRO: More natural to use bicas.Logger, bicas.utils.Timekeeper.
+% PROPOSAL: More natural to use bicas.Logger, bicas.utils.Timekeeper.
 %
-% PROPOSAL: Be able to optionally limit to specified SWM (several?).
+% PROPOSAL: Be able to optionally limit to specified SWM(s).
 %   PROPOSAL: Use settings.
 %       CON: How handle from bash?
 %   TODO-DEC: How specify set of SWMs?
@@ -252,6 +240,13 @@ function main(...
 %                datasets overlap with many other datasets because they are
 %                long, not because they overlap with themselves.
 %       CON: Unclear what the algorithm should be.
+%
+% PROPOSAL: Outsource implementation to new function "main2". "main" should only
+%           pass on all arguments to "main2" and set
+%           Bpa=bicas.tools.batch.BicasProcessingAccessImpl().
+%   PRO: Good for automated tests. Tests for
+%        bicas.tools.batch.run_BICAS_all_passes() could be converted into tests
+%        for "main2".
 
 
 % IMPLEMENTATION NOTE: bicas.tools.batch.main() calls
@@ -294,7 +289,7 @@ assert(isnumeric(Settings.currentDatasetExtensionDays))
 irf.assert.file_exists(bicasConfigFile)
 assert(isscalar(outputIsCdag) & islogical(outputIsCdag))
 irf.assert.dir_exists(outputDir)
-assert(iscell(inputPathsCa))
+assert(iscell(inputPathsCa) & iscolumn(inputPathsCa))
 
 
 
@@ -366,14 +361,17 @@ end
 
 
 
+% Obtain information about BICAS s/w modes (SWMs) from BICAS using unofficial
+% BICAS "interface" (in reality: Use knowledge of BICAS's implementation).
+%
 function SwmArray = get_SWMs(bicasConfigFile)
 BSO = bicas.create_default_BSO();
 
 % ID string used to inform BICAS SETTINGS of who set the setting. Only
 % relevant for inspecting logs.
 % NOTE: Exact string not really important.
-bicasSettingsSource = mfilename('fullpath');
-
+% bicasSettingsSource = mfilename('fullpath');
+%
 %     BSO.override_value('SWM.L1-L2_ENABLED', ...
 %         Settings.bicasSetting_SWM_L1_L2_ENABLED, ...
 %         bicasSettingsSource)

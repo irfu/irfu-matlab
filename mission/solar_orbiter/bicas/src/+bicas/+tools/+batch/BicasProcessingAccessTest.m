@@ -35,10 +35,13 @@ classdef BicasProcessingAccessTest < bicas.tools.batch.BicasProcessingAccessAbst
 
 
 
+    % ARGUMENTS
+    % =========
     % callNonZeroErrorArray
-    %       Array of numbers. Call numbers for when method bicas_main()
+    %       Array of numbers. Those "call numbers" for which method bicas_main()
     %       should return non-zero error code and simulate failure.
-    %       1=First call.
+    %       The "call number" is N when method "bicas_main" is called the N'th
+    %       time. Call number 1=First call.
     %
     function obj = BicasProcessingAccessTest(SwmArray, callNonZeroErrorArray)
       assert(isa(SwmArray, 'bicas.swm.SoftwareMode') & iscolumn(SwmArray))
@@ -56,7 +59,7 @@ classdef BicasProcessingAccessTest < bicas.tools.batch.BicasProcessingAccessAbst
     function [varargout] = bicas_main(obj, varargin)
 
       obj.nCalls = obj.nCalls + 1;
-      iCall = obj.nCalls;
+      iCall      = obj.nCalls;    % Call number.
       if ismember(iCall, obj.callNonZeroErrorArray)
         %=============================
         % CASE: Return non-zero error
