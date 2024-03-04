@@ -1,6 +1,7 @@
-function quicklooks_7days(data,paths,Tint,logoPath)
+function quicklooks_7days(data, OutputPaths, Tint, logoPath)
+%
 % Given data in the struct 'data' (see solo.qli.quicklooks_main), generates
-% plots and saves them in the paths specified in the struct 'paths' (see
+% plots and saves them in the paths specified in the struct 'OutputPaths' (see
 % solo.qli.quicklooks_main). Tint should be a 7-day time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-08T00:00:00.00Z');
 
@@ -314,7 +315,7 @@ fig.PaperPositionMode='auto';
 %=====================
 % Save figure to file
 %=====================
-solo.qli.utils.save_figure_to_file(paths.path_1w, Tint)
+solo.qli.utils.save_figure_to_file(OutputPaths.path_1w, Tint)
 % TODO-NI: Why are there any commands (except close()) after this?
 %          Did the code use to iterate over 24h, 6h, 2h plots too?
 

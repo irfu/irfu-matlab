@@ -1,7 +1,7 @@
 %
 % Wrapper around solo.qli.quicklooks_main() intended for being used by being
 % called from system scripts (e.g. bash) for the purpose of cron jobs on
-% brain/spis. The arguments have also been designed for this purpose and
+% brain/spis. The arguments have also been designed for this purpose and are
 % therefore all strings.
 %
 % NOTE: This script is NOT intended to be called from MATLAB by the average
@@ -17,6 +17,7 @@
 %       Empty ==> Do not plot any logo.
 % vhtDataDir
 %       Path to directory containing VHT (velocity) .mat files.
+%       V_RPW_1h.mat and V_RPW.mat. Typically brain:/data/solo/data_yuri/
 % outputDir
 %       Plots will be placed in subdirectories under this directory.
 %       NOTE: Will create subdirectories if not pre-existing.

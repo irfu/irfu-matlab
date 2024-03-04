@@ -29,13 +29,14 @@
 %       irfu-matlab/mission/solar_orbiter/+solo/irf_logo.png
 %       Empty ==> Do not plot any logo.
 % vhtDataDir
-%       Path to directory containing VHT (velocity) .mat files.
+%       Path to directory containing VHT (velocity) .mat files
+%       V_RPW_1h.mat and V_RPW.mat. Typically brain:/data/solo/data_yuri/
 % outputDir
 %       Plots will be placed in subdirectories under this directory.
 %       NOTE: Will create subdirectories if not pre-existing.
-% runNonweeklyPlots, runWeeklyPlots
-%       Whether to run the resp. groups of plots.
-%       NOTE: Permits chars "0" and "1" for when calling from bash.
+% generateNonweeklyPlots, generateWeeklyPlots
+%       Whether to generate non-weekly (2h, 6h, 24h) quicklooks and or weekly
+%       quicklooks.
 %       Useful for testing and not re-running unnecessary time-consuming plots.
 % utcBegin, utcEnd
 %       Strings. Defines time interval for which quicklooks should be generated.
@@ -49,7 +50,7 @@
 %
 function quicklooks_main(...
   logoPath, vhtDataDir, outputDir, ...
-  runNonweeklyPlots, runWeeklyPlots, utcBeginStr, utcEndStr)
+  generateNonweeklyPlots, generateWeeklyPlots, utcBeginStr, utcEndStr)
 %
 % NOTE: Mission begins on 2020-02-12=Wednesday.
 % ==> There is no SPICE data on Monday-Tuesday before this date.
@@ -57,7 +58,7 @@ function quicklooks_main(...
 %     PROPOSAL: Additionally round start time up to start date.
 %
 % PROPOSAL: Better name: quicklooks_main?
-%       ~main, ~plot, ~generate
+%       ~main, ~plot, ~generate, ~qli
 %       generate_quicklooks()
 %
 % PROPOSAL: Directly generate arrays of timestamps for iterating over, instead
@@ -117,6 +118,14 @@ function quicklooks_main(...
 % ##############################################################################
 
 
+%=========================
+% Assertions on arguments
+%=========================
+assert(islogical(generateNonweeklyPlots) & islogical(generateNonweeklyPlots))
+assert(islogical(generateWeeklyPlots   ) & islogical(generateWeeklyPlots   ))
+
+
+
 %============
 % ~Constants
 %============
@@ -143,11 +152,16 @@ VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 % someone complains).
 FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
 
+
+
+%==============================
+% Miscellaneous initialization
+%==============================
 % Specify subdirectories for saving the respective types of plots.
-Paths.path_2h  = fullfile(outputDir, '2h' );
-Paths.path_6h  = fullfile(outputDir, '6h' );
-Paths.path_24h = fullfile(outputDir, '24h');
-Paths.path_1w  = fullfile(outputDir, '1w' );
+OutputPaths.path_2h  = fullfile(outputDir, '2h' );
+OutputPaths.path_6h  = fullfile(outputDir, '6h' );
+OutputPaths.path_24h = fullfile(outputDir, '24h');
+OutputPaths.path_1w  = fullfile(outputDir, '1w' );
 
 
 
@@ -169,16 +183,16 @@ TimeIntervalWeeks = derive_TimeIntervalWeeks(...
 
 
 
-%=======================
-% Create subdirectories
-%=======================
+%=========================================================
+% Create subdirectories for different types of quicklooks
+%=========================================================
 % NOTE: Creates subdirectories for all four plot types, regardless of whether
 %       they will actually be generated or not.
 %   NOTE: This simplifies bash wrapper scripts that copy content of
 %         sub-directories to analogous sub-directories, also when not all
 %         plot types are generated.
-for fnCa = fieldnames(Paths)'
-  dirPath = Paths.(fnCa{1});
+for fnCa = fieldnames(OutputPaths)'
+  dirPath = OutputPaths.(fnCa{1});
   [parentDir, dirBasename, dirSuffix] = fileparts(dirPath);
   % NOTE: Works (without warnings) also if subdirectories pre-exist ("msg"
   % contains warning which is never printed.)
@@ -191,7 +205,7 @@ end
 %=============================================
 % Run the code for 2-, 6-, 24-hour quicklooks
 %=============================================
-if runNonweeklyPlots
+if generateNonweeklyPlots
   % Daily time-intervals
   Time1DayStepsArray = make_time_array(TimeIntervalNonWeeks, 1);
 
@@ -205,7 +219,7 @@ if runNonweeklyPlots
     % Select time interval.
     Tint = irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
     try
-      quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, ENABLE_B)
+      quicklooks_24_6_2_h_local(Tint, vht1h, OutputPaths, logoPath, ENABLE_B)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
@@ -218,7 +232,7 @@ end
 %===================================
 % Run the code for weekly overviews
 %===================================
-if runWeeklyPlots
+if generateWeeklyPlots
 
   % Weekly time-intervals
   Time7DayStepsArray = make_time_array(TimeIntervalWeeks, 7);
@@ -232,7 +246,7 @@ if runWeeklyPlots
     % Select time interval.
     Tint = irf.tint(Time7DayStepsArray(iTint), Time7DayStepsArray(iTint+1));
     try
-      quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
+      quicklooks_7days_local(Tint, vht6h, OutputPaths, logoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
@@ -305,111 +319,94 @@ end
 
 
 
-function quicklooks_24_6_2_h_local(Tint, vht1h, Paths, logoPath, enableB)
+function quicklooks_24_6_2_h_local(Tint, vht1h, OutputPaths, logoPath, enableB)
 log_plot_function_time_interval(Tint)
 
 Data = [];
 
-Data.Vrpw = vht1h.V_RPW_1h.tlim(Tint);
-
-% E-field:
-Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
-
-% RPW density:
-Data.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
-
-% B-field:
-Data.B = db_get_ts('solo_L2_mag-rtn-normal','B_RTN', Tint);
-
-% Proton & alpha temperature:
-Data.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
-
-% Proton & alpha velocity:
-Data.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_RTN', Tint);
-
-% Proton & alpha density:
-Data.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
-
+Data.Vrpw   = vht1h.V_RPW_1h.tlim(Tint);
+% E-field
+Data.E      = db_get_ts(     'solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
+% RPW density
+Data.Ne     = db_get_ts(     'solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
+% B-field
+Data.B      = db_get_ts(     'solo_L2_mag-rtn-normal', 'B_RTN', Tint);
+% Proton & alpha temperature
+Data.Tpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'T', Tint);
+% Proton & alpha velocity
+Data.Vpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
+% Proton & alpha density
+Data.Npas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
-Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
-
+Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux',Tint);
 % TNR E-field
-Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
-
+Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
-% Note: solopos uses SPICE, but should be taken care of by
+% NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
 % "solo.get_position".
-Data.solopos = get_SolO_pos(Tint);
+Data.solopos = get_SolO_position(Tint);
 
 % Earth position (also uses SPICE)
-dt = 60*60;
-Data.earthpos = get_Earth_pos(Tint, dt);
+DT = 60*60;
+Data.earthpos = get_Earth_position(Tint, DT);
 
 if ~enableB
   Data.B = [];
 end
 
 % Plot data and save figure
-solo.qli.quicklooks_24_6_2_h(Data, Paths, Tint, logoPath)
+solo.qli.quicklooks_24_6_2_h(Data, OutputPaths, Tint, logoPath)
 end
 
 
 
-function quicklooks_7days_local(Tint, vht6h, Paths, logoPath)
+function quicklooks_7days_local(Tint, vht6h, OutputPaths, logoPath)
 log_plot_function_time_interval(Tint)
 
 Data = [];
 
-Data.Vrpw = vht6h.V_RPW.tlim(Tint);
-
+Data.Vrpw   = vht6h.V_RPW.tlim(Tint);
 % E-field:
-Data.E = db_get_ts('solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
-
+Data.E      = db_get_ts(     'solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
 % RPW density:
-Data.Ne = db_get_ts('solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
-
+Data.Ne     = db_get_ts(     'solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
 % B-field:
-Data.B = db_get_ts('solo_L2_mag-rtn-normal-1-minute','B_RTN', Tint);
-
+Data.B      = db_get_ts(     'solo_L2_mag-rtn-normal-1-minute', 'B_RTN', Tint);
 % Proton & alpha temperature:
-Data.Tpas = db_get_ts('solo_L2_swa-pas-grnd-mom','T', Tint);
-
+Data.Tpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'T', Tint);
 % Proton & alpha velocity:
-Data.Vpas = db_get_ts('solo_L2_swa-pas-grnd-mom','V_RTN', Tint);
-
+Data.Vpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
 % Proton & alpha density:
-Data.Npas = db_get_ts('solo_L2_swa-pas-grnd-mom','N', Tint);
-
+Data.Npas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
-Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux','eflux',Tint);
-
+Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux',Tint);
 % TNR E-field
-Data.Etnr = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
-
+Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
-% Note: solopos uses SPICE, but should be taken care of by
+% NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
 % "solo.get_position".
-Data.solopos = get_SolO_pos(Tint);
+Data.solopos = get_SolO_position(Tint);
 
 % Earth position (also uses SPICE)
-dt       = 60*60;
-earthPosTSeries = get_Earth_pos(Tint, dt);
+DT = 60*60;
+earthPosTSeries = get_Earth_position(Tint, DT);
 Data.earthpos = earthPosTSeries;
 
 % Plot data and save figure
-solo.qli.quicklooks_7days(Data, Paths, Tint, logoPath)
+solo.qli.quicklooks_7days(Data, OutputPaths, Tint, logoPath)
 end
 
 
 
 % Get Solar Orbiter position
 %
-% NOTE: Uses SPICE and "solo.get_position()".
-function soloPos = get_SolO_pos(Tint)
-assert(length(Tint) == 2)
+% NOTE: Uses SPICE and "solo.get_position()" which can itself load SPICE
+% kernels(!).
+function soloPos = get_SolO_position(Tint)
+assert((length(Tint) == 2) & isa(Tint, 'EpochTT'))
 
 % IM = irfu-matlab (as opposed to SPICE).
-imSoloPos = solo.get_position(Tint,'frame','ECLIPJ2000');
+imSoloPos = solo.get_position(Tint, 'frame', 'ECLIPJ2000');
 
 % BUG?!!: If solo.get_position() is non-empty, and presumably contains a
 %         value, THEN use SPICE value anyway?!! Note: This behaviour does
@@ -426,7 +423,7 @@ end
 
 
 % Use SPICE to get Earth's position.
-function earthPosTSeries = get_Earth_pos(Tint, dt)
+function earthPosTSeries = get_Earth_position(Tint, dt)
 assert(length(Tint) == 2)
 assert(isnumeric(dt))
 
@@ -451,8 +448,8 @@ end
 
 % Function for deriving the exact week boundaries to use.
 function TimeIntervalWeeks = derive_TimeIntervalWeeks(TimeBegin, TimeEnd, firstDayOfWeek)
-assert(isscalar(TimeBegin))
-assert(isscalar(TimeEnd))
+assert(isscalar(TimeBegin) & isa(TimeBegin, 'EpochTT'))
+assert(isscalar(TimeEnd)   & isa(TimeBegin, 'EpochTT'))
 
 tWeeksBegin = round_to_week(TimeBegin,  1, firstDayOfWeek);
 tWeeksEnd   = round_to_week(TimeEnd,   -1, firstDayOfWeek);
@@ -469,12 +466,15 @@ end
 
 % Generate array of timestamps with specific and constant frequency.
 %
+% ARGUMENTS
+% =========
 % TintInterval
 %       Time interval
 % nDays
 %       Number of days between each timestamp.
+%
 function TimeArray = make_time_array(TintInterval, nDays)
-assert(length(TintInterval) == 2)
+assert((length(TintInterval) == 2) & isa(TintInterval, 'EpochTT'))
 
 t0          = TintInterval(1);
 tlength     = TintInterval(2) - TintInterval(1);
@@ -526,31 +526,38 @@ end
 
 % Round timestamp down/up to beginning of week.
 %
-% t1, t2 : GenericTimeArray, scalar.
+% ARGUMENTS
+% =========
+%     t1
+%         Scalar EpochTT.
+%     roundDir
+%         Scalar number. -1 or 1.
+%
 function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
-assert(isscalar(t1))
+assert(isscalar(t1) & isa(t1, 'EpochTT'))
 assert(ismember(roundDir, [-1, 1]))
 
 dv1  = irf.cdf.TT2000_to_datevec(t1.ttns);
-dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
+Dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
 
 % Round to midnight.
-dt1b = dateshift(dt1a, 'start', 'day');
-if (roundDir == 1) && (dt1a ~= dt1b)
+Dt1b = dateshift(Dt1a, 'start', 'day');
+if (roundDir == 1) && (Dt1a ~= Dt1b)
   % IMPLEMENTATION NOTE: dateshift(..., 'end', 'day') "rounds" to one day
   % after if timestamp is already midnight. Therefore do not want use
   % that.
-  dt1b = dt1b + days(1);
+  % 2024-03-04: This if statement might be unnecessary.
+  Dt1b = Dt1b + days(1);
 end
 
 % Round to week boundary, as defined by beginningOfWeek.
 % NOTE: dateshift( 'dayofweek' ) rounds to next match, including potentially
 % the same day.
-dt1c = dateshift(dt1b, 'dayofweek', firstDayOfWeek);
-if (roundDir == -1) && (dt1b ~= dt1c)
-  dt1c = dt1c - days(7);
+Dt1c = dateshift(Dt1b, 'dayofweek', firstDayOfWeek);
+if (roundDir == -1) && (Dt1b ~= Dt1c)
+  Dt1c = Dt1c - days(7);
 end
 
-tt2000 = irf.cdf.datevec_to_TT2000(datevec(dt1c));
+tt2000 = irf.cdf.datevec_to_TT2000(datevec(Dt1c));
 t2     = irf.time_array(tt2000);
 end

@@ -304,34 +304,35 @@ classdef solo_local_file_db < solo_file_db
       % Descriptor contains instrument and data product descriptor part
       % separated by "-".
 
-      temp      = strsplit(C{3}, '-');
-      instr     = temp{1};
+      temp       = strsplit(C{3}, '-');
+      instrument = temp{1};
+      dbRoot     = obj.dbRoot;
 
-      if strcmp(instr, 'rpw')
+      if strcmp(instrument, 'rpw')
         %==============================
         % CASE: Searching for RPW data
         %==============================
-        if exist(fullfile(obj.dbRoot, 'latest'), 'dir')
+        if exist(fullfile(dbRoot, 'latest'), 'dir')
           % CASE: obj.dbRoot has subdirectory "latest/".
-          %       ==> RPW BIAS data (L2, L3) processed at IRFU.
+          %       ==> Use RPW BIAS data (L2, L3) processed at IRFU.
           %
           % Ex: obj.dbRoot == /data/solo/data_irfu/
           %               ==> /data/solo/data_irfu/latest/rpw/
 
-          rDir = fullfile(obj.dbRoot, 'latest', 'rpw');
+          rDir = fullfile(dbRoot, 'latest', 'rpw');
         else
           % CASE: obj.dbRoot DOES NOT have subdirectory "latest/".
-          %       ==> RPW data (all subsystems) mirrored from ROC/LESIA.
+          %       ==> Use RPW data (all subsystems) mirrored from ROC/LESIA.
           %
           % Ex: obj.dbRoot == /data/solo/
           %               ==> /data/solo/remote/data/
-          rDir = fullfile(obj.dbRoot, 'remote', 'data');
+          rDir = fullfile(dbRoot, 'remote', 'data');
         end
       else
         %==================================
         % CASE: Searching for non-RPW data
         %==================================
-        rDir = fullfile(obj.dbRoot, 'soar', instr);
+        rDir = fullfile(dbRoot, 'soar', instrument);
         if exist(rDir, 'dir')
           % CASE: obj.dbRoot has subdirectory "soar".
           %       ==> Use (presumed) SOAR mirror.
@@ -341,10 +342,10 @@ classdef solo_local_file_db < solo_file_db
           return
         end
 
-        rDir = fullfile(obj.dbRoot, instr);
+        rDir = fullfile(dbRoot, instrument);
         if exist(rDir, 'dir')
           % CASE: obj.dbRoot has subdirectory named after instrument.
-          %       ==> obj.dbRoot is general folder for (multiple) non-RPW
+          %       ==> obj.dbRoot is a general folder for (multiple) non-RPW
           %           instruments.
           %
           % Ex: obj.dbRoot == /data/solo/data_manual/

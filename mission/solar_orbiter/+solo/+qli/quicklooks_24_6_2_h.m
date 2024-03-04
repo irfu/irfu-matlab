@@ -1,7 +1,7 @@
-function quicklooks_24_6_2_h(data,paths,Tint_24h,logoPath)
+function quicklooks_24_6_2_h(data, OutputPaths, Tint_24h, logoPath)
 %
 % Given data in the struct 'data' (see solo.qli.quicklooks_main), generates
-% plots and saves them in the paths specified in the struct 'paths' (see
+% plots and saves them in the paths specified in the struct 'OutputPaths' (see
 % solo.qli.quicklooks_main). Computes spectrum of B, so takes a while to run.
 % Tint_24h should be a 24hour time interval, e.g.
 % irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
@@ -465,7 +465,7 @@ fig.PaperPositionMode='auto';
 %   ==> Changing order of commands.
 %   ==> Calls to YScale, YTick above become superseded.
 %   ==> Unwanted change of behaviour.
-solo.qli.utils.save_figure_to_file(paths.path_24h, Tint_24h)
+solo.qli.utils.save_figure_to_file(OutputPaths.path_24h, Tint_24h)
 
 
 
@@ -503,7 +503,7 @@ end
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 6 h intervals', tBeginSec);
 for i6h = I_6H
   Tint_6h = Tint_24h(1) + 6*60*60*(i6h+[0, 1]);
-  modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_6h, paths.path_6h)
+  modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_6h, OutputPaths.path_6h)
 end
 
 %===========================
@@ -512,7 +512,7 @@ end
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 2 h intervals', tBeginSec);
 for i2h = I_2H
   Tint_2h = Tint_24h(1) + 2*60*60*(i2h+[0, 1]);
-  modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_2h, paths.path_2h)
+  modify_save_subinterval_plot(h, hCisText1, hCisText2, data, Tint_2h, OutputPaths.path_2h)
 end
 
 

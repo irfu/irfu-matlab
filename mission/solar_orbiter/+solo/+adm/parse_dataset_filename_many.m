@@ -7,7 +7,7 @@
 % NOTE: Function accepts FILENAMES and PATHS, not just paths (as the argument
 % name implies), and not just filenames (like
 % solo.adm.parse_dataset_filename()). It is therefore not entirely
-% wrong that function name mentions filenames, not paths.
+% wrong that the function name mentions filenames, not paths.
 %
 %
 % ARGUMENT
