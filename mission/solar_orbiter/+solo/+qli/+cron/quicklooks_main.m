@@ -76,11 +76,8 @@
 function quicklooks_main(...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 
-% Path relative to irfu-matlab root.
-IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/irf_logo.png';
-VHT_DIR        = '/data/solo/data_yuri/';
-OUTPUT_DIR     = '/data/solo/quicklooks/www/';
-%OUTPUT_DIR     = '/home/erjo/temp/so_qli/output/';
+VHT_DIR    = '/data/solo/data_yuri/';
+OUTPUT_DIR = '/data/solo/quicklooks/www/';
 
 
 
@@ -92,9 +89,6 @@ assert(islogical(generateWeeklyQuicklooks))
 % IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
 % bash.
 irf()
-
-irfumatlabRootPath = fullfile(mfilename('path'), '../../../../');
-irfLogoPath        = fullfile(irfumatlabRootPath, IRF_LOGO_RPATH);
 
 
 
@@ -119,6 +113,6 @@ solo.db_cache('on', 'save')
 % Generate quicklooks
 %=====================
 solo.qli.quicklooks_main(...
-  irfLogoPath, VHT_DIR, OUTPUT_DIR, ...
+  VHT_DIR, OUTPUT_DIR, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end

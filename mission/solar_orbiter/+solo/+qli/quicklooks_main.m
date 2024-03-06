@@ -22,11 +22,6 @@
 %
 % ARGUMENTS
 % =========
-% logoPath
-%       Path to IRF logo image.
-%       Normally located in irfu-matlab:
-%       irfu-matlab/mission/solar_orbiter/+solo/irf_logo.png
-%       Empty ==> Do not plot any logo.
 % vhtDataDir
 %       Path to directory containing VHT (velocity) .mat files
 %       V_RPW_1h.mat and V_RPW.mat. Typically brain:/data/solo/data_yuri/
@@ -50,7 +45,7 @@
 % Uppsala, Sweden. Modified by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function quicklooks_main(...
-  logoPath, vhtDataDir, outputDir, ...
+  vhtDataDir, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 %
 % NOTE: Mission begins on 2020-02-12=Wednesday.
@@ -107,12 +102,6 @@ function quicklooks_main(...
 %
 % PROPOSAL: Move quicklooks_24_6_2.m constants here. Submit values as arguments.
 %
-% PROPOSAL: Abolish path argument to IRF logo. Hardcode path and use some kind
-%           of condition for whether to include log instead.
-%     PROPOSAL: HOSTNAME, OS (only allow brain/spis)
-%     PROPOSAL: Path of irfu-matlab version used.
-%         CON: Ties it to the cron job user.
-%
 %
 % quicklooks_24_6_2_h.m(), quicklooks_7day()
 % ==========================================
@@ -164,7 +153,8 @@ ENABLE_B                      = 1;    % 0 or 1.
 % Should be enabled by default.
 CATCH_PLOT_EXCEPTIONS_ENABLED = 1;    % 0 or 1.
 
-
+% Path to IRF logo, relative to irfu-matlab root.
+IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/irf_logo.png';
 
 % NOTE: Usually found at /data/solo/data_yuri/.
 VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
@@ -187,6 +177,25 @@ OutputPaths.path_2h  = fullfile(outputDir, '2h' );
 OutputPaths.path_6h  = fullfile(outputDir, '6h' );
 OutputPaths.path_24h = fullfile(outputDir, '24h');
 OutputPaths.path_1w  = fullfile(outputDir, '1w' );
+
+% Derive full path to IRF logo image if it seems that it should be used
+% ---------------------------------------------------------------------
+% Empty ==> Do not plot any logo.
+% IMPLEMENTATION NOTE: The IRF logo should only be used for official quicklooks.
+% The path is therefore only automatically set if it appears that the quicklooks
+% being generated are "official".
+irfLogoPath = [];
+if isunix()
+  [errorCode, stdoutStr] = system('hostname');
+  assert(errorCode == 0, 'Error when calling "hostname". errorCode = %i', errorCode)
+  hostName = strip(stdoutStr);
+
+  if ismember(hostName, {'brain', 'spis'})
+    parentDir          = fileparts(mfilename('fullpath'));
+    irfumatlabRootPath = fullfile(parentDir, '../../../../');
+    irfLogoPath        = fullfile(irfumatlabRootPath, IRF_LOGO_RPATH);
+  end
+end
 
 
 
@@ -236,7 +245,7 @@ if generateNonweeklyQuicklooks
     DayDt = DaysDtArray(iDay);
 
     try
-      quicklooks_24_6_2_h_local(DayDt, vht1h, OutputPaths, logoPath, ENABLE_B)
+      quicklooks_24_6_2_h_local(DayDt, vht1h, OutputPaths, irfLogoPath, ENABLE_B)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
@@ -261,7 +270,7 @@ if generateWeeklyQuicklooks
     WeekDt = WeeksDtArray(iWeek);
 
     try
-      quicklooks_7days_local(WeekDt, vht6h, OutputPaths, logoPath)
+      quicklooks_7days_local(WeekDt, vht6h, OutputPaths, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
@@ -338,7 +347,7 @@ end
 
 
 
-function quicklooks_24_6_2_h_local(Dt, vht1h, OutputPaths, logoPath, enableB)
+function quicklooks_24_6_2_h_local(Dt, vht1h, OutputPaths, irfLogoPath, enableB)
 Tint = [
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(1))
@@ -378,12 +387,12 @@ if ~enableB
 end
 
 % Plot data and save figure
-solo.qli.quicklooks_24_6_2_h(Data, OutputPaths, Tint, logoPath)
+solo.qli.quicklooks_24_6_2_h(Data, OutputPaths, Tint, irfLogoPath)
 end
 
 
 
-function quicklooks_7days_local(Dt, vht6h, OutputPaths, logoPath)
+function quicklooks_7days_local(Dt, vht6h, OutputPaths, irfLogoPath)
 Tint = [
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(7)), ...
@@ -420,7 +429,7 @@ earthPosTSeries = get_Earth_position(Tint, DT);
 Data.earthpos   = earthPosTSeries;
 
 % Plot data and save figure
-solo.qli.quicklooks_7days(Data, OutputPaths, Tint, logoPath)
+solo.qli.quicklooks_7days(Data, OutputPaths, Tint, irfLogoPath)
 end
 
 
