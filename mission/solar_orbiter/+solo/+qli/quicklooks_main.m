@@ -15,10 +15,9 @@
 % * Uses solo.read_TNR() indirectly which in turns relies on a hardcoded
 %   path to "/data/solo/remote/data/L2/thr/" and selected subdirectories.
 % * Creates subdirectories to the output directory if not pre-existing.
-% * 7-day plots will only cover that largest sub-time interval that is
-%   composed of full 7-day periods. Note: 7-day periods begin with a
-%   hardcoded weekday (Wednesday as of 2023-07-24).
-% * Overwrites pre-existing plot files without warning.
+% * Note: 7-day quicklooks always begin with a specific hardcoded weekday
+%   (Wednesday as of 2023-07-24).
+% * Overwrites pre-existing quicklook files without warning.
 %
 %
 % ARGUMENTS
@@ -34,15 +33,17 @@
 % outputDir
 %       Plots will be placed in subdirectories under this directory.
 %       NOTE: Will create subdirectories if not pre-existing.
-% generateNonweeklyPlots, generateWeeklyPlots
-%       Whether to generate non-weekly (2h, 6h, 24h) quicklooks and or weekly
+% generateNonweeklyQuicklooks, generateWeeklyQuicklooks
+%       Scalar logical. Whether to generate non-weekly (2h, 6h, 24h) quicklooks
+%       and/or weekly quicklooks.
+%       Useful for testing and not re-running unnecessary time-consuming
 %       quicklooks.
-%       Useful for testing and not re-running unnecessary time-consuming plots.
-% utcBegin, utcEnd
-%       Strings. Defines time interval for which quicklooks should be generated.
-%       NOTE: Weekly plots will only be produced for those weeks which are
-%       contained entirely inside the specified time interval (?). Weekly plots
-%       always (as of 2023-07-24) begin on a Wednesday(!) at 00:00:00.
+% DaysDtArray
+%       Column array of datetime objects. UTC, midnight only.
+%       Defines days for which quicklooks should be generated. A day is
+%       specified by the midnight which begins that day.
+%       Weekly quicklooks (if enabled) will be produced for all weeks which
+%       contain at least one day specified here.
 %
 %
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
@@ -50,7 +51,7 @@
 %
 function quicklooks_main(...
   logoPath, vhtDataDir, outputDir, ...
-  generateNonweeklyPlots, generateWeeklyPlots, utcBeginStr, utcEndStr)
+  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 %
 % NOTE: Mission begins on 2020-02-12=Wednesday.
 % ==> There is no SPICE data on Monday-Tuesday before this date.
@@ -92,7 +93,11 @@ function quicklooks_main(...
 %
 % PROPOSAL: Move quicklooks_24_6_2.m constants here. Submit values as arguments.
 %
-% PROPOSAL: Always round time up to full weeks for 7-day plots.
+% PROPOSAL: Abolish path argument to IRF logo. Hardcode path and use some kind
+%           of condition for whether to include log instead.
+%     PROPOSAL: HOSTNAME, OS (only allow brain/spis)
+%     PROPOSAL: Path of irfu-matlab version used.
+%         CON: Ties it to cron job user.
 %
 %
 % quicklooks_24_6_2_h.m(), quicklooks_7day()
@@ -121,8 +126,13 @@ function quicklooks_main(...
 %=========================
 % Assertions on arguments
 %=========================
-assert(islogical(generateNonweeklyPlots) & islogical(generateNonweeklyPlots))
-assert(islogical(generateWeeklyPlots   ) & islogical(generateWeeklyPlots   ))
+assert(islogical(generateNonweeklyQuicklooks) & islogical(generateNonweeklyQuicklooks))
+assert(islogical(generateWeeklyQuicklooks   ) & islogical(generateWeeklyQuicklooks   ))
+assert(iscolumn(DaysDtArray))
+solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
+
+% "Normalize"
+DaysDtArray = unique(DaysDtArray);
 
 
 
@@ -170,16 +180,8 @@ tSec = tic();
 % Array of plotting exceptions caught.
 PlotExcArray = MException.empty(1, 0);
 
-
-
-%=================================
-% Specify time interval for plots
-%=================================
-% Non-weekly plots.
-TimeIntervalNonWeeks = irf.tint(utcBeginStr, utcEndStr);
-% Weekly plots: Indirectly sets weekly boundaries.
-TimeIntervalWeeks = derive_TimeIntervalWeeks(...
-  TimeIntervalNonWeeks(1), TimeIntervalNonWeeks(2), FIRST_DAY_OF_WEEK);
+% Derive weeks from specified days (midnights which begin 7-day periods).
+WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, FIRST_DAY_OF_WEEK);
 
 
 
@@ -205,9 +207,8 @@ end
 %=============================================
 % Run the code for 2-, 6-, 24-hour quicklooks
 %=============================================
-if generateNonweeklyPlots
+if generateNonweeklyQuicklooks
   % Daily time-intervals
-  Time1DayStepsArray = make_time_array(TimeIntervalNonWeeks, 1);
 
   % Load data
   % This is the .mat file containing RPW speeds at 1h resolution.
@@ -215,11 +216,11 @@ if generateNonweeklyPlots
   % brain:/solo/data/data_yuri/.
   vht1h = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
 
-  for iTint=1:length(Time1DayStepsArray)-1
-    % Select time interval.
-    Tint = irf.tint(Time1DayStepsArray(iTint), Time1DayStepsArray(iTint+1));
+  for iDay = 1:length(DaysDtArray)
+    DayDt = DaysDtArray(iDay);
+
     try
-      quicklooks_24_6_2_h_local(Tint, vht1h, OutputPaths, logoPath, ENABLE_B)
+      quicklooks_24_6_2_h_local(DayDt, vht1h, OutputPaths, logoPath, ENABLE_B)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
@@ -232,21 +233,19 @@ end
 %===================================
 % Run the code for weekly overviews
 %===================================
-if generateWeeklyPlots
+if generateWeeklyQuicklooks
 
-  % Weekly time-intervals
-  Time7DayStepsArray = make_time_array(TimeIntervalWeeks, 7);
-
-  % Load data
+  % Load VHT data
+  % -------------
   % This is the .mat file containing RPW speeds at 6h resolution.
   % The file should be in the same folder as this script (quicklook_main).
   vht6h = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
 
-  for iTint=1:length(Time7DayStepsArray)-1
-    % Select time interval.
-    Tint = irf.tint(Time7DayStepsArray(iTint), Time7DayStepsArray(iTint+1));
+  for iWeek = 1:numel(WeeksDtArray)
+    WeekDt = WeeksDtArray(iWeek);
+
     try
-      quicklooks_7days_local(Tint, vht6h, OutputPaths, logoPath)
+      quicklooks_7days_local(WeekDt, vht6h, OutputPaths, logoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
@@ -256,14 +255,14 @@ end
 
 
 
-wallTimeSec   = toc(tSec);
-wallTimeHours = wallTimeSec/3600;
-plotsTimeDays = (TimeIntervalNonWeeks.tts(2) - TimeIntervalNonWeeks.tts(1)) / 86400;
+wallTimeSec     = toc(tSec);
+wallTimeHours   = wallTimeSec/3600;
+nQuicklooksDays = numel(DaysDtArray);
 
 % NOTE: Execution speed may vary by orders of magnitude depending on settings
 % (nonweekly vs weekly plots). May therefore want scientific notation.
-fprintf('Wall time used:                  %g [h] = %g [s]\n', wallTimeHours, wallTimeSec);
-fprintf('Wall time used per day of plots: %g [h/day]\n',      wallTimeHours / plotsTimeDays);
+fprintf('Wall time used:                       %g [h] = %g [s]\n', wallTimeHours, wallTimeSec);
+fprintf('Wall time used per day of quicklooks: %g [h/day]\n',      wallTimeHours / nQuicklooksDays);
 
 
 
@@ -319,7 +318,11 @@ end
 
 
 
-function quicklooks_24_6_2_h_local(Tint, vht1h, OutputPaths, logoPath, enableB)
+function quicklooks_24_6_2_h_local(Dt, vht1h, OutputPaths, logoPath, enableB)
+Tint = [
+  solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
+  solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(1))
+];
 log_plot_function_time_interval(Tint)
 
 Data = [];
@@ -360,7 +363,11 @@ end
 
 
 
-function quicklooks_7days_local(Tint, vht6h, OutputPaths, logoPath)
+function quicklooks_7days_local(Dt, vht6h, OutputPaths, logoPath)
+Tint = [
+  solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
+  solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(7)), ...
+];
 log_plot_function_time_interval(Tint)
 
 Data = [];
@@ -446,47 +453,6 @@ end
 
 
 
-% Function for deriving the exact week boundaries to use.
-function TimeIntervalWeeks = derive_TimeIntervalWeeks(TimeBegin, TimeEnd, firstDayOfWeek)
-assert(isscalar(TimeBegin) & isa(TimeBegin, 'EpochTT'))
-assert(isscalar(TimeEnd)   & isa(TimeBegin, 'EpochTT'))
-
-tWeeksBegin = round_to_week(TimeBegin,  1, firstDayOfWeek);
-tWeeksEnd   = round_to_week(TimeEnd,   -1, firstDayOfWeek);
-
-if tWeeksBegin <= tWeeksEnd
-  TimeIntervalWeeks = irf.tint(tWeeksBegin, tWeeksEnd);
-else
-  % Empty week. ~Hackish.
-  TimeIntervalWeeks = irf.tint(tWeeksBegin, tWeeksBegin);
-end
-end
-
-
-
-% Generate array of timestamps with specific and constant frequency.
-%
-% ARGUMENTS
-% =========
-% TintInterval
-%       Time interval
-% nDays
-%       Number of days between each timestamp.
-%
-function TimeArray = make_time_array(TintInterval, nDays)
-assert((length(TintInterval) == 2) & isa(TintInterval, 'EpochTT'))
-
-t0          = TintInterval(1);
-tlength     = TintInterval(2) - TintInterval(1);
-% NOTE: Does not take leap seconds into account.
-stepSizeSec = nDays*24*60*60;    % seconds.
-
-dt          = 0:stepSizeSec:tlength;
-TimeArray   = t0+dt;
-end
-
-
-
 % Wrapper around solo.db_get_ts() which normalizes the output to always return
 % one TSeries object.
 %
@@ -520,44 +486,4 @@ if nCells>1
     OutputTs = OutputTs.combine(InputTs{iCell});
   end
 end
-end
-
-
-
-% Round timestamp down/up to beginning of week.
-%
-% ARGUMENTS
-% =========
-%     t1
-%         Scalar EpochTT.
-%     roundDir
-%         Scalar number. -1 or 1.
-%
-function t2 = round_to_week(t1, roundDir, firstDayOfWeek)
-assert(isscalar(t1) & isa(t1, 'EpochTT'))
-assert(ismember(roundDir, [-1, 1]))
-
-dv1  = irf.cdf.TT2000_to_datevec(t1.ttns);
-Dt1a = datetime(dv1, 'TimeZone', 'UTCLeapSeconds');
-
-% Round to midnight.
-Dt1b = dateshift(Dt1a, 'start', 'day');
-if (roundDir == 1) && (Dt1a ~= Dt1b)
-  % IMPLEMENTATION NOTE: dateshift(..., 'end', 'day') "rounds" to one day
-  % after if timestamp is already midnight. Therefore do not want use
-  % that.
-  % 2024-03-04: This if statement might be unnecessary.
-  Dt1b = Dt1b + days(1);
-end
-
-% Round to week boundary, as defined by beginningOfWeek.
-% NOTE: dateshift( 'dayofweek' ) rounds to next match, including potentially
-% the same day.
-Dt1c = dateshift(Dt1b, 'dayofweek', firstDayOfWeek);
-if (roundDir == -1) && (Dt1b ~= Dt1c)
-  Dt1c = Dt1c - days(7);
-end
-
-tt2000 = irf.cdf.datevec_to_TT2000(datevec(Dt1c));
-t2     = irf.time_array(tt2000);
 end

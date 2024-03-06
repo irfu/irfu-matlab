@@ -8,12 +8,78 @@ classdef utils
 
 
 
+  properties(Constant)
+    SOAR_URL = 'https://soar.esac.esa.int/';
+  end
+
+
+
   %#######################
   %#######################
   % PUBLIC STATIC METHODS
   %#######################
   %#######################
   methods(Static)
+
+
+
+    % Assert that datetime object only contains timestamps which refer to
+    % midnight.
+    function assert_UTC_midnight_datetime(Dt)
+      assert(isa(Dt, 'datetime'))
+      assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'), ...
+        'datetime object is not UTC.')
+      assert(all(Dt == dateshift(Dt, 'start', 'day'), 'all'), ...
+        'datetime object does not only contain timestamps representing midnight.')
+    end
+
+
+
+    function t = scalar_datetime_to_EpochTT(Dt)
+      % NOTE: Might not be the perfect implementation, but it works.
+
+      assert(isa(Dt, 'datetime'))
+      assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'))
+
+      tt2000 = irf.cdf.datevec_to_TT2000(datevec(Dt));
+      t = irf.time_array(tt2000);
+    end
+
+
+
+    % Given an array of datetime representing days to be plotted, derive the
+    % corresponding weeks which overlap with the specified days.
+    %
+    % ARGUMENTS
+    % =========
+    % DayDtArray
+    %       datetime column array. Every timestamp is midnight and represents
+    %       the 24h period which begins at that timestamp.
+    % firstDayOfWeek
+    %       First day of week. datetime convention (1=Sunday, ..., 7=Saturday).
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % WeekDtArray
+    %       datetime column array. Every timestamp is midnight and represents
+    %       the week (contiguous 7-day period) which begins at that timestamp.
+    %
+    function WeekDtArray = derive_weeks(DayDtArray, firstDayOfWeek)
+      solo.qli.utils.assert_UTC_midnight_datetime(DayDtArray)
+      assert(iscolumn(DayDtArray))
+
+      % Find nearest previous day with specified weekday
+      % ------------------------------------------------
+      % IMPLEMENTATION NOTE: dateshift(... 'dayofweek' ...) can only search
+      % forward. Subtracts days to "round down" instead.
+      WeekDtArray = dateshift(DayDtArray - caldays(6), 'dayofweek', firstDayOfWeek);
+
+      % IMPLEMENTATION NOTE: Important to eliminate doubles since, every initial
+      % timestamp within the same week will separately generate the same
+      % timestamp reresenting the same week.
+      WeekDtArray = sort(unique(WeekDtArray));
+    end
 
 
 
@@ -24,9 +90,9 @@ classdef utils
       str = sprintf( ...
         [ ...
         'Swedish Institute of Space Physics, Uppsala (IRFU), %s.', ...
-        ' Data available at https://soar.esac.esa.int/' ...
+        ' Data available at %s.' ...
         ], ...
-        dateStr ...
+        dateStr, solo.qli.utils.SOAR_URL ...
         );
     end
 

@@ -1,8 +1,8 @@
 %
-% Wrapper around solo.qli.quicklooks_main() intended for being used by being
-% called from system scripts (e.g. bash) for the purpose of cron jobs on
-% brain/spis. The arguments have also been designed for this purpose and are
-% therefore all strings.
+% Wrapper around solo.qli.quicklooks_main() intended for being run on brain/spis
+% for the purpose of cron jobs and manual generation.
+%
+% NOTE: This function is NOT intended to be called from bash/the OS.
 %
 % NOTE: This script is NOT intended to be called from MATLAB by the average
 %       user. See solo.qli.quicklooks_main() instead.
@@ -10,22 +10,11 @@
 %
 % ARGUMENTS
 % =========
-% logoPath
-%       Path to IRF logo image.
-%       Normally located in irfu-matlab:
-%       irfu-matlab/mission/solar_orbiter/+solo/irf_logo.png
-%       Empty ==> Do not plot any logo.
-% vhtDataDir
-%       Path to directory containing VHT (velocity) .mat files.
-%       V_RPW_1h.mat and V_RPW.mat. Typically brain:/data/solo/data_yuri/
-% outputDir
-%       Plots will be placed in subdirectories under this directory.
-%       NOTE: Will create subdirectories if not pre-existing.
-% runNonweeklyPlots, runWeeklyPlots
-%       NOTE: STRINGS.
-%       Whether to run ("1") or not run ("0") the resp. groups of plots.
-% utcBegin, utcEnd : Strings.
-%       Defines time interval for which quicklooks should be generated.
+% generateNonweeklyQuicklooks, generateWeeklyQuicklooks
+%       Scalar logical. Whether to generate non-weekly (2h, 6h, 24h) quicklooks
+%       and/or weekly quicklooks.
+% DaysDtArray
+%       datetime array. Array of
 %
 %
 % NOTES ON CRASHES ON SPIS & BRAIN
@@ -83,57 +72,52 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2022-08-30.
 %
-function quicklooks_main_cron(...
-  logoPath, vhtDataDir, outputDir, ...
-  runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
+function quicklooks_main(...
+  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 
-runNonweeklyPlots = interpret_argument_flag(runNonweeklyPlots);
-runWeeklyPlots    = interpret_argument_flag(runWeeklyPlots);
+% Path relative to irfu-matlab root.
+IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/irf_logo.png';
+VHT_DIR        = '/data/solo/data_yuri/';
+OUTPUT_DIR     = '/data/solo/quicklooks/www/';
+%OUTPUT_DIR     = '/home/erjo/temp/so_qli/output/';
+
+
+
+assert(islogical(generateNonweeklyQuicklooks))
+assert(islogical(generateWeeklyQuicklooks))
+
+
 
 % IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
 % bash.
-irf
+irf()
+
+irfumatlabRootPath = fullfile(mfilename('path'), '../../../../');
+irfLogoPath        = fullfile(irfumatlabRootPath, IRF_LOGO_RPATH);
+
+
 
 %===============================================================
 % Configure Solar Orbiter database from which data will be used
 %===============================================================
 % NOTE: System-dependent configuration!
-% IMPLEMENTATION NOTE: Only use /data/solo/remote/data/ and /data/solo/soar/
-% (and not /data/solo/data_irfu/) since data_irfu is (1) less reliable
-% ("bleeding edge" data) and (2) is (somewhat) ~frequently reprocessed in large
-% sets.
-% ==> Future automatic QLI processing would process a lot.
+% IMPLEMENTATION NOTE: Only uses /data/solo/remote/data/ and /data/solo/soar/
+% (and not /data/solo/data_irfu/) since data_irfu/ (1) has less reliable data
+% ("bleeding edge"), and (2) is (somewhat) ~frequently reprocessed in large
+% sets which would increase automatic QLI processing a lot.
 
 solo.db_init('local_file_db', '/data/solo/');
-%solo.db_init('local_file_db', '/data/solo/data_irfu');
 
 % Setup cache
-solo.db_init('db_cache_size_max', 4096)
+solo.db_init('db_cache_size_max', 4096)   % Unit: MiB.
 solo.db_cache('on', 'save')
 
-%======
-% Plot
-%======
+
+
+%=====================
+% Generate quicklooks
+%=====================
 solo.qli.quicklooks_main(...
-  logoPath, vhtDataDir, outputDir, ...
-  runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
-end
-
-
-
-% Interpret argument for main function interface. Intended accept and normalize
-% arguments which are either
-% (1) MATLAB-friendly (numeric/logical), or
-% (2) bash script-friendly (strings).
-%
-function value = interpret_argument_flag(arg)
-assert(isscalar(arg), 'Flag argument is not scalar.')
-
-if ischar(arg) && arg=='0'
-  value = false;
-elseif ischar(arg) && arg=='1'
-  value = true;
-else
-  error('Can not interpret argument flag. Illegal format.')
-end
+  irfLogoPath, VHT_DIR, OUTPUT_DIR, ...
+  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
