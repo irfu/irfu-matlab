@@ -31,7 +31,7 @@
 %       Path to directory containing VHT (velocity) .mat files
 %       V_RPW_1h.mat and V_RPW.mat. Typically brain:/data/solo/data_yuri/
 % outputDir
-%       Plots will be placed in subdirectories under this directory.
+%       Quicklooks will be placed in subdirectories under this directory.
 %       NOTE: Will create subdirectories if not pre-existing.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
 %       Scalar logical. Whether to generate non-weekly (2h, 6h, 24h) quicklooks
@@ -59,29 +59,43 @@ function quicklooks_main(...
 %     PROPOSAL: Additionally round start time up to start date.
 %
 % PROPOSAL: Better name: quicklooks_main?
-%       ~main, ~plot, ~generate, ~qli
-%       generate_quicklooks()
-%
-% PROPOSAL: Directly generate arrays of timestamps for iterating over, instead
-%           of via TimeIntervalNonWeeks and TimeIntervalWeeks.
-% PROPOSAL: Print time intervals for which
-%           solo.qli.quicklooks_24_6_2_h() and
-%           solo.qli.quicklooks_7days() are called.
-%   PRO: Text will be stored in logs (not created by this code, but by bash
-%        wrapper scripts).
-%   PRO: Useful for more easily determining for which time intervals the code
-%        (those two functions) crashes.
+%   NEED: Consistent with various wrappers.
+%       ~main, ~plot, ~generate, ~qli, quicklooks
+%       generate_quicklooks
+%   PROPOSAL:
+%       qli.generate_quicklooks()
+%           This file.
+%           Input: List of arbitrary dates.
+%       qli.cron.*():
+%           Wrapper around generate_quicklooks() which configures SolO DB for brain/spis.
+%           Input: List of arbitrary dates.
+%       qli.cron.*_bash_manual()
+%           Wrapper around *() for being called from bash for manual
+%           generation of quicklooks.
+%           Input: Two timestamp arguments specifying one continuous range of dates.
+%       qli.cron.*_bash_logs()
+%       qli.cron.*_bash_from_logs()
+%       qli.cron.*_bash_log_updates()
+%       qli.cron.*_bash_from_log_updates()
+%           Input: None?
+%           PROPOSAL: Log file patterns?
+%               CON: Varying set of log files.
+% PROPOSAL: Rename
+%       qli.quicklooks_24_6_2_h()
+%       qli.quicklooks_7days()     # NOTE: Generates ONE quicklook.
+%     NOTE: Files are used by JB.
+%     qli.generate_quicklooks_*
 %
 % PROPOSAL: Some way of handling disk access error?
-%   PROPOSAL: try-catch plot code once (weekly or non-weekly plot function).
+%   PROPOSAL: try-catch plot code once (weekly or non-weekly quicklooks function).
 %             Then try without catch a second time, maybe after delay.
 %             If the first call fails due to disk access error, it might still
 %             trigger automount which makes the second attempt succeed.
-%
-% PROPOSAL: Refactor some functions into separate function files with test code.
-%   Ex: derive_TimeIntervalWeeks()
-%       make_time_array()
-%       round_to_week()
+%   PROPOSAL: Before loading data with SolO DB, use same trick as in bash
+%             scripts for triggering automounting of NAS.
+%     NOTE: Has seen presumed automount fail errors in long quicklook generation
+%           runs.
+%         Ex: so_qli.2024-02-27_20.11.02.log
 %
 % PROPOSAL: Log time consumption for each call to plot functions.
 %   PROPOSAL: Use solo.qli.utils.log_time().
@@ -97,7 +111,7 @@ function quicklooks_main(...
 %           of condition for whether to include log instead.
 %     PROPOSAL: HOSTNAME, OS (only allow brain/spis)
 %     PROPOSAL: Path of irfu-matlab version used.
-%         CON: Ties it to cron job user.
+%         CON: Ties it to the cron job user.
 %
 %
 % quicklooks_24_6_2_h.m(), quicklooks_7day()
@@ -123,6 +137,7 @@ function quicklooks_main(...
 % ##############################################################################
 
 
+
 %=========================
 % Assertions on arguments
 %=========================
@@ -145,7 +160,7 @@ DaysDtArray = unique(DaysDtArray);
 ENABLE_B                      = 1;    % 0 or 1.
 % Whether to catch plotting exceptions, continue plotting other days/weeks, and
 % then re-raise the last caught exception at the very end. This produces as many
-% plots as possible when one or some plots fail.
+% quicklooks as possible when one or some quicklooks fail.
 % Should be enabled by default.
 CATCH_PLOT_EXCEPTIONS_ENABLED = 1;    % 0 or 1.
 
@@ -158,7 +173,7 @@ VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 % Define boundary of weeks. Beginning of stated weekday.
 % ------------------------------------------------------
 % NOTE: First day of data (launch+2 days) is 2020-02-12, a Wednesday.
-% Therefore using Wednesday as beginning of "week" for weekly plots (until
+% Therefore using Wednesday as beginning of "week" for weekly quicklooks (until
 % someone complains).
 FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
 
@@ -167,7 +182,7 @@ FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
 %==============================
 % Miscellaneous initialization
 %==============================
-% Specify subdirectories for saving the respective types of plots.
+% Specify subdirectories for saving the respective types of quicklooks.
 OutputPaths.path_2h  = fullfile(outputDir, '2h' );
 OutputPaths.path_6h  = fullfile(outputDir, '6h' );
 OutputPaths.path_24h = fullfile(outputDir, '24h');
@@ -188,11 +203,11 @@ WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, FIRST_DAY_OF_WEEK);
 %=========================================================
 % Create subdirectories for different types of quicklooks
 %=========================================================
-% NOTE: Creates subdirectories for all four plot types, regardless of whether
+% NOTE: Creates subdirectories for all four quicklook types, regardless of whether
 %       they will actually be generated or not.
 %   NOTE: This simplifies bash wrapper scripts that copy content of
 %         sub-directories to analogous sub-directories, also when not all
-%         plot types are generated.
+%         quicklook types are generated.
 for fnCa = fieldnames(OutputPaths)'
   dirPath = OutputPaths.(fnCa{1});
   [parentDir, dirBasename, dirSuffix] = fileparts(dirPath);
@@ -210,7 +225,8 @@ end
 if generateNonweeklyQuicklooks
   % Daily time-intervals
 
-  % Load data
+  % Load VHT data
+  % -------------
   % This is the .mat file containing RPW speeds at 1h resolution.
   % The file should be in the current path. This file can be found in
   % brain:/solo/data/data_yuri/.
@@ -278,6 +294,10 @@ end    % function
 
 
 
+% Log time interval for which a plotting function is called.
+%
+% This is useful for more easily determining for which time interval the code
+% crashes by reading the log.
 function log_plot_function_time_interval(Tint)
 utcStr1 = Tint(1).utc;
 utcStr2 = Tint(2).utc;
@@ -391,13 +411,13 @@ Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux',Tint);
 Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 % NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
-% "solo.get_position".
+% "solo.get_position()".
 Data.solopos = get_SolO_position(Tint);
 
 % Earth position (also uses SPICE)
 DT = 60*60;
 earthPosTSeries = get_Earth_position(Tint, DT);
-Data.earthpos = earthPosTSeries;
+Data.earthpos   = earthPosTSeries;
 
 % Plot data and save figure
 solo.qli.quicklooks_7days(Data, OutputPaths, Tint, logoPath)

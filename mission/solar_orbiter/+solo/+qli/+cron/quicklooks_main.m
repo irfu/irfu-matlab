@@ -14,7 +14,8 @@
 %       Scalar logical. Whether to generate non-weekly (2h, 6h, 24h) quicklooks
 %       and/or weekly quicklooks.
 % DaysDtArray
-%       datetime array. Array of
+%       datetime column array. Array of UTC midnights representing the beginning
+%       of days for which to generate quicklooks.
 %
 %
 % NOTES ON CRASHES ON SPIS & BRAIN

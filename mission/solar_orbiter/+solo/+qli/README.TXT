@@ -3,8 +3,8 @@ QLI = QuickLooks IRFU ("IRFU quicklooks")
 
 SolO quicklooks generated at IRFU.
 
-NOTE: Uses SolO/RPW data AND data from instruments.
 NOTE: Not to be confused with LESIA's summary plots or BIA_QL3.
+NOTE: Quicklooks use SolO/RPW datasets AND datasets from other instruments.
 
 
 
