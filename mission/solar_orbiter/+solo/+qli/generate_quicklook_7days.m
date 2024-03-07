@@ -266,7 +266,7 @@ h(2).YLabel.Position=h(3).YLabel.Position;
 h(9).XLabel.Visible = 'off';
 
 % Add spacecraft position as text.
-[soloStr, earthStr] = solo.qli.utils.context_info_strings(data.solopos, data.earthpos, Tint);
+[soloStr, earthStr] = solo.qli.utils.get_context_info_strings(data.solopos, data.earthpos, Tint);
 text(h(9), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', 18);
 % Add Earth longitude as text.
 text(h(9), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', 18);
@@ -288,7 +288,7 @@ if ~isempty(logoPath)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
-str = solo.qli.utils.generate_data_source_info_string();
+str = solo.qli.utils.get_data_source_info_string();
 text(h(1), 0, 1.2, str, 'Units', 'normalized')
 
 % Remove overlapping ticks.

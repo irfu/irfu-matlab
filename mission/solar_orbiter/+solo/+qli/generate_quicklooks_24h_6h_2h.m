@@ -414,7 +414,7 @@ h(2).YLabel.Units='normalized';
 h(2).YLabel.Position=h(1).YLabel.Position;
 
 % Add context info strings (CIS): Spacecraft position, Earth longitude as text.
-[soloStr, earthStr] = solo.qli.utils.context_info_strings(data.solopos, data.earthpos, Tint_24h);
+[soloStr, earthStr] = solo.qli.utils.get_context_info_strings(data.solopos, data.earthpos, Tint_24h);
 hCisText1 = text(h(10), -0.11, -0.575, soloStr,  'units', 'normalized', 'fontsize', 18);
 hCisText2 = text(h(10), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', 18);
 
@@ -435,7 +435,7 @@ if ~isempty(logoPath)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
-str = solo.qli.utils.generate_data_source_info_string();
+str = solo.qli.utils.get_data_source_info_string();
 text(h(1), 0, 1.2, str, 'Units', 'normalized')
 
 yyaxis(h(2), 'left');
@@ -568,7 +568,7 @@ yyaxis(hAxesArray(2), 'left');
 set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
 
 % Update text
-[hCisText1.String, hCisText2.String] = solo.qli.utils.context_info_strings(data.solopos, data.earthpos, Tint);
+[hCisText1.String, hCisText2.String] = solo.qli.utils.get_context_info_strings(data.solopos, data.earthpos, Tint);
 
 solo.qli.utils.save_figure_to_file(parentDirPath, Tint)
 end

@@ -85,7 +85,7 @@ classdef utils
 
     % Generate text string with information on data source and when the plot
     % was generated.
-    function str = generate_data_source_info_string()
+    function str = get_data_source_info_string()
       dateStr = char(datetime("now", "Format", "uuuu-MM-dd"));
       str = sprintf( ...
         [ ...
@@ -127,7 +127,7 @@ classdef utils
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function [soloStr, earthStr] = context_info_strings(soloPosTSeries, earthPosTSeries, Tint)
+    function [soloStr, earthStr] = get_context_info_strings(soloPosTSeries, earthPosTSeries, Tint)
       % PROPOSAL: No Tint argument. Caller submits already truncated TSeries.
       %   PRO: One fewer arguments.
       %   CON: Caller has to truncate twice.

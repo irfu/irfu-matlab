@@ -167,9 +167,9 @@ classdef utils___UTEST < matlab.unittest.TestCase
     % Merely test that function (1) does not crash, and (2) returns string.
     %
     % NOTE: Function returns time-dependent string.
-    function test_generate_data_source_info_string(testCase)
+    function test_get_data_source_info_string(testCase)
 
-      actOutput = solo.qli.utils.generate_data_source_info_string();
+      actOutput = solo.qli.utils.get_data_source_info_string();
 
       testCase.verifyInstanceOf(actOutput, 'char')
       testCase.verifyTrue(isrow(actOutput))
@@ -177,14 +177,14 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_context_info_strings(testCase)
+    function test_get_context_info_strings(testCase)
 
       % Arbitrary number output variables.
       function test(...
           soloPosTSeries, earthPosTSeries, Tint, ...
           expSoloStr, expEarthStr)
 
-        [actSoloStr, actEarthStr] = solo.qli.utils.context_info_strings(soloPosTSeries, earthPosTSeries, Tint);
+        [actSoloStr, actEarthStr] = solo.qli.utils.get_context_info_strings(soloPosTSeries, earthPosTSeries, Tint);
         testCase.verifyEqual(actSoloStr,  expSoloStr)
         testCase.verifyEqual(actEarthStr, expEarthStr)
       end
