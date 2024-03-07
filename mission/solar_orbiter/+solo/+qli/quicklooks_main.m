@@ -77,8 +77,8 @@ function quicklooks_main(...
 %           PROPOSAL: Log file patterns?
 %               CON: Varying set of log files.
 % PROPOSAL: Rename
-%       qli.quicklooks_24_6_2_h()
-%       qli.quicklooks_7days()     # NOTE: Generates ONE quicklook.
+%       qli.generate_quicklooks_24h_6h_2h()
+%       qli.generate_quicklook_7days()     # NOTE: Generates ONE quicklook.
 %     NOTE: Files are used by JB.
 %     qli.generate_quicklooks_*
 %
@@ -105,7 +105,7 @@ function quicklooks_main(...
 % PROPOSAL: Move quicklooks_24_6_2.m constants here. Submit values as arguments.
 %
 %
-% quicklooks_24_6_2_h.m(), quicklooks_7day()
+% generate_quicklooks_24h_6h_2h.m(), quicklooks_7day()
 % ==========================================
 % PROBLEM: Lots of cases of, and checks for data that may or may not be missing.
 % PROBLEM: Missing data can be represented as [] (0x0), rather than e.g. Nx0.
@@ -227,7 +227,7 @@ if generateNonweeklyQuicklooks
 
     try
       trigger_automount(isOfficialProcessing)
-      quicklooks_24_6_2_h_local(DayDt, vht1h, OutputPaths, irfLogoPath)
+      generate_quicklooks_24h_6h_2h_local(DayDt, vht1h, OutputPaths, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(Exc)
@@ -253,7 +253,7 @@ if generateWeeklyQuicklooks
 
     try
       trigger_automount(isOfficialProcessing)
-      quicklooks_7days_local(WeekDt, vht6h, OutputPaths, irfLogoPath)
+      generate_quicklook_7days_local(WeekDt, vht6h, OutputPaths, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(Exc)
@@ -330,7 +330,7 @@ end
 
 
 
-function quicklooks_24_6_2_h_local(Dt, vht1h, OutputPaths, irfLogoPath)
+function generate_quicklooks_24h_6h_2h_local(Dt, vht1h, OutputPaths, irfLogoPath)
 Tint = [
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(1))
@@ -370,12 +370,12 @@ if ~solo.qli.const.ENABLE_B
 end
 
 % Plot data and save figure
-solo.qli.quicklooks_24_6_2_h(Data, OutputPaths, Tint, irfLogoPath)
+solo.qli.generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint, irfLogoPath)
 end
 
 
 
-function quicklooks_7days_local(Dt, vht6h, OutputPaths, irfLogoPath)
+function generate_quicklook_7days_local(Dt, vht6h, OutputPaths, irfLogoPath)
 Tint = [
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(7)), ...
@@ -412,7 +412,7 @@ earthPosTSeries = get_Earth_position(Tint, DT);
 Data.earthpos   = earthPosTSeries;
 
 % Plot data and save figure
-solo.qli.quicklooks_7days(Data, OutputPaths, Tint, irfLogoPath)
+solo.qli.generate_quicklook_7days(Data, OutputPaths, Tint, irfLogoPath)
 end
 
 

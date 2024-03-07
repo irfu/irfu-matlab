@@ -16,7 +16,7 @@ classdef const
   %#####################
   properties(Constant)
     % IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
-    % speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
+    % speeds up solo.qli.generate_quicklooks_24h_6h_2h() greatly. Useful for some debugging.
     % Should be enabled by default.
     ENABLE_B = true;
 

@@ -1,4 +1,4 @@
-function quicklooks_24_6_2_h(data, OutputPaths, Tint_24h, logoPath)
+function generate_quicklooks_24h_6h_2h(data, OutputPaths, Tint_24h, logoPath)
 %
 % Generates quicklooks (files) for covering ONE UTC day of data:
 % 1x24h quicklooks, 4x6h quicklooks, 12x2h quicklooks.
@@ -536,7 +536,7 @@ end
 
 close(fig);
 
-[~] = solo.qli.utils.log_time('End of quicklooks_24_6_2_h.m', tBeginSec);
+[~] = solo.qli.utils.log_time('End of generate_quicklooks_24h_6h_2h.m', tBeginSec);
 
 end
 

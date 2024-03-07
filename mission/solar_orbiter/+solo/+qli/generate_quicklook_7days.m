@@ -1,4 +1,4 @@
-function quicklooks_7days(data, OutputPaths, Tint, logoPath)
+function generate_quicklook_7days(data, OutputPaths, Tint, logoPath)
 %
 % Generates ONE quicklook (file) for covering ONE UTC week of data.
 %
@@ -346,6 +346,6 @@ solo.qli.utils.save_figure_to_file(OutputPaths.path_1w, Tint)
 
 close(fig);
 
-[~] = solo.qli.utils.log_time('End of quicklooks_7days.m', tBeginSec);
+[~] = solo.qli.utils.log_time('End of generate_quicklook_7days.m', tBeginSec);
 
 end
