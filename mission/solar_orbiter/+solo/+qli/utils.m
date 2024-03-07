@@ -146,11 +146,13 @@ classdef utils
       assert(isa(Tint,            'EpochTT'))
       assert(length(Tint) == 2)
 
+      %======
+      % SolO
+      %======
       % NOTE: In principle a lot of execution/time just for obtaining a constant,
       %       but the function is not time-critical so it should not be a problem.
       Units = irf_units;
       AU_KM = Units.AU / Units.km;   % Astronomical unit [km]
-
       soloPos = soloPosTSeries.tlim(Tint).data;
       if ~isempty(soloPos)
         % NOTE: 2x whitespaces between every value.
@@ -168,6 +170,9 @@ classdef utils
         soloStr = '';
       end
 
+      %=======
+      % Earth
+      %=======
       earthPos = earthPosTSeries.tlim(Tint).data;
       if ~isempty(earthPos)
         earthStr = sprintf('Earth:  EcLon %d\\circ', round(earthPos(1,2)*180/pi));
@@ -197,17 +202,17 @@ classdef utils
     function filename = get_plot_filename(Tint)
       assert(isa(Tint, 'EpochTT') && (length(Tint) == 2))
 
-      ett1 = Tint(1);
-      utcStr1 = ett1.utc;
-      utcStr1 = utcStr1(1:13);
-      utcStr1([5,8])=[];
+      ett1           = Tint(1);
+      utcStr1        = ett1.utc;
+      utcStr1        = utcStr1(1:13);
+      utcStr1([5,8]) = [];
 
-      ett2 = Tint(end);
-      utcStr2 = ett2.utc;
-      utcStr2 = utcStr2(1:13);
-      utcStr2([5,8])=[];
+      ett2           = Tint(2);
+      utcStr2        = ett2.utc;
+      utcStr2        = utcStr2(1:13);
+      utcStr2([5,8]) = [];
 
-      filename = [utcStr1,'_',utcStr2,'.png'];
+      filename = [utcStr1, '_', utcStr2,'.png'];
     end
 
 

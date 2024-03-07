@@ -586,22 +586,25 @@ end
 % ARGUMENTS
 % =========
 % hAxesAutoYLimYTickArray
-%   Array of axes for which to
-%   (1) set YLim automatically (from data; with margins)
-%   (2) set YTick automatically.
+%       Array of axes for which to
+%       (1) set YLim automatically (from data; with margins)
+%       (2) set YTick automatically.
 % hAxesAutoYLimArray
-%   Array of axes for which to
-%   (1) set YLim automatically (from data; with margins),
-%   (2) keep YTick as is.
+%       Array of axes for which to
+%       (1) set YLim automatically (from data; with margins),
+%       (2) keep YTick as is.
 % hAxesMarginYLimArray
-%   Array of axes for which to
-%   (1) add margins to pre-existing YLim
-%   (2) keep YTick as is.
+%       Array of axes for which to
+%       (1) add margins to pre-existing YLim
+%       (2) keep YTick as is.
 %
 function set_YLim_YTick(hAxesAutoYLimYTickArray, hAxesAutoYLimArray, hAxesMarginYLimArray)
 % PROPOSAL: Automatically (not MATLAB) set YTick for logarithmic axis to
 %           ensure one tick per power of ten, 10^n.
 % PROPOSAL: Set YLimMode=manual for YLimYTick axes.
+% PROPOSAL: Split into 2/3 separate functions.
+%     NOTE: solo.qli.utils.ensure_axes_data_tick_margins)() is called for all
+%           axes.
 
 assert(isa(hAxesAutoYLimYTickArray, 'matlab.graphics.axis.Axes'))
 assert(isa(hAxesAutoYLimArray,      'matlab.graphics.axis.Axes'))

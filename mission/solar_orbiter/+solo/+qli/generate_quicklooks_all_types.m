@@ -58,34 +58,6 @@ function generate_quicklooks_all_types(...
 % ==> Code fails for week Monday-to-Sunday.
 %     PROPOSAL: Additionally round start time up to start date.
 %
-% PROPOSAL: Better name: generate_quicklooks_all_types?
-%   NEED: Consistent with various wrappers.
-%       ~main, ~plot, ~generate, ~qli, quicklooks
-%       generate_quicklooks
-%   PROPOSAL:
-%       qli.generate_quicklooks_all_types()
-%           This file.
-%           Input: List of arbitrary dates.
-%       qli.cron.*():
-%           Wrapper around generate_quicklooks() which configures SolO DB for brain/spis.
-%           Input: List of arbitrary dates.
-%       qli.cron.*_bash_manual()
-%           Wrapper around *() for being called from bash for manual
-%           generation of quicklooks.
-%           Input: Two timestamp arguments specifying one continuous range of dates.
-%       qli.cron.*_bash_logs()
-%       qli.cron.*_bash_from_logs()
-%       qli.cron.*_bash_log_updates()
-%       qli.cron.*_bash_from_log_updates()
-%           Input: None?
-%           PROPOSAL: Log file patterns?
-%               CON: Varying set of log files.
-% PROPOSAL: Rename
-%       qli.generate_quicklooks_24h_6h_2h()
-%       qli.generate_quicklook_7days()     # NOTE: Generates ONE quicklook.
-%     NOTE: Files are used by JB.
-%     qli.generate_quicklooks_*
-%
 % PROPOSAL: Some way of handling disk access error?
 %   PROPOSAL: try-catch plot code once (weekly or non-weekly quicklooks function).
 %             Then try without catch a second time, maybe after delay.
@@ -106,7 +78,10 @@ function generate_quicklooks_all_types(...
 %   NOTE: Would require argument for dimensions when empty.
 %   PRO: Could (probably) simplify plot code a lot.
 %
-% PROPOSAL: Move quicklooks_24_6_2.m constants here. Submit values as arguments.
+% PROPOSAL: Move generate_quicklooks_24h_6h_2h, generate_quicklook_7days constants here. Submit values as arguments.
+% PROPOSAL: Move generate_quicklooks_24h_6h_2h, generate_quicklook_7days constants to class for constants.
+%
+% PROPOSAL: Parallelize loop over days and weeks.
 %
 % PROBLEM: How handle IRF logo file?!
 %   NOTE: Is not in the git repo itself, only the directory structure.
@@ -124,7 +99,7 @@ function generate_quicklooks_all_types(...
 %
 %
 % generate_quicklooks_24h_6h_2h.m(), quicklooks_7day()
-% ==========================================
+% ====================================================
 % PROBLEM: Lots of cases of, and checks for data that may or may not be missing.
 % PROBLEM: Missing data can be represented as [] (0x0), rather than e.g. Nx0.
 %   Stems from solo.db_get_ts() (?) not finding any data for selected time
@@ -143,15 +118,13 @@ function generate_quicklooks_all_types(...
 % 2022-03-12T07:22:03.090373000Z -- 2022-03-13T00
 %   Missing data.Tpas
 
-% ##############################################################################
-
 
 
 %=========================
 % Assertions on arguments
 %=========================
-assert(islogical(generateNonweeklyQuicklooks) & islogical(generateNonweeklyQuicklooks))
-assert(islogical(generateWeeklyQuicklooks   ) & islogical(generateWeeklyQuicklooks   ))
+assert(islogical(generateNonweeklyQuicklooks) & isscalar(generateNonweeklyQuicklooks))
+assert(islogical(generateWeeklyQuicklooks   ) & isscalar(generateWeeklyQuicklooks   ))
 assert(iscolumn(DaysDtArray))
 solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
 
@@ -358,7 +331,18 @@ Data.Vpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
 Data.Npas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
 Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+
 % TNR E-field
+% -----------
+% BUG? Is not anything like an "E-field"!! Reading the wrong variable or
+% mislabelling the right variable?
+% NOTE: Variable is not used very much. Code only checks if empty or not.
+%
+%      FIELDNAM        (CDF_CHAR/8): "TNR_BAND"
+%      CATDESC         (CDF_CHAR/31): "TNR band of the current record "
+%      VAR_NOTES       (CDF_CHAR/71): "TNR band of the current record. Possible values are: 1=A, 2=B, 3=C, 4=D"
+% /solo_L2_rpw-tnr-surv-cdag_20240101_V02.cdf
+%
 Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 % NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
@@ -421,10 +405,10 @@ end
 
 
 
-% Get Solar Orbiter position
+% Get Solar Orbiter's position.
 %
-% NOTE: Uses SPICE and "solo.get_position()" which can itself load SPICE
-% kernels(!).
+% NOTE: Uses SPICE and "solo.get_position()" indirectly through irfu-matlab
+% which can itself load SPICE kernels(!).
 function soloPos = get_SolO_position(Tint)
 assert((length(Tint) == 2) & isa(Tint, 'EpochTT'))
 
@@ -446,16 +430,40 @@ end
 
 
 % Use SPICE to get Earth's position.
+%
 function earthPosTSeries = get_Earth_position(Tint, dt)
 assert(length(Tint) == 2)
 assert(isnumeric(dt))
 
 et = Tint.start.tts : dt : Tint.stop.tts;
 
+% SPICE coordinate system
+% -------------------------------------------------------------------------
+% 17  ECLIPJ2000  Ecliptic coordinates based upon the
+%                 J2000 frame.
+%
+%                 The value for the obliquity of the
+%                 ecliptic at J2000 is taken from page 114
+%                 of [7] equation 3.222-1. This agrees with the
+%                 expression given in [5].
+%
+% Source: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/frames.html
+% ##############################################################################
+% 'LT+S'     Correct for one-way light time and
+%            stellar aberration using a Newtonian
+%            formulation. This option modifies the
+%            position obtained with the 'LT' option
+%            to account for the observer's velocity
+%            relative to the solar system
+%            barycenter. The result is the apparent
+%            position of the target---the position
+%            as seen by the observer.
+% Source: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/mice/cspice_spkpos.html
 spiceEarthPos = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+
 if ~isempty(spiceEarthPos)
-  [E_radius, E_lon, E_lat] = cspice_reclat(spiceEarthPos);
-  earthPos = [E_radius', E_lon', E_lat'];
+  [earthSunDistance, earthEclLongitude, earthEclLatitude] = cspice_reclat(spiceEarthPos);
+  earthPos = [earthSunDistance', earthEclLongitude', earthEclLatitude'];
 
   Tlength  = Tint(end)-Tint(1);
   dTimes   = 0:dt:Tlength;

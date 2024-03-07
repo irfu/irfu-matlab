@@ -1,6 +1,6 @@
 %
-% Wrapper around solo.qli.generate_quicklooks_all_types() intended for being run on brain/spis
-% for the purpose of cron jobs and manual generation.
+% Wrapper around solo.qli.generate_quicklooks_all_types() intended for being run
+% on brain/spis for the purpose of cron jobs and manual generation.
 %
 % NOTE: This function is NOT intended to be called from bash/the OS.
 %
@@ -82,11 +82,10 @@ function generate_quicklooks(...
 
 VHT_DIR        = '/data/solo/data_yuri/';
 
+% Path to IRF logo, relative to the irfu-matlab root.
 % NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code still
 % requires it to be located inside the corresponding directory.
 IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+cron/irf_logo.png';
-IRF_LOGO_PATH  = fullfile(solo.qli.utils.get_irfumatlab_root_path(), IRF_LOGO_RPATH);
-irf.assert.file_exists(IRF_LOGO_PATH)
 
 
 
@@ -94,6 +93,9 @@ assert(islogical(generateNonweeklyQuicklooks))
 assert(islogical(generateWeeklyQuicklooks))
 
 
+
+irfLogoPath = fullfile(solo.qli.utils.get_irfumatlab_root_path(), IRF_LOGO_RPATH);
+irf.assert.file_exists(irfLogoPath)
 
 % IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
 % bash.
@@ -122,6 +124,6 @@ solo.db_cache('on', 'save')
 % Generate quicklooks
 %=====================
 solo.qli.generate_quicklooks_all_types(...
-  IRF_LOGO_PATH, VHT_DIR, outputDir, ...
+  irfLogoPath, VHT_DIR, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
