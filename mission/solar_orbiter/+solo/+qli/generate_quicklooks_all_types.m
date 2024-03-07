@@ -45,7 +45,7 @@
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
 % Uppsala, Sweden. Modified by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
-function quicklooks_main(...
+function generate_quicklooks_all_types(...
   vhtDataDir, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 %
@@ -54,7 +54,7 @@ function quicklooks_main(...
 % ==> Code fails for week Monday-to-Sunday.
 %     PROPOSAL: Additionally round start time up to start date.
 %
-% PROPOSAL: Better name: quicklooks_main?
+% PROPOSAL: Better name: generate_quicklooks_all_types?
 %   NEED: Consistent with various wrappers.
 %       ~main, ~plot, ~generate, ~qli, quicklooks
 %       generate_quicklooks

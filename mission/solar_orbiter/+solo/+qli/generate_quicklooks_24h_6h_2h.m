@@ -8,10 +8,10 @@ function generate_quicklooks_24h_6h_2h(data, OutputPaths, Tint_24h, logoPath)
 % =========
 % data
 %     Struct with various time series of data extracted from SPICE and datasets.
-%     See the call from solo.qli.quicklooks_main().
+%     See the call from solo.qli.generate_quicklooks_all_types().
 % OutputPaths
 %     Struct with paths to separate output directories for the different types
-%     of quicklooks (see solo.qli.quicklooks_main).
+%     of quicklooks (see solo.qli.generate_quicklooks_all_types).
 % Tint_24h
 %     Should be a 24-hour time interval consistent with the time series in
 %     "data", e.g.

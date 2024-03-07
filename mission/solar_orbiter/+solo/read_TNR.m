@@ -244,7 +244,7 @@ catch CauseExc
   % "path" contains "*" i.e. it is not a real path, but dataobj() can
   % handle that. Can therefore not (easily) manually check for path
   % existence outside of dataobj().
-  % SolO IRFU quicklooks (solo.qli.quicklooks_main()) fails for 2022-08-08
+  % SolO IRFU quicklooks (solo.qli.generate_quicklooks_all_types()) fails for 2022-08-08
   % if not for some way of handling non-existent path here.
   % /Erik P G Johansson 2022-09-12
   Exc = MException('read_TNR:FileNotFound', 'Can not find/open file path="%s".', path);

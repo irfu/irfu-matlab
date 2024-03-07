@@ -1,11 +1,11 @@
 %
-% Wrapper around solo.qli.quicklooks_main() intended for being run on brain/spis
+% Wrapper around solo.qli.generate_quicklooks_all_types() intended for being run on brain/spis
 % for the purpose of cron jobs and manual generation.
 %
 % NOTE: This function is NOT intended to be called from bash/the OS.
 %
 % NOTE: This script is NOT intended to be called from MATLAB by the average
-%       user. See solo.qli.quicklooks_main() instead.
+%       user. See solo.qli.generate_quicklooks_all_types() instead.
 %
 %
 % ARGUMENTS
@@ -112,7 +112,7 @@ solo.db_cache('on', 'save')
 %=====================
 % Generate quicklooks
 %=====================
-solo.qli.quicklooks_main(...
+solo.qli.generate_quicklooks_all_types(...
   VHT_DIR, OUTPUT_DIR, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end

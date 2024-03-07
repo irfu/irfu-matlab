@@ -8,7 +8,7 @@
 %       the name.
 %
 % NOTE: This script is NOT intended to be called from MATLAB by the average
-%       user. See solo.qli.quicklooks_main() instead.
+%       user. See solo.qli.generate_quicklooks_all_types() instead.
 %
 %
 % ARGUMENTS
