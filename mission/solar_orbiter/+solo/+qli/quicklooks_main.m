@@ -87,7 +87,8 @@ function quicklooks_main(...
 %             If the first call fails due to disk access error, it might still
 %             trigger automount which makes the second attempt succeed.
 %   PROPOSAL: Before loading data with SolO DB, use same trick as in bash
-%             scripts for triggering automounting of NAS.
+%             scripts for triggering automounting of NAS before every time
+%             SolO DB is called. -- IMPLEMENTED BUT UNTESTED /2024-03-07
 %     NOTE: Has seen presumed automount fail errors in long quicklook generation
 %           runs.
 %         Ex: so_qli.2024-02-27_20.11.02.log
@@ -140,35 +141,6 @@ DaysDtArray = unique(DaysDtArray);
 
 
 
-%============
-% ~Constants
-%============
-% IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
-% speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
-% Should be enabled by default.
-ENABLE_B                      = 1;    % 0 or 1.
-% Whether to catch plotting exceptions, continue plotting other days/weeks, and
-% then re-raise the last caught exception at the very end. This produces as many
-% quicklooks as possible when one or some quicklooks fail.
-% Should be enabled by default.
-CATCH_PLOT_EXCEPTIONS_ENABLED = 1;    % 0 or 1.
-
-% Path to IRF logo, relative to irfu-matlab root.
-IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/irf_logo.png';
-
-% NOTE: Usually found at /data/solo/data_yuri/.
-VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
-VHT_6H_DATA_FILENAME = 'V_RPW.mat';
-
-% Define boundary of weeks. Beginning of stated weekday.
-% ------------------------------------------------------
-% NOTE: First day of data (launch+2 days) is 2020-02-12, a Wednesday.
-% Therefore using Wednesday as beginning of "week" for weekly quicklooks (until
-% someone complains).
-FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
-
-
-
 %==============================
 % Miscellaneous initialization
 %==============================
@@ -178,23 +150,31 @@ OutputPaths.path_6h  = fullfile(outputDir, '6h' );
 OutputPaths.path_24h = fullfile(outputDir, '24h');
 OutputPaths.path_1w  = fullfile(outputDir, '1w' );
 
+% Try to determine whether quicklooks are being generated as part of IRFU's
+% official processing.
+isOfficialProcessing = false;
+if isunix()
+  [errorCode, stdoutStr] = system('hostname');
+  assert(errorCode == 0, 'Error when calling "hostname". errorCode = %i', errorCode)
+  hostName = strip(stdoutStr);
+
+  if ismember(hostName, solo.qli.const.OFFICIAL_PROCESSING_IRFU_HOST_NAMES_CA)
+    isOfficialProcessing = true;
+  end
+end
+
 % Derive full path to IRF logo image if it seems that it should be used
 % ---------------------------------------------------------------------
 % Empty ==> Do not plot any logo.
 % IMPLEMENTATION NOTE: The IRF logo should only be used for official quicklooks.
 % The path is therefore only automatically set if it appears that the quicklooks
 % being generated are "official".
-irfLogoPath = [];
-if isunix()
-  [errorCode, stdoutStr] = system('hostname');
-  assert(errorCode == 0, 'Error when calling "hostname". errorCode = %i', errorCode)
-  hostName = strip(stdoutStr);
-
-  if ismember(hostName, {'brain', 'spis'})
-    parentDir          = fileparts(mfilename('fullpath'));
-    irfumatlabRootPath = fullfile(parentDir, '../../../../');
-    irfLogoPath        = fullfile(irfumatlabRootPath, IRF_LOGO_RPATH);
-  end
+if isOfficialProcessing
+  parentDir          = fileparts(mfilename('fullpath'));
+  irfumatlabRootPath = fullfile(parentDir, '../../../../');
+  irfLogoPath        = fullfile(irfumatlabRootPath, solo.qli.const.IRF_LOGO_RPATH);
+else
+  irfLogoPath = [];
 end
 
 
@@ -205,7 +185,7 @@ tSec = tic();
 PlotExcArray = MException.empty(1, 0);
 
 % Derive weeks from specified days (midnights which begin 7-day periods).
-WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, FIRST_DAY_OF_WEEK);
+WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, solo.qli.const.FIRST_DAY_OF_WEEK);
 
 
 
@@ -239,16 +219,17 @@ if generateNonweeklyQuicklooks
   % This is the .mat file containing RPW speeds at 1h resolution.
   % The file should be in the current path. This file can be found in
   % brain:/solo/data/data_yuri/.
-  vht1h = load(fullfile(vhtDataDir, VHT_1H_DATA_FILENAME));
+  vht1h = load(fullfile(vhtDataDir, solo.qli.const.VHT_1H_DATA_FILENAME));
 
   for iDay = 1:length(DaysDtArray)
     DayDt = DaysDtArray(iDay);
 
     try
-      quicklooks_24_6_2_h_local(DayDt, vht1h, OutputPaths, irfLogoPath, ENABLE_B)
+      trigger_automount(isOfficialProcessing)
+      quicklooks_24_6_2_h_local(DayDt, vht1h, OutputPaths, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
-      handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
+      handle_plot_exception(Exc)
     end
   end
 end
@@ -264,16 +245,17 @@ if generateWeeklyQuicklooks
   % -------------
   % This is the .mat file containing RPW speeds at 6h resolution.
   % The file should be in the same folder as this script (quicklook_main).
-  vht6h = load(fullfile(vhtDataDir, VHT_6H_DATA_FILENAME));
+  vht6h = load(fullfile(vhtDataDir, solo.qli.const.VHT_6H_DATA_FILENAME));
 
   for iWeek = 1:numel(WeeksDtArray)
     WeekDt = WeeksDtArray(iWeek);
 
     try
+      trigger_automount(isOfficialProcessing)
       quicklooks_7days_local(WeekDt, vht6h, OutputPaths, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
-      handle_plot_exception(CATCH_PLOT_EXCEPTIONS_ENABLED, Exc)
+      handle_plot_exception(Exc)
     end
   end
 end
@@ -291,7 +273,7 @@ fprintf('Wall time used per day of quicklooks: %g [h/day]\n',      wallTimeHours
 
 
 
-if CATCH_PLOT_EXCEPTIONS_ENABLED && ~isempty(PlotExcArray)
+if solo.qli.const.CATCH_PLOT_EXCEPTIONS_ENABLED && ~isempty(PlotExcArray)
   fprintf(2, 'Caught %i plotting exceptions.\n', numel(PlotExcArray))
   fprintf(2, 'Rethrowing old (last) exception.\n')
   % NOTE: This does display (stderr) the stack trace for position
@@ -329,8 +311,8 @@ end
 %             => Catch exception and continue.
 % Testing:    Crash on first exception so that it can be fixed.
 %             => Rethrow exception as soon as possible.
-function handle_plot_exception(catchExceptionEnabled, Exc)
-if catchExceptionEnabled
+function handle_plot_exception(Exc)
+if solo.qli.const.CATCH_PLOT_EXCEPTIONS_ENABLED
   % Print stack trace without rethrowing exception.
   % One wants that in the log.
   % NOTE: fprintf(FID=2) => stderr
@@ -347,7 +329,7 @@ end
 
 
 
-function quicklooks_24_6_2_h_local(Dt, vht1h, OutputPaths, irfLogoPath, enableB)
+function quicklooks_24_6_2_h_local(Dt, vht1h, OutputPaths, irfLogoPath)
 Tint = [
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(1))
@@ -382,7 +364,7 @@ Data.solopos = get_SolO_position(Tint);
 DT = 60*60;
 Data.earthpos = get_Earth_position(Tint, DT);
 
-if ~enableB
+if ~solo.qli.const.ENABLE_B
   Data.B = [];
 end
 
@@ -515,4 +497,28 @@ if nCells>1
     OutputTs = OutputTs.combine(InputTs{iCell});
   end
 end
+end
+
+
+
+% Try to trigger automount for official processing, to avoid file-reading
+% problems for long runs.
+%
+% CONTEXT
+% =======
+% The automounting which should make /data/solo/ available on brain/spis (IRFU)
+% does not always work as intended. It appears to not always work fast enough
+% for reading files on rare occassions, leading to apparent can-not-read-file
+% errors for existing files when making long runs, in particular on
+% out-of-office hours(?). Other code which has faced this problem has
+% seemingly resolved it by using Linux commands to list the directory contents
+% and ignore the result before using /data/solo/ (such as
+% "ls /data/solo/ >> /dev/null").
+%
+function trigger_automount(isOfficialProcessing)
+  if isOfficialProcessing
+    junk = dir(solo.qli.const.OFFICIAL_PROCESSING_AUTOMOUNT_DIR);
+  end
+  % NOTE: Command only works on UNIX/Linux. Not Windows, MacOs etc.
+  % errorCode = system('ls -l /data/solo/ >> /dev/null');
 end
