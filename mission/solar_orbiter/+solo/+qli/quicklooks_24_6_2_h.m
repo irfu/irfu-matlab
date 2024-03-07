@@ -418,7 +418,7 @@ if ~isempty(logoPath)
 end
 % colormap (map)
 set(ha2,'handlevisibility','off','visible','off')
-str = solo.qli.utils.generate_data_source_info();
+str = solo.qli.utils.generate_data_source_info_string();
 text(h(1), 0, 1.2, str, 'Units', 'normalized')
 
 yyaxis(h(2), 'left');

@@ -85,7 +85,7 @@ classdef utils
 
     % Generate text string with information on data source and when the plot
     % was generated.
-    function str = generate_data_source_info()
+    function str = generate_data_source_info_string()
       dateStr = char(datetime("now", "Format", "uuuu-MM-dd"));
       str = sprintf( ...
         [ ...

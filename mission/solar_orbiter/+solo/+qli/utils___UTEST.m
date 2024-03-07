@@ -167,9 +167,9 @@ classdef utils___UTEST < matlab.unittest.TestCase
     % Merely test that function (1) does not crash, and (2) returns string.
     %
     % NOTE: Function returns time-dependent string.
-    function test_generate_data_source_info(testCase)
+    function test_generate_data_source_info_string(testCase)
 
-      actOutput = solo.qli.utils.generate_data_source_info();
+      actOutput = solo.qli.utils.generate_data_source_info_string();
 
       testCase.verifyInstanceOf(actOutput, 'char')
       testCase.verifyTrue(isrow(actOutput))
