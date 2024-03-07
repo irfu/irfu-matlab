@@ -9,14 +9,15 @@
 % NOTES
 % =====
 % * Requires solo.db_init() to have been properly used to initialize dataset
-%   lookup.
-% * Uses SPICE implicitly, and therefore relies on some path convention. Not
-%   sure which, but presumably it does at least find /data/solo/SPICE/.
+%   lookup before calling this function.
+% * Uses SPICE implicitly, and therefore relies on some path convention used by
+%   irfu-matlab for where to find SPICE kernels. Not sure which convention, but
+%   presumably it does at least find /data/solo/SPICE/.
 % * Uses solo.read_TNR() indirectly which in turns relies on a hardcoded
 %   path to "/data/solo/remote/data/L2/thr/" and selected subdirectories.
 % * Creates subdirectories to the output directory if not pre-existing.
 % * Note: 7-day quicklooks always begin with a specific hardcoded weekday
-%   (Wednesday as of 2023-07-24).
+%   (Wednesday as of 2024-03-07).
 % * Overwrites pre-existing quicklook files without warning.
 %
 %
@@ -58,7 +59,7 @@ function quicklooks_main(...
 %       ~main, ~plot, ~generate, ~qli, quicklooks
 %       generate_quicklooks
 %   PROPOSAL:
-%       qli.generate_quicklooks()
+%       qli.generate_quicklooks_all_types()
 %           This file.
 %           Input: List of arbitrary dates.
 %       qli.cron.*():
@@ -333,7 +334,7 @@ function quicklooks_24_6_2_h_local(Dt, vht1h, OutputPaths, irfLogoPath)
 Tint = [
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(1))
-];
+  ];
 log_plot_function_time_interval(Tint)
 
 Data = [];
@@ -352,7 +353,7 @@ Data.Vpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
 % Proton & alpha density
 Data.Npas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
-Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux',Tint);
+Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
 % TNR E-field
 Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
@@ -378,7 +379,7 @@ function quicklooks_7days_local(Dt, vht6h, OutputPaths, irfLogoPath)
 Tint = [
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(7)), ...
-];
+  ];
 log_plot_function_time_interval(Tint)
 
 Data = [];
@@ -397,7 +398,7 @@ Data.Vpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
 % Proton & alpha density:
 Data.Npas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
-Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux',Tint);
+Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
 % TNR E-field
 Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
@@ -516,9 +517,9 @@ end
 % "ls /data/solo/ >> /dev/null").
 %
 function trigger_automount(isOfficialProcessing)
-  if isOfficialProcessing
-    junk = dir(solo.qli.const.OFFICIAL_PROCESSING_AUTOMOUNT_DIR);
-  end
-  % NOTE: Command only works on UNIX/Linux. Not Windows, MacOs etc.
-  % errorCode = system('ls -l /data/solo/ >> /dev/null');
+if isOfficialProcessing
+  junk = dir(solo.qli.const.OFFICIAL_PROCESSING_AUTOMOUNT_DIR);
+end
+% NOTE: Command only works on UNIX/Linux. Not Windows, MacOs etc.
+% errorCode = system('ls -l /data/solo/ >> /dev/null');
 end

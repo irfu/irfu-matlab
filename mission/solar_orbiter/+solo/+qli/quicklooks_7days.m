@@ -1,9 +1,22 @@
 function quicklooks_7days(data, OutputPaths, Tint, logoPath)
 %
-% Given data in the struct 'data' (see solo.qli.quicklooks_main), generates
-% plots and saves them in the paths specified in the struct 'OutputPaths' (see
-% solo.qli.quicklooks_main). Tint should be a 7-day time interval, e.g.
-% irf.tint('2020-06-01T00:00:00.00Z','2020-06-08T00:00:00.00Z');
+% Generates ONE quicklook (file) for covering ONE UTC week of data.
+%
+%
+% ARGUMENTS
+% =========
+% data
+%     Struct with various time series of data extracted from SPICE and datasets.
+%     See the call from solo.qli.quicklooks_main().
+% OutputPaths
+%     Struct with paths to separate output directories for the different types
+%     of quicklooks (see solo.qli.quicklooks_main).
+% Tint
+%     Should be a 7-day time interval consistent with the time series in "data"
+%     e.g.
+%     irf.tint('2020-06-03T00:00:00.00Z','2020-06-10T00:00:00.00Z');
+% logoPath
+%     Either path to IRF logo, or empty.
 
 
 
@@ -333,6 +346,6 @@ solo.qli.utils.save_figure_to_file(OutputPaths.path_1w, Tint)
 
 close(fig);
 
-[~] = solo.qli.utils.log_time('End (7 days plot)', tBeginSec);
+[~] = solo.qli.utils.log_time('End of quicklooks_7days.m', tBeginSec);
 
 end

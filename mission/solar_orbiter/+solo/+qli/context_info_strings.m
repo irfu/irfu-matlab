@@ -1,12 +1,11 @@
 %
-% Generate human-readable "context strings" to put at bottom of plots.
+% Generate human-readable "context strings" to put at bottom of quicklooks.
 %
 %
 % IMPLEMENTATION NOTES
 % ====================
-% Could be split up into two functions, one per string. Is not since both
-% strings can be seen as complementary, or as top and bottom string. Makes it
-% more natural if future updates information between the strings.
+% Could be split up into two functions, one per string. It has not been split up
+% both strings can be seen as complementary, or as a top and bottom string.
 % --
 % One can use "R=" etc, but then the text comes too close to the UTC date
 % (reduce font size?).
@@ -15,44 +14,40 @@
 % ARGUMENTS
 % =========
 % soloPosTSeries, earthPosTSeries
-%       "Complete" TSeries with data.
+%       TSeries with positions for SolO and Earth.
 % Tint
 %       Selected time interval.
 %
 %
 % RETURN VALUES
 % =============
-% Two human-readable strings.
-%       One-row.
+% Two human-readable one-row (no line feed) strings.
 %       Empty string(s) if no corresponding data for time interval.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function [soloStr, earthStr] = context_info_strings(soloPosTSeries, earthPosTSeries, Tint)
-% TODO-DEC: Function name?
-%       Context, info, string(s)
 % PROPOSAL: Move to solo.qli.utils.
 %
 % PROPOSAL: No Tint argument. Caller submits already truncated TSeries.
 %   PRO: One fewer arguments.
 %   CON: Caller has to truncate twice.
 %   CON: Caller might truncate differently for different TSeries.
-% PROPOSAL: Return cell array of strings.
-% PROPOSAL: Return multirow strings (with LF).
 
 assert(isa(soloPosTSeries,  'TSeries'))
 assert(isa(earthPosTSeries, 'TSeries'))
 assert(isa(Tint,            'EpochTT'))
+assert(length(Tint) == 2)
 
 % NOTE: In principle a lot of execution/time just for obtaining a constant,
-%       but the function is not time critical so should not be a problem.
+%       but the function is not time-critical so it should not be a problem.
 Units = irf_units;
 AU_KM = Units.AU / Units.km;   % Astronomical unit [km]
 
 soloPos = soloPosTSeries.tlim(Tint).data;
 if ~isempty(soloPos)
-  % NOTE: Doubled whitespaces.
+  % NOTE: 2x whitespaces between every value.
   soloStr = sprintf([
     'SolO:', ...
     '  %.2f AU,', ...
@@ -73,4 +68,5 @@ if ~isempty(earthPos)
 else
   earthStr = '';
 end
+
 end

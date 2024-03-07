@@ -18,7 +18,7 @@ classdef const
     % IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
     % speeds up solo.qli.quicklooks_24_6_2_h() greatly. Useful for some debugging.
     % Should be enabled by default.
-    ENABLE_B                      = true;
+    ENABLE_B = true;
 
     % Whether to catch plotting exceptions, continue plotting other days/weeks, and
     % then re-raise the last caught exception at the very end. This produces as many

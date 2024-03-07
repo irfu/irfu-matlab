@@ -1,15 +1,32 @@
 function quicklooks_24_6_2_h(data, OutputPaths, Tint_24h, logoPath)
 %
-% Given data in the struct 'data' (see solo.qli.quicklooks_main), generates
-% plots and saves them in the paths specified in the struct 'OutputPaths' (see
-% solo.qli.quicklooks_main). Computes spectrum of B, so takes a while to run.
-% Tint_24h should be a 24hour time interval, e.g.
-% irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
+% Generates quicklooks (files) for covering ONE UTC day of data:
+% 1x24h quicklooks, 4x6h quicklooks, 12x2h quicklooks.
 %
-% NOTE: Function uses solo.read_TNR() indirectly which in turns relies on a
-%       hardcoded path to "/data/solo/remote/data/L2/thr/" and selected
-%       subdirectories.
-
+%
+% ARGUMENTS
+% =========
+% data
+%     Struct with various time series of data extracted from SPICE and datasets.
+%     See the call from solo.qli.quicklooks_main().
+% OutputPaths
+%     Struct with paths to separate output directories for the different types
+%     of quicklooks (see solo.qli.quicklooks_main).
+% Tint_24h
+%     Should be a 24-hour time interval consistent with the time series in
+%     "data", e.g.
+%     irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
+% logoPath
+%     Either path to IRF logo, or empty.
+%
+%
+% NOTES
+% =====
+% * Computes the spectrum for B when magnetic field data is available. When it
+%   does, the code takes a lot of time.
+% * The function uses solo.read_TNR() which in turns relies on a
+%   hardcoded path to "/data/solo/remote/data/L2/thr/" and selected
+%   subdirectories.
 
 
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).

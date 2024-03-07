@@ -6,6 +6,8 @@
 %
 classdef context_info_strings___UTEST < matlab.unittest.TestCase
 
+
+
   %##############
   %##############
   % TEST METHODS
@@ -17,13 +19,14 @@ classdef context_info_strings___UTEST < matlab.unittest.TestCase
 
     function test0(testCase)
 
-      %             % Arbitrary number output variables.
-      function test(inputsCa, expOutputsCa)
-        % Pre-allocate correct size for later assignment via function
-        actOutputs = cell(size(expOutputsCa));
+      % Arbitrary number output variables.
+      function test(...
+          soloPosTSeries, earthPosTSeries, Tint, ...
+          expSoloStr, expEarthStr)
 
-        [actOutputs{:}] = solo.qli.context_info_strings(inputsCa{:});
-        testCase.verifyEqual(actOutputs, expOutputsCa)
+        [actSoloStr, actEarthStr] = solo.qli.context_info_strings(soloPosTSeries, earthPosTSeries, Tint);
+        testCase.verifyEqual(actSoloStr,  expSoloStr)
+        testCase.verifyEqual(actEarthStr, expEarthStr)
       end
 
       %===================================================================
@@ -31,15 +34,15 @@ classdef context_info_strings___UTEST < matlab.unittest.TestCase
       Units = irf_units;
       AU_KM = Units.AU / Units.km;   % Astronomical unit [km]
 
-      ett = EpochTT( ...
+      ETT = EpochTT( ...
         [ ...
         '2024-01-10T00:00:00.000000000Z'; ...
         '2024-01-11T00:00:00.000000000Z'; ...
         '2024-01-12T00:00:00.000000000Z' ...
         ] ...
         );
-      Ts = TSeries( ...
-        ett, ...
+      POSITION_TS = TSeries( ...
+        ETT, ...
         [ ...
         1*AU_KM, 3, 4; ...
         2*AU_KM, 5, 6; ...
@@ -48,17 +51,24 @@ classdef context_info_strings___UTEST < matlab.unittest.TestCase
         );
 
       % In-range time interval.
-      ti1 = EpochTT(['2024-01-09T00:00:00.000000000Z'; '2024-03-13T00:00:00.000000000Z']);
-      test({Ts, Ts, ti1}, {'SolO:  1.00 AU,  EcLat 229\circ,  EcLon 172\circ', 'Earth:  EcLon 172\circ'})
+      TI_1 = EpochTT(['2024-01-09T00:00:00.000000000Z'; '2024-03-13T00:00:00.000000000Z']);
+      test(...
+        POSITION_TS, POSITION_TS, TI_1, ...
+        'SolO:  1.00 AU,  EcLat 229\circ,  EcLon 172\circ', ...
+        'Earth:  EcLon 172\circ')
 
       % Out-of-range time interval.
-      ti2 = EpochTT(['2024-01-01T00:00:00.000000000Z'; '2024-01-02T00:00:00.000000000Z']);
-      test({Ts, Ts, ti2}, {'', ''})
-
+      TI_2 = EpochTT(['2024-01-01T00:00:00.000000000Z'; '2024-01-02T00:00:00.000000000Z']);
+      test(...
+        POSITION_TS, POSITION_TS, TI_2, ...
+        '', ...
+        '')
     end
 
 
 
   end    % methods(Test)
+
+
 
 end
