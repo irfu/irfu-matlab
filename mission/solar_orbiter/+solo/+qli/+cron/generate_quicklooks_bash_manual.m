@@ -28,7 +28,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2022-08-30.
 %
-function quicklooks_main_bash_manual(...
+function generate_quicklooks_bash_manual(...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
   beginDayUtcInclStr, endDayUtcExclStr)
 
@@ -68,7 +68,7 @@ DaysDtArray = [BeginDayInclDt:caldays(1):EndDayInclDt]';
 %=====================
 % Generate quicklooks
 %=====================
-solo.qli.cron.quicklooks_main(...
+solo.qli.cron.generate_quicklooks(...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
 

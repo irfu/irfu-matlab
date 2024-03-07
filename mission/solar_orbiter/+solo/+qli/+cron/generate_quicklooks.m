@@ -73,7 +73,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2022-08-30.
 %
-function quicklooks_main(...
+function generate_quicklooks(...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 
 VHT_DIR    = '/data/solo/data_yuri/';

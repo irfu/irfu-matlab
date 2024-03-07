@@ -27,7 +27,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function quicklooks_main_bash_from_logs(varargin)
+function generate_quicklooks_bash_from_logs(varargin)
 
 LESIA_LOG_FILE_DIR_PATTERN = '/home/erjo/logs/pull.so.data.cron.brain.*.log';
 SOAR_LOG_FILE_DIR_PATTERN  = '/home/erjo/logs/so_soar_irfu_mirror_sync.*.log';
@@ -82,6 +82,6 @@ end
 
 AllDaysDtArray = unique(AllDaysDtArray);
 
-solo.qli.cron.quicklooks_main(true, true, AllDaysDtArray)
+solo.qli.cron.generate_quicklooks(true, true, AllDaysDtArray)
 
 end
