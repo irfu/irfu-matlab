@@ -23,6 +23,10 @@
 %
 % ARGUMENTS
 % =========
+% irfLogoPath
+%       Path to IRF logo. Empty ==> Do not plot any logo.
+%       IMPLEMENTATION NOTE: The IRF logo should only be used for official
+%       quicklooks.
 % vhtDataDir
 %       Path to directory containing VHT (velocity) .mat files
 %       V_RPW_1h.mat and V_RPW.mat. Typically brain:/data/solo/data_yuri/
@@ -46,7 +50,7 @@
 % Uppsala, Sweden. Modified by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function generate_quicklooks_all_types(...
-  vhtDataDir, outputDir, ...
+  irfLogoPath, vhtDataDir, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 %
 % NOTE: Mission begins on 2020-02-12=Wednesday.
@@ -103,6 +107,20 @@ function generate_quicklooks_all_types(...
 %   PRO: Could (probably) simplify plot code a lot.
 %
 % PROPOSAL: Move quicklooks_24_6_2.m constants here. Submit values as arguments.
+%
+% PROBLEM: How handle IRF logo file?!
+%   NOTE: Is not in the git repo itself, only the directory structure.
+%   PROPOSAL: Argument to generate_quicklooks* functions. cron code hardcodes
+%             it.
+%       TODO-DEC: Which default location to use (for cron.*)?
+%           NOTE: Should work for both nas and locally.
+%           PROPOSAL: In git repo. -- IMPLEMENTED
+%               PRO: Connects file with s/w.
+%               CON: File is not part of git repo.
+%               PROPOSAL: Directly under git repo root.
+%           PROPOSAL: Under home directory.
+%               CON: Risks forgetting why it is needed to be there.
+%               CON: No direct connection between QLI s/w and file.
 %
 %
 % generate_quicklooks_24h_6h_2h.m(), quicklooks_7day()
@@ -162,18 +180,6 @@ if isunix()
   if ismember(hostName, solo.qli.const.OFFICIAL_PROCESSING_IRFU_HOST_NAMES_CA)
     isOfficialProcessing = true;
   end
-end
-
-% Derive full path to IRF logo image if it seems that it should be used
-% ---------------------------------------------------------------------
-% Empty ==> Do not plot any logo.
-% IMPLEMENTATION NOTE: The IRF logo should only be used for official quicklooks.
-% The path is therefore only automatically set if it appears that the quicklooks
-% being generated are "official".
-if isOfficialProcessing
-  irfLogoPath = solo.qli.utils.get_IRF_logo_path();
-else
-  irfLogoPath = [];
 end
 
 

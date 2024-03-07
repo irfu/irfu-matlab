@@ -26,9 +26,6 @@ classdef const
     % Should be enabled by default.
     CATCH_PLOT_EXCEPTIONS_ENABLED = true;
 
-    % Path to IRF logo, relative to irfu-matlab root.
-    IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/irf_logo.png';
-
     % NOTE: Usually found at /data/solo/data_yuri/.
     VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
     VHT_6H_DATA_FILENAME = 'V_RPW.mat';

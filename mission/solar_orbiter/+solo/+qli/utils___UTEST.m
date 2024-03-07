@@ -91,14 +91,6 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_IRF_logo_path(testCase)
-      irfLogoPath = solo.qli.utils.get_IRF_logo_path();
-
-      irf.assert.file_exists(irfLogoPath)
-    end
-
-
-
     function test_derive_weeks(testCase)
 
       function test(DayBeginDtArray, firstDayOfWeek, ExpWeekBeginDtArray)

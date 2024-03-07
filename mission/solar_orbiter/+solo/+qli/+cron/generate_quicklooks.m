@@ -80,7 +80,13 @@
 function generate_quicklooks(...
   outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 
-VHT_DIR    = '/data/solo/data_yuri/';
+VHT_DIR        = '/data/solo/data_yuri/';
+
+% NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code still
+% requires it to be located inside the corresponding directory.
+IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+cron/irf_logo.png';
+IRF_LOGO_PATH  = fullfile(solo.qli.utils.get_irfumatlab_root_path(), IRF_LOGO_RPATH);
+irf.assert.file_exists(IRF_LOGO_PATH)
 
 
 
@@ -116,6 +122,6 @@ solo.db_cache('on', 'save')
 % Generate quicklooks
 %=====================
 solo.qli.generate_quicklooks_all_types(...
-  VHT_DIR, outputDir, ...
+  IRF_LOGO_PATH, VHT_DIR, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
