@@ -47,6 +47,21 @@ classdef utils
 
 
 
+    function irfumatlabRootPath = get_irfumatlab_root_path()
+      % PROPOSAL: Convert into generic function.
+      parentDir          = fileparts(mfilename('fullpath'));
+      irfumatlabRootPath = fullfile(parentDir, '../../../../');
+    end
+
+
+
+    function irfLogoPath = get_IRF_logo_path()
+      irfumatlabRootPath = solo.qli.utils.get_irfumatlab_root_path();
+      irfLogoPath        = fullfile(irfumatlabRootPath, solo.qli.const.IRF_LOGO_RPATH);
+    end
+
+
+
     % Given an array of datetime representing days to be plotted, derive the
     % corresponding weeks which overlap with the specified days.
     %

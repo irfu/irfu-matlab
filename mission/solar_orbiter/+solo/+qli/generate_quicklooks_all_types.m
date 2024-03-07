@@ -171,9 +171,7 @@ end
 % The path is therefore only automatically set if it appears that the quicklooks
 % being generated are "official".
 if isOfficialProcessing
-  parentDir          = fileparts(mfilename('fullpath'));
-  irfumatlabRootPath = fullfile(parentDir, '../../../../');
-  irfLogoPath        = fullfile(irfumatlabRootPath, solo.qli.const.IRF_LOGO_RPATH);
+  irfLogoPath = solo.qli.utils.get_IRF_logo_path();
 else
   irfLogoPath = [];
 end

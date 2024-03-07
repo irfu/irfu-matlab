@@ -80,6 +80,25 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_get_irfumatlab_root_path(testCase)
+      irfumatlabRootPath = solo.qli.utils.get_irfumatlab_root_path();
+
+      irf.assert.dir_exists(irfumatlabRootPath)
+      irf.assert.dir_exists(fullfile(irfumatlabRootPath, 'mission'))
+      % NOTE: Check that specific subdirectory within irfu-matlab exists, to
+      % verify the location.
+    end
+
+
+
+    function test_get_IRF_logo_path(testCase)
+      irfLogoPath = solo.qli.utils.get_IRF_logo_path();
+
+      irf.assert.file_exists(irfLogoPath)
+    end
+
+
+
     function test_derive_weeks(testCase)
 
       function test(DayBeginDtArray, firstDayOfWeek, ExpWeekBeginDtArray)
@@ -244,6 +263,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
         );
       test({Tint}, '20240110T02_20240111T04.png')
     end
+
 
 
   end    % methods(Test)
