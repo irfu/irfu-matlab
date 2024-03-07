@@ -14,6 +14,8 @@
 %
 % ARGUMENTS
 % =========
+% outputDir
+%       Path to output directory.
 % varargin
 %       Cell array of string IDs representing different dataset source
 %       directories. Function will use the logs for the specified directories to
@@ -27,7 +29,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function generate_quicklooks_bash_from_logs(varargin)
+function generate_quicklooks_bash_from_logs(outputDir, varargin)
 
 LESIA_LOG_FILE_DIR_PATTERN = '/home/erjo/logs/pull.so.data.cron.brain.*.log';
 SOAR_LOG_FILE_DIR_PATTERN  = '/home/erjo/logs/so_soar_irfu_mirror_sync.*.log';
@@ -82,6 +84,6 @@ end
 
 AllDaysDtArray = unique(AllDaysDtArray);
 
-solo.qli.cron.generate_quicklooks(true, true, AllDaysDtArray)
+solo.qli.cron.generate_quicklooks(outputDir, true, true, AllDaysDtArray)
 
 end

@@ -13,6 +13,8 @@
 %
 % ARGUMENTS
 % =========
+% outputDir
+%       Path to output directory.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
 %       One-character strings. Whether to generate ("1" or "0") non-weekly (2h,
 %       6h, 24h) quicklooks and/or weekly quicklooks.
@@ -29,7 +31,7 @@
 % First created 2022-08-30.
 %
 function generate_quicklooks_bash_manual(...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
+  outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
   beginDayUtcInclStr, endDayUtcExclStr)
 
 generateNonweeklyQuicklooks = interpret_argument_flag(generateNonweeklyQuicklooks);
@@ -69,7 +71,7 @@ DaysDtArray = [BeginDayInclDt:caldays(1):EndDayInclDt]';
 % Generate quicklooks
 %=====================
 solo.qli.cron.generate_quicklooks(...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
+  outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
 
 

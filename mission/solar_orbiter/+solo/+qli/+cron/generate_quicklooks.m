@@ -10,6 +10,10 @@
 %
 % ARGUMENTS
 % =========
+% outputDir
+%       Path to output directory.
+%       IMPLEMENTATION NOTE: Not hardcoding this is useful for manual testing of
+%       the setup and for manual large-scale processing.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
 %       Scalar logical. Whether to generate non-weekly (2h, 6h, 24h) quicklooks
 %       and/or weekly quicklooks.
@@ -74,10 +78,9 @@
 % First created 2022-08-30.
 %
 function generate_quicklooks(...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
+  outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 
 VHT_DIR    = '/data/solo/data_yuri/';
-OUTPUT_DIR = '/data/solo/quicklooks/www/';
 
 
 
@@ -113,6 +116,6 @@ solo.db_cache('on', 'save')
 % Generate quicklooks
 %=====================
 solo.qli.generate_quicklooks_all_types(...
-  VHT_DIR, OUTPUT_DIR, ...
+  VHT_DIR, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
