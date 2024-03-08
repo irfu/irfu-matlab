@@ -27,6 +27,9 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % * The function uses solo.read_TNR() which in turns relies on a
 %   hardcoded path to "/data/solo/remote/data/L2/thr/" and selected
 %   subdirectories.
+% * The function obtains some data by reading CDF files directly (cdfread;
+%   solo_L2_swa-pas-eflux).
+
 
 
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
@@ -60,6 +63,7 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %
 % PROPOSAL: Make function not directly call solo.read_TNR()
 %   PRO: Makes function testable.
+%     CON: Function still reads other CDF files.
 %   CON: Must understand the solo.read_TNR() return value.
 %     CON: Seems feasible.
 %       case 0:
@@ -102,11 +106,11 @@ fig.Position = [1,1,1095,800];
 %===================================
 if ~isempty(Data.B)
   irf_plot(h(1),Data.B.tlim(Tint24h),'linewidth',LWIDTH);
-  hold(h(1),'on');
+  hold(    h(1),'on');
   irf_plot(h(1),Data.B.abs.tlim(Tint24h),'linewidth',LWIDTH);
 end
 irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE);
-ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
+ylabel(    h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 
@@ -240,7 +244,7 @@ if ~isempty(Data.Tpas)
   irf_plot(h(5),Data.Tpas.tlim(Tint24h),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
 irf_zoom(h(5),'y');
-ylabel(h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
+ylabel(  h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 
@@ -251,12 +255,12 @@ tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 %==================================
 if ~isempty(Data.Vpas)
   irf_plot(h(6),Data.Vpas.y.tlim(Tint24h),'color',COLORS(2,:),'linewidth',LWIDTH);
-  hold(h(6),'on');
+  hold(    h(6),'on');
   irf_plot(h(6),Data.Vpas.z.tlim(Tint24h),'color',COLORS(3,:),'linewidth',LWIDTH);
 end
 irf_legend(h(6),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
-irf_zoom(h(6),'y');
-ylabel(h(6),{'V_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
+irf_zoom(  h(6),'y');
+ylabel(    h(6),{'V_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 
@@ -272,9 +276,9 @@ end
 if ~isempty(Data.Vpas)
   irf_plot(h(7),Data.Vpas.x.tlim(Tint24h),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
-irf_legend(h(7),{'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',LEG_SIZE);
-irf_zoom(h(7),'y');
-ylabel(h(7),{'V_R';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
+irf_legend(h(7), {'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',LEG_SIZE);
+irf_zoom(  h(7), 'y');
+ylabel(    h(7), {'V_R';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
@@ -303,18 +307,22 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 
 %===================================
 % Fill panel 9: Ion energy spectrum
+% ---------------------------------
+% NOTE: READS CDF FILES!
 %===================================
 if ~isempty(Data.ieflux)
-  myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint24h);
-  iDEF   = struct('t',  Data.ieflux.tlim(Tint24h).time.epochUnix);
+  SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux',Tint24h);
+  iDEF         = struct('t',  Data.ieflux.tlim(Tint24h).time.epochUnix);
   % for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-  for ii = 1:length(myFile)
-    iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
+  for iFile = 1:length(SwaFileArray)
+    iEnergy = cdfread(...
+      fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
+      'variables', 'Energy');
     iEnergy = iEnergy{1};
-    iDEF.p = Data.ieflux.data;
+    iDEF.p  = Data.ieflux.data;
   end
-  iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
-  iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
+  iDEF.p_label = {'dEF','keV/','(cm^2 s sr keV)'};
+  iDEF.f       = repmat(iEnergy,1,numel(iDEF.t))';
   irf_spectrogram(h(9),iDEF,'log','donotfitcolorbarlabel');
   % set(h(1),'ytick',[1e1 1e2 1e3]);
   %caxis(h(9),[-1 1])
@@ -327,9 +335,9 @@ if ~isempty(Data.ieflux)
     caxis(h(9),[log10(h9_medp)+2 (max(max(log10(iDEF.p))))])
   end
 end
-set(h(9), 'YScale', 'log');
-colormap(h(9),jet)
-ylabel(h(9),{'W_{i}';'(eV)'},'interpreter','tex','fontsize',FSIZE);
+set(     h(9), 'YScale', 'log');
+colormap(h(9), jet)
+ylabel(  h(9), {'W_{i}';'(eV)'},'interpreter','tex','fontsize',FSIZE);
 tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 
 
@@ -353,15 +361,15 @@ if ~isempty(Data.Etnr)    % && false
   if isa(TNR,'struct')
     sz_tnr = size(TNR.p);
     if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-      irf_spectrogram(h(10),TNR,'log','donotfitcolorbarlabel')
-      hold(h(10),'on');
+      irf_spectrogram(h(10), TNR, 'log', 'donotfitcolorbarlabel')
+      hold(           h(10), 'on');
       if ~isempty(Data.Ne)
         % Electron plasma frequency
         wpe_sc = (sqrt(((Data.Ne.tlim(Tint24h)*1000000)*qe^2)/(Me*epso)));
         fpe_sc = (wpe_sc/2/pi)/1000;
         irf_plot(h(10),fpe_sc,'r','linewidth',LWIDTH);
         fpe_sc.units = 'kHz';
-        fpe_sc.name = 'f [kHz]';
+        fpe_sc.name  = 'f [kHz]';
       end
       hold(h(10), 'off');
       text(h(10), 0.01, 0.3, 'f_{pe,RPW}', 'units', 'normalized', 'fontsize', FSIZE, 'Color', 'r');
@@ -411,7 +419,7 @@ h(2).YLabel.Units='normalized';
 % left) when h(3) did not have any label).
 h(2).YLabel.Position=h(1).YLabel.Position;
 
-% Add context info strings (CIS): Spacecraft position, Earth longitude as text.
+% Add Context Info Strings (CIS): Spacecraft position, Earth longitude as text.
 [soloStr, earthStr] = solo.qli.utils.get_context_info_strings(Data.soloPos, Data.earthPos, Tint24h);
 hCisText1 = text(h(10), -0.11, -0.575, soloStr,  'units', 'normalized', 'fontsize', FSIZE);
 hCisText2 = text(h(10), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', FSIZE);
@@ -428,13 +436,13 @@ logoPos(1) = logoPos(1) + logoPos(3) + 0.06;
 logoPos(2) = logoPos(2) + 0.06;
 logoPos(3) = 0.05;
 logoPos(4) = logoPos(3) * 1095/800;
-ha2 = axes('position', logoPos);
+hLogoAxes = axes('position', logoPos);
 if ~isempty(logoPath)
-  [x, map] = imread(logoPath);
+  [x, ~] = imread(logoPath);
   image(x)
 end
 % colormap (map)
-set(ha2, 'handlevisibility', 'off', 'visible', 'off')
+set(hLogoAxes, 'handlevisibility', 'off', 'visible', 'off')
 
 str = solo.qli.utils.get_data_source_info_string();
 text(h(1), 0, 1.2, str, 'Units', 'normalized')
@@ -497,7 +505,7 @@ solo.qli.utils.save_figure_to_file(OutputPaths.path_24h, Tint24h)
 %=============================================
 % Change panel 2+5 y scales to "lin" (previously "log").
 % h(5): Keep old ylimits and ticks!
-yyaxis(h(2),'right');
+yyaxis(h(2), 'right');
 h(2).YScale    = 'lin';       % NOTE: Previously LOG.
 h(2).YTickMode = 'auto';
 yyaxis(h(2), 'left');

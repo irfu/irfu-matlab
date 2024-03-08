@@ -17,6 +17,15 @@ function generate_quicklook_7days(Data, OutputPaths, Tint, logoPath)
 %     irf.tint('2020-06-03T00:00:00.00Z','2020-06-10T00:00:00.00Z');
 % logoPath
 %     Either path to IRF logo, or empty.
+%
+%
+% NOTES
+% =====
+% * The function obtains some data by reading CDF files directly (cdfread;
+%   solo_L2_swa-pas-eflux).
+% * The function also locates CDF files (reads files via SolO DB?) which are
+%   used to obtain a time interval which is passed to solo.read_TNR(). ==>
+%   Relies on more files.
 
 
 
@@ -46,12 +55,12 @@ fig.Position = [1,1,1095,800];
 %===================================
 if ~isempty(Data.B)
   irf_plot(h(1),Data.B.tlim(Tint),'linewidth',LWIDTH);
-  hold(h(1),'on');
+  hold(    h(1),'on');
   irf_plot(h(1),Data.B.abs.tlim(Tint),'linewidth',LWIDTH);
 end
-irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE);
-ylabel(h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
-irf_zoom(h(1),'y');
+irf_legend(h(1), {'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE);
+ylabel(    h(1), {'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
+irf_zoom(  h(1), 'y');
 
 tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 
@@ -65,9 +74,9 @@ if ~isempty(Data.B)
   irf_plot(h(2),Data.B.abs.tlim(Tint),'linewidth',LWIDTH);
 end
 ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FSIZE);
-h(2).YScale='log';
-h(2).YTick=[10,100];
-%h(2).YLim=[0.1,200];
+h(2).YScale = 'log';
+h(2).YTick  = [10,100];
+%h(2).YLim   = [0.1,200];
 
 tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 
@@ -83,11 +92,11 @@ end
 if ~isempty(Data.Npas)
   irf_plot(h(3),Data.Npas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
-ylabel(h(3),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FSIZE);
+ylabel(    h(3),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FSIZE);
 irf_legend(h(3),{'N_{e,RPW} ',' N_{i,PAS}'},[0.98 0.16],'Fontsize',LEG_SIZE);
-h(3).YScale='log';
-h(3).YTick=[10,100];
-%h(3).YLim=[0.8,200];
+h(3).YScale = 'log';
+h(3).YTick  = [10,100];
+%h(3).YLim   = [0.8,200];
 
 tBeginSec = solo.qli.utils.log_time('End panel 3', tBeginSec);
 
@@ -100,9 +109,9 @@ if ~isempty(Data.Tpas)
   irf_plot(h(4),Data.Tpas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
 end
 ylabel(h(4),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
-h(4).YScale='log';
-h(4).YTick=[1,10,100];
-h(4).YLim=[0.5,300];
+h(4).YScale = 'log';
+h(4).YTick  = [1,10,100];
+h(4).YLim   = [0.5,300];
 
 tBeginSec = solo.qli.utils.log_time('End panel 4', tBeginSec);
 
@@ -114,12 +123,12 @@ tBeginSec = solo.qli.utils.log_time('End panel 4', tBeginSec);
 % y,z PAS velocities
 if ~isempty(Data.Vpas)
   irf_plot(h(5),Data.Vpas.y.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
-  hold(h(5),'on');
+  hold(    h(5),'on');
   irf_plot(h(5),Data.Vpas.z.tlim(Tint),'color',COLORS(3,:),'linewidth',LWIDTH);
 end
-irf_legend(h(5),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
-irf_zoom(h(5),'y');
-ylabel(h(5),{'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
+irf_legend(h(5), {'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
+irf_zoom(  h(5), 'y');
+ylabel(    h(5), {'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 
@@ -130,14 +139,14 @@ tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 %==============
 hold(h(6),'on');
 if ~isempty(Data.Vrpw)
-  irf_plot(h(6),-Data.Vrpw,'o','color',COLORS(1,:));
+  irf_plot(h(6), -Data.Vrpw, 'o', 'color', COLORS(1,:));
 end
 if ~isempty(Data.Vpas)
-  irf_plot(h(6),Data.Vpas.x.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(6), Data.Vpas.x.tlim(Tint), 'color', COLORS(2,:), 'linewidth', LWIDTH);
 end
-irf_legend(h(6),{'V_{RPW}','V_{PAS}'},[0.98 0.15],'Fontsize',LEG_SIZE);
+irf_legend(h(6), {'V_{RPW}', 'V_{PAS}'}, [0.98 0.15], 'Fontsize', LEG_SIZE);
 %h(6).YLim=[150,950];
-ylabel(h(6),{'v_{R}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
+ylabel(h(6), {'v_{R}'; '(km/s)'}, 'interpreter', 'tex', 'fontsize',FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 
@@ -147,13 +156,13 @@ tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 % Fill panel 7
 %==============
 if ~isempty(Data.E)
-  irf_plot(h(7),Data.E.y,'color',COLORS(2,:),'linewidth',LWIDTH)
-  hold(h(7),'on');
+  irf_plot(h(7), Data.E.y, 'color', COLORS(2,:), 'linewidth', LWIDTH)
+  hold(    h(7),'on');
   %irf_plot(h(7),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
 end
-irf_legend(h(7),{'','E_y'},[0.98 0.20],'Fontsize',LEG_SIZE);
-irf_zoom(h(7),'y');
-ylabel(h(7),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',FSIZE);
+irf_legend(h(7), {'', 'E_y'}, [0.98 0.20], 'Fontsize', LEG_SIZE);
+irf_zoom(  h(7), 'y');
+ylabel(    h(7), {'E_{SRF}'; '(mV/m)'}, 'interpreter', 'tex', 'fontsize', FSIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
@@ -161,19 +170,23 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
 %===================================
 % Fill panel 8: Ion energy spectrum
+% ---------------------------------
+% NOTE: READS CDF FILES!
 %===================================
 if ~isempty(Data.ieflux)
-  myFile=solo.db_list_files('solo_L2_swa-pas-eflux',Tint);
-  iDEF   = struct('t',  Data.ieflux.tlim(Tint).time.epochUnix);
+  SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint);
+  iDEF   = struct('t', Data.ieflux.tlim(Tint).time.epochUnix);
   %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-  for ii = 1:length(myFile)
-    iEnergy = cdfread([myFile(ii).path '/' myFile(ii).name],'variables','Energy');
+  for iFile = 1:length(SwaFileArray)
+    iEnergy = cdfread(...
+      fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
+      'variables', 'Energy');
     iEnergy = iEnergy{1};
-    iDEF.p = Data.ieflux.data;
+    iDEF.p  = Data.ieflux.data;
   end
-  iDEF.f = repmat(iEnergy,1,numel(iDEF.t))';
-  iDEF.p_label={'dEF','keV/','(cm^2 s sr keV)'};
-  irf_spectrogram(h(8),iDEF,'log','donotfitcolorbarlabel');
+  iDEF.f       = repmat(iEnergy,1,numel(iDEF.t))';
+  iDEF.p_label = {'dEF', 'keV/','(cm^2 s sr keV)'};
+  irf_spectrogram(h(8), iDEF,'log','donotfitcolorbarlabel');
   % set(h(1),'ytick',[1e1 1e2 1e3]);
   hold(h(8),'on');
   h8_clims = h(8).CLim;
@@ -183,9 +196,9 @@ if ~isempty(Data.ieflux)
   if h8_medp > 0 && h8_medp > h8_clims(1) && log10(h8_medp)+2<(max(max(log10(iDEF.p))))
     caxis(h(8),[log10(h8_medp)+2 (max(max(log10(iDEF.p))))])
   end
-  set(h(8), 'YScale', 'log');
-  colormap(h(8),jet)
-  ylabel(h(8),'[eV]')
+  set(     h(8), 'YScale', 'log');
+  colormap(h(8), jet)
+  ylabel(  h(8), '[eV]')
 end
 
 tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
@@ -194,17 +207,19 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 
 %======================================
 % Fill panel 9: E-field spectrum (TNR)
+% ------------------------------------
+% NOTE: READS CDF FILES!
 %======================================
 % NOTE: Panel takes much more time than other panels.
 if ~isempty(Data.Etnr)
   % Electron plasma frequency
-  myFile2=solo.db_list_files('solo_L2_rpw-tnr-surv-cdag',Tint);
+  TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
   tp =[];pp=[];
   warning('off', 'fuzzy:general:warnDeprecation_Combine');
   TNR = [];
   %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
-  for iii = 1:length(myFile2)
-    tt = [myFile2(iii).start myFile2(iii).stop];
+  for iFile = 1:length(TnrFileArray)
+    tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
     [TNRp] =  solo.read_TNR(tt);
     if isa(TNRp,'struct')
       % NOTE: MATLAB documentation (R2019b):
@@ -227,23 +242,23 @@ if ~isempty(Data.Etnr)
     % TNR.p_label = TNRp.p_label;
     sz_tnr = size(TNR.p);
     if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-      irf_spectrogram(h(9),TNR,'log','donotfitcolorbarlabel')
-      hold(h(9),'on');
+      irf_spectrogram(h(9), TNR,'log','donotfitcolorbarlabel')
+      hold(           h(9), 'on');
     end
     if ~isempty(Data.Ne)
-      wpe_sc = (sqrt(((Data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));
-      fpe_sc = (wpe_sc/2/pi)/1000;
+      wpe_sc       = (sqrt(((Data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));
+      fpe_sc       = (wpe_sc/2/pi)/1000;
       fpe_sc.units = 'kHz';
       fpe_sc.name  = 'f [kHz]';
       irf_plot(h(9),fpe_sc,'r','linewidth',LWIDTH);
     end
-    text(h(9), 0.01, 0.3, 'f_{pe,RPW}', 'units', 'normalized', 'fontsize', FSIZE, 'Color', 'r');
+    text(    h(9), 0.01, 0.3, 'f_{pe,RPW}', 'units', 'normalized', 'fontsize', FSIZE, 'Color', 'r');
     %set(h(9), 'YScale', 'log');
-    colormap(h(9),jet)
+    colormap(h(9), jet)
     %ylabel(h(9),'f [kHz]')
-    set(h(9),'ColorScale','log')
+    set(     h(9), 'ColorScale','log')
     %caxis([.01 10]*10^-12)
-    yticks(h(9),[10^1 10^2]);
+    yticks(  h(9), [10^1 10^2]);
   end
 end
 
@@ -255,14 +270,14 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 % Other, miscellaneous
 %======================
 irf_plot_axis_align(h(1:9));
-irf_zoom(h(1:9),'x',Tint);
-irf_zoom(h(1),'y');
-irf_zoom(h(5:9),'y');
+irf_zoom(h(1:9), 'x', Tint);
+irf_zoom(h(1),   'y');
+irf_zoom(h(5:9), 'y');
 
 h(2).YLabel.Position=[1.05,0.5,0];
 %yyaxis(h(2),'left');
-h(2).YLabel.Units='normalized';
-h(2).YLabel.Position=h(3).YLabel.Position;
+h(2).YLabel.Units    = 'normalized';
+h(2).YLabel.Position = h(3).YLabel.Position;
 
 h(9).XLabel.Visible = 'off';
 
@@ -284,13 +299,13 @@ logoPos(1) = logoPos(1) + logoPos(3) + 0.01;
 logoPos(2) = logoPos(2) + 0.06;
 logoPos(3) = 0.05;
 logoPos(4) = logoPos(3) * 1095/800;
-ha2 = axes('position', logoPos);
+hLogoAxes = axes('position', logoPos);
 if ~isempty(logoPath)
-  [x, map] = imread(logoPath);
+  [x, ~] = imread(logoPath);
   image(x)
 end
 % colormap (map)
-set(ha2, 'handlevisibility', 'off', 'visible', 'off')
+set(hLogoAxes, 'handlevisibility', 'off', 'visible', 'off')
 
 str = solo.qli.utils.get_data_source_info_string();
 text(h(1), 0, 1.2, str, 'Units', 'normalized')
@@ -321,7 +336,7 @@ h(2).YLim   = [0.8,200];
 %oldticks5 = h(5).YTick;
 h(5).YScale = 'log';
 h(5).YTick  = [1,10,100];
-%h(5).YLim=[0.5,300];
+%h(5).YLim   = [0.5,300];
 
 % c_eval('h(?).FontSize=18;', 1:9);
 for i = 1:9
