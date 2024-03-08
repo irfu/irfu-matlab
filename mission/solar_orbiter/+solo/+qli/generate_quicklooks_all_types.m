@@ -28,7 +28,7 @@
 %       IMPLEMENTATION NOTE: The IRF logo should only be used for official
 %       quicklooks.
 % vhtDataDir
-%       Path to directory containing VHT (velocity) .mat files
+%       Path to directory containing VHT (velocity) data files
 %       V_RPW_1h.mat and V_RPW.mat. Typically brain:/data/solo/data_yuri/
 % outputDir
 %       Quicklooks will be placed in subdirectories under this directory.
@@ -39,7 +39,8 @@
 %       Useful for testing and not re-running unnecessary time-consuming
 %       quicklooks.
 % DaysDtArray
-%       Column array of datetime objects. UTC, midnight only.
+%       Column array of datetime objects. UTC, midnight only
+%       (TimeZone = "UTCLeapSeconds").
 %       Defines days for which quicklooks should be generated. A day is
 %       specified by the midnight which begins that day.
 %       Weekly quicklooks (if enabled) will be produced for all weeks which

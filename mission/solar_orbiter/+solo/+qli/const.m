@@ -38,10 +38,10 @@ classdef const
 
 
 
-    % Whether to catch plotting exceptions, continue plotting other days/weeks, and
-    % then re-raise the last caught exception at the very end. This produces as many
-    % quicklooks as possible when one or some quicklooks fail.
-    % Should be enabled by default.
+    % Whether to catch plotting exceptions, continue plotting other days/weeks,
+    % and then re-raise the last caught exception at the very end. This produces
+    % as many quicklooks as possible when one or some quicklooks fail. Should be
+    % enabled by default.
     CATCH_PLOT_EXCEPTIONS_ENABLED = true;
 
     % NOTE: Usually found at /data/solo/data_yuri/.

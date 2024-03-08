@@ -220,7 +220,7 @@ if ~isempty(Data.Etnr)
   %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
   for iFile = 1:length(TnrFileArray)
     tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
-    [TNRp] =  solo.read_TNR(tt);
+    [TNRp] = solo.read_TNR(tt);
     if isa(TNRp,'struct')
       % NOTE: MATLAB documentation (R2019b):
       % "combine will be removed in a future release"

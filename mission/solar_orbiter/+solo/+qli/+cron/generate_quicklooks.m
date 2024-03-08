@@ -80,7 +80,7 @@
 function generate_quicklooks(...
   outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 
-VHT_DIR        = '/data/solo/data_yuri/';
+VHT_DIR = '/data/solo/data_yuri/';
 
 % Path to IRF logo, relative to the irfu-matlab root.
 % NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code still
