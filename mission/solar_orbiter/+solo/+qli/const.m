@@ -15,10 +15,28 @@ classdef const
   %#####################
   %#####################
   properties(Constant)
+    % Whether to enable (permit) having magnetic field data
+    % -----------------------------------------------------
     % IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
-    % speeds up solo.qli.generate_quicklooks_24h_6h_2h() greatly. Useful for some debugging.
-    % Should be enabled by default.
+    % speeds up solo.qli.generate_quicklooks_24h_6h_2h() greatly. Useful for
+    % some debugging. Should be enabled by default.
     ENABLE_B = true;
+
+    % Whether to enable/disable panels with time-consuming spectra
+    % ------------------------------------------------------------
+    % Disabling this is useful for debugging and testing (speeds up execution).
+    % Should be enabled by default.
+    NONWEEKLY_SPECTRA_ENABLED = true;
+
+    % Whether to generate all more than one quicklook of every type (per day)
+    % -----------------------------------------------------------------------
+    % In practice only affects 6h and 2h quicklooks. Disabling this is useful
+    % for debugging and testing (speeds up execution). Should be enabled by
+    % default.
+    NONWEEKLY_ALL_PLOTS_ENABLED = true;
+    %NONWEEKLY_ALL_PLOTS_ENABLED = false;
+
+
 
     % Whether to catch plotting exceptions, continue plotting other days/weeks, and
     % then re-raise the last caught exception at the very end. This produces as many

@@ -347,11 +347,11 @@ Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 % NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
 % "solo.get_position".
-Data.solopos = get_SolO_position(Tint);
+Data.soloPos = get_SolO_position(Tint);
 
 % Earth position (also uses SPICE)
 DT = 60*60;
-Data.earthpos = get_Earth_position(Tint, DT);
+Data.earthPos = get_Earth_position(Tint, DT);
 
 if ~solo.qli.const.ENABLE_B
   Data.B = [];
@@ -392,12 +392,12 @@ Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 % NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
 % "solo.get_position()".
-Data.solopos = get_SolO_position(Tint);
+Data.soloPos = get_SolO_position(Tint);
 
 % Earth position (also uses SPICE)
 DT = 60*60;
 earthPosTSeries = get_Earth_position(Tint, DT);
-Data.earthpos   = earthPosTSeries;
+Data.earthPos   = earthPosTSeries;
 
 % Plot data and save figure
 solo.qli.generate_quicklook_7days(Data, OutputPaths, Tint, irfLogoPath)
