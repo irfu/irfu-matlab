@@ -126,7 +126,7 @@ classdef solo_local_file_db < solo_file_db
           % between our "startFile" and "stopFile" names.
           indAfterStart = arrayfun(@(x) isequal({startFile; x.name}, sort({startFile; x.name})), listingD);
           indBeforeStop = arrayfun(@(x) isequal({x.name;  stopFile}, sort({x.name;  stopFile})), listingD);
-          % Also look at files just before and after as it might be some
+          % Also look at files just before and after as there might be some
           % overlap.
           indLast = find(indBeforeStop, 1, 'last');
           if(indLast<length(listingD)), indBeforeStop(indLast+1) = true; end
@@ -390,9 +390,9 @@ classdef solo_local_file_db < solo_file_db
           case {'rpw-tnr-fp'}
             subDir = 'tnr_fp';
 
-            % Official directory names used by ROC and that IRFU should therefore
-            % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
-            % Erik P G Johansson 2020-11-27.
+            % Official directory names used by ROC and that IRFU should
+            % therefore also use. As per agreement with Yuri Khotyaintsev,
+            % Thomas Chust, and Erik P G Johansson 2020-11-27.
             % /Erik P G Johansson 2020-12-15.
           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
             subDir = 'lfr_density';

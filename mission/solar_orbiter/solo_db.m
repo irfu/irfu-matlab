@@ -35,6 +35,7 @@ classdef solo_db < handle
 
 
     function fileList = list_files(obj,filePrefix,tint,varName)
+      % Return array of data structures describing matching files (datasets).
       if nargin < 4, varName = ''; end
       fileList = [];
       if nargin==2, tint =[]; end
