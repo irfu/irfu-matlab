@@ -19,6 +19,12 @@
 % * Note: 7-day quicklooks always begin with a specific hardcoded weekday
 %   (Wednesday as of 2024-03-07).
 % * Overwrites pre-existing quicklook files without warning.
+% * ~BUG: SolO DB (solo.db_get_ts() etc.) requires the caller to specify
+%    dataset_ID plus "-cdag" if present, but does not raise exception if wrong.
+%    ==> The code requires the datasets searched by SolO DB to have/lack "-cdag"
+%    exactly as specified (hardcoded). If they are not, then data appears to not
+%    be present and no exception is raised! This means that the code might not
+%    recognize datasets for the path specified with solo.db_init().
 %
 %
 % ARGUMENTS
@@ -319,9 +325,9 @@ Data = [];
 
 Data.Vrpw   = vht1h.V_RPW_1h.tlim(Tint);
 % E-field
-Data.E      = db_get_ts(     'solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
+Data.E      = db_get_ts(     'solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
 % RPW density
-Data.Ne     = db_get_ts(     'solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
+Data.Ne     = db_get_ts(     'solo_L3_rpw-bia-density-10-seconds-cdag', 'DENSITY', Tint);
 % B-field
 Data.B      = db_get_ts(     'solo_L2_mag-rtn-normal', 'B_RTN', Tint);
 % Proton & alpha temperature
@@ -375,9 +381,9 @@ Data = [];
 
 Data.Vrpw   = vht6h.V_RPW.tlim(Tint);
 % E-field:
-Data.E      = db_get_ts(     'solo_L3_rpw-bia-efield-10-seconds', 'EDC_SRF', Tint);
+Data.E      = db_get_ts(     'solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
 % RPW density:
-Data.Ne     = db_get_ts(     'solo_L3_rpw-bia-density-10-seconds', 'DENSITY', Tint);
+Data.Ne     = db_get_ts(     'solo_L3_rpw-bia-density-10-seconds-cdag', 'DENSITY', Tint);
 % B-field:
 Data.B      = db_get_ts(     'solo_L2_mag-rtn-normal-1-minute', 'B_RTN', Tint);
 % Proton & alpha temperature:
