@@ -94,7 +94,7 @@ assert(islogical(generateWeeklyQuicklooks))
 
 
 
-irfLogoPath = fullfile(solo.qli.utils.get_irfumatlab_root_path(), IRF_LOGO_RPATH);
+irfLogoPath = fullfile(irf('path'), IRF_LOGO_RPATH);
 irf.assert.file_exists(irfLogoPath)
 
 % IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from

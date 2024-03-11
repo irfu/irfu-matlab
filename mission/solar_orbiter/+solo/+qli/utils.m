@@ -47,14 +47,6 @@ classdef utils
 
 
 
-    function irfumatlabRootPath = get_irfumatlab_root_path()
-      % PROPOSAL: Convert into generic function.
-      parentDir          = fileparts(mfilename('fullpath'));
-      irfumatlabRootPath = fullfile(parentDir, '..', '..', '..', '..');
-    end
-
-
-
     % Given an array of datetime representing days to be plotted, derive the
     % corresponding weeks which overlap with the specified days.
     %

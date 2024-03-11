@@ -80,17 +80,6 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_irfumatlab_root_path(testCase)
-      irfumatlabRootPath = solo.qli.utils.get_irfumatlab_root_path();
-
-      irf.assert.dir_exists(irfumatlabRootPath)
-      irf.assert.dir_exists(fullfile(irfumatlabRootPath, 'mission'))
-      % NOTE: Check that specific subdirectory within irfu-matlab exists, to
-      % verify the location.
-    end
-
-
-
     function test_derive_weeks(testCase)
 
       function test(DayBeginDtArray, firstDayOfWeek, ExpWeekBeginDtArray)
