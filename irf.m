@@ -25,6 +25,9 @@ function [out,out1]=irf(varargin)
 % version = IRF('version') return IRF version number
 % [versionNumber, versionDate] = IRF('version') return also date
 %
+% [out] = IRF('path') returns the path to the current irfu-matlab root
+% directory.
+%
 % IRF('demo') demonstration how to use IRF
 
 %this is an edit to load BLAS
