@@ -15,7 +15,7 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % Tint24h
 %     Should be a 24-hour time interval consistent with the time series in
 %     "data", e.g.
-%     irf.tint('2020-06-01T00:00:00.00Z','2020-06-02T00:00:00.00Z');
+%     irf.tint('2020-06-01T00:00:00.00Z', '2020-06-02T00:00:00.00Z');
 % logoPath
 %     Either path to IRF logo, or empty.
 %
@@ -70,7 +70,7 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %         out = 0;
 %       case 1:
 %         out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
-%         out.p_label={'dB'};
+%         out.p_label = {'dB'};
 %
 %   PROPOSAL: Only call solo.read_TNR() via dependency injection.
 %     CON: Overkill.
@@ -95,9 +95,9 @@ epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
 mp    = Units.mp;      % Proton mass [km]
 qe    = Units.e;       % Elementary charge [C]
 
-h            = irf_plot(10,'newfigure');
+h            = irf_plot(10, 'newfigure');
 fig          = gcf;
-fig.Position = [1,1,1095,800];
+fig.Position = [1, 1, 1095, 800];
 
 
 
@@ -105,12 +105,12 @@ fig.Position = [1,1,1095,800];
 % Fill panel 1: B vector components
 %===================================
 if ~isempty(Data.B)
-  irf_plot(h(1),Data.B.tlim(Tint24h),'linewidth',LINE_WIDTH);
-  hold(    h(1),'on');
-  irf_plot(h(1),Data.B.abs.tlim(Tint24h),'linewidth',LINE_WIDTH);
+  irf_plot(h(1), Data.B.tlim(Tint24h), 'linewidth', LINE_WIDTH);
+  hold(    h(1), 'on');
+  irf_plot(h(1), Data.B.abs.tlim(Tint24h), 'linewidth', LINE_WIDTH);
 end
-irf_legend(h(1),{'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEGEND_FONT_SIZE);
-ylabel(    h(1),{'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FONT_SIZE);
+irf_legend(h(1), {'B_{R}', 'B_{T}', 'B_{N}', '|B|'}, [0.98 0.18], 'Fontsize', LEGEND_FONT_SIZE);
+ylabel(    h(1), {'B_{RTN}'; '(nT)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 
@@ -119,34 +119,34 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 %=======================
 % Fill panel 2: N & |B|
 %=======================
-hold(h(2),'on');
+hold(h(2), 'on');
 if ~isempty(Data.Ne)
-  irf_plot(h(2),Data.Ne.tlim(Tint24h),'-','color',COLORS(1,:),'linewidth',LINE_WIDTH);
+  irf_plot(h(2), Data.Ne.tlim(Tint24h), '-', 'color', COLORS(1,:), 'linewidth', LINE_WIDTH);
 end
 if ~isempty(Data.Npas)
-  irf_plot(h(2),Data.Npas.tlim(Tint24h),'-','color',COLORS(2,:),'linewidth',LINE_WIDTH);
+  irf_plot(h(2), Data.Npas.tlim(Tint24h), '-', 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
-ylabel(h(2),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FONT_SIZE);
-h(2).ColorOrder=COLORS;
-irf_legend(h(2),{'N_{e,RPW}','N_{i,PAS}','|B|'},[0.98 0.16],'Fontsize',LEGEND_FONT_SIZE);
+ylabel(h(2), {'N'; '(cm^{-3})'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
+h(2).ColorOrder = COLORS;
+irf_legend(h(2), {'N_{e,RPW}', 'N_{i,PAS}', '|B|'}, [0.98 0.16], 'Fontsize', LEGEND_FONT_SIZE);
 
-yyaxis(h(2),'right');
+yyaxis(h(2), 'right');
 if ~isempty(Data.B)
   fci = qe*Data.B.abs*10^-9/mp/(2*pi);
-  irf_plot(h(2),Data.B.abs.tlim(Tint24h),'color',COLORS(3,:),'linewidth',LINE_WIDTH);
+  irf_plot(h(2), Data.B.abs.tlim(Tint24h), 'color', COLORS(3,:), 'linewidth', LINE_WIDTH);
   %Bnan = rmmissing(data.B.abs.data);
   %if ~isempty(Bnan)
-  %    h(2).YLim=[floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
+  %    h(2).YLim = [floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
   %end
   minAbsB = min(Data.B.tlim(Tint24h).abs.data);
   maxAbsB = max(Data.B.tlim(Tint24h).abs.data);
   if ~isnan(minAbsB) && ~isnan(maxAbsB)
     % Only zoom if min & max are not NaN (==> Avoid crash).
-    irf_zoom(h(2),'y',[minAbsB-1, maxAbsB+1]);
+    irf_zoom(h(2), 'y', [minAbsB-1, maxAbsB+1]);
   end
 end
-ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FONT_SIZE);
-h(2).YColor=[1,0,0];
+ylabel(h(2), {'|B|'; '(nT)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
+h(2).YColor = [1, 0, 0];
 
 tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 
@@ -173,7 +173,7 @@ if ~isempty(Data.B) && solo.qli.const.NONWEEKLY_SPECTRA_ENABLED
 
     frequency   = ebsp.f;
     time        = ebsp.t;
-    Bsum        = ebsp.bb_xxyyzzss(:,:,4);
+    Bsum        = ebsp.bb_xxyyzzss(:, :, 4);
     ellipticity = ebsp.ellipticity;
     dop         = ebsp.dop;    % DOP = Degree Of Polarization
 
@@ -190,21 +190,21 @@ if ~isempty(Data.B) && solo.qli.const.NONWEEKLY_SPECTRA_ENABLED
     % "BW2 = bwareaopen(BW,P) removes from a binary image all connected
     % components (objects) that have fewer than P pixels, producing another
     % binary image BW2."
-    msk_denoise                 = bwareaopen(msk,8);
+    msk_denoise                 = bwareaopen(msk, 8);
     ellipticity(msk_denoise==0) = NaN;
 
     %---------
     % Panel 3
     %---------
-    specrec         = struct('t',time);
+    specrec         = struct('t', time);
     specrec.f       = frequency;
     specrec.p       = Bsum;
     specrec.f_label = '';
     specrec.p_label = {'log_{10}B^{2}', 'nT^2 Hz^{-1}'};
     irf_spectrogram(h(3), specrec, 'log', 'donotfitcolorbarlabel');
     set(     h(3), 'yscale', 'log');
-    % set(h(1),'ytick',[1e1 1e2 1e3]);
-    % caxis(h(3),[-8 -1])
+    % set(h(1), 'ytick', [1e1 1e2 1e3]);
+    % caxis(h(3), [-8 -1])
     hold(    h(3), 'on');
     irf_plot(h(3), fci, 'k', 'linewidth', LINE_WIDTH);
     text(    h(3), 0.01, 0.3, 'f_{ci}', 'units', 'normalized', 'fontsize', FONT_SIZE);
@@ -213,14 +213,14 @@ if ~isempty(Data.B) && solo.qli.const.NONWEEKLY_SPECTRA_ENABLED
     %---------
     % Panel 4
     %---------
-    specrec         = struct('t',time);
+    specrec         = struct('t', time);
     specrec.f       = frequency;
     specrec.p       = ellipticity;
     specrec.f_label = '';
     specrec.p_label = {'Ellipticity', 'DOP>0.7'};
     irf_spectrogram(h(4), specrec, 'log', 'donotfitcolorbarlabel');
     set(     h(4), 'yscale', 'log');
-    % set(h(1),'ytick',[1e1 1e2 1e3]);
+    % set(h(1), 'ytick', [1e1 1e2 1e3]);
     caxis(   h(4), [-1 1])
     hold(    h(4), 'on');
     irf_plot(h(4), fci, 'k', 'linewidth', LINE_WIDTH);
@@ -233,8 +233,8 @@ if ~isempty(Data.B) && solo.qli.const.NONWEEKLY_SPECTRA_ENABLED
     colormap(h(4), bgrcmap);
   end
 end
-ylabel(h(3), {'f';'(Hz)'}, 'fontsize', FONT_SIZE);
-ylabel(h(4), {'f';'(Hz)'}, 'fontsize', FONT_SIZE);
+ylabel(h(3), {'f'; '(Hz)'}, 'fontsize', FONT_SIZE);
+ylabel(h(4), {'f'; '(Hz)'}, 'fontsize', FONT_SIZE);
 tBeginSec = solo.qli.utils.log_time('End panel 3 & 4', tBeginSec);
 
 
@@ -243,10 +243,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 3 & 4', tBeginSec);
 % Fill panel 5: Ion temperature
 %===============================
 if ~isempty(Data.Tpas)
-  irf_plot(h(5),Data.Tpas.tlim(Tint24h),'color',COLORS(2,:),'linewidth',LINE_WIDTH);
+  irf_plot(h(5), Data.Tpas.tlim(Tint24h), 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
-irf_zoom(h(5),'y');
-ylabel(  h(5),{'T_i';'(eV)'},'interpreter','tex','fontsize',FONT_SIZE);
+irf_zoom(h(5), 'y');
+ylabel(  h(5), {'T_i'; '(eV)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 
@@ -256,13 +256,13 @@ tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 % Fill panel 6: y,z PAS velocities
 %==================================
 if ~isempty(Data.Vpas)
-  irf_plot(h(6),Data.Vpas.y.tlim(Tint24h),'color',COLORS(2,:),'linewidth',LINE_WIDTH);
-  hold(    h(6),'on');
-  irf_plot(h(6),Data.Vpas.z.tlim(Tint24h),'color',COLORS(3,:),'linewidth',LINE_WIDTH);
+  irf_plot(h(6), Data.Vpas.y.tlim(Tint24h), 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
+  hold(    h(6), 'on');
+  irf_plot(h(6), Data.Vpas.z.tlim(Tint24h), 'color', COLORS(3,:), 'linewidth', LINE_WIDTH);
 end
-irf_legend(h(6),{'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEGEND_FONT_SIZE);
-irf_zoom(  h(6),'y');
-ylabel(    h(6),{'V_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FONT_SIZE);
+irf_legend(h(6), {'', 'v_{T}', 'v_{N}'}, [0.98 0.18], 'Fontsize', LEGEND_FONT_SIZE);
+irf_zoom(  h(6), 'y');
+ylabel(    h(6), {'V_{T,N}'; '(km/s)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 
@@ -271,16 +271,16 @@ tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 %=====================================
 % Fill panel 7: Vrpw, Vpas velocities
 %=====================================
-hold(h(7),'on');
+hold(h(7), 'on');
 if ~isempty(Data.Vrpw)
-  irf_plot(h(7),-Data.Vrpw,'o-','color',COLORS(1,:));
+  irf_plot(h(7),-Data.Vrpw, 'o-', 'color', COLORS(1,:));
 end
 if ~isempty(Data.Vpas)
-  irf_plot(h(7),Data.Vpas.x.tlim(Tint24h),'color',COLORS(2,:),'linewidth',LINE_WIDTH);
+  irf_plot(h(7), Data.Vpas.x.tlim(Tint24h), 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
-irf_legend(h(7), {'V_{RPW}','V_{PAS}'},[0.98 0.18],'Fontsize',LEGEND_FONT_SIZE);
+irf_legend(h(7), {'V_{RPW}', 'V_{PAS}'}, [0.98 0.18], 'Fontsize', LEGEND_FONT_SIZE);
 irf_zoom(  h(7), 'y');
-ylabel(    h(7), {'V_R';'(km/s)'},'interpreter','tex','fontsize',FONT_SIZE);
+ylabel(    h(7), {'V_R'; '(km/s)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
@@ -290,18 +290,18 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 % Fill panel 8: Electric field
 %==============================
 if ~isempty(Data.E)
-  irf_plot(h(8),Data.E.y,'color',COLORS(2,:),'linewidth',LINE_WIDTH)
-  hold(h(8),'on');
-  %irf_plot(h(8),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
+  irf_plot(h(8), Data.E.y, 'color', COLORS(2,:), 'linewidth', LINE_WIDTH)
+  hold(    h(8), 'on');
+  %irf_plot(h(8), data.E.z, 'color', COLORS(3,:), 'linewidth', LWIDTH)
 
   minEy = min(rmmissing(Data.E.y.data));
   maxEy = max(rmmissing(Data.E.y.data));
   if ~isempty(minEy) && ~isempty(maxEy)
-    irf_zoom(h(8),'y',[minEy-5 maxEy+5]);
+    irf_zoom(h(8), 'y', [minEy-5 maxEy+5]);
   end
 end
-irf_legend(h(8),{'','E_y'},[0.98 0.20],'Fontsize',LEGEND_FONT_SIZE);
-ylabel(h(8),{'E_{SRF}';'(mV/m)'},'interpreter','tex','fontsize',FONT_SIZE);
+irf_legend(h(8), {'', 'E_y'}, [0.98 0.20], 'Fontsize', LEGEND_FONT_SIZE);
+ylabel(    h(8), {'E_{SRF}'; '(mV/m)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 
@@ -313,8 +313,8 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 % NOTE: READS CDF FILES!
 %===================================
 if ~isempty(Data.ieflux)
-  SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux',Tint24h);
-  iDEF         = struct('t',  Data.ieflux.tlim(Tint24h).time.epochUnix);
+  SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint24h);
+  iDEF         = struct('t', Data.ieflux.tlim(Tint24h).time.epochUnix);
   % for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
   for iFile = 1:length(SwaFileArray)
     iEnergy = cdfread(...
@@ -323,13 +323,13 @@ if ~isempty(Data.ieflux)
     iEnergy = iEnergy{1};
     iDEF.p  = Data.ieflux.data;
   end
-  iDEF.p_label = {'dEF','keV/','(cm^2 s sr keV)'};
-  iDEF.f       = repmat(iEnergy,1,numel(iDEF.t))';
-  irf_spectrogram(h(9),iDEF,'log','donotfitcolorbarlabel');   % NOTE: Somewhat time-consuming.
-  % set(h(1),'ytick',[1e1 1e2 1e3]);
-  %caxis(h(9),[-1 1])
+  iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
+  iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
+  irf_spectrogram(h(9),iDEF, 'log', 'donotfitcolorbarlabel');   % NOTE: Somewhat time-consuming.
+  % set(h(1), 'ytick', [1e1 1e2 1e3]);
+  %caxis(h(9), [-1 1])
 
-  hold(h(9),'on');
+  hold(h(9), 'on');
   h9_clims = h(9).CLim;
   % Fix color axis
   h9_medp = mean(iDEF.p);
@@ -340,7 +340,7 @@ if ~isempty(Data.ieflux)
 end
 set(     h(9), 'YScale', 'log');
 colormap(h(9), jet)
-ylabel(  h(9), {'W_{i}';'(eV)'},'interpreter','tex','fontsize',FONT_SIZE);
+ylabel(  h(9), {'W_{i}'; '(eV)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 
 
@@ -361,7 +361,7 @@ if ~isempty(Data.Etnr)
       TNR = [];
     end
   end
-  if isa(TNR,'struct')
+  if isa(TNR, 'struct')
     sz_tnr = size(TNR.p);
     if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
       irf_spectrogram(h(10), TNR, 'log', 'donotfitcolorbarlabel')
@@ -370,36 +370,36 @@ if ~isempty(Data.Etnr)
         % Electron plasma frequency
         wpe_sc = (sqrt(((Data.Ne.tlim(Tint24h)*1000000)*qe^2)/(Me*epso)));
         fpe_sc = (wpe_sc/2/pi)/1000;
-        irf_plot(h(10),fpe_sc,'r','linewidth',LINE_WIDTH);
+        irf_plot(h(10),fpe_sc, 'r', 'linewidth', LINE_WIDTH);
         fpe_sc.units = 'kHz';
         fpe_sc.name  = 'f [kHz]';
       end
       hold(h(10), 'off');
       text(h(10), 0.01, 0.3, 'f_{pe,RPW}', 'units', 'normalized', 'fontsize', FONT_SIZE, 'Color', 'r');
       set( h(10), 'YScale', 'log');
-      %set(h(10),'ColorScale','log')
-      %caxis(h(10),[.01 1]*10^-12)
-      ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FONT_SIZE);
+      %set(h(10), 'ColorScale', 'log')
+      %caxis(h(10), [.01 1]*10^-12)
+      ylabel(h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
       colormap(h(10),jet)
-      %yticks(h(10),[10^1 10^2]);
-      %irf_zoom(h(10),'y',[10^1 10^2])
+      %yticks(h(10), [10^1 10^2]);
+      %irf_zoom(h(10), 'y', [10^1 10^2])
     end
   end
 end
-ylabel(h(10), {'f';'(kHz)'},'interpreter','tex','fontsize',FONT_SIZE);
+ylabel(h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 yticks(h(10),      [10^1 10^2]);
 % Not set YLim.
-%irf_zoom(h(10),'y',[10^1 10^2])
-irf_zoom(h(10),'y',[9, 110])    % Not overwritten later.
+%irf_zoom(h(10), 'y', [10^1 10^2])
+irf_zoom(h(10), 'y', [9, 110])    % Not overwritten later.
 
 if isempty(Data.Vrpw) ...
     && isempty(Data.E)    && isempty(Data.Ne)   && isempty(Data.B) ...
     && isempty(Data.Tpas) && isempty(Data.Npas) && isempty(Data.ieflux) ...
     && isempty(Data.Etnr)
-  nanPlot = irf.ts_scalar(Tint24h,ones(1,2)*NaN);
-  irf_plot(h(10),nanPlot);    % No LWIDTH?
-  grid(    h(10),'off');
-  ylabel(  h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FONT_SIZE);
+  nanPlot = irf.ts_scalar(Tint24h,ones(1, 2)*NaN);
+  irf_plot(h(10), nanPlot);    % No LWIDTH?
+  grid(    h(10), 'off');
+  ylabel(  h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 end
 
 tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
@@ -410,17 +410,17 @@ tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
 % Other, miscellaneous
 %======================
 irf_plot_axis_align(h(1:10));  % Make panels ("data area") have the same length.
-irf_zoom(h(1:10),'x',Tint24h);
-irf_zoom(h(1),'y');
+irf_zoom(h(1:10), 'x', Tint24h);
+irf_zoom(h(1),    'y');
 
-h(2).YLabel.Position=[1.05,0.5,0];
-yyaxis(h(2),'left');
-h(2).YLabel.Units='normalized';
+h(2).YLabel.Position = [1.05, 0.5, 0];
+yyaxis(h(2), 'left');
+h(2).YLabel.Units = 'normalized';
 % NOTE: *NOT* using h(3) or h(4) since they do not have ylabels if the relevant
 % data is missing. h(1) ylabel always has a position. Using h(3) (old
 % implementation) lead to left panel 2 ylabel having the wrong position (too far
 % left) when h(3) did not have any label).
-h(2).YLabel.Position=h(1).YLabel.Position;
+h(2).YLabel.Position = h(1).YLabel.Position;
 
 % Add Context Info Strings (CIS): Spacecraft position, Earth longitude as text.
 [soloStr, earthStr] = solo.qli.utils.get_context_info_strings(Data.soloPos, Data.earthPos, Tint24h);
@@ -698,7 +698,7 @@ end
 %     Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(  Tint)) && ~all(isnan(data.Ne.tlim(Tint).data));
 %     Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint));
 %     if Neflag && Npasflag
-%         yyaxis(hAxes,'left');
+%         yyaxis(hAxes, 'left');
 %         hAxes.YLim=[...
 %             min(floor([min(data.Npas.tlim(Tint).data),min(data.Ne.tlim(Tint).data)])),...
 %             max(ceil( [max(data.Npas.tlim(Tint).data),max(data.Ne.tlim(Tint).data)]))...
