@@ -34,10 +34,10 @@ tBeginSec = tic();
 
 
 % Setup figure:
-LWIDTH   = 1.0;   % irf_plot() line width.
-FSIZE    = 18;    % Font size
-LEG_SIZE = 22;    % irf_legend() font size.
-COLORS   = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
+LINE_WIDTH       = 1.0;   % irf_plot() line width.
+FONT_SIZE        = 18;    % Font size
+LEGEND_FONT_SIZE = 22;    % irf_legend() font size.
+COLORS           = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 Units = irf_units;
 Me    = Units.me;      % Electron mass [kg]
@@ -54,12 +54,12 @@ fig.Position = [1,1,1095,800];
 % Fill panel 1: B vector components
 %===================================
 if ~isempty(Data.B)
-  irf_plot(h(1),Data.B.tlim(Tint),'linewidth',LWIDTH);
+  irf_plot(h(1),Data.B.tlim(Tint),'linewidth',LINE_WIDTH);
   hold(    h(1),'on');
-  irf_plot(h(1),Data.B.abs.tlim(Tint),'linewidth',LWIDTH);
+  irf_plot(h(1),Data.B.abs.tlim(Tint),'linewidth',LINE_WIDTH);
 end
-irf_legend(h(1), {'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEG_SIZE);
-ylabel(    h(1), {'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FSIZE);
+irf_legend(h(1), {'B_{R}','B_{T}','B_{N}','|B|'},[0.98 0.18],'Fontsize',LEGEND_FONT_SIZE);
+ylabel(    h(1), {'B_{RTN}';'(nT)'},'interpreter','tex','fontsize',FONT_SIZE);
 irf_zoom(  h(1), 'y');
 
 tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
@@ -71,9 +71,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 %======================
 if ~isempty(Data.B)
   %fci = qe*data.B.abs*10^-9/mp/(2*pi);
-  irf_plot(h(2),Data.B.abs.tlim(Tint),'linewidth',LWIDTH);
+  irf_plot(h(2),Data.B.abs.tlim(Tint),'linewidth',LINE_WIDTH);
 end
-ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FSIZE);
+ylabel(h(2),{'|B|';'(nT)'},'interpreter','tex','fontsize',FONT_SIZE);
 h(2).YScale = 'log';
 h(2).YTick  = [10,100];
 %h(2).YLim   = [0.1,200];
@@ -87,13 +87,13 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 %=========================
 hold(h(3),'on');
 if ~isempty(Data.Ne)
-  irf_plot(h(3),Data.Ne.tlim(Tint),'color',COLORS(1,:),'linewidth',LWIDTH);
+  irf_plot(h(3),Data.Ne.tlim(Tint),'color',COLORS(1,:),'linewidth',LINE_WIDTH);
 end
 if ~isempty(Data.Npas)
-  irf_plot(h(3),Data.Npas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(3),Data.Npas.tlim(Tint),'color',COLORS(2,:),'linewidth',LINE_WIDTH);
 end
-ylabel(    h(3),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FSIZE);
-irf_legend(h(3),{'N_{e,RPW} ',' N_{i,PAS}'},[0.98 0.16],'Fontsize',LEG_SIZE);
+ylabel(    h(3),{'N';'(cm^{-3})'},'interpreter','tex','fontsize',FONT_SIZE);
+irf_legend(h(3),{'N_{e,RPW} ',' N_{i,PAS}'},[0.98 0.16],'Fontsize',LEGEND_FONT_SIZE);
 h(3).YScale = 'log';
 h(3).YTick  = [10,100];
 %h(3).YLim   = [0.8,200];
@@ -106,9 +106,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 3', tBeginSec);
 % Fill panel 4: Ion temperature
 %===============================
 if ~isempty(Data.Tpas)
-  irf_plot(h(4),Data.Tpas.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(4),Data.Tpas.tlim(Tint),'color',COLORS(2,:),'linewidth',LINE_WIDTH);
 end
-ylabel(h(4),{'T_i';'(eV)'},'interpreter','tex','fontsize',FSIZE);
+ylabel(h(4),{'T_i';'(eV)'},'interpreter','tex','fontsize',FONT_SIZE);
 h(4).YScale = 'log';
 h(4).YTick  = [1,10,100];
 h(4).YLim   = [0.5,300];
@@ -122,13 +122,13 @@ tBeginSec = solo.qli.utils.log_time('End panel 4', tBeginSec);
 %==============
 % y,z PAS velocities
 if ~isempty(Data.Vpas)
-  irf_plot(h(5),Data.Vpas.y.tlim(Tint),'color',COLORS(2,:),'linewidth',LWIDTH);
+  irf_plot(h(5),Data.Vpas.y.tlim(Tint),'color',COLORS(2,:),'linewidth',LINE_WIDTH);
   hold(    h(5),'on');
-  irf_plot(h(5),Data.Vpas.z.tlim(Tint),'color',COLORS(3,:),'linewidth',LWIDTH);
+  irf_plot(h(5),Data.Vpas.z.tlim(Tint),'color',COLORS(3,:),'linewidth',LINE_WIDTH);
 end
-irf_legend(h(5), {'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEG_SIZE);
+irf_legend(h(5), {'','v_{T}','v_{N}'},[0.98 0.18],'Fontsize',LEGEND_FONT_SIZE);
 irf_zoom(  h(5), 'y');
-ylabel(    h(5), {'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FSIZE);
+ylabel(    h(5), {'v_{T,N}';'(km/s)'},'interpreter','tex','fontsize',FONT_SIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 5', tBeginSec);
 
@@ -142,11 +142,11 @@ if ~isempty(Data.Vrpw)
   irf_plot(h(6), -Data.Vrpw, 'o', 'color', COLORS(1,:));
 end
 if ~isempty(Data.Vpas)
-  irf_plot(h(6), Data.Vpas.x.tlim(Tint), 'color', COLORS(2,:), 'linewidth', LWIDTH);
+  irf_plot(h(6), Data.Vpas.x.tlim(Tint), 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
-irf_legend(h(6), {'V_{RPW}', 'V_{PAS}'}, [0.98 0.15], 'Fontsize', LEG_SIZE);
+irf_legend(h(6), {'V_{RPW}', 'V_{PAS}'}, [0.98 0.15], 'Fontsize', LEGEND_FONT_SIZE);
 %h(6).YLim=[150,950];
-ylabel(h(6), {'v_{R}'; '(km/s)'}, 'interpreter', 'tex', 'fontsize',FSIZE);
+ylabel(h(6), {'v_{R}'; '(km/s)'}, 'interpreter', 'tex', 'fontsize',FONT_SIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 
@@ -156,13 +156,13 @@ tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 % Fill panel 7
 %==============
 if ~isempty(Data.E)
-  irf_plot(h(7), Data.E.y, 'color', COLORS(2,:), 'linewidth', LWIDTH)
+  irf_plot(h(7), Data.E.y, 'color', COLORS(2,:), 'linewidth', LINE_WIDTH)
   hold(    h(7),'on');
   %irf_plot(h(7),data.E.z,'color',COLORS(3,:),'linewidth',LWIDTH)
 end
-irf_legend(h(7), {'', 'E_y'}, [0.98 0.20], 'Fontsize', LEG_SIZE);
+irf_legend(h(7), {'', 'E_y'}, [0.98 0.20], 'Fontsize', LEGEND_FONT_SIZE);
 irf_zoom(  h(7), 'y');
-ylabel(    h(7), {'E_{SRF}'; '(mV/m)'}, 'interpreter', 'tex', 'fontsize', FSIZE);
+ylabel(    h(7), {'E_{SRF}'; '(mV/m)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 
 tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
@@ -250,9 +250,9 @@ if ~isempty(Data.Etnr)
       fpe_sc       = (wpe_sc/2/pi)/1000;
       fpe_sc.units = 'kHz';
       fpe_sc.name  = 'f [kHz]';
-      irf_plot(h(9),fpe_sc,'r','linewidth',LWIDTH);
+      irf_plot(h(9),fpe_sc,'r','linewidth',LINE_WIDTH);
     end
-    text(    h(9), 0.01, 0.3, 'f_{pe,RPW}', 'units', 'normalized', 'fontsize', FSIZE, 'Color', 'r');
+    text(    h(9), 0.01, 0.3, 'f_{pe,RPW}', 'units', 'normalized', 'fontsize', FONT_SIZE, 'Color', 'r');
     %set(h(9), 'YScale', 'log');
     colormap(h(9), jet)
     %ylabel(h(9),'f [kHz]')
@@ -283,9 +283,9 @@ h(9).XLabel.Visible = 'off';
 
 % Add spacecraft position as text.
 [soloStr, earthStr] = solo.qli.utils.get_context_info_strings(Data.soloPos, Data.earthPos, Tint);
-text(h(9), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', FSIZE);
+text(h(9), -0.11, -0.575, soloStr, 'units', 'normalized', 'fontsize', FONT_SIZE);
 % Add Earth longitude as text.
-text(h(9), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', FSIZE);
+text(h(9), -0.11, -0.925, earthStr, 'units', 'normalized', 'fontsize', FONT_SIZE);
 
 
 
@@ -340,7 +340,7 @@ h(5).YTick  = [1,10,100];
 
 % c_eval('h(?).FontSize=18;', 1:9);
 for i = 1:9
-  h(i).FontSize = FSIZE;
+  h(i).FontSize = FONT_SIZE;
 end
 
 
