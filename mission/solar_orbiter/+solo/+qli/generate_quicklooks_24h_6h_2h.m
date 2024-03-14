@@ -165,21 +165,23 @@ if ~isempty(Data.B) && solo.qli.const.NONWEEKLY_SPECTRA_ENABLED
     end
     b0 = bb.filt(0, 0.01,fMag, 5);
 
-    % IMPORTANT NOTE: The call to irf_ebsp() is very time-consuming.
+    % IMPORTANT NOTE: The call to irf_ebsp() is very time-consuming. Is
+    % therefore measuring the execution time.
     tBeginSec = solo.qli.utils.log_time('irf_ebsp(): Begin call', tBeginSec);
-    ebsp = irf_ebsp([],bb,[],b0,[],[0.05 fMax],'fullB=dB', 'polarization', 'fac');
+    ebsp      = irf_ebsp([], bb, [], b0, [], [0.05 fMax], 'fullB=dB', 'polarization', 'fac');
     tBeginSec = solo.qli.utils.log_time('irf_ebsp(): End call', tBeginSec);
 
     frequency   = ebsp.f;
     time        = ebsp.t;
     Bsum        = ebsp.bb_xxyyzzss(:,:,4);
     ellipticity = ebsp.ellipticity;
-    dop         = ebsp.dop;
+    dop         = ebsp.dop;    % DOP = Degree Of Polarization
 
     % Remove points with very low degree of polarization
-    dopthresh = 0.7;
-    removepts = find(dop < dopthresh);
-    ellipticity(removepts) = NaN;
+    DEGREE_OF_POLARIZATION_THRESHOLD = 0.7;
+    % iRemove = find(dop < DEGREE_OF_POLARIZATION_THRESHOLD);
+    bRemove = dop < DEGREE_OF_POLARIZATION_THRESHOLD;
+    ellipticity(bRemove) = NaN;
 
     % Remove "lonely" pixels
     msk              = ellipticity;
@@ -323,16 +325,17 @@ if ~isempty(Data.ieflux)
   end
   iDEF.p_label = {'dEF','keV/','(cm^2 s sr keV)'};
   iDEF.f       = repmat(iEnergy,1,numel(iDEF.t))';
-  irf_spectrogram(h(9),iDEF,'log','donotfitcolorbarlabel');
+  irf_spectrogram(h(9),iDEF,'log','donotfitcolorbarlabel');   % NOTE: Somewhat time-consuming.
   % set(h(1),'ytick',[1e1 1e2 1e3]);
   %caxis(h(9),[-1 1])
+
   hold(h(9),'on');
   h9_clims = h(9).CLim;
   % Fix color axis
   h9_medp = mean(iDEF.p);
   h9_medp = min(h9_medp(h9_medp>0));
   if h9_medp > 0 && h9_medp > h9_clims(1) && log10(h9_medp)+2<(max(max(log10(iDEF.p))))
-    caxis(h(9),[log10(h9_medp)+2 (max(max(log10(iDEF.p))))])
+    caxis(h(9), [log10(h9_medp)+2 (max(max(log10(iDEF.p))))])
   end
 end
 set(     h(9), 'YScale', 'log');
@@ -350,7 +353,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 % ==> The panel becomes wider.
 % ==> Other panels become wider.
 % ==> Moves the IRF logo to the right, and partially outside image.
-if ~isempty(Data.Etnr)    % && false
+if ~isempty(Data.Etnr)
   try
     [TNR] = solo.read_TNR(Tint24h);
   catch Exc
@@ -395,8 +398,8 @@ if isempty(Data.Vrpw) ...
     && isempty(Data.Etnr)
   nanPlot = irf.ts_scalar(Tint24h,ones(1,2)*NaN);
   irf_plot(h(10),nanPlot);    % No LWIDTH?
-  grid(h(10),'off');
-  ylabel(h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
+  grid(    h(10),'off');
+  ylabel(  h(10),{'f';'(kHz)'},'interpreter','tex','fontsize',FSIZE);
 end
 
 tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
