@@ -54,20 +54,50 @@ if numel(dd)==1;dd=['0' dd];end
 
 sensor = 5;
 sensor2 = 4;
-%IMPLEMENTATION NOTE: solo.get_db_ts does not work to get the zVariable
+%IMPLEMENTATION NOTE: solo.get_db_ts() does not work to get the zVariable
 %TNR_BAND_FREQ from the TNR cdf file, therefore the dataobj(x) function
 %is used instead, which requires giving the full path of the file.
-%The solo.get_db_ts function seems to fail to create the TSeries object
+%The solo.get_db_ts() function seems to fail to create the TSeries object
 %because the DEPEND_0 field is of different size from the data.
 path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
 
-data_l2 = rcdf(path, tint);
+data_l2 = read_TNR_CDFs(path, tint);
 
-n_freqs = size(data_l2.tnr_band_freq.data, 2) * 4;
+% =============================================================================
+% Information on selected solo_L2_rpw-tnr-surv zVariables used by this function
+% (=fields in struct "data_l2")
+% =============================================================================
+%
+% zVariable Information
+% ---------------------
+% AUTO1                     CDF_DOUBLE/1   1:[32]    T/T
+% AUTO2                     CDF_DOUBLE/1   1:[32]    T/T
+% FRONT_END                 CDF_UINT1/1    0:[]      T/
+% MAGNETIC_SPECTRAL_POWER1  CDF_DOUBLE/1   1:[32]    T/T
+% MAGNETIC_SPECTRAL_POWER2  CDF_DOUBLE/1   1:[32]    T/T
+% SWEEP_NUM                 CDF_UINT4/1    0:[]      T/
+% TNR_BAND                  CDF_UINT1/1    0:[]      T/
+% TNR_BAND_FREQ             CDF_UINT4/1    2:[4,32]  F/TT
+% SENSOR_CONFIG             CDF_UINT1/1    1:[2]     T/T
+%
+% Descriptions in zVariable attribute VAR_NOTES
+% ---------------------------------------------
+% AUTO1                     "Power spectral density at receiver+PA for channel 1 before applying antenna gain"
+% AUTO2                     "Power spectral density at receiver+PA for channel 2 before applying antenna gain"
+% FRONT_END                 "Indicates the TNR front end setting (GND=0, PREAMP=1, CAL=2)"
+% MAGNETIC_SPECTRAL_POWER1  "Magnetic power spectral density from 1 search coil axis in channel 1"
+% MAGNETIC_SPECTRAL_POWER2  "Magnetic power spectral density from 1 search coil axis in channel 2"
+% SWEEP_NUM                 "TNR sweep index number in the current file"
+% TNR_BAND                  "TNR band of the current record. Possible values are: 1=A, 2=B, 3=C, 4=D"
+% TNR_BAND_FREQ             "Frequencies of analysis of the 4 TNR bands in Hz"
+% SENSOR_CONFIG             "Indicates the THR sensor configuration
+%                            (V1=1, V2=2, V3=3, V1-V2=4, V2-V3=5, V3-V1=6, B_MF=7,
+%                            HF_V1-V2=9, HF_V2-V3=10, HF_V3-V1=11)"
+
+n_freqs  = size(   data_l2.tnr_band_freq.data, 2) * 4;
 freq_tnr = reshape(data_l2.tnr_band_freq.data', n_freqs, 1);
 
-
-puntical_ = find(data_l2.front_end.data == 1);
+puntical_ = find(data_l2.front_end.data == 1);   % 1 = PREAMP
 
 epoch_ = data_l2.auto1.time.epoch(puntical_, :);
 auto1_ = data_l2.auto1.data(puntical_, :);
@@ -77,6 +107,7 @@ bande_ = data_l2.tnr_band.data(puntical_, :);
 confg_ = data_l2.sensor_config.data(puntical_, :);
 
 if sensor == 7
+  % NOTE: Overwrite previously assigned variables.
   auto1_ = data_l2.magnetic_spectral_power1.data(puntical_, :);
   auto2_ = data_l2.magnetic_spectral_power2.data(puntical_, :);
 end
@@ -139,9 +170,9 @@ max_sweep = max(sweep_num(sens_));
 min_sweep = min(sweep_num(sens_));
 sweep_num = sweep_num(sens_);
 
-v_ = zeros(128, 1);
-sweep_tnr = zeros(1, 1);
-time_ = zeros(1, 1);
+v_        = zeros(128, 1);
+sweep_tnr = zeros(  1, 1);
+time_     = zeros(  1, 1);
 
 for ind_sweep = min_sweep:max_sweep
   v1_ = zeros(128, 1);
@@ -154,7 +185,7 @@ for ind_sweep = min_sweep:max_sweep
     end
   end
 
-  if sum(v1_) > 0.0
+  if sum(v1_) > 0.0    % Might be a way of detecting CDF fill values (large, negative).
     punt0_ = find(v1_ == 0.0);
     if ~isempty(punt0_)
       v1_(punt0_) = NaN;
@@ -219,7 +250,7 @@ out.p_label={'dB'};
 end
 
 %%
-function out_struct = rcdf(path, tint)
+function out_struct = read_TNR_CDFs(path, tint)
 %     Reads required field from TNR .cdf file.
 %
 %     @author: Louis Richard
@@ -227,7 +258,8 @@ function out_struct = rcdf(path, tint)
 %     Parameters
 %     ----------
 %     path : str
-%       Filename in .cdf containing the L2 data.
+%       Path to L2 TNR CDF(s). May refer to multiple files by using wildcard
+%       which dataobj() understands.
 %
 %     tint : EpochTT (2x1)
 %       Time interval
