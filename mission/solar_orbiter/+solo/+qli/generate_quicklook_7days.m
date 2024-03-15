@@ -1,4 +1,4 @@
-function generate_quicklook_7days(Data, OutputPaths, Tint, logoPath)
+function generate_quicklook_7days(Data, outputDir1wPath, Tint, logoPath)
 %
 % Generates ONE quicklook (file) for covering ONE UTC week of data.
 %
@@ -8,9 +8,7 @@ function generate_quicklook_7days(Data, OutputPaths, Tint, logoPath)
 % Data
 %     Struct with various time series of data extracted from SPICE and datasets.
 %     See the call from solo.qli.generate_quicklooks_all_types().
-% OutputPaths
-%     Struct with paths to separate output directories for the different types
-%     of quicklooks (see solo.qli.generate_quicklooks_all_types).
+% outputDir1wPath
 % Tint
 %     Should be a 7-day time interval consistent with the time series in "data"
 %     e.g.
@@ -356,7 +354,7 @@ fig.PaperPositionMode = 'auto';
 %=====================
 % Save figure to file
 %=====================
-solo.qli.utils.save_figure_to_file(OutputPaths.path_1w, Tint)
+solo.qli.utils.save_figure_to_file(outputDir1wPath, Tint)
 % TODO-NI: Why are there any commands (except close()) after this?
 %          Did the code use to iterate over 24h, 6h, 2h plots too?
 

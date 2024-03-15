@@ -222,6 +222,23 @@ classdef utils
 
 
 
+    % Log time interval for which a plotting function is called.
+    %
+    % This is useful for more easily determining for which time interval the code
+    % crashes by reading the log.
+    function log_plot_function_time_interval(Tint)
+      utcStr1 = Tint(1).utc;
+      utcStr2 = Tint(2).utc;
+      % NOTE: Truncating subseconds (keeping accuracy down to seconds).
+      utcStr1 = utcStr1(1:19);
+      utcStr2 = utcStr2(1:19);
+
+      % Not specifying which plot function is called (weekly, nonweekly plots).
+      fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
+    end
+
+
+
     % Generate text string with information on data source and when the plot
     % was generated.
     function str = get_data_source_info_string()

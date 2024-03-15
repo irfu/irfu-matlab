@@ -122,7 +122,13 @@ function generate_quicklooks_all_types(...
 %                 normalize their arguments with cell_array_TS_to_TS().
 %             CON: Can not extend wrapper solo.qli.utils.db_get_ts() to retrieve data for both
 %                  -cdag and non-cdag.
-%     PROPOSAL: Names *_local --> *_SolO_DB
+%     PROPOSAL: New names for *_local
+%         DB
+%         SolO DB
+%         default_data_sources
+%         default
+%         SPICE
+%         DB_SPICE
 %     CON/PROBLEM: They both use solo.qli.utils.get_Earth_position(), solo.qli.utils.get_SolO_position().
 %
 %
@@ -202,14 +208,14 @@ if generateNonweeklyQuicklooks
   % This is the .mat file containing RPW speeds at 1h resolution.
   % The file should be in the current path. This file can be found in
   % brain:/solo/data/data_yuri/.
-  vht1h = load(fullfile(vhtDataDir, solo.qli.const.VHT_1H_DATA_FILENAME));
+  vhtFile1hPath = fullfile(vhtDataDir, solo.qli.const.VHT_1H_DATA_FILENAME);
 
   for iDay = 1:length(DaysDtArray)
     DayDt = DaysDtArray(iDay);
 
     try
       trigger_automount(isOfficialProcessing)
-      generate_quicklooks_24h_6h_2h_local(DayDt, vht1h, OutputPaths, irfLogoPath)
+      solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE(DayDt, vhtFile1hPath, OutputPaths, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(Exc)
@@ -228,14 +234,14 @@ if generateWeeklyQuicklooks
   % -------------
   % This is the .mat file containing RPW speeds at 6h resolution.
   % The file should be in the same folder as this script (quicklook_main).
-  vht6h = load(fullfile(vhtDataDir, solo.qli.const.VHT_6H_DATA_FILENAME));
+  vhtFile6hPath = fullfile(vhtDataDir, solo.qli.const.VHT_6H_DATA_FILENAME);
 
   for iWeek = 1:numel(WeeksDtArray)
     WeekDt = WeeksDtArray(iWeek);
 
     try
       trigger_automount(isOfficialProcessing)
-      generate_quicklook_7days_local(WeekDt, vht6h, OutputPaths, irfLogoPath)
+      solo.qli.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.path_1w, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(Exc)
@@ -268,23 +274,6 @@ end    % function
 
 
 
-% Log time interval for which a plotting function is called.
-%
-% This is useful for more easily determining for which time interval the code
-% crashes by reading the log.
-function log_plot_function_time_interval(Tint)
-utcStr1 = Tint(1).utc;
-utcStr2 = Tint(2).utc;
-% NOTE: Truncating subseconds (keeping accuracy down to seconds).
-utcStr1 = utcStr1(1:19);
-utcStr2 = utcStr2(1:19);
-
-% Not specifying which plot function is called (weekly, nonweekly plots).
-fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
-end
-
-
-
 % Handle *PLOTTING* exception.
 %
 % Historically, the plotting code has caused many exceptions. One may want
@@ -308,104 +297,6 @@ if solo.qli.const.CATCH_PLOT_EXCEPTIONS_ENABLED
 else
   rethrow(Exc)
 end
-end
-
-
-
-function generate_quicklooks_24h_6h_2h_local(Dt, vht1h, OutputPaths, irfLogoPath)
-Tint = [
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(1))
-  ];
-log_plot_function_time_interval(Tint)
-
-Data = [];
-
-Data.Vrpw   = vht1h.V_RPW_1h.tlim(Tint);
-% E-field
-Data.E      = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
-% RPW density
-Data.Ne     = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-density-10-seconds-cdag', 'DENSITY', Tint);
-% B-field
-Data.B      = solo.qli.utils.db_get_ts('solo_L2_mag-rtn-normal', 'B_RTN', Tint);
-% Proton & alpha temperature
-Data.Tpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'T', Tint);
-% Proton & alpha velocity
-Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
-% Proton & alpha density
-Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
-% Ion spectrum
-Data.ieflux = solo.db_get_ts(          'solo_L2_swa-pas-eflux', 'eflux', Tint);
-
-% TNR E-field
-% -----------
-% BUG? Is not anything like an "E-field"!! Reading the wrong variable or
-% mislabelling the right variable?
-% NOTE: Variable is not used very much. Code only checks if empty or not.
-%
-%      FIELDNAM        (CDF_CHAR/8): "TNR_BAND"
-%      CATDESC         (CDF_CHAR/31): "TNR band of the current record "
-%      VAR_NOTES       (CDF_CHAR/71): "TNR band of the current record. Possible values are: 1=A, 2=B, 3=C, 4=D"
-% /solo_L2_rpw-tnr-surv-cdag_20240101_V02.cdf
-%
-Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
-% Solar Orbiter position
-% NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
-% solo.get_position().
-Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
-
-% Earth position (also uses SPICE)
-DT = 60*60;
-Data.earthPos = solo.qli.utils.get_Earth_position(Tint, DT);
-
-if ~solo.qli.const.ENABLE_B
-  Data.B = [];
-end
-
-% Plot data and save figure
-solo.qli.generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint, irfLogoPath)
-end
-
-
-
-function generate_quicklook_7days_local(Dt, vht6h, OutputPaths, irfLogoPath)
-Tint = [
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(7)), ...
-  ];
-log_plot_function_time_interval(Tint)
-
-Data = [];
-
-Data.Vrpw   = vht6h.V_RPW.tlim(Tint);
-% E-field:
-Data.E      = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
-% RPW density:
-Data.Ne     = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-density-10-seconds-cdag', 'DENSITY', Tint);
-% B-field:
-Data.B      = solo.qli.utils.db_get_ts('solo_L2_mag-rtn-normal-1-minute', 'B_RTN', Tint);
-% Proton & alpha temperature:
-Data.Tpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'T', Tint);
-% Proton & alpha velocity:
-Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
-% Proton & alpha density:
-Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
-% Ion spectrum
-Data.ieflux = solo.db_get_ts(          'solo_L2_swa-pas-eflux', 'eflux', Tint);
-% TNR E-field
-Data.Etnr   = solo.db_get_ts(          'solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
-% Solar Orbiter position
-% NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
-% "solo.get_position()".
-Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
-
-% Earth position (also uses SPICE)
-DT = 60*60;
-earthPosTSeries = solo.qli.utils.get_Earth_position(Tint, DT);
-Data.earthPos   = earthPosTSeries;
-
-% Plot data and save figure
-solo.qli.generate_quicklook_7days(Data, OutputPaths, Tint, irfLogoPath)
 end
 
 
