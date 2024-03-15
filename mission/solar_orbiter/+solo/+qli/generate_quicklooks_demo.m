@@ -1,18 +1,19 @@
 %
-% Demonstration code for how to generate "IRFU quicklooks" ("QLI") locally.
+% Demonstration code for how to generate "IRFU quicklooks" ("QLI") locally. The
+% user can copy and modify this to generate quicklooks her-/himself.
 %
 %
-% NOTE: The configuration is system-dependent! The function is configured for
-% being run on brain/spis at IRFU, or any system where /data/solo/ has been
-% mounted to the same location.
+% NOTE: The example implementation below is system-dependent! The function is
+% configured for being run on brain/spis at IRFU, or any system where
+% /data/solo/ has been mounted to the same location.
 %
 % NOTE: GENERATING QUICKLOOKS IS TIME-CONSUMING, in particular when MAG data is
 % available (80% of the time). Depending on the machine, it may take on the
 % order of 20 minutes per day of data with MAG data.
 %
 % NOTE: The exact locations and sizes of text and panels on quicklooks generated
-% locally may be different or outright wrong (for text) when compared to
-% officially generated quicklooks.
+% locally may be different or outright wrong (for text, e.g. bad location) when
+% compared to officially generated quicklooks.
 %
 %
 % ARGUMENTS

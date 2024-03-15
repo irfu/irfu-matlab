@@ -80,14 +80,6 @@ function generate_quicklooks_all_types(...
 % PROPOSAL: Log time consumption for each call to plot functions.
 %   PROPOSAL: Use solo.qli.utils.log_time().
 %
-% PROPOSAL: Have local function db_get_ts() normalize data returned from
-%           solo.db_get_ts() to TSeries, also for absent data.
-%   NOTE: Would require argument for dimensions when empty.
-%   PRO: Could (probably) simplify plot code a lot.
-%
-% PROPOSAL: Move generate_quicklooks_24h_6h_2h, generate_quicklook_7days constants here. Submit values as arguments.
-% PROPOSAL: Move generate_quicklooks_24h_6h_2h, generate_quicklook_7days constants to class for constants.
-%
 % PROPOSAL: Parallelize loop over days and weeks.
 %
 % PROBLEM: How handle IRF logo file?!
@@ -104,9 +96,37 @@ function generate_quicklooks_all_types(...
 %               CON: Risks forgetting why it is needed to be there.
 %               CON: No direct connection between QLI s/w and file.
 %
+% PROPOSAL: Have local function db_get_ts() normalize data returned from
+%           solo.db_get_ts() to TSeries, also for absent data.
+%   NOTE: Would require argument for dimensions when empty.
+%   PRO: Could (probably) simplify plot code a lot.
 %
-% generate_quicklooks_24h_6h_2h.m(), quicklooks_7day()
-% ====================================================
+% PROPOSAL: Always call solo.db_get_ts() both with and without "-cdag", to make
+%           sure that the code does select non-existing datasets.
+%           Use pre-existing db_get_ts() wrapper.
+%
+% PROPOSAL: Convert
+%           generate_quicklooks_24h_6h_2h_local()
+%           generate_quicklook_7days_local()
+%           into separate function files which use SolO DB for retrieving values.
+%     PRO: Usage of SolO DB becomes clearer for users.
+%     PRO: It becomes easier for users to add new variables.
+%     PRO: Can still use automated tests.
+%     CON/PROBLEM: They both use wrapper db_get_ts() (function in this file).
+%         CON-PROPOSAL: Move db_get_ts() to separate function and call it from
+%                       above functions.
+%         CON-PROPOSAL: Have
+%                 solo.qli.generate_quicklooks_24h_6h_2h()
+%                 solo.qli.generate_quicklook_7days()
+%                 normalize their arguments with cell_array_TS_to_TS().
+%             CON: Can not extend wrapper db_get_ts() to retrieve data for both
+%                  -cdag and non-cdag.
+%     PROPOSAL: Names *_local --> *_SolO_DB
+%     CON/PROBLEM: They both use get_Earth_position(), get_SolO_position().
+%
+%
+% generate_quicklooks_24h_6h_2h(), generate_quicklook_7day()
+% ============================================================
 % PROBLEM: Lots of cases of, and checks for data that may or may not be missing.
 % PROBLEM: Missing data can be represented as [] (0x0), rather than e.g. Nx0.
 %   Stems from solo.db_get_ts() (?) not finding any data for selected time
@@ -330,7 +350,7 @@ Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
 Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 % NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
-% "solo.get_position".
+% solo.get_position().
 Data.soloPos = get_SolO_position(Tint);
 
 % Earth position (also uses SPICE)
@@ -389,40 +409,37 @@ end
 
 
 
-% Get Solar Orbiter's position.
+% Use SPICE to get Solar Orbiter's position as
+% [soloSunDistance, soloEclLongitude, soloEclLatitude].
 %
-% NOTE: Uses SPICE and "solo.get_position()" indirectly through irfu-matlab
-% which can itself load SPICE kernels(!).
-function soloPos = get_SolO_position(Tint)
+% NOTE: Uses SPICE kernels and "solo.get_position()" indirectly through
+% irfu-matlab which can itself load SPICE kernels(!).
+function soloPosRadLonLatTSeries = get_SolO_position(Tint)
 assert((length(Tint) == 2) & isa(Tint, 'EpochTT'))
 
 % IM = irfu-matlab (as opposed to SPICE).
-imSoloPos = solo.get_position(Tint, 'frame', 'ECLIPJ2000');
+% See get_Earth_position() (in this file) for information on the coordinate
+% system.
+soloPosXyz = solo.get_position(Tint, 'frame', 'ECLIPJ2000');
 
-% BUG?!!: If solo.get_position() is non-empty, and presumably contains a
-%         value, THEN use SPICE value anyway?!! Note: This behaviour does
-%         however mimick the behaviour of the original code by
-%         Konrad Steinvall, IRF (before refactoring).
-if ~isempty(imSoloPos)
-  [radius, lon, lat] = cspice_reclat(imSoloPos.data');
-  soloPos = irf.ts_vec_xyz(imSoloPos.time,[radius',lon',lat']);
+if ~isempty(soloPosXyz)
+  [soloSunDistance, soloEclLongitude, soloEclLatitude] = cspice_reclat(soloPosXyz.data');
+  soloPosRadLonLatTSeries = irf.ts_vec_xyz(soloPosXyz.time, [soloSunDistance', soloEclLongitude', soloEclLatitude']);
 else
-  soloPos = imSoloPos;
+  %soloPosRadLonLat = soloPosXyz;
+  soloPosRadLonLatTSeries = TSeries();   % Empty TSeries.
 end
 end
 
 
 
-% Use SPICE to get Earth's position.
+% Use SPICE to get Earth's position as
+% [earthSunDistance, earthEclLongitude, earthEclLatitude].
 %
-function earthPosTSeries = get_Earth_position(Tint, dt)
-assert(length(Tint) == 2)
-assert(isnumeric(dt))
-
-et = Tint.start.tts : dt : Tint.stop.tts;
-
-% SPICE coordinate system
-% -------------------------------------------------------------------------
+function earthPosRadLonLatTSeries = get_Earth_position(Tint, dt)
+%===============================================================================
+% Arguments for cspice_spkpos()
+% -----------------------------
 % 17  ECLIPJ2000  Ecliptic coordinates based upon the
 %                 J2000 frame.
 %
@@ -432,7 +449,7 @@ et = Tint.start.tts : dt : Tint.stop.tts;
 %                 expression given in [5].
 %
 % Source: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/frames.html
-% ##############################################################################
+% --
 % 'LT+S'     Correct for one-way light time and
 %            stellar aberration using a Newtonian
 %            formulation. This option modifies the
@@ -442,20 +459,26 @@ et = Tint.start.tts : dt : Tint.stop.tts;
 %            barycenter. The result is the apparent
 %            position of the target---the position
 %            as seen by the observer.
+%
 % Source: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/mice/cspice_spkpos.html
-spiceEarthPos = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+%===============================================================================
+assert(length(Tint) == 2)
+assert(isnumeric(dt))
 
-if ~isempty(spiceEarthPos)
-  [earthSunDistance, earthEclLongitude, earthEclLatitude] = cspice_reclat(spiceEarthPos);
+et = Tint.start.tts : dt : Tint.stop.tts;
+
+earthPosXyz = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+
+if ~isempty(earthPosXyz)
+  [earthSunDistance, earthEclLongitude, earthEclLatitude] = cspice_reclat(earthPosXyz);
   earthPos = [earthSunDistance', earthEclLongitude', earthEclLatitude'];
 
-  Tlength  = Tint(end)-Tint(1);
-  dTimes   = 0:dt:Tlength;
-  Times    = Tint(1)+dTimes;
-  earthPosTSeries = irf.ts_vec_xyz(Times, earthPos);
+  Tlength = Tint(end)-Tint(1);
+  dTimes  = 0:dt:Tlength;
+  Times   = Tint(1)+dTimes;
+  earthPosRadLonLatTSeries = irf.ts_vec_xyz(Times, earthPos);
 else
-  % earthPos = [];
-  earthPosTSeries = TSeries();   % Empty TSeries.
+  earthPosRadLonLatTSeries = TSeries();   % Empty TSeries.
 end
 end
 
