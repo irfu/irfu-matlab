@@ -11,7 +11,7 @@ function [hout,hcb] = irf_spectrogram(varargin)
 %    specrec - structure including spectra
 %              specrec.t  - time vector (epoch unix)
 %              specrec.f  - frequency vector (can be also matrix the size specrec.p)
-%              specrec.p  - spectral density matrix (size(t)xsize(f))
+%              specrec.p  - spectral density matrix (size(t) x size(f))
 %              specrec.dt - Description of the ~half-width of each separate spectrum in the plots. (Can be omitted)
 %                           Specified in seconds. Multiple allowed forms:
 %                           (1) Numeric value(s). Half-width of each spectrum.

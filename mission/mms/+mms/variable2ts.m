@@ -1,5 +1,5 @@
 function ts = variable2ts(v)
-%MMS.VARIABLE2TS  Converst variable structure to TSeries
+%MMS.VARIABLE2TS  Converts variable structure to TSeries
 %
 % ts = variable2ts(v)
 

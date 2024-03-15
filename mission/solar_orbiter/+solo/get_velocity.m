@@ -96,7 +96,7 @@ posvel = cspice_spkezr('solo', et, frame, 'LT+s', 'Sun'); %This gives both posit
 % Convert to utc and then to TT2000 in TSeries object
 utc_tmp = cspice_et2utc(et, 'ISOC', 0);
 
-% Note pos' since it is returned as 3xN but TSeries expexcts Nx3 (where N is number of records).
+% Note pos' since it is returned as 3xN but TSeries expects Nx3 (where N is number of records).
 soloVelocity= irf.ts_vec_xyz(EpochTT(utc_tmp), posvel(4:6,:)');
 soloVelocity.units = 'km/s'; % Add some metadata information (read when plotting in irf_plot)
 soloVelocity.coordinateSystem=frame;
