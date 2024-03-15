@@ -143,11 +143,7 @@ DaysDtArray = unique(DaysDtArray);
 %==============================
 % Miscellaneous initialization
 %==============================
-% Specify subdirectories for saving the respective types of quicklooks.
-OutputPaths.path_2h  = fullfile(outputDir, '2h' );
-OutputPaths.path_6h  = fullfile(outputDir, '6h' );
-OutputPaths.path_24h = fullfile(outputDir, '24h');
-OutputPaths.path_1w  = fullfile(outputDir, '1w' );
+OutputPaths = solo.qli.utils.create_output_directories(outputDir);
 
 % Try to determine whether quicklooks are being generated as part of IRFU's
 % official processing.
@@ -171,25 +167,6 @@ PlotExcArray = MException.empty(1, 0);
 
 % Derive weeks from specified days (midnights which begin 7-day periods).
 WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, solo.qli.const.FIRST_DAY_OF_WEEK);
-
-
-
-%=========================================================
-% Create subdirectories for different types of quicklooks
-%=========================================================
-% NOTE: Creates subdirectories for all four quicklook types, regardless of whether
-%       they will actually be generated or not.
-%   NOTE: This simplifies bash wrapper scripts that copy content of
-%         sub-directories to analogous sub-directories, also when not all
-%         quicklook types are generated.
-for fnCa = fieldnames(OutputPaths)'
-  dirPath = OutputPaths.(fnCa{1});
-  [parentDir, dirBasename, dirSuffix] = fileparts(dirPath);
-  % NOTE: Works (without warnings) also if subdirectories pre-exist ("msg"
-  % contains warning which is never printed.)
-  [success, msg] = mkdir(parentDir, [dirBasename, dirSuffix]);
-  assert(success, 'Failed to create directory "%s". %s', dirPath, msg)
-end
 
 
 

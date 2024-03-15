@@ -83,6 +83,37 @@ classdef utils
 
 
 
+    % Specify and create subdirectories to place quicklooks in.
+    function OutputPaths = create_output_directories(outputDir)
+      % PROBLEM: Hardcoded subdirectory names in code.
+      % IMPLEMENTATION NOTE: Function is useful partly since it can be shared
+      % with test code.
+
+      OutputPaths.path_2h  = fullfile(outputDir, '2h' );
+      OutputPaths.path_6h  = fullfile(outputDir, '6h' );
+      OutputPaths.path_24h = fullfile(outputDir, '24h');
+      OutputPaths.path_1w  = fullfile(outputDir, '1w' );
+
+      %=========================================================
+      % Create subdirectories for different types of quicklooks
+      %=========================================================
+      % NOTE: Works (without warnings) also if subdirectories pre-exist
+      % NOTE: Creates subdirectories for all four quicklook types, regardless of
+      %       whether they will actually be generated or not.
+      %   NOTE: This simplifies bash wrapper scripts that copy content of
+      %         sub-directories to analogous sub-directories, also when not all
+      %         quicklook types are generated.
+      for fnCa = fieldnames(OutputPaths)'
+        dirPath = OutputPaths.(fnCa{1});
+        if ~exist(dirPath, 'dir')
+          [success, msg] = mkdir(dirPath);
+          assert(success, 'Failed to create directory "%s": "%s"', dirPath, msg)
+        end
+      end
+    end
+
+
+
     % Generate text string with information on data source and when the plot
     % was generated.
     function str = get_data_source_info_string()
