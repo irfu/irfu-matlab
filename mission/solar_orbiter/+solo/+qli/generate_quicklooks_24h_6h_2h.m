@@ -499,7 +499,7 @@ fig.PaperPositionMode = 'auto';
 %   ==> Changing order of commands.
 %   ==> Calls to YScale, YTick above become superseded.
 %   ==> Unwanted change of behaviour.
-solo.qli.utils.save_figure_to_file(OutputPaths.path_24h, Tint24h)
+solo.qli.utils.save_figure_to_file(OutputPaths.dir24h, Tint24h)
 
 
 
@@ -537,7 +537,7 @@ end
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 6 h intervals', tBeginSec);
 for i6h = I_6H
   Tint6h = Tint24h(1) + 6*60*60*(i6h+[0, 1]);
-  modify_save_subinterval_plot(h, hCisText1, hCisText2, Data, Tint6h, OutputPaths.path_6h)
+  modify_save_subinterval_plot(h, hCisText1, hCisText2, Data, Tint6h, OutputPaths.dir6h)
 end
 
 %===========================
@@ -546,7 +546,7 @@ end
 tBeginSec = solo.qli.utils.log_time('Begin iterating over 2 h intervals', tBeginSec);
 for i2h = I_2H
   Tint2h = Tint24h(1) + 2*60*60*(i2h+[0, 1]);
-  modify_save_subinterval_plot(h, hCisText1, hCisText2, Data, Tint2h, OutputPaths.path_2h)
+  modify_save_subinterval_plot(h, hCisText1, hCisText2, Data, Tint2h, OutputPaths.dir2h)
 end
 
 

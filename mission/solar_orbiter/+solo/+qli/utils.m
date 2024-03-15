@@ -89,10 +89,10 @@ classdef utils
       % IMPLEMENTATION NOTE: Function is useful partly since it can be shared
       % with test code.
 
-      OutputPaths.path_2h  = fullfile(outputDir, '2h' );
-      OutputPaths.path_6h  = fullfile(outputDir, '6h' );
-      OutputPaths.path_24h = fullfile(outputDir, '24h');
-      OutputPaths.path_1w  = fullfile(outputDir, '1w' );
+      OutputPaths.dir2h  = fullfile(outputDir, '2h' );
+      OutputPaths.dir6h  = fullfile(outputDir, '6h' );
+      OutputPaths.dir24h = fullfile(outputDir, '24h');
+      OutputPaths.dir1w  = fullfile(outputDir, '1w' );
 
       %=========================================================
       % Create subdirectories for different types of quicklooks

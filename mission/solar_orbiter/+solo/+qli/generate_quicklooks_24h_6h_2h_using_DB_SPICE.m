@@ -21,7 +21,7 @@
 %     brain:/data/solo/data_yuri/V_RPW_1h.mat .
 % OutputPaths
 %     Struct with paths to output directories for different types of plots.
-%     Fields: path_2h, path_6h, path_24h.
+%     Fields: dir2h, dir6h, dir24h.
 % irfLogoPath
 %     Path to IRF logo. Empty ==> Do not plot any logo.
 %     IMPLEMENTATION NOTE: The IRF logo should only be used for official

@@ -241,7 +241,7 @@ if generateWeeklyQuicklooks
 
     try
       trigger_automount(isOfficialProcessing)
-      solo.qli.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.path_1w, irfLogoPath)
+      solo.qli.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.dir1w, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(Exc)
