@@ -1,4 +1,4 @@
-% galactic noise 
+% galactic noise
 % log10(f[MHz]) log10(Brightness[W/m2 Hz sr])
        -0.863864      -22.828025
          -0.711712      -22.573248

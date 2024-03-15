@@ -340,7 +340,13 @@ for i=1:varsbsize
         end
       end
     case 2
-      if start_time>toepoch([2015 10 12 12 00 0])
+      if start_time>toepoch([2022 08 23 12 08 0])
+        % p3 failure
+        if any(probe=='1') || any(probe=='2') || any(probe=='3')
+          irf_log('dsrc',sprintf('p1, p2 & p3 is BAD on sc%d',cl_id))
+          continue
+        end
+        elseif start_time>toepoch([2015 10 12 12 00 0])
         % p2 failure
         if any(probe=='1') || any(probe=='2')
           irf_log('dsrc',sprintf('p1 & p2 is BAD on sc%d',cl_id))

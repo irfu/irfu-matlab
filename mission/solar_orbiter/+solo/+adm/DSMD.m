@@ -23,21 +23,38 @@
 % First created 2020-05-28.
 %
 classdef DSMD
-  % PROPOSAL: Rename DatasetMetadata.
-  %   PRO: Consistent with other class naming for BICAS.
+  % PROPOSAL: Better name,
+  %     PROPOSAL: Long name: DatasetMetadata.
+  %         PRO: Consistent with other class naming for BICAS.
+  %         -model
+  %         -metadata
+  %         -file
   %
   % PROPOSAL: Make DSMD entirely immutable, including .datasetId. Modify
   %           solo.adm.convert_DSMD_DATASET_ID_to_SOLO() to create new instance instead.
+  %
+  % PROPOSAL: Add file modification timestamp.
+  %   CON: Not desirable for DSMDs which do not correspond to preexisting files on disk.
+  %       Ex: bicas.tools.batch.autocreate_input_BPCIs2___speedTest calling
+  %           solo.adm.paths_to_DSMD_array() for just filenames.
+  %       Ex: bicas.tools.batch.run_BICAS_all_passes() calling
+  %           solo.adm.paths_to_DSMD_array() for just filenames.
+  %   PROPOSAL: New class = path + modif. timestamp + DSMD(without path/modif.timestamp)
   %
   % PROPOSAL: Remove path from DSMD.
   %   PRO: path is not metadata.
   %   PRO: path is information that is often "correlated" with the metadata in algorithms, but it is not used by algorithms.
   %       Ex: Filter DSMDs ==> Filter paths
-  %       Ex: Group DSMDs  ==> Group paths
+  %       Ex: Group  DSMDs ==> Group paths
   %       PROPOSAL: Algorithms should not return DSMDs but indices into the
   %           argument DSMD array.
   %           Ex: Group DSMDs should return groups of indices instead.
-  %   PROPOSAL: New class = path + DSMD(without path)
+  %   PROPOSAL: New class = path, modification date + DSMD(without path and modification date)
+  %         DSMDF=DatasetMetadataFile
+  %         DSMDM=DatasetMetadataModel
+  %     PROPOSAL: New class inherits from DSMD.
+  %     PROPOSAL: New class owns one DSMD (composition).
+  %         PRO: May want to extract non-file DSMDs from (array of) file DSMDs.
   %
   % PROPOSAL: Add static function for extracting CA of dataset filenames from
   %           array of DSMDs.
@@ -45,7 +62,10 @@ classdef DSMD
   % TODO-DEC: What constitutes equality between DSMDs?
   %           Same DSI and time interval?
   %           isCdag? Version number?
-  %           Path?
+  %           Path? Filename?
+  %
+  % PROPOSAL: Datetime objects should have uppercase initial
+  %     PRO: Consistent with (BICAS) naming conventions.
 
 
 

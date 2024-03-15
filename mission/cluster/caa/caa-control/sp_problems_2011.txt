@@ -20,9 +20,9 @@ Why all red circles on SC1? Fixed by refetching some data
 
 110302 2130 - 110303 1330 SC3 DSC etc starts but no sci data
 
-110307-110321 Spin phase missing in DDS files for all but SC4. New data was fetched. 
+110307-110321 Spin phase missing in DDS files for all but SC4. New data was fetched.
 
-110330 08-11 SC12 strange harmonics, mark as bad. C1 marked as manual-quality (QRecord) and put to quality 1. 
+110330 08-11 SC12 strange harmonics, mark as bad. C1 marked as manual-quality (QRecord) and put to quality 1.
 
 110331 SC1 05:04-15:13  No spectra or E-field but harmonics exist. Turns out to be missing P32 due to SPLIT mode problem (ns_ops). Should be fixed in new version which then should use LX. Check problem has gone after reprocessing.
 
@@ -64,7 +64,7 @@ SC2 strange data, AIE check. So far we have put it into ns_ops.
 5) Unclassified
 ===============
 
-2011-11-04 from 03:43 to 2011-11-05 07:16. Strange data on C3. DWP problem, TM buffer overflow. Entered in NS_OPS. 
+2011-11-04 from 03:43 to 2011-11-05 07:16. Strange data on C3. DWP problem, TM buffer overflow. Entered in NS_OPS.
 
 2011-11,12 C2 quality should be 1, but it is typically 2. Rerun C2.
 

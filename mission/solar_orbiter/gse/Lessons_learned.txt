@@ -1,25 +1,25 @@
 Lessons learned that can be used in Solar Orbiter
 =================================================
 
-1	Use TT2000, time precision is nanoseconds. 
+1	Use TT2000, time precision is nanoseconds.
 	If it is sufficient precision for all RPW instruments, then it is preferable instead of CDF EPOCH16 which is two numbers.
-2	Use variable names that are unique across all Solar Orbiter mission.	
+2	Use variable names that are unique across all Solar Orbiter mission.
 	For example in Cluster Active Archive variable name includes dataset name and also data prodcut level where necessary. Example: E_Vec_xyz_GSE__C4_CP_EFW_L2_E3D_GSE
 3	Do not use minus signs '-' inside the names of variables or datasets.
-	MATLAB does not like minus signs in variable names and therefore all minus signs have to be converted to underscores. Better avoid minus signs alltogether. 
-4	Use variable names less than 63 characters.	
+	MATLAB does not like minus signs in variable names and therefore all minus signs have to be converted to underscores. Better avoid minus signs alltogether.
+4	Use variable names less than 63 characters.
 	Limitation in cdf???
 5	Use the same vocabulary everywhere.
 	For example in CAA one uses 'datasets' (not data products).
-6	Distinguish zeros from data gaps/NaNs.	
+6	Distinguish zeros from data gaps/NaNs.
 7	For time strings use ISO formatted time.
-	e.g. 2014-03-30T08:01:15.084297Z  (comma after seconds is optional and 
-there can be any number of digits behind comma) 
+	e.g. 2014-03-30T08:01:15.084297Z  (comma after seconds is optional and
+there can be any number of digits behind comma)
 8	The same information should be kept in one location only.
 	Other instances should refer to that location. For example, in Cluster, spacecraft position was also kept in the file of magnetometer data which just wastes disk space and at the end it appeared also has less precision than needed.
 9	All documentation for data/processing/calibration in one document.
 10	Archive not only the high level science data, but all the data+calibrations, preserve as much information available in raw data as possible.
 11	Consider use of quality flags and caveats.
-12	Consider archiving operation files, so that they can be easily used in data processing (anomalies, maneuvres, etc) 
+12	Consider archiving operation files, so that they can be easily used in data processing (anomalies, maneuvres, etc)
 13	All data must be provided in the instrument coordinate system and the coord system transformations to geophysical systems needs to be done using common routines.
 

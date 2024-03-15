@@ -212,7 +212,7 @@ end
 
 
 
-% Original code from quicklooks_24_6_2_h.m which this function largely replaces.
+% Original code from generate_quicklooks_24h_6h_2h.m which this function largely replaces.
 % NOTE: The old code should have a bug for the cases
 % (1) mintick<=0 and minlim<0, and
 % (2) maxtick<=0 and maxlim>0

@@ -1,14 +1,14 @@
 RPW/BIAS Calibration pipeline
 =============================
-BIAS(IRFU) delivers: 
+BIAS(IRFU) delivers:
 * Calibration files for E field DC/LF (up to 10kHZ)
 * s/w L1 > L2 satellite potential
-* s/w L1 > L2 E field time series 
+* s/w L1 > L2 E field time series
 * s/w L1 > L2 probe sweeps
 
-Alternatively, instead of the software we might provide the calibrated data, 
-but it feels that it is better to deliver the software. Then the data 
-production will be performed elsewhere, and our role will be to provide 
+Alternatively, instead of the software we might provide the calibrated data,
+but it feels that it is better to deliver the software. Then the data
+production will be performed elsewhere, and our role will be to provide
 updated calibration files and perform validation of the L2 data.
 
 For BIAS calibration required:
@@ -18,55 +18,55 @@ For BIAS calibration required:
 * L2 plasma density (particle instruments)
 * L2 particle spectrograms
 
-Here we require calibrated data from other instruments, 
-so for timely calibration it would be necessary to have 
-access to these data as soon as possible, e.g. before they 
-become public. This needs to be coordinated with other 
+Here we require calibrated data from other instruments,
+so for timely calibration it would be necessary to have
+access to these data as soon as possible, e.g. before they
+become public. This needs to be coordinated with other
 in situ PIs.
 
 
 Calibration files for E field DC/LF (up to 10kHZ)
 -------------------------------------------------
-Model the probe properties, and get the model transfer function 
+Model the probe properties, and get the model transfer function
 as a function of plasma parameters.
 
-Verify the transfer function using known wave modes such as whistler 
+Verify the transfer function using known wave modes such as whistler
 by comparing the E/B ratio and phase between E and B.
 
 
 Spacecraft potential (time series)
 ----------------------------------
-What we need is to understand which fraction of the spacecraft potential 
-we observe, as the probes are not exactly at the plasma potential. 
+What we need is to understand which fraction of the spacecraft potential
+we observe, as the probes are not exactly at the plasma potential.
 
 Vps = K*Vps_observed
 
-To know factor K will require in-flight calibration with electron 
-data (good resolution at low energies) and possibly simulations 
-with SPIS. As a result we expect to have a table with correction 
-factors corresponding to different levels of solar UV emissions, 
+To know factor K will require in-flight calibration with electron
+data (good resolution at low energies) and possibly simulations
+with SPIS. As a result we expect to have a table with correction
+factors corresponding to different levels of solar UV emissions,
 bias current settings, etc.
 
 
 E-field time series
 -------------------
-The goal is to get measurement of 2D electric field in the plane 
-of RPW probes (YZ plane). In-flight calibration is needed to get 
+The goal is to get measurement of 2D electric field in the plane
+of RPW probes (YZ plane). In-flight calibration is needed to get
 the amplitude correction factor A and offsets dEy and dEz:
 
-Ey = dEy + A*Ey_observed 
+Ey = dEy + A*Ey_observed
 Ez = dEz + A*Ez_observed
 
-These correction factors are to be identified from comparison 
-of the observed E with -VxB observed by particle detectors 
-(ions and electrons) both for DC fields as well as for wave 
+These correction factors are to be identified from comparison
+of the observed E with -VxB observed by particle detectors
+(ions and electrons) both for DC fields as well as for wave
 fields for example for the Alfvén waves.
 
-One expects that these factors will vary with distance from Sun, 
-bias settings and plasma paramaters, and how much these are going 
-to vary is difficult to predict. In the best case we will create 
-a model for the offsets using the solar UV flux, bias setting and 
-the spacecraft potential as input; otherwise, if it will not be 
-possible to create such a model, we will need to determine the correction 
+One expects that these factors will vary with distance from Sun,
+bias settings and plasma paramaters, and how much these are going
+to vary is difficult to predict. In the best case we will create
+a model for the offsets using the solar UV flux, bias setting and
+the spacecraft potential as input; otherwise, if it will not be
+possible to create such a model, we will need to determine the correction
 factors for every particular time interval.
 

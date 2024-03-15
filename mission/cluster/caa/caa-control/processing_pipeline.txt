@@ -139,7 +139,7 @@ The ISDAT index files may need re-generation to avoid missing data intervals.
      ssh db
      cd /data/cluster/burst
      sudo rm 06*
-     cd ../index 
+     cd ../index
      sudo rm 06*
      rm indexmap.bak
      mv indexmap indexmap.bak
@@ -351,8 +351,8 @@ Special processing files are under git control in: irfu-matlab/mission/cluster/c
 Make sure /data/cluster is mounted. ns_ops_c?.dat files are needed.
 The DSI offsets are constant offsets applied to the despun data.
 They are computed on a statistical basis and applied on a roughly per-year basis.
-1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Note: Solar wind season 
-lasts from the end of November to June, therefore we run the code from 1st of September 
+1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Note: Solar wind season
+lasts from the end of November to June, therefore we run the code from 1st of September
 to the end of August. Example:
      cp /data/cluster/irfu-matlab/mission/cluster/caa/mPlan.mat /home/chris/caa/test-mp
      cp /data/cluster/irfu-matlab/mission/cluster/caa/deltaoff.mat /home/chris/caa/test-mp
@@ -364,7 +364,7 @@ to the end of August. Example:
     caa_sh_pl_xoff(dE,dAmp,dt,weight)
    and read out the mean offsets for all 4 spacecraft.
    Update table SW/SH offsets in c_efw_dsi_off.m.
-3. Determine the DSI offsets in the magnetosphere for all 4 spacecraft. Note: we run the 
+3. Determine the DSI offsets in the magnetosphere for all 4 spacecraft. Note: we run the
 code from 1st of April to the end of March next year.
 (Note that caa_ms_pl_xoff_stats uses a function from the curve-fitting toolbox)
      DdsiX1=caa_get('2008-04-01T00:00:00Z','2009-03-31T23:59:59Z',1,'DdsiX?');
@@ -440,7 +440,7 @@ Some problems should be added to nsops:
    scp chris@fernie:/home/chris/devel/irfu-matlab/mission/cluster/caa/caa-control/ns_ops.xml .
    sudo make all
    sudo make txt
-   scp ns_ops_c[1-4].dat ns_ops.xml chris@db:/export/data/cluster/caa-control 
+   scp ns_ops_c[1-4].dat ns_ops.xml chris@db:/export/data/cluster/caa-control
 The runners will need to be restarted on runners (spis, caa...) after this operation in order to force them to reload the new nsops file (alternatively, just sudo pkill -9 MATLAB). After this, the affected intervals can be re-run as needed.
 There's also a separate "manual problems" file at /data/cluster/caa-control/QRecord_c?.dat that can be used to mark it as a "manual interval". The columns in this file are: epoch time, dt, L2 quality, L3 quality, dief quality (deprecated).
 6. Bad packets.
@@ -448,7 +448,7 @@ There's also a separate "manual problems" file at /data/cluster/caa-control/QRec
 8. Jumping offsets at the flanks from bad SW/MS identifications. These should be added to special_processing (git: irfu-matlab/mission/cluster/caa/caa-control/YYYY_special_processing.txt) with an entry something like this:
    2010-06-22T03:00:00Z 2010-06-22T06:00:00Z  1234 % force MS offsets
     [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
-    Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+    Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);
     if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
 Once entered into the file, call caa_special_process to run the special processing.
 If you encounter a lot of these, consider forcing the whole month in c_efw_dsi_off.m.
@@ -574,7 +574,7 @@ To update the irfu-matlab software repository:
 
 To update the CAA software from CVS:
   ssh caa
-  sudo -i -u caa 
+  sudo -i -u caa
   cd ~caa/devel/caa-runner
   export CVSROOT=':pserver:caa@space.irfu.se:/stor/devel'
   cvs login
@@ -694,7 +694,7 @@ Page 2:
   Ey (C1234 = black, R, G, B)
   4 panels of spectra of the raw (spinning) signal
     blue=spin fundamental (~electric field)   -- should be much larger than other components
-    green, red, cyan, magenta, yellow: first through fifth harmonics 
+    green, red, cyan, magenta, yellow: first through fifth harmonics
     red circles: lobe wake
     green circles: plasmasphere saturation
   Spacecraft potential
@@ -736,7 +736,7 @@ File naming convention is: yymmdst.sat, with s=source, t=data type, sat=satellit
          st=ga        --> attitude and spin rate (auxiliary)
          st=la        --> time calibration (auxiliary)
          st=ia        --> command history (auxiliary)
-         st=sh        --> Spacecraft platform housekeeping data 
+         st=sh        --> Spacecraft platform housekeeping data
          st=ta        --> Short term event file (auxiliary)
          st=va        --> Covariance matrix file (auxiliary)
          st=wb/h/n    --> WEC burst/housekeeping/normal
@@ -823,10 +823,10 @@ If db ever gets rebooted (e.g. power failure), then the RAID array will NOT prop
    Check that
     [root@db /]# showmount -e
      Exports list on localhost:
-     /export/data3/CIS                  130.238.30.0 
-     /export/data/istp                  130.238.30.0 
-     /export/data/cluster               130.238.30.0 
-     /export/data/caa                   abba.irfu.se brain.irfu.se caa.irfu.se hem.irfu.se hq.irfu.se ice.irfu.se sipadan.irfu.se fernie.irfu.se 
+     /export/data3/CIS                  130.238.30.0
+     /export/data/istp                  130.238.30.0
+     /export/data/cluster               130.238.30.0
+     /export/data/caa                   abba.irfu.se brain.irfu.se caa.irfu.se hem.irfu.se hq.irfu.se ice.irfu.se sipadan.irfu.se fernie.irfu.se
    [root@db /]# rpcinfo -p
    program vers proto   port  service
     100000    4   tcp    111  rpcbind

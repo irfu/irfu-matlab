@@ -11,13 +11,14 @@
 % ARGUMENT
 % ========
 % filePathCa
-%       Cell array of file paths. All of them must follow naming conventions.
+%       Cell array of file paths.
 %
 %
 % RETURN VALUE
 % ============
 % DsmdArray
-%       Column array of DSMD objects.
+%       Column array of DSMD objects for those input filenames which follow
+%       naming conventions.
 % bIsDatasetArray
 %       Logical column array. Same size as argument. True iff the corresponding
 %       input path was interpreted as a dataset (was translated into a DSMD).
@@ -46,8 +47,6 @@ function [DsmdArray, bIsDatasetArray] = paths_to_DSMD_array(filePathCa)
 %           convention for a .cdf file (as could be expected).
 %   CON: Do not want to recognize RCTs if applying to entire ROC data/ dir.
 %   NOTE: Needs support in parse_dataset_filename(_many).
-% PROPOSAL: Policy for how to handle not being able to derive time interval
-%           from parsable filename: ignore, warning, error.
 
 % FI = File Info
 [fiCa, bIsDatasetArray] = solo.adm.parse_dataset_filename_many(filePathCa);

@@ -27,7 +27,7 @@ sp failure:
  Added new parameter passing to ec, and reprocessed files.
  Created new special-processing functionality caa_special_process and new file /data/caa/l1/2007/special_processing.txt
 
-05-13 screwed up Vsc data 
+05-13 screwed up Vsc data
   Problem with Db/getData for all C2 data after probe failure on 2007-05-13. Patched and reprocessed.
 
 05-28 1500 C1,3 very messed up data.
@@ -107,7 +107,7 @@ It would be nice to have a quick way of applying all manual_problems within a ti
 05-06 2250-2300: hbiassa on C2
 05-14 0400-0402 hbiassap34 on C2
 05-15 0450-0600 hbiassa on C234
-05-15 0528-0532 and 0550-0602 hbiassa on C1 
+05-15 0528-0532 and 0550-0602 hbiassa on C1
 05-31 2240-2250 hbiassa on C2
   added to manual_problems
 
@@ -171,7 +171,7 @@ It would be nice to have a quick way of applying all manual_problems within a ti
   Raw signal jumps at the reset on 0721 1845 and then lasts until at least the end of the month
   Bad puck and guard settings on C2  2007-07-21 18:45 until 2007-08-05 01:01
   Added special offsets for this interval in special_processing.
-  Put in ns_ops. Considered adding as 
+  Put in ns_ops. Considered adding as
 
 0725 0447-0450 C2 bad data in the LX stream
   Put in ns_ops, and added a PROBESA to the manual_problems.
@@ -227,9 +227,9 @@ It would be nice to have a quick way of applying all manual_problems within a ti
 1015 15-1247+ C4 Probe latchup (all probes -68) 14:52:02 to 12:40 (78478 seconds)
 1024 C3 maneuver 19:29:50 (420 s)
      C1 maneuver 22:59:53.5 (300 s)
-1028 11:14:15 C1 bad HKpacket (5 sec) 
+1028 11:14:15 C1 bad HKpacket (5 sec)
 1030 1849-2030 C4 Extreme (30V) spin-dependent swings in probe potentials. Cause unknown.
-  added to nsops 
+  added to nsops
 
 1102 18-24 force SW
 1123 18:12:03 maneuver C3 (300 s)
@@ -250,9 +250,9 @@ It would be nice to have a quick way of applying all manual_problems within a ti
   1108 C4 03:04:10-03:32:15 no EFW data
   1110 C1 09:58:48-10:20:26 no EFW data
        C2 10:57:17-11:22:54 see below
-       C3 08:55:09-08:55:12 
+       C3 08:55:09-08:55:12
   1116 10:43:00-12:18:00 C4 see ops_files/ESOC_MOR/Cluster_MOR_no380_(week46-2007).pdf
-  1118 17:37:00-19:08:00 on C3 
+  1118 17:37:00-19:08:00 on C3
   added to nsops and reprocessed.
 
 1123 01:10-03:10 hacked-up telemetry on C4

@@ -1,30 +1,25 @@
 %
-% Wrapper around solo.qli.quicklooks_main() intended for being used by being
-% called from system scripts (e.g. bash) for the purpose of cron jobs on
-% brain/spis. The arguments have also been designed for this purpose and
-% therefore all strings.
+% Wrapper around solo.qli.generate_quicklooks_all_types() intended for being run
+% on brain/spis for the purpose of cron jobs and manual generation.
+%
+% NOTE: This function is NOT intended to be called from bash/the OS.
 %
 % NOTE: This script is NOT intended to be called from MATLAB by the average
-%       user. See solo.qli.quicklooks_main() instead.
+%       user. See solo.qli.generate_quicklooks_all_types() instead.
 %
 %
 % ARGUMENTS
 % =========
-% logoPath
-%       Path to IRF logo image.
-%       Normally located in irfu-matlab:
-%       irfu-matlab/mission/solar_orbiter/+solo/irf_logo.png
-%       Empty ==> Do not plot any logo.
-% vhtDataDir
-%       Path to directory containing VHT (velocity) .mat files.
 % outputDir
-%       Plots will be placed in subdirectories under this directory.
-%       NOTE: Will create subdirectories if not pre-existing.
-% runNonweeklyPlots, runWeeklyPlots
-%       NOTE: STRINGS.
-%       Whether to run ("1") or not run ("0") the resp. groups of plots.
-% utcBegin, utcEnd : Strings.
-%       Defines time interval for which quicklooks should be generated.
+%       Path to output directory.
+%       IMPLEMENTATION NOTE: Not hardcoding this is useful for manual testing of
+%       the setup and for manual large-scale processing.
+% generateNonweeklyQuicklooks, generateWeeklyQuicklooks
+%       Scalar logical. Whether to generate non-weekly (2h, 6h, 24h) quicklooks
+%       and/or weekly quicklooks.
+% DaysDtArray
+%       datetime column array. Array of UTC midnights representing the beginning
+%       of days for which to generate quicklooks.
 %
 %
 % NOTES ON CRASHES ON SPIS & BRAIN
@@ -82,50 +77,53 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2022-08-30.
 %
-function quicklooks_main_cron(...
-  logoPath, vhtDataDir, outputDir, ...
-  runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
+function generate_quicklooks(...
+  outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 
-runNonweeklyPlots = interpret_argument_flag(runNonweeklyPlots);
-runWeeklyPlots    = interpret_argument_flag(runWeeklyPlots);
+VHT_DIR = '/data/solo/data_yuri/';
+
+% Path to IRF logo, relative to the irfu-matlab root.
+% NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code still
+% requires it to be located inside the corresponding directory.
+IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+cron/irf_logo.png';
+
+
+
+assert(islogical(generateNonweeklyQuicklooks))
+assert(islogical(generateWeeklyQuicklooks))
+
+
+
+irfLogoPath = fullfile(irf('path'), IRF_LOGO_RPATH);
+irf.assert.file_exists(irfLogoPath)
 
 % IMPLEMENTATION NOTE: Needed to make "DB" work. Necessary when calling from
 % bash.
-irf
+irf()
+
+
 
 %===============================================================
 % Configure Solar Orbiter database from which data will be used
 %===============================================================
 % NOTE: System-dependent configuration!
+% IMPLEMENTATION NOTE: Only uses /data/solo/remote/data/ and /data/solo/soar/
+% (and not /data/solo/data_irfu/) since data_irfu/ (1) has less reliable data
+% ("bleeding edge"), and (2) is (somewhat) ~frequently reprocessed in large
+% sets which would increase automatic QLI processing a lot.
+
 solo.db_init('local_file_db', '/data/solo/');
-solo.db_init('local_file_db', '/data/solo/data_irfu');
+
 % Setup cache
-solo.db_init('db_cache_size_max', 4096)
+solo.db_init('db_cache_size_max', 4096)   % Unit: MiB.
 solo.db_cache('on', 'save')
 
-%======
-% Plot
-%======
-solo.qli.quicklooks_main(...
-  logoPath, vhtDataDir, outputDir, ...
-  runNonweeklyPlots, runWeeklyPlots, utcBegin, utcEnd)
-end
 
 
-
-% Interpret argument for main function interface. Intended accept and normalize
-% arguments which are either
-% (1) MATLAB-friendly (numeric/logical), or
-% (2) bash script-friendly (strings).
-%
-function value = interpret_argument_flag(arg)
-assert(isscalar(arg), 'Flag argument is not scalar.')
-
-if ischar(arg) && arg=='0'
-  value = false;
-elseif ischar(arg) && arg=='1'
-  value = true;
-else
-  error('Can not interpret argument flag. Illegal format.')
-end
+%=====================
+% Generate quicklooks
+%=====================
+solo.qli.generate_quicklooks_all_types(...
+  irfLogoPath, VHT_DIR, outputDir, ...
+  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end

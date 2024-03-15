@@ -6,6 +6,8 @@
 % Ex: Can interpret [seconds, milliseconds, microseconds, nanoseconds] as used
 %     by the spdf* TT2000 functions.
 %
+% See e.g. https://en.wikipedia.org/wiki/Mixed_radix .
+%
 %
 % NOTES
 % =====
@@ -21,7 +23,7 @@
 %
 % CONVENTIONS
 % ===========
-% MRD = Mixed Radix Digits, i.e. the digits in mixed radix number.
+% MRD = Mixed Radix Digits, i.e. the digits in a mixed radix number.
 % --
 % iDigit=1 <==> Least significant digit.
 %            NOTE: This means that digits are in the opposite order to what is

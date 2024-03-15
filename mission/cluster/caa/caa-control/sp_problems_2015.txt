@@ -53,14 +53,14 @@ Same problem on 2015-12-31, starting at 14:18
 Entered in NS_OPS:
 C4 saturation, 2015-02-15 02:12 - 07:10
 C4 saturation, 2015-02-23 11:30 - 13:20
-C4 saturation, 2015-02-27 20:54 - 00:14 
-C4 saturation, 2015-02-28 14:10 - 17:00 
+C4 saturation, 2015-02-27 20:54 - 00:14
+C4 saturation, 2015-02-28 14:10 - 17:00
 C1-4 saturation, 2015-03-15 16:54 - 17:06, 17:42 - 20:15
 C4 saturation, 2015-03-16 10:40 - 14:48
 C1, probe 3 latched at -10.29 V., 2015-03-20 17:00 -- 2015-03-21 17:40
 C4 saturation, 2015-03-31 several intervals starting 13:47
 C1-4 saturation, 2015-03-31 17:14 - 17:23
-C4 saturation, 2015-04-09 12:37 - 13:30 
+C4 saturation, 2015-04-09 12:37 - 13:30
 C1-4 saturation, 2015-04-10 06:52 - 08:43
 C4 saturation, 2015-04-10 09:10 - 09:46, 11:25 - 11:30, 12:34 - 12:38, 16:58 - 17:06
 C4 saturation, 2015-04-11 16:39:20 - 16:40:40, etc, 21:45 - 21:50
