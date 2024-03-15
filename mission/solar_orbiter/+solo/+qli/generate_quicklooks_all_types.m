@@ -96,33 +96,34 @@ function generate_quicklooks_all_types(...
 %               CON: Risks forgetting why it is needed to be there.
 %               CON: No direct connection between QLI s/w and file.
 %
-% PROPOSAL: Have local function db_get_ts() normalize data returned from
+% PROPOSAL: Have local function solo.qli.utils.db_get_ts() normalize data returned from
 %           solo.db_get_ts() to TSeries, also for absent data.
 %   NOTE: Would require argument for dimensions when empty.
 %   PRO: Could (probably) simplify plot code a lot.
 %
 % PROPOSAL: Always call solo.db_get_ts() both with and without "-cdag", to make
 %           sure that the code does select non-existing datasets.
-%           Use pre-existing db_get_ts() wrapper.
+%           Use pre-existing solo.qli.utils.db_get_ts() wrapper.
 %
 % PROPOSAL: Convert
 %           generate_quicklooks_24h_6h_2h_local()
 %           generate_quicklook_7days_local()
-%           into separate function files which use SolO DB for retrieving values.
+%           into separate function files which use SolO DB for retrieving
+%           values. -- IMPLEMENTED
 %     PRO: Usage of SolO DB becomes clearer for users.
 %     PRO: It becomes easier for users to add new variables.
 %     PRO: Can still use automated tests.
-%     CON/PROBLEM: They both use wrapper db_get_ts() (function in this file).
-%         CON-PROPOSAL: Move db_get_ts() to separate function and call it from
-%                       above functions.
+%     CON/PROBLEM: They both use wrapper solo.qli.utils.db_get_ts() (function in this file).
+%         CON-PROPOSAL: Move solo.qli.utils.db_get_ts() to separate function and call it from
+%                       above functions. -- IMPLEMENTED
 %         CON-PROPOSAL: Have
 %                 solo.qli.generate_quicklooks_24h_6h_2h()
 %                 solo.qli.generate_quicklook_7days()
 %                 normalize their arguments with cell_array_TS_to_TS().
-%             CON: Can not extend wrapper db_get_ts() to retrieve data for both
+%             CON: Can not extend wrapper solo.qli.utils.db_get_ts() to retrieve data for both
 %                  -cdag and non-cdag.
 %     PROPOSAL: Names *_local --> *_SolO_DB
-%     CON/PROBLEM: They both use get_Earth_position(), get_SolO_position().
+%     CON/PROBLEM: They both use solo.qli.utils.get_Earth_position(), solo.qli.utils.get_SolO_position().
 %
 %
 % generate_quicklooks_24h_6h_2h(), generate_quicklook_7day()
@@ -322,19 +323,19 @@ Data = [];
 
 Data.Vrpw   = vht1h.V_RPW_1h.tlim(Tint);
 % E-field
-Data.E      = db_get_ts(     'solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
+Data.E      = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
 % RPW density
-Data.Ne     = db_get_ts(     'solo_L3_rpw-bia-density-10-seconds-cdag', 'DENSITY', Tint);
+Data.Ne     = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-density-10-seconds-cdag', 'DENSITY', Tint);
 % B-field
-Data.B      = db_get_ts(     'solo_L2_mag-rtn-normal', 'B_RTN', Tint);
+Data.B      = solo.qli.utils.db_get_ts('solo_L2_mag-rtn-normal', 'B_RTN', Tint);
 % Proton & alpha temperature
-Data.Tpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'T', Tint);
+Data.Tpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'T', Tint);
 % Proton & alpha velocity
-Data.Vpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
+Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
 % Proton & alpha density
-Data.Npas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'N', Tint);
+Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
-Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+Data.ieflux = solo.db_get_ts(          'solo_L2_swa-pas-eflux', 'eflux', Tint);
 
 % TNR E-field
 % -----------
@@ -351,11 +352,11 @@ Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 % NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
 % solo.get_position().
-Data.soloPos = get_SolO_position(Tint);
+Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
 
 % Earth position (also uses SPICE)
 DT = 60*60;
-Data.earthPos = get_Earth_position(Tint, DT);
+Data.earthPos = solo.qli.utils.get_Earth_position(Tint, DT);
 
 if ~solo.qli.const.ENABLE_B
   Data.B = [];
@@ -378,145 +379,33 @@ Data = [];
 
 Data.Vrpw   = vht6h.V_RPW.tlim(Tint);
 % E-field:
-Data.E      = db_get_ts(     'solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
+Data.E      = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
 % RPW density:
-Data.Ne     = db_get_ts(     'solo_L3_rpw-bia-density-10-seconds-cdag', 'DENSITY', Tint);
+Data.Ne     = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-density-10-seconds-cdag', 'DENSITY', Tint);
 % B-field:
-Data.B      = db_get_ts(     'solo_L2_mag-rtn-normal-1-minute', 'B_RTN', Tint);
+Data.B      = solo.qli.utils.db_get_ts('solo_L2_mag-rtn-normal-1-minute', 'B_RTN', Tint);
 % Proton & alpha temperature:
-Data.Tpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'T', Tint);
+Data.Tpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'T', Tint);
 % Proton & alpha velocity:
-Data.Vpas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
+Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint);
 % Proton & alpha density:
-Data.Npas   = db_get_ts(     'solo_L2_swa-pas-grnd-mom', 'N', Tint);
+Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
-Data.ieflux = solo.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+Data.ieflux = solo.db_get_ts(          'solo_L2_swa-pas-eflux', 'eflux', Tint);
 % TNR E-field
-Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+Data.Etnr   = solo.db_get_ts(          'solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 % NOTE: Uses SPICE kernels indirectly. Kernels should be taken care of by
 % "solo.get_position()".
-Data.soloPos = get_SolO_position(Tint);
+Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
 
 % Earth position (also uses SPICE)
 DT = 60*60;
-earthPosTSeries = get_Earth_position(Tint, DT);
+earthPosTSeries = solo.qli.utils.get_Earth_position(Tint, DT);
 Data.earthPos   = earthPosTSeries;
 
 % Plot data and save figure
 solo.qli.generate_quicklook_7days(Data, OutputPaths, Tint, irfLogoPath)
-end
-
-
-
-% Use SPICE to get Solar Orbiter's position as
-% [soloSunDistance, soloEclLongitude, soloEclLatitude].
-%
-% NOTE: Uses SPICE kernels and "solo.get_position()" indirectly through
-% irfu-matlab which can itself load SPICE kernels(!).
-function soloPosRadLonLatTSeries = get_SolO_position(Tint)
-assert((length(Tint) == 2) & isa(Tint, 'EpochTT'))
-
-% IM = irfu-matlab (as opposed to SPICE).
-% See get_Earth_position() (in this file) for information on the coordinate
-% system.
-soloPosXyz = solo.get_position(Tint, 'frame', 'ECLIPJ2000');
-
-if ~isempty(soloPosXyz)
-  [soloSunDistance, soloEclLongitude, soloEclLatitude] = cspice_reclat(soloPosXyz.data');
-  soloPosRadLonLatTSeries = irf.ts_vec_xyz(soloPosXyz.time, [soloSunDistance', soloEclLongitude', soloEclLatitude']);
-else
-  %soloPosRadLonLat = soloPosXyz;
-  soloPosRadLonLatTSeries = TSeries();   % Empty TSeries.
-end
-end
-
-
-
-% Use SPICE to get Earth's position as
-% [earthSunDistance, earthEclLongitude, earthEclLatitude].
-%
-function earthPosRadLonLatTSeries = get_Earth_position(Tint, dt)
-%===============================================================================
-% Arguments for cspice_spkpos()
-% -----------------------------
-% 17  ECLIPJ2000  Ecliptic coordinates based upon the
-%                 J2000 frame.
-%
-%                 The value for the obliquity of the
-%                 ecliptic at J2000 is taken from page 114
-%                 of [7] equation 3.222-1. This agrees with the
-%                 expression given in [5].
-%
-% Source: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/frames.html
-% --
-% 'LT+S'     Correct for one-way light time and
-%            stellar aberration using a Newtonian
-%            formulation. This option modifies the
-%            position obtained with the 'LT' option
-%            to account for the observer's velocity
-%            relative to the solar system
-%            barycenter. The result is the apparent
-%            position of the target---the position
-%            as seen by the observer.
-%
-% Source: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/mice/cspice_spkpos.html
-%===============================================================================
-assert(length(Tint) == 2)
-assert(isnumeric(dt))
-
-et = Tint.start.tts : dt : Tint.stop.tts;
-
-earthPosXyz = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
-
-if ~isempty(earthPosXyz)
-  [earthSunDistance, earthEclLongitude, earthEclLatitude] = cspice_reclat(earthPosXyz);
-  earthPos = [earthSunDistance', earthEclLongitude', earthEclLatitude'];
-
-  Tlength = Tint(end)-Tint(1);
-  dTimes  = 0:dt:Tlength;
-  Times   = Tint(1)+dTimes;
-  earthPosRadLonLatTSeries = irf.ts_vec_xyz(Times, earthPos);
-else
-  earthPosRadLonLatTSeries = TSeries();   % Empty TSeries.
-end
-end
-
-
-
-% Wrapper around solo.db_get_ts() which normalizes the output to always return
-% one TSeries object.
-%
-% NOTE: solo.db_get_ts() returns a cell array of TSeries instead of a single
-% TSeries when the underlying code thinks that the underlying CDFs do not have
-% consistent metadata. See solo.db_get_ts().
-%
-function Ts = db_get_ts(varargin)
-
-temp = solo.db_get_ts(varargin{:});
-
-% Normalize (TSeries or cell array) --> TSeries.
-if iscell(temp)
-  temp = cell_array_TS_to_TS(temp);
-end
-
-Ts = temp;
-end
-
-
-
-% Take a cell array of TSeries and merges them into one TSeries.
-function OutputTs = cell_array_TS_to_TS(InputTs)
-assert(iscell(InputTs))
-
-nCells   = numel(InputTs);
-OutputTs = InputTs{1};
-
-if nCells>1
-  for iCell = 2:nCells    % NOTE: Begins at 2.
-    OutputTs = OutputTs.combine(InputTs{iCell});
-  end
-end
 end
 
 

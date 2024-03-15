@@ -114,6 +114,114 @@ classdef utils
 
 
 
+    % Wrapper around solo.db_get_ts() which normalizes the output to always
+    % return one TSeries object, or [].
+    %
+    % NOTE: solo.db_get_ts() returns a cell array of TSeries instead of a single
+    % TSeries when the underlying code thinks that the underlying CDFs do not
+    % have consistent metadata. See solo.db_get_ts().
+    %
+    function Ts = db_get_ts(varargin)
+      % TODO-NI: Document example for which solo.db_get_ts() returns cell array.
+
+      temp = solo.db_get_ts(varargin{:});
+
+      % Normalize (TSeries or cell array) --> TSeries.
+      if iscell(temp)
+        TsCa   = temp;   % Rename variable.
+        nCells = numel(TsCa);
+        Ts     = TsCa{1};
+
+        if nCells>1
+          for iCell = 2:nCells    % NOTE: Begins at 2.
+            Ts = Ts.combine(TsCa{iCell});
+          end
+        end
+      else
+        Ts = temp;
+      end
+
+    end
+
+
+
+    % Use SPICE to get Solar Orbiter's position as
+    % [soloSunDistance, soloEclLongitude, soloEclLatitude].
+    %
+    % NOTE: Uses SPICE kernels and "solo.get_position()" indirectly through
+    % irfu-matlab which can itself load SPICE kernels(!).
+    function soloPosRadLonLatTSeries = get_SolO_position(Tint)
+      assert((length(Tint) == 2) & isa(Tint, 'EpochTT'))
+
+      % See solo.qli.utils.get_Earth_position() (in this file) for information
+      % on the coordinate system.
+      % NOTE: Function automatically returns data with a sampling rate of
+      % 1 data point/hour.
+      soloPosXyz = solo.get_position(Tint, 'frame', 'ECLIPJ2000');
+
+      if ~isempty(soloPosXyz)
+        [soloSunDistance, soloEclLongitude, soloEclLatitude] = cspice_reclat(soloPosXyz.data');
+        soloPosRadLonLatTSeries = irf.ts_vec_xyz(soloPosXyz.time, ...
+          [soloSunDistance', soloEclLongitude', soloEclLatitude']);
+      else
+        %soloPosRadLonLat = soloPosXyz;
+        soloPosRadLonLatTSeries = TSeries();   % Empty TSeries.
+      end
+    end
+
+
+
+    % Use SPICE to get Earth's position as
+    % [earthSunDistance, earthEclLongitude, earthEclLatitude].
+    %
+    function earthPosRadLonLatTSeries = get_Earth_position(Tint, dtSec)
+      %=========================================================================
+      % Arguments for cspice_spkpos()
+      % -----------------------------
+      % 17  ECLIPJ2000  Ecliptic coordinates based upon the
+      %                 J2000 frame.
+      %
+      %                 The value for the obliquity of the
+      %                 ecliptic at J2000 is taken from page 114
+      %                 of [7] equation 3.222-1. This agrees with the
+      %                 expression given in [5].
+      %
+      % Source: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/frames.html
+      % --
+      % 'LT+S'     Correct for one-way light time and
+      %            stellar aberration using a Newtonian
+      %            formulation. This option modifies the
+      %            position obtained with the 'LT' option
+      %            to account for the observer's velocity
+      %            relative to the solar system
+      %            barycenter. The result is the apparent
+      %            position of the target---the position
+      %            as seen by the observer.
+      %
+      % Source: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/mice/cspice_spkpos.html
+      %=========================================================================
+      assert((length(Tint) == 2) & isa(Tint, 'EpochTT'))
+      assert(isnumeric(dtSec))
+
+      et = Tint.start.tts : dtSec : Tint.stop.tts;
+
+      earthPosXyz = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
+
+      if ~isempty(earthPosXyz)
+        [earthSunDistance, earthEclLongitude, earthEclLatitude] = cspice_reclat(earthPosXyz);
+        earthPos = [earthSunDistance', earthEclLongitude', earthEclLatitude'];
+
+        Tlength = Tint(end)-Tint(1);
+        dTimes  = 0:dtSec:Tlength;
+        Times   = Tint(1)+dTimes;
+        earthPosRadLonLatTSeries = irf.ts_vec_xyz(Times, earthPos);
+      else
+        earthPosRadLonLatTSeries = TSeries();   % Empty TSeries.
+      end
+    end
+
+
+
     % Generate text string with information on data source and when the plot
     % was generated.
     function str = get_data_source_info_string()
