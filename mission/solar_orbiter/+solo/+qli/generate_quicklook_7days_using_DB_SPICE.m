@@ -60,9 +60,9 @@ Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint
 % Proton & alpha density:
 Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
-Data.ieflux = solo.db_get_ts(          'solo_L2_swa-pas-eflux', 'eflux', Tint);
+Data.ieflux = solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
 % TNR E-field
-Data.Etnr   = solo.db_get_ts(          'solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+Data.Etnr   = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
 

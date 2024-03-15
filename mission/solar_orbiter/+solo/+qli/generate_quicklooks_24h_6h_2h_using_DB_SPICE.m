@@ -63,7 +63,7 @@ Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint
 % Proton & alpha density
 Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
-Data.ieflux = solo.db_get_ts(          'solo_L2_swa-pas-eflux', 'eflux', Tint);
+Data.ieflux = solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
 
 % TNR E-field
 % -----------
@@ -76,7 +76,7 @@ Data.ieflux = solo.db_get_ts(          'solo_L2_swa-pas-eflux', 'eflux', Tint);
 %      VAR_NOTES       (CDF_CHAR/71): "TNR band of the current record. Possible values are: 1=A, 2=B, 3=C, 4=D"
 % /solo_L2_rpw-tnr-surv-cdag_20240101_V02.cdf
 %
-Data.Etnr   = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+Data.Etnr   = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 % Solar Orbiter position
 Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
 
