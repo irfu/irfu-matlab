@@ -132,7 +132,7 @@ irf_legend(h(2), {'N_{e,RPW}', 'N_{i,PAS}', '|B|'}, [0.98 0.16], 'Fontsize', LEG
 
 yyaxis(h(2), 'right');
 if ~isempty(Data.B)
-  fci = qe*Data.B.abs*10^-9/mp/(2*pi);
+  fci = qe*(Data.B.abs*10^-9)/mp/(2*pi);    % Proton gyration frequency [cycles/s]
   irf_plot(h(2), Data.B.abs.tlim(Tint24h), 'color', COLORS(3,:), 'linewidth', LINE_WIDTH);
   %Bnan = rmmissing(data.B.abs.data);
   %if ~isempty(Bnan)
@@ -155,20 +155,27 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 %===========================
 % Fill panel 3 & 4: Spectra
 %===========================
+IRF_EBSP_FREQ_MIN_HZ            = 0.05;
+B_SAMPLING_PERIOD_THRESHOLD_SEC = 0.1250*0.95;  % 0.1250*0.95 = 0.1187
 if ~isempty(Data.B) && solo.qli.const.NONWEEKLY_SPECTRA_ENABLED
   if  ~isempty(rmmissing(Data.B.data))
-    bb = Data.B;
-    if median(diff((bb.time.epochUnix))) < 0.1250*0.95
-      fMag = 128; fMax = 7;
+    B = Data.B;
+    medianSamplingPeriodSec = median(diff((B.time.epochUnix)));
+    if medianSamplingPeriodSec < B_SAMPLING_PERIOD_THRESHOLD_SEC
+      fMag = 128; freqMaxHz = 7;
     else
-      fMag =   8; fMax = 3;
+      fMag =   8; freqMaxHz = 3;
     end
-    b0 = bb.filt(0, 0.01,fMag, 5);
 
-    % IMPORTANT NOTE: The call to irf_ebsp() is very time-consuming. Is
-    % therefore measuring the execution time.
+    % Create filtered version of B.
+    %  TSeries.filt() --> irf_filt() --> filtfilt().
+    B_0 = B.filt(0, 0.01, fMag, 5);
+
+    % -------------------------------------------------------------
+    % IMPORTANT NOTE: The call to irf_ebsp() is very time-consuming
+    % -------------------------------------------------------------
     tBeginSec = solo.qli.utils.log_time('irf_ebsp(): Begin call', tBeginSec);
-    ebsp      = irf_ebsp([], bb, [], b0, [], [0.05 fMax], 'fullB=dB', 'polarization', 'fac');
+    ebsp      = irf_ebsp([], B, [], B_0, [], [IRF_EBSP_FREQ_MIN_HZ, freqMaxHz], 'fullB=dB', 'polarization', 'fac');
     tBeginSec = solo.qli.utils.log_time('irf_ebsp(): End call', tBeginSec);
 
     frequency   = ebsp.f;
@@ -292,7 +299,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 if ~isempty(Data.E)
   irf_plot(h(8), Data.E.y, 'color', COLORS(2,:), 'linewidth', LINE_WIDTH)
   hold(    h(8), 'on');
-  %irf_plot(h(8), data.E.z, 'color', COLORS(3,:), 'linewidth', LWIDTH)
+  %irf_plot(h(8), data.E.z, 'color', COLORS(3,:), 'linewidth', LINE_WIDTH)
 
   minEy = min(rmmissing(Data.E.y.data));
   maxEy = max(rmmissing(Data.E.y.data));
@@ -317,6 +324,9 @@ if ~isempty(Data.ieflux)
   iDEF         = struct('t', Data.ieflux.tlim(Tint24h).time.epochUnix);
   % for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
   for iFile = 1:length(SwaFileArray)
+
+    % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
+    %       dataobj(), not NASA SPDF).
     iEnergy = cdfread(...
       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
       'variables', 'Energy');
@@ -397,7 +407,7 @@ if isempty(Data.Vrpw) ...
     && isempty(Data.Tpas) && isempty(Data.Npas) && isempty(Data.ieflux) ...
     && isempty(Data.Etnr)
   nanPlot = irf.ts_scalar(Tint24h,ones(1, 2)*NaN);
-  irf_plot(h(10), nanPlot);    % No LWIDTH?
+  irf_plot(h(10), nanPlot);    % No LINE_WIDTH?
   grid(    h(10), 'off');
   ylabel(  h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 end
@@ -477,7 +487,6 @@ h(5).YLim   = [0.5, 300];
 
 
 % Remove overlapping ticks.
-%solo.qli.utils.ensure_axes_data_tick_margins(h)
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
 % depending on panel.
 yyaxis(h(2), 'right');
@@ -525,10 +534,10 @@ I_6H = 0:3;
 I_2H = 0:11;
 if ~solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED
   % For debugging/testing.
-  %I_6H = [0];
-  %I_2H = [0];
-  I_6H = [1];
-  I_2H = [5];
+  I_6H = [0];
+  I_2H = [0];
+  %I_6H = [1];
+  %I_2H = [5];
 end
 
 %===========================
@@ -612,14 +621,14 @@ end
 %       (2) keep YTick as is.
 % hAxesMarginYLimArray
 %       Array of axes for which to
-%       (1) add margins to pre-existing YLim
+%       (1) ensure there are margins to pre-existing YLim
 %       (2) keep YTick as is.
 %
 function set_YLim_YTick(hAxesAutoYLimYTickArray, hAxesAutoYLimArray, hAxesMarginYLimArray)
 % PROPOSAL: Automatically (not MATLAB) set YTick for logarithmic axis to
 %           ensure one tick per power of ten, 10^n.
 % PROPOSAL: Set YLimMode=manual for YLimYTick axes.
-% PROPOSAL: Split into 2/3 separate functions.
+% PROPOSAL: Split into 2 or 3 separate functions.
 %     NOTE: solo.qli.utils.ensure_axes_data_tick_margins)() is called for all
 %           axes.
 
@@ -644,14 +653,14 @@ assert(numel(hAxesArray) == (...
 % Automatically set preliminary YLim (y limits) and final YTick (y tick
 % positions) for selected axes.
 %=======================================================================
-% Set axes y range (YLim) to only cover the data (plus rounding outwards
-% to ticks).
+% Set axes y range (YLim) to only cover the data (plus rounding outwards to
+% ticks).
 set(hAxesAutoYLimYTickArray, 'YLimMode', 'auto')
 % Auto-generate ticks (YTick; y values at which there should be ticks).
 set(hAxesAutoYLimYTickArray, 'YTickMode', 'auto')
 %---------------------------------------------------------------------------
 % IMPORTANT: Read YLim without using the return result ("do nothing")
-% --------------------------------------------------------------------
+% -------------------------------------------------------------------
 % IMPLEMENTATION NOTE: THIS COMMAND SHOULD THEORETICALLY NOT BE NEEDED,
 % BUT IS NEEDED FOR THE YLim VALUES TO BE SET PROPERLY. MATLAB BUG?!
 % This behaviour has been observed on Erik P G Johansson's laptop
