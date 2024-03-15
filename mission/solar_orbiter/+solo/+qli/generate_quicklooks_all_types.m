@@ -257,14 +257,17 @@ nQuicklooksDays = numel(DaysDtArray);
 
 % NOTE: Execution speed may vary by orders of magnitude depending on settings
 % (nonweekly vs weekly plots). May therefore want scientific notation.
-fprintf('Wall time used:                       %g [h] = %g [s]\n', wallTimeHours, wallTimeSec);
-fprintf('Wall time used per day of quicklooks: %g [h/day]\n',      wallTimeHours / nQuicklooksDays);
+irf.log('n', sprintf('Wall time used:                       %g [h] = %g [s]', wallTimeHours, wallTimeSec));
+irf.log('n', sprintf('Wall time used per day of quicklooks: %g [h/day]',      wallTimeHours / nQuicklooksDays));
 
 
 
 if solo.qli.const.CATCH_PLOT_EXCEPTIONS_ENABLED && ~isempty(PlotExcArray)
-  fprintf(2, 'Caught %i plotting exceptions.\n', numel(PlotExcArray))
-  fprintf(2, 'Rethrowing old (last) exception.\n')
+  %fprintf(2, 'Caught %i plotting exceptions.\n', numel(PlotExcArray))
+  %fprintf(2, 'Rethrowing old (last) exception.\n')
+  irf.log('c', sprintf('Caught %i plotting exceptions.', numel(PlotExcArray)))
+  irf.log('c', 'Rethrowing old (last) exception.')
+
   % NOTE: This does display (stderr) the stack trace for position
   % of the *ORIGINAL* error.
   rethrow(PlotExcArray(end))
@@ -288,11 +291,15 @@ if solo.qli.const.CATCH_PLOT_EXCEPTIONS_ENABLED
   % Print stack trace without rethrowing exception.
   % One wants that in the log.
   % NOTE: fprintf(FID=2) => stderr
-  fprintf(2, 'Caught plotting error without rethrowing it.\n')
-  fprintf(2, 'Plot error/exception: "%s"\n', Exc.message)
+  %fprintf(2, 'Caught plotting error without rethrowing it.\n')
+  %fprintf(2, 'Plot error/exception: "%s"\n', Exc.message)
+  irf.log('w', 'Caught plotting error without rethrowing it.')
+  irf.log('w', sprintf('Plot error/exception: "%s"', Exc.message))
+
   for i = 1:numel(Exc.stack)
     s = Exc.stack(i);
-    fprintf(2, '    Error in %s (line %i)\n', s.name, s.line)
+    %fprintf(2, '    Error in %s (line %i)\n', s.name, s.line)
+    irf.log('w', sprintf('    Error in %s (line %i)', s.name, s.line))
   end
 else
   rethrow(Exc)

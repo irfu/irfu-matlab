@@ -234,7 +234,8 @@ classdef utils
       utcStr2 = utcStr2(1:19);
 
       % Not specifying which plot function is called (weekly, nonweekly plots).
-      fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
+      %fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
+      irf.log('n', sprintf('Calling plot function for %s--%s.', utcStr1, utcStr2))
     end
 
 
@@ -379,7 +380,8 @@ classdef utils
     % For debugging speed.
     function tBeginSec = log_time(locationStr, tBeginSec)
       tSec = toc(tBeginSec);
-      fprintf(1, '%s: %.1f [s]\n', locationStr, tSec)
+      %fprintf(1, '%s: %.1f [s]\n', locationStr, tSec)
+      irf.log('n', sprintf('%s: %.1f [s]', locationStr, tSec))
       tBeginSec = tic();
     end
 
