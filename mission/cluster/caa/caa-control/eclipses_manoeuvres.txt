@@ -265,7 +265,7 @@ not confirmed
 http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/manoeuvres_2003_06_v01.htm
 http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/manoeuvres_2003_06_v02.htm
 http://jsoc1.bnsc.rl.ac.uk/pub/msp/june_man_raw.pdf
-E-mail 2003-11-06: 
+E-mail 2003-11-06:
 MOR 148-154
 C3 030604
 C1,2 030607
