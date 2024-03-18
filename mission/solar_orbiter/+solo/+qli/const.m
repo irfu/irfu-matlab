@@ -20,20 +20,21 @@ classdef const
     % IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
     % speeds up solo.qli.generate_quicklooks_24h_6h_2h() greatly. Useful for
     % some debugging. Should be enabled by default.
-    ENABLE_B = true;
+    ENABLE_B = true;    % DEFAULT
+    %ENABLE_B = false;
 
     % Whether to enable/disable panels with time-consuming spectra
     % ------------------------------------------------------------
     % Disabling this is useful for debugging and testing (speeds up execution).
     % Should be enabled by default.
-    NONWEEKLY_SPECTRA_ENABLED = true;
+    NONWEEKLY_SPECTRA_ENABLED = true;    % DEFAULT
 
     % Whether to generate all more than one quicklook of every type (per day)
     % -----------------------------------------------------------------------
     % In practice only affects 6h and 2h quicklooks. Disabling this is useful
     % for debugging and testing (speeds up execution). Should be enabled by
     % default.
-    NONWEEKLY_ALL_PLOTS_ENABLED = true;
+    NONWEEKLY_ALL_PLOTS_ENABLED = true;    % DEFAULT
     %NONWEEKLY_ALL_PLOTS_ENABLED = false;
 
 
@@ -44,7 +45,7 @@ classdef const
     % enabled by default.
     CATCH_PLOT_EXCEPTIONS_ENABLED = true;
 
-    % NOTE: Usually found at /data/solo/data_yuri/.
+    % NOTE: Below files are normally found at brain:/data/solo/data_yuri/.
     VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';
     VHT_6H_DATA_FILENAME = 'V_RPW.mat';
 

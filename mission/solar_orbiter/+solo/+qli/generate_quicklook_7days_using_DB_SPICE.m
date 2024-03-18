@@ -42,10 +42,10 @@ solo.qli.utils.log_plot_function_time_interval(Tint)
 
 
 
-Vht6h = load(vhtFile6hPath);
 
 Data = [];
 
+Vht6h       = load(vhtFile6hPath);
 Data.Vrpw   = Vht6h.V_RPW.tlim(Tint);
 % E-field:
 Data.E      = solo.qli.utils.db_get_ts('solo_L3_rpw-bia-efield-10-seconds-cdag', 'EDC_SRF', Tint);
@@ -61,11 +61,23 @@ Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint
 Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
 Data.ieflux = solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
-% TNR E-field
+
+% TNR "E-field"
+% -------------
+% BUG? zVariable is not anything like an "E-field"!! Reading the wrong variable or
+% mislabelling the right variable?
+% NOTE: Variable is not used very much. solo.qli.generate_quicklooks_24h_6h_2h()
+% only checks if empty or not (sic!).
+%
+%      FIELDNAM        (CDF_CHAR/8): "TNR_BAND"
+%      CATDESC         (CDF_CHAR/31): "TNR band of the current record "
+%      VAR_NOTES       (CDF_CHAR/71): "TNR band of the current record. Possible values are: 1=A, 2=B, 3=C, 4=D"
+% /solo_L2_rpw-tnr-surv-cdag_20240101_V02.cdf
+%
 Data.Etnr   = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+
 % Solar Orbiter position
 Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
-
 % Earth position (also uses SPICE)
 EARTH_POS_DT_SEC = 60*60;
 Data.earthPos    = solo.qli.utils.get_Earth_position(Tint, EARTH_POS_DT_SEC);

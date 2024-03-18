@@ -25,6 +25,8 @@
 %    exactly as specified (hardcoded). If they are not, then data appears to not
 %    be present and no exception is raised! This means that the code might not
 %    recognize datasets for the path specified with solo.db_init().
+% * The code uses irf.log(). The caller may want to set the log level before
+%   calling the code.
 %
 %
 % ARGUMENTS
@@ -186,6 +188,13 @@ if isunix()
 end
 
 
+% NOTE: true/false ==> 0/1
+irf.log('n', sprintf('isOfficialProcessing = %i', isOfficialProcessing))
+if isOfficialProcessing
+  assert(~isempty(irfLogoPath))
+end
+
+
 
 tSec = tic();
 
@@ -214,7 +223,7 @@ if generateNonweeklyQuicklooks
     DayDt = DaysDtArray(iDay);
 
     try
-      trigger_automount(isOfficialProcessing)
+      optionally_trigger_automount(isOfficialProcessing)
       solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE(DayDt, vhtFile1hPath, OutputPaths, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
@@ -240,7 +249,7 @@ if generateWeeklyQuicklooks
     WeekDt = WeeksDtArray(iWeek);
 
     try
-      trigger_automount(isOfficialProcessing)
+      optionally_trigger_automount(isOfficialProcessing)
       solo.qli.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.dir1w, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
@@ -322,10 +331,15 @@ end
 % and ignore the result before using /data/solo/ (such as
 % "ls /data/solo/ >> /dev/null").
 %
-function trigger_automount(isOfficialProcessing)
+function optionally_trigger_automount(isOfficialProcessing)
 if isOfficialProcessing
+  irf.log('n', sprintf(...
+    'Trying to trigger automounting, if not already mounted: %s', ...
+    solo.qli.const.OFFICIAL_PROCESSING_AUTOMOUNT_DIR ...
+    ))
   junk = dir(solo.qli.const.OFFICIAL_PROCESSING_AUTOMOUNT_DIR);
+
+  % NOTE: Command only works on UNIX/Linux. Not Windows, MacOs etc.
+  %errorCode = system('ls -l /data/solo/ >> /dev/null');
 end
-% NOTE: Command only works on UNIX/Linux. Not Windows, MacOs etc.
-% errorCode = system('ls -l /data/solo/ >> /dev/null');
 end

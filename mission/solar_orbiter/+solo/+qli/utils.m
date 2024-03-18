@@ -147,6 +147,7 @@ classdef utils
 
     % Use SPICE to get Solar Orbiter's position as
     % [soloSunDistance, soloEclLongitude, soloEclLatitude].
+    % Longitude and latitude are in radians.
     %
     % NOTE: Uses SPICE kernels and "solo.get_position()" indirectly through
     % irfu-matlab which can itself load SPICE kernels(!).
@@ -160,9 +161,9 @@ classdef utils
       soloPosXyz = solo.get_position(Tint, 'frame', 'ECLIPJ2000');
 
       if ~isempty(soloPosXyz)
-        [soloSunDistance, soloEclLongitude, soloEclLatitude] = cspice_reclat(soloPosXyz.data');
+        [soloSunDistance, soloEclLongitudeRad, soloEclLatitudeRad] = cspice_reclat(soloPosXyz.data');
         soloPosRadLonLatTSeries = irf.ts_vec_xyz(soloPosXyz.time, ...
-          [soloSunDistance', soloEclLongitude', soloEclLatitude']);
+          [soloSunDistance', soloEclLongitudeRad', soloEclLatitudeRad']);
       else
         %soloPosRadLonLat = soloPosXyz;
         soloPosRadLonLatTSeries = TSeries();   % Empty TSeries.
@@ -173,6 +174,7 @@ classdef utils
 
     % Use SPICE to get Earth's position as
     % [earthSunDistance, earthEclLongitude, earthEclLatitude].
+    % Longitude and latitude are in radians.
     %
     function earthPosRadLonLatTSeries = get_Earth_position(Tint, dtSec)
       %=========================================================================
@@ -208,8 +210,8 @@ classdef utils
       earthPosXyz = cspice_spkpos('Earth', et, 'ECLIPJ2000', 'LT+s', 'Sun');
 
       if ~isempty(earthPosXyz)
-        [earthSunDistance, earthEclLongitude, earthEclLatitude] = cspice_reclat(earthPosXyz);
-        earthPos = [earthSunDistance', earthEclLongitude', earthEclLatitude'];
+        [earthSunDistance, earthEclLongitudeRad, earthEclLatitudeRad] = cspice_reclat(earthPosXyz);
+        earthPos = [earthSunDistance', earthEclLongitudeRad', earthEclLatitudeRad'];
 
         Tlength = Tint(end)-Tint(1);
         dTimes  = 0:dtSec:Tlength;
@@ -332,7 +334,8 @@ classdef utils
 
 
 
-    % ~Utility function that removes duplicated code from plot functions.
+    % ~Utility function which removes duplicated code from plot functions.
+    %
     % NOTE: Function can not simultaneously handle both yyaxis left & right.
     function ensure_axes_data_tick_margins(hAxesArray)
       assert(isa(hAxesArray, 'matlab.graphics.axis.Axes'))

@@ -82,13 +82,15 @@ end
 % (2) bash script-friendly (strings).
 %
 function value = interpret_argument_flag(arg)
-assert(isscalar(arg), 'Flag argument is not scalar.')
+% NOTE: num2str() converts string/number-->string.
+assert(isscalar(arg), 'Flag argument "%s" is not scalar.',   num2str(arg))
+assert(ischar(arg),   'Flag argument "%s" is not a string.', num2str(arg))
 
 if     ischar(arg) && arg=='0'
   value = false;
 elseif ischar(arg) && arg=='1'
   value = true;
 else
-  error('Can not interpret argument flag. Illegal format.')
+  error('Can not interpret argument flag="%s". Illegal value.', arg)
 end
 end
