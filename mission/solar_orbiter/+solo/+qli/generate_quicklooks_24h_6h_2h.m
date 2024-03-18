@@ -490,7 +490,7 @@ h(5).YLim   = [0.5, 300];
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
 % depending on panel.
 yyaxis(h(2), 'left');
-set_YLim_YTick(h([1, 3:4, 6:9]), h([2]), h([5, 10]))
+set_YLim_YTick(h([1, 6:9]), h([2]), h([3:5, 10]))
 yyaxis(h(2), 'right');
 set_YLim_YTick(h([]), h([2]), h([]))
 
@@ -589,7 +589,7 @@ irf_zoom(hAxesArray, 'x', Tint);
 
 % NOTE: Different from for 24h plots.
 yyaxis(hAxesArray(2), 'left');
-set_YLim_YTick(hAxesArray(1:9), hAxesArray([]), hAxesArray([10]))
+set_YLim_YTick(hAxesArray([1:2, 5:9]), hAxesArray([]), hAxesArray([3:4, 10]))
 yyaxis(hAxesArray(2), 'right');
 set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
 
