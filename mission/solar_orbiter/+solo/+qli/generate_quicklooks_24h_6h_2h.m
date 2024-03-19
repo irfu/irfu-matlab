@@ -89,11 +89,11 @@ FONT_SIZE        = 18;    % Font size
 LEGEND_FONT_SIZE = 22;    % irf_legend() font size.
 COLORS           = [0 0 0; 0 0 1; 1 0 0; 0 0.5 0; 0 1 1; 1 0 1; 1 1 0];
 
-Units = irf_units;
-Me    = Units.me;      % Electron mass [kg]
-epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
-mp    = Units.mp;      % Proton mass [km]
-qe    = Units.e;       % Elementary charge [C]
+UNITS = irf_units;
+Me    = UNITS.me;      % Electron mass [kg]
+eps0  = UNITS.eps0;    % Permitivitty of free space [Fm^-1]
+mp    = UNITS.mp;      % Proton mass [km]
+qe    = UNITS.e;       % Elementary charge [C]
 
 h            = irf_plot(10, 'newfigure');
 fig          = gcf;
@@ -132,7 +132,6 @@ irf_legend(h(2), {'N_{e,RPW}', 'N_{i,PAS}', '|B|'}, [0.98 0.16], 'Fontsize', LEG
 
 yyaxis(h(2), 'right');
 if ~isempty(Data.B)
-  fci = qe*(Data.B.abs*10^-9)/mp/(2*pi);    % Proton gyration frequency [cycles/s]
   irf_plot(h(2), Data.B.abs.tlim(Tint24h), 'color', COLORS(3,:), 'linewidth', LINE_WIDTH);
   %Bnan = rmmissing(data.B.abs.data);
   %if ~isempty(Bnan)
@@ -160,6 +159,9 @@ B_SAMPLING_PERIOD_THRESHOLD_SEC = 0.1250*0.95;  % 0.1250*0.95 = 0.1187
 if ~isempty(Data.B) && solo.qli.const.NONWEEKLY_SPECTRA_ENABLED
   if  ~isempty(rmmissing(Data.B.data))
     B = Data.B;
+
+    fci = qe*(B.abs*10^-9)/mp/(2*pi);    % Proton gyration frequency [cycles/s]
+
     medianSamplingPeriodSec = median(diff((B.time.epochUnix)));
     if medianSamplingPeriodSec < B_SAMPLING_PERIOD_THRESHOLD_SEC
       fMag = 128; freqMaxHz = 7;
@@ -314,52 +316,64 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 
 
 
-%===================================
+%============================================================================
 % Fill panel 9: Ion energy spectrum
 % ---------------------------------
 % NOTE: READS CDF FILES!
-%===================================
+% NOTE: Essentially the same as solo.qli.generate_quicklook_7days(): Panel 8
+%============================================================================
 if ~isempty(Data.ieflux)
   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint24h);
   iDEF         = struct('t', Data.ieflux.tlim(Tint24h).time.epochUnix);
-  % for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
+  %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
   for iFile = 1:length(SwaFileArray)
-
     % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
-    %       dataobj(), not NASA SPDF).
+    %       dataobj(), not spdfcdfread()).
+    % NOTE: zVariable "Energy" seems to be metadata (not science data).
+    %       zVariable attributes CATDESC="Center of energy bins",
+    %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
+    % NOTE: Can not load this variable using
+    %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+    %       Gets error message: "Data does not contain DEPEND_0 or DATA"
     iEnergy = cdfread(...
       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
       'variables', 'Energy');
     iEnergy = iEnergy{1};
-    iDEF.p  = Data.ieflux.data;
   end
+  iDEF.p       = Data.ieflux.data;
   iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
   iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
-  irf_spectrogram(h(9),iDEF, 'log', 'donotfitcolorbarlabel');   % NOTE: Somewhat time-consuming.
+  irf_spectrogram(h(9), iDEF, 'log', 'donotfitcolorbarlabel');   % NOTE: Somewhat time-consuming.
   % set(h(1), 'ytick', [1e1 1e2 1e3]);
   %caxis(h(9), [-1 1])
 
   hold(h(9), 'on');
   h9_clims = h(9).CLim;
   % Fix color axis
-  h9_medp = mean(iDEF.p);
-  h9_medp = min(h9_medp(h9_medp>0));
-  if h9_medp > 0 && h9_medp > h9_clims(1) && log10(h9_medp)+2<(max(max(log10(iDEF.p))))
-    caxis(h(9), [log10(h9_medp)+2 (max(max(log10(iDEF.p))))])
+  h9_medp       = mean(iDEF.p);              % MxN --> 1xN
+  h9_medp       = min(h9_medp(h9_medp>0));
+  h9_caxisRange = [log10(h9_medp)+2, max(max(log10(iDEF.p)))];
+  %if (h9_medp > 0) && (h9_medp > h9_clims(1)) && (log10(h9_medp)+2 < max(max(log10(iDEF.p))))
+  if (h9_medp > 0) && (h9_medp > h9_clims(1)) && (h9_caxisRange(1) < h9_caxisRange(2))
+    %caxis(h(9), [log10(h9_medp)+2 max(max(log10(iDEF.p)))])
+    caxis(h(9), h9_caxisRange)
   end
 end
 set(     h(9), 'YScale', 'log');
 colormap(h(9), jet)
 ylabel(  h(9), {'W_{i}'; '(eV)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
+
 tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 
 
 
-%=======================================
+%=======================================================
 % Fill panel 10: E-field spectrum (TNR)
-%=======================================
+% -------------------------------------
+% NOTE: READS CDF FILES indirectly via solo.read_TNR()!
+%=======================================================
 % BUG(?): PROBABLY WHAT HAPPENS: Does not create color bar (no call to
-% colormap()) when no data.
+% colormap()) when there is no data.
 % ==> The panel becomes wider.
 % ==> Other panels become wider.
 % ==> Moves the IRF logo to the right, and partially outside image.
@@ -371,16 +385,17 @@ if ~isempty(Data.Etnr)
       TNR = [];
     end
   end
-  if isa(TNR, 'struct')
+
+  if isstruct(TNR)
     sz_tnr = size(TNR.p);
     if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
       irf_spectrogram(h(10), TNR, 'log', 'donotfitcolorbarlabel')
       hold(           h(10), 'on');
       if ~isempty(Data.Ne)
         % Electron plasma frequency
-        wpe_sc = (sqrt(((Data.Ne.tlim(Tint24h)*1000000)*qe^2)/(Me*epso)));
+        wpe_sc = (sqrt(((Data.Ne.tlim(Tint24h)*1000000)*qe^2)/(Me*eps0)));
         fpe_sc = (wpe_sc/2/pi)/1000;
-        irf_plot(h(10),fpe_sc, 'r', 'linewidth', LINE_WIDTH);
+        irf_plot(h(10), fpe_sc, 'r', 'linewidth', LINE_WIDTH);
         fpe_sc.units = 'kHz';
         fpe_sc.name  = 'f [kHz]';
       end
@@ -419,7 +434,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
 %======================
 % Other, miscellaneous
 %======================
-irf_plot_axis_align(h(1:10));  % Make panels ("data area") have the same length.
+irf_plot_axis_align(h(1:10));  % Make panels ("data area") have the same width.
 irf_zoom(h(1:10), 'x', Tint24h);
 irf_zoom(h(1),    'y');
 
@@ -465,21 +480,24 @@ text(h(1), 0, 1.2, str, 'Units', 'normalized')
 %===============
 % Adjust panels
 %===============
+% IMPLEMENTATION NOTE: Not sure why these commands are located here rather
+% than where their respective panels are created. Related to
+% irf_plot_axis_align()?
 yyaxis(h(2), 'left');
-h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h.
+h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
 h(2).YTick  = [1, 10, 100];
 
 % NOTE: Panel 2 YTick not auto-adjusted partly because
 % solo.qli.utils.ensure_axes_data_tick_margins() can not handle both left &
 % right yaxis.
 yyaxis(h(2), 'right');
-h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h.
+h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
 h(2).YTick  = [1, 10, 100];
 
 % NOTE: h(5).YLim are hardcoded and seem too broad/wide.
 % PROPOSAL: Not overwrite automatic YLim?
-oldlims5  = h(5).YLim;
-oldticks5 = h(5).YTick;
+oldYLimH5   = h(5).YLim;
+oldYTickH5  = h(5).YTick;
 h(5).YScale = 'log';       % NOTE: Later changed to LIN.
 h(5).YTick  = [1, 10, 100];
 h(5).YLim   = [0.5, 300];
@@ -525,8 +543,8 @@ h(2).YScale    = 'lin';       % NOTE: Previously LOG.
 h(2).YTickMode = 'auto';
 
 h(5).YScale = 'lin';          % NOTE: Previously LOG.
-h(5).YLim   = oldlims5;
-h(5).YTick  = oldticks5;
+h(5).YLim   = oldYLimH5;
+h(5).YTick  = oldYTickH5;
 
 
 
@@ -601,9 +619,9 @@ end
 
 
 
-% Automatically set or adjust y limits and y tick positions.
-% "Always" ensures that ticks are not at the min/max (YLim) to avoid overlapping labels.
-% Can specify different behaviour for different axes.
+% Automatically set or adjust y limits and y tick positions. "Always" ensures
+% that ticks are not at the min/max (YLim) to avoid overlapping labels. Can
+% specify different behaviour for different axes.
 %
 % NOTE: Function can not simultaneously handle both yyaxis left & right.
 % NOTE: MATLAB's automatic setting of y ticks for log scale (and which is used)

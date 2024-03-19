@@ -37,10 +37,10 @@ FONT_SIZE        = 18;    % Font size
 LEGEND_FONT_SIZE = 22;    % irf_legend() font size.
 COLORS           = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
-Units = irf_units;
-Me    = Units.me;      % Electron mass [kg]
-epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
-qe    = Units.e;       % Elementary charge [C]
+UNITS = irf_units;
+Me    = UNITS.me;      % Electron mass [kg]
+eps0  = UNITS.eps0;    % Permitivitty of free space [Fm^-1]
+qe    = UNITS.e;       % Elementary charge [C]
 
 h            = irf_plot(9, 'newfigure');
 fig          = gcf;
@@ -166,33 +166,47 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
 
 
-%===================================
+%=================================================================================
 % Fill panel 8: Ion energy spectrum
 % ---------------------------------
 % NOTE: READS CDF FILES!
-%===================================
+% NOTE: Essentially the same as solo.qli.generate_quicklooks_24h_6h_2h(): Panel 9
+%=================================================================================
 if ~isempty(Data.ieflux)
   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint);
-  iDEF   = struct('t', Data.ieflux.tlim(Tint).time.epochUnix);
+  iDEF         = struct('t', Data.ieflux.tlim(Tint).time.epochUnix);
   %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
   for iFile = 1:length(SwaFileArray)
+    % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
+    %       dataobj(), not spdfcdfread()).
+    % NOTE: zVariable "Energy" seems to be metadata (not science data).
+    %       zVariable attributes CATDESC="Center of energy bins",
+    %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
+    % NOTE: Can not load this variable using
+    %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+    %       Gets error message: "Data does not contain DEPEND_0 or DATA"
     iEnergy = cdfread(...
       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
       'variables', 'Energy');
     iEnergy = iEnergy{1};
-    iDEF.p  = Data.ieflux.data;
   end
-  iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
+  iDEF.p       = Data.ieflux.data;
   iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
+  iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
   irf_spectrogram(h(8), iDEF, 'log', 'donotfitcolorbarlabel');
   % set(h(1), 'ytick', [1e1 1e2 1e3]);
+
+
   hold(h(8), 'on');
   h8_clims = h(8).CLim;
   % Fix color axis
-  h8_medp = mean(iDEF.p);
-  h8_medp = min(h8_medp(h8_medp>0));
-  if h8_medp > 0 && h8_medp > h8_clims(1) && log10(h8_medp)+2<(max(max(log10(iDEF.p))))
-    caxis(h(8), [log10(h8_medp)+2 (max(max(log10(iDEF.p))))])
+  h8_medp       = mean(iDEF.p);              % MxN --> 1xN
+  h8_medp       = min(h8_medp(h8_medp>0));
+  h8_caxisRange = [log10(h8_medp)+2, max(max(log10(iDEF.p)))];
+  %if (h8_medp > 0) && (h8_medp > h8_clims(1)) && (log10(h8_medp)+2 < max(max(log10(iDEF.p))))
+  if (h8_medp > 0) && (h8_medp > h8_clims(1)) && (h8_caxisRange(1) < h8_caxisRange(2))
+    %caxis(h(8), [log10(h8_medp)+2 (max(max(log10(iDEF.p))))])
+    caxis(h(8), h8_caxisRange)
   end
   set(     h(8), 'YScale', 'log');
   colormap(h(8), jet)
@@ -203,11 +217,11 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 
 
 
-%======================================
+%=======================================================
 % Fill panel 9: E-field spectrum (TNR)
 % ------------------------------------
-% NOTE: READS CDF FILES!
-%======================================
+% NOTE: READS CDF FILES indirectly via solo.read_TNR()!
+%=======================================================
 % NOTE: Panel takes much more time than other panels.
 if ~isempty(Data.Etnr)
   % Electron plasma frequency
@@ -217,9 +231,12 @@ if ~isempty(Data.Etnr)
   warning('off', 'fuzzy:general:warnDeprecation_Combine');
   TNR = [];
   %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
+
+  % NOTE: Below loop takes most of the time. In each iteration,
+  % solo.read_TNR() dominates the time consumption.
   for iFile = 1:length(TnrFileArray)
     tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
-    [TNRp] = solo.read_TNR(tt);
+    [TNRp] = solo.read_TNR(tt);    % Somewhat time-consuming.
     if isa(TNRp, 'struct')
       % NOTE: MATLAB documentation (R2019b):
       % "combine will be removed in a future release"
@@ -236,6 +253,7 @@ if ~isempty(Data.Etnr)
       TNR.p_label = TNRp.p_label;
     end
   end
+
   if isstruct(TNR)
     % TNR.f       = TNRp.f;
     % TNR.p_label = TNRp.p_label;
@@ -245,7 +263,7 @@ if ~isempty(Data.Etnr)
       hold(           h(9), 'on');
     end
     if ~isempty(Data.Ne)
-      wpe_sc       = (sqrt(((Data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));
+      wpe_sc       = (sqrt(((Data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*eps0)));
       fpe_sc       = (wpe_sc/2/pi)/1000;
       fpe_sc.units = 'kHz';
       fpe_sc.name  = 'f [kHz]';
