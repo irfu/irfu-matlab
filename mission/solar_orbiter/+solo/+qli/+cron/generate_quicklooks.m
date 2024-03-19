@@ -101,7 +101,10 @@ irf.assert.file_exists(irfLogoPath)
 % bash.
 irf()
 
-
+% Set log level. Must use "notice" to not miss relevant log messages, in
+% particular which time interval is currently being plotted (which is useful for
+% debugging crashes during long batch runs).
+irf.log('notice')
 
 %===============================================================
 % Configure Solar Orbiter database from which data will be used
