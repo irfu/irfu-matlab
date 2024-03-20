@@ -64,6 +64,7 @@ Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint
 Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
 Data.ieflux = solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+Data.swaEnergyMetadata = solo.qli.utils.read_constant_metadata('solo_L2_swa-pas-eflux', 'Energy', Tint);
 
 % TNR "E-field"
 % -------------
