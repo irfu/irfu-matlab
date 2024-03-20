@@ -16,6 +16,8 @@ function out = read_TNR(tint)
 %
 %     tint : EpochTT (2x1)
 %         Time interval
+%         NOTE: Will only load the TNR file (solo_L2_rpw-tnr-surv-cdag)
+%         corresponding to the initial timestamp.
 %
 %     sensor : int
 %         TNR sensor to be read:
@@ -54,11 +56,13 @@ if numel(dd)==1;dd=['0' dd];end
 
 sensor = 5;
 sensor2 = 4;
-%IMPLEMENTATION NOTE: solo.get_db_ts() does not work to get the zVariable
-%TNR_BAND_FREQ from the TNR cdf file, therefore the dataobj(x) function
-%is used instead, which requires giving the full path of the file.
-%The solo.get_db_ts() function seems to fail to create the TSeries object
-%because the DEPEND_0 field is of different size from the data.
+
+% IMPLEMENTATION NOTE: solo.get_db_ts() does not work to get the zVariable
+% TNR_BAND_FREQ from the TNR cdf file, therefore the dataobj(x) function
+% is used instead, which requires giving the full path of the file.
+% The solo.get_db_ts() function seems to fail to create the TSeries object
+% because the DEPEND_0 field is of different size from the data.
+% NOTE: Path with wildcard.
 path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
 
 data_l2 = read_TNR_CDFs(path, tint);
@@ -276,8 +280,8 @@ catch CauseExc
   % "path" contains "*" i.e. it is not a real path, but dataobj() can
   % handle that. Can therefore not (easily) manually check for path
   % existence outside of dataobj().
-  % SolO IRFU quicklooks (solo.qli.generate_quicklooks_all_types()) fails for 2022-08-08
-  % if not for some way of handling non-existent path here.
+  % SolO IRFU quicklooks (solo.qli.generate_quicklooks_all_types()) fails for
+  % 2022-08-08 if not for some way of handling non-existent path here.
   % /Erik P G Johansson 2022-09-12
   Exc = MException('read_TNR:FileNotFound', 'Can not find/open file path="%s".', path);
   Exc = addCause(Exc, CauseExc);
