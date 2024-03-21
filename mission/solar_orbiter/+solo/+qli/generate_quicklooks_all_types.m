@@ -156,7 +156,7 @@ DaysDtArray = unique(DaysDtArray);
 OutputPaths = solo.qli.utils.create_output_directories(outputDir);
 
 % Try to determine whether quicklooks are being generated as part of IRFU's
-% processing of official quicklooks.
+% official generation of quicklooks.
 % -------------------------------------------------------------------------
 % NOTE: As of 2024-03-21, this flag is only used for whether to explicitly
 % trigger automounts (requires knowledge of hardcoded path). Whether to inclulde
@@ -167,7 +167,7 @@ if isunix()
   assert(errorCode == 0, 'Error when calling "hostname". errorCode = %i', errorCode)
   hostName = strip(stdoutStr);
 
-  if ismember(hostName, solo.qli.const.OFFICIAL_PROCESSING_IRFU_HOST_NAMES_CA)
+  if ismember(hostName, solo.qli.const.OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA)
     isOfficialProcessing = true;
   end
 end
@@ -302,8 +302,8 @@ end
 
 
 
-% Try to trigger automount for official processing, to avoid file-reading
-% problems for long runs.
+% Try to trigger automount for official generation of quicklooks, in order to
+% avoid file-reading problems for long batch runs.
 %
 % CONTEXT
 % =======
@@ -320,9 +320,9 @@ function optionally_trigger_automount(isOfficialProcessing)
 if isOfficialProcessing
   irf.log('n', sprintf(...
     'Trying to trigger automounting, if not already mounted: %s', ...
-    solo.qli.const.OFFICIAL_PROCESSING_AUTOMOUNT_DIR ...
+    solo.qli.const.OFFICIAL_GENERATION_AUTOMOUNT_DIR ...
     ))
-  junk = dir(solo.qli.const.OFFICIAL_PROCESSING_AUTOMOUNT_DIR);
+  junk = dir(solo.qli.const.OFFICIAL_GENERATION_AUTOMOUNT_DIR);
 
   % NOTE: Command only works on UNIX/Linux. Not Windows, MacOs etc.
   %errorCode = system('ls -l /data/solo/ >> /dev/null');

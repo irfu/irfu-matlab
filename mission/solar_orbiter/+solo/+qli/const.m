@@ -1,13 +1,13 @@
 %
-% Class for collecting constants relating to solo.qli (but not solo.qli.cron
+% Class for collecting constants relating to solo.qli (but not solo.qli.offgen
 % (almost)).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef const
-  % PROPOSAL: Move OFFICIAL_PROCESSING_IRFU_HOST_NAMES_CA and
-  %           OFFICIAL_PROCESSING_AUTOMOUNT_DIR to solo.qli.cron somehow.
+  % PROPOSAL: Move OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA and
+  %           OFFICIAL_GENERATION_AUTOMOUNT_DIR to solo.qli.offgen somehow.
 
 
 
@@ -58,13 +58,13 @@ classdef const
     % (until someone complains).
     FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
 
-    % Host names used for determining whether the processing is "official
-    % processing" of quicklooks or not.
-    OFFICIAL_PROCESSING_IRFU_HOST_NAMES_CA = {'brain', 'spis'};
+    % Host names used for determining whether the current generation of
+    % quicklooks is "official generation" of quicklooks or not.
+    OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA = {'brain', 'spis'};
 
     % Directory which shall be used for trying to trigger automounting for
-    % official processing.
-    OFFICIAL_PROCESSING_AUTOMOUNT_DIR = '/data/solo/';
+    % official generation of quicklooks.
+    OFFICIAL_GENERATION_AUTOMOUNT_DIR = '/data/solo/';
   end
 
 
