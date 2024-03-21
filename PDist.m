@@ -2083,10 +2083,10 @@ classdef PDist < TSeries
       %   h(2) = subplot(2,2,2);
       %   h(3) = subplot(2,2,3);
       %   h(4) = subplot(2,2,4);
-      %   hs = pdist.plot_isosurface(h(1));
-      %   hs = pdist.plot_isosurface(h(2),'val',(1:3)*1e-27);
-      %   hs = pdist.plot_isosurface(h(3),'val',(1:3)*1e-27,'smooth',3);
-      %   hs = pdist.plot_isosurface(h(4),'val',(1:3)*1e-27,'smooth',3,'fill');
+      %   hs1 = pdist.plot_isosurface(h(1));
+      %   hs2 = pdist.plot_isosurface(h(2),'val',(1:3)*1e-27);
+      %   hs3 = pdist.plot_isosurface(h(3),'val',(1:3)*1e-27,'smooth',3);
+      %   hs4 = pdist.plot_isosurface(h(4),'val',(1:3)*1e-27,'smooth',3,'fill');
       %   linkprop(h,{'View'})
 
       % Check for axes
@@ -2113,17 +2113,12 @@ classdef PDist < TSeries
       doSmooth = 0;
       doPrintInfo = 0;
       doFillGap = 0;
+      doRotate = 0;
+      T = [1 0 0; 0 1 0; 0 0 1]; % no rotation
 
       % Default formatting
       faceAlpha = 0.5;
       iso_values = [];
-      % colors = [     0    0.4470    0.7410;...
-      %           0.8500    0.3250    0.0980;...
-      %           0.9290    0.6940    0.1250;...
-      %           0.4940    0.1840    0.5560;...
-      %           0.4660    0.6740    0.1880;...
-      %           0.3010    0.7450    0.9330;...
-      %           0.6350    0.0780    0.1840];
       colors = get(ax,'colororder');
 
 
@@ -2135,6 +2130,10 @@ classdef PDist < TSeries
       while have_options
         l = 1;
         switch(lower(args{1}))
+          case {'rotate'}
+            doRotate = 1;
+            T = args{2};
+            l = 2;
           case {'facealpha'}
             faceAlpha = args{2};
             l = 2;
@@ -2283,6 +2282,21 @@ classdef PDist < TSeries
       if isempty(iso_values)
         iso_values = prctile(F(:),[50 70 90]);
       end
+
+      if doRotate
+        VxX = reshape(VX,numel(VX),1);
+        VyY = reshape(VY,numel(VX),1);
+        VzZ = reshape(VZ,numel(VX),1);
+
+        newTmpX = [VxX VyY VzZ]*T(1,:)';
+        newTmpY = [VxX VyY VzZ]*T(2,:)';
+        newTmpZ = [VxX VyY VzZ]*T(3,:)';
+
+        VX = reshape(newTmpX,size(VX));
+        VY = reshape(newTmpY,size(VY));
+        VZ = reshape(newTmpZ,size(VZ));
+        all_handles.Rotation = T;
+      end
       
       nSurf = numel(iso_values);
 
@@ -2301,7 +2315,8 @@ classdef PDist < TSeries
         Flev = iso_values(isurf);
         s = isosurface(VX,VY,VZ,F,Flev);
         %s = isocaps(VX,VY,VZ,F,Flev);
-        p = patch(ax,Faces=s.faces,Vertices=s.vertices);
+        %p = patch(ax,Faces=s.faces,Vertices=s.vertices);
+        p = patch(ax,'Faces',s.faces,'Vertices',s.vertices);
         hps(isurf) = p;
         
         % Default formatting
@@ -2347,7 +2362,7 @@ classdef PDist < TSeries
       end
       if 1 % Print iso values as legend
         legs = arrayfun(@(x)sprintf('%g',x),iso_values,'UniformOutput',false);
-        hleg = legend(ax,legs,'location','northeast');
+        hleg = legend(hps,legs,'location','northeast','box','off');
         hleg.Title.String = sprintf('f_%s (%s)',pdist.species(1),pdist.units);
         all_handles.Legend = hleg;
       end
