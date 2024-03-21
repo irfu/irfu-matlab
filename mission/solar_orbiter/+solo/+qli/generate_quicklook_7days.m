@@ -23,7 +23,7 @@ function generate_quicklook_7days(Data, outputDir1wPath, Tint, logoPath)
 %   solo_L2_swa-pas-eflux).
 % * The function also locates CDF files (reads files via SolO DB?) which are
 %   used to obtain a time interval which is passed to solo.read_TNR(). ==>
-%   Relies on more files.
+%   Relies on more files. -- OBSOLETE INFO. REFACTORED AWAY.
 
 
 
@@ -169,7 +169,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 %=================================================================================
 % Fill panel 8: Ion energy spectrum
 % ---------------------------------
-% NOTE: READS CDF FILES! -- REFACTORED AWAY
+% NOTE: READS CDF FILES! -- OBSOLETE INFO. REFACTORED AWAY.
 % NOTE: Essentially the same as solo.qli.generate_quicklooks_24h_6h_2h(): Panel 9
 %=================================================================================
 if ~isempty(Data.ieflux)
@@ -221,46 +221,46 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 %=======================================================
 % Fill panel 9: E-field spectrum (TNR)
 % ------------------------------------
-% NOTE: READS CDF FILES indirectly via solo.read_TNR()!
+% NOTE: READS CDF FILES indirectly via solo.read_TNR()! -- OBSOLETE INFO. REFACTORED AWAY.
 %=======================================================
 % NOTE: Panel takes much more time than other panels.
 if ~isempty(Data.tnrBand)
   % Electron plasma frequency
-  TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
-  tp = [];
-  pp = [];
-  warning('off', 'fuzzy:general:warnDeprecation_Combine');
-  TNR = [];
-  %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
+%   TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
+%   tp = [];
+%   pp = [];
+%   warning('off', 'fuzzy:general:warnDeprecation_Combine');
+%   TNR = [];
+%   %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
+%
+%   % NOTE: Below loop takes most of the time. In each iteration,
+%   % solo.read_TNR() dominates the time consumption.
+%   for iFile = 1:length(TnrFileArray)
+%     tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
+%     [TNRp] = solo.read_TNR(tt);    % Somewhat time-consuming.
+%     if isa(TNRp, 'struct')
+%       % NOTE: MATLAB documentation (R2019b):
+%       % "combine will be removed in a future release"
+%       TNR.t = combine(tp, TNRp.t);
+%       tp    = TNR.t;
+%       TNR.p = combine(pp, TNRp.p);
+%       pp    = TNR.p;
+%
+%       % IMPLEMENTATION NOTE: Only read from TNRp from within this if
+%       % clause, since it might not be a struct if read from elsewhere,
+%       % even if it in principle means overwriting the value multiple
+%       % times as for TNRp.f and TNRp.p_label.
+%       TNR.f       = TNRp.f;
+%       TNR.p_label = TNRp.p_label;
+%     end
+%   end
 
-  % NOTE: Below loop takes most of the time. In each iteration,
-  % solo.read_TNR() dominates the time consumption.
-  for iFile = 1:length(TnrFileArray)
-    tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
-    [TNRp] = solo.read_TNR(tt);    % Somewhat time-consuming.
-    if isa(TNRp, 'struct')
-      % NOTE: MATLAB documentation (R2019b):
-      % "combine will be removed in a future release"
-      TNR.t = combine(tp, TNRp.t);
-      tp    = TNR.t;
-      TNR.p = combine(pp, TNRp.p);
-      pp    = TNR.p;
-
-      % IMPLEMENTATION NOTE: Only read from TNRp from within this if
-      % clause, since it might not be a struct if read from elsewhere,
-      % even if it in principle means overwriting the value multiple
-      % times as for TNRp.f and TNRp.p_label.
-      TNR.f       = TNRp.f;
-      TNR.p_label = TNRp.p_label;
-    end
-  end
-
-  if isstruct(TNR)
+  if isstruct(Data.Tnr)
     % TNR.f       = TNRp.f;
     % TNR.p_label = TNRp.p_label;
-    sz_tnr = size(TNR.p);
-    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-      irf_spectrogram(h(9), TNR, 'log', 'donotfitcolorbarlabel')
+    sz_tnr = size(Data.Tnr.p);
+    if sz_tnr(1) == length(Data.Tnr.t) && sz_tnr(2) == length(Data.Tnr.f)
+      irf_spectrogram(h(9), Data.Tnr, 'log', 'donotfitcolorbarlabel')
       hold(           h(9), 'on');
     end
     if ~isempty(Data.Ne)

@@ -75,6 +75,10 @@ Data.swaEnergyMetadata = solo.qli.utils.read_constant_metadata('solo_L2_swa-pas-
 % /solo_L2_rpw-tnr-surv-cdag_20240101_V02.cdf
 Data.tnrBand   = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 
+Data.Tnr = read_TNR(Tint);
+
+
+
 % Solar Orbiter position
 Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
 % Earth position (also uses SPICE)
@@ -93,3 +97,46 @@ end
 
 
 
+% Calls solo.read_TNR() for multiple days and merges the result.
+%
+%
+% RETURN VALUE
+% ============
+% TNR
+%       Struct, if there are datasets.
+%       [], if there are no datasets.
+%
+% IMPLEMENTATION NOTE: Implementation is made to reproduce old behaviour. Can
+% likely be cleaned up/simplified together with solo.read_TNR().
+function Tnr = read_TNR(Tint)
+
+TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
+
+tp  = [];
+pp  = [];
+Tnr = [];
+warning('off', 'fuzzy:general:warnDeprecation_Combine');
+
+% NOTE: Below loop takes most of the time. In each iteration,
+% solo.read_TNR() dominates the time consumption.
+for iFile = 1:length(TnrFileArray)
+  FileTint  = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
+  [TnrFile] = solo.read_TNR(FileTint);    % Somewhat time-consuming.
+  if struct(TnrFile)
+    % NOTE: MATLAB documentation (R2019b):
+    % "combine will be removed in a future release"
+    Tnr.t = combine(tp, TnrFile.t);
+    tp    = Tnr.t;
+    Tnr.p = combine(pp, TnrFile.p);
+    pp    = Tnr.p;
+
+    % IMPLEMENTATION NOTE: Only read from TNRp from within this if
+    % clause, since it might not be a struct if read from elsewhere,
+    % even if it in principle means overwriting the value multiple
+    % times as for TNRp.f and TNRp.p_label.
+    Tnr.f       = TnrFile.f;
+    Tnr.p_label = TnrFile.p_label;
+  end
+end
+
+end

@@ -26,10 +26,9 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %   does, the code takes a lot of time.
 % * The function uses solo.read_TNR() which in turns relies on a
 %   hardcoded path to "/data/solo/remote/data/L2/thr/" and selected
-%   subdirectories.
+%   subdirectories. -- OBSOLETE INFO. REFACTORED AWAY.
 % * The function obtains some data by reading CDF files directly (cdfread;
-%   solo_L2_swa-pas-eflux).
-
+%   solo_L2_swa-pas-eflux). -- OBSOLETE INFO. REFACTORED AWAY.
 
 
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
@@ -319,7 +318,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 %============================================================================
 % Fill panel 9: Ion energy spectrum
 % ---------------------------------
-% NOTE: READS CDF FILES! -- REFACTORED AWAY
+% NOTE: READS CDF FILES! -- OBSOLETE INFO. REFACTORED AWAY.
 % NOTE: Essentially the same as solo.qli.generate_quicklook_7days(): Panel 8
 %============================================================================
 if ~isempty(Data.ieflux)
@@ -371,7 +370,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 %=======================================================
 % Fill panel 10: E-field spectrum (TNR)
 % -------------------------------------
-% NOTE: READS CDF FILES indirectly via solo.read_TNR()!
+% NOTE: READS CDF FILES indirectly via solo.read_TNR()! -- OBSOLETE INFO. REFACTORED AWAY.
 %=======================================================
 % BUG(?): PROBABLY WHAT HAPPENS: Does not create color bar (no call to
 % colormap()) when there is no data.
@@ -379,18 +378,20 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 % ==> Other panels become wider.
 % ==> Moves the IRF logo to the right, and partially outside image.
 if ~isempty(Data.tnrBand)
-  try
-    [TNR] = solo.read_TNR(Tint24h);
-  catch Exc
-    if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
-      TNR = [];
-    end
-  end
+%   try
+%     [TNR] = solo.read_TNR(Tint24h);
+%   catch Exc
+%     if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
+%       TNR = [];
+%     end
+%   end
 
-  if isstruct(TNR)
-    sz_tnr = size(TNR.p);
-    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-      irf_spectrogram(h(10), TNR, 'log', 'donotfitcolorbarlabel')
+  if isstruct(Data.Tnr)
+    sz_tnr = size(Data.Tnr.p);
+    % NOTE: Condition is a way of determining whether Data.Tnr contains
+    %       any real data, despite not being empty.
+    if sz_tnr(1) == length(Data.Tnr.t) && sz_tnr(2) == length(Data.Tnr.f)
+      irf_spectrogram(h(10), Data.Tnr, 'log', 'donotfitcolorbarlabel')
       hold(           h(10), 'on');
       if ~isempty(Data.Ne)
         % Electron plasma frequency
