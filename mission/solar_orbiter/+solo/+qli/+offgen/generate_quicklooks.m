@@ -89,7 +89,7 @@ VHT_DIR = '/data/solo/data_yuri/';
 % Path to IRF logo, relative to the irfu-matlab root.
 % NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code still
 % requires it to be located inside the corresponding directory.
-IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+cron/irf_logo.png';
+IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+offgen/irf_logo.png';
 
 
 
