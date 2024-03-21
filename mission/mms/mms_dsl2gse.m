@@ -42,7 +42,7 @@ elseif isstruct(defatt) && isfield(defatt,'time') && ...
   saxTmp = irf.geocentric_coordinate_transformation(...
     [ttDefatt.epochUnix x y z],'gei>gse');
   spin_axis = saxTmp(:,2:4);
-  
+
   %XXX: FIXME add quaternion interpolation
   tData = ttDefatt - ttDefatt(1); data = double(spin_axis);
   newData = irf_resamp([tData data],TsIn.time-ttDefatt(1));

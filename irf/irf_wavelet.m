@@ -44,9 +44,8 @@ if isa(data,'TSeries')
   irf.log('debug','TSeries data used');
   %Temporary fix
   %tlimit = irf.tint(data.time.start.utc,data.time.stop.utc);
-  timeint = data.time.stop-data.time.start;
-  Fs=numel(data.data(:,1))/timeint;
   t = data.time.epochUnix;
+  Fs=1/median(diff(t));
   data = data.data;
 else
   irf.log('debug','Old format used');
@@ -188,25 +187,25 @@ for i=1:size(data,2) % go through all the datacolumns
   Sw=fft(datacol);
   %  Sw=fft(detrend(Ex));
   [aa,Sww]=meshgrid(a,Sw); % Matrix form
-  
+
   %% Calculate the FFT of the wavelet transform
-  
+
   Ww=sqrt(1).*Sww.*exp(-sigma*sigma*((aa.*ww-w0).^2)/2);
-  
+
   %% Get the wavelet transform by IFFT of the FFT
-  
+
   W=ifft(Ww);
   power = W;
-  
+
   %% Calculate the power spectrum
   if returnpower
     power=abs((2*pi)*conj(W).*W./newfreqmat);
   else
     power=sqrt(abs((2*pi)./newfreqmat)).*power;
   end
-  
+
   %% Remove data possibly influenced by edge effects
-  
+
   power2=power;
   if cutedge
     censur=floor(2*a);
@@ -215,11 +214,11 @@ for i=1:size(data,2) % go through all the datacolumns
       power2(numel(datacol)-censur(j):numel(datacol),j)=NaN;
     end
   end
-  
+
   specrec.p{i}=power2;
-  
+
   %% remove NaNs
-  
+
   specrec.p{i}(inan(:,i),:)=NaN;
 end
 

@@ -34,7 +34,7 @@ switch nargin
       end
       TintTT = irf.time_array(start([1 end]));
     end
-    
+
   case 2
     if ischar(start) && ischar(stop)
       if ~isvector(start) || ~isvector(stop)

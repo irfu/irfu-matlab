@@ -49,7 +49,7 @@ if flag==-1
   warning on
 else    % Vps -> Ne
   n(:,colind) = 10.^interp1( Vps_ref, log10(Ne_ref), abs(real(Vps(:,colind))), 'linear', 'extrap' )*coef;
-  
+
 end
 
 return;

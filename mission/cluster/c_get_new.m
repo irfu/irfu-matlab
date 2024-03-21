@@ -72,7 +72,7 @@ disp(mmm); % show onces menu
 
 q='0';flag_save=1;
 while(q ~= 'q') % ====== MAIN LOOP =========
-  
+
   q=input('input>','s');if isempty(q),q='0';end
   save_list='';save_file='';
   if strcmp(q,'q'), return,
@@ -99,7 +99,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   elseif strcmp(q,'2')
     % define sc_list
     sc_list = irf_ask('Spacecraft list [%]>','sc_list',1:4);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Ephemeris
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -108,7 +108,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     for j=1:length(var_list)
       for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,var_list{j}); end
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % P
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -117,7 +117,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       getData(cdb,tint_epoch(1),Dt,ic,q);
       getData(ClusterProc(pwd),ic,q);
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % ClusterDB/getData quantities
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -128,19 +128,19 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       strcmp(q,'ncis') || strcmp(q,'tcis') || strcmp(q,'vcis') || ...
       strcmp(q,'vce') || strcmp(q,'wbdwf') || strcmp(q,'sax')
     for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,q); end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % EDI Inertial
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   elseif strcmp(q,'iedi')
     for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,'edi'); end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % WHISPER Natural
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   elseif strcmp(q,'whinat')
     for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,'whinat'); end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % ClusterProc/getData quantities
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -148,7 +148,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       strcmp(q,'dieburst') || strcmp(q,'vedbs') || strcmp(q,'vedb') || ...
       strcmp(q,'br') || strcmp(q,'brs') || strcmp(q,'dibsc')
     for ic=sc_list, getData(ClusterProc(pwd),ic,q); end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % spinfits
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -161,7 +161,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       es_rmwhip = 'n';
       for ic=sc_list, getData(ClusterProc(pwd),ic,'dies'); end
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % despin E
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -174,7 +174,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       e_rmwhip = 'n';
       for ic=sc_list, getData(ClusterProc(pwd),ic,'die'); end
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % E.B=0
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -205,11 +205,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
           'ang_limit',ang_limit);
       end
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
   elseif strcmp(q,'x')
     var_name=input('matlab variable name =','s');
     disp('? in input is substituted by cluster number');
@@ -222,11 +222,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       [t,data] = isGetDataLite( DATABASE, start_time, Dt,str{1}, str{2}, str{3}, str{4},str{5},str{6},str{7});
       eval([varic '=[double(t) double(data)];']);
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Magnetic fields
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
   elseif strcmp(q,'bf')
     for ic=sc_list
       disp(['Choose FGM GSE data for spacecraft ' num2str(ic) ]);
@@ -239,14 +239,14 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
     eval(['save mB ' save_list]);
     save_list = '';
-    
+
   elseif strcmp(q,'dbf')
     for ic=sc_list
       eval(irf_ssub('load mB B?;tt=B?(1,1);',ic));
       eval(irf_ssub('dB?=c_gse2dsc(B?,[B?(1,1) ic]);',ic));
       eval(irf_ssub('save -append mB dB?;',ic));
     end
-    
+
   elseif strcmp(q,'dibf')
     for ic=sc_list
       eval(irf_ssub('load mB B?;',ic));
@@ -254,7 +254,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       eval(irf_ssub('diB?=c_gse2dsi(B?,SAX?);',ic));
       eval(irf_ssub('save -append mB diB?;',ic));
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % E ASCII
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -324,7 +324,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       end
       clear E_add_comment diE_add_comment number_of_points;
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % P ASCII
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -340,7 +340,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
         eval(irf_ssub('c_export_ascii(NVps?);',ic));
       end
     end
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % VCp ASCII
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -357,16 +357,16 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
     eval(['save mCIS ' save_list]);
     save_list = '';
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % THE END
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+
     % If line is not recognized evaluate it in matlab
   else
     eval(q,'');
   end
-  
+
   % If flag_save is set, save variables to specified file
   if flag_save==1 && ~isempty(save_file) && ~isempty(save_list)
     if exist(save_file,'file')
@@ -375,7 +375,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       eval(['save ' save_file ' ' save_list]);
     end
   end
-  
+
 end
 
 if exist('db','var'), Mat_DbClose(db); end

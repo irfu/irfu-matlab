@@ -178,21 +178,21 @@ if flag_edi
   try
     edi = my_load(cl_id,'C?_CP_EDI_MP');
     iEDI_Vec_xyz_gse = getmat(edi,irf_ssub('E_xyz_gse__C?_CP_EDI_MP',cl_id) );
-    
+
     B_EDI = irf_resamp(B_vec_xyz_gse,iEDI_Vec_xyz_gse);
     evxb = irf_tappl(irf_cross(B_EDI,irf_resamp(V,B_EDI)),'*1e-3*(-1)');
-    
+
     EDI_Vec_xyz_gse = iEDI_Vec_xyz_gse;
     EDI_Vec_xyz_gse(:,2:4) = EDI_Vec_xyz_gse(:,2:4) + evxb(:,2:4); %#ok<NASGU>
     clear evxb
-    
+
     EDI_Vec_xyz_ISR2 = c_gse2dsi(EDI_Vec_xyz_gse,SAX);
-    
+
     % Vz in 3rd column
     ttt = irf_e_vxb(EDI_Vec_xyz_ISR2,B_vec_xyz_ISR2,-1);
     EDI_Vec_xyz_ISR2(:,4) = ttt(:,4);
     clear ttt
-    
+
     [diff_EDIr,E_Vec_xy_ISR2_rEDI] = get_diff_resamp(E_Vec_xy_ISR2, EDI_Vec_xyz_ISR2, t);
   catch
     flag_edi = 0;
@@ -231,11 +231,11 @@ if flag_pea
   V_PEA_xyz_gse = getmat(pea, irf_ssub('Data_Velocity_GSE__C?_CP_PEA_MOMENTS',cl_id) );
   V_PEA_xyz_ISR2 = c_gse2dsi(V_PEA_xyz_gse,SAX);
   EVXB_PEA_xyz_ISR2 = irf_tappl(irf_cross(V_PEA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
-  
+
   [apar,aperp] = irf_dec_parperp(B_vec_xyz_ISR2,V_PEA_xyz_ISR2); %#ok<ASGLU>
   EVXB_PEA_xyz_ISR2(:,4) = aperp(:,4);
   clear apar aperp
-  
+
   [diff_PEAr,E_Vec_xy_ISR2_rPEA] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_PEA_xyz_ISR2, t);
 end
 
@@ -246,11 +246,11 @@ if flag_hia
     V_HIA_xyz_gse = getmat(cis_hia, irf_ssub('V_HIA_xyz_gse__C?_PP_CIS',cl_id) );
     V_HIA_xyz_ISR2 = c_gse2dsi(V_HIA_xyz_gse,SAX);
     EVXB_HIA_xyz_ISR2 = irf_tappl(irf_cross(V_HIA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
-    
+
     [apar,aperp] = irf_dec_parperp(B_vec_xyz_ISR2,V_HIA_xyz_ISR2); %#ok<ASGLU>
     EVXB_HIA_xyz_ISR2(:,4) = aperp(:,4);
     clear apar aperp
-    
+
     [diff_HIAr,E_Vec_xy_ISR2_rHIA] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2, t);
   catch
     flag_hia = 0;
@@ -265,11 +265,11 @@ if flag_cod
     V_COD_xyz_gse = getmat(cis_codif, irf_ssub('velocity__C?_CP_CIS-CODIF_HS_H1_MOMENTS',cl_id) );
     V_COD_xyz_ISR2 = c_gse2dsi(V_COD_xyz_gse,SAX);
     EVXB_COD_xyz_ISR2 = irf_tappl(irf_cross(V_COD_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
-    
+
     [apar,aperp] = irf_dec_parperp(B_vec_xyz_ISR2,V_COD_xyz_ISR2); %#ok<ASGLU>
     EVXB_COD_xyz_ISR2(:,4) = aperp(:,4);
     clear apar aperp
-    
+
     [diff_CODr,E_Vec_xy_ISR2_rCOD] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_COD_xyz_ISR2, t);
   catch
     flag_cod = 0;
@@ -397,7 +397,7 @@ ts = [];
 for comp=1:NCOMP
   h(OFF+comp) = irf_subplot(NPLOTS,1,-OFF-comp);
   hold on
-  
+
   leg = {};
   if flag_pea
     if plot_range_pea==1
@@ -443,12 +443,12 @@ for comp=1:NCOMP
     end
     leg = {leg{:} 'EDI'};
   end
-  
+
   irf_plot(E_Vec_xy_ISR2(:,[1 (comp+1)]))
   if flag_efw_irf, leg = {leg{:} 'EFW-IRF'};
   else, leg = {leg{:} 'EFW'};
   end
-  
+
   if flag_pea && plot_range_pea==1
     irf_plot(get_mm_resamp('max',EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
       t(1:IDX_ST_PEA:fix(length(t)/IDX_ST_PEA*IDX_ST_PEA))),'g')
@@ -462,14 +462,14 @@ for comp=1:NCOMP
   if flag_edi && plot_range_edi==1
     irf_plot(get_mm_resamp('max',EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),t),'k')
   end
-  
+
   hold off
-  
+
   if comp<=2, set(h(OFF+comp),'YLim',YLim)
   else, set(h(OFF+comp),'YLim',YLimVZ)
   end
   if isempty(ts), ts = t_start_epoch(tint(1)); end
-  
+
   set(h(OFF+comp),'XLim',tint_pl - ts,'XTickLabel',[],'Box','on');
 end
 

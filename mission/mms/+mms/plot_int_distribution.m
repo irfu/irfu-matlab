@@ -151,7 +151,7 @@ while have_options
       elseif isa(xphat,'TSeries') % time series
         xphat = xphat.resample(dist).norm.data;
       end
-      
+
     case 'vlim'
       vlim = args{2};
       have_vlim = 1;
@@ -219,14 +219,14 @@ end
 % loop to get projection
 for i = 1:length(it)
   if length(it)>1;disp([num2str(i),'/',num2str(length(it))]); end
-  
+
   % 3d data matrix for time index it, [E,phi,th]
   F3d = double(squeeze(double(dist.data(it(i),:,:,:)))*1e12); % s^3/m^6
-  
+
   emat = double(dist.energy); % in eV
   energy = emat(it(i),:);
-  
-  
+
+
   % if scpot is in input, correct for it
   if correctForScPot
     energy = energy-scPot.resample(dist).data(it(i));
@@ -235,34 +235,34 @@ for i = 1:length(it)
     F3d(1:iEend+1,:,:) = 0;
     energy(energy<0) = 0; % not sure if needed
   end
-  
+
   v = sqrt(2*energy*u.e/M); % m/s
-  
+
   if length(v) ~= 32
     error('something went wrong')
   end
-  
+
   % azimuthal angle
   phi = double(dist.depend{2}(it(i),:)); % in degrees
   %phi = phi+180;
   %phi(phi>360) = phi(phi>360)-360;
   phi = phi-180;
   phi = phi*pi/180; % in radians
-  
+
   if length(phi) ~= 32
     error('something went wrong')
   end
-  
+
   % elevation angle
   th = double(dist.depend{3}); % polar angle in degrees
   th = th-90; % elevation angle in degrees
   th = th*pi/180; % in radians
-  
+
   if length(th) ~= 16
     error('something went wrong')
   end
-  
-  
+
+
   % Set projection grid after the first distribution function
   if i == 1
     % bin centers
@@ -294,26 +294,26 @@ end
 if strcmpi(plotMode,'line')
   % average
   Fg = nanmean(Fg,1);
-  
+
   pst = [];
   pst.F = Fg;
   pst.v = vg;
   pst.dens = nanmean(dens,1);
   pst.vel = nanmean(vel,1);
-  
+
   plot(ax,vg*vUnitFactor,Fg,'-o');
   ax.YScale = 'log';
   ax.XLabel.String = [vlabel ' ' vUnitStr];
-  
+
   % set vlim in km
   if have_vlim, ax.XLim = vlim*[-1 1]*vUnitFactor*1e3; end
-  
+
   % set clim
   if have_clim, ax.YLim = clim*[-1 1]; end
-  
+
   if doFlipX; ax.XDir = 'reverse'; end
-  
-  
+
+
 elseif strcmpi(plotMode,'ts') || strcmpi(plotMode,'spec')
   % do not average, instead initiate specrec for irf_spectrogram
   % put nans instead of 0s
@@ -323,19 +323,19 @@ elseif strcmpi(plotMode,'ts') || strcmpi(plotMode,'spec')
   pst.f_label = 'velocity';
   pst.f = vg*vUnitFactor;
   pst.p = log10(Fg);
-  
+
   irf_spectrogram(ax,pst);
   ax.YLabel.String = [vlabel ' ' vUnitStr];
-  
+
   pst.dens = dens;
   pst.vel = vel;
-  
+
   % set vlim in km
   if have_vlim, ax.YLim = vlim*[-1 1]*vUnitFactor*1e3; end
-  
+
   % set clim
   if have_clim, ax.CLim = clim*[-1 1]; end
-  
+
   if doFlipX; ax.YDir = 'reverse'; end
 else
   error('Unknown plot mode')

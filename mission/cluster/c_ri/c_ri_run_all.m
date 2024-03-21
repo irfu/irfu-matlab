@@ -209,50 +209,50 @@ while ~strcmp(path_ok,'c')
     catch, disp('Paths changes valid only for this run!');
     end
   end
-  
+
 end
 [i_end,c] = size(st_m);
 
 for i = 1:i_end
   st = st_m(i,:);
   et = et_m(i,:);
-  
+
   %step one
   if run_steps(1) == 1
     c_ri_auto_event_search(st,et,d2MP,psw,p_MP);
   end
-  
+
   %step two
   if run_steps(2) == 1
     c_ri_run_get_B(st,et,p_MP, p_Bt);
   end
-  
+
   %step three
   if run_steps(3) == 1
     c_ri_four_B_files_2_one(p_Bt,p_Bd,st,et);
   end
-  
+
   %step four
   if run_steps(4) == 1
     c_ri_load_B_for_preprocess(st,et,p_Bd, p_Bp);
   end
-  
+
   %step five
   if run_steps(5) == 1
     c_ri_run_calc_angles_w_pre(st,et, p_Bp, p_A);
   end
-  
+
   %step  sex
   if run_steps(6) == 1
     m_ang = min_angle(i);
     m_ampl = min_ampl(i);
     c_ri_run_class_angle_as_event(st,et,m_ang,m_ampl,p_A,p_E);
   end
-  
+
   %step seven
   if run_steps(7) == 1
     per = period(i);
     c_ri_run_events_into_pictures(st,et,p_MP,p_Bp,p_E,p_R, per);
   end
-  
+
 end

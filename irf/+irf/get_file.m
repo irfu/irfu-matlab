@@ -40,7 +40,7 @@ if useDatastore
     end
   end
 else
-  
+
 end
 
 if nargout == 0

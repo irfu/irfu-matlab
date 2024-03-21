@@ -1,5 +1,5 @@
 %
-% Convert a settings value (from bicas.settings) to  one-row string that can be
+% Convert a settings value (from bicas.Settings) to  one-row string that can be
 % displayed, e.g. in a log message.
 %
 % NOTE: This function should ideally be able to handle all settings values, but
@@ -11,7 +11,7 @@
 % ARGUMENTS
 % =========
 % value
-%       A settings value from an instance of bicas.settings, i.e. the value in a
+%       A settings value from an instance of bicas.Settings, i.e. the value in a
 %       key-value pair (one of the versions of the value).
 %
 %
@@ -21,62 +21,62 @@
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-08-12, by breaking out code from bicas.sprint_SETTINGS().
+% First created 2021-08-12, by breaking out code from bicas.sprint_BSO().
 %
 function displayStr = settings_value_to_display_str(value)
-    % PROPOSAL: Shorter name.
-    
-    if ischar(value)
+% PROPOSAL: Shorter name.
 
-        displayStr = ['"', value, '"'];
+if ischar(value)
 
-    elseif islogical(value)
+  displayStr = ['"', value, '"'];
 
-        assert(isscalar(value))
-        if value
-            displayStr = 'true';
-        else
-            displayStr = 'false';
-        end
+elseif islogical(value)
 
-    elseif isnumeric(value)
+  assert(isscalar(value))
+  if value
+    displayStr = 'true';
+  else
+    displayStr = 'false';
+  end
 
-        assert(isvector(value))
-        
-        if isscalar(value)
-            displayStr = sprintf('%g', value);
-        else
-            % RECURSIVE CALL
-            displayStr = sprintf('[%s]', many_display_str(num2cell(value)));
-        end
+elseif isnumeric(value)
 
-    elseif iscell(value)
+  assert(isvector(value))
 
-        assert(isvector(value))
-        
-        % RECURSIVE CALL
-        displayStr = sprintf('{%s}', many_display_str(value));
-    else
+  if isscalar(value)
+    displayStr = sprintf('%g', value);
+  else
+    % RECURSIVE CALL
+    displayStr = sprintf('[%s]', many_display_str(num2cell(value)));
+  end
 
-        error(...
-            'BICAS:Assertion', ...
-            ['can not convert SETTINGS value (overriden or not)'])
-    end
+elseif iscell(value)
+
+  assert(isvector(value))
+
+  % RECURSIVE CALL
+  displayStr = sprintf('{%s}', many_display_str(value));
+else
+
+  error(...
+    'BICAS:Assertion', ...
+    ['can not convert BSO value (overriden or not)'])
+end
 end
 
 
 
 function displayStr = many_display_str(ca)
-    % PROPOSAL: Better name.
-    
-    assert(isvector(ca))    
-    
-    displayStrCa = cell(numel(ca), 1);
-    for i = 1:numel(ca)
+% PROPOSAL: Better name.
 
-        % RECURSIVE CALL
-        displayStrCa{i} = bicas.settings_value_to_display_str(ca{i});
-    end
-    
-    displayStr = strjoin(displayStrCa, ', ');
+assert(isvector(ca))
+
+displayStrCa = cell(numel(ca), 1);
+for i = 1:numel(ca)
+
+  % RECURSIVE CALL
+  displayStrCa{i} = bicas.settings_value_to_display_str(ca{i});
+end
+
+displayStr = strjoin(displayStrCa, ', ');
 end

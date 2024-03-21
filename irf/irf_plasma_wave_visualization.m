@@ -389,7 +389,7 @@ if 1 % calculate field line position
   % B x v = [B^2 E - (E.B)B] / B^2
   % k x E = -w dB
   % (k.E) k - k^2 E = -w dB x k
-  
+
   field_lines=zeros(length(time_steps),Nfield,Nfieldlinepoints,3); % field line time evolution
   rep_k=repmat(shiftdim(k,-1),[Nfield,Nfieldlinepoints,1]); % replicated k vector the size of field_lines_init
   rep_dRfieldline = repmat((shiftdim(repmat(dRfieldline,Nfieldlinepoints,1),-1)),[Nfield 1 1]); % replicated to size Nfield x Nfieldlinepoints x 3

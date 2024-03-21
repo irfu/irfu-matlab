@@ -45,7 +45,7 @@
 2014-04-21 v1.5.5 several bug fixes
 2014-03-24 v1.5.4 bug fix for dataobj() tint when delta_plus/minus are values and not variables
 2014-03-20 v1.5.3 bug fix for dataobj() tint with delta_plus/delta_minus, minor updates
-2014-03-18 v1.5.2 minor bug fix for dataobj() tint 
+2014-03-18 v1.5.2 minor bug fix for dataobj() tint
 2014-03-11 v1.5.1 checks whether ceflib is working
 2014-03-11 v1.5.0 many bug fixes, c_caa_cef_var_get() can stream data from CAA
 2014-02-21 v1.4.6 minor fixes in different routines
@@ -62,19 +62,19 @@
 2013-09-16 v1.1.3 modified caa_load caa_download for cfa
 2013-09-13 v1.1.2 checks for errors when testing libraries
 2013-09-13 v1.1.1 checks for errors when testing libraries
-2013-09-13 v1.1.0 directory restructuring 
+2013-09-13 v1.1.0 directory restructuring
 2013-09-13 v1.0.3 checking version against github server instead irfu
 2013-09-13 v1.0.2 removed libcef/ and improved README.md
-2013-09-12 v1.0.1 new: cef_get_data() CEF file reading, add: caa_download() CFA reading, CAA streaming support 
+2013-09-12 v1.0.1 new: cef_get_data() CEF file reading, add: caa_download() CFA reading, CAA streaming support
 2013-06-19 name change c_caa_meta > caa_meta, caa metadata index updated, many other minor things
 2013-05-21 caa_download new option 'listdata', new: c_caa_meta(), many other minor bug fixes and improvements
 2013-04-27 implemented IGRF in model.igrf and Hapgood 1997 in irf.geocentric_coordinate_transformation
 2013-04-24 use your own caa user/password when interacting with caa
 2013-03-11 irfu-matlab moved to git! https://github.com/irfu/irfu-matlab
-2013-03-04 caa_download - added option downloadDirectory=... 
+2013-03-04 caa_download - added option downloadDirectory=...
 2013-02-25 c_4_r - added elipticity, planarity and scale outputs
 2013-02-13 model.magnetopause_normal - Shue 1998 model
 2013-02-12 model.magnetopause_normal - Shue 1997 model
-2013-02-04 added irfdemo, run irf('demo') to see it 
+2013-02-04 added irfdemo, run irf('demo') to see it
 2012-01-01 added onera files IRBEM-LIB
-2010-01-01 started cvs 
+2010-01-01 started cvs

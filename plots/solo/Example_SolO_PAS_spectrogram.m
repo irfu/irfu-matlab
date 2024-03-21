@@ -19,7 +19,7 @@ irf_plot(hca,B_SRF);
 ylabel(hca,'B [nT] SRF');
 irf_legend(hca,{'B_X';'B_Y';'B_Z'},[1.02 0.98]);
 %
-hca = irf_panel('ieflux'); 
+hca = irf_panel('ieflux');
 specrec   = struct('t', ieflux.time.epochUnix);
 specrec.p = ieflux.data;
 specrec.p_label='dEF';

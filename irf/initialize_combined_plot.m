@@ -33,12 +33,12 @@ if totCols<1 % gives the fraction of the plot to be taken up by the timeseries
     h1(ii).Position(3) = space*0.8;
     h1(ii).Position(1) = h1(ii).Position(1)*0.4;
   end
-  
+
   % Make "square" plots
   isub = 0;
   h2left = [];
   totCols = 100;
-  
+
   if strcmp('horizontal',sorting)
     for ii = 1:nRows
       for jj = (totCols-nCols+1):totCols
@@ -56,7 +56,7 @@ if totCols<1 % gives the fraction of the plot to be taken up by the timeseries
       end
     end
   end
-  
+
   % Move panels so they have the appropriate width
   h1right = h1(1).Position(1)+h1(1).Position(3)+0.03;
   x0 = totCols;
@@ -66,10 +66,10 @@ if totCols<1 % gives the fraction of the plot to be taken up by the timeseries
       isub = isub + 1;
       h2(isub).Position(1) = h1right*1.1 + (1-h1right)/nCols*(ii-1)*0.9; % set the left edge
       h2(isub).Position(3) = (1-h1right)/nCols*0.7; % set the width
-      
+
     end
   end
-  
+
 else % gives the the "total number of columns" for scaling
   % Adjust the width of the irf_plot panels
   for ii = 1:nTimePanels
@@ -77,11 +77,11 @@ else % gives the the "total number of columns" for scaling
     h1(ii).Position(3) = space*0.5;
     h1(ii).Position(1) = h1(ii).Position(1)*0.4;
   end
-  
+
   % Make the subplot panels
   isub = 0;
   h2left = [];
-  
+
   if strcmp('horizontal',sorting)
     for ii = 1:nRows
       for jj = (totCols-nCols+1):totCols
@@ -99,7 +99,7 @@ else % gives the the "total number of columns" for scaling
       end
     end
   end
-  
+
   % Adjust irf_plot panels again
   h2left = min(h2left);
   for ii = 1:nTimePanels

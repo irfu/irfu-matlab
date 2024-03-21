@@ -1,15 +1,15 @@
 classdef (Abstract) solo_file_db
   %SOLO_FILE_DB  Interface class for SOLO file databses
-  
+
   properties (SetAccess = immutable)
     id
   end
-  
+
   properties
     cache
     index
   end
-  
+
   methods
     function obj = solo_file_db(id)
       obj.id = id;
@@ -25,6 +25,6 @@ classdef (Abstract) solo_file_db
       end
     end
   end
-  
+
 end
 

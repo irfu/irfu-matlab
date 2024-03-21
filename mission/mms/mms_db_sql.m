@@ -1,21 +1,21 @@
 classdef mms_db_sql < handle
   %MMS_DB_SQL handle MMS database of files and variables in SQLITE
-  
+
   properties (Access=protected)
     conn = [];
     statement
     PrepStmt
     databaseDirectory
   end
-  
+
   properties
     databaseFile
   end
-  
+
   properties (Dependent = true)
     isConnected
   end
-  
+
   methods
     function obj = mms_db_sql(fileName)
       % Create or open existing database
@@ -37,7 +37,7 @@ classdef mms_db_sql < handle
         obj.open_database;
       end
     end
-    
+
     function open_database(obj)
       % Create tables if they do not exist
       sql = [ 'PRAGMA foreign_keys = ON;', ...
@@ -80,7 +80,7 @@ classdef mms_db_sql < handle
         ];
       obj.sqlUpdate(sql);
     end
-    
+
     function connect(obj)
       % CONNECT open connection to database
       if ~obj.isConnected
@@ -90,7 +90,7 @@ classdef mms_db_sql < handle
         obj.statement = obj.conn.createStatement();
       end
     end
-    
+
     function insertPrepToFileList(obj, filesToImport)
       % insert filesToImport with prepareStatement. Quicker as it does not
       % use that many SQL transactions.
@@ -116,7 +116,7 @@ classdef mms_db_sql < handle
       obj.conn.setAutoCommit(true);
       obj.statement = obj.conn.createStatement();
     end
-    
+
     function insertPrepToVarIndex(obj, toImport)
       % INPUT toImport struct with "filesToImport" information and "cdfOut"
       if ~iscell(toImport) || ~isstruct(toImport{1})
@@ -127,16 +127,16 @@ classdef mms_db_sql < handle
       if ~obj.isConnected, obj.connect(); end
       % Disable defualt automatic commit
       obj.conn.setAutoCommit(false);
-      
+
       % Prepared SQL statement
       sql = ['INSERT INTO VarIndex (idFile, idDataset, startTT, endTT)', ...
         ' VALUES ( ', ...
         '(SELECT idFile FROM FileList WHERE fileNameFullPath = ?), ',...
         '(SELECT idDataset FROM Datasets WHERE varNames = ? AND dataset = ?), ',...
         '?, ?);'];
-      
+
       obj.PrepStmt = obj.conn.prepareStatement(sql);
-      
+
       % Loop through all the files and variables start/stop time to be imported.
       for ii = 1:numel(toImport)
         for jj = 1:numel(toImport{ii}.cdfOut)
@@ -164,17 +164,17 @@ classdef mms_db_sql < handle
       end
       obj.PrepStmt.executeBatch();
       obj.conn.commit(); % <-- HERE all SQL transactions etc. are done, may take a while.
-      
+
       % Reset connection & statement to default statement with autocommit
       obj.conn.setAutoCommit(true);
     end
-    
+
     function close(obj)
       % CLOSE close connection to database
       obj.conn.close % close connection
       obj.conn = [];
     end
-    
+
     function value = get.isConnected(obj)
       if isempty(obj.conn)
         value = false;
@@ -182,7 +182,7 @@ classdef mms_db_sql < handle
         value = true;
       end
     end
-    
+
     function import_a_file_from_list(obj)
       % import one new file from FileListToImport
       sql = ['SELECT * FROM FileListToImport ',...
@@ -217,7 +217,7 @@ classdef mms_db_sql < handle
         obj.sqlUpdate(sql);
       end
     end
-    
+
     function clear_deleted_files(obj)
       % Clear up database by removing all entries of files which have
       % been deleted.
@@ -234,7 +234,7 @@ classdef mms_db_sql < handle
       obj.sqlUpdate(sql);
       obj.sqlUpdate('DELETE FROM FileListToImport');
     end
-    
+
     function clear_unused_files(obj)
       % Clear up database by removing all entries of files which have no
       % entries in the child tables. Note: This can occur as we import all
@@ -245,7 +245,7 @@ classdef mms_db_sql < handle
         '(SELECT idFile FROM VarIndex);'];
       obj.sqlUpdate(sql);
     end
-    
+
     function import_files_from_list(obj)
       % import all files from FileListToImport
       someFilesDidNotImport = false;
@@ -302,7 +302,7 @@ classdef mms_db_sql < handle
       sql = 'DELETE FROM FileListToImport';
       obj.sqlUpdate(sql);
     end
-    
+
     function add_all_files_to_import_list(obj)
       % works only in unix or mac
       % Note: This function adds all files found on system to import
@@ -335,7 +335,7 @@ classdef mms_db_sql < handle
         'echo -e ".mod csv\n.import delme.txt FileListToImport\n" | sqlite3 ' obj.databaseFile ';'...
         'rm ./delme.txt' ]);
     end
-    
+
     function status = import_files(obj, filesToImport)
       % Import multiple files at once. (Or as quickly as possible)..
       % return status = 1 if file is imported sucessully, or it exists or
@@ -365,14 +365,14 @@ classdef mms_db_sql < handle
           filesToImport(ii) = [];
           continue;
         end
-        
+
         % Extract epochVarName and varNames to be compared between files.
         for iDataset = 1:numel(out)
           currOut(iDataset).epochVarName = out(iDataset).epochVarName;
           currOut(iDataset).varNames = out(iDataset).varNames;
           currOut(iDataset).dataset = filesToImport{ii}.dataset;
         end
-        
+
         if( ~exist('prevOut', 'var') || ~isequal(prevOut, currOut) )
           % Not the same epochVarNames or varNames as last file, run full
           % SQL query and insert possible new values.
@@ -386,9 +386,9 @@ classdef mms_db_sql < handle
         else
           % Same as previous, no need to run time consuming SQL query/insert
         end
-        
+
         filesToImport{ii}.cdfOut = out;
-        
+
         if isempty(toImport)
           toImport{1} = filesToImport{ii};
         else
@@ -414,7 +414,7 @@ classdef mms_db_sql < handle
         obj.sqlUpdate(sql);
       end
     end
-    
+
     function idDataset = add_var_names(obj, dataset, varNames)
       % ADD_VAR_NAMES add variable names to VarNames table
       if ischar(varNames), varNames = {varNames}; end
@@ -436,7 +436,7 @@ classdef mms_db_sql < handle
         obj.sqlUpdate(sql);
       end
     end
-    
+
     function [idDatasetList,DatasetList] = find_datasets_with_varname(obj, varName)
       % find Datasets with varName
       idDatasetList = {}; iDataset = 1;
@@ -455,7 +455,7 @@ classdef mms_db_sql < handle
         irf.log('warning',['There is no variable with name ' varName '.']);
       end
     end
-    
+
     function idDatasetList = find_dataset_id(obj, dataset)
       % find Datasets with name "dataset"
       idDatasetList = {}; iDataset = 1;
@@ -469,7 +469,7 @@ classdef mms_db_sql < handle
         irf.log('warning',['There is no dataset with name ' dataset '.']);
       end
     end
-    
+
     function tintArray = index_var(obj, varName)
       sql = ['SELECT startTT,endTT FROM VarIndex LEFT JOIN VarNames ', ...
         'USING (idDataset) WHERE VarNames.varName = "' varName '" ',...
@@ -489,7 +489,7 @@ classdef mms_db_sql < handle
         clear tintArray;
       end
     end
-    
+
     function res = file_has_var(obj, fileName, varName)
       % find files
       if ischar(varName), varName={varName}; end
@@ -506,7 +506,7 @@ classdef mms_db_sql < handle
         end
       end
     end
-    
+
     function fileNames = find_files(obj, varargin)
       % FIND FILES search files given variable name and/or dataset and/or time interval
       %
@@ -557,7 +557,7 @@ classdef mms_db_sql < handle
         end
         args(1:2) = [];
       end
-      
+
       if searchTint
         sqlTime = [' AND startTT <= ', num2str(endTT), ...
           ' AND endTT >= ', num2str(startTT) ];
@@ -586,7 +586,7 @@ classdef mms_db_sql < handle
         fileNames{end+1, 1} = char(rs.getString('fileNameFullPath')); %#ok<AGROW>
       end
     end
-    
+
     function var(obj, varargin)
       % VAR seach variable names
       %  VAR('par1', 'par2', ..)
@@ -612,7 +612,7 @@ classdef mms_db_sql < handle
         disp(linkTxt{1});
       end
     end
-    
+
     function var_attributes(obj, varName)
       fileNameList = obj.find_files('varname', varName);
       fileName = fileNameList{1};
@@ -638,14 +638,14 @@ classdef mms_db_sql < handle
       disp '------ VARIABLE ATTRIBUTES -------';
       disp(varAttr);
     end
-    
+
     function out = sqlQuery(obj, sql)
       % General function to query SQL
       obj.connect;
       irf.log('debug',['sqlite> ' sql]);
       out = obj.statement.executeQuery(sql);
     end
-    
+
     function out = sqlUpdate(obj, sql)
       % General function to update SQL, if only one entry is to be inserted
       % consider using sqlInsertAndReturnLastKey.
@@ -653,7 +653,7 @@ classdef mms_db_sql < handle
       irf.log('debug',['sqlite> ', sql]);
       out = obj.statement.executeUpdate(sql);
     end
-    
+
     function [out, key] = sqlInsertAndReturnLastKey(obj, sql)
       % Function to update one SQL table by inserting one row and returning
       % the automatically generated key for that row. Can of course insert
@@ -671,11 +671,11 @@ classdef mms_db_sql < handle
         error(errStr);
       end
     end
-    
+
   end
-  
+
   methods (Static)
-    
+
     function out = get_science_variables(cdfFileName)
       % OUT returns structure array with fields
       %     epochVarName - name of the epoch variable, string
@@ -828,7 +828,7 @@ classdef mms_db_sql < handle
         end
       end
     end
-    
+
     function [startTT, endTT] = start_stop_in_ttns(timeInterval)
       if ischar(timeInterval)
         timeInterval = irf.tint(timeInterval);
@@ -844,7 +844,7 @@ classdef mms_db_sql < handle
         return;
       end
     end
-    
+
     function fileInfo = get_file_info(fileName)
       % GET_FILE_INFO get values of directory, dataset, date, version
       % fileInfo is structure with fields
@@ -853,7 +853,7 @@ classdef mms_db_sql < handle
         '(?<dataset>mms[1-4]?_[\w-]*)_(?<date>20\d\d\d\d\d\d\d*)', ...
         '_v(?<verX>[\d]).(?<verY>[\d]).(?<verZ>[\d])(.cdf)'], 'names');
     end
-    
+
     function outStr=matlab_link(linkText, linkCommandText)
       % MATLAB_LINK returns string with link to matlab text to execute
       %
@@ -872,7 +872,7 @@ classdef mms_db_sql < handle
         end
       end
     end
-    
+
   end
-  
+
 end

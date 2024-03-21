@@ -29,18 +29,18 @@ function [newTS,colors]=irf_plot_linecolor_2TS(inputTS,colorTS,values)
 data = inputTS.data;
 colorTSdata=colorTS.data;
 for ivals = 1:length(values)+1
-  
+
   if ivals==1
     interval = [0,values(ivals)];
-    
+
   elseif ivals==length(values)+1
     interval = [values(end),inf];
-    
+
   else
     interval = [values(ivals-1),values(ivals)];
-    
+
   end
-  
+
   temp=NaN(size(data));
   crit = logical(((colorTSdata>=interval(1)).*(colorTSdata<interval(2))));
   temp(crit)=data(crit);

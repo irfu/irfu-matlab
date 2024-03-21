@@ -153,7 +153,7 @@ end
 for dd = 1:length(dirs)
   d = dirs{dd};
   cd(d);
-  
+
   % Set up spin fit related information.
   % Probe pair used can vary for each subinterval!
   if (strcmp(caa_vs, 'E') && (lev ~= 1)) || strcmp(caa_vs, 'DER') || strcmp(caa_vs, 'SFIT')
@@ -175,7 +175,7 @@ for dd = 1:length(dirs)
       end
     end
   end
-  
+
   % Load data
   if strcmp(caa_vs, 'P') && lev == 1
     data = caa_combine_l1_p(cl_id);
@@ -212,13 +212,13 @@ for dd = 1:length(dirs)
       c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
       ASPOC = c_ctl(cl_id,'aspoc');
     end
-    
+
     if lev == 2
       pvar = 'P?';
     elseif lev == 3
       pvar = 'Ps?';
     end
-    
+
     [ok,probe_info,msg] = c_load([ pvar '_info'],cl_id);
     if ~ok || isempty(probe_info), data = []; irf_log('load',msg)
     else
@@ -233,7 +233,7 @@ for dd = 1:length(dirs)
         dsize=size(data, 1);
         data = [data zeros(dsize, 4)]; %#ok<AGROW> % add columns: probe# aspoc bitmask quality
         data(:, 3) = probe_info.probe; % Set probe#.
-        
+
         if isempty(ASPOC)
           irf_log('proc','no ASPOC active data');
         else
@@ -256,10 +256,10 @@ for dd = 1:length(dirs)
         data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
         quality_column = size(data, 2);
         bitmask_column = quality_column - 1;
-        
+
         % Identify and flag problem areas in data with bitmask and quality factor:
         data = caa_identify_problems(data, lev, num2str(probe_info.probe), cl_id, bitmask_column, quality_column, 1);
-        
+
       end
     end
   elseif strcmp(caa_vs, 'SFIT')
@@ -298,7 +298,7 @@ for dd = 1:length(dirs)
         end
       end
     end % Load data
-    
+
     if no_p12 && no_p34, data = [];
     elseif no_p12
       % save time, NaN(fillval) and p34 spin-fit (B C sdev)
@@ -414,7 +414,7 @@ for dd = 1:length(dirs)
         c_ctl('load_aspoc_active', [c_ctl(5,'data_path') '/caa-control']);
         ASPOC = c_ctl(cl_id,'aspoc');
       end
-      
+
       % Export empty file if TM, BB or EB data exist
       % Check for TM data
       mfn='./mEFWburstTM.mat'; % For tm
@@ -461,7 +461,7 @@ for dd = 1:length(dirs)
           end
         end
       end
-      
+
       pvar='bP?';
       [ok,probe_info] = c_load([ pvar '_info'],cl_id);
       if ~ok || isempty(probe_info), data = []; % Check for no IB data
@@ -477,7 +477,7 @@ for dd = 1:length(dirs)
           dsize=size(data, 1);
           data = [data zeros(dsize, 4)]; %#ok<AGROW> % add columns: probe# aspoc bitmask quality
           data(:, 3) = probe_info.probe; % Set probe#.
-          
+
           if isempty(ASPOC)
             irf_log('proc','no ASPOC active data');
           else
@@ -500,7 +500,7 @@ for dd = 1:length(dirs)
           data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
           quality_column = size(data, 2);
           bitmask_column = quality_column - 1;
-          
+
           % Identify and flag problem areas in data with bitmask and quality factor:
           data = caa_identify_problems(data, lev, num2str(probe_info.probe), cl_id, bitmask_column, quality_column, 2);
         end
@@ -568,11 +568,11 @@ for dd = 1:length(dirs)
           end
           dsize=size(data, 1);
           data = [data zeros(dsize, 2)]; %#ok<AGROW> % add columns: bitmask quality
-          
+
           data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
           quality_column = size(data, 2);
           bitmask_column = quality_column - 1;
-          
+
           % Identify and flag problem areas in data with bitmask and quality factor:
           data = caa_identify_problems(data, lev, num2str(1), cl_id, bitmask_column, quality_column, 4);
         else
@@ -650,7 +650,7 @@ for dd = 1:length(dirs)
           data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
           quality_column = size(data, 2);
           bitmask_column = quality_column - 1;
-          
+
           % Identify and flag problem areas in data with bitmask and quality factor:
           data = caa_identify_problems(data, lev, probe_info.probe, cl_id, bitmask_column, quality_column, 3);
         else
@@ -662,7 +662,7 @@ for dd = 1:length(dirs)
     [ok,data] = c_load(vs);
     if ~ok, irf_log('load',['Failed to load ' vs]); end
   end
-  
+
   if isempty(data)
     if ~regexp(caa_vs,'^(I|P|E|B)B$')
       irf_log('load', ['No ' vs]);
@@ -670,7 +670,7 @@ for dd = 1:length(dirs)
     cd(old_pwd)
     continue
   end
-  
+
   % Make subinterval
   if ~isempty(st) && ~isempty(dt)  %  == ~(isempty(st) || isempty(dt)) == NOR
     t_int_full = st + [0 dt];
@@ -684,7 +684,7 @@ for dd = 1:length(dirs)
       irf_log('save', sprintf('%s : %s -- %s',...
         vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
     end
-    
+
     if strcmp(caa_vs, 'DER')
       % Take data in the following order: p12, p32, p42
       if ~isempty(data{1}), data1 = data{1};
@@ -707,7 +707,7 @@ for dd = 1:length(dirs)
         t_int(1)=t_int(1)-120;
         t_int(2)=t_int(2)+300;
       end
-      
+
       % Limit data to both time interval given as input, and time interval read from file.
       data = irf_tlim(data,t_int_full);  % NOTE: Superfluous when using caa_get above. (ML)
       data = irf_tlim(data, t_int);
@@ -731,7 +731,7 @@ for dd = 1:length(dirs)
                 badibfound=true;
                 irf_log('save', [caa_vs num2str(cl_id) ' L2 iburst removed. Data marked as bad.'])
               end
-              
+
             end
           end
         end
@@ -747,13 +747,13 @@ for dd = 1:length(dirs)
     end
     clear iso_ts dtint
   end
-  
-  
+
+
   % Do magic on E-field
   if strcmp(caa_vs,'E') && ~isempty(data) && (lev ~= 1)
     % Remove Ez, which is zero
     data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
-    
+
     % Get info on probe pair(s) in (sub)interval.
     if lev == 2
       E_info = c_load('diE?p1234_info', cl_id, 'var');  % Load info; need list of probe pairs!
@@ -764,16 +764,16 @@ for dd = 1:length(dirs)
     elseif lev == 3
       probe_info = num2str(sfit_probe);
     end
-    
+
     % Extend data array to accept bitmask and quality flag (2 columns at the end)
     data = [data zeros(size(data, 1), 2)]; %#ok<AGROW>
     data(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
     quality_column = size(data, 2);
     bitmask_column = quality_column - 1;
-    
+
     % Identify and flag problem areas in data with bitmask and quality factor:
     data = caa_identify_problems(data, lev, probe_info, cl_id, bitmask_column, quality_column);
-    
+
     probe_str = 'Probe pair';
     nPp = fix(length(probe_info))/2;
     for iP=1:nPp
@@ -786,13 +786,13 @@ for dd = 1:length(dirs)
     end
     com_str = sprintf('%s/%s %s', ...
       epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), probe_str);
-    
+
     result_com{end+1} = com_str; %#ok<AGROW>
     irf_log('calb',com_str)
-    
+
     % Correct offsets
     if ~isempty(data)
-      
+
       if lev==3
         % Delta offsets: remove automatic and apply CAA
         Del_caa = c_efw_delta_off(data(1,1),cl_id);
@@ -806,7 +806,7 @@ for dd = 1:length(dirs)
           end
         end
       end
-      
+
       % Dsi offsets
       dsiof = c_ctl(cl_id,'dsiof');
       if isempty(dsiof)
@@ -819,10 +819,10 @@ for dd = 1:length(dirs)
         else
           [dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
         end
-        
+
         [ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
         [ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
-        
+
         if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
         else, irf_log('calb','Using default DSI offsets')
         end
@@ -832,7 +832,7 @@ for dd = 1:length(dirs)
         irf_log('calb','Using user specified DSI offsets')
       end
       clear dsiof
-      
+
       data = caa_corof_dsi(data,Ddsi,Damp);
       if length(Ddsi) == 1
         dsi_str = sprintf('%s/%s ISR2 offsets: dEx=%1.2f dEy=%1.2f, dAmp=%1.2f',...
@@ -851,7 +851,7 @@ for dd = 1:length(dirs)
       irf_log('calb',dsi_str)
       clear Ddsi Damp
     end
-    
+
     if lev==2
       [ok, d_info] = c_load([vs '_info'],'var');
       if ~ok
@@ -861,7 +861,7 @@ for dd = 1:length(dirs)
     else
       dsc = c_desc(vs);
     end
-    
+
     [ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
     if ~isreal(Del)
       Del = imag(Del);
@@ -879,7 +879,7 @@ for dd = 1:length(dirs)
       epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), del_str);
     result_com{end+1} = del_str; %#ok<AGROW>
     irf_log('calb',del_str)
-    
+
   elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)$','once'))
     if ~isempty(data)
       % convert mV/m back to V
@@ -887,7 +887,7 @@ for dd = 1:length(dirs)
       else, data(:,2) = data(:,2)*.088;
       end
     end
-    
+
     % Combine ADC offsets from two probe pairs into one dataset:
   elseif strcmp(caa_vs, 'DER')
     if isempty(data1) && isempty(data2), data = [];
@@ -907,7 +907,7 @@ for dd = 1:length(dirs)
       timestamp = start_time:4:t_int(2);
       data_out = zeros(length(timestamp), 3) * NaN;
       data_out(:, 1) = timestamp;
-      
+
       if ~isempty(intersect(ppDER,[12 32 120 320 420]))
         [ind1, ind2] = irf_find_comm_idx(data_out, data1);
         data_out(ind1, 2) = data1(ind2, 2);
@@ -917,7 +917,7 @@ for dd = 1:length(dirs)
         data_out(ind1, 3) = data2(ind2, 2);
       end
       data = data_out;
-      
+
       % Extend description to cover data record for two probe pairs:
       adc_str = 'Probe pair';
       for iP = 1:length(ppDER)
@@ -935,13 +935,13 @@ for dd = 1:length(dirs)
       clear start_time timestamp ind1 ind2 data_out
     end
   end
-  
+
   if isempty(result), result = data;
   else
     if ~isempty(data)
       t = result(:,1);
       tapp = data(:,1);
-      
+
       if tapp(1) <= t(end)
         if tapp(1) < t(end)
           irf_log('proc',sprintf('Last point in data is %f seconds before first point in appended data',t(end)-tapp(1)))
@@ -954,7 +954,7 @@ for dd = 1:length(dirs)
         irf_log('proc',sprintf('   Attempt to append interval %s to %s',epoch2iso(tapp(1)),epoch2iso(tapp(end))))
       end
     end
-    
+
     if ~isempty(data)
       result = [result; data]; %#ok<AGROW>
     end
@@ -1115,7 +1115,7 @@ if (~strcmp(caa_vs, 'IB') && ~strcmp(caa_vs, 'PB') && ~strcmp(caa_vs, 'EB') && ~
     status = 1;
     return
   end
-  
+
   sta = fprintf(fid,buf);
   fclose(fid);
   if sta<=0, irf_log('save','problem writing CEF header'), status = 1; return, end
@@ -1131,7 +1131,7 @@ if ~isempty(data)
     ii = find(isnan(data(:,j+1))) ;
     if ~isempty(ii), data(ii,j+1) = FILL_VAL; end
   end
-  
+
   % build up formatting string
   format=repmat('%8.3f',n_col,1);
   i=1;
@@ -1163,11 +1163,11 @@ else
     status = 1;
     return
   end
-  
+
   sta = fprintf(fid,'END_OF_DATA\n');
   fclose(fid);
   if sta<=0, irf_log('save','problem writing CEF tail'), status = 1; return, end
-  
+
   if exist([file_name ext_s '.gz'],'file')
     delete([file_name ext_s '.gz']);
   end

@@ -32,26 +32,26 @@ function s_fq = get_sample_fq_for_period(download_logg,B)
 
 for i =1:i_end
   if download_logg(i,1) ~=-1
-    
+
     first_time = download_logg(i,1);
     last_time = first_time + download_logg(i,2)
     f = time2row(first_time,B,1);
     e = time2row(last_time,B,f);
-    
+
     s_fq(i,1) = first_time;
     s_fq(i,2) = last_time;
     dt = B(e,1) - B(f,1);
-    
+
     if dt ~= 0
       s_fq(i,3) = (e-f)/dt;
     else
       s_fq(i) = -1;
     end
-    
+
   else
-    
+
     s_fq(i) = -1;
-    
+
   end
 end
 

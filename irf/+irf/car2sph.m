@@ -19,7 +19,7 @@ if nargin>1
     z=r.*st;
     x=r.*ct.*cp;
     y=r.*ct.*sp;
-    
+
     if time_flag == 1
       rtp=[time x y z];
     else

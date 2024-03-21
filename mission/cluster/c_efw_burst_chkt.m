@@ -35,7 +35,7 @@ duration=5*shorttime;
 spacecraft = str2double(filename(end));
 while shorttime >= 0
   startdate=(playbackSAT-(playbackEFW-startEFW) - shorttime );
-  
+
   [sctime,temp]=caa_is_get(database,startdate, ...
     duration,spacecraft,'efw','DSC');
   if ~isempty(temp), break, end

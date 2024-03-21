@@ -7,7 +7,7 @@ function hout = pl_l2(fName)
 %% load data
 d =dataobj(fName);
 
-EDC = get_ts(d,'EDC'); 
+EDC = get_ts(d,'EDC');
 VDC = get_ts(d,'VDC');
 
 %% plot data
@@ -23,4 +23,4 @@ irf_plot(h(2),VDC);
 legend(h(2),'V1','V2','V3')
 
 %%
-if nargout, hout = h; end 
+if nargout, hout = h; end

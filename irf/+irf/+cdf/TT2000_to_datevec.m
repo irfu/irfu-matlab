@@ -20,28 +20,28 @@
 % First created 2020-05-25.
 %
 function dateVecUtc = TT2000_to_datevec(tt2000)
-    % PROPOSAL: Separate wrapper function to handle spdfbreakdowntt2000 special case.
-    
-    assert(iscolumn(tt2000), 'Argument tt2000 is not a column array.')
-    
-    % CASE: tt2000 is a Nx1 array.
-    
-    if ~isempty(tt2000)
-        % NOTE: spdfbreakdowntt2000 requires at least one row.
-        % NOTE: spdfbreakdowntt2000 accepts both double and int64.
-        
-        % OUT = spdfbreakdowntt2000(tt2000) returns the UTC date/time from CDF
-        % TT2000 time. OUT is an array with each row having nine (9) numerical
-        % values for year, month, day, hour, minute, second, millisecond,
-        % microsecond and nanosecond.
-        v = spdfbreakdowntt2000(tt2000);
-    else
-        v = zeros(0,9);
-    end
-    % CASE: v is a Nx9 array.
-    
-    % IMPLEMENTATION NOTE: Rounding to nine digits is good for automatic
-    % testing. Eliminates some of arbitrariness in double-precision calculation.
-    v6         = round(v(:,6) + 1e-3*v(:,7) + 1e-6*v(:,8) + 1e-9*v(:,9), 9);
-    dateVecUtc = [v(:,1:5), v6];
+% PROPOSAL: Separate wrapper function to handle spdfbreakdowntt2000 special case.
+
+assert(iscolumn(tt2000), 'Argument tt2000 is not a column array.')
+
+% CASE: tt2000 is a Nx1 array.
+
+if ~isempty(tt2000)
+  % NOTE: spdfbreakdowntt2000 requires at least one row.
+  % NOTE: spdfbreakdowntt2000 accepts both double and int64.
+
+  % OUT = spdfbreakdowntt2000(tt2000) returns the UTC date/time from CDF
+  % TT2000 time. OUT is an array with each row having nine (9) numerical
+  % values for year, month, day, hour, minute, second, millisecond,
+  % microsecond and nanosecond.
+  v = spdfbreakdowntt2000(tt2000);
+else
+  v = zeros(0,9);
+end
+% CASE: v is a Nx9 array.
+
+% IMPLEMENTATION NOTE: Rounding to nine digits is good for automatic
+% testing. Eliminates some of arbitrariness in double-precision calculation.
+v6         = round(v(:,6) + 1e-3*v(:,7) + 1e-6*v(:,8) + 1e-9*v(:,9), 9);
+dateVecUtc = [v(:,1:5), v6];
 end

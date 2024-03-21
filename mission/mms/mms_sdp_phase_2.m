@@ -235,10 +235,10 @@ if(ndouble>0)
     irf.log('notice', logStr);
   end
   keep2 = find(period_flag ~= 1);
-  
+
   period_flag(quick_double - 1) = 8;
   period_flag(quick_double + 1) = 8;
-  
+
   % ; iifsunper on the sunpulse before and after the removed sunpulse could be off by 1%
   if quick_double(end)<length(valid_iifsunper)
     valid_iifsunper(quick_double + 1 ) = 0;
@@ -323,18 +323,18 @@ end
 for i = 1:ngap+1
   nseg = segs(i+1)-segs(i)-1;  % number of periods in this segment
   if (nseg <= 0), continue; end
-  
+
   segind = 1+segs(i)+1:nseg+segs(i)+1; % Index, period data of segment.
   segperiod = period(segind);
   segvalid_iifsunper = valid_iifsunper(segind+1);
   segiifsunper = iifsunper(segind+1);
   segind_pulse = (1:nseg+1) + segs(i) + 1; % Index, pulse data of segment.
   segpulse = pulse(segind_pulse);
-  
+
   % Median smooth the spin period data (this will reject periods that are
   % spuriously long, due to missed sun pulses).
   mwin = 7; % This should be an odd number!
-  
+
   if(mwin <= nseg)
     mwin2 = floor(mwin/2);
     % TN: MEDIAN in IDL with second argument width applies a median
@@ -350,7 +350,7 @@ for i = 1:ngap+1
     mperiod = double(segperiod);
     mperiod(:) = median(segperiod);
   end
-  
+
   % ; Use IIFSUNPER if it is valid
   use_iif = find(segvalid_iifsunper);
   if( isempty(use_iif) )
@@ -359,13 +359,13 @@ for i = 1:ngap+1
   else
     mperiod(use_iif) = double(segiifsunper(use_iif));
   end
-  
+
   % Number of spins between each pulse is time between pulse divided by
   % the best guess at the actual period.
   nspins1 = double(segperiod)./mperiod;
-  
+
   seg_period_flag = period_flag(segind);
-  
+
   % ; nspins1 should be nearly an integer value.  If not, issue a warning
   % ; and set a flag.
   spin_warn = find( abs(nspins1 - round(nspins1)) >= 0.25 );
@@ -384,7 +384,7 @@ for i = 1:ngap+1
     end
     seg_period_flag(spin_warn) = 2;
   end
-  
+
   %    ; TODO (maybe) begin ;;;;;;;;;;;;;;;;;;;
   %    ; insert a pseudo sun pulse time and period based on IIFSUNPER to
   %    ; fill in missed sun pulse time.
@@ -396,7 +396,7 @@ for i = 1:ngap+1
   %    ; decrement nspins1[pseudo]
   %    ; and furter debug the mess that this incremental improvment would cause...
   %    ; TODO (mabye) end   ;;;;;;;;;;;;;;;;;;;;
-  
+
   % ; calculate the average period between pulses.
   nspins1 = int64(round(nspins1));
   period(segind) = period(segind) ./ nspins1;
@@ -436,7 +436,7 @@ for i = 1:ngap
     irf.log('warning', logStr);
     period1 = NaN;
   end
-  
+
   % ; 1b) find period at end of gap:  median of IIFSUNPER (from pseudopulse)
   % ;     of first pulse after gap, plus next 4 spin periods.
   if gapidx + 1 ~= segs(i+2) && gapidx < length(period)
@@ -457,13 +457,13 @@ for i = 1:ngap
     irf.log('warning', logStr);
     period2 = NaN;
   end
-  
+
   period(gapidx) = pulse(gapidx+1) - pulse(gapidx);
-  
+
   % ; 2) determine number of spins in gap, working forwards and backwards.
   nspins1 = period(gapidx)/period1;
   nspins2 = period(gapidx)/period2;
-  
+
   if isfinite(nspins1) && isfinite(nspins2) && round(nspins1) == round(nspins2)
     nspins = (nspins1+nspins2)/2;
     period_flag(gapidx) = 1;
@@ -499,7 +499,7 @@ for i = 1:ngap
     irf.log('warning', logStr);
     period_flag(gapidx) = 6;
   end
-  
+
   period(gapidx) = period(gapidx) ./ round(nspins); % average spin period over the interval where there are no sunpulses
   % ; for Hermite interpolation:
   % ; ; increase spinno after the gap by the number of missed sunpulses.
@@ -555,7 +555,7 @@ if isempty(inrange)
 end
 
 if n_inrange > 0
-  
+
   % ; linear interpolate between each pulse
   phase(inrange) = (torow(epoch(inrange)) - torow(pulse(per(inrange))))./torow(period(per(inrange)))*360 + dss2bcs;
   % ;    ; hermite interpolate between each pulse

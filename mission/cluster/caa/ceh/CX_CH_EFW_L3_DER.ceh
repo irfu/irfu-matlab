@@ -36,7 +36,7 @@ START_META     =   DATASET_CAVEATS
 END_META       =   DATASET_CAVEATS
 
 START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>PI>Yuri.Khotyaintsev@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
 START_META     =   ACKNOWLEDGEMENT

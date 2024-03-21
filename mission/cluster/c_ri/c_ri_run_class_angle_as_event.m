@@ -35,65 +35,65 @@ function c_ri_run_class_angle_as_event(s_tm, e_tm, min_angle, min_ampl, path_inp
 for mpc = 1:nr_mp_cross
   s_t = s_tm(mpc,:);
   e_t = e_tm(mpc,:);
-  
+
   if nargin == 4
     path_input = [pwd '/'];
     path_output = [pwd '/'];
   end
-  
+
   %writing the ls-command to a file, which can be opened by matlab
   file_prefix = 'Ap_';
   start_path = pwd;
-  
+
   cd(path_input);
-  
+
   ls_out = sprintf('%sls_B_data.txt',path_output);
   unix_command = sprintf('ls %s*.mat >%s' ,file_prefix, ls_out );
   unix(unix_command);
-  
+
   fp = fopen(ls_out, 'r');
   % continue until end of file
-  
+
   time_of_events = 0;
-  
+
   while feof(fp) == 0
     file_name = fgetl(fp);
     f_length = length(file_name);
-    
+
     %excluding bad filenames
     if strcmp(file_name(1:3),file_prefix) && strcmp(file_name(f_length-3:f_length), '.mat')
-      
+
       if c_ri_timestr_within_intervall(file_name,s_t,e_t) == 1
-        
+
         disp(['loading : ' file_name])
         load(file_name);
-        
+
         new_events = 0;
         mode = file_name(f_length-4);
         new_events = class_angle_as_event(angles, ampl, min_angle, min_ampl,mode);
         time_of_events = add_A2M(time_of_events, new_events);
       end
-      
+
     end
-    
+
   end
-  
-  
+
+
   [r_t,c_t] = size(time_of_events);
-  
+
   if r_t == 1 && c_t == 1
     disp('no events found, nothing saved to file')
   else
     f_date = c_ri_datestring_file(s_t);
     t_date = c_ri_datestring_file(e_t);
     p_and_f = sprintf('%sE_F%s_T%s',path_output, f_date, t_date);
-    
+
     %save section
     disp(['saving: ' p_and_f])
     save(p_and_f, 'time_of_events', 'min_angle','min_ampl')
-    
+
   end
-  
+
 end % nr of MP_cross
 
 cd(start_path);

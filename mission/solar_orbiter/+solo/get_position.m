@@ -1,5 +1,5 @@
 function soloPosition = get_position(Tint, varargin)
-%SOLO.GET_POSITION  Get the position of Solar Orbiter 
+%SOLO.GET_POSITION  Get the position of Solar Orbiter
 %
 % soloPosition = solo.get_position(tint, PARAMS)
 %
@@ -7,10 +7,13 @@ function soloPosition = get_position(Tint, varargin)
 % Output is a TSeries object with position in the data variable "pos",
 % if any positons found for the time interval "tint".
 %
+% Note: Always returns coordinates with a sampling rate of one position per hour
+%       (hardcoded).
+%
 % Options:
 %    'predicted' - get predicted position instead of flown
 %    'frame' - frame of the data (see below, default: ECLIPJ2000)
-% 
+%
 % The following generic frames are defined:
 %
 %      SPICE Frame Name            Long-name
@@ -50,22 +53,22 @@ function soloPosition = get_position(Tint, varargin)
 %      EARTH_MECL_MEQX_J2000       Earth Mean Ecliptic and Equinox at J2000
 %                                  frame (Auxiliary frame for SOLO_GSE and
 %                                  SOLO_HEE)
-% 
+%
 % Example:
 %
 % Tint = irf.tint('2020-07-31T00:00:00Z/2020-08-01T15:00:00Z'); % time interval in TT2000 UTC
 % %Get predicted position in SOLO_GSE frame
-% soloPosition = solo.get_position(Tint, 'predicted','frame','SOLO_GSE'); 
+% soloPosition = solo.get_position(Tint, 'predicted','frame','SOLO_GSE');
 % irf_plot(soloPosition, '.');
 
 
 frame = 'ECLIPJ2000';
 flagFlownPredicted = 'flown';
 
-if nargin > 1, have_options = 1; args = varargin;
-else, have_options = 0;
+if nargin > 1, has_options = 1; args = varargin;
+else, has_options = 0;
 end
-while have_options
+while has_options
   l = 1;
   switch lower(args{1})
     case 'frame'
@@ -82,22 +85,22 @@ while have_options
   end
 end
 
-t_step = 60*60; %3600 sec
+T_STEP_SEC = 60*60; % 3600 s
 
 solo.db_get_metakernel(flagFlownPredicted);
 
 % Compute et (SPICE ephemeries time, make use of input in TT2000)
-et = Tint.start.tts:t_step:Tint.stop.tts;
+et = Tint.start.tts:T_STEP_SEC:Tint.stop.tts;
 
 % The position of Solar Orbiter in units of km
 pos = cspice_spkpos('solo', et, frame, 'LT+s', 'Sun');
 % More frames (instead of 'ECLIPJ2000') described in/share/SPICE/Solar-Orbiter/kernels/fk/solo_ANC_soc-sci-fk_V06.tf
 
-% Convert to utc and then to TT2000 in TSeries object
+% Convert to UTC and then to TT2000 in TSeries object
 utc_tmp = cspice_et2utc(et, 'ISOC', 0);
 
-% Note pos' since it is returned as 3xN but TSeries expexcts Nx3 (where N is number of records).
+% Note pos' since it is returned as 3xN but TSeries expects Nx3 (where N is number of records).
 soloPosition = irf.ts_vec_xyz(EpochTT(utc_tmp), pos');
 soloPosition.units = 'km'; % Add some metadata information (read when plotting in irf_plot)
-soloPosition.coordinateSystem=frame;
+soloPosition.coordinateSystem = frame;
 end

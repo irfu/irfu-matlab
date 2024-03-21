@@ -228,7 +228,7 @@ while have_vectors
   if plotSphere
     vecHat = vectors{1,1}/norm(vectors{1,1});
     vecTxt = vectors{1,2};
-    
+
     scale = 1.5;
     quiver3(ax,-scale*vecHat(1),-scale*vecHat(2),-scale*vecHat(3),vecHat(1),vecHat(2),vecHat(3),2*scale,'linewidth',2)
     scale = 1.7;
@@ -248,15 +248,15 @@ while have_vectors
     [azim,elev,r] = cart2sph(vecHat(1),vecHat(2),vecHat(3)); % tip of arrow
     if azim<0, azim = azim + 2*pi; end % from [-180 180] to [0 360]
     if elev<0; pol = pi/2 + abs(elev); else, pol = pi/2 - elev; end % from elevation to polar
-    
+
     plot(ax,azim*180/pi,pol*180/pi,'o','linewidth',2,'markersize',12,'color',[1 0 0])
     plot(ax,azim*180/pi,pol*180/pi,'o','linewidth',0.5,'markersize',2,'color',[1 0 0],'markerfacecolor',[0 0 0])
     axes(ax); text(double(azim*180/pi),double(pol*180/pi),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', vectorlabelcolor)
-    
+
     [azim,elev,r] = cart2sph(-vecHat(1),-vecHat(2),-vecHat(3)); % back of arrow
     if azim<0, azim = azim + 2*pi; end % from [-180 180] to [0 360]
     if elev<0; pol = pi/2 + abs(elev); else, pol = pi/2 - elev; end % from elevation to polar
-    
+
     plot3(ax,azim*180/pi,pol*180/pi,0,'o','linewidth',2,'markersize',12,'color',[1 0 0])
     plot3(ax,azim*180/pi,pol*180/pi,0,'x','linewidth',2,'markersize',12,'color',[1 0 0])
     axes(ax); text(double(azim*180/pi),double(pol*180/pi),['   ' vecTxt],'fontsize',14,'HorizontalAlignment','left', 'color', vectorlabelcolor)

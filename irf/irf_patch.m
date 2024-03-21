@@ -74,7 +74,7 @@ if iscell(args{1})
       patch2 = patch1.clone(patch1.time,repmat(args{1}{2},patch1.length,1));
     end
   end
-  
+
   switch plotOption
     case 'difference'
     case 'larger'
@@ -88,28 +88,28 @@ if iscell(args{1})
   %ts = ;
   tPatch1 = patch1.time.epochUnix-t_start_epoch(patch1.time.epochUnix);
   tPatch2 = patch2.time.epochUnix-t_start_epoch(patch2.time.epochUnix);
-  
+
   allPatch = irf.ts_scalar(patch1.time,[patch1.data patch2.data]);
   hl = irf_plot(ax,allPatch); for ii = 1:numel(hl); hl(ii).Visible = 'off'; end; hold(ax,'off')
-  
+
   %hl = irf_plot(ax,patch1); for ii = 1:numel(hl); hl(ii).Visible = 'off'; end; hold(ax,'on')
   %hl = irf_plot(ax,patch2); for ii = 1:numel(hl); hl(ii).Visible = 'off'; end; hold(ax,'off')
-  
+
   for iComp = 1:size(patch1.data,2)
     xPatch = [tPatch1; NaN; tPatch2(end:-1:1)];
     yPatch = [patch1.data(:,iComp); NaN; patch2.data(end:-1:1,iComp)];
-    
+
     isNan = isnan(yPatch);
     xPatch(isNan) = [];
     yPatch(isNan) = [];
-    
+
     hp = patch(xPatch,yPatch,'k','Parent', ax);
     hp.FaceAlpha = 0.2;
     hp.EdgeColor = hl(iComp).Color;
     hp.FaceColor = hl(iComp).Color;
     hp_out(iComp) = hp;
   end
-  
+
 elseif isa(args{1},'TSeries')
   tsData = args{1};
   tmpData = tsData.data;
@@ -117,7 +117,7 @@ elseif isa(args{1},'TSeries')
   nDim2 = size(tsData.data,2);
   cmap = colormap('jet'); cmap = flipdim(cmap(fix(linspace(1,64,nDim2-1)),:),1);
   tPatch = tsData.time.epochUnix-t_start_epoch(tsData.time.epochUnix);
-  
+
   hold(ax,'on')
   colors = get(ax,'ColorOrder');
   % plot white line of max value so that irf_zoom works
@@ -128,25 +128,25 @@ elseif isa(args{1},'TSeries')
   for iP = 1:nDim2-1
     xPatch = [tPatch; NaN; tPatch(end:-1:1)];
     yPatch = [tsData.data(:,iP); NaN; tsData.data(end:-1:1,iP+1)];
-    
-    
+
+
     isNan = isnan(yPatch);
     xPatch(isNan) = [];
     yPatch(isNan) = [];
-    
+
     hp = patch(xPatch,yPatch,'k','Parent', ax);
     hp.FaceAlpha = 0.9;
     hp.EdgeColor = 'none';
     hp.FaceColor = cmap(iP,:);
-    
+
     if all(tsData.data(:,iP) == tsData.data(:,iP+1))
       hp.Visible = 'off';
     end
-    
+
     %pause
     hp_out(iP) = hp;
   end
-  
+
   hold(ax,'off')
 end
 
@@ -158,7 +158,7 @@ end
     ud = get(gcf,'userdata');
     ii = find(~isnan(t));
     if ~isempty(ii), valid_time_stamp = t(ii(1)); else, valid_time_stamp = []; end
-    
+
     if isfield(ud,'t_start_epoch')
       t_st_e = double(ud.t_start_epoch);
     elseif ~isempty(valid_time_stamp)
@@ -176,6 +176,6 @@ end
     else
       t_st_e = double(0);
     end
-    
+
   end
 end

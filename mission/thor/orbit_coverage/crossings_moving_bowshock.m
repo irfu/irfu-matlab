@@ -29,7 +29,7 @@ if 0
   TYear = 60*60*24*365;
   %tint = tStart + [0 rTHOR.time.stop-rTHOR.time.start];
   tint = tStart + [0 TTHOR]*0.3;
-  
+
   % Bowshock nose distance, R0
   omni_bsnx_orig = irf_get_data_omni(tint,'bsnx','omni_min');
   %omni_bsnx_orig = irf_get_data_omni(tint,'bsnx','omni_min');

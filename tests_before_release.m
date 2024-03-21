@@ -36,21 +36,31 @@ suite = testsuite(testsToRun);
 
 % Add tests for MATLAB packages in which automated test files can be
 % automatically found via MATLAB's filenaming convention.
-for pkgPathCa = {'bicas', 'irf.str', 'irf.utils', 'solo.adm', 'solo.shk', 'solo.qli'}
+% NOTE: Excludes BICAS which requires MATLAB R2019b.
+for pkgPathCa = {'irf.str', 'irf.utils', 'solo.adm', 'solo.hwzv', 'solo.shk', 'solo.qli'}
   suite = [ ...
     suite, matlab.unittest.TestSuite.fromPackage(...
-      pkgPathCa{1}, 'IncludingSubpackages', true) ...
-  ];
+    pkgPathCa{1}, 'IncludingSubpackages', true) ...
+    ];
 end
 
+% Generate test report (PDF), if not pre-existing.
 import matlab.unittest.plugins.TestReportPlugin;
 runner = matlab.unittest.TestRunner.withTextOutput;
-ciPath = [irf('path'), filesep, 'ciPath'];
-if ~exist(ciPath, 'dir'), mkdir(ciPath); end
-runner.addPlugin(TestReportPlugin.producingPDF([ciPath, filesep, 'report.pdf'], 'Verbosity', 3));
-% CHECK output, if any problems do not release new version of irfu-matlab!
+ciPath = fullfile(irf('path'), 'ciPath');
+if ~exist(ciPath, 'dir')
+  mkdir(ciPath);
+end
+runner.addPlugin(TestReportPlugin.producingPDF(...
+  fullfile(ciPath, 'report.pdf'), 'Verbosity', 3 ...
+));
+
+% RUN TESTS
+% ---------
+% CHECK output. If there are any problems do not release new version of irfu-matlab!
 % assertSuccess should allow CI/CD Matlab Actions to report error if any
 % test failed.
+% NOTE: assertSuccess() only exists in MATLAB R2020a and later.
 assertSuccess(runner.run(suite));
 
 end

@@ -92,40 +92,40 @@ if strcmpi(method,'frequency')
   if nfft/2==fix(nfft/2), nf = nfft/2;
   else, nf = (nfft+1)/2;
   end
-  
+
   fsamp = c_efw_fsample(einp);
   f = fsamp*((1:nf) -1)'/nfft;
-  
+
   tfinp = get_efw_tf(filt);
-  
+
   tf =         interp1(tfinp(:,1),tfinp(:,4),f,'linear','extrap');    % Add real part.
   tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,5),f,'linear','extrap');    % Add imaginary part.
-  
+
   Pxx = fft(einp(:,2));
   if nfft/2==fix(nfft/2)
     Pxy = Pxx./[tf;flipud(conj(tf))];
   else
     Pxy = Pxx./[tf;flipud(conj(tf(1:end-1)))];
   end
-  
+
   eout = einp;
   eout(:,2) = ifft(Pxy,'symmetric')/14.8;
 elseif strcmpi(method,'time')
   % Translated to Matlab by T.Nilsson, IRFU, from LPP/Berkeley IDL code.
-  
+
   fsamp = c_efw_fsample(einp);
   nk = 512;        % Number of samples in interpolated transfer function.
   df = fsamp/nk;
   frq = (0:nk-1)*df; frq(nk/2+2:end) = frq(nk/2+2:end)-nk*df;
-  
+
   % Take absolute value: handle negative f
   myf = abs(frq);
-  
+
   % Interpolation of the filter to the fixed size (nk) of the kernel
   % for positive frequencies myf
   tfinp = get_efw_tf(filt);
   c = interp1(tfinp(:,1), complex(tfinp(:,4),tfinp(:,5)), myf,'linear','extrap');
-  
+
   take_conj = find(frq<0);
   n_take_conj = numel(take_conj);
   if(n_take_conj>0)
@@ -134,32 +134,32 @@ elseif strcmpi(method,'time')
     c = complex(ones(1,size(tfinp2,1)),zeros(1,size(tfinp2,1)));    % BUG: "tfinp2" not defined anywhere.
     warning('c filter had no negative freq. Not valid');
   end
-  
+
   % FFT of real function must be real at f=0
   c(1) = abs( c(1) ) * sign( real( c(1) ) );
-  
+
   s = complex(ones(1,nk),0);
-  
+
   s = s./c;
-  
+
   % ks = fft(s, 1) <- IDL "1" gives direction (+ => reverse, - => forward)
   ks = ifft(s)*length(s);
-  
+
   % If we did everything right, the imaginary part truly is negligible
   pr = sum(real(ks).*real(ks));
   pi = sum(imag(ks).*imag(ks));
-  
+
   if(pi/pr>1e-5)
     sprintf('*** cluster_efw_deconvo: Imag/Real for impulse response is = %d.',pi/pr);
   end
-  
+
   kernel = real(ks);
-  
+
   % zero time of the kernel is at index 0. Now, shift that to index nk/2
   % to get a kernel suitable for linear convolution and
   % to allow application of the window.
   kernel = circshift(kernel, [0 nk/2]);
-  
+
   % As this is a continuous calibration, the window must be applied to the
   % kernel, rather than to the waveform.
   % note: application of window introduces a slight offset, which must be
@@ -167,33 +167,33 @@ elseif strcmpi(method,'time')
   % Correcting for the offset in the kernel itself
   % would nullify the benefit of the window.
   kernel = kernel .* hann(nk,'periodic')';
-  
+
   % normalize the kernel
   kernel = kernel/nk;
-  
+
   % Preallocate output (including column 1: time)
   eout = einp;
-  
+
   % Before applying the filter remove any DC levels as the Hann window
   % above could interfere with these and create an offset. The signal should
   % be uncoupled before we let the Hann applied kernel do its thing.
   einp_mean = mean(einp(:,2));
   einp(:,2) = einp(:,2) - einp_mean;
-  
+
   % notes on edge behavior:
   % default: zero output when kernel overlaps edge
   % /edge_zero: usually good, but can emphasize low frequency trends, i.e.
   %                           artifacts of despin
   % /edge_wrap; similar to edge zero (based on analysis of cal signal).
   % /edge_truncate: usually bad
-  
+
   % Normalize with the 14.8322 which corresponds to the 23 dB at
   % DC level.
   eout(:,2) = cluster_staff_fastconvol(einp(:,2)', kernel, edge, 0)' / 14.8322;
-  
+
   % Remove any offset caused by Hann window and the kernel.
   eout(:,2) = eout(:,2) - mean(eout(:,2));
-  
+
   % We should now have completely removed any DC levels, inferred from the
   % filter process. Then add the DC levels back again (the DC level were in
   % effect untouched by the filter process).
@@ -278,7 +278,7 @@ if(b_length<nbp)
 else
   % Use brute force convolution, with correct attribute.
   ao = conv(ao, kernel,'full');
-  
+
 end
 
 % shift back to zero delay

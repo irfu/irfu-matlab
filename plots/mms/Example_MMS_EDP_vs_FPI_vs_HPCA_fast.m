@@ -128,6 +128,6 @@ if 0
   ylabel(h(3),'E_z DSL [mV/m]')
   irf_zoom(h,'x',Tint)
   irf_plot_ylabels_align(h)
-  
+
   irf_print_fig(['mms' num2str(mmsId) '_E_EDP_vs_FPI_vs_HPCA_fast_' irf_fname(Tint,2)],'png')
 end

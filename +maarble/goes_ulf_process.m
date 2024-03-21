@@ -13,13 +13,13 @@ for year=2007:2007
       %clear variables
       clearvars -EXCEPT day monthStr year folder folder_url scId flagPlot flagPC12 flagPC35 flagExport
       dayStr = sprintf('%02d',day);
-      
+
       filename_url=sprintf(...
         '%s%i%s%s%i%s%s%s','https://cdaweb.gsfc.nasa.gov/pub/data/goes/goes12/mag_l2/',...
         year,'/','g12_l2_mag_',year,monthStr,dayStr,'_v01.cdf');
       filename=sprintf('%s%s%i%s%s%s', folder,...
         'g12_l2_mag_',year,monthStr,dayStr,'_v01.cdf');
-      
+
       if exist(filename,'file')==0
         if(verLessThan('matlab','8.4')) % Version less than R2014b
           % HTTPS-only server cannot be accessed.
@@ -56,18 +56,18 @@ for year=2007:2007
         % convert everything to GSE
         B = irf.geocentric_coordinate_transformation(geiB,'gei>gse');
         R = irf.geocentric_coordinate_transformation(geiR,'gei>gse');
-        
+
         tint = B([1 end],1)';
         tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
         % Extend time interval by these ranges to avoid edge effects
         DT_PC5 = 80*60; DT_PC2 = 120;
-        
+
         fsamp=1/median(diff(B(:,1)));
         bf = irf_filt(B,0,1/600,fsamp,5);
         t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
         B0_1MIN = irf_resamp(bf,t_1min); %clear bf
         facMatrix = irf_convert_fac([],B0_1MIN,R);
-        
+
         for prod=[12 35]
           if (prod==12 && flagPC12) || (prod==35 && flagPC35)
             prodStr = num2str(prod);
@@ -88,7 +88,7 @@ for year=2007:2007
                 {'dop'},{'planarity'},...
                 {'ellipticity',[],{limByDopStruct,limByPlanarityStruct}},...
                 {'k_tp',[],{limByDopStruct,limByPlanarityStruct}}};
-              
+
               h = irf_pl_ebsp(ebsp,params);
               irf_zoom(h,'x',tint)
               title(h(1),['GOES-' scId(2:3) ', ' irf_disp_iso_range(tint,1)])
@@ -100,7 +100,7 @@ for year=2007:2007
             end
           end
         end
-        
+
         % Export FAC matrix & position
         if flagExport
           [facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);

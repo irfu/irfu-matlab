@@ -5,7 +5,7 @@ classdef EpochTT < GenericTimeArray
   %             - vector of number (double) of seconds since TT2000 epoch
   %             - vector of integer number (int64) of nanoseconds as TT2000
   %             - UTC string array
-  
+
   % ----------------------------------------------------------------------------
   % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
@@ -13,7 +13,7 @@ classdef EpochTT < GenericTimeArray
   % can do whatever you want with this stuff. If we meet some day, and you think
   % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
   % ----------------------------------------------------------------------------
-  
+
   methods
     function obj = EpochTT(inp)
       if nargin==0, return, end
@@ -75,7 +75,7 @@ classdef EpochTT < GenericTimeArray
       end
     end
   end
-  
+
   methods (Static)
     function output = from_ttns(input,index) % for consistency with other GenericTimeArray routines
       if nargin == 1
@@ -92,5 +92,5 @@ classdef EpochTT < GenericTimeArray
       end
     end
   end
-  
+
 end

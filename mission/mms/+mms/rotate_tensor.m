@@ -170,7 +170,7 @@ elseif (rotflag(1) == 'g')
   c_eval('defatt = mms.db_get_variable(''mms?_ancillary_defatt'',''zra'',Tint);',SCnum);
   c_eval('defatt.zdec = mms.db_get_variable(''mms?_ancillary_defatt'',''zdec'',Tint).zdec;',SCnum);
   defatt = mms_removerepeatpnts(defatt); %#ok<NODEF>
-  
+
   % Development of transformation matrix follows modified version of mms_dsl2gse.m
   ttDefatt = EpochTT(defatt.time);
   zra = irf.ts_scalar(ttDefatt,defatt.zra);

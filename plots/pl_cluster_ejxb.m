@@ -219,7 +219,7 @@ irf_timeaxis(h);
 for ic=sc_list
   figure;
   h=irf_plot({bb,bb,bb,bb});
-  
+
   axes(h(1));
   %if find(ic==icb), % plot also burst data
   %  c_eval('irf_plot({dEn?,dejbn?,egradn?,egradn_burst?},''comp''); ylabel(''E,jxB/ne,\nabla p/ne\newline [mV/m] sc?'');',ic);
@@ -237,7 +237,7 @@ for ic=sc_list
     ' dt=[' num2str(dt,' %6.2f') ']s,' ...
     ' L=[' num2str(L,' %6.2f') '], N=[' num2str(N,' %6.2f') '].'],gca,[0,1 ]);
   leg_coord=[.2,.6];font_size=13;cluster_labels={'C1 ','C2 ','C3 ','C4 '};cluster_colors='krgb';
-  
+
   axes(h(2));
   c_eval('irf_plot(n?(:,[1 2]));',ic);
   if find(ic==icb) % plot also burst data
@@ -245,10 +245,10 @@ for ic=sc_list
   end
   c_eval('ylabel(''N_{Vps} [cc] sc?'');',ic);
   set(h(2),'YScale','log')
-  
+
   axes(h(3));
   c_eval('irf_plot(Blnm?(:,[1 5])); ylabel(''B [nT] sc?''); ',ic);
-  
+
   axes(h(4));
   c_eval('irf_plot(irf_tappl([jz? jperp?(:,2)],''*1e6''));ylabel(''j_{||},jperp [\mu A/m^2] sc?'');',ic);
   leg_coord=[.1,.6];font_size=13;figure_labels={'j_{||}', 'j_{perp}'};line_colors='bg';
@@ -256,13 +256,13 @@ for ic=sc_list
     ht=irf_pl_info(figure_labels{iPlot},gca,leg_coord);set(ht,'color',line_colors(iPlot),'Fontsize',font_size,'FontWeight','demi');
     ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
   end
-  
+
   axis(h,'tight');
   irf_zoom(tint,'x',h);
   irf_timeaxis(h);
-  
+
   %ht=irf_pl_number_subplots(h)
-  
+
 end
 %%  Figure 3
 %%%%%%%%%%%%%% Separate s/c %%%%%%%%%%%%%%%%%
@@ -271,7 +271,7 @@ end
 if 1 % 1 if plot, 0 if skip the figure
   figure;
   h=irf_plot({bb,bb,bb,bb,bb,bb});
-  
+
   axes(h(1));
   %c_pl_tx('n?',2,dt);
   cluster_colors='krgb';
@@ -289,7 +289,7 @@ if 1 % 1 if plot, 0 if skip the figure
     ht=irf_pl_info(cluster_labels{ic},gca,leg_coord);set(ht,'color',cluster_colors(ic),'Fontsize',font_size,'FontWeight','demi');
     ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
   end
-  
+
   axes(h(2))
   c_eval('jz? = irf_tappl(jz?,''*1e6'');',sc_list)
   c_pl_tx('jz?',2,dt,'sc_list',sc_list);
@@ -300,7 +300,7 @@ if 1 % 1 if plot, 0 if skip the figure
     ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
   end
   set(h(2),'YTick',[-.4 -.2 0 .2 .4])
-  
+
   for ax=sc_list
     axes(h(ax+2));
     %         tmax = toepoch([2004 1 4 12 47 9.6]);
@@ -320,7 +320,7 @@ if 1 % 1 if plot, 0 if skip the figure
     %             'irf_plot([igradn?(end,:); igradn1?(1,:)],''dt'',dt(?),''LineStyle'',''k--'');'...
     hold off
     set(gca,'YLim',[-19 19])
-    
+
     %         leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'uxB ','jxB/ne','-\nabla p/ne'};cluster_colors='bkgr';
     leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'jxB/ne','-\nabla p/ne'};cluster_colors='bgr';
     for ic=1:3
@@ -328,12 +328,12 @@ if 1 % 1 if plot, 0 if skip the figure
       ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.2 0];
     end
   end
-  
+
   %axis(h,'tight');
   irf_zoom(tint,'x',h);
   %     irf_zoom(toepoch([2004 01 04 12 47 07]) + [.5 4],'x',h)
   irf_timeaxis(h);
-  
+
   % % lw=1;k=-5:0;
   % % for j=1:2
   % %   hh=get(h(j),'children');

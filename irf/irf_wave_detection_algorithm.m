@@ -45,85 +45,85 @@ if isstruct(tint)
   Btot = ebsp.B0;
   save_plot = 1;
 else
-  
+
   %% Check input
   [~,args,~] = axescheck(varargin{:});
   b=local.c_read(['B_vec_xyz_gse__' scId_s '_CP_FGM_5VPS'],tint);
-  
+
   %% get background magnetic field
   bf=irf_filt(b,1/600,0,[],5);
   b0=b;
   b0(:,2:4)=b(:,2:4)-bf(:,2:4);
   B=b0;
-  
+
   sampl=10;
   t=b(1,1):1/sampl:b(end,1); t=t';
   B=irf_resamp(B,t);
   b=irf_resamp(b,t); disp('resampling to 10 Hz');
   b(:,2:4)=b(:,2:4)-B(:,2:4);
-  
+
   %% Remove the last sample if the total number of samples is odd
-  
+
   if size(b,1)/2 ~= floor(size(b,1)/2)
     b=b(1:end-1,:);
     B=B(1:end-1,:);
     t=t(1:end-1,:);
   end
-  
-  
+
+
   % set to zero NaNs
   ind_nan_b=isnan(b); b(ind_nan_b)=0;
   ind_nan_B=isnan(B); B(ind_nan_B)=0;
-  
+
   Btot = B(:,1:2);
   Btot(:,2)=sqrt(B(:,2).*B(:,2)+B(:,3).*B(:,3)+B(:,4).*B(:,4));
-  
+
   %% Find the frequencies for an FFT of all data
-  
+
   nd2=size(b,1)/2;
   nyq=1/2;
   freq=sampl*(1:nd2)/(nd2)*nyq;
   w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
-  
+
   %% Set some important parameters
   freq_int=[.02 5];
   freq_number=21;
   Morlet_width=5.36;
-  
+
   if isnumeric(args{end})
     freq_int=args{end};
   elseif ismember({'freq'},args)
     disp('frequency interval values missing. using default')
   end
-  
-  
+
+
   amin=log10(0.5*sampl/freq_int(2));amax=log10(0.5*sampl/freq_int(1));anumber=freq_number;
   a=logspace(amin,amax,anumber);
   w0=sampl/2; % The maximum frequency
   sigma=Morlet_width/w0; % The width of the Morlet wavelet
-  
+
   Swb=fft(b(:,2:4),[],1);
-  
-  
+
+
   %% Get the correct frequencies for the wavelet transform
   newfreq=w0./a;
   ndata = size(b,1); nfreq = length(a);
   powerCrossCov_SM_plot = zeros(ndata,nfreq);
-  
+
   parfor ind_a=1:length(a)
     mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
     mWexp = repmat(mWexp,1,3);
     Wwb = sqrt(1).*Swb.*mWexp;
-    
+
     %% Get the wavelet transform by IFFT of the FFT
     Wb = ifft(Wwb,[],1);
-    
+
     %% Calculate the power spectrum
     newfreqmat=w0/a(ind_a);
-    
+
     %% spectral matrix
     spectralMatrix = zeros(3,3,ndata);
-    
+
     spectralMatrix(1,1,:) = 2*pi*(Wb(:,1).*conj(Wb(:,1)))./newfreqmat;
     spectralMatrix(1,2,:) = 2*pi*(Wb(:,1).*conj(Wb(:,2)))./newfreqmat;
     spectralMatrix(1,3,:) = 2*pi*(Wb(:,1).*conj(Wb(:,3)))./newfreqmat;
@@ -133,20 +133,20 @@ else
     spectralMatrix(3,1,:) = 2*pi*(Wb(:,3).*conj(Wb(:,1)))./newfreqmat;
     spectralMatrix(3,2,:) = 2*pi*(Wb(:,3).*conj(Wb(:,2)))./newfreqmat;
     spectralMatrix(3,3,:) = 2*pi*(Wb(:,3).*conj(Wb(:,3)))./newfreqmat;
-    
+
     SMpermute = permute(spectralMatrix,[3,1,2]);
-    
-    
+
+
     %% power
     powerCrossCov_SM_plot(:,ind_a) = SMpermute(:,3,3)+SMpermute(:,1,1)+SMpermute(:,2,2);
   end
-  
-  
+
+
   %% average down the signal
-  
-  
+
+
   %% smooth data without decreasing sampling frequency
-  
+
   powerCrossCov_avg = zeros(ndata,nfreq);
   smoothwidth = 200;
   halfw = 100;
@@ -158,14 +158,14 @@ else
       sumPower=sumPower+powerCrossCov_SM_plot(i+smoothwidth,j);
     end
   end
-  
+
   powerCrossCov_SM_plot = powerCrossCov_avg./smoothwidth;
-  
+
   %% put NaNs back in place
-  
+
   idx_nan_b = sum(ind_nan_b,2)>0;
   powerCrossCov_SM_plot(idx_nan_b,:) = NaN;
-  
+
   %% Remove data possibly influenced by edge effects
   for ind_a=1:length(a)
     censur=floor(2*a);
@@ -173,16 +173,16 @@ else
     SMpermute(censur_indexes,:,:) = NaN;
     powerCrossCov_SM_plot(censur_indexes,:,:) = NaN;
   end
-  
+
   %% down-sample
-  
+
   sampl1 = 1/30; %2 samples per minute
   t1 = b(1,1):1/sampl1:b(end,1); t1=t1';
   powerCrossCov_SM_plot = interp1(t,powerCrossCov_SM_plot,t1,'linear','extrap');
   sampl = sampl1;
   t = t1;
   ndata = size(powerCrossCov_SM_plot,1);
-  
+
 end
 
 %% remove background median over a window
@@ -219,7 +219,7 @@ else
   for i = ndata-halftind+1:ndata
     medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(i-halftind:end,:));
   end
-  
+
 end
 
 
@@ -270,7 +270,7 @@ for i=1:ndata
       if lowerBound == newfreq(end-1) && eventThresh(end) == 1
         lowerBound = upperBound;
       end
-      
+
       if eventThresh(j) == 1 && upperBound < 4*lowerBound && ...
           upperBound > 1.25*lowerBound && peakFreq < hCyclFreq(i) ...
           && peakFreq ~= newfreq(end) && peakFreq > oCyclFreq(i)/4
@@ -279,7 +279,7 @@ for i=1:ndata
       end
     end
   end
-  
+
 end
 
 power_median_removed(ind_nan_pmr)=NaN;
@@ -330,28 +330,28 @@ while counter < nPeaks
   else
     counter=counter+1;
   end
-  
+
 end
 
 if waveEvent(1) > 0
   ascii(TTemic)
   TTemic=unique(TTemic);
   export_ascii(TTemic,[scId_s '_MAARBLE_PC12_wave_events'])
-  
-  
+
+
   %% plot
-  
+
   figure(318), clf
   clear h;
   npl=2;clf;
   ipl=1;
   cmapSpace = irf_colormap('space');
-  
+
   t_start_epoch=get_t_start_epoch(t(1,1));
-  
-  
+
+
   %%%%% B spectra from spectral matrix
-  
+
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   pcolor(t-t_start_epoch,newfreq,log10(abs(powerCrossCov_SM_plot.')))
   shading flat
@@ -369,9 +369,9 @@ if waveEvent(1) > 0
   else, hca2 = colorbar('peer',h(1));
   end
   ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
-  
+
   %%%%% B spectra with median removed
-  
+
   h(ipl)=irf_subplot(npl,1,-ipl);
   pcolor(t-t_start_epoch,newfreq,log10(abs(power_median_removed.')))
   shading flat
@@ -382,11 +382,11 @@ if waveEvent(1) > 0
   plot(P(:,1)-t_start_epoch,P(:,2),'d','markerfacecolor','k','markeredgecolor','k','markersize',6)
   plot(P(:,1)-t_start_epoch,P(:,4),'o','markerfacecolor','k','markeredgecolor','k','markersize',4)
   plot(P(:,1)-t_start_epoch,P(:,5),'o','markerfacecolor','k','markeredgecolor','k','markersize',4)
-  
+
   plot(t-t_start_epoch,hCyclFreq,'color','k');
   plot(t-t_start_epoch,heCyclFreq,'--','color','k');
   plot(t-t_start_epoch,oCyclFreq,'-.','color','k');
-  
+
   hold off
   caxis([-3.5 2.5]);
   colormap(cmapSpace);
@@ -394,12 +394,12 @@ if waveEvent(1) > 0
   else, hca2 = colorbar('peer',h(1));
   end
   ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
-  
-  
+
+
   %% Add figure menu
   irf_figmenu;
-  
-  
+
+
   axes(h(1));
   if exist('timeInt','var')
     irf_zoom(h,'x',[timeInt(1)-600 timeInt(2)+600]);
@@ -409,10 +409,10 @@ if waveEvent(1) > 0
   xlimlast=get(h(end),'xlim');
   start_time = irf_time(xlimlast(1) + t_start_epoch,'vector');
   time_label = datestr( datenum(start_time),1 );
-  
+
   irf_legend(h(1),[scId_s '           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
   irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
-  
+
   if save_plot
     print('-dpng',[scId_s '_MAARBLE_PC12_wave_detection_' irf_fname(tint,5)])
   end
@@ -483,18 +483,18 @@ if min(size(x))==1
 else
   n = size(x,1)-sum(nans);
   y = zeros(size(n));
-  
+
   % Odd columns
   odd = find(rem(n,2)==1 & n>0);
   idx =(n(odd)+1)/2 + (odd-1)*m;
   y(odd) = x(idx);
-  
+
   % Even columns
   even = find(rem(n,2)==0 & n>0);
   idx1 = n(even)/2 + (even-1)*m;
   idx2 = n(even)/2+1 + (even-1)*m;
   y(even) = (x(idx1)+x(idx2))/2;
-  
+
   % All NaN columns
   i = find(n==0);
   y(i) = i + nan;

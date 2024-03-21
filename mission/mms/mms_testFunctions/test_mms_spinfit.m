@@ -1,9 +1,9 @@
 classdef test_mms_spinfit < matlab.unittest.TestCase
   %TEST_MMS_DEFATT_PHASE
-  
+
   properties
   end
-  
+
   methods (Test)
     function test_c_efw_spinfit_mx_simple(testCase)
       %% Test constant spin
@@ -26,34 +26,34 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       phaseRad34 = phaseRad - MMS_CONST.Phaseshift.e34;
       e12 = Ex*cos(phaseRad12) + Ey*sin(phaseRad12) + adcOff_12;
       e34 = Ex*cos(phaseRad34) + Ey*sin(phaseRad34) + adcOff_34;
-      
+
       % Check with despin
       dE = mms_sdp_despin(e12-adcOff_12,e34-adcOff_34,phaseComputed.data); %#ok<NASGU>
-      
+
       if(DEBUG)
         % Plot
         irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34]); %#ok<UNRCH>
         irf_plot([EpochTT(timeEpochTT200Req).epochUnix dE])
         legend('Ex','Ey')
       end
-      
+
       % Compute spinfit for E12
       [~,sfit,~,~,~] = ...
         c_efw_spinfit_mx(3,10,3,...
         double(timeEpochTT200Req-t0)'*1e-9,e12',phaseRad12');
       sfit(sfit==-1.5900e+09)=NaN; sfit = sfit'; sfit(isnan(sfit(:,1)),:)=[];
-      
+
       %Test 12
       testCase.verifyEqual(median(sfit(:,1)),adcOff_12,'AbsTol',1e-6);
       testCase.verifyEqual(median(sfit(:,2)),Ex,'AbsTol',1e-6);
       testCase.verifyEqual(median(sfit(:,3)),Ey,'AbsTol',1e-6);
-      
+
       % Compute spinfit for E34
       [~,sfit,~,~,~] = ...
         c_efw_spinfit_mx(3,10,3,...
         double(timeEpochTT200Req-t0)'*1e-9,e34',phaseRad34');
       sfit(sfit==-1.5900e+09)=NaN; sfit = sfit'; sfit(isnan(sfit(:,1)),:)=[];
-      
+
       %Test 34
       testCase.verifyEqual(median(sfit(:,1)),adcOff_34,'AbsTol',1e-6);
       testCase.verifyEqual(median(sfit(:,2)),Ex,'AbsTol',1e-6);
@@ -111,7 +111,7 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       t0 = int64(481744867369743068); % 2015-04-08T06:00:00.185743068Z
       phiDeg0 = 267.5688;
       MMS_CONST=mms_constants;
-      
+
       %0.5 sec sampling DEFATT
       timeSecPhase = (1:3600)'*.5;
       defatt.time = int64(timeSecPhase*1e9) + t0;
@@ -125,33 +125,33 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       phaseRad34 = phaseRad - MMS_CONST.Phaseshift.e34;
       e12 = Ex*cos(phaseRad12) + Ey*sin(phaseRad12) + adcOff_12;
       e34 = Ex*cos(phaseRad34) + Ey*sin(phaseRad34) + adcOff_34;
-      
+
       % Plot
       %irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34])
-      
+
       % Check with despin
       %dE = mms_sdp_despin(e12-adcOff_12,e34-adcOff_34,phaseComputed.data);
       %irf_plot([EpochTT(timeEpochTT200Req).epochUnix dE])
       %legend('Ex','Ey')
-      
+
       % Compute spinfit for E12
       fitEvery = 5e9; fitInterv = 20e9; %ns
       [~, sfit, ~, ~, ~] = mms_spinfit_m( 3, 10, 5, ...
         timeEpochTT200Req, e12, phaseRad12, fitEvery, fitInterv, t0 );
-      
+
       sfit(sfit==-1.5900e+09)=NaN; sfit(isnan(sfit(:,1)),:)=[];
-      
+
       %Test 12
       testCase.verifyEqual(median(sfit(:,1)),adcOff_12,'AbsTol',1e-6);
       testCase.verifyEqual(median(sfit(:,2)),Ex,'AbsTol',1e-6);
       testCase.verifyEqual(median(sfit(:,3)),Ey,'AbsTol',1e-6);
-      
+
       % Compute spinfit for E34
       [~, sfit, ~, ~, ~] = mms_spinfit_m( 3, 10, 5, ...
         timeEpochTT200Req, e34, phaseRad34, fitEvery, fitInterv, t0 );
-      
+
       sfit(sfit==-1.5900e+09)=NaN; sfit(isnan(sfit(:,1)),:)=[];
-      
+
       %Test 34
       testCase.verifyEqual(median(sfit(:,1)),adcOff_34,'AbsTol',1e-6);
       testCase.verifyEqual(median(sfit(:,2)),Ex,'AbsTol',1e-6);

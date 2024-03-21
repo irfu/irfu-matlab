@@ -63,25 +63,25 @@ if ischar(args{1})
         def_ct.deltaof_sdev_max = 2;
         % delta offsets we remove points which
         % are > deltaof_sdev_max*sdev
-        
+
         % DSI offsets are moved to c_efw_dsi_off
         % use c_ctl only if you want to override the default value
         def_ct.dsiof = [];
-        
+
         def_ct.ibias = zeros(256,5,'single');
         def_ct.puck  = zeros(256,5,'single');
         def_ct.guard = zeros(256,5,'single');
-        
+
         def_ct.aspoc = NaN;
-        
+
         def_ct.badib = NaN;
-        
+
         c_ct{1} = def_ct;
         c_ct{2} = def_ct;
         c_ct{3} = def_ct;
         c_ct{4} = def_ct;
         clear def_ct
-        
+
         % cell number 5 has global settings
         % this cell must be accessed as SC # 0
         if ismac || isunix
@@ -100,19 +100,19 @@ if ischar(args{1})
         c_ct{5} = def_ct;
       end
     end
-    
+
   elseif strcmp(args{1},'get')
     if nargin<3, error('get: must be c_ctl(''get'',cl_id,''ct_name''))'), end
     cl_id = args{2}; if cl_id==0, cl_id = 5; end
     c = args{3};
-    
+
     global c_ct
     if isempty(c_ct)
       irf_log('fcal','CTL is not initialized. Initializing...')
       c_ctl('init')
       global c_ct
     end
-    
+
     if isfield(c_ct{cl_id},c)
       if nargout>0
         eval(['out=c_ct{cl_id}.' c ';'])
@@ -127,50 +127,50 @@ if ischar(args{1})
       irf_log('fcal',['unknown ctl: ' c])
     end
   elseif strcmp(args{1},'load_hk_cal')
-    
+
     global c_ct
     if isempty(c_ct)
       irf_log('fcal','CTL is not initialized. Initializing...')
       c_ctl('init')
       global c_ct
     end
-    
+
     % Read from (/Volumes)/data/cluster/cal
-    
+
     [c_ct{1}.ibias, c_ct{1}.puck, c_ct{1}.guard] = readhkcalmatrix('C1_CT_EFW_20001128_V002.cal');
     [c_ct{2}.ibias, c_ct{2}.puck, c_ct{2}.guard] = readhkcalmatrix('C2_CT_EFW_20001128_V002.cal');
     [c_ct{3}.ibias, c_ct{3}.puck, c_ct{3}.guard] = readhkcalmatrix('C3_CT_EFW_20001128_V002.cal');
     [c_ct{4}.ibias, c_ct{4}.puck, c_ct{4}.guard] = readhkcalmatrix('C4_CT_EFW_20001128_V002.cal');
   elseif strcmp(args{1},'load_aspoc_active')
-    
+
     global c_ct
     if isempty(c_ct)
       irf_log('fcal','CTL is not initialized. Initializing...')
       c_ctl('init')
       global c_ct
     end
-    
+
     if nargin>1, d = args{2};
     else, d = '.';
     end
-    
+
     c_ct{1}.aspoc = readaspocactive('/C1_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
     c_ct{2}.aspoc = readaspocactive('/C2_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
     c_ct{3}.aspoc = readaspocactive('/C3_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
     c_ct{4}.aspoc = readaspocactive('/C4_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
   elseif strcmp(args{1},'load_bad_ib')
-    
+
     global c_ct
     if isempty(c_ct)
       irf_log('fcal','CTL is not initialized. Initializing...')
       c_ctl('init')
       global c_ct
     end
-    
+
     if nargin>1, d = args{2};
     else, d = '.';
     end
-    
+
     badiblist=ibfn2epoch('/BAD_IB_L2_LIST_C1-4.txt', d);
     for i=1:4
       c_ct{i}.badib=badiblist{i};
@@ -183,17 +183,17 @@ if ischar(args{1})
       c_ctl('init')
       global c_ct
     end
-    
+
     if nargin>1, d = args{2};
     else, d = '.';
     end
-    
+
     for j=1:4
       try
         f_name = [d '/ns_ops_c' num2str(j) '.dat'];
         if exist(f_name,'file')
           c_ct{j}.ns_ops = load(f_name,'-ascii');
-          
+
           % remove lines with undefined dt
           c_ct{j}.ns_ops(find(c_ct{j}.ns_ops(:,2)==-157),:) = [];
         else, irf_log('load',['file ' f_name ' not found'])
@@ -202,7 +202,7 @@ if ischar(args{1})
         disp(lasterr)
       end
     end
-    
+
   elseif strcmp(args{1},'load_man_int')
     global c_ct
     if isempty(c_ct)
@@ -210,17 +210,17 @@ if ischar(args{1})
       c_ctl('init')
       global c_ct
     end
-    
+
     if nargin>1, d = args{2};
     else, d = '.';
     end
-    
+
     for j=1:4
       try
         f_name = [d '/QRecord_c' num2str(j) '.dat'];
         if exist(f_name,'file')
           c_ct{j}.man_int = load(f_name,'-ascii');
-          
+
           % remove lines with undefined dt
           c_ct{j}.man_int(find(c_ct{j}.man_int(:,2)==-157),:) = [];      % TODO: Is this valid for man_int as well?
         else, irf_log('load',['file ' f_name ' not found'])
@@ -229,7 +229,7 @@ if ischar(args{1})
         disp(lasterr)
       end
     end
-    
+
   elseif strcmp(args{1},'list')
     if nargin>=2
       sc_list = args{2};
@@ -250,11 +250,11 @@ if ischar(args{1})
         end
       end
     end
-    
+
   elseif strcmp(args{1},'save')
     global c_ct
     if isempty(c_ct), disp('CTL is not initialized.'), return, end
-    
+
     if nargin>1
       d = args{2};
       if exist(d,'dir')
@@ -268,7 +268,7 @@ if ischar(args{1})
       disp('Saving mcctl.mat')
       save -MAT mcctl.mat c_ct
     end
-    
+
   elseif strcmp(args{1},'set')
     if nargin<3, error('set: must be c_ctl(''set'',''ctl_name'',value))'), end
     if isnumeric(args{2})
@@ -297,7 +297,7 @@ if ischar(args{1})
       end
       eval(['disp(c_ct{cl_id}.' c ');'])
     end
-    
+
   else
     error('Invalid argument')
   end
@@ -305,7 +305,7 @@ elseif isnumeric(args{1})
   sc_list = args{1};
   ii = find(sc_list==5);
   if ~isempty(ii), sc_list(ii) = 5; end
-  
+
   if nargin>2, have_options = 1; args = args(2:end);
   elseif nargin==2
     have_options = 0;
@@ -314,7 +314,7 @@ elseif isnumeric(args{1})
     end
   else, have_options = 0;
   end
-  
+
   while have_options
     if length(args)>1
       if ischar(args{1})
@@ -382,7 +382,7 @@ if fid >= 0
       end
     end
   end
-  
+
   puck=zeros(256,5,'single');
   ret = findhkcalmatrix(fid, 'QTY          PUCK1');
   if ret ~= 0
@@ -396,7 +396,7 @@ if fid >= 0
       end
     end
   end
-  
+
   guard=zeros(256,5,'single');
   ret = findhkcalmatrix(fid, 'QTY          GUARD1');
   if ret ~= 0
@@ -410,7 +410,7 @@ if fid >= 0
       end
     end
   end
-  
+
   fclose(fid);
 else
   irf_log('load',['File ' datapath filen ' not found']);

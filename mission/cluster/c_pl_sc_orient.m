@@ -95,7 +95,7 @@ switch lower(action)
     h(4)=subplot(2,2,4);axis off;
     data.h=h;
     set(figNumber,'userdata',data);
-    
+
     %====================================
     % The vector 1 entering
     labelStr='0';
@@ -291,7 +291,7 @@ switch lower(action)
     data.flag_v1=get(data.vec1flag, 'value');
     data.flag_v2=get(data.vec2flag, 'value');
     data.flag_b=get(data.bflag, 'value');
-    
+
     if data.flag_v1==1
       data.v1=eval(['[' get(data.vec1Hndl,'string') ']']);
       if length(data.v1)==1, data.flag_v1=0;end
@@ -300,7 +300,7 @@ switch lower(action)
       data.v2=eval(['[' get(data.vec2Hndl,'string') ']']);
       if length(data.v2)==1, data.flag_v2=0;end
     end
-    
+
     phase_p1=data.phase/180*pi + 3*pi/4 ;
     phase_p3=phase_p1     - pi/2   ;
     phase_p2=phase_p1     + pi     ;
@@ -309,7 +309,7 @@ switch lower(action)
     phase_leea=phase_heea+pi;
     phase_rapid=data.phase/180*pi + 60.167/180*pi; % rapid phase
     phase_sunsensor=data.phase/180*pi + 26.367/180*pi; % the location o fsun sensor
-    
+
     rp1=[44*cos(phase_p1) 44*sin(phase_p1) 0]; %#ok<NASGU> % in DS reference frame
     rp2=[44*cos(phase_p2) 44*sin(phase_p2) 0]; %#ok<NASGU>
     rp3=[44*cos(phase_p3) 44*sin(phase_p3) 0]; %#ok<NASGU>
@@ -320,9 +320,9 @@ switch lower(action)
     rleea=sec_length*[cos(phase_leea) sin(phase_leea);cos(phase_leea-dphi) sin(phase_leea-dphi);cos(phase_leea+dphi) sin(phase_leea+dphi)];
     rrapid=sec_length*[cos(phase_rapid) sin(phase_rapid);cos(phase_rapid-dphi) sin(phase_rapid-dphi);cos(phase_rapid+dphi) sin(phase_rapid+dphi)];
     rsunsensor=sec_length*[cos(phase_sunsensor) sin(phase_sunsensor)];
-    
+
     for ip=1:4, c_eval('rp?_gse=c_coord_trans(''DSC'',''GSE'',[data.t rp?],''cl_id'',data.ic);rp?_gse(1)=[];',ip),end
-    
+
     if data.flag_b==1
       bfield=irf_resamp(data.b,data.t);
       bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
@@ -344,9 +344,9 @@ switch lower(action)
       vn2_ds=c_coord_trans('GSE','DSC',vn2_gse,'cl_id',data.ic);
       vn2_elevation=-asin(vn2_ds(4))*180/pi;
     end
-    
+
     aa=0:.1:2*pi;x_circle=cos(aa);y_circle=sin(aa);
-    
+
     axes(h(1));cla
     text(0,50,'sun','verticalalignment','top','horizontalalignment','center','fontweight','demi');
     text(50,0,'dawn','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
@@ -360,7 +360,7 @@ switch lower(action)
     text(50,45,'LEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','g');
     text(50,40,'HEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','b');
     text(50,35,'Rapid','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','k');
-    
+
     if data.flag_b==1
       bnproj=[0 bn(2)/norm(bn(2:3)) bn(3)/norm(bn(2:3))];
       hl=line([0 bnproj(3)*25],[0 bnproj(2)*25]);set(hl,'color','red','linewidth',.4);       % B direction
@@ -382,7 +382,7 @@ switch lower(action)
       text(30*vn2proj(3),30*vn2proj(2),'V');           % label
       text(-49,38,['V2 elevation=' num2str(vn2_elevation,2) ' deg'],'fontsize',8);           % label
     end
-    
+
     for aa=0:pi/12:2*pi % plot grid
       hl=line([0 100*cos(aa)],[0 100*sin(aa)]);
       set(hl,'linestyle',':','color','green','linewidth',.2);
@@ -392,7 +392,7 @@ switch lower(action)
       c_eval('patch(rp?(2)+x_circle*0.4,rp?(1)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
       c_eval('text(rp?(2)*.9,rp?(1)*.9,num2str(?),''fontweight'',''bold'');',ip);
     end
-    
+
     axes(h(3));cla
     text(0,50,'Z_{GSE}','verticalalignment','top','horizontalalignment','center','fontweight','demi');
     text(50,0,'-Y_{GSE}','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
@@ -416,7 +416,7 @@ switch lower(action)
       hl=line([0 -vn2_gse(3)*25],[0 vn2_gse(4)*25]);set(hl,'color','b','linewidth',2);       % V direction
       text(-30*vn2proj(3),30*vn2proj(4),'V');           % label
     end
-    
+
     for aa=0:pi/12:pi/2
       hl=line(x_circle*44*sin(aa),y_circle*44*sin(aa));
       set(hl,'linestyle',':','color','green','linewidth',.2);
@@ -426,7 +426,7 @@ switch lower(action)
       c_eval('patch(-rp?_gse(2)+x_circle*0.4,rp?_gse(3)+y_circle*0.4,x_circle*0+1,''facecolor'',''black'',''edgecolor'',''none'');',ip);
       c_eval('text(-rp?_gse(2)*.8,rp?_gse(3)*.8,num2str(?));',ip);
     end
-    
+
     axes(h(2));cla
     text(0,50,'(BxS)xS','verticalalignment','top','horizontalalignment','center','fontweight','demi');
     text(50,0,'BxS','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
@@ -443,7 +443,7 @@ switch lower(action)
         c_eval('text(rp?_b(1)*.8,rp?_b(2)*.8,num2str(?));',ip);
       end
     end
-    
+
     % add text
     cla(h(4))
     irf_legend(h(4),['c_pl_sc_orient() ' char(datetime("now","Format","dd-MMM-uuuu HH:mm:ss"))],[0,1],'fontsize',8,'interpreter','none','color',[0.5 0.5 0.5]);

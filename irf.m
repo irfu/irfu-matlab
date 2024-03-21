@@ -25,6 +25,9 @@ function [out,out1]=irf(varargin)
 % version = IRF('version') return IRF version number
 % [versionNumber, versionDate] = IRF('version') return also date
 %
+% [out] = IRF('path') returns the path to the current irfu-matlab root
+% directory.
+%
 % IRF('demo') demonstration how to use IRF
 
 %this is an edit to load BLAS
@@ -100,7 +103,7 @@ switch lower(action)
       disp('YES :)');
       if nargout, out = true; end
     end
-    
+
   case 'check_path'
     irfPath = [irf('path') filesep];
     notOnIrfPath = @(x) ~any(strfind(path, [irfPath x]));
@@ -118,6 +121,7 @@ switch lower(action)
       ['plots'   filesep 'solo'],...
       ['mission' filesep 'cluster'],...
       ['mission' filesep 'cluster' filesep 'caa'],...
+      ['mission' filesep 'juice'],...
       ['mission' filesep 'solar_orbiter'],...
       ['mission' filesep 'solar_orbiter' filesep 'bicas' filesep 'src'],...
       ['mission' filesep 'themis'],...
@@ -137,13 +141,13 @@ switch lower(action)
         disp(['Added to path: ' pathToAdd]);
       end
     end
-    
+
   case 'demo'
     echodemo irfdemo
-    
+
   case 'help'
     help irfu-matlab
-    
+
   case 'mice'
     if exist('cspice_j2000','file') % mice is installed
       try
@@ -170,7 +174,7 @@ switch lower(action)
         disp('MICE  .. NOT OK. Please contact IRFU if you need SPICE/MICE for your intended use of irfu-matlab!');
       end
     end
-    
+
   case 'mice_help'
     disp('Kernel files at IRFU are located at spis:/share/SPICE');
     disp('Kernels at irfu: general, Cassini, Rosetta, Solar Orbiter, JUICE');
@@ -181,7 +185,7 @@ switch lower(action)
     disp('If you want for example get all Rosetta kernels, execute:');
     disp('> wget  --timestamping -r -nH --cut-dirs=2 -X *former_versions* ftp://naif.jpl.nasa.gov/pub/naif/ROSETTA');
     disp('');
-    
+
   case 'irbem'
     if exist('onera_desp_lib_coord_trans','file') % irbem is installed
       x=[0 0 1];
@@ -232,7 +236,7 @@ switch lower(action)
         disp('IRBEM .. NOT OK. Please contact IRFU if you need IRBEM for your intended use of irfu-matlab!');
       end
     end
-    
+
   case 'ceflib'
     if ~ispc
       if exist('cef_init','file') % CESR CEFLIB is installed
@@ -268,7 +272,7 @@ switch lower(action)
     else
       datastore('irfu_matlab','okCeflib',false);
     end
-    
+
   case 'cdf_leapsecondstable'
     % Check to see if CDF_LEAPSECONDSTABLE is set as environment
     % variable, as it is used by TT2000 conversions in irf_time. If it is
@@ -331,7 +335,7 @@ switch lower(action)
         end
       end
     end
-    
+
   case 'check_os'
     % NASA's SPDF cdf patch use compiled mex files. For irfu-matlab only
     % Linux, Mac and Windows (all of which 64 bit) OS are included.
@@ -353,7 +357,7 @@ switch lower(action)
         if(nargout), out=false; end
         datastore('irfu_matlab','okCheckOS',false);
     end
-    
+
   case 'matlab'
     % Issue warning if running too old Matlab. This should be incremented
     % when irfu-matlab relies on newer Matlab functions not found in older
@@ -366,10 +370,10 @@ switch lower(action)
       if(nargout), out=true; end
       datastore('irfu_matlab','okMatlab',true);
     end
-    
+
   case 'path'
     out = fileparts(which('irf.m'));
-    
+
   case 'version'
     logFile = [fileparts(which('irf.m')) filesep 'log.txt'];
     fid = fopen(logFile);
@@ -384,7 +388,7 @@ switch lower(action)
       out = versionNumber; % return only date
       out1 = versionTime;
     end
-    
+
   otherwise
     error('unknown input argument');
 end

@@ -25,7 +25,7 @@ function r = log(logLevel,logMsg)
 %
 % See also: LOG_DEBUG_INIT
 
-% internally log levels are represented by numbers
+% Log levels are represented internally by below numbers:
 %
 % off = 0
 % critical = 1

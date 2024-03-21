@@ -10,7 +10,7 @@ for thId=thIds
       dataDir,filesep,thId,filesep,filesep,year);
     if ~exist(fullPath,'dir'), continue, end
     files = dir(sprintf('%s%sth%s_or_ssc_*_v*.cdf',fullPath,filesep,thId));
-    
+
     if ~isempty(files)
       for iFile=1:length(files)
         fileToRead = [fullPath,filesep,files(iFile).name];

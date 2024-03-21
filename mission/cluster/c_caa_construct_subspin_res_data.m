@@ -44,29 +44,29 @@ if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(
   if isempty(variable)
     error('Cannot load the requested CAA variable')
   end
-  
+
   phivar=c_caa_var_get(variable.DEPEND_1);phivar=fillval_to_nan(phivar);phi=phivar.data;%nan_phi=isnan(phi);phi(nan_phi)=[];
   phi_dminus = getv(dataobject,phivar.DELTA_MINUS); phi_dminus = phi_dminus.data;
   phi_dplus = getv(dataobject,phivar.DELTA_PLUS); phi_dplus = phi_dplus.data;
-  
+
   polarvar=c_caa_var_get(variable.DEPEND_2);polar=polarvar.data(1,:);
   envar=c_caa_var_get(variable.DEPEND_3);envar=fillval_to_nan(envar);en=envar.data(1,:);nan_en=isnan(en);en(nan_en)=[];
   enunits=getfield(getv(dataobject,variable.DEPEND_3),'UNITS');
   enlabel=enunits;
   t=varmat.t(:); ndata = length(t);
-  
+
   dd=regexp(variable_name, '__', 'split');
   ic=str2double(dd{2}(2));
   %Phi Angle in the SR2 co-ordinate system at the center time of the spin
   phi_spin_center = c_caa_var_get(['Angle_SR2phi__' dd{2}]);
   phi_spin_center = phi_spin_center.data(1);
-  
+
   spin_period = median(diff(t));
   if spin_period > 4.3 || spin_period < 3.7
     spin_period = 4;
     irf_log('proc',sprintf('Using spin period of %.2f sec',spin_period))
   end
-  
+
   % Sub-spin time
   phi_0 = double(phi - phi_spin_center);
   phi_0(phi_0<-180) = phi_0(phi_0<-180) + 360;
@@ -74,7 +74,7 @@ if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(
   tt = repmat(t,1,AR_MODE) + spin_period * phi_0/360; tt = reshape(tt',ndata*AR_MODE,1);
   tt_dminus = spin_period * double(phi_dminus)/360; tt_dminus = reshape(tt_dminus',ndata*AR_MODE,1);
   tt_dplus = spin_period * double(phi_dplus)/360; tt_dplus = reshape(tt_dplus',ndata*AR_MODE,1);
-  
+
   variable.data(:,:,:,nan_en)=[]; % remove NaN energy data
   variable=fillval_to_nan(variable); % FILLVALs put to NaN
   newdata = zeros(ndata*AR_MODE,size(variable.data,3),size(variable.data,4));
@@ -88,11 +88,11 @@ if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(
     newdata(ii+2,:,:) = squeeze(variable.data(:,3,:,:));
     newdata(ii+3,:,:) = squeeze(variable.data(:,4,:,:));
   end
-  
+
   B = c_caa_var_get(irf_ssub('B_vec_xyz_gse__C?_CP_FGM_FULL',ic),'mat');
   B_SR2=irf_resamp(c_coord_trans('GSE','SR2',B,'cl_id',ic),tt,'nearest'); % sample to t
   b_SR2=irf_norm(B_SR2);
-  
+
   phi = reshape(phi',ndata*AR_MODE,1);
   cosphi=cosd(phi);sinphi=sind(phi);
   cospolar=cosd(polar);sinpolar=sind(polar);
@@ -103,22 +103,22 @@ if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(
     pitchsector = acosd((dot(nparticle,b_SR2(:,2:4),2)));
     pitchangle(:,jpolar,:)=repmat(pitchsector,[1 1 length(en)]);
   end
-  
+
   data=ftheta(newdata,pitchangle,theta);
-  
+
   [en,ix]=sort(en); % sort energy in ascending order
   data=data(:,:,ix); % sort data accordingly
-  
+
   %[tt,ix]=sort(tt); % sort time in ascending order
   %data=data(ix,:,:); % sort data accordingly
-  
-  
+
+
   ind_data = data; ind_data(~isnan(data)) = 1; ind_data(isnan(data)) = 0;
   data_with_nan=data;
   data(isnan(data)) = 0;
   data_omni=reshape(sum(data,2)./sum(ind_data,2),size(data,1),size(data,3));
   data_angle=reshape(sum(data,3)./sum(ind_data,3),size(data,1),size(data,2));
-  
+
   res.tt = tt;                    % time axis
   res.tt_deltaplus = tt_dplus;
   res.tt_deltaminus = tt_dminus;
@@ -240,7 +240,7 @@ elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'CODIF_LS') 
   pitchangle=variable.data;
   t=varmat.data(:,1);
   [tt]=subspintime(dataobject,phi);
-  
+
   dd=regexp(variable_name, '__', 'split');
   ic=str2double(dd{2}(2));
   c_eval('caa_load C?_CP_FGM_FULL;',ic);

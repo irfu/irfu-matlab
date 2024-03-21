@@ -57,17 +57,17 @@ if any(strfind(product,'PITCH')) % Something fishy with background level
   else
     detector_str='';
   end
-  
+
   % Load pitch angle data
   [caaData,dataobject,data,data_units]=c_caa_var_get(['Data',detector_str,'__',product]);
   [caabg,~,bg,bg_units]=c_caa_var_get(['BackgroundLevel',detector_str,'__',product]);
-  
+
   % Pitch angles
   theta=data.dep_x{2}.data(1,:);
   theta_plus=data.dep_x{2}.df.plus;
   theta_minus=data.dep_x{2}.df.minus;
   %nan_theta=isnan(theta);theta(nan_theta)=[];
-  
+
   % Energy levels
   en=data.dep_x{3}.data(1,:);
   en_plus=data.dep_x{3}.df.plus;
@@ -76,37 +76,37 @@ if any(strfind(product,'PITCH')) % Something fishy with background level
   en_pol=[en+en_plus en(end)-en_minus(end)];
   [en, en_cs_order]=sort(en);
   [en_pol, en_pol_order]=sort(en_pol);
-  
+
   % Sub spin angles
   phi=data.dep_x{1}.data(1,:);
   nan_phi=isnan(phi);phi(nan_phi)=[];
-  
+
   % Construct subspin resolution data
   dataraw=data.data; dataraw(:,:,:,nan_en)=[];dataraw(:,nan_phi,:,:)=[];
   dataraw=permute(dataraw,[2 1 3 4]); % permute the order azimuts, time, pitch angle, energy
   data=reshape(dataraw,size(dataraw,1)*size(dataraw,2),size(dataraw,3),size(dataraw,4));
   [tt,dtsampling]=subspintime(dataobject,phi); % define subspin time from angle phi.
   data(data==0)=NaN;
-  
+
   % Same for background level
   bgraw=bg.data; bgraw(:,:,:,nan_en)=[];bgraw(:,nan_phi,:,:)=[];
   bgraw=permute(dataraw,[2 1 3 4]); % permute the order azimuts, time, pitch angle, energy
   bg=reshape(bgraw,size(bgraw,1)*size(bgraw,2),size(bgraw,3),size(bgraw,4));
-  
+
   % Time
   specrec.t=tt;
   specrec.dt=dtsampling/2;
-  
+
   % Energy
   specrec.en_label='Energy [eV]';
   specrec.en_cs=en;
   specrec.en_pol=en_pol;
-  
+
   % Pitch angle
   specrec.f_label='Pitch angle';
   specrec.f_cs=theta;
   specrec.f_pol=[theta-theta_minus theta(end)+theta_plus(end)];
-  
+
   % Data
   specrec.p_label=['Log ' distr ' [' data_units ']']; % data
   specrec.p=double(data(:,:,en_cs_order)); % average over time
@@ -116,25 +116,25 @@ if any(strfind(product,'PEA_3DXP'))
   % Load pitch angle data
   res=c_caa_construct_subspin_res_data(['Data__', product]);
   bg=c_caa_construct_subspin_res_data(['BackgroundLevel__',product]);
-  
+
   SEDL=c_caa_var_get(['Sweep_Energy_DeltaLower__', product],'mat');
   SEDU=c_caa_var_get(['Sweep_Energy_DeltaUpper__', product],'mat');
   en_nan=isnan(SEDL(1,:));SEDL(:,en_nan)=[]; [SEDL, SEDL_order]=sort(SEDL(1,2:end));
   en_nan=isnan(SEDU(1,:));SEDU(:,en_nan)=[]; [SEDU, SEDU_order]=sort(SEDU(1,2:end));
-  
+
   % Store all data in specrec
   specrec.t=res.tt;
   specrec.dt=res.dtsampling/2;
-  
+
   specrec.en_label='Energy [eV]'; % energy
   specrec.en_cs=res.en(:);
   specrec.en_pol=[res.en-SEDL res.en(end)+SEDU(end)];
-  
+
   specrec.f_label='Pitch angle'; % pitch angle
   specrec.f_cs=res.theta;
   dtheta=diff(res.theta(1:2))/2;
   specrec.f_pol=[res.theta-dtheta res.theta(end)+dtheta];
-  
+
   specrec.p_label=['Log ' distr ' [' res.dataunits ']'];
   specrec.p=res.data;
   specrec.p(specrec.p==0)=NaN;
@@ -145,30 +145,30 @@ if any([strfind(product,'CODIF_HS'),...
     strfind(product,'HIA_LS'),...
     strfind(product,'HIA_HS'),...
     strfind(product,'HIA') ])
-  
+
   % Load pitch angle data
   res=c_caa_construct_subspin_res_data(['3d_ions__', product]);
   caaSEDU=c_caa_var_get(['delta_plus_energy_table__', product]);
   caaSEDL=c_caa_var_get(['delta_minus_energy_table__', product]);
   SEDL1=flipdim(caaSEDL.data(1,:),2); en_nan=isnan(SEDL1);SEDL1(en_nan)=[];
   SEDU1=flipdim(caaSEDU.data(1,:),2); en_nan=isnan(SEDU1);SEDU1(en_nan)=[];
-  
+
   % Store all data in specrec
   % Time
   specrec.t=res.tt;
   specrec.dt=res.dtsampling/2;
-  
+
   % Energy
   specrec.en_label='Energy [eV]';
   specrec.en_cs=res.en;
   specrec.en_pol=[res.en-SEDL1 res.en(end)+SEDU1(end)];
-  
+
   % Pitch angle
   specrec.f_label='Pitch angle';
   specrec.f_cs=res.theta;
   dtheta=diff(res.theta(1:2))/2;
   specrec.f_pol=[res.theta-dtheta res.theta(end)+dtheta];
-  
+
   % Data
   specrec.p_label=['Log ' distr ' [' res.dataunits ']'];
   specrec.p=res.data;
@@ -177,27 +177,27 @@ if any([strfind(product,'CODIF_HS'),...
 end
 if any(strfind(product,'RAP')) && any(strfind(product,'PAD'))
   [caaData,dataobject,Data,Data_units]=c_caa_var_get(['PAD_Electron_Dif_flux__',product]);
-  
+
   % Time
   specrec.t=Data.t;
   specrec.dt=(Data.t(2)-Data.t(1))/2;
-  
+
   % Energy
   en=Data.dep_x{1}.data(1,:);
   en_plus=Data.dep_x{1}.df.plus;
   en_minus=Data.dep_x{1}.df.minus;
   nan_en=isnan(en); en(nan_en)=[]; en_plus(nan_en)=[]; en_minus(nan_en)=[];
-  
+
   specrec.en_label='Energy [keV]';
   specrec.en_cs=tocolumn(en);
   specrec.en_pol=tocolumn([en(1)-en_minus en+en_plus(1)]);
-  
+
   % Pitch angles
   specrec.f_label='Pitch angle';
   specrec.f_cs=Data.dep_x{2}.data(1,:);
   specrec.f_pol=[Data.dep_x{2}.data(1,:)-Data.dep_x{2}.df.minus,...
     Data.dep_x{2}.data(1,end)+Data.dep_x{2}.df.plus(end)];
-  
+
   % Data
   specrec.p_label=['Log ' distr ' [' Data_units ']'];
   dataraw=Data.data; dataraw(:,nan_en,:)=[];
@@ -215,7 +215,7 @@ end
     timevar=getv(dataobject,dataobject.VariableAttributes.DEPEND_0{1,2});
     tt=timevar.data(:);
     tt=repmat(tt,1,length(phi));
-    
+
     if isfield(timevar,'DELTA_PLUS') && isfield(timevar,'DELTA_MINUS')
       if ischar(timevar.DELTA_PLUS)
         deltaplus= getv(dataobject,timevar.DELTA_PLUS);

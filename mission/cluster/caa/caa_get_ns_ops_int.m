@@ -37,9 +37,9 @@ end
 while 1
   ii = find( ns_ops(:,1)<st+dt & ns_ops(:,1)>st & ns_ops(:,1)+ns_ops(:,2)>=st+dt);
   if isempty(ii), break, end
-  
+
   ints_out = [ints_out; ns_ops(ii(1),1) st+dt];
-  
+
   % clear already processed records
   ns_ops(ii(1),:) = [];
 end
@@ -48,9 +48,9 @@ end
 while 1
   ii = find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<=st+dt);
   if isempty(ii), break, end
-  
+
   ints_out = [ints_out; st ns_ops(ii(1),1)+ns_ops(ii(1),2)];
-  
+
   % clear already processed records
   ns_ops(ii(1),:) = [];
 end

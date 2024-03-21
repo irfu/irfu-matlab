@@ -38,7 +38,7 @@ for day=t0:86400:t1
   fname = irf_fname(day,1);
   files = dir([DP '/burst/' fname(1:6) '*we.0' num2str(cl_id)]);
   if isempty(files), continue, end
-  
+
   nfiles = length(files);
   irf_log('load',...
     ['20' fname(1:6) ' C' num2str(cl_id) ' : ' num2str(nfiles) ' bursts(s)'])
@@ -55,7 +55,7 @@ for day=t0:86400:t1
     end
     if isempty(data), irf_log('load','NO DATA'), continue, end
     st_int = data{2}(1,1) -int2; clear data
-    
+
     no_data = 0;
     for v=1:length(vars0)
       data = getData(cdb,st_int, 2*int2, cl_id,vars0{v});

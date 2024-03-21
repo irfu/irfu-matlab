@@ -1,6 +1,6 @@
 classdef spacecraft
   %LP.SPACECRAFT spaceraft class
-  
+
   properties
     name
     areaTotal
@@ -34,9 +34,9 @@ classdef spacecraft
   %     data.probe.total_vs_sunlit_area=4;
   %     set(data.inp.n_value,'string','1');
   %     set(data.inp.T_value,'string','100 500');
-  
+
   methods
-    
+
     function surfacePhotoemission = get.surfacePhotoemission(Lp)
       if any(strcmp(Lp.surface,'user defined')) || ~isempty(Lp.surfacePhotoemission)
         surfacePhotoemission = Lp.surfacePhotoemission;
@@ -44,8 +44,8 @@ classdef spacecraft
         surfacePhotoemission = lp.photocurrent(1,0,1,Lp.surface);
       end
     end
-    
+
   end
-  
+
 end
 

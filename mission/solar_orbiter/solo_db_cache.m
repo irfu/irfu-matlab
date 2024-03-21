@@ -1,22 +1,22 @@
 classdef solo_db_cache<handle
   %SOLO_DB_CACHE Caching of files
-  
+
   properties
     timeout = 0          % db cache timeout in sec, off by default
     cacheSizeMax = 1024  % db cache max size in mb
   end
-  
+
   properties (Dependent = true)
     enabled              % ON/OFF flag
   end
-  
+
   properties (Access = private)
     enabled_ = true;
     names
     loaded
     data
   end
-  
+
   methods
     function obj = solo_db_cache(szMB,tout)
       % obj = solo_db_cache([szMB,toutSEC])
@@ -24,11 +24,11 @@ classdef solo_db_cache<handle
       if nargin<2 && ~isempty(szMB), obj.cacheSizeMax = szMB; end
       if nargin==2 && ~isempty(tout), obj.timeout = tout; end
     end
-    
+
     function res = get.enabled(obj)
       res = obj.enabled_;
     end
-    
+
     function set.enabled(obj,value)
       if numel(value) ~=1 || ~islogical(value)
         error('expecting logical value (true/false)')
@@ -38,14 +38,14 @@ classdef solo_db_cache<handle
         obj.loaded = []; obj.names = []; obj.data = [];
       end
     end
-    
+
     function set.timeout(obj,value)
       if numel(value) ~=1 || ~isnumeric(value) || value<0
         error('expecting a numerical value >=0 (seconds)')
       end
       obj.timeout = value;
     end
-    
+
     function set.cacheSizeMax(obj,value)
       if numel(value) ~=1 || value<=0
         error('expecting a positive numerical value (MB)')
@@ -53,7 +53,7 @@ classdef solo_db_cache<handle
       if value>10*1024, warning('cache size > 10 GB'), end
       obj.cacheSizeMax = value;
     end
-    
+
     function res = get_by_key(obj,key)
       % res = cache.get_by_key(key)
       res = [];
@@ -65,7 +65,7 @@ classdef solo_db_cache<handle
       end
       res = obj.data{idx};
     end
-    
+
     function add_entry(obj,key,dataEntry)
       % cache.add_entry(key,dataEntry)
       % key - string
@@ -94,7 +94,7 @@ classdef solo_db_cache<handle
         w = whos('cacheTmp');
       end
     end
-    
+
     function disp(obj)
       % Display cache memory usage and contents
       if ~obj.enabled, disp('DB caching disabled'), return, end
@@ -115,7 +115,7 @@ classdef solo_db_cache<handle
         end
       end
     end
-    
+
     function purge(obj)
       if ~obj.enabled || obj.timeout==0 || isempty(obj.names), return, end
       % purge old entries from cache
@@ -124,6 +124,6 @@ classdef solo_db_cache<handle
       obj.loaded(idx) = []; obj.names(idx) = []; obj.data(idx) = [];
     end
   end
-  
+
 end
 

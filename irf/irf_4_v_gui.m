@@ -61,11 +61,11 @@ else
       else
         c_eval('ud.pos?=R?;',1:4)
       end
-      
+
     end
     % Set the rest of parameters if applicable
     ud = set_col_and_sc(ud,varargin{2:end});
-    
+
   elseif(nargin>=5 && nargin<=7)
     ud.var1 = varargin{1};
     ud.var2 = varargin{2};
@@ -73,27 +73,27 @@ else
     ud.var4 = varargin{4};
     ud.variable_str = [inputname(1) '..' inputname(4)];
     ud = set_col_and_sc(ud,varargin{5:end});
-    
+
   elseif(nargin>=8 && nargin<=10)
     ud.var1 = varargin{1};
     ud.var2 = varargin{2};
     ud.var3 = varargin{3};
     ud.var4 = varargin{4};
     ud.variable_str = [inputname(1) '..' inputname(4)];
-    
+
     R1 = varargin{5};
     R2 = varargin{6};
     R3 = varargin{7};
     R4 = varargin{8};
-    
+
     if isa(R1,'TSeries')
       ud = r_ts2mat(ud,R1,R2,R3,R4);
     else
       c_eval('ud.pos?=R?;',1:4)
     end
-    
+
     ud = set_col_and_sc(ud,varargin{9:end});
-    
+
   else
     error('Unknown input type.')
   end
@@ -105,7 +105,7 @@ end
 if ud.flag_first_call
   % Initialize gui and read position data if not inputted.
   ud=irf_4_v_gui(ud.hfig,'init');
-  
+
   if ~is_pos_ok(ud)
     if ~isfield(ud,'sc')
       error('Wrong format of position data')
@@ -116,7 +116,7 @@ if ud.flag_first_call
       ud = get_c_pos(ud);
     end
   end
-  
+
 else
   switch action
     case 'init'
@@ -141,7 +141,7 @@ else
       ud = new_var(ud);
     case 'update_var_col'
       ud = update_var_col(ud);
-      
+
     otherwise % Mostly for debugging
       error(['Not implemented action: ', action])
   end
@@ -304,10 +304,10 @@ else
     v = irf_gse2gsm([t(1) v], -1);
     v = v(2:4);
   end
-  
+
   % The actual calculation
   dt=irf_4_v(ud.pos1,ud.pos2,ud.pos3,ud.pos4,[t v]);
-  
+
   ref_satellite_string=get(ud.ref_satellite,'string');
   ref_satellite=str2double(ref_satellite_string);
   if ref_satellite<1 || ref_satellite>4, ref_satellite=1;end

@@ -13,9 +13,9 @@ classdef test_geocentric_coordinate_transformation < matlab.unittest.TestCase
     coord2 = {'gei', 'geo', 'gse', 'gsm', 'mag'};
     coord3 = {'gei', 'geo', 'gse', 'gsm', 'mag'};
   end
-  
+
   methods (Test, ParameterCombination='exhaustive')
-    
+
     function test_cyclic_transformations(testCase, coord0, coord1, coord2, coord3)
       % Test transforming from "coord0">"coord1">"coord2">"coord3" and
       % then finally back to "coord0" and verify result is the same.

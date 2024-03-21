@@ -1,5 +1,6 @@
 Release notes
 =============
+Note: This list includes updates to unofficial functionality, e.g. for processing L2 to L3.
 
 
 Version 1.0.0
@@ -100,3 +101,43 @@ Version 7.0.0
 -------------
 Using new L2 master CDFs with corrections for DELTA_PLUS/MINUS_VAR, APPLICABLE, Data_type.
 Non-Standard Operations (NSO) table thruster firings updated for until 2023-02-05.
+
+
+Version 8.0.0
+-------------
+Changed setting names:
+    PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN
+--> PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN
+    SW_MODES.L2-L2_CWF-DWNS_ENABLED
+--> SWM.L2-L2_CWF-DSR_ENABLED
+    SW_MODES.L1-L2_ENABLED
+--> SWM.L1-L2_ENABLED
+    SW_MODES.L2-L2_CWF-DSR_ENABLED
+--> SWM.L2-L2_CWF-DSR_ENABLED
+    SW_MODES.L2-L3_ENABLED
+--> SWM.L2-L3_ENABLED
+    INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY
+--> INPUT_CDF.GA_DSI_MISMATCH_POLICY
+Change name of unofficial s/w mode (L2-->L3):
+    LFR-SURV-CWF-E-DWNS
+--> LFR-SURV-CWF-E-DSR
+Enable glob. attr. "MODS".
+Read and use setting for demultiplexer latching relay in BIAS HK (HK_BIA_MODE_DIFF_PROBE).
+Use automatic saturation detection for setting full saturation bit in L2_QUALITY_BITMASK and for capping QUALITY_FLAG.
+Use measured BIAS HK currents for detecting sweeps for data beginning 2023-12-16. Use mux mode for detecting sweeps before this date.
+    Note: This should be a temporary measure until BICAS can detect sweeps via QUALITY_BITMASK (L1).
+Add zVariable L3_QUALITY_BITMASK to L3 density datasets and set quality bit for bad density quality in it.
+Non-Standard Operations (NSO) table thruster firings updated for until 2024-01-11.
+Much refactoring (internal code reorganization).
+--
+NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely stated that a later CDF format was used.
+
+
+Version 8.0.1
+-------------
+Corrected documentation w.r.t. the CDF format version used in BICAS v8.0.0. This version still uses CDF 3.7.1.
+Changed source code style: Two whitespace indentation, no trailing whitespace.
+QUALITY_FLAG is now capped at 3 (previously 2).
+Non-Standard Operations (NSO) table thruster firings updated for until 2024-01-30.
+Bugfix: Automatic sweep detection (SCDA) no longer removes data due to labelling data as sweeps when constant BIAS HK currents are very different.
+Changed setting names relating to autodetection of sweeps.

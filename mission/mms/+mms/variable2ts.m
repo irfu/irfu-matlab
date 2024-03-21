@@ -1,5 +1,5 @@
 function ts = variable2ts(v)
-%MMS.VARIABLE2TS  Converst variable structure to TSeries
+%MMS.VARIABLE2TS  Converts variable structure to TSeries
 %
 % ts = variable2ts(v)
 
@@ -78,7 +78,7 @@ if ~isempty(regexp(v.name,'^mms[1-4]_d[ei]s_','once')) || ~isempty(regexp(v.name
         irf.log('warning','Epoch_plus_var/Epoch_minus_var units are not clear, assume s');
       end
       % toffset = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)-int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
-      % tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;  
+      % tdiff = (int64(v.DEPEND_0.DELTA_PLUS_VAR.data)+int64(v.DEPEND_0.DELTA_MINUS_VAR.data))*1e6/2;
       % v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS in ms
       toffset = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS-v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);
       tdiff = int64((v.DEPEND_0.DELTA_PLUS_VAR.data*flag_PLUS+v.DEPEND_0.DELTA_MINUS_VAR.data*flag_MINUS)*1e6/2);

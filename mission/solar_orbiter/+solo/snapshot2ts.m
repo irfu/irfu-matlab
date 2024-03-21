@@ -3,11 +3,11 @@ function res = snapshot2ts(d, varName, varargin)
 %
 %  res = solo.snapshot2ts(DataObj, varName, [FLAGS])
 %
-% Input: 
+% Input:
 %   DataObj - dataobj (e.g. LFR_E)
 %   varName - name of a variable
 %
-% Options: 
+% Options:
 %   'NoNaN' - do not add NaN at the end of each snapshot
 %   'RmMedian' - subtract median value from each of the snapshots
 
@@ -44,7 +44,7 @@ for iFreq = 1:length(freqs)
   lSnapshot = size(data,2);
   nComp = size(data,3);
   if nComp>5 % XXX hack
-    nComp = size(data,2); lSnapshot = size(data,3); 
+    nComp = size(data,2); lSnapshot = size(data,3);
     data = permute(data,[1 3 2]);
   end
   epoch = d.data.Epoch.data(ii);

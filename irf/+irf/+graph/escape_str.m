@@ -13,10 +13,10 @@
 %
 function s = escape_str(s)
 % PROPOSAL: Use regexprep.
-    
-    s = strrep(s, '\', '\\');   % NOTE: Must come first!
-    s = strrep(s, '_', '\_');
-    s = strrep(s, '^', '\^');
-    s = strrep(s, '{', '\{');
-    s = strrep(s, '}', '\}');
+
+s = strrep(s, '\', '\\');   % NOTE: Must come first!
+s = strrep(s, '_', '\_');
+s = strrep(s, '^', '\^');
+s = strrep(s, '{', '\{');
+s = strrep(s, '}', '\}');
 end

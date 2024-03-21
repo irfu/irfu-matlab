@@ -30,7 +30,7 @@ if (nargin==1 && ischar(time))
 end
 
 if nargin ==2
- R=R_init;
+  R=R_init;
 end
 
 sc_list=1:4;
@@ -80,9 +80,9 @@ switch lower(action)
       data.R =R;
       set(gcf,'userdata',data);
     else
-        set(gcf,'userdata',data);
-        mms.mms4_pl_conf('read_position');
-    end 
+      set(gcf,'userdata',data);
+      mms.mms4_pl_conf('read_position');
+    end
     mms.mms4_pl_conf(plot_type);
   case 'read_position'
     data=get(gcf,'userdata');
@@ -244,7 +244,7 @@ switch lower(action)
     data.plot_type='supercompact2';
     set(gcf,'userdata',data);
     mms.mms4_pl_conf(data.coord_label);
-    
+
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%%%%%% action plot %%%%%%%%%%%%%%%%%
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -287,17 +287,17 @@ switch lower(action)
         [flag_using_omni_data,omni]=add_magnetopause(h(1));
         add_bowshock(h(1));
         add_Earth(h(1));
-        
+
         plotAxes = 'YZ';
         plot_position(h(2));
         add_Earth(h(2),'day');
-        
+
         plotAxes = 'XY';
         plot_position(h(3));
         add_magnetopause(h(3));
         add_bowshock(h(3));
         add_Earth(h(3));
-        
+
         cla(h(4));
         for ic=sc_list
           plot(h(4),XRe{ic}(2),sqrt(XRe{ic}(3)^2+XRe{ic}(4)^2),mms_marker_small{ic}{:});
@@ -310,34 +310,34 @@ switch lower(action)
         add_magnetopause(h(4));
         add_bowshock(h(4));
         add_Earth(h(4));
-        
+
         plotAxes = 'XZ';
         plot_relative_position(h(5));
-        
+
         plotAxes = 'YZ';
         plot_relative_position(h(6));
-        
+
         plotAxes = 'XY';
         plot_relative_position(h(7));
       case 'compact'
-        
+
         cla(h(1));
         plotAxes = 'XZ';
         plot_relative_position(h(1));
         fix_RE_axis(h(1),h(21));
-        
+
         cla(h(2));
         plotAxes = 'YZ';
         plot_relative_position(h(2));
         fix_RE_axis(h(2),h(22));
-        
+
         cla(h(3));
         plotAxes = 'XY';
         plot_relative_position(h(3));
         fix_RE_axis(h(3),h(23));
         %
       case 'config3d'
-        
+
         hold(h(1),'off');
         for ic=sc_list
           % put Cluster markers
@@ -378,7 +378,7 @@ switch lower(action)
         grid(h(1),'on');
         axis(h(1),[-drref drref -drref drref]);
         hold(h(1),'off');
-        
+
         hca=h(2);
         hold(hca,'on');
         axis(hca,[0 1 0 1]);
@@ -389,7 +389,7 @@ switch lower(action)
         text(xs+2*dxx+0.03,yy,'MMS3','parent',hca);
         text(xs+3*dxx+0.03,yy,'MMS4','parent',hca);
         axis(hca,'off');
-        
+
       case 'lmn'
         cla(h(1));
         x=get_in_lmn(x);
@@ -402,7 +402,7 @@ switch lower(action)
         set(h(1),'xdir','reverse');
         grid(h(1),'on');
         axis(h(1),[-drref drref -drref drref]);
-        
+
         cla(h(2));
         for ic=1:numel(sc_list)
           plot(h(2),x{ic}(3),x{ic}(4),mms_marker{sc_list(ic)}{:});
@@ -412,7 +412,7 @@ switch lower(action)
         ylabel(h(2),'N [km] ');
         grid(h(2),'on');
         axis(h(2),[-drref drref -drref drref]);
-        
+
         cla(h(3));
         for ic=1:numel(sc_list)
           plot(h(3),x{ic}(2),x{ic}(3),mms_marker{sc_list(ic)}{:});
@@ -424,26 +424,26 @@ switch lower(action)
         axis(h(3),[-drref drref -drref drref]);
         set(h(3),'xdir','reverse')
         set(h(3),'ydir','reverse')
-        
+
       case 'supercompact'
-        
+
         plotAxes = 'XZ';
         plot_relative_position(h(1));
         fix_RE_axis(h(1),h(21));
         irf_legend(h(1),irf_time(data.t,'epoch>utc_yyyy-mm-dd HH:MM:SS'),[0.02 0.98],'fontsize',9);
-        
+
         plotAxes = 'YZ';
         plot_relative_position(h(2));
         text_Cluster_markers(h(2));
         fix_RE_axis(h(2),h(22));
         %
       case 'supercompact2'
-        
+
         plotAxes = 'XZ';
         plot_relative_position(h(1));
         fix_RE_axis(h(1),h(21));
         irf_legend(h(1),irf_time(data.t,'epoch>utc_yyyy-mm-dd HH:MM:SS'),[0.02 0.98],'fontsize',9);
-        
+
         plotAxes = 'XY';
         plot_relative_position(h(2));
         text_Cluster_markers(h(2));

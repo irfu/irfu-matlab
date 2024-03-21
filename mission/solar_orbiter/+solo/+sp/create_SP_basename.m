@@ -15,12 +15,12 @@
 % We should stay as much as possible compliant with the definition in the "Solar
 % Orbiter data definition document" (see SOL-SGS-TN-0009-MetadataStandard-2.4
 % enclosed).
-% 
+%
 % In this case SP file should be labelled as level 3 data products (L3) and
 % should have the form:
-% 
+%
 % 	solo_L3_<descriptor>_<datetime>_V<version>_<Free_field>.<extension>
-% 
+%
 % Where:
 % 	<descriptor> should be the same than the parent L1/L2 CDF used to generate
 % 	the SP file (e.g. "rpw-tnr-surv", "rpw-tds-surv-rswf-e", etc.),
@@ -49,32 +49,32 @@
 % First created 2020-05-08.
 %
 function basename = create_SP_basename(srcDatasetId, dateVec3, versionNbr)
-    % Ex: solo_L3_rpw-tnr-surv_20200315_V01.png
-    %
-    % PROPOSAL: Create corresponding parse_summary_plot_filename().
-    %   PRO: May be useful for algorithms for selecting datasets when batch
-    %        processing.
-    %   PROBLEM: Future SPs may produce multiple SPs per dataset. ==> Unclear
-    %            return format, complexity.
-    % PROPOSAL: Use (future) assertion function on DATASET_ID.
-    
-    % ASSERTIONS
-    irf.assert.castring(srcDatasetId)
-    assert(isnumeric(dateVec3))
-    assert(numel(dateVec3) == 3)
-    assert(isscalar(versionNbr))
-    assert(isnumeric(versionNbr))
-    assert(versionNbr >= 1)
-    
-    % NOTE: Output should have uppercase "L3", despite most of basename being
-    % lower case.
-    modifDatasetId = regexprep(lower(srcDatasetId), '^solo_(hk|l2)_', 'solo_L3_');
-    
-    % ASSERTION: DATASET_ID was modified.
-    assert(~strcmp(srcDatasetId, modifDatasetId), ...
-        'Can not handle datasetId="%s".', srcDatasetId)
+% Ex: solo_L3_rpw-tnr-surv_20200315_V01.png
+%
+% PROPOSAL: Create corresponding parse_summary_plot_filename().
+%   PRO: May be useful for algorithms for selecting datasets when batch
+%        processing.
+%   PROBLEM: Future SPs may produce multiple SPs per dataset. ==> Unclear
+%            return format, complexity.
+% PROPOSAL: Use (future) assertion function on DATASET_ID.
 
-    % NOTE: Uppercase "V" (version) despite most of basename being lower case.
-    basename = sprintf('%s_%04g%02g%02g_V%02g', ...
-        modifDatasetId, dateVec3(:), versionNbr);
+% ASSERTIONS
+irf.assert.castring(srcDatasetId)
+assert(isnumeric(dateVec3))
+assert(numel(dateVec3) == 3)
+assert(isscalar(versionNbr))
+assert(isnumeric(versionNbr))
+assert(versionNbr >= 1)
+
+% NOTE: Output should have uppercase "L3", despite most of basename being
+% lower case.
+modifDatasetId = regexprep(lower(srcDatasetId), '^solo_(hk|l2)_', 'solo_L3_');
+
+% ASSERTION: DATASET_ID was modified.
+assert(~strcmp(srcDatasetId, modifDatasetId), ...
+  'Can not handle datasetId="%s".', srcDatasetId)
+
+% NOTE: Uppercase "V" (version) despite most of basename being lower case.
+basename = sprintf('%s_%04g%02g%02g_V%02g', ...
+  modifDatasetId, dateVec3(:), versionNbr);
 end

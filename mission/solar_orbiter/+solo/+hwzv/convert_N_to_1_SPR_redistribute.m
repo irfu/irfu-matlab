@@ -20,11 +20,11 @@
 % First created 2020-05-28, based on older code.
 %
 function zv2 = convert_N_to_1_SPR_redistribute(zv1)
-    
-    irf.assert.sizes(zv1, [NaN, NaN, NaN])
-    
-    zv  = permute(zv1, [2,1,3]);
-    zv2 = reshape(zv, size(zv,1) * size(zv,2), size(zv,3));
-    
-    irf.assert.sizes(zv2, [NaN, NaN])
+
+irf.assert.sizes(zv1, [NaN, NaN, NaN])
+
+zv  = permute(zv1, [2,1,3]);
+zv2 = reshape(zv, size(zv,1) * size(zv,2), size(zv,3));
+
+irf.assert.sizes(zv2, [NaN, NaN])
 end

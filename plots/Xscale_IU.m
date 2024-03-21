@@ -27,8 +27,8 @@ while there_is_more_curves
   elseif probe_type ==2
     probe_cross_section=probe_area/4; %sphere
   end
-  
-  
+
+
   J_probe=lp_probecurrent(probe_type,probe_cross_section, ...
     probe_area,Upot,R_sun,UV_factor,m_amu1,m_amu2,m2,n,Ti,Te,V_SC);
   J_probe_2=lp_probecurrent(probe_type,probe_cross_section, ...
@@ -36,16 +36,16 @@ while there_is_more_curves
   dUdI=(Upot2-Upot)./(J_probe_2-J_probe);
   J_probe=J_probe*1e6;% to get in microA
   J_probe_2=J_probe_2*1e6;% to get in microA
-  
+
   result.Ti(j)=Ti;
   result.Te(j)=Te;
   result.n(j)=n;
   result.Upot{j}=Upot;
   result.dUdI{j}=dUdI;
   result.Jprobe{j}=J_probe;
-  
+
   there_is_more_curves=irf_ask('There is more UI curves to plot? (1/0) [%]>','there_is_more_curves',0);
-  
+
 end
 
 number_of_curves=j;

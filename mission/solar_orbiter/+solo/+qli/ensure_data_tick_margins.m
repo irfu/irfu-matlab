@@ -42,122 +42,111 @@
 % =============
 % plotLimits
 %       Length-2 row vector. Suggested values for property X/Y/ZLim, i.e. min &
-%       max value for the range in plot.
+%       max value for the displayed range on one axis in a plot.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function plotLimits = ensure_data_tick_margins(ticks, dataLimits, scale)
-    % PROPOSAL: Use terminology/naming similar to property names:
-    %           plotLimits : X/Y/ZLim
-    %           scale      : X/Y/ZScale
-    %
-    % PROPOSAL: Arguments for internal constants, C_LINEAR_MARGIN etc.
-    %
-    % NOTE: 2022-03-22, 24h plot, panel 8/E_SRF has bad y margins for
-    % "e723101f Erik P G Johansson (2023-05-10 18:10:25 +0200) SolO QLI:
-    % Aesthetics-fix: Panel 2, left y label: Constant position"
-    % (some data is outside the boundaries). This was later fixed in
-    % "c1d06302 JordiBoldu (2023-05-11 14:09:27 +0200) Plot fixes"
-    % on one branch in a code section for which a pre-bugfix version was
-    % replaced by this code on another branch in parallel, without the bugfix.
-    % Need to check that this code fixes the same bug eventually.
-    % /EJ 2023-05-11
-    %
+% PROPOSAL: Use terminology/naming similar to property names:
+%           plotLimits : X/Y/ZLim
+%           scale      : X/Y/ZScale
+%
+% PROPOSAL: Arguments for internal constants, C_LINEAR_MARGIN etc.
+%
+% NOTE: 2022-03-22, 24h plot, panel 8/E_SRF has bad y margins for
+% "e723101f Erik P G Johansson (2023-05-10 18:10:25 +0200) SolO QLI:
+% Aesthetics-fix: Panel 2, left y label: Constant position"
+% (some data is outside the boundaries). This was later fixed in
+% "c1d06302 JordiBoldu (2023-05-11 14:09:27 +0200) Plot fixes"
+% on one branch in a code section for which a pre-bugfix version was
+% replaced by this code on another branch in parallel, without the bugfix.
+% Need to check that this code fixes the same bug eventually.
+% /EJ 2023-05-11
+%
 
-    %C_LINEAR_MARGIN = 0.1;
-    C_LINEAR_MARGIN = 0.05;
+%C_LINEAR_MARGIN = 0.1;
+C_LINEAR_MARGIN = 0.05;
 
-    assert((isvector(ticks) || isempty(ticks)) && issorted(ticks, 'ascend'))
-    %assert(length(tickLimits) == 2)
-    assert(length(dataLimits) == 2)
+assert((isvector(ticks) || isempty(ticks)) && issorted(ticks, 'ascend'))
+assert(length(dataLimits) == 2)
 
-    %tickMin = tickLimits(1);
-    %tickMax = tickLimits(2);
-    dataMin = dataLimits(1);
-    dataMax = dataLimits(2);
+dataMin = dataLimits(1);
+dataMax = dataLimits(2);
 
-    %assert(tickMin <= tickMax)
-    assert(dataMin <= dataMax)
+assert(dataMin <= dataMax)
 
-    linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
-    % IMPLEMENTATION NOTE: Does not want to derive linearMargin from ticks
-    % since:
-    % (1) there might be zero ticks,
-    % (2) ticks may be uncorrelated with dataMin/dataMax.
+linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
+% IMPLEMENTATION NOTE: Does not want to derive linearMargin from ticks
+% since:
+% (1) there might be zero ticks,
+% (2) ticks may be uncorrelated with dataMin/dataMax.
 
-%     if strcmp(scale, 'linear')
-%         plotMax =  ensure_lin_max_margin( tickMax,  dataMax, linearMargin);
-%         plotMin = -ensure_lin_max_margin(-tickMin, -dataMin, linearMargin);
-%     elseif strcmp(scale, 'log')
-%         plotMax =  ensure_log_max_margin( tickMax,  dataMax, linearMargin);
-%         plotMin = -ensure_log_max_margin(-tickMin, -dataMin, linearMargin);
-%     else
-%         error('Illegal argument scale="%s"', scale)
-%     end
-    plotMax =  ensure_max_margin( ticks,  dataMax, scale, linearMargin);
-    plotMin = -ensure_max_margin(-ticks, -dataMin, scale, linearMargin);
+plotMax =  ensure_max_margin( ticks,  dataMax, scale, linearMargin);
+plotMin = -ensure_max_margin(-ticks, -dataMin, scale, linearMargin);
 
-    plotLimits = [plotMin; plotMax];
+plotLimits = [plotMin; plotMax];
 end
 
 
 
 % Find plotMax (only).
 function plotMax = ensure_max_margin(ticks, dataMax, scale, linearMargin)
-    % PROPOSAL: Better way of deriving value "just below" higherBoundary.
-    %   PROPOSAL: Different methods depending on "scale".
-    %   PROPOSAL: higherBoundary-eps(higherBoundary)*C
+% PROPOSAL: Better way of deriving value "just below" higherBoundary.
+%   PROPOSAL: Different methods depending on "scale".
+%   PROPOSAL: higherBoundary-eps(higherBoundary)*C
+% PROPOSAL: Special case for zero ticks.
+%   PRO: Could simplify algorithm.
 
-    EPSILON = 1e-10;
-    C_DIMINISH = 0.9;
-    C_MAGNIFY  = 1.1;
-    %C_DIMINISH = 0.8;
-    %C_MAGNIFY  = 1.25;
+EPSILON    = 1e-10;
+C_DIMINISH = 0.9;
+C_MAGNIFY  = 1.1;
+%C_DIMINISH = 0.8;
+%C_MAGNIFY  = 1.25;
 
-    % Use ticks to define "boundaries" which additionally have values at the
-    % infinities. This ensures that there are always lower and higher boundaries
-    % which makes the rest of the algorithm simpler.
-    boundaries = [-inf; ticks(:); inf];
+% Use ticks to define "boundaries" which additionally have values at the
+% infinities. This ensures that there are always lower and higher boundaries
+% which makes the rest of the algorithm simpler.
+boundaries = [-inf; ticks(:); inf];
 
-    % Find nearest lower/equal boundary. Should always exist though can be -Inf.
-    lowerEqBoundary = max(boundaries(boundaries <= dataMax));
-    % Find nearest higher      boundary. Should always exist though can be +Inf.
-    higherBoundary  = min(boundaries(boundaries >  dataMax));
+% Find nearest lower/equal boundary. Should always exist though can be -Inf.
+lowerEqBoundary = max(boundaries(boundaries <= dataMax));
+% Find nearest higher      boundary. Should always exist though can be +Inf.
+higherBoundary  = min(boundaries(boundaries >  dataMax));
 
-    %===================================
-    % Adjust lowerEqBoundary for margin
-    %===================================
-    if strcmp(scale, 'linear')
+%===================================
+% Adjust lowerEqBoundary for margin
+%===================================
+if strcmp(scale, 'linear')
 
-        lowerEqBoundary = lowerEqBoundary + linearMargin;
+  lowerEqBoundary = lowerEqBoundary + linearMargin;
 
-    elseif strcmp(scale, 'log')
+elseif strcmp(scale, 'log')
 
-        if lowerEqBoundary > 0
-            lowerEqBoundary = lowerEqBoundary * C_MAGNIFY;
-        elseif lowerEqBoundary < 0
-            lowerEqBoundary = lowerEqBoundary * C_DIMINISH;
-        else
-            error('Illegal tickLowerEq=%d', lowerEqBoundary)
-        end
+  if lowerEqBoundary > 0
+    lowerEqBoundary = lowerEqBoundary * C_MAGNIFY;
+  elseif lowerEqBoundary < 0
+    lowerEqBoundary = lowerEqBoundary * C_DIMINISH;
+  else
+    error('Illegal tickLowerEq=%d', lowerEqBoundary)
+  end
 
-    else
-        error('Illegal argument scale="%s"', scale)
-    end
+else
+  error('Illegal argument scale="%s"', scale)
+end
 
-    assert(isscalar(lowerEqBoundary))
-    assert(isscalar(higherBoundary ))
+assert(isscalar(lowerEqBoundary))
+assert(isscalar(higherBoundary ))
 
-    % Use dataMax, but increase value if too low, i.e. to get a margin relative
-    % to the nearest lower tick (without considering higher ticks).
-    % NOTE: lowerEqBoundary may be -Inf.
-    plotMax = max(dataMax, lowerEqBoundary);
+% Use dataMax, but increase value if too low, i.e. to get a margin relative
+% to the nearest lower tick (without considering higher ticks).
+% NOTE: lowerEqBoundary may be -Inf.
+plotMax = max(dataMax, lowerEqBoundary);
 
-    % If value is higher than the next higher tick, then decrease value to "just
-    % below" the next higher tick.
-    % NOTE: higherBoundary may be +Inf.
-    plotMax = min(plotMax, higherBoundary-EPSILON);
+% If value is higher than the next higher tick, then decrease value to "just
+% below" the next higher tick.
+% NOTE: higherBoundary may be +Inf.
+plotMax = min(plotMax, higherBoundary-EPSILON);
 end
 
 
@@ -212,7 +201,7 @@ end
 
 
 
-% Original code from quicklooks_24_6_2_h.m which this function largely replaces.
+% Original code from generate_quicklooks_24h_6h_2h.m which this function largely replaces.
 % NOTE: The old code should have a bug for the cases
 % (1) mintick<=0 and minlim<0, and
 % (2) maxtick<=0 and maxlim>0

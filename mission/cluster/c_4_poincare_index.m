@@ -60,7 +60,7 @@ if isTimeSpecified
   idB{1,2}=irf_resamp(idB{1,2},idB{1,1});
   idB{1,3}=irf_resamp(idB{1,3},idB{1,1});
   idB{1,4}=irf_resamp(idB{1,4},idB{1,1});
-  
+
   %Renaming of vectors for simplicty sake and removing time for calculations
   %using B?
   time=idB{1,1}(:,1); %time= first column of SC1

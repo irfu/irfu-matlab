@@ -1,7 +1,7 @@
 classdef EpochCdf16 < GenericTimeArray
   %EpochCdf16 Class representing CDF epoch16, seconds and picoseconds.
   %   Detailed explanation goes here
-  
+
   % ----------------------------------------------------------------------------
   % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
@@ -9,11 +9,11 @@ classdef EpochCdf16 < GenericTimeArray
   % can do whatever you want with this stuff. If we meet some day, and you think
   % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
   % ----------------------------------------------------------------------------
-  
+
   properties
     ps
   end
-  
+
   methods
     function obj = EpochCdf16(inp,inp2)
       if nargin==0, return, end

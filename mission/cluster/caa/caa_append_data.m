@@ -59,6 +59,6 @@ if isstruct(data)
 else
   % Fill the gap between the datasets
   data = caa_fill_gaps(data,app(1,1));
-  
+
   data = [data; app];
 end

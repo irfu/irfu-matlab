@@ -109,7 +109,7 @@
 %       (e.g. using "interp1") and submit it as argument.
 %       NOTE: Transfer function is permitted to return NaN. This will set y2 to
 %       NaN.
-% 
+%
 %
 % RETURN VALUES
 % =============
@@ -156,153 +156,153 @@ function [y2] = apply_TF_freq(dt, y1, tf)
 
 
 
-    % EMID = Error Message ID
-    EMID_ARG = 'BICAS:Assertion:IllegalArgument';
-    
-    %============
-    % ASSERTIONS
-    %============
-    assert(nargin == 3)    % Number of arguments has changed historically.
-    if ~iscolumn(y1)
-        error(EMID_ARG, 'Argument y1 is not a column vector.')
-    elseif ~isnumeric(y1)
-        error(EMID_ARG, 'Argument y1 is not numeric.')
-    elseif ~isreal(y1)
-        error(EMID_ARG, 'y1 is not real.')
-        % NOTE: The algorithm itself does not make sense for non-real functions.
-    elseif ~isnumeric(dt)
-        error(EMID_ARG, 'dt is not numeric..')
-    elseif ~isscalar(dt)
-        error(EMID_ARG, 'dt is not scalar.')
-    elseif ~(dt>0)
-        error(EMID_ARG, 'dt is not positive.')
-    elseif ~isa(tf, 'function_handle')
-        % irf.assert.func does not seem to handle return values
-        % correctly.
-        error(EMID_ARG, 'tf is not a function.')
-    elseif ~isreal(tf(0))
-        error(EMID_ARG, 'tf(0) is not real.')
-    end
+% EMID = Error Message ID
+EMID_ARG = 'BICAS:Assertion:IllegalArgument';
+
+%============
+% ASSERTIONS
+%============
+assert(nargin == 3)    % Number of arguments has changed historically.
+if ~iscolumn(y1)
+  error(EMID_ARG, 'Argument y1 is not a column vector.')
+elseif ~isnumeric(y1)
+  error(EMID_ARG, 'Argument y1 is not numeric.')
+elseif ~isreal(y1)
+  error(EMID_ARG, 'y1 is not real.')
+  % NOTE: The algorithm itself does not make sense for non-real functions.
+elseif ~isnumeric(dt)
+  error(EMID_ARG, 'dt is not numeric..')
+elseif ~isscalar(dt)
+  error(EMID_ARG, 'dt is not scalar.')
+elseif ~(dt>0)
+  error(EMID_ARG, 'dt is not positive.')
+elseif ~isa(tf, 'function_handle')
+  % irf.assert.func does not seem to handle return values
+  % correctly.
+  error(EMID_ARG, 'tf is not a function.')
+elseif ~isreal(tf(0))
+  error(EMID_ARG, 'tf(0) is not real.')
+end
 
 
 
-    nSamples = length(y1);
-    
+nSamples = length(y1);
 
 
-    %#############
-    % Compute DFT
-    %#############
-    yDft1 = fft(y1);
-    
-    
-    
-    %============================================================================
-    % Define the frequencies used to interpret the DFT components X_k (yDft1)
-    % -----------------------------------------------------------------------
-    % IMPLEMENTATION NOTE:
-    % The code only works with REAL-valued time-domain signals. Therefore,
-    % (1) We want to interpret the signal as consisting of pairs of positive and
-    % negative frequencies (pairs of complex bases).
-    % (2) We want to interpret the TF as being a symmetric function, defined for
-    % both positive and negative frequencies,
-    %    Z(omega) = Z*(-omega), *=conjugate.
-    %
-    % The DFT components X_k, k=1..N can be thought of as representing different
-    % frequencies
-    %    omega_k = 2*pi*(k-1) / (N*dt)
-    % .
-    % Since
-    %    exp(i*2*pi*omega_k*t_n) = exp(i*2*pi*omega_(k+m*N)*t_n),
-    % where
-    %    t_n = (n-1)*dt ,
-    %    m = any integer ,
-    % the exact frequencies associated with DFT components X_k are however
-    % subject to a choice/interpretation, where
-    %    omega_k <--> omega_(k+m*N) .
-    % Since we only work with real-valued signals, we want to interpret the DFT
-    % components as having frequencies
-    %    omega_1, ..., omega_ceil(N/2), omega_[ceil(N/2)+1-N], ..., omega_0
-    % but to look up values in the TF, we have to use the absolute values of the
-    % above frequencies and conjugate Z when necessary.
-    %
-    % NOTE: omega_0 = 0.
-    % NOTE: The above must work for both even & odd N. For even N, the DFT
-    % component X_N/2+1 (which does not have a frequency twin) should be real
-    % for real signals.
-    %============================================================================
-    %tfOmegaLookups     = 2*pi * ((1:N) - 1) / (N*dt);
-    % Indicies for which omega_k should be replaced by omega_(k-N).
-    %i = (tfOmegaLookups >= pi/dt);
-    %tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
-    
-    % Modified k values (~indices) used to calculate omega_k for every X_k.
-    kOmegaLookup   = [1:ceil(nSamples/2), (ceil(nSamples/2)+1-nSamples):0 ];
-    
-    tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / double(nSamples*dt);
-    
-    
-    
-    %======================================================================
-    % Find complex TF values, i.e. complex factors to multiply every DFT
-    % component with
-    % ------------------------------------------------------------------
-    % NOTE: De-trending (outside function) should already have removed the
-    % zero-frequency component from the in signal.
-    %======================================================================
-    tfZLookups                = tf(abs(tfOmegaLookups));
-    bNegativeFreq             = tfOmegaLookups < 0;
-    tfZLookups(bNegativeFreq) = conj(tfZLookups(bNegativeFreq));   % Modify some indices.
-    % ASSERTION
-    %if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
-    if ~all(~isinf(tfZLookups))
-        % NOTE: Deliberately permits Z=NaN (but not infinity) since
-        % bicas.proc.L1L2.cal is designed to create TFs that return Z=NaN for
-        % impossible combinations where it does not matter anyway.
-        % /EJ 2020-11-05
-        error(...
-            'BICAS:Assertion', ...
-            ['Transfer function "tf" returned non-finite value (not NaN)', ...
-            ' for at least one frequency.'])
-    end
-    
-    
-    
-    %##################
-    % Apply TF to data
-    %##################
-    % NOTE: For real input signal and even N, this should produce complex
-    % yDft2(N/2+1) values.
-    % IMPORTANT NOTE: Must transpose complex vector in a way that does not
-    % negate the imaginary part. Transposing with ' (apostrophe) negates the
-    % imaginary part.
-    yDft2 = yDft1 .* transpose(tfZLookups);
-    
-    
-    
-    %##############
-    % Compute IDFT
-    %##############
-    % IMPLEMENTATION NOTE: Uses ifft options to force yDft2 to be (interpreted
-    % as) conjugate symmetric due to possible rounding errors.
-    %
-    % ifft options:
-    %     "ifft(..., 'symmetric') causes ifft to treat X as conjugate symmetric
-    %     along the active dimension.  This option is useful when X is not
-    %     exactly conjugate symmetric merely because of round-off error.  See
-    %     the reference page for the specific mathematical definition of this
-    %     symmetry."
-    y2 = ifft(yDft2, 'symmetric');
-    %y2p = ifft(yDft2);    % TEST
-    
-    
-    % ASSERTION: Real (numbers) output.
-    % IMPLEMENTATION NOTE: Will react sometimes if "ifft" with 'symmetric' is
-    % not used.
-    if ~isreal(y2)
-        maxAbsImag = max(abs(imag(y2)));
-        error('BICAS:Assertion', ...
-            'y2 is not real (non-complex). Bug. maxAbsImag=%g.', maxAbsImag)
-    end
+
+%#############
+% Compute DFT
+%#############
+yDft1 = fft(y1);
+
+
+
+%============================================================================
+% Define the frequencies used to interpret the DFT components X_k (yDft1)
+% -----------------------------------------------------------------------
+% IMPLEMENTATION NOTE:
+% The code only works with REAL-valued time-domain signals. Therefore,
+% (1) We want to interpret the signal as consisting of pairs of positive and
+% negative frequencies (pairs of complex bases).
+% (2) We want to interpret the TF as being a symmetric function, defined for
+% both positive and negative frequencies,
+%    Z(omega) = Z*(-omega), *=conjugate.
+%
+% The DFT components X_k, k=1..N can be thought of as representing different
+% frequencies
+%    omega_k = 2*pi*(k-1) / (N*dt)
+% .
+% Since
+%    exp(i*2*pi*omega_k*t_n) = exp(i*2*pi*omega_(k+m*N)*t_n),
+% where
+%    t_n = (n-1)*dt ,
+%    m = any integer ,
+% the exact frequencies associated with DFT components X_k are however
+% subject to a choice/interpretation, where
+%    omega_k <--> omega_(k+m*N) .
+% Since we only work with real-valued signals, we want to interpret the DFT
+% components as having frequencies
+%    omega_1, ..., omega_ceil(N/2), omega_[ceil(N/2)+1-N], ..., omega_0
+% but to look up values in the TF, we have to use the absolute values of the
+% above frequencies and conjugate Z when necessary.
+%
+% NOTE: omega_0 = 0.
+% NOTE: The above must work for both even & odd N. For even N, the DFT
+% component X_N/2+1 (which does not have a frequency twin) should be real
+% for real signals.
+%============================================================================
+%tfOmegaLookups     = 2*pi * ((1:N) - 1) / (N*dt);
+% Indicies for which omega_k should be replaced by omega_(k-N).
+%i = (tfOmegaLookups >= pi/dt);
+%tfOmegaLookups(i) = abs(tfOmegaLookups(i)  - 2*pi/dt);
+
+% Modified k values (~indices) used to calculate omega_k for every X_k.
+kOmegaLookup   = [1:ceil(nSamples/2), (ceil(nSamples/2)+1-nSamples):0 ];
+
+tfOmegaLookups = 2*pi * (kOmegaLookup - 1) / double(nSamples*dt);
+
+
+
+%======================================================================
+% Find complex TF values, i.e. complex factors to multiply every DFT
+% component with
+% ------------------------------------------------------------------
+% NOTE: De-trending (outside function) should already have removed the
+% zero-frequency component from the in signal.
+%======================================================================
+tfZLookups                = tf(abs(tfOmegaLookups));
+bNegativeFreq             = tfOmegaLookups < 0;
+tfZLookups(bNegativeFreq) = conj(tfZLookups(bNegativeFreq));   % Modify some indices.
+% ASSERTION
+%if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
+if ~all(~isinf(tfZLookups))
+  % NOTE: Deliberately permits Z=NaN (but not infinity) since
+  % bicas.proc.L1L2.cal.Cal is designed to create TFs that return Z=NaN for
+  % impossible combinations where it does not matter anyway.
+  % /EJ 2020-11-05
+  error(...
+    'BICAS:Assertion', ...
+    ['Transfer function "tf" returned non-finite value (not NaN)', ...
+    ' for at least one frequency.'])
+end
+
+
+
+%##################
+% Apply TF to data
+%##################
+% NOTE: For real input signal and even N, this should produce complex
+% yDft2(N/2+1) values.
+% IMPORTANT NOTE: Must transpose complex vector in a way that does not
+% negate the imaginary part. Transposing with ' (apostrophe) negates the
+% imaginary part.
+yDft2 = yDft1 .* transpose(tfZLookups);
+
+
+
+%##############
+% Compute IDFT
+%##############
+% IMPLEMENTATION NOTE: Uses ifft options to force yDft2 to be (interpreted
+% as) conjugate symmetric due to possible rounding errors.
+%
+% ifft options:
+%     "ifft(..., 'symmetric') causes ifft to treat X as conjugate symmetric
+%     along the active dimension.  This option is useful when X is not
+%     exactly conjugate symmetric merely because of round-off error.  See
+%     the reference page for the specific mathematical definition of this
+%     symmetry."
+y2 = ifft(yDft2, 'symmetric');
+%y2p = ifft(yDft2);    % TEST
+
+
+% ASSERTION: Real (numbers) output.
+% IMPLEMENTATION NOTE: Will react sometimes if "ifft" with 'symmetric' is
+% not used.
+if ~isreal(y2)
+  maxAbsImag = max(abs(imag(y2)));
+  error('BICAS:Assertion', ...
+    'y2 is not real (non-complex). Bug. maxAbsImag=%g.', maxAbsImag)
+end
 
 end

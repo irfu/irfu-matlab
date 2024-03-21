@@ -43,23 +43,23 @@ db = Mat_DbOpen('unix:99');
 for i = 1:i_end
   start_time = fromepoch(download_blocks(i,1));
   Dt = download_blocks(i,2);
-  
+
   fgm_t = -1;
   fgm_data = 0;
-  
+
   [fgm_t, fgm_data] = isGetDataLite(db, start_time, Dt, 'Cluster', num2str(spacecraft),'fgm', 'Bprim', ' ', ' ', ' ');
   fgm_data=double(fgm_data);
-  
+
   [a, b] = size(fgm_data);
   [c, d] = size(fgm_t);
-  
+
   % to solve the situation if there are only zeros... error in download
   if a == 0 && b == 0 && c == 0 && d == 0
     fgm_t = -1;
   end
-  
+
   if fgm_t(1) ~= -1 && a == 3 && b > 1
-    
+
     %to reduce sensitivity in R_c_despin in the aspect of start and end points
     % the first point and the last points are thrown away
     if i == 1
@@ -71,23 +71,23 @@ for i = 1:i_end
       fgm_t = fgm_t(1:c-6,:);
       fgm_data = fgm_data(:,1:b-6);
     end
-    
+
     [a, b] = size(fgm_data);
     [c, d] = size(fgm_t);
-    
+
     srB = [double(fgm_t) double(real(fgm_data))'];
     dB = R_c_despin(srB, spacecraft, 'sat',db);
     B_t = R_c_gse2dsc(dB, spacecraft,-1,db);
-    
+
   else
     disp(['did not load data from ' R_datestring(start_time) ' dt: ' int2str(Dt) ]);
     B_t = 0;
   end
-  
+
   B = add_A2M(B, B_t);
-  
+
   clear fgm_t fgm_data srB dB
-  
+
 end
 
 Mat_DbClose(db);

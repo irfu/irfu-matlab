@@ -33,9 +33,9 @@ for iProbe=1:numel(sdpProbes)
   % default every 5 seconds (tt2000 int64). Convert both to "double" for
   % interp1 and similar things to work.
   adc_off = [double(spinfits.time), double(spinfits.sfit.(sdpProbes{iProbe})(:,1))];
-  
+
   adc_off(:,2) = movmedian(adc_off(:,2), nPointsADCOffset,'omitnan');
-  
+
   if(size(adc_off,1)==1)
     % Only one good adc_offset (possibly because only one spinfit).
     ADC_off.(sdpProbes{iProbe})(1:length(time),1) = adc_off(:,2);

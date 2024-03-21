@@ -1,6 +1,6 @@
 function res = get_data(varStr,Tint)
 % res = solo.get_data(varStr, Tint)
-%  
+%
 % Read Solar Orbiter data from the IRF server
 %
 % varStr is one of the following (note aliases can also be used):
@@ -24,6 +24,7 @@ function res = get_data(varStr,Tint)
 %   'L2_rpw-lfr-surv-cwf-e' (alias: vdc)
 %   'L2_rpw-lfr-surv-cwf-e-1-second_qual' (alias: vdc_1sec_qual)
 %   'L2_rpw-lfr-surv-cwf-e_qual' (alias: vdc_qual)
+%   'L2_rpw-lfr-sbm1-cwf-b-cdag' (alias: b_scm_sbm1) - RPW shock triggered data
 %    Snapshots and other products need to be added!
 %
 % SWA-PAS:
@@ -65,7 +66,7 @@ vars = {'L2_mag-srf-normal','L2_mag-srf-normal-1-minute','L2_mag-rtn-normal','L2
     'L2_rpw-lfr-surv-cwf-e-1-second', 'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
     'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', 'L2_rpw-lfr-surv-cwf-e','L2_rpw-lfr-surv-cwf-e-1-second_qual',...
     'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', 'L2_rpw-lfr-surv-cwf-e_qual',...
-    'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N'};
+    'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N','L2_rpw-tds-surv-stat','L2_rpw-lfr-sbm1-cwf-b-cdag'};
 
 %% check if alias is used and change to full variable name
 if ~ismember(varStr, vars)
@@ -102,6 +103,8 @@ if ~ismember(varStr, vars)
         case 'nescpot_10sec',   varStrNew = 'L3_rpw-bia-density-10-seconds';
         case 'b_scm_srf',       varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_srf';
         case 'b_scm_rtn',       varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn';
+        case 'tds_stat',        varStrNew = 'L2_rpw-tds-surv-stat';
+        case 'b_scm_sbm1',      varStrNew = 'L2_rpw-lfr-sbm1-cwf-b-cdag';
         otherwise
             % fallback, it was not a full variable name nor short alias
             errStr = ['"varStr":', varStr, ' incorrect alias used.'];
@@ -150,23 +153,45 @@ if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
                         res=EDC_SRF;
                     end
                 case 'surv'
-                    switch C2{5}
-                        case 'b' % search-coil
-                            BSCM = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'B_RTN', Tint);
-                            if strcmp(C{3},'srf') && ~isempty(BSCM)
-                                res = solo.srf2rtn(BSCM, -1);
-                                res.name = 'B_SRF';
-                            else
-                                res = BSCM;
-                            end
-                        case 'e'  % VDC
-                            if length(C)>2
-                                if strcmp(C{3},'qual')
-                                    res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'QUALITY_FLAG', Tint);
+                    if strcmp(C2{4},'stat')
+                        res = solo.db_get_ts(['solo_', C{1}, '_', C{2},'-cdag'], 'WA_MED_FREQ', Tint);
+                    else
+                        switch C2{5}
+                            case 'b' % search-coil
+                                BSCM = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'B_RTN', Tint);
+                                if strcmp(C{3},'srf') && ~isempty(BSCM)
+                                    res = solo.srf2rtn(BSCM, -1);
+                                    res.name = 'B_SRF';
+                                else
+                                    res = BSCM;
                                 end
-                            else
-                            res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
+                            case 'e'  % VDC
+                                if length(C)>2
+                                    if strcmp(C{3},'qual')
+                                        res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'QUALITY_FLAG', Tint);
+                                    end
+                                else
+                                    res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
+                                end
+                        end
+                    end
+                case 'sbm1'
+                    load_days = floor(irf_time(Tint(1),'epochtt>datenum')): floor(floor(irf_time(Tint(2),'epochtt>datenum')));
+                    cc = 1;
+                    for k=1:length(load_days)
+                        data_dir = ['/Volumes/solo/remote/data/L2/lfr_sbm1_wf_b/' irf_time(load_days(k),'datenum>utc_yyyy') '/' irf_time(load_days(k),'datenum>utc_mm') ,'/'];
+                        allFiles = dir(data_dir);
+                        files = allFiles(~[allFiles.isdir]);
+                        for i = 1:length(files)
+                            fileName = files(i).name;
+                            if contains(fileName, irf_time(load_days(k),'datenum>utc_yyyymmdd'))
+                                matchingFiles{cc} = [data_dir fileName];
+                                tmpDataObj = dataobj(matchingFiles{cc});
+                                tmpData = get_ts(tmpDataObj,'B');
+                                res{cc} = tmpData.tlim(Tint);
+                                cc=cc+1;
                             end
+                        end
                     end
                 otherwise
                     errStr = 'Not yet defined';

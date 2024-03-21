@@ -3,7 +3,7 @@ function [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
 %
 % [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
 %
-% dataType is one of : 'defatt','defeph','defq', 'predq'
+% dataType is one of : 'defatt','defeph','defq', 'predq', 'predeph'
 
 if(~exist(fullFilename,'file'))
   errStr = ['File not found. ', fullFilename];
@@ -33,7 +33,7 @@ switch lower(dataType)
     % (where doy is day of year and mmm is milliseconds)
     % Column 10 Z-Phase (in degrees).
     formatSpec='%f-%f%s %*f %*f %*f %*f %*f %*f %*f %*f %f %f %f %f %f %f %f %f %f %f %*[^\n]';
-  case 'defeph'
+  case {'defeph', 'predeph'}
     % DEFEPH file:
     % The DEFEPH files start with a header, the number of lines with
     % header in not constant and this file does not contain things like
@@ -60,7 +60,7 @@ switch lower(dataType)
     % (where doy is day of year and mmm is miliseconds.
     % Column 3 is Quality factor, column 4 is scale.
     formatSpec='%f-%f%s %*f %f %f %*[^\n]';
-    
+
   otherwise
     errStr = ['Unknown dataType: ',dataType,' for ancillary data. ', ...
       'Valid values are "defatt" and "defeph".'];
@@ -115,8 +115,8 @@ switch lower(dataType)
     idxBad = diff(dataIN.time)==0; % Identify first duplicate
     fs = fields(dataIN);
     for idxFs=1:length(fs), dataIN.(fs{idxFs})(idxBad) = []; end
-    
-  case 'defeph'
+
+  case {'defeph', 'predeph'}
     % Convert time to fromat TT2000 using the irf_time function by first
     % converting [yyyy, doy] to a 'yyyy-mm-dd' string, then add the
     % remaining 'HH:MM:SS.mmm' string (excluding the "/") which was read
@@ -135,6 +135,6 @@ switch lower(dataType)
       tmpStr(:,2:end)], 'utc>ttns');
     dataIN.quality = tmpData{1,4};
     dataIN.scale   = tmpData{1,5};
-    
+
   otherwise
 end

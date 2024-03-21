@@ -22,7 +22,7 @@ function info = onera_desp_lib_load(libfile,headerfile)
 %function onera_desp_lib_load(libfile,@prototypefunction);
 %function onera_desp_lib_load(libfile,headerfile);
 % checks for the presence of the onera_desp_lib dynamic library in memory
-% if not present, attempts to load it using a headerfile
+% if not present, attempts to load it using a headerfile (libirbem.h)
 % checks environment variable IRBEM_LIB_DLL to specify the file to load
 %  (full file path, or a file name in the matlab search path)
 % otherwise, it guesses the file name
@@ -31,7 +31,7 @@ function info = onera_desp_lib_load(libfile,headerfile)
 
 if ~libisloaded('onera_desp_lib')
     if nargin < 2
-        headerfile = 'onera_desp_lib.h';
+        headerfile = 'libirbem.h';
     end
     
     % determine DLL extension
@@ -47,7 +47,7 @@ if ~libisloaded('onera_desp_lib')
         if ~isempty(getenv('IRBEM_LIB_DLL'))
             libfile = getenv('IRBEM_LIB_DLL');
         else
-            libfile = ['onera_desp_lib_',lower(computer),'.',libext];
+            libfile = ['libirbem_', lower(computer),'.',libext];
         end
     end
     if ~exist(libfile,'file')

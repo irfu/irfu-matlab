@@ -28,16 +28,16 @@ for cl_id = 1:4
   if ~exist(v_s,'var')
     et = []; R = [];
     for mo=mm
-      
+
       irf_log('proc',sprintf('Getting R%d for %d-%d',cl_id,yyyy,mo))
       if ~isempty(et), st = et;
       else, st = toepoch([yyyy mo 01 00 00 00]);
       end
-      
+
       if mo==12, et = toepoch([yyyy+1 01 01 00 00 00]);
       else, et = toepoch([yyyy mo+1 01 00 00 00]);
       end
-      
+
       data = getData(ClusterDB, st, et-st, cl_id, 'r', 'nosave');
       if isempty(data) || (data{2}(end,1)-data{2}(1,1)) < (et-st-3600*4)
         data=[];
@@ -51,12 +51,12 @@ for cl_id = 1:4
         end
       end
       if isempty(data), error('cannot fetch position'), end
-      
+
       R_tmp = irf_abs(data{2});
       R = [R; R_tmp];
       clear R_tmp
     end
-    
+
     irf_log('save',[v_s ' -> mR.mat'])
     if exist('./mR.mat','file'), eval([v_s '=R; save ./mR.mat ' v_s ' -append'])
     else, eval([v_s '=R; save ./mR.mat ' v_s])
@@ -64,7 +64,7 @@ for cl_id = 1:4
   else
     eval([ 'R=' v_s ';'])
   end
-  
+
   % Find the perigee and split into orbits
   v_s = sprintf('ORB%dY%d',cl_id,yyyy);
   if (~force_orbit_splitting(cl_id)), if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end, end
@@ -104,7 +104,7 @@ for cl_id = 1:4
     end
   else, eval([ 'ORB=' v_s ';'])
   end
-  
+
   % Find magnetopause crossings
   v_s = sprintf('MP%dY%d',cl_id,yyyy);
   if (~force_MP_determination(cl_id)), if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end, end
@@ -120,9 +120,9 @@ for cl_id = 1:4
         end
       end
     end
-    
+
     if isempty(MP), irf_log('proc',['no data for ' v_s]), continue, end
-    
+
     irf_log('save',[v_s ' -> mPlan.mat'])
     if exist('./mPlan.mat','file')
       eval([v_s '=MP; save ./mPlan.mat ' v_s ' -append'])
@@ -130,13 +130,13 @@ for cl_id = 1:4
     end
   else, eval([ 'MP=' v_s ';'])
   end
-  
+
   v_s = sprintf('MPauseY%d',yyyy);
   if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end
   if ~exist(v_s,'var'), MP3h = [];
   else, eval([ 'MP3h=' v_s ';'])
   end
-  
+
   % Plot
   figure(cl_id), clf
   for o=1:length(ORB)

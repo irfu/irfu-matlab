@@ -30,16 +30,16 @@ cont = 1;
 while feof(fp) == 0 && cont == 1
   temp_l = fgetl(fp);
   t = length(temp_l);
-  
+
   if n1 == t
     if strcmp(t_name,temp_l) == 1
       name2 = t_name;
       cont = 0;
     end
   end
-  
+
   if strcmp(temp_l(t), '1') == 1
     cont = 0;
   end
-  
+
 end

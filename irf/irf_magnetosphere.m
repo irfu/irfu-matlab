@@ -45,40 +45,40 @@ elseif nargin == 2 % IRF_MAGNETOPAUSE(model, time)
   else
     dpbz_t=irf_resamp(dpbz,t);
     Dp = dpbz_t(2);
-        if isnan(Dp)
-            dp_tmp = irf_get_data(tint, 'P','omni');
-            dp_tmp = irf_resamp(dp_tmp, t);
-            Dp = dp_tmp(2);
-            irf_log('fcal', 'Dp uses 1-hour omni data. ');
-        end   
+    if isnan(Dp)
+      dp_tmp = irf_get_data(tint, 'P','omni');
+      dp_tmp = irf_resamp(dp_tmp, t);
+      Dp = dp_tmp(2);
+      irf_log('fcal', 'Dp uses 1-hour omni data. ');
+    end
     Bz = dpbz_t(3);
-        if isnan(Bz)
-            bz_tmp = irf_get_data(tint, 'bzgsm', 'omni');
-            bz_tmp = irf_resamp(bz_tmp, t);
-            Bz = bz_tmp(2);
-            irf_log('fcal', 'Bz uses 1-hour omni data. ');
-        end           
+    if isnan(Bz)
+      bz_tmp = irf_get_data(tint, 'bzgsm', 'omni');
+      bz_tmp = irf_resamp(bz_tmp, t);
+      Bz = bz_tmp(2);
+      irf_log('fcal', 'Bz uses 1-hour omni data. ');
+    end
     Bx=dpbz_t(4);
-        if isnan(Bx)
-            bx_tmp = irf_get_data(tint, 'bx', 'omni');
-            bx_tmp = irf_resamp(bx_tmp, t);
-            Bx = bx_tmp(2);
-            irf_log('fcal', 'Bx uses 1-hour omni data. ');
-        end     
+    if isnan(Bx)
+      bx_tmp = irf_get_data(tint, 'bx', 'omni');
+      bx_tmp = irf_resamp(bx_tmp, t);
+      Bx = bx_tmp(2);
+      irf_log('fcal', 'Bx uses 1-hour omni data. ');
+    end
     By=dpbz_t(5);
-        if isnan(By)
-            by_tmp = irf_get_data(tint, 'bygsm', 'omni');
-            by_tmp = irf_resamp(by_tmp, t);
-            By = by_tmp(2);
-            irf_log('fcal', 'By uses 1-hour omni data. ');
-        end     
+    if isnan(By)
+      by_tmp = irf_get_data(tint, 'bygsm', 'omni');
+      by_tmp = irf_resamp(by_tmp, t);
+      By = by_tmp(2);
+      irf_log('fcal', 'By uses 1-hour omni data. ');
+    end
     M=dpbz_t(6);
-        if isnan(M)
-            m_tmp = irf_get_data(tint, 'Ma', 'omni');
-            m_tmp = irf_resamp(m_tmp, t);
-            M = m_tmp(2);
-            irf_log('fcal', 'Ma uses 1-hour omni data. ');
-        end     
+    if isnan(M)
+      m_tmp = irf_get_data(tint, 'Ma', 'omni');
+      m_tmp = irf_resamp(m_tmp, t);
+      M = m_tmp(2);
+      irf_log('fcal', 'Ma uses 1-hour omni data. ');
+    end
     if isnan(Dp) || isnan(Bz) || isempty(Dp) || isempty(Bz)
       return
     end

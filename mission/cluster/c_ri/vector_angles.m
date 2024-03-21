@@ -38,21 +38,21 @@ function ang = vector_angles(v1 , v2)
 if norm(v1) == 0 || norm(v2) == 0
   %'Error, zero-vector as input, returning 0-angle'
   ang = 0;
-  
+
   %the angle calculation
 else
   % normalising, since the length of the vector is not of importance
   v1 = v1 / norm(v1);
   v2 = v2 / norm(v2);
-  
-  
+
+
   a = dot(v1, v2);
   angles = abs(acos(a));
   ang_pi = angles/pi;
   ang = (angles)/pi*180;
-  
+
   if ang>180  %to avoid angles greater than 180 degrees
     ang = 360 - ang;
   end
-  
+
 end

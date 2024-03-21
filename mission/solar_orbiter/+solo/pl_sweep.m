@@ -9,6 +9,9 @@ function [iPhoto_out] = pl_sweep(fName, hardcopyFlag)
 %
 % Output:
 %     iPhoto - photo-saturation current
+%
+% NOTE: This function is called by cron jobs for batch processing BIAS sweep
+% plots on brain/spis at IRFU.
 
 iPhoto = NaN(1,3);
 
@@ -40,8 +43,8 @@ for iProbe=1:3
   dataI = I.data(ii,iProbe);
   dataV = V.data(ii,iProbe);
   %Remove initial jumps
-  dataI(1:2) = []; dataV(1:2) = []; 
-  
+  dataI(1:2) = []; dataV(1:2) = [];
+
   %Determine photo saturation current
   iiPhoto = dataV>PHOTO_LIM(1) & dataV<PHOTO_LIM(2);
   if any(iiPhoto)
@@ -50,7 +53,7 @@ for iProbe=1:3
     if (stdPhoto > 5*1000) || (iPhoto(iProbe) > 0), iPhoto(iProbe) = NaN; end
   else, stdPhoto = NaN;
   end
-  
+
   plot(h,dataV, dataI/1000,'.-')
   irf_legend(sprintf('I_{sat}%d = %.1f uA (std = %.1f)',iProbe,iPhoto(iProbe)/1000, stdPhoto/1000) ,[0.8, 0.4-0.1*iProbe]);
   switch iProbe

@@ -19,12 +19,12 @@ if nvars>0
     if strcmpi(dobj.vars{v,1},var_s) || strcmpi(dobj.vars{v,2},var_s)
       v1_s = dobj.vars{v,2};
       maxdep = length(dobj.data.(dobj.vars{v,1}).variance(3:end));
-      
+
       dep_x = cell(maxdep,2);
       found_any = 0;
       for d=1:maxdep
         found = 0;
-        
+
         field = sprintf('LABEL_%d',d);
         tt = findva(dobj,field,v1_s);
         if ~isempty(tt)
@@ -32,7 +32,7 @@ if nvars>0
           found = 1;
           found_any = 1;
         end
-        
+
         field = sprintf('DEPEND_%d',d);
         tt = findva(dobj,field,v1_s);
         if ~isempty(tt)

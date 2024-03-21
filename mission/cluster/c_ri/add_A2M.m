@@ -25,10 +25,10 @@ function M = add_A2M(M,A)
 
 %--------------------- the beginning --------------------------
 if A ~= 0
-  
+
   if M == 0
     M = A;
-    
+
   else
     [new_lines,col] = size(A);
     [old_lines,col] = size(M);
@@ -36,5 +36,5 @@ if A ~= 0
     to = old_lines + new_lines;
     M(from:to,:) = A;
   end
-  
+
 end

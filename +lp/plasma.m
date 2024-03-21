@@ -20,9 +20,9 @@ classdef plasma
   %   Plasma.n  = 1e6;
   %   Plasma.qe = [-1 1];
   %   Plasma.T  = [1 10];
-  
+
   % TODO include also magnetic field and anisotropies
-  
+
   properties
     name   % string
     qe     % number of elementary charge
@@ -35,7 +35,7 @@ classdef plasma
     m
     q
   end
-  
+
   methods
     function m = get.m(Plasma)
       Units = irf_units;
@@ -47,6 +47,6 @@ classdef plasma
       q =  Plasma.qe*Units.e;
     end
   end
-  
+
 end
 

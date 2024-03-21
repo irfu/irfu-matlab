@@ -32,7 +32,7 @@ switch type
     A2=varargin{6}; % Bz
     B=varargin{7}; % could be Ek,dEk
     C=varargin{8}; % could be En,dEn
-    
+
     if ~exist('str_title','var')
       str_title=[];
     end
@@ -44,34 +44,34 @@ switch type
     set(gcf,'defaultAxesFontUnits','pixels');
     set(gcf,'defaultTextFontUnits','pixels');
     set(gcf,'paperpositionmode','auto') % to get the same printing as on screen
-    
+
     n_frames=max(size(corr_dir));
     n_ims=100; % make hundred images
-    
+
     set(fig,'color','white');
     set(fig,'position',[560   531   886   395])
     h(1)=axes('position',[0.070    0.640    0.6750    0.270]);
     h(3)=axes('position',[0.070    0.370    0.6750    0.270]);
     h(4)=axes('position',[0.070    0.100    0.6750    0.270]);
     h(2)=axes('position',[0.800    0.370    0.1250    0.2150]); % small direction plot
-    
+
     tint=[A2(1,1) A2(end,1)];
     index0=find(corr_dir(:,1)==max(corr_dir(:,1))); % mark highest correlation with red indicator
     ind=0;
-    
+
     for k=fix(linspace(1,n_frames,n_ims))
       ind=ind+1;
-      
+
       % normalized potential match plot
       irf_plot(h(1),{[A1(:,1) A1(:,k+1)./repmat(max(max(abs(A1(:,k+1)))),size(A1,1),1)],...
         [A2(:,1) A2(:,2)./repmat(max(abs(A2(:,2))),size(A2,1),1)]},'comp');
       set(h(1),'ylim',[-1.1 1.1]);
       ylabel(h(1),'Normalized potential')
       irf_legend(h(1),{'\phi_E','\phi_B'},[0.02 0.9]);
-      
+
       title(h(1),str_title)
       grid(h(1),'off'); hold(h(1),'off')
-      
+
       % electric field
       irf_plot(h(3),B(:,[1 k+1])); ylabel(h(3),'E_k'); hold(h(3),'off')
       ylimk=[min(min(B(:,2:end))) max(max(B(:,2:end)))]; set(h(3),'ylim',ylimk);
@@ -79,7 +79,7 @@ switch type
       ylimn=[min(min(C(:,2:end))) max(max(C(:,2:end)))]; set(h(4),'ylim',ylimn);
       irf_zoom(h([1 3:4]),'x',tint);
       grid(h(3),'off');grid(h(4),'off')
-      
+
       % direction plot
       quiver3(h(2),0,0,0,x(k,1),x(k,2),x(k,3));
       hold(h(2),'on')
@@ -105,7 +105,7 @@ switch type
       %title(h(2),['B_{max}=',num2str(max(abs(Bz(:,2))),'%.2f'),'\newline', corr_str]) %'\phi_{max}=',num2str(max(max(abs(phiE(:,2:end)))),'%.2f'),
       title(h(2),title_right_str)
       grid(h(2),'off')
-      
+
       % collect frames
       f=getframe(fig);
       A(:,ind)=f;
@@ -126,7 +126,7 @@ switch type
     v=varargin{3};
     if ~isempty(varargin{4}); str_n=num2str(varargin{4},'%.2f'); else, str_n='?'; end
     nv=length(v);
-    
+
     % Adjust title_str and add density and B0
     if ~exist('title_str','var')
       title_str=[];
@@ -134,7 +134,7 @@ switch type
     %title_str=[title_str,', ',num2str(B0,'%.f'),' nT, ',num2str(n,'%.2f'), 'cc'];
     ylims=[floor(min(phi_B(:,end))/100) ceil(max(phi_B(:,end))/100)]*110;
     ylims=[floor(min(phi_B(:,end))) ceil(max(phi_B(:,end)))];
-    
+
     fig=figure('name','Velocity match','position',[560 560 1000 400]);
     set(gcf,'color','white'); % white background for figures (default is grey)
     set(gcf,'defaultAxesFontSize',14);
@@ -150,7 +150,7 @@ switch type
       ylabel(h,'Potential [V]')
       title(h,title_str)
       hold off;
-      
+
       % collect frames
       f=getframe(fig);
       A(:,k)=f;

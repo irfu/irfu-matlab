@@ -25,21 +25,22 @@ END_META       =   EXPERIMENT_DESCRIPTION
 ! Name and coordinates of the PI, and possible earlier PIs
 !
 START_META     =   INVESTIGATOR_COORDINATES
-   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>PI>Yuri.Khotyaintsev@irfu.se"
 END_META       =   INVESTIGATOR_COORDINATES
 !
 ! List of standard reference documents for the experiment
 !
 START_META     =   EXPERIMENT_REFERENCES
-   ENTRY       =   "http://www.cluster.irfu.se/"
+   ENTRY       =   "https://doi.org/10.5270/esa-rp1zebe"
+   ENTRY       =   "https://cluster.irfu.se"
 END_META       =   EXPERIMENT_REFERENCES
 !
 ! Name, role and coordinates of experiment key personnel
 !
 START_META     =   EXPERIMENT_KEY_PERSONNEL
-   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
-   ENTRY       =   "Yuri Khotyaintsev>Archive manager>Yuri.Khotyaintsev@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>PI>Yuri.Khotyaintsev@irfu.se"
    ENTRY       =   "Anders Eriksson>Operations manager>Anders.Eriksson@irfu.se"
+   ENTRY       =   "Mats Andre>former PI (2000-2023)>Mats.Andre@irfu.se"
    ENTRY       =   "Georg Gustafsson>former PI(-2000)>Georg.Gustafsson@irfu.se"
    ENTRY       =   "Chris Cully>Former archive scientist (2009-2012)>Chris.Cully@irfu.se"
    ENTRY       =   "Per-Arne Lindqvist>Former archive manager (-2009)>Per-Arne.Lindqvist@alfvenlab.kth.se"
@@ -51,16 +52,16 @@ START_META     =   EXPERIMENT_CAVEATS
    ENTRY       =   "Caveats for the Cluster EFW experiment:"
    ENTRY       =   ""
    ENTRY       =   "For general information on EFW, please visit the EFW home page"
-   ENTRY       =   "http://www.cluster.irfu.se"
+   ENTRY       =   "https://cluster.irfu.se"
    ENTRY       =   ""
    ENTRY       =   "For general information on EFW operations, both standard operations and"
    ENTRY       =   "anomalies, please visit the EFW operations home page"
-   ENTRY       =   "http://www.cluster.irfu.se/efw/ops"
+   ENTRY       =   "https://cluster.irfu.se/efw/ops"
    ENTRY       =   ""
    ENTRY       =   "For a chronological table of all non-standard operations and known"
    ENTRY       =   "instrument anomalies, please visit the EFW non-standard operations home"
    ENTRY       =   "page"
-   ENTRY       =   "http://www.cluster.irfu.se/efw/ops/ns_ops.html"
+   ENTRY       =   "https://cluster.irfu.se/efw/ops/ns_ops.html"
    ENTRY       =   ""
    ENTRY       =   "For more information on data quality and how the CAA data are processed"
    ENTRY       =   "please consult the EFW CAA Users Guide and the EFW CAA Interface Control"
@@ -76,16 +77,4 @@ END_META       =   INSTRUMENT_TYPE
 START_META     =   MEASUREMENT_TYPE
    ENTRY       =   "Electric_Field"
 END_META       =   MEASUREMENT_TYPE
-!
-! Name of dataset contact
-!
-START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
-END_META       =   CONTACT_COORDINATES
-!
-START_META     =   ACKNOWLEDGEMENT
-   ENTRY       =   "Please acknowledge the EFW team and ESA CAA in any"
-   ENTRY       =   "publication based upon use of these data"
-END_META       =   ACKNOWLEDGEMENT
-
 

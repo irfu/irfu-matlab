@@ -194,7 +194,7 @@ for ii = length(list):-1:1
       % original requested time interval Tint.
       % Improve?: Possibly limit resulting maneuvers that cover longer time
       % intervals than the specified original Tint.
-      
+
       % if maneuvers found and tmpTimeline exist, return only the unique
       % list of files
       if(exist('tmpTimeline','var') && ~isempty(tmpTimeline))

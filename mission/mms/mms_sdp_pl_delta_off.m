@@ -63,7 +63,7 @@ end
 
 if ~isempty(Vifpi)
   Efpi = irf_e_vxb(Vifpi,B.resample(Vifpi));
-  
+
   mmsIdS = sprintf('mms%d',mmsId);
   fPref = [mmsIdS '_fpi_fast_ql_dis'];
   iEnSp_pX = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_pX'], Tint); %positiveX
@@ -74,7 +74,7 @@ if ~isempty(Vifpi)
     iEnSp_mX = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mX'], Tint); %positiveX
     iEnSp_mY = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mY'], Tint); %positiveY
     iEnSp_mZ = mms.db_get_variable(fPref,[mmsIdS '_dis_energySpectr_mZ'], Tint); %positiveZ
-    
+
     [~,energy] = hist([log10(10),log10(30e3)],32); energy = 10.^energy;
     IonSpc = struct('t',irf_time(iEnSp_pX.DEPEND_0.data,'ttns>epoch'));
     %specrec.f=iEnSp_pX.DEPEND_1.data;%energy levels
@@ -85,7 +85,7 @@ if ~isempty(Vifpi)
     IonSpc.p_label = 'au';
     IonSpc.plot_type = 'log';
   end
-  
+
   VHplushpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l2',Tint,mmsId);
   if isempty(VHplushpca), Ehpca = [];
   else, Ehpca = irf_e_vxb(VHplushpca,B.resample(VHplushpca));
@@ -145,12 +145,12 @@ myCols = [[0 0 0];[.3 .3 .3];[0 0 1];[0.3010 0.7450 0.9330];[1 0 1];[1 0 0]];
 if 1
   h = irf_figure(93,9,'reset');
   cmap = irf_colormap('space'); colormap(cmap)
-  
+
   hca = irf_panel('B');
   irf_plot(hca,B);
   if any(B.abs.data>100), set(hca,'YLim',[-99 99]), end
   ylabel(hca,'B [nT]'), irf_legend(hca,{'X','Y','Z'},[0.95, 0.95])
-  
+
   hca = irf_panel('DIS-spectrogram');
   if ~isempty(IonSpc)
     irf_spectrogram(hca,IonSpc,'log','donotfitcolorbarlabel');
@@ -160,13 +160,13 @@ if 1
   irf_plot(hca,Tifpi)
   hold(hca,'off')
   ylabel(hca,'E(i) [eV]'), set(hca,'YTick',[10 100 1000 10000])
-  
+
   irf_plot_axis_align(h);
-  
+
   hca = irf_panel('Vfpi');
   irf_plot(hca,Vifpi);
   ylabel(hca,'Vi [km/s]'), irf_legend(hca,{'X','Y','Z'},[0.95, 0.95])
-  
+
   hca = irf_panel('Ni');
   irf_plot(hca,Nifpi);
   ylabel(hca,'Ni [cc]')
@@ -179,10 +179,10 @@ if 1
   set(hca,'XColor','b','YColor','b');
   irf_zoom(hca,'x',Tint), xlabel(hca,'')
   set(hca,'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required
-  
+
   hca = irf_panel('Delta_off'); set(hca,'ColorOrder',myCols)
   irf_plot(hca,{DeltaAspocOffR.x,DeltaAspocOnR.x,DeltaAspocOffR.y,DeltaAspocOnR.y},'comp')
-  
+
   hold(hca,'on')
   irf_plot(hca,DeltaAspocOffRes,'.')
   hold(hca,'off')
@@ -190,7 +190,7 @@ if 1
   set(hca,'YLim',[-1.4 1.4])
   set(hca,'ColorOrder',[[0 0 0];[0 0 1]]);
   irf_legend(hca,{'X','Y'},[0.95, 0.95])
-  
+
   leg = {'12','12ao','34','34ao','dis'};
   hca = irf_panel('Ex'); set(hca,'ColorOrder',myCols)
   irf_plot(hca,{Es12AspocOffR.x,Es12AspocOnR.x,...
@@ -202,7 +202,7 @@ if 1
     hold(hca,'on'), irf_plot(hca,EhpcaR.x,'r.'), hold(hca,'off'), leg = [leg 'hpca'];
   end
   ylabel(hca,'Ex [mV/m]'), irf_legend(hca,leg,[0.95, 0.95])
-  
+
   hca = irf_panel('Fpi_x'); set(hca,'ColorOrder',myCols)
   if ~isempty(Efpi)
     irf_plot(hca,{EfpiR.x-Es12AspocOffR.x,EfpiR.x-Es12AspocOnR.x,...
@@ -211,7 +211,7 @@ if 1
   ylabel(hca,'\Delta FPI x [mV/m]')
   set(hca,'YLim',[-4.9 .9])
   irf_legend(hca,{'12','12ao','34','34ao'},[0.95, 0.95])
-  
+
   leg = {'12','12ao','34','34ao','dis'};
   hca = irf_panel('Ey'); set(hca,'ColorOrder',myCols)
   irf_plot(hca,{Es12AspocOffR.y,Es12AspocOnR.y,...
@@ -223,7 +223,7 @@ if 1
     hold(hca,'on'), irf_plot(hca,EhpcaR.y,'r.'), hold(hca,'off'), leg = [leg 'hpca'];
   end
   ylabel(hca,'Ey [mV/m]'), irf_legend(hca,leg,[0.95, 0.95])
-  
+
   hca = irf_panel('Fpi_y'); set(hca,'ColorOrder',myCols)
   if ~isempty(Efpi)
     irf_plot(hca,{EfpiR.y-Es12AspocOffR.y,EfpiR.y-Es12AspocOnR.y,...
@@ -232,12 +232,12 @@ if 1
   ylabel(hca,'\Delta FPI Y [mV/m]')
   set(hca,'YLim',[-1.9 1.9])
   irf_legend(hca,{'12','12ao','34','34ao'},[0.95, 0.95])
-  
+
   %irf_plot_ylabels_align(h)
   irf_zoom(h,'x',Tint)
   mmsIdS = sprintf('MMS%d',mmsId);
   title(h(1),mmsIdS)
-  
+
   set(gcf,'paperpositionmode','auto')
   irf_print_fig(['Offsets_' mmsIdS '_' irf_fname(Tint.start.epochUnix)],'png')
 end
@@ -308,7 +308,7 @@ if 1
   [offs_x, slope] = comp_off_slope(Es12AspocOffR(idxMSH)-[Del.x Del.y], Es34AspocOffR(idxMSH), EfpiR(idxMSH));
   res.p1234.xy.slope = slope; res.p1234.xy.offs=offs_x;
   ylabel('E FPI [mV/m]'), xlabel('SDP [mV/m]')
-  
+
   subplot(nRows,2,8)
   [~,res.p1234.y] = plot_xy([Es12AspocOffR.data(idxMSH,2)-Del.y; Es34AspocOffR.data(idxMSH,2)],...
     [EfpiR.y.data(idxMSH); EfpiR.y.data(idxMSH)]); cla

@@ -12,25 +12,25 @@ threshold = 100; % Points separated in time by less than 100ns are treated as re
 
 if isa(tsdata,'TSeries')
   diffs = diff(tsdata.time.epoch);
-  
+
   norepeat = ones(length(tsdata.time),1);
   norepeat(diffs < threshold) = 0;
-  
+
   newtstime = tsdata.time(norepeat == 1);
   newtsdata = tsdata.data(norepeat == 1,:);
-  
+
   newdata = TSeries(newtstime,newtsdata,'to',tsdata.tensorOrder);
-  
+
 elseif isstruct(tsdata) && isfield(tsdata,'time')
   if isa(tsdata.time,'EpochTT')
     diffs = diff(tsdata.time.epoch);
   else
     diffs = diff(tsdata.time);
   end
-  
+
   norepeat = ones(length(tsdata.time),1);
   norepeat(diffs < threshold) = 0;
-  
+
   varnames = fieldnames(tsdata);
   for ii=1:length(varnames)
     tsdata.(varnames{ii}) = tsdata.(varnames{ii})(norepeat == 1,:);

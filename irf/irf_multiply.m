@@ -16,7 +16,7 @@ if size(x1,2)>size(x2,2)
   else
     irf_log('proc','ERROR: could not make inteligent guess what you are meaning.');return;
   end
-  
+
 elseif size(x2,2)>size(x1,2)
   irf_log('proc','WARNING: x2 has more columns than x1');
   if size(x1,2)==2, for j=3:size(x2,2), x1(:,j)=x1(:,2); end % assume x2 is time series of scalar

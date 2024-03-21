@@ -54,7 +54,7 @@ for o=1:size(ORB,1)
   if(isempty(t_in) || (~isempty(t_in2) && t_in2>t_in)), t_in=t_in2; end
   if(isempty(t_in) || (~isempty(t_in3) && t_in3>t_in)), t_in=t_in3; end
   if(isempty(t_in) || (~isempty(t_in4) && t_in4>t_in)), t_in=t_in4; end
-  
+
   if ~isempty(t_out) && ~isempty(t_in)
     tt = fromepoch(t_out);
     t_out = toepoch([tt(1:3) fix(tt(4)/3)*3 0 0]);

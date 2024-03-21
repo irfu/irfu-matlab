@@ -58,7 +58,7 @@ particletype = pdist.species;
 intenergies = 1:size(energy,2);
 
 if isfield(pdist.ancillary,'energy0') && isfield(pdist.ancillary,'energy1') && isfield(pdist.ancillary,'esteptable')
-	if sum(abs(pdist.ancillary.energy0-pdist.ancillary.energy1)) < 0.0001
+  if sum(abs(pdist.ancillary.energy0-pdist.ancillary.energy1)) < 0.0001
     flag_same_e = 1;
   end
 end
@@ -168,13 +168,13 @@ H_psd = zeros(length(pdist.time), 3);
 tic
 
 % Calculate angle differences
-if isfield(pdist.ancillary,'delta_phi_minus') && isfield(pdist.ancillary,'delta_phi_plus') 
+if isfield(pdist.ancillary,'delta_phi_minus') && isfield(pdist.ancillary,'delta_phi_plus')
   deltaphi = pdist.ancillary.delta_phi_plus+pdist.ancillary.delta_phi_minus;
   flag_dphi = 1;
 else
   deltaphi = median(diff(pdist.depend{2}(1,:)));
 end
-if isfield(pdist.ancillary,'delta_theta_minus') && isfield(pdist.ancillary,'delta_theta_plus') 
+if isfield(pdist.ancillary,'delta_theta_minus') && isfield(pdist.ancillary,'delta_theta_plus')
   deltatheta = pdist.ancillary.delta_theta_plus+pdist.ancillary.delta_theta_minus;
   flag_dtheta = 1;
 else
@@ -205,7 +205,7 @@ if isfield(pdist.ancillary,'delta_energy_minus') && isfield(pdist.ancillary,'del
   energy_minus_size = size(energy_minus);
   energy_plus_size = size(energy_plus);
   if isequal(energy_size, energy_minus_size) && isequal(energy_size, energy_plus_size)
-      flag_dE_SameDim = 1;      % same dimensions goto Line 230 section. 
+    flag_dE_SameDim = 1;      % same dimensions goto Line 230 section.
   end
 end
 
@@ -227,10 +227,10 @@ elseif flag_same_e && ~flag_dE && ~flag_dE_SameDim
   vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
   vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
 elseif flag_same_e && flag_dE && flag_dE_SameDim
-    energyupper = energy + energy_plus;
-    energylower = energy - energy_minus;
-    vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
-    vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
+  energyupper = energy + energy_plus;
+  energylower = energy - energy_minus;
+  vupper = sqrt(2*qe*(energyupper - SCpot.data*ones(size(energy(1,:))))/pmass);
+  vlower = sqrt(2*qe*(energylower - SCpot.data*ones(size(energy(1,:))))/pmass);
 elseif ~flag_same_e % && ~flag_dE && ~flag_dE_SameDim
   energy0 = pdist.ancillary.energy0;
   energy1 = pdist.ancillary.energy1;

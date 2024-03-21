@@ -30,7 +30,7 @@ while size(data,1) >=pos+STEP
     detailed_spec(count,1) = data(pos+fix(STEP/2),1);
   end
   detailed_spec(count,ncol) = median(Pxx(FREQS));
-  
+
   pos = pos + STEP;
 end
 if count < size(detailed_spec,1), detailed_spec(count+1:end,:) = []; end

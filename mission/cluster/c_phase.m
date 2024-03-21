@@ -44,7 +44,7 @@ while tStart<targetTime(end)
   iPhaTmp = tPhase_2>=tStart-DT_MAX/2 & tPhase_2<tStop+DT_MAX/2;
   tPhaTmp = tPhase_2(iPhaTmp);
   if length(tPhaTmp)<=1, tStart = tStop; continue; end
-  
+
   if isempty(iLastOkPoint), iOutTmp = targetTime <= tStop;
   else, iOutTmp = targetTime<=tStop & targetTime>targetTime(iLastOkPoint);
   end
@@ -52,7 +52,7 @@ while tStart<targetTime(end)
     tStart = tStop; tStep = targetTime(end) - tStart;
     continue;
   end
-  
+
   gaps = find(diff(tPhaTmp)>SPIN_GAP_MAX, 1);
   if ~isempty(gaps)
     irf_log('proc','Gaps in phase_2, cannot compute phase'),
@@ -134,7 +134,7 @@ res = [time phaseOut];
       if isnan(spinPeriod) || ...
           spinPeriod > SPIN_PERIOD_MAX || spinPeriod < SPIN_PERIOD_MIN
         if ~isnan(spinPeriod)
-            irf_log('proc',sprintf('Found bad spin period: %f s',spinPeriod));
+          irf_log('proc',sprintf('Found bad spin period: %f s',spinPeriod));
         end
         spinPeriod = [];
       end

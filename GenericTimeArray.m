@@ -18,7 +18,7 @@ classdef (Abstract) GenericTimeArray
   %     pad_utc()
   %     validate_utc()
   %     LeapSeconds()
-  
+
   % ----------------------------------------------------------------------------
   % SPDX-License-Identifier: Beerware
   % "THE BEER-WARE LICENSE" (Revision 42):
@@ -26,11 +26,11 @@ classdef (Abstract) GenericTimeArray
   % can do whatever you want with this stuff. If we meet some day, and you think
   % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
   % ----------------------------------------------------------------------------
-  
+
   properties
     epoch
   end
-  
+
   methods
     function disp(obj)
       %DISP display object
@@ -52,22 +52,22 @@ classdef (Abstract) GenericTimeArray
         fprintf('  %s\n',tmp.toUtc)
       end
     end
-    
+
     function res = isempty(obj)
       %ISEMPTY True for empty array.
       res = isempty(obj.epoch);
     end
-    
+
     function res = length(obj)
       %LENGTH number of records in array.
       res = length(obj.epoch);
     end
-    
+
     function res = size(obj)
       %SIZE size of the record's array.
       res = size(obj.epoch);
     end
-    
+
     function res = minus(obj, obj1)
       %MINUS  time difference in seconds
       % T2 - T1 returns time difference between T2 and T1 in seconds
@@ -82,7 +82,7 @@ classdef (Abstract) GenericTimeArray
       end
       res = obj.tts - obj1.tts;
     end
-    
+
     function res = le(obj,obj1)
       %LE  less than of equal to
       if ~isa(obj1,'GenericTimeArray')
@@ -95,7 +95,7 @@ classdef (Abstract) GenericTimeArray
       objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch <= objTmp.epoch;
     end
-    
+
     function res = ge(obj,obj1)
       %GE  greater than of equal to
       if ~isa(obj1,'GenericTimeArray')
@@ -108,7 +108,7 @@ classdef (Abstract) GenericTimeArray
       objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch >= objTmp.epoch;
     end
-    
+
     function res = lt(obj,obj1)
       %LT  less than
       if ~isa(obj1,'GenericTimeArray')
@@ -121,7 +121,7 @@ classdef (Abstract) GenericTimeArray
       objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch < objTmp.epoch;
     end
-    
+
     function res = gt(obj,obj1)
       %GT  greater than
       if ~isa(obj1,'GenericTimeArray')
@@ -134,7 +134,7 @@ classdef (Abstract) GenericTimeArray
       objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch > objTmp.epoch;
     end
-    
+
     function res = eq(obj,obj1)
       %EQ  equal to
       if ~isa(obj1,'GenericTimeArray')
@@ -145,7 +145,7 @@ classdef (Abstract) GenericTimeArray
       if len==0 && len1==0, res = true; return
       elseif len==0 || len1==0, res = false; return
       end
-      
+
       objTmp = convert_epoch(obj1,class(obj));
       if len1==1
         res = obj.epoch == objTmp.epoch;
@@ -155,7 +155,7 @@ classdef (Abstract) GenericTimeArray
         res = false;
       end
     end
-    
+
     function res = ne(obj,obj1)
       %NE  not equal to
       if ~isa(obj1,'GenericTimeArray')
@@ -164,7 +164,7 @@ classdef (Abstract) GenericTimeArray
       end
       res = ~(obj.eq(obj1));
     end
-    
+
     function res = end(obj,k,~)
       %END last index in array
       switch k
@@ -174,7 +174,7 @@ classdef (Abstract) GenericTimeArray
           res = 1;
       end
     end
-    
+
     function res = start(obj)
       %START  first point of the time array
       if isempty(obj)
@@ -184,7 +184,7 @@ classdef (Abstract) GenericTimeArray
       S.type = '()'; S.subs={1};
       res = subsref(obj,S);
     end
-    
+
     function res = stop(obj)
       %STOP  last point of the time array
       if isempty(obj)
@@ -194,23 +194,23 @@ classdef (Abstract) GenericTimeArray
       S.type = '()'; S.subs={length(obj)};
       res = subsref(obj,S);
     end
-    
+
     function [res,varargout] = sort(obj)
       %SORT   sorts time array in ascending order
       %  T2 = T1.sort;
       %  [T2, I] = T1.sort;
       %     I - index matrix
       %     T2 = T1(I);
-      
+
       if isempty(obj)
         error('irf:GenericTimeArray:sort:badInputs',...
           'empty input')
       end
       nout = max(nargout,1) - 1;
-      
+
       [sorted_obj,sorted_ind] = sort(obj.ttns);
       res = feval(class(obj),sorted_obj);
-      
+
       if nout == 0
         varargout = {};
       elseif nout == 1
@@ -220,11 +220,11 @@ classdef (Abstract) GenericTimeArray
           'unknown output format')
       end
     end
-    
+
     function res = horzcat(varargin)
       % tt = [t1 t2];
       % tt = [t1 t2:t3];
-      
+
       objs = varargin;
       nobj = numel(objs);
       obj_ttns = int64([]);
@@ -237,11 +237,11 @@ classdef (Abstract) GenericTimeArray
       end
       res = EpochTT(obj_ttns);
     end
-    
+
     function res = vertcat(varargin)
       res = horzcat(varargin{:});
     end
-    
+
     function [varargout] = subsref(obj,idx)
       %SUBSREF handle indexing
       switch idx(1).type
@@ -261,7 +261,7 @@ classdef (Abstract) GenericTimeArray
             'Not a supported subscripted reference')
       end
     end
-    
+
     function [idxLim,res] = tlim(obj,inp,mode)
       %TLIM   Returns index and records within specified time interval
       %
@@ -278,7 +278,7 @@ classdef (Abstract) GenericTimeArray
       %
       % Y is part of X outside the interval for "XOR" mode:
       % X(:,1) < LIM.START & X(:,1) > LIM.STOP
-      
+
       if isempty(inp)
         error('irf:GenericTimeArray:tlim:badInputs',...
           'empty limiting array')
@@ -309,7 +309,7 @@ classdef (Abstract) GenericTimeArray
       else, idxLim = tlimPrivate(obj,lim,mode);
       end
     end
-    
+
     function res = convert_epoch(obj,className)
       if isa(obj,className)
         res = obj;
@@ -317,7 +317,7 @@ classdef (Abstract) GenericTimeArray
         res = feval(className,obj.ttns);
       end
     end
-    
+
     function res = epochUnix(obj)
       if isempty(obj), res = [];
       else, res = EpochUnix.from_ttns(obj.ttns);
@@ -330,11 +330,11 @@ classdef (Abstract) GenericTimeArray
     function s = toUtc(obj,varargin)
       s = obj.utc(varargin{:});
     end
-    
+
     % Abstract time operation methods
     to_ttns(epoch,index)   % static function to convert epoch to ttns
     from_ttns(obj,index)   % static function to convert ttns to epoch
-    
+
     function s = ttns(obj,varargin)
       % s = ttns(obj,[index]) return index points
       s = obj.to_ttns(obj.epoch,varargin{:});
@@ -344,12 +344,12 @@ classdef (Abstract) GenericTimeArray
       s = double(obj.ttns(varargin{:}))/1e9;
     end
   end
-  
+
   methods (Abstract)
     plus(obj,arg)
     colon(obj,varargin)
   end
-  
+
   methods (Access = private)
     function [idxLim,res] = tlimPrivate(obj,inp,mode)
       % Private version of tLim, can be reloaded
@@ -365,36 +365,36 @@ classdef (Abstract) GenericTimeArray
       end
     end
   end
-  
+
   methods (Static)
     function res = validate_utc( utc )
       %VALIDATE_UTC validate UTC string
       %   validate UTC string : yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]'
-      
+
       MAX_NUM_IDX = 29;
       res = false;
-      
+
       if isempty(utc), return, end
       if ~ismatrix(utc), return, end
-      
+
       lUtc = size(utc,2); if all(all(utc(:,end)=='Z')), lUtc = lUtc-1; end
       idxDash = [5 8]; idxColon = [14 17]; idxT = 11; idxDot = 20;
       idxNonDigit = [idxDash idxT idxColon];
       if lUtc>=idxDot, idxNonDigit = [idxNonDigit idxDot]; end
-      
+
       if lUtc < 19 || lUtc > MAX_NUM_IDX+1 || lUtc == idxDot || ...
           ~all(all(utc(:,idxT)=='T')) || ...
           ~all(all(utc(:,idxDash)=='-')) || ~all(all(utc(:,idxColon)==':')) || ...
           (lUtc>=idxDot && ~all(all(utc(:,idxDot)=='.')))
         return
       end
-      
+
       idxTmp = 1:lUtc;
       idxDigit = setxor(idxNonDigit,idxTmp);
       if ~all(all(isstrprop(utc(:,idxDigit),'digit')))
         return
       end
-      
+
       if  ~all( utc(:,1)=='1' | utc(:,1)=='2' ) || ... % year starts with 1 or 2
           ~all( utc(:,6)=='0' | utc(:,6)=='1' ) || ... % month starts with 0 or 1
           any( utc(:,6)=='0' & utc(:,7)=='0' )         % no month 00
