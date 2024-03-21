@@ -48,6 +48,8 @@ tint = dist.time([1 end]);
 r = 1; % radius of sphere
 phi_edges = linspace(0,2*pi,size(dist.data,3)+1);  % azimuthal angle bin edges, default
 theta_edges = linspace(0,pi,size(dist.data,4)+1); % polar angle bin edges, default
+doPitchangles = 0;
+doDouble = 0;
 
 if nargs > 1, have_options = 1; else have_options = 0; end
 
@@ -91,10 +93,17 @@ while have_options
     case 'vectorlabelcolor'
       l = 2;
       vectorlabelcolor = args{2};
+    case {'pitchangle','pitchangles'}
+      l = 3;
+      B_for_pitchangles = args{2};
+      pitchangle_levels = args{3};
+      doPitchangles = 1;
     case 'flat'
       plotSphere = 0;
     case 'sphere'
       plotSphere = 1;
+    case 'double'
+      doDouble = 1;
     case 'normal'       % normal vector;
       l = 2;
       normal = args{2};
@@ -195,15 +204,24 @@ if plotSphere
   ax.ZLabel.String = 'Z';
   shading(ax,'flat');
 else % plot flat map
-  % change matrix so it corresponds to where the particles are going to, not coming from
+  % change matrix so it corresponds to where the particles are going to, not coming from  
   plotC = flipdim([C(:,17:32) C(:,1:16)],1);
-  hs = surf(ax,PHI*180/pi,THETA*180/pi,THETA*0,plotC);
+  if doDouble
+    plotC = [plotC,plotC];
+    PHI_ = [PHI, 2*pi + PHI(:,2:end)]*180/pi;
+    THETA_ = [THETA,THETA(:,2:end)]*180/pi;
+    hs = surf(ax,PHI_,THETA_,THETA_*0,smooth2(double(plotC),1));
+    %hs = surf(ax,PHI_,THETA_,THETA_*0,plotC);
+  else
+    hs = surf(ax,PHI*180/pi,THETA*180/pi,THETA*0,plotC);
+  end
   ax.XLabel.String = 'Azimuthal angle (deg)';
   ax.YLabel.String = 'Polar angle (deg)';
   shading(ax,'flat');
   view(ax,[0 0 -1])
   ax.YLim = [0 180];
   ax.XLim = [0 360];
+  if doDouble, ax.XLim = [0 720]; end
   ax.Box = 'on';
 end
 hcb = colorbar('peer',ax);
@@ -253,6 +271,38 @@ while have_vectors
   end
   vectors = vectors(2:end,:);
   if isempty(vectors), break, end
+end
+
+if doPitchangles
+  if isa(B_for_pitchangles,'TSeries')
+    Btmp = B_for_pitchangles.tlim(dist.time([1 dist.nt]) + 0.5*0.03*[-1 1]).data;
+    btmp = mean(Btmp,1);
+    btmp = btmp/sqrt(sum(btmp.^2));
+  else
+    btmp = B_for_pitchangles/sqrt(sum(B_for_pitchangles.^2));
+  end  
+  dotPA = X*btmp(1) + Y*btmp(2) + Z*btmp(3);
+  PA = acosd(dotPA);    
+  if numel(pitchangle_levels) == 1
+    pitchangle_levels = pitchangle_levels*[1 1];
+  end
+  
+  hold(ax,'on')
+  climtmp = ax.CLim;
+  if plotSphere
+  
+  else
+    if doDouble
+      plotPA = [PA,PA(:,2:end)];
+      PHI_ = [PHI, 2*pi + PHI(:,2:end)];
+      THETA_ = [THETA,THETA(:,2:end)];
+      contour(ax,PHI_*180/pi,THETA_*180/pi,plotPA,pitchangle_levels,'k','linewidth',1)      
+    else
+      contour(ax,PHI*180/pi,THETA*180/pi,PA,pitchangle_levels,'k','linewidth',1)
+    end
+  end
+  ax.CLim = climtmp;
+  hold(ax,'off')
 end
 
 if plotb
