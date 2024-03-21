@@ -1,5 +1,5 @@
 %
-% Wrapper around solo.qli.cron.generate_quicklooks() for generating quicklooks
+% Wrapper around solo.qli.offgen.generate_quicklooks() for generating quicklooks
 % for dates which are automatically derived from implicitly specified log files,
 % which should indicate updated datasets.
 %
@@ -86,6 +86,6 @@ end
 
 AllDaysDtArray = unique(AllDaysDtArray);
 
-solo.qli.cron.generate_quicklooks(outputDir, true, true, AllDaysDtArray)
+solo.qli.offgen.generate_quicklooks(outputDir, true, true, AllDaysDtArray)
 
 end

@@ -51,10 +51,10 @@ function generate_quicklooks_bash_any(modeId, varargin)
 
   switch(modeId)
     case 'MANUAL'
-      solo.qli.cron.generate_quicklooks_bash_manual(varargin{:})
+      solo.qli.offgen.generate_quicklooks_bash_manual(varargin{:})
 
     case 'GENERATE_FROM_LOGS'
-      solo.qli.cron.generate_quicklooks_bash_from_logs(varargin{:})
+      solo.qli.offgen.generate_quicklooks_bash_from_logs(varargin{:})
 
     otherwise
       error('Illegal modeId="%s"', modeId)

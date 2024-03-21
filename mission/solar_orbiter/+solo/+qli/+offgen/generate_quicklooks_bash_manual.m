@@ -1,5 +1,5 @@
 %
-% Wrapper around solo.qli.cron.generate_quicklooks() for generating quicklooks
+% Wrapper around solo.qli.offgen.generate_quicklooks() for generating quicklooks
 % for all dates within a specified time interval.
 %
 %
@@ -74,7 +74,7 @@ DaysDtArray = [BeginDayInclDt:caldays(1):EndDayInclDt]';
 %=====================
 % Generate quicklooks
 %=====================
-solo.qli.cron.generate_quicklooks(...
+solo.qli.offgen.generate_quicklooks(...
   outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
 
