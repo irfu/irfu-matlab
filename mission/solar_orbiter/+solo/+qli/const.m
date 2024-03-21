@@ -6,6 +6,8 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef const
+  % PROPOSAL: Move OFFICIAL_PROCESSING_IRFU_HOST_NAMES_CA and
+  %           OFFICIAL_PROCESSING_AUTOMOUNT_DIR to solo.qli.cron somehow.
 
 
 
@@ -29,9 +31,9 @@ classdef const
     % Should be enabled by default.
     NONWEEKLY_SPECTRA_ENABLED = true;    % DEFAULT
 
-    % Whether to generate all more than one quicklook of every type (per day)
-    % -----------------------------------------------------------------------
-    % In practice only affects 6h and 2h quicklooks. Disabling this is useful
+    % Whether to generate more than one quicklook (file) of every type (per day)
+    % --------------------------------------------------------------------------
+    % Only affects 6h and 2h quicklooks in practice. Disabling this is useful
     % for debugging and testing (speeds up execution). Should be enabled by
     % default.
     NONWEEKLY_ALL_PLOTS_ENABLED = true;    % DEFAULT

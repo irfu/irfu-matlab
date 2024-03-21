@@ -19,11 +19,12 @@ For an example of how to generate quicklooks locally, e.g. in bulk, look at belo
 ===========================================
  How to edit the content of the quicklooks
 ===========================================
-quicklooks_24_6_2_h.m, quicklooks_7days.m
+generate_quicklooks_24h_6h_2h.m
+generate_quicklook_7days.m
     Files which do the actual plotting.
 
 generate_quicklooks_24h_6h_2h_using_DB_SPICE.m
 generate_quicklook_7days_using_DB_SPICE.m
-    Files which call quicklooks_24_6_2_h.m and quicklooks_7days.m
-    and supply them with bulk data. If you need to add available
-    science data (zVariables), then you need to edit these.
+    Files which call generate_quicklooks_24h_6h_2h.m and generate_quicklook_7days.m
+    and supply them with bulk data. If you want the quicklooks to have access
+    to more data e.g. science data (zVariables), then you need to edit these.

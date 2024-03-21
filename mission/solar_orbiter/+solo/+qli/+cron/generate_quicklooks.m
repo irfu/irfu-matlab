@@ -1,11 +1,14 @@
 %
 % Wrapper around solo.qli.generate_quicklooks_all_types() intended for being run
-% on brain/spis for the purpose of cron jobs and manual generation.
+% on brain/spis for the purpose of cron jobs and official generation of
+% quicklooks.
 %
-% NOTE: This function is NOT intended to be called from bash/the OS.
-%
+% NOTE: See README.TXT for information on this package.
 % NOTE: This script is NOT intended to be called from MATLAB by the average
 %       user. See solo.qli.generate_quicklooks_all_types() instead.
+%
+% NOTE: This function is NOT intended to be called from bash/the OS. There are
+%       other MATLAB scripts for that.
 %
 %
 % ARGUMENTS
@@ -21,6 +24,12 @@
 %       datetime column array. Array of UTC midnights representing the beginning
 %       of days for which to generate quicklooks.
 %
+%
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
+% First created 2022-08-30.
+%
+function generate_quicklooks(...
+  outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 %
 % NOTES ON CRASHES ON SPIS & BRAIN
 % ================================
@@ -64,7 +73,8 @@
 %
 % NOTE: Above crashes...
 % * Happened after 300h+ (12-13 days) of execution.
-% * Happened when nobody worked (Sunday morning), i.e. low access hours.
+% * Happened when nobody else was working (Sunday morning), i.e. low-access
+%   hours.
 % * Happened only 1h33m within each other's crashes.
 % * Can be explained by disk error.
 % * EXAMPLE 1 & 2: Could be re-run without triggering error for the same data.
@@ -72,13 +82,7 @@
 % accessible (or not accessible quickly enough?) during low access hours,
 % presumably due to being unmounted due to automounting.
 % /Erik P G Johansson 2022-09-20
-%
-%
-% Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2022-08-30.
-%
-function generate_quicklooks(...
-  outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
+
 
 VHT_DIR = '/data/solo/data_yuri/';
 

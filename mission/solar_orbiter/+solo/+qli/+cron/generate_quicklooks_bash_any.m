@@ -2,8 +2,11 @@
 % Generate quicklooks, but specifying method for how to select dates.
 %
 %
-% NOTE: This function is intended to be called from bash/the OS, hence "bash" in
-%       the name.
+% NOTE: See README.TXT for information on this package.
+% NOTE: This script is NOT intended to be called from MATLAB by the average
+%       user. See solo.qli.generate_quicklooks_all_types() instead.
+%
+% NOTE: This function is designed to be called from bash/the OS.
 %
 % NOTE: This script is NOT intended to be called from MATLAB by the average
 %       user. See solo.qli.generate_quicklooks_all_types() instead.

@@ -39,7 +39,7 @@ COLORS           = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 UNITS = irf_units;
 Me    = UNITS.me;      % Electron mass [kg]
-eps0  = UNITS.eps0;    % Permitivitty of free space [Fm^-1]
+eps0  = UNITS.eps0;    % Permittivity of free space [Fm^-1]
 qe    = UNITS.e;       % Elementary charge [C]
 
 h            = irf_plot(9, 'newfigure');

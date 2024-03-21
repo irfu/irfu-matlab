@@ -107,31 +107,12 @@ function generate_quicklooks_all_types(...
 %           sure that the code does select non-existing datasets.
 %           Use pre-existing solo.qli.utils.db_get_ts() wrapper.
 %
-% PROPOSAL: Convert
-%           generate_quicklooks_24h_6h_2h_local()
-%           generate_quicklook_7days_local()
-%           into separate function files which use SolO DB for retrieving
-%           values. -- IMPLEMENTED
-%     PRO: Usage of SolO DB becomes clearer for users.
-%     PRO: It becomes easier for users to add new variables.
-%     PRO: Can still use automated tests.
-%     CON/PROBLEM: They both use wrapper solo.qli.utils.db_get_ts() (function in this file).
-%         CON-PROPOSAL: Move solo.qli.utils.db_get_ts() to separate function and call it from
-%                       above functions. -- IMPLEMENTED
-%         CON-PROPOSAL: Have
-%                 solo.qli.generate_quicklooks_24h_6h_2h()
-%                 solo.qli.generate_quicklook_7days()
-%                 normalize their arguments with cell_array_TS_to_TS().
-%             CON: Can not extend wrapper solo.qli.utils.db_get_ts() to retrieve data for both
-%                  -cdag and non-cdag.
-%     PROPOSAL: New names for *_local
-%         DB
-%         SolO DB
-%         default_data_sources
-%         default
-%         SPICE
-%         DB_SPICE
-%     CON/PROBLEM: They both use solo.qli.utils.get_Earth_position(), solo.qli.utils.get_SolO_position().
+% PROPOSAL: Replace argument vhtDataDir --> vhtData1hFilePath,
+%           vhtData6hFilePath.
+%   PRO: Inconsistent to have hardcoded filenames but argument for directory.
+%   PRO: cron setup should specify filenames.
+%   PRO: generate_quicklooks_*_using_DB_SPICE() alraedy have arguments for paths
+%        to he files directly.
 %
 %
 % generate_quicklooks_24h_6h_2h(), generate_quicklook_7day()
@@ -175,7 +156,11 @@ DaysDtArray = unique(DaysDtArray);
 OutputPaths = solo.qli.utils.create_output_directories(outputDir);
 
 % Try to determine whether quicklooks are being generated as part of IRFU's
-% official processing.
+% processing of official quicklooks.
+% -------------------------------------------------------------------------
+% NOTE: As of 2024-03-21, this flag is only used for whether to explicitly
+% trigger automounts (requires knowledge of hardcoded path). Whether to inclulde
+% IRF logo is specified by the caller.
 isOfficialProcessing = false;
 if isunix()
   [errorCode, stdoutStr] = system('hostname');

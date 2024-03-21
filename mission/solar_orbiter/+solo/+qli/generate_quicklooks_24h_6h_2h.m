@@ -91,7 +91,7 @@ COLORS           = [0 0 0; 0 0 1; 1 0 0; 0 0.5 0; 0 1 1; 1 0 1; 1 1 0];
 
 UNITS = irf_units;
 Me    = UNITS.me;      % Electron mass [kg]
-eps0  = UNITS.eps0;    % Permitivitty of free space [Fm^-1]
+eps0  = UNITS.eps0;    % Permittivity of free space [Fm^-1]
 mp    = UNITS.mp;      % Proton mass [km]
 qe    = UNITS.e;       % Elementary charge [C]
 
@@ -394,8 +394,8 @@ if ~isempty(Data.Etnr)
       hold(           h(10), 'on');
       if ~isempty(Data.Ne)
         % Electron plasma frequency
-        wpe_sc = (sqrt(((Data.Ne.tlim(Tint24h)*1000000)*qe^2)/(Me*eps0)));
-        fpe_sc = (wpe_sc/2/pi)/1000;
+        wpe_sc = (sqrt(((Data.Ne.tlim(Tint24h)*1000000)*qe^2)/(Me*eps0)));   % TSeries
+        fpe_sc = (wpe_sc/2/pi)/1000;                                         % TSeries --> TSeries (sic!)
         irf_plot(h(10), fpe_sc, 'r', 'linewidth', LINE_WIDTH);
         fpe_sc.units = 'kHz';
         fpe_sc.name  = 'f [kHz]';

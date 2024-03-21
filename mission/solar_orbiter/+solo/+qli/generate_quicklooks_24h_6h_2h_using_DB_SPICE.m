@@ -45,7 +45,6 @@ solo.qli.utils.log_plot_function_time_interval(Tint)
 
 
 
-
 Data = [];
 
 Vht1h       = load(vhtFile1hPath);

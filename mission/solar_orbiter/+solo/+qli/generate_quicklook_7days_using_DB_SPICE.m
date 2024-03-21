@@ -19,6 +19,7 @@
 %     Path to file with 6h VHT data. Typically found at
 %     brain:/data/solo/data_yuri/V_RPW.mat .
 % outputDir1wPath
+%     Path to output directory.
 % irfLogoPath
 %     Path to IRF logo. Empty ==> Do not plot any logo.
 %     IMPLEMENTATION NOTE: The IRF logo should only be used for official
