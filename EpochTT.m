@@ -35,6 +35,12 @@ classdef EpochTT < GenericTimeArray
             'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
         end
         obj.epoch = GenericTimeArray.utc2ttns(inp);
+      elseif isa(inp,'string')
+        if ~GenericTimeArray.validate_utc(inp)
+          error('irf:EpochUnix:EpochUnix:badInputs',...
+            'UTC string input (string) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
+        end
+        obj.epoch = GenericTimeArray.utc2ttns(inp);  
       elseif isa(inp,'GenericTimeArray')
         if isa(inp,'EpochTT')
           obj = inp;

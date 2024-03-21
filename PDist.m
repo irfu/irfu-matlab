@@ -1186,7 +1186,7 @@ classdef PDist < TSeries
         lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
       end
       if correct4scpot
-        scpot = scpot.tlim(dist.time).resample(dist.time);
+        scpot = scpot.resample(dist.time);
         scpot_mat = repmat(scpot.data, size(emat(1,:)));
       end
       if isDes == 1; M = units.me; else; M = units.mp; end
@@ -1839,6 +1839,7 @@ classdef PDist < TSeries
       doFLim = 1; flim = [0 Inf];
       doSmooth = 0;
       doP12 = 0;
+      doB = 0;
       
       if strcmp(dist.species,'electrons')
         v_scale = 1e-3;
@@ -1865,6 +1866,11 @@ classdef PDist < TSeries
             doP12 = 1;
             v1 = args{2};
             v2 = args{3};
+            if isempty(v1)
+              doCalculateVbulk = 1;
+            else
+              doCalculateVbulk = 0;
+            end
           case {'tint','time','t'}
             l = 2;
             notint = 0;
@@ -1928,6 +1934,10 @@ classdef PDist < TSeries
           case {'colorbar','docolorbar'}
             l = 2;
             doColorbar = args{2};
+          case 'b'
+            l = 2;
+            doB = 1;
+            B = args{2};    
         end
         args = args(l+1:end);
         if isempty(args), break, end
@@ -1955,9 +1965,15 @@ classdef PDist < TSeries
         plot_data = smooth2(plot_data,nSmooth);
       end
       if doP12
-        v1_bulk = mean(v1.resample(dist).data,1);
-        v2_bulk = mean(v2.resample(dist).data,1);
         [V1,V2] = ndgrid(dist.depend{1}(1,:),dist.depend{2}(1,:)); % km/s
+        if doCalculateVbulk % incase moments are bad, this might be a better firs/temporary option
+          % NOT IMPLEMENTED
+          vx = dist.units;
+        else
+          v1_bulk = mean(v1.resample(dist).data,1);
+          v2_bulk = mean(v2.resample(dist).data,1);
+        end
+        
         V1V2 = (V1-v1_bulk).*(V2-v2_bulk)*1e3*1e3; % km/s -> m/s
         % units_scaling
         new_units = 'arb. units';
@@ -1993,8 +2009,33 @@ classdef PDist < TSeries
       ax.Box = 'on';
       shading(ax,'flat');
 
-      if doP12 % add info about integrated value
-        irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+      if doB
+
+        if isa(B,'TSeries')
+          dt = obj.time(2) - obj.time(1);
+          B1 = B{1}.tlim(dist.time([1 end]) + 0.5*dt*[-1 1]);
+          B2 = B{2}.tlim(dist.time([1 end]) + 0.5*dt*[-1 1]);
+          B1 = mean(B1.data,1);
+          B2 = mean(B2.data,1);
+          b1 = B1/norm(B1);
+          b2 = B2/norm(B2);
+        else % single vector value
+          b = B/norm(B);
+        end    
+
+        hold(hca,'on')
+        Bnorm = B;
+        hold(hca,'off')
+      end
+      if doP12 % add info about integrated value         
+        if integrated_p12 >= 0 
+          sumf_color = 'r';
+        else
+          sumf_color = 'b';
+        end
+        %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+        %irf_legend(ax,sprintf('p = %.6f nPa',integrated_p12),[0.02 0.02],'color',sumf_color)
+        irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
       end      
       if doContour
         hold(ax,'on')
@@ -2838,9 +2879,17 @@ classdef PDist < TSeries
           otherwise
             error('Units not supported.')
         end
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
-        irf.log('warning','Converting DPFlux to PSD');
-        tmpData = obj.data/1e12*mm^2*0.53707;
+      elseif flagdir == -1 
+        switch obj.units
+          case '1/(cm^2 s sr eV)'
+            irf.log('warning','Converting DPFlux to PSD');
+            tmpData = obj.data/1e12*mm^2*0.53707;
+          case '1/(cm^2 s sr keV)'
+            irf.log('warning','Converting DPFlux to PSD'); %% OBS, not correct units!!! Same above
+            tmpData = 1e-3*obj.data/1e12*mm^2*0.53707;
+          otherwise 
+            error(sprintf('Units: %s not supported',obj.units))
+        end
       end
       
       energy = obj.depend{1};
@@ -2858,12 +2907,17 @@ classdef PDist < TSeries
         PD = obj;
         PD.data_ = tmpData;
         PD.units = '1/(cm^2 s sr eV)';
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
-        reshapedData = reshapedData./matEnergy;
-        tmpData = reshape(reshapedData,sizeData);
-        PD = obj;
-        PD.data_ = tmpData;
-        PD.units = 's^3/m^6';
+      elseif flagdir == -1 
+          reshapedData = reshapedData./matEnergy;
+          tmpData = reshape(reshapedData,sizeData);
+          PD = obj;
+          PD.data_ = tmpData;
+        switch obj.units
+          case '1/(cm^2 s sr eV)'
+            PD.units = 's^3/m^6';
+          case '1/(cm^2 s sr keV)' %% OBS, not correct units!!! Same above
+            PD.units = 's^3/m^6';
+        end
       else
         irf.log('warning','No change to PDist');
         PD = obj;

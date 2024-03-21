@@ -31,6 +31,7 @@ function [ax,hcb,C] = plot_skymap(varargin)
 dist = args{1}; args = args(2:end);
 if isempty(dist); irf.log('warning','Empty input.'); return; end
 
+doSmooth = 0;
 plotLog = 0;
 fString = ['(' dist.units ')'];
 plotSphere = 1;
@@ -107,6 +108,10 @@ while have_options
         plotLog = 1;
         fString = ['log_{10}' fString];
       end
+    case 'smooth'
+      l = 2;
+      nSmooth = args{2};
+      doSmooth = 1;
   end
   args = args(l+1:end);
   if isempty(args), break, end
@@ -184,6 +189,11 @@ end
 
 % Plot skymap
 if isempty(ax), fig = figure; ax = axes; end
+if doSmooth
+  %smC = C;
+  %smC()
+  C = smooth2(double(C),nSmooth);
+end
 if plotLog, C = log10(C); end % units are whatever the input units were
 
 if plotSphere
