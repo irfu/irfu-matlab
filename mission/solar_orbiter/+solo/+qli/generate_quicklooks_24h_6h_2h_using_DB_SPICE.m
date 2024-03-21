@@ -76,7 +76,7 @@ Data.swaEnergyMetadata = solo.qli.utils.read_constant_metadata('solo_L2_swa-pas-
 % /solo_L2_rpw-tnr-surv-cdag_20240101_V02.cdf
 Data.tnrBand = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 
-Data.Tnr = read_TNR(Tint);
+Data.Tnr = solo.read_TNR(Tint);
 
 
 
@@ -100,14 +100,14 @@ end
 
 % IMPLEMENTATION NOTE: Implementation is made to reproduce old behaviour. Can
 % likely be cleaned up/simplified together with solo.read_TNR().
-function Tnr = read_TNR(Tint)
-
-try
-  Tnr = solo.read_TNR(Tint);
-catch Exc
-  if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
-    Tnr = [];
-  end
-end
-
-end
+% function Tnr = read_TNR(Tint)
+%
+% try
+%   Tnr = solo.read_TNR(Tint);
+% catch Exc
+%   if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
+%     Tnr = [];
+%   end
+% end
+%
+% end

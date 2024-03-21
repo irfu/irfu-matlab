@@ -4,20 +4,13 @@ function out = read_TNR(tint)
 %     @author: Louis Richard
 %     Updated by: Jordi Boldu
 %
-%     NOTE: Relies on hardcoded file system path for finding CDFs and then
-%     reading them itself. Does not use irfu-matlab's solo.db_get_ts() for
-%     locating and obtaining CDF data due to one zVariable not being readable
-%     with it.
+%     NOTE: Uses irfu-matlab's solo.db_get_ts() and solo.db_list_files() for
+%     reading and locating CDF datasets.
 %
 %     Parameters
 %     ----------
-%     path : str
-%         String of the filename in .cdf containing the L2 data
-%
 %     tint : EpochTT (2x1)
 %         Time interval
-%         NOTE: Will only load the TNR file (solo_L2_rpw-tnr-surv-cdag)
-%         corresponding to the initial timestamp.
 %
 %     sensor : int
 %         TNR sensor to be read:
@@ -31,41 +24,30 @@ function out = read_TNR(tint)
 %
 %     Returns
 %     -------
-%     out : struct
-%         Spectrum of the measured signals.
+%     out :
+%         Struct. Spectrum of the measured signals.
+%         [], if there is are no TNR datasets for the specified period.
 %
 %     Notes
 %     -----
-%     The script check if there are data from the two channel and put them
+%     Function checks if there are data from the two channels and put them
 %     together.
+%     Function raises exception if there is no dataset for the specified date.
 %
 
 %%
 
-%tint = irf.tint('2021-05-18T00:00:00Z','2021-05-19T00:00:00Z');
-date_vector = irf_time(tint,'epochTT>vector');
-yyyy = num2str(date_vector(1,1));
-
-mm = num2str(date_vector(1,2));
-if numel(mm)==1;mm=['0' mm];end
-
-dd = num2str(date_vector(1,3));
-if numel(dd)==1;dd=['0' dd];end
-
-
-
 sensor = 5;
 sensor2 = 4;
 
-% IMPLEMENTATION NOTE: solo.get_db_ts() does not work to get the zVariable
-% TNR_BAND_FREQ from the TNR cdf file, therefore the dataobj(x) function
-% is used instead, which requires giving the full path of the file.
-% The solo.get_db_ts() function seems to fail to create the TSeries object
-% because the DEPEND_0 field is of different size from the data.
-% NOTE: Path with wildcard.
-path = ['/data/solo/remote/data/L2/thr/' yyyy '/' mm '/solo_L2_rpw-tnr-surv-cdag_' yyyy mm dd '_V*.cdf'];
+data_l2 = read_raw_TNR_data(tint);
 
-data_l2 = read_TNR_CDFs(path, tint);
+if isempty(data_l2)
+  out = [];
+  return
+end
+
+
 
 % =============================================================================
 % Information on selected solo_L2_rpw-tnr-surv zVariables used by this function
@@ -98,8 +80,8 @@ data_l2 = read_TNR_CDFs(path, tint);
 %                            (V1=1, V2=2, V3=3, V1-V2=4, V2-V3=5, V3-V1=6, B_MF=7,
 %                            HF_V1-V2=9, HF_V2-V3=10, HF_V3-V1=11)"
 
-n_freqs  = size(   data_l2.tnr_band_freq.data, 2) * 4;
-freq_tnr = reshape(data_l2.tnr_band_freq.data', n_freqs, 1);
+n_freqs  = size(   data_l2.tnr_band_freq, 2) * 4;
+freq_tnr = reshape(data_l2.tnr_band_freq', n_freqs, 1);    % 2D array --> 1D array
 
 puntical_ = find(data_l2.front_end.data == 1);   % 1 = PREAMP
 
@@ -159,7 +141,7 @@ elseif ~isempty(sens1_)
   sens_ = sens1_;
   timet_ici = timet_(sens1_);
 else
-  out = 0;
+  out = [];
   return;
   %irf.log('critical', 'no data at all ?!?')
 end
@@ -253,57 +235,57 @@ out.p_label={'dB'};
 %         irf_zoom(h(10),'y',[10^1 10^2])
 end
 
+
+
 %%
-function out_struct = read_TNR_CDFs(path, tint)
-%     Reads required field from TNR .cdf file.
+function Data = read_raw_TNR_data(tint)
+%     Read required raw TNR zVariables.
 %
-%     @author: Louis Richard
+%     @author: Louis Richard. Modified by Erik P G Johansson.
 %
 %     Parameters
 %     ----------
-%     path : str
-%       Path to L2 TNR CDF(s). May refer to multiple files by using wildcard
-%       which dataobj() understands.
-%
 %     tint : EpochTT (2x1)
 %       Time interval
 %
 %     Returns
 %     -------
-%     out_struct : struct
-%       L2 data structure.
+%     D : struct
+%       Every field corresponds to one zVariable.
+%       All fields are TSeries except one which is an array.
 
-try
-  data_obj = dataobj(path);
-catch CauseExc
-  % IMPLEMENTATION NOTE: Assumes that error is due to File-not-found.
-  % "path" contains "*" i.e. it is not a real path, but dataobj() can
-  % handle that. Can therefore not (easily) manually check for path
-  % existence outside of dataobj().
-  % SolO IRFU quicklooks (solo.qli.generate_quicklooks_all_types()) fails for
-  % 2022-08-08 if not for some way of handling non-existent path here.
-  % /Erik P G Johansson 2022-09-12
-  Exc = MException('read_TNR:FileNotFound', 'Can not find/open file path="%s".', path);
-  Exc = addCause(Exc, CauseExc);
-  throw(Exc)
-end
-
-% Key of the TNR frequencies
-freqs_key = 'TNR_BAND_FREQ';
-
-% Names of the field in time series format
-tseries_keys = {'AUTO1', 'AUTO2', 'SWEEP_NUM', 'TNR_BAND', ...
+% Names of the zVariables which are converted to TSeries objects.
+ZVAR_NAMES = {...
+  'AUTO1', 'AUTO2', 'SWEEP_NUM', 'TNR_BAND', ...
   'SENSOR_CONFIG', 'FRONT_END', ...
   'MAGNETIC_SPECTRAL_POWER1', 'MAGNETIC_SPECTRAL_POWER2'};
 
-% Construct the data structure starting with the TNR frequencies
-% (only not time series field)
-out_struct = struct(lower(freqs_key), ...
-  get_variable(data_obj, freqs_key));
+Data = struct();
 
-for i_key = 1:numel(tseries_keys)
-  key_upper = tseries_keys{i_key};
-  out_struct.(lower(key_upper)) = get_ts(data_obj, key_upper).tlim(tint);
-end
+% Read zVariable TNR_BAND_FREQ
+% ----------------------------
+% NOTE: The zVariable TNR_BAND_FREQ is virtual in the CDF record dimension (i.e.
+% values are identical, "copied", i.e. time-independent). The value loaded here
+% is one such value (i.e. for one CDF record), but the value loaded into the
+% MATLAB variable is still 4x32, where the first dimension therefore does NOT
+% represent CDF records.
+% NOTE: Can not use get_ts(DataObj, FREQS_ZVAR_NAME) for unknown reasons. May be
+% difference in e.g. metadata or because variable is virtual in the CDF-record
+% dimension.
+% --
+% Array, or [] if there is no data (dataset).
+Data.tnr_band_freq = solo.qli.utils.read_constant_metadata('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND_FREQ', tint);
+if isempty(Data.tnr_band_freq)
+  Data = [];
+  return
 end
 
+% Read zVariables with solo.db_get_ts()
+% -------------------------------------
+% TSeries, or empty TSeries, if there is no data (dataset).
+for i_key = 1:numel(ZVAR_NAMES)
+  zvName               = ZVAR_NAMES{i_key};
+  Data.(lower(zvName)) = solo.db_get_ts('solo_L2_rpw-tnr-surv-cdag', zvName, tint);
+end
+
+end
