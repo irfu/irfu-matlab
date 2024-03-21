@@ -224,7 +224,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 % NOTE: READS CDF FILES indirectly via solo.read_TNR()!
 %=======================================================
 % NOTE: Panel takes much more time than other panels.
-if ~isempty(Data.Etnr)
+if ~isempty(Data.tnrBand)
   % Electron plasma frequency
   TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
   tp = [];

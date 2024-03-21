@@ -378,7 +378,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 % ==> The panel becomes wider.
 % ==> Other panels become wider.
 % ==> Moves the IRF logo to the right, and partially outside image.
-if ~isempty(Data.Etnr)
+if ~isempty(Data.tnrBand)
   try
     [TNR] = solo.read_TNR(Tint24h);
   catch Exc
@@ -421,7 +421,7 @@ irf_zoom(h(10), 'y', [9, 110])    % Not overwritten later.
 if isempty(Data.Vrpw) ...
     && isempty(Data.E)    && isempty(Data.Ne)   && isempty(Data.B) ...
     && isempty(Data.Tpas) && isempty(Data.Npas) && isempty(Data.ieflux) ...
-    && isempty(Data.Etnr)
+    && isempty(Data.tnrBand)
   nanPlot = irf.ts_scalar(Tint24h,ones(1, 2)*NaN);
   irf_plot(h(10), nanPlot);    % No LINE_WIDTH?
   grid(    h(10), 'off');
