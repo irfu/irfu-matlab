@@ -1,14 +1,13 @@
 %
-% Wrapper around solo.qli.cron.quicklooks_cron() intended for being used by
-% being called from system scripts (e.g. bash) for the purpose of cron jobs and
-% manual official processing on brain/spis. The arguments have also been
-% designed for this purpose and are therefore all strings.
+% Wrapper around solo.qli.offgen.generate_quicklooks() for generating quicklooks
+% for all dates within a specified time interval.
 %
-% NOTE: This function is intended to be called from bash/the OS, hence "bash" in
-%       the name.
 %
+% NOTE: See README.TXT for information on this package.
 % NOTE: This script is NOT intended to be called from MATLAB by the average
 %       user. See solo.qli.generate_quicklooks_all_types() instead.
+%
+% NOTE: This function is designed to potentially be called from bash/the OS.
 %
 %
 % ARGUMENTS
@@ -25,6 +24,11 @@
 %       generated.
 %       beginDayUtcInclStr is INCLUSIVE. endDayUtcExclStr is EXCLUSIVE, i.e.
 %       the day AFTER the last day of the time interval.
+%
+%
+% RETURN VALUES
+% =============
+% (None)
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -70,7 +74,7 @@ DaysDtArray = [BeginDayInclDt:caldays(1):EndDayInclDt]';
 %=====================
 % Generate quicklooks
 %=====================
-solo.qli.cron.generate_quicklooks(...
+solo.qli.offgen.generate_quicklooks(...
   outputDir, generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
 

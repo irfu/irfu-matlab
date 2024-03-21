@@ -19,6 +19,7 @@
 %     Path to file with 6h VHT data. Typically found at
 %     brain:/data/solo/data_yuri/V_RPW.mat .
 % outputDir1wPath
+%     Path to output directory.
 % irfLogoPath
 %     Path to IRF logo. Empty ==> Do not plot any logo.
 %     IMPLEMENTATION NOTE: The IRF logo should only be used for official
@@ -61,11 +62,10 @@ Data.Vpas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'V_RTN', Tint
 Data.Npas   = solo.qli.utils.db_get_ts('solo_L2_swa-pas-grnd-mom', 'N', Tint);
 % Ion spectrum
 Data.ieflux = solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+Data.swaEnergyMetadata = solo.qli.utils.read_constant_metadata('solo_L2_swa-pas-eflux', 'Energy', Tint);
 
-% TNR "E-field"
-% -------------
-% BUG? zVariable is not anything like an "E-field"!! Reading the wrong variable or
-% mislabelling the right variable?
+% TNR_BAND
+% --------
 % NOTE: Variable is not used very much. solo.qli.generate_quicklooks_24h_6h_2h()
 % only checks if empty or not (sic!).
 %
@@ -73,14 +73,17 @@ Data.ieflux = solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
 %      CATDESC         (CDF_CHAR/31): "TNR band of the current record "
 %      VAR_NOTES       (CDF_CHAR/71): "TNR band of the current record. Possible values are: 1=A, 2=B, 3=C, 4=D"
 % /solo_L2_rpw-tnr-surv-cdag_20240101_V02.cdf
-%
-Data.Etnr   = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+Data.tnrBand   = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 
 % Solar Orbiter position
 Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
 % Earth position (also uses SPICE)
 EARTH_POS_DT_SEC = 60*60;
 Data.earthPos    = solo.qli.utils.get_Earth_position(Tint, EARTH_POS_DT_SEC);
+
+if ~solo.qli.const.ENABLE_B
+  Data.B = [];
+end
 
 % ============================
 % Plot data and save quicklook

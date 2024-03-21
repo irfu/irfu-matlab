@@ -1,12 +1,14 @@
 %
-% Generate quicklooks (QLI) for dates derived from relevant log files, which
-% should indicate updated datasets.
+% Wrapper around solo.qli.offgen.generate_quicklooks() for generating quicklooks
+% for dates which are automatically derived from implicitly specified log files,
+% which should indicate updated datasets.
 %
-% Function intended to be called from bash in cron job, once after the specified
-% dataset source directories have been updated.
 %
+% NOTE: See README.TXT for information on this package.
 % NOTE: This script is NOT intended to be called from MATLAB by the average
 %       user. See solo.qli.generate_quicklooks_all_types() instead.
+%
+% NOTE: This function is designed to potentially be called from bash/the OS.
 %
 % NOTE: The dataset IDs referred to in the implementation must be consistent
 %       with the use of datasets in solo.qli.generate_quicklooks_all_types().
@@ -17,9 +19,9 @@
 % outputDir
 %       Path to output directory.
 % varargin
-%       Cell array of string IDs representing different dataset source
-%       directories. Function will use the logs for the specified directories to
-%       derive dates for which QLI should be generated.
+%       String IDs representing different dataset source directories. The
+%       function will use the logs for the specified directories to derive dates
+%       for which QLI should be generated.
 %
 %
 % RETURN VALUES
@@ -84,6 +86,6 @@ end
 
 AllDaysDtArray = unique(AllDaysDtArray);
 
-solo.qli.cron.generate_quicklooks(outputDir, true, true, AllDaysDtArray)
+solo.qli.offgen.generate_quicklooks(outputDir, true, true, AllDaysDtArray)
 
 end

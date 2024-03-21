@@ -114,6 +114,41 @@ classdef utils
 
 
 
+    % Read ONE zVariable for *constant* metadata which can not be loaded using
+    % solo.db_get_ts() due to not having the expected CDF metadata.
+    %
+    % Ex: solo_L2_swa-pas-eflux + zVariable "Energy"
+    %     solo.db_get_ts() yields error message: "Data does not contain DEPEND_0
+    %     or DATA"
+    %
+    % NOTE: Will only load the first dataset found since the zVariable is
+    %       assumed to be constant across datasets.
+    %
+    % RETURN VALUE
+    % ============
+    % zvData
+    %       Array, if found at least one dataset.
+    %       [], if no matching dataset was found.
+    %
+    function zvData = read_constant_metadata(filePrefix, zvName, Tint)
+
+      FileArray = solo.db_list_files(filePrefix, Tint);
+      if ~isempty(FileArray)
+        FileArray(1);
+        filePath = fullfile(FileArray(1).path, FileArray(1).name);
+
+        % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
+        %       dataobj(), not NASA SPDF). *Might* be faster (or might not) since
+        %       only reading a specified zVariable.
+        zvCa   = cdfread(filePath, 'variables', zvName);
+        zvData = zvCa{1};
+      else
+        zvData = [];
+      end
+    end
+
+
+
     % Wrapper around solo.db_get_ts() which normalizes the output to always
     % return one TSeries object, or [].
     %

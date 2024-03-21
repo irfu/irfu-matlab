@@ -91,7 +91,7 @@ COLORS           = [0 0 0; 0 0 1; 1 0 0; 0 0.5 0; 0 1 1; 1 0 1; 1 1 0];
 
 UNITS = irf_units;
 Me    = UNITS.me;      % Electron mass [kg]
-eps0  = UNITS.eps0;    % Permitivitty of free space [Fm^-1]
+eps0  = UNITS.eps0;    % Permittivity of free space [Fm^-1]
 mp    = UNITS.mp;      % Proton mass [km]
 qe    = UNITS.e;       % Elementary charge [C]
 
@@ -319,27 +319,28 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 %============================================================================
 % Fill panel 9: Ion energy spectrum
 % ---------------------------------
-% NOTE: READS CDF FILES!
+% NOTE: READS CDF FILES! -- REFACTORED AWAY
 % NOTE: Essentially the same as solo.qli.generate_quicklook_7days(): Panel 8
 %============================================================================
 if ~isempty(Data.ieflux)
-  SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint24h);
+%   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint24h);
   iDEF         = struct('t', Data.ieflux.tlim(Tint24h).time.epochUnix);
   %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-  for iFile = 1:length(SwaFileArray)
-    % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
-    %       dataobj(), not spdfcdfread()).
-    % NOTE: zVariable "Energy" seems to be metadata (not science data).
-    %       zVariable attributes CATDESC="Center of energy bins",
-    %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
-    % NOTE: Can not load this variable using
-    %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
-    %       Gets error message: "Data does not contain DEPEND_0 or DATA"
-    iEnergy = cdfread(...
-      fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
-      'variables', 'Energy');
-    iEnergy = iEnergy{1};
-  end
+%   for iFile = 1:length(SwaFileArray)
+%     % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
+%     %       dataobj(), not spdfcdfread()).
+%     % NOTE: zVariable "Energy" seems to be metadata (not science data).
+%     %       zVariable attributes CATDESC="Center of energy bins",
+%     %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
+%     % NOTE: Can not load this variable using
+%     %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+%     %       Gets error message: "Data does not contain DEPEND_0 or DATA"
+%     iEnergy = cdfread(...
+%       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
+%       'variables', 'Energy');
+%     iEnergy = iEnergy{1};
+%   end
+  iEnergy      = Data.swaEnergyMetadata;
   iDEF.p       = Data.ieflux.data;
   iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
   iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
@@ -377,7 +378,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 % ==> The panel becomes wider.
 % ==> Other panels become wider.
 % ==> Moves the IRF logo to the right, and partially outside image.
-if ~isempty(Data.Etnr)
+if ~isempty(Data.tnrBand)
   try
     [TNR] = solo.read_TNR(Tint24h);
   catch Exc
@@ -393,8 +394,8 @@ if ~isempty(Data.Etnr)
       hold(           h(10), 'on');
       if ~isempty(Data.Ne)
         % Electron plasma frequency
-        wpe_sc = (sqrt(((Data.Ne.tlim(Tint24h)*1000000)*qe^2)/(Me*eps0)));
-        fpe_sc = (wpe_sc/2/pi)/1000;
+        wpe_sc = (sqrt(((Data.Ne.tlim(Tint24h)*1000000)*qe^2)/(Me*eps0)));   % TSeries
+        fpe_sc = (wpe_sc/2/pi)/1000;                                         % TSeries --> TSeries (sic!)
         irf_plot(h(10), fpe_sc, 'r', 'linewidth', LINE_WIDTH);
         fpe_sc.units = 'kHz';
         fpe_sc.name  = 'f [kHz]';
@@ -420,7 +421,7 @@ irf_zoom(h(10), 'y', [9, 110])    % Not overwritten later.
 if isempty(Data.Vrpw) ...
     && isempty(Data.E)    && isempty(Data.Ne)   && isempty(Data.B) ...
     && isempty(Data.Tpas) && isempty(Data.Npas) && isempty(Data.ieflux) ...
-    && isempty(Data.Etnr)
+    && isempty(Data.tnrBand)
   nanPlot = irf.ts_scalar(Tint24h,ones(1, 2)*NaN);
   irf_plot(h(10), nanPlot);    % No LINE_WIDTH?
   grid(    h(10), 'off');

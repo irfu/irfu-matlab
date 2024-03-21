@@ -39,7 +39,7 @@ COLORS           = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
 
 UNITS = irf_units;
 Me    = UNITS.me;      % Electron mass [kg]
-eps0  = UNITS.eps0;    % Permitivitty of free space [Fm^-1]
+eps0  = UNITS.eps0;    % Permittivity of free space [Fm^-1]
 qe    = UNITS.e;       % Elementary charge [C]
 
 h            = irf_plot(9, 'newfigure');
@@ -169,27 +169,28 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 %=================================================================================
 % Fill panel 8: Ion energy spectrum
 % ---------------------------------
-% NOTE: READS CDF FILES!
+% NOTE: READS CDF FILES! -- REFACTORED AWAY
 % NOTE: Essentially the same as solo.qli.generate_quicklooks_24h_6h_2h(): Panel 9
 %=================================================================================
 if ~isempty(Data.ieflux)
-  SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint);
+%   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint);
   iDEF         = struct('t', Data.ieflux.tlim(Tint).time.epochUnix);
   %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-  for iFile = 1:length(SwaFileArray)
-    % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
-    %       dataobj(), not spdfcdfread()).
-    % NOTE: zVariable "Energy" seems to be metadata (not science data).
-    %       zVariable attributes CATDESC="Center of energy bins",
-    %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
-    % NOTE: Can not load this variable using
-    %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
-    %       Gets error message: "Data does not contain DEPEND_0 or DATA"
-    iEnergy = cdfread(...
-      fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
-      'variables', 'Energy');
-    iEnergy = iEnergy{1};
-  end
+%   for iFile = 1:length(SwaFileArray)
+%     % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
+%     %       dataobj(), not spdfcdfread()).
+%     % NOTE: zVariable "Energy" seems to be metadata (not science data).
+%     %       zVariable attributes CATDESC="Center of energy bins",
+%     %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
+%     % NOTE: Can not load this variable using
+%     %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+%     %       Gets error message: "Data does not contain DEPEND_0 or DATA"
+%     iEnergy = cdfread(...
+%       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
+%       'variables', 'Energy');
+%     iEnergy = iEnergy{1};
+%   end
+  iEnergy      = Data.swaEnergyMetadata;
   iDEF.p       = Data.ieflux.data;
   iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
   iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
@@ -223,7 +224,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 % NOTE: READS CDF FILES indirectly via solo.read_TNR()!
 %=======================================================
 % NOTE: Panel takes much more time than other panels.
-if ~isempty(Data.Etnr)
+if ~isempty(Data.tnrBand)
   % Electron plasma frequency
   TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
   tp = [];

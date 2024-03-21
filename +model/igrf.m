@@ -56,7 +56,9 @@ switch flag
     g11 = interp1(yearsIGRF,gIGRF(2,3:end),year,'linear','extrap');
     h11 = interp1(yearsIGRF,hIGRF(1,3:end),year,'linear','extrap');
     lambda = atand(h11./g11);
-    phi = 90-asind((g11.*cosd(lambda)+h11.*sind(lambda))./g01);
+    % There is a correction (Hapgood 1997) to the Hapgood 1992 model, which
+    % replaces the previous arcsin with an arctan.
+    phi = 90-atand((g11.*cosd(lambda)+h11.*sind(lambda))./g01); % latitude
     if nargout == 2
       out1 = lambda;
       out2 = phi;

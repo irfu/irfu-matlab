@@ -2,8 +2,11 @@
 % Generate quicklooks, but specifying method for how to select dates.
 %
 %
-% NOTE: This function is intended to be called from bash/the OS, hence "bash" in
-%       the name.
+% NOTE: See README.TXT for information on this package.
+% NOTE: This script is NOT intended to be called from MATLAB by the average
+%       user. See solo.qli.generate_quicklooks_all_types() instead.
+%
+% NOTE: This function is designed to be called from bash/the OS.
 %
 % NOTE: This script is NOT intended to be called from MATLAB by the average
 %       user. See solo.qli.generate_quicklooks_all_types() instead.
@@ -48,10 +51,10 @@ function generate_quicklooks_bash_any(modeId, varargin)
 
   switch(modeId)
     case 'MANUAL'
-      solo.qli.cron.generate_quicklooks_bash_manual(varargin{:})
+      solo.qli.offgen.generate_quicklooks_bash_manual(varargin{:})
 
     case 'GENERATE_FROM_LOGS'
-      solo.qli.cron.generate_quicklooks_bash_from_logs(varargin{:})
+      solo.qli.offgen.generate_quicklooks_bash_from_logs(varargin{:})
 
     otherwise
       error('Illegal modeId="%s"', modeId)
