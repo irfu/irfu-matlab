@@ -398,6 +398,85 @@ classdef utils
 
 
 
+    % For debugging.
+    function print_Y_axis_info(h)
+      fprintf('h.YLimMode  = "%s"\n', h.YLimMode)
+      fprintf('h.YTickMode = "%s"\n', h.YLimMode)
+      fprintf('h.YLim  = [%s]\n', sprintf('%f  ', h.YLim))
+      fprintf('h.YTick = [%s]\n', sprintf('%f  ', h.YTick))
+    end
+
+
+
+    % (1) Set YLim automatically (from data; with margins)
+    % (2) Set YTick automatically.
+    %
+    % NOTE: Function can not simultaneously handle both yyaxis left & right.
+    % NOTE: MATLAB's automatic setting of y ticks for log scale (and which is used)
+    %       can be bad. May therefore want to set y ticks for panels with log scale.
+    function set_YLim_YTick_automatically(hAxesArray)
+      assert(isa(hAxesArray, 'matlab.graphics.axis.Axes'))
+
+      %h = hAxesArray(1);
+      %solo.qli.utils.print_Y_axis_info(h)
+
+      %=======================================================================
+      % Automatically set preliminary YLim (y limits) and final YTick (y tick
+      % positions) for selected axes.
+      %=======================================================================
+      % Set axes y range (YLim) to only cover the data (plus rounding outwards to
+      % ticks).
+      set(hAxesArray, 'YLimMode', 'auto')
+      % Auto-generate ticks (YTick; y values at which there should be ticks).
+      set(hAxesArray, 'YTickMode', 'auto')
+
+      %---------------------------------------------------------------------------
+      % IMPORTANT: Read YLim without using the return result ("do nothing")
+      % -------------------------------------------------------------------
+      % IMPLEMENTATION NOTE: THIS COMMAND SHOULD THEORETICALLY NOT BE NEEDED,
+      % BUT IS NEEDED FOR THE YLim VALUES TO BE SET PROPERLY. MATLAB BUG?!
+      % This behaviour has been observed on Erik P G Johansson's laptop
+      % "irony" (MATLAB R2019b, Ubuntu Linux) as of 2023-05-25.
+      % Ex: (Re-)scaling of panel 5, 2022-02-23T10-12 (2h plot).
+      % 2024-03-22: Refactored the code. Not sure if needed.
+      get(hAxesArray, 'YLim');
+      %---------------------------------------------------------------------------
+      % Prevent later setting of YLim (next command) from generating new ticks.
+      set(hAxesArray, 'YTickMode', 'manual')
+
+      %solo.qli.utils.print_Y_axis_info(h)
+      solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray)
+      %solo.qli.utils.print_Y_axis_info(h)
+    end
+
+
+
+    % (1) Set YLim automatically (from data; with margins),
+    % (2) Keep YTick as is.
+    %
+    % NOTE: See set_YLim_YTick_automatically().
+    function set_YLim_automatically(hAxesArray)
+      assert(isa(hAxesArray, 'matlab.graphics.axis.Axes'))
+
+      %h = hAxesArray(1);
+      %solo.qli.utils.print_Y_axis_info(h)
+
+      %=========================================================================
+      % Automatically set YLim (y limits) but keep old YTick (y tick positions)
+      % for selected axes.
+      %=========================================================================
+      set(hAxesArray, 'YTickMode', 'manual')
+      %get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
+      set(hAxesArray, 'YLimMode',  'auto')
+      %get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
+
+      %solo.qli.utils.print_Y_axis_info(h)
+      solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray)
+      %solo.qli.utils.print_Y_axis_info(h)
+    end
+
+
+
     function filename = get_plot_filename(Tint)
       assert(isa(Tint, 'EpochTT') && (length(Tint) == 2))
 

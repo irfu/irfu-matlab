@@ -527,10 +527,16 @@ h(2).YTick  = [1, 10, 100];
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
 % depending on panel.
 yyaxis(h(2), 'left');
-set_YLim_YTick(h([1, 6:9]), h([2]), h([3:5, 10]))
+%set_YLim_YTick(h([1, 6:9]), h([2]), h([3:5, 10]))
+solo.qli.utils.set_YLim_YTick_automatically( h([1, 6:9 ]))
+solo.qli.utils.set_YLim_YTick_automatically( h([2])      )
+solo.qli.utils.ensure_axes_data_tick_margins(h([3:5, 10]))
+
 yyaxis(h(2), 'right');
-set_YLim_YTick(h([]), h([2]), h([]))  % Can be bad.
+%set_YLim_YTick(h([]), h([2]), h([]))  % Can be bad.
 %set_YLim_YTick(h([2]), h([]), h([]))  % Can be bad.
+solo.qli.utils.set_YLim_YTick_automatically(h([2]))
+
 
 % NOTE: h(5).YLim are hardcoded and seem too broad/wide.
 % PROPOSAL: Not overwrite automatic YLim?
@@ -635,108 +641,20 @@ irf_zoom(hAxesArray, 'x', Tint);
 
 % NOTE: Different from for 24h plots.
 yyaxis(hAxesArray(2), 'left');
-set_YLim_YTick(hAxesArray([1:2, 5:9]), hAxesArray([]), hAxesArray([3:4, 10]))
+% set_YLim_YTick(hAxesArray([1:2, 5:9]), hAxesArray([]), hAxesArray([3:4, 10]))
+solo.qli.utils.set_YLim_YTick_automatically( hAxesArray([1:2, 5:9]))
+solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray([3:4, 10 ]))
+
+
+
 yyaxis(hAxesArray(2), 'right');
-set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
+% set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
+solo.qli.utils.set_YLim_YTick_automatically(hAxesArray([2]))
 
 % Update text
 [hCisText1.String, hCisText2.String] = solo.qli.utils.get_context_info_strings(Data.soloPos, Data.earthPos, Tint);
 
 solo.qli.utils.save_figure_to_file(parentDirPath, Tint)
-end
-
-
-
-% Automatically set or adjust y limits and y tick positions. "Always" ensures
-% that ticks are not at the min/max (YLim) to avoid overlapping labels. Can
-% specify different behaviour for different axes.
-%
-% NOTE: Function can not simultaneously handle both yyaxis left & right.
-% NOTE: MATLAB's automatic setting of y ticks for log scale (and which is used)
-%       can be bad. May therefore want to set y ticks for panels with log scale.
-%
-% ARGUMENTS
-% =========
-% hAxesAutoYLimYTickArray
-%       Array of axes for which to
-%       (1) set YLim automatically (from data; with margins)
-%       (2) set YTick automatically.
-% hAxesAutoYLimArray
-%       Array of axes for which to
-%       (1) set YLim automatically (from data; with margins),
-%       (2) keep YTick as is.
-% hAxesMarginYLimArray
-%       Array of axes for which to
-%       (1) ensure there are margins to pre-existing YLim
-%       (2) keep YTick as is.
-%
-function set_YLim_YTick(hAxesAutoYLimYTickArray, hAxesAutoYLimArray, hAxesMarginYLimArray)
-% PROPOSAL: Automatically (not MATLAB) set YTick for logarithmic axis to
-%           ensure one tick per power of ten, 10^n.
-% PROPOSAL: Set YLimMode=manual for YLimYTick axes.
-% PROPOSAL: Split into 2 or 3 separate functions.
-%     NOTE: solo.qli.utils.ensure_axes_data_tick_margins)() is called for all
-%           axes.
-
-assert(isa(hAxesAutoYLimYTickArray, 'matlab.graphics.axis.Axes'))
-assert(isa(hAxesAutoYLimArray,      'matlab.graphics.axis.Axes'))
-assert(isa(hAxesMarginYLimArray,    'matlab.graphics.axis.Axes'))
-
-hAxesArray = unique([...
-  hAxesAutoYLimYTickArray(:); ...
-  hAxesAutoYLimArray(:); ...
-  hAxesMarginYLimArray(:) ...
-  ]);
-
-% Assert that all axes are unique (no overlap/intersection).
-assert(numel(hAxesArray) == (...
-  numel(hAxesAutoYLimYTickArray) + ...
-  numel(hAxesAutoYLimArray) + ...
-  numel(hAxesMarginYLimArray)...
-  ))
-
-%=======================================================================
-% Automatically set preliminary YLim (y limits) and final YTick (y tick
-% positions) for selected axes.
-%=======================================================================
-% Set axes y range (YLim) to only cover the data (plus rounding outwards to
-% ticks).
-set(hAxesAutoYLimYTickArray, 'YLimMode', 'auto')
-% Auto-generate ticks (YTick; y values at which there should be ticks).
-set(hAxesAutoYLimYTickArray, 'YTickMode', 'auto')
-%---------------------------------------------------------------------------
-% IMPORTANT: Read YLim without using the return result ("do nothing")
-% -------------------------------------------------------------------
-% IMPLEMENTATION NOTE: THIS COMMAND SHOULD THEORETICALLY NOT BE NEEDED,
-% BUT IS NEEDED FOR THE YLim VALUES TO BE SET PROPERLY. MATLAB BUG?!
-% This behaviour has been observed on Erik P G Johansson's laptop
-% "irony" (MATLAB R2019b, Ubuntu Linux) as of 2023-05-25.
-% Ex: (Re-)scaling of panel 5, 2022-02-23T10-12 (2h plot).
-get(hAxesAutoYLimYTickArray, 'YLim');
-%---------------------------------------------------------------------------
-% Prevent later setting of YLim (next command) from generating new ticks.
-set(hAxesAutoYLimYTickArray, 'YTickMode', 'manual')
-
-%=========================================================================
-% Automatically set YLim (y limits) but keep old YTick (y tick positions)
-% for selected axes.
-%=========================================================================
-set(hAxesAutoYLimArray, 'YTickMode', 'manual')
-%get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
-set(hAxesAutoYLimArray, 'YLimMode',  'auto')
-%get(hAxesManualArray, 'YLim');   % READ ONLY. UNNECESSARY?
-
-%===========================================================================
-% If needed, adjust YLim (but not YTick) to ensure there are margins between
-% YLim and YTick = No ticks on the panel edges/corners.
-%===========================================================================
-%i = 10;
-%h = hAxesArray(i);
-%fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(h.YLim))
-%fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(h.YTick))
-solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray)
-%fprintf('hAxesArray(%i).YLim  = %s\n', i, num2str(h.YLim))
-%fprintf('hAxesArray(%i).YTick = %s\n', i, num2str(h.YTick))
 end
 
 
