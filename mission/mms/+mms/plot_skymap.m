@@ -214,7 +214,7 @@ if plotSphere
   ax.ZLabel.String = 'Z';
   shading(ax,'flat');
 else % plot flat map
-  % change matrix so it corresponds to where the particles are going to, not coming from  
+  % change matrix so it corresponds to where the particles are going to, not coming from
   plotC = flipdim([C(:,17:32) C(:,1:16)],1);
   if doDouble
     plotC = [plotC,plotC];
@@ -290,23 +290,23 @@ if doPitchangles
     btmp = btmp/sqrt(sum(btmp.^2));
   else
     btmp = B_for_pitchangles/sqrt(sum(B_for_pitchangles.^2));
-  end  
+  end
   dotPA = X*btmp(1) + Y*btmp(2) + Z*btmp(3);
-  PA = acosd(dotPA);    
+  PA = acosd(dotPA);
   if numel(pitchangle_levels) == 1
     pitchangle_levels = pitchangle_levels*[1 1];
   end
-  
+
   hold(ax,'on')
   climtmp = ax.CLim;
   if plotSphere
-  
+
   else
     if doDouble
       plotPA = [PA,PA(:,2:end)];
       PHI_ = [PHI, 2*pi + PHI(:,2:end)];
       THETA_ = [THETA,THETA(:,2:end)];
-      contour(ax,PHI_*180/pi,THETA_*180/pi,plotPA,pitchangle_levels,'k','linewidth',1)      
+      contour(ax,PHI_*180/pi,THETA_*180/pi,plotPA,pitchangle_levels,'k','linewidth',1)
     else
       contour(ax,PHI*180/pi,THETA*180/pi,PA,pitchangle_levels,'k','linewidth',1)
     end

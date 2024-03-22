@@ -555,12 +555,12 @@ classdef PDist < TSeries
             scpot = args{2};
             args = args(l+1:end);
           case 'edges'
-            doEdges = 1;            
-            args = args(l+1:end);            
+            doEdges = 1;
+            args = args(l+1:end);
           otherwise
             irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
             args = args(l+1:end);
-        end        
+        end
         if isempty(args), break, end
       end
 
@@ -596,7 +596,7 @@ classdef PDist < TSeries
           vx = NaN*obj.data;
           vy = NaN*obj.data;
           vz = NaN*obj.data;
-          
+
           if doEdges
             sizedata = size(obj.data);
             sizedata(2:end) = sizedata(2:end) + 1;
@@ -1769,7 +1769,7 @@ classdef PDist < TSeries
             Var(1:2) =[];
           case 'new_grid'
             flag_newgrid = 1;
-            Eedgesn = Var{2}; 
+            Eedgesn = Var{2};
             thedgesn = Var{3}; % CN: illogical order because th is depend{3}
             phedgesn = Var{4}; % CN: illogical order because ph is depend{2}
             Var(1:4) = [];
@@ -2168,7 +2168,7 @@ classdef PDist < TSeries
             % else
             %   includescpot = 0;
             %   irf.log('notice','scpot not recognized. Not using it.')
-            % end         
+            % end
             doScPot = 1;
           case '10^3 km/s' % not implemented
             l = 1;
@@ -2179,7 +2179,7 @@ classdef PDist < TSeries
             v_scale = 1;
             v_label_units = 'km/s';
           case 'printinfo' % not implemented
-            doPrintInfo = 1;          
+            doPrintInfo = 1;
           case 'smooth'
             l = 2;
             doSmooth = 1;
@@ -2192,7 +2192,7 @@ classdef PDist < TSeries
         if isempty(args), break, end
       end
 
-      
+
       % due to Matlab functionality, we must explicitly call the overloaded
       % subsref (defined within this subclass), otherwise it will call the
       % builtin function
@@ -2203,12 +2203,12 @@ classdef PDist < TSeries
 
       F = pdist.data;
       F = mean(F,1); % average over time, if multiple times
-      F = squeeze(F);     
+      F = squeeze(F);
 
       if 0 % interpolate to edges of bins, NOT WORKING
         phi = TSeries(pdist.time,pdist.depend{1,2});
         azimuthal = phi.data*pi/180;
-        
+
         theta = pdist.depend{1,3};
         polar = repmat(theta*pi/180,pdist.length,1);
         energy = pdist.depend{1};
@@ -2223,7 +2223,7 @@ classdef PDist < TSeries
         [EN,AZ,POL] = meshgrid(energy,azimuthal,polar);
         [ENe,AZe,POLe] = meshgrid(energy_e,azimuthal_e,polar_e);
         Fe = interp3(EN,AZ,POL,F,ENe,AZe,POLe);
-        Fe = permute(Fe,[2 1 3]); % from meshgrid to ndgrid        
+        Fe = permute(Fe,[2 1 3]); % from meshgrid to ndgrid
       end
 
       if doScPot
@@ -2232,7 +2232,7 @@ classdef PDist < TSeries
       else
         [VX,VY,VZ] = pdist.v;
         %[VXe,VYe,VZe] = pdist.v('edges');
-      end      
+      end
       % Assume all energy levels are the same
       VX = squeeze(mean(VX,1));
       VY = squeeze(mean(VY,1));
@@ -2245,7 +2245,7 @@ classdef PDist < TSeries
       %Fg = griddedInterpolant(VX,VY,VZ,F);
       %Fq = Fg(VXe,VYe,VZe);
 %      Fq = interp3(VX,VY,VZ,F,VXe,VYe,VZe);
-      
+
       %F = Fe;
       %VX = VXe;
       %VY = VYe;
@@ -2271,14 +2271,14 @@ classdef PDist < TSeries
       if doSmooth
         F = smooth3(F,'box',nSmooth);
       end
-      
+
       if doFillGap
         F = F(:,2:end-icat_az,:);
         VX = VX(:,2:end-icat_az,:);
         VY = VY(:,2:end-icat_az,:);
         VZ = VZ(:,2:end-icat_az,:);
-      end     
-      
+      end
+
       if isempty(iso_values)
         iso_values = prctile(F(:),[50 70 90]);
       end
@@ -2297,7 +2297,7 @@ classdef PDist < TSeries
         VZ = reshape(newTmpZ,size(VZ));
         all_handles.Rotation = T;
       end
-      
+
       nSurf = numel(iso_values);
 
       if numel(faceAlpha) == 1
@@ -2305,7 +2305,7 @@ classdef PDist < TSeries
       end
       %holdon = 0;
 
-      if strcmp(ax.NextPlot,'replace')        
+      if strcmp(ax.NextPlot,'replace')
         delete(ax.Children)
       end
 
@@ -2318,22 +2318,22 @@ classdef PDist < TSeries
         %p = patch(ax,Faces=s.faces,Vertices=s.vertices);
         p = patch(ax,'Faces',s.faces,'Vertices',s.vertices);
         hps(isurf) = p;
-        
+
         % Default formatting
-        p.EdgeColor = 'none';        
+        p.EdgeColor = 'none';
         p.FaceColor = colors(mod(isurf-1,size(colors,1))+1,:).^0.5; % cycle colors
         p.FaceAlpha = faceAlpha(isurf);
       end
       %hold(ax,'off') % not with patch objects
-      
-      % might be leftover from previous plottings, only add if no lights 
+
+      % might be leftover from previous plottings, only add if no lights
       hlight = findobj(ax,'Type','Light');
-      if isempty(hlight) 
+      if isempty(hlight)
         hlight = camlight(ax);
       end
 
-      lighting(ax,'gouraud')    
-      
+      lighting(ax,'gouraud')
+
       view(ax,[2 2 1])
       %view(ax,[0 0 1])
 
@@ -2342,10 +2342,10 @@ classdef PDist < TSeries
 
       ax.XLabel.String = 'v_{x} (km/s)';
       ax.YLabel.String = 'v_{y} (km/s)';
-      ax.ZLabel.String = 'v_{z} (km/s)';  
+      ax.ZLabel.String = 'v_{z} (km/s)';
       axis(ax,'square')
       axis(ax,'equal')
-      
+
       if 1 % Print title with time
         if pdist.length == 1
           ax.Title.String = pdist.time.utc('yyyy-mm-ddTHH:MM:SS:mmmZ');
@@ -2570,7 +2570,7 @@ classdef PDist < TSeries
           case 'b'
             l = 2;
             doB = 1;
-            B = args{2};    
+            B = args{2};
         end
         args = args(l+1:end);
         if isempty(args), break, end
@@ -2607,7 +2607,7 @@ classdef PDist < TSeries
           v1_bulk = mean(v1.resample(dist).data,1);
           v2_bulk = mean(v2.resample(dist).data,1);
         end
-        
+
         V1V2 = (V1-v1_bulk).*(V2-v2_bulk)*1e3*1e3; % km/s -> m/s
         % units_scaling
         new_units = 'arb. units';
@@ -2676,14 +2676,14 @@ classdef PDist < TSeries
           b2 = B2/norm(B2);
         else % single vector value
           b = B/norm(B);
-        end    
+        end
 
         hold(hca,'on')
         Bnorm = B;
         hold(hca,'off')
       end
-      if doP12 % add info about integrated value         
-        if integrated_p12 >= 0 
+      if doP12 % add info about integrated value
+        if integrated_p12 >= 0
           sumf_color = 'r';
         else
           sumf_color = 'b';
@@ -2691,10 +2691,10 @@ classdef PDist < TSeries
         %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
         %irf_legend(ax,sprintf('p = %.6f nPa',integrated_p12),[0.02 0.02],'color',sumf_color)
         irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
-      end      
+      end
       %if doP12 % add info about integrated value
         %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
-      %end      
+      %end
 
       if doContour
         hold(ax,'on')
@@ -3538,7 +3538,7 @@ classdef PDist < TSeries
           otherwise
             error('Units not supported.')
         end
-      elseif flagdir == -1 
+      elseif flagdir == -1
         switch obj.units
           case '1/(cm^2 s sr eV)'
             irf.log('warning','Converting DPFlux to PSD');
@@ -3546,7 +3546,7 @@ classdef PDist < TSeries
           case '1/(cm^2 s sr keV)'
             irf.log('warning','Converting DPFlux to PSD'); %% OBS, not correct units!!! Same above
             tmpData = 1e-3*obj.data/1e12*mm^2*0.53707;
-          otherwise 
+          otherwise
             error(sprintf('Units: %s not supported',obj.units))
         end
       end
@@ -3566,7 +3566,7 @@ classdef PDist < TSeries
         PD = obj;
         PD.data_ = tmpData;
         PD.units = '1/(cm^2 s sr eV)';
-      elseif flagdir == -1 
+      elseif flagdir == -1
           reshapedData = reshapedData./matEnergy;
           tmpData = reshape(reshapedData,sizeData);
           PD = obj;
@@ -3652,7 +3652,7 @@ classdef PDist < TSeries
       end
 
       PD = mms.get_pitchangledist(obj,obj1,'angles',nangles,varargin{:}); % - For v1.0.0 or higher data
-      
+
       % if the pitch angle bins are not equally spaced, we pass this for
       % plotting purposes, can be empty
       PD.ancillary.pitchangle_edges = pitchangle_edges;
@@ -3665,19 +3665,19 @@ classdef PDist < TSeries
       %   wave, but here we assume it to be close to zero (or equivalently,
       %   very far away from the resonant energy, so th is stricly the
       %   pitch angle
-      %   
+      %
       %   Example:
       %     pitch_dfdt = pitch.pitchangle_diffusion(Dth);
       %     pitch_dfdt.plot_pad_polar(hca,'10^3 km/s','flim',[-inf inf],'nolog10')
       %
       th_edges = obj.ancillary.pitchangle_edges;
       dth = diff(th_edges);
-      th = th_edges(1:end-1) + 0.5*dth;   
+      th = th_edges(1:end-1) + 0.5*dth;
       dt = mean(dth); % assumes they are equispaced
       TH = repmat(th,[numel(obj.depend{1}(1,:)),1]);
 
       f = squeeze(obj.data);
-      dfdth = f*0; 
+      dfdth = f*0;
       dfdth(:,2:end-1) = (f(:,3:end)-f(:,1:end-2))/(2*dt);
       dfdth(:,1) = (f(:,2)-f(:,1))/(dt);
       dfdth(:,end) = (f(:,end)-f(:,end-1))/(dt);
@@ -3687,7 +3687,7 @@ classdef PDist < TSeries
 
       %[~,dfdt__] = gradient(Dsinthdfdth,E',TH');
 
-      dfdt__ = dfdth*0; 
+      dfdt__ = dfdth*0;
       dfdt__(:,2:end-1) = (Dsinthdfdth(:,3:end)-Dsinthdfdth(:,1:end-2))/(2*dt);
       dfdt__(:,1) = diff(Dsinthdfdth(:,1:2),1,2)/(dt);
       dfdt__(:,end) = diff(Dsinthdfdth(:,end-1:end),1,2)/(dt);

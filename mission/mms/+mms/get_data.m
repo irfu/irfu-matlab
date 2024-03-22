@@ -1082,7 +1082,7 @@ end
                 pref        = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_P4_flux_t' num2str(iSen)];
                 pref_energy = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_phxtof_' species '_t' num2str(iSen) '_'];
               end
-              if not(isfield(dobj.data,pref))                  
+              if not(isfield(dobj.data,pref))
                 pref        = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev  '_phxtof_' species '_P4_flux_t' num2str(iSen)];
                 pref_energy = ['mms' mmsIdS '_epd_eis_' Vr.tmmode '_' Vr.lev  '_phxtof_' species '_t' num2str(iSen) '_'];
               end
