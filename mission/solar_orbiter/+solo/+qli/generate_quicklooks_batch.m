@@ -1,6 +1,6 @@
 %
-% Generate multiple IRFU-local types of quicklooks (files) for SolO data (not
-% just RPW) for a specified time interval.
+% Generate multiple types of quicklooks (24 h, 6 h, 2 h, weekly; files) for
+% explicitly specified dates.
 %
 % Intended for batch processing, e.g. being called from bash script, e.g. cron
 % job via a MATLAB wrapper script.
@@ -16,15 +16,15 @@
 % * Uses solo.read_TNR() indirectly which in turns relies on a hardcoded
 %   path to "/data/solo/remote/data/L2/thr/" and selected subdirectories.
 % * Creates subdirectories to the output directory if not pre-existing.
-% * Note: 7-day quicklooks always begin with a specific hardcoded weekday
-%   (Wednesday as of 2024-03-07).
+% * Note: "Weekly"/7-day quicklooks always begin with a specific hardcoded
+%   weekday (Wednesday as of 2024-03-22).
 % * Overwrites pre-existing quicklook files without warning.
 % * ~BUG: SolO DB (solo.db_get_ts() etc.) requires the caller to specify
-%    dataset_ID plus "-cdag" if present, but does not raise exception if wrong.
-%    ==> The code requires the datasets searched by SolO DB to have/lack "-cdag"
-%    exactly as specified (hardcoded). If they are not, then data appears to not
-%    be present and no exception is raised! This means that the code might not
-%    recognize datasets for the path specified with solo.db_init().
+%   dataset_ID plus "-cdag" if present, but does not raise exception if wrong.
+%   ==> The code requires the datasets searched by SolO DB to have/lack "-cdag"
+%   exactly as specified (hardcoded). If they are not, then data appears to not
+%   be present and no exception is raised! This means that the code might not
+%   recognize datasets for the path specified with solo.db_init().
 % * The code uses irf.log(). The caller may want to set the log level before
 %   calling the code.
 %
@@ -98,11 +98,6 @@ function generate_quicklooks_batch(...
 %               CON: Risks forgetting why it is needed to be there.
 %               CON: No direct connection between QLI s/w and file.
 %
-% PROPOSAL: Have local function solo.qli.utils.db_get_ts() normalize data returned from
-%           solo.db_get_ts() to TSeries, also for absent data.
-%   NOTE: Would require argument for dimensions when empty.
-%   PRO: Could (probably) simplify plot code a lot.
-%
 % PROPOSAL: Always call solo.db_get_ts() both with and without "-cdag", to make
 %           sure that the code does select non-existing datasets.
 %           Use pre-existing solo.qli.utils.db_get_ts() wrapper.
@@ -113,6 +108,15 @@ function generate_quicklooks_batch(...
 %   PRO: cron setup should specify filenames.
 %   PRO: generate_quicklooks_*_using_DB_SPICE() alraedy have arguments for paths
 %        to he files directly.
+%
+% PROPOSAL: Use dependency injection for plotting.
+%   PRO: Faster tests.
+%   PRO: Does not need to fiddle with solo.qli.const constants.
+%   CON: Exposes dependency to demo caller.
+%   CON: Convert into class with multiple functions, including wrapper.
+%   CON: Can manually add "return" in *_using_DB_SPICE functions.
+%   CON: Needs additional file with class.
+%     CON-PROPOSAL: Use function handles to static functions.
 %
 %
 % generate_quicklooks_24h_6h_2h(), generate_quicklook_7day()
@@ -161,20 +165,20 @@ OutputPaths = solo.qli.utils.create_output_directories(outputDir);
 % NOTE: As of 2024-03-21, this flag is only used for whether to explicitly
 % trigger automounts (requires knowledge of hardcoded path). Whether to inclulde
 % IRF logo is specified by the caller.
-isOfficialProcessing = false;
+isOfficialGeneration = false;
 if isunix()
   [errorCode, stdoutStr] = system('hostname');
   assert(errorCode == 0, 'Error when calling "hostname". errorCode = %i', errorCode)
   hostName = strip(stdoutStr);
 
-  if ismember(hostName, solo.qli.const.OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA)
-    isOfficialProcessing = true;
+  if ismember(hostName, solo.qli.const.OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA) && isunix
+    isOfficialGeneration = true;
   end
 end
 
 
-% NOTE: true/false ==> 0/1
-if isOfficialProcessing
+
+if isOfficialGeneration
   assert(~isempty(irfLogoPath))
 end
 
@@ -188,7 +192,7 @@ irf.log('n', sprintf('generateNonweeklyQuicklooks  = %d',   generateNonweeklyQui
 irf.log('n', sprintf('generateWeeklyQuicklooks     = %d',   generateWeeklyQuicklooks))
 irf.log('n', sprintf('numel(DaysDtArray)           = %d',   numel(DaysDtArray)))
 % Log other
-irf.log('n', sprintf('isOfficialProcessing         = %d',   isOfficialProcessing))
+irf.log('n', sprintf('isOfficialGeneration         = %d',   isOfficialGeneration))
 % Log selected constants.
 irf.log('n', sprintf('ENABLE_B                     = %d',   solo.qli.const.ENABLE_B))
 irf.log('n', sprintf('NONWEEKLY_SPECTRA_ENABLED    = %d',   solo.qli.const.NONWEEKLY_SPECTRA_ENABLED))
@@ -223,7 +227,7 @@ if generateNonweeklyQuicklooks
     DayDt = DaysDtArray(iDay);
 
     try
-      optionally_trigger_automount(isOfficialProcessing)
+      optionally_trigger_automount(isOfficialGeneration)
       solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE(DayDt, vhtFile1hPath, OutputPaths, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
@@ -249,7 +253,7 @@ if generateWeeklyQuicklooks
     WeekDt = WeeksDtArray(iWeek);
 
     try
-      optionally_trigger_automount(isOfficialProcessing)
+      optionally_trigger_automount(isOfficialGeneration)
       solo.qli.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.dir1w, irfLogoPath)
     catch Exc
       PlotExcArray(end+1) = Exc;
@@ -331,8 +335,8 @@ end
 % and ignore the result before using /data/solo/ (such as
 % "ls /data/solo/ >> /dev/null").
 %
-function optionally_trigger_automount(isOfficialProcessing)
-if isOfficialProcessing
+function optionally_trigger_automount(isOfficialGeneration)
+if isOfficialGeneration
   irf.log('n', sprintf(...
     'Trying to trigger automounting, if not already mounted: %s', ...
     solo.qli.const.OFFICIAL_GENERATION_AUTOMOUNT_DIR ...

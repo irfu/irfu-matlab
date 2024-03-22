@@ -26,5 +26,6 @@ generate_quicklook_7days.m
 generate_quicklooks_24h_6h_2h_using_DB_SPICE.m
 generate_quicklook_7days_using_DB_SPICE.m
     Files which call generate_quicklooks_24h_6h_2h.m and generate_quicklook_7days.m
-    and supply them with bulk data. If you want the quicklooks to have access
-    to more data e.g. science data (zVariables), then you need to edit these.
+    respectively and supply them with bulk data. If you want the quicklooks to have
+    access to more data e.g. more science data (zVariables), then you need to edit
+    these.

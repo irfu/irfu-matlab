@@ -8,10 +8,11 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % =========
 % Data
 %     Struct with various time series of data extracted from SPICE and datasets.
-%     See the call from solo.qli.generate_quicklooks_all_types().
+%     See the call from solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE().
 % OutputPaths
 %     Struct with paths to separate output directories for the different types
-%     of quicklooks (see solo.qli.generate_quicklooks_all_types).
+%     of quicklooks.
+%     Has fields: .dir2h, .dir6h, .dir24h
 % Tint24h
 %     Should be a 24-hour time interval consistent with the time series in
 %     "data", e.g.
@@ -31,6 +32,12 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %   solo_L2_swa-pas-eflux). -- OBSOLETE INFO. REFACTORED AWAY.
 
 
+
+% ==========
+% KNOWN BUGS
+% ==========
+% NOTE: Several bug descriptions here may obsolete.
+%
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
 %   /EJ 2023-05-10
 %   Ex: 20220329T04_20220329T06.png
@@ -52,6 +59,16 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %      2023-02-05: Normal. Has one colorbar for "f (kHz)"
 %      2023-02-06: Wider panels. Has no colorbar for "f (kHz)"
 %
+% BUG: 24h, panel 2, |B| (right axis) is scaled badly on y axis. Too much extra
+% space. Old quicklooks were better.
+% a44b3127 Erik P G Johansson (2024-03-21 12:56:51 +0100) SolO QLI: Change terms: official {processing-->generation}
+% Ex: 2023-01-05
+% irf_zoom(h(2), 'y', [minAbsB-1, maxAbsB+1]); at plotting gives good zoom, but
+% set_YLim_YTick(h([]), h([2]), h([])) later re-zooms in worse way.
+% /Erik P G Johansson 2024-03-21
+
+
+
 % TODO-NI: Panels 2 & 5 are logarithmic for 24h plots and linear for 6h & 2h?
 %          Should they be?
 % TODO-NI: Old panels 5 had a constant y axis range (YLim) for 24h, but dynamic
@@ -75,6 +92,9 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %     CON: Overkill.
 %   PROPOSAL: Submit the return value of solo.read_TNR() as argument instead of
 %             calling it.
+%
+% PROPOSAL: Eliminate isempty(Data.tnrBand).
+%   PRO: Seems unnecessary.
 
 
 
@@ -407,7 +427,7 @@ if ~isempty(Data.tnrBand)
       %set(h(10), 'ColorScale', 'log')
       %caxis(h(10), [.01 1]*10^-12)
       ylabel(h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
-      colormap(h(10),jet)
+      colormap(h(10), jet)
       %yticks(h(10), [10^1 10^2]);
       %irf_zoom(h(10), 'y', [10^1 10^2])
     end

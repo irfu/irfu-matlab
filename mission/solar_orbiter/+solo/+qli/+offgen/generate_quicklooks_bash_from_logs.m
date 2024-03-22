@@ -4,9 +4,8 @@
 % which should indicate updated datasets.
 %
 %
-% NOTE: See README.TXT for information on this package.
 % NOTE: This script is NOT intended to be called from MATLAB by the average
-%       user. See solo.qli.generate_quicklooks_all_types() instead.
+%       user. See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT.
 %
 % NOTE: This function is designed to potentially be called from bash/the OS.
 %
