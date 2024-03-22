@@ -50,8 +50,8 @@ function generate_quicklooks_bash_any(modeId, varargin)
 %        text so that it does not log or create intermediate directory etc.
 
   switch(modeId)
-    case 'MANUAL'
-      solo.qli.offgen.generate_quicklooks_bash_manual(varargin{:})
+    case 'TIME_INTERVAL'
+      solo.qli.offgen.generate_quicklooks_bash_time_interval(varargin{:})
 
     case 'GENERATE_FROM_LOGS'
       solo.qli.offgen.generate_quicklooks_bash_from_logs(varargin{:})
