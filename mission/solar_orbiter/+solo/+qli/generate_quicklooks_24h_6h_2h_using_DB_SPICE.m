@@ -85,9 +85,7 @@ Data.soloPos = solo.qli.utils.get_SolO_position(Tint);
 EARTH_POS_DT_SEC = 60*60;
 Data.earthPos    = solo.qli.utils.get_Earth_position(Tint, EARTH_POS_DT_SEC);
 
-if ~solo.qli.const.ENABLE_B
-  Data.B = [];
-end
+
 
 % =============================
 % Plot data and save quicklooks

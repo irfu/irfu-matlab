@@ -40,6 +40,12 @@ fig.Position = [1, 1, 1095, 800];
 
 
 
+if ~solo.qli.const.ENABLE_B
+  Data.B = [];
+end
+
+
+
 %===================================
 % Fill panel 1: B vector components
 %===================================
