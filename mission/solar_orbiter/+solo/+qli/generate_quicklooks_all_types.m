@@ -174,10 +174,25 @@ end
 
 
 % NOTE: true/false ==> 0/1
-irf.log('n', sprintf('isOfficialProcessing = %i', isOfficialProcessing))
 if isOfficialProcessing
   assert(~isempty(irfLogoPath))
 end
+
+
+
+% Log arguments
+irf.log('n', sprintf('irfLogoPath                  = "%s"', irfLogoPath))
+irf.log('n', sprintf('vhtDataDir                   = "%s"', vhtDataDir))
+irf.log('n', sprintf('outputDir                    = "%s"', outputDir))
+irf.log('n', sprintf('generateNonweeklyQuicklooks  = %d',   generateNonweeklyQuicklooks))
+irf.log('n', sprintf('generateWeeklyQuicklooks     = %d',   generateWeeklyQuicklooks))
+irf.log('n', sprintf('numel(DaysDtArray)           = %d',   numel(DaysDtArray)))
+% Log other
+irf.log('n', sprintf('isOfficialProcessing         = %d',   isOfficialProcessing))
+% Log selected constants.
+irf.log('n', sprintf('ENABLE_B                     = %d',   solo.qli.const.ENABLE_B))
+irf.log('n', sprintf('NONWEEKLY_SPECTRA_ENABLED    = %d',   solo.qli.const.NONWEEKLY_SPECTRA_ENABLED))
+irf.log('n', sprintf('NONWEEKLY_ALL_PLOTS_ENABLED  = %d',   solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED))
 
 
 
