@@ -36,10 +36,9 @@
 % Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function generate_quicklook_7days_using_DB_SPICE(Dt, vhtFile6hPath, outputDir1wPath, irfLogoPath)
-Tint = [
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(7)), ...
-  ];
+assert(isa(Dt, 'datetime') && isscalar(Dt) && strcmp(Dt.TimeZone, 'UTCLeapSeconds'))
+
+Tint = EpochTT([char(Dt); char(Dt+caldays(7))]);
 
 
 

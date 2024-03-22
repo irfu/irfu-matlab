@@ -35,18 +35,6 @@ classdef utils
 
 
 
-    function t = scalar_datetime_to_EpochTT(Dt)
-      % NOTE: Might not be the perfect implementation, but it works.
-
-      assert(isa(Dt, 'datetime'))
-      assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'))
-
-      tt2000 = irf.cdf.datevec_to_TT2000(datevec(Dt));
-      t = irf.time_array(tt2000);
-    end
-
-
-
     % Given an array of datetime representing days to be plotted, derive the
     % corresponding weeks which overlap with the specified days.
     %

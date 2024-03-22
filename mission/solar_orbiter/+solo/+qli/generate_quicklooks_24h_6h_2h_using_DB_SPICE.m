@@ -38,10 +38,9 @@
 % Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function generate_quicklooks_24h_6h_2h_using_DB_SPICE(Dt, vhtFile1hPath, OutputPaths, irfLogoPath)
-Tint = [
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(1))
-  ];
+assert(isa(Dt, 'datetime') && isscalar(Dt) && strcmp(Dt.TimeZone, 'UTCLeapSeconds'))
+
+Tint = EpochTT([char(Dt); char(Dt+caldays(1))]);
 
 
 
