@@ -105,8 +105,9 @@ classdef generate_quicklooks_24h_6h_2h___UTEST < matlab.unittest.TestCase
 
       Data = solo.qli.testdata.generate_test_data(...
         QuicklooksTint, SpacePosTint, BTint);
+      irfLogoPath = solo.qli.testdata.get_test_logo_path();
 
-      solo.qli.generate_quicklooks_24h_6h_2h(Data, testCase.OutputPaths, QuicklooksTint, [])
+      solo.qli.generate_quicklooks_24h_6h_2h(Data, testCase.OutputPaths, QuicklooksTint, irfLogoPath)
     end
 
 

@@ -100,7 +100,10 @@ classdef testdata
       Data        = solo.qli.testdata.generate_test_data(...
         QuicklooksTint, SpacePosTint, BTint);
 
-      solo.qli.generate_quicklooks_24h_6h_2h(Data, OutputPaths, QuicklooksTint, [])
+      irfLogoPath = solo.qli.testdata.get_test_logo_path();
+      %irfLogoPath = '/nonhome_data/work_files/SOLAR_ORBITER/irfu-matlab_qli/mission/solar_orbiter/+solo/+qli/+offgen/irf_logo.png';
+
+      solo.qli.generate_quicklooks_24h_6h_2h(Data, OutputPaths, QuicklooksTint, irfLogoPath)
       toc
     end
 
@@ -124,7 +127,9 @@ classdef testdata
       Data = solo.qli.testdata.generate_test_data(...
         QuicklooksTint, SpacePosTint, BTint);
 
-      solo.qli.generate_quicklook_7days(Data, outputDir, QuicklooksTint, [])
+      irfLogoPath = solo.qli.testdata.get_test_logo_path();
+
+      solo.qli.generate_quicklook_7days(Data, outputDir, QuicklooksTint, irfLogoPath)
       toc
     end
 
@@ -393,6 +398,28 @@ classdef testdata
       % "overflow".
       A = max(A, aMin);
       A = min(A, aMax);
+    end
+
+
+
+    % Create image file which can be used as test logo.
+    function create_test_logo(filePath)
+      % NOTE: Argument determines the file type, which is not perfect.
+
+      % NOTE: irf_logo.png is 1220x1226 pixels.
+      TEST_LOGO = [
+        0,1,0;
+        1,0,1;
+        0,1,0
+        ];
+      imwrite(TEST_LOGO, filePath)
+    end
+
+
+
+    function testLogoPath = get_test_logo_path()
+      testLogoPath = fullfile(tempdir, 'test_logo.png');
+      solo.qli.testdata.create_test_logo(testLogoPath)
     end
 
 

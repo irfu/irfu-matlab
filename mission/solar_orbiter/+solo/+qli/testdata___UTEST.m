@@ -69,6 +69,25 @@ classdef testdata___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_create_test_logo(testCase)
+      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      filePath = fullfile(F.Folder, 'test_logo.png');
+
+      solo.qli.testdata.create_test_logo(filePath)
+
+      irf.assert.file_exists(filePath)
+      testCase.assertTrue( dir(filePath).bytes > 0 )
+    end
+
+
+
+    function test_get_test_logo_path(testCase)
+      testLogoPath = solo.qli.testdata.get_test_logo_path();
+      irf.assert.file_exists(testLogoPath)
+    end
+
+
+
   end    % methods(Test)
 
 
