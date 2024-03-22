@@ -1,5 +1,5 @@
 %
-% Wrapper around solo.qli.generate_quicklooks_all_types() intended for being run
+% Wrapper around solo.qli.generate_quicklooks_batch() intended for being run
 % on brain/spis for the purpose of cron jobs and official generation of
 % quicklooks.
 %
@@ -130,7 +130,7 @@ solo.db_cache('on', 'save')
 %=====================
 % Generate quicklooks
 %=====================
-solo.qli.generate_quicklooks_all_types(...
+solo.qli.generate_quicklooks_batch(...
   irfLogoPath, VHT_DIR, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
 end
