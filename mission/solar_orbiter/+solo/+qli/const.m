@@ -12,6 +12,12 @@ classdef const
   %           somehow.
   %   PROBLEM: generate_quicklooks_*_using_DB_SPICE() use them.
   %     PROPOSAL: Also hardcode values in demo file.
+  %
+  % PROPOSAL: Replace ENABLE_B, NONWEEKLY_SPECTRA_ENABLED,
+  %           NONWEEKLY_ALL_PLOTS_ENABLED with optional arguments, "settings" (varargin)
+  %   NOTE: Would need to expose the same settings arguments in
+  %         solo.qli.generate_quicklooks_batch().
+  %   PRO: Calling MTEST code could set values (override defaults).
 
 
 

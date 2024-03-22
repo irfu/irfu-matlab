@@ -23,20 +23,32 @@ tBeginSec = tic();
 
 
 
-% Setup figure:
 LINE_WIDTH       = 1.0;   % irf_plot() line width.
 FONT_SIZE        = 18;    % Font size
 LEGEND_FONT_SIZE = 22;    % irf_legend() font size.
-COLORS           = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
+COLORS           = [
+  0 0 0;    % Black
+  0 0 1;    % Blue
+  1 0 0;    % Red
+  0 0.5 0;
+  0 1 1 ;
+  1 0 1;
+  1 1 0];
+
+% NOTE: Unclear units. Magnitude implies pixels, but actual quicklooks are
+% 2281x1667 pixels.
+FIG_WIDTH  = 1095;
+FIG_HEIGHT =  800;
 
 UNITS = irf_units;
 Me    = UNITS.me;      % Electron mass [kg]
 eps0  = UNITS.eps0;    % Permittivity of free space [Fm^-1]
 qe    = UNITS.e;       % Elementary charge [C]
 
+% Setup figure
 h            = irf_plot(9, 'newfigure');
 fig          = gcf;
-fig.Position = [1, 1, 1095, 800];
+fig.Position = [1, 1, FIG_WIDTH, FIG_HEIGHT];
 
 
 
@@ -309,11 +321,18 @@ xtickangle(h(9), 0)
 %======================================================
 % Add IRF logo and data source information info string
 %======================================================
-logoPos = h(1).Position;    %  [left, bottom, width, height]
-logoPos(1) = logoPos(1) + logoPos(3) + 0.01;
-logoPos(2) = logoPos(2) + 0.06;
-logoPos(3) = 0.05;
-logoPos(4) = logoPos(3) * 1095/800;
+panelPos = h(1).Position;    %  [left, bottom, width, height]
+logoPos = [
+  panelPos(1) + panelPos(3) + 0.01;
+  panelPos(2) + 0.06;
+  0.05;
+  0.05 * FIG_WIDTH/FIG_HEIGHT;
+  ];
+% logoPos = h(1).Position;    %  [left, bottom, width, height]
+% logoPos(1) = logoPos(1) + logoPos(3) + 0.01;
+% logoPos(2) = logoPos(2) + 0.06;
+% logoPos(3) = 0.05;
+% logoPos(4) = logoPos(3) * 1095/800;
 hLogoAxes = axes('position', logoPos);
 if ~isempty(logoPath)
   [x, ~] = imread(logoPath);

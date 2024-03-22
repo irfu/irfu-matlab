@@ -79,22 +79,24 @@ classdef testdata
 
 
     % Generate plots for manual inspection from test data.
-    function manual_24h_6h_2h_test(outputDir)
+    function manual_test_24h_6h_2h(outputDir)
       close all
       tic
 
+      DT0 = datetime('2023-01-05T00:00:00.00Z', 'TimeZone', 'UTCLeapSeconds');
+
       QuicklooksTint = irf.tint(...
-        '2024-01-01T00:00:00.00Z', ...
-        '2024-01-02T00:00:00.00Z');
+        char(DT0), ...
+        char(DT0+caldays(1)));
       SpacePosTint = irf.tint(...
-        '2023-12-01T00:00:00.00Z', ...
-        '2024-02-02T00:00:00.00Z');
+        char(DT0-calmonths(1)), ...
+        char(DT0+calmonths(1)));
 
       % Shorter time interval to speed up test, but not too short so that it is
       % hard to inspect the relevant part of the plot (spectrum).
       BTint = irf.tint(...
-        '2024-01-01T01:00:00', ...
-        '2024-01-01T01:30:00');
+        char(DT0+hours(1)), ...
+        char(DT0+hours(1)+minutes(30)));
 
       OutputPaths = solo.qli.utils.create_output_directories(outputDir);
       Data        = solo.qli.testdata.generate_test_data(...
@@ -110,7 +112,7 @@ classdef testdata
 
 
     % Generate plot for manual inspection from test data.
-    function manual_7days_test(outputDir)
+    function manual_test_7days(outputDir)
       close all
       tic
 

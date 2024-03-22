@@ -29,10 +29,11 @@
 % ARGUMENTS
 % =========
 % ticks
-%       Vector (or empty) with tick values on the relevant axis.
+%       Vector (or empty) with tick values on the relevant axis (X/Y/Z).
 %       Values may be inside and/or outside dataLimits.
 % dataLimits
-%       Length-2 vector. Min & max value for data in plot on the relevant axis.
+%       Length-2 vector. Min & max value for data in plot on the relevant axis
+%       (X/Y/Z).
 % scale
 %       String constant. 'linear' or 'log'.
 %       NOTE: Same constants as in graphical object properties X/Y/ZScale.

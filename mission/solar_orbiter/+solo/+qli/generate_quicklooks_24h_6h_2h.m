@@ -81,11 +81,23 @@ tBeginSec = tic();
 
 
 
-% Setup figure:
 LINE_WIDTH       = 1.0;   % irf_plot() line width.
 FONT_SIZE        = 18;    % Font size
 LEGEND_FONT_SIZE = 22;    % irf_legend() font size.
-COLORS           = [0 0 0; 0 0 1; 1 0 0; 0 0.5 0; 0 1 1; 1 0 1; 1 1 0];
+% Different colors to reuse. One color per row.
+COLORS           = [
+  0 0 0;    % Black
+  0 0 1;    % Blue
+  1 0 0;    % Red
+  0 0.5 0;
+  0 1 1;
+  1 0 1;
+  1 1 0];
+
+% NOTE: Unclear units. Magnitude implies pixels, but actual quicklooks are
+% 2281x1667 pixels.
+FIG_WIDTH  = 1095;
+FIG_HEIGHT =  800;
 
 UNITS = irf_units;
 Me    = UNITS.me;      % Electron mass [kg]
@@ -93,10 +105,10 @@ eps0  = UNITS.eps0;    % Permittivity of free space [Fm^-1]
 mp    = UNITS.mp;      % Proton mass [km]
 qe    = UNITS.e;       % Elementary charge [C]
 
+% Setup figure
 h            = irf_plot(10, 'newfigure');
 fig          = gcf;
-fig.Position = [1, 1, 1095, 800];
-
+fig.Position = [1, 1, FIG_WIDTH, FIG_HEIGHT];
 
 
 if ~solo.qli.const.ENABLE_B
@@ -135,8 +147,9 @@ h(2).ColorOrder = COLORS;
 irf_legend(h(2), {'N_{e,RPW}', 'N_{i,PAS}', '|B|'}, [0.98 0.16], 'Fontsize', LEGEND_FONT_SIZE);
 
 yyaxis(h(2), 'right');
+ABS_B_COLOR = COLORS(3,:);
 if ~isempty(Data.B)
-  irf_plot(h(2), Data.B.abs.tlim(Tint24h), 'color', COLORS(3,:), 'linewidth', LINE_WIDTH);
+  irf_plot(h(2), Data.B.abs.tlim(Tint24h), 'color', ABS_B_COLOR, 'linewidth', LINE_WIDTH);
   %Bnan = rmmissing(data.B.abs.data);
   %if ~isempty(Bnan)
   %    h(2).YLim = [floor(min(abs(Bnan))),ceil(max(abs(Bnan)))];
@@ -149,7 +162,7 @@ if ~isempty(Data.B)
   end
 end
 ylabel(h(2), {'|B|'; '(nT)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
-h(2).YColor = [1, 0, 0];
+h(2).YColor = ABS_B_COLOR;
 
 tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 
@@ -441,17 +454,24 @@ tBeginSec = solo.qli.utils.log_time('End panel 10', tBeginSec);
 %======================
 % Other, miscellaneous
 %======================
-irf_plot_axis_align(h(1:10));  % Make panels ("data area") have the same width.
-irf_zoom(h(1:10), 'x', Tint24h);
+irf_plot_axis_align(h(1:10));      % Make the panels have the same width.
+irf_zoom(h(1:10), 'x', Tint24h);   % Make the panels cover the same x (time) range.
 irf_zoom(h(1),    'y');
 
+% Correct the position of the right y label.
+% (It is affected by irf_plot_axis_align(h(1:10))).
+yyaxis(h(2), 'right');
 h(2).YLabel.Position = [1.05, 0.5, 0];
-yyaxis(h(2), 'left');
-h(2).YLabel.Units = 'normalized';
+
+% Correct/adjust the position of the left y label, so that it lines up with
+% another panel's y label
+% -------------------------------------------------------------------------
 % NOTE: *NOT* using h(3) or h(4) since they do not have ylabels if the relevant
 % data is missing. h(1) ylabel always has a position. Using h(3) (old
 % implementation) lead to left panel 2 ylabel having the wrong position (too far
 % left) when h(3) did not have any label).
+yyaxis(h(2), 'left');
+h(2).YLabel.Units    = h(1).YLabel.Units;
 h(2).YLabel.Position = h(1).YLabel.Position;
 
 % Add Context Info Strings (CIS): Spacecraft position, Earth longitude as text.
@@ -466,11 +486,13 @@ xtickangle(h(10), 0)
 %======================================================
 % Add IRF logo and data source information info string
 %======================================================
-logoPos = h(1).Position;    %  [left, bottom, width, height]
-logoPos(1) = logoPos(1) + logoPos(3) + 0.06;
-logoPos(2) = logoPos(2) + 0.06;
-logoPos(3) = 0.05;
-logoPos(4) = logoPos(3) * 1095/800;
+panelPos = h(1).Position;    %  [left, bottom, width, height]
+logoPos = [
+  panelPos(1) + panelPos(3) + 0.06;
+  panelPos(2) + 0.06;
+  0.05;
+  0.05 * FIG_WIDTH/FIG_HEIGHT;
+  ];
 hLogoAxes = axes('position', logoPos);
 if ~isempty(logoPath)
   [x, ~] = imread(logoPath);
@@ -501,6 +523,15 @@ yyaxis(h(2), 'right');
 h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
 h(2).YTick  = [1, 10, 100];
 
+% Remove overlapping ticks.
+% Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
+% depending on panel.
+yyaxis(h(2), 'left');
+set_YLim_YTick(h([1, 6:9]), h([2]), h([3:5, 10]))
+yyaxis(h(2), 'right');
+set_YLim_YTick(h([]), h([2]), h([]))  % Can be bad.
+%set_YLim_YTick(h([2]), h([]), h([]))  % Can be bad.
+
 % NOTE: h(5).YLim are hardcoded and seem too broad/wide.
 % PROPOSAL: Not overwrite automatic YLim?
 oldYLimH5   = h(5).YLim;
@@ -508,16 +539,6 @@ oldYTickH5  = h(5).YTick;
 h(5).YScale = 'log';       % NOTE: Later changed to LIN.
 h(5).YTick  = [1, 10, 100];
 h(5).YLim   = [0.5, 300];
-
-
-
-% Remove overlapping ticks.
-% Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
-% depending on panel.
-yyaxis(h(2), 'left');
-set_YLim_YTick(h([1, 6:9]), h([2]), h([3:5, 10]))
-yyaxis(h(2), 'right');
-set_YLim_YTick(h([]), h([2]), h([]))
 
 
 

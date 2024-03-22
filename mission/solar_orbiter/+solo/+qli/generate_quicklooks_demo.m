@@ -9,12 +9,12 @@
 %
 % NOTE: GENERATING QUICKLOOKS IS TIME-CONSUMING, in particular 24h, 6h, 2h
 % quicklooks when MAG data is available (80% of the mission time). Depending on
-% the machine, it may take on the order of 20 minutes per day of data with MAG
-% data!
+% the machine, it may take on the order of 20-30 minutes per day of data when
+% there is MAG data!
 %
 % NOTE: The exact locations and sizes of text and panels on quicklooks as seen
 % in windows (figures) in the OS GUI may be different or outright wrong when
-% compared to file-versions of quicklooks (for text, e.g. bad location).
+% compared to file versions of quicklooks (for text, e.g. bad location).
 %
 %
 % ARGUMENTS
@@ -30,7 +30,7 @@
 function generate_quicklooks_demo(outputDir)
 
 VHT_DIR                       = '/data/solo/data_yuri/';
-GENERATE_NONWEEKLY_QUICKLOOKS = false;   % Whether to generate 24h, 6h, and 2h quicklooks.
+GENERATE_NONWEEKLY_QUICKLOOKS = true;   % Whether to generate 24h, 6h, and 2h quicklooks.
 GENERATE_WEEKLY_QUICKLOOKS    = true;
 
 % datetime column array. Array of UTC midnights representing the beginning of

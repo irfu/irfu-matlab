@@ -148,8 +148,8 @@ classdef utils
         filePath = fullfile(FileArray(1).path, FileArray(1).name);
 
         % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
-        %       dataobj(), not NASA SPDF). *Might* be faster (or might not) since
-        %       only reading a specified zVariable.
+        %       dataobj(), not NASA SPDF). *Might* be faster (or might not)
+        %       since only reading a specified zVariable.
         zvCa   = cdfread(filePath, 'variables', zvName);
         zvData = zvCa{1};
       else
