@@ -6,10 +6,10 @@
 %
 % IMPLEMENTATION NOTE: This function is separate from
 % solo.qli.generate_quicklooks_24h_6h_2h() (1) partly for historical reasons,
-% and (2) partly to facilitate (future) test code for
-% solo.qli.generate_quicklooks_24h_6h_2h() which then requires explicitly
-% submitting all data as arguments to it (i.e. NOT use e.g. solo.db_get_ts(), or
-% SPICE).
+% and (2) partly to facilitate test code for
+% solo.qli.generate_quicklooks_24h_6h_2h() which requires explicitly
+% submitting all data as arguments to it (i.e. NOT use e.g. solo.db_get_ts() or
+% SPICE which both read files on disk).
 %
 %
 % ARGUMENTS

@@ -6,9 +6,9 @@
 %
 % IMPLEMENTATION NOTE: This function is separate from
 % solo.qli.generate_quicklook_7days() (1) partly for historical reasons, and (2)
-% partly to facilitate (future) test code for
-% solo.qli.generate_quicklook_7days() which then requires explicitly submitting
-% all data as arguments to it (i.e. NOT use e.g. solo.db_get_ts(), or SPICE).
+% partly to facilitate test code for solo.qli.generate_quicklook_7days() which
+% requires explicitly submitting all data as arguments to it (i.e. NOT use
+% e.g. solo.db_get_ts() or SPICE which both read files from disk).
 %
 %
 % ARGUMENTS
