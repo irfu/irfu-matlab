@@ -61,6 +61,8 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % irf_zoom(h(2), 'y', [minAbsB-1, maxAbsB+1]); at plotting gives good zoom, but
 % set_YLim_YTick(h([]), h([2]), h([])) later re-zooms in worse way.
 % /Erik P G Johansson 2024-03-21
+% Should be solved.
+% /Erik P G Johansson 2024-03-25
 
 
 
@@ -160,6 +162,10 @@ if ~isempty(Data.B)
     % Only zoom if min & max are not NaN (==> Avoid crash).
     irf_zoom(h(2), 'y', [minAbsB-1, maxAbsB+1]);
   end
+else
+  % Values in the absence of data.
+  minAbsB = NaN;
+  maxAbsB = NaN;
 end
 ylabel(h(2), {'|B|'; '(nT)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 h(2).YColor = ABS_B_COLOR;
@@ -516,26 +522,30 @@ yyaxis(h(2), 'left');
 h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
 h(2).YTick  = [1, 10, 100];
 
-% NOTE: Panel 2 YTick not auto-adjusted partly because
-% solo.qli.utils.ensure_axes_data_tick_margins() can not handle both left &
-% right yaxis.
-yyaxis(h(2), 'right');
-h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
-h(2).YTick  = [1, 10, 100];
-
 % Remove overlapping ticks.
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
 % depending on panel.
-yyaxis(h(2), 'left');
 %set_YLim_YTick(h([1, 6:9]), h([2]), h([3:5, 10]))
 solo.qli.utils.set_YLim_YTick_automatically( h([1, 6:9 ]))
-solo.qli.utils.set_YLim_YTick_automatically( h([2])      )
+%solo.qli.utils.set_YLim_YTick_automatically( h([2])      )
 solo.qli.utils.ensure_axes_data_tick_margins(h([3:5, 10]))
 
+
+
+% NOTE: Had difficulties making panel 2, right axis have a sensible range and
+% ticks. Therefore using explicit min & max from data. In part because MATLAB
+% sets YLim min=0 which is bad for a log scale.
 yyaxis(h(2), 'right');
-%set_YLim_YTick(h([]), h([2]), h([]))  % Can be bad.
-%set_YLim_YTick(h([2]), h([]), h([]))  % Can be bad.
-solo.qli.utils.set_YLim_YTick_automatically(h([2]))
+h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
+h(2).YTick  = [1, 10, 100];
+if ~isnan(minAbsB) && ~isnan(maxAbsB)
+  % NOTE: Log scale makes effective visual distance smaller. May need greater
+  % deviation from 1 than intuitively expected.
+  C_ABS_B_MARGIN = 1.2;
+  h(2).YLim = [minAbsB/C_ABS_B_MARGIN, maxAbsB*C_ABS_B_MARGIN];
+end
+
+solo.qli.utils.ensure_axes_data_tick_margins(h(2))
 
 
 % NOTE: h(5).YLim are hardcoded and seem too broad/wide.
