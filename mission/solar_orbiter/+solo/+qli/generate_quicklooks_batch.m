@@ -13,8 +13,6 @@
 % * Uses SPICE implicitly, and therefore relies on some path convention used by
 %   irfu-matlab for where to find SPICE kernels. Not sure which convention, but
 %   presumably it does at least find /data/solo/SPICE/.
-% * Uses solo.read_TNR() indirectly which in turns relies on a hardcoded
-%   path to "/data/solo/remote/data/L2/thr/" and selected subdirectories.
 % * Creates subdirectories to the output directory if not pre-existing.
 % * Note: "Weekly"/7-day quicklooks always begin with a specific hardcoded
 %   weekday (Wednesday as of 2024-03-22).

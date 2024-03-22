@@ -25,11 +25,6 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % =====
 % * Computes the spectrum for B when magnetic field data is available. When it
 %   does, the code takes a lot of time.
-% * The function uses solo.read_TNR() which in turns relies on a
-%   hardcoded path to "/data/solo/remote/data/L2/thr/" and selected
-%   subdirectories. -- OBSOLETE INFO. REFACTORED AWAY.
-% * The function obtains some data by reading CDF files directly (cdfread;
-%   solo_L2_swa-pas-eflux). -- OBSOLETE INFO. REFACTORED AWAY.
 
 
 
@@ -76,22 +71,6 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % TODO-NI Panel 10 (log) is hardcoded to YLim~[10, 100] (because that is what
 %         it used to be). This does not cover the entire interval of data
 %         (there is more data at lower y). Should it be that way?
-%
-% PROPOSAL: Make function not directly call solo.read_TNR()
-%   PRO: Makes function testable.
-%     CON: Function still reads other CDF files.
-%   CON: Must understand the solo.read_TNR() return value.
-%     CON: Seems feasible.
-%       case 0:
-%         out = 0;
-%       case 1:
-%         out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
-%         out.p_label = {'dB'};
-%
-%   PROPOSAL: Only call solo.read_TNR() via dependency injection.
-%     CON: Overkill.
-%   PROPOSAL: Submit the return value of solo.read_TNR() as argument instead of
-%             calling it.
 %
 % PROPOSAL: Eliminate isempty(Data.tnrBand).
 %   PRO: Seems unnecessary.

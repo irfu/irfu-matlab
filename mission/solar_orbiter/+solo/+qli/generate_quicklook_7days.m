@@ -16,15 +16,6 @@ function generate_quicklook_7days(Data, outputDir1wPath, Tint, logoPath)
 %     irf.tint('2020-06-03T00:00:00.00Z', '2020-06-10T00:00:00.00Z');
 % logoPath
 %     Either path to IRF logo, or empty.
-%
-%
-% NOTES
-% =====
-% * The function obtains some data by reading CDF files directly (cdfread;
-%   solo_L2_swa-pas-eflux).
-% * The function also locates CDF files (reads files via SolO DB?) which are
-%   used to obtain a time interval which is passed to solo.read_TNR(). ==>
-%   Relies on more files. -- OBSOLETE INFO. REFACTORED AWAY.
 
 
 
