@@ -1,15 +1,12 @@
 %
-% Generate quicklooks, but specifying method for how to select dates.
+% Generate quicklooks, but the caller specifies the method for how to
+% select dates.
 %
 %
-% NOTE: See README.TXT for information on this package.
 % NOTE: This script is NOT intended to be called from MATLAB by the average
-%       user. See solo.qli.generate_quicklooks_all_types() instead.
+%       user. See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT.
 %
 % NOTE: This function is designed to be called from bash/the OS.
-%
-% NOTE: This script is NOT intended to be called from MATLAB by the average
-%       user. See solo.qli.generate_quicklooks_all_types() instead.
 %
 %
 % IMPLEMENTATION NOTES

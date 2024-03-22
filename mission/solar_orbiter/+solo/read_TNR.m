@@ -2,7 +2,7 @@ function out = read_TNR(tint)
 %     Read L2 data from TNR.
 %
 %     @author: Louis Richard
-%     Updated by: Jordi Boldu
+%     Updated by: Jordi Boldu, Erik P G Johansson
 %
 %     NOTE: Uses irfu-matlab's solo.db_get_ts() and solo.db_list_files() for
 %     reading and locating CDF datasets.
@@ -25,7 +25,8 @@ function out = read_TNR(tint)
 %     Returns
 %     -------
 %     out :
-%         Struct. Spectrum of the measured signals.
+%         Struct. Spectrum of the measured signals. Can be used as argument to
+%         irf_spectrogram().
 %         [], if there is are no TNR datasets for the specified period.
 %
 %     Notes
@@ -43,6 +44,7 @@ sensor2 = 4;
 data_l2 = read_raw_TNR_data(tint);
 
 if isempty(data_l2)
+  % There are no TNR datasets for the selected time interval.
   out = [];
   return
 end
@@ -141,6 +143,7 @@ elseif ~isempty(sens1_)
   sens_ = sens1_;
   timet_ici = timet_(sens1_);
 else
+  % "there is no data on any sensor configuration"
   out = [];
   return;
   %irf.log('critical', 'no data at all ?!?')
@@ -239,7 +242,7 @@ end
 
 %%
 function Data = read_raw_TNR_data(tint)
-%     Read required raw TNR zVariables.
+%     Read selected TNR zVariables.
 %
 %     @author: Louis Richard. Modified by Erik P G Johansson.
 %

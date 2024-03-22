@@ -55,31 +55,6 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_scalar_datetime_to_EpochTT(testCase)
-
-      function test(utcStr)
-        Dt          = datetime(utcStr, 'TimeZone', 'UTCLeapSeconds');
-        ExpEpochTT  = EpochTT(utcStr);
-
-        ActEpochTT = solo.qli.utils.scalar_datetime_to_EpochTT(Dt);
-
-        testCase.assertEqual(ActEpochTT, ExpEpochTT)
-      end
-
-      test('2024-03-05T01:02:03.004Z')
-      test('2024-03-05T01:02:03.123456789Z')
-
-      % On and around leap second.
-      test('2016-12-31T23:59:58.000Z')
-      test('2016-12-31T23:59:59.000Z')
-      test('2016-12-31T23:59:60.000Z')
-      test('2016-12-31T23:59:60.500Z')
-      test('2017-01-01T00:00:00.000Z')
-      test('2017-01-01T00:00:01.000Z')
-    end
-
-
-
     function test_derive_weeks(testCase)
 
       function test(DayBeginDtArray, firstDayOfWeek, ExpWeekBeginDtArray)

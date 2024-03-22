@@ -51,15 +51,6 @@ DAYS_DATETIME_COLUMN_ARRAY    = datetime({...
 % NOTE: Only uses /data/solo/remote/data/ and /data/solo/soar/ (and not
 %       /data/solo/data_irfu/) since data_irfu/ has less reliable data
 %       ("bleeding edge").
-%
-% IMPORTANT NOTE
-% --------------
-% The quicklook generation relies on the path specified submitted to
-% solo.db_init(), but it also relies on a hardcoded path to
-% /data/solo/remote/data/L2/thr/ in solo.read_TNR(). There is currently no way
-% of changing this without changing that hardcoded path and therefore currently
-% no way of generating quicklooks without this path available. This restriction
-% may be eliminated eventually.
 
 irf()    % Needed to make "SolO DB" work.
 solo.db_init('local_file_db', '/data/solo/');

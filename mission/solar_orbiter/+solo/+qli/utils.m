@@ -35,18 +35,6 @@ classdef utils
 
 
 
-    function t = scalar_datetime_to_EpochTT(Dt)
-      % NOTE: Might not be the perfect implementation, but it works.
-
-      assert(isa(Dt, 'datetime'))
-      assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'))
-
-      tt2000 = irf.cdf.datevec_to_TT2000(datevec(Dt));
-      t = irf.time_array(tt2000);
-    end
-
-
-
     % Given an array of datetime representing days to be plotted, derive the
     % corresponding weeks which overlap with the specified days.
     %
@@ -115,14 +103,36 @@ classdef utils
 
 
     % Read ONE zVariable for *constant* metadata which can not be loaded using
-    % solo.db_get_ts() due to not having the expected CDF metadata.
+    % solo.db_get_ts() due to being constant CDF metadata(?), e.g. not having
+    % DEPEND_0..
     %
+    %
+    % NOTE: Will only load the first dataset found since the zVariable is
+    %       assumed to be constant across datasets.
+    %
+    %
+    % EXAMPLES OF zVARIABLES WHICH CAN BE LOADED WITH THIS FUNCTION, BUT NOT
+    % WITH solo.db_get_ts()
+    % ======================================================================
     % Ex: solo_L2_swa-pas-eflux + zVariable "Energy"
     %     solo.db_get_ts() yields error message: "Data does not contain DEPEND_0
     %     or DATA"
     %
-    % NOTE: Will only load the first dataset found since the zVariable is
-    %       assumed to be constant across datasets.
+    % Ex: solo_L2_rpw-tnr-surv-cdag + zVariable "TNR_BAND_FREQ"
+    %     solo.get_db_ts() function seems to fail to create the TSeries object
+    %     because the DEPEND_0 zVariable is of different size compared to the
+    %     requested zVariable.
+    %     solo.db_get_ts() yields error message:
+    %     """"
+    %     Output argument "TS" (and maybe others) not assigned during call to "irf.ts_scalar".
+    %     Error in solo.variable2ts (line 44)
+    %     ts = feval(['irf.ts_' varType],v.DEPEND_0.data,data);
+    %     Error in solo_db/get_ts (line 327)
+    %             res = solo.variable2ts(v);
+    %     Error in solo.db_get_ts (line 50)
+    %     res = SOLO_DB.get_ts(filePrefix,varName,tint);
+    %     """"
+    %
     %
     % RETURN VALUE
     % ============
@@ -263,17 +273,19 @@ classdef utils
     %
     % This is useful for more easily determining for which time interval the code
     % crashes by reading the log.
-    function log_plot_function_time_interval(Tint)
-      utcStr1 = Tint(1).utc;
-      utcStr2 = Tint(2).utc;
-      % NOTE: Truncating subseconds (keeping accuracy down to seconds).
-      utcStr1 = utcStr1(1:19);
-      utcStr2 = utcStr2(1:19);
-
-      % Not specifying which plot function is called (weekly, nonweekly plots).
-      %fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
-      irf.log('n', sprintf('Calling plot function for %s--%s.', utcStr1, utcStr2))
-    end
+%     function log_plot_function_time_interval(Tint)
+%       utcStr1 = Tint(1).utc;
+%       utcStr2 = Tint(2).utc;
+%       % NOTE: Truncating subseconds (keeping accuracy down to seconds).
+%       utcStr1 = utcStr1(1:19);
+%       utcStr2 = utcStr2(1:19);
+%
+%       % Not specifying which plot function is called (weekly, nonweekly plots).
+%       %fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
+%       irf.log('n', sprintf('======================================================'))
+%       irf.log('n', sprintf('Calling plot function for %s--%s.', utcStr1, utcStr2))
+%       irf.log('n', sprintf('======================================================'))
+%     end
 
 
 
@@ -415,7 +427,7 @@ classdef utils
 
 
     % Simple function for logging number of seconds from previous call.
-    % For debugging speed.
+    % For debugging speed of execution.
     function tBeginSec = log_time(locationStr, tBeginSec)
       tSec = toc(tBeginSec);
       %fprintf(1, '%s: %.1f [s]\n', locationStr, tSec)

@@ -8,10 +8,11 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % =========
 % Data
 %     Struct with various time series of data extracted from SPICE and datasets.
-%     See the call from solo.qli.generate_quicklooks_all_types().
+%     See the call from solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE().
 % OutputPaths
 %     Struct with paths to separate output directories for the different types
-%     of quicklooks (see solo.qli.generate_quicklooks_all_types).
+%     of quicklooks.
+%     Has fields: .dir2h, .dir6h, .dir24h
 % Tint24h
 %     Should be a 24-hour time interval consistent with the time series in
 %     "data", e.g.
@@ -24,13 +25,14 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % =====
 % * Computes the spectrum for B when magnetic field data is available. When it
 %   does, the code takes a lot of time.
-% * The function uses solo.read_TNR() which in turns relies on a
-%   hardcoded path to "/data/solo/remote/data/L2/thr/" and selected
-%   subdirectories. -- OBSOLETE INFO. REFACTORED AWAY.
-% * The function obtains some data by reading CDF files directly (cdfread;
-%   solo_L2_swa-pas-eflux). -- OBSOLETE INFO. REFACTORED AWAY.
 
 
+
+% ==========
+% KNOWN BUGS
+% ==========
+% NOTE: Several bug descriptions here may obsolete.
+%
 % BUG?: Panel 2/density/abs(B): Sometimes has no left-hand ticks (for density?).
 %   /EJ 2023-05-10
 %   Ex: 20220329T04_20220329T06.png
@@ -52,6 +54,16 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %      2023-02-05: Normal. Has one colorbar for "f (kHz)"
 %      2023-02-06: Wider panels. Has no colorbar for "f (kHz)"
 %
+% BUG: 24h, panel 2, |B| (right axis) is scaled badly on y axis. Too much extra
+% space. Old quicklooks were better.
+% a44b3127 Erik P G Johansson (2024-03-21 12:56:51 +0100) SolO QLI: Change terms: official {processing-->generation}
+% Ex: 2023-01-05
+% irf_zoom(h(2), 'y', [minAbsB-1, maxAbsB+1]); at plotting gives good zoom, but
+% set_YLim_YTick(h([]), h([2]), h([])) later re-zooms in worse way.
+% /Erik P G Johansson 2024-03-21
+
+
+
 % TODO-NI: Panels 2 & 5 are logarithmic for 24h plots and linear for 6h & 2h?
 %          Should they be?
 % TODO-NI: Old panels 5 had a constant y axis range (YLim) for 24h, but dynamic
@@ -60,21 +72,8 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %         it used to be). This does not cover the entire interval of data
 %         (there is more data at lower y). Should it be that way?
 %
-% PROPOSAL: Make function not directly call solo.read_TNR()
-%   PRO: Makes function testable.
-%     CON: Function still reads other CDF files.
-%   CON: Must understand the solo.read_TNR() return value.
-%     CON: Seems feasible.
-%       case 0:
-%         out = 0;
-%       case 1:
-%         out = struct('t', time_.epochUnix, 'f', freq_tnr, 'p',vp.^10);
-%         out.p_label = {'dB'};
-%
-%   PROPOSAL: Only call solo.read_TNR() via dependency injection.
-%     CON: Overkill.
-%   PROPOSAL: Submit the return value of solo.read_TNR() as argument instead of
-%             calling it.
+% PROPOSAL: Eliminate isempty(Data.tnrBand).
+%   PRO: Seems unnecessary.
 
 
 
@@ -407,7 +406,7 @@ if ~isempty(Data.tnrBand)
       %set(h(10), 'ColorScale', 'log')
       %caxis(h(10), [.01 1]*10^-12)
       ylabel(h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
-      colormap(h(10),jet)
+      colormap(h(10), jet)
       %yticks(h(10), [10^1 10^2]);
       %irf_zoom(h(10), 'y', [10^1 10^2])
     end

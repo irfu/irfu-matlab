@@ -1,6 +1,7 @@
 
 NOTE: This code should NOT be of interest to the typical user.
 
+offgen = Official Generation of quicklooks
 
 This MATLAB package (directory) contains code which is associated
 with the particular setup on IRFU servers which is used for generating official

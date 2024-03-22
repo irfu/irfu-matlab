@@ -15,13 +15,14 @@
 % ARGUMENTS
 % =========
 % Dt
-%     UTC Datetime object to the midnight that begins a day.
+%     UTC Datetime object to the midnight that begins the day for which
+%     quicklooks should be made.
 % vhtFile1hPath
 %     Path to file with 1h VHT data. Typically found at
 %     brain:/data/solo/data_yuri/V_RPW_1h.mat .
 % OutputPaths
 %     Struct with paths to output directories for different types of plots.
-%     Fields: dir2h, dir6h, dir24h.
+%     Has fields: .dir2h, .dir6h, .dir24h
 % irfLogoPath
 %     Path to IRF logo. Empty ==> Do not plot any logo.
 %     IMPLEMENTATION NOTE: The IRF logo should only be used for official
@@ -37,11 +38,9 @@
 % Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function generate_quicklooks_24h_6h_2h_using_DB_SPICE(Dt, vhtFile1hPath, OutputPaths, irfLogoPath)
-Tint = [
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(1))
-  ];
-solo.qli.utils.log_plot_function_time_interval(Tint)
+assert(isa(Dt, 'datetime') && isscalar(Dt) && strcmp(Dt.TimeZone, 'UTCLeapSeconds'))
+
+Tint = EpochTT([char(Dt); char(Dt+caldays(1))]);
 
 
 
@@ -98,8 +97,10 @@ end
 
 
 
-% IMPLEMENTATION NOTE: Implementation is made to reproduce old behaviour. Can
-% likely be cleaned up/simplified together with solo.read_TNR().
+% IMPLEMENTATION NOTE: Implementation is made to reproduce old behaviour
+% (copy-paste). Can likely be cleaned up/simplified together with
+% solo.read_TNR().
+%
 % function Tnr = read_TNR(Tint)
 %
 % try

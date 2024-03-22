@@ -7,23 +7,15 @@ function generate_quicklook_7days(Data, outputDir1wPath, Tint, logoPath)
 % =========
 % Data
 %     Struct with various time series of data extracted from SPICE and datasets.
-%     See the call from solo.qli.generate_quicklooks_all_types().
+%     See the call from solo.qli.generate_quicklook_7days_using_DB_SPICE().
 % outputDir1wPath
+%     Direct output directory for the quicklooks.
 % Tint
 %     Should be a 7-day time interval consistent with the time series in "data"
 %     e.g.
 %     irf.tint('2020-06-03T00:00:00.00Z', '2020-06-10T00:00:00.00Z');
 % logoPath
 %     Either path to IRF logo, or empty.
-%
-%
-% NOTES
-% =====
-% * The function obtains some data by reading CDF files directly (cdfread;
-%   solo_L2_swa-pas-eflux).
-% * The function also locates CDF files (reads files via SolO DB?) which are
-%   used to obtain a time interval which is passed to solo.read_TNR(). ==>
-%   Relies on more files. -- OBSOLETE INFO. REFACTORED AWAY.
 
 
 
@@ -68,7 +60,6 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 % Fill panel 2: abs(B)
 %======================
 if ~isempty(Data.B)
-  %fci = qe*data.B.abs*10^-9/mp/(2*pi);
   irf_plot(h(2), Data.B.abs.tlim(Tint), 'linewidth', LINE_WIDTH);
 end
 ylabel(h(2), {'|B|';'(nT)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);

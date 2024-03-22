@@ -14,7 +14,8 @@
 % ARGUMENTS
 % =========
 % Dt
-%     UTC Datetime object to the midnight that begins a week.
+%     UTC Datetime object to the midnight that begins the 7-day period for which
+%     a quicklook should be made.
 % vhtFile6hPath
 %     Path to file with 6h VHT data. Typically found at
 %     brain:/data/solo/data_yuri/V_RPW.mat .
@@ -35,12 +36,9 @@
 % Erik P G Johansson, IRF, Uppsala, Sweden.
 %
 function generate_quicklook_7days_using_DB_SPICE(Dt, vhtFile6hPath, outputDir1wPath, irfLogoPath)
-Tint = [
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
-  solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(7)), ...
-  ];
-solo.qli.utils.log_plot_function_time_interval(Tint)
+assert(isa(Dt, 'datetime') && isscalar(Dt) && strcmp(Dt.TimeZone, 'UTCLeapSeconds'))
 
+Tint = EpochTT([char(Dt); char(Dt+caldays(7))]);
 
 
 
@@ -73,7 +71,7 @@ Data.swaEnergyMetadata = solo.qli.utils.read_constant_metadata('solo_L2_swa-pas-
 %      CATDESC         (CDF_CHAR/31): "TNR band of the current record "
 %      VAR_NOTES       (CDF_CHAR/71): "TNR band of the current record. Possible values are: 1=A, 2=B, 3=C, 4=D"
 % /solo_L2_rpw-tnr-surv-cdag_20240101_V02.cdf
-Data.tnrBand   = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
+Data.tnrBand = solo.qli.utils.db_get_ts('solo_L2_rpw-tnr-surv-cdag', 'TNR_BAND', Tint);
 
 Data.Tnr     = solo.read_TNR(Tint);
 
@@ -106,12 +104,15 @@ end
 %       Struct, if there are datasets.
 %       [], if there are no datasets.
 %
-% IMPLEMENTATION NOTE: Implementation is made to reproduce old behaviour. Can
-% likely be cleaned up/simplified together with solo.read_TNR().
+% IMPLEMENTATION NOTE: Implementation is made to reproduce old behaviour
+% (copy-paste). Can likely be cleaned up/simplified together with
+% solo.read_TNR().
+%
 % function Tnr = read_TNR(Tint)
 %
 % % UGLY! Obtains list of files to determine for which time intervals to call
 % % solo.read_TNR()!!!
+%
 % TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
 %
 % tp  = [];
