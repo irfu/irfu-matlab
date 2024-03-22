@@ -173,23 +173,23 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 % NOTE: Essentially the same as solo.qli.generate_quicklooks_24h_6h_2h(): Panel 9
 %=================================================================================
 if ~isempty(Data.ieflux)
-%   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint);
+  %   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint);
   iDEF         = struct('t', Data.ieflux.tlim(Tint).time.epochUnix);
   %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-%   for iFile = 1:length(SwaFileArray)
-%     % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
-%     %       dataobj(), not spdfcdfread()).
-%     % NOTE: zVariable "Energy" seems to be metadata (not science data).
-%     %       zVariable attributes CATDESC="Center of energy bins",
-%     %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
-%     % NOTE: Can not load this variable using
-%     %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
-%     %       Gets error message: "Data does not contain DEPEND_0 or DATA"
-%     iEnergy = cdfread(...
-%       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
-%       'variables', 'Energy');
-%     iEnergy = iEnergy{1};
-%   end
+  %   for iFile = 1:length(SwaFileArray)
+  %     % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
+  %     %       dataobj(), not spdfcdfread()).
+  %     % NOTE: zVariable "Energy" seems to be metadata (not science data).
+  %     %       zVariable attributes CATDESC="Center of energy bins",
+  %     %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
+  %     % NOTE: Can not load this variable using
+  %     %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+  %     %       Gets error message: "Data does not contain DEPEND_0 or DATA"
+  %     iEnergy = cdfread(...
+  %       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
+  %       'variables', 'Energy');
+  %     iEnergy = iEnergy{1};
+  %   end
   iEnergy      = Data.swaEnergyMetadata;
   iDEF.p       = Data.ieflux.data;
   iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
@@ -226,34 +226,34 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 % NOTE: Panel takes much more time than other panels.
 if ~isempty(Data.tnrBand)
   % Electron plasma frequency
-%   TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
-%   tp = [];
-%   pp = [];
-%   warning('off', 'fuzzy:general:warnDeprecation_Combine');
-%   TNR = [];
-%   %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
-%
-%   % NOTE: Below loop takes most of the time. In each iteration,
-%   % solo.read_TNR() dominates the time consumption.
-%   for iFile = 1:length(TnrFileArray)
-%     tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
-%     [TNRp] = solo.read_TNR(tt);    % Somewhat time-consuming.
-%     if isa(TNRp, 'struct')
-%       % NOTE: MATLAB documentation (R2019b):
-%       % "combine will be removed in a future release"
-%       TNR.t = combine(tp, TNRp.t);
-%       tp    = TNR.t;
-%       TNR.p = combine(pp, TNRp.p);
-%       pp    = TNR.p;
-%
-%       % IMPLEMENTATION NOTE: Only read from TNRp from within this if
-%       % clause, since it might not be a struct if read from elsewhere,
-%       % even if it in principle means overwriting the value multiple
-%       % times as for TNRp.f and TNRp.p_label.
-%       TNR.f       = TNRp.f;
-%       TNR.p_label = TNRp.p_label;
-%     end
-%   end
+  %   TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
+  %   tp = [];
+  %   pp = [];
+  %   warning('off', 'fuzzy:general:warnDeprecation_Combine');
+  %   TNR = [];
+  %   %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
+  %
+  %   % NOTE: Below loop takes most of the time. In each iteration,
+  %   % solo.read_TNR() dominates the time consumption.
+  %   for iFile = 1:length(TnrFileArray)
+  %     tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
+  %     [TNRp] = solo.read_TNR(tt);    % Somewhat time-consuming.
+  %     if isa(TNRp, 'struct')
+  %       % NOTE: MATLAB documentation (R2019b):
+  %       % "combine will be removed in a future release"
+  %       TNR.t = combine(tp, TNRp.t);
+  %       tp    = TNR.t;
+  %       TNR.p = combine(pp, TNRp.p);
+  %       pp    = TNR.p;
+  %
+  %       % IMPLEMENTATION NOTE: Only read from TNRp from within this if
+  %       % clause, since it might not be a struct if read from elsewhere,
+  %       % even if it in principle means overwriting the value multiple
+  %       % times as for TNRp.f and TNRp.p_label.
+  %       TNR.f       = TNRp.f;
+  %       TNR.p_label = TNRp.p_label;
+  %     end
+  %   end
 
   if isstruct(Data.Tnr)
     % TNR.f       = TNRp.f;

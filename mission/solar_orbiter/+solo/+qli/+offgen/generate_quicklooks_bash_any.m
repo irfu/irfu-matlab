@@ -49,14 +49,15 @@ function generate_quicklooks_bash_any(modeId, varargin)
 %   CON: Bash wrapper script needs to be aware of syntax for generating help
 %        text so that it does not log or create intermediate directory etc.
 
-  switch(modeId)
-    case 'TIME_INTERVAL'
-      solo.qli.offgen.generate_quicklooks_bash_time_interval(varargin{:})
+switch(modeId)
+  case 'TIME_INTERVAL'
+    solo.qli.offgen.generate_quicklooks_bash_time_interval(varargin{:})
 
-    case 'GENERATE_FROM_LOGS'
-      solo.qli.offgen.generate_quicklooks_bash_from_logs(varargin{:})
+  case 'GENERATE_FROM_LOGS'
+    solo.qli.offgen.generate_quicklooks_bash_from_logs(varargin{:})
 
-    otherwise
-      error('Illegal modeId="%s"', modeId)
-  end
+  otherwise
+    error('Illegal modeId="%s"', modeId)
+end
+
 end

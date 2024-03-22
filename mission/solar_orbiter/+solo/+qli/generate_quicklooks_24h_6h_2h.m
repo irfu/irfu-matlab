@@ -322,23 +322,23 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 % NOTE: Essentially the same as solo.qli.generate_quicklook_7days(): Panel 8
 %============================================================================
 if ~isempty(Data.ieflux)
-%   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint24h);
+  %   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint24h);
   iDEF         = struct('t', Data.ieflux.tlim(Tint24h).time.epochUnix);
   %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-%   for iFile = 1:length(SwaFileArray)
-%     % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
-%     %       dataobj(), not spdfcdfread()).
-%     % NOTE: zVariable "Energy" seems to be metadata (not science data).
-%     %       zVariable attributes CATDESC="Center of energy bins",
-%     %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
-%     % NOTE: Can not load this variable using
-%     %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
-%     %       Gets error message: "Data does not contain DEPEND_0 or DATA"
-%     iEnergy = cdfread(...
-%       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
-%       'variables', 'Energy');
-%     iEnergy = iEnergy{1};
-%   end
+  %   for iFile = 1:length(SwaFileArray)
+  %     % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
+  %     %       dataobj(), not spdfcdfread()).
+  %     % NOTE: zVariable "Energy" seems to be metadata (not science data).
+  %     %       zVariable attributes CATDESC="Center of energy bins",
+  %     %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
+  %     % NOTE: Can not load this variable using
+  %     %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+  %     %       Gets error message: "Data does not contain DEPEND_0 or DATA"
+  %     iEnergy = cdfread(...
+  %       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
+  %       'variables', 'Energy');
+  %     iEnergy = iEnergy{1};
+  %   end
   iEnergy      = Data.swaEnergyMetadata;
   iDEF.p       = Data.ieflux.data;
   iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
@@ -378,13 +378,13 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 % ==> Other panels become wider.
 % ==> Moves the IRF logo to the right, and partially outside image.
 if ~isempty(Data.tnrBand)
-%   try
-%     [TNR] = solo.read_TNR(Tint24h);
-%   catch Exc
-%     if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
-%       TNR = [];
-%     end
-%   end
+  %   try
+  %     [TNR] = solo.read_TNR(Tint24h);
+  %   catch Exc
+  %     if strcmp(Exc.identifier, 'read_TNR:FileNotFound')
+  %       TNR = [];
+  %     end
+  %   end
 
   if isstruct(Data.Tnr)
     sz_tnr = size(Data.Tnr.p);
