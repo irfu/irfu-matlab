@@ -40,7 +40,6 @@ Tint = [
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt), ...
   solo.qli.utils.scalar_datetime_to_EpochTT(Dt+caldays(7)), ...
   ];
-solo.qli.utils.log_plot_function_time_interval(Tint)
 
 
 

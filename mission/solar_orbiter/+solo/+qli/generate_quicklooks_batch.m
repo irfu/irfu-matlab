@@ -77,9 +77,6 @@ function generate_quicklooks_batch(...
 %           runs.
 %         Ex: so_qli.2024-02-27_20.11.02.log
 %
-% PROPOSAL: Log time consumption for each call to plot functions.
-%   PROPOSAL: Use solo.qli.utils.log_time().
-%
 % PROPOSAL: Parallelize loop over days and weeks.
 %
 % PROBLEM: How handle IRF logo file?!
@@ -226,7 +223,11 @@ if generateNonweeklyQuicklooks
 
     try
       optionally_trigger_automount(isOfficialGeneration)
+
+      irf.log('n', sprintf('Calling 24h/6h/2h plot function for %s', string(DayDt)))
+      tBeginSec = tic();
       solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE(DayDt, vhtFile1hPath, OutputPaths, irfLogoPath)
+      solo.qli.utils.log_time('Time to generate one day''s 24h/6h/2h quicklooks', tBeginSec);
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(Exc)
@@ -252,7 +253,11 @@ if generateWeeklyQuicklooks
 
     try
       optionally_trigger_automount(isOfficialGeneration)
+
+      irf.log('n', sprintf('Calling 7-day plot function for %s', string(WeekDt)))
+      tBeginSec = tic();
       solo.qli.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.dir1w, irfLogoPath)
+      solo.qli.utils.log_time('Time to generate one 7-day quicklook', tBeginSec);
     catch Exc
       PlotExcArray(end+1) = Exc;
       handle_plot_exception(Exc)
