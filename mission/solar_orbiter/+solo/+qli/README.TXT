@@ -1,10 +1,12 @@
 
+package for generating SolO quicklooks available at
+https://www.space.irfu.se/soloql/.
+
 QLI = QuickLooks IRFU ("IRFU quicklooks")
 
-Code for generating SolO quicklooks available at https://www.space.irfu.se/soloql/.
-
 NOTE: Not to be confused with LESIA's summary plots or BIA_QL3.
-NOTE: These quicklooks use both SolO/RPW datasets AND datasets from other instruments.
+NOTE: These quicklooks use both SolO/RPW datasets AND datasets from
+other instruments.
 
 
 

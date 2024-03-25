@@ -63,6 +63,25 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % /Erik P G Johansson 2024-03-21
 % Should be solved.
 % /Erik P G Johansson 2024-03-25
+%
+% BUG?: 24h, panel 10, TNR spectrum (irf_spectrogram()):
+% Spectral data (irfu-matlab version 2024-03-22) freuently looks different
+% compared to earlier spectras (cron job, irfu-matlab version circa 2023-04).
+% More sections with constant spectrum, some new rectangular "holes" (white,
+% unfilled) in spectra. Some sections are unaltered. Unclear if this si due to
+% changes in underlying data or in code (e.g. recent change in solo.read_TNR()).
+% Ex: 24h quicklook for 2023-01-27:
+%   Large part of spectrum has changed from time changing to constant.
+%   New "hole" in spectrum.
+%   Last section is the same as before.
+% /Erik P G Johansson 2024-03-25
+%
+% BUG: There is no date label for the data under the lowest panel, if there is
+% no data. Do not think this was a problem previously(?).
+% NOTE: irf_spectrogram() sets the date label (sic!). There may also be other
+% functions which also set it.
+% Ex: 2023-03-24, solo.qli.generate_quicklooks_24h_6h_2h___UTEST.test_no_data().
+% /Erik P G Johansson 2024-03-27
 
 
 
@@ -160,6 +179,8 @@ if ~isempty(Data.B)
   maxAbsB = max(Data.B.tlim(Tint24h).abs.data);
   if ~isnan(minAbsB) && ~isnan(maxAbsB)
     % Only zoom if min & max are not NaN (==> Avoid crash).
+    % NOTE: NaN should only happen if there is NaN in the data. Absence of data
+    % should yield 0x1 array.
     irf_zoom(h(2), 'y', [minAbsB-1, maxAbsB+1]);
   end
 else
@@ -552,7 +573,7 @@ solo.qli.utils.ensure_axes_data_tick_margins(h(2))
 % PROPOSAL: Not overwrite automatic YLim?
 oldYLimH5   = h(5).YLim;
 oldYTickH5  = h(5).YTick;
-h(5).YScale = 'log';       % NOTE: Later changed to LIN.
+h(5).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
 h(5).YTick  = [1, 10, 100];
 h(5).YLim   = [0.5, 300];
 

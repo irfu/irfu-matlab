@@ -25,10 +25,11 @@ classdef utils
 
     % Assert that datetime object only contains timestamps which refer to
     % midnight.
+    % NOTE: Does not require scalar object.
     function assert_UTC_midnight_datetime(Dt)
       assert(isa(Dt, 'datetime'))
       assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'), ...
-        'datetime object is not UTC.')
+        'datetime object is not TimeZone=UTC.')
       assert(all(Dt == dateshift(Dt, 'start', 'day'), 'all'), ...
         'datetime object does not only contain timestamps representing midnight.')
     end
@@ -400,6 +401,8 @@ classdef utils
 
     % For debugging.
     function print_Y_axis_info(h)
+      % PROPOSAL: Use irf.log('debug', ...)
+
       fprintf('h.YLimMode  = "%s"\n', h.YLimMode)
       fprintf('h.YTickMode = "%s"\n', h.YLimMode)
       fprintf('h.YLim  = [%s]\n', sprintf('%f  ', h.YLim))

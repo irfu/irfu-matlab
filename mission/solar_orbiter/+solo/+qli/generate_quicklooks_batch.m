@@ -107,11 +107,17 @@ function generate_quicklooks_batch(...
 % PROPOSAL: Use dependency injection for plotting.
 %   PRO: Faster tests.
 %   PRO: Does not need to fiddle with solo.qli.const constants.
+%   PRO: Can use the same dependency injection for testing batch processing
+%        functionality.
 %   CON: Exposes dependency to demo caller.
+%     CON-PROPOSAL: There should be no demo for this function, but for other
+%          higher-level batch function.
 %   CON: Convert into class with multiple functions, including wrapper.
 %   CON: Can manually add "return" in *_using_DB_SPICE functions.
 %   CON: Needs additional file with class.
 %     CON-PROPOSAL: Use function handles to static functions.
+%
+% PROPOSAL: Log date of re-thrown exception (previously caught exception).
 %
 %
 % generate_quicklooks_24h_6h_2h(), generate_quicklook_7day()
@@ -139,8 +145,12 @@ function generate_quicklooks_batch(...
 %=========================
 % Assertions on arguments
 %=========================
-assert(islogical(generateNonweeklyQuicklooks) & isscalar(generateNonweeklyQuicklooks))
-assert(islogical(generateWeeklyQuicklooks   ) & isscalar(generateWeeklyQuicklooks   ))
+assert(...
+  islogical(generateNonweeklyQuicklooks) & isscalar(generateNonweeklyQuicklooks), ...
+  'Argument generateNonweeklyQuicklooks is not a scalar logical.')
+assert(...
+  islogical(generateWeeklyQuicklooks   ) & isscalar(generateWeeklyQuicklooks), ...
+  'Argument generateWeeklyQuicklooks is not a scalar logical.')
 assert(iscolumn(DaysDtArray))
 solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
 
@@ -186,7 +196,7 @@ irf.log('n', sprintf('outputDir                    = "%s"', outputDir))
 irf.log('n', sprintf('generateNonweeklyQuicklooks  = %d',   generateNonweeklyQuicklooks))
 irf.log('n', sprintf('generateWeeklyQuicklooks     = %d',   generateWeeklyQuicklooks))
 irf.log('n', sprintf('numel(DaysDtArray)           = %d',   numel(DaysDtArray)))
-% Log other
+% Log misc. variables
 irf.log('n', sprintf('isOfficialGeneration         = %d',   isOfficialGeneration))
 % Log selected constants.
 irf.log('n', sprintf('ENABLE_B                     = %d',   solo.qli.const.ENABLE_B))
@@ -315,7 +325,9 @@ if solo.qli.const.CATCH_PLOT_EXCEPTIONS_ENABLED
   for i = 1:numel(Exc.stack)
     s = Exc.stack(i);
     %fprintf(2, '    Error in %s (line %i)\n', s.name, s.line)
-    irf.log('w', sprintf('    Error in %s (line %i)', s.name, s.line))
+    irf.log(...
+      solo.qli.const.LOG_LEVEL_CAUGHT_EXCEPTIONS, ...
+      sprintf('    Error in %s (line %i)', s.name, s.line))
   end
 else
   rethrow(Exc)

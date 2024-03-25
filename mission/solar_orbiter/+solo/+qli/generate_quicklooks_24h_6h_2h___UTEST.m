@@ -76,6 +76,7 @@ classdef generate_quicklooks_24h_6h_2h___UTEST < matlab.unittest.TestCase
 
 
 
+    % Plotting without data is important for testing many special cases.
     function test_no_data(testCase)
       QuicklooksTint = irf.tint(...
         '2024-01-01T00:00:00.00Z', ...

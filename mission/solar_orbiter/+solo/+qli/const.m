@@ -18,6 +18,13 @@ classdef const
   %   NOTE: Would need to expose the same settings arguments in
   %         solo.qli.generate_quicklooks_batch().
   %   PRO: Calling MTEST code could set values (override defaults).
+  %
+  % PROPOSAL: Redefine/replace ENABLE_B to only disable only the slow part in
+  %           generate_quicklooks_24h_6h_2h() and generate_quicklook_7days()
+  %           (not emulate the absence of B data entirely).
+  %   PRO: More complete quicklooks when disabling functionality for speed.
+  %
+  % PROPOSAL: Abolish CATCH_PLOT_EXCEPTIONS_ENABLED.
 
 
 
@@ -57,6 +64,10 @@ classdef const
     % as many quicklooks as possible when one or some quicklooks fail. Should be
     % enabled by default.
     CATCH_PLOT_EXCEPTIONS_ENABLED = true;
+
+    % Log level used for irf.log() when logging exceptions which are caught due
+    % to CATCH_PLOT_EXCEPTIONS_ENABLED=true.
+    LOG_LEVEL_CAUGHT_EXCEPTIONS = 'C';
 
     % NOTE: Below files are normally found at brain:/data/solo/data_yuri/.
     VHT_1H_DATA_FILENAME = 'V_RPW_1h.mat';

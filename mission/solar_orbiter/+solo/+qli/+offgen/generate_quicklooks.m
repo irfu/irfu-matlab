@@ -92,11 +92,6 @@ IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+offgen/irf_logo.png';
 
 
 
-assert(islogical(generateNonweeklyQuicklooks))
-assert(islogical(generateWeeklyQuicklooks))
-
-
-
 irfLogoPath = fullfile(irf('path'), IRF_LOGO_RPATH);
 irf.assert.file_exists(irfLogoPath)
 
