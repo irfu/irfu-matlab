@@ -16,7 +16,7 @@ classdef const
   % PROPOSAL: Replace ENABLE_B, NONWEEKLY_SPECTRA_ENABLED,
   %           NONWEEKLY_ALL_PLOTS_ENABLED with optional arguments, "settings" (varargin)
   %   NOTE: Would need to expose the same settings arguments in
-  %         solo.qli.generate_quicklooks_batch().
+  %         solo.qli.batch.generate_quicklooks().
   %   PRO: Calling MTEST code could set values (override defaults).
   %
   % PROPOSAL: Redefine/replace ENABLE_B to only disable only the slow part in
@@ -87,6 +87,9 @@ classdef const
     % Directory which shall be used for trying to trigger automounting for
     % official generation of quicklooks.
     OFFICIAL_GENERATION_AUTOMOUNT_DIR = '/data/solo/';
+
+    % Constant which is useful to have for defining tests.
+    DT_EMPTY_ARRAY = datetime(cell(0,1), 'TimeZone', 'UTCLeapSeconds')
   end
 
 

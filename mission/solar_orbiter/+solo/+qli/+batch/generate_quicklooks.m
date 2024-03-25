@@ -51,16 +51,20 @@
 %       specified by the midnight which begins that day.
 %       Weekly quicklooks (if enabled) will be produced for all weeks which
 %       contain at least one day specified here.
+% Gql
+%       solo.qli.batch.GenerateQuicklooks* object. Should be an instance of
+%       solo.qli.batch.GenerateQuicklooksImplementation object in the nomincal
+%       case. Arugment exists to facilitate automated tests.
 %
 %
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
 % Uppsala, Sweden. Modified by Erik P G Johansson, IRF, Uppsala, Sweden.
 %
-function generate_quicklooks_batch(...
+function generate_quicklooks(...
   irfLogoPath, vhtDataDir, outputDir, ...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
+  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray, Gql)
 %
-% NOTE: Mission begins on 2020-02-12=Wednesday.
+% NOTE: Data begins on 2020-02-12=Wednesday.
 % ==> There is no SPICE data on Monday-Tuesday before this date.
 % ==> Code fails for week Monday-to-Sunday.
 %     PROPOSAL: Additionally round start time up to start date.
@@ -104,19 +108,6 @@ function generate_quicklooks_batch(...
 %   PRO: generate_quicklooks_*_using_DB_SPICE() alraedy have arguments for paths
 %        to he files directly.
 %
-% PROPOSAL: Use dependency injection for plotting.
-%   PRO: Faster tests.
-%   PRO: Does not need to fiddle with solo.qli.const constants.
-%   PRO: Can use the same dependency injection for testing batch processing
-%        functionality.
-%   CON: Exposes dependency to demo caller.
-%     CON-PROPOSAL: There should be no demo for this function, but for other
-%          higher-level batch function.
-%   CON: Convert into class with multiple functions, including wrapper.
-%   CON: Can manually add "return" in *_using_DB_SPICE functions.
-%   CON: Needs additional file with class.
-%     CON-PROPOSAL: Use function handles to static functions.
-%
 % PROPOSAL: Log date of re-thrown exception (previously caught exception).
 %
 %
@@ -151,8 +142,11 @@ assert(...
 assert(...
   islogical(generateWeeklyQuicklooks   ) & isscalar(generateWeeklyQuicklooks), ...
   'Argument generateWeeklyQuicklooks is not a scalar logical.')
-assert(iscolumn(DaysDtArray))
+assert(iscolumn(DaysDtArray), 'Argument DaysDtArray is not column array.')
 solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
+assert(isa(Gql, 'solo.qli.batch.GenerateQuicklooksAbstract'))
+
+
 
 % "Normalize"
 DaysDtArray = unique(DaysDtArray);
@@ -210,9 +204,6 @@ tSec = tic();
 % Array of plotting exceptions caught.
 PlotExcArray = MException.empty(1, 0);
 
-% Derive weeks from specified days (midnights which begin 7-day periods).
-WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, solo.qli.const.FIRST_DAY_OF_WEEK);
-
 
 
 %=============================================
@@ -221,8 +212,6 @@ WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, solo.qli.const.FIRST_DAY
 if generateNonweeklyQuicklooks
   % Daily time-intervals
 
-  % Load VHT data
-  % -------------
   % This is the .mat file containing RPW speeds at 1h resolution.
   % The file should be in the current path. This file can be found in
   % brain:/solo/data/data_yuri/.
@@ -236,7 +225,7 @@ if generateNonweeklyQuicklooks
 
       irf.log('n', sprintf('Calling 24h/6h/2h plot function for %s', string(DayDt)))
       tBeginSec = tic();
-      solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE(DayDt, vhtFile1hPath, OutputPaths, irfLogoPath)
+      Gql.generate_quicklooks_24h_6h_2h_using_DB_SPICE(DayDt, vhtFile1hPath, OutputPaths, irfLogoPath)
       solo.qli.utils.log_time('Time to generate one day''s 24h/6h/2h quicklooks', tBeginSec);
     catch Exc
       PlotExcArray(end+1) = Exc;
@@ -252,8 +241,9 @@ end
 %===================================
 if generateWeeklyQuicklooks
 
-  % Load VHT data
-  % -------------
+  % Derive weeks from specified days (midnights which begin 7-day periods).
+  WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, solo.qli.const.FIRST_DAY_OF_WEEK);
+
   % This is the .mat file containing RPW speeds at 6h resolution.
   % The file should be in the same folder as this script (quicklook_main).
   vhtFile6hPath = fullfile(vhtDataDir, solo.qli.const.VHT_6H_DATA_FILENAME);
@@ -266,7 +256,7 @@ if generateWeeklyQuicklooks
 
       irf.log('n', sprintf('Calling 7-day plot function for %s', string(WeekDt)))
       tBeginSec = tic();
-      solo.qli.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.dir1w, irfLogoPath)
+      Gql.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.dir1w, irfLogoPath)
       solo.qli.utils.log_time('Time to generate one 7-day quicklook', tBeginSec);
     catch Exc
       PlotExcArray(end+1) = Exc;

@@ -1,5 +1,5 @@
 %
-% Wrapper around solo.qli.generate_quicklooks_batch() intended for being run
+% Wrapper around solo.qli.batch.generate_quicklooks() intended for being run
 % on brain/spis for the purpose of cron jobs and official generation of
 % quicklooks.
 %
@@ -90,6 +90,8 @@ VHT_DIR = '/data/solo/data_yuri/';
 % requires it to be located inside the corresponding directory.
 IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+offgen/irf_logo.png';
 
+GQL = solo.qli.batch.GenerateQuicklooksImplementation();
+
 
 
 irfLogoPath = fullfile(irf('path'), IRF_LOGO_RPATH);
@@ -124,7 +126,7 @@ solo.db_cache('on', 'save')
 %=====================
 % Generate quicklooks
 %=====================
-solo.qli.generate_quicklooks_batch(...
+solo.qli.batch.generate_quicklooks(...
   irfLogoPath, VHT_DIR, outputDir, ...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray)
+  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray, GQL)
 end

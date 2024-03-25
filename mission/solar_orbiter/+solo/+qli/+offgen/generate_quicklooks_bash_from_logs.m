@@ -10,7 +10,7 @@
 % NOTE: This function is designed to potentially be called from bash/the OS.
 %
 % NOTE: The dataset IDs referred to in the implementation must be consistent
-%       with the use of datasets in solo.qli.generate_quicklooks_batch().
+%       with the use of datasets in solo.qli.batch.generate_quicklooks().
 %
 %
 % ARGUMENTS

@@ -14,7 +14,7 @@ other instruments.
  How to generate quicklook files
 =================================
 For an example of how to generate quicklooks locally, e.g. in bulk, look at below file:
-    generate_quicklooks_demo.m
+    +batch/generate_quicklooks_demo.m
 
 
 
