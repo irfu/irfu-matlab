@@ -56,7 +56,7 @@ classdef GenerateQuicklooksTest < solo.qli.batch.GenerateQuicklooksAbstract
 
 
 
-    function obj = generate_quicklooks_24h_6h_2h_using_DB_SPICE(obj, Dt, varargin)
+    function generate_quicklooks_24h_6h_2h_using_DB_SPICE(obj, Dt, varargin)
       obj.Dt24h6h2hArray = [obj.Dt24h6h2hArray; Dt];
       if ismember(Dt, obj.Dt24h6h2ExceptionArray)
         error('Test error')
@@ -65,7 +65,7 @@ classdef GenerateQuicklooksTest < solo.qli.batch.GenerateQuicklooksAbstract
 
 
 
-    function obj = generate_quicklook_7days_using_DB_SPICE(obj, Dt, varargin)
+    function generate_quicklook_7days_using_DB_SPICE(obj, Dt, varargin)
       obj.Dt7daysArray = [obj.Dt7daysArray; Dt];
       if ismember(Dt, obj.Dt7daysExceptionArray)
         error('Test error')

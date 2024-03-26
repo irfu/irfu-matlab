@@ -13,8 +13,8 @@ other instruments.
 =================================
  How to generate quicklook files
 =================================
-For an example of how to generate quicklooks locally, e.g. in bulk, look at below file:
-    +batch/generate_quicklooks_demo.m
+For an example of how to generate multiple quicklooks (files) locally, see
+solo.qli.batch.generate_quicklooks_demo().
 
 
 
@@ -27,7 +27,23 @@ generate_quicklook_7days.m
 
 generate_quicklooks_24h_6h_2h_using_DB_SPICE.m
 generate_quicklook_7days_using_DB_SPICE.m
-    Files which call generate_quicklooks_24h_6h_2h.m and generate_quicklook_7days.m
-    respectively and supply them with bulk data. If you want the quicklooks to have
-    access to more data e.g. more science data (zVariables), then you need to edit
-    these.
+    Files which call generate_quicklooks_24h_6h_2h.m
+    and generate_quicklook_7days.m
+    respectively and supply them with bulk data. If you want the quicklooks to
+    have access to more data e.g. more science data (zVariables), then you need
+    to edit these.
+
+
+
+========================================
+ Various source code naming conventions
+========================================
+NOTE: Tries to follow BICAS conventions. See
+      irfu-matlab/mission/solar_orbiter/bicas/readme.txt
+--
+DT
+    datetime
+GQL
+    solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
+OFFGEN, "official generation"
+    Official Generation of quicklooks for the homepage.

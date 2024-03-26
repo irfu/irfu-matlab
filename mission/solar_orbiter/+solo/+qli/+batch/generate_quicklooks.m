@@ -1,9 +1,6 @@
 %
-% Generate multiple types of quicklooks (24 h, 6 h, 2 h, weekly; files) for
-% explicitly specified dates.
-%
-% Intended for batch processing, e.g. being called from bash script, e.g. cron
-% job via a MATLAB wrapper script.
+% Generate multiple types of quicklooks (24 h, 6 h, 2 h, weekly; files) for an
+% array of explicitly specified dates.
 %
 %
 % NOTES
@@ -63,6 +60,59 @@
 function generate_quicklooks(...
   irfLogoPath, vhtDataDir, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray, Gql)
+
+% NOTES ON CRASHES ON SPIS & BRAIN
+% ================================
+% Long runs on brain/spis may crash due to not being able to access disk
+% (nas24), which is unrelated to the QLI code itself.
+%
+% EXAMPLE 1: Crash 2022-09-18 (Sunday) 06:57:50, brain:
+% Crashed while processing data after 2022-03-23.
+% """"""""
+% purging solo_L3_rpw-bia-efield-10-seconds_20220313_V01.cdf
+% purging solo_L3_rpw-bia-density-10-seconds_20220313_V01.cdf
+% purging solo_L2_swa-pas-grnd-mom_20220313_V02.cdf
+% purging solo_L2_rpw-tnr-surv-cdag_20220313_V05.cdf
+% exception.message=No cdf files specified
+% dataobj, row 72
+% rcdf, row 229
+% read_TNR, row 53
+% quicklooks_24_6_2_h, row 203
+% quicklooks_main, row 209
+% quicklooks_main_cron, row 54
+% Command exited with non-zero status 99
+% """"""""
+%
+% EXAMPLE 2: Crash 2022-09-18 (Sunday) 08:30:13, spis
+% Crashed while processing data after 2021-12-17.
+% """"""""
+% purging solo_L3_rpw-bia-efield-10-seconds_20211209_V01.cdf
+% purging solo_L3_rpw-bia-density-10-seconds_20211209_V01.cdf
+% purging solo_L2_swa-pas-grnd-mom_20211208_V03.cdf
+% purging solo_L2_swa-pas-eflux_20211208_V02.cdf
+% purging solo_L2_rpw-tnr-surv-cdag_20211208_V04.cdf
+%   [warning: solo_db.get_variable/append_sci_var(131)] Discarded 3745 data points
+% exception.message=SPICE(INVALIDVALUE): [spkpos_c->SPKPOS->SPKEZP->SPKAPO->SPKGPS->SPKPVN->SPKR19] Window size in type 19 segment was 0; must be in the range 2:14 for subtype 0. Mini-segment index is 113. Failure occurred at input vector index 7. (CSPICE_N0067)
+% cspice_spkpos, row 630
+% get_position, row 93
+% get_SolO_pos, row 320
+% quicklooks_main, row 189
+% quicklooks_main_cron, row 54
+% Command exited with non-zero status 99
+% """"""""
+%
+% NOTE: Above crashes...
+% * Happened after 300h+ (12-13 days) of execution.
+% * Happened when nobody else was working (Sunday morning), i.e. low-access
+%   hours.
+% * Happened only 1h33m within each other's crashes.
+% * Can be explained by disk error.
+% * EXAMPLE 1 & 2: Could be re-run without triggering error for the same data.
+% There are earlier reasons to believe that the nas24 disks are not always
+% accessible (or not accessible quickly enough?) during low access hours,
+% presumably due to being unmounted due to automounting.
+% /Erik P G Johansson 2022-09-20
+%
 %
 % NOTE: Data begins on 2020-02-12=Wednesday.
 % ==> There is no SPICE data on Monday-Tuesday before this date.
@@ -142,7 +192,7 @@ assert(...
 assert(...
   islogical(generateWeeklyQuicklooks   ) & isscalar(generateWeeklyQuicklooks), ...
   'Argument generateWeeklyQuicklooks is not a scalar logical.')
-assert(iscolumn(DaysDtArray), 'Argument DaysDtArray is not column array.')
+assert(iscolumn(DaysDtArray), 'Argument DaysDtArray is not column array (Nx1).')
 solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
 assert(isa(Gql, 'solo.qli.batch.GenerateQuicklooksAbstract'))
 
@@ -164,6 +214,8 @@ OutputPaths = solo.qli.utils.create_output_directories(outputDir);
 % NOTE: As of 2024-03-21, this flag is only used for whether to explicitly
 % trigger automounts (requires knowledge of hardcoded path). Whether to inclulde
 % IRF logo is specified by the caller.
+% --
+% WARNING: This could potentially be bad for automated tests!
 isOfficialGeneration = false;
 if isunix()
   [errorCode, stdoutStr] = system('hostname');
@@ -178,24 +230,25 @@ end
 
 
 if isOfficialGeneration
+  % WARNING: This could potentially be bad for automated tests!
   assert(~isempty(irfLogoPath))
 end
 
 
 
 % Log arguments
-irf.log('n', sprintf('irfLogoPath                  = "%s"', irfLogoPath))
-irf.log('n', sprintf('vhtDataDir                   = "%s"', vhtDataDir))
-irf.log('n', sprintf('outputDir                    = "%s"', outputDir))
-irf.log('n', sprintf('generateNonweeklyQuicklooks  = %d',   generateNonweeklyQuicklooks))
-irf.log('n', sprintf('generateWeeklyQuicklooks     = %d',   generateWeeklyQuicklooks))
-irf.log('n', sprintf('numel(DaysDtArray)           = %d',   numel(DaysDtArray)))
+irf.log('n', sprintf('irfLogoPath                 = "%s"', irfLogoPath))
+irf.log('n', sprintf('vhtDataDir                  = "%s"', vhtDataDir))
+irf.log('n', sprintf('outputDir                   = "%s"', outputDir))
+irf.log('n', sprintf('generateNonweeklyQuicklooks = %d',   generateNonweeklyQuicklooks))
+irf.log('n', sprintf('generateWeeklyQuicklooks    = %d',   generateWeeklyQuicklooks))
+irf.log('n', sprintf('numel(DaysDtArray)          = %d',   numel(DaysDtArray)))
 % Log misc. variables
-irf.log('n', sprintf('isOfficialGeneration         = %d',   isOfficialGeneration))
+irf.log('n', sprintf('isOfficialGeneration        = %d',   isOfficialGeneration))
 % Log selected constants.
-irf.log('n', sprintf('ENABLE_B                     = %d',   solo.qli.const.ENABLE_B))
-irf.log('n', sprintf('NONWEEKLY_SPECTRA_ENABLED    = %d',   solo.qli.const.NONWEEKLY_SPECTRA_ENABLED))
-irf.log('n', sprintf('NONWEEKLY_ALL_PLOTS_ENABLED  = %d',   solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED))
+irf.log('n', sprintf('ENABLE_B                    = %d',   solo.qli.const.ENABLE_B))
+irf.log('n', sprintf('NONWEEKLY_SPECTRA_ENABLED   = %d',   solo.qli.const.NONWEEKLY_SPECTRA_ENABLED))
+irf.log('n', sprintf('NONWEEKLY_ALL_PLOTS_ENABLED = %d',   solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED))
 
 
 

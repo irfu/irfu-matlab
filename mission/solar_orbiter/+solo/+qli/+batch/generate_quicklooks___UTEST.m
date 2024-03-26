@@ -1,6 +1,4 @@
 %
-% UNFINISHED
-%
 % matlab.unittest automatic test code for solo.qli.batch.generate_quicklooks().
 %
 %
@@ -50,11 +48,11 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
 
 
     function create_output_directories(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-      testCase.vhtDir = F.Folder;
+      VhtFixture    = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      OutputFixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
 
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-      testCase.outputDir = F.Folder;
+      testCase.vhtDir    = VhtFixture.Folder;
+      testCase.outputDir = OutputFixture.Folder;
     end
 
 
@@ -81,7 +79,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
         [], testCase.vhtDir, testCase.outputDir, ...
         false, false, solo.qli.const.DT_EMPTY_ARRAY, Gql)
 
-      % Logo, quicklooks enabled.
+      % Logo & quicklooks enabled.
       solo.qli.batch.generate_quicklooks(...
         logoPath, testCase.vhtDir, testCase.outputDir, ...
         true, true, solo.qli.const.DT_EMPTY_ARRAY, Gql)

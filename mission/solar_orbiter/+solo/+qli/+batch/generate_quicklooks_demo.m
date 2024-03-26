@@ -1,20 +1,21 @@
 %
 % Demonstration code for how to generate "IRFU quicklooks" ("QLI") locally. The
-% user can copy and modify this to generate quicklooks her-/himself.
+% user may have to copy and modify this function to generate quicklooks
+% themselves.
 %
 %
-% NOTE: The example implementation below is system-dependent! The function is
-% configured for being run on brain/spis at IRFU, or any system where
-% /data/solo/ has been mounted to the same location.
-%
-% NOTE: GENERATING QUICKLOOKS IS TIME-CONSUMING, in particular 24h, 6h, 2h
-% quicklooks when MAG data is available (80% of the mission time). Depending on
-% the machine, it may take on the order of 20-30 minutes per day of data when
-% there is MAG data!
-%
-% NOTE: The exact locations and sizes of text and panels on quicklooks as seen
-% in windows (figures) in the OS GUI may be different or outright wrong when
-% compared to file versions of quicklooks (for text, e.g. bad location).
+% NOTES
+% =====
+% * The example implementation below is system-dependent! The function is
+%   configured for being run on brain/spis at IRFU, or any system where
+%   /data/solo/ has been mounted to the same location.
+% * GENERATING QUICKLOOKS IS TIME-CONSUMING, in particular 24h, 6h, 2h
+%   quicklooks when MAG data is available (80% of the mission time). Depending
+%   on the machine, it may take on the order of 30 minutes per day of data when
+%   there is MAG data available!
+% * The exact locations and sizes of text and panels on quicklooks as seen in
+%   windows (figures) in the OS GUI may be different or outright wrong when
+%   compared to file versions of quicklooks (for text, e.g. bad location).
 %
 %
 % ARGUMENTS
@@ -33,16 +34,20 @@ VHT_DIR                       = '/data/solo/data_yuri/';
 GENERATE_NONWEEKLY_QUICKLOOKS = true;   % Whether to generate 24h, 6h, and 2h quicklooks.
 GENERATE_WEEKLY_QUICKLOOKS    = true;
 
-% datetime column array. Array of UTC midnights representing the beginning of
+% datetime COLUMN array. Array of UTC midnights representing the beginning of
 % days for which to generate quicklooks. Specifies explicit individual days (not
 % a time range).
-% DAYS_DATETIME_COLUMN_ARRAY    = datetime({...
+% DAYS_DATETIME_COLUMN_ARRAY = datetime({...
 %   '2022-12-01T00:00:00Z'; ...
 %   '2022-12-03T00:00:00Z'; ...
 %   '2022-12-05T00:00:00Z'}, 'TimeZone', 'UTCLeapSeconds');
-DAYS_DATETIME_COLUMN_ARRAY    = datetime({...
+% DAYS_DATETIME_COLUMN_ARRAY = datetime({...
+%   '2022-12-05T00:00:00Z'}, 'TimeZone', 'UTCLeapSeconds') + caldays([0:30]')
+DAYS_DATETIME_COLUMN_ARRAY = datetime({...
   '2022-12-05T00:00:00Z'}, 'TimeZone', 'UTCLeapSeconds');
 
+% Required, but only exists for technical reasons (automated testing).
+GQL = solo.qli.batch.GenerateQuicklooksImplementation();
 
 
 %===============================================================
@@ -69,5 +74,5 @@ irf.log('notice')
 solo.qli.batch.generate_quicklooks(...
   [], VHT_DIR, outputDir, ...
   GENERATE_NONWEEKLY_QUICKLOOKS, GENERATE_WEEKLY_QUICKLOOKS, ...
-  DAYS_DATETIME_COLUMN_ARRAY)
+  DAYS_DATETIME_COLUMN_ARRAY, GQL)
 end
