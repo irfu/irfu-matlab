@@ -17,6 +17,40 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_umdt(testCase)
+      function test(strCa, expStrCa)
+        assert(iscell(expStrCa))
+        ActDt = solo.qli.utils.umdt(strCa);
+
+        ExpDt = datetime(expStrCa, 'TimeZone', 'UTCLeapSeconds');
+
+        testCase.assertEqual(ActDt, ExpDt)
+        testCase.assertEqual(size(ActDt), size(expStrCa))
+      end
+
+      test(...
+        '2024-02-03', ...
+        {'2024-02-03T00:00:00Z'})
+      test(...
+        cell(0, 1), ...
+        cell(0, 1))
+      test(...
+        {'2024-02-03'}, ...
+        {'2024-02-03T00:00:00Z'})
+      test(...
+        {'2024-02-03';           '2024-03-04'}, ...
+        {'2024-02-03T00:00:00Z'; '2024-03-04T00:00:00Z'})
+
+      testCase.assertError(...
+        @() solo.qli.utils.umdt('2024-02-03T00:00:00Z'), ...
+        ?MException)
+      testCase.assertError(...
+        @() solo.qli.utils.umdt(datetime('2024-02-03')), ...
+        ?MException)
+    end
+
+
+
     function test_assert_UTC_midnight_datetime(testCase)
 
       function test_OK(Dt)
@@ -57,9 +91,9 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
     function test_derive_weeks(testCase)
 
-      function test(DayBeginDtArray, firstDayOfWeek, ExpWeekBeginDtArray)
-        DayBeginDtArray.TimeZone     = 'UTCLeapSeconds';
-        ExpWeekBeginDtArray.TimeZone = 'UTCLeapSeconds';
+      function test(DayBeginStrCa, firstDayOfWeek, ExpWeekBeginStrCa)
+        DayBeginDtArray     = solo.qli.utils.umdt(DayBeginStrCa);
+        ExpWeekBeginDtArray = solo.qli.utils.umdt(ExpWeekBeginStrCa);
 
         ActWeekBeginDtArray = solo.qli.utils.derive_weeks(DayBeginDtArray, firstDayOfWeek);
 

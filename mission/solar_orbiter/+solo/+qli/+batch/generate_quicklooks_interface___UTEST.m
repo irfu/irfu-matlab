@@ -92,10 +92,10 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
       testCase.assertEqual(...
         Settings.Gql.Dt24h6h2hArray, ...
-        datetime('2024-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds') + caldays([0; 1]))
+        solo.qli.utils.umdt('2024-01-01') + caldays([0; 1]))
       testCase.assertEqual(...
         Settings.Gql.Dt7daysArray, ...
-        datetime('2023-12-27T00:00:00Z', 'TimeZone', 'UTCLeapSeconds'))
+        solo.qli.utils.umdt('2023-12-27'))
     end
 
 
@@ -150,8 +150,8 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
         'GENERATE_FROM_LOGS', 'LESIA', 'SOAR' ...
       )
 
-      ExpDt24h6h2h = datetime({'2023-01-01T00:00:00Z'; '2023-02-02T00:00:00Z'}, 'TimeZone', 'UTCLeapSeconds');
-      ExpDt7days   = datetime({'2022-12-28T00:00:00Z'; '2023-02-01T00:00:00Z'}, 'TimeZone', 'UTCLeapSeconds');
+      ExpDt24h6h2h = solo.qli.utils.umdt({'2023-01-01'; '2023-02-02'});
+      ExpDt7days   = solo.qli.utils.umdt({'2022-12-28'; '2023-02-01'});
       testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, ExpDt24h6h2h)
       testCase.assertEqual(Settings.Gql.Dt7daysArray,   ExpDt7days)
     end

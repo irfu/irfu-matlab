@@ -31,14 +31,8 @@ function DaysDtArray = get_days_from_time_interval(...
 assert(ischar(beginDayUtcInclStr))
 assert(ischar(endDayUtcExclStr))
 
-BeginDayInclDt = datetime(beginDayUtcInclStr);
-EndDayExclDt   = datetime(endDayUtcExclStr);
-% IMPLEMENTATION NOTE: Not setting TimeZone in the datetime() constructor call
-% so that the code accepts strings on the format YYYY-MM-DD. If
-% TimeZone=UTCLeapSeconds is set in the constructor call, then the format
-% YYYY-MM-DDThh:mm:ssZ is required.
-BeginDayInclDt.TimeZone = 'UTCLeapSeconds';
-EndDayExclDt.TimeZone   = 'UTCLeapSeconds';
+BeginDayInclDt = solo.qli.utils.umdt(beginDayUtcInclStr);
+EndDayExclDt   = solo.qli.utils.umdt(endDayUtcExclStr);
 
 % NOTE: Indirectly assertion on the string timestamps.
 solo.qli.utils.assert_UTC_midnight_datetime(BeginDayInclDt)

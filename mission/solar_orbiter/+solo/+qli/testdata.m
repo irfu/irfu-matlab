@@ -83,7 +83,7 @@ classdef testdata
       close all
       tic
 
-      DT0 = datetime('2023-01-05T00:00:00.00Z', 'TimeZone', 'UTCLeapSeconds');
+      DT0 = solo.qli.utils.umdt('2023-01-05');
 
       QuicklooksTint = irf.tint(...
         char(DT0), ...

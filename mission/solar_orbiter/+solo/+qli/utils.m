@@ -36,6 +36,33 @@ classdef utils
 
 
 
+    % Convert strings YYYY-MM-DD to UTC datetime object with timestamp at
+    % midnight. (E.g. format 2024-01-01T00:00:00.000Z does NOT work,
+    % deliberately)
+    %
+    % UMDT = UTC Midnight DateTime
+    %
+    % IMPLEMENTATION NOTE: solo.qli works with many UTC datetime objects for
+    % timestamps at midnight, and tests hardcode many such values. This function
+    % exists to shorten code. Hence the short function name.
+    %
+    % ARGUMENTS
+    % =========
+    % strCa
+    %       Either
+    %       (1) Cell array of strings (timestamps for corresponding elements).
+    %       (2) String (one timestamp)
+    function Dt = umdt(strCa)
+      assert(iscell(strCa) || ischar(strCa))
+      % NOTE: datetime() also accepts other datetime objects, with any
+      % time-of-day. "Must" therefore forbid.
+
+      Dt          = datetime(strCa);
+      Dt.TimeZone = 'UTCLeapSeconds';
+    end
+
+
+
     % Given an array of datetime representing days to be plotted, derive the
     % corresponding weeks which overlap with the specified days.
     %
