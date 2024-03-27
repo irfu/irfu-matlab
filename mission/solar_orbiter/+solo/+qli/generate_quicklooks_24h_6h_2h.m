@@ -132,9 +132,8 @@ fig          = gcf;
 fig.Position = [1, 1, FIG_WIDTH, FIG_HEIGHT];
 
 
-if ~solo.qli.const.ENABLE_B
-  Data.B = [];
-end
+
+%fig.set('units', 'normalized', 'outerposition', [0.5 0 0.5 1])  % DEBUG
 
 
 
@@ -200,7 +199,7 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 %===========================
 IRF_EBSP_FREQ_MIN_HZ            = 0.05;
 B_SAMPLING_PERIOD_THRESHOLD_SEC = 0.1250*0.95;  % 0.1250*0.95 = 0.1187
-if ~isempty(Data.B) && solo.qli.const.NONWEEKLY_SPECTRA_ENABLED
+if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
   if  ~isempty(rmmissing(Data.B.data))
     B = Data.B;
 

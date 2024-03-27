@@ -13,16 +13,11 @@ classdef const
   %   PROBLEM: generate_quicklooks_*_using_DB_SPICE() use them.
   %     PROPOSAL: Also hardcode values in demo file.
   %
-  % PROPOSAL: Replace ENABLE_B, NONWEEKLY_SPECTRA_ENABLED,
-  %           NONWEEKLY_ALL_PLOTS_ENABLED with optional arguments, "settings" (varargin)
+  % PROPOSAL: Replace B_SPECTRA_ENABLED, NONWEEKLY_ALL_PLOTS_ENABLED
+  %           with optional arguments, "settings" (varargin).
   %   NOTE: Would need to expose the same settings arguments in
   %         solo.qli.batch.generate_quicklooks().
   %   PRO: Calling MTEST code could set values (override defaults).
-  %
-  % PROPOSAL: Redefine/replace ENABLE_B to only disable only the slow part in
-  %           generate_quicklooks_24h_6h_2h() and generate_quicklook_7days()
-  %           (not emulate the absence of B data entirely).
-  %   PRO: More complete quicklooks when disabling functionality for speed.
   %
   % PROPOSAL: Abolish CATCH_PLOT_EXCEPTIONS_ENABLED.
 
@@ -34,20 +29,13 @@ classdef const
   %#####################
   %#####################
   properties(Constant)
-    % Whether to enable (permit) having magnetic field data
-    % -----------------------------------------------------
-    % IMPLEMENTATION NOTE: Disabling B (use empty; pretend there is no B data)
-    % speeds up solo.qli.generate_quicklooks_24h_6h_2h() greatly. Useful for
-    % some debugging. Should be enabled by default.
-    ENABLE_B = true;    % DEFAULT
-    %ENABLE_B = false;
-
-    % Whether to enable/disable panels with time-consuming spectra
-    % ------------------------------------------------------------
-    % Disabling this is useful for debugging and testing (speeds up execution).
-    % Should be enabled by default.
-    NONWEEKLY_SPECTRA_ENABLED = true;    % DEFAULT
-    %NONWEEKLY_SPECTRA_ENABLED = false;
+    % Whether to enable two time-consuming spectra based on B (24h6h2h)
+    % -----------------------------------------------------------------
+    % IMPLEMENTATION NOTE: Disabling these speeds up
+    % solo.qli.generate_quicklooks_24h_6h_2h() greatly. Useful for some
+    % debugging. Should be enabled by default.
+    B_SPECTRA_ENABLED = true;    % DEFAULT
+    %B_SPECTRA_ENABLED = false;
 
     % Whether to generate more than one quicklook (file) of every type (per day)
     % --------------------------------------------------------------------------

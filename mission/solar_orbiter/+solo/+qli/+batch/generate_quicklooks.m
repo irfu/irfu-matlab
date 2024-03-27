@@ -246,8 +246,7 @@ irf.log('n', sprintf('numel(DaysDtArray)          = %d',   numel(DaysDtArray)))
 % Log misc. variables
 irf.log('n', sprintf('isOfficialGeneration        = %d',   isOfficialGeneration))
 % Log selected constants.
-irf.log('n', sprintf('ENABLE_B                    = %d',   solo.qli.const.ENABLE_B))
-irf.log('n', sprintf('NONWEEKLY_SPECTRA_ENABLED   = %d',   solo.qli.const.NONWEEKLY_SPECTRA_ENABLED))
+irf.log('n', sprintf('B_SPECTRA_ENABLED           = %d',   solo.qli.const.B_SPECTRA_ENABLED))
 irf.log('n', sprintf('NONWEEKLY_ALL_PLOTS_ENABLED = %d',   solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED))
 
 
