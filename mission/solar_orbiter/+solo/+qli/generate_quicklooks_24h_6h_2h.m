@@ -194,9 +194,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 
 
 
-%===========================
-% Fill panel 3 & 4: Spectra
-%===========================
+%==========================================
+% Fill panel 3 & 4: Spectra derived from B
+%==========================================
 IRF_EBSP_FREQ_MIN_HZ            = 0.05;
 B_SAMPLING_PERIOD_THRESHOLD_SEC = 0.1250*0.95;  % 0.1250*0.95 = 0.1187
 if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
@@ -216,18 +216,18 @@ if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
     %  TSeries.filt() --> irf_filt() --> filtfilt().
     B_0 = B.filt(0, 0.01, fMag, 5);
 
-    % -------------------------------------------------------------
+    %---------------------------------------------------------------
     % IMPORTANT NOTE: The call to irf_ebsp() is very time-consuming
-    % -------------------------------------------------------------
+    %---------------------------------------------------------------
     tBeginSec = solo.qli.utils.log_time('irf_ebsp(): Begin call', tBeginSec);
-    ebsp      = irf_ebsp([], B, [], B_0, [], [IRF_EBSP_FREQ_MIN_HZ, freqMaxHz], 'fullB=dB', 'polarization', 'fac');
+    Ebsp      = irf_ebsp([], B, [], B_0, [], [IRF_EBSP_FREQ_MIN_HZ, freqMaxHz], 'fullB=dB', 'polarization', 'fac');
     tBeginSec = solo.qli.utils.log_time('irf_ebsp(): End call', tBeginSec);
 
-    frequency   = ebsp.f;
-    time        = ebsp.t;
-    Bsum        = ebsp.bb_xxyyzzss(:, :, 4);
-    ellipticity = ebsp.ellipticity;
-    dop         = ebsp.dop;    % DOP = Degree Of Polarization
+    frequency   = Ebsp.f;
+    time        = Ebsp.t;
+    Bsum        = Ebsp.bb_xxyyzzss(:, :, 4);
+    ellipticity = Ebsp.ellipticity;
+    dop         = Ebsp.dop;    % DOP = Degree Of Polarization
 
     % Remove points with very low degree of polarization
     DEGREE_OF_POLARIZATION_THRESHOLD = 0.7;
@@ -245,15 +245,15 @@ if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
     msk_denoise                 = bwareaopen(msk, 8);
     ellipticity(msk_denoise==0) = NaN;
 
-    %---------
-    % Panel 3
-    %---------
-    specrec         = struct('t', time);
-    specrec.f       = frequency;
-    specrec.p       = Bsum;
-    specrec.f_label = '';
-    specrec.p_label = {'log_{10}B^{2}', 'nT^2 Hz^{-1}'};
-    irf_spectrogram(h(3), specrec, 'log', 'donotfitcolorbarlabel');
+    %-----------------
+    % Panel 3: "Bsum"
+    %-----------------
+    Specrec         = struct('t', time);
+    Specrec.f       = frequency;
+    Specrec.p       = Bsum;
+    Specrec.f_label = '';
+    Specrec.p_label = {'log_{10}B^{2}', 'nT^2 Hz^{-1}'};
+    irf_spectrogram(h(3), Specrec, 'log', 'donotfitcolorbarlabel');
     set(     h(3), 'yscale', 'log');
     % set(h(1), 'ytick', [1e1 1e2 1e3]);
     % caxis(h(3), [-8 -1])
@@ -262,15 +262,15 @@ if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
     text(    h(3), 0.01, 0.3, 'f_{ci}', 'units', 'normalized', 'fontsize', FONT_SIZE);
     colormap(h(3), 'jet');
 
-    %---------
-    % Panel 4
-    %---------
-    specrec         = struct('t', time);
-    specrec.f       = frequency;
-    specrec.p       = ellipticity;
-    specrec.f_label = '';
-    specrec.p_label = {'Ellipticity', 'DOP>0.7'};
-    irf_spectrogram(h(4), specrec, 'log', 'donotfitcolorbarlabel');
+    %----------------------
+    % Panel 4: Ellipticity
+    %----------------------
+    Specrec         = struct('t', time);
+    Specrec.f       = frequency;
+    Specrec.p       = ellipticity;
+    Specrec.f_label = '';
+    Specrec.p_label = {'Ellipticity', 'DOP>0.7'};
+    irf_spectrogram(h(4), Specrec, 'log', 'donotfitcolorbarlabel');
     set(     h(4), 'yscale', 'log');
     % set(h(1), 'ytick', [1e1 1e2 1e3]);
     caxis(   h(4), [-1 1])
@@ -578,7 +578,6 @@ h(5).YLim   = [0.5, 300];
 
 
 
-fig = gcf;
 fig.PaperPositionMode = 'auto';
 
 %===========================

@@ -197,7 +197,7 @@ if ~isempty(Data.ieflux)
   iDEF.p       = Data.ieflux.data;
   iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
   iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
-  irf_spectrogram(h(8), iDEF, 'log', 'donotfitcolorbarlabel');
+  irf_spectrogram(h(8), iDEF, 'log', 'donotfitcolorbarlabel');   % Somewhat time-consuming
   % set(h(1), 'ytick', [1e1 1e2 1e3]);
 
 
@@ -377,7 +377,6 @@ irf_zoom(           h(1:9), 'x', Tint);
 % irf_zoom(h(1:7), 'y');
 
 % Plot complete, print figure.
-fig = gcf;
 fig.PaperPositionMode = 'auto';
 
 %=====================
