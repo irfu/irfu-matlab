@@ -76,8 +76,8 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
         'TIME_INTERVAL', '2024-01-01', '2024-01-01' ...
       )
 
-      testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, solo.qli.const.DT_EMPTY_ARRAY)
-      testCase.assertEqual(Settings.Gql.Dt7daysArray,   solo.qli.const.DT_EMPTY_ARRAY)
+      testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(Settings.Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
@@ -125,8 +125,8 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
         'GENERATE_FROM_LOGS', 'LESIA', 'SOAR' ...
       )
 
-      testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, solo.qli.const.DT_EMPTY_ARRAY)
-      testCase.assertEqual(Settings.Gql.Dt7daysArray,   solo.qli.const.DT_EMPTY_ARRAY)
+      testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(Settings.Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 

@@ -102,8 +102,7 @@ DsmdArray = solo.adm.paths_to_DSMD_array(datasetFileNameCa(:));
 % [DsmdArray.dt1] behaves differently for empty DSMD array (it returns 0x0
 % double).
 if isempty(DsmdArray)
-  Dt1Array = datetime.empty(0, 1);
-  Dt1Array.TimeZone = 'UTCLeapSeconds';
+  Dt1Array = solo.qli.const.EMPTY_DT_ARRAY;
 else
   Dt1Array = [DsmdArray.dt1];
 end

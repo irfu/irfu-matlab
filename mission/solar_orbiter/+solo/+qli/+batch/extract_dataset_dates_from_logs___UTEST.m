@@ -6,7 +6,58 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
-  % PROPOSAL: Use unit test setup for temporary directory.
+
+
+
+  %############
+  %############
+  % PROPERTIES
+  %############
+  %############
+  properties
+    % Additional properties of testCase objects.
+    testDir
+  end
+
+
+
+  %#######
+  %#######
+  % SETUP
+  %#######
+  %#######
+  methods (TestMethodSetup)
+
+
+
+    function close_figures(testCase)
+      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      testCase.testDir = F.Folder;
+    end
+
+
+
+  end
+
+
+
+  %################
+  %################
+  % HELPER METHODS
+  %################
+  %################
+  methods
+
+
+
+    % Create path to file (existing/non-existing) in test directory.
+    function path = fullfile(testCase, filename)
+      path = fullfile(testCase.testDir, filename);
+    end
+
+
+
+  end
 
 
 
@@ -33,29 +84,23 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
     function test_one_log_empty(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, {})
-
-      ExpDtArray = solo.qli.const.DT_EMPTY_ARRAY;
 
       [ActDtArray, actLogFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'solo_L3_rpw-bia-density'});
 
-      testCase.assertEqual(ActDtArray, ExpDtArray)
+      testCase.assertEqual(ActDtArray, solo.qli.const.EMPTY_DT_ARRAY)
       testCase.assertEqual(actLogFilePath, filePath)
     end
 
 
 
     function test_one_log_no_match(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
@@ -63,21 +108,17 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'IRRELEVANT TEXT', ...
         })
 
-      ExpDtArray = solo.qli.const.DT_EMPTY_ARRAY;
-
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'solo_L3_rpw-bia-density'});
 
-      testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
+      testCase.assertEqual(sort(ActDtArray), solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
 
     function test_one_log_one_match_simple(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
@@ -95,31 +136,25 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
     function test_one_log_zero_DSIs_simple(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
         'solo_L3_rpw-bia-density_20240101_V01.cdf', ...
         })
 
-      ExpDtArray = solo.qli.const.DT_EMPTY_ARRAY;
-
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {});
 
-      testCase.assertEqual(sort(ActDtArray), ExpDtArray)
+      testCase.assertEqual(sort(ActDtArray), solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
 
     function test_one_log_two_identical_matches(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
@@ -139,10 +174,8 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
     % Test that can detect both CDAG and non-CDAG filenames.
     function test_one_log_CDAG_nonCDAG(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
@@ -161,10 +194,8 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
     function test_one_log_one_DSI_complex(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
@@ -186,10 +217,8 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
     function test_one_log_multiple_DSIs_complex(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       % IMPLEMENTATION NOTE: Two density, three MAG to test concatenation of
       % different-length cell arrays inside called function.
@@ -213,10 +242,8 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
     function test_one_log_multiple_matches_on_same_row(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath          = fullfile(F.Folder, 'processing2024-01-01.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
@@ -234,11 +261,9 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
     function test_multiple_logs_multiple_DSIs_complex(testCase)
-      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-
-      logFileDirPattern = fullfile(F.Folder, 'processing*.log');
-      filePath1         = fullfile(F.Folder, 'processing2024-01-01T12.00.00.log');
-      filePath2         = fullfile(F.Folder, 'processing2024-01-01T18.00.00.log');
+      logFileDirPattern = testCase.fullfile('processing*.log');
+      filePath1         = testCase.fullfile('processing2024-01-01T12.00.00.log');
+      filePath2         = testCase.fullfile('processing2024-01-01T18.00.00.log');
 
       % NOTE: Log file which will be ignored.
       solo.qli.batch.utils.write_file(filePath1, ...

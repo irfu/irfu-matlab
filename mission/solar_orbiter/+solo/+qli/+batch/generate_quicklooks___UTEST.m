@@ -27,11 +27,11 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
   %#################
   properties(TestParameter)
     EXC_24H6H2H = {...
-      solo.qli.const.DT_EMPTY_ARRAY, ...
+      solo.qli.const.EMPTY_DT_ARRAY, ...
       solo.qli.utils.umdt('2024-01-01') ...
       }
     EXC_7DAYS = {...
-      solo.qli.const.DT_EMPTY_ARRAY, ...
+      solo.qli.const.EMPTY_DT_ARRAY, ...
       solo.qli.utils.umdt('2023-12-27') ...
       }
   end
@@ -77,12 +77,12 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
       % Everything disabled.
       solo.qli.batch.generate_quicklooks(...
         [], testCase.vhtDir, testCase.outputDir, ...
-        false, false, solo.qli.const.DT_EMPTY_ARRAY, Gql)
+        false, false, solo.qli.const.EMPTY_DT_ARRAY, Gql)
 
       % Logo & quicklooks enabled.
       solo.qli.batch.generate_quicklooks(...
         logoPath, testCase.vhtDir, testCase.outputDir, ...
-        true, true, solo.qli.const.DT_EMPTY_ARRAY, Gql)
+        true, true, solo.qli.const.EMPTY_DT_ARRAY, Gql)
     end
 
 
@@ -97,7 +97,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
         true, false, DaysDtArray, Gql)
 
       testCase.assertEqual(Gql.Dt24h6h2hArray, DaysDtArray)
-      testCase.assertEqual(Gql.Dt7daysArray,   solo.qli.const.DT_EMPTY_ARRAY)
+      testCase.assertEqual(Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
@@ -111,7 +111,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
         [], testCase.vhtDir, testCase.outputDir, ...
         false, true, DaysDtArray, Gql)
 
-      testCase.assertEqual(Gql.Dt24h6h2hArray, solo.qli.const.DT_EMPTY_ARRAY)
+      testCase.assertEqual(Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
       testCase.assertEqual(Gql.Dt7daysArray,   ExpDt7daysArray)
     end
 
@@ -123,7 +123,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
 
       Gql = solo.qli.batch.GenerateQuicklooksTest(...
         DaysDtArray(1), ...
-        solo.qli.const.DT_EMPTY_ARRAY);
+        solo.qli.const.EMPTY_DT_ARRAY);
 
       testCase.assertError(...
         @() solo.qli.batch.generate_quicklooks(...
@@ -132,7 +132,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
         ?MException)
 
       testCase.assertEqual(Gql.Dt24h6h2hArray, DaysDtArray)
-      testCase.assertEqual(Gql.Dt7daysArray,   solo.qli.const.DT_EMPTY_ARRAY)
+      testCase.assertEqual(Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
@@ -142,7 +142,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
       DaysDtArray     = solo.qli.utils.umdt('2024-01-01') + caldays( [0; 2]);  % Mon, Wed
       ExpDt7daysArray = solo.qli.utils.umdt('2023-12-27') + calweeks([0; 1]);
       Gql = solo.qli.batch.GenerateQuicklooksTest(...
-        solo.qli.const.DT_EMPTY_ARRAY, ...
+        solo.qli.const.EMPTY_DT_ARRAY, ...
         ExpDt7daysArray(1));
 
       testCase.assertError(...
@@ -151,7 +151,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
         false, true, DaysDtArray, Gql), ...
         ?MException)
 
-      testCase.assertEqual(Gql.Dt24h6h2hArray, solo.qli.const.DT_EMPTY_ARRAY)
+      testCase.assertEqual(Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
       testCase.assertEqual(Gql.Dt7daysArray,   ExpDt7daysArray)
     end
 

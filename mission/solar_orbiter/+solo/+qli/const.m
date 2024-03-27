@@ -77,7 +77,7 @@ classdef const
     OFFICIAL_GENERATION_AUTOMOUNT_DIR = '/data/solo/';
 
     % Constant which is useful to have for defining tests.
-    DT_EMPTY_ARRAY = datetime(cell(0,1), 'TimeZone', 'UTCLeapSeconds')
+    EMPTY_DT_ARRAY = datetime(cell(0,1), 'TimeZone', 'UTCLeapSeconds')
   end
 
 

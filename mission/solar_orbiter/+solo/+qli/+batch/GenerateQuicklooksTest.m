@@ -39,13 +39,13 @@ classdef GenerateQuicklooksTest < solo.qli.batch.GenerateQuicklooksAbstract
 
 
     function obj = GenerateQuicklooksTest(varargin)
-      obj.Dt24h6h2hArray = solo.qli.const.DT_EMPTY_ARRAY;
-      obj.Dt7daysArray   = solo.qli.const.DT_EMPTY_ARRAY;
+      obj.Dt24h6h2hArray = solo.qli.const.EMPTY_DT_ARRAY;
+      obj.Dt7daysArray   = solo.qli.const.EMPTY_DT_ARRAY;
 
       switch(nargin)
         case 0
-          obj.Dt24h6h2ExceptionArray = solo.qli.const.DT_EMPTY_ARRAY;
-          obj.Dt7daysExceptionArray  = solo.qli.const.DT_EMPTY_ARRAY;
+          obj.Dt24h6h2ExceptionArray = solo.qli.const.EMPTY_DT_ARRAY;
+          obj.Dt7daysExceptionArray  = solo.qli.const.EMPTY_DT_ARRAY;
         case 2
           obj.Dt24h6h2ExceptionArray = varargin{1};
           obj.Dt7daysExceptionArray  = varargin{2};

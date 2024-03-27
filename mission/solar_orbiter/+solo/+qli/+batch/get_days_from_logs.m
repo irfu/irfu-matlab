@@ -32,7 +32,7 @@
 function DaysDtArray = get_days_from_logs(Settings, varargin)
 % PROPOSAL: Move dataset IDs to solo.qli.batch.const (new)
 
-DaysDtArray = solo.qli.const.DT_EMPTY_ARRAY;
+DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
 for i = 1:numel(varargin)
   datasetsSourceId = varargin{i};
