@@ -30,6 +30,11 @@ classdef const
   %#####################
   %#####################
   properties(Constant)
+
+    %========================================
+    % Enable/disable functionality for speed
+    %========================================
+
     % Whether to enable two time-consuming spectra based on B (24h6h2h)
     % -----------------------------------------------------------------
     % IMPLEMENTATION NOTE: Disabling these speeds up
@@ -54,6 +59,10 @@ classdef const
     %NONWEEKLY_ALL_PLOTS_ENABLED = false;
 
 
+
+    %===============
+    % Miscellaneous
+    %===============
 
     % Whether to catch plotting exceptions, continue plotting other days/weeks,
     % and then re-raise the last caught exception at the very end. This produces
@@ -85,7 +94,7 @@ classdef const
     OFFICIAL_GENERATION_AUTOMOUNT_DIR = '/data/solo/';
 
     % Constant which is useful to have for defining tests.
-    EMPTY_DT_ARRAY = datetime(cell(0,1), 'TimeZone', 'UTCLeapSeconds')
+    EMPTY_DT_ARRAY = NaT([0, 1], 'TimeZone', 'UTCLeapSeconds');
   end
 
 

@@ -186,7 +186,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
     function test_get_context_info_strings(testCase)
 
-      % Arbitrary number output variables.
+      % Arbitrary number of output variables.
       function test(...
           soloPosTSeries, earthPosTSeries, Tint, ...
           expSoloStr, expEarthStr)
@@ -234,11 +234,10 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_plot_filename(testCase)
-
-      function test(inputsCa, expOutput)
-        actOutput = solo.qli.utils.get_plot_filename(inputsCa{:});
-        testCase.verifyEqual(actOutput, expOutput)
+    function test_create_quicklook_filename(testCase)
+      function test(Tint, expFilename)
+        actFilename = solo.qli.utils.create_quicklook_filename(Tint);
+        testCase.assertEqual(actFilename, expFilename)
       end
 
       %===================================================================
@@ -249,7 +248,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
         '2024-01-11T04:04:09.900000004Z'; ...
         ] ...
         );
-      test({Tint}, '20240110T02_20240111T04.png')
+      test(Tint, '20240110T02_20240111T04.png')
     end
 
 

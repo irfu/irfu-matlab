@@ -47,3 +47,5 @@ GQL
     solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
 OFFGEN, "official generation"
     Official Generation of quicklooks for the homepage.
+DSI
+    Dataset ID

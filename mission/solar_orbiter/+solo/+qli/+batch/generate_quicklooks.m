@@ -237,17 +237,20 @@ end
 
 
 % Log arguments
-irf.log('n', sprintf('irfLogoPath                 = "%s"', irfLogoPath))
-irf.log('n', sprintf('vhtDataDir                  = "%s"', vhtDataDir))
-irf.log('n', sprintf('outputDir                   = "%s"', outputDir))
-irf.log('n', sprintf('generateNonweeklyQuicklooks = %d',   generateNonweeklyQuicklooks))
-irf.log('n', sprintf('generateWeeklyQuicklooks    = %d',   generateWeeklyQuicklooks))
-irf.log('n', sprintf('numel(DaysDtArray)          = %d',   numel(DaysDtArray)))
+irf.log('n', sprintf('irfLogoPath                   = "%s"', irfLogoPath))
+irf.log('n', sprintf('vhtDataDir                    = "%s"', vhtDataDir))
+irf.log('n', sprintf('outputDir                     = "%s"', outputDir))
+irf.log('n', sprintf('generateNonweeklyQuicklooks   = %d',   generateNonweeklyQuicklooks))
+irf.log('n', sprintf('generateWeeklyQuicklooks      = %d',   generateWeeklyQuicklooks))
+irf.log('n', sprintf('numel(DaysDtArray)            = %d',   numel(DaysDtArray)))
 % Log misc. variables
-irf.log('n', sprintf('isOfficialGeneration        = %d',   isOfficialGeneration))
+irf.log('n', sprintf('isOfficialGeneration          = %d',   isOfficialGeneration))
 % Log selected constants.
-irf.log('n', sprintf('B_SPECTRA_ENABLED           = %d',   solo.qli.const.B_SPECTRA_ENABLED))
-irf.log('n', sprintf('NONWEEKLY_ALL_PLOTS_ENABLED = %d',   solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED))
+irf.log('n', sprintf('B_SPECTRA_ENABLED             = %d',   solo.qli.const.B_SPECTRA_ENABLED))
+irf.log('n', sprintf('NONWEEKLY_ALL_PLOTS_ENABLED   = %d',   solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED))
+irf.log('n', sprintf('NONWEEKLY_6H_2H_PLOTS_ENABLED = %d',   solo.qli.const.NONWEEKLY_6H_2H_PLOTS_ENABLED))
+% Log current working directory so that relative paths can be interpreted.
+irf.log('n', sprintf('Current working directory     = %s',   pwd))
 
 
 

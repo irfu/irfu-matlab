@@ -64,17 +64,8 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % Should be solved.
 % /Erik P G Johansson 2024-03-25
 %
-% BUG?: 24h, panel 10, TNR spectrum (irf_spectrogram()):
-% Spectral data (irfu-matlab version 2024-03-22) freuently looks different
-% compared to earlier spectras (cron job, irfu-matlab version circa 2023-04).
-% More sections with constant spectrum, some new rectangular "holes" (white,
-% unfilled) in spectra. Some sections are unaltered. Unclear if this si due to
-% changes in underlying data or in code (e.g. recent change in solo.read_TNR()).
-% Ex: 24h quicklook for 2023-01-27:
-%   Large part of spectrum has changed from time changing to constant.
-%   New "hole" in spectrum.
-%   Last section is the same as before.
-% /Erik P G Johansson 2024-03-25
+% https://github.com/irfu/irfu-matlab/issues/138
+% /Erik P G Johansson 2024-03-28
 %
 % BUG: There is no date label for the data under the lowest panel, if there is
 % no data. Do not think this was a problem previously(?).

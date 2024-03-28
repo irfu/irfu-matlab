@@ -25,6 +25,7 @@ classdef utils
 
     % Assert that datetime object only contains timestamps which refer to
     % midnight.
+    %
     % NOTE: Does not require scalar object.
     function assert_UTC_midnight_datetime(Dt)
       assert(isa(Dt, 'datetime'))
@@ -169,6 +170,7 @@ classdef utils
     %       [], if no matching dataset was found.
     %
     function zvData = read_constant_metadata(filePrefix, zvName, Tint)
+      % PROPOSAL: Refactor to use dataobj().
 
       FileArray = solo.db_list_files(filePrefix, Tint);
       if ~isempty(FileArray)
@@ -177,13 +179,78 @@ classdef utils
 
         % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
         %       dataobj(), not NASA SPDF). *Might* be faster (or might not)
-        %       since only reading a specified zVariable.
+        %       since only reading one specific zVariable.
         zvCa   = cdfread(filePath, 'variables', zvName);
         zvData = zvCa{1};
       else
         zvData = [];
       end
     end
+
+
+
+    % EXPERIMENTAL. SOMEWHAT UGLY CIRCUMVENTION. UNCLEAR IF PERMANENT SOLUTION.
+    %
+    % Read selected zVariables from datasets selected using solo.db_list_files()
+    % but not by using solo.db_get_ts().
+    %
+    % Function exists as a workaround to avoid the removal of samples for
+    % identical timestamps in solo.db_get_ts() which has an unduly large effect
+    % on QLI (panel 10, 24h6h2h), unknown why.
+    %
+    % 2024-03-28: It seems likely that this code can be deleted, but it not
+    % clear yet. Function was created as a possible workaround/bugfix for
+    % https://github.com/irfu/irfu-matlab/issues/138 .
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % zvCa
+    %     Column cell array of TSeries.
+    %     [], if there are no datasets for the selected time interval.
+    %
+    % NOTE: Overlaps with solo.qli.utils.read_constant_metadata().
+%     function zvCa = read_CDFs(filePrefix, Tint, zvNamesCa)
+%       % PROPOSAL: Merge with solo.qli.utils.read_constant_metadata().
+%       %   PRO: Overlaps with it. If calling both for the same dataset(s), then
+%       %        reading the same file(s) twice.
+%       %     CON: Does not whether cdfread() reads entire files or just part of them.
+%
+%       % IMPLEMENTATION NOTE: Not storing return TSeries values in TSeries array
+%       % since indexing () has special meaning for TSeries.
+%
+%
+%       FileArray = solo.db_list_files(filePrefix, Tint);
+%
+%       zvCa = cell(numel(zvNamesCa), 1);
+%       if ~isempty(FileArray)
+%         for iFile = 1:numel(FileArray)
+%           File     = FileArray(iFile);
+%           filePath = fullfile(File.path, File.name);
+%           Do       = dataobj(filePath);
+%
+%           for iZv = 1:numel(zvNamesCa)
+%             Ts = get_ts(Do, zvNamesCa{iZv});
+%
+%             TsOld = zvCa{iZv, 1};
+%             if ~isequal(TsOld, [])
+%               Ts = TsOld.combine(Ts);
+%             end
+%             zvCa{iZv} = Ts;
+%           end
+%         end
+%         zvCa{1} = zvCa{1};
+%       else
+%         % CASE: There are no datasets to read
+%         % IMPLEMENTATION NOTE: Can not return e.g. empty TSeries with consistent
+%         % sizes since the sizes can not be known without zVariables.
+%         zvCa = [];
+%       end
+%
+%       for iZv = 1:numel(zvNamesCa)
+%         zvCa{iZv} = zvCa{iZv}.tlim(Tint);
+%       end
+%     end
 
 
 
@@ -361,7 +428,8 @@ classdef utils
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function [soloStr, earthStr] = get_context_info_strings(soloPosTSeries, earthPosTSeries, Tint)
+    function [soloStr, earthStr] = get_context_info_strings(...
+        soloPosTSeries, earthPosTSeries, Tint)
       % PROPOSAL: No Tint argument. Caller submits already truncated TSeries.
       %   PRO: One fewer arguments.
       %   CON: Caller has to truncate twice.
@@ -507,7 +575,8 @@ classdef utils
 
 
 
-    function filename = get_plot_filename(Tint)
+    % Ex: 20240313T20_20240313T22.png
+    function filename = create_quicklook_filename(Tint)
       assert(isa(Tint, 'EpochTT') && (length(Tint) == 2))
 
       ett1           = Tint(1);
@@ -528,7 +597,7 @@ classdef utils
     function save_figure_to_file(parentDirPath, Tint)
       % PROPOSAL: Include fig.PaperPositionMode='auto';
 
-      filename = solo.qli.utils.get_plot_filename(Tint);
+      filename = solo.qli.utils.create_quicklook_filename(Tint);
       filePath = fullfile(parentDirPath, filename);
       print('-dpng', filePath);
     end
