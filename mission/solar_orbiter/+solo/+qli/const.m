@@ -13,7 +13,8 @@ classdef const
   %   PROBLEM: generate_quicklooks_*_using_DB_SPICE() use them.
   %     PROPOSAL: Also hardcode values in demo file.
   %
-  % PROPOSAL: Replace B_SPECTRA_ENABLED, NONWEEKLY_ALL_PLOTS_ENABLED
+  % PROPOSAL: Replace B_SPECTRA_ENABLED, NONWEEKLY_ALL_PLOTS_ENABLED,
+  %           NONWEEKLY_ALL_PLOTS_ENABLED
   %           with optional arguments, "settings" (varargin).
   %   NOTE: Would need to expose the same settings arguments in
   %         solo.qli.batch.generate_quicklooks().
@@ -36,6 +37,13 @@ classdef const
     % debugging. Should be enabled by default.
     B_SPECTRA_ENABLED = true;    % DEFAULT
     %B_SPECTRA_ENABLED = false;
+
+    % Whether to generate any 6h and 2h quicklooks (files)
+    % ----------------------------------------------------
+    % Disabling this is useful for debugging and testing (speeds up execution).
+    % Should be enabled by default.
+    NONWEEKLY_6H_2H_PLOTS_ENABLED = true;
+    %NONWEEKLY_6H_2H_PLOTS_ENABLED = false;
 
     % Whether to generate more than one quicklook (file) of every type (per day)
     % --------------------------------------------------------------------------

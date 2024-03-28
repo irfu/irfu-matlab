@@ -613,12 +613,13 @@ h(5).YTick  = oldYTickH5;
 
 I_6H = 0:3;
 I_2H = 0:11;
-if ~solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED
+if ~solo.qli.const.NONWEEKLY_6H_2H_PLOTS_ENABLED
+  I_6H = [];
+  I_2H = [];
+elseif ~solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED
   % For debugging/testing.
   I_6H = [0];
   I_2H = [0];
-  %I_6H = [1];
-  %I_2H = [5];
 end
 
 %===========================
