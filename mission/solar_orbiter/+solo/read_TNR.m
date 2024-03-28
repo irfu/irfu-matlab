@@ -102,9 +102,20 @@ end
 
 sweep_num = sweep_;
 
-delta_sw = abs(sweep_(2:end) - sweep_(1:end - 1));
+% NOTE: zVariable SWEEP_NUM is CDF_UINT32 which is converted into MATLAB class
+% uint32. uint32 can not represent negative values and MATLAB (apparently) does
+% not wrap values it can not represent, so MATLAB converts negative values into
+% zero instead.
+% Therefore,
+%   diff(uint32([0,3,0])) == [3,  0]
+%   diff(double([0,3,0])) == [3, -3]
+% Must therefor use double.
+%delta_sw = abs(sweep_(2:end) - sweep_(1:end - 1));
+delta_sw = abs(diff(double(sweep_)));
 
-xdelta_sw = find(delta_sw > 100)';
+% List of indices to "large" jumps (increase/decrease) in sweep_.
+SWEEP_NUM_THRESHOLD = 100;
+xdelta_sw = find(delta_sw > SWEEP_NUM_THRESHOLD)';
 
 if ~isempty(xdelta_sw)
   xdelta_sw = [xdelta_sw, numel(sweep_)];
