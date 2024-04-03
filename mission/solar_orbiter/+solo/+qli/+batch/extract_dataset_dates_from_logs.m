@@ -14,7 +14,7 @@
 %       String. String pattern for dir() command describing one or multiple log
 %       files.
 %       NOTE: Must match at least one file (~failsafe).
-% datasetIdCa
+% dsiCa
 %       Cell array of dataset IDs for datasets which should be searched for.
 %       NOTE: This excludes any "-cdag" suffix. The code will match both CDAG
 %       and non-CDAG files.
@@ -34,8 +34,8 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function [DatasetsDtArray, logFilePath] = extract_dataset_dates_from_logs(...
-  logFileDirPattern, datasetIdCa)
-% PROPOSAL: Require correct case for dataset ID?
+  logFileDirPattern, dsiCa)
+
 % PROPOSAL: Specify filename patterns (not dataset IDs).
 % PROPOSAL: Require at least one dataset ID.
 
@@ -78,19 +78,27 @@ logFilePath = fullfile(Fsoi.folder, Fsoi.name);
 s = fileread(logFilePath);
 
 datasetFileNameCa = cell(0, 1);
-for i = 1:numel(datasetIdCa)
-  datasetId = datasetIdCa{i};
-  % IMPLEMENTATION NOTE: Important to prevent maximal munch from making
-  % matches covering multiple datasets/filenames.
+for i = 1:numel(dsiCa)
+  dsi = dsiCa{i};
+
+  assert(strcmp(dsi, upper(dsi)), 'dsi="%s" is not uppercase (convention).', dsi)
+
+  % IMPLEMENTATION NOTE: Important to prevent maximal munch from making matches
+  % covering multiple datasets/filenames.
   % Ex: Over multiple rows. ==> Exclude line feed in filename.
   % Ex: On the same row.    ==> Exclude period in filename (except before file suffix).
   % NOTE: solo.adm.parse_dataset_filename()'s "unofficial" basename extension
   % can cause problems if there are multiple dataset filenames on the same row
   % and one does not exclude e.g. period.
   % NOTE: Must permit filenames with and without "-cdag".
-  pattern = sprintf('%s(|-cdag)_[^\\n.]*\\.cdf', datasetId);
+  pattern = sprintf('%s(|-cdag)_[^\\n.]*\\.cdf', dsi);
 
-  matchCa = regexpi(s, pattern, 'match');   % NOTE: Case-insensitive.
+  % IMPLEMENTATION NOTE: Using case-insensitive reg. exp. matching to handle
+  % that (1) dataset filenames contain DSI in lowercase (mostly), and (2) that
+  % uppercase dataset IDs have not been historically required in this code.
+  % Note: Some dataset filenames actually have mixed case in the dataset ID part
+  % (I think) but they are not relevant here (yet).
+  matchCa = regexpi(s, pattern, 'match');
 
   datasetFileNameCa = [datasetFileNameCa; matchCa(:)];
 end

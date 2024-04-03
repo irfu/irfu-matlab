@@ -73,7 +73,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
     function test_zero_logs(testCase)
       function call_raise_exception(varargin)
         [~, ~] = solo.qli.batch.extract_dataset_dates_from_logs(...
-          '/nonexisting_dir/nonexisting_log.log', {'solo_L3_rpw-bia-density'});
+          '/nonexisting_dir/nonexisting_log.log', {'SOLO_L3_RPW-BIA-DENSITY'});
       end
 
       testCase.verifyError(...
@@ -90,7 +90,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
       solo.qli.batch.utils.write_file(filePath, {})
 
       [ActDtArray, actLogFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
 
       testCase.assertEqual(ActDtArray, solo.qli.const.EMPTY_DT_ARRAY)
       testCase.assertEqual(actLogFilePath, filePath)
@@ -109,7 +109,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         })
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
 
       testCase.assertEqual(sort(ActDtArray), solo.qli.const.EMPTY_DT_ARRAY)
     end
@@ -128,7 +128,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
       ExpDtArray = solo.qli.utils.umdt('2024-01-01');
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
 
       testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
     end
@@ -165,7 +165,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
       ExpDtArray = solo.qli.utils.umdt('2024-01-01');
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
 
       testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
     end
@@ -186,7 +186,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
       ExpDtArray = solo.qli.utils.umdt({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
 
       testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
     end
@@ -209,7 +209,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
       ExpDtArray = solo.qli.utils.umdt({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
 
       testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
     end
@@ -234,7 +234,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
       ExpDtArray = solo.qli.utils.umdt('2024-01-01') + calmonths([0;1;2;3]);
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density', 'solo_L2_mag-rtn-normal-1-minute'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY', 'SOLO_L2_MAG-RTN-NORMAL-1-MINUTE'});
 
       testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
     end
@@ -253,7 +253,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
       ExpDtArray = solo.qli.utils.umdt({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
 
       testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
     end
@@ -281,7 +281,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
       ExpDtArray = solo.qli.utils.umdt({'2025-01-01'; '2025-02-01'});
 
       [ActDtArray, actLogFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
-        logFileDirPattern, {'solo_L3_rpw-bia-density', 'solo_L2_mag-rtn-normal-1-minute'});
+        logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY', 'SOLO_L2_MAG-RTN-NORMAL-1-MINUTE'});
 
       testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
       testCase.assertEqual(actLogFilePath, filePath2)
