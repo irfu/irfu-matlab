@@ -45,7 +45,6 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
     % Calls which return one file path.
     function test_one_file(testCase)
-
       f = testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
 
       testDir  = f.Folder;
