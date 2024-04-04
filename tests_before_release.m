@@ -19,7 +19,7 @@ function tests_before_release
 % Setup paths etc.
 irf;
 
-% Tests to run (ie file name of file containing a "matlab.unittest.TestCase")
+% Tests to run (i.e. file name of file containing a "matlab.unittest.TestCase")
 testsToRun = {...
   'TestTimeArray', ...              % IRF generic
   'test_irf_time', ...
