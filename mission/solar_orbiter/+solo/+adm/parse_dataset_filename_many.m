@@ -13,7 +13,7 @@
 % ARGUMENT
 % ========
 % filePathCa
-%       Cell column array of paths to files. Can be both datasets and not.
+%       Column cell array of paths to files. Can be both datasets and not.
 %
 %
 % RETURN VALUE
