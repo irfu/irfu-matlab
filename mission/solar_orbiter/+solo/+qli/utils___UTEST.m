@@ -251,6 +251,34 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_parse_quicklook_filename(testCase)
+      function test(filename, ExpStartDt1, ExpStartDt2)
+        [ActStartDt1, ActStartDt2] = solo.qli.utils.parse_quicklook_filename(filename);
+
+        testCase.assertEqual(ActStartDt1, ExpStartDt1)
+        testCase.assertEqual(ActStartDt2, ExpStartDt2)
+      end
+
+      test( ...
+        '20000101T00_20991231T22.png', ...
+        datetime([2000,  1,  1,  0, 0, 0], 'TimeZone', 'UTCLeapSeconds'), ...
+        datetime([2099, 12, 31, 22, 0, 0], 'TimeZone', 'UTCLeapSeconds'))
+
+      % Wrong file suffix.
+      test( ...
+        '20000101T00_20991231T22.jpg', ...
+        [], ...
+        [])
+
+      % Wrong timestamp format.
+      test( ...
+        '20000101T0000_20991231T2259.png', ...
+        [], ...
+        [])
+    end
+
+
+
   end    % methods(Test)
 
 

@@ -41,8 +41,12 @@ generate_quicklook_7days_using_DB_SPICE.m
 NOTE: Additionally tries to follow BICAS conventions. See
       irfu-matlab/mission/solar_orbiter/bicas/readme.txt
 --
-DT
-    datetime
+DICT
+    MATLAB dictionary object.
+DSMD
+    solo.adm.DatasetMetadata
+FMD
+    File Modification Date
 GQL
     solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
 OFFGEN, "official generation"

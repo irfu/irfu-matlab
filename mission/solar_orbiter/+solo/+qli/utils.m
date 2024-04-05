@@ -594,6 +594,52 @@ classdef utils
 
 
 
+    % Parse a quicklook filename.
+    %
+    % ARGUMENTS
+    % =========
+    % filename
+    %       Quicklook filename created with
+    %       solo.qli.utils.create_quicklook_filename().
+    %
+    % RETURN VALUES
+    % =============
+    % Dt1, Dt2
+    %       datetime. Beginning and end timestamps, if the filename is a valid
+    %       quicklook filename.
+    %       [], if non-quicklook filename.
+    function [Dt1, Dt2] = parse_quicklook_filename(filename)
+      TIMESTAMP_RE_CA = {'20[0-9]{2}', '[01][0-9]', '[0-3][0-9]', 'T', '[0-2][0-9]'};
+
+      % Ex: 20240313T20_20240313T22.png
+      [subStrCa, ~, isPerfectMatch] = irf.str.regexp_str_parts(...
+        filename, {TIMESTAMP_RE_CA{:}, '_', TIMESTAMP_RE_CA{:}, '.png'}, 'permit non-match');
+
+      if isPerfectMatch
+        year1  = str2double(subStrCa{1});
+        month1 = str2double(subStrCa{2});
+        day1   = str2double(subStrCa{3});
+        hour1  = str2double(subStrCa{4+1});
+
+        year2  = str2double(subStrCa{6+1});
+        month2 = str2double(subStrCa{6+2});
+        day2   = str2double(subStrCa{6+3});
+        hour2  = str2double(subStrCa{6+4+1});
+
+        DtArray = datetime(...
+          [year1, month1, day1, hour1, 0, 0;
+           year2, month2, day2, hour2, 0, 0], ...
+          'TimeZone', 'UTCLeapSeconds');
+        Dt1 = DtArray(1);
+        Dt2 = DtArray(2);
+      else
+        Dt1 = [];
+        Dt2 = [];
+      end
+    end
+
+
+
     function save_figure_to_file(parentDirPath, Tint)
       % PROPOSAL: Include fig.PaperPositionMode='auto';
 
