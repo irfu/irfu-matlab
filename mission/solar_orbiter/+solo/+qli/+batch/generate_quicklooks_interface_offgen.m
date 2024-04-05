@@ -51,6 +51,10 @@ Settings.Gql                    = solo.qli.batch.GenerateQuicklooksImplementatio
 Settings.vhtDir                 = '/data/solo/data_yuri/';
 Settings.irfLogoPath            = fullfile(irf('path'), IRF_LOGO_RPATH);
 Settings.LogFileDirPatternDict  = LOG_FILE_DIR_PATTERN_DICT;
+Settings.datasetDirsCa          = {
+  '/data/solo/remote/data';    % LESIA
+  '/data/solo/soar';           % SOAR
+};
 
 irf.assert.file_exists(Settings.irfLogoPath)
 

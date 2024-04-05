@@ -6,6 +6,8 @@
 % purpose of other test code which is closer to the relevant parts of the code:
 %   * solo.qli.batch.generate_quicklooks___UTEST
 %   * solo.qli.batch.extract_dataset_dates_from_logs___UTEST
+%   * solo.qli.batch.fmd___UTEST
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
@@ -39,11 +41,13 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       VhtFixture      = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       OutputFixture   = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       InputLogFixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      QliFixture      = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
 
       Settings             = [];
       Settings.irfLogoPath = solo.qli.testdata.get_test_logo_path();
       Settings.vhtDir      = VhtFixture.Folder;
       Settings.Gql         = solo.qli.batch.GenerateQuicklooksTest();
+      Settings.qliDir      = QliFixture.Folder;
 
       testCase.Settings    = Settings;
       testCase.inputLogDir = InputLogFixture.Folder;
@@ -159,6 +163,49 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       ExpDt7days   = solo.qli.utils.umdt({'2022-12-28'; '2023-02-01'});
       testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, ExpDt24h6h2h)
       testCase.assertEqual(Settings.Gql.Dt7daysArray,   ExpDt7days)
+    end
+
+
+
+  end    % methods(Test)
+  methods(Test)
+    % ===========================
+    % GENERATE_FROM_FMDS commands
+    % ===========================
+
+
+
+    function test_empty(testCase)
+      Settings = testCase.Settings;
+      Settings.datasetDirsCa = cell(0, 1);
+
+      solo.qli.batch.generate_quicklooks_interface(...
+        Settings, testCase.outputDir, '1', '1', ...
+        'GENERATE_FROM_FMDS' ...
+        )
+    end
+
+
+
+    function test_nonempty(testCase)
+      % NOTE: Would be more meaningful if could assert the returned dates.
+      Settings = testCase.Settings;
+
+      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      dir1 = F.Folder;
+      F = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      dir2 = F.Folder;
+
+      qliPath      = irf.fs.create_empty_file({Settings.qliDir, '20240101T00_20240102T00.png'});
+      datasetPath1 = irf.fs.create_empty_file({dir1, 'solo_L2_swa-pas-eflux_20240101_V02.cdf'});
+      datasetPath2 = irf.fs.create_empty_file({dir2, 'solo_L2_mag-rtn-normal_20240101_V02.cdf'});
+
+      Settings.datasetDirsCa = {dir1; dir2};
+
+      solo.qli.batch.generate_quicklooks_interface(...
+        Settings, testCase.outputDir, '1', '1', ...
+        'GENERATE_FROM_FMDS' ...
+        )
     end
 
 

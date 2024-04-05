@@ -46,24 +46,28 @@ classdef fmd
 
 
     function DaysDtArray = get_days_from_FMDs(datasetDirsCa, qliDir, dsiCa)
-      assert(iscell(datasetDirsCa))
+      assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
       assert(ischar(qliDir))
 
       %=========================================
       % Obtain information from the file system
       %=========================================
-      [datasetPathsCa, DatasetFsoiArray] = bicas.tools.batch.get_file_paths(dirPathsCa);
+      [datasetPathsCa, DatasetFsoiArray] = bicas.tools.batch.get_file_paths(datasetDirsCa);
       [DsmdArray, bIsDatasetArray]       = solo.adm.paths_to_DSMD_array(datasetPathsCa);
-      DatasetFsoiArray  = DatasetFsoiArray(bIsDatasetArray);
-      DatasetFmdDtArray = datetime({DatasetFsoiArray.datenum, 'ConvertFrom', 'datenum'})';
+      DatasetFsoiArray   = DatasetFsoiArray(bIsDatasetArray);
+      DatasetFmdSdnArray = [DatasetFsoiArray.datenum];
+      DatasetFmdSdnArray = DatasetFmdSdnArray(:);
+      DatasetFmdDtArray  = datetime(DatasetFmdSdnArray, 'ConvertFrom', 'datenum');
 
       [QliPathsCa, QliFsoiArray] = bicas.tools.batch.get_file_paths({qliDir});
-      QliFmdDtArray = datetime({QliFsoiArray.datenum}, 'ConvertFrom', 'datenum')';
+      QliFmdSdnArray = [QliFsoiArray.datenum];
+      QliFmdSdnArray = QliFmdSdnArray(:);
+      QliFmdDtArray  = datetime(QliFmdSdnArray, 'ConvertFrom', 'datenum');
 
       %==============
       % Derive dates
       %==============
-      DaysDtArray = get_days_from_FMDs_from_file_info(...
+      DaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs_from_file_info(...
         DsmdArray, DatasetFmdDtArray, dsiCa, QliPathsCa, QliFmdDtArray);
     end
 

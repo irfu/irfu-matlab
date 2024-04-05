@@ -62,6 +62,9 @@ switch(dateSelectionAlgorithmId)
   case 'GENERATE_FROM_LOGS'
     DaysDtArray = solo.qli.batch.get_days_from_logs(Settings, varargin{:});
 
+  case 'GENERATE_FROM_FMDS'
+    DaysDtArray = solo.qli.batch.get_days_from_FMDs(Settings, varargin{:});
+
   otherwise
     error('Illegal dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
 end
