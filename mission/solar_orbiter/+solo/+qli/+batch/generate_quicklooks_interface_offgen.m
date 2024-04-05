@@ -42,13 +42,15 @@ function generate_quicklooks_interface_offgen(...
 IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+batch/irf_logo.png';
 
 
+LOG_FILE_DIR_PATTERN_DICT          = dictionary();
+LOG_FILE_DIR_PATTERN_DICT('LESIA') = '/home/erjo/logs/pull.so.data.cron.brain.*.log';
+LOG_FILE_DIR_PATTERN_DICT('SOAR')  = '/home/erjo/logs/so_soar_irfu_mirror_sync.*.log';
 
 Settings = [];
 Settings.Gql                    = solo.qli.batch.GenerateQuicklooksImplementation();
 Settings.vhtDir                 = '/data/solo/data_yuri/';
 Settings.irfLogoPath            = fullfile(irf('path'), IRF_LOGO_RPATH);
-Settings.lesiaLogFileDirPattern = '/home/erjo/logs/pull.so.data.cron.brain.*.log';
-Settings.soarLogFileDirPattern  = '/home/erjo/logs/so_soar_irfu_mirror_sync.*.log';
+Settings.LogFileDirPatternDict  = LOG_FILE_DIR_PATTERN_DICT;
 
 irf.assert.file_exists(Settings.irfLogoPath)
 

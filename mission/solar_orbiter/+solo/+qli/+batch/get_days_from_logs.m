@@ -31,34 +31,29 @@
 %
 function DaysDtArray = get_days_from_logs(Settings, varargin)
 
+assert(isequal(...
+  sort(Settings.LogFileDirPatternDict.keys), ...
+  sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
+  'Settings.LogFileDirPatternDict defines the wrong set of keys.')
+
+
+
 DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
 for i = 1:numel(varargin)
-  logFilesId = varargin{i};
-  assert(ischar(logFilesId), 'logFilesId %i is not a string.', i)
+  datasetsSourceId = varargin{i};
+  assert(ischar(datasetsSourceId), 'logFilesId %i is not a string.', i)
 
-  switch(logFilesId)
-
-    % case 'IRFU'
-    %   % '/home/erjo/logs/so_bicas_batch_cron.*.log'
-    %   logFileDirPattern = Settings.irfuLogFileDirPattern;
-    %   dsiCa             = solo.qli.batch.const.IRFU_LOGS_DSI_CA;
-
-    case 'LESIA'
-      logFileDirPattern = Settings.lesiaLogFileDirPattern;
-      dsiCa             = solo.qli.batch.const.LESIA_LOGS_DSI_CA;
-
-    case 'SOAR'
-      logFileDirPattern = Settings.soarLogFileDirPattern;
-      dsiCa             = solo.qli.batch.const.SOAR_LOGS_DSI_CA;
-
-    otherwise
-      error('Illegal datasetsSourceId="%s"', logFilesId)
+  if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(datasetsSourceId)
+    error('Illegal datasetsSourceId="%s"', datasetsSourceId)
   end
+
+  dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(datasetsSourceId);
+  dsiCa             = dsiCaCa{1};
+  logFileDirPattern = Settings.LogFileDirPatternDict(datasetsSourceId);
 
   SourceDaysDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
     logFileDirPattern, dsiCa);
-
 
   DaysDtArray = [DaysDtArray; SourceDaysDtArray];
 end

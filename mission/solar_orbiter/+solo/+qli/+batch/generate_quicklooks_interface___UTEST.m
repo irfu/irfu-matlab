@@ -117,8 +117,11 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       solo.qli.batch.utils.write_file(...
         fullfile(testCase.inputLogDir, 'SOAR_2024-01-01.log'), {})
 
-      Settings.lesiaLogFileDirPattern = fullfile(testCase.inputLogDir, 'LESIA_*.log');
-      Settings.soarLogFileDirPattern  = fullfile(testCase.inputLogDir, 'SOAR_*.log');
+
+      LOG_FILE_DIR_PATTERN_DICT          = dictionary();
+      LOG_FILE_DIR_PATTERN_DICT('LESIA') = fullfile(testCase.inputLogDir, 'LESIA_*.log');
+      LOG_FILE_DIR_PATTERN_DICT('SOAR')  = fullfile(testCase.inputLogDir, 'SOAR_*.log');
+      Settings.LogFileDirPatternDict     = LOG_FILE_DIR_PATTERN_DICT;
 
       solo.qli.batch.generate_quicklooks_interface(...
         Settings, testCase.outputDir, '1', '1', ...
@@ -142,8 +145,10 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
         fullfile(testCase.inputLogDir, 'SOAR_2024-01-01.log'), ...
         {'solo_L2_mag-rtn-normal_20230202_V99.cdf'})
 
-      Settings.lesiaLogFileDirPattern = fullfile(testCase.inputLogDir, 'LESIA_*.log');
-      Settings.soarLogFileDirPattern  = fullfile(testCase.inputLogDir, 'SOAR_*.log');
+      LOG_FILE_DIR_PATTERN_DICT          = dictionary();
+      LOG_FILE_DIR_PATTERN_DICT('LESIA') = fullfile(testCase.inputLogDir, 'LESIA_*.log');
+      LOG_FILE_DIR_PATTERN_DICT('SOAR')  = fullfile(testCase.inputLogDir, 'SOAR_*.log');
+      Settings.LogFileDirPatternDict     = LOG_FILE_DIR_PATTERN_DICT;
 
       solo.qli.batch.generate_quicklooks_interface(...
         Settings, testCase.outputDir, '1', '1', ...
