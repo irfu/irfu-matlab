@@ -49,6 +49,8 @@ function generate_quicklooks_interface(...
 %          functions called.
 %   CON: Bash wrapper script needs to be aware of syntax for generating help
 %        text so that it does not log or create intermediate directory etc.
+% PROPOSAL: More consistent string constants.
+%   TODO-DEC: How/whether to pluralize "LOG" and "FMD"?
 
 generateNonweeklyQuicklooks = interpret_argument_flag(generateNonweeklyQuicklooks);
 generateWeeklyQuicklooks    = interpret_argument_flag(generateWeeklyQuicklooks);

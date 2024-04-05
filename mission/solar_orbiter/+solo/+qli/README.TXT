@@ -38,7 +38,7 @@ generate_quicklook_7days_using_DB_SPICE.m
 ========================================
  Various source code naming conventions
 ========================================
-NOTE: Tries to follow BICAS conventions. See
+NOTE: Additionally tries to follow BICAS conventions. See
       irfu-matlab/mission/solar_orbiter/bicas/readme.txt
 --
 DT
@@ -47,5 +47,3 @@ GQL
     solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
 OFFGEN, "official generation"
     Official Generation of quicklooks for the homepage.
-DSI
-    Dataset ID

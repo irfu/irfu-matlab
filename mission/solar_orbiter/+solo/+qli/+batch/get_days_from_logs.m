@@ -14,8 +14,8 @@
 %
 % ARGUMENTS
 % =========
-% outputDir
-%       Path to output directory.
+% Settings
+%       Struct with fields for relevant settings.
 % varargin
 %       String IDs representing different dataset source directories. The
 %       function will use the logs for the specified directories to derive dates
@@ -39,10 +39,10 @@ for i = 1:numel(varargin)
 
   switch(logFilesId)
 
-%     case 'IRFU'
-%       % '/home/erjo/logs/so_bicas_batch_cron.*.log'
-%       logFileDirPattern = Settings.irfuLogFileDirPattern;
-%       dsiCa             = solo.qli.batch.const.IRFU_LOGS_DSI_CA;
+    % case 'IRFU'
+    %   % '/home/erjo/logs/so_bicas_batch_cron.*.log'
+    %   logFileDirPattern = Settings.irfuLogFileDirPattern;
+    %   dsiCa             = solo.qli.batch.const.IRFU_LOGS_DSI_CA;
 
     case 'LESIA'
       logFileDirPattern = Settings.lesiaLogFileDirPattern;

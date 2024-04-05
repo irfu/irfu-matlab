@@ -1,7 +1,7 @@
 %
-% Wrapper around solo.qli.batch.generate_quicklooks_interface() intended for being
-% run on brain/spis for the purpose of OFFICIAL GENERATION of quicklooks, e.g.
-% in cron jobs.
+% Wrapper around solo.qli.batch.generate_quicklooks_interface() intended for
+% being run on brain/spis for the purpose of OFFICIAL GENERATION of quicklooks,
+% e.g. in cron jobs.
 %
 % NOTE: This script relies on hardcoded information about the system setup used
 %       for official generation.
@@ -11,11 +11,12 @@
 % NOTE: This script is NOT intended to be called from MATLAB by the average
 %       user as is. See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT.
 %       It may however be seen as an example of how to call
+%       solo.qli.batch.generate_quicklooks_interface().
 %
 %
 % ARGUMENTS
 % =========
-% See solo.qli.batch.generate_quicklooks_batch().
+% See solo.qli.batch.generate_quicklooks_interface().
 % --
 % outputDir
 %       Path to output directory.
