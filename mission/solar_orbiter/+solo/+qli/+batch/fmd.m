@@ -130,7 +130,7 @@ classdef fmd
         DayFmdDictCa{iDsi, 1} = solo.qli.batch.fmd.get_dataset_DFMDD_DSI(DsmdArray, FmdDtArray, dsi);
       end
 
-      DayFmdDict = solo.qli.batch.fmd.merge_dictionaries_max(DayFmdDictCa, datetime.empty, datetime.empty);
+      DayFmdDict = solo.qli.batch.utils.merge_dictionaries_max(DayFmdDictCa, datetime.empty, datetime.empty);
     end
 
 
@@ -173,7 +173,7 @@ classdef fmd
         DatasetDtArray = DatasetDt1:caldays(1):DatasetDt2;
 
         for iDatasetDt = 1:numel(DatasetDtArray)
-          DayFmdDict = solo.qli.batch.fmd.dictionary_set_value_max(...
+          DayFmdDict = solo.qli.batch.utils.dictionary_set_value_max(...
             DayFmdDict, DatasetDtArray(iDatasetDt), FmdDtArray(iDsmd));
         end
       end
@@ -211,57 +211,9 @@ classdef fmd
         % (2) the same filename in multiple locations (should not happen), and
         % (3) the same path multiple times (should not happen).
         for iDay = 1:numel(FilenameDtArray)
-          DayFmdDict = solo.qli.batch.fmd.dictionary_set_value_max(...
+          DayFmdDict = solo.qli.batch.utils.dictionary_set_value_max(...
             DayFmdDict, FilenameDtArray(iDay), QliFmdDtArray(iFile));
         end
-      end
-    end
-
-
-
-    % ~Generic dictionary utility function.
-    %
-    % Merge arbitrary number of dictionaries into one. Only keep the greatest
-    % value when there are key collisions.
-    %
-    % NOTE: Does not care about the type of keys, only whether they are
-    % identical to each other or not.
-    %
-    function MergedDict = merge_dictionaries_max(DictCa, keyType, valueType)
-      assert(iscell(DictCa))
-
-      MergedDict = dictionary(keyType, valueType);
-
-      for iDict = 1:numel(DictCa)
-        InputDict  = DictCa{iDict};
-
-        keyArray   = InputDict.keys;
-        valueArray = InputDict.values;
-
-        for iKey = 1:numel(keyArray)
-          MergedDict = solo.qli.batch.fmd.dictionary_set_value_max(...
-            MergedDict, keyArray(iKey), valueArray(iKey));
-        end
-      end
-    end
-
-
-
-    % ~Generic dictionary utility function.
-    %
-    % Set one dictionary key value. In case of key collision, use the greatest
-    % value.
-    %
-    function Dict = dictionary_set_value_max(...
-        Dict, key, newValue)
-
-      if Dict.isKey(key)
-        oldValue = Dict(key);
-        if oldValue < newValue
-          Dict(key) = newValue;
-        end
-      else
-        Dict(key) = newValue;
       end
     end
 
