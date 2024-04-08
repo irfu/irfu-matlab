@@ -15,6 +15,20 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
 
 
+  %#################
+  %#################
+  % TEST PARAMETERS
+  %#################
+  %#################
+  properties(TestParameter)
+    % Technically, additional properties of testCase objects with cell array
+    % default values. Test methods with arguments with the same name will be
+    % called once for every element in the cell arrays.
+    OPERATION_ID = {'LIST', 'GENERATE'}
+  end
+
+
+
   %############
   %############
   % PROPERTIES
@@ -72,12 +86,12 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_time_interval_zero_days(testCase)
+    function test_time_interval_zero_days(testCase, OPERATION_ID)
       Settings = testCase.Settings; %#ok<*PROP>
 
       solo.qli.batch.generate_quicklooks_interface(...
         Settings, testCase.outputDir, '1', '1', ...
-        'TIME_INTERVAL', '2024-01-01', '2024-01-01' ...
+        OPERATION_ID, 'TIME_INTERVAL', '2024-01-01', '2024-01-01' ...
         )
 
       testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
@@ -86,12 +100,12 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_time_interval_two_days(testCase)
+    function test_time_interval_two_days(testCase, OPERATION_ID)
       Settings = testCase.Settings;
 
       solo.qli.batch.generate_quicklooks_interface(...
         Settings, testCase.outputDir, '1', '1', ...
-        'TIME_INTERVAL', '2024-01-01', '2024-01-03' ...
+        'GENERATE', 'TIME_INTERVAL', '2024-01-01', '2024-01-03' ...
         )
 
       testCase.assertEqual(...
@@ -106,9 +120,9 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
   end    % methods(Test)
   methods(Test)
-    % ==========================
-    % GENERATE_FROM_LOG commands
-    % ==========================
+    % =============
+    % LOGS commands
+    % =============
 
 
 
@@ -129,7 +143,7 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
       solo.qli.batch.generate_quicklooks_interface(...
         Settings, testCase.outputDir, '1', '1', ...
-        'GENERATE_FROM_LOGS', 'LESIA', 'SOAR' ...
+        'GENERATE', 'LOGS', 'LESIA', 'SOAR' ...
         )
 
       testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
@@ -156,7 +170,7 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
       solo.qli.batch.generate_quicklooks_interface(...
         Settings, testCase.outputDir, '1', '1', ...
-        'GENERATE_FROM_LOGS', 'LESIA', 'SOAR' ...
+        'GENERATE', 'LOGS', 'LESIA', 'SOAR' ...
         )
 
       ExpDt24h6h2h = solo.qli.utils.umdt({'2023-01-01'; '2023-02-02'});
@@ -169,9 +183,9 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
   end    % methods(Test)
   methods(Test)
-    % ===========================
-    % GENERATE_FROM_FMDS commands
-    % ===========================
+    % =============
+    % FMDS commands
+    % =============
 
 
 
@@ -181,7 +195,7 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
       solo.qli.batch.generate_quicklooks_interface(...
         Settings, testCase.outputDir, '1', '1', ...
-        'GENERATE_FROM_FMDS' ...
+        'GENERATE', 'FMDS' ...
         )
     end
 
@@ -204,7 +218,7 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
 
       solo.qli.batch.generate_quicklooks_interface(...
         Settings, testCase.outputDir, '1', '1', ...
-        'GENERATE_FROM_FMDS' ...
+        'GENERATE', 'FMDS' ...
         )
     end
 

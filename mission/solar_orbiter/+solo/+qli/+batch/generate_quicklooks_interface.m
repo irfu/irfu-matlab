@@ -18,8 +18,11 @@
 %       One-character strings. Whether to generate ("1" or "0") non-weekly (2h,
 %       6h, 24h) quicklooks and/or weekly quicklooks.
 %       NOTE: STRINGS.
+% operationId
+%       String constant which specifies what to do with list of dates.
 % dateSelectionAlgorithmId
-%       String constant which the date selection algorithm/method.
+%       String constant which specifies which algorithm/method should be used
+%       for obtaining dates.
 % varargin
 %     Arguments associated with the selected date selection algorithm. See
 %     implementation.
@@ -35,7 +38,7 @@
 function generate_quicklooks_interface(...
   Settings, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
-  dateSelectionAlgorithmId, varargin)
+  operationId, dateSelectionAlgorithmId, varargin)
 
 % PROPOSAL: Better name.
 %   Is not meant to be called from bash, but almost. The exception is settings.
@@ -49,20 +52,30 @@ function generate_quicklooks_interface(...
 %          functions called.
 %   CON: Bash wrapper script needs to be aware of syntax for generating help
 %        text so that it does not log or create intermediate directory etc.
+%
 % PROPOSAL: More consistent string constants.
 %   TODO-DEC: How/whether to pluralize "LOG" and "FMD"?
+%   PROPOSAL:
+%     GENERATE_FROM_*: *_TIME_INTERVAL, *_LOGS, *_FMDS
+% PROPOSAL: Additional string constant for whether to list dates or generate
+%           quicklooks. -- IMPLEMENTED
+%   <operationModId>           : LIST, GENERATE
+%   <dateSelectionAlgorithmId> : TIME_INTERVAL, LOGS, FMDS
+
 
 generateNonweeklyQuicklooks = interpret_argument_flag(generateNonweeklyQuicklooks);
 generateWeeklyQuicklooks    = interpret_argument_flag(generateWeeklyQuicklooks);
+
+
 
 switch(dateSelectionAlgorithmId)
   case 'TIME_INTERVAL'
     DaysDtArray = solo.qli.batch.get_days_from_time_interval(varargin{:});
 
-  case 'GENERATE_FROM_LOGS'
+  case 'LOGS'
     DaysDtArray = solo.qli.batch.get_days_from_logs(Settings, varargin{:});
 
-  case 'GENERATE_FROM_FMDS'
+  case 'FMDS'
     DaysDtArray = solo.qli.batch.get_days_from_FMDs(Settings, varargin{:});
 
   otherwise
@@ -71,13 +84,31 @@ end
 
 
 
-%=====================
-% Generate quicklooks
-%=====================
-solo.qli.batch.generate_quicklooks(...
-  Settings.irfLogoPath, Settings.vhtDir, outputDir, ...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
-  DaysDtArray, Settings.Gql)
+switch(operationId)
+  case 'LIST'
+    %============
+    % List dates
+    %============
+    % NOTE: Does not use irf.log().
+    nDates = numel(DaysDtArray);
+    for i = 1:nDates
+      Dt = DaysDtArray(i);
+      fprintf('%04i-%02i-%02i\n', Dt.Year, Dt.Month, Dt.Day)
+    end
+    fprintf('Number of dates: %i\n', nDates)
+
+  case 'GENERATE'
+    %=====================
+    % Generate quicklooks
+    %=====================
+    solo.qli.batch.generate_quicklooks(...
+      Settings.irfLogoPath, Settings.vhtDir, outputDir, ...
+      generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
+      DaysDtArray, Settings.Gql)
+
+  otherwise
+    error('Illegal operationId="%s"', operationId)
+end
 
 end
 
