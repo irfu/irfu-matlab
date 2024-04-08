@@ -22,7 +22,7 @@ classdef interface
 
 
     function DaysDtArray = get_days_from_selected_algorithm(...
-        Settings, dateSelectionAlgorithmId, algorithmArgumentsCa)
+        Settings, outputDir, dateSelectionAlgorithmId, algorithmArgumentsCa)
       % PROPOSAL: Replace Settings-->Separate arguments.
 
       % NOTE: "Settings" is deliberately not passed on to any function, so as to
@@ -43,7 +43,7 @@ classdef interface
         case 'FMDS'
           DaysDtArray = solo.qli.batch.interface.get_days_from_FMDs(...
             Settings.datasetDirsCa, ...
-            Settings.qliDir, ...
+            outputDir, ...
             algorithmArgumentsCa{:});
 
         otherwise

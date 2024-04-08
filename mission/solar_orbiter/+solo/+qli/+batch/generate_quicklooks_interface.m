@@ -67,7 +67,7 @@ generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(ge
 generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(generateWeeklyQuicklooks);
 
 DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
-  Settings, dateSelectionAlgorithmId, varargin);
+  Settings, outputDir, dateSelectionAlgorithmId, varargin);
 
 switch(operationId)
   case 'LIST'

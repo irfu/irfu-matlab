@@ -68,13 +68,11 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       VhtFixture      = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       OutputFixture   = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       %InputLogFixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-      %QliFixture      = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
 
       Settings             = [];
       Settings.irfLogoPath = solo.qli.testdata.get_test_logo_path();
       Settings.vhtDir      = VhtFixture.Folder;
       Settings.Gql         = solo.qli.batch.GenerateQuicklooksTest();
-      %Settings.qliDir      = QliFixture.Folder;
 
       testCase.Settings    = Settings;
       %testCase.inputLogDir = InputLogFixture.Folder;
