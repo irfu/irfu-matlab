@@ -59,7 +59,7 @@ function generate_quicklooks_interface(...
 %                quicklooks should be generated.
 
 irf.assert.struct(Settings, ...
-  {'vhtDir', 'irfLogoPath', 'LogFileDirPatternDict', 'datasetDirsCa', 'Gql'}, {})
+  {'irfLogoPath', 'vhtDir', 'LogFileDirPatternDict', 'fmdQliDir', 'datasetDirsCa', 'Gql'}, {})
 
 
 generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);
@@ -71,7 +71,7 @@ irf.log('n', sprintf('dateSelectionAlgorithmId = "%s"', dateSelectionAlgorithmId
 
 
 DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
-  Settings, outputDir, dateSelectionAlgorithmId, varargin);
+  Settings, Settings.fmdQliDir, dateSelectionAlgorithmId, varargin);
 
 switch(operationId)
   case 'LIST'

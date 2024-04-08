@@ -44,6 +44,11 @@ IRF_LOGO_RPATH  = 'mission/solar_orbiter/+solo/+qli/+batch/irf_logo.png';
 
 VHT_DIR         = '/data/solo/data_yuri/';
 
+% Nominal directory.
+%FMD_QLI_DIR     = '/data/solo/quicklooks/www/24h';
+% Directory used while the NAS8 SolO partition still has problems.
+FMD_QLI_DIR     = '/data/juice/EJ_temp/quicklooks_SOLAR_ORBITER/www/24h';
+
 % Directories with datasets which will be read by solo.db_get_ts() and returned
 % by solo.db_list_files().
 DATASET_DIRS_CA = {
@@ -65,6 +70,7 @@ Settings.vhtDir                 = VHT_DIR;
 Settings.irfLogoPath            = fullfile(irf('path'), IRF_LOGO_RPATH);
 Settings.LogFileDirPatternDict  = LOG_FILE_DIR_PATTERN_DICT;
 Settings.datasetDirsCa          = DATASET_DIRS_CA;
+Settings.fmdQliDir              = FMD_QLI_DIR;
 
 irf.assert.file_exists(Settings.irfLogoPath)
 

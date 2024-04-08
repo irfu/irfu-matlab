@@ -76,6 +76,7 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       % Settings which are required but should not be relevant.
       Settings.datasetDirsCa         = {};
       Settings.LogFileDirPatternDict = dictionary();
+      Settings.fmdQliDir             = '';
 
       testCase.Settings    = Settings;
       %testCase.inputLogDir = InputLogFixture.Folder;
