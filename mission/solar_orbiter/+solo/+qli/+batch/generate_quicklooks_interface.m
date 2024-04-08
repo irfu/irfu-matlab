@@ -63,26 +63,11 @@ function generate_quicklooks_interface(...
 %   <dateSelectionAlgorithmId> : TIME_INTERVAL, LOGS, FMDS
 
 
-generateNonweeklyQuicklooks = interpret_argument_flag(generateNonweeklyQuicklooks);
-generateWeeklyQuicklooks    = interpret_argument_flag(generateWeeklyQuicklooks);
+generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);
+generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(generateWeeklyQuicklooks);
 
-
-
-switch(dateSelectionAlgorithmId)
-  case 'TIME_INTERVAL'
-    DaysDtArray = solo.qli.batch.get_days_from_time_interval(varargin{:});
-
-  case 'LOGS'
-    DaysDtArray = solo.qli.batch.get_days_from_logs(Settings, varargin{:});
-
-  case 'FMDS'
-    DaysDtArray = solo.qli.batch.get_days_from_FMDs(Settings, varargin{:});
-
-  otherwise
-    error('Illegal dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
-end
-
-
+DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
+  Settings, dateSelectionAlgorithmId, varargin);
 
 switch(operationId)
   case 'LIST'
@@ -108,28 +93,6 @@ switch(operationId)
 
   otherwise
     error('Illegal operationId="%s"', operationId)
-end
-
-end
-
-
-
-% Interpret argument for main function interface. Intended accept and normalize
-% arguments which are either
-% (1) MATLAB-friendly (numeric/logical), or
-% (2) bash script-friendly (strings).
-%
-function value = interpret_argument_flag(arg)
-% NOTE: num2str() converts string/number-->string.
-assert(isscalar(arg), 'Flag argument "%s" is not scalar.',   num2str(arg))
-assert(ischar(arg),   'Flag argument "%s" is not a string.', num2str(arg))
-
-if     ischar(arg) && arg=='0'
-  value = false;
-elseif ischar(arg) && arg=='1'
-  value = true;
-else
-  error('Can not interpret argument flag="%s". Illegal value.', arg)
 end
 
 end
