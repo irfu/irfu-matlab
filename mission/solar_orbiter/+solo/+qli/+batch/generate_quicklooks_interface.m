@@ -1,5 +1,5 @@
 %
-% Generate quicklooks, but the caller specifies the method for how to
+% Batch-generate quicklooks, but the caller specifies the method for how to
 % select dates.
 %
 % NOTE: The function is intended for batch generating quicklooks, in particular
@@ -53,14 +53,10 @@ function generate_quicklooks_interface(...
 %   CON: Bash wrapper script needs to be aware of syntax for generating help
 %        text so that it does not log or create intermediate directory etc.
 %
-% PROPOSAL: More consistent string constants.
-%   TODO-DEC: How/whether to pluralize "LOG" and "FMD"?
-%   PROPOSAL:
-%     GENERATE_FROM_*: *_TIME_INTERVAL, *_LOGS, *_FMDS
-% PROPOSAL: Additional string constant for whether to list dates or generate
-%           quicklooks. -- IMPLEMENTED
-%   <operationModId>           : LIST, GENERATE
-%   <dateSelectionAlgorithmId> : TIME_INTERVAL, LOGS, FMDS
+% PROPOSAL: Command for generating all quicklooks older than certain FMD.
+%
+% ~PROBLEM/UGLY: Specifying generation-specific arguments also when no
+%                quicklooks should be generated.
 
 irf.assert.struct(Settings, ...
   {'vhtDir', 'irfLogoPath', 'LogFileDirPatternDict', 'datasetDirsCa', 'Gql'}, {})
@@ -69,14 +65,19 @@ irf.assert.struct(Settings, ...
 generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);
 generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(generateWeeklyQuicklooks);
 
+irf.log('n', sprintf('operationId              = "%s"', operationId))
+irf.log('n', sprintf('dateSelectionAlgorithmId = "%s"', dateSelectionAlgorithmId))
+
+
+
 DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
   Settings, outputDir, dateSelectionAlgorithmId, varargin);
 
 switch(operationId)
   case 'LIST'
-    %============
-    % List dates
-    %============
+    %=============================================
+    % List dates (do not generate any quicklooks)
+    %=============================================
     % NOTE: Does not use irf.log().
 
     % Compensate for that previous log message appears to not end with line

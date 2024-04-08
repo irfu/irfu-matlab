@@ -77,9 +77,10 @@ classdef fmd
       %=========================================
       % Obtain information from the file system
       %=========================================
-
       % Datasets
+      irf.log('n', 'Collecting paths to datasets.')
       [datasetPathsCa, DatasetFsoiArray] = bicas.tools.batch.get_file_paths(datasetDirsCa);
+      irf.log('n', 'Obtaining DSMDs from paths.')
       [DsmdArray, bIsDatasetArray]       = solo.adm.paths_to_DSMD_array(datasetPathsCa);
       DatasetFsoiArray   = DatasetFsoiArray(bIsDatasetArray);
       DatasetFmdSdnArray = [DatasetFsoiArray.datenum];
@@ -87,6 +88,7 @@ classdef fmd
       DatasetFmdDtArray  = datetime(DatasetFmdSdnArray, 'ConvertFrom', 'datenum');
 
       % QLIs
+      irf.log('n', 'Collecting paths to quicklooks.')
       [QliPathsCa, QliFsoiArray] = bicas.tools.batch.get_file_paths({qliDir});
       QliFmdSdnArray = [QliFsoiArray.datenum];
       QliFmdSdnArray = QliFmdSdnArray(:);    % Normalize to column vector.
@@ -95,6 +97,7 @@ classdef fmd
       %==============
       % Derive dates
       %==============
+      irf.log('n', 'Determining days for which quicklooks could/should be updated.')
       DaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs_from_file_info(...
         DsmdArray, DatasetFmdDtArray, dsiCa, QliPathsCa, QliFmdDtArray);
     end

@@ -80,7 +80,7 @@ classdef interface___UTEST < matlab.unittest.TestCase
         {'2024-02-01'; '2024-02-02'}, ...
         cell(0, 1), ...
         100, '2024-01-01', '2024-01-10')
-      
+
       %======================
       % Filter by max number
       %======================

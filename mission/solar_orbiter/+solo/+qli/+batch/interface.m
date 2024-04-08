@@ -2,7 +2,8 @@
 % Code associated with the "interface".
 %
 % Many functions have string arguments suitable for being passed on from the
-% user in e.g. bash scripts calling MATLAB code.
+% user in e.g. bash scripts calling MATLAB code. Code should thus have
+% human-readable error messages for bad arguments.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -47,7 +48,7 @@ classdef interface
             algorithmArgumentsCa{:});
 
         otherwise
-          error('Illegal dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
+          error('Illegal argument dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
       end
     end
 
@@ -59,7 +60,7 @@ classdef interface
       % NOTE: num2str() converts string/number-->string.
       assert(isscalar(arg), 'Flag argument "%s" is not scalar.',   num2str(arg))
       assert(ischar(arg),   'Flag argument "%s" is not a string.', num2str(arg))
-      
+
       if     ischar(arg) && arg=='0'
         value = false;
       elseif ischar(arg) && arg=='1'
@@ -142,40 +143,39 @@ classdef interface
     %
     function DaysDtArray = get_days_from_time_interval(...
       beginDayUtcInclStr, endDayUtcExclStr)
-      
-      assert(ischar(beginDayUtcInclStr))
-      assert(ischar(endDayUtcExclStr))
-      
+
+      solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
+      solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
+
       BeginDayInclDt = solo.qli.utils.umdt(beginDayUtcInclStr);
       EndDayExclDt   = solo.qli.utils.umdt(endDayUtcExclStr);
-      
+
       % NOTE: Indirectly assertion on the string timestamps.
       solo.qli.utils.assert_UTC_midnight_datetime(BeginDayInclDt)
       solo.qli.utils.assert_UTC_midnight_datetime(EndDayExclDt)
-      
-      
-      
+
+
+
       % IMPLEMENTATION NOTE: Subtracting one day from argument for end timestamp to
       % ensure that it is in accordance with the definition of the corresponding
       % argument.
-      
+
       % IMPLEMENTATION NOTE: Needs to use "caldays()" not "days()" for handling leap
       %                      seconds.
       EndDayInclDt = EndDayExclDt - caldays(1);
-      
-      
-      
+
+
+
       % Construct array of timestamps, where every timestamp represents one day
       % beginning on that timestamp.
       % -----------------------------------------------------------------------
       % IMPLEMENTATION NOTE: Needs to use "caldays()" not "days()" for handling leap
       %                      seconds.
       DaysDtArray = [BeginDayInclDt:caldays(1):EndDayInclDt]';
-      
     end
 
-    
-    
+
+
     %
     % Generate array of dates derived from implicitly specified log files, which
     % should indicate updated datasets.
@@ -203,32 +203,30 @@ classdef interface
         sort(LogFileDirPatternDict.keys), ...
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
         'Settings.LogFileDirPatternDict defines the wrong set of keys.')
-      
-      
-      
+
       DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
-      
+
       for i = 1:numel(varargin)
         datasetsSourceId = varargin{i};
         assert(ischar(datasetsSourceId), 'logFilesId %i is not a string.', i)
-      
+
         if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(datasetsSourceId)
           error('Illegal datasetsSourceId="%s"', datasetsSourceId)
         end
-      
+
         dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(datasetsSourceId);
         dsiCa             = dsiCaCa{1};
         logFileDirPattern = LogFileDirPatternDict(datasetsSourceId);
 
         SourceDaysDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
           logFileDirPattern, dsiCa);
-      
+
         DaysDtArray = [DaysDtArray; SourceDaysDtArray];
       end
-      
-      DaysDtArray = unique(DaysDtArray);    
+
+      DaysDtArray = unique(DaysDtArray);
     end
-    
+
 
 
     % Generate array of dates derived from file modification dates, which should
@@ -255,7 +253,7 @@ classdef interface
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
       dsiCa = [solo.qli.batch.const.SOURCE_DSI_DICT.values{:}]';
-      
+
       DaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs(...
         datasetDirsCa, ...
         qliDir, ...

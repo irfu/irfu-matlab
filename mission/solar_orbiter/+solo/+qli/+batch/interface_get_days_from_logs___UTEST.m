@@ -94,7 +94,7 @@ classdef interface_get_days_from_logs___UTEST < matlab.unittest.TestCase
         );
 
       testCase.assertEqual(ActDaysDtArray, solo.qli.utils.umdt({'2023-01-01'; '2023-02-02'}))
-    end    
+    end
 
 
 
