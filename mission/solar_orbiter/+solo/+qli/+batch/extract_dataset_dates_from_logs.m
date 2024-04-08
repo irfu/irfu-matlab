@@ -48,7 +48,7 @@ FsoiArray = FsoiArray(~[FsoiArray.isdir]);
 % IMPLEMENTATION NOTE: This is a failsafe against setting the wrong path
 % pattern.
 if isempty(FsoiArray)
-  error('No files match logFileDirPattern=%s.')
+  error('No files match logFileDirPattern=%s.', logFileDirPattern)
 end
 
 

@@ -75,6 +75,11 @@ switch(operationId)
     % List dates
     %============
     % NOTE: Does not use irf.log().
+
+    % Compensate for that previous log message appears to not end with line
+    % feed.
+    fprintf('\n')
+
     nDates = numel(DaysDtArray);
     for i = 1:nDates
       Dt = DaysDtArray(i);
