@@ -1,9 +1,8 @@
 %
-% Wrapper around solo.qli.offgen.generate_quicklooks() for generating quicklooks
-% for all dates within a specified time interval.
+% Generate array of dates for all dates within a specified time interval.
 %
 %
-% NOTE: Several arguments are designed to partly handle arguments deriving from
+% NOTE: Arguments are designed to partly handle arguments deriving from
 %       the bash/the OS and are therefore on a string format.
 %
 %

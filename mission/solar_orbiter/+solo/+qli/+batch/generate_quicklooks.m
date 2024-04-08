@@ -133,20 +133,6 @@ function generate_quicklooks(...
 %
 % PROPOSAL: Parallelize loop over days and weeks.
 %
-% PROBLEM: How handle IRF logo file?!
-%   NOTE: Is not in the git repo itself, only the directory structure.
-%   PROPOSAL: Argument to generate_quicklooks* functions. cron code hardcodes
-%             it.
-%       TODO-DEC: Which default location to use (for cron.*)?
-%           NOTE: Should work for both nas and locally.
-%           PROPOSAL: In git repo. -- IMPLEMENTED
-%               PRO: Connects file with s/w.
-%               CON: File is not part of git repo.
-%               PROPOSAL: Directly under git repo root.
-%           PROPOSAL: Under home directory.
-%               CON: Risks forgetting why it is needed to be there.
-%               CON: No direct connection between QLI s/w and file.
-%
 % PROPOSAL: Always call solo.db_get_ts() both with and without "-cdag", to make
 %           sure that the code does select non-existing datasets.
 %           Use pre-existing solo.qli.utils.db_get_ts() wrapper.
@@ -159,6 +145,18 @@ function generate_quicklooks(...
 %        to he files directly.
 %
 % PROPOSAL: Log date of re-thrown exception (previously caught exception).
+%
+% PROBLEM: How handle that simultaneous batch processing runs (using potentially
+%          different methods for deriving list of dates)?
+%   PROPOSAL: Create temporary file in standard location which informs other
+%             processes of dates for which the current process will generate quicklooks.
+%             When a processes begins, it reads pre-existing temporary file(s)
+%             and removes those from its own list of dates to generate.
+%   PROPOSAL: Check FMD for quicklooks before generating them. If FMD is more
+%             recent than the time current process launched, then do not
+%             generate for that date.
+%     CON: Only works easily for 24h quicklooks (which are not always generated).
+%   PROPOSAL: Have some kind of queue system: One queue of dates.
 %
 %
 % generate_quicklooks_24h_6h_2h(), generate_quicklook_7day()

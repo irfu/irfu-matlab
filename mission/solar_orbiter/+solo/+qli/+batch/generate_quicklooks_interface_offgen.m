@@ -3,15 +3,16 @@
 % being run on brain/spis for the purpose of OFFICIAL GENERATION of quicklooks,
 % e.g. in cron jobs.
 %
-% NOTE: This script relies on hardcoded information about the system setup used
-%       for official generation.
-%
-% NOTE: This function is intended to be called from bash/the OS.
-%
 % NOTE: This script is NOT intended to be called from MATLAB by the average
 %       user as is. See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT.
 %       It may however be seen as an example of how to call
 %       solo.qli.batch.generate_quicklooks_interface().
+%
+% NOTE: This script relies on hardcoded information about the system setup used
+%       for official generation. This function is the intended store of
+%       hardcoded information that is relevant ONLY to the OFFICIAL GENERATION.
+%
+% NOTE: This function is intended to be called from bash/the OS.
 %
 %
 % ARGUMENTS
@@ -39,22 +40,31 @@ function generate_quicklooks_interface_offgen(...
 % Path to IRF logo, relative to the irfu-matlab root.
 % NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code still
 % requires it to be located inside the corresponding directory.
-IRF_LOGO_RPATH = 'mission/solar_orbiter/+solo/+qli/+batch/irf_logo.png';
+IRF_LOGO_RPATH  = 'mission/solar_orbiter/+solo/+qli/+batch/irf_logo.png';
 
+VHT_DIR         = '/data/solo/data_yuri/';
 
+% Directories with datasets which will be read by solo.db_get_ts() and returned
+% by solo.db_list_files().
+DATASET_DIRS_CA = {
+  '/data/solo/remote/data';    % LESIA
+  '/data/solo/soar';           % SOAR
+};
+
+% Paths with globbing filename patterns for log files which contain the names of
+% new datasets.
 LOG_FILE_DIR_PATTERN_DICT          = dictionary();
 LOG_FILE_DIR_PATTERN_DICT('LESIA') = '/home/erjo/logs/pull.so.data.cron.brain.*.log';
 LOG_FILE_DIR_PATTERN_DICT('SOAR')  = '/home/erjo/logs/so_soar_irfu_mirror_sync.*.log';
 
+
+
 Settings = [];
 Settings.Gql                    = solo.qli.batch.GenerateQuicklooksImplementation();
-Settings.vhtDir                 = '/data/solo/data_yuri/';
+Settings.vhtDir                 = VHT_DIR;
 Settings.irfLogoPath            = fullfile(irf('path'), IRF_LOGO_RPATH);
 Settings.LogFileDirPatternDict  = LOG_FILE_DIR_PATTERN_DICT;
-Settings.datasetDirsCa          = {
-  '/data/solo/remote/data';    % LESIA
-  '/data/solo/soar';           % SOAR
-};
+Settings.datasetDirsCa          = DATASET_DIRS_CA;
 
 irf.assert.file_exists(Settings.irfLogoPath)
 

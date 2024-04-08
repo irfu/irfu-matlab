@@ -15,10 +15,21 @@ classdef const
   %###################
   properties(Constant)
 
-    % Return data structure describing in which data directory structure data
-    % for different DSIs is assumed to come from.
+    % Data structure describing in which data directory structure data for
+    % different DSIs is assumed to come from when using solo.db_get_ts() and
+    % solo.db_list_files().
     %
-    % NOTE: Specifies DSIs (i.e. excluding CDAG).
+    % NOTE: Due to above, the lists of DSIs hardcoded here must be consistent
+    % with
+    % (1) the use of datasets in
+    %       solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE() and
+    %       solo.qli.generate_quicklook_7days_using_DB_SPICE(),
+    %     and
+    % (2) which directory tree from which corresponding datasets
+    %     will be loaded, i.e. solo.db_init('local_file_db', ...) and
+    %     the implicit behaviour of solo.db_get_ts()/solo.db_list_files().
+    %
+    % NOTE: Dictionary values specify DSIs (i.e. excluding CDAG).
     SOURCE_DSI_DICT = solo.qli.batch.const.get_DSIs()
 
   end

@@ -13,26 +13,51 @@
 % DFMDD
 %   Day-to-FMD Dictionary.
 %   Dictionary with
-%   * keys=datetime (UTC; midnight) representing days of measured data
-%   * values=datetime (no timezone) representing relevant FMD (e.g. most
+%   * keys   = datetime (UTC; midnight) representing days of measured data
+%   * values = datetime (no timezone) representing relevant FMD (e.g. most
 %     recent for datasets on the day specified in the key).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef fmd
-  % PROPOSAL: Better name.
-  %   datasets, quicklooks
-  %   inventory
-  %   analyze
-  %   scan
-  %   detect
-  %   FMD
-  %
-  % PROPOSAL: Move ~generic dictionary functions to solo.qli.batch.utils.
-  %
   % NOTE: Uses BICAS code: bicas.tools.batch.get_file_paths().
   %   PROPOSAL: Refactor it as generic function.
+  %
+  % PROPOSAL: Argument for specifying some kind of upper limit to the number of
+  %             days returned.
+  %   PROPOSAL: Specify interval of dates.
+  %   PROPOSAL: Max number of dates.
+  %   PROPOSAL: Separate function in solo.qli.batch.utils for filtering lists of
+  %             dates.
+  %     PRO: Easily testable.
+  %     PRO: If functionality is filtering, then it should be separate from
+  %          solo.qli.batch.fmd.
+  %
+  % ~BUG: Bad thinking: Implementetion checks for all DSIs in all specified
+  %       dataset directories.
+  %   If using both IRFU and LESIA dataset directories, then some datasets are
+  %   found in both. Ideally, the algorithm should only check for the right
+  %   datasets in the right directory.
+  %   --
+  %   PROPOSAL: For every directory, store a set of DSIs.
+  %     NOTE: If using subdirectories (for speeding up), e.g.
+  %           /data/solo/remote/data/L3/lfr_efield/ for EFIELD,
+  %           then these directories are separate from the space of the
+  %           directory IDs (SOAR, LESIA, IRFU) which specify logs.
+  %   PROPOSAL: Caller should specify a list of dataset directories which are so
+  %             granular that there is no overlap in datasets.
+  %     Ex: /data/solo/data_irfu/latest/rpw/L3/ and
+  %         /data/solo/remote/data/L2/
+  %   --
+  %   PROPOSITION: ~Harmless bug.
+  %     PRO: Only leads to false positives (never false negatives). Will only
+  %          lead to generating more dates, not fewer.
+  %     PRO: Not yet using IRFU and LESIA simultaneously.
+  %     PRO: If using IRFU and LESIA simultaneously, then the overlapping DSIs
+  %          (currently BIAS L3) are more likely to be more recent in IRFU
+  %          directory, than in LESIA directory.
+  %       CON: Not just after a delivery of L3 datasets.
 
 
 
@@ -52,6 +77,8 @@ classdef fmd
       %=========================================
       % Obtain information from the file system
       %=========================================
+
+      % Datasets
       [datasetPathsCa, DatasetFsoiArray] = bicas.tools.batch.get_file_paths(datasetDirsCa);
       [DsmdArray, bIsDatasetArray]       = solo.adm.paths_to_DSMD_array(datasetPathsCa);
       DatasetFsoiArray   = DatasetFsoiArray(bIsDatasetArray);
@@ -59,9 +86,10 @@ classdef fmd
       DatasetFmdSdnArray = DatasetFmdSdnArray(:);
       DatasetFmdDtArray  = datetime(DatasetFmdSdnArray, 'ConvertFrom', 'datenum');
 
+      % QLIs
       [QliPathsCa, QliFsoiArray] = bicas.tools.batch.get_file_paths({qliDir});
       QliFmdSdnArray = [QliFsoiArray.datenum];
-      QliFmdSdnArray = QliFmdSdnArray(:);
+      QliFmdSdnArray = QliFmdSdnArray(:);    % Normalize to column vector.
       QliFmdDtArray  = datetime(QliFmdSdnArray, 'ConvertFrom', 'datenum');
 
       %==============
@@ -74,7 +102,7 @@ classdef fmd
 
 
     % Get array of days for which to generate QLIs from file system information
-    % that is only specified in arguments.
+    % which is only specified in arguments.
     %
     % IMPLEMENTATION NOTE: This function separates the algorithms/logic from the
     % file system reading so as to have a function that is nice for automated

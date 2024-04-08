@@ -3,15 +3,6 @@
 % should indicate updated datasets.
 %
 %
-% NOTE: Several arguments are designed to partly handle arguments deriving from
-%       the bash/the OS and are therefore on a string format.
-%
-% NOTE: The dataset IDs referred to in the implementation must be consistent
-%       with the use of datasets in
-%       solo.qli.generate_quicklooks_24h_6h_2h_using_DB_SPICE() and
-%       solo.qli.generate_quicklook_7days().
-%
-%
 % ARGUMENTS
 % =========
 % Settings
@@ -19,7 +10,7 @@
 % varargin
 %       String IDs representing different dataset source directories. The
 %       function will use the logs for the specified directories to derive dates
-%       for which QLI should be generated.
+%       for which QLIs should be generated.
 %
 %
 % RETURN VALUES

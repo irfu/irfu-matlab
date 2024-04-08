@@ -2,6 +2,7 @@
 % matlab.unittest automatic test code for
 % solo.qli.batch.generate_quicklooks_interface().
 %
+%
 % NOTE: Does not test the details of separate commands, since that is the
 % purpose of other test code which is closer to the relevant parts of the code:
 %   * solo.qli.batch.generate_quicklooks___UTEST
@@ -12,6 +13,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
+  % PROPOSAL: Reorg. to have separate test classes for the resp. functions.
+  %   PRO: Can check return value (DaysDtArray). Current implementation can only
+  %        check for non-crashes.
+  %     PRO: Important for LOGS, FMDS.
 
 
 
