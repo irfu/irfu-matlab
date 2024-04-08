@@ -25,17 +25,26 @@ classdef interface
         Settings, dateSelectionAlgorithmId, algorithmArgumentsCa)
       % PROPOSAL: Replace Settings-->Separate arguments.
 
+      % NOTE: "Settings" is deliberately not passed on to any function, so as to
+      % not hide its usage (and implicitly meaning).
+
       assert(iscell(algorithmArgumentsCa))
 
       switch(dateSelectionAlgorithmId)
         case 'TIME_INTERVAL'
-          DaysDtArray = solo.qli.batch.interface.get_days_from_time_interval(algorithmArgumentsCa{:});
+          DaysDtArray = solo.qli.batch.interface.get_days_from_time_interval(...
+            algorithmArgumentsCa{:});
 
         case 'LOGS'
-          DaysDtArray = solo.qli.batch.interface.get_days_from_logs(Settings, algorithmArgumentsCa{:});
+          DaysDtArray = solo.qli.batch.interface.get_days_from_logs(...
+            Settings.LogFileDirPatternDict, ...
+            algorithmArgumentsCa{:});
 
         case 'FMDS'
-          DaysDtArray = solo.qli.batch.interface.get_days_from_FMDs(Settings, algorithmArgumentsCa{:});
+          DaysDtArray = solo.qli.batch.interface.get_days_from_FMDs(...
+            Settings.datasetDirsCa, ...
+            Settings.qliDir, ...
+            algorithmArgumentsCa{:});
 
         otherwise
           error('Illegal dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
@@ -145,9 +154,9 @@ classdef interface
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function DaysDtArray = get_days_from_logs(Settings, varargin)      
+    function DaysDtArray = get_days_from_logs(LogFileDirPatternDict, varargin)
       assert(isequal(...
-        sort(Settings.LogFileDirPatternDict.keys), ...
+        sort(LogFileDirPatternDict.keys), ...
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
         'Settings.LogFileDirPatternDict defines the wrong set of keys.')
       
@@ -165,8 +174,8 @@ classdef interface
       
         dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(datasetsSourceId);
         dsiCa             = dsiCaCa{1};
-        logFileDirPattern = Settings.LogFileDirPatternDict(datasetsSourceId);
-      
+        logFileDirPattern = LogFileDirPatternDict(datasetsSourceId);
+
         SourceDaysDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
           logFileDirPattern, dsiCa);
       
@@ -195,14 +204,14 @@ classdef interface
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function DaysDtArray = get_days_from_FMDs(Settings, varargin)    
+    function DaysDtArray = get_days_from_FMDs(datasetDirsCa, qliDir, varargin)
       assert(numel(varargin) == 0, 'Illegal number of additional arguments.')
       
       dsiCa = [solo.qli.batch.const.SOURCE_DSI_DICT.values{:}]';
       
       DaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs(...
-        Settings.datasetDirsCa, ...
-        Settings.qliDir, ...
+        datasetDirsCa, ...
+        qliDir, ...
         dsiCa);
     end
 
