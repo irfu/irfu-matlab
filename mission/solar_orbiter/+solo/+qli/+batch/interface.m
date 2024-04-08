@@ -71,6 +71,50 @@ classdef interface
 
 
 
+    % Function for checking whether string-valued argument is a date on form
+    % YYYY-MM-DD. Function is made to make it easy to generate more
+    % easy-to-understand error messages.
+    function check_interface_date_str(dateStr)
+      DATE_RE = '^20[0-9][0-9]-[0-1][0-9]-[0-3][0-9]$';
+
+      assert(ischar(dateStr))
+
+      i = regexp(dateStr, DATE_RE, 'once');
+      if isempty(i)
+        error('String "%s" is not on the form YYYY-MM-DD.', dateStr)
+      end
+    end
+
+
+
+    function DaysDtArray = filter_days_array(...
+        DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
+
+      solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
+      solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
+
+      Dt1      = solo.qli.utils.umdt(beginDayUtcInclStr);
+      Dt2      = solo.qli.utils.umdt(endDayUtcExclStr);
+      maxNDays = str2double(maxNDaysStr);
+
+      if ~isnumeric(maxNDays)
+        error('Argument "%s" could not be interpreted as a number.', maxNDaysStr)
+      end
+
+      % IMPLEMENTATION NOTE: Filtering by time interval BEFORE filtering by max
+      % number of dates (since that makes sense).
+
+      % Remove date outside specified time interval.
+      bKeep       = (Dt1 <= DaysDtArray) & (DaysDtArray < Dt2);
+      DaysDtArray = DaysDtArray(bKeep);
+
+      % Remove last dates, if exceeding number of dates.
+      bKeep       = [1:min(maxNDays, numel(DaysDtArray))]';
+      DaysDtArray = DaysDtArray(bKeep);
+    end
+
+
+
     % Generate array of dates for all dates within a specified time interval.
     %
     %
@@ -204,15 +248,21 @@ classdef interface
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function DaysDtArray = get_days_from_FMDs(datasetDirsCa, qliDir, varargin)
-      assert(numel(varargin) == 0, 'Illegal number of additional arguments.')
-      
+    function DaysDtArray = get_days_from_FMDs(...
+        datasetDirsCa, qliDir, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
+
+      solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
+      solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
+
       dsiCa = [solo.qli.batch.const.SOURCE_DSI_DICT.values{:}]';
       
       DaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs(...
         datasetDirsCa, ...
         qliDir, ...
         dsiCa);
+
+      DaysDtArray = solo.qli.batch.interface.filter_days_array(...
+        DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr);
     end
 
 
