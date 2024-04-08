@@ -73,6 +73,9 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       Settings.irfLogoPath = solo.qli.testdata.get_test_logo_path();
       Settings.vhtDir      = VhtFixture.Folder;
       Settings.Gql         = solo.qli.batch.GenerateQuicklooksTest();
+      % Settings which are required but should not be relevant.
+      Settings.datasetDirsCa         = {};
+      Settings.LogFileDirPatternDict = dictionary();
 
       testCase.Settings    = Settings;
       %testCase.inputLogDir = InputLogFixture.Folder;

@@ -62,6 +62,9 @@ function generate_quicklooks_interface(...
 %   <operationModId>           : LIST, GENERATE
 %   <dateSelectionAlgorithmId> : TIME_INTERVAL, LOGS, FMDS
 
+irf.assert.struct(Settings, ...
+  {'vhtDir', 'irfLogoPath', 'LogFileDirPatternDict', 'datasetDirsCa', 'Gql'}, {})
+
 
 generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);
 generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(generateWeeklyQuicklooks);
