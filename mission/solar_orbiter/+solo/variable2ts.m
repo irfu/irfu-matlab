@@ -1,5 +1,5 @@
 function ts = variable2ts(v)
-%SOLO.VARIABLE2TS  Converst variable structure to TSeries
+%SOLO.VARIABLE2TS  Converts variable structure to TSeries
 %
 % ts = variable2ts(v)
 
@@ -27,10 +27,10 @@ elseif isfield(v,'LABL_PTR_3')
 end
 
 data = v.data; siConversion = '';
-if v.dim(1)==3 && v.dim(2)==1, varType = 'vec_xyz';
+if     v.dim(1) == 3 && v.dim(2) == 1, varType = 'vec_xyz';
 elseif v.dim(1) == 3 && v.dim(2) == 3 && isfield(v,'TENSOR_ORDER') && v.TENSOR_ORDER == 2, varType = 'tensor_xyz';
-elseif v.dim(1)==2 && v.dim(2)==1, varType = 'vec_xy';
-elseif v.dim(1)==1 && v.dim(2)==1, varType = 'scalar';
+elseif v.dim(1) == 2 && v.dim(2) == 1, varType = 'vec_xy';
+elseif v.dim(1) == 1 && v.dim(2) == 1, varType = 'scalar';
 else
   varType = 'scalar';
 end

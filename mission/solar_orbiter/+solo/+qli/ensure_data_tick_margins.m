@@ -29,10 +29,11 @@
 % ARGUMENTS
 % =========
 % ticks
-%       Vector (or empty) with tick values on the relevant axis.
+%       Vector (or empty) with tick values on the relevant axis (X/Y/Z).
 %       Values may be inside and/or outside dataLimits.
 % dataLimits
-%       Length-2 vector. Min & max value for data in plot on the relevant axis.
+%       Length-2 vector. Min & max value for data in plot on the relevant axis
+%       (X/Y/Z).
 % scale
 %       String constant. 'linear' or 'log'.
 %       NOTE: Same constants as in graphical object properties X/Y/ZScale.
@@ -42,7 +43,7 @@
 % =============
 % plotLimits
 %       Length-2 row vector. Suggested values for property X/Y/ZLim, i.e. min &
-%       max value for the range in plot.
+%       max value for the displayed range on one axis in a plot.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -69,15 +70,11 @@ function plotLimits = ensure_data_tick_margins(ticks, dataLimits, scale)
 C_LINEAR_MARGIN = 0.05;
 
 assert((isvector(ticks) || isempty(ticks)) && issorted(ticks, 'ascend'))
-%assert(length(tickLimits) == 2)
 assert(length(dataLimits) == 2)
 
-%tickMin = tickLimits(1);
-%tickMax = tickLimits(2);
 dataMin = dataLimits(1);
 dataMax = dataLimits(2);
 
-%assert(tickMin <= tickMax)
 assert(dataMin <= dataMax)
 
 linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
@@ -86,15 +83,6 @@ linearMargin = (dataMax - dataMin) * C_LINEAR_MARGIN;
 % (1) there might be zero ticks,
 % (2) ticks may be uncorrelated with dataMin/dataMax.
 
-%     if strcmp(scale, 'linear')
-%         plotMax =  ensure_lin_max_margin( tickMax,  dataMax, linearMargin);
-%         plotMin = -ensure_lin_max_margin(-tickMin, -dataMin, linearMargin);
-%     elseif strcmp(scale, 'log')
-%         plotMax =  ensure_log_max_margin( tickMax,  dataMax, linearMargin);
-%         plotMin = -ensure_log_max_margin(-tickMin, -dataMin, linearMargin);
-%     else
-%         error('Illegal argument scale="%s"', scale)
-%     end
 plotMax =  ensure_max_margin( ticks,  dataMax, scale, linearMargin);
 plotMin = -ensure_max_margin(-ticks, -dataMin, scale, linearMargin);
 
@@ -108,8 +96,10 @@ function plotMax = ensure_max_margin(ticks, dataMax, scale, linearMargin)
 % PROPOSAL: Better way of deriving value "just below" higherBoundary.
 %   PROPOSAL: Different methods depending on "scale".
 %   PROPOSAL: higherBoundary-eps(higherBoundary)*C
+% PROPOSAL: Special case for zero ticks.
+%   PRO: Could simplify algorithm.
 
-EPSILON = 1e-10;
+EPSILON    = 1e-10;
 C_DIMINISH = 0.9;
 C_MAGNIFY  = 1.1;
 %C_DIMINISH = 0.8;

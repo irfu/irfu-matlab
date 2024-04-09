@@ -149,8 +149,14 @@ DLR
     1/true  = V13
     2023-08-29, EJ: Variable is constant for the entire mission except when it
     flips from zero to one at about 2023-08-21T12:04.
-DSI
-    DATASET_ID. String constant that uniquely identifies each type of dataset.
+DSI, "dataset ID"
+    DATASET_ID or "dataset ID". String constant which uniquely identifies a
+    type of dataset.
+    NOTE: Must be uppercase by definition (when used as string constants),
+    though dataset IDs are represented as (mostly) lowercase in the official
+    filenaming convention are (mostly) lowercase).
+    NOTE: Dataset IDs exclude the "-cdag" suffix. "-cdag" is a LESIA invention
+    for internal datasets.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical
     variants thereof) are not abbreviated "DSI", but to the GA name, in
     analogy with other variables named after GAs.

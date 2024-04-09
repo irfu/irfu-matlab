@@ -1,4 +1,4 @@
-function generate_quicklook_7days(Data, OutputPaths, Tint, logoPath)
+function generate_quicklook_7days(Data, outputDir1wPath, Tint, logoPath)
 %
 % Generates ONE quicklook (file) for covering ONE UTC week of data.
 %
@@ -7,25 +7,15 @@ function generate_quicklook_7days(Data, OutputPaths, Tint, logoPath)
 % =========
 % Data
 %     Struct with various time series of data extracted from SPICE and datasets.
-%     See the call from solo.qli.generate_quicklooks_all_types().
-% OutputPaths
-%     Struct with paths to separate output directories for the different types
-%     of quicklooks (see solo.qli.generate_quicklooks_all_types).
+%     See the call from solo.qli.generate_quicklook_7days_using_DB_SPICE().
+% outputDir1wPath
+%     Direct output directory for the quicklooks.
 % Tint
 %     Should be a 7-day time interval consistent with the time series in "data"
 %     e.g.
 %     irf.tint('2020-06-03T00:00:00.00Z', '2020-06-10T00:00:00.00Z');
 % logoPath
 %     Either path to IRF logo, or empty.
-%
-%
-% NOTES
-% =====
-% * The function obtains some data by reading CDF files directly (cdfread;
-%   solo_L2_swa-pas-eflux).
-% * The function also locates CDF files (reads files via SolO DB?) which are
-%   used to obtain a time interval which is passed to solo.read_TNR(). ==>
-%   Relies on more files.
 
 
 
@@ -33,20 +23,32 @@ tBeginSec = tic();
 
 
 
-% Setup figure:
 LINE_WIDTH       = 1.0;   % irf_plot() line width.
 FONT_SIZE        = 18;    % Font size
 LEGEND_FONT_SIZE = 22;    % irf_legend() font size.
-COLORS           = [0 0 0;0 0 1;1 0 0;0 0.5 0;0 1 1 ;1 0 1; 1 1 0];
+COLORS           = [
+  0 0 0;    % Black
+  0 0 1;    % Blue
+  1 0 0;    % Red
+  0 0.5 0;
+  0 1 1 ;
+  1 0 1;
+  1 1 0];
 
-Units = irf_units;
-Me    = Units.me;      % Electron mass [kg]
-epso  = Units.eps0;    % Permitivitty of free space [Fm^-1]
-qe    = Units.e;       % Elementary charge [C]
+% NOTE: Unclear units. Magnitude implies pixels, but actual quicklooks are
+% 2281x1667 pixels.
+FIG_WIDTH  = 1095;
+FIG_HEIGHT =  800;
 
+UNITS = irf_units;
+Me    = UNITS.me;      % Electron mass [kg]
+eps0  = UNITS.eps0;    % Permittivity of free space [Fm^-1]
+qe    = UNITS.e;       % Elementary charge [C]
+
+% Setup figure
 h            = irf_plot(9, 'newfigure');
 fig          = gcf;
-fig.Position = [1, 1, 1095, 800];
+fig.Position = [1, 1, FIG_WIDTH, FIG_HEIGHT];
 
 
 
@@ -70,7 +72,6 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 % Fill panel 2: abs(B)
 %======================
 if ~isempty(Data.B)
-  %fci = qe*data.B.abs*10^-9/mp/(2*pi);
   irf_plot(h(2), Data.B.abs.tlim(Tint), 'linewidth', LINE_WIDTH);
 end
 ylabel(h(2), {'|B|';'(nT)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
@@ -168,33 +169,48 @@ tBeginSec = solo.qli.utils.log_time('End panel 7', tBeginSec);
 
 
 
-%===================================
+%=================================================================================
 % Fill panel 8: Ion energy spectrum
 % ---------------------------------
-% NOTE: READS CDF FILES!
-%===================================
+% NOTE: READS CDF FILES! -- OBSOLETE INFO. REFACTORED AWAY.
+% NOTE: Essentially the same as solo.qli.generate_quicklooks_24h_6h_2h(): Panel 9
+%=================================================================================
 if ~isempty(Data.ieflux)
-  SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint);
-  iDEF   = struct('t', Data.ieflux.tlim(Tint).time.epochUnix);
+  %   SwaFileArray = solo.db_list_files('solo_L2_swa-pas-eflux', Tint);
+  iDEF         = struct('t', Data.ieflux.tlim(Tint).time.epochUnix);
   %for ii = 1:round((myFile(end).stop-myFile(1).start)/3600/24)
-  for iFile = 1:length(SwaFileArray)
-    iEnergy = cdfread(...
-      fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
-      'variables', 'Energy');
-    iEnergy = iEnergy{1};
-    iDEF.p  = Data.ieflux.data;
-  end
-  iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
+  %   for iFile = 1:length(SwaFileArray)
+  %     % NOTE: Reads CDFs using cdfread() which is a MATLAB function (i.e. not
+  %     %       dataobj(), not spdfcdfread()).
+  %     % NOTE: zVariable "Energy" seems to be metadata (not science data).
+  %     %       zVariable attributes CATDESC="Center of energy bins",
+  %     %       VAR_TYPE="support_data". No DEPEND_0, so not time-dependent.
+  %     % NOTE: Can not load this variable using
+  %     %       solo.qli.utils.db_get_ts('solo_L2_swa-pas-eflux', 'eflux', Tint);
+  %     %       Gets error message: "Data does not contain DEPEND_0 or DATA"
+  %     iEnergy = cdfread(...
+  %       fullfile(SwaFileArray(iFile).path, SwaFileArray(iFile).name), ...
+  %       'variables', 'Energy');
+  %     iEnergy = iEnergy{1};
+  %   end
+  iEnergy      = Data.swaEnergyMetadata;
+  iDEF.p       = Data.ieflux.data;
   iDEF.p_label = {'dEF', 'keV/', '(cm^2 s sr keV)'};
-  irf_spectrogram(h(8), iDEF, 'log', 'donotfitcolorbarlabel');
+  iDEF.f       = repmat(iEnergy, 1, numel(iDEF.t))';
+  irf_spectrogram(h(8), iDEF, 'log', 'donotfitcolorbarlabel');   % Somewhat time-consuming
   % set(h(1), 'ytick', [1e1 1e2 1e3]);
+
+
   hold(h(8), 'on');
   h8_clims = h(8).CLim;
   % Fix color axis
-  h8_medp = mean(iDEF.p);
-  h8_medp = min(h8_medp(h8_medp>0));
-  if h8_medp > 0 && h8_medp > h8_clims(1) && log10(h8_medp)+2<(max(max(log10(iDEF.p))))
-    caxis(h(8), [log10(h8_medp)+2 (max(max(log10(iDEF.p))))])
+  h8_medp       = mean(iDEF.p);              % MxN --> 1xN
+  h8_medp       = min(h8_medp(h8_medp>0));
+  h8_caxisRange = [log10(h8_medp)+2, max(max(log10(iDEF.p)))];
+  %if (h8_medp > 0) && (h8_medp > h8_clims(1)) && (log10(h8_medp)+2 < max(max(log10(iDEF.p))))
+  if (h8_medp > 0) && (h8_medp > h8_clims(1)) && (h8_caxisRange(1) < h8_caxisRange(2))
+    %caxis(h(8), [log10(h8_medp)+2 (max(max(log10(iDEF.p))))])
+    caxis(h(8), h8_caxisRange)
   end
   set(     h(8), 'YScale', 'log');
   colormap(h(8), jet)
@@ -205,49 +221,53 @@ tBeginSec = solo.qli.utils.log_time('End panel 8', tBeginSec);
 
 
 
-%======================================
+%=======================================================
 % Fill panel 9: E-field spectrum (TNR)
 % ------------------------------------
-% NOTE: READS CDF FILES!
-%======================================
+% NOTE: READS CDF FILES indirectly via solo.read_TNR()! -- OBSOLETE INFO. REFACTORED AWAY.
+%=======================================================
 % NOTE: Panel takes much more time than other panels.
-if ~isempty(Data.Etnr)
+if ~isempty(Data.tnrBand)
   % Electron plasma frequency
-  TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
-  tp = [];
-  pp = [];
-  warning('off', 'fuzzy:general:warnDeprecation_Combine');
-  TNR = [];
-  %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
-  for iFile = 1:length(TnrFileArray)
-    tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
-    [TNRp] = solo.read_TNR(tt);
-    if isa(TNRp, 'struct')
-      % NOTE: MATLAB documentation (R2019b):
-      % "combine will be removed in a future release"
-      TNR.t = combine(tp, TNRp.t);
-      tp    = TNR.t;
-      TNR.p = combine(pp, TNRp.p);
-      pp    = TNR.p;
+  %   TnrFileArray = solo.db_list_files('solo_L2_rpw-tnr-surv-cdag', Tint);
+  %   tp = [];
+  %   pp = [];
+  %   warning('off', 'fuzzy:general:warnDeprecation_Combine');
+  %   TNR = [];
+  %   %for iii = 1:round((myFile2(end).stop-myFile2(1).start)/3600/24)
+  %
+  %   % NOTE: Below loop takes most of the time. In each iteration,
+  %   % solo.read_TNR() dominates the time consumption.
+  %   for iFile = 1:length(TnrFileArray)
+  %     tt     = [TnrFileArray(iFile).start, TnrFileArray(iFile).stop];
+  %     [TNRp] = solo.read_TNR(tt);    % Somewhat time-consuming.
+  %     if isa(TNRp, 'struct')
+  %       % NOTE: MATLAB documentation (R2019b):
+  %       % "combine will be removed in a future release"
+  %       TNR.t = combine(tp, TNRp.t);
+  %       tp    = TNR.t;
+  %       TNR.p = combine(pp, TNRp.p);
+  %       pp    = TNR.p;
+  %
+  %       % IMPLEMENTATION NOTE: Only read from TNRp from within this if
+  %       % clause, since it might not be a struct if read from elsewhere,
+  %       % even if it in principle means overwriting the value multiple
+  %       % times as for TNRp.f and TNRp.p_label.
+  %       TNR.f       = TNRp.f;
+  %       TNR.p_label = TNRp.p_label;
+  %     end
+  %   end
 
-      % IMPLEMENTATION NOTE: Only read from TNRp from within this if
-      % clause, since it might not be a struct if read from elsewhere,
-      % even if it in principle means overwriting the value multiple
-      % times as for TNRp.f and TNRp.p_label.
-      TNR.f       = TNRp.f;
-      TNR.p_label = TNRp.p_label;
-    end
-  end
-  if isstruct(TNR)
+  if isstruct(Data.Tnr)
     % TNR.f       = TNRp.f;
     % TNR.p_label = TNRp.p_label;
-    sz_tnr = size(TNR.p);
-    if sz_tnr(1) == length(TNR.t) && sz_tnr(2) == length(TNR.f)
-      irf_spectrogram(h(9), TNR, 'log', 'donotfitcolorbarlabel')
+    sz_tnr = size(Data.Tnr.p);
+    if sz_tnr(1) == length(Data.Tnr.t) && sz_tnr(2) == length(Data.Tnr.f)
+      irf_spectrogram(h(9), Data.Tnr, 'log', 'donotfitcolorbarlabel')
       hold(           h(9), 'on');
     end
     if ~isempty(Data.Ne)
-      wpe_sc       = (sqrt(((Data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*epso)));
+      wpe_sc       = (sqrt(((Data.Ne.tlim(Tint)*1000000)*qe^2)/(Me*eps0)));
       fpe_sc       = (wpe_sc/2/pi)/1000;
       fpe_sc.units = 'kHz';
       fpe_sc.name  = 'f [kHz]';
@@ -295,11 +315,18 @@ xtickangle(h(9), 0)
 %======================================================
 % Add IRF logo and data source information info string
 %======================================================
-logoPos = h(1).Position;    %  [left, bottom, width, height]
-logoPos(1) = logoPos(1) + logoPos(3) + 0.01;
-logoPos(2) = logoPos(2) + 0.06;
-logoPos(3) = 0.05;
-logoPos(4) = logoPos(3) * 1095/800;
+panelPos = h(1).Position;    %  [left, bottom, width, height]
+logoPos = [
+  panelPos(1) + panelPos(3) + 0.01;
+  panelPos(2) + 0.06;
+  0.05;
+  0.05 * FIG_WIDTH/FIG_HEIGHT;
+  ];
+% logoPos = h(1).Position;    %  [left, bottom, width, height]
+% logoPos(1) = logoPos(1) + logoPos(3) + 0.01;
+% logoPos(2) = logoPos(2) + 0.06;
+% logoPos(3) = 0.05;
+% logoPos(4) = logoPos(3) * 1095/800;
 hLogoAxes = axes('position', logoPos);
 if ~isempty(logoPath)
   [x, ~] = imread(logoPath);
@@ -350,13 +377,12 @@ irf_zoom(           h(1:9), 'x', Tint);
 % irf_zoom(h(1:7), 'y');
 
 % Plot complete, print figure.
-fig = gcf;
 fig.PaperPositionMode = 'auto';
 
 %=====================
 % Save figure to file
 %=====================
-solo.qli.utils.save_figure_to_file(OutputPaths.path_1w, Tint)
+solo.qli.utils.save_figure_to_file(outputDir1wPath, Tint)
 % TODO-NI: Why are there any commands (except close()) after this?
 %          Did the code use to iterate over 24h, 6h, 2h plots too?
 

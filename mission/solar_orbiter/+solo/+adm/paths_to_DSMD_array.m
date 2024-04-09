@@ -11,7 +11,7 @@
 % ARGUMENT
 % ========
 % filePathCa
-%       Cell array of file paths.
+%       Column cell array of paths to files. Can be both datasets and not.
 %
 %
 % RETURN VALUE
@@ -42,6 +42,8 @@ function [DsmdArray, bIsDatasetArray] = paths_to_DSMD_array(filePathCa)
 %       Ex: solo.adm.DSMD_from_paths().
 %   CON: Ties class to filenaming convention.
 %       CON: Weak argument (but valid).
+%
+% PROPOSAL: Preallocate DsmdArray. Remove excess size at the end.
 %
 % PROPOSAL: Policy for how to handle not being able to recognize filenaming
 %           convention for a .cdf file (as could be expected).

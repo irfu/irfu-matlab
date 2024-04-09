@@ -1,14 +1,20 @@
 *.m~
 *.DS_Store
-*.asv
 *.swp
 fort.6
 .caa.log
 
-# Path for automatically generated test reports (created by tests_before_release*.m).
+# MATLAB's autosaved files
+*.asv
+
+# Path for automatically generated test reports (created by
+# tests_before_release*.m).
 ciPath/
 
-# IRF logo needed by mission/solar_orbiter/+solo/quicklook_main.m etc.
-# Not included in irfu-matlab to prevent non-IRFU people from (automatically)
-# creating quicklooks with IRF logo.
+# IRF logo needed by irfu-matlab/mission/solar_orbiter/+solo/+qli/ for official
+# quicklooks. Not included in irfu-matlab git repo to prevent non-IRFU people
+# from (automatically) creating quicklooks with IRF logo. Specified in
+# .gitignore since it is stil convenient to manually place the logo file in
+# irfu-matlab directory for actual processing of quicklooks (e.g. for official
+# generation of quicklooks).
 irf_logo.png
