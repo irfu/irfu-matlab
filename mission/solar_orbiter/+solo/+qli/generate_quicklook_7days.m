@@ -279,6 +279,7 @@ if ~isempty(Data.tnrBand)
     %ylabel(h(9), 'f [kHz]')
     set(     h(9), 'ColorScale', 'log')
     %caxis([.01 10]*10^-12)
+
     yticks(  h(9), [10^1 10^2]);
   end
 end
@@ -293,7 +294,9 @@ tBeginSec = solo.qli.utils.log_time('End panel 9', tBeginSec);
 irf_plot_axis_align(h(1:9));
 irf_zoom(h(1:9), 'x', Tint);
 irf_zoom(h(1),   'y');
-irf_zoom(h(5:9), 'y');
+irf_zoom(h(5:8), 'y');
+% NOTE: Panel 9: If there is no TNR data, then plotting of fpe_sc may restrict
+% the y range. Therefore excluding panel 9.
 
 h(2).YLabel.Position = [1.05, 0.5, 0];
 %yyaxis(h(2), 'left');
