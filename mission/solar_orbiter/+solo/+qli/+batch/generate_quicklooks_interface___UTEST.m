@@ -67,7 +67,6 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
     function create_output_directories(testCase)
       VhtFixture      = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       OutputFixture   = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-      %InputLogFixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
 
       Settings             = [];
       Settings.irfLogoPath = solo.qli.testdata.get_test_logo_path();
@@ -79,7 +78,6 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       Settings.fmdQliDir             = '';
 
       testCase.Settings    = Settings;
-      %testCase.inputLogDir = InputLogFixture.Folder;
       testCase.outputDir   = OutputFixture.Folder;
     end
 

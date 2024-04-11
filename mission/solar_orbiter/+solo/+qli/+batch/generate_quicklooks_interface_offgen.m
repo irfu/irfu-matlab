@@ -17,12 +17,10 @@
 %
 % ARGUMENTS
 % =========
-% See solo.qli.batch.generate_quicklooks_interface().
-% --
-% outputDir
-%       Path to output directory.
-%       IMPLEMENTATION NOTE: Not hardcoding this is useful for manual testing of
-%       the setup and for manual large-scale processing.
+% varargin
+%       Arguments which are passed on to
+%       solo.qli.batch.generate_quicklooks_interface() (all but "Settings").
+%
 %
 %
 % RETURN VALUES
@@ -32,10 +30,10 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function generate_quicklooks_interface_offgen(...
-  outputDir, ...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
-  dateSelectionAlgorithmId, varargin)
+function generate_quicklooks_interface_offgen(varargin)
+
+% IMPLEMENTATION NOTE: Not hardcoding outputPath since this is useful for
+% manual testing of the setup and for manual large-scale processing.
 
 % Path to IRF logo, relative to the irfu-matlab root.
 % NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code still
@@ -106,7 +104,5 @@ solo.db_cache('on', 'save')
 % Generate quicklooks
 %=====================
 solo.qli.batch.generate_quicklooks_interface(...
-  Settings, outputDir, ...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
-  dateSelectionAlgorithmId, varargin{:})
+  Settings, varargin{:})
 end

@@ -17,6 +17,10 @@ function generate_quicklook_7days(Data, outputDir1wPath, Tint, logoPath)
 % logoPath
 %     Either path to IRF logo, or empty.
 
+% BUG?: Panel 3/Densities: How does irf_legend() know which colors to use
+%       (legend text should reasonably have the same colors as the curves). Is
+%       it wrong when the first density is missing (no data)?
+
 
 
 tBeginSec = tic();

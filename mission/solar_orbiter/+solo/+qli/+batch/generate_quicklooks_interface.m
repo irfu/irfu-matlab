@@ -11,7 +11,24 @@
 % ARGUMENTS
 % =========
 % Settings
-%       Struct with misc. system-dependent settings.
+%       Struct with misc. (mostly) system-dependent settings.
+%       .fmdQliDir
+%           Path to already generated quicklooks which can be used for reading
+%           at file modification dates. Not the same as output directory.
+%           Should be enough to point to the 24h quicklooks.
+%       .irfLogoPath
+%           See solo.qli.batch.generate_quicklooks().
+%       .vhtDir
+%           See solo.qli.batch.generate_quicklooks().
+%       .LogFileDirPatternDict
+%           Dictionary of log file paths with globbing.
+%           See solo.qli.batch.interface.get_days_from_logs().
+%       .datasetDirsCa
+%           Cell array of paths to directories with datasets. Used for FMDS.
+%           See solo.qli.batch.interface.get_days_from_FMDs().
+%       .Gql
+%           See solo.qli.batch.generate_quicklooks().
+%
 % outputDir
 %       Path to output directory.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks

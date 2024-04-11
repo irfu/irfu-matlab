@@ -85,10 +85,10 @@ classdef testdata
 
       DT0 = solo.qli.utils.umdt('2023-01-05');
 
-      QuicklooksTint = irf.tint(...
+      QUICKLOOKS_TINT = irf.tint(...
         char(DT0), ...
         char(DT0+caldays(1)));
-      SpacePosTint = irf.tint(...
+      SPACE_POS_TINT = irf.tint(...
         char(DT0-calmonths(1)), ...
         char(DT0+calmonths(1)));
 
@@ -100,12 +100,12 @@ classdef testdata
 
       OutputPaths = solo.qli.utils.create_output_directories(outputDir);
       Data        = solo.qli.testdata.generate_test_data(...
-        QuicklooksTint, SpacePosTint, BTint);
+        QUICKLOOKS_TINT, SPACE_POS_TINT, BTint);
 
       irfLogoPath = solo.qli.testdata.get_test_logo_path();
       %irfLogoPath = '/nonhome_data/work_files/SOLAR_ORBITER/irfu-matlab_qli/mission/solar_orbiter/+solo/+qli/+offgen/irf_logo.png';
 
-      solo.qli.generate_quicklooks_24h_6h_2h(Data, OutputPaths, QuicklooksTint, irfLogoPath)
+      solo.qli.generate_quicklooks_24h_6h_2h(Data, OutputPaths, QUICKLOOKS_TINT, irfLogoPath)
       toc
     end
 
@@ -116,22 +116,22 @@ classdef testdata
       close all
       tic
 
-      QuicklooksTint = irf.tint(...
+      QUICKLOOKS_TINT = irf.tint(...
         '2023-12-27T00:00:00.00Z', ...
         '2024-01-03T00:00:00.00Z');
-      SpacePosTint = irf.tint(...
+      SPACE_POS_TINT = irf.tint(...
         '2023-12-01T00:00:00.00Z', ...
         '2024-02-02T00:00:00.00Z');
       % Shorter time interval to speed up test, but not too short so that it is
       % hard to inspect the relevant part of the plot (spectrum).
-      BTint = QuicklooksTint;
+      BTint = QUICKLOOKS_TINT;
 
       Data = solo.qli.testdata.generate_test_data(...
-        QuicklooksTint, SpacePosTint, BTint);
+        QUICKLOOKS_TINT, SPACE_POS_TINT, BTint);
 
       irfLogoPath = solo.qli.testdata.get_test_logo_path();
 
-      solo.qli.generate_quicklook_7days(Data, outputDir, QuicklooksTint, irfLogoPath)
+      solo.qli.generate_quicklook_7days(Data, outputDir, QUICKLOOKS_TINT, irfLogoPath)
       toc
     end
 
