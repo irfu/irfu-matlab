@@ -13,9 +13,16 @@
 % DFMDD
 %   Day-to-FMD Dictionary.
 %   Dictionary with
-%   * keys   = datetime (UTC; midnight) representing days of measured data
-%   * values = datetime (no timezone) representing relevant FMD (e.g. most
-%     recent for datasets on the day specified in the key).
+%   * keys   = datetime (UTC; midnight) representing specific days of measured
+%              data
+%   * values = datetime (no timezone) representing relevant FMDs (e.g. most
+%              recent FMDs for all input datasets on the day specified in the
+%              key).
+% IDMRQ = Input Datasets More Recent than QLI
+%   Algorithm for generating array of dates for which to (optionally) generate
+%   QLIs. A day is included if (1) the most recent QLI FMD (for that day) is
+%   more recent than the most recent input dataset (for that day), or (2) there
+%   is no QLI for that day.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -98,7 +105,7 @@ classdef fmd
 
 
 
-    function DaysDtArray = get_days_from_FMDs(datasetDirsCa, qliDir, dsiCa)
+    function DaysDtArray = get_days_from_IDMRQ(datasetDirsCa, qliDir, dsiCa)
       assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
       assert(ischar(qliDir))
 
@@ -126,7 +133,7 @@ classdef fmd
       % Derive dates
       %==============
       irf.log('n', 'Determining days for which quicklooks could/should be updated.')
-      DaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs_from_file_info(...
+      DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_from_file_info(...
         DsmdArray, DatasetFmdDtArray, dsiCa, QliPathsCa, QliFmdDtArray);
     end
 
@@ -139,30 +146,30 @@ classdef fmd
     % file system reading so as to have a function that is nice for automated
     % testing.
     %
-    function DaysDtArray = get_days_from_FMDs_from_file_info(...
+    function DaysDtArray = get_days_from_IDMRQ_from_file_info(...
         DsmdArray, DatasetFmdDtArray, dsiCa, QliPathsCa, QliFmdDtArray)
 
-      DatasetsFmdDict = solo.qli.batch.fmd.get_dataset_DFMDD_all(...
+      DatasetsDfmdd = solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs(...
         DsmdArray, DatasetFmdDtArray, dsiCa);
-      QliFmdDict      = solo.qli.batch.fmd.get_QLI_DFMDD(...
+      QliDfmdd      = solo.qli.batch.fmd.get_QLI_DFMDD(...
         QliPathsCa, QliFmdDtArray);
 
-      DaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs_algorithm(...
-        DatasetsFmdDict, QliFmdDict);
+      DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_algorithm(...
+        DatasetsDfmdd, QliDfmdd);
 
       solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
     end
 
 
 
-    function ChangedDatasetsDtArray = get_days_from_FMDs_algorithm(...
-        DatasetsFmdDict, QliFmdDict)
+    function ChangedDatasetsDtArray = get_days_from_IDMRQ_algorithm(...
+        DatasetsDfmdd, QliDfmdd)
 
       % IMPLEMENTATION NOTE: An empty dictionary can not specify timezone in
       % keys/values. Must therefore always normalize to UTC first.
       AllDatasetsDtArray = intersect(...
-        datetime(DatasetsFmdDict.keys, 'TimeZone', 'UTCLeapSeconds'), ...
-        datetime(QliFmdDict.keys,      'TimeZone', 'UTCLeapSeconds'));
+        datetime(DatasetsDfmdd.keys, 'TimeZone', 'UTCLeapSeconds'), ...
+        datetime(QliDfmdd.keys,      'TimeZone', 'UTCLeapSeconds'));
 
       % Preallocate.
       ChangedDatasetsDtArray = NaT(...
@@ -172,7 +179,7 @@ classdef fmd
       for iDatasetDt = 1:numel(AllDatasetsDtArray)
         DatasetDt = AllDatasetsDtArray(iDatasetDt);
 
-        if DatasetsFmdDict(DatasetDt) >= QliFmdDict(DatasetDt)
+        if DatasetsDfmdd(DatasetDt) >= QliDfmdd(DatasetDt)
           nChangedDatasets = nChangedDatasets + 1;
           ChangedDatasetsDtArray(nChangedDatasets, 1) = DatasetDt;
         end
@@ -183,36 +190,31 @@ classdef fmd
 
 
 
-    % Same concept as solo.qli.batch.fmd.get_dataset_DFMDD_DSI(),
-    % except that it covers multiple DSIs and only keeps the latest FMD for data
-    % timestamp (dictionary key) collisions.
-    function DayFmdDict = get_dataset_DFMDD_all(DsmdArray, FmdDtArray, dsiCa)
-      DayFmdDictCa = cell(0, 1);
+    % Given DSMDs and corresponding FMDs, get DFMDD for the most recent dataset
+    % FMDs for multiple DSIs.
+    function Dfmdd = get_dataset_DFMDD_for_all_DSIs(DsmdArray, FmdDtArray, dsiCa)
+      DfmddCa = cell(0, 1);
 
       for iDsi = 1:numel(dsiCa)
-        dsi = dsiCa{iDsi};
-        DayFmdDictCa{iDsi, 1} = solo.qli.batch.fmd.get_dataset_DFMDD_DSI(DsmdArray, FmdDtArray, dsi);
+        DfmddCa{iDsi, 1} = solo.qli.batch.fmd.get_dataset_DFMDD_for_one_DSI(...
+          DsmdArray, FmdDtArray, dsiCa{iDsi});
       end
 
-      DayFmdDict = solo.qli.batch.utils.merge_dictionaries_max(DayFmdDictCa, datetime.empty, datetime.empty);
+      Dfmdd = solo.qli.batch.utils.merge_dictionaries_max(...
+        DfmddCa, datetime.empty, datetime.empty);
     end
 
 
 
-    % Given DSMDs and FMDs, get dictionary of the latest FMDs for every day for
-    % a specified DSI.
+    % Given DSMDs and corresponding FMDs, get DFMDD for the most recent dataset
+    % FMDs for one specific DSI.
     %
     % ARGUMENTS
     % =========
     % FmdDtArray
     %       Column array of FMDs for every DSMD.
     %
-    % RETURN VALUE
-    % ============
-    % DayFmdDict
-    %       Dictionary day-->FMD
-    %
-    function DayFmdDict = get_dataset_DFMDD_DSI(DsmdArray, FmdDtArray, dsi)
+    function Dfmdd = get_dataset_DFMDD_for_one_DSI(DsmdArray, FmdDtArray, dsi)
       assert(isa(DsmdArray,  'solo.adm.DSMD'))
       assert(isa(FmdDtArray, 'datetime')     )
       assert(ischar(dsi))
@@ -224,7 +226,7 @@ classdef fmd
       DsmdArray  = DsmdArray(bKeep);
       FmdDtArray = FmdDtArray(bKeep);
 
-      DayFmdDict = dictionary(datetime.empty, datetime.empty);
+      Dfmdd      = dictionary(datetime.empty, datetime.empty);
 
       for iDsmd = 1:numel(DsmdArray)
         % IMPLEMENTATION NOTE: Handle datasets which cover an arbitrary length
@@ -237,25 +239,25 @@ classdef fmd
         DatasetDtArray = DatasetDt1:caldays(1):DatasetDt2;
 
         for iDatasetDt = 1:numel(DatasetDtArray)
-          DayFmdDict = solo.qli.batch.utils.dictionary_set_value_max(...
-            DayFmdDict, DatasetDtArray(iDatasetDt), FmdDtArray(iDsmd));
+          Dfmdd = solo.qli.batch.utils.dictionary_set_value_max(...
+            Dfmdd, DatasetDtArray(iDatasetDt), FmdDtArray(iDsmd));
         end
       end
     end
 
 
 
-    % Given FMDs for paths to potential QLI files, get
-    % dictionary of the latest FMDs for every day.
+    % Given FMDs for paths to potential QLI files, get DFMDD for the most recent
+    % QLI FMDs.
     %
-    function DayFmdDict = get_QLI_DFMDD(QliPathsCa, QliFmdDtArray)
-      assert(iscall(QliPathsCa))
+    function Dfmdd = get_QLI_DFMDD(QliPathsCa, QliFmdDtArray)
+      assert(iscell(QliPathsCa))
       assert(isa(QliFmdDtArray, 'datetime'))
       irf.assert.sizes(...
         QliPathsCa,    [-1], ...
         QliFmdDtArray, [-1])
 
-      DayFmdDict = dictionary(datetime.empty, datetime.empty);
+      Dfmdd = dictionary(datetime.empty, datetime.empty);
 
       for iFile = 1:numel(QliPathsCa)
         [FilenameDt1, FilenameDt2] = solo.qli.utils.parse_quicklook_filename(...
@@ -276,8 +278,8 @@ classdef fmd
         % (2) the same filename in multiple locations (should not happen), and
         % (3) the same path multiple times (should not happen).
         for iDay = 1:numel(FilenameDtArray)
-          DayFmdDict = solo.qli.batch.utils.dictionary_set_value_max(...
-            DayFmdDict, FilenameDtArray(iDay), QliFmdDtArray(iFile));
+          Dfmdd = solo.qli.batch.utils.dictionary_set_value_max(...
+            Dfmdd, FilenameDtArray(iDay), QliFmdDtArray(iFile));
         end
       end
     end

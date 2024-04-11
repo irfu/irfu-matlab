@@ -1,11 +1,11 @@
 %
 % matlab.unittest automatic test code for
-% solo.qli.batch.interface.get_days_from_FMDs().
+% solo.qli.batch.interface.get_days_from_IDMRQ().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef interface_get_days_from_FMDs___UTEST < matlab.unittest.TestCase
+classdef interface_get_days_from_IDMRQ___UTEST < matlab.unittest.TestCase
 
 
 
@@ -55,7 +55,7 @@ classdef interface_get_days_from_FMDs___UTEST < matlab.unittest.TestCase
     function test_empty(testCase)
       datasetDirsCa = cell(0, 1);
 
-      ActDaysDtArray = solo.qli.batch.interface.get_days_from_FMDs(...
+      ActDaysDtArray = solo.qli.batch.interface.get_days_from_IDMRQ(...
         datasetDirsCa, testCase.fmdQliDir, '999', '2000-01-01', '2099-01-01');
 
       testCase.assertEqual(ActDaysDtArray, solo.qli.const.EMPTY_DT_ARRAY)
@@ -100,7 +100,7 @@ classdef interface_get_days_from_FMDs___UTEST < matlab.unittest.TestCase
       %==============
       datasetDirsCa = {dir1; dir2};
 
-      ActDaysDtArray = solo.qli.batch.interface.get_days_from_FMDs(...
+      ActDaysDtArray = solo.qli.batch.interface.get_days_from_IDMRQ(...
         datasetDirsCa, testCase.fmdQliDir, '9999', '2000-01-01', '2099-01-01');
 
       testCase.assertEqual(ActDaysDtArray, ...

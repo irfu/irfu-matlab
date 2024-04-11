@@ -23,7 +23,7 @@ classdef fmd___UTEST < matlab.unittest.TestCase
 
 
     % Test highest-level function.
-    function test_get_days_from_FMDs_from_file_info(testCase)
+    function test_get_days_from_IDMRQ_from_file_info(testCase)
 
       function test(...
           datasetPathsCa, datasetsFmdStrCa, dsiCa, ...
@@ -35,7 +35,7 @@ classdef fmd___UTEST < matlab.unittest.TestCase
         QliFmdDtArray     = datetime(qliFmdStrCa);
         ExpDaysDtArray    = solo.qli.utils.umdt(expDaysStrCa);
 
-        ActDaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs_from_file_info(...
+        ActDaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_from_file_info(...
           DsmdArray,  DatasetFmdDtArray, dsiCa, ...
           qliPathsCa, QliFmdDtArray);
 
@@ -129,10 +129,10 @@ classdef fmd___UTEST < matlab.unittest.TestCase
 
 
 
-    % NOTE: Not solo.qli.batch.fmd.testing get_dataset_DFMDD_DSI()
+    % NOTE: Not solo.qli.batch.fmd.testing get_dataset_DFMDD_for_one_DSI()
     % which is wrapped by
-    % solo.qli.batch.fmd.get_dataset_DFMDD_all().
-    function test_get_dataset_DFMDD_all(testCase)
+    % solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs().
+    function test_get_dataset_DFMDD_for_all_DSIs(testCase)
 
       function test(datasetPathsCa, fmdStrCa, dsiCa, expDaysStrCa, expFmdStrCa)
         [DsmdArray, ~] = solo.adm.paths_to_DSMD_array(datasetPathsCa);
@@ -141,7 +141,7 @@ classdef fmd___UTEST < matlab.unittest.TestCase
           solo.qli.utils.umdt(expDaysStrCa), ...
           datetime(           expFmdStrCa));
 
-        ActDayFmdDict = solo.qli.batch.fmd.get_dataset_DFMDD_all(...
+        ActDayFmdDict = solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs(...
           DsmdArray, FmdDtArray, dsiCa);
 
         testCase.assertEqual(ActDayFmdDict, ExpDayFmdDict)

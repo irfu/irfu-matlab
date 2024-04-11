@@ -42,7 +42,7 @@ classdef interface
             algorithmArgumentsCa{:});
 
         case 'FMDS'
-          DaysDtArray = solo.qli.batch.interface.get_days_from_FMDs(...
+          DaysDtArray = solo.qli.batch.interface.get_days_from_IDMRQ(...
             Settings.datasetDirsCa, ...
             outputDir, ...
             algorithmArgumentsCa{:});
@@ -246,7 +246,7 @@ classdef interface
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function DaysDtArray = get_days_from_FMDs(...
+    function DaysDtArray = get_days_from_IDMRQ(...
         datasetDirsCa, qliDir, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
@@ -254,7 +254,7 @@ classdef interface
 
       dsiCa = [solo.qli.batch.const.SOURCE_DSI_DICT.values{:}]';
 
-      DaysDtArray = solo.qli.batch.fmd.get_days_from_FMDs(...
+      DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ(...
         datasetDirsCa, qliDir, dsiCa);
 
       % Filter list of days.
