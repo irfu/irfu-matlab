@@ -5,11 +5,14 @@
 % user in e.g. bash scripts calling MATLAB code. Code should thus have
 % human-readable error messages for bad arguments.
 %
+% Therefore also giving better error messages for illegal arguments (and number
+% of arguments) supplied from the top-level caller (e.g. bash wrapper).
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef interface
-  % PROPOSAL: Automatic test code.
+  % PROPOSAL: Better automatic tests.
 
 
 
@@ -23,7 +26,7 @@ classdef interface
 
 
     function DaysDtArray = get_days_from_selected_algorithm(...
-        Settings, outputDir, dateSelectionAlgorithmId, algorithmArgumentsCa)
+        Settings, fmdQliDir, dateSelectionAlgorithmId, algorithmArgumentsCa)
       % PROPOSAL: Replace Settings-->Separate arguments.
 
       % NOTE: "Settings" is deliberately not passed on to any function, so as to
@@ -34,18 +37,18 @@ classdef interface
       switch(dateSelectionAlgorithmId)
         case 'TIME_INTERVAL'
           DaysDtArray = solo.qli.batch.interface.get_days_from_time_interval(...
-            algorithmArgumentsCa{:});
+            algorithmArgumentsCa);
 
         case 'LOGS'
           DaysDtArray = solo.qli.batch.interface.get_days_from_logs(...
             Settings.LogFileDirPatternDict, ...
-            algorithmArgumentsCa{:});
+            algorithmArgumentsCa);
 
         case 'FMDS'
           DaysDtArray = solo.qli.batch.interface.get_days_from_IDMRQ(...
             Settings.datasetDirsCa, ...
-            outputDir, ...
-            algorithmArgumentsCa{:});
+            fmdQliDir, ...
+            algorithmArgumentsCa);
 
         otherwise
           error('Illegal argument dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
@@ -125,7 +128,8 @@ classdef interface
     %
     % ARGUMENTS
     % =========
-    % beginDayUtcInclStr, endDayUtcExclStr
+    % algorithmArgumentsCa{1} = beginDayUtcInclStr
+    % algorithmArgumentsCa{2} = endDayUtcExclStr
     %       Strings on format YYYY-MM-DD.
     %       Beginning and end of time interval for which quicklooks should be
     %       generated.
@@ -142,7 +146,11 @@ classdef interface
     % First created 2022-08-30.
     %
     function DaysDtArray = get_days_from_time_interval(...
-      beginDayUtcInclStr, endDayUtcExclStr)
+      algorithmArgumentsCa)
+
+      assert(numel(algorithmArgumentsCa) == 2, 'Illegal number of algorithm arguments.')
+      beginDayUtcInclStr = algorithmArgumentsCa{1};
+      endDayUtcExclStr   = algorithmArgumentsCa{2};
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
@@ -185,7 +193,7 @@ classdef interface
     % =========
     % Settings
     %       Struct with fields for relevant settings.
-    % varargin
+    % algorithmArgumentsCa
     %       String IDs representing different dataset source directories. The
     %       function will use the logs for the specified directories to derive dates
     %       for which QLIs should be generated.
@@ -198,7 +206,7 @@ classdef interface
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function DaysDtArray = get_days_from_logs(LogFileDirPatternDict, varargin)
+    function DaysDtArray = get_days_from_logs(LogFileDirPatternDict, algorithmArgumentsCa)
       assert(isequal(...
         sort(LogFileDirPatternDict.keys), ...
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
@@ -206,12 +214,12 @@ classdef interface
 
       DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
-      for i = 1:numel(varargin)
-        datasetsSourceId = varargin{i};
-        assert(ischar(datasetsSourceId), 'logFilesId %i is not a string.', i)
+      for i = 1:numel(algorithmArgumentsCa)
+        datasetsSourceId = algorithmArgumentsCa{i};
 
+        assert(ischar(datasetsSourceId), 'datasetsSourceId{%i} is not a string.', i)
         if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(datasetsSourceId)
-          error('Illegal datasetsSourceId="%s"', datasetsSourceId)
+          error('Illegal datasetsSourceId{%i}="%s"', i, datasetsSourceId)
         end
 
         dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(datasetsSourceId);
@@ -247,13 +255,19 @@ classdef interface
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
     function DaysDtArray = get_days_from_IDMRQ(...
-        datasetDirsCa, qliDir, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
+        datasetDirsCa, qliDir, algorithmArgumentsCa)
+
+      assert(numel(algorithmArgumentsCa) == 3, 'Illegal number of algorithm arguments.')
+      maxNDaysStr        = algorithmArgumentsCa{1};
+      beginDayUtcInclStr = algorithmArgumentsCa{2};
+      endDayUtcExclStr   = algorithmArgumentsCa{3};
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
       dsiCa = [solo.qli.batch.const.SOURCE_DSI_DICT.values{:}]';
 
+      % Get raw list of IDMRQ days.
       DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ(...
         datasetDirsCa, qliDir, dsiCa);
 

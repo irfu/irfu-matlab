@@ -49,7 +49,6 @@ DAYS_DATETIME_COLUMN_ARRAY = datetime({...
 % Required, but only exists for technical reasons (automated testing).
 GQL = solo.qli.batch.GenerateQuicklooksImplementation();
 
-
 %===============================================================
 % Configure Solar Orbiter database from which data will be used
 %===============================================================

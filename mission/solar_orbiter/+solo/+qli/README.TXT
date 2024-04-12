@@ -51,3 +51,5 @@ GQL
     solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
 OFFGEN, "official generation"
     Official Generation of quicklooks for the homepage.
+QLI
+    QuickLooks IRFU ("IRFU quicklooks").

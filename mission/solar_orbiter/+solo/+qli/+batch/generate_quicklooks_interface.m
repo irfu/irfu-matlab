@@ -1,6 +1,7 @@
 %
 % Batch-generate quicklooks, but the caller specifies the method for how to
-% select dates.
+% select dates, e.g. specify range, derive from logs, derive from file
+% modification dates etc..
 %
 % NOTE: The function is intended for batch generating quicklooks, in particular
 %       by being called from another, custom MATLAB function which specifies
@@ -28,7 +29,6 @@
 %           See solo.qli.batch.interface.get_days_from_IDMRQ().
 %       .Gql
 %           See solo.qli.batch.generate_quicklooks().
-%
 % outputDir
 %       Path to output directory.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks

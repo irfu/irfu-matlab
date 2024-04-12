@@ -51,6 +51,7 @@ classdef fmd
   %   PROBLEM: Can not be implemented with external filter function for list of
   %            days.
   %     PROPOSAL: Return list of days, AND corresponding QLI FMDs.
+  %       PRO: Can create filtering function which considers FMDs.
   %
   % PROPOSAL: Use solo.db_list_files() for obtaining paths to datasets.
   %   TODO-NI: Unclear if performance is reasonable.
@@ -61,13 +62,27 @@ classdef fmd
   %   PRO: Resolves bug ("Implementetion checks for *all* DSIs in *all*
   %        specified dataset directories.")
   %   --
+  %   CON: Preliminary tests (on local mount) indicate that it takes much more
+  %        time than using solo.adm on concrete paths (current implementation
+  %        2024-04-12).
+  %     Ex:
+  %         TINT = irf.tint('2020-02-12T00:00:00/2021-04-13T00:00:00');
+  %         FsoiArray = solo.db_list_files('solo_L2_mag-rtn-normal', TINT);
+  %         ==>  274.6 s
+  %   CON: Does not iterate over DSIs, but "dataset prefixes" (w/wo. cdag;
+  %        always uppercase archiving level), since that is the
+  %        solo.db_list_files() argument. Can not (elegantly) convert DSI to
+  %        dataset prefix.
+  %   --
   %   PROPOSAL: Call it once for the entire (mission) time range in one call (per DSI).
   %             Still needs to use solo.adm+DSMDs.
-  %     PRO: Likely faster.
+  %     PRO: Likely faster than calling once per day.
   %   PROPOSAL: Call it once for each day (per DSI).
   %             Can avoid(?) using solo.adm+DSMDs.
   %     CON: Likely slower.
   %     NOTE: Can yield multiple day files due to midnight overlap.
+  %
+  %
   %
   % ~BUG: Bad thinking: Implementetion checks for *all* DSIs in *all* specified
   %       dataset directories.
@@ -84,10 +99,11 @@ classdef fmd
   %             granular that there is no overlap in datasets.
   %     Ex: /data/solo/data_irfu/latest/rpw/L3/ and
   %         /data/solo/remote/data/L2/
+  %     CON: Risk of manual mistakes.
   %   --
   %   PROPOSITION: ~It is a harmless bug.
-  %     PRO: Only leads to false positives (never false negatives). Will only
-  %          lead to generating more dates, not fewer.
+  %     PRO: Only leads to false positives (never false negatives), i.e. will
+  %          only lead to generating more dates, not fewer.
   %     PRO: Not yet using IRFU and LESIA simultaneously.
   %     PRO: If using IRFU and LESIA simultaneously, then the overlapping DSIs
   %          (currently BIAS L3) are more likely to be more recent in IRFU
@@ -250,18 +266,18 @@ classdef fmd
     % Given FMDs for paths to potential QLI files, get DFMDD for the most recent
     % QLI FMDs.
     %
-    function Dfmdd = get_QLI_DFMDD(QliPathsCa, QliFmdDtArray)
-      assert(iscell(QliPathsCa))
+    function Dfmdd = get_QLI_DFMDD(qliPathsCa, QliFmdDtArray)
+      assert(iscell(qliPathsCa))
       assert(isa(QliFmdDtArray, 'datetime'))
       irf.assert.sizes(...
-        QliPathsCa,    [-1], ...
+        qliPathsCa,    [-1], ...
         QliFmdDtArray, [-1])
 
       Dfmdd = dictionary(datetime.empty, datetime.empty);
 
-      for iFile = 1:numel(QliPathsCa)
+      for iFile = 1:numel(qliPathsCa)
         [FilenameDt1, FilenameDt2] = solo.qli.utils.parse_quicklook_filename(...
-          irf.fs.get_name(QliPathsCa{iFile}));
+          irf.fs.get_name(qliPathsCa{iFile}));
 
         if isempty(FilenameDt1)
           continue
