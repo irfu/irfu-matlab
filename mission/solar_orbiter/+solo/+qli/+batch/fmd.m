@@ -82,6 +82,12 @@ classdef fmd
   %     CON: Likely slower.
   %     NOTE: Can yield multiple day files due to midnight overlap.
   %
+  % PROPOSAL: Merge
+  %   solo.qli.batch.fmd.construct_QLI_DFMDD()
+  %   solo.qli.batch.fmd.get_QLI_DFMDD()
+  % PROPOSAL: Merge in more of the related functionality from the one call into
+  %   solo.qli.batch.fmdget_dataset_DFMDD_for_all_DSIs(),
+  %
   %
   %
   % ~BUG: Bad thinking: Implementetion checks for *all* DSIs in *all* specified
@@ -121,6 +127,35 @@ classdef fmd
 
 
 
+    function QliDfmdd = get_days_from_QLI_FMD_interval(qliDir, startInclFmdDt, stopExclFmdDt, Fsr)
+      assert(startInclFmdDt <= stopExclFmdDt)
+
+      QliDfmdd = solo.qli.batch.fmd.get_QLI_DFMDD(qliDir, Fsr);
+      QliDfmdd = solo.qli.batch.fmd.filter_DFMDD_by_FMD(QliDfmdd, startInclFmdDt, stopExclFmdDt);
+    end
+
+
+
+    % For a given a DFMDD, filter it to only keep the FMDs in a certain range.
+    function QliDfmdd2 = filter_DFMDD_by_FMD(QliDfmdd1, startInclFmdDt, stopExclFmdDt)
+      assert(strcmp(startInclFmdDt.TimeZone, ''))
+      assert(strcmp(stopExclFmdDt.TimeZone,  ''))
+
+      QliDfmdd2 = dictionary();
+
+      Table = QliDfmdd1.entries;
+      for i = 1:QliDfmdd1.numEntries
+        DayDt = Table.Key(i);
+        FmdDt = Table.Value(i);
+
+        if (startInclFmdDt <= FmdDt) && (FmdDt < stopExclFmdDt)
+          QliDfmdd2(DayDt) = FmdDt;
+        end
+      end
+    end
+
+
+
     function DaysDtArray = get_days_from_IDMRQ(datasetDirsCa, qliDir, dsiCa, Fsr)
       assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
       assert(ischar(qliDir))
@@ -140,12 +175,8 @@ classdef fmd
         DsmdArray, DatasetFmdDtArray, dsiCa);
 
       % QLIs
-      irf.log('n', 'Collecting paths and FMDs to quicklooks.')
-      [qliPathsCa, qliFmdSdnArray] = Fsr.get_file_paths_FMD_SDNs({qliDir});
-      qliFmdSdnArray = qliFmdSdnArray(:);    % Normalize to column vector.
-      QliFmdDtArray  = datetime(qliFmdSdnArray, 'ConvertFrom', 'datenum');
-      QliDfmdd      = solo.qli.batch.fmd.get_QLI_DFMDD(...
-        qliPathsCa, QliFmdDtArray);
+      irf.log('n', 'Collecting paths and FMDs for QLIs.')
+      QliDfmdd = solo.qli.batch.fmd.get_QLI_DFMDD(qliDir, Fsr);
 
       %==============
       % Derive dates
@@ -247,7 +278,7 @@ classdef fmd
     % Given FMDs for paths to potential QLI files, get DFMDD for the most recent
     % QLI FMDs.
     %
-    function Dfmdd = get_QLI_DFMDD(qliPathsCa, QliFmdDtArray)
+    function Dfmdd = construct_QLI_DFMDD(qliPathsCa, QliFmdDtArray)
       assert(iscell(qliPathsCa))
       assert(isa(QliFmdDtArray, 'datetime'))
       irf.assert.sizes(...
@@ -279,6 +310,17 @@ classdef fmd
             Dfmdd, FilenameDtArray(iDay), QliFmdDtArray(iFile));
         end
       end
+    end
+
+
+
+    function QliDfmdd = get_QLI_DFMDD(qliDir, Fsr)
+      irf.log('n', 'Collecting paths and FMDs for QLIs.')
+      [qliPathsCa, qliFmdSdnArray] = Fsr.get_file_paths_FMD_SDNs({qliDir});
+      qliFmdSdnArray = qliFmdSdnArray(:);    % Normalize to column vector.
+      QliFmdDtArray  = datetime(qliFmdSdnArray, 'ConvertFrom', 'datenum');
+      QliDfmdd       = solo.qli.batch.fmd.construct_QLI_DFMDD(...
+        qliPathsCa, QliFmdDtArray);
     end
 
 

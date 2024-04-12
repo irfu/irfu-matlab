@@ -22,6 +22,68 @@ classdef fmd___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_get_days_from_QLI_FMD_interval(testCase)
+
+      function test(qliDir, startInclFmdStr, stopExclFmdStr, ExpQliDfmdd)
+        Fsr = solo.qli.batch.FileSystemReaderTest(FsrDict);
+
+        ActQliDfmdd = solo.qli.batch.fmd.get_days_from_QLI_FMD_interval(...
+          qliDir, datetime(startInclFmdStr), datetime(stopExclFmdStr), Fsr);
+
+        testCase.assertEqual(ActQliDfmdd, ExpQliDfmdd)
+      end
+
+      %=========================================================================
+
+      if 1
+        % Zero QLIs.
+        FsrDict = dictionary();
+        FsrDict({{'/qli'}}) = {{cell(0, 1), []}};
+        ExpDfmdd = dictionary();
+        test( ...
+          '/qli', ...
+          '2020-01-01', '2020-02-01', ...
+          ExpDfmdd ...
+          )
+      end
+
+
+
+      % Non-zero QLIs
+      FsrDict = dictionary();
+      QLI_CA = {
+        '20240101T00_20240102T00.png'; ...
+        '20240102T00_20240103T00.png';
+        '20240103T00_20240104T00.png';
+        '20240104T00_20240105T00.png';
+        };
+      FMD_SDN_ARRAY = datenum([
+        [2025,01,01];
+        [2025,01,02];
+        [2025,01,03];
+        [2025,01,04];
+        ]);
+      FsrDict({{'/qli'}}) = {{QLI_CA, FMD_SDN_ARRAY}};
+
+      ExpDfmdd = dictionary();
+      ExpDfmdd(solo.qli.utils.umdt({ ...
+        '2024-01-02';
+        '2024-01-03'
+        })) = datetime({ ...
+        '2025-01-02';
+        '2025-01-03'
+      });
+
+      test( ...
+        '/qli', ...
+        '2025-01-02', '2025-01-04', ...
+        ExpDfmdd ...
+        )
+
+    end
+
+
+
     % Test Using actual file system (FS). ==> More complicated by nature.
     function test_get_days_from_IDMRQ_FS(testCase)
       QliFixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
@@ -238,10 +300,10 @@ classdef fmd___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_QLI_DFMDD(testCase)
+    function test_construct_QLI_DFMDD(testCase)
 
       function test(qliPathsCa, QliFmdDtArray, ExpDayFmdDict)
-        ActDayFmdDict = solo.qli.batch.fmd.get_QLI_DFMDD(...
+        ActDayFmdDict = solo.qli.batch.fmd.construct_QLI_DFMDD(...
           qliPathsCa, QliFmdDtArray);
 
         testCase.assertEqual(ActDayFmdDict, ExpDayFmdDict)
