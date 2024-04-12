@@ -46,8 +46,7 @@ classdef interface
 
         case 'FMDS'
           DaysDtArray = solo.qli.batch.interface.get_days_from_IDMRQ(...
-            Settings.datasetDirsCa, ...
-            fmdQliDir, ...
+            Settings.datasetDirsCa, fmdQliDir, Settings.Fsr, ...
             algorithmArgumentsCa);
 
         otherwise
@@ -255,7 +254,7 @@ classdef interface
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
     function DaysDtArray = get_days_from_IDMRQ(...
-        datasetDirsCa, qliDir, algorithmArgumentsCa)
+        datasetDirsCa, qliDir, Fsr, algorithmArgumentsCa)
 
       assert(numel(algorithmArgumentsCa) == 3, 'Illegal number of algorithm arguments.')
       maxNDaysStr        = algorithmArgumentsCa{1};
@@ -269,7 +268,7 @@ classdef interface
 
       % Get raw list of IDMRQ days.
       DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ(...
-        datasetDirsCa, qliDir, dsiCa);
+        datasetDirsCa, qliDir, dsiCa, Fsr);
 
       % Filter list of days.
       DaysDtArray = solo.qli.batch.interface.filter_days_array(...

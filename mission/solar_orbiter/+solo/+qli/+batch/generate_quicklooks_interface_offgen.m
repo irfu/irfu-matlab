@@ -64,6 +64,7 @@ LOG_FILE_DIR_PATTERN_DICT('SOAR')  = '/home/erjo/logs/so_soar_irfu_mirror_sync.*
 
 Settings = [];
 Settings.Gql                    = solo.qli.batch.GenerateQuicklooksImplementation();
+Settings.Fsr                    = solo.qli.batch.FileSystemReaderImplementation();
 Settings.vhtDir                 = VHT_DIR;
 Settings.irfLogoPath            = fullfile(irf('path'), IRF_LOGO_RPATH);
 Settings.LogFileDirPatternDict  = LOG_FILE_DIR_PATTERN_DICT;

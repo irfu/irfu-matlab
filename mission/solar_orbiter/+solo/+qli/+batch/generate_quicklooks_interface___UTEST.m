@@ -72,6 +72,9 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       Settings.irfLogoPath = solo.qli.testdata.get_test_logo_path();
       Settings.vhtDir      = VhtFixture.Folder;
       Settings.Gql         = solo.qli.batch.GenerateQuicklooksTest();
+      % Empty FSR for those tests which do not require. Those which do, should
+      % overwrite it.
+      Settings.Fsr         = solo.qli.batch.FileSystemReaderTest(dictionary());
       % Settings which are required but should not be relevant.
       Settings.datasetDirsCa         = {};
       Settings.LogFileDirPatternDict = dictionary();

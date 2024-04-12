@@ -76,7 +76,8 @@ function generate_quicklooks_interface(...
 %                quicklooks should be generated.
 
 irf.assert.struct(Settings, ...
-  {'irfLogoPath', 'vhtDir', 'LogFileDirPatternDict', 'fmdQliDir', 'datasetDirsCa', 'Gql'}, {})
+  {'irfLogoPath', 'vhtDir', 'LogFileDirPatternDict', 'fmdQliDir', 'datasetDirsCa', 'Gql', 'Fsr'}, {})
+
 
 
 generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);

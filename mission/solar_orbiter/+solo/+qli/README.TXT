@@ -47,6 +47,8 @@ DSMD
     solo.adm.DatasetMetadata
 FMD
     File Modification Date
+FSR
+    solo.qli.batch.FileSystemReaderAbstract and subclasses thereof.
 GQL
     solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
 OFFGEN, "official generation"

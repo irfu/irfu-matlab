@@ -121,7 +121,7 @@ classdef fmd
 
 
 
-    function DaysDtArray = get_days_from_IDMRQ(datasetDirsCa, qliDir, dsiCa)
+    function DaysDtArray = get_days_from_IDMRQ(datasetDirsCa, qliDir, dsiCa, Fsr)
       assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
       assert(ischar(qliDir))
 
@@ -129,47 +129,28 @@ classdef fmd
       % Obtain information from the file system
       %=========================================
       % Datasets
-      irf.log('n', 'Collecting paths to datasets.')
-      [datasetPathsCa, DatasetFsoiArray] = bicas.tools.batch.get_file_paths(datasetDirsCa);
+      irf.log('n', 'Collecting paths and FMDs to datasets.')
+      [datasetPathsCa, DatasetFmdSdnArray] = Fsr.get_file_paths_FMD_SDNs(datasetDirsCa);
       irf.log('n', 'Obtaining DSMDs from paths.')
-      [DsmdArray, bIsDatasetArray]       = solo.adm.paths_to_DSMD_array(datasetPathsCa);
-      DatasetFsoiArray   = DatasetFsoiArray(bIsDatasetArray);
-      DatasetFmdSdnArray = [DatasetFsoiArray.datenum];
+      [DsmdArray, bIsDatasetArray]         = solo.adm.paths_to_DSMD_array(datasetPathsCa);
+      DatasetFmdSdnArray = DatasetFmdSdnArray(bIsDatasetArray);
       DatasetFmdSdnArray = DatasetFmdSdnArray(:);
       DatasetFmdDtArray  = datetime(DatasetFmdSdnArray, 'ConvertFrom', 'datenum');
+      DatasetsDfmdd = solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs(...
+        DsmdArray, DatasetFmdDtArray, dsiCa);
 
       % QLIs
-      irf.log('n', 'Collecting paths to quicklooks.')
-      [QliPathsCa, QliFsoiArray] = bicas.tools.batch.get_file_paths({qliDir});
-      QliFmdSdnArray = [QliFsoiArray.datenum];
-      QliFmdSdnArray = QliFmdSdnArray(:);    % Normalize to column vector.
-      QliFmdDtArray  = datetime(QliFmdSdnArray, 'ConvertFrom', 'datenum');
+      irf.log('n', 'Collecting paths and FMDs to quicklooks.')
+      [qliPathsCa, qliFmdSdnArray] = Fsr.get_file_paths_FMD_SDNs({qliDir});
+      qliFmdSdnArray = qliFmdSdnArray(:);    % Normalize to column vector.
+      QliFmdDtArray  = datetime(qliFmdSdnArray, 'ConvertFrom', 'datenum');
+      QliDfmdd      = solo.qli.batch.fmd.get_QLI_DFMDD(...
+        qliPathsCa, QliFmdDtArray);
 
       %==============
       % Derive dates
       %==============
-      irf.log('n', 'Determining days for which quicklooks could/should be updated.')
-      DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_from_file_info(...
-        DsmdArray, DatasetFmdDtArray, dsiCa, QliPathsCa, QliFmdDtArray);
-    end
-
-
-
-    % Get array of days for which to generate QLIs from file system information
-    % which is only specified in arguments.
-    %
-    % IMPLEMENTATION NOTE: This function separates the algorithms/logic from the
-    % file system reading so as to have a function that is nice for automated
-    % testing.
-    %
-    function DaysDtArray = get_days_from_IDMRQ_from_file_info(...
-        DsmdArray, DatasetFmdDtArray, dsiCa, QliPathsCa, QliFmdDtArray)
-
-      DatasetsDfmdd = solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs(...
-        DsmdArray, DatasetFmdDtArray, dsiCa);
-      QliDfmdd      = solo.qli.batch.fmd.get_QLI_DFMDD(...
-        QliPathsCa, QliFmdDtArray);
-
+      irf.log('n', 'Determining days for which quicklooks could/should be updated (IDMRQ).')
       DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_algorithm(...
         DatasetsDfmdd, QliDfmdd);
 
