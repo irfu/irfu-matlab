@@ -49,6 +49,10 @@ classdef interface
             Settings.datasetDirsCa, fmdQliDir, Settings.Fsr, ...
             algorithmArgumentsCa);
 
+        case 'QLI_FMD_INTERVAL'
+          DaysDtArray = solo.qli.batch.interface.get_days_from_QLI_FMD_interval( ...
+            fmdQliDir, Settings.Fsr, algorithmArgumentsCa);
+
         otherwise
           error('Illegal argument dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
       end
@@ -78,7 +82,7 @@ classdef interface
     % YYYY-MM-DD. Function is made to make it easy to generate more
     % easy-to-understand error messages.
     function check_interface_date_str(dateStr)
-      DATE_RE = '^20[0-9][0-9]-[0-1][0-9]-[0-3][0-9]$';
+      DATE_RE = '^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]$';
 
       assert(ischar(dateStr))
 
@@ -92,6 +96,8 @@ classdef interface
 
     function DaysDtArray = filter_days_array(...
         DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
+
+      solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
@@ -273,6 +279,29 @@ classdef interface
       % Filter list of days.
       DaysDtArray = solo.qli.batch.interface.filter_days_array(...
         DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr);
+    end
+
+
+
+    function DaysDtArray = get_days_from_QLI_FMD_interval(...
+        qliDir, Fsr, algorithmArgumentsCa)
+
+      assert(numel(algorithmArgumentsCa) == 3, 'Illegal number of algorithm arguments.')
+
+      maxNDaysStr    = algorithmArgumentsCa{1};
+      startInclFmdDt = datetime(algorithmArgumentsCa{2});
+      stopExclFmdDt  = datetime(algorithmArgumentsCa{3});
+
+      QliDfmdd = solo.qli.batch.fmd.get_days_from_QLI_FMD_interval( ...
+        qliDir, startInclFmdDt, stopExclFmdDt, Fsr);
+      if QliDfmdd.numEntries == 0
+        DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
+      else
+        DaysDtArray = QliDfmdd.keys;
+      end
+
+      DaysDtArray = solo.qli.batch.interface.filter_days_array(...
+        DaysDtArray, maxNDaysStr, '0000-01-01', '9999-12-31');
     end
 
 
