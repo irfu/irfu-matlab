@@ -20,8 +20,8 @@ classdef interface_get_days_from_IDMRQ___UTEST < matlab.unittest.TestCase
 
     function test_empty(testCase)
       FsrDict = dictionary();
-      FsrDict({{'/qli'}})  = {{cell(0, 1), []}};
-      FsrDict({cell(0,1)}) = {{cell(0, 1), []}};
+      FsrDict({{'/qli'}})  = {{cell(0, 1), solo.qli.const.EMPTY_DT_ARRAY}};
+      FsrDict({cell(0,1)}) = {{cell(0, 1), solo.qli.const.EMPTY_DT_ARRAY}};
       Fsr = solo.qli.batch.FileSystemReaderTest(FsrDict);
 
       ActDaysDtArray = solo.qli.batch.interface.get_days_from_IDMRQ(...
@@ -36,8 +36,8 @@ classdef interface_get_days_from_IDMRQ___UTEST < matlab.unittest.TestCase
     function test_nonempty(testCase)
       % One dataset is younger than QLI.
       FsrDict = dictionary();
-      FsrDict({{'/data'}}) = {{{'/data/solo_L2_swa-pas-eflux_20240101_V02.cdf'}, [20250102]}};
-      FsrDict({{'/qli' }}) = {{{'/qli/20240101T00_20240102T00.png'            }, [20250101]}};
+      FsrDict({{'/data'}}) = {{{'/data/solo_L2_swa-pas-eflux_20240101_V02.cdf'}, datetime('2025-01-02')}};
+      FsrDict({{'/qli' }}) = {{{'/qli/20240101T00_20240102T00.png'            }, datetime('2025-01-01')}};
       Fsr = solo.qli.batch.FileSystemReaderTest(FsrDict);
 
       ActDaysDtArray = solo.qli.batch.interface.get_days_from_IDMRQ(...

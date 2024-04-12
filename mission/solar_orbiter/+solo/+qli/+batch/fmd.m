@@ -164,13 +164,12 @@ classdef fmd
       % Obtain information from the file system
       %=========================================
       % Datasets
-      irf.log('n', 'Collecting paths and FMDs to datasets.')
-      [datasetPathsCa, DatasetFmdSdnArray] = Fsr.get_file_paths_FMD_SDNs(datasetDirsCa);
+      irf.log('n', 'Collecting paths and FMDs for datasets.')
+      [datasetPathsCa, DatasetFmdDtArray] = Fsr.get_file_paths_FMD_SDNs(datasetDirsCa);
       irf.log('n', 'Obtaining DSMDs from paths.')
       [DsmdArray, bIsDatasetArray]         = solo.adm.paths_to_DSMD_array(datasetPathsCa);
-      DatasetFmdSdnArray = DatasetFmdSdnArray(bIsDatasetArray);
-      DatasetFmdSdnArray = DatasetFmdSdnArray(:);
-      DatasetFmdDtArray  = datetime(DatasetFmdSdnArray, 'ConvertFrom', 'datenum');
+      DatasetFmdDtArray = DatasetFmdDtArray(bIsDatasetArray);
+      DatasetFmdDtArray = DatasetFmdDtArray(:);
       DatasetsDfmdd = solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs(...
         DsmdArray, DatasetFmdDtArray, dsiCa);
 
@@ -316,10 +315,9 @@ classdef fmd
 
     function QliDfmdd = get_QLI_DFMDD(qliDir, Fsr)
       irf.log('n', 'Collecting paths and FMDs for QLIs.')
-      [qliPathsCa, qliFmdSdnArray] = Fsr.get_file_paths_FMD_SDNs({qliDir});
-      qliFmdSdnArray = qliFmdSdnArray(:);    % Normalize to column vector.
-      QliFmdDtArray  = datetime(qliFmdSdnArray, 'ConvertFrom', 'datenum');
-      QliDfmdd       = solo.qli.batch.fmd.construct_QLI_DFMDD(...
+      [qliPathsCa, QliFmdDtArray] = Fsr.get_file_paths_FMD_SDNs({qliDir});
+      QliFmdDtArray = QliFmdDtArray(:);    % Normalize to column vector.
+      QliDfmdd      = solo.qli.batch.fmd.construct_QLI_DFMDD(...
         qliPathsCa, QliFmdDtArray);
     end
 

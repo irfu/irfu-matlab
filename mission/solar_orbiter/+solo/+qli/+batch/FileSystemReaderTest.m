@@ -38,6 +38,11 @@ classdef FileSystemReaderTest < solo.qli.batch.FileSystemReaderAbstract
 
         value = ReturnValuesDict({key});
         assert(iscell(value))
+        assert(numel(value{1}) == 2)
+        filePathCa = value{1}{1};
+        FmdDt      = value{1}{2};
+        assert(iscell(filePathCa))
+        assert(isa(FmdDt, 'datetime'))
       end
       
     end
