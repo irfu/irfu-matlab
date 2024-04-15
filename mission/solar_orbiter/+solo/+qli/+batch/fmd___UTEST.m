@@ -87,7 +87,7 @@ classdef fmd___UTEST < matlab.unittest.TestCase
 
 
     % Test using actual file system (FS). ==> More complicated by nature.
-    function test_get_days_from_IDMRQ_and_FS_FS(testCase)
+    function test_get_days_from_DMRQ_and_FS_FS(testCase)
       QliFixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       fmdQliDir  = QliFixture.Folder;
       F    = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
@@ -129,7 +129,7 @@ classdef fmd___UTEST < matlab.unittest.TestCase
       %==============
       datasetDirsCa = {dir1; dir2};
 
-      ActDaysDtArray = solo.qli.batch.interface.get_days_from_IDMRQ(...
+      ActDaysDtArray = solo.qli.batch.interface.get_days_from_DMRQ(...
         datasetDirsCa, fmdQliDir, Fsr, ...
         {'9999', '2000-01-01', '2099-01-01'});
 
@@ -141,14 +141,14 @@ classdef fmd___UTEST < matlab.unittest.TestCase
 
     % Test using solo.qli.batch.FileSystemReaderTest. ==> Less complicated by
     % nature.
-    function test_get_days_from_IDMRQ_and_FS_FSRTest(testCase)
+    function test_get_days_from_DMRQ_and_FS_FSRTest(testCase)
       function test(datasetDirsCa, qliDir, dsiCa, FsrDict, expDaysStrCa)
         assert(ischar(qliDir))
 
         Fsr            = solo.qli.batch.FileSystemReaderTest(FsrDict);
         ExpDaysDtArray = solo.qli.utils.umdt(expDaysStrCa);
 
-        ActDaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_and_FS(...
+        ActDaysDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_and_FS(...
           datasetDirsCa, qliDir, dsiCa, Fsr);
 
         testCase.assertEqual(ActDaysDtArray, ExpDaysDtArray)

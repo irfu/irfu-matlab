@@ -26,7 +26,7 @@
 %           See solo.qli.batch.interface.get_days_from_logs().
 %       .datasetDirsCa
 %           Cell array of paths to directories with datasets. Used for FMDS.
-%           See solo.qli.batch.interface.get_days_from_IDMRQ().
+%           See solo.qli.batch.interface.get_days_from_DMRQ().
 %       .Gql
 %           See solo.qli.batch.generate_quicklooks().
 % outputDir

@@ -151,9 +151,9 @@ classdef fmd
 
 
 
-    % Derive array of dates from the IDMRQ algorithm and reading file system
+    % Derive array of dates from the DMRQ algorithm and reading file system
     % data.
-    function DaysDtArray = get_days_from_IDMRQ_and_FS(datasetDirsCa, qliDir, dsiCa, Fsr)
+    function DaysDtArray = get_days_from_DMRQ_and_FS(datasetDirsCa, qliDir, dsiCa, Fsr)
       assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
       assert(ischar(qliDir))
 
@@ -177,8 +177,8 @@ classdef fmd
       %==============
       % Derive dates
       %==============
-      irf.log('n', 'Determining days for which QLIs could/should be updated (IDMRQ).')
-      DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_algorithm(...
+      irf.log('n', 'Determining days for which QLIs could/should be updated (DMRQ).')
+      DaysDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_algorithm(...
         DatasetsDfmdd, QliDfmdd);
 
       solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
@@ -186,9 +186,9 @@ classdef fmd
 
 
 
-    % Derive array of dates from the IDMRQ algorithm and arguments containing
+    % Derive array of dates from the DMRQ algorithm and arguments containing
     % file system data.
-    function ChangedDatasetsDtArray = get_days_from_IDMRQ_algorithm(...
+    function ChangedDatasetsDtArray = get_days_from_DMRQ_algorithm(...
         DatasetsDfmdd, QliDfmdd)
 
       % IMPLEMENTATION NOTE: An empty dictionary can not specify timezone in
