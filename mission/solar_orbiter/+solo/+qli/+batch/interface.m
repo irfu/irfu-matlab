@@ -296,10 +296,10 @@ classdef interface
 
       QliDfmdd = solo.qli.batch.fmd.get_days_from_QLI_FMD_interval( ...
         qliDir, startInclFmdDt, stopExclFmdDt, Fsr);
-      if QliDfmdd.numEntries == 0
+      if QliDfmdd.n == 0
         DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
       else
-        DaysDtArray = QliDfmdd.keys;
+        DaysDtArray = QliDfmdd.DaysDtArray;
       end
 
       DaysDtArray = solo.qli.batch.interface.filter_days_array(...

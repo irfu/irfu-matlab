@@ -138,12 +138,13 @@ classdef fmd
       assert(strcmp(startInclFmdDt.TimeZone, ''))
       assert(strcmp(stopExclFmdDt.TimeZone,  ''))
 
-      QliDfmdd2 = dictionary();
+      QliDfmdd2 = solo.qli.batch.DayDayDictionary();
 
-      Table = QliDfmdd1.entries;
-      for i = 1:QliDfmdd1.numEntries
-        DayDt = Table.Key(i);
-        FmdDt = Table.Value(i);
+      DayDtArray = QliDfmdd1.DaysDtArray();
+      FmdDtArray = QliDfmdd1.FmdDtArray();
+      for i = 1:QliDfmdd1.n
+        DayDt = DayDtArray(i);
+        FmdDt = FmdDtArray(i);
 
         if (startInclFmdDt <= FmdDt) && (FmdDt < stopExclFmdDt)
           QliDfmdd2(DayDt) = FmdDt;
@@ -196,8 +197,8 @@ classdef fmd
       % IMPLEMENTATION NOTE: An empty dictionary can not specify timezone in
       % keys/values. Must therefore always normalize to UTC first.
       AllDatasetsDtArray = intersect(...
-        datetime(DatasetsDfmdd.keys, 'TimeZone', 'UTCLeapSeconds'), ...
-        datetime(QliDfmdd.keys,      'TimeZone', 'UTCLeapSeconds'));
+        datetime(DatasetsDfmdd.DaysDtArray(), 'TimeZone', 'UTCLeapSeconds'), ...
+        datetime(QliDfmdd.DaysDtArray(),      'TimeZone', 'UTCLeapSeconds'));
 
       % Preallocate.
       ChangedDatasetsDtArray = NaT(...
@@ -228,8 +229,7 @@ classdef fmd
           DsmdArray, FmdDtArray, dsiCa{iDsi});
       end
 
-      Dfmdd = solo.qli.batch.utils.merge_dictionaries_max(...
-        DfmddCa, datetime.empty, datetime.empty);
+      Dfmdd = solo.qli.batch.DayDayDictionary.merge_max(DfmddCa);
     end
 
 
@@ -254,7 +254,7 @@ classdef fmd
       DsmdArray  = DsmdArray(bKeep);
       FmdDtArray = FmdDtArray(bKeep);
 
-      Dfmdd      = dictionary(datetime.empty, datetime.empty);
+      Dfmdd      = solo.qli.batch.DayDayDictionary();
 
       for iDsmd = 1:numel(DsmdArray)
         % IMPLEMENTATION NOTE: Handle datasets which cover an arbitrary length
@@ -267,8 +267,7 @@ classdef fmd
         DatasetDtArray = DatasetDt1:caldays(1):DatasetDt2;
 
         for iDatasetDt = 1:numel(DatasetDtArray)
-          Dfmdd = solo.qli.batch.utils.dictionary_set_value_max(...
-            Dfmdd, DatasetDtArray(iDatasetDt), FmdDtArray(iDsmd));
+          Dfmdd = Dfmdd.set_if_greater(DatasetDtArray(iDatasetDt), FmdDtArray(iDsmd));
         end
       end
     end
@@ -285,7 +284,8 @@ classdef fmd
         qliPathsCa,    [-1], ...
         qliFmdDtArray, [-1])
 
-      Dfmdd = dictionary(datetime.empty, datetime.empty);
+      %Dfmdd = dictionary(datetime.empty, datetime.empty);
+      Dfmdd = solo.qli.batch.DayDayDictionary();
 
       for iFile = 1:numel(qliPathsCa)
         [FilenameDt1, FilenameDt2] = solo.qli.utils.parse_quicklook_filename(...
@@ -306,8 +306,7 @@ classdef fmd
         % (2) the same filename in multiple locations (should not happen), and
         % (3) the same path multiple times (should not happen).
         for iDay = 1:numel(FilenameDtArray)
-          Dfmdd = solo.qli.batch.utils.dictionary_set_value_min(...
-            Dfmdd, FilenameDtArray(iDay), qliFmdDtArray(iFile));
+          Dfmdd = Dfmdd.set_if_smaller(FilenameDtArray(iDay), qliFmdDtArray(iFile));
         end
       end
     end

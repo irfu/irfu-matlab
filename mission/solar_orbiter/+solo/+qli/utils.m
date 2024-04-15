@@ -41,7 +41,7 @@ classdef utils
     % midnight. (E.g. format 2024-01-01T00:00:00.000Z does NOT work,
     % deliberately)
     %
-    % UMDT = UTC Midnight DateTime
+    % UMDDT = UMD DT = UTC Midnight Date, datetime
     %
     % IMPLEMENTATION NOTE: solo.qli works with many UTC datetime objects for
     % timestamps at midnight, and tests hardcode many such values. This function

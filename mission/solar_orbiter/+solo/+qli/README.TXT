@@ -52,7 +52,7 @@ DMRQ
 DSMD
     solo.adm.DatasetMetadata
 FMD
-    File Modification Date
+    File Modification Date (timestamp).
 FSR
     solo.qli.batch.FileSystemReaderAbstract and subclasses thereof.
 GQL
@@ -62,3 +62,5 @@ OFFGEN, "official generation"
 QLI
     QuickLooks IRFU ("IRFU quicklooks"). In the code it refers to the file
     representations of the quicklooks.
+UMD
+    UTC Midnight Date (timestamp).
