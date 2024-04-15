@@ -266,7 +266,8 @@ function Data = read_raw_TNR_data(tint)
 %     -------
 %     D : struct
 %       Every field corresponds to one zVariable.
-%       All fields are TSeries except one which is an array.
+%       All fields are TSeries except for one time-independent zVariable which
+%       is an array.
 
 % Names of the zVariables which are converted to TSeries objects.
 ZVAR_NAMES = {...

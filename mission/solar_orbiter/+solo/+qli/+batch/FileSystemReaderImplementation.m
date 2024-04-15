@@ -18,7 +18,7 @@ classdef FileSystemReaderImplementation < solo.qli.batch.FileSystemReaderAbstrac
 
 
 
-    function [pathsCa, fmdDtArray] = get_file_paths_FMD_SDNs(obj, dirsCa)
+    function [pathsCa, fmdDtArray] = get_file_paths_FMDs(obj, dirsCa)
 
       [pathsCa, FsoiArray] = bicas.tools.batch.get_file_paths(dirsCa);
       if ~isempty(FsoiArray)

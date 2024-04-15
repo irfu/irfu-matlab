@@ -5,7 +5,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef FileSystemReaderTest < solo.qli.batch.FileSystemReaderAbstract
-  % PROPOSAL: Automatic test code.
 
 
 
@@ -29,7 +28,7 @@ classdef FileSystemReaderTest < solo.qli.batch.FileSystemReaderAbstract
 
 
 
-    function obj = FileSystemReaderTest(ReturnValuesDict)      
+    function obj = FileSystemReaderTest(ReturnValuesDict)
       obj.ReturnValuesDict = ReturnValuesDict;
 
       for i = 1:ReturnValuesDict.numEntries
@@ -44,21 +43,21 @@ classdef FileSystemReaderTest < solo.qli.batch.FileSystemReaderAbstract
         assert(iscell(filePathCa))
         assert(isa(FmdDt, 'datetime'))
       end
-      
+
     end
 
 
 
-    function [pathsCa, fmdSdnArray] = get_file_paths_FMD_SDNs(obj, dirsCa)
+    function [pathsCa, fmdDtArray] = get_file_paths_FMDs(obj, dirsCa)
       value       = obj.ReturnValuesDict({dirsCa});
       value       = value{1};
 
-      pathsCa     = value{1};
-      fmdSdnArray = value{2};
+      pathsCa    = value{1};
+      fmdDtArray = value{2};
 
       % Normalize to column arrays.
-      pathsCa     = pathsCa(:);
-      fmdSdnArray = fmdSdnArray(:);
+      pathsCa    = pathsCa(:);
+      fmdDtArray = fmdDtArray(:);
     end
 
 

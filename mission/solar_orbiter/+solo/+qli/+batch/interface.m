@@ -13,6 +13,8 @@
 %
 classdef interface
   % PROPOSAL: Better automatic tests.
+  % PROPOSAL: Merge TIME_INTERVAL and QLI_FMD_INTERVAL.
+  %   maxNDays fmdMinDate fmdMaxDate dataMinDate dataMaxDate
 
 
 
@@ -273,7 +275,7 @@ classdef interface
       dsiCa = [solo.qli.batch.const.SOURCE_DSI_DICT.values{:}]';
 
       % Get raw list of IDMRQ days.
-      DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ(...
+      DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_and_FS(...
         datasetDirsCa, qliDir, dsiCa, Fsr);
 
       % Filter list of days.

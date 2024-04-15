@@ -51,7 +51,14 @@ FSR
     solo.qli.batch.FileSystemReaderAbstract and subclasses thereof.
 GQL
     solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
+IDMRQ
+    Input Datasets More Recent than QLI (file).
+    Algorithm for generating array of dates for which to (optionally) generate
+    QLIs. A day is included if (1) the most recent QLI FMD (for that day) is
+    more recent than the most recent input dataset (for that day), or (2) there
+    is no QLI for that day.
 OFFGEN, "official generation"
     Official Generation of quicklooks for the homepage.
 QLI
-    QuickLooks IRFU ("IRFU quicklooks").
+    QuickLooks IRFU ("IRFU quicklooks"). In the code it refers to the file
+    representations of the quicklooks.

@@ -18,7 +18,7 @@ classdef FileSystemReaderAbstract   % < handle
 
 
 
-    [pathsCa, fmdSdnArray] = get_file_paths_FMD_SDNs(obj, dirsCa);
+    [pathsCa, fmdDtArray] = get_file_paths_FMDs(obj, dirsCa);
 
 
 

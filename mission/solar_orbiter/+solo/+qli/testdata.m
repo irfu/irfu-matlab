@@ -140,6 +140,12 @@ classdef testdata
     % Generate test data which can be used as input to
     % solo.qli.generate_quicklooks_24h_6h_2h() and
     % solo.qli.generate_quicklook_7days().
+    %
+    % Returns test data corresponding to to absent science data.
+    %
+    % NOTE: Always returns
+    % * swaEnergyMetadata (constant metadata found in CDFs)
+    % * SPICE positions
     function Data = generate_empty_test_data(SpacePosTint)
       % NOTE: Data.Vrpw is loaded as a TSeries from .mat files and time interval
       % is then selected with TSeries.tlim(). ==> Empty data is represented as a

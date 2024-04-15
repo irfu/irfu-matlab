@@ -18,11 +18,6 @@
 %   * values = datetime (no timezone) representing relevant FMDs (e.g. most
 %              recent FMDs for all input datasets on the day specified in the
 %              key).
-% IDMRQ = Input Datasets More Recent than QLI
-%   Algorithm for generating array of dates for which to (optionally) generate
-%   QLIs. A day is included if (1) the most recent QLI FMD (for that day) is
-%   more recent than the most recent input dataset (for that day), or (2) there
-%   is no QLI for that day.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -156,7 +151,9 @@ classdef fmd
 
 
 
-    function DaysDtArray = get_days_from_IDMRQ(datasetDirsCa, qliDir, dsiCa, Fsr)
+    % Derive array of dates from the IDMRQ algorithm and reading file system
+    % data.
+    function DaysDtArray = get_days_from_IDMRQ_and_FS(datasetDirsCa, qliDir, dsiCa, Fsr)
       assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
       assert(ischar(qliDir))
 
@@ -165,7 +162,7 @@ classdef fmd
       %=========================================
       % Datasets
       irf.log('n', 'Collecting paths and FMDs for datasets.')
-      [datasetPathsCa, DatasetFmdDtArray] = Fsr.get_file_paths_FMD_SDNs(datasetDirsCa);
+      [datasetPathsCa, DatasetFmdDtArray] = Fsr.get_file_paths_FMDs(datasetDirsCa);
       irf.log('n', 'Obtaining DSMDs from paths.')
       [DsmdArray, bIsDatasetArray]         = solo.adm.paths_to_DSMD_array(datasetPathsCa);
       DatasetFmdDtArray = DatasetFmdDtArray(bIsDatasetArray);
@@ -180,7 +177,7 @@ classdef fmd
       %==============
       % Derive dates
       %==============
-      irf.log('n', 'Determining days for which quicklooks could/should be updated (IDMRQ).')
+      irf.log('n', 'Determining days for which QLIs could/should be updated (IDMRQ).')
       DaysDtArray = solo.qli.batch.fmd.get_days_from_IDMRQ_algorithm(...
         DatasetsDfmdd, QliDfmdd);
 
@@ -189,6 +186,8 @@ classdef fmd
 
 
 
+    % Derive array of dates from the IDMRQ algorithm and arguments containing
+    % file system data.
     function ChangedDatasetsDtArray = get_days_from_IDMRQ_algorithm(...
         DatasetsDfmdd, QliDfmdd)
 
@@ -277,12 +276,12 @@ classdef fmd
     % Given FMDs for paths to potential QLI files, get DFMDD for the most recent
     % QLI FMDs.
     %
-    function Dfmdd = construct_QLI_DFMDD(qliPathsCa, QliFmdDtArray)
+    function Dfmdd = construct_QLI_DFMDD(qliPathsCa, qliFmdDtArray)
       assert(iscell(qliPathsCa))
-      assert(isa(QliFmdDtArray, 'datetime'))
+      assert(isa(qliFmdDtArray, 'datetime'))
       irf.assert.sizes(...
         qliPathsCa,    [-1], ...
-        QliFmdDtArray, [-1])
+        qliFmdDtArray, [-1])
 
       Dfmdd = dictionary(datetime.empty, datetime.empty);
 
@@ -306,7 +305,7 @@ classdef fmd
         % (3) the same path multiple times (should not happen).
         for iDay = 1:numel(FilenameDtArray)
           Dfmdd = solo.qli.batch.utils.dictionary_set_value_max(...
-            Dfmdd, FilenameDtArray(iDay), QliFmdDtArray(iFile));
+            Dfmdd, FilenameDtArray(iDay), qliFmdDtArray(iFile));
         end
       end
     end
@@ -315,10 +314,10 @@ classdef fmd
 
     function QliDfmdd = get_QLI_DFMDD(qliDir, Fsr)
       irf.log('n', 'Collecting paths and FMDs for QLIs.')
-      [qliPathsCa, QliFmdDtArray] = Fsr.get_file_paths_FMD_SDNs({qliDir});
-      QliFmdDtArray = QliFmdDtArray(:);    % Normalize to column vector.
+      [qliPathsCa, qliFmdDtArray] = Fsr.get_file_paths_FMDs({qliDir});
+      qliFmdDtArray = qliFmdDtArray(:);    % Normalize to column vector.
       QliDfmdd      = solo.qli.batch.fmd.construct_QLI_DFMDD(...
-        qliPathsCa, QliFmdDtArray);
+        qliPathsCa, qliFmdDtArray);
     end
 
 

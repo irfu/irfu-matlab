@@ -17,10 +17,6 @@ function generate_quicklook_7days(Data, outputDir1wPath, Tint, logoPath)
 % logoPath
 %     Either path to IRF logo, or empty.
 
-% BUG?: Panel 3/Densities: How does irf_legend() know which colors to use
-%       (legend text should reasonably have the same colors as the curves). Is
-%       it wrong when the first density is missing (no data)?
-
 
 
 tBeginSec = tic();
@@ -30,7 +26,16 @@ tBeginSec = tic();
 LINE_WIDTH       = 1.0;   % irf_plot() line width.
 FONT_SIZE        = 18;    % Font size
 LEGEND_FONT_SIZE = 22;    % irf_legend() font size.
-COLORS           = [
+% Different colors (RGB) to reuse. One color per row.
+% ---------------------------------------------------
+% NOTE: (1) When these colors are used for irf_plot(), they do not automatically
+% match the colors used by irf_legend() unless h(i).ColorOrder is set (which it
+% is not done everywhere). The current COLOR appear to fact the de facto default
+% colors used by irf_legend(). (2) These colors are not always explicitly used
+% for irf_plot() (panel 1, B), but they seem to match the de facto default
+% colors used by irf_plot() anyway. Can therefore not set these arbitrarily
+% unless one also updates the rest of the code.
+COLORS = [
   0 0 0;    % Black
   0 0 1;    % Blue
   1 0 0;    % Red
@@ -131,6 +136,7 @@ if ~isempty(Data.Vpas)
   hold(    h(5), 'on');
   irf_plot(h(5), Data.Vpas.z.tlim(Tint), 'color', COLORS(3,:), 'linewidth', LINE_WIDTH);
 end
+% NOTE: Empty string for first legend string. ==> irf_legend() skips that color (black).
 irf_legend(h(5), {'', 'v_{T}', 'v_{N}'}, [0.98 0.18], 'Fontsize', LEGEND_FONT_SIZE);
 irf_zoom(  h(5), 'y');
 ylabel(    h(5), {'v_{T,N}';'(km/s)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
@@ -165,6 +171,7 @@ if ~isempty(Data.E)
   hold(    h(7), 'on');
   %irf_plot(h(7), data.E.z, 'color', COLORS(3,:), 'linewidth', LWIDTH)
 end
+% NOTE: Empty string for first legend string. ==> irf_legend() skips that color (black).
 irf_legend(h(7), {'', 'E_y'}, [0.98 0.20], 'Fontsize', LEGEND_FONT_SIZE);
 irf_zoom(  h(7), 'y');
 ylabel(    h(7), {'E_{SRF}'; '(mV/m)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
