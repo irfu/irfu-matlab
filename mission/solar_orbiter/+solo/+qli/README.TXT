@@ -50,19 +50,22 @@ DMRQ
     more recent than the most recent input dataset (for that day), or (2) there
     is no QLI for that day.
 DSMD
-    solo.adm.DatasetMetadata
+    Class solo.adm.DatasetMetadata.
+DT
+    datetime (class)
 FMD
     File Modification Date (timestamp).
+    If represented as datetime, then always without TimeZone.
 FSR
-    solo.qli.batch.FileSystemReaderAbstract and subclasses thereof.
+    Class solo.qli.batch.FileSystemReaderAbstract and subclasses thereof.
 GQL
-    solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
+    Class solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
 OFFGEN, "official generation"
     Official Generation of quicklooks for the homepage.
 QLI
     QuickLooks IRFU ("IRFU quicklooks"). In the code it refers to the file
     representations of the quicklooks.
 UFD
-    solo.qli.batch.UmdFmdDictionary
+    Class solo.qli.batch.UmdFmdDictionary. Models dictionary UMD-->FMD.
 UMD
     UTC Midnight Date (timestamp).

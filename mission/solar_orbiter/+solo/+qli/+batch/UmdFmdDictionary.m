@@ -58,7 +58,7 @@ classdef UmdFmdDictionary
       end
 
       % ASSERTIONS
-      solo.qli.utils.assert_UTC_midnight_datetime(DatasetDaysDtArray)
+      solo.qli.utils.assert_UMD_DT(DatasetDaysDtArray)
       assert(isa(FmdDtArray, 'datetime'))
       assert(strcmp(FmdDtArray.TimeZone, ''))
       irf.assert.sizes(...
@@ -88,7 +88,7 @@ classdef UmdFmdDictionary
           assert(isscalar(S.subs))
 
           key = S.subs{1};
-          solo.qli.utils.assert_UTC_midnight_datetime(key);
+          solo.qli.utils.assert_UMD_DT(key);
 
           varargout = {obj.Dict(key)};
 
@@ -111,7 +111,7 @@ classdef UmdFmdDictionary
 
       key = S.subs{1};
 
-      solo.qli.utils.assert_UTC_midnight_datetime(key);
+      solo.qli.utils.assert_UMD_DT(key);
       assert(isa(FmdDt, 'datetime'))
       assert(strcmp(FmdDt.TimeZone, ''))
 

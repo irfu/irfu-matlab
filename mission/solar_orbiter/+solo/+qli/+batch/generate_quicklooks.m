@@ -206,7 +206,7 @@ assert(...
   islogical(generateWeeklyQuicklooks   ) & isscalar(generateWeeklyQuicklooks), ...
   'Argument generateWeeklyQuicklooks is not a scalar logical.')
 assert(iscolumn(DaysDtArray), 'Argument DaysDtArray is not column array (Nx1).')
-solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
+solo.qli.utils.assert_UMD_DT(DaysDtArray)
 assert(isa(Gql, 'solo.qli.batch.GenerateQuicklooksAbstract'))
 
 

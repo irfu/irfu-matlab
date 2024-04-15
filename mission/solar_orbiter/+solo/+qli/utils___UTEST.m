@@ -51,16 +51,16 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_assert_UTC_midnight_datetime(testCase)
+    function test_assert_UMD_DT(testCase)
 
       function test_OK(Dt)
         % Check that does not crash/raise exception.
-        solo.qli.utils.assert_UTC_midnight_datetime(Dt);
+        solo.qli.utils.assert_UMD_DT(Dt);
       end
 
       function test_exc(Dt)
         testCase.verifyError(...
-          @() solo.qli.utils.assert_UTC_midnight_datetime(Dt), ...
+          @() solo.qli.utils.assert_UMD_DT(Dt), ...
           ?MException)
       end
 

@@ -31,13 +31,25 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function generate_quicklooks_interface_offgen(varargin)
+% PROPOSAL: Implement support for reading a config file (e.g. JSON) containing
+%           the values hardcoded in this file. Then abolish the hardcoded values
+%           (in the code).
+%   PROPOSAL: Implement config file support in
+%             solo.qli.batch.generate_quicklooks_interface()
+%             and abolish this wrapper.
+%     CON: Makes it harder to call
+%           solo.qli.batch.generate_quicklooks_interface() from other MATLAB code.
+%       CON: Is not meant to be called by other MATLAB code, except test code.
+%       PRO: Settings.Gql object can not be stored in config file.
+%         CON-PROPOSAL: Create wrapper which only sets GQL.
+%           CON: Yet another file and level in the function call hierarchy.
 
 % IMPLEMENTATION NOTE: Not hardcoding outputPath since this is useful for
 % manual testing of the setup and for manual large-scale processing.
 
 % Path to IRF logo, relative to the irfu-matlab root.
-% NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code still
-% requires it to be located inside the corresponding directory.
+% NOTE: The IRF logo is not part of the irfu-matlab git repo, but this code
+% still requires it to be located inside the corresponding directory.
 IRF_LOGO_RPATH  = 'mission/solar_orbiter/+solo/+qli/+batch/irf_logo.png';
 
 VHT_DIR         = '/data/solo/data_yuri/';

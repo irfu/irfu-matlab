@@ -27,7 +27,7 @@ classdef utils
     % midnight.
     %
     % NOTE: Does not require scalar object.
-    function assert_UTC_midnight_datetime(Dt)
+    function assert_UMD_DT(Dt)
       assert(isa(Dt, 'datetime'))
       assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'), ...
         'datetime object is not TimeZone=UTC.')
@@ -37,7 +37,7 @@ classdef utils
 
 
 
-    % Convert strings YYYY-MM-DD to UTC datetime object with timestamp at
+    % Convert string(s) YYYY-MM-DD to UTC datetime object with timestamp at
     % midnight. (E.g. format 2024-01-01T00:00:00.000Z does NOT work,
     % deliberately)
     %
@@ -51,8 +51,8 @@ classdef utils
     % =========
     % strCa
     %       Either
-    %       (1) Cell array of strings (timestamps for corresponding elements).
-    %       (2) String (one timestamp)
+    %       (1) String (one timestamp)
+    %       (2) Cell array of strings (timestamps for corresponding elements).
     function Dt = umddt(strCa)
       assert(iscell(strCa) || ischar(strCa))
       % NOTE: datetime() also accepts other datetime objects, with any
@@ -83,7 +83,7 @@ classdef utils
     %       the week (contiguous 7-day period) which begins at that timestamp.
     %
     function WeekDtArray = derive_weeks(DayDtArray, firstDayOfWeek)
-      solo.qli.utils.assert_UTC_midnight_datetime(DayDtArray)
+      solo.qli.utils.assert_UMD_DT(DayDtArray)
       assert(iscolumn(DayDtArray))
 
       % Find nearest previous day with specified weekday

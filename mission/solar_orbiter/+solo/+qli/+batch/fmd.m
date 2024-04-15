@@ -170,7 +170,7 @@ classdef fmd
       DaysDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_algorithm(...
         DatasetsUfd, QliUfd);
 
-      solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
+      solo.qli.utils.assert_UMD_DT(DaysDtArray)
     end
 
 
@@ -180,15 +180,12 @@ classdef fmd
     function ChangedDatasetsDtArray = get_days_from_DMRQ_algorithm(...
         DatasetsUfd, QliUfd)
 
-      % IMPLEMENTATION NOTE: An empty dictionary can not specify timezone in
-      % keys/values. Must therefore always normalize to UTC first.
       AllDatasetsDtArray = intersect(...
-        datetime(DatasetsUfd.DaysDtArray(), 'TimeZone', 'UTCLeapSeconds'), ...
-        datetime(QliUfd.DaysDtArray(),      'TimeZone', 'UTCLeapSeconds'));
+        DatasetsUfd.DaysDtArray(), QliUfd.DaysDtArray());
 
       % Preallocate.
       ChangedDatasetsDtArray = NaT(...
-        [numel(AllDatasetsDtArray), 1], 'TimeZone', 'UTCLeapSeconds');
+        size((AllDatasetsDtArray)), 'TimeZone', 'UTCLeapSeconds');
 
       nChangedDatasets = 0;
       for iDatasetDt = 1:numel(AllDatasetsDtArray)

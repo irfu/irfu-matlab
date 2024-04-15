@@ -99,7 +99,7 @@ classdef interface
     function DaysDtArray = filter_days_array(...
         DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
 
-      solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
+      solo.qli.utils.assert_UMD_DT(DaysDtArray)
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
@@ -166,8 +166,8 @@ classdef interface
       EndDayExclDt   = solo.qli.utils.umddt(endDayUtcExclStr);
 
       % NOTE: Indirectly assertion on the string timestamps.
-      solo.qli.utils.assert_UTC_midnight_datetime(BeginDayInclDt)
-      solo.qli.utils.assert_UTC_midnight_datetime(EndDayExclDt)
+      solo.qli.utils.assert_UMD_DT(BeginDayInclDt)
+      solo.qli.utils.assert_UMD_DT(EndDayExclDt)
 
 
 
