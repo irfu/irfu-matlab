@@ -264,15 +264,15 @@ classdef fmd___UTEST < matlab.unittest.TestCase
 
       function test(datasetPathsCa, fmdStrCa, dsiCa, expDaysStrCa, expFmdStrCa)
         [DsmdArray, ~] = solo.adm.paths_to_DSMD_array(datasetPathsCa);
-        FmdDtArray = datetime(fmdStrCa);
-        ExpDayFmdDict = dictionary(...
+        FmdDtArray     = datetime(fmdStrCa);
+        ExpDfmdd       = dictionary(...
           solo.qli.utils.umdt(expDaysStrCa), ...
           datetime(           expFmdStrCa));
 
-        ActDayFmdDict = solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs(...
+        ActDfmdd = solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs(...
           DsmdArray, FmdDtArray, dsiCa);
 
-        testCase.assertEqual(ActDayFmdDict, ExpDayFmdDict)
+        testCase.assertEqual(ActDfmdd, ExpDfmdd)
       end
 
       %=========================================================================
@@ -314,11 +314,11 @@ classdef fmd___UTEST < matlab.unittest.TestCase
 
     function test_construct_QLI_DFMDD(testCase)
 
-      function test(qliPathsCa, QliFmdDtArray, ExpDayFmdDict)
-        ActDayFmdDict = solo.qli.batch.fmd.construct_QLI_DFMDD(...
+      function test(qliPathsCa, QliFmdDtArray, ExpDfmdd)
+        ActDfmdd = solo.qli.batch.fmd.construct_QLI_DFMDD(...
           qliPathsCa, QliFmdDtArray);
 
-        testCase.assertEqual(ActDayFmdDict, ExpDayFmdDict)
+        testCase.assertEqual(ActDfmdd, ExpDfmdd)
       end
 
       %=========================================================================

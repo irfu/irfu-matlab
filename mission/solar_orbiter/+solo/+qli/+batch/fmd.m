@@ -83,6 +83,8 @@ classdef fmd
   % PROPOSAL: Merge in more of the related functionality from the one call into
   %   solo.qli.batch.fmdget_dataset_DFMDD_for_all_DSIs(),
   %
+  % PROPOSAL: Class for DFMDDs.
+  %
   %
   %
   % ~BUG: Bad thinking: Implementetion checks for *all* DSIs in *all* specified
