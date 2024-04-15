@@ -61,12 +61,28 @@ classdef utils   % < handle
 
     % ~Generic dictionary utility function.
     %
-    % Set one dictionary key value. In case of key collision, use the greatest
-    % value.
+    % Set one dictionary key value. In case of key collision, use the smaller of
+    % the old and new value.
     %
-    function Dict = dictionary_set_value_max(...
-        Dict, key, newValue)
+    function Dict = dictionary_set_value_min(Dict, key, newValue)
+      if Dict.isKey(key)
+        oldValue = Dict(key);
+        if oldValue > newValue
+          Dict(key) = newValue;
+        end
+      else
+        Dict(key) = newValue;
+      end
+    end
 
+
+
+    % ~Generic dictionary utility function.
+    %
+    % Set one dictionary key value. In case of key collision, use the larger of
+    % the old and new value.
+    %
+    function Dict = dictionary_set_value_max(Dict, key, newValue)
       if Dict.isKey(key)
         oldValue = Dict(key);
         if oldValue < newValue

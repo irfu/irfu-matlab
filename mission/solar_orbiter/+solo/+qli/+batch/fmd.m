@@ -304,7 +304,7 @@ classdef fmd
         % (2) the same filename in multiple locations (should not happen), and
         % (3) the same path multiple times (should not happen).
         for iDay = 1:numel(FilenameDtArray)
-          Dfmdd = solo.qli.batch.utils.dictionary_set_value_max(...
+          Dfmdd = solo.qli.batch.utils.dictionary_set_value_min(...
             Dfmdd, FilenameDtArray(iDay), qliFmdDtArray(iFile));
         end
       end
