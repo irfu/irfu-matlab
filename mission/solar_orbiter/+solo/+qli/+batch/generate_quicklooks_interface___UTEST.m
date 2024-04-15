@@ -127,8 +127,8 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
           ExpDt7daysArray   = solo.qli.const.EMPTY_DT_ARRAY;
 
         case 'GENERATE'
-          ExpDt24h6h2hArray = solo.qli.utils.umdt('2024-01-01') + caldays([0:2]');
-          ExpDt7daysArray   = solo.qli.utils.umdt('2023-12-27') + calweeks([0:1]');
+          ExpDt24h6h2hArray = solo.qli.utils.umddt('2024-01-01') + caldays([0:2]');
+          ExpDt7daysArray   = solo.qli.utils.umddt('2023-12-27') + calweeks([0:1]');
 
         otherwise
           error('')

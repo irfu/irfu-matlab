@@ -53,7 +53,7 @@ classdef utils
     %       Either
     %       (1) Cell array of strings (timestamps for corresponding elements).
     %       (2) String (one timestamp)
-    function Dt = umdt(strCa)
+    function Dt = umddt(strCa)
       assert(iscell(strCa) || ischar(strCa))
       % NOTE: datetime() also accepts other datetime objects, with any
       % time-of-day. "Must" therefore forbid.

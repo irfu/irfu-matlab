@@ -104,8 +104,8 @@ classdef interface
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
-      Dt1      = solo.qli.utils.umdt(beginDayUtcInclStr);
-      Dt2      = solo.qli.utils.umdt(endDayUtcExclStr);
+      Dt1      = solo.qli.utils.umddt(beginDayUtcInclStr);
+      Dt2      = solo.qli.utils.umddt(endDayUtcExclStr);
       maxNDays = str2double(maxNDaysStr);
 
       if ~isnumeric(maxNDays)
@@ -162,8 +162,8 @@ classdef interface
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
-      BeginDayInclDt = solo.qli.utils.umdt(beginDayUtcInclStr);
-      EndDayExclDt   = solo.qli.utils.umdt(endDayUtcExclStr);
+      BeginDayInclDt = solo.qli.utils.umddt(beginDayUtcInclStr);
+      EndDayExclDt   = solo.qli.utils.umddt(endDayUtcExclStr);
 
       % NOTE: Indirectly assertion on the string timestamps.
       solo.qli.utils.assert_UTC_midnight_datetime(BeginDayInclDt)

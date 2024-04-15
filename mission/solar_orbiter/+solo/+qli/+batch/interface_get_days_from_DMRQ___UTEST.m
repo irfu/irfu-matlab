@@ -44,7 +44,7 @@ classdef interface_get_days_from_DMRQ___UTEST < matlab.unittest.TestCase
         {'/data'}, '/qli', Fsr, ...
         {'999', '2000-01-01', '2099-01-01'});
 
-      testCase.assertEqual(ActDaysDtArray, solo.qli.utils.umdt({'2024-01-01'}))
+      testCase.assertEqual(ActDaysDtArray, solo.qli.utils.umddt({'2024-01-01'}))
     end
 
 
