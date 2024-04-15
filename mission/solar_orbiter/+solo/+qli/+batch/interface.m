@@ -294,12 +294,12 @@ classdef interface
       startInclFmdDt = datetime(algorithmArgumentsCa{2});
       stopExclFmdDt  = datetime(algorithmArgumentsCa{3});
 
-      QliDfmdd = solo.qli.batch.fmd.get_days_from_QLI_FMD_interval( ...
+      QliUfd = solo.qli.batch.fmd.get_days_from_QLI_FMD_interval( ...
         qliDir, startInclFmdDt, stopExclFmdDt, Fsr);
-      if QliDfmdd.n == 0
+      if QliUfd.n == 0
         DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
       else
-        DaysDtArray = QliDfmdd.DaysDtArray;
+        DaysDtArray = QliUfd.DaysDtArray;
       end
 
       DaysDtArray = solo.qli.batch.interface.filter_days_array(...

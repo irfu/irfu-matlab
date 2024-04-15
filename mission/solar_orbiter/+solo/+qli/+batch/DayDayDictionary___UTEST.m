@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for solo.qli.batch.DayDayDictionary.
+% matlab.unittest automatic test code for solo.qli.batch.UmdFmdDictionary.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef DayDayDictionary___UTEST < matlab.unittest.TestCase
+classdef UmdFmdDictionary___UTEST < matlab.unittest.TestCase
 
 
 
@@ -67,18 +67,18 @@ classdef DayDayDictionary___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(sort(Dfmdd.FmdDtArray),  sort([C.FMD_1; C.FMD_2]))
       end
 
-      Dfmdd = solo.qli.batch.DayDayDictionary();
+      Dfmdd = solo.qli.batch.UmdFmdDictionary();
       testCase.assertEqual(Dfmdd.n, 0)
       testCase.assertEqual(Dfmdd.DaysDtArray, solo.qli.const.EMPTY_DT_ARRAY)
       testCase.assertEqual(Dfmdd.FmdDtArray,  datetime.empty(0, 1))
 
       Dfmdd(C.UMD_1) = C.FMD_1;
-      Dfmdd2 = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_1);
+      Dfmdd2 = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_1);
       assert_DFMDD_1(Dfmdd)
       assert_DFMDD_1(Dfmdd2)
 
       Dfmdd(C.UMD_2) = C.FMD_2;
-      Dfmdd2 = solo.qli.batch.DayDayDictionary([C.UMD_1; C.UMD_2], [C.FMD_1; C.FMD_2]);
+      Dfmdd2 = solo.qli.batch.UmdFmdDictionary([C.UMD_1; C.UMD_2], [C.FMD_1; C.FMD_2]);
       assert_DFMDD_2(Dfmdd)
       assert_DFMDD_2(Dfmdd2)
     end
@@ -88,17 +88,17 @@ classdef DayDayDictionary___UTEST < matlab.unittest.TestCase
     function test_isequal(testCase)
       C = testCase.C;
 
-      Dfmdd1 = solo.qli.batch.DayDayDictionary();
-      Dfmdd2 = solo.qli.batch.DayDayDictionary();
+      Dfmdd1 = solo.qli.batch.UmdFmdDictionary();
+      Dfmdd2 = solo.qli.batch.UmdFmdDictionary();
       testCase.assertTrue(isequal(Dfmdd1, Dfmdd2))
 
-      Dfmdd1 = solo.qli.batch.DayDayDictionary(...
+      Dfmdd1 = solo.qli.batch.UmdFmdDictionary(...
         [C.UMD_1; C.UMD_2], [C.FMD_1; C.FMD_2]);
-      Dfmdd2 = solo.qli.batch.DayDayDictionary(...
+      Dfmdd2 = solo.qli.batch.UmdFmdDictionary(...
         [C.UMD_1; C.UMD_2], [C.FMD_1; C.FMD_2]);
-      Dfmdd3 = solo.qli.batch.DayDayDictionary(...
+      Dfmdd3 = solo.qli.batch.UmdFmdDictionary(...
         [C.UMD_2; C.UMD_1], [C.FMD_2; C.FMD_1]);
-      Dfmdd4 = solo.qli.batch.DayDayDictionary(...
+      Dfmdd4 = solo.qli.batch.UmdFmdDictionary(...
         [C.UMD_2], [C.FMD_2]);
       testCase.assertTrue(isequal(Dfmdd1, Dfmdd2))
       testCase.assertTrue(isequal(Dfmdd1, Dfmdd3))
@@ -110,13 +110,13 @@ classdef DayDayDictionary___UTEST < matlab.unittest.TestCase
     function test_set_if_smaller(testCase)
       C = testCase.C;
 
-      Dfmdd    = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_2);
-      ExpDfmdd = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_2);
+      Dfmdd    = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_2);
+      ExpDfmdd = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_2);
       Dfmdd = Dfmdd.set_if_smaller(              C.UMD_1, C.FMD_3);
       testCase.assertEqual(Dfmdd, ExpDfmdd)
 
-      Dfmdd    = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_2);
-      ExpDfmdd = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_1);
+      Dfmdd    = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_2);
+      ExpDfmdd = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_1);
       Dfmdd = Dfmdd.set_if_smaller(              C.UMD_1, C.FMD_1);
       testCase.assertEqual(Dfmdd, ExpDfmdd)
     end
@@ -126,13 +126,13 @@ classdef DayDayDictionary___UTEST < matlab.unittest.TestCase
     function test_set_if_greater(testCase)
       C = testCase.C;
 
-      Dfmdd    = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_2);
-      ExpDfmdd = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_3);
+      Dfmdd    = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_2);
+      ExpDfmdd = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_3);
       Dfmdd = Dfmdd.set_if_greater(              C.UMD_1, C.FMD_3);
       testCase.assertEqual(Dfmdd, ExpDfmdd)
 
-      Dfmdd    = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_2);
-      ExpDfmdd = solo.qli.batch.DayDayDictionary(C.UMD_1, C.FMD_2);
+      Dfmdd    = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_2);
+      ExpDfmdd = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_2);
       Dfmdd = Dfmdd.set_if_greater(              C.UMD_1, C.FMD_1);
       testCase.assertEqual(Dfmdd, ExpDfmdd)
     end
@@ -143,7 +143,7 @@ classdef DayDayDictionary___UTEST < matlab.unittest.TestCase
     function test_merge_max(testCase)
 
       function test(DfmddCa, ExpDfmdd)
-        ActDfmdd = solo.qli.batch.DayDayDictionary.merge_max(...
+        ActDfmdd = solo.qli.batch.UmdFmdDictionary.merge_max(...
           DfmddCa);
 
         testCase.assertEqual(ActDfmdd, ExpDfmdd)
@@ -173,42 +173,42 @@ classdef DayDayDictionary___UTEST < matlab.unittest.TestCase
 
       test(...
         cell(0, 1), ...
-        solo.qli.batch.DayDayDictionary())
+        solo.qli.batch.UmdFmdDictionary())
 
       test(...
-        {solo.qli.batch.DayDayDictionary()}, ...
-        solo.qli.batch.DayDayDictionary())
+        {solo.qli.batch.UmdFmdDictionary()}, ...
+        solo.qli.batch.UmdFmdDictionary())
 
       test_perm(...
         { ...
-        solo.qli.batch.DayDayDictionary(); ...
-        solo.qli.batch.DayDayDictionary(UMD_1, FMD_1)
+        solo.qli.batch.UmdFmdDictionary(); ...
+        solo.qli.batch.UmdFmdDictionary(UMD_1, FMD_1)
         }, ...
-        solo.qli.batch.DayDayDictionary(UMD_1, FMD_1))
+        solo.qli.batch.UmdFmdDictionary(UMD_1, FMD_1))
 
       test_perm(...
         { ...
-        solo.qli.batch.DayDayDictionary(UMD_1, FMD_1);
-        solo.qli.batch.DayDayDictionary(UMD_2, FMD_2) ...
+        solo.qli.batch.UmdFmdDictionary(UMD_1, FMD_1);
+        solo.qli.batch.UmdFmdDictionary(UMD_2, FMD_2) ...
         }, ...
-        solo.qli.batch.DayDayDictionary([UMD_1; UMD_2], [FMD_1; FMD_2]))
+        solo.qli.batch.UmdFmdDictionary([UMD_1; UMD_2], [FMD_1; FMD_2]))
 
       test_perm(...
         { ...
-        solo.qli.batch.DayDayDictionary(UMD_1, FMD_1);
-        solo.qli.batch.DayDayDictionary(UMD_1, FMD_2) ...
+        solo.qli.batch.UmdFmdDictionary(UMD_1, FMD_1);
+        solo.qli.batch.UmdFmdDictionary(UMD_1, FMD_2) ...
         }, ...
-        solo.qli.batch.DayDayDictionary(UMD_1, FMD_2))
+        solo.qli.batch.UmdFmdDictionary(UMD_1, FMD_2))
 
       test_perm(...
         { ...
-        %solo.qli.batch.DayDayDictionary([1, 3, 4], [11, 6, 8]);
-        %solo.qli.batch.DayDayDictionary([2, 3, 4], [22, 5, 9]) ...
-        solo.qli.batch.DayDayDictionary(UMD_1+caldays([1; 3; 4]), FMD_1+caldays([11; 6; 8]));
-        solo.qli.batch.DayDayDictionary(UMD_1+caldays([2; 3; 4]), FMD_1+caldays([22; 5; 9])) ...
+        %solo.qli.batch.UmdFmdDictionary([1, 3, 4], [11, 6, 8]);
+        %solo.qli.batch.UmdFmdDictionary([2, 3, 4], [22, 5, 9]) ...
+        solo.qli.batch.UmdFmdDictionary(UMD_1+caldays([1; 3; 4]), FMD_1+caldays([11; 6; 8]));
+        solo.qli.batch.UmdFmdDictionary(UMD_1+caldays([2; 3; 4]), FMD_1+caldays([22; 5; 9])) ...
         }, ...
-        solo.qli.batch.DayDayDictionary(UMD_1+caldays([1; 2; 3; 4]), FMD_1+caldays([11; 22; 6; 9])))
-        %solo.qli.batch.DayDayDictionary([1, 2, 3, 4], [11, 22, 6, 9]))
+        solo.qli.batch.UmdFmdDictionary(UMD_1+caldays([1; 2; 3; 4]), FMD_1+caldays([11; 22; 6; 9])))
+        %solo.qli.batch.UmdFmdDictionary([1, 2, 3, 4], [11, 22, 6, 9]))
     end
 
 

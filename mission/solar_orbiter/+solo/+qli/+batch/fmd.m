@@ -8,18 +8,6 @@
 % filenames), and (2) timestamps referring to FMDs (~local time; not UTC).
 %
 %
-% ADDITIONAL NAMING CONVENTIONS
-% =============================
-% DFMDD
-%   Day-to-FMD Dictionary.
-%   Dictionary with
-%   * keys   = datetime (UTC; midnight) representing specific days of measured
-%              data
-%   * values = datetime (no timezone) representing relevant FMDs (e.g. most
-%              recent FMDs for all input datasets on the day specified in the
-%              key).
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef fmd
@@ -78,12 +66,10 @@ classdef fmd
   %     NOTE: Can yield multiple day files due to midnight overlap.
   %
   % PROPOSAL: Merge
-  %   solo.qli.batch.fmd.construct_QLI_DFMDD()
-  %   solo.qli.batch.fmd.get_QLI_DFMDD()
+  %   solo.qli.batch.fmd.construct_QLI_UFD()
+  %   solo.qli.batch.fmd.get_QLI_UFD()
   % PROPOSAL: Merge in more of the related functionality from the one call into
-  %   solo.qli.batch.fmdget_dataset_DFMDD_for_all_DSIs(),
-  %
-  % PROPOSAL: Class for DFMDDs.
+  %   solo.qli.batch.fmdget_dataset_UFD_for_all_DSIs(),
   %
   %
   %
@@ -124,30 +110,30 @@ classdef fmd
 
 
 
-    function QliDfmdd = get_days_from_QLI_FMD_interval(qliDir, startInclFmdDt, stopExclFmdDt, Fsr)
+    function QliUfd = get_days_from_QLI_FMD_interval(qliDir, startInclFmdDt, stopExclFmdDt, Fsr)
       assert(startInclFmdDt <= stopExclFmdDt)
 
-      QliDfmdd = solo.qli.batch.fmd.get_QLI_DFMDD(qliDir, Fsr);
-      QliDfmdd = solo.qli.batch.fmd.filter_DFMDD_by_FMD(QliDfmdd, startInclFmdDt, stopExclFmdDt);
+      QliUfd = solo.qli.batch.fmd.get_QLI_UFD(qliDir, Fsr);
+      QliUfd = solo.qli.batch.fmd.filter_UFD_by_FMD(QliUfd, startInclFmdDt, stopExclFmdDt);
     end
 
 
 
-    % For a given a DFMDD, filter it to only keep the FMDs in a certain range.
-    function QliDfmdd2 = filter_DFMDD_by_FMD(QliDfmdd1, startInclFmdDt, stopExclFmdDt)
+    % For a given a UFD, filter it to only keep the FMDs in a certain range.
+    function QliUfd2 = filter_UFD_by_FMD(QliUfd1, startInclFmdDt, stopExclFmdDt)
       assert(strcmp(startInclFmdDt.TimeZone, ''))
       assert(strcmp(stopExclFmdDt.TimeZone,  ''))
 
-      QliDfmdd2 = solo.qli.batch.DayDayDictionary();
+      QliUfd2 = solo.qli.batch.UmdFmdDictionary();
 
-      DayDtArray = QliDfmdd1.DaysDtArray();
-      FmdDtArray = QliDfmdd1.FmdDtArray();
-      for i = 1:QliDfmdd1.n
+      DayDtArray = QliUfd1.DaysDtArray();
+      FmdDtArray = QliUfd1.FmdDtArray();
+      for i = 1:QliUfd1.n
         DayDt = DayDtArray(i);
         FmdDt = FmdDtArray(i);
 
         if (startInclFmdDt <= FmdDt) && (FmdDt < stopExclFmdDt)
-          QliDfmdd2(DayDt) = FmdDt;
+          QliUfd2(DayDt) = FmdDt;
         end
       end
     end
@@ -170,19 +156,19 @@ classdef fmd
       [DsmdArray, bIsDatasetArray]         = solo.adm.paths_to_DSMD_array(datasetPathsCa);
       DatasetFmdDtArray = DatasetFmdDtArray(bIsDatasetArray);
       DatasetFmdDtArray = DatasetFmdDtArray(:);
-      DatasetsDfmdd = solo.qli.batch.fmd.get_dataset_DFMDD_for_all_DSIs(...
+      DatasetsUfd = solo.qli.batch.fmd.get_dataset_UFD_for_all_DSIs(...
         DsmdArray, DatasetFmdDtArray, dsiCa);
 
       % QLIs
       irf.log('n', 'Collecting paths and FMDs for QLIs.')
-      QliDfmdd = solo.qli.batch.fmd.get_QLI_DFMDD(qliDir, Fsr);
+      QliUfd = solo.qli.batch.fmd.get_QLI_UFD(qliDir, Fsr);
 
       %==============
       % Derive dates
       %==============
       irf.log('n', 'Determining days for which QLIs could/should be updated (DMRQ).')
       DaysDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_algorithm(...
-        DatasetsDfmdd, QliDfmdd);
+        DatasetsUfd, QliUfd);
 
       solo.qli.utils.assert_UTC_midnight_datetime(DaysDtArray)
     end
@@ -192,13 +178,13 @@ classdef fmd
     % Derive array of dates from the DMRQ algorithm and arguments containing
     % file system data.
     function ChangedDatasetsDtArray = get_days_from_DMRQ_algorithm(...
-        DatasetsDfmdd, QliDfmdd)
+        DatasetsUfd, QliUfd)
 
       % IMPLEMENTATION NOTE: An empty dictionary can not specify timezone in
       % keys/values. Must therefore always normalize to UTC first.
       AllDatasetsDtArray = intersect(...
-        datetime(DatasetsDfmdd.DaysDtArray(), 'TimeZone', 'UTCLeapSeconds'), ...
-        datetime(QliDfmdd.DaysDtArray(),      'TimeZone', 'UTCLeapSeconds'));
+        datetime(DatasetsUfd.DaysDtArray(), 'TimeZone', 'UTCLeapSeconds'), ...
+        datetime(QliUfd.DaysDtArray(),      'TimeZone', 'UTCLeapSeconds'));
 
       % Preallocate.
       ChangedDatasetsDtArray = NaT(...
@@ -208,7 +194,7 @@ classdef fmd
       for iDatasetDt = 1:numel(AllDatasetsDtArray)
         DatasetDt = AllDatasetsDtArray(iDatasetDt);
 
-        if DatasetsDfmdd(DatasetDt) >= QliDfmdd(DatasetDt)
+        if DatasetsUfd(DatasetDt) >= QliUfd(DatasetDt)
           nChangedDatasets = nChangedDatasets + 1;
           ChangedDatasetsDtArray(nChangedDatasets, 1) = DatasetDt;
         end
@@ -219,22 +205,22 @@ classdef fmd
 
 
 
-    % Given DSMDs and corresponding FMDs, get DFMDD for the most recent dataset
+    % Given DSMDs and corresponding FMDs, get UFD for the most recent dataset
     % FMDs for multiple DSIs.
-    function Dfmdd = get_dataset_DFMDD_for_all_DSIs(DsmdArray, FmdDtArray, dsiCa)
-      DfmddCa = cell(0, 1);
+    function Ufd = get_dataset_UFD_for_all_DSIs(DsmdArray, FmdDtArray, dsiCa)
+      UfdCa = cell(0, 1);
 
       for iDsi = 1:numel(dsiCa)
-        DfmddCa{iDsi, 1} = solo.qli.batch.fmd.get_dataset_DFMDD_for_one_DSI(...
+        UfdCa{iDsi, 1} = solo.qli.batch.fmd.get_dataset_UFD_for_one_DSI(...
           DsmdArray, FmdDtArray, dsiCa{iDsi});
       end
 
-      Dfmdd = solo.qli.batch.DayDayDictionary.merge_max(DfmddCa);
+      Ufd = solo.qli.batch.UmdFmdDictionary.merge_max(UfdCa);
     end
 
 
 
-    % Given DSMDs and corresponding FMDs, get DFMDD for the most recent dataset
+    % Given DSMDs and corresponding FMDs, get UFD for the most recent dataset
     % FMDs for one specific DSI.
     %
     % ARGUMENTS
@@ -242,7 +228,7 @@ classdef fmd
     % FmdDtArray
     %       Column array of FMDs for every DSMD.
     %
-    function Dfmdd = get_dataset_DFMDD_for_one_DSI(DsmdArray, FmdDtArray, dsi)
+    function Ufd = get_dataset_UFD_for_one_DSI(DsmdArray, FmdDtArray, dsi)
       assert(isa(DsmdArray,  'solo.adm.DSMD'))
       assert(isa(FmdDtArray, 'datetime')     )
       assert(ischar(dsi))
@@ -254,7 +240,7 @@ classdef fmd
       DsmdArray  = DsmdArray(bKeep);
       FmdDtArray = FmdDtArray(bKeep);
 
-      Dfmdd      = solo.qli.batch.DayDayDictionary();
+      Ufd      = solo.qli.batch.UmdFmdDictionary();
 
       for iDsmd = 1:numel(DsmdArray)
         % IMPLEMENTATION NOTE: Handle datasets which cover an arbitrary length
@@ -267,25 +253,24 @@ classdef fmd
         DatasetDtArray = DatasetDt1:caldays(1):DatasetDt2;
 
         for iDatasetDt = 1:numel(DatasetDtArray)
-          Dfmdd = Dfmdd.set_if_greater(DatasetDtArray(iDatasetDt), FmdDtArray(iDsmd));
+          Ufd = Ufd.set_if_greater(DatasetDtArray(iDatasetDt), FmdDtArray(iDsmd));
         end
       end
     end
 
 
 
-    % Given FMDs for paths to potential QLI files, get DFMDD for the most recent
+    % Given FMDs for paths to potential QLI files, get UFD for the most recent
     % QLI FMDs.
     %
-    function Dfmdd = construct_QLI_DFMDD(qliPathsCa, qliFmdDtArray)
+    function Ufd = construct_QLI_UFD(qliPathsCa, qliFmdDtArray)
       assert(iscell(qliPathsCa))
       assert(isa(qliFmdDtArray, 'datetime'))
       irf.assert.sizes(...
         qliPathsCa,    [-1], ...
         qliFmdDtArray, [-1])
 
-      %Dfmdd = dictionary(datetime.empty, datetime.empty);
-      Dfmdd = solo.qli.batch.DayDayDictionary();
+      Ufd = solo.qli.batch.UmdFmdDictionary();
 
       for iFile = 1:numel(qliPathsCa)
         [FilenameDt1, FilenameDt2] = solo.qli.utils.parse_quicklook_filename(...
@@ -306,18 +291,18 @@ classdef fmd
         % (2) the same filename in multiple locations (should not happen), and
         % (3) the same path multiple times (should not happen).
         for iDay = 1:numel(FilenameDtArray)
-          Dfmdd = Dfmdd.set_if_smaller(FilenameDtArray(iDay), qliFmdDtArray(iFile));
+          Ufd = Ufd.set_if_smaller(FilenameDtArray(iDay), qliFmdDtArray(iFile));
         end
       end
     end
 
 
 
-    function QliDfmdd = get_QLI_DFMDD(qliDir, Fsr)
+    function QliUfd = get_QLI_UFD(qliDir, Fsr)
       irf.log('n', 'Collecting paths and FMDs for QLIs.')
       [qliPathsCa, qliFmdDtArray] = Fsr.get_file_paths_FMDs({qliDir});
       qliFmdDtArray = qliFmdDtArray(:);    % Normalize to column vector.
-      QliDfmdd      = solo.qli.batch.fmd.construct_QLI_DFMDD(...
+      QliUfd      = solo.qli.batch.fmd.construct_QLI_UFD(...
         qliPathsCa, qliFmdDtArray);
     end
 

@@ -62,5 +62,7 @@ OFFGEN, "official generation"
 QLI
     QuickLooks IRFU ("IRFU quicklooks"). In the code it refers to the file
     representations of the quicklooks.
+UFD
+    solo.qli.batch.UmdFmdDictionary
 UMD
     UTC Midnight Date (timestamp).

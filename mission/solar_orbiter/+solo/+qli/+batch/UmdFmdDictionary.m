@@ -8,14 +8,14 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef DayDayDictionary
+classdef UmdFmdDictionary
   % PROPOSAL: Better name,
   %   day, datasets, FMD, midnight, UTC
   %   DayFmdDictionary = DFD
   %   DataDayFmdDictionary = DDFD
-  %   UmdtFmddtDictionary  = UFDictionary = UFD
+  %   UmdFmdDictionary  = UFDictionary = UFD
   %
-  % PROBLEM: Property "Dict" is not pricate despite that it should be.
+  % PROBLEM: Property "Dict" is not private despite that it should be.
 
 
 
@@ -45,7 +45,7 @@ classdef DayDayDictionary
 
 
     % Asserts that there are no duplicate constructor input data days.
-    function obj = DayDayDictionary(varargin)
+    function obj = UmdFmdDictionary(varargin)
 
       if numel(varargin) == 0
         DatasetDaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
@@ -120,13 +120,13 @@ classdef DayDayDictionary
 
 
 
-    function isEqual = isequal(obj, otherDfmdd)
-      if ~isa(obj, 'solo.qli.batch.DayDayDictionary')
+    function isEqual = isequal(obj, otherUfd)
+      if ~isa(obj, 'solo.qli.batch.UmdFmdDictionary')
         isEqual = false;
-      elseif ~isa(otherDfmdd, 'solo.qli.batch.DayDayDictionary')
+      elseif ~isa(otherUfd, 'solo.qli.batch.UmdFmdDictionary')
         isEqual = false;
       else
-        isEqual = isequal(obj.Dict, otherDfmdd.Dict);
+        isEqual = isequal(obj.Dict, otherUfd.Dict);
       end
     end
 
@@ -220,26 +220,26 @@ classdef DayDayDictionary
 
 
 
-    % Merge arbitrary number of DFMDDs into one. Only keep the greatest value
+    % Merge arbitrary number of UFDs into one. Only keep the greatest value
     % when there are key collisions.
     %
-    function Dfmdd = merge_max(DfmddCa)
-      assert(iscell(DfmddCa))
+    function Ufd = merge_max(UfdCa)
+      assert(iscell(UfdCa))
 
-      OutputDfmmd = solo.qli.batch.DayDayDictionary();
+      OutputDfmmd = solo.qli.batch.UmdFmdDictionary();
 
-      for iDfmdd = 1:numel(DfmddCa)
-        InputDfmdd  = DfmddCa{iDfmdd};
+      for iUfd = 1:numel(UfdCa)
+        InputUfd  = UfdCa{iUfd};
 
-        DayDtArray = InputDfmdd.DaysDtArray();
-        FmdDtArray = InputDfmdd.FmdDtArray();
+        DayDtArray = InputUfd.DaysDtArray();
+        FmdDtArray = InputUfd.FmdDtArray();
 
         for iKey = 1:numel(DayDtArray)
           OutputDfmmd = OutputDfmmd.set_if_greater(DayDtArray(iKey), FmdDtArray(iKey));
         end
       end
 
-      Dfmdd = OutputDfmmd;
+      Ufd = OutputDfmmd;
     end
 
 
