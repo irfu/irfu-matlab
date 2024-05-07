@@ -156,6 +156,8 @@ DSI
     analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
+DT
+    MATLAB datetime object.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).
