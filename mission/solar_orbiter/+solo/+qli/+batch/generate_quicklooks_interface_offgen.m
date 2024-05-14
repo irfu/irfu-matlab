@@ -19,7 +19,8 @@
 % =========
 % varargin
 %       Arguments which are passed on to
-%       solo.qli.batch.generate_quicklooks_interface() (all but "Settings").
+%       solo.qli.batch.generate_quicklooks_interface() (all arguments to that
+%       function except "Settings").
 %
 %
 % RETURN VALUES
@@ -33,6 +34,7 @@ function generate_quicklooks_interface_offgen(varargin)
 % PROPOSAL: Implement support for reading a config file (e.g. JSON) containing
 %           the values hardcoded in this file. Then abolish the hardcoded values
 %           (in the code).
+%   PRO: No hardcoded setup-dependent values in code.
 %   PROPOSAL: Implement config file support in
 %             solo.qli.batch.generate_quicklooks_interface()
 %             and abolish this wrapper.

@@ -3,7 +3,7 @@
 % select dates, e.g. specify range, derive from logs, derive from file
 % modification dates etc.
 %
-% NOTE: The function is intended for batch generating quicklooks, in particular
+% NOTE: This function is intended for batch generating quicklooks, in particular
 %       by being called from another, custom MATLAB function which specifies
 %       (hardcodes) the relevant system setup and initializes "SolO DB", and
 %       which is in turn called by a bash script.
@@ -63,8 +63,10 @@ function generate_quicklooks_interface(...
 %   Is not meant to be called from bash, but almost. The exception is settings.
 %   ~bash
 %   ~interface
+%     CON: Is not true "outer interface" (called from non-MATLAB).
 %   ~main
 %   ~syntax
+%   ~day selection algorithm(s)
 % PROPOSAL: Option for returning help text.
 %   PRO: Eliminates duplication of documentation in bash wrapper script.
 %     CON: Help text in this function would duplicate documentation in the two
@@ -74,6 +76,15 @@ function generate_quicklooks_interface(...
 % PROPOSAL: Omit "objects" (Fsr, Gql) from Settings.
 %
 % PROPOSAL: Command for generating all quicklooks older than certain FMD.
+%
+% PROPOSAL: Arguments which are passed on from bash wrapper for indirectly
+%           specifying dates etc., and which are not setup-dependent, should be
+%           a well-defined set stored in a 1D cell array.
+%   CON: Those arguments are not a well-defined set.
+%     CON: operationId-dependent arguments passed on to
+%          solo.qli.batch.interface.get_days_from_selected_algorithm() are a
+%          well-defined set.
+%   PRO: Makes it more clear which arguments are passed on (copied) to where.
 %
 % ~PROBLEM/UGLY: Specifying generation-specific arguments also when no
 %                quicklooks should be generated.
@@ -91,8 +102,6 @@ irf.log('n', sprintf('dateSelectionAlgorithmId = "%s"', dateSelectionAlgorithmId
 
 
 
-% DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
-%   Settings, Settings.fmdQliDir, dateSelectionAlgorithmId, varargin);
 DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
   Settings.datasetDirsCa, ...
   Settings.LogFileDirPatternDict, ...
@@ -107,18 +116,7 @@ switch(operationId)
     %=============================================
     % List dates (do not generate any quicklooks)
     %=============================================
-    % NOTE: Does not use irf.log().
-
-    % Compensate for that previous log message appears to not end with line
-    % feed.
-    fprintf('\n')
-
-    nDates = numel(DaysDtArray);
-    for i = 1:nDates
-      Dt = DaysDtArray(i);
-      fprintf('%04i-%02i-%02i\n', Dt.Year, Dt.Month, Dt.Day)
-    end
-    fprintf('Number of dates: %i\n', nDates)
+    list_operation(DaysDtArray)
 
   case 'GENERATE'
     %=====================
@@ -133,5 +131,22 @@ switch(operationId)
     error('Illegal operationId="%s"', operationId)
 
 end
+
+end
+
+
+
+% NOTE: Does not use irf.log().
+function list_operation(DaysDtArray)
+
+% Compensate for that preceding log message appears to not end with line feed.
+fprintf('\n')
+
+nDates = numel(DaysDtArray);
+for i = 1:nDates
+  Dt = DaysDtArray(i);
+  fprintf('%04i-%02i-%02i\n', Dt.Year, Dt.Month, Dt.Day)
+end
+fprintf('Number of dates: %i\n', nDates)
 
 end
