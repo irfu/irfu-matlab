@@ -1,7 +1,7 @@
 %
 % Batch-generate quicklooks, but the caller specifies the method for how to
 % select dates, e.g. specify range, derive from logs, derive from file
-% modification dates etc..
+% modification dates etc.
 %
 % NOTE: The function is intended for batch generating quicklooks, in particular
 %       by being called from another, custom MATLAB function which specifies
@@ -29,6 +29,8 @@
 %           See solo.qli.batch.interface.get_days_from_DMRQ().
 %       .Gql
 %           See solo.qli.batch.generate_quicklooks().
+%       .Fsr
+%           See solo.qli.batch.interface.get_days_from_selected_algorithm().
 % outputDir
 %       Path to output directory.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
@@ -69,6 +71,7 @@ function generate_quicklooks_interface(...
 %          functions called.
 %   CON: Bash wrapper script needs to be aware of syntax for generating help
 %        text so that it does not log or create intermediate directory etc.
+% PROPOSAL: Omit "objects" (Fsr, Gql) from Settings.
 %
 % PROPOSAL: Command for generating all quicklooks older than certain FMD.
 %
@@ -88,10 +91,18 @@ irf.log('n', sprintf('dateSelectionAlgorithmId = "%s"', dateSelectionAlgorithmId
 
 
 
+% DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
+%   Settings, Settings.fmdQliDir, dateSelectionAlgorithmId, varargin);
 DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
-  Settings, Settings.fmdQliDir, dateSelectionAlgorithmId, varargin);
+  Settings.datasetDirsCa, ...
+  Settings.LogFileDirPatternDict, ...
+  Settings.Fsr, ...
+  Settings.fmdQliDir, ...
+  dateSelectionAlgorithmId, ...
+  varargin);
 
 switch(operationId)
+
   case 'LIST'
     %=============================================
     % List dates (do not generate any quicklooks)
@@ -120,6 +131,7 @@ switch(operationId)
 
   otherwise
     error('Illegal operationId="%s"', operationId)
+
 end
 
 end

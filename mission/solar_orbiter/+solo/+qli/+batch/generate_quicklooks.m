@@ -50,7 +50,7 @@
 %       contain at least one day specified here.
 % Gql
 %       solo.qli.batch.GenerateQuicklooks* object. Should be an instance of
-%       solo.qli.batch.GenerateQuicklooksImplementation object in the nomincal
+%       solo.qli.batch.GenerateQuicklooksImplementation object in the nominal
 %       case. Arugment exists to facilitate automated tests.
 %
 %

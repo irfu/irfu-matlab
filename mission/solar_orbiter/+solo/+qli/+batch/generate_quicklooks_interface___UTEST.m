@@ -76,7 +76,7 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       % overwrite it.
       Settings.Fsr         = solo.qli.batch.FileSystemReaderTest(dictionary());
       % Settings which are required but should not be relevant.
-      Settings.datasetDirsCa         = {};
+      Settings.datasetDirsCa         = cell(0, 1);
       Settings.LogFileDirPatternDict = dictionary();
       Settings.fmdQliDir             = '';
 

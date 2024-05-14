@@ -22,7 +22,6 @@
 %       solo.qli.batch.generate_quicklooks_interface() (all but "Settings").
 %
 %
-%
 % RETURN VALUES
 % =============
 % (none)
@@ -43,6 +42,7 @@ function generate_quicklooks_interface_offgen(varargin)
 %       PRO: Settings.Gql object can not be stored in config file.
 %         CON-PROPOSAL: Create wrapper which only sets GQL.
 %           CON: Yet another file and level in the function call hierarchy.
+%                <=> Can not abolish this function.
 
 % IMPLEMENTATION NOTE: Not hardcoding outputPath since this is useful for
 % manual testing of the setup and for manual large-scale processing.
@@ -59,8 +59,8 @@ VHT_DIR         = '/data/solo/data_yuri/';
 % Directory used while the NAS8 SolO partition still has problems.
 FMD_QLI_DIR     = '/data/juice/EJ_temp/quicklooks_SOLAR_ORBITER/www/24h';
 
-% Directories with datasets which will be read by solo.db_get_ts() and returned
-% by solo.db_list_files().
+% Directories with datasets which will be used by solo.db_get_ts() and
+% solo.db_list_files().
 DATASET_DIRS_CA = {
   '/data/solo/remote/data';    % LESIA
   '/data/solo/soar';           % SOAR
@@ -116,6 +116,5 @@ solo.db_cache('on', 'save')
 %=====================
 % Generate quicklooks
 %=====================
-solo.qli.batch.generate_quicklooks_interface(...
-  Settings, varargin{:})
+solo.qli.batch.generate_quicklooks_interface(Settings, varargin{:})
 end

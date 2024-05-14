@@ -27,13 +27,21 @@ classdef interface
 
 
 
+    % ARGUMENTS
+    % =========
+    % Fsr
+    %     solo.qli.batch.FileSystemReader* object. Should be an instance of
+    %     solo.qli.batch.FileSystemReaderImplementation object in the nominal
+    %     case. Arugment exists to facilitate automated tests.
     function DaysDtArray = get_days_from_selected_algorithm(...
-        Settings, fmdQliDir, dateSelectionAlgorithmId, algorithmArgumentsCa)
-      % PROPOSAL: Replace Settings-->Separate arguments.
+        datasetDirsCa, LogFileDirPatternDict, Fsr, ...
+        fmdQliDir, dateSelectionAlgorithmId, algorithmArgumentsCa)
 
-      % NOTE: "Settings" is deliberately not passed on to any function, so as to
-      % not hide its usage (and implicitly meaning).
-
+      assert(iscell(datasetDirsCa) & iscolumn(datasetDirsCa))
+      assert(isa(LogFileDirPatternDict, 'dictionary'))
+      assert(isa(Fsr, 'solo.qli.batch.FileSystemReaderAbstract'))
+      assert(iscell(datasetDirsCa) & iscolumn(datasetDirsCa))
+      assert(ischar(dateSelectionAlgorithmId))
       assert(iscell(algorithmArgumentsCa))
 
       switch(dateSelectionAlgorithmId)
@@ -198,8 +206,6 @@ classdef interface
     %
     % ARGUMENTS
     % =========
-    % Settings
-    %       Struct with fields for relevant settings.
     % algorithmArgumentsCa
     %       String IDs representing different dataset source directories. The
     %       function will use the logs for the specified directories to derive dates
@@ -217,7 +223,7 @@ classdef interface
       assert(isequal(...
         sort(LogFileDirPatternDict.keys), ...
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
-        'Settings.LogFileDirPatternDict defines the wrong set of keys.')
+        'LogFileDirPatternDict defines the wrong set of keys.')
 
       DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
@@ -246,12 +252,6 @@ classdef interface
 
     % Generate array of dates derived from file modification dates, which should
     % indicate datasets which are newer than the corresponding quicklooks.
-    %
-    %
-    % ARGUMENTS
-    % =========
-    % Settings
-    %       Struct with fields for relevant settings.
     %
     %
     % RETURN VALUES
