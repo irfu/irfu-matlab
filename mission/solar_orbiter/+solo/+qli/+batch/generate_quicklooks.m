@@ -221,30 +221,9 @@ DaysDtArray = unique(DaysDtArray);
 %==============================
 OutputPaths = solo.qli.utils.create_output_directories(outputDir);
 
-% Try to determine whether quicklooks are being generated as part of IRFU's
-% official generation of quicklooks.
-% -------------------------------------------------------------------------
-% NOTE: As of 2024-03-21, this flag is only used for whether to explicitly
-% trigger automounts (requires knowledge of hardcoded path). Whether to include
-% IRF logo is specified by the caller.
-% --
-% WARNING: This could potentially be bad for automated tests!
-isOfficialGeneration = false;
-if isunix()
-  [errorCode, stdoutStr] = system('hostname');
-  assert(errorCode == 0, 'Error when calling "hostname". errorCode = %i', errorCode)
-  hostName = strip(stdoutStr);
-
-  if ismember(hostName, solo.qli.const.OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA) && isunix
-    isOfficialGeneration = true;
-  end
-end
-
-
-
-if isOfficialGeneration
-  % WARNING: This could potentially be bad for automated tests!
-  assert(~isempty(irfLogoPath))
+automountTriggeringPathsCa = {vhtDataDir, outputDir};
+if ~isempty(irfLogoPath)
+  automountTriggeringPathsCa{end+1} = irfLogoPath;
 end
 
 
@@ -257,7 +236,7 @@ irf.log('n', sprintf('generateNonweeklyQuicklooks   = %d',   generateNonweeklyQu
 irf.log('n', sprintf('generateWeeklyQuicklooks      = %d',   generateWeeklyQuicklooks))
 irf.log('n', sprintf('numel(DaysDtArray)            = %d',   numel(DaysDtArray)))
 % Log misc. variables
-irf.log('n', sprintf('isOfficialGeneration          = %d',   isOfficialGeneration))
+irf.log('n', sprintf('automountTriggeringPathsCa    = {%s}', strjoin(automountTriggeringPathsCa, ', ')))
 % Log selected constants.
 irf.log('n', sprintf('B_SPECTRA_ENABLED             = %d',   solo.qli.const.B_SPECTRA_ENABLED))
 irf.log('n', sprintf('NONWEEKLY_ALL_PLOTS_ENABLED   = %d',   solo.qli.const.NONWEEKLY_ALL_PLOTS_ENABLED))
@@ -289,7 +268,7 @@ if generateNonweeklyQuicklooks
     DayDt = DaysDtArray(iDay);
 
     try
-      optionally_trigger_automount(isOfficialGeneration)
+      trigger_automounting(automountTriggeringPathsCa)
 
       irf.log('n', sprintf('Calling 24h/6h/2h plot function for %s', string(DayDt)))
       tBeginSec = tic();
@@ -320,7 +299,7 @@ if generateWeeklyQuicklooks
     WeekDt = WeeksDtArray(iWeek);
 
     try
-      optionally_trigger_automount(isOfficialGeneration)
+      trigger_automounting(automountTriggeringPathsCa)
 
       irf.log('n', sprintf('Calling 7-day plot function for %s', string(WeekDt)))
       tBeginSec = tic();
@@ -394,29 +373,28 @@ end
 
 
 
-% Try to trigger automount for official generation of quicklooks, in order to
-% avoid file-reading problems for long batch runs.
+% Try to trigger automounting of disks in order to avoid file-reading problems
+% for long batch runs.
+%
 %
 % CONTEXT
 % =======
-% The automounting which should make /data/solo/ available on brain/spis (IRFU)
-% does not always work as intended. It appears to not always work fast enough
-% for reading files on rare occassions, leading to apparent can-not-read-file
-% errors for existing files when making long runs, in particular on
-% out-of-office hours(?). Other code which has faced this problem has
-% seemingly resolved it by using Linux commands to list the directory contents
-% and ignore the result before using /data/solo/ (such as
-% "ls /data/solo/ >> /dev/null").
+% The automounting which should make IRFU's /data/solo/ available on brain/spis
+% (IRFU) does not always work as intended. It appears to not always work fast
+% enough for reading files on rare occassions, leading to apparent
+% can-not-read-file errors for existing files when making long runs, in
+% particular on out-of-office hours(?). Other code which has faced this problem
+% has seemingly resolved it by using Linux commands to list the directory
+% contents and ignore the result before using /data/solo/ (such as "ls
+% /data/solo/ >> /dev/null").
 %
-function optionally_trigger_automount(isOfficialGeneration)
-if isOfficialGeneration
-  irf.log('n', sprintf(...
-    'Trying to trigger automounting, if not already mounted: %s', ...
-    solo.qli.const.OFFICIAL_GENERATION_AUTOMOUNT_DIR ...
-    ))
-  junk = dir(solo.qli.const.OFFICIAL_GENERATION_AUTOMOUNT_DIR);
+function trigger_automounting(pathsCa)
+for i = 1:numel(pathsCa)
+  path = pathsCa{i};
 
-  % NOTE: Command only works on UNIX/Linux. Not Windows, MacOs etc.
-  %errorCode = system('ls -l /data/solo/ >> /dev/null');
+  irf.log('n', sprintf(...
+    'Trying to trigger automounting, if not already mounted: %s', path ...
+    ))
+  junk = dir(path);
 end
 end
