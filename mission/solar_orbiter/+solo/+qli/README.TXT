@@ -41,12 +41,17 @@ generate_quicklook_7days_using_DB_SPICE.m
 NOTE: Additionally tries to follow BICAS conventions. See
       irfu-matlab/mission/solar_orbiter/bicas/readme.txt
 --
+DASA
+    Date Array Selection Algorithm. One of any of a set of algorithms for
+    selecting which dates for which to generate quicklooks.
+    Ex: DMRQ
+DASAID
+    DASA ID. String constant which represents a specific DASA.
 DICT
     MATLAB dictionary object.
 DMRQ
-    Datasets More Recent than QLI (file) algorithm.
-    Algorithm for generating array of dates for which to (optionally) generate
-    QLIs. A day is included if (1) the most recent QLI FMD (for that day) is
+    Datasets More Recent than QLI (file) algorithm. DASA.
+    A day is included if (1) the most recent QLI FMD (for that day) is
     more recent than the most recent input dataset (for that day), or (2) there
     is no QLI for that day.
 DSMD

@@ -13,9 +13,8 @@
 %   * solo.qli.batch.fmd___UTEST
 %   * solo.qli.batch.interface_*_UTEST
 % --
-% Only testing the TIME_INTERVAL algorithm since it is
-% the easiest one to use here. Other algorithms are tested through the
-% corresponding subfunctions.
+% Only testing the TIME_INTERVAL DASA since it is the easiest one to use here.
+% Other DASAS are tested through the corresponding subfunctions.
 % --
 % Indirectly testing the TIME_INTERVAL subfunction
 % (solo.qli.batch.interface.get_days_from_time_interval()) which thus does

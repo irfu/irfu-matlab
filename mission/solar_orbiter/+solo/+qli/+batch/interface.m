@@ -22,6 +22,7 @@ classdef interface
   %   PROPOSAL: Better name.
   %     ~interface
   %     ~utils
+  %     ~DASA
 
 
 
@@ -48,38 +49,38 @@ classdef interface
     %     solo.qli.batch.FileSystemReader* object. Should be an instance of
     %     solo.qli.batch.FileSystemReaderImplementation object in the nominal
     %     case. Arugment exists to facilitate automated tests.
-    function DaysDtArray = get_days_from_selected_algorithm(...
+    function DaysDtArray = get_days_from_DASA(...
         datasetDirsCa, LogFileDirPatternDict, Fsr, ...
-        fmdQliDir, dateSelectionAlgorithmId, algorithmArgumentsCa)
+        fmdQliDir, dasaid, dasaArgumentsCa)
 
       assert(iscell(datasetDirsCa) & iscolumn(datasetDirsCa))
       assert(isa(LogFileDirPatternDict, 'dictionary'))
       assert(isa(Fsr, 'solo.qli.batch.FileSystemReaderAbstract'))
       assert(iscell(datasetDirsCa) & iscolumn(datasetDirsCa))
-      assert(ischar(dateSelectionAlgorithmId))
-      assert(iscell(algorithmArgumentsCa))
+      assert(ischar(dasaid))
+      assert(iscell(dasaArgumentsCa) & iscolumn(dasaArgumentsCa))
 
-      switch(dateSelectionAlgorithmId)
+      switch(dasaid)
         case 'TIME_INTERVAL'
           DaysDtArray = solo.qli.batch.interface.get_days_from_time_interval(...
-            algorithmArgumentsCa);
+            dasaArgumentsCa);
 
         case 'LOGS'
           DaysDtArray = solo.qli.batch.interface.get_days_from_logs(...
             Settings.LogFileDirPatternDict, ...
-            algorithmArgumentsCa);
+            dasaArgumentsCa);
 
         case 'DMRQ'
           DaysDtArray = solo.qli.batch.interface.get_days_from_DMRQ(...
             Settings.datasetDirsCa, fmdQliDir, Settings.Fsr, ...
-            algorithmArgumentsCa);
+            dasaArgumentsCa);
 
         case 'QLI_FMD_INTERVAL'
           DaysDtArray = solo.qli.batch.interface.get_days_from_QLI_FMD_interval( ...
-            fmdQliDir, Settings.Fsr, algorithmArgumentsCa);
+            fmdQliDir, Settings.Fsr, dasaArgumentsCa);
 
         otherwise
-          error('Illegal argument dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
+          error('Illegal argument dasaid="%s"', dasaid)
       end
     end
 
@@ -94,8 +95,8 @@ classdef interface
     %
     % ARGUMENTS
     % =========
-    % algorithmArgumentsCa{1} = beginDayUtcInclStr
-    % algorithmArgumentsCa{2} = endDayUtcExclStr
+    % dasaArgumentsCa{1} = beginDayUtcInclStr
+    % dasaArgumentsCa{2} = endDayUtcExclStr
     %       Strings on format YYYY-MM-DD.
     %       Beginning and end of time interval for which quicklooks should be
     %       generated.
@@ -112,11 +113,12 @@ classdef interface
     % First created 2022-08-30.
     %
     function DaysDtArray = get_days_from_time_interval(...
-      algorithmArgumentsCa)
+      dasaArgumentsCa)
 
-      assert(numel(algorithmArgumentsCa) == 2, 'Illegal number of algorithm arguments.')
-      beginDayUtcInclStr = algorithmArgumentsCa{1};
-      endDayUtcExclStr   = algorithmArgumentsCa{2};
+      solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 2)
+
+      beginDayUtcInclStr = dasaArgumentsCa{1};
+      endDayUtcExclStr   = dasaArgumentsCa{2};
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
@@ -157,10 +159,10 @@ classdef interface
     %
     % ARGUMENTS
     % =========
-    % algorithmArgumentsCa
+    % dasaArgumentsCa
     %       String IDs representing different dataset source directories. The
-    %       function will use the logs for the specified directories to derive dates
-    %       for which QLIs should be generated.
+    %       function will use the logs for the specified directories to derive
+    %       dates for which QLIs should be generated.
     %
     %
     % RETURN VALUES
@@ -170,7 +172,7 @@ classdef interface
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function DaysDtArray = get_days_from_logs(LogFileDirPatternDict, algorithmArgumentsCa)
+    function DaysDtArray = get_days_from_logs(LogFileDirPatternDict, dasaArgumentsCa)
       assert(isequal(...
         sort(LogFileDirPatternDict.keys), ...
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
@@ -178,8 +180,8 @@ classdef interface
 
       DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
-      for i = 1:numel(algorithmArgumentsCa)
-        datasetsSourceId = algorithmArgumentsCa{i};
+      for i = 1:numel(dasaArgumentsCa)
+        datasetsSourceId = dasaArgumentsCa{i};
 
         assert(ischar(datasetsSourceId), 'datasetsSourceId{%i} is not a string.', i)
         if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(datasetsSourceId)
@@ -213,12 +215,13 @@ classdef interface
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
     function DaysDtArray = get_days_from_DMRQ(...
-        datasetDirsCa, qliDir, Fsr, algorithmArgumentsCa)
+        datasetDirsCa, qliDir, Fsr, dasaArgumentsCa)
 
-      assert(numel(algorithmArgumentsCa) == 3, 'Illegal number of algorithm arguments.')
-      maxNDaysStr        = algorithmArgumentsCa{1};
-      beginDayUtcInclStr = algorithmArgumentsCa{2};
-      endDayUtcExclStr   = algorithmArgumentsCa{3};
+      solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 3)
+
+      maxNDaysStr        = dasaArgumentsCa{1};
+      beginDayUtcInclStr = dasaArgumentsCa{2};
+      endDayUtcExclStr   = dasaArgumentsCa{3};
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
@@ -237,13 +240,13 @@ classdef interface
 
 
     function DaysDtArray = get_days_from_QLI_FMD_interval(...
-        qliDir, Fsr, algorithmArgumentsCa)
+        qliDir, Fsr, dasaArgumentsCa)
 
-      assert(numel(algorithmArgumentsCa) == 3, 'Illegal number of algorithm arguments.')
+      solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 3)
 
-      maxNDaysStr    = algorithmArgumentsCa{1};
-      startInclFmdDt = datetime(algorithmArgumentsCa{2});
-      stopExclFmdDt  = datetime(algorithmArgumentsCa{3});
+      maxNDaysStr    = dasaArgumentsCa{1};
+      startInclFmdDt = datetime(dasaArgumentsCa{2});
+      stopExclFmdDt  = datetime(dasaArgumentsCa{3});
 
       QliUfd = solo.qli.batch.fmd.get_days_from_QLI_FMD_interval( ...
         qliDir, startInclFmdDt, stopExclFmdDt, Fsr);
@@ -294,6 +297,15 @@ classdef interface
       i = regexp(dateStr, solo.qli.batch.const.DATE_RE, 'once');
       if isempty(i)
         error('String "%s" is not on the form YYYY-MM-DD.', dateStr)
+      end
+    end
+
+
+
+    function check_nbr_of_DASA_arguments(dasaArgumentsCa, expNArgs)
+      if numel(dasaArgumentsCa) ~= expNArgs
+        error('Illegal number of algorithm (DASA) arguments. Expected %i arguments', ...
+          expNArgs)
       end
     end
 

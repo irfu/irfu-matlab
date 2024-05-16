@@ -140,8 +140,8 @@ classdef fmd
 
 
 
-    % Derive array of dates from the DMRQ algorithm and reading file system
-    % data.
+    % Derive array of dates from the DMRQ and by reading file system data
+    % itself.
     function DaysDtArray = get_days_from_DMRQ_and_FS(datasetDirsCa, qliDir, dsiCa, Fsr)
       assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
       assert(ischar(qliDir))
@@ -175,8 +175,8 @@ classdef fmd
 
 
 
-    % Derive array of dates from the DMRQ algorithm and arguments containing
-    % file system data.
+    % Derive array of dates from the DMRQ and arguments containing file system
+    % data (i.e. do not read from file system itself).
     function ChangedDatasetsDtArray = get_days_from_DMRQ_algorithm(...
         DatasetsUfd, QliUfd)
 

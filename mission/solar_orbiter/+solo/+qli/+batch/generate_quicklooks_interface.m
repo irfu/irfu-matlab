@@ -30,7 +30,7 @@
 %       .Gql
 %           See solo.qli.batch.generate_quicklooks().
 %       .Fsr
-%           See solo.qli.batch.interface.get_days_from_selected_algorithm().
+%           See solo.qli.batch.interface.get_days_from_DASA().
 % outputDir
 %       Path to output directory.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
@@ -39,12 +39,11 @@
 %       NOTE: STRINGS.
 % operationId
 %       String constant which specifies what to do with list of dates.
-% dateSelectionAlgorithmId
-%       String constant which specifies which algorithm/method should be used
+% dasaid
+%       String constant which specifies which DASA (algorithm) should be used
 %       for obtaining dates.
 % varargin
-%     Arguments associated with the selected date selection algorithm. See
-%     implementation.
+%       Arguments associated with the selected DASA. See implementation.
 %
 %
 % RETURN VALUES
@@ -57,7 +56,7 @@
 function generate_quicklooks_interface(...
   Settings, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
-  operationId, dateSelectionAlgorithmId, varargin)
+  operationId, dasaid, varargin)
 
 % PROPOSAL: Better name.
 %   Is not meant to be called from bash, but almost. The exception is settings.
@@ -66,7 +65,7 @@ function generate_quicklooks_interface(...
 %     CON: Is not true "outer interface" (called from non-MATLAB).
 %   ~main
 %   ~syntax
-%   ~day selection algorithm(s)
+%   ~DASA
 % PROPOSAL: Option for returning help text.
 %   PRO: Eliminates duplication of documentation in bash wrapper script.
 %     CON: Help text in this function would duplicate documentation in the two
@@ -82,7 +81,7 @@ function generate_quicklooks_interface(...
 %           a well-defined set stored in a 1D cell array.
 %   CON: Those arguments are not a well-defined set.
 %     CON: operationId-dependent arguments passed on to
-%          solo.qli.batch.interface.get_days_from_selected_algorithm() are a
+%          solo.qli.batch.interface.get_days_from_DASA() are a
 %          well-defined set.
 %   PRO: Makes it more clear which arguments are passed on (copied) to where.
 %
@@ -97,18 +96,18 @@ irf.assert.struct(Settings, ...
 generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);
 generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(generateWeeklyQuicklooks);
 
-irf.log('n', sprintf('operationId              = "%s"', operationId))
-irf.log('n', sprintf('dateSelectionAlgorithmId = "%s"', dateSelectionAlgorithmId))
+irf.log('n', sprintf('operationId = "%s"', operationId))
+irf.log('n', sprintf('dasaid      = "%s"', dasaid))
 
 
 
-DaysDtArray = solo.qli.batch.interface.get_days_from_selected_algorithm(...
+DaysDtArray = solo.qli.batch.interface.get_days_from_DASA(...
   Settings.datasetDirsCa, ...
   Settings.LogFileDirPatternDict, ...
   Settings.Fsr, ...
   Settings.fmdQliDir, ...
-  dateSelectionAlgorithmId, ...
-  varargin);
+  dasaid, ...
+  varargin(:));
 
 switch(operationId)
 
