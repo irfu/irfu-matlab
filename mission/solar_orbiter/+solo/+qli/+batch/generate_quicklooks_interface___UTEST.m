@@ -50,6 +50,8 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
     Settings
     inputLogDir
     outputDir
+    Gql
+    Fsr
   end
 
 
@@ -67,20 +69,20 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       VhtFixture      = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       OutputFixture   = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
 
-      Settings             = [];
-      Settings.irfLogoPath = solo.qli.testdata.get_test_logo_path();
-      Settings.vhtDir      = VhtFixture.Folder;
-      Settings.Gql         = solo.qli.batch.GenerateQuicklooksTest();
-      % Empty FSR for those tests which do not require. Those which do, should
-      % overwrite it.
-      Settings.Fsr         = solo.qli.batch.FileSystemReaderTest(dictionary());
+      Settings                       = [];
+      Settings.irfLogoPath           = solo.qli.testdata.get_test_logo_path();
+      Settings.vhtDir                = VhtFixture.Folder;
       % Settings which are required but should not be relevant.
       Settings.datasetDirsCa         = cell(0, 1);
       Settings.LogFileDirPatternDict = dictionary();
       Settings.fmdQliDir             = '';
 
-      testCase.Settings    = Settings;
-      testCase.outputDir   = OutputFixture.Folder;
+      testCase.Settings  = Settings;
+      testCase.Gql       = solo.qli.batch.GenerateQuicklooksTest();
+      % Empty FSR for those tests which do not require. Those which do, should
+      % overwrite it.
+      testCase.Fsr       = solo.qli.batch.FileSystemReaderTest(dictionary());
+      testCase.outputDir = OutputFixture.Folder;
     end
 
 
@@ -102,12 +104,12 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       Settings = testCase.Settings; %#ok<*PROP>
 
       solo.qli.batch.generate_quicklooks_interface(...
-        Settings, testCase.outputDir, '1', '1', ...
-        OPERATION_ID, 'TIME_INTERVAL', '2024-01-01', '2024-01-01' ...
+        Settings, testCase.Gql, testCase.Fsr, testCase.outputDir, '1', '1', ...
+        OPERATION_ID, 'TIME_INTERVAL', {'2024-01-01', '2024-01-01'}' ...
         )
 
-      testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
-      testCase.assertEqual(Settings.Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(testCase.Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(testCase.Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
@@ -116,8 +118,8 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
       Settings = testCase.Settings;
 
       solo.qli.batch.generate_quicklooks_interface(...
-        Settings, testCase.outputDir, '1', '1', ...
-        OPERATION_ID, 'TIME_INTERVAL', '2024-01-01', '2024-01-04' ...
+        Settings, testCase.Gql, testCase.Fsr, testCase.outputDir, '1', '1', ...
+        OPERATION_ID, 'TIME_INTERVAL', {'2024-01-01', '2024-01-04'}' ...
         )
 
       switch(OPERATION_ID)
@@ -133,8 +135,8 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
           error('')
       end
 
-      testCase.assertEqual(Settings.Gql.Dt24h6h2hArray, ExpDt24h6h2hArray)
-      testCase.assertEqual(Settings.Gql.Dt7daysArray,   ExpDt7daysArray)
+      testCase.assertEqual(testCase.Gql.Dt24h6h2hArray, ExpDt24h6h2hArray)
+      testCase.assertEqual(testCase.Gql.Dt7daysArray,   ExpDt7daysArray)
     end
 
 

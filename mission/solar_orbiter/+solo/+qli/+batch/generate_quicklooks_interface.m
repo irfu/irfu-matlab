@@ -27,10 +27,10 @@
 %       .datasetDirsCa
 %           Cell array of paths to directories with datasets. Used for FMDS.
 %           See solo.qli.batch.interface.get_days_from_DMRQ().
-%       .Gql
-%           See solo.qli.batch.generate_quicklooks().
-%       .Fsr
-%           See solo.qli.batch.interface.get_days_from_DASA().
+% Gql
+%       See solo.qli.batch.generate_quicklooks().
+% Fsr
+%       See solo.qli.batch.interface.get_days_from_DASA().
 % outputDir
 %       Path to output directory.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
@@ -42,8 +42,9 @@
 % dasaid
 %       String constant which specifies which DASA (algorithm) should be used
 %       for obtaining dates.
-% varargin
-%       Arguments associated with the selected DASA. See implementation.
+% dasaArgumentsCa
+%       1D column cell array. Arguments associated with the selected DASA
+%       (dasaid). See implementation.
 %
 %
 % RETURN VALUES
@@ -54,9 +55,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function generate_quicklooks_interface(...
-  Settings, outputDir, ...
+  Settings, Gql, Fsr, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
-  operationId, dasaid, varargin)
+  operationId, dasaid, dasaArgumentsCa)
 
 % PROPOSAL: Better name.
 %   Is not meant to be called from bash, but almost. The exception is settings.
@@ -89,7 +90,7 @@ function generate_quicklooks_interface(...
 %                quicklooks should be generated.
 
 irf.assert.struct(Settings, ...
-  {'irfLogoPath', 'vhtDir', 'LogFileDirPatternDict', 'fmdQliDir', 'datasetDirsCa', 'Gql', 'Fsr'}, {})
+  {'irfLogoPath', 'vhtDir', 'LogFileDirPatternDict', 'fmdQliDir', 'datasetDirsCa'}, {})
 
 
 
@@ -104,10 +105,10 @@ irf.log('n', sprintf('dasaid      = "%s"', dasaid))
 DaysDtArray = solo.qli.batch.interface.get_days_from_DASA(...
   Settings.datasetDirsCa, ...
   Settings.LogFileDirPatternDict, ...
-  Settings.Fsr, ...
+  Fsr, ...
   Settings.fmdQliDir, ...
   dasaid, ...
-  varargin(:));
+  dasaArgumentsCa);
 
 switch(operationId)
 
@@ -124,7 +125,7 @@ switch(operationId)
     solo.qli.batch.generate_quicklooks(...
       Settings.irfLogoPath, Settings.vhtDir, outputDir, ...
       generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
-      DaysDtArray, Settings.Gql)
+      DaysDtArray, Gql)
 
   otherwise
     error('Illegal operationId="%s"', operationId)
