@@ -10,40 +10,24 @@
 %
 % ARGUMENTS
 % =========
-% Settings
-%       Struct with misc. (mostly) system-dependent settings.
-%       .fmdQliDir
-%           Path to already generated quicklooks which can be used for reading
-%           at file modification dates. Not the same as output directory.
-%           Should be enough to point to the 24h quicklooks.
-%       .irfLogoPath
-%           See solo.qli.batch.generate_quicklooks().
-%       .vhtDir
-%           See solo.qli.batch.generate_quicklooks().
-%       .LogFileDirPatternDict
-%           Dictionary of log file paths with globbing.
-%           See solo.qli.batch.interface.get_days_from_logs().
-%       .datasetDirsCa
-%           Cell array of paths to directories with datasets. Used for FMDS.
-%           See solo.qli.batch.interface.get_days_from_DMRQ().
+% NOTE: Also see wrapper solo.qli.batch.generate_quicklooks_interface_offgen()
+%       for description of arguments.
+% --
+% Config
+%       Struct with misc. (mostly) system-dependent configuration.
 % Gql
 %       See solo.qli.batch.generate_quicklooks().
 % Fsr
 %       See solo.qli.batch.interface.get_days_from_DASA().
 % outputDir
-%       Path to output directory.
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
-%       One-character strings. Whether to generate ("1" or "0") non-weekly (2h,
-%       6h, 24h) quicklooks and/or weekly quicklooks.
-%       NOTE: STRINGS.
 % operationId
-%       String constant which specifies what to do with list of dates.
 % dasaid
 %       String constant which specifies which DASA (algorithm) should be used
 %       for obtaining dates.
 % dasaArgumentsCa
 %       1D column cell array. Arguments associated with the selected DASA
-%       (dasaid). See implementation.
+%       (dasaid).
 %
 %
 % RETURN VALUES
@@ -54,7 +38,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function generate_quicklooks_interface(...
-  Settings, Gql, Fsr, outputDir, ...
+  Config, Gql, Fsr, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
   operationId, dasaid, dasaArgumentsCa)
 
@@ -67,25 +51,17 @@ function generate_quicklooks_interface(...
 %   ~syntax
 %   ~DASA
 %
-% PROPOSAL: Arguments which are passed on from bash wrapper for indirectly
-%           specifying dates etc., and which are not setup-dependent, should be
-%           a well-defined set stored in a 1D cell array.
-%   CON: Those arguments are not a well-defined set.
-%     CON: operationId-dependent arguments passed on to
-%          solo.qli.batch.interface.get_days_from_DASA() are a
-%          well-defined set.
-%   PRO: Makes it more clear which arguments are passed on (copied) to where.
-%
 % ~PROBLEM/UGLY: Specifying generation-specific arguments also when no
-%                quicklooks should be generated.
+%                QLIs should be generated.
 
-irf.assert.struct(Settings, ...
-  {'irfLogoPath', 'vhtDir', 'LogFileDirPatternDict', 'fmdQliDir', 'datasetDirsCa'}, {})
+% NOTE: soloDbDirPath is not used by this function.
+irf.assert.struct(Config, ...
+  {'irfLogoPath', 'vhtDir', 'LogFileDirPatternDict', 'fmdQliDir', 'datasetDirsCa'}, ...
+  {'soloDbDirPath'})
+assert(islogical(generateNonweeklyQuicklooks) & isscalar(generateNonweeklyQuicklooks))
+assert(islogical(generateWeeklyQuicklooks)    & isscalar(generateWeeklyQuicklooks))
 
 
-
-generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);
-generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(generateWeeklyQuicklooks);
 
 irf.log('n', sprintf('operationId = "%s"', operationId))
 irf.log('n', sprintf('dasaid      = "%s"', dasaid))
@@ -93,10 +69,10 @@ irf.log('n', sprintf('dasaid      = "%s"', dasaid))
 
 
 DaysDtArray = solo.qli.batch.interface.get_days_from_DASA(...
-  Settings.datasetDirsCa, ...
-  Settings.LogFileDirPatternDict, ...
+  Config.datasetDirsCa, ...
+  Config.LogFileDirPatternDict, ...
   Fsr, ...
-  Settings.fmdQliDir, ...
+  Config.fmdQliDir, ...
   dasaid, ...
   dasaArgumentsCa);
 
@@ -113,7 +89,7 @@ switch(operationId)
     % Generate quicklooks
     %=====================
     solo.qli.batch.generate_quicklooks(...
-      Settings.irfLogoPath, Settings.vhtDir, outputDir, ...
+      Config.irfLogoPath, Config.vhtDir, outputDir, ...
       generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
       DaysDtArray, Gql)
 
