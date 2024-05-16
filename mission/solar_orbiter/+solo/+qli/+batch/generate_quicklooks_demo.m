@@ -1,12 +1,12 @@
 %
-% Demonstration code for how to generate "IRFU quicklooks" ("QLI") locally. The
-% user may have to copy and modify this function to generate quicklooks
-% themselves.
+% EXAMPLE code for how to generate "IRFU quicklooks" ("QLI") locally from
+% inside MATLAB. The user may have to copy and modify this function to generate
+% quicklooks themselves.
 %
 %
 % NOTES
 % =====
-% * The example implementation below is system-dependent! The function is
+% * This EXAMPLE implementation below is system-dependent! The function is
 %   configured for being run on brain/spis at IRFU, or any system where
 %   /data/solo/ has been mounted to the same location.
 % * GENERATING QUICKLOOKS IS TIME-CONSUMING, in particular 24h, 6h, 2h
@@ -73,5 +73,5 @@ irf.log('notice')
 solo.qli.batch.generate_quicklooks(...
   [], VHT_DIR, outputDir, ...
   GENERATE_NONWEEKLY_QUICKLOOKS, GENERATE_WEEKLY_QUICKLOOKS, ...
-  DAYS_DATETIME_COLUMN_ARRAY, GQL, FSL)
+  DAYS_DATETIME_COLUMN_ARRAY, GQL)
 end
