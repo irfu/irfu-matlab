@@ -3,7 +3,7 @@ function [h1, h2] = initialize_combined_plot(type,nTimePanels,nRows,nCols,totCol
 %
 %   [h1,h2] = INITIALIZE_COMBINED_PLOT(type,nTimePanels,nRows,nCols,totCols OR timeseriesFraction,sorting);
 %     Input:
-%       type - specifies how the time- and non-time panels should be 
+%       type - specifies how the time- and non-time panels should be
 %              organized with resect to each other: 'leftright' or 'topbottom'
 %       nTimePanels - number of time panels (placed to the left or top)
 %       nRows - number of rows
@@ -38,7 +38,7 @@ switch type
         h1(ii).Position(3) = space*0.8;
         h1(ii).Position(1) = h1(ii).Position(1)*0.4;
       end
-    
+
       % Make "square" plots
       isub = 0;
       h2left = [];
@@ -50,7 +50,7 @@ switch type
           h2left = [h2left; h2(isub).Position(1)];
         end
       end
-    
+
       % Move panels so they have the appropriate width
       h1right = h1(1).Position(1)+h1(1).Position(3)+0.03;
       x0 = totCols;
@@ -59,7 +59,7 @@ switch type
         for jj = 1:nRows
           isub = isub + 1;
           h2(isub).Position(1) = h1right*1.1 + (1-h1right)/nCols*(ii-1)*0.9; % set the left edge
-          h2(isub).Position(3) = (1-h1right)/nCols*0.7; % set the width    
+          h2(isub).Position(3) = (1-h1right)/nCols*0.7; % set the width
         end
       end
 
@@ -68,7 +68,7 @@ switch type
         h2 = h2';
         h2 = h2(:);
       end
-    
+
     else % gives the the "total number of columns" for scaling
       % Adjust the width of the irf_plot panels
       for ii = 1:nTimePanels
@@ -76,11 +76,11 @@ switch type
         h1(ii).Position(3) = space*0.5;
         h1(ii).Position(1) = h1(ii).Position(1)*0.4;
       end
-    
+
       % Make the subplot panels
       isub = 0;
       h2left = [];
-    
+
       if strcmp('horizontal',sorting)
         for ii = 1:nRows
           for jj = (totCols-nCols+1):totCols
@@ -98,7 +98,7 @@ switch type
           end
         end
       end
-    
+
       % Adjust irf_plot panels again
       h2left = min(h2left);
       for ii = 1:nTimePanels
@@ -113,11 +113,11 @@ switch type
       ybot = 1-height - 0.1;
       ytop = ybot + height;
       panel_height = height/nTimePanels;
-      for ii = 1:nTimePanels % move timeseries panels       
+      for ii = 1:nTimePanels % move timeseries panels
         h1(ii).Position(2) = ybot + ((nTimePanels-ii))*panel_height;
         h1(ii).Position(4) = panel_height;
       end
-    
+
       % Make "square" plots
       isub = 0;
       h2left = [];
@@ -168,7 +168,7 @@ switch type
         end
       end
 
-      if strcmp('vertical',sorting)     
+      if strcmp('vertical',sorting)
         h2 = reshape(h2,nCols,nRows);
         h2 = h2';
         h2 = h2(:);
