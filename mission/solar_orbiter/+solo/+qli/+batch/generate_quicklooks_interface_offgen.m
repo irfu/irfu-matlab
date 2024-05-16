@@ -62,7 +62,7 @@ VHT_DIR         = '/data/solo/data_yuri/';
 FMD_QLI_DIR     = '/data/juice/EJ_temp/quicklooks_SOLAR_ORBITER/www/24h';
 
 % Directories with datasets which will be used by solo.db_get_ts() and
-% solo.db_list_files().
+% solo.db_list_files() for locating requested data.
 DATASET_DIRS_CA = {
   '/data/solo/remote/data';    % LESIA
   '/data/solo/soar';           % SOAR

@@ -7,8 +7,8 @@
 %
 classdef const
   % PROPOSAL: Move OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA and
-  %           OFFICIAL_GENERATION_AUTOMOUNT_DIR to solo.qli.offgen somehow.
-  % PROPOSAL: Move VHT_1H_DATA_FILENAME, VHT_6H_DATA_FILENAME to solo.qli.offgen
+  %           OFFICIAL_GENERATION_AUTOMOUNT_DIR to solo.qli.batch somehow.
+  % PROPOSAL: Move VHT_1H_DATA_FILENAME, VHT_6H_DATA_FILENAME to solo.qli.batch
   %           somehow.
   %   PROBLEM: generate_quicklooks_*_using_DB_SPICE() use them.
   %     PROPOSAL: Also hardcode values in demo file.

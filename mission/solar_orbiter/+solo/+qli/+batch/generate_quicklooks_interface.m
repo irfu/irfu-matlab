@@ -1,12 +1,11 @@
 %
-% Batch-generate quicklooks, but the caller specifies the method for how to
-% select dates, e.g. specify range, derive from logs, derive from file
+% Batch-generate quicklooks, but the caller specifies the algorithm (DASA) for
+% how to select dates, e.g. specify range, derive from logs, derive from file
 % modification dates etc.
 %
-% NOTE: This function is intended for batch generating quicklooks, in particular
-%       by being called from another, custom MATLAB function which specifies
-%       (hardcodes) the relevant system setup and initializes "SolO DB", and
-%       which is in turn called by a bash script.
+% NOTE: This function is intended for being called from another, custom MATLAB
+%       function which specifies (hardcodes) the relevant system setup and
+%       initializes "SolO DB", and which is in turn called by a bash script.
 %
 %
 % ARGUMENTS
@@ -67,15 +66,6 @@ function generate_quicklooks_interface(...
 %   ~main
 %   ~syntax
 %   ~DASA
-% PROPOSAL: Option for returning help text.
-%   PRO: Eliminates duplication of documentation in bash wrapper script.
-%     CON: Help text in this function would duplicate documentation in the two
-%          functions called.
-%   CON: Bash wrapper script needs to be aware of syntax for generating help
-%        text so that it does not log or create intermediate directory etc.
-% PROPOSAL: Omit "objects" (Fsr, Gql) from Settings.
-%
-% PROPOSAL: Command for generating all quicklooks older than certain FMD.
 %
 % PROPOSAL: Arguments which are passed on from bash wrapper for indirectly
 %           specifying dates etc., and which are not setup-dependent, should be

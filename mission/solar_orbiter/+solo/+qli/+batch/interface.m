@@ -13,9 +13,6 @@
 %
 classdef interface
   % PROPOSAL: Better automatic tests.
-  % PROPOSAL: Merge TIME_INTERVAL and QLI_FMD_INTERVAL.
-  %   maxNDays fmdMinDate fmdMaxDate dataMinDate dataMaxDate
-  %
   % PROBLEM: Name "interface" could imply that users should look for functions
   %          to call in this file (which is wrong).
   %          Cf. JUICE/RPWI GS TM-to-L1a (python).
@@ -23,6 +20,11 @@ classdef interface
   %     ~interface
   %     ~utils
   %     ~DASA
+  %
+  % PROPOSAL: Merge TIME_INTERVAL and QLI_FMD_INTERVAL.
+  %   maxNDays fmdMinDate fmdMaxDate dataMinDate dataMaxDate
+  %
+  % PROPOSAL: Include generate_quicklooks_interface:list_operation
 
 
 
@@ -178,6 +180,8 @@ classdef interface
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
         'LogFileDirPatternDict defines the wrong set of keys.')
 
+
+
       DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
       for i = 1:numel(dasaArgumentsCa)
@@ -226,6 +230,8 @@ classdef interface
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
+
+
       dsiCa = [solo.qli.batch.const.SOURCE_DSI_DICT.values{:}]';
 
       % Get raw list of DMRQ days.
@@ -248,8 +254,11 @@ classdef interface
       startInclFmdDt = datetime(dasaArgumentsCa{2});
       stopExclFmdDt  = datetime(dasaArgumentsCa{3});
 
+
+
       QliUfd = solo.qli.batch.fmd.get_days_from_QLI_FMD_interval( ...
         qliDir, startInclFmdDt, stopExclFmdDt, Fsr);
+
       if QliUfd.n == 0
         DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
       else

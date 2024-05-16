@@ -225,7 +225,7 @@ OutputPaths = solo.qli.utils.create_output_directories(outputDir);
 % official generation of quicklooks.
 % -------------------------------------------------------------------------
 % NOTE: As of 2024-03-21, this flag is only used for whether to explicitly
-% trigger automounts (requires knowledge of hardcoded path). Whether to inclulde
+% trigger automounts (requires knowledge of hardcoded path). Whether to include
 % IRF logo is specified by the caller.
 % --
 % WARNING: This could potentially be bad for automated tests!

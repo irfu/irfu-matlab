@@ -1,6 +1,6 @@
 %
-% Code for obtaining days to reprocess QLIs based on file modification dates of
-% datasets and pre-existing QLIs.
+% Code for obtaining days to reprocess QLIs based on file modification dates
+% (FMD) of datasets and pre-existing QLIs.
 %
 %
 % NOTE: There are two types of timestamps in the implementation: (1) timestamps
@@ -73,7 +73,7 @@ classdef fmd
   %
   %
   %
-  % ~BUG: Bad thinking: Implementetion checks for *all* DSIs in *all* specified
+  % ~BUG: Bad thinking: Implementation checks for *all* DSIs in *all* specified
   %       dataset directories.
   %   If using both IRFU and LESIA dataset directories, then some datasets are
   %   found in both. Ideally, the algorithm should only check for the right
@@ -237,7 +237,7 @@ classdef fmd
       DsmdArray  = DsmdArray(bKeep);
       FmdDtArray = FmdDtArray(bKeep);
 
-      Ufd      = solo.qli.batch.UmdFmdDictionary();
+      Ufd        = solo.qli.batch.UmdFmdDictionary();
 
       for iDsmd = 1:numel(DsmdArray)
         % IMPLEMENTATION NOTE: Handle datasets which cover an arbitrary length

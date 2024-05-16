@@ -70,6 +70,9 @@ OFFGEN, "official generation"
 QLI
     QuickLooks IRFU ("IRFU quicklooks"). In the code it refers to the file
     representations of the quicklooks.
+SolO DB
+    Informal term for the irfu-matlab functionality behind solo.get_ts() and
+    solo.db_list_files().
 UFD
     Class solo.qli.batch.UmdFmdDictionary. Models dictionary UMD-->FMD.
 UMD
