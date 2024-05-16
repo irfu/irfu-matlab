@@ -21,8 +21,11 @@
 % outputDir
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
 % operationId
+%       See solo.qli.batch.generate_quicklooks_shell().
 % dasaid
+%       See solo.qli.batch.generate_quicklooks_shell().
 % dasaArgumentsCa
+%       See solo.qli.batch.generate_quicklooks_shell().
 %
 %
 % RETURN VALUES

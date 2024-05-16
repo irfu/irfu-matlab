@@ -35,9 +35,9 @@ generate_quicklook_7days_using_DB_SPICE.m
 
 
 
-========================================
- Various source code naming conventions
-========================================
+==========================================================
+ Various source code and documentation naming conventions
+==========================================================
 NOTE: Additionally tries to follow BICAS conventions. See
       irfu-matlab/mission/solar_orbiter/bicas/readme.txt
 --
@@ -50,7 +50,7 @@ DASAID
 DICT
     MATLAB dictionary object.
 DMRQ
-    Datasets More Recent than QLI (file) algorithm. DASA.
+    Datasets More Recent than QLI (file) algorithm. A particular DASA.
     A day is included if (1) the most recent QLI FMD (for that day) is
     more recent than the most recent input dataset (for that day), or (2) there
     is no QLI for that day.
@@ -65,8 +65,6 @@ FSR
     Class solo.qli.batch.FileSystemReaderAbstract and subclasses thereof.
 GQL
     Class solo.qli.batch.GenerateQuicklooksAbstract and subclasses thereof.
-OFFGEN, "official generation"
-    Official Generation of quicklooks for the homepage.
 QLI
     QuickLooks IRFU ("IRFU quicklooks"). In the code it refers to the file
     representations of the quicklooks.
@@ -74,6 +72,6 @@ SolO DB
     Informal term for the irfu-matlab functionality behind solo.get_ts() and
     solo.db_list_files().
 UFD
-    Class solo.qli.batch.UmdFmdDictionary. Models dictionary UMD-->FMD.
+    Class solo.qli.batch.UmdFmdDictionary. Models a dictionary UMD-->FMD.
 UMD
     UTC Midnight Date (timestamp).

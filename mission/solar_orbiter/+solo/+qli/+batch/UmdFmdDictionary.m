@@ -1,5 +1,5 @@
 %
-% Dictionary for day (midnight, UTC) --> timestamp (no timezone time zone).
+% Dictionary for day (UMD) --> timestamp (no timezone time zone).
 % Intended for storing one FMD per day of data, without assuming continuous time
 % ranges of data.
 %
@@ -9,12 +9,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef UmdFmdDictionary
-  % PROPOSAL: Better name,
-  %   day, datasets, FMD, midnight, UTC
-  %   DayFmdDictionary = DFD
-  %   DataDayFmdDictionary = DDFD
-  %   UmdFmdDictionary  = UFDictionary = UFD
-  %
   % PROBLEM: Property "Dict" is not private despite that it should be.
 
 
@@ -121,7 +115,7 @@ classdef UmdFmdDictionary
 
 
     function isEqual = isequal(obj, otherUfd)
-      if ~isa(obj, 'solo.qli.batch.UmdFmdDictionary')
+      if     ~isa(obj,      'solo.qli.batch.UmdFmdDictionary')
         isEqual = false;
       elseif ~isa(otherUfd, 'solo.qli.batch.UmdFmdDictionary')
         isEqual = false;

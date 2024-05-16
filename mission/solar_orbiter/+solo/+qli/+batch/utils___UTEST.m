@@ -5,9 +5,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef utils___UTEST < matlab.unittest.TestCase
-  % PROPOSAL: Replace hardcoded JSON config file with actual "example config
-  %           file" on disk.
-  %   PROPOSAL: Use as OFFGEN config file.
 
 
 
@@ -24,6 +21,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
       Fixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       configFilePath = fullfile(Fixture.Folder, 'config.json');
 
+      % Write config file.
       solo.qli.batch.utils.write_file(...
         configFilePath, ...
         {
@@ -46,7 +44,17 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
       ActConfig = solo.qli.batch.utils.read_config_file(configFilePath);
 
-      testCase.verifyEqual(ActConfig.vhtDir, '/data/solo/data_yuri/')
+      % NOTE: Only checking some values.
+      testCase.assertEqual(ActConfig.vhtDir, '/data/solo/data_yuri/')
+      testCase.assertEqual( ...
+        sort(ActConfig.datasetDirsCa), ...
+        sort({'/data/solo/remote/data'; '/data/solo/soar'}) ...
+        )
+
+      ExpLogFileDirPatternDict = dictionary();
+      ExpLogFileDirPatternDict('SOAR')  = "/home/erjo/logs/so_soar_irfu_mirror_sync.*.log";
+      ExpLogFileDirPatternDict('LESIA') = "/home/erjo/logs/pull.so.data.cron.brain.*.log";
+      testCase.assertEqual(ActConfig.LogFileDirPatternDict, ExpLogFileDirPatternDict)
     end
 
 
