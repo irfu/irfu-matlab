@@ -3,9 +3,8 @@
 % how to select dates, e.g. specify range, derive from logs, derive from file
 % modification dates etc.
 %
-% NOTE: This function is intended for being called from another, custom MATLAB
-%       function which specifies (hardcodes) the relevant system setup and
-%       initializes "SolO DB", and which is in turn called by a bash script.
+% NOTE: This function is primarily intended to be called from
+%       solo.qli.batch.generate_quicklooks_interface_offgen().
 %
 %
 % ARGUMENTS
@@ -23,11 +22,7 @@
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
 % operationId
 % dasaid
-%       String constant which specifies which DASA (algorithm) should be used
-%       for obtaining dates.
 % dasaArgumentsCa
-%       1D column cell array. Arguments associated with the selected DASA
-%       (dasaid).
 %
 %
 % RETURN VALUES
@@ -50,6 +45,7 @@ function generate_quicklooks_interface(...
 %   ~main
 %   ~syntax
 %   ~DASA
+%   ~DASA arguments
 %
 % ~PROBLEM/UGLY: Specifying generation-specific arguments also when no
 %                QLIs should be generated.

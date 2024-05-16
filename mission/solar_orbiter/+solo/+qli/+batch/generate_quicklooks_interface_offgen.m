@@ -76,7 +76,8 @@
 %       String constant which specifies which DASA (algorithm) should be used
 %       for obtaining dates.
 % varargin
-%       Arguments associated with the selected DASA (dasaid). Meaning varies.
+%       Arguments used by the selected DASA (dasaid). Meaning varies depending
+%       on "dasaid".
 %
 %
 % RETURN VALUES

@@ -44,7 +44,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
         } ...
       )
 
-      ActConfig = solo.qli.batch.utils.read_config_file(configFilePath);      
+      ActConfig = solo.qli.batch.utils.read_config_file(configFilePath);
 
       testCase.verifyEqual(ActConfig.vhtDir, '/data/solo/data_yuri/')
     end

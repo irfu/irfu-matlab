@@ -51,7 +51,7 @@
 % Gql
 %       solo.qli.batch.GenerateQuicklooks* object. Should be an instance of
 %       solo.qli.batch.GenerateQuicklooksImplementation object in the nominal
-%       case. Arugment exists to facilitate automated tests.
+%       case. Argument exists to facilitate automated tests.
 %
 %
 % Initially created ~<2021-03-11, based on code by Konrad Steinvall, IRF,
