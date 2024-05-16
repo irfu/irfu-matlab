@@ -69,8 +69,8 @@ classdef utils
     %
     % ARGUMENTS
     % =========
-    % DayDtArray
-    %       datetime column array. Every timestamp is midnight and represents
+    % UmdDtArray
+    %       UMD datetime column array. Every timestamp represents
     %       the 24h period which begins at that timestamp.
     % firstDayOfWeek
     %       First day of week. datetime convention (1=Sunday, ..., 7=Saturday).
@@ -78,24 +78,24 @@ classdef utils
     %
     % RETURN VALUE
     % ============
-    % WeekDtArray
-    %       datetime column array. Every timestamp is midnight and represents
-    %       the week (contiguous 7-day period) which begins at that timestamp.
+    % WeekUmdDtArray
+    %       UMD datetime column array. Every timestamp represents the week
+    %       (contiguous 7-day period) which begins at that timestamp.
     %
-    function WeekDtArray = derive_weeks(DayDtArray, firstDayOfWeek)
-      solo.qli.utils.assert_UMD_DT(DayDtArray)
-      assert(iscolumn(DayDtArray))
+    function WeekUmdDtArray = derive_weeks(UmdDtArray, firstDayOfWeek)
+      solo.qli.utils.assert_UMD_DT(UmdDtArray)
+      assert(iscolumn(UmdDtArray))
 
       % Find nearest previous day with specified weekday
       % ------------------------------------------------
       % IMPLEMENTATION NOTE: dateshift(... 'dayofweek' ...) can only search
       % forward. Subtracts days to "round down" instead.
-      WeekDtArray = dateshift(DayDtArray - caldays(6), 'dayofweek', firstDayOfWeek);
+      WeekUmdDtArray = dateshift(UmdDtArray - caldays(6), 'dayofweek', firstDayOfWeek);
 
       % IMPLEMENTATION NOTE: Important to eliminate doubles since, every initial
       % timestamp within the same week will separately generate the same
       % timestamp reresenting the same week.
-      WeekDtArray = sort(unique(WeekDtArray));
+      WeekUmdDtArray = sort(unique(WeekUmdDtArray));
     end
 
 

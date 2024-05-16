@@ -65,11 +65,11 @@ classdef interface_get_days_from_logs___UTEST < matlab.unittest.TestCase
       LOG_FILE_DIR_PATTERN_DICT('SOAR')  = fullfile(testCase.inputLogDir, 'SOAR_*.log');
       LogFileDirPatternDict              = LOG_FILE_DIR_PATTERN_DICT;
 
-      ActDaysDtArray = solo.qli.batch.interface.get_days_from_logs(...
+      ActUmdDtArray = solo.qli.batch.interface.get_days_from_logs(...
         LogFileDirPatternDict, {'LESIA', 'SOAR'} ...
         );
 
-      testCase.assertEqual(ActDaysDtArray, solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(ActUmdDtArray, solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
@@ -88,11 +88,11 @@ classdef interface_get_days_from_logs___UTEST < matlab.unittest.TestCase
       LOG_FILE_DIR_PATTERN_DICT('SOAR')  = fullfile(testCase.inputLogDir, 'SOAR_*.log');
       LogFileDirPatternDict              = LOG_FILE_DIR_PATTERN_DICT;
 
-      ActDaysDtArray = solo.qli.batch.interface.get_days_from_logs(...
+      ActUmdDtArray = solo.qli.batch.interface.get_days_from_logs(...
         LogFileDirPatternDict, {'LESIA', 'SOAR'} ...
         );
 
-      testCase.assertEqual(ActDaysDtArray, solo.qli.utils.umddt({'2023-01-01'; '2023-02-02'}))
+      testCase.assertEqual(ActUmdDtArray, solo.qli.utils.umddt({'2023-01-01'; '2023-02-02'}))
     end
 
 

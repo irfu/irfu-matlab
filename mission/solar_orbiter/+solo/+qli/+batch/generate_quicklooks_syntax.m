@@ -64,7 +64,7 @@ irf.log('n', sprintf('dasaid      = "%s"', dasaid))
 
 
 
-DaysDtArray = solo.qli.batch.interface.get_days_from_DASA(...
+UmdDtArray = solo.qli.batch.interface.get_days_from_DASA(...
   Config.datasetDirsCa, ...
   Config.LogFileDirPatternDict, ...
   Fsr, ...
@@ -78,7 +78,7 @@ switch(operationId)
     %=============================================
     % List dates (do not generate any quicklooks)
     %=============================================
-    list_operation(DaysDtArray)
+    list_operation(UmdDtArray)
 
   case 'GENERATE'
     %=====================
@@ -87,7 +87,7 @@ switch(operationId)
     solo.qli.batch.generate_quicklooks(...
       Config.irfLogoPath, Config.vhtDir, outputDir, ...
       generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
-      DaysDtArray, Gql)
+      UmdDtArray, Gql)
 
   otherwise
     error('Illegal operationId="%s"', operationId)
@@ -99,14 +99,14 @@ end
 
 
 % NOTE: Does not use irf.log().
-function list_operation(DaysDtArray)
+function list_operation(UmdDtArray)
 
 % Compensate for that preceding log message appears to not end with line feed.
 fprintf('\n')
 
-nDates = numel(DaysDtArray);
+nDates = numel(UmdDtArray);
 for i = 1:nDates
-  Dt = DaysDtArray(i);
+  Dt = UmdDtArray(i);
   fprintf('%04i-%02i-%02i\n', Dt.Year, Dt.Month, Dt.Day)
 end
 fprintf('Number of dates: %i\n', nDates)

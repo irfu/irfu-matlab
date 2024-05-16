@@ -17,8 +17,8 @@ classdef GenerateQuicklooksTest < solo.qli.batch.GenerateQuicklooksAbstract
     % 1D column arrays of the dates for which
     % generate_quicklooks_24h_6h_2h_using_DB_SPICE()/generate_quicklook_7days_using_DB_SPICE()
     % was called, in the order it was called.
-    Dt24h6h2hArray
-    Dt7daysArray
+    UmdDt24h6h2hArray
+    UmdDt7daysArray
 
     % 1D column arrays of the dates for which
     % generate_quicklooks_24h_6h_2h_using_DB_SPICE()/generate_quicklook_7days_using_DB_SPICE()
@@ -39,8 +39,8 @@ classdef GenerateQuicklooksTest < solo.qli.batch.GenerateQuicklooksAbstract
 
 
     function obj = GenerateQuicklooksTest(varargin)
-      obj.Dt24h6h2hArray = solo.qli.const.EMPTY_DT_ARRAY;
-      obj.Dt7daysArray   = solo.qli.const.EMPTY_DT_ARRAY;
+      obj.UmdDt24h6h2hArray = solo.qli.const.EMPTY_DT_ARRAY;
+      obj.UmdDt7daysArray   = solo.qli.const.EMPTY_DT_ARRAY;
 
       switch(nargin)
         case 0
@@ -57,7 +57,7 @@ classdef GenerateQuicklooksTest < solo.qli.batch.GenerateQuicklooksAbstract
 
 
     function generate_quicklooks_24h_6h_2h_using_DB_SPICE(obj, Dt, varargin)
-      obj.Dt24h6h2hArray = [obj.Dt24h6h2hArray; Dt];
+      obj.UmdDt24h6h2hArray = [obj.UmdDt24h6h2hArray; Dt];
       if ismember(Dt, obj.Dt24h6h2ExceptionArray)
         error('Test error')
       end
@@ -66,7 +66,7 @@ classdef GenerateQuicklooksTest < solo.qli.batch.GenerateQuicklooksAbstract
 
 
     function generate_quicklook_7days_using_DB_SPICE(obj, Dt, varargin)
-      obj.Dt7daysArray = [obj.Dt7daysArray; Dt];
+      obj.UmdDt7daysArray = [obj.UmdDt7daysArray; Dt];
       if ismember(Dt, obj.Dt7daysExceptionArray)
         error('Test error')
       end

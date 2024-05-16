@@ -41,8 +41,8 @@ classdef UmdFmdDictionary___UTEST < matlab.unittest.TestCase
       function assert_UFD_1(Ufd)
         testCase.assertEqual(Ufd(C.UMD_1), C.FMD_1)
         testCase.assertEqual(Ufd.n, 1)
-        testCase.assertEqual(Ufd.DaysDtArray, C.UMD_1)
-        testCase.assertEqual(Ufd.FmdDtArray,  C.FMD_1)
+        testCase.assertEqual(Ufd.UmdDtArray, C.UMD_1)
+        testCase.assertEqual(Ufd.FmdDtArray, C.FMD_1)
       end
 
       function assert_UFD_2(Ufd)
@@ -50,14 +50,14 @@ classdef UmdFmdDictionary___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(Ufd(C.UMD_2), C.FMD_2)
         testCase.assertEqual(Ufd.n, 2)
         % NOTE: Not assuming order of arrays.
-        testCase.assertEqual(sort(Ufd.DaysDtArray), sort([C.UMD_1; C.UMD_2 ]))
-        testCase.assertEqual(sort(Ufd.FmdDtArray),  sort([C.FMD_1; C.FMD_2]))
+        testCase.assertEqual(sort(Ufd.UmdDtArray), sort([C.UMD_1; C.UMD_2 ]))
+        testCase.assertEqual(sort(Ufd.FmdDtArray), sort([C.FMD_1; C.FMD_2]))
       end
 
       Ufd = solo.qli.batch.UmdFmdDictionary();
       testCase.assertEqual(Ufd.n, 0)
-      testCase.assertEqual(Ufd.DaysDtArray, solo.qli.const.EMPTY_DT_ARRAY)
-      testCase.assertEqual(Ufd.FmdDtArray,  datetime.empty(0, 1))
+      testCase.assertEqual(Ufd.UmdDtArray, solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(Ufd.FmdDtArray, datetime.empty(0, 1))
 
       Ufd(C.UMD_1) = C.FMD_1;
       Ufd2 = solo.qli.batch.UmdFmdDictionary(C.UMD_1, C.FMD_1);

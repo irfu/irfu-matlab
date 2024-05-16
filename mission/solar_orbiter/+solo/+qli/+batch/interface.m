@@ -51,7 +51,7 @@ classdef interface
     %     solo.qli.batch.FileSystemReader* object. Should be an instance of
     %     solo.qli.batch.FileSystemReaderImplementation object in the nominal
     %     case. Arugment exists to facilitate automated tests.
-    function DaysDtArray = get_days_from_DASA(...
+    function UmdDtArray = get_days_from_DASA(...
         datasetDirsCa, LogFileDirPatternDict, Fsr, ...
         fmdQliDir, dasaid, dasaArgumentsCa)
 
@@ -64,21 +64,21 @@ classdef interface
 
       switch(dasaid)
         case 'TIME_INTERVAL'
-          DaysDtArray = solo.qli.batch.interface.get_days_from_time_interval(...
+          UmdDtArray = solo.qli.batch.interface.get_days_from_time_interval(...
             dasaArgumentsCa);
 
         case 'LOGS'
-          DaysDtArray = solo.qli.batch.interface.get_days_from_logs(...
+          UmdDtArray = solo.qli.batch.interface.get_days_from_logs(...
             Settings.LogFileDirPatternDict, ...
             dasaArgumentsCa);
 
         case 'DMRQ'
-          DaysDtArray = solo.qli.batch.interface.get_days_from_DMRQ(...
+          UmdDtArray = solo.qli.batch.interface.get_days_from_DMRQ(...
             Settings.datasetDirsCa, fmdQliDir, Settings.Fsr, ...
             dasaArgumentsCa);
 
         case 'QLI_FMD_INTERVAL'
-          DaysDtArray = solo.qli.batch.interface.get_days_from_QLI_FMD_interval( ...
+          UmdDtArray = solo.qli.batch.interface.get_days_from_QLI_FMD_interval( ...
             fmdQliDir, Settings.Fsr, dasaArgumentsCa);
 
         otherwise
@@ -114,7 +114,7 @@ classdef interface
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     % First created 2022-08-30.
     %
-    function DaysDtArray = get_days_from_time_interval(...
+    function UmdDtArray = get_days_from_time_interval(...
         dasaArgumentsCa)
 
       solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 2)
@@ -149,7 +149,7 @@ classdef interface
       % -----------------------------------------------------------------------
       % IMPLEMENTATION NOTE: Needs to use "caldays()" not "days()" for handling leap
       %                      seconds.
-      DaysDtArray = [BeginDayInclDt:caldays(1):EndDayInclDt]';
+      UmdDtArray = [BeginDayInclDt:caldays(1):EndDayInclDt]';
     end
 
 
@@ -169,12 +169,12 @@ classdef interface
     %
     % RETURN VALUES
     % =============
-    % DaysDtArray
+    % UmdDtArray
     %
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function DaysDtArray = get_days_from_logs(LogFileDirPatternDict, dasaArgumentsCa)
+    function UmdDtArray = get_days_from_logs(LogFileDirPatternDict, dasaArgumentsCa)
       assert(isequal(...
         sort(LogFileDirPatternDict.keys), ...
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
@@ -182,7 +182,7 @@ classdef interface
 
 
 
-      DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
+      UmdDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
       for i = 1:numel(dasaArgumentsCa)
         datasetsSourceId = dasaArgumentsCa{i};
@@ -196,13 +196,13 @@ classdef interface
         dsiCa             = dsiCaCa{1};
         logFileDirPattern = LogFileDirPatternDict(datasetsSourceId);
 
-        SourceDaysDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
+        SourceUmdDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
           logFileDirPattern, dsiCa);
 
-        DaysDtArray = [DaysDtArray; SourceDaysDtArray];
+        UmdDtArray = [UmdDtArray; SourceUmdDtArray];
       end
 
-      DaysDtArray = unique(DaysDtArray);
+      UmdDtArray = unique(UmdDtArray);
     end
 
 
@@ -213,12 +213,12 @@ classdef interface
     %
     % RETURN VALUES
     % =============
-    % DaysDtArray
+    % UmdDtArray
     %
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function DaysDtArray = get_days_from_DMRQ(...
+    function UmdDtArray = get_days_from_DMRQ(...
         datasetDirsCa, qliDir, Fsr, dasaArgumentsCa)
 
       solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 3)
@@ -235,17 +235,17 @@ classdef interface
       dsiCa = [solo.qli.batch.const.SOURCE_DSI_DICT.values{:}]';
 
       % Get raw list of DMRQ days.
-      DaysDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_and_FS(...
+      UmdDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_and_FS(...
         datasetDirsCa, qliDir, dsiCa, Fsr);
 
       % Filter list of days.
-      DaysDtArray = solo.qli.batch.interface.filter_days_array(...
-        DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr);
+      UmdDtArray = solo.qli.batch.interface.filter_days_array(...
+        UmdDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr);
     end
 
 
 
-    function DaysDtArray = get_days_from_QLI_FMD_interval(...
+    function UmdDtArray = get_days_from_QLI_FMD_interval(...
         qliDir, Fsr, dasaArgumentsCa)
 
       solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 3)
@@ -260,13 +260,13 @@ classdef interface
         qliDir, startInclFmdDt, stopExclFmdDt, Fsr);
 
       if QliUfd.n == 0
-        DaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
+        UmdDtArray = solo.qli.const.EMPTY_DT_ARRAY;
       else
-        DaysDtArray = QliUfd.DaysDtArray;
+        UmdDtArray = QliUfd.UmdDtArray;
       end
 
-      DaysDtArray = solo.qli.batch.interface.filter_days_array(...
-        DaysDtArray, maxNDaysStr, '0000-01-01', '9999-12-31');
+      UmdDtArray = solo.qli.batch.interface.filter_days_array(...
+        UmdDtArray, maxNDaysStr, '0000-01-01', '9999-12-31');
     end
 
 
@@ -321,10 +321,10 @@ classdef interface
 
 
     % Utility function for filtering an array of days.
-    function DaysDtArray = filter_days_array(...
-        DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
+    function UmdDtArray = filter_days_array(...
+        UmdDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
 
-      solo.qli.utils.assert_UMD_DT(DaysDtArray)
+      solo.qli.utils.assert_UMD_DT(UmdDtArray)
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
@@ -341,12 +341,12 @@ classdef interface
       % number of dates (since that makes sense).
 
       % Remove date outside specified time interval.
-      bKeep       = (Dt1 <= DaysDtArray) & (DaysDtArray < Dt2);
-      DaysDtArray = DaysDtArray(bKeep);
+      bKeep      = (Dt1 <= UmdDtArray) & (UmdDtArray < Dt2);
+      UmdDtArray = UmdDtArray(bKeep);
 
       % Remove last dates, if exceeding number of dates.
-      bKeep       = [1:min(maxNDays, numel(DaysDtArray))]';
-      DaysDtArray = DaysDtArray(bKeep);
+      bKeep      = [1:min(maxNDays, numel(UmdDtArray))]';
+      UmdDtArray = UmdDtArray(bKeep);
     end
 
 

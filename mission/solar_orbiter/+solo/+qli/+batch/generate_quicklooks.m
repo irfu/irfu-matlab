@@ -41,7 +41,7 @@
 %       and/or weekly quicklooks.
 %       Useful for testing and not re-running unnecessary time-consuming
 %       quicklooks.
-% DaysDtArray
+% DaysUmdDtArray
 %       Column array of datetime objects. UTC, midnight only
 %       (TimeZone = "UTCLeapSeconds").
 %       Defines days for which quicklooks should be generated. A day is
@@ -59,7 +59,7 @@
 %
 function generate_quicklooks(...
   irfLogoPath, vhtDataDir, outputDir, ...
-  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysDtArray, Gql)
+  generateNonweeklyQuicklooks, generateWeeklyQuicklooks, DaysUmdDtArray, Gql)
 
 % NOTE: Data begins on 2020-02-12=Wednesday.
 % ==> There is no SPICE data on Monday-Tuesday before this date.
@@ -152,14 +152,14 @@ assert(...
 assert(...
   islogical(generateWeeklyQuicklooks   ) & isscalar(generateWeeklyQuicklooks), ...
   'Argument generateWeeklyQuicklooks is not a scalar logical.')
-assert(iscolumn(DaysDtArray), 'Argument DaysDtArray is not column array (Nx1).')
-solo.qli.utils.assert_UMD_DT(DaysDtArray)
+assert(iscolumn(DaysUmdDtArray), 'Argument DaysUmdDtArray is not column array (Nx1).')
+solo.qli.utils.assert_UMD_DT(DaysUmdDtArray)
 assert(isa(Gql, 'solo.qli.batch.GenerateQuicklooksAbstract'))
 
 
 
 % "Normalize"
-DaysDtArray = unique(DaysDtArray);
+DaysUmdDtArray = unique(DaysUmdDtArray);
 
 
 
@@ -181,7 +181,7 @@ irf.log('n', sprintf('vhtDataDir                    = "%s"', vhtDataDir))
 irf.log('n', sprintf('outputDir                     = "%s"', outputDir))
 irf.log('n', sprintf('generateNonweeklyQuicklooks   = %d',   generateNonweeklyQuicklooks))
 irf.log('n', sprintf('generateWeeklyQuicklooks      = %d',   generateWeeklyQuicklooks))
-irf.log('n', sprintf('numel(DaysDtArray)            = %d',   numel(DaysDtArray)))
+irf.log('n', sprintf('numel(DaysUmdDtArray)         = %d',   numel(DaysUmdDtArray)))
 % Log misc. variables
 irf.log('n', sprintf('automountTriggeringPathsCa    = {%s}', strjoin(automountTriggeringPathsCa, ', ')))
 % Log selected constants.
@@ -211,17 +211,17 @@ if generateNonweeklyQuicklooks
   % brain:/solo/data/data_yuri/.
   vhtFile1hPath = fullfile(vhtDataDir, solo.qli.const.VHT_1H_DATA_FILENAME);
 
-  for iDay = 1:length(DaysDtArray)
-    DayDt = DaysDtArray(iDay);
+  for iDay = 1:length(DaysUmdDtArray)
+    DayUmdDt = DaysUmdDtArray(iDay);
 
     try
       trigger_automounting(automountTriggeringPathsCa)
 
       irf.log('n',         '============================================================')
-      irf.log('n', sprintf('Calling 24h/6h/2h plot function for %s', string(DayDt)))
+      irf.log('n', sprintf('Calling 24h/6h/2h plot function for %s', string(DayUmdDt)))
       irf.log('n',         '============================================================')
       tBeginSec = tic();
-      Gql.generate_quicklooks_24h_6h_2h_using_DB_SPICE(DayDt, vhtFile1hPath, OutputPaths, irfLogoPath)
+      Gql.generate_quicklooks_24h_6h_2h_using_DB_SPICE(DayUmdDt, vhtFile1hPath, OutputPaths, irfLogoPath)
       solo.qli.utils.log_time('Time to generate one day''s 24h/6h/2h quicklooks', tBeginSec);
     catch Exc
       PlotExcArray(end+1) = Exc;
@@ -238,23 +238,23 @@ end
 if generateWeeklyQuicklooks
 
   % Derive weeks from specified days (midnights which begin 7-day periods).
-  WeeksDtArray = solo.qli.utils.derive_weeks(DaysDtArray, solo.qli.const.FIRST_DAY_OF_WEEK);
+  WeeksUmdDtArray = solo.qli.utils.derive_weeks(DaysUmdDtArray, solo.qli.const.FIRST_DAY_OF_WEEK);
 
   % This is the .mat file containing RPW speeds at 6h resolution.
   % The file should be in the same folder as this script (quicklook_main).
   vhtFile6hPath = fullfile(vhtDataDir, solo.qli.const.VHT_6H_DATA_FILENAME);
 
-  for iWeek = 1:numel(WeeksDtArray)
-    WeekDt = WeeksDtArray(iWeek);
+  for iWeek = 1:numel(WeeksUmdDtArray)
+    WeekUmdDt = WeeksUmdDtArray(iWeek);
 
     try
       trigger_automounting(automountTriggeringPathsCa)
 
       irf.log('n',         '========================================================')
-      irf.log('n', sprintf('Calling 7-day plot function for %s', string(WeekDt)))
+      irf.log('n', sprintf('Calling 7-day plot function for %s', string(WeekUmdDt)))
       irf.log('n',         '========================================================')
       tBeginSec = tic();
-      Gql.generate_quicklook_7days_using_DB_SPICE(WeekDt, vhtFile6hPath, OutputPaths.dir1w, irfLogoPath)
+      Gql.generate_quicklook_7days_using_DB_SPICE(WeekUmdDt, vhtFile6hPath, OutputPaths.dir1w, irfLogoPath)
       solo.qli.utils.log_time('Time to generate one 7-day quicklook', tBeginSec);
     catch Exc
       PlotExcArray(end+1) = Exc;
@@ -267,7 +267,7 @@ end
 
 wallTimeSec     = toc(tSec);
 wallTimeHours   = wallTimeSec/3600;
-nQuicklooksDays = numel(DaysDtArray);
+nQuicklooksDays = numel(DaysUmdDtArray);
 
 % NOTE: Execution speed may vary by orders of magnitude depending on settings
 % (nonweekly vs weekly plots). May therefore want scientific notation.

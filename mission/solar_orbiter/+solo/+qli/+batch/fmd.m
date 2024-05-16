@@ -126,14 +126,14 @@ classdef fmd
 
       QliUfd2 = solo.qli.batch.UmdFmdDictionary();
 
-      DayDtArray = QliUfd1.DaysDtArray();
+      UmdDtArray = QliUfd1.UmdDtArray();
       FmdDtArray = QliUfd1.FmdDtArray();
       for i = 1:QliUfd1.n
-        DayDt = DayDtArray(i);
+        UmdDt = UmdDtArray(i);
         FmdDt = FmdDtArray(i);
 
         if (startInclFmdDt <= FmdDt) && (FmdDt < stopExclFmdDt)
-          QliUfd2(DayDt) = FmdDt;
+          QliUfd2(UmdDt) = FmdDt;
         end
       end
     end
@@ -142,7 +142,7 @@ classdef fmd
 
     % Derive array of dates from the DMRQ and by reading file system data
     % itself.
-    function DaysDtArray = get_days_from_DMRQ_and_FS(datasetDirsCa, qliDir, dsiCa, Fsr)
+    function UmdDtArray = get_days_from_DMRQ_and_FS(datasetDirsCa, qliDir, dsiCa, Fsr)
       assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
       assert(ischar(qliDir))
 
@@ -167,10 +167,10 @@ classdef fmd
       % Derive dates
       %==============
       irf.log('n', 'Determining days for which QLIs could/should be updated (DMRQ).')
-      DaysDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_algorithm(...
+      UmdDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_algorithm(...
         DatasetsUfd, QliUfd);
 
-      solo.qli.utils.assert_UMD_DT(DaysDtArray)
+      solo.qli.utils.assert_UMD_DT(UmdDtArray)
     end
 
 
@@ -181,7 +181,7 @@ classdef fmd
         DatasetsUfd, QliUfd)
 
       AllDatasetsDtArray = intersect(...
-        DatasetsUfd.DaysDtArray(), QliUfd.DaysDtArray());
+        DatasetsUfd.UmdDtArray(), QliUfd.UmdDtArray());
 
       % Preallocate.
       ChangedDatasetsDtArray = NaT(...
@@ -299,7 +299,7 @@ classdef fmd
       irf.log('n', 'Collecting paths and FMDs for QLIs.')
       [qliPathsCa, qliFmdDtArray] = Fsr.get_file_paths_FMDs({qliDir});
       qliFmdDtArray = qliFmdDtArray(:);    % Normalize to column vector.
-      QliUfd      = solo.qli.batch.fmd.construct_QLI_UFD(...
+      QliUfd        = solo.qli.batch.fmd.construct_QLI_UFD(...
         qliPathsCa, qliFmdDtArray);
     end
 

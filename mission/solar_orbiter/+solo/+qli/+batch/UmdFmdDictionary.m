@@ -3,7 +3,7 @@
 % Intended for storing one FMD per day of data, without assuming continuous time
 % ranges of data.
 %
-% Keys are referred to as "Day", and values as FMD.
+% Keys are referred to as UMD, and values as FMD.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -28,7 +28,7 @@ classdef UmdFmdDictionary
     Dict
   end
   properties(Access=public)
-    DaysDtArray
+    UmdDtArray
     FmdDtArray
     n
   end
@@ -48,34 +48,34 @@ classdef UmdFmdDictionary
     function obj = UmdFmdDictionary(varargin)
 
       if numel(varargin) == 0
-        DatasetDaysDtArray = solo.qli.const.EMPTY_DT_ARRAY;
-        FmdDtArray         = datetime(cell(0, 1));
+        UmdDtArray = solo.qli.const.EMPTY_DT_ARRAY;
+        FmdDtArray = datetime(cell(0, 1));
       elseif numel(varargin) == 2
-        DatasetDaysDtArray = varargin{1};
-        FmdDtArray         = varargin{2};
+        UmdDtArray = varargin{1};
+        FmdDtArray = varargin{2};
       else
         error('Illegal number of arguments.')
       end
 
       % ASSERTIONS
-      solo.qli.utils.assert_UMD_DT(DatasetDaysDtArray)
+      solo.qli.utils.assert_UMD_DT(UmdDtArray)
       assert(isa(FmdDtArray, 'datetime'))
       assert(strcmp(FmdDtArray.TimeZone, ''))
       irf.assert.sizes(...
-        DatasetDaysDtArray, [-1], ...
-        FmdDtArray,         [-1])
+        UmdDtArray, [-1], ...
+        FmdDtArray, [-1])
       % Unique days.
-      assert(numel(unique(DatasetDaysDtArray)) == numel(DatasetDaysDtArray))
+      assert(numel(unique(UmdDtArray)) == numel(UmdDtArray))
 
-      obj.Dict = dictionary(DatasetDaysDtArray, FmdDtArray);
+      obj.Dict = dictionary(UmdDtArray, FmdDtArray);
       % NOTE: dictionary does not store TimeZone for empty arrays, i.e.
       % obj.Dict.keys.TimeZone == ''.
     end
 
 
 
-    function isKey = is_key(obj, DayDt)
-      isKey = obj.Dict.isKey(DayDt);
+    function isKey = is_key(obj, UmdDt)
+      isKey = obj.Dict.isKey(UmdDt);
     end
 
 
@@ -137,10 +137,10 @@ classdef UmdFmdDictionary
     % Set one dictionary key value. In case of key collision, use the smaller of
     % the old and new value.
     %
-    function obj = set_if_smaller(obj, DayDt, FmdDt)
-      S = struct('type', '()', 'subs', {{DayDt}});
+    function obj = set_if_smaller(obj, UmdDt, FmdDt)
+      S = struct('type', '()', 'subs', {{UmdDt}});
 
-      if obj.is_key(DayDt)
+      if obj.is_key(UmdDt)
         oldValue = obj.subsref(S);
         if oldValue > FmdDt
           obj = obj.subsasgn(S, FmdDt);
@@ -157,10 +157,10 @@ classdef UmdFmdDictionary
     % Set one dictionary key value. In case of key collision, use the larger of
     % the old and new value.
     %
-    function obj = set_if_greater(obj, DayDt, FmdDt)
-      S = struct('type', '()', 'subs', {{DayDt}});
+    function obj = set_if_greater(obj, UmdDt, FmdDt)
+      S = struct('type', '()', 'subs', {{UmdDt}});
 
-      if obj.is_key(DayDt)
+      if obj.is_key(UmdDt)
         oldValue = obj.subsref(S);
         if oldValue < FmdDt
           obj = obj.subsasgn(S, FmdDt);
@@ -179,22 +179,22 @@ classdef UmdFmdDictionary
 
     % NOTE: Does not guarantee order, except that it is consistent with
     % get.FmdDtArray().
-    function DaysDtArray = get.DaysDtArray(obj)
-      DaysDtArray = obj.Dict.keys;
+    function UmdDtArray = get.UmdDtArray(obj)
+      UmdDtArray = obj.Dict.keys;
 
       % Normalize TimeZone (empty for empty array).
 
       % IMPLEMENTATION NOTE: dictionary does not store TimeZone for empty
       % arrays, i.e. obj.Dict.keys.TimeZone == ''.
-      if isempty(DaysDtArray)
-        DaysDtArray.TimeZone = 'UTCLeapSeconds';
+      if isempty(UmdDtArray)
+        UmdDtArray.TimeZone = 'UTCLeapSeconds';
       end
     end
 
 
 
     % NOTE: Does not guarantee order, except that it is consistent with
-    % get.DaysDtArray().
+    % get.UmdDtArray().
     function FmdDtArray = get.FmdDtArray(obj)
       FmdDtArray = obj.Dict.values;
     end
@@ -231,11 +231,11 @@ classdef UmdFmdDictionary
       for iUfd = 1:numel(UfdCa)
         InputUfd  = UfdCa{iUfd};
 
-        DayDtArray = InputUfd.DaysDtArray();
+        UmdDtArray = InputUfd.UmdDtArray();
         FmdDtArray = InputUfd.FmdDtArray();
 
-        for iKey = 1:numel(DayDtArray)
-          OutputDfmmd = OutputDfmmd.set_if_greater(DayDtArray(iKey), FmdDtArray(iKey));
+        for iKey = 1:numel(UmdDtArray)
+          OutputDfmmd = OutputDfmmd.set_if_greater(UmdDtArray(iKey), FmdDtArray(iKey));
         end
       end
 

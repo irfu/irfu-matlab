@@ -128,11 +128,11 @@ classdef fmd___UTEST < matlab.unittest.TestCase
       %==============
       datasetDirsCa = {dir1; dir2};
 
-      ActDaysDtArray = solo.qli.batch.interface.get_days_from_DMRQ(...
+      ActUmdDtArray = solo.qli.batch.interface.get_days_from_DMRQ(...
         datasetDirsCa, fmdQliDir, Fsr, ...
         {'9999', '2000-01-01', '2099-01-01'});
 
-      testCase.assertEqual(ActDaysDtArray, ...
+      testCase.assertEqual(ActUmdDtArray, ...
         solo.qli.utils.umddt({'2024-01-01'}))
     end
 
@@ -145,12 +145,12 @@ classdef fmd___UTEST < matlab.unittest.TestCase
         assert(ischar(qliDir))
 
         Fsr            = solo.qli.batch.FileSystemReaderTest(FsrDict);
-        ExpDaysDtArray = solo.qli.utils.umddt(expDaysStrCa);
+        ExpUmdDtArray = solo.qli.utils.umddt(expDaysStrCa);
 
-        ActDaysDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_and_FS(...
+        ActUmdDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_and_FS(...
           datasetDirsCa, qliDir, dsiCa, Fsr);
 
-        testCase.assertEqual(ActDaysDtArray, ExpDaysDtArray)
+        testCase.assertEqual(ActUmdDtArray, ExpUmdDtArray)
       end
 
       %=========================================================================

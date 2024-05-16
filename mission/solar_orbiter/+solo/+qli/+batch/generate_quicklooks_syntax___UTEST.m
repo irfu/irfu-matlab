@@ -108,8 +108,8 @@ classdef generate_quicklooks_syntax___UTEST < matlab.unittest.TestCase
         OPERATION_ID, 'TIME_INTERVAL', {'2024-01-01', '2024-01-01'}' ...
         )
 
-      testCase.assertEqual(testCase.Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
-      testCase.assertEqual(testCase.Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(testCase.Gql.UmdDt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(testCase.Gql.UmdDt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
@@ -124,19 +124,19 @@ classdef generate_quicklooks_syntax___UTEST < matlab.unittest.TestCase
 
       switch(OPERATION_ID)
         case 'LIST'
-          ExpDt24h6h2hArray = solo.qli.const.EMPTY_DT_ARRAY;
-          ExpDt7daysArray   = solo.qli.const.EMPTY_DT_ARRAY;
+          ExpUmdDt24h6h2hArray = solo.qli.const.EMPTY_DT_ARRAY;
+          ExpUmdDt7daysArray   = solo.qli.const.EMPTY_DT_ARRAY;
 
         case 'GENERATE'
-          ExpDt24h6h2hArray = solo.qli.utils.umddt('2024-01-01') + caldays([0:2]');
-          ExpDt7daysArray   = solo.qli.utils.umddt('2023-12-27') + calweeks([0:1]');
+          ExpUmdDt24h6h2hArray = solo.qli.utils.umddt('2024-01-01') + caldays([0:2]');
+          ExpUmdDt7daysArray   = solo.qli.utils.umddt('2023-12-27') + calweeks([0:1]');
 
         otherwise
           error('')
       end
 
-      testCase.assertEqual(testCase.Gql.Dt24h6h2hArray, ExpDt24h6h2hArray)
-      testCase.assertEqual(testCase.Gql.Dt7daysArray,   ExpDt7daysArray)
+      testCase.assertEqual(testCase.Gql.UmdDt24h6h2hArray, ExpUmdDt24h6h2hArray)
+      testCase.assertEqual(testCase.Gql.UmdDt7daysArray,   ExpUmdDt7daysArray)
     end
 
 
