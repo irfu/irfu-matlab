@@ -34,6 +34,14 @@ classdef interface
 
 
 
+    %###############
+    %###############
+    % DAY SELECTION
+    %###############
+    %###############
+
+
+
     % ARGUMENTS
     % =========
     % Fsr
@@ -73,70 +81,6 @@ classdef interface
         otherwise
           error('Illegal argument dateSelectionAlgorithmId="%s"', dateSelectionAlgorithmId)
       end
-    end
-
-
-
-    % Interpret argument for main function interface.
-    %
-    function value = interpret_boolean_flag(arg)
-      % NOTE: num2str() converts string/number-->string.
-      assert(isscalar(arg), 'Flag argument "%s" is not scalar.',   num2str(arg))
-      assert(ischar(arg),   'Flag argument "%s" is not a string.', num2str(arg))
-
-      if     ischar(arg) && arg=='0'
-        value = false;
-      elseif ischar(arg) && arg=='1'
-        value = true;
-      else
-        error('Can not interpret argument flag="%s". Illegal value.', arg)
-      end
-    end
-
-
-
-    % Function for checking whether string-valued argument is a date on form
-    % YYYY-MM-DD. Function is made to make it easy to generate more
-    % easy-to-understand error messages.
-    function check_interface_date_str(dateStr)
-      DATE_RE = '^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]$';
-
-      assert(ischar(dateStr))
-
-      i = regexp(dateStr, DATE_RE, 'once');
-      if isempty(i)
-        error('String "%s" is not on the form YYYY-MM-DD.', dateStr)
-      end
-    end
-
-
-
-    function DaysDtArray = filter_days_array(...
-        DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
-
-      solo.qli.utils.assert_UMD_DT(DaysDtArray)
-
-      solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
-      solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
-
-      Dt1      = solo.qli.utils.umddt(beginDayUtcInclStr);
-      Dt2      = solo.qli.utils.umddt(endDayUtcExclStr);
-      maxNDays = str2double(maxNDaysStr);
-
-      if ~isnumeric(maxNDays)
-        error('Argument "%s" could not be interpreted as a number.', maxNDaysStr)
-      end
-
-      % IMPLEMENTATION NOTE: Filtering by time interval BEFORE filtering by max
-      % number of dates (since that makes sense).
-
-      % Remove date outside specified time interval.
-      bKeep       = (Dt1 <= DaysDtArray) & (DaysDtArray < Dt2);
-      DaysDtArray = DaysDtArray(bKeep);
-
-      % Remove last dates, if exceeding number of dates.
-      bKeep       = [1:min(maxNDays, numel(DaysDtArray))]';
-      DaysDtArray = DaysDtArray(bKeep);
     end
 
 
@@ -311,6 +255,77 @@ classdef interface
 
       DaysDtArray = solo.qli.batch.interface.filter_days_array(...
         DaysDtArray, maxNDaysStr, '0000-01-01', '9999-12-31');
+    end
+
+
+
+    %###############
+    %###############
+    % MISCELLANEOUS
+    %###############
+    %###############
+
+
+
+    % Interpret argument for main function interface.
+    %
+    function value = interpret_boolean_flag(arg)
+      % NOTE: num2str() converts string/number-->string.
+      assert(isscalar(arg), 'Flag argument "%s" is not scalar.',   num2str(arg))
+      assert(ischar(arg),   'Flag argument "%s" is not a string.', num2str(arg))
+
+      if     ischar(arg) && arg=='0'
+        value = false;
+      elseif ischar(arg) && arg=='1'
+        value = true;
+      else
+        error('Can not interpret argument flag="%s". Illegal value.', arg)
+      end
+    end
+
+
+
+    % Function for checking whether string-valued argument is a date on form
+    % YYYY-MM-DD. Function is made to make it easy to generate more
+    % easy-to-understand error messages.
+    function check_interface_date_str(dateStr)
+      assert(ischar(dateStr))
+
+      i = regexp(dateStr, solo.qli.batch.const.DATE_RE, 'once');
+      if isempty(i)
+        error('String "%s" is not on the form YYYY-MM-DD.', dateStr)
+      end
+    end
+
+
+
+    % Utility function for filtering an array of days.
+    function DaysDtArray = filter_days_array(...
+        DaysDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
+
+      solo.qli.utils.assert_UMD_DT(DaysDtArray)
+
+      solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
+      solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
+
+      Dt1      = solo.qli.utils.umddt(beginDayUtcInclStr);
+      Dt2      = solo.qli.utils.umddt(endDayUtcExclStr);
+      maxNDays = str2double(maxNDaysStr);
+
+      if ~isnumeric(maxNDays)
+        error('Argument "%s" could not be interpreted as a number.', maxNDaysStr)
+      end
+
+      % IMPLEMENTATION NOTE: Filtering by time interval BEFORE filtering by max
+      % number of dates (since that makes sense).
+
+      % Remove date outside specified time interval.
+      bKeep       = (Dt1 <= DaysDtArray) & (DaysDtArray < Dt2);
+      DaysDtArray = DaysDtArray(bKeep);
+
+      % Remove last dates, if exceeding number of dates.
+      bKeep       = [1:min(maxNDays, numel(DaysDtArray))]';
+      DaysDtArray = DaysDtArray(bKeep);
     end
 
 

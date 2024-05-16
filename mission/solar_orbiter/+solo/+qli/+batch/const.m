@@ -32,6 +32,8 @@ classdef const
     % NOTE: Dictionary values specify DSIs (i.e. excluding CDAG).
     SOURCE_DSI_DICT = solo.qli.batch.const.get_DSIs()
 
+    % Regular expression for date string on form YYYY-MM-DD.
+    DATE_RE = '^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]$';
   end
 
 
