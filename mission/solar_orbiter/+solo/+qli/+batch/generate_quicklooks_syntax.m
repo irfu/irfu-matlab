@@ -4,12 +4,12 @@
 % modification dates etc.
 %
 % NOTE: This function is primarily intended to be called from
-%       solo.qli.batch.generate_quicklooks_interface_offgen().
+%       solo.qli.batch.generate_quicklooks_shell().
 %
 %
 % ARGUMENTS
 % =========
-% NOTE: Also see wrapper solo.qli.batch.generate_quicklooks_interface_offgen()
+% NOTE: Also see wrapper solo.qli.batch.generate_quicklooks_shell()
 %       for description of arguments.
 % --
 % Config
@@ -32,7 +32,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function generate_quicklooks_interface(...
+function generate_quicklooks_syntax(...
   Config, Gql, Fsr, outputDir, ...
   generateNonweeklyQuicklooks, generateWeeklyQuicklooks, ...
   operationId, dasaid, dasaArgumentsCa)

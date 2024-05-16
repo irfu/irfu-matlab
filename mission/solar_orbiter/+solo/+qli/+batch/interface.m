@@ -24,7 +24,7 @@ classdef interface
   % PROPOSAL: Merge TIME_INTERVAL and QLI_FMD_INTERVAL.
   %   maxNDays fmdMinDate fmdMaxDate dataMinDate dataMaxDate
   %
-  % PROPOSAL: Include generate_quicklooks_interface:list_operation
+  % PROPOSAL: Include generate_quicklooks_syntax:list_operation
 
 
 

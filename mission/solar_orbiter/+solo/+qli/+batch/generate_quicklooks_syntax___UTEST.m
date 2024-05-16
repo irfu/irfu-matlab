@@ -1,6 +1,6 @@
 %
 % matlab.unittest automatic test code for
-% solo.qli.batch.generate_quicklooks_interface() and indirectly
+% solo.qli.batch.generate_quicklooks_syntax() and indirectly
 % solo.qli.batch.interface.get_days_from_time_interval().
 %
 %
@@ -23,7 +23,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
+classdef generate_quicklooks_syntax___UTEST < matlab.unittest.TestCase
 
 
 
@@ -103,7 +103,7 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
     function test_time_interval_zero_days(testCase, OPERATION_ID)
       Settings = testCase.Settings; %#ok<*PROP>
 
-      solo.qli.batch.generate_quicklooks_interface(...
+      solo.qli.batch.generate_quicklooks_syntax(...
         Settings, testCase.Gql, testCase.Fsr, testCase.outputDir, true, true, ...
         OPERATION_ID, 'TIME_INTERVAL', {'2024-01-01', '2024-01-01'}' ...
         )
@@ -117,7 +117,7 @@ classdef generate_quicklooks_interface___UTEST < matlab.unittest.TestCase
     function test_time_interval_two_days(testCase, OPERATION_ID)
       Settings = testCase.Settings;
 
-      solo.qli.batch.generate_quicklooks_interface(...
+      solo.qli.batch.generate_quicklooks_syntax(...
         Settings, testCase.Gql, testCase.Fsr, testCase.outputDir, true, true, ...
         OPERATION_ID, 'TIME_INTERVAL', {'2024-01-01', '2024-01-04'}' ...
         )

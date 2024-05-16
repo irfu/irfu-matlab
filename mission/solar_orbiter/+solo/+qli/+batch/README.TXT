@@ -15,7 +15,7 @@ How to do batch generation of quicklooks in general
 See solo.qli.batch.generate_quicklooks_demo().
 
 
-===========================================================================
-How to do official batch generation of quicklooks on the default IRFU setup
-===========================================================================
-See solo.qli.batch.generate_quicklooks_interface_offgen().
+=================================================
+How to do official batch generation of quicklooks
+=================================================
+See solo.qli.batch.generate_quicklooks_shell().
