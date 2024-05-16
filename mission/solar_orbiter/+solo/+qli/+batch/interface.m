@@ -196,8 +196,10 @@ classdef interface
         dsiCa             = dsiCaCa{1};
         logFileDirPattern = LogFileDirPatternDict(datasetsSourceId);
 
-        SourceUmdDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
+        [SourceUmdDtArray, logFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
           logFileDirPattern, dsiCa);
+
+        irf.log('n', sprintf('Extracting dates from logFilePath="%s"', logFilePath))
 
         UmdDtArray = [UmdDtArray; SourceUmdDtArray];
       end
