@@ -42,7 +42,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
         '  }'
         '}'
         } ...
-      )
+        )
 
       ActConfig = solo.qli.batch.utils.read_config_file(configFilePath);
 

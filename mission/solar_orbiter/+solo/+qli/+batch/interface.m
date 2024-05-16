@@ -115,7 +115,7 @@ classdef interface
     % First created 2022-08-30.
     %
     function DaysDtArray = get_days_from_time_interval(...
-      dasaArgumentsCa)
+        dasaArgumentsCa)
 
       solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 2)
 
