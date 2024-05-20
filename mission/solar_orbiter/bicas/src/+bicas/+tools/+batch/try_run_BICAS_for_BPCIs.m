@@ -15,7 +15,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function BpcsArray = try_run_BICAS_for_BPCIs(...
-  Bpa, BpciArray, configFile, bicasSettingsArgsCa)
+  Bpa, BpciArray, configFile, automountTriggerPathsCa, bicasSettingsArgsCa)
 
 % PROPOSAL: Better name. Omit "try".
 %   CON: "try" implies handling failure.
@@ -47,6 +47,14 @@ for iBpci = 1:numel(BpciArray)
   argsCa(end+1:end+2) = {'--config',     configFile};
   argsCa(end+1:end+2) = {'--log-matlab', logFile};
   argsCa              = [argsCa(:); bicasSettingsArgsCa(:)];
+
+  % Trigger automounts
+  % ==================
+  % IMPLEMENTATION NOTE: The BPCIs contain canonical paths due to the use of
+  % dir() when generating paths to all files under a specified path using
+  % bicas.tools.batch.get_file_paths(). Can therefore not trigger automounts
+  % using the paths used in the call to BICAS directly (i.e. in the BPCI).
+  irf.fs.trigger_automounts(automountTriggerPathsCa)
 
   %========================================
   % Check if input datasets are available,

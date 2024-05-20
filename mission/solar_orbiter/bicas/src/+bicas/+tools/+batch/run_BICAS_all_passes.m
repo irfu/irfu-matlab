@@ -168,15 +168,20 @@ while true
     break
   end
 
-  %===============================================================
+  %=============================================================================
   % Try run BICAS for selected BPCIs
   % --------------------------------
   % Skip BPCIs for which not all input datasets exist just before
   % execution.
-  %===============================================================
-  %error('DELIBERATELY EXITING BEFORE EXECUTING BICAS.')   % DEBUG
+  %
+  % NOTE: automountTriggerPathsCa includes inputPathsCa which can be very long
+  % if it refers to explicit datasets. Could possibly slow down execution.
+  % PROPOSAL: Only include the first N paths of inputPathsCa in automountTriggerPathsCa.
+  %   CON: It is not yet known to be a problem.
+  %=============================================================================
+  automountTriggerPathsCa = [{configFile; outputDir; referenceDir}; inputPathsCa];
   BpcsPassArray = bicas.tools.batch.try_run_BICAS_for_BPCIs(...
-    Bpa, BpciRunArray, configFile, bicasSettingsArgsCa);
+    Bpa, BpciRunArray, configFile, automountTriggerPathsCa, bicasSettingsArgsCa);
 
   BpcsAllArray = [BpcsAllArray; BpcsPassArray];
 
