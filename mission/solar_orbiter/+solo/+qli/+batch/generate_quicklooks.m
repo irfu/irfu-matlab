@@ -71,12 +71,6 @@ function generate_quicklooks(...
 %             Then try without catch a second time, maybe after delay.
 %             If the first call fails due to disk access error, it might still
 %             trigger automount which makes the second attempt succeed.
-%   PROPOSAL: Before loading data with SolO DB, use same trick as in bash
-%             scripts for triggering automounting of NAS before every time
-%             SolO DB is called. -- IMPLEMENTED BUT UNTESTED /2024-03-07
-%     NOTE: Has seen presumed automount fail errors in long quicklook generation
-%           runs.
-%         Ex: so_qli.2024-02-27_20.11.02.log
 %
 % PROPOSAL: Parallelize loop over days and weeks.
 %
@@ -168,9 +162,9 @@ DaysUmdDtArray = unique(DaysUmdDtArray);
 %==============================
 OutputPaths = solo.qli.utils.create_output_directories(outputDir);
 
-automountTriggeringPathsCa = {vhtDataDir, outputDir};
+automountTriggeringPathsCa = {vhtDataDir; outputDir};
 if ~isempty(irfLogoPath)
-  automountTriggeringPathsCa{end+1} = irfLogoPath;
+  automountTriggeringPathsCa{end+1, 1} = irfLogoPath;
 end
 
 
@@ -215,7 +209,7 @@ if generateNonweeklyQuicklooks
     DayUmdDt = DaysUmdDtArray(iDay);
 
     try
-      trigger_automounting(automountTriggeringPathsCa)
+      irf.fs.trigger_automounts(automountTriggeringPathsCa)
 
       irf.log('n',         '============================================================')
       irf.log('n', sprintf('Calling 24h/6h/2h plot function for %s', string(DayUmdDt)))
@@ -248,7 +242,7 @@ if generateWeeklyQuicklooks
     WeekUmdDt = WeeksUmdDtArray(iWeek);
 
     try
-      trigger_automounting(automountTriggeringPathsCa)
+      irf.fs.trigger_automounts(automountTriggeringPathsCa)
 
       irf.log('n',         '========================================================')
       irf.log('n', sprintf('Calling 7-day plot function for %s', string(WeekUmdDt)))
@@ -319,33 +313,5 @@ if solo.qli.const.CATCH_PLOT_EXCEPTIONS_ENABLED
   end
 else
   rethrow(Exc)
-end
-end
-
-
-
-% Try to trigger automounting of disks in order to avoid file-reading problems
-% for long batch runs.
-%
-%
-% CONTEXT
-% =======
-% The automounting which should make IRFU's /data/solo/ available on brain/spis
-% (IRFU) does not always work as intended. It appears to not always work fast
-% enough for reading files on rare occassions, leading to apparent
-% can-not-read-file errors for existing files when making long runs, in
-% particular on out-of-office hours(?). Other code which has faced this problem
-% has seemingly resolved it by using Linux commands to list the directory
-% contents and ignore the result before using /data/solo/ (such as "ls
-% /data/solo/ >> /dev/null").
-%
-function trigger_automounting(pathsCa)
-for i = 1:numel(pathsCa)
-  path = pathsCa{i};
-
-  irf.log('n', sprintf(...
-    'Trying to trigger automounting, if not already mounted: %s', path ...
-    ))
-  junk = dir(path);
 end
 end
