@@ -1,4 +1,5 @@
-Directory for MATLAB code related to software "BIA_QL3" for generating official BIAS quicklooks/summary plots.
+Directory for MATLAB code related to software "BIA_QL3" for generating official
+BIAS quicklooks/summary plots.
 The software is delivered to ROC/LESIA for execution there.
 
 
