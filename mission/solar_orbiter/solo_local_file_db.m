@@ -103,8 +103,10 @@ classdef solo_local_file_db < solo_file_db
           t.min   = str2double(utc(15:16));
           t.sec   = str2double(utc(18:end-1));
         end
+
         function limited_sci_list()
-          listingD = dir([fullfile(curDir, dPref) '*.cdf']); % SolO have only latest file of each type.
+          listingD = dir([fullfile(curDir, dPref) '*.cdf']); % SolO directories only have the latest version datasets (files).
+
           if isempty(listingD), return, end
           if isempty(dateFormat)
             % Are we looking for files with 8 or the full 14 digits
@@ -126,7 +128,7 @@ classdef solo_local_file_db < solo_file_db
           % between our "startFile" and "stopFile" names.
           indAfterStart = arrayfun(@(x) isequal({startFile; x.name}, sort({startFile; x.name})), listingD);
           indBeforeStop = arrayfun(@(x) isequal({x.name;  stopFile}, sort({x.name;  stopFile})), listingD);
-          % Also look at files just before and after as it might be some
+          % Also look at files just before and after as there might be some
           % overlap.
           indLast = find(indBeforeStop, 1, 'last');
           if(indLast<length(listingD)), indBeforeStop(indLast+1) = true; end
@@ -190,13 +192,14 @@ classdef solo_local_file_db < solo_file_db
           end
         end
       end % LIST_SCI
+
       %% ADD2LIST_SCI
       function add2list_sci(name,curDir)
         Entry = struct('name', name, 'ver', str2double(name(end-5:end-4)), ...
           'start',[], 'stop',[],...
           'path', curDir, 'dbId', obj.id);
         Entry = add_ss(Entry);
-        % Check time limits of the file
+        % Check if time range in file is within specified time limits.
         if isempty(Entry) || ~isempty(tint) && ...
             (Entry.start>tint.stop || Entry.stop<tint.start)
           return
@@ -211,6 +214,7 @@ classdef solo_local_file_db < solo_file_db
         if is_version_larger(str2double(name(end-5:end-4)), fileList(iSame).ver)
           fileList(iSame) = add_ss(Entry); % replace file
         end
+
         function entry = add_ss(entry)
           entryTmp = obj.cache.get_by_key(entry.name);
           if ~isempty(entryTmp)
@@ -230,14 +234,17 @@ classdef solo_local_file_db < solo_file_db
             errS = ['Cannot read: ' entry.path filesep entry.name];
             irf.log('critical',errS), error(errS)
           end
+
+          % Search for TT2000-typed zVariables in CDF.
           isCdfEpochTT2000VariableArray=cellfun(@(x) strcmpi(x,'tt2000'), info.Variables(:,4));
           if ~any(isCdfEpochTT2000VariableArray)
             errS = ['no TT2000 vars in:' entry.path filesep entry.name];
             irf.log('critical',errS), error(errS)
           end
-          iVar = find(isCdfEpochTT2000VariableArray,1);
-          data = spdfcdfread([entry.path filesep entry.name], ...
-            'Variables', info.Variables(iVar,1), 'CombineRecords', true, ...
+
+          iTt2000Var = find(isCdfEpochTT2000VariableArray,1);
+          varData = spdfcdfread([entry.path filesep entry.name], ...
+            'Variables', info.Variables(iTt2000Var,1), 'CombineRecords', true, ...
             'KeepEpochAsIs', true, 'DataOnly', true);
           if ispc
             % Add a very short delay to ensure consecutive files are not
@@ -245,10 +252,10 @@ classdef solo_local_file_db < solo_file_db
             % hard crash on Win10 regardless of the try&catch.
             pause(0.0001);
           end
-          if isempty(data), entry = []; return, end
-          entry.start = EpochTT(data(1));
-          entry.stop = EpochTT(data(end));
-          % add to cache
+          if isempty(varData), entry = []; return, end
+          entry.start = EpochTT(varData(1));
+          entry.stop = EpochTT(varData(end));
+          % Add to cache
           entryTmp.start = entry.start; entryTmp.stop = entry.stop;
           entryTmp.vars = info.Variables;
           obj.cache.add_entry(entry.name, entryTmp);
@@ -304,34 +311,35 @@ classdef solo_local_file_db < solo_file_db
       % Descriptor contains instrument and data product descriptor part
       % separated by "-".
 
-      temp      = strsplit(C{3}, '-');
-      instr     = temp{1};
+      temp       = strsplit(C{3}, '-');
+      instrument = temp{1};
+      dbRootDir  = obj.dbRoot;
 
-      if strcmp(instr, 'rpw')
+      if strcmp(instrument, 'rpw')
         %==============================
         % CASE: Searching for RPW data
         %==============================
-        if exist(fullfile(obj.dbRoot, 'latest'), 'dir')
+        if exist(fullfile(dbRootDir, 'latest'), 'dir')
           % CASE: obj.dbRoot has subdirectory "latest/".
-          %       ==> RPW BIAS data (L2, L3) processed at IRFU.
+          %       ==> Use RPW BIAS data (L2, L3) processed at IRFU.
           %
           % Ex: obj.dbRoot == /data/solo/data_irfu/
           %               ==> /data/solo/data_irfu/latest/rpw/
 
-          rDir = fullfile(obj.dbRoot, 'latest', 'rpw');
+          rDir = fullfile(dbRootDir, 'latest', 'rpw');
         else
           % CASE: obj.dbRoot DOES NOT have subdirectory "latest/".
-          %       ==> RPW data (all subsystems) mirrored from ROC/LESIA.
+          %       ==> Use RPW data (all subsystems) mirrored from ROC/LESIA.
           %
           % Ex: obj.dbRoot == /data/solo/
           %               ==> /data/solo/remote/data/
-          rDir = fullfile(obj.dbRoot, 'remote', 'data');
+          rDir = fullfile(dbRootDir, 'remote', 'data');
         end
       else
         %==================================
         % CASE: Searching for non-RPW data
         %==================================
-        rDir = fullfile(obj.dbRoot, 'soar', instr);
+        rDir = fullfile(dbRootDir, 'soar', instrument);
         if exist(rDir, 'dir')
           % CASE: obj.dbRoot has subdirectory "soar".
           %       ==> Use (presumed) SOAR mirror.
@@ -341,10 +349,10 @@ classdef solo_local_file_db < solo_file_db
           return
         end
 
-        rDir = fullfile(obj.dbRoot, instr);
+        rDir = fullfile(dbRootDir, instrument);
         if exist(rDir, 'dir')
           % CASE: obj.dbRoot has subdirectory named after instrument.
-          %       ==> obj.dbRoot is general folder for (multiple) non-RPW
+          %       ==> obj.dbRoot is a general folder for (multiple) non-RPW
           %           instruments.
           %
           % Ex: obj.dbRoot == /data/solo/data_manual/
@@ -389,9 +397,9 @@ classdef solo_local_file_db < solo_file_db
           case {'rpw-tnr-fp'}
             subDir = 'tnr_fp';
 
-            % Official directory names used by ROC and that IRFU should therefore
-            % also use. As per agreement with Yuri Khotyaintsev, Thomas Chust, and
-            % Erik P G Johansson 2020-11-27.
+            % Official directory names used by ROC and that IRFU should
+            % therefore also use. As per agreement with Yuri Khotyaintsev,
+            % Thomas Chust, and Erik P G Johansson 2020-11-27.
             % /Erik P G Johansson 2020-12-15.
           case {'rpw-bia-density', 'rpw-bia-density-10-seconds'}
             subDir = 'lfr_density';

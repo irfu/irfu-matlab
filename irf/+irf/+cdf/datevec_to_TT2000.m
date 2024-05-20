@@ -22,11 +22,17 @@
 %
 function tt2000 = datevec_to_TT2000(dateVecUtc)
 % PROPOSAL: Separate wrapper function to handle spdfcomputett2000 special case.
-
 % PROPOSAL: Make handle failed conversions when spdfcomputett2000 returns a too low value.
 %   ~CON: spdfcomputett2000 already returns special value.
+%
+% PROPOSAL: Refactor to take datetime as argument.
+%   PRO: More standard time format.
+%   PRO: The only (irfu-matlab) applications so far effectively use datetime as
+%        argument for this function.  /2024-03-05
+%   PRO: Already easy to convert between datetime and date vector.
+%   NOTE: Might want to similarily convert irf.cdf.TT2000_to_datevec().
 
-irf.assert.sizes(dateVecUtc, [NaN,6])
+irf.assert.sizes(dateVecUtc, [NaN, 6])
 
 % IMPLEMENTATION NOTE: Using integer precision is good for automatic testing
 % (empirically it is needed for predictable, reversible results).

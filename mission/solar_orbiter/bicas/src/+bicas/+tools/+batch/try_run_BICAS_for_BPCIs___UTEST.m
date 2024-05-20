@@ -226,13 +226,7 @@ classdef try_run_BICAS_for_BPCIs___UTEST < matlab.unittest.TestCase
 
             path = Bpci.inputsArray(iFile).path;
 
-            % Create parent directory if needed.
-            parentDir = fileparts(path);
-            if ~isempty(parentDir) && ~exist(parentDir, 'dir')
-              mkdir(parentDir)
-            end
-
-            irf.fs.create_empty_file(path);
+            irf.fs.create_empty_file({path});
           end
         end
       end

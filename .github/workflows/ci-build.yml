@@ -32,7 +32,7 @@ jobs:
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
         with:
-          products: MATLAB Parallel_Computing_Toolbox Image_Processing_Toolbox Financial_Toolbox
+          products: MATLAB Parallel_Computing_Toolbox Image_Processing_Toolbox Financial_Toolbox Signal_Processing_Toolbox
 
       # Install required runtime lib for Fortan (whamp mex file)
       - name: Install libgfortran5

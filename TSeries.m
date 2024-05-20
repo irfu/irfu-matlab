@@ -1395,7 +1395,7 @@ classdef TSeries
       elseif obj.tensorOrder==1
         % For non-cartesian bases, in order to do a proper inte/extrapolarion
         % we first transform into cartesian basis, resample, and then
-        % transform back to teh original basis
+        % transform back to the original basis
         basis = obj.BASIS{obj.tensorBasis_};
         switch basis
           case {'xy','xyz'}, resample_(obj); return
@@ -1447,9 +1447,9 @@ classdef TSeries
       if obj.tensorOrder==0
         filt_(obj);
       elseif obj.tensorOrder==1
-        % For non-cartesian bases, in order to do a proper inte/extrapolarion
+        % For non-cartesian bases, in order to do a proper inter-/extrapolation
         % we first transform into cartesian basis, resample, and then
-        % transform back to teh original basis
+        % transform back to the original basis
         basis = obj.BASIS{obj.tensorBasis_};
         switch basis
           case {'xy','xyz'}, filt_(obj); return

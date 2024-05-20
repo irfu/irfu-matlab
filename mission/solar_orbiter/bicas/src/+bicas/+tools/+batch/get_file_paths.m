@@ -7,18 +7,18 @@
 % ARGUMENTS
 % =========
 % fileDirPathsCa
-%       Column cell array of paths to files and directories (mixed).
+%       Column cell array of paths to existing files and directories (mixed).
 %
 %
 % RETURN VALUES
 % =============
-% filePathsCa1
+% filePathsCa
 %       Column cell array of paths to files.
 %       The (paths to) files in fileDirPathsCa are copied here.
 %       The directories in fileDirPathsCa are searched recursively for files,.
 % FsoiArray1
 %       Column struct array.
-%       dir() info for every path in filePathsCa1.
+%       dir() info for every path in filePathsCa.
 %
 %
 % FSOI = File System Object Info
@@ -26,15 +26,16 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function [filePathsCa1, FsoiArray1] = get_file_paths(fileDirPathsCa)
-% PROPOSAL: Automatic test code.
-%
+function [filePathsCa, FsoiArray1] = get_file_paths(fileDirPathsCa)
 % NOTE: Function could be implemented recursively, but that is not needed since
 %       dir() handles that.
 %
+% PROPOSAL: Redefine as generic, outside of BICAS.
+%   PRO: Is used by solo.qli.batch.fmd.
+%
 % TODO-DEC: How handle non-existing files and directories?
-%   NOTE: Only existing directories can be translated into files. Question
-%         only exists for files.
+%   NOTE: Only existing directories can be translated into files. Ambiguity
+%         "only" exists for files.
 %   PROPOSAL: Do not test for existing files.
 %     PRO: Caller should test for that anyway.
 %     CON: Can not return dir() info for files, even though the function does
@@ -59,10 +60,31 @@ assert(iscell(fileDirPathsCa) & iscolumn(fileDirPathsCa))
 FsoiEmptyArray = dir('~');
 FsoiEmptyArray = FsoiEmptyArray([], 1);    % Column array.
 
-bIsFile = arrayfun(@(pathCa) (exist(pathCa{1}, 'file') == 2), fileDirPathsCa, 'UniformOutput', true);
-bIsDir  = arrayfun(@(pathCa) (exist(pathCa{1}, 'dir')  == 7), fileDirPathsCa, 'UniformOutput', true);
+bIsFile = arrayfun(...
+  @(pathCa) (exist(pathCa{1}, 'file') == 2), ...
+  fileDirPathsCa, 'UniformOutput', true);
+bIsDir  = arrayfun(...
+  @(pathCa) ((exist(pathCa{1}, 'dir')  == 7) & (exist(pathCa{1}, 'file') ~= 2)), ...
+  fileDirPathsCa, 'UniformOutput', true);
 
-assert(all(bIsFile | bIsDir), 'Not all paths refer to existing files or directories.')
+% All objects should be either existing files or directories. Mount problems can
+% likely make files/directories appear and then disappear though, and thus
+% trigger error.
+iNonexisting = find(~(bIsFile | bIsDir));
+if ~isempty(iNonexisting)
+  nTotal       = numel(fileDirPathsCa);
+  nNonexisting = numel(iNonexisting);
+
+  quotedStrCa = cellfun(...
+    @(fileDirpath) (sprintf('"%s"', fileDirpath)), fileDirPathsCa(iNonexisting), ...
+    'UniformOutput', false);
+  pathListStr = strjoin(quotedStrCa, ', ');
+  errorMsg = sprintf('%i/%i fileDirPathsCa paths refer to non-existing files/directories. fileDirPathsCa{:}=%s', ...
+    nNonexisting, nTotal, pathListStr);
+
+  error(errorMsg)
+end
+
 
 inputFilePathCa = fileDirPathsCa(bIsFile);
 inputDirPathCa  = fileDirPathsCa(bIsDir);
@@ -103,12 +125,12 @@ for iDir = 1:numel(inputDirPathCa)
     FsoiArray2];
 end
 
-filePathsCa1 = arrayfun(@(Oi) (fullfile(Oi.folder, Oi.name)), FsoiArray1, 'UniformOutput', false);
+filePathsCa = arrayfun(@(Oi) (fullfile(Oi.folder, Oi.name)), FsoiArray1, 'UniformOutput', false);
 
 
 
-assert(iscolumn(filePathsCa1))
+assert(iscolumn(filePathsCa))
 assert(iscolumn(FsoiArray1))
-assert(numel(filePathsCa1) == numel(FsoiArray1))
+assert(numel(filePathsCa) == numel(FsoiArray1))
 
 end

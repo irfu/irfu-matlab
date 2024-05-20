@@ -234,8 +234,8 @@ else
   inSampling=1/(dB(2,1)-dB(1,1));
   e = [];
 end
-if inSampling/2<freq_int(2)
-  error('F_MAX must be lower than the Nyquist frequecy')
+if inSampling/2 < freq_int(2)
+  error('F_MAX must be lower than the Nyquist frequency')
 end
 if wantEE && size(e,2) <4 && flag_dEdotB0==0
   error('E must have all 3 components or flag ''dEdotdB=0'' must be given')
@@ -299,7 +299,9 @@ w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
 
 Morlet_width=5.36*mwidthcoef;
 freq_number=ceil((log10(freq_int(2)) - log10(freq_int(1)))*12*mwidthcoef); %to get proper overlap for Morlet
-amin=log10(0.5*inSampling/freq_int(2));amax=log10(0.5*inSampling/freq_int(1));anumber=freq_number;
+amin=log10(0.5*inSampling/freq_int(2));
+amax=log10(0.5*inSampling/freq_int(1));
+anumber=freq_number;
 %  amin=0.01; % The highest frequency to consider is 0.5*sampl/10^amin
 %  amax=2; % The lowest frequency to consider is 0.5*sampl/10^amax
 %  anumber=400; % The number of frequencies

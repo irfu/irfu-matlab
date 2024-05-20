@@ -114,7 +114,7 @@ classdef BicasProcessingAccessTest < bicas.tools.batch.BicasProcessingAccessAbst
           % since bicas.batch.main permits overwriting files.
 
           % CREATE EMPTY OUTPUT DATASET.
-          irf.fs.create_empty_file(outputFilename);
+          irf.fs.create_empty_file({outputFilename});
         end
 
         [varargout{1}] = 0;

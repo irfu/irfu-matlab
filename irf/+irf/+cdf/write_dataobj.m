@@ -331,7 +331,7 @@ for i = 1:length(dataobj_Variables(:,1))
 
   %============================================================================
   % Convert specific VariableAttributes values
-  %
+  % ------------------------------------------
   % Case 1: tt2000 values as UTC strings : Convert to tt2000.
   % Case 2: All other                    : Convert to the zVariable data type.
   % --------------------------------------------------------------------------

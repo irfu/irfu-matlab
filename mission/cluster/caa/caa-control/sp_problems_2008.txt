@@ -3,7 +3,7 @@ Problems seen when looking through the summary plots for 2008
 
 1a) Processing bugs fixed
 ========================
-When try to fetch phase for an interval with a maneuver, the phase data often stops at the maneuver. 
+When try to fetch phase for an interval with a maneuver, the phase data often stops at the maneuver.
   Fixed and committed to CVS 2010 April 09.
 
 
@@ -134,7 +134,7 @@ C3 offset could be bumped up a bit, maybe 0.3 mV/m. Check the CIS crosscal for e
 4) Ignored problems
 ===================
 
-04-22 0137-0915 where is C4 data? 
+04-22 0137-0915 where is C4 data?
 04-04 12:08:12 1-point spike in p34 on C3
 05-20 0020-0500 where's C3 data?
 10-05 1645-0109 where's C3?  (eclipse is 0310-0809)

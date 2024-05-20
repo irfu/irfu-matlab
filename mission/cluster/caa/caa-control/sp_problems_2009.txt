@@ -48,14 +48,14 @@ Problems seen when looking through the summary plots for 2008
 03-02 1730-1728+ C4 badbias
 03-31 1413-0640+C3 badbias
  added to nsops
-0403 01:38:41 (2 sec) bad packet C1 
+0403 01:38:41 (2 sec) bad packet C1
 0408 04:45-10 where's C3?
 0429 21:40:27 (2 sec) bad packet C3
 0422 0144-1638 C3 bad bias (-40 nA)
   added to nsops
 0517 0753-0756 C4 BADDAC
 0509 17-09:10+ hbiassa on C1
-  added to manual_problems 
+  added to manual_problems
 0519 0340-0630 bad telemetry C2 (also affects p)
  added to nsops and special_processing
 090515 11:00:00 C1 manoeuvre (59 pulses)
@@ -74,7 +74,7 @@ Problems seen when looking through the summary plots for 2008
 0619 9-15 force MS offsets
   added to special_processing
 0624 0130-0629 C2 hbiassa (also 134)
-  added to manual_problems 
+  added to manual_problems
 0627 09-15 force SH offsets
 07* entire month: force MS offset
   changed in c_efw_dsi_off.m
@@ -112,7 +112,7 @@ Problems seen when looking through the summary plots for 2008
 11-19 14:03-end of day: data gaps on C1234, thruster firings at 15:00 (C3) and 17:00 (C2)
   added to ns-ops and reprocessed.
 11-24 1743-0201+  SC4 weird timing
-   added to ns_ops. Automatically removed from CAA data 
+   added to ns_ops. Automatically removed from CAA data
 11-29 09-12 force MS offsets
 11-30 09-15 force SH offsets
   added to special_processing
@@ -188,7 +188,7 @@ intervals in which the timing is strange:
 yymmdd hhmm-hhmm   SC
 090218 1421-1606?  SC1  disappears entirely from CAA data due to repeated probe saturation identifications. Also called out in nsops.
 090318 0810-1419   SC2  Wrong date in email. Should be 090319 (below).
-090319 0810-1419   SC2  mostly disappears from CAA data. Removed some bad LX data by man_prob. Called out in nsops. 
+090319 0810-1419   SC2  mostly disappears from CAA data. Removed some bad LX data by man_prob. Called out in nsops.
 090406 0929-0045+  SC3  Called out in nsops and removed.
 090409 2115-2235   SC4  patchy telemetry, gaps in CAA data
 090417 1823-2210   SC2  disappears entirely from CAA data

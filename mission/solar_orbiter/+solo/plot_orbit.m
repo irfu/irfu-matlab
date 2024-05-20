@@ -44,7 +44,7 @@ pos_solo = cspice_spkpos('solo', et, frame, 'none', 'Sun');
 % Convert to utc and then to TT2000 in TSeries object
 utc_tmp = cspice_et2utc(et, 'ISOC', 0);
 
-% Note pos' since it is returned as 3xN but TSeries expexcts Nx3 (where N is number of records).
+% Note pos' since it is returned as 3xN but TSeries expects Nx3 (where N is number of records).
 soloPosition = irf.ts_vec_xyz(EpochTT(utc_tmp), pos_solo'/1.496e8);
 soloPosition.units = 'km'; % Add some metadata information (read when plotting in irf_plot)
 soloPosition.name='Solar Orbiter';

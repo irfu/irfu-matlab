@@ -519,6 +519,7 @@ classdef PDist < TSeries
       doSqueeze = 0;
       doRotation = 0;
       have_options = 0;
+      doEdges = 0;
 
       nargs = numel(varargin);
       if nargs > 0, have_options = 1; args = varargin(:); end
@@ -553,6 +554,9 @@ classdef PDist < TSeries
             doScpot = 1;
             scpot = args{2};
             args = args(l+1:end);
+          case 'edges'
+            doEdges = 1;
+            args = args(l+1:end);
           otherwise
             irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
             args = args(l+1:end);
@@ -560,88 +564,113 @@ classdef PDist < TSeries
         if isempty(args), break, end
       end
 
-      phi = TSeries(obj.time,obj.depend{1,2});
-      azimuthal = phi.data*pi/180;
+      switch obj.type
+        case 'skymap'
+          phi = TSeries(obj.time,obj.depend{1,2});
+          azimuthal = phi.data*pi/180;
 
-      theta = obj.depend{1,3};
-      polar = repmat(theta*pi/180,obj.length,1);
+          theta = obj.depend{1,3};
+          polar = repmat(theta*pi/180,obj.length,1);
+          energy = obj.depend{1};
 
-      energy = obj.depend{1};
+          if doEdges % get V at edges of bins
+            azimuthal = [azimuthal(:,1) - 0.5*(azimuthal(:,2)-azimuthal(:,1)) azimuthal(:,1:end-1) + 0.5*diff(azimuthal,1,2) azimuthal(:,end) + 0.5*(azimuthal(:,end)-azimuthal(:,end-1))];
+            polar = [polar(:,1) - 0.5*(polar(:,2)-polar(:,1)) polar(:,1:end-1) + 0.5*diff(polar,1,2) polar(:,end) + 0.5*(polar(:,end)-polar(:,end-1))];
+            de_minus = obj.ancillary.delta_energy_minus;
+            de_plus = obj.ancillary.delta_energy_plus;
+            energy = [energy(:,1) - de_minus(:,1) energy + de_plus];
+          end
 
-      if doScpot
-        scpot = scpot.resample(obj).data;
-      else
-        scpot = zeros(obj.length,1);
-      end
+          if doScpot
+            if isa(scpot,'TSeries')
+              scpot = scpot.resample(obj).data;
+            elseif isa(scpot,'numeric') && numel(scpot) == 1
+              scpot = repmat(scpot,obj.length,1);
+            elseif isa(scpot,'numeric') && numel(scpot) == obj.length
+              scpot = scpot;
+            end
+          else
+            scpot = zeros(obj.length,1);
+          end
 
-      vx = NaN*obj.data;
-      vy = NaN*obj.data;
-      vz = NaN*obj.data;
+          vx = NaN*obj.data;
+          vy = NaN*obj.data;
+          vz = NaN*obj.data;
 
-      sp = obj.species;
-      switch sp
-        case 'ions'
-          m = units.mp;
-          mult = 1;
-        case 'electrons'
-          m = units.me;
-          mult = -1;
-      end
+          if doEdges
+            sizedata = size(obj.data);
+            sizedata(2:end) = sizedata(2:end) + 1;
+            vx = nan(sizedata);
+            vy = nan(sizedata);
+            vz = nan(sizedata);
+          end
 
-      for ii = 1:length(obj.time)
-        % Adjust for spacecraft potential
-        energy_tmp = energy(ii,:) + mult*scpot(ii);
-        energy_tmp(energy_tmp<0) = 0; % if scpot is not used, energy_tmp = energy and nothing is changed
+          sp = obj.species;
+          switch sp
+            case 'ions'
+              m = units.mp;
+              mult = 1;
+            case 'electrons'
+              m = units.me;
+              mult = -1;
+          end
 
-        % Energy -> speed
-        velocity = sqrt((energy_tmp)*units.eV*2/m)/1000; % km/s
+          for ii = 1:length(obj.time)
+            % Adjust for spacecraft potential
+            energy_tmp = energy(ii,:) + mult*scpot(ii);
+            energy_tmp(energy_tmp<0) = 0; % if scpot is not used, energy_tmp = energy and nothing is changed
 
-        % ndgrid of spherical coordinates
-        [VEL,AZ,POL] = ndgrid(velocity(ii,:),azimuthal(ii,:),polar(ii,:));
+            % Energy -> speed
+            velocity = sqrt((energy_tmp)*units.eV*2/m)/1000; % km/s
 
-        % From spherical to cartesian coordinates
-        % '-' because the data shows which direction the particles were coming from
-        VX = -VEL.*sin(POL).*cos(AZ);
-        VY = -VEL.*sin(POL).*sin(AZ);
-        VZ = -VEL.*cos(POL);
+            % ndgrid of spherical coordinates
+            [VEL,AZ,POL] = ndgrid(velocity,azimuthal(ii,:),polar(ii,:));
 
-        if doRotation % Transform into different coordinate system
-          VxX = reshape(VX,numel(VX),1);
-          VyY = reshape(VY,numel(VX),1);
-          VzZ = reshape(VZ,numel(VX),1);
+            % From spherical to cartesian coordinates
+            % '-' because the data shows which direction the particles were coming from
+            VX = -VEL.*sin(POL).*cos(AZ);
+            VY = -VEL.*sin(POL).*sin(AZ);
+            VZ = -VEL.*cos(POL);
 
-          newTmpX = [VxX VyY VzZ]*newx';
-          newTmpY = [VxX VyY VzZ]*newy';
-          newTmpZ = [VxX VyY VzZ]*newz';
+            if doRotation % Transform into different coordinate system
+              VxX = reshape(VX,numel(VX),1);
+              VyY = reshape(VY,numel(VX),1);
+              VzZ = reshape(VZ,numel(VX),1);
 
-          VX = reshape(newTmpX,size(VX));
-          VY = reshape(newTmpY,size(VY));
-          VZ = reshape(newTmpZ,size(VZ));
-        end
+              newTmpX = [VxX VyY VzZ]*newx';
+              newTmpY = [VxX VyY VzZ]*newy';
+              newTmpZ = [VxX VyY VzZ]*newz';
 
-        vx(ii,:,:,:) = VX;
-        vy(ii,:,:,:) = VY;
-        vz(ii,:,:,:) = VZ;
-      end
+              VX = reshape(newTmpX,size(VX));
+              VY = reshape(newTmpY,size(VY));
+              VZ = reshape(newTmpZ,size(VZ));
+            end
 
-      if 0 % Diagnostics
-        step = 2; %#ok<UNRCH>
-        subplot(1,3,1)
-        scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,VEL(1:step:end)); axis equal
-        subplot(1,3,2)
-        scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,AZ(1:step:end)); axis equal
-        subplot(1,3,3)
-        scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,POL(1:step:end)); axis equal
-      end
-      if doSqueeze
-        vx = squeeze(vx);
-        vy = squeeze(vy);
-        vz = squeeze(vz);
-      end
-      if doReturnTSeries
-        vx = irf.ts_scalar(obj.time,vx);
-        vy = irf.ts_scalar(obj.time,vy);
-        vz = irf.ts_scalar(obj.time,vz);
+            vx(ii,:,:,:) = VX;
+            vy(ii,:,:,:) = VY;
+            vz(ii,:,:,:) = VZ;
+          end
+
+          if 0 % Diagnostics
+            step = 2; %#ok<UNRCH>
+            subplot(1,3,1)
+            scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,VEL(1:step:end)); axis equal
+            subplot(1,3,2)
+            scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,AZ(1:step:end)); axis equal
+            subplot(1,3,3)
+            scatter3(VX(1:step:end),VY(1:step:end),VZ(1:step:end),VZ(1:step:end)*0+10,POL(1:step:end)); axis equal
+          end
+          if doSqueeze
+            vx = squeeze(vx);
+            vy = squeeze(vy);
+            vz = squeeze(vz);
+          end
+          if doReturnTSeries
+            vx = irf.ts_scalar(obj.time,vx);
+            vy = irf.ts_scalar(obj.time,vy);
+            vz = irf.ts_scalar(obj.time,vz);
+          end
+        case 'pitch'
       end
     end
     function PD = d3v(obj,varargin)
@@ -1186,7 +1215,8 @@ classdef PDist < TSeries
         lowerelim_mat = repmat(lowerelim, size(emat(1,:)));
       end
       if correct4scpot
-        scpot = scpot.tlim(dist.time).resample(dist.time);
+        %scpot = scpot.tlim(dist.time).resample(dist.time);
+        scpot = scpot.resample(dist.time);
         scpot_mat = repmat(scpot.data, size(emat(1,:)));
       end
       if isDes == 1; M = units.me; else; M = units.mp; end
@@ -1706,6 +1736,8 @@ classdef PDist < TSeries
       % PDIST.SHIFT  Rebin the distribution function to shifted reference
       %              frame and a rotated coordinate system.
       %
+      %   PD = pdist.shift(v_nf,nMC,orient,sc,varargin)
+      %
       %%%This function rebins the distribution function to shifted reference
       %%%frame and a rotated coordinate system.
       %%% Input:
@@ -1738,8 +1770,8 @@ classdef PDist < TSeries
           case 'new_grid'
             flag_newgrid = 1;
             Eedgesn = Var{2};
-            thedgesn = Var{3};
-            phedgesn = Var{4};
+            thedgesn = Var{3}; % CN: illogical order because th is depend{3}
+            phedgesn = Var{4}; % CN: illogical order because ph is depend{2}
             Var(1:4) = [];
           otherwise
             error(['undefined input flag: ' flag])
@@ -2041,6 +2073,303 @@ classdef PDist < TSeries
         end
       end
     end
+    function varargout = plot_isosurface(varargin)
+      % PDIST.PLOT_ISOSURFACE Plots isosurfaces of skymap.
+      %   Might require some newer Matlab version and specific toolbox.
+      %
+      % Example:
+      %   pdist = ePDist2(100);
+      %   h(1) = subplot(2,2,1);
+      %   h(2) = subplot(2,2,2);
+      %   h(3) = subplot(2,2,3);
+      %   h(4) = subplot(2,2,4);
+      %   hs1 = pdist.plot_isosurface(h(1));
+      %   hs2 = pdist.plot_isosurface(h(2),'val',(1:3)*1e-27);
+      %   hs3 = pdist.plot_isosurface(h(3),'val',(1:3)*1e-27,'smooth',3);
+      %   hs4 = pdist.plot_isosurface(h(4),'val',(1:3)*1e-27,'smooth',3,'fill');
+      %   linkprop(h,{'View'})
+
+      % Check for axes
+      [ax,args,nargs] = axescheck_pdist(varargin{:});
+      if isempty(ax); ax = gca; end
+      all_handles.Axes = ax;
+
+      % Make sure first non axes-handle input is PDist of the right type.
+      if isa(args{1},'PDist') && any(strcmp(args{1}.type,{'skymap'}))
+        dist_orig = args{1};
+      else
+        error('First input that is not an axes handle must be a PDist of type ''skymap''.')
+      end
+      args = args(2:end);
+      nargs = nargs - 1;
+
+      pdist = dist_orig;
+
+      tId = 1:pdist.length; % if tint is not given as input (check below) default is to include all the time indices of input distribution
+
+
+      % Default values
+      doScPot = 0;
+      doSmooth = 0;
+      doPrintInfo = 0;
+      doFillGap = 0;
+      doRotate = 0;
+      T = [1 0 0; 0 1 0; 0 0 1]; % no rotation
+
+      % Default formatting
+      faceAlpha = 0.5;
+      iso_values = [];
+      colors = get(ax,'colororder');
+
+
+      % check for input, try to keep it at a minimum, so that the
+      % functionality is similar to Matlabs plot function, all the details
+      % can then be fixed outside the function using ax.XLim, ax.YLim,
+      % ax.CLim, etc... and colorbar perhaps?
+      if nargs > 0; have_options = 1; else have_options = 0; end
+      while have_options
+        l = 1;
+        switch(lower(args{1}))
+          case {'rotate'}
+            doRotate = 1;
+            T = args{2};
+            l = 2;
+          case {'facealpha'}
+            faceAlpha = args{2};
+            l = 2;
+          case {'fill'}
+            doFillGap = 1;
+            l = 1;
+          case {'val','iso_val','values'}
+            l = 2;
+            iso_values = args{2};
+          case {'prctile','percentile'}
+            l = 2;
+            iso_values_percentile = args{2};
+          case {'tint','time','t'} % not implemented
+            l = 2;
+            notint = 0;
+            tint = args{2};
+            if tint.length == 1 % find closest time
+              [~,tId] = min(abs(pdist.time-tint));
+            else % take everything within time interval
+              [tId,~] = pdist.time.tlim(tint);
+            end
+          case 'vectors'
+            l = 2;
+            vectors = args{2};
+            have_vectors = 1;
+          case 'scpot'
+            l = 2;
+            scpot = args{2};
+            % if isa(scpot,'TSeries')
+            %   includescpot = 1;
+            %   irf.log('notice','Spacecraft potential passed.')
+            % else
+            %   includescpot = 0;
+            %   irf.log('notice','scpot not recognized. Not using it.')
+            % end
+            doScPot = 1;
+          case '10^3 km/s' % not implemented
+            l = 1;
+            v_scale = 1e-3;
+            v_label_units = '10^3 km/s';
+          case 'km/s' % not implemented
+            l = 1;
+            v_scale = 1;
+            v_label_units = 'km/s';
+          case 'printinfo' % not implemented
+            doPrintInfo = 1;
+          case 'smooth'
+            l = 2;
+            doSmooth = 1;
+            nSmooth = args{2};
+          case {'colorbar','docolorbar'} % not implemented
+            l = 2;
+            doColorbar = args{2};
+        end
+        args = args(l+1:end);
+        if isempty(args), break, end
+      end
+
+
+      % due to Matlab functionality, we must explicitly call the overloaded
+      % subsref (defined within this subclass), otherwise it will call the
+      % builtin function
+      subs.type = '()';
+      subs.subs = {tId};
+      pdist = dist_orig.subsref(subs);
+      if (length(pdist.time)<1); irf.log('warning','No data for given time interval.'); return; end
+
+      F = pdist.data;
+      F = mean(F,1); % average over time, if multiple times
+      F = squeeze(F);
+
+      if 0 % interpolate to edges of bins, NOT WORKING
+        phi = TSeries(pdist.time,pdist.depend{1,2});
+        azimuthal = phi.data*pi/180;
+
+        theta = pdist.depend{1,3};
+        polar = repmat(theta*pi/180,pdist.length,1);
+        energy = pdist.depend{1};
+        doEdges = 1;
+        if doEdges % get V at edges of bins
+          azimuthal_e = [azimuthal(1) - 0.5*(azimuthal(2)-azimuthal(1)) azimuthal(1:end-1) + 0.5*diff(azimuthal) azimuthal(end) + 0.5*(azimuthal(end)-azimuthal(end-1))];
+          polar_e = [polar(1) - 0.5*(polar(2)-polar(1)) polar(1:end-1) + 0.5*diff(polar) polar(end) + 0.5*(polar(end)-polar(end-1))];
+          de_minus = pdist.ancillary.delta_energy_minus;
+          de_plus = pdist.ancillary.delta_energy_plus;
+          energy_e = [energy(:,1) - de_minus(:,1) energy + de_plus];
+        end
+        [EN,AZ,POL] = meshgrid(energy,azimuthal,polar);
+        [ENe,AZe,POLe] = meshgrid(energy_e,azimuthal_e,polar_e);
+        Fe = interp3(EN,AZ,POL,F,ENe,AZe,POLe);
+        Fe = permute(Fe,[2 1 3]); % from meshgrid to ndgrid
+      end
+
+      if doScPot
+        [VX,VY,VZ] = pdist.v('scpot',scP);
+        %[VXe,VYe,VZe] = pdist.v('scpot',scP,'edges');
+      else
+        [VX,VY,VZ] = pdist.v;
+        %[VXe,VYe,VZe] = pdist.v('edges');
+      end
+      % Assume all energy levels are the same
+      VX = squeeze(mean(VX,1));
+      VY = squeeze(mean(VY,1));
+      VZ = squeeze(mean(VZ,1));
+      %VXe = squeeze(mean(VXe,1));
+      %VYe = squeeze(mean(VYe,1));
+      %VZe = squeeze(mean(VZe,1));
+
+
+      %Fg = griddedInterpolant(VX,VY,VZ,F);
+      %Fq = Fg(VXe,VYe,VZe);
+%      Fq = interp3(VX,VY,VZ,F,VXe,VYe,VZe);
+
+      %F = Fe;
+      %VX = VXe;
+      %VY = VYe;
+      %VZ = VZe;
+
+
+      if doFillGap % make circular in azimuth, to fill in the gap
+        icat_az = 1:(nSmooth-1)+3;
+        F = cat(2,F,F(:,icat_az,:));
+        VX = cat(2,VX,VX(:,icat_az,:));
+        VY = cat(2,VY,VY(:,icat_az,:));
+        VZ = cat(2,VZ,VZ(:,icat_az,:));
+
+        if 0
+          icat_pol = 1;
+          F = cat(3,F,F(:,:,end)*0+mean(F(:,:,end),3));
+          VX = cat(3,VX,VX(:,:,end)*0+mean(VX(:,:,end),3));
+          VY = cat(3,VY,VY(:,:,end)*0+mean(VY(:,:,end),3));
+          VZ = cat(3,VZ,VZ(:,:,end)*0+mean(VZ(:,:,end),3));
+        end
+      end
+
+      if doSmooth
+        F = smooth3(F,'box',nSmooth);
+      end
+
+      if doFillGap
+        F = F(:,2:end-icat_az,:);
+        VX = VX(:,2:end-icat_az,:);
+        VY = VY(:,2:end-icat_az,:);
+        VZ = VZ(:,2:end-icat_az,:);
+      end
+
+      if isempty(iso_values)
+        iso_values = prctile(F(:),[50 70 90]);
+      end
+
+      if doRotate
+        VxX = reshape(VX,numel(VX),1);
+        VyY = reshape(VY,numel(VX),1);
+        VzZ = reshape(VZ,numel(VX),1);
+
+        newTmpX = [VxX VyY VzZ]*T(1,:)';
+        newTmpY = [VxX VyY VzZ]*T(2,:)';
+        newTmpZ = [VxX VyY VzZ]*T(3,:)';
+
+        VX = reshape(newTmpX,size(VX));
+        VY = reshape(newTmpY,size(VY));
+        VZ = reshape(newTmpZ,size(VZ));
+        all_handles.Rotation = T;
+      end
+
+      nSurf = numel(iso_values);
+
+      if numel(faceAlpha) == 1
+        faceAlpha = repmat(faceAlpha,size(iso_values));
+      end
+      %holdon = 0;
+
+      if strcmp(ax.NextPlot,'replace')
+        delete(ax.Children)
+      end
+
+      hps = gobjects(0);
+      for isurf = 1:nSurf
+        %if not(holdon); hold(ax,'on'); holdon = 1; end
+        Flev = iso_values(isurf);
+        s = isosurface(VX,VY,VZ,F,Flev);
+        %s = isocaps(VX,VY,VZ,F,Flev);
+        %p = patch(ax,Faces=s.faces,Vertices=s.vertices);
+        p = patch(ax,'Faces',s.faces,'Vertices',s.vertices);
+        hps(isurf) = p;
+
+        % Default formatting
+        p.EdgeColor = 'none';
+        p.FaceColor = colors(mod(isurf-1,size(colors,1))+1,:).^0.5; % cycle colors
+        p.FaceAlpha = faceAlpha(isurf);
+      end
+      %hold(ax,'off') % not with patch objects
+
+      % might be leftover from previous plottings, only add if no lights
+      hlight = findobj(ax,'Type','Light');
+      if isempty(hlight)
+        hlight = camlight(ax);
+      end
+
+      lighting(ax,'gouraud')
+
+      view(ax,[2 2 1])
+      %view(ax,[0 0 1])
+
+      all_handles.Patch = hps;
+      all_handles.Light = hlight;
+
+      ax.XLabel.String = 'v_{x} (km/s)';
+      ax.YLabel.String = 'v_{y} (km/s)';
+      ax.ZLabel.String = 'v_{z} (km/s)';
+      axis(ax,'square')
+      axis(ax,'equal')
+
+      if 1 % Print title with time
+        if pdist.length == 1
+          ax.Title.String = pdist.time.utc('yyyy-mm-ddTHH:MM:SS:mmmZ');
+        else
+          t1 = pdist.time.start.utc('yyyy-mm-ddTHH:MM:SS:mmmZ');
+          t2 = pdist.time.stop.utc('yyyy-mm-ddTHH:MM:SS:mmmZ');
+          tcomp = t1 == t2;
+          if sum(tcomp(1:11))==11
+            ax.Title.String = {sprintf('%s - %s',t1,t2(12:end))};
+          else
+            ax.Title.String = {sprintf('%s - %s',t1,t2)};
+          end
+        end
+      end
+      if 1 % Print iso values as legend
+        legs = arrayfun(@(x)sprintf('%g',x),iso_values,'UniformOutput',false);
+        hleg = legend(hps,legs,'location','northeast','box','off');
+        hleg.Title.String = sprintf('f_%s (%s)',pdist.species(1),pdist.units);
+        all_handles.Legend = hleg;
+      end
+
+
+      varargout{1} = all_handles;
+    end
     function varargout = plot_plane(varargin)
       % PDIST.PLOT_PLANE Surface/pcolor plot of PDist of type 'plane (reduced)'.
       %   PDist.PLOT_PLANE(...)
@@ -2140,8 +2469,8 @@ classdef PDist < TSeries
       doFLim = 1; flim = [0 Inf];
       doSmooth = 0;
       doP12 = 0;
+      doB = 0;
       doStress = 0;
-
       if strcmp(dist.species,'electrons')
         v_scale = 1e-3;
         v_label_units = '10^3 km/s';
@@ -2170,6 +2499,11 @@ classdef PDist < TSeries
             doP12 = 1;
             v1 = args{2};
             v2 = args{3};
+            if isempty(v1)
+              doCalculateVbulk = 1;
+            else
+              doCalculateVbulk = 0;
+            end
           case {'tint','time','t'}
             l = 2;
             notint = 0;
@@ -2233,6 +2567,10 @@ classdef PDist < TSeries
           case {'colorbar','docolorbar'}
             l = 2;
             doColorbar = args{2};
+          case 'b'
+            l = 2;
+            doB = 1;
+            B = args{2};
         end
         args = args(l+1:end);
         if isempty(args), break, end
@@ -2261,9 +2599,15 @@ classdef PDist < TSeries
         plot_data = smooth2(plot_data,nSmooth);
       end
       if doP12
-        v1_bulk = mean(v1.resample(dist).data,1);
-        v2_bulk = mean(v2.resample(dist).data,1);
         [V1,V2] = ndgrid(dist.depend{1}(1,:),dist.depend{2}(1,:)); % km/s
+        if doCalculateVbulk % incase moments are bad, this might be a better firs/temporary option
+          % NOT IMPLEMENTED
+          vx = dist.units;
+        else
+          v1_bulk = mean(v1.resample(dist).data,1);
+          v2_bulk = mean(v2.resample(dist).data,1);
+        end
+
         V1V2 = (V1-v1_bulk).*(V2-v2_bulk)*1e3*1e3; % km/s -> m/s
         % units_scaling
         new_units = 'arb. units';
@@ -2320,9 +2664,38 @@ classdef PDist < TSeries
       ax.Box = 'on';
       shading(ax,'flat');
 
-      if doP12 % add info about integrated value
-        %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+      if doB
+
+        if isa(B,'TSeries')
+          dt = obj.time(2) - obj.time(1);
+          B1 = B{1}.tlim(dist.time([1 end]) + 0.5*dt*[-1 1]);
+          B2 = B{2}.tlim(dist.time([1 end]) + 0.5*dt*[-1 1]);
+          B1 = mean(B1.data,1);
+          B2 = mean(B2.data,1);
+          b1 = B1/norm(B1);
+          b2 = B2/norm(B2);
+        else % single vector value
+          b = B/norm(B);
+        end
+
+        hold(hca,'on')
+        Bnorm = B;
+        hold(hca,'off')
       end
+      if doP12 % add info about integrated value
+        if integrated_p12 >= 0
+          sumf_color = 'r';
+        else
+          sumf_color = 'b';
+        end
+        %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+        %irf_legend(ax,sprintf('p = %.6f nPa',integrated_p12),[0.02 0.02],'color',sumf_color)
+        irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
+      end
+      %if doP12 % add info about integrated value
+        %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+      %end
+
       if doContour
         hold(ax,'on')
         if isempty(contour_levels), contour_levels = 10;
@@ -2459,9 +2832,9 @@ classdef PDist < TSeries
 
       % default plotting parameters
       doMirrorData = 0;
-      doAxesV = 0; % default is to do energy
+      doAxesV = 1; v_scale = 1; v_label_units = 'km/s'; % default is to do energy
       doLog10 = 1;
-      doLogAxes = 1;
+      doLogAxes = 0;
       doColorbar = 1;
       doAxisLabels = 1;
       doPrintInfo = 0;
@@ -2528,7 +2901,7 @@ classdef PDist < TSeries
             v_scale = 1e-3;
             v_label_units = '10^3 km/s';
             doAxesV = 1;
-          case 'km/s'
+          case {'km/s','v'}
             l = 1;
             v_scale = 1;
             v_label_units = 'km/s';
@@ -2643,7 +3016,7 @@ classdef PDist < TSeries
         plot_Y = [Y; flipdim(Y(1:end-1,:),1)];
         plot_data = [data flipdim(data,2)];
       else
-        plot_X = X;
+        plot_X = -X; % the rotation by 90 puts it in negative v's, so option to put a minus sign here to have positive vperp
         plot_Y = Y;
         plot_data = data;
       end
@@ -3165,9 +3538,17 @@ classdef PDist < TSeries
           otherwise
             error('Units not supported.')
         end
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
-        irf.log('warning','Converting DPFlux to PSD');
-        tmpData = obj.data/1e12*mm^2*0.53707;
+      elseif flagdir == -1
+        switch obj.units
+          case '1/(cm^2 s sr eV)'
+            irf.log('warning','Converting DPFlux to PSD');
+            tmpData = obj.data/1e12*mm^2*0.53707;
+          case '1/(cm^2 s sr keV)'
+            irf.log('warning','Converting DPFlux to PSD'); %% OBS, not correct units!!! Same above
+            tmpData = 1e-3*obj.data/1e12*mm^2*0.53707;
+          otherwise
+            error(sprintf('Units: %s not supported',obj.units))
+        end
       end
 
       energy = obj.depend{1};
@@ -3185,12 +3566,17 @@ classdef PDist < TSeries
         PD = obj;
         PD.data_ = tmpData;
         PD.units = '1/(cm^2 s sr eV)';
-      elseif flagdir == -1 && strcmp(obj.units,'1/(cm^2 s sr eV)')
-        reshapedData = reshapedData./matEnergy;
-        tmpData = reshape(reshapedData,sizeData);
-        PD = obj;
-        PD.data_ = tmpData;
-        PD.units = 's^3/m^6';
+      elseif flagdir == -1
+          reshapedData = reshapedData./matEnergy;
+          tmpData = reshape(reshapedData,sizeData);
+          PD = obj;
+          PD.data_ = tmpData;
+        switch obj.units
+          case '1/(cm^2 s sr eV)'
+            PD.units = 's^3/m^6';
+          case '1/(cm^2 s sr keV)' %% OBS, not correct units!!! Same above
+            PD.units = 's^3/m^6';
+        end
       else
         irf.log('warning','No change to PDist');
         PD = obj;
@@ -3264,61 +3650,52 @@ classdef PDist < TSeries
       else % obj2 is part of varargin to be passed on to mms.get_pitchangles
         varargin = {obj2,varargin{:}};
       end
-      %       if method % try new method to try to get away the stripes
-      %         data_size = size(obj.data);
-      %         B = obj1.resample(obj.time);
-      %         [VX,VY,VZ] = obj.v('squeeze');
-      %         vx = squeeze(VX(:,1,:,:));
-      %         vy = squeeze(VY(:,1,:,:));
-      %         vz = squeeze(VZ(:,1,:,:));
-      %         vabs = sqrt(vx.^2 + vy.^2 + vz.^2);
-      %         vxnorm = vx./vabs;
-      %         vynorm = vy./vabs;
-      %         vznorm = vz./vabs;
-      %         Bnorm = irf_norm(B.data);
-      %         Bxnorm = squeeze(repmat(Bnorm(:,1),1,1,data_size(3),data_size(4)));
-      %         Bynorm = squeeze(repmat(Bnorm(:,2),1,1,data_size(3),data_size(4)));
-      %         Bznorm = squeeze(repmat(Bnorm(:,3),1,1,data_size(3),data_size(4)));
-      %
-      %         % pitch angle for each bin (dimension only includes one energy level)
-      %         pitchangle = acosd(vxnorm.*Bxnorm + vynorm.*Bynorm + vznorm.*Bznorm);
-      %         pitchangles = nan(data_size);
-      %         for iE = 1:data_size(2)
-      %           pitchangles(:,iE,:,:) = pitchangle;
-      %         end
-      %         % sum up f and sort them into the right pitch angle bin
-      %         pitchangle_edges = linspace(0,180,nangles+1);
-      % %         %[count,edges,mid,loc] = histcn(pitchangle,pitchangle_edges,pitchangle_edges,pitchangle_edges);
-      % %         [count,edges,mid,loc] = histcn(pitchangles(:),pitchangle_edges);
-      % %         locs = reshape(loc,data_size);
-      % %         [loc_t,loc_E,loc_az,loc_pol] = ind2sub(data_size,loc);
-      %         % use irf.nanmean to sum up f for each new bin
-      %         new_data = nan(obj.length,size(obj.data,2),nangles);
-      %
-      %         for it = 1:data_size(1)
-      %           for iE = 1:data_size(2)
-      %             pitchangles_ = pitchangles(it,iE,:,:);
-      %             [count,edges,mid,loc] = histcn(pitchangles_(:),pitchangle_edges);
-      %             locs = reshape(loc,data_size(3:4));
-      %             for ipa = 1:nangles
-      %               locs_ipa = find(loc == ipa);
-      %               new_data(it,iE,ipa) = irf.nanmean(obj.data(it,iE,locs_ipa));
-      %             end
-      %           end
-      %         end
-      %
-      % %         for ipa = 1:nangles
-      % %           locs_ = find(loc == ipa);
-      % %           new_data(:,:,ipa) = irf.nanmean(obj.data(loc==ipa));
-      % %         end
-      %         PD = obj.clone(obj.time,new_data);
-      %         PD.depend = {PD.depend{1},repmat(mid{1},obj.length,1)};
-      %       else
+
       PD = mms.get_pitchangledist(obj,obj1,'angles',nangles,varargin{:}); % - For v1.0.0 or higher data
-      %       end
+
       % if the pitch angle bins are not equally spaced, we pass this for
       % plotting purposes, can be empty
       PD.ancillary.pitchangle_edges = pitchangle_edges;
+    end
+    function PD = pitchangle_diffusion(obj,Dth)
+      % Calculates df/dt for pitch angle distribution with some assumptions
+      % Under development. Only implemented for single distribution.
+      %   dfdt = 1/sin(th)*d/dth(D*sin(th)*df/dth)
+      %   th ('pitch angle') should be with respect to the phase speed of the
+      %   wave, but here we assume it to be close to zero (or equivalently,
+      %   very far away from the resonant energy, so th is stricly the
+      %   pitch angle
+      %
+      %   Example:
+      %     pitch_dfdt = pitch.pitchangle_diffusion(Dth);
+      %     pitch_dfdt.plot_pad_polar(hca,'10^3 km/s','flim',[-inf inf],'nolog10')
+      %
+      th_edges = obj.ancillary.pitchangle_edges;
+      dth = diff(th_edges);
+      th = th_edges(1:end-1) + 0.5*dth;
+      dt = mean(dth); % assumes they are equispaced
+      TH = repmat(th,[numel(obj.depend{1}(1,:)),1]);
+
+      f = squeeze(obj.data);
+      dfdth = f*0;
+      dfdth(:,2:end-1) = (f(:,3:end)-f(:,1:end-2))/(2*dt);
+      dfdth(:,1) = (f(:,2)-f(:,1))/(dt);
+      dfdth(:,end) = (f(:,end)-f(:,end-1))/(dt);
+      %[~,dfdth_] = gradient(f',E,TH);
+      Dsinthdfdth = Dth*sind(TH).*dfdth;
+      %imagesc(dfdth')
+
+      %[~,dfdt__] = gradient(Dsinthdfdth,E',TH');
+
+      dfdt__ = dfdth*0;
+      dfdt__(:,2:end-1) = (Dsinthdfdth(:,3:end)-Dsinthdfdth(:,1:end-2))/(2*dt);
+      dfdt__(:,1) = diff(Dsinthdfdth(:,1:2),1,2)/(dt);
+      dfdt__(:,end) = diff(Dsinthdfdth(:,end-1:end),1,2)/(dt);
+      dfdt = dfdt__./sind(TH);
+
+      PD = obj;
+      PD.data = reshape(dfdt,[1 size(dfdt)]);
+      PD.units = '...';
     end
     function PD = squeeze(obj)
       PD = obj;

@@ -11,7 +11,7 @@
 % ARGUMENT
 % ========
 % filePathCa
-%       Cell array of file paths.
+%       Column cell array of paths to files. Can be both datasets and not.
 %
 %
 % RETURN VALUE
@@ -43,12 +43,12 @@ function [DsmdArray, bIsDatasetArray] = paths_to_DSMD_array(filePathCa)
 %   CON: Ties class to filenaming convention.
 %       CON: Weak argument (but valid).
 %
+% PROPOSAL: Preallocate DsmdArray. Remove excess size at the end.
+%
 % PROPOSAL: Policy for how to handle not being able to recognize filenaming
 %           convention for a .cdf file (as could be expected).
 %   CON: Do not want to recognize RCTs if applying to entire ROC data/ dir.
 %   NOTE: Needs support in parse_dataset_filename(_many).
-% PROPOSAL: Policy for how to handle not being able to derive time interval
-%           from parsable filename: ignore, warning, error.
 
 % FI = File Info
 [fiCa, bIsDatasetArray] = solo.adm.parse_dataset_filename_many(filePathCa);

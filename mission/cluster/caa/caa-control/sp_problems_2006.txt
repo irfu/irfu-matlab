@@ -30,7 +30,7 @@ Problems seen when looking through the summary plots for 2006
   Changed hbiassa to flag intervals with ADC offsets consistently > 50 mV/m (at least 2 spins in a row)
   Then changed ps processing to use a max, rather than a mean, for hbiassa affected intervals
 
-Want some way to mark problems by hand. 
+Want some way to mark problems by hand.
   New getData quantity "manproblems" sets problems based on datatbase at /data/cluster/caa-control.
   Added to the CaaRunner L1 quantities.
 
@@ -205,7 +205,7 @@ hbiassa problems
 C2: 06-01 0000 to 06-16 2330 (take p12 as well)
 C1:06-16 0037-0327
 C1: 06-22 0215-0220
-C1(2)34: 06-27 0755-1100  
+C1(2)34: 06-27 0755-1100
 C1:06-27 1329-1331
 C1(2)34: 06-05 21-1810 the next day
 C1: 06-13 1650-1653
@@ -219,7 +219,7 @@ C1 06-27 1328-1332
 
 2006-07-07T14:22, dt="924810", C1: weird digital problem.
   Added to ns_ops and QRecord
-  Use QRecord to take L2 to quality 1 and L3 to quality 2 
+  Use QRecord to take L2 to quality 1 and L3 to quality 2
 
 07-12 12 C3: maneuver at 1230
   refetched phase, reprocessed L12. 1200 second break required in ns_ops.
@@ -246,11 +246,11 @@ C1 06-27 1328-1332
   added to manual_problems.
 
 08-21 1802 C4 bad packet?
-  blank 18:04:08 for one second.  added to nsops. 
+  blank 18:04:08 for one second.  added to nsops.
 
 08-30 1500: C2 is strange 1519-0000, and then vanishes for the remainder of the month.
   upgraded tbd to bad_data in ns_ops for 15:15:54-03:37:22 interval.
-  Then have a badbias interval until midnight. 
+  Then have a badbias interval until midnight.
   Added to nsops.
 
 08-21 1802 C3 bad packet?
@@ -334,7 +334,7 @@ C1 06-27 1328-1332
   Corrupt ISDAT index file
   Re-generated the index file for that day, and the data became available.
 
-12-07 11:16:50 (300 seconds): maneuver, C1 
+12-07 11:16:50 (300 seconds): maneuver, C1
 12-09 06: 0309 to 1243: probe latchup on C3 (all probes to -68V)
 12-29 1033-0200: what's going on with C2? badbias.
 12-14 0045: bad HK packet, C3 00:44:31 (5 sec)
@@ -426,7 +426,7 @@ manproblems not properly implemented in the runners.
   Results in frequent NaNs in L2,L3 E data.
   Proposed solution:
    rename probesa from PROBE_SATURATION to NEGATIVE_PROBE_POTENTIAL
-   rename probeld from LOW_DENSITY_SATURATION to PROBE_SATURATION 
+   rename probeld from LOW_DENSITY_SATURATION to PROBE_SATURATION
    move detection of latched probes from probesa to probeld in getData
    make sure Vp>50 goes inteo probesa
    Don't blank probesa from ec|dies|die

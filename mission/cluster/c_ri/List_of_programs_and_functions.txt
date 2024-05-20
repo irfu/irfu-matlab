@@ -7,7 +7,7 @@ using:	-fromepoch
 		-Ut2number
 		-four_vector_angles
 		-plot_angles
-		
+
 program test2 (not in use)
 using:	-fromepoch
 		-Ut2number
@@ -15,11 +15,11 @@ using:	-fromepoch
 		-time_synch
 		-four_vector_angles
 		-plot_angles
-		
+
 program pres
 using:	-020302_test.mat !a binary file!
 		-irf_timeaxis
-	
+
 function get_B_from_ISDAT
 using:	-Mat_DbOpen
 		-database UNIX:99 !not a function!
@@ -28,7 +28,7 @@ using:	-Mat_DbOpen
 		-R_c_gse2dsc
 		-Mat_DbClose
 		-create_downloadblocks
-		
+
 function Ut2number
 using:	-toepoch
 
@@ -63,7 +63,7 @@ using:	-
 
 function find_b_and_e (not in use)
 using:	-timestr_to_timetag
-		-unix('ddsls /data/cluster/DDS/020302*fb.01 >/share/robert/times.info') 
+		-unix('ddsls /data/cluster/DDS/020302*fb.01 >/share/robert/times.info')
 		!UNIX CALL OPENS and CREATES A FILE!
 
 function find_distance (not in use)
@@ -79,13 +79,13 @@ function search_events
 using:	-get_pos_from_ISDAT
 		-distance_to_MP
 		-gse2gsm
-		
+
 function find_angles (not in use)
 using:	-fromepoch
 		-get_B_from_ISDAT
 		-Ut2number
 		-four_vector_angles
-		
+
 function class_angle_as_event
 using	-ind2nr
 
@@ -96,9 +96,9 @@ function auto_event_search
 using:	-isGetContentLite
 		-toepoch
 		-search_events
-		-save /share/robert/mp_crossing_(from date)_to_(to_date) 
+		-save /share/robert/mp_crossing_(from date)_to_(to_date)
 		 !!!saving to file
-		
+
 function t_and_dt
 using:	-toepoch
 
@@ -133,16 +133,16 @@ using:	-isGetContetLite
 		-R_datestring
 		-load (filename and path to a file that contains the crossing of the MP)
 		-save /share/robert/B_data/B_[from]_to_[to]
-		
+
 function download_B_4_cl
 using:	-find_row
 		-fromepoch
 		-download_intervall
 		-add_A2M
-		
+
 function download_B_intervall
 using:	-get_B_from_ISDAT
-		-add_A2M		
+		-add_A2M
 
 function find_100_without_data_gap (not in use)
 using:	-
@@ -161,7 +161,7 @@ using:	-find_sample_fp
 		-create_timelind
 		-create_complete_M
 		-save /share/robert/B_compl_[from]_to_[to].mat
-		
+
 function BigStep
 using:	-BStep
 
@@ -193,9 +193,9 @@ using:	-fromepoch
 		-toepoch
 		-time2row
 		-find_max_angles
-		-plot_max_angles 
+		-plot_max_angles
 		-class_angle_as_event
-		
+
 function create_downloadblocks
 using:	-
 
@@ -213,7 +213,7 @@ using:	-
 
 function create_file
 using:	-
-		
+
 functoin get_timetable
 using	-
 

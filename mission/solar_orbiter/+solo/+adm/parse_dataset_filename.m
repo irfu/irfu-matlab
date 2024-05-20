@@ -30,7 +30,7 @@
 % ================================
 % 1    = Basename suffix
 % 2    = Additions to filename that
-% LCUC = Lowercase or Uppercase
+% LCUC = LowerCase or UpperCase
 %
 %
 % RECOGNIZED FILENAMING CONVENTION: EXAMPLES
@@ -131,6 +131,13 @@
 %           (optionally) the suffix "-CDAG".
 %
 %
+% ~BUG
+% ====
+% filename == "solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf"
+% is falsely recognized as a legal dataset filename.
+% This is due to the unofficial extension being interpreted as non-empty.
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-12-17.
 %
@@ -189,6 +196,8 @@ function R = parse_dataset_filename(filename)
 % PROPOSAL: Abolish dsicdagCase. Should be regarded as part of the
 %           respective filenaming conventions.
 % PROPOSAL: Abolish unoffExtension.
+%   PRO: Causes some filenames to unexpectedly be intepreted as compliant.
+%     Ex: "solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf"
 %
 % PROPOSAL: Separate (globally available) parse/create functions for every
 %           separate filenaming scheme.
@@ -323,9 +332,9 @@ UNOFF_EXTENSION_RE = '(\..*|)';
 
 TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 
-%===========================================
-% Standard (incl. CDAG; tested for earlier)
-%===========================================
+%=================================================================
+% Standard filenaming convention (incl. CDAG; tested for earlier)
+%=================================================================
 [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
@@ -337,9 +346,9 @@ if perfectMatch
   return
 end
 
-%=====
-% LES
-%=====
+%=============================
+% "LES" filenaming convention
+%=============================
 [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', ...
   LES_TESTSTR_RE, UNOFF_EXTENSION_RE}, 'permit non-match');
@@ -352,9 +361,9 @@ if perfectMatch
   return
 end
 
-%======
-% CNES
-%======
+%===============================
+% "CNES" filenameing convention
+%===============================
 [subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', CNE_TESTSTR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');

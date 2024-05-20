@@ -35,6 +35,7 @@ classdef solo_db < handle
 
 
     function fileList = list_files(obj,filePrefix,tint,varName)
+      % Return array of data structures describing matching files (datasets).
       if nargin < 4, varName = ''; end
       fileList = [];
       if nargin==2, tint =[]; end
@@ -147,8 +148,13 @@ classdef solo_db < handle
         end
 
         % check for overlapping time records
+        % ----------------------------------
+        % idxUnique = (Presumably) index to the FIRST instance of a unique
+        %             value.
         [~,idxUnique] = unique(res.DEPEND_0.data);
         idxDuplicate = setdiff(1:length(res.DEPEND_0.data), idxUnique);
+        % Remove CDF records for which the dependent (DEPEND_0) zVariable
+        % (typically "Epoch") is identical to earlier instance.
         res.data(idxDuplicate, :, :, :, :, :, :, :, :, :, :, :) = [];
         for idep = 0:n_dep
           DEP_str = ['DEPEND_' num2str(idep)];
@@ -158,7 +164,7 @@ classdef solo_db < handle
         end
         nDuplicate = length(idxDuplicate);
         if nDuplicate
-          irf.log('warning',sprintf('Discarded %d data points',nDuplicate))
+          irf.log('warning',sprintf('Discarded %d data points for zVariable "%s"',nDuplicate, varName))
         end
 
         % update number of records, nrec
