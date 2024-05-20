@@ -1,7 +1,7 @@
 %
-% Try run BICAS for array of specified BPCI. If the input datasets can not be
-% found immediately before a BICAS run, then that BPCI is skipped. This is to
-% prevent the code from confusing a "genuine" BICAS error (which the code can
+% Try run BICAS for array of specified BPCIs. If the input datasets can not be
+% found immediately before a call to BICAS, then that BPCI is skipped. This is
+% to prevent the code from confusing a "genuine" BICAS error (which the code can
 % not interpret) with BICAS merely not being able to read missing input
 % datasets.
 %
