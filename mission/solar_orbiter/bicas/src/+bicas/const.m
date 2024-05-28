@@ -39,12 +39,17 @@ classdef const
     % the correct MATLAB version.
     %
     % NOTE: BICAS originally required MATLAB R2016a but no longer does.
-    % NOTE: ROC only needs MATLAB R2019b. Source:
-    %       https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
+    % NOTE: ROC only requires supporting MATLAB R2019b.
+    %       Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
     % NOTE: Added MATLAB 2021a in order to make it possible to run test code
     %       on GitHub CI (earliest supported MATLAB version).
     %       https://github.com/matlab-actions/setup-matlab/
-    PERMITTED_MATLAB_VERSIONS         = {'2019b', '2021a'};
+    % NOTE: Added MATLAB 2024a since ROC is planning to support it (replacing
+    %       R2019b).
+    %       Source: e-mail 2024-04-24, Quynh Nhu NGUYEN
+    % NOTE: Added MATLAB 2023b since it is currently (2024-05-28) the latest
+    %       version running on brain, spis, anna (IRFU servers).
+    PERMITTED_MATLAB_VERSIONS         = {'2019b', '2021a', '2023b', '2024a'};
 
     % Path to default config file relative to BICAS's directory root. Note
     % that this is also implicitly the constant for the default config file
