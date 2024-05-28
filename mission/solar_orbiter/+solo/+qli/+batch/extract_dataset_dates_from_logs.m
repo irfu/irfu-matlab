@@ -36,8 +36,13 @@
 function [DatasetsDtArray, logFilePath] = extract_dataset_dates_from_logs(...
   logFileDirPattern, dsiCa)
 
-% PROPOSAL: Specify filename patterns (not dataset IDs).
-% PROPOSAL: Require at least one dataset ID.
+% PROPOSAL: Specify dataset filename patterns (not DSIs).
+% PROPOSAL: Require at least one DSI.
+% PROPOSAL: For every log, collect the log FMD. Only update QLIs (implicated by
+%           the datasets mentioned in the log) whose QLI FMD is older than the log FMD.
+%   PRO: Rerunning a algorithm will not update the same QLIs again.
+%   PROBLEM: Has no way of obtaining the QLI FMDs for selected dates. Must
+%            retreive QLI FMDs for all dates (which is somewhat slow).
 
 % FSOI = File System Object Info
 FsoiArray = dir(logFileDirPattern);
@@ -48,7 +53,7 @@ FsoiArray = FsoiArray(~[FsoiArray.isdir]);
 % IMPLEMENTATION NOTE: This is a failsafe against setting the wrong path
 % pattern.
 if isempty(FsoiArray)
-  error('No files match logFileDirPattern=%s.')
+  error('No files match logFileDirPattern=%s.', logFileDirPattern)
 end
 
 

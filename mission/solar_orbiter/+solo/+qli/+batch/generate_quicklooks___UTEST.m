@@ -28,11 +28,11 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
   properties(TestParameter)
     EXC_24H6H2H = {...
       solo.qli.const.EMPTY_DT_ARRAY, ...
-      solo.qli.utils.umdt('2024-01-01') ...
+      solo.qli.utils.umddt('2024-01-01') ...
       }
     EXC_7DAYS = {...
       solo.qli.const.EMPTY_DT_ARRAY, ...
-      solo.qli.utils.umdt('2023-12-27') ...
+      solo.qli.utils.umddt('2023-12-27') ...
       }
   end
 
@@ -88,91 +88,91 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
 
 
     function test_one_day_24h6h2h(testCase)
-      DaysDtArray = solo.qli.utils.umdt('2024-01-01');
+      UmdDtArray = solo.qli.utils.umddt('2024-01-01');
 
       Gql = solo.qli.batch.GenerateQuicklooksTest();
 
       solo.qli.batch.generate_quicklooks(...
         [], testCase.vhtDir, testCase.outputDir, ...
-        true, false, DaysDtArray, Gql)
+        true, false, UmdDtArray, Gql)
 
-      testCase.assertEqual(Gql.Dt24h6h2hArray, DaysDtArray)
-      testCase.assertEqual(Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(Gql.UmdDt24h6h2hCallsArray, UmdDtArray)
+      testCase.assertEqual(Gql.UmdDt7daysCallsArray,   solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
 
     function test_one_day_week_7days(testCase)
-      DaysDtArray     = solo.qli.utils.umdt('2024-01-01');
-      ExpDt7daysArray = solo.qli.utils.umdt('2023-12-27');
+      UmdDtArray              = solo.qli.utils.umddt('2024-01-01');
+      ExpUmdDt7daysCallsArray = solo.qli.utils.umddt('2023-12-27');
       Gql = solo.qli.batch.GenerateQuicklooksTest();
 
       solo.qli.batch.generate_quicklooks(...
         [], testCase.vhtDir, testCase.outputDir, ...
-        false, true, DaysDtArray, Gql)
+        false, true, UmdDtArray, Gql)
 
-      testCase.assertEqual(Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
-      testCase.assertEqual(Gql.Dt7daysArray,   ExpDt7daysArray)
+      testCase.assertEqual(Gql.UmdDt24h6h2hCallsArray, solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(Gql.UmdDt7daysCallsArray,   ExpUmdDt7daysCallsArray)
     end
 
 
 
     % Generate two days, but raise exception for the first one.
     function test_two_days_24h6h2h_exception(testCase)
-      DaysDtArray = solo.qli.utils.umdt('2024-01-01') + caldays([0; 1]);
+      UmdDtArray = solo.qli.utils.umddt('2024-01-01') + caldays([0; 1]);
 
       Gql = solo.qli.batch.GenerateQuicklooksTest(...
-        DaysDtArray(1), ...
+        UmdDtArray(1), ...
         solo.qli.const.EMPTY_DT_ARRAY);
 
       testCase.assertError(...
         @() solo.qli.batch.generate_quicklooks(...
         [], testCase.vhtDir, testCase.outputDir, ...
-        true, false, DaysDtArray, Gql), ...
+        true, false, UmdDtArray, Gql), ...
         ?MException)
 
-      testCase.assertEqual(Gql.Dt24h6h2hArray, DaysDtArray)
-      testCase.assertEqual(Gql.Dt7daysArray,   solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(Gql.UmdDt24h6h2hCallsArray, UmdDtArray)
+      testCase.assertEqual(Gql.UmdDt7daysCallsArray,   solo.qli.const.EMPTY_DT_ARRAY)
     end
 
 
 
     % Generate two weeks, but raise exception for the first one.
     function test_two_weeks_7days_exception(testCase)
-      DaysDtArray     = solo.qli.utils.umdt('2024-01-01') + caldays( [0; 2]);  % Mon, Wed
-      ExpDt7daysArray = solo.qli.utils.umdt('2023-12-27') + calweeks([0; 1]);
+      UmdDtArray              = solo.qli.utils.umddt('2024-01-01') + caldays( [0; 2]);  % Mon, Wed
+      ExpUmdDt7daysCallsArray = solo.qli.utils.umddt('2023-12-27') + calweeks([0; 1]);
       Gql = solo.qli.batch.GenerateQuicklooksTest(...
         solo.qli.const.EMPTY_DT_ARRAY, ...
-        ExpDt7daysArray(1));
+        ExpUmdDt7daysCallsArray(1));
 
       testCase.assertError(...
         @() solo.qli.batch.generate_quicklooks(...
         [], testCase.vhtDir, testCase.outputDir, ...
-        false, true, DaysDtArray, Gql), ...
+        false, true, UmdDtArray, Gql), ...
         ?MException)
 
-      testCase.assertEqual(Gql.Dt24h6h2hArray, solo.qli.const.EMPTY_DT_ARRAY)
-      testCase.assertEqual(Gql.Dt7daysArray,   ExpDt7daysArray)
+      testCase.assertEqual(Gql.UmdDt24h6h2hCallsArray, solo.qli.const.EMPTY_DT_ARRAY)
+      testCase.assertEqual(Gql.UmdDt7daysCallsArray,   ExpUmdDt7daysCallsArray)
     end
 
 
 
     function test_complex(testCase)
-      DaysDtArray     = solo.qli.utils.umdt('2024-01-01') + caldays([0; 1; 10; 11]); % Mon-Tue, Wed-Thu
-      ExpDt7daysArray = solo.qli.utils.umdt('2023-12-27') + calweeks([0; 2]);        % Skip middle week.
+      UmdDtArray              = solo.qli.utils.umddt('2024-01-01') + caldays([0; 1; 10; 11]); % Mon-Tue, Wed-Thu
+      ExpUmdDt7daysCallsArray = solo.qli.utils.umddt('2023-12-27') + calweeks([0; 2]);        % Skip middle week.
 
       Gql = solo.qli.batch.GenerateQuicklooksTest(...
-        DaysDtArray(2), ...
-        ExpDt7daysArray(1));
+        UmdDtArray(2), ...
+        ExpUmdDt7daysCallsArray(1));
 
       testCase.assertError(...
         @() solo.qli.batch.generate_quicklooks(...
         [], testCase.vhtDir, testCase.outputDir, ...
-        true, true, DaysDtArray, Gql), ...
+        true, true, UmdDtArray, Gql), ...
         ?MException)
 
-      testCase.assertEqual(Gql.Dt24h6h2hArray, DaysDtArray)
-      testCase.assertEqual(Gql.Dt7daysArray,   ExpDt7daysArray)
+      testCase.assertEqual(Gql.UmdDt24h6h2hCallsArray, UmdDtArray)
+      testCase.assertEqual(Gql.UmdDt7daysCallsArray,   ExpUmdDt7daysCallsArray)
     end
 
 

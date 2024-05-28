@@ -1,12 +1,12 @@
 %
-% Demonstration code for how to generate "IRFU quicklooks" ("QLI") locally. The
-% user may have to copy and modify this function to generate quicklooks
-% themselves.
+% EXAMPLE code for how to generate "IRFU quicklooks" ("QLI") locally from
+% inside MATLAB. The user may have to copy and modify this function to generate
+% quicklooks themselves.
 %
 %
 % NOTES
 % =====
-% * The example implementation below is system-dependent! The function is
+% * This EXAMPLE implementation below is system-dependent! The function is
 %   configured for being run on brain/spis at IRFU, or any system where
 %   /data/solo/ has been mounted to the same location.
 % * GENERATING QUICKLOOKS IS TIME-CONSUMING, in particular 24h, 6h, 2h
@@ -49,9 +49,8 @@ DAYS_DATETIME_COLUMN_ARRAY = datetime({...
 % Required, but only exists for technical reasons (automated testing).
 GQL = solo.qli.batch.GenerateQuicklooksImplementation();
 
-
 %===============================================================
-% Configure Solar Orbiter database from which data will be used
+% Configure Solar Orbiter database from which data will be read
 %===============================================================
 % NOTE: Only uses /data/solo/remote/data/ and /data/solo/soar/ (and not
 %       /data/solo/data_irfu/) since data_irfu/ has less reliable data
@@ -65,7 +64,8 @@ solo.db_cache('on', 'save')
 
 
 
-% Enable more log messages. Not necessary, but is useful for debugging..
+% Enable more log messages. Not necessary, but is useful for debugging and
+% progress updates.
 irf.log('notice')
 
 %=====================

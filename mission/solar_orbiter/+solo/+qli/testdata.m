@@ -83,29 +83,29 @@ classdef testdata
       close all
       tic
 
-      DT0 = solo.qli.utils.umdt('2023-01-05');
+      DT_0 = solo.qli.utils.umddt('2023-01-05');
 
-      QuicklooksTint = irf.tint(...
-        char(DT0), ...
-        char(DT0+caldays(1)));
-      SpacePosTint = irf.tint(...
-        char(DT0-calmonths(1)), ...
-        char(DT0+calmonths(1)));
+      QUICKLOOKS_TINT = irf.tint(...
+        char(DT_0), ...
+        char(DT_0+caldays(1)));
+      SPACE_POS_TINT = irf.tint(...
+        char(DT_0-calmonths(1)), ...
+        char(DT_0+calmonths(1)));
 
       % Shorter time interval to speed up test, but not too short so that it is
       % hard to inspect the relevant part of the plot (spectrum).
       BTint = irf.tint(...
-        char(DT0+hours(1)), ...
-        char(DT0+hours(1)+minutes(30)));
+        char(DT_0+hours(1)), ...
+        char(DT_0+hours(1)+minutes(30)));
 
       OutputPaths = solo.qli.utils.create_output_directories(outputDir);
       Data        = solo.qli.testdata.generate_test_data(...
-        QuicklooksTint, SpacePosTint, BTint);
+        QUICKLOOKS_TINT, SPACE_POS_TINT, BTint);
 
       irfLogoPath = solo.qli.testdata.get_test_logo_path();
       %irfLogoPath = '/nonhome_data/work_files/SOLAR_ORBITER/irfu-matlab_qli/mission/solar_orbiter/+solo/+qli/+offgen/irf_logo.png';
 
-      solo.qli.generate_quicklooks_24h_6h_2h(Data, OutputPaths, QuicklooksTint, irfLogoPath)
+      solo.qli.generate_quicklooks_24h_6h_2h(Data, OutputPaths, QUICKLOOKS_TINT, irfLogoPath)
       toc
     end
 
@@ -116,22 +116,22 @@ classdef testdata
       close all
       tic
 
-      QuicklooksTint = irf.tint(...
+      QUICKLOOKS_TINT = irf.tint(...
         '2023-12-27T00:00:00.00Z', ...
         '2024-01-03T00:00:00.00Z');
-      SpacePosTint = irf.tint(...
+      SPACE_POS_TINT = irf.tint(...
         '2023-12-01T00:00:00.00Z', ...
         '2024-02-02T00:00:00.00Z');
       % Shorter time interval to speed up test, but not too short so that it is
       % hard to inspect the relevant part of the plot (spectrum).
-      BTint = QuicklooksTint;
+      BTint = QUICKLOOKS_TINT;
 
       Data = solo.qli.testdata.generate_test_data(...
-        QuicklooksTint, SpacePosTint, BTint);
+        QUICKLOOKS_TINT, SPACE_POS_TINT, BTint);
 
       irfLogoPath = solo.qli.testdata.get_test_logo_path();
 
-      solo.qli.generate_quicklook_7days(Data, outputDir, QuicklooksTint, irfLogoPath)
+      solo.qli.generate_quicklook_7days(Data, outputDir, QUICKLOOKS_TINT, irfLogoPath)
       toc
     end
 
@@ -140,6 +140,12 @@ classdef testdata
     % Generate test data which can be used as input to
     % solo.qli.generate_quicklooks_24h_6h_2h() and
     % solo.qli.generate_quicklook_7days().
+    %
+    % Returns test data corresponding to to absent science data.
+    %
+    % NOTE: Always returns
+    % * swaEnergyMetadata (constant metadata found in CDFs)
+    % * SPICE positions
     function Data = generate_empty_test_data(SpacePosTint)
       % NOTE: Data.Vrpw is loaded as a TSeries from .mat files and time interval
       % is then selected with TSeries.tlim(). ==> Empty data is represented as a

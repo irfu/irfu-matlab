@@ -1,14 +1,11 @@
 %
-% Class for collecting constants relating to solo.qli (but not solo.qli.offgen
-% (almost)).
+% Class for collecting constants relating to solo.qli.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef const
-  % PROPOSAL: Move OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA and
-  %           OFFICIAL_GENERATION_AUTOMOUNT_DIR to solo.qli.offgen somehow.
-  % PROPOSAL: Move VHT_1H_DATA_FILENAME, VHT_6H_DATA_FILENAME to solo.qli.offgen
+  % PROPOSAL: Move VHT_1H_DATA_FILENAME, VHT_6H_DATA_FILENAME to solo.qli.batch
   %           somehow.
   %   PROBLEM: generate_quicklooks_*_using_DB_SPICE() use them.
   %     PROPOSAL: Also hardcode values in demo file.
@@ -85,16 +82,13 @@ classdef const
     % (until someone complains).
     FIRST_DAY_OF_WEEK = 4;   % 2 = Monday; 4 = Wednesday
 
-    % Host names used for determining whether the current generation of
-    % quicklooks is "official generation" of quicklooks or not.
-    OFFICIAL_GENERATION_IRFU_HOST_NAMES_CA = {'brain', 'spis'};
-
-    % Directory which shall be used for trying to trigger automounting for
-    % official generation of quicklooks.
-    OFFICIAL_GENERATION_AUTOMOUNT_DIR = '/data/solo/';
-
     % Constant which is useful to have for defining tests.
     EMPTY_DT_ARRAY = NaT([0, 1], 'TimeZone', 'UTCLeapSeconds');
+
+    % NOTE: Used for putting in human-readable strings (on QLIs), not for
+    % loading data over the internet.
+    SOAR_URL = 'https://soar.esac.esa.int/';
+
   end
 
 

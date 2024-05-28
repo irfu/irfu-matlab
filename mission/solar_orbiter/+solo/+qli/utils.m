@@ -8,12 +8,6 @@ classdef utils
 
 
 
-  properties(Constant)
-    SOAR_URL = 'https://soar.esac.esa.int/';
-  end
-
-
-
   %#######################
   %#######################
   % PUBLIC STATIC METHODS
@@ -26,8 +20,8 @@ classdef utils
     % Assert that datetime object only contains timestamps which refer to
     % midnight.
     %
-    % NOTE: Does not require scalar object.
-    function assert_UTC_midnight_datetime(Dt)
+    % NOTE: Does not require scalar object. Can be any size.
+    function assert_UMD_DT(Dt)
       assert(isa(Dt, 'datetime'))
       assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'), ...
         'datetime object is not TimeZone=UTC.')
@@ -37,11 +31,11 @@ classdef utils
 
 
 
-    % Convert strings YYYY-MM-DD to UTC datetime object with timestamp at
+    % Convert string(s) YYYY-MM-DD to UTC datetime object with timestamp at
     % midnight. (E.g. format 2024-01-01T00:00:00.000Z does NOT work,
     % deliberately)
     %
-    % UMDT = UTC Midnight DateTime
+    % UMDDT = UMD DT = UTC Midnight Date, datetime
     %
     % IMPLEMENTATION NOTE: solo.qli works with many UTC datetime objects for
     % timestamps at midnight, and tests hardcode many such values. This function
@@ -51,9 +45,9 @@ classdef utils
     % =========
     % strCa
     %       Either
-    %       (1) Cell array of strings (timestamps for corresponding elements).
-    %       (2) String (one timestamp)
-    function Dt = umdt(strCa)
+    %       (1) String (one timestamp)
+    %       (2) Cell array of strings (timestamps for corresponding elements).
+    function Dt = umddt(strCa)
       assert(iscell(strCa) || ischar(strCa))
       % NOTE: datetime() also accepts other datetime objects, with any
       % time-of-day. "Must" therefore forbid.
@@ -69,8 +63,8 @@ classdef utils
     %
     % ARGUMENTS
     % =========
-    % DayDtArray
-    %       datetime column array. Every timestamp is midnight and represents
+    % UmdDtArray
+    %       UMD datetime column array. Every timestamp represents
     %       the 24h period which begins at that timestamp.
     % firstDayOfWeek
     %       First day of week. datetime convention (1=Sunday, ..., 7=Saturday).
@@ -78,24 +72,24 @@ classdef utils
     %
     % RETURN VALUE
     % ============
-    % WeekDtArray
-    %       datetime column array. Every timestamp is midnight and represents
-    %       the week (contiguous 7-day period) which begins at that timestamp.
+    % WeekUmdDtArray
+    %       UMD datetime column array. Every timestamp represents the week
+    %       (contiguous 7-day period) which begins at that timestamp.
     %
-    function WeekDtArray = derive_weeks(DayDtArray, firstDayOfWeek)
-      solo.qli.utils.assert_UTC_midnight_datetime(DayDtArray)
-      assert(iscolumn(DayDtArray))
+    function WeekUmdDtArray = derive_weeks(UmdDtArray, firstDayOfWeek)
+      solo.qli.utils.assert_UMD_DT(UmdDtArray)
+      assert(iscolumn(UmdDtArray))
 
       % Find nearest previous day with specified weekday
       % ------------------------------------------------
       % IMPLEMENTATION NOTE: dateshift(... 'dayofweek' ...) can only search
       % forward. Subtracts days to "round down" instead.
-      WeekDtArray = dateshift(DayDtArray - caldays(6), 'dayofweek', firstDayOfWeek);
+      WeekUmdDtArray = dateshift(UmdDtArray - caldays(6), 'dayofweek', firstDayOfWeek);
 
       % IMPLEMENTATION NOTE: Important to eliminate doubles since, every initial
       % timestamp within the same week will separately generate the same
       % timestamp reresenting the same week.
-      WeekDtArray = sort(unique(WeekDtArray));
+      WeekUmdDtArray = sort(unique(WeekUmdDtArray));
     end
 
 
@@ -186,71 +180,6 @@ classdef utils
         zvData = [];
       end
     end
-
-
-
-    % EXPERIMENTAL. SOMEWHAT UGLY CIRCUMVENTION. UNCLEAR IF PERMANENT SOLUTION.
-    %
-    % Read selected zVariables from datasets selected using solo.db_list_files()
-    % but not by using solo.db_get_ts().
-    %
-    % Function exists as a workaround to avoid the removal of samples for
-    % identical timestamps in solo.db_get_ts() which has an unduly large effect
-    % on QLI (panel 10, 24h6h2h), unknown why.
-    %
-    % 2024-03-28: It seems likely that this code can be deleted, but it not
-    % clear yet. Function was created as a possible workaround/bugfix for
-    % https://github.com/irfu/irfu-matlab/issues/138 .
-    %
-    %
-    % RETURN VALUE
-    % ============
-    % zvCa
-    %     Column cell array of TSeries.
-    %     [], if there are no datasets for the selected time interval.
-    %
-    % NOTE: Overlaps with solo.qli.utils.read_constant_metadata().
-%     function zvCa = read_CDFs(filePrefix, Tint, zvNamesCa)
-%       % PROPOSAL: Merge with solo.qli.utils.read_constant_metadata().
-%       %   PRO: Overlaps with it. If calling both for the same dataset(s), then
-%       %        reading the same file(s) twice.
-%       %     CON: Does not whether cdfread() reads entire files or just part of them.
-%
-%       % IMPLEMENTATION NOTE: Not storing return TSeries values in TSeries array
-%       % since indexing () has special meaning for TSeries.
-%
-%
-%       FileArray = solo.db_list_files(filePrefix, Tint);
-%
-%       zvCa = cell(numel(zvNamesCa), 1);
-%       if ~isempty(FileArray)
-%         for iFile = 1:numel(FileArray)
-%           File     = FileArray(iFile);
-%           filePath = fullfile(File.path, File.name);
-%           Do       = dataobj(filePath);
-%
-%           for iZv = 1:numel(zvNamesCa)
-%             Ts = get_ts(Do, zvNamesCa{iZv});
-%
-%             TsOld = zvCa{iZv, 1};
-%             if ~isequal(TsOld, [])
-%               Ts = TsOld.combine(Ts);
-%             end
-%             zvCa{iZv} = Ts;
-%           end
-%         end
-%         zvCa{1} = zvCa{1};
-%       else
-%         % CASE: There are no datasets to read
-%         % IMPLEMENTATION NOTE: Can not return e.g. empty TSeries with consistent
-%         % sizes since the sizes can not be known without zVariables.
-%         zvCa = [];
-%       end
-%
-%       for iZv = 1:numel(zvNamesCa)
-%         zvCa{iZv} = zvCa{iZv}.tlim(Tint);
-%       end
-%     end
 
 
 
@@ -364,26 +293,6 @@ classdef utils
 
 
 
-    % Log time interval for which a plotting function is called.
-    %
-    % This is useful for more easily determining for which time interval the code
-    % crashes by reading the log.
-%     function log_plot_function_time_interval(Tint)
-%       utcStr1 = Tint(1).utc;
-%       utcStr2 = Tint(2).utc;
-%       % NOTE: Truncating subseconds (keeping accuracy down to seconds).
-%       utcStr1 = utcStr1(1:19);
-%       utcStr2 = utcStr2(1:19);
-%
-%       % Not specifying which plot function is called (weekly, nonweekly plots).
-%       %fprintf('Calling plot function for %s--%s.\n', utcStr1, utcStr2);
-%       irf.log('n', sprintf('======================================================'))
-%       irf.log('n', sprintf('Calling plot function for %s--%s.', utcStr1, utcStr2))
-%       irf.log('n', sprintf('======================================================'))
-%     end
-
-
-
     % Generate text string with information on data source and when the plot
     % was generated.
     function str = get_data_source_info_string()
@@ -393,7 +302,7 @@ classdef utils
         'Swedish Institute of Space Physics, Uppsala (IRFU), %s.', ...
         ' Data available at %s.' ...
         ], ...
-        dateStr, solo.qli.utils.SOAR_URL ...
+        dateStr, solo.qli.const.SOAR_URL ...
         );
     end
 
@@ -628,7 +537,7 @@ classdef utils
 
         DtArray = datetime(...
           [year1, month1, day1, hour1, 0, 0;
-           year2, month2, day2, hour2, 0, 0], ...
+          year2, month2, day2, hour2, 0, 0], ...
           'TimeZone', 'UTCLeapSeconds');
         Dt1 = DtArray(1);
         Dt2 = DtArray(2);

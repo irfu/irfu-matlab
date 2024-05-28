@@ -32,6 +32,8 @@ classdef const
     % NOTE: Dictionary values specify DSIs (i.e. excluding CDAG).
     SOURCE_DSI_DICT = solo.qli.batch.const.get_DSIs()
 
+    % Regular expression for date string on form YYYY-MM-DD.
+    DATE_RE = '^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]$';
   end
 
 
@@ -55,13 +57,13 @@ classdef const
         'SOLO_L2_RPW-TNR-SURV', ...
         'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS', ...
         'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS'...
-      }};
+        }};
       SourceDsiDict('SOAR') =  {{
         'SOLO_L2_MAG-RTN-NORMAL', ...
         'SOLO_L2_MAG-RTN-NORMAL-1-MINUTE', ...
         'SOLO_L2_SWA-PAS-EFLUX', ...
         'SOLO_L2_SWA-PAS-GRND-MOM', ...
-      }};
+        }};
 
       % ASSERTION: Unique DSIs
       % NOTE: Can not assert misspelled DSIs.

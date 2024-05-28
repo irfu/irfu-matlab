@@ -24,7 +24,7 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % NOTES
 % =====
 % * Computes the spectrum for B when magnetic field data is available. When it
-%   does, the code takes a lot of time.
+%   does, the function takes a lot of time to execute.
 
 
 
@@ -64,7 +64,7 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % Should be solved.
 % /Erik P G Johansson 2024-03-25
 %
-% https://github.com/irfu/irfu-matlab/issues/138
+% BUG: https://github.com/irfu/irfu-matlab/issues/138
 % /Erik P G Johansson 2024-03-28
 %
 % BUG: There is no date label for the data under the lowest panel, if there is
@@ -86,6 +86,15 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %
 % PROPOSAL: Eliminate isempty(Data.tnrBand).
 %   PRO: Seems unnecessary.
+% PROPOSAL: Eliminate calls to tlim(). They should be unnecessary since the
+%           caller sets them correctly anyway.
+%   PROPOSAL: Assert correct limits?
+%     NOTE: Data.swaEnergyMetadata does not have any time dependence.
+%   NOTE: Tint24h is a function argument which only used for
+%     * Trimming TSeries in time (unnecessary). Most use cases.
+%     * Zooming in x.
+%     * solo.qli.utils.get_context_info_strings()
+%     * Figuring out time intervals for all types of quicklooks.
 
 
 
@@ -96,16 +105,23 @@ tBeginSec = tic();
 LINE_WIDTH       = 1.0;   % irf_plot() line width.
 FONT_SIZE        = 18;    % Font size
 LEGEND_FONT_SIZE = 22;    % irf_legend() font size.
-% Different colors to reuse. One color per row.
-COLORS           = [
-  0 0 0;    % Black
-  0 0 1;    % Blue
-  1 0 0;    % Red
+% Different colors (RGB) to reuse. One color per row.
+% ---------------------------------------------------
+% NOTE: (1) When these colors are used for irf_plot(), they do not automatically
+% match the colors used by irf_legend() unless h(i).ColorOrder is set (which it
+% is not done everywhere). The current COLOR appear to fact the de facto default
+% colors used by irf_legend(). (2) These colors are not always explicitly used
+% for irf_plot() (panel 1, B), but they seem to match the de facto default
+% colors used by irf_plot() anyway. Can therefore not set these arbitrarily
+% unless one also updates the rest of the code.
+COLORS = [
+  0 0   0;    % Black
+  0 0   1;    % Blue
+  1 0   0;    % Red
   0 0.5 0;
-  0 1 1;
-  1 0 1;
-  1 1 0];
-
+  0 1   1;
+  1 0   1;
+  1 1   0];
 % NOTE: Unclear units. Magnitude implies pixels, but actual quicklooks are
 % 2281x1667 pixels.
 FIG_WIDTH  = 1095;
@@ -132,6 +148,7 @@ fig.Position = [1, 1, FIG_WIDTH, FIG_HEIGHT];
 % Fill panel 1: B vector components
 %===================================
 if ~isempty(Data.B)
+  % NOTE: Does not use "COLOR" to set line colors. Unclear how color is set.
   irf_plot(h(1), Data.B.tlim(Tint24h), 'linewidth', LINE_WIDTH);
   hold(    h(1), 'on');
   irf_plot(h(1), Data.B.abs.tlim(Tint24h), 'linewidth', LINE_WIDTH);
@@ -154,11 +171,14 @@ if ~isempty(Data.Npas)
   irf_plot(h(2), Data.Npas.tlim(Tint24h), '-', 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
 ylabel(h(2), {'N'; '(cm^{-3})'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
-h(2).ColorOrder = COLORS;
+ABS_B_COLOR = COLORS(3,:);
+
+% NOTE: Must call irf_legend() while yyaxis=left (otherwise irf_legend() crashes) .
+h(2).ColorOrder = COLORS;   % Ensure irf_legend() uses the same colors.
 irf_legend(h(2), {'N_{e,RPW}', 'N_{i,PAS}', '|B|'}, [0.98 0.16], 'Fontsize', LEGEND_FONT_SIZE);
 
 yyaxis(h(2), 'right');
-ABS_B_COLOR = COLORS(3,:);
+
 if ~isempty(Data.B)
   irf_plot(h(2), Data.B.abs.tlim(Tint24h), 'color', ABS_B_COLOR, 'linewidth', LINE_WIDTH);
   %Bnan = rmmissing(data.B.abs.data);
@@ -303,6 +323,8 @@ if ~isempty(Data.Vpas)
   hold(    h(6), 'on');
   irf_plot(h(6), Data.Vpas.z.tlim(Tint24h), 'color', COLORS(3,:), 'linewidth', LINE_WIDTH);
 end
+h(6).ColorOrder = COLORS;   % Ensure irf_legend() uses the same colors.
+% NOTE: Empty string for first legend string. ==> irf_legend() skips that color (black).
 irf_legend(h(6), {'', 'v_{T}', 'v_{N}'}, [0.98 0.18], 'Fontsize', LEGEND_FONT_SIZE);
 irf_zoom(  h(6), 'y');
 ylabel(    h(6), {'V_{T,N}'; '(km/s)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
@@ -321,6 +343,7 @@ end
 if ~isempty(Data.Vpas)
   irf_plot(h(7), Data.Vpas.x.tlim(Tint24h), 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
+h(7).ColorOrder = COLORS;   % Ensure irf_legend() uses the same colors.
 irf_legend(h(7), {'V_{RPW}', 'V_{PAS}'}, [0.98 0.18], 'Fontsize', LEGEND_FONT_SIZE);
 irf_zoom(  h(7), 'y');
 ylabel(    h(7), {'V_R'; '(km/s)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
@@ -343,6 +366,7 @@ if ~isempty(Data.E)
     irf_zoom(h(8), 'y', [minEy-5 maxEy+5]);
   end
 end
+% NOTE: Empty string for first legend string. ==> irf_legend() skips that color (black).
 irf_legend(h(8), {'', 'E_y'}, [0.98 0.20], 'Fontsize', LEGEND_FONT_SIZE);
 ylabel(    h(8), {'E_{SRF}'; '(mV/m)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
 
@@ -441,7 +465,7 @@ if ~isempty(Data.tnrBand)
       set( h(10), 'YScale', 'log');
       %set(h(10), 'ColorScale', 'log')
       %caxis(h(10), [.01 1]*10^-12)
-      ylabel(h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
+      ylabel(  h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
       colormap(h(10), jet)
       %yticks(h(10), [10^1 10^2]);
       %irf_zoom(h(10), 'y', [10^1 10^2])
@@ -449,7 +473,7 @@ if ~isempty(Data.tnrBand)
   end
 end
 ylabel(h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);
-yticks(h(10),      [10^1 10^2]);
+yticks(h(10), [10^1 10^2]);
 % Not set YLim.
 %irf_zoom(h(10), 'y', [10^1 10^2])
 irf_zoom(h(10), 'y', [9, 110])    % Not overwritten later.
@@ -458,7 +482,9 @@ if isempty(Data.Vrpw) ...
     && isempty(Data.E)    && isempty(Data.Ne)   && isempty(Data.B) ...
     && isempty(Data.Tpas) && isempty(Data.Npas) && isempty(Data.ieflux) ...
     && isempty(Data.tnrBand)
-  nanPlot = irf.ts_scalar(Tint24h,ones(1, 2)*NaN);
+
+  % Create invisible plot if there is ~no data (?).
+  nanPlot = irf.ts_scalar(Tint24h, ones(1, 2)*NaN);
   irf_plot(h(10), nanPlot);    % No LINE_WIDTH?
   grid(    h(10), 'off');
   ylabel(  h(10), {'f'; '(kHz)'}, 'interpreter', 'tex', 'fontsize', FONT_SIZE);

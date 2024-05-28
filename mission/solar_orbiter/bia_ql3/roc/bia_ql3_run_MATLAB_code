@@ -6,32 +6,10 @@
 # PROPOSAL: Assertion for no single quote in strings.
 # PROPOSAL: Assertion for MATLAB path paths being real directory paths.
 # 
-# TODO-DECISION: Hur hantera fall där man vill anropa två MATLAB-skript i följd?
-#   Ex: ca_generate_CLAA
-#       time matlab -nojvm -nodesktop -r "cd('~/matlab_copy'); init_matlab('spis_Cassini') ; erikpgjohansson.ca.generate_std([$ibegin_year, $ibegin_doy], [$eend_year, $eend_doy]); quit"
-#   PROPOSAL: Skapa en ny matlab-funktion som anropar båda matlab-skript.
-#       
-# PROPOSAL: Argument för nuvarande katalog.
 # PROPOSAL: MATLAB code must return exit code which is returned to bash?
 #   PROPOSAL: Optional?
 #   NOTE: MATLAB code can print to stderr.
 #
-# NOTE/BUG: Has observed Lapdog via ro_pipeline hanging after completing. Possibly this can be solved using -nodisplay.
-#   NOTE: Used run_MATLAB_code with -nojvm -nodesktop (NOT -nodisplay).
-# """"""""
-# create_LBL_files: 447 s (elapsed wall time)
-# lapdog: DONE!
-# Warning:
-# Connection to the X11 Display Server (localhost:13.0) has been lost.
-# No more graphics windows can no longer be displayed in this session.
-# Graphics Objects can still be printed, and all commands should still work.
-# We recommend that you try to save your current session and exit. 
-# >> Warning:
-# Connection to the X11 Display Server (localhost:13.0) has been lost.
-# No more graphics windows can no longer be displayed in this session.
-# Graphics Objects can still be printed, and all commands should still work.
-# We recommend that you try to save your current session and exit. 
-# """"""""
 # 
 #====================================================================================
 

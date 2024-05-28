@@ -1,4 +1,5 @@
-Directory for non-MATLAB files related to software "BIA_QL3" for generating official BIAS quicklooks/summary plots.
+Directory for non-MATLAB files related to software "BIA_QL3" for generating
+official BIAS quicklooks/summary plots.
 The software is delivered to ROC/LESIA for execution there.
 
 
@@ -14,11 +15,13 @@ NOTES
 According to ROC (Milan Maksimovic, LESIA):
     "Summary Plot" (SP) = Plot which summarizes the content of a single dataset
     "Quicklook"         = Plot which summarizes data for entire instrument.
-Hence this code generates what he calls "summary plots" and the MATLAB package is called "solo.sp".
-However, ROC has named the software "BIA_QL3" (QL=Quicklooks? L3?!) so the usage is inconsistent.
+Hence this code generates what he calls "summary plots" and the MATLAB package
+is called "solo.sp". However, ROC has named the software "BIA_QL3"
+(QL=Quicklooks? L3?!) so the usage is inconsistent.
 --
-Since the software is run by ROC/LESIA, the code has to conform to the interface which they specify.
-Not a formal description, but see e.g.
+Since the software is run by ROC/LESIA, the code has to conform to the interface
+which they specify. There is no formal description of the interface, but see
+e.g.
 https://gitlab.obspm.fr/ROC/RCS/BIA_QL3/-/issues/1
 
 

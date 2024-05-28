@@ -31,6 +31,7 @@ function [filePathsCa, FsoiArray1] = get_file_paths(fileDirPathsCa)
 %       dir() handles that.
 %
 % PROPOSAL: Redefine as generic, outside of BICAS.
+%   PRO: Is used by solo.qli.batch.fmd.
 %
 % TODO-DEC: How handle non-existing files and directories?
 %   NOTE: Only existing directories can be translated into files. Ambiguity
@@ -59,10 +60,31 @@ assert(iscell(fileDirPathsCa) & iscolumn(fileDirPathsCa))
 FsoiEmptyArray = dir('~');
 FsoiEmptyArray = FsoiEmptyArray([], 1);    % Column array.
 
-bIsFile = arrayfun(@(pathCa) (exist(pathCa{1}, 'file') == 2), fileDirPathsCa, 'UniformOutput', true);
-bIsDir  = arrayfun(@(pathCa) (exist(pathCa{1}, 'dir')  == 7), fileDirPathsCa, 'UniformOutput', true);
+bIsFile = arrayfun(...
+  @(pathCa) (exist(pathCa{1}, 'file') == 2), ...
+  fileDirPathsCa, 'UniformOutput', true);
+bIsDir  = arrayfun(...
+  @(pathCa) ((exist(pathCa{1}, 'dir')  == 7) & (exist(pathCa{1}, 'file') ~= 2)), ...
+  fileDirPathsCa, 'UniformOutput', true);
 
-assert(all(bIsFile | bIsDir), 'Not all paths refer to existing files or directories.')
+% All objects should be either existing files or directories. Mount problems can
+% likely make files/directories appear and then disappear though, and thus
+% trigger error.
+iNonexisting = find(~(bIsFile | bIsDir));
+if ~isempty(iNonexisting)
+  nTotal       = numel(fileDirPathsCa);
+  nNonexisting = numel(iNonexisting);
+
+  quotedStrCa = cellfun(...
+    @(fileDirpath) (sprintf('"%s"', fileDirpath)), fileDirPathsCa(iNonexisting), ...
+    'UniformOutput', false);
+  pathListStr = strjoin(quotedStrCa, ', ');
+  errorMsg = sprintf('%i/%i fileDirPathsCa paths refer to non-existing files/directories. fileDirPathsCa{:}=%s', ...
+    nNonexisting, nTotal, pathListStr);
+
+  error(errorMsg)
+end
+
 
 inputFilePathCa = fileDirPathsCa(bIsFile);
 inputDirPathCa  = fileDirPathsCa(bIsDir);
