@@ -25,7 +25,7 @@
 % removed before using it as a file (comments are illegal in JSON files(!)):
 % ------------------------------------------------------------------------------
 % {
-%   # Path to IRF logo.
+%   # Path to IRF logo or null (not quoted string) if no logo.
 %   # See solo.qli.batch.generate_quicklooks().
 %   "irfLogoPath": "/home/erjo/so_irfu-matlab_qli_IRFpl/mission/solar_orbiter/+solo/+qli/+batch/irf_logo.png",
 %
@@ -148,7 +148,9 @@ generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(ge
 dasaArgumentsCa             = varargin(:);    % Column array.
 
 Config = solo.qli.batch.utils.read_config_file(configFilePath);
-irf.assert.file_exists(Config.irfLogoPath)
+if ~isempty(Config.irfLogoPath)
+  irf.assert.file_exists(Config.irfLogoPath)
+end
 
 
 
