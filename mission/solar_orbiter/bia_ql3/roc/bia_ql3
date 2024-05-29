@@ -68,6 +68,11 @@ declare -r log_dir="$6"
 
 
 
+# NOTE: Uses the location of the current script to set paths:
+#       bin_dir:
+#           Used for locating other bash script without relying on PATH.
+#       irfumatlab_so_dir, irfumatlab_dir:
+#           Used for setting MATLAB path (for finding MATLAB source code).
 declare -r log_file="${log_dir}/bia_ql_${YYYYMMDD}.log"    # Filename format as requested from ROC.
 declare -r temp=$(dirname "$0")
 declare -r bin_dir=$(readlink -f "$temp")

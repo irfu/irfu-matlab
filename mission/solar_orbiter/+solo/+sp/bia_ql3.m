@@ -1,6 +1,6 @@
 %
-% Main function for software "BIA_QL3" for creating BIAS summary plots intended
-% to be delivered to, and used by, LESIA/ROC.
+% Main function for software "BIA_QL3" for creating BIAS summary plots. The
+% software is intended to be delivered to, and used by, LESIA/ROC.
 %
 % See irfu-matlab/mission/solar_orbiter/bia_ql3/README.TXT for more
 % documentation of "BIA_QL3".
@@ -13,9 +13,8 @@
 %
 % INTERFACE REQUIREMENTS FOR THIS FUNCTION
 % ========================================
-% See
+% LESIA/ROC requries a certain OS SHELL interface. See
 %   https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/42
-% for the OS SHELL interface requested by ROC.
 %   > shellExecutable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
 % This function's interface mirrors the bash/OS script interface to simplify the
 % bash wrapper script. The function is therefore not very versatile.
@@ -29,6 +28,8 @@
 %   NOTE: Can handle the absence of matching datasets/directories, but fails on
 %   multiple matching datasets (assertion).
 % * Works for both CDAG/non-CDAG filenames.
+% * Code does not use other "library" code, in particular not solo.adm for
+%   parsing filenames.
 %
 %
 % ARGUMENTS
