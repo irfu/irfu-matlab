@@ -30,9 +30,6 @@ function [filePathsCa, FsoiArray1] = get_file_paths(fileDirPathsCa)
 % NOTE: Function could be implemented recursively, but that is not needed since
 %       dir() handles that.
 %
-% PROPOSAL: Redefine as generic, outside of BICAS.
-%   PRO: Is used by solo.qli.batch.fmd.
-%
 % TODO-DEC: How handle non-existing files and directories?
 %   NOTE: Only existing directories can be translated into files. Ambiguity
 %         "only" exists for files.

@@ -84,7 +84,7 @@ while true
   % Get reference DSMDs
   %=====================
   if ~isempty(referenceDir)
-    [filePathsCa,   ~] = bicas.tools.batch.get_file_paths({referenceDir});
+    [filePathsCa,   ~] = irf.fs.get_file_paths({referenceDir});
     [RefDsmdArray,  ~] = solo.adm.paths_to_DSMD_array(filePathsCa);
   else
     RefDsmdArray = solo.adm.DSMD.empty(0, 1);
@@ -131,7 +131,7 @@ while true
   else
     referenceDirCa = {referenceDir};
   end
-  [filePathsCa,    ~] = bicas.tools.batch.get_file_paths(inputPathsCa);
+  [filePathsCa,    ~] = irf.fs.get_file_paths(inputPathsCa);
   [InputDsmdArray, ~] = solo.adm.paths_to_DSMD_array(filePathsCa);
   if DEBUG_ENABLED
     log_DSMD_array('Input directories (only recognized datasets)', InputDsmdArray)

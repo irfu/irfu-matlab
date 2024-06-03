@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.tools.batch.get_file_paths().
+% matlab.unittest automatic test code for irf.fs.get_file_paths().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -61,7 +61,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
         assert(iscolumn(fileDirPathsCa))
 
         testCase.assertError(...
-          @() bicas.tools.batch.get_file_paths(fileDirPathsCa), ...
+          @() irf.fs.get_file_paths(fileDirPathsCa), ...
           ?MException)
       end
 
@@ -82,11 +82,11 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       ExpFsoiArray1 = dir('~');
       ExpFsoiArray1 = ExpFsoiArray1([], 1);    % Column array.
 
-      emptyDir1 = bicas.tools.batch.get_file_paths___UTEST.create_directory(testDir, {'empty_dir1'});
-      emptyDir2 = bicas.tools.batch.get_file_paths___UTEST.create_directory(testDir, {'empty_dir2'});
+      emptyDir1 = irf.fs.get_file_paths___UTEST.create_directory(testDir, {'empty_dir1'});
+      emptyDir2 = irf.fs.get_file_paths___UTEST.create_directory(testDir, {'empty_dir2'});
 
       function test(fileDirPathsCa)
-        [actFilePathsCa1, ActFsoiArray1] = bicas.tools.batch.get_file_paths___UTEST.test_call(...
+        [actFilePathsCa1, ActFsoiArray1] = irf.fs.get_file_paths___UTEST.test_call(...
           testCase, fileDirPathsCa);
 
         testCase.assertEqual(actFilePathsCa1, cell(0, 1))
@@ -108,11 +108,11 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       testDir = testCase.testDir;
 
       dir1     = fullfile(testDir, 'dir1');
-      emptyDir = bicas.tools.batch.get_file_paths___UTEST.create_directory( testDir, {'empty_dir'});
+      emptyDir = irf.fs.get_file_paths___UTEST.create_directory( testDir, {'empty_dir'});
       file1    = irf.fs.create_empty_file({testDir, 'dir1', 'dir1', 'file1'});
 
       function test(fileDirPathsCa)
-        [actFilePathsCa1, ActFsoiArray1] = bicas.tools.batch.get_file_paths___UTEST.test_call(...
+        [actFilePathsCa1, ActFsoiArray1] = irf.fs.get_file_paths___UTEST.test_call(...
           testCase, fileDirPathsCa);
 
         testCase.assertEqual(actFilePathsCa1,      {file1})
@@ -130,8 +130,8 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
     function test_mixed_complex(testCase)
       testDir = testCase.testDir;
 
-      dirWithEmptySubdir = bicas.tools.batch.get_file_paths___UTEST.create_directory( testDir, {'dir_with_empty_subdir'});
-      [~]                = bicas.tools.batch.get_file_paths___UTEST.create_directory( testDir, {'dir_with_empty_subdir', 'dir1'});
+      dirWithEmptySubdir = irf.fs.get_file_paths___UTEST.create_directory( testDir, {'dir_with_empty_subdir'});
+      [~]                = irf.fs.get_file_paths___UTEST.create_directory( testDir, {'dir_with_empty_subdir', 'dir1'});
 
       dir1     = fullfile(                 testDir, 'dir1');
       file11   = irf.fs.create_empty_file({testDir, 'dir1', 'file1'});
@@ -141,7 +141,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       file21   = irf.fs.create_empty_file({testDir, 'dir2', 'file1'});
       file211  = irf.fs.create_empty_file({testDir, 'dir2', 'dir1', 'file11'});
 
-      [actFilePathsCa1, ~] = bicas.tools.batch.get_file_paths___UTEST.test_call(...
+      [actFilePathsCa1, ~] = irf.fs.get_file_paths___UTEST.test_call(...
         testCase, {dirWithEmptySubdir; dir1; file21; file211} ...
       );
 
@@ -169,7 +169,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
     function [actFilePathsCa1, ActFsoiArray1] = test_call(testCase, fileDirPathsCa)
       expFieldNamesCa = fieldnames(dir('~'));
 
-      [actFilePathsCa1, ActFsoiArray1] = bicas.tools.batch.get_file_paths(fileDirPathsCa);
+      [actFilePathsCa1, ActFsoiArray1] = irf.fs.get_file_paths(fileDirPathsCa);
 
        % Check existence of struct fields.
       testCase.assertEqual(...
