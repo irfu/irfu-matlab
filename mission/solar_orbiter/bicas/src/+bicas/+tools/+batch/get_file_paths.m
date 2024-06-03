@@ -1,7 +1,7 @@
 %
 % Given a list of paths to files and directories, return a list of paths
 % to files only. Directories are searched recursively for files. Also return
-% dir() info for each path since it is a byproduct of the processing.
+% dir() info structs for each path since it is a byproduct of the processing.
 %
 %
 % ARGUMENTS
@@ -52,14 +52,19 @@ assert(iscell(fileDirPathsCa) & iscolumn(fileDirPathsCa))
 
 
 
+% =======================================================================
 % Create empty struct array of the right size
 % -------------------------------------------
 % IMPLEMENTATION NOTE: Calling dir() just to make sure that the code uses
 % the exact struct which it produces. This should make the code more
 % future-proof.
+% =======================================================================
 FsoiEmptyArray = dir('~');
 FsoiEmptyArray = FsoiEmptyArray([], 1);    % Column array.
 
+
+
+% Determine which argument paths are files and directories respectively.
 bIsFile = arrayfun(...
   @(pathCa) (exist(pathCa{1}, 'file') == 2), ...
   fileDirPathsCa, 'UniformOutput', true);
@@ -67,9 +72,13 @@ bIsDir  = arrayfun(...
   @(pathCa) ((exist(pathCa{1}, 'dir')  == 7) & (exist(pathCa{1}, 'file') ~= 2)), ...
   fileDirPathsCa, 'UniformOutput', true);
 
+% ==============================================================================
+% Verify that all arguments paths are either files or directories
+% ---------------------------------------------------------------
 % All objects should be either existing files or directories. Mount problems can
 % likely make files/directories appear and then disappear though, and thus
 % trigger error.
+% ==============================================================================
 iNonexisting = find(~(bIsFile | bIsDir));
 if ~isempty(iNonexisting)
   nTotal       = numel(fileDirPathsCa);
@@ -86,11 +95,15 @@ if ~isempty(iNonexisting)
 end
 
 
+
 inputFilePathCa = fileDirPathsCa(bIsFile);
 inputDirPathCa  = fileDirPathsCa(bIsDir);
 
 
 
+% ===========================
+% Iterate over argument files
+% ===========================
 % Pre-allocate
 % ------------
 % IMPLEMENTATION NOTE: A human caller may specify many explicit file paths using
@@ -99,7 +112,7 @@ inputDirPathCa  = fileDirPathsCa(bIsDir);
 % files and directories (though the splitting is not absolutely necessary).
 fsoiCa = cell(1 + numel(inputFilePathCa), 1);
 fsoiCa{1, 1} = FsoiEmptyArray;
-
+% Iterate
 for iFile = 1:numel(inputFilePathCa)
   fsoiCa{1+iFile, 1} = dir(inputFilePathCa{iFile});
 end
@@ -107,6 +120,9 @@ FsoiArray1 = cat(1, fsoiCa{:});
 
 
 
+% =================================
+% Iterate over argument directories
+% =================================
 for iDir = 1:numel(inputDirPathCa)
   path       = inputDirPathCa{iDir};
   FsoiArray2 = dir(fullfile(path, '**'));   % Recursive call to dir().
@@ -118,6 +134,8 @@ for iDir = 1:numel(inputDirPathCa)
     FsoiArray1;
     FsoiArray2];
 end
+
+
 
 filePathsCa = arrayfun(@(Oi) (fullfile(Oi.folder, Oi.name)), FsoiArray1, 'UniformOutput', false);
 
