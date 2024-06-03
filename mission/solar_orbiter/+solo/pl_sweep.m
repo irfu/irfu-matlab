@@ -42,8 +42,15 @@ for iProbe=1:3
   ii = AntFlag.data==iProbe;
   dataI = I.data(ii,iProbe);
   dataV = V.data(ii,iProbe);
-  %Remove initial jumps
-  dataI(1:2) = []; dataV(1:2) = [];
+  if isempty(dataI) & isempty(dataV)
+    % NOTE: A sweep dataset may lack data for one probe, which then results in
+    %       empty data arrays which can not be truncated.
+    % Example: solo_L1_rpw-bia-sweep-cdag_20240522T020342-20240529T020451_V02.cdf
+    irf.log('w', sprintf('"%s" does not contain any data for antenna %i.', fName, iProbe))
+  else
+    %Remove initial jumps
+    dataI(1:2) = []; dataV(1:2) = [];
+  end
 
   %Determine photo saturation current
   iiPhoto = dataV>PHOTO_LIM(1) & dataV<PHOTO_LIM(2);
