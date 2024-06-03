@@ -61,7 +61,7 @@ for iProbe=1:3
   else, stdPhoto = NaN;
   end
 
-  plot(h,dataV, dataI/1000,'.-')
+  plot(h, dataV, dataI/1000,'.-')
   irf_legend(sprintf('I_{sat}%d = %.1f uA (std = %.1f)',iProbe,iPhoto(iProbe)/1000, stdPhoto/1000) ,[0.8, 0.4-0.1*iProbe]);
   switch iProbe
     case 1, hold(h,'on')

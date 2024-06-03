@@ -18,7 +18,16 @@
 %       The directories in fileDirPathsCa are searched recursively for files,.
 % FsoiArray1
 %       Column struct array.
-%       dir() info for every path in filePathsCa.
+%       dir() info struct for every path in filePathsCa.
+%
+%
+% NOTES
+% =====
+% The function returns "normalized", "canonical" paths, i.e. e.g. converting
+% brain:/data/solo/ to path /amd/nas8/USBDiskRaid5/solo/ which can not trigger a
+% brain/spis automount. There is no known around this conversion. The calling
+% code therefore has to make sure to trigger automounts manually at the right
+% locations.
 %
 %
 % FSOI = File System Object Info
