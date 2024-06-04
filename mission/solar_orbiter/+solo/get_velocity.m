@@ -6,7 +6,7 @@ function soloVelocity = get_velocity(Tint, varargin)
 %
 % A function to get the Velocity of Solar Orbiter for a given time interval
 % Output is a TSeries object with velocity in the data variable "soloVelocity",
-% if any positons found for the time interval "tint".
+% if any positions found for the time interval "tint".
 %
 % Options:
 %    'predicted' - get predicted position instead of flown

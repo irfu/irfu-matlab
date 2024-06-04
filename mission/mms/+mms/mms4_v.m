@@ -60,7 +60,7 @@ else
   error(errStr);
 end
 
-% Begin by looking for locally saved mat files of positon and velocity to load (quickest)
+% Begin by looking for locally saved mat files of position and velocity to load (quickest)
 if ~is_R_ok && exist(['.' filesep, 'mmsR.mat'],'file') && ...
     exist(['.' filesep, 'mmsV.mat'],'file')
   % Local files found
