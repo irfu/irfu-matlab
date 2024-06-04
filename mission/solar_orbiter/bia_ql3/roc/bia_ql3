@@ -1,26 +1,26 @@
 #!/bin/bash
-#====================================================================================
+#===============================================================================
 #
 # BOGIQ:
 # ------
 # 
-#====================================================================================
+#===============================================================================
 
 
 
 #==============================
 # SUBROUTINE: Print help info.
 #==============================
-print_help_info() { #-------------------------------------------------------------
+print_help_info() { #-----------------------------------------------------------
 cat << "SCRIPT_INFO"
 
 Generate BIAS summary plots for one day.
 
 
 NOTE: Can handle absence of datasets. Will fail for multiple matching datasets
-(multiple versions of the same DATASET_ID).
-NOTE: Plot generation may take a significant amount of time, ~10 minutes per plot for
-large datasets that include spectra (i.e. CWF+SWF, but not HK).
+      (multiple versions of the same DATASET_ID).
+NOTE: Plot generation may take a significant amount of time, ~10 minutes per
+      plot for large datasets that include spectra (i.e. CWF+SWF, but not HK).
 
 
 Arguments: matlab_executable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
@@ -68,6 +68,11 @@ declare -r log_dir="$6"
 
 
 
+# NOTE: Uses the location of the current script to set paths:
+#       bin_dir:
+#           Used for locating other bash script without relying on PATH.
+#       irfumatlab_so_dir, irfumatlab_dir:
+#           Used for setting MATLAB path (for finding MATLAB source code).
 declare -r log_file="${log_dir}/bia_ql_${YYYYMMDD}.log"    # Filename format as requested from ROC.
 declare -r temp=$(dirname "$0")
 declare -r bin_dir=$(readlink -f "$temp")

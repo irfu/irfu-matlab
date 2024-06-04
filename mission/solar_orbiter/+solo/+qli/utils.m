@@ -8,12 +8,6 @@ classdef utils
 
 
 
-  properties(Constant)
-    SOAR_URL = 'https://soar.esac.esa.int/';
-  end
-
-
-
   %#######################
   %#######################
   % PUBLIC STATIC METHODS
@@ -26,7 +20,7 @@ classdef utils
     % Assert that datetime object only contains timestamps which refer to
     % midnight.
     %
-    % NOTE: Does not require scalar object.
+    % NOTE: Does not require scalar object. Can be any size.
     function assert_UMD_DT(Dt)
       assert(isa(Dt, 'datetime'))
       assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'), ...
@@ -308,7 +302,7 @@ classdef utils
         'Swedish Institute of Space Physics, Uppsala (IRFU), %s.', ...
         ' Data available at %s.' ...
         ], ...
-        dateStr, solo.qli.utils.SOAR_URL ...
+        dateStr, solo.qli.const.SOAR_URL ...
         );
     end
 

@@ -50,7 +50,7 @@ DAYS_DATETIME_COLUMN_ARRAY = datetime({...
 GQL = solo.qli.batch.GenerateQuicklooksImplementation();
 
 %===============================================================
-% Configure Solar Orbiter database from which data will be used
+% Configure Solar Orbiter database from which data will be read
 %===============================================================
 % NOTE: Only uses /data/solo/remote/data/ and /data/solo/soar/ (and not
 %       /data/solo/data_irfu/) since data_irfu/ has less reliable data
@@ -64,7 +64,8 @@ solo.db_cache('on', 'save')
 
 
 
-% Enable more log messages. Not necessary, but is useful for debugging..
+% Enable more log messages. Not necessary, but is useful for debugging and
+% progress updates.
 irf.log('notice')
 
 %=====================

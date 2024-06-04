@@ -1,6 +1,5 @@
 %
-% Class for collecting constants relating to solo.qli (but not solo.qli.offgen
-% (almost)).
+% Class for collecting constants relating to solo.qli.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -85,6 +84,11 @@ classdef const
 
     % Constant which is useful to have for defining tests.
     EMPTY_DT_ARRAY = NaT([0, 1], 'TimeZone', 'UTCLeapSeconds');
+
+    % NOTE: Used for putting in human-readable strings (on QLIs), not for
+    % loading data over the internet.
+    SOAR_URL = 'https://soar.esac.esa.int/';
+
   end
 
 

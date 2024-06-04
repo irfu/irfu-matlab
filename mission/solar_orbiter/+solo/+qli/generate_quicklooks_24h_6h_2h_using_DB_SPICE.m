@@ -67,7 +67,7 @@ Data.swaEnergyMetadata = solo.qli.utils.read_constant_metadata('solo_L2_swa-pas-
 % TNR_BAND
 % --------
 % NOTE: Variable is not used very much. solo.qli.generate_quicklooks_24h_6h_2h()
-% only checks if empty or not (sic!).
+% only checks if it is empty or not (sic!).
 %
 %      FIELDNAM        (CDF_CHAR/8): "TNR_BAND"
 %      CATDESC         (CDF_CHAR/31): "TNR band of the current record "

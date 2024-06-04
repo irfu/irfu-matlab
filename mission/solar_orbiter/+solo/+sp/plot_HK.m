@@ -214,7 +214,8 @@ end
 
 
 
-% Utility function
+% Utility function. Given a string pattern with space for an integer, e.g.
+% 'HK_BIA_BIAS%i', produce one version for each antenna.
 function zvNameTripletCa = ZV_name_triplet(zvNamePattern)
 zvNameTripletCa = {};
 for iAnt = 1:3

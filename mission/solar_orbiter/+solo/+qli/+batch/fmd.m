@@ -11,9 +11,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef fmd
-  % NOTE: Uses BICAS code: bicas.tools.batch.get_file_paths().
-  %   PROPOSAL: Refactor it to a generic function.
-  %
   % PROPOSAL: Argument for specifying some kind of upper limit to the number of
   %             days returned.
   %   PROPOSAL: Specify interval of dates. -- IMPLEMENTED

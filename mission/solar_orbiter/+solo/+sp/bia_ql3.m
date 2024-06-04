@@ -1,6 +1,6 @@
 %
-% Main function for software "BIA_QL3" for creating BIAS summary plots intended
-% to be delivered to, and used by, LESIA/ROC.
+% Main function for software "BIA_QL3" for creating BIAS summary plots. The
+% software is intended to be delivered to, and used by, LESIA/ROC.
 %
 % See irfu-matlab/mission/solar_orbiter/bia_ql3/README.TXT for more
 % documentation of "BIA_QL3".
@@ -13,9 +13,8 @@
 %
 % INTERFACE REQUIREMENTS FOR THIS FUNCTION
 % ========================================
-% See
+% LESIA/ROC requries a certain OS SHELL interface. See
 %   https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/42
-% for the OS SHELL interface requested by ROC.
 %   > shellExecutable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
 % This function's interface mirrors the bash/OS script interface to simplify the
 % bash wrapper script. The function is therefore not very versatile.
@@ -29,6 +28,8 @@
 %   NOTE: Can handle the absence of matching datasets/directories, but fails on
 %   multiple matching datasets (assertion).
 % * Works for both CDAG/non-CDAG filenames.
+% * Code does not use other "library" code, in particular not solo.adm for
+%   parsing filenames.
 %
 %
 % ARGUMENTS
@@ -66,6 +67,10 @@ function bia_ql3(yyyyMmDdStr, hkBiaDir, lfrWfDirPath, outputDir)
 % See https://gitlab.obspm.fr/ROC/RCS/BIA_QL3/-/issues/3/.
 irf('check_path');
 
+irf.log('notice')    % Set log level.
+
+
+
 % ASSERTIONS
 assert(ischar(yyyyMmDdStr))
 assert(numel(yyyyMmDdStr) == 8, ...
@@ -95,22 +100,27 @@ if isscalar(Fi)
   datasetPath = fullfile(Fi.folder, Fi.name);
 elseif isempty(Fi)
   % Do nothing.
-  fprintf('Can not find any dataset matching "%s".\n', datasetPathPattern)
+  irf.log('w', sprintf('Can not find any dataset matching "%s".\n', datasetPathPattern))
   return    % EXIT
 else
   error('Found multiple files matching pattern "%s".', datasetPathPattern)
 end
 
+irf.log('n', sprintf('Creating summary plot for dataset "%s".', datasetPath))
 
 
+
+%===============================================================================
+% Read CDF to obtain DSI and dataset version from global attributes
+% -----------------------------------------------------------------
+% NOTE: Not using data for plotting. Only reading this to avoid having to parse
+% the filename (and rely on filenaming conventions).
+%===============================================================================
 Do = dataobj(datasetPath);
-
-datasetId     = Do.GlobalAttributes.Dataset_ID{1};
+dsi           = Do.GlobalAttributes.Dataset_ID{1};
 dataVersionGa = Do.GlobalAttributes.Data_version{1};
 
-%============================================
-% dataVersionNbr := normalized dataVersionGa
-%============================================
+% Normalize: dataVersionNbr := normalized dataVersionGa
 if isnumeric(dataVersionGa)
   dataVersionNbr = dataVersionGa;
 elseif ischar(dataVersionGa)
@@ -120,6 +130,8 @@ else
     ['Can not determine dataset version from global', ...
     ' attribute Data_version in file "%s"'], datasetPath)
 end
+
+
 
 %=====================================
 % dateVec3 := reformatted yyyyMmDdStr
@@ -131,14 +143,14 @@ dateVec3 = [...
 
 
 
-plot_save_SP_file(outputDir, datasetPath, datasetId, dateVec3, dataVersionNbr)
+plot_save_SP_file(outputDir, datasetPath, dsi, dateVec3, dataVersionNbr)
 end
 
 
 
-function plot_save_SP_file(outputDir, datasetPath, datasetId, dateVec3, dataVersionNbr)
+function plot_save_SP_file(outputDir, datasetPath, dsi, dateVec3, dataVersionNbr)
 
-switch(datasetId)
+switch(dsi)
 
   case 'SOLO_HK_RPW-BIA'
     plotFunc = @solo.sp.plot_HK;
@@ -153,19 +165,29 @@ switch(datasetId)
 
   otherwise
     error('Can not plot dataset "%s" using DATASET_ID="%s".', ...
-      datasetPath, datasetId)
+      datasetPath, dsi)
 end
 
-spFilename = solo.sp.create_SP_filename(...
-  datasetId, dateVec3, dataVersionNbr);
+
+
+spFilename = solo.sp.create_SP_filename(dsi, dateVec3, dataVersionNbr);
 spFilePath = fullfile(outputDir, spFilename);
+
+
 
 % IMPLEMENTATION NOTE: The solo.sp.plot_* functions create their own
 % figures. Can therefore not create the figure beforehand and set
 % visibility=off.
+irf.log('n', sprintf('Creating in-memory summary plot for "%s"', spFilePath))
+t = tic();
 plotFunc(datasetPath);
+wallTimeSec = toc(t);
+irf.log('n', sprintf('Wall time to create in-memory summary plot: %.2f [s]', wallTimeSec))
+
+
 
 hFig = gcf();
+irf.log('n', sprintf('Saving in-memory plot to file "%s"', spFilePath))
 solo.sp.save_SP_figure(spFilePath, hFig)
 close(hFig)
 end

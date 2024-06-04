@@ -24,7 +24,7 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % NOTES
 % =====
 % * Computes the spectrum for B when magnetic field data is available. When it
-%   does, the code takes a lot of time.
+%   does, the function takes a lot of time to execute.
 
 
 
