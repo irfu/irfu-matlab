@@ -1,4 +1,4 @@
-# irfu-matlab [![ci-build](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml/badge.svg)](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml)
+# irfu-matlab [![ci-build](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml/badge.svg)](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml)  [![DOI](https://zenodo.org/badge/8636532.svg)](https://zenodo.org/doi/10.5281/zenodo.11550090)
 
 ## Acknowledgment
 
