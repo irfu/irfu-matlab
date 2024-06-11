@@ -141,3 +141,9 @@ QUALITY_FLAG is now capped at 3 (previously 2).
 Non-Standard Operations (NSO) table thruster firings updated for until 2024-01-30.
 Bugfix: Automatic sweep detection (SCDA) no longer removes data due to labelling data as sweeps when constant BIAS HK currents are very different.
 Changed setting names relating to autodetection of sweeps.
+
+
+Version 8.1.0
+-------------
+Require and use MATLAB R2024a (instead of MATLAB R2019b).
+Non-Standard Operations (NSO) table thruster firings updated for until 2024-05-05.
