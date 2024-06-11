@@ -316,7 +316,7 @@ classdef const
       MAP('SWD.release.version')            = '8.0.1';
       MAP('SWD.release.date')               = '2024-02-01T15:00:00Z';
       MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
-      MAP('SWD.release.contact')            = 'erjo@irfu.se';
+      MAP('SWD.release.contact')            = 'erjo@irf.se';
       MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
       % 'Various updates and refactoring; close to complete support for
       % LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset
