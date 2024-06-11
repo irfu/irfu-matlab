@@ -10,36 +10,44 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 %
 % RETURN VALUES
 % =============
-%   NeScp           - Electron density (derived from "SCP", hence the name).
-%   NeScpQualityBit - Binary value that specifies whether the density value
-%                     seems bad or not. 1=Bad, 0=Can not find any problem.
-%                     Must not be NaN. (Currently (2023-08-10) not sure if this
-%                     is strictly in agreement with conventions, but that is
-%                     what BICAS requires).
-%   codeVerStr      - Code version string. Used by BICAS. Represents the version
-%                     of the function *code*, including calibration data,
-%                     excluding comments.
-%                     Is on the form of a human-readable UTC timestamp string.
-%
+% NeScp
+%       Electron density (derived from "SCP", hence the name).
+% NeScpQualityBit
+%       Binary value that specifies whether the density value
+%       seems bad or not. 1=Bad, 0=Can not find any problem.
+%       Must not be NaN. (Currently (2023-08-10) not sure if this
+%       is strictly in agreement with conventions, but that is
+%       what BICAS requires).
+% codeVerStr
+%       Date-formatted version string for the code that implements the function
+%       *code*, including calibration data. This is used by BICAS for setting
+%       the relevant CDF global attribute to indicate the version of the
+%       algorithm used to produce a particular dataset (CDF file).
+%       Must be on the form of a human-readable UTC timestamp string which
+%       conforms to regular expression bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP.
 %
 % NOTE: This function is used by BICAS for producing official L3 datasets. It
-%       must therefore have an interface that is compatible with BICAS.
-% NOTE: 2023-10-05: Return value NeScpQualityBit is not yet used by BICAS, but
-%       BICAS still requires it to be set and to be on the correct format in
-%       preparation of using it.
+%       must therefore have an interface (name, arguments, return values) that
+%       is compatible with BICAS.
 %
 % Calibration using plasma line
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
 
 Cal = [];
 
-%===========================================================================
-% Date string that represent the version of the function. This string is
+%===============================================================================
+% Timestamp string that represent the version of the function. This string is
 % used by BICAS to set a CDF global attribute in official datasets for
 % traceability.
-% NOTE: This value is meant to be be updated by hand, not by an automatic
-% timestamp, so that a constant value represents the same algorithm.
-%===========================================================================
+%
+% IMPORTANT NOTE: This value is meant to be be updated manually to
+% the approximate current date when the calibration data or algorithm is
+% updated (or possibly when calibration data or algorithm risk being
+% unintentionally changed due to refactoring).
+% * It should *NOT* be an automatically set timestamp (e.g. current time).
+% * It should *NOT* be updated for unrelated code changes, e.g. comments or
+%   variable name changes.
+%===============================================================================
 codeVerStr = '2023-12-19T15:11:00';
 
 AddEntry('2020-03-08T00:00:00Z/2020-05-18T04:05:54Z',[0.8889  3.4389]); % Based on data from 2020-04-07

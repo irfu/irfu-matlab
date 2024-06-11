@@ -1,4 +1,4 @@
-function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr,matVerStr] = vdccal(VDC_inp, EDC_inp, calFilename)
+function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(VDC_inp, EDC_inp, calFilename)
 %SOLO.VDCCAL  Calibrate VDC to get DC E and PSP
 %
 %    [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = solo.vdccal(VDC,EDC,calfilename)
@@ -34,6 +34,8 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr,matVerStr] = vdccal(VDC_in
 %       the function itself. This is used by BICAS for setting the relevant CDF
 %       global attribute to indicate the version of the algorithm used to
 %       produce a particular dataset (CDF file).
+%       Must be on the form of a human-readable UTC timestamp string which
+%       conforms to regular expression bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP.
 %       Note: The version string does not cover the calibration .mat file.
 % matVerStr
 %       Version string representing the calibration .mat file. Currently
