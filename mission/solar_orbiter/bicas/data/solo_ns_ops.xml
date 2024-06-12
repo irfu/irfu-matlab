@@ -20,7 +20,7 @@
             2021-05-24, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
         </note>
         <note>
-            2024-02-01, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2024-01-30 (inclusive). Only contains manually identified thuster firings.
+            2024-02-01, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2024-05-05 (inclusive). Only contains manually identified thuster firings.
         </note>
         <note>
             2024-01-31, Erik P G Johansson: BICAS detects saturation itself since v8.0.0 and labels it as "full saturation". One should therefore not need to add more FULL_SATURATION entries to this list. FULL_SATURATION entries in this table are additionally treated by BICAS as "full saturation".
@@ -2198,6 +2198,90 @@
         <event>
             <startTimeUtc>2024-01-29T01:04:25</startTimeUtc>
             <stopTimeUtc> 2024-01-29T01:13:27</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-02-05T01:04:16</startTimeUtc>
+            <stopTimeUtc> 2024-02-05T01:18:37</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-02-12T01:04:24</startTimeUtc>
+            <stopTimeUtc> 2024-02-12T01:19:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-02-19T00:54:07</startTimeUtc>
+            <stopTimeUtc> 2024-02-19T01:09:27</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-02-26T00:10:07</startTimeUtc>
+            <stopTimeUtc> 2024-02-26T00:20:52</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-03-04T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2024-03-04T01:14:02</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-03-11T01:04:20</startTimeUtc>
+            <stopTimeUtc> 2024-03-11T01:23:08</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-03-19T01:04:16</startTimeUtc>
+            <stopTimeUtc> 2024-03-19T01:40:26</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unusually long.</description>
+        </event>
+        <event>
+            <startTimeUtc>2024-03-25T07:04:10</startTimeUtc>
+            <stopTimeUtc> 2024-03-25T07:55:32</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-03-30T21:04:22</startTimeUtc>
+            <stopTimeUtc> 2024-03-30T21:53:00</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-04-04T17:14:25</startTimeUtc>
+            <stopTimeUtc> 2024-04-04T17:46:39</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-04-09T01:04:18</startTimeUtc>
+            <stopTimeUtc> 2024-04-09T01:39:57</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-04-17T01:04:23</startTimeUtc>
+            <stopTimeUtc> 2024-04-17T01:43:49</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-04-22T09:49:20</startTimeUtc>
+            <stopTimeUtc> 2024-04-22T10:17:52</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2024-04-29T01:04:18</startTimeUtc>
+            <stopTimeUtc> 2024-04-29T01:24:03</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>

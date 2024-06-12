@@ -38,13 +38,15 @@ classdef const
     % Permissible string values returned by "version('-release')" when using
     % the correct MATLAB version.
     %
-    % NOTE: BICAS originally required MATLAB R2016a but no longer does.
-    % NOTE: ROC only needs MATLAB R2019b. Source:
-    %       https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
-    % NOTE: Added MATLAB 2020a in order to make it possible to run test code
-    %       on GitHub CI (earliest supported MATLAB version).
-    %       https://github.com/matlab-actions/setup-matlab/
-    PERMITTED_MATLAB_VERSIONS         = {'2019b', '2020a'};
+    % NOTE: BICAS originally required MATLAB R2016a.
+    %       This was later changed to only require MATLAB R2019b.
+    %       Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
+    % NOTE: Added MATLAB 2024a since ROC is planning to support it (replacing
+    %       R2019b).
+    %       Source: e-mail 2024-04-24, Quynh Nhu NGUYEN
+    % NOTE: Added MATLAB 2023b since it is currently (2024-05-28) the latest
+    %       MATLAB version running on brain, spis, anna (IRFU servers).
+    PERMITTED_MATLAB_VERSIONS         = {'2023b', '2024a'};
 
     % Path to default config file relative to BICAS's directory root. Note
     % that this is also implicitly the constant for the default config file
@@ -311,10 +313,10 @@ classdef const
       % 0.Y.Z beta version for instance). In all cases, any change in the
       % S/W must lead to update the version number.
       % """"""""
-      MAP('SWD.release.version')            = '8.0.1';
-      MAP('SWD.release.date')               = '2024-02-01T15:00:00Z';
+      MAP('SWD.release.version')            = '8.1.0';
+      MAP('SWD.release.date')               = '2024-06-11T15:00:00Z';
       MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
-      MAP('SWD.release.contact')            = 'erjo@irfu.se';
+      MAP('SWD.release.contact')            = 'erjo@irf.se';
       MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
       % 'Various updates and refactoring; close to complete support for
       % LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset
@@ -385,14 +387,19 @@ classdef const
       %                 '; New L3 density quality bit.', ...
       %                 '; Detect sweeps for exclusion using algorithm.' ...
       %             ]; % v8.0.0
+      % MAP('SWD.release.modification')       = [...
+      %   'Non-Standard Operations (NSO) table for thruster firings', ...
+      %   ' updated for up until 2024-01-30', ...
+      %   '; Cap QUALITY_FLAG at 3 (instead of 2)', ...
+      %   '; Bugfix for automatic sweep detection (SCDA)', ...
+      %   '; Corrected documentation w.r.t. CDF format version.' ...
+      %   '; Changed source code style', ...
+      %   ]; % v8.0.1
       MAP('SWD.release.modification')       = [...
-        'Non-Standard Operations (NSO) table for thruster firings', ...
-        ' updated for up until 2024-01-30', ...
-        '; Cap QUALITY_FLAG at 3 (instead of 2)', ...
-        '; Bugfix for automatic sweep detection (SCDA)', ...
-        '; Corrected documentation w.r.t. CDF format version.' ...
-        '; Changed source code style', ...
-        ]; % v8.0.1
+        'Require MATLAB R2024a (instead of R2019b)', ...
+        '; Non-Standard Operations (NSO) table for thruster firings', ...
+        ' updated for up until 2024-05-05', ...
+        ]; % v8.1.0
 
       MAP('SWD.release.source')             = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
       % Appropriate branch? "master" instead?

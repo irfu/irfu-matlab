@@ -7,6 +7,7 @@
 %
 function assert_BICAS_DSI(dsi)
 % PROPOSAL: Implement via list.
+% PROBLEM: Only handles L1/L2 datasets. Not L3. Function needs to be redefined? Abolish?!!
 
 % '(ROC-SGSE|SOLO)_(L[12].+RPW-(LFR|TDS)-(SBM[12]|SURV|LFM)-(C|S|RS)WF.*)|HK_RPW_BIA)'
 % IMPLEMENTATION NOTE: Does not cover everything.

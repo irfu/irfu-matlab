@@ -53,8 +53,8 @@ jobs:
           path: ciPath/report.pdf
           retention-days: 1
 
-  # Job which runs selected tests for MATLAB R2020a.
-  matlab_R2020a:
+  # Job which runs tests for BICAS specifically (SOdevel, R2024a only).
+  matlab_BICAS:
     # Runs Matlab
     #runs-on: ubuntu-latest
     ## Specify ubuntu-20.04 (as per 2022-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
@@ -71,18 +71,20 @@ jobs:
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v2
         with:
-          release: R2020a
-          products: MATLAB Parallel_Computing_Toolbox Image_Processing_Toolbox Financial_Toolbox
+          # NOTE: The MATLAB version must be consistent with version supported
+          # by BICAS!
+          release: R2024a
+          products: MATLAB Parallel_Computing_Toolbox Image_Processing_Toolbox Financial_Toolbox Wavelet_Toolbox Signal_Processing_Toolbox
 
       # Run MATLAB code
       - name: Run commands
         uses: matlab-actions/run-command@v2
         with:
-          command: tests_before_release_R2020a;
+          command: tests_before_release_BICAS;
 
       # Upload artifact (pdf report with plots, etc.)
       - uses: actions/upload-artifact@v4
         with:
-          name: test_report_R2020a.pdf
-          path: ciPath/report_R2020a.pdf
+          name: test_report_BICAS.pdf
+          path: ciPath/report_BICAS.pdf
           retention-days: 1

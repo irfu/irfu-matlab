@@ -151,7 +151,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %INPUT_DSI                 = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
       % Define length of bins, and relative position of corresponding
       % bin timestamps.
-      % NS = Nanoseconds
       BIN_LENGTH_WOLS_NS        = int64(10e9);
       BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
 

@@ -131,7 +131,13 @@ FsoiArray1 = cat(1, fsoiCa{:});
 % =================================
 for iDir = 1:numel(inputDirPathCa)
   path       = inputDirPathCa{iDir};
+
+  % NOTE: Empirically, Fsoi=dir() returns the ~canonical path in Fsoi.folder,
+  % not the original path, which means that the new path might not trigger
+  % automounting! For example, it converts
+  % brain:/data/solo --> /amd/nas8/USBDiskRaid5/solo .
   FsoiArray2 = dir(fullfile(path, '**'));   % Recursive call to dir().
+
   FsoiArray2 = FsoiArray2(~[FsoiArray2.isdir]);
   FsoiArray2 = FsoiArray2(:);
   % CASE: FsoiArray2 is a column array.

@@ -5,6 +5,7 @@
 % The code works, but is too complicated to be worth it in hindsight?!
 %
 % NOTE: Does not test BICAS failing (returning on-zero error code).
+% NOTE: Does not really test argument automountTriggerPathsCa.
 %
 % IMPLEMENTATION NOTE: Code has to use (almost) real DSIs due to BICAS data
 % structure assertions.
@@ -246,7 +247,7 @@ classdef try_run_BICAS_for_BPCIs___UTEST < matlab.unittest.TestCase
         %======================
         ActBpcsArray = bicas.tools.batch.try_run_BICAS_for_BPCIs(...
           Bpa, BpciArray, ...
-          CONFIG_FILE, BICAS_SETTINGS_ARGS_CA);
+          CONFIG_FILE, cell(0, 1), BICAS_SETTINGS_ARGS_CA);
 
 
 

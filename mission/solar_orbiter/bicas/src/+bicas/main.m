@@ -161,7 +161,7 @@ try
 
   % Default error code (i.e. no error).
   errorCode = bicas.const.EMIDP_2_INFO('NoError').errorCode;
-  main_without_error_handling(varargin, L);
+  main_without_error_handling(varargin(:), L);
 
 catch Exception1
   %================================================================

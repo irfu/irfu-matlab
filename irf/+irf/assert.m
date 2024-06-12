@@ -52,8 +52,6 @@ classdef assert
   % TODO-DEC: Use assertions on (assertion function) arguments internally?
   %   NOTE: Potentially slower.
   %
-  % TODO-NI: Slower to use assert() than if ... error ?
-  %
   % PROPOSAL: Internal utility function for error() and assert() that always use irf.assert.ASSERTION_EMID.
   %   CON: Not that much shorter.
   %           error(irf.assert.ASSERTION_EMID, msg)
@@ -166,9 +164,6 @@ classdef assert
   %       PROPOSAL: Assert ending LF (assert not ending CR+LF).
   %       PROPOSAL: Assert all linebreaks are LF (no CR+LF).
   %       PROPOSAL: Assert all linebreaks are LF (no CR+LF). Require ending linebreak.
-  %
-  % PROPOSAL: Assert string sets equal
-  %   Ex: write_dataobj
   %
   % PROPOSAL: Assertion functions for MATLAB's date vectors.
   %   NOTE: Variants with 3 and 6 components

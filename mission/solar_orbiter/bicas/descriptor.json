@@ -7,12 +7,12 @@
         "icd_version": "1.4"
     },
     "release": {
-        "version":      "8.0.1",
-        "date":         "2024-02-01T15:00:00Z",
+        "version":      "8.1.0",
+        "date":         "2024-06-11T15:00:00Z",
         "author":       "Erik P G Johansson, BIAS team, IRF",
-        "contact":      "erjo@irfu.se",
+        "contact":      "erjo@irf.se",
         "institute":    "Swedish Institute of Space Physics (IRF)",
-        "modification": "Non-Standard Operations (NSO) table for thruster firings updated for up until 2024-01-30; Cap QUALITY_FLAG at 3 (instead of 2); Bugfix for automatic sweep detection (SCDA); Corrected documentation w.r.t. CDF format version.; Changed source code style",
+        "modification": "Require MATLAB R2024a (instead of R2019b); Non-Standard Operations (NSO) table for thruster firings updated for up until 2024-05-05",
         "source":       "https://github.com/irfu/irfu-matlab/commits/SOdevel"
     },
     "environment": {

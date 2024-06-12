@@ -109,7 +109,8 @@
 %       recursively.
 %       --
 %       SPECIAL CASE: Empty <=> Empty reference directory.
-% inputPathsCa : Cell array
+% inputPathsCa
+%       Column cell array.
 %       Arbitrary number of paths (arguments) to individual datasets and/or
 %       directories. Datasets are searched for (recursively) under directories.
 %       Other files are ignored. The found datasets are used for finding

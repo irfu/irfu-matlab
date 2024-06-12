@@ -1,7 +1,7 @@
 %
 % Run all of BICAS's automatic tests. This function is not called by BICAS
-% proper. It is only intended to be called manually during development to easily
-% check that changes have not obviously broken anything.
+% proper. It is only intended to be called manually during development to
+% trigger all automated tests related to BICAS.
 %
 % NOTE: Will ALWAYS only run in the CURRENT irfu-matlab git repo, not
 % necessarily the irfu-matlab git repo used for running BICAS.

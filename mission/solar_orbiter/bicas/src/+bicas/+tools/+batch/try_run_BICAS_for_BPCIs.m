@@ -1,7 +1,7 @@
 %
-% Try run BICAS for array of specified BPCI. If the input datasets can not be
-% found immediately before a BICAS run, then that BPCI is skipped. This is to
-% prevent the code from confusing a "genuine" BICAS error (which the code can
+% Try run BICAS for array of specified BPCIs. If the input datasets can not be
+% found immediately before a call to BICAS, then that BPCI is skipped. This is
+% to prevent the code from confusing a "genuine" BICAS error (which the code can
 % not interpret) with BICAS merely not being able to read missing input
 % datasets.
 %
@@ -15,7 +15,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function BpcsArray = try_run_BICAS_for_BPCIs(...
-  Bpa, BpciArray, configFile, bicasSettingsArgsCa)
+  Bpa, BpciArray, configFile, automountTriggerPathsCa, bicasSettingsArgsCa)
 
 % PROPOSAL: Better name. Omit "try".
 %   CON: "try" implies handling failure.
@@ -48,6 +48,14 @@ for iBpci = 1:numel(BpciArray)
   argsCa(end+1:end+2) = {'--log-matlab', logFile};
   argsCa              = [argsCa(:); bicasSettingsArgsCa(:)];
 
+  % Trigger automounts
+  % ==================
+  % IMPLEMENTATION NOTE: The BPCIs contain canonical paths due to the use of
+  % dir() when generating paths to all files under a specified path using
+  % bicas.tools.batch.get_file_paths(). Can therefore not trigger automounts
+  % using the paths used in the call to BICAS directly (i.e. in the BPCI).
+  irf.fs.trigger_automounts(automountTriggerPathsCa)
+
   %========================================
   % Check if input datasets are available,
   % otherwise skip and try the next BPCI
@@ -58,9 +66,9 @@ for iBpci = 1:numel(BpciArray)
       'Can not find previously identified input file needed for a call', ...
       ' to BICAS. This may e.g. be due to that', ...
       ' (1) it has been moved during the execution of this script, or', ...
-      ' (2) the disk was temporarily inaccessible (nas24 automount problem).', ...
-      ' It will', ...
-      ' be searched for again in the next pass.\n    firstInvalidPath="%s"'], ...
+      ' (2) the disk was temporarily inaccessible (NAS automount problem).', ...
+      ' It will be searched for again in the next pass.\n', ...
+      '    firstInvalidPath="%s"'], ...
       firstInvalidPath)
     continue
   end

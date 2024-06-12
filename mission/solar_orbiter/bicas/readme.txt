@@ -162,6 +162,8 @@ DSI, "dataset ID"
     analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
+DT
+    MATLAB datetime object.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).
@@ -357,6 +359,8 @@ UFV
     Use Fill Values. Refers to CDF records for which science data should be
     overwritten with fill values. This refers to both bias currents and
     measured voltages.
+VBMC
+    Validate BICAS Master CDFs.
 WOLS
     WithOut Leap Seconds
 ZV
