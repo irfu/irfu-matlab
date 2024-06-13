@@ -110,7 +110,7 @@ c_eval('f1D_? = f1D_?.resample(f1D_1);',1:4)
 c_eval('f1D_?! = f1D_?; f1D_?!.data = f1D_?.data - f1D_!.data;',sc(1),sc(2))
 
 hca = irf_panel(h,'pdist diff');
-[~,hcb] = irf_spectrogram(hca,f1D_14.specrec('1D_velocity'), 'lin');
+c_eval('[~,hcb] = irf_spectrogram(hca,f1D_?!.specrec(''1D_velocity''), ''lin'');',sc(1),sc(2))
 hcb.Label.String = 'log_{10}F_e [s m^{-4}]';
 ylabel(hca,['\DeltaV_{||,',num2str(sc(1)),',',num2str(sc(2)),'} [km/s]'])
 colormap('jet')
