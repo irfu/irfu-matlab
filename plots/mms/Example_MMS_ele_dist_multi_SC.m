@@ -4,7 +4,7 @@
 % Compare with: Wilder, F. D., et al. (2016), GRL, 43, 5909?5917,
 % doi:10.1002/2016GL069473.
 %
-% The Example is fairly slow. Approx 2-4 mins.
+% The Example is fairly slow. Approx 5 mins.
 %
 % Originally written for 1SC at two time intervals by A. Johlander
 % Adapted for 2SC (or all SC) at a single time by J. D. White
@@ -14,7 +14,7 @@
 tStart = tic;
 % time interval
 % tint = irf.tint('2017-07-06T00:54:12.000/2017-07-06T00:54:20.00Z');
-tint = irf.tint('2018-05-05T17:12:18.00Z/2018-05-05T17:12:26.00Z');
+tint = irf.tint('2018-05-05T17:12:21.00Z/2018-05-05T17:12:23.00Z');
 
 % time to plot reduced electron distribution
 % t1 = irf.time_array('2017-07-06T00:54:14.500');

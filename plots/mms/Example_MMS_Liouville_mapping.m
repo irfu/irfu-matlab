@@ -14,7 +14,7 @@
 %% Set parameters and get data
 % time interval
 % tint = irf.tint('2015-09-19T10:08:14/2015-09-19T10:08:18');
-tint = irf.tint('2018-05-05T17:12:18/2018-05-05T17:12:26');
+tint = irf.tint('2018-05-05T17:12:21/2018-05-05T17:12:23');
 
 % times to make lines
 % t1 = irf.time_array('2015-09-19T10:08:16.275');
@@ -145,18 +145,8 @@ idxb = find(grad_fvb > 0.000001,1,'last'); % find beam index
 % End of ROI: from roi_a to end / scale_fact
 % ROI array: from start to end of ROI, interpolated from warm_dist
 scale_fact = 2.5;
-% num_pts = 30;
-% xbq = linspace(v_parb(idx1),v_parb(round(idx1+(end-idx1)/scale_fact)),num_pts);
 yb_pts = f_eb(idxb:round(idxb+(end-idxb)/scale_fact));
 xb_pts = v_parb(idxb:round(idxb+(end-idxb)/scale_fact));
-% roi_array = interp1(xb_pts,yb_pts,xbq);
-
-% find indices (idx2) of closest points in cold_dist
-% idx2 = [];
-% for k = 1:length(yb_pts)
-%   [~,idxk] = min(abs(f_ec_thr - yb_pts(k)));
-%   idx2 = [idx2 idxk]; % maybe find more efficient way to do this
-% end
 
 % find first/last indices (idx2a/b) of closest points in cold_dist to beam
 [~,idxc_start] = min(abs(f_ec_thr - yb_pts(1)));
@@ -204,7 +194,7 @@ hca.ColorOrder = col; % set colour order for legends
 irf_legend(hca,{ePDist(it1).time.toUtc; ...
                 ePDist(it2).time.toUtc; ...
                 ['Liouville Mapping, \Delta\phi_{||} = ' ...
-                num2str(phi_mean,3) '±' num2str(phi_err,3) ...
+                num2str(phi_mean,3) '±' num2str(phi_err,2) ...
                 'V']},[0.98,0.98])
 % hca.XLim = [min(vg),max(vg)];
 %labels
