@@ -25,6 +25,7 @@ function [Rpar,Rperp,thetaBR] = mms4_displacement(varargin)
 %     [Rpar,Rperp,thetaBR] = mms.mms4_displacement('B?','R?','plot',1);
 %     [Rpar,Rperp,thetaBR] = mms.mms4_displacement(Tint,'plot',0);
 
+% if no arguments are given, display help
 if (nargin < 1)
   help mms.mms4_displacement;
   Rpar = NaN;
@@ -33,32 +34,33 @@ if (nargin < 1)
   return;
 end
 
-ic = 1:4;
+% setting default parameters
+ic = 1:4; % MMS s/c numbers
 getBR = false;
 plotfig = false;
-
-if isa(varargin{1},'EpochTT')
-  if length(varargin{1}) == 2
+% varargin is cell array so index w/ {}
+if isa(varargin{1},'EpochTT') % if Tint provided as 1st arg
+  if length(varargin{1}) == 2 % interval = start and end time
     Tint = varargin{1};
-    getBR = true;
-    argsstart = 2;
-    irf.log('notice','Tint passed.')
+    getBR = true; % Tint provided so need to find B and R
+    argsstart = 2; % start args after Tint when called later
+    irf.log('notice','Tint passed.') % logging that Tint has been passed
   end
-else
-  c_eval('B?=evalin(''base'',irf_ssub(varargin{1},?));',ic);
+else % if B and R provided, evaluate in base workspace
+  c_eval('B?=evalin(''base'',irf_ssub(varargin{1},?));',ic); % ssub = string substitution
   c_eval('R?=evalin(''base'',irf_ssub(varargin{2},?));',ic);
   irf.log('notice','B and R are passed.')
   argsstart = 3;
 end
 
-if getBR
-  Tintl = Tint+[-60 60];
-  R = mms.get_data('R_gse',Tintl); %#ok<NASGU>
-  c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
-  if Tint(2)-Tint(1) > 600
+if getBR % only true if Tint passed
+  Tintl = Tint+[-60 60]; % assuming this adds 1min either side of interval
+  R = mms.get_data('R_gse',Tintl); %#ok<NASGU> % get R_gse for all s/c
+  c_eval('R? = irf.ts_vec_xyz(R.time,R.gseR?);',ic); % create TSeries obj
+  if Tint(2)-Tint(1) > 600 % if time interval > 10 mins, use survey mode
     c_eval('B? = mms.get_data(''B_gse_fgm_srvy_l2'',Tint,?);',ic);
     irf.log('notice','Survey mode B is used.');
-  else
+  else % if time interval <= 10 mins, use burst mode, unless Bint<Tint/1.2
     c_eval('B? = mms.get_data(''B_gse_fgm_brst_l2'',Tint,?);',ic);
     if B1.time.stop-B1.time.start < (Tint(2)-Tint(1))/1.2
       c_eval('B? = mms.get_data(''B_gse_fgm_srvy_l2'',Tint,?);',ic);
@@ -69,7 +71,7 @@ if getBR
   end
 end
 
-
+% check for options args, i.e. 'plot' case
 args=varargin(argsstart:end);
 if numel(args)>0
   haveoptions=1;
@@ -77,6 +79,7 @@ else
   haveoptions=0;
 end
 
+% if plotting, check for 0 (no plot) or 1 (plot figure)
 while haveoptions
   l = 2;
   switch(lower(args{1}))
@@ -94,10 +97,12 @@ while haveoptions
   args = args(l+1:end);
   if isempty(args), haveoptions=0; end
 end
-
+TSeries
+% resample the B and R data at the B1 data sampling rate
 c_eval('B? = B?.resample(B1);',ic);
 c_eval('R? = R?.resample(B1);',ic);
 
+% relative displacements between s/c
 R_12=R1-R2; %#ok<NASGU>
 R_13=R1-R3; %#ok<NASGU>
 R_14=R1-R4; %#ok<NASGU>
@@ -105,6 +110,7 @@ R_23=R2-R3; %#ok<NASGU>
 R_24=R2-R4; %#ok<NASGU>
 R_34=R3-R4; %#ok<NASGU>
 
+% relative B-field between s/c
 B_12=(B1+B2)/2; %#ok<NASGU>
 B_13=(B1+B3)/2; %#ok<NASGU>
 B_14=(B1+B4)/2; %#ok<NASGU>
@@ -152,7 +158,7 @@ if plotfig
 
   h(2)=irf_panel('PosBperp');
   irf_plot(h(2),Rperp);
-  ylabel(h(2),{'|\delta R_{\perp}| (km)'},'Interpreter','tex');
+  ylabel(h(2),{'|R_{\perp}| (km)'},'Interpreter','tex');
 
   h(3)=irf_panel('ThetaBR');
   irf_plot(h(3),thetaBR);

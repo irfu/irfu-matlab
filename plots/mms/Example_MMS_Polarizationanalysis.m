@@ -7,7 +7,8 @@
 
 ic = 3; % Spacecraft number
 
-Tint = irf.tint('2015-10-30T05:15:42.00Z/2015-10-30T05:15:54.00Z');
+% Tint = irf.tint('2015-10-30T05:15:42.00Z/2015-10-30T05:15:54.00Z');
+Tint = irf.tint('2018-05-05T17:12:10/2018-05-05T17:12:30');
 
 %% Load data
 Tintl = Tint+[-100 100];

@@ -47,19 +47,19 @@ while have_options
   args_tmp = args_tmp(l+1:end);
   if isempty(args_tmp), break, end
 end
-idist_name = idist.name;
+idist_name = idist.name; %linkprop % previously linkprop was not commented out
 ic = idist_name(4);     ic = str2num(ic);
 idist_BG = idist;
 idist_new = idist;
 
 %%  2. load BACKGROUND from 'DIS-MOMS' data
-% 2.1. background data
+% 2.1. background data (was 1:17 - now 1:18 - and was 10:13 - now 15:18)
 c_eval('Ni_bg = mms.db_get_ts([idist_name(1:17), ''dis-moms''], [''mms?_dis_numberdensity_bg_'', idist_name(10:13)], Tint);', ic);
 c_eval('EnergySpectr_bg = mms.db_get_ts([idist_name(1:17), ''dis-moms''], [''mms?_dis_spectr_bg_'', idist_name(10:13)], Tint);', ic);
 c_eval('Pres_bg = mms.db_get_ts([idist_name(1:17), ''dis-moms''], [''mms?_dis_pres_bg_'', idist_name(10:13)], Tint);', ic);
 c_eval('omniEnergySpectr_bg = mms.db_get_ts([idist_name(1:17), ''dis-moms''], [''mms?_dis_energyspectr_omni_'', idist_name(10:13)], Tint);', ic);
 
-% 2.2. official moments data
+% 2.2. official moments data (was 10:13 - now 15:18)
 Ni = mms.get_data(['Ni_fpi_', idist_name(10:13), '_l2'], Tint, ic);
 gseVi = mms.get_data(['Vi_gse_fpi_', idist_name(10:13), '_l2'], Tint, ic);
 gsePi = mms.get_data(['Pi_gse_fpi_', idist_name(10:13), '_l2'], Tint, ic);
