@@ -71,7 +71,7 @@ if getBR % only true if Tint passed
   end
 end
 
-% check for options args, i.e. 'plot' case
+% check for options args, i.e. 'plot' case 
 args=varargin(argsstart:end);
 if numel(args)>0
   haveoptions=1;
@@ -102,7 +102,7 @@ TSeries
 c_eval('B? = B?.resample(B1);',ic);
 c_eval('R? = R?.resample(B1);',ic);
 
-% relative displacements between s/c
+% relative displacements between s/c 
 R_12=R1-R2; %#ok<NASGU>
 R_13=R1-R3; %#ok<NASGU>
 R_14=R1-R4; %#ok<NASGU>
