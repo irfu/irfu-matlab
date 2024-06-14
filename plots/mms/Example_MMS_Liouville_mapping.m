@@ -140,7 +140,7 @@ idxb = find(grad_fvb > 0.000001,1,'last'); % find beam index
 % and will always find an index (whereas gradient method may not)
 [~,idxb] = max(f_eb_thr);
 
-% Definitions: 
+% Definitions:
 % Start of ROI: idx = beam index + 3 (to get away from maximum)
 % End of ROI: from roi_a to end / scale_fact
 % ROI array: from start to end of ROI, interpolated from warm_dist

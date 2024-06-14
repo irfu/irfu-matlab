@@ -136,22 +136,22 @@ if ~allSC % plot only SC in sc array
     % plot multiple individual times
     c_eval('plot(hca,f1D_?(it).depend{1},f1D_?.data(it+[-!:1:!],:),'':'',''Color'',colours(2,:),''linewidth'',1)',sc(1),halfTime)
     c_eval('plot(hca,f1D_?(it).depend{1},f1D_?.data(it+[-!:1:!],:),'':'',''Color'',colours(1,:),''linewidth'',1)',sc(2),halfTime)
-    
+
     % plot time-averaged reduced distribution function (i.e. integrated over
     % time and divided by scalar factor)
     c_eval('plot(hca,f1D_?(it).depend{1},mean(f1D_?.data(it+[-!:1:!],:)),''Color'',colours(2,:),''linewidth'',2)',sc(1),halfTime)
     c_eval('plot(hca,f1D_?(it).depend{1},mean(f1D_?.data(it+[-!:1:!],:)),''Color'',colours(1,:),''linewidth'',2)',sc(2),halfTime)
-  
+
     % create string to append to title string
     titleStringAdd = [' (time-averaged for ', num2str(numTimes), ' times)'];
   else
     c_eval('plot(hca,f1D_?(it).depend{1},f1D_?(it).data,''Color'',colours(2,:),''linewidth'',2)',sc(1))
     c_eval('plot(hca,f1D_?(it).depend{1},f1D_?(it).data,''Color'',colours(1,:),''linewidth'',2)',sc(2))
-  
+
     % create string to append to title string
     titleStringAdd = ' (not time-averaged)';
   end
-  
+
   % legend shows SC
   hca.ColorOrder = flipud(colours(1:2,:)); % set colour order for legends
   irf_legend(hca,{['MMS',num2str(sc(1))];['MMS',num2str(sc(2))];},[0.98,0.98])
@@ -160,20 +160,20 @@ else % plot all SC
   if halfTime > 0
     % plot multiple individual times as dashed lines
     c_eval('plot(hca,f1D_?(it).depend{1},f1D_?.data(it+[-!:1:!],:),'':'',''Color'',allSC_colours(?,:),''linewidth'',1)',1:4,halfTime)
-    
+
     % plot time-averaged reduced distribution function (i.e. integrated over
     % time and divided by scalar factor) as bold lines
     c_eval('plot(hca,f1D_?(it).depend{1},mean(f1D_?.data(it+[-!:1:!],:)),''Color'',allSC_colours(?,:),''linewidth'',2)',1:4,halfTime)
-  
+
     % create string to append to title string
     titleStringAdd = [' (time-averaged for ', num2str(numTimes), ' times)'];
   else
     c_eval('plot(hca,f1D_?(it).depend{1},f1D_?(it).data,''Color'',allSC_colours(?,:),''linewidth'',2)',1:4)
-  
+
     % create string to append to title string
     titleStringAdd = ' (not time-averaged)';
   end
-  
+
   % legend shows SC
   hca.ColorOrder = allSC_colours; % set colour order for legend
   irf_legend(hca,{'MMS1';'MMS2';'MMS3';'MMS4'},[0.98,0.98])
@@ -202,22 +202,22 @@ if ~allSC % plot only SC in sc array
     % plot multiple individual times as dashed lines
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?.omni.data(it+[-!:1:!],:),'':'',''Color'',colours(2,:),''linewidth'',1)',sc(1),halfTime)
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?.omni.data(it+[-!:1:!],:),'':'',''Color'',colours(1,:),''linewidth'',1)',sc(2),halfTime)
-    
-    % plot time-averaged reduced distribution function (i.e. integrated 
+
+    % plot time-averaged reduced distribution function (i.e. integrated
     % over time and divided by scalar factor) as bold lines
     c_eval('plot(hca,ePDist?(it).depend{1},mean(ePDist?.omni.data(it+[-!:1:!],:)),''Color'',colours(2,:),''linewidth'',2)',sc(1),halfTime)
     c_eval('plot(hca,ePDist?(it).depend{1},mean(ePDist?.omni.data(it+[-!:1:!],:)),''Color'',colours(1,:),''linewidth'',2)',sc(2),halfTime)
-  
+
     % create string to append to title string
     titleStringAdd = [' (time-averaged for ', num2str(numTimes), ' times)'];
   else
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?(it).omni.data,''Color'',colours(2,:),''linewidth'',2)',sc(1))
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?(it).omni.data,''Color'',colours(1,:),''linewidth'',2)',sc(2))
-  
+
     % create string to append to title string
     titleStringAdd = ' (not time-averaged)';
   end
-  
+
   % legend shows SC
   hca.ColorOrder = flipud(colours(1:2,:)); % set colour order for legend
   irf_legend(hca,{['MMS',num2str(sc(1))];['MMS',num2str(sc(2))];},[0.98,0.98])
@@ -226,20 +226,20 @@ else % plot all SC
   if halfTime > 0
     % plot multiple individual times as dashed lines
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?.omni.data(it+[-!:1:!],:),'':'',''Color'',allSC_colours(?,:),''linewidth'',1)',1:4,halfTime)
-    
-    % plot time-averaged reduced distribution function (i.e. integrated 
+
+    % plot time-averaged reduced distribution function (i.e. integrated
     % over time and divided by scalar factor) as bold lines
     c_eval('plot(hca,ePDist?(it).depend{1},mean(ePDist?.omni.data(it+[-!:1:!],:)),''Color'',allSC_colours(?,:),''linewidth'',2)',1:4,halfTime)
-  
+
     % create string to append to title string
     titleStringAdd = [' (time-averaged for ', num2str(numTimes), ' times)'];
   else
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?(it).omni.data,''Color'',allSC_colours(?,:),''linewidth'',2)',1:4)
-  
+
     % create string to append to title string
     titleStringAdd = ' (not time-averaged)';
   end
-  
+
   % legend shows SC
   hca.ColorOrder = allSC_colours; % set colour order for legend
   irf_legend(hca,{'MMS1';'MMS2';'MMS3';'MMS4'},[0.98,0.98])
@@ -267,22 +267,22 @@ if ~allSC % plot only SC in sc array
     % plot multiple individual times as dashed lines
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?.pitchangles(dmpaB?,pitchRange).data(it+[-!:1:!],:),'':'',''Color'',colours(2,:),''linewidth'',1)',sc(1),halfTime)
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?.pitchangles(dmpaB?,pitchRange).data(it+[-!:1:!],:),'':'',''Color'',colours(1,:),''linewidth'',1)',sc(2),halfTime)
-    
-    % plot time-averaged reduced distribution function (i.e. integrated 
+
+    % plot time-averaged reduced distribution function (i.e. integrated
     % over time and divided by scalar factor) as bold lines
     c_eval('plot(hca,ePDist?(it).depend{1},mean(ePDist?.pitchangles(dmpaB?,pitchRange).data(it+[-!:1:!],:)),''Color'',colours(2,:),''linewidth'',2)',sc(1),halfTime)
     c_eval('plot(hca,ePDist?(it).depend{1},mean(ePDist?.pitchangles(dmpaB?,pitchRange).data(it+[-!:1:!],:)),''Color'',colours(1,:),''linewidth'',2)',sc(2),halfTime)
-  
+
     % create string to append to title string
     titleStringAdd = [' (time-averaged for ', num2str(numTimes), ' times)'];
   else
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?(it).pitchangles(dmpaB?,pitchRange).data,''Color'',colours(2,:),''linewidth'',2)',sc(1))
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?(it).pitchangles(dmpaB?,pitchRange).data,''Color'',colours(1,:),''linewidth'',2)',sc(2))
-  
+
     % create string to append to title string
     titleStringAdd = ' (not time-averaged)';
   end
-  
+
   % legend shows SC
   hca.ColorOrder = flipud(colours(1:2,:)); % set colour order for legend
   irf_legend(hca,{['MMS',num2str(sc(1))];['MMS',num2str(sc(2))];},[0.98,0.98])
@@ -291,20 +291,20 @@ else % plot all SC
   if halfTime > 0
     % plot multiple individual times as dashed lines
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?.pitchangles(dmpaB?,pitchRange).data(it+[-!:1:!],:),'':'',''Color'',allSC_colours(?,:),''linewidth'',1)',1:4,halfTime)
-    
-    % plot time-averaged reduced distribution function (i.e. integrated 
+
+    % plot time-averaged reduced distribution function (i.e. integrated
     % over time and divided by scalar factor) as bold lines
     c_eval('plot(hca,ePDist?(it).depend{1},mean(ePDist?.pitchangles(dmpaB?,pitchRange).data(it+[-!:1:!],:)),''Color'',allSC_colours(?,:),''linewidth'',2)',1:4,halfTime)
-  
+
     % create string to append to title string
     titleStringAdd = [' (time-averaged for ', num2str(numTimes), ' times)'];
   else
     c_eval('plot(hca,ePDist?(it).depend{1},ePDist?(it).pitchangles(dmpaB?,pitchRange).data,''Color'',allSC_colours(?,:),''linewidth'',2)',1:4)
-  
+
     % create string to append to title string
     titleStringAdd = ' (not time-averaged)';
   end
-  
+
   % legend shows SC
   hca.ColorOrder = allSC_colours; % set colour order for legend
   irf_legend(hca,{'MMS1';'MMS2';'MMS3';'MMS4'},[0.98,0.98])
