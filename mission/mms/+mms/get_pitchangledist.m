@@ -62,6 +62,7 @@ end
 
 pitcha = anglevec-dangle/2;
 
+%anglevec
 % Input check
 findnearest = 0;
 if isa(varargin{1},'PDist') && strcmp('skymap',varargin{1}.type)
@@ -99,12 +100,14 @@ numechannels = length(energy(1,:));
 lengthphi = length(phi.data(1,:));
 lengththeta = length(theta);
 
+
 B = B.resample(pdist);
 Bvec = B/B.abs;
 Bvecx = repmat(Bvec.data(:,1),1,numechannels,lengthphi,lengththeta);
 Bvecy = repmat(Bvec.data(:,2),1,numechannels,lengthphi,lengththeta);
 Bvecz = repmat(Bvec.data(:,3),1,numechannels,lengthphi,lengththeta);
 
+if 0
 if findnearest == 1
   [~,tintpos] = min(abs(pdist.time-tint));
   tint = pdist.time(tintpos);
@@ -135,6 +138,7 @@ zt = squeeze(permute(zt,[1 4 2 3]));
 %thetab = acosd(xt.*Bvecx+yt.*Bvecy+zt.*Bvecz);
 thetab = acosd(xt.*squeeze(Bvecx)+yt.*squeeze(Bvecy)+zt.*squeeze(Bvecz));
 
+
 c_eval('dist? = pdist.data;',1:length(anglevec));
 %dist1(thetab > anglevec(1)) = NaN;
 for jj = 1:(length(anglevec))
@@ -150,7 +154,7 @@ elseif strcmp(meanorsum, 'sum_weighted')
   c_eval('sr? = pdist.solidangle.data;',1:length(anglevec));
   c_eval('sr?(isnan(dist?)) = NaN;',1:length(anglevec));
   c_eval('dist? =  squeeze(irf.nansum(irf.nansum(dist?.*sr?,4),3));',1:length(anglevec));
-  c_eval('sumsr? =  squeeze(irf.nansum(irf.nansum(sr?,4),3));',1:length(anglevec));
+  c_eval('sumsr? =  squeeze(  irf.nansum(irf.nansum(sr?,4),3));',1:length(anglevec));
   c_eval('dist? = dist?./sumsr?;',1:length(anglevec));
 end
 %paddistarr = cat(3,dist15,dist30,dist45,dist60,dist75,dist90,dist105,dist120,dist135,dist150,dist165,dist180);
@@ -160,6 +164,50 @@ for ii = 2:length(anglevec)
 end
 
 theta = pitcha;
+else
+  
+  [VX,VY,VZ] = pdist.v;
+  VABS = sqrt(VX.^2 + VY.^2 + VZ.^2);
+  VXnorm = VX./VABS;
+  VYnorm = VY./VABS;
+  VZnorm = VZ./VABS;
+  
+  angle_b = acosd(VXnorm.*Bvecx + VYnorm.*Bvecy + VZnorm.*Bvecz);
+  
+  % Bin pitchangles
+  pitch_angle_bin_edges = 0:15:180;
+  pitch_angle_bin_edges = [0 anglevec];
+  dangle = diff(pitch_angle_bin_edges);
+  theta = pitch_angle_bin_edges(1:end-1) + 0.5*dangle;
+  nPitchangles = numel(pitch_angle_bin_edges)-1;
+  bins = discretize(angle_b,pitch_angle_bin_edges);
+
+  % Accumulate all the data into proper grid 
+  energy_bin_edges = [pdist.ancillary.energy(1,:) - pdist.ancillary.delta_energy_minus(1,:) pdist.ancillary.energy(1,end) + pdist.ancillary.delta_energy_plus(1,end)];
+  nEnergies = numel(pdist.depend{1}(1,:));  
+  nTimes = pdist.length;
+  
+  datasize = size(pdist.data);
+  
+  bins_pa = discretize(angle_b(:),pitch_angle_bin_edges);
+  bins_en = repmat(discretize(pdist.depend{1}(:),energy_bin_edges),[prod(datasize(3:4)),1]); %repmat((1:nEnergies)',[nTimes 1]);  
+  bins_time = repmat((1:nTimes)',[prod(datasize(2:end)),1]);
+  %bins_en = discretize(angle_b,pitch_angle_bin_edges);
+  %for it = 1:nTimes
+%     for iE = 1:nEnergies
+      %bins = discretize(squeeze(angle_b(:,iE,:)),pitch_angle_bin_edges);
+      %data = squeeze(pdist.data(:,iE,:));
+      subs = [bins_time,bins_en,bins_pa];
+      vals = pdist.data(:);
+      paddistarr = accumarray(subs,vals,[nTimes,nEnergies,nPitchangles],@nanmean);
+      
+%       A(:,iE,:) = accumarray(subs,vals,[nTimes,nPitchangles],@nanmean);
+%       N(:,iE,:) = accumarray([(1:nTimes)' bins],(pdist.data(:,iE,:,:)>0),[nTimes,nPitchangles],@sum);
+%     end
+  
+  1;
+  %end
+end
 if findnearest == 0
   paddist = PDist(pdist.time,paddistarr,'pitchangle',energy,theta);
   paddist.units = varargin{1}.units;
@@ -171,5 +219,4 @@ if findnearest == 0
 else
   paddist = squeeze(paddistarr);
 end
-
 end

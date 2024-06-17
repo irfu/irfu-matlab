@@ -99,10 +99,10 @@ classdef mms_db < handle
           error('Data does not contain DEPEND_0 or DATA')
         end
 
-        if v.nrec == 1 && contains(v.CATDESC, 'FPI') % this is a quick fix of the problem of having PDist burst files with nrec =1 remove when fixed by FPI people
-          irf.log('waring','PDist with nrec = 1')
-          return
-        end
+%        if v.nrec == 1 && contains(v.CATDESC, 'FPI') % this is a quick fix of the problem of having PDist burst files with nrec =1 remove when fixed by FPI people
+%          irf.log('waring','PDist with nrec = 1')
+%          return
+%        end
 
 
         if isempty(res), res = v; return, end

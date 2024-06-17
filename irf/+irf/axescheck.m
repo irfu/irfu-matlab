@@ -6,6 +6,7 @@ function [ax,args,nargs] = axescheck(varargin)
 args = varargin;
 nargs = nargin;
 ax=[];
+ishghandle(args{1},'axes');
 if (nargs > 0) && all(all(ishghandle(args{1},'axes')))
   ax = args{1};
   args = args(2:end);

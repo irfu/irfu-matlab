@@ -6,7 +6,7 @@
 
 %% Load data
 ic = 1:4;
-Tint = irf.tint('2015-10-16T13:05:24.000Z/2015-10-16T13:05:50.000Z');
+Tint = irf.tint('2015-10-16T10:33:45.000Z/2015-10-16T10:33:45.500Z');
 % Take longer time than used for the dispersion relation, so edge effects are not included
 c_eval('Bxyz?=mms.get_data(''B_gse_brst_l2'',Tint,?);',ic);
 c_eval('Bscm?=mms.get_data(''B_gse_scm_brst_l2'',Tint,?);',ic);
@@ -18,6 +18,7 @@ c_eval('Bscmfac? = irf_convert_fac(Bscm?, Bxyz?, [1, 0, 0]);',ic);
 
 %% Compute dispersion relation
 Tints = irf.tint('2015-10-16T13:05:26.500Z/2015-10-16T13:05:27.000Z');
+Tints = Tint;
 
 [xvecs,yvecs,Power] = mms.fk_powerspec4SC('Bscmfac?.x','Rxyz?','Bxyz?',Tints,'linear',10,'numk',500,'cav',4,'wwidth',2);
 

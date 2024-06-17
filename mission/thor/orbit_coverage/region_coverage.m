@@ -50,8 +50,8 @@ av_Dp = nanmean(reshape([Dp; nan(24-mod(size(Dp,1),24),1)],24,nDays),1)';
 % Eq.(10) alpha=(0.58-0.007*Bz)*(1+0.024*log(Dp))
 % Default values: Dp=2nPa, Bz=0nT
 % av_Bz = 0; av_Dp = 1.4; % default
-rzero=(10.22+1.29*tanh(0.184*(av_Bz+8.14))).*av_Dp.^(-1/6.6); % magnetopause standoff distance
-alpha=(0.58-0.007*av_Bz).*(1+0.024*log(av_Dp));
+rzero = (10.22+1.29*tanh(0.184*(av_Bz+8.14))).*av_Dp.^(-1/6.6); % magnetopause standoff distance
+alpha = (0.58-0.007*av_Bz).*(1+0.024*log(av_Dp));
 
 if 0 % plot data
   %%
