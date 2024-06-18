@@ -113,7 +113,7 @@ for j=1:length(h)
       % spectrograms, patches or surface plots (except irf_pl_mark marking
       % itself)
       %
-      if 1%~isempty(findobj(h(j),'tag','irf_pl_mark')) || ~any(~isempty([findobj(h(j),'Type','surface') findobj(h(j),'Type','patch')])) % put mark under everything
+      if ~isempty(findobj(h(j),'tag','irf_pl_mark')) || ~any(~isempty([findobj(h(j),'Type','surface') findobj(h(j),'Type','patch')])) % put mark under everything
         hold(h(j),'on');
         hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j),'facealpha',1,'tag','irf_pl_mark',pvpairs{:});
         set(h(j),'children',circshift(get(h(j),'children'),-1)); % move patch to be the first children (below other plots)

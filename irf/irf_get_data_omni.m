@@ -299,7 +299,6 @@ try
     else
       webOpt = weboptions();
     end
-    webOpt = weboptions('CertificateFilename', '');
     webOpt.Timeout = 20;
     c = webread(url, webOpt);
     getDataSuccess = true;

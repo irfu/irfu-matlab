@@ -188,9 +188,9 @@ for i=label_order % start with first label first
     ht(i).Position(2) = ht(i).Position(2)+tmp_ref_ext_y; % add to y-position
     % update what should be added to the y-position next time (can be < 0)
     if strcmp(value_vertical_alignment,'baseline')
-      tmp_ref_ext_y = tmp_ref_ext_y+ht(i).Extent(4)*1.5;
+      tmp_ref_ext_y = tmp_ref_ext_y+ht(i).Extent(4);
     elseif strcmp(value_vertical_alignment,'top')
-      tmp_ref_ext_y = tmp_ref_ext_y-ht(i).Extent(4)*1.5;
+      tmp_ref_ext_y = tmp_ref_ext_y-ht(i).Extent(4);
     end
   end
 
