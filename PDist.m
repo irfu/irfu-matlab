@@ -2114,6 +2114,7 @@ classdef PDist < TSeries
       doPrintInfo = 0;
       doFillGap = 0;
       doRotate = 0;
+      nSmooth = 1;
       T = [1 0 0; 0 1 0; 0 0 1]; % no rotation
 
       % Default formatting
@@ -2140,7 +2141,7 @@ classdef PDist < TSeries
           case {'fill'}
             doFillGap = 1;
             l = 1;
-          case {'val','iso_val','values'}
+          case {'vals','val','iso_val','values'}
             l = 2;
             iso_values = args{2};
           case {'prctile','percentile'}
@@ -2337,6 +2338,7 @@ classdef PDist < TSeries
       view(ax,[2 2 1])
       %view(ax,[0 0 1])
 
+      all_handles.Values = iso_values;
       all_handles.Patch = hps;
       all_handles.Light = hlight;
 
@@ -4005,6 +4007,7 @@ classdef PDist < TSeries
 
           % Partial density for each macroparticle
           dn_part = dn/Nbin;
+          df_part = f/Nbin;
 
           Nbin_mat = Nbin*ones(sizedata);
 
@@ -4019,7 +4022,7 @@ classdef PDist < TSeries
             vx_all = repelem(vx(it,:),Nbin_mat(it,:));
             vy_all = repelem(vy(it,:),Nbin_mat(it,:));
             vz_all = repelem(vz(it,:),Nbin_mat(it,:));
-            f_all = repelem(f(it,:),Nbin_mat(it,:));
+            df_all = repelem(f(it,:),Nbin_mat(it,:));
 
             [iDep1,iDep2,iDep3] = ndgrid(1:sizedata(2),1:sizedata(3),1:sizedata(4));
             iDep1_all = repelem(iDep1(:),Nbin_mat(it,:));
@@ -4034,6 +4037,7 @@ classdef PDist < TSeries
             p(it).vx = tocolumn(vx_all);
             p(it).vy = tocolumn(vy_all);
             p(it).vz = tocolumn(vz_all);
+            p(it).df = tocolumn(df_all);
           end
         case 'random' % initialize random positions within each bin
           % First calculate how many particles should g in each bin
@@ -4071,9 +4075,11 @@ classdef PDist < TSeries
 
           % Partial density for each macroparticle
           dn_part = dn./Ntmp_roundup;
+          df_part = f./Ntmp_roundup;
 
           % n_frac = 0 divided by Ntmp_roundup = 0 gives NaN
           dn_part(isnan(dn_part)) = 0;
+          df_part(isnan(df_part)) = 0;
 
           % Edges of energy bins, same for each time step
           energy_minus = obj.depend{1}(1,:) - obj.ancillary.delta_energy_minus;
@@ -4100,6 +4106,7 @@ classdef PDist < TSeries
             vy_all = zeros(sum(Ntmp_roundup(it,:),2),1);
             vz_all = zeros(sum(Ntmp_roundup(it,:),2),1);
             dn_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            df_all = zeros(sum(Ntmp_roundup(it,:),2),1);
 
             i_part_count = 1;
 
@@ -4162,6 +4169,7 @@ classdef PDist < TSeries
 
                   % Assign particle density to each macro particle
                   tmp_dn = repelem(dn_part(it,iEnergy,iAzim,iPolar),N_bin);
+                  tmp_df = repelem(df_part(it,iEnergy,iAzim,iPolar),N_bin);
                   tmp_iDep1 = repelem(iEnergy,N_bin);
                   tmp_iDep2 = repelem(iAzim,N_bin);
                   tmp_iDep3 = repelem(iPolar,N_bin);
@@ -4174,6 +4182,7 @@ classdef PDist < TSeries
                   vy_all(i_part_count + (0:N_bin-1),:) = tmp_vy;
                   vz_all(i_part_count + (0:N_bin-1),:) = tmp_vz;
                   dn_all(i_part_count + (0:N_bin-1),:) = tmp_dn;
+                  df_all(i_part_count + (0:N_bin-1),:) = tmp_df;
 
                   % Increase counter
                   i_part_count = i_part_count + N_bin;
@@ -4187,6 +4196,7 @@ classdef PDist < TSeries
             p(it).vy = vy_all(1:i_part_count-1);
             p(it).vz = vz_all(1:i_part_count-1);
             p(it).dn = dn_all(1:i_part_count-1);
+            p(it).df = df_all(1:i_part_count-1);
           end % end time loop
       end % end switch method
       particles = p;
@@ -4391,7 +4401,75 @@ classdef PDist < TSeries
       moms.T.siConversion = '11604.50520>K';
       % tensorOrder, representation, etc are read-only, how to add?
     end
+    function PD = movmean(obj,nMean,varargin)
+      % PDIST.MOVMEAN Executes a running average of the distribution.
+      %   PDIST.MOVMEAN(pdist,N)
+      %   PDIST.MOVMEAN(pdist,N,'RemoveOneCounts',pdist_counts)
+      % 
+      %     N - number of data points for the moving mean
+      %     pdist_counts - PDist object with number of counts, defined as in the example below  
+      % 
+      %   Example:      
+      %     ic = 3;            
+      %     tint = irf.tint('2017-07-11T22:31:00.00Z/2017-07-11T22:37:20.00Z');
+      %     iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
+      %     iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
+      %     iPDist_counts = iPDist; iPDist_counts.data = (iPDist.data./iPDistErr.data).^2;
+      %
+      %     iPD_03 = iPDist3.movmean(3);      
+      %     iPD_11 = iPDist3.movmean(11);
+      %         
+      %     iPD_03_rem = iPDist3.movmean(3,'RemoveOneCounts',iPDist_counts);      
+      %     iPD_11_rem = iPDist3.movmean(11,'RemoveOneCounts',iPDist_counts);
+      %
+      %     h = irf_plot({iPDist.omni.deflux.specrec,...
+      %                   iPD_03.omni.deflux.specrec,iPD_03_rem.omni.deflux.specrec,...
+      %                   iPD_11.omni.deflux.specrec,iPD_11_rem.omni.deflux.specrec});
+      %     c_eval('h(?).YScale = ''log'';',1:numel(h))
+      %     linkprop(h,{'CLim'});
+      %     irf_legend(h(1),{'original'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
+      %     irf_legend(h(2),{'3-point average'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
+      %     irf_legend(h(3),{'3-point average with one-counts removed'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
+      %     irf_legend(h(4),{'11-point average'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
+      %     irf_legend(h(5),{'11-point average with one-counts removed'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
 
+
+      % Default values
+      doRemoveOneCounts = 0;
+
+      if isempty(varargin)
+        nargs = 0;
+        args = {};
+      else
+        [ax,args,nargs] = axescheck_pdist(varargin{:});
+      end
+
+      if nargs > 0; have_options = 1; else have_options = 0; end
+      while have_options
+        l = 1;
+        switch(lower(args{1}))
+          case 'removeonecounts'
+            l = 2;
+            doRemoveOneCounts = 1;
+            tsOneCounts = varargin{2};
+        end
+        args = args(l+1:end);
+        if isempty(args), break, end
+      end
+
+      new_data = movmean(obj.data,nMean,1); % the 1 specifies the dimension along which the moving mean is taken
+
+      if doRemoveOneCounts
+        data_one_counts = tsOneCounts.data;
+        data_one_counts(isnan(data_one_counts)) = 0;
+        counts = movsum(data_one_counts,nMean,1);
+        new_data(counts<1.5) = 0;
+      end
+
+      PD = obj;
+      PD.data = new_data;
+      %PD = PDist(obj.time,new_data,'skymap',obj.depend{:})      
+    end    
 
   end
   % Plotting and other functions
