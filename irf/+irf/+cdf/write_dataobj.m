@@ -2,7 +2,8 @@ function write_dataobj(filePath, ...
   dataobj_GlobalAttributes, ...
   dataobj_data, ...
   dataobj_VariableAttributes, ...
-  dataobj_Variables, varargin)
+  dataobj_Variables, ...
+  varargin)
 %
 % Function which writes a CDF file.
 %
@@ -10,6 +11,9 @@ function write_dataobj(filePath, ...
 % data format as returned by dataobj (irfu-matlab). Useful for reading a CDF
 % file, modifying the contents somewhat, and then writing the modified contents
 % to a CDF file. Originally based on write_cdf.m/write_cdf_spdfcdfread.m.
+% Primarily used by BICAS (SolO; BIAS CAlibration Software).
+%
+% NOTE: The function is not fully generic, but quite. See comments.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -56,6 +60,7 @@ function write_dataobj(filePath, ...
 %       {iZv, 10} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
 %       {iZv, 11} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
 %       {iZv, 12} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
+%       "NOT USED" = Not used by this function.
 % varargin
 %       Settings passed to irf.utils.interpret_settings_args(). See
 %       implementation.
@@ -64,12 +69,12 @@ function write_dataobj(filePath, ...
 %
 % LIMITATIONS
 % ===========
-% NOTE/PROBLEM: spdfcdfread and spdfcdfinfo may crash MATLAB(!) when reading
-% files written with spdfcdfwrite (which this function uses). It appears that
-% this happens when spdfcdfwrite receives various forms of "incomplete" input
-% data. spdfcdfwrite appears to often not give any warning/error message when
+% NOTE/PROBLEM: spdfcdfread() and spdfcdfinfo() may crash MATLAB(!) when reading
+% files written with spdfcdfwrite() (which this function uses). It appears that
+% this happens when spdfcdfwrite() receives various forms of "incomplete" input
+% data. spdfcdfwrite() appears to often not give any warning/error message when
 % receiving such data and writes a file anyway with neither error nor warning.
-% Before passing data to spdfcdfwrite, this function tries to give errors for,
+% Before passing data to spdfcdfwrite(), this function tries to give errors for,
 % or correct such data, but can only do so as far as the problem is understood
 % by the author. Submitting empty data for a CDF variable is one such case.
 % Therefore, despite best efforts, this function might still produce nonsensical
@@ -84,10 +89,10 @@ function write_dataobj(filePath, ...
 % though. Therefore, the same variable attributes are also represented as
 % integers when reading the CDF file with dataobj.
 %
-% BUG/NOTE: spdfcdfwrite has been observed to set the wrong pad value when
+% BUG/NOTE: spdfcdfwrite() has been observed to set the wrong pad value when
 % writing 0 records.
 %
-% NOTE: spdfcdfwrite always writes char as UCHAR (not CHAR) in the CDF.
+% NOTE: spdfcdfwrite() always writes char as UCHAR (not CHAR) in the CDF.
 %
 % NOTE: The exact stated zVar dimensionality per record may be slightly wrong
 % with regard to size=1 dimension:
@@ -115,11 +120,11 @@ function write_dataobj(filePath, ...
 % it on a dataobj (i.e. without basing it on an existing CDF file).
 %
 %
-% IMPLEMENTATION NOTE ON "spdfcdfwrite" AND CHAR ZVARIABLES
+% IMPLEMENTATION NOTE: "spdfcdfwrite()" AND CHAR ZVARIABLES
 % =========================================================
-% The behaviour of spdfcdfwrite when passing char arrays or cell arrays of
+% The behaviour of spdfcdfwrite() when passing char arrays or cell arrays of
 % strings for zVariables is very mysterious and hard to understand. Below is the
-% empirical behaviour from passing such arrays to spdfcdfwrite (RecordBound
+% empirical behaviour from passing such arrays to spdfcdfwrite() (RecordBound
 % option disabled option, Singleton option enabled).
 % --
 % i = index within record. N,M,K>1
@@ -135,7 +140,7 @@ function write_dataobj(filePath, ...
 % NOTE: For the above, using RecordBound ONLY leads to more data being
 % lost/ignored for some cases.
 % --
-% Left column  = Size of CELL ARRAY (of strings) passed to spdfcdfwrite.
+% Left column  = Size of CELL ARRAY (of strings) passed to spdfcdfwrite().
 % Right column = Result read from cdfdump (not dataobj).
 % 0x0 : zVar is not written to file (still no error)!
 % 1x1 : 1 record, 1 string/record
@@ -171,7 +176,7 @@ function write_dataobj(filePath, ...
 % PROPOSAL: Reorganize into write_dataobj calling more genering function write_CDF which assumes more generic data
 % structures.
 %   PROPOSAL: Useful for combining with future generic function read_CDF which could replace dataobj.
-%       NOTE/CON: spdfcdfread returns some data structures similar to what dataobj contains so the gain might be small.
+%       NOTE/CON: spdfcdfread() returns some data structures similar to what dataobj contains so the gain might be small.
 %
 % PROPOSAL: Create analogous read_CDF+write_CDF (which use the same data structures). Combine with proper test code.
 %   NOTE: This current code is based on writing a modified dataobj to disk, which is not necessarily desirable for a
@@ -185,7 +190,7 @@ function write_dataobj(filePath, ...
 %
 % PROPOSAL: Shorten for-loop over zvars, by outsourcing tasks to functions.
 %
-% PROPOSAL: Write zVars using cell arrays of records (matrices) (spdfcdfwrite permits it; see "RecordBound").
+% PROPOSAL: Write zVars using cell arrays of records (matrices) (spdfcdfwrite() permits it; see "RecordBound").
 %
 % PROPOSAL: Flag for different interpretations of indices in char arrays (dataobj or logical).
 % PROPOSAL: Flag for assertion on preventing NaN.
@@ -208,8 +213,8 @@ ZVA_OF_ZV_DATA_TYPE_NAME_LIST = {...
   'FILLVAL'};
 
 DEFAULT_SETTINGS = struct();...
-  % Whether zVariable value size per record must fit the submitted metadata
-% (dataobj_Variables{i, 2}).
+% Whether zVariable value size per record must fit the submitted metadata
+% specified in dataobj_Variables{i, 2}.
 DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = 1;
 % Default 1/true since dataobj is not strict about SIZE  of empty zVars.
 DEFAULT_SETTINGS.strictEmptyNumericZvSizePerRecord = 1;
@@ -240,13 +245,13 @@ clear zvNameAllCa1 zvNameAllCa2
 
 
 
-%============================================================
-% Construct variables that spdfcdfwrite accepts as arguments
-%============================================================
-zvNameRcCa          = {};   % RC = spdfcdfwrite option "RecordBound".
+%=============================================================
+% Construct variables that spdfcdfwrite() accepts as arguments
+%=============================================================
+zvNameRcCa          = {};   % RC = spdfcdfwrite() option "RecordBound".
 % Lists where pairs of successive components contain (a) zVar names, and (b)
 % corresponding zVar values/data types/pad values. These lists are needed as
-% arguments to spdfcdfwrite, which requires that very format.
+% arguments to spdfcdfwrite(), which requires that very format.
 zvNameAndValueCa    = {};
 zvNameAndDataTypeCa = {};
 zvNameAndPadValueCa = {};
@@ -259,7 +264,7 @@ for i = 1:length(dataobj_Variables(:,1))
   % IMPLEMENTATION NOTE: Not using (1) data(i).VariableName or (2)
   % info.Variables(:,1) to obtain the variable name since experience shows
   % that components of (1) can be empty (contain empty struct fields) and (2)
-  % may not cover all variables when obtained via spdfcdfread!!
+  % may not cover all variables when obtained via spdfcdfread()!!
   %===========================================================================
   zvName                 = dataobj_Variables{i, 1};
   specifiedSizePerRecord = dataobj_Variables{i, 2};
@@ -294,18 +299,18 @@ for i = 1:length(dataobj_Variables(:,1))
 
 
 
-  %======================================================================
+  %=========================================================================
   % ASSERTION:
   %   Check that the supplied ZV data variable has a MATLAB class
   %   (type) which matches the specified CDF type.
-  % --------------------------------------------------------------------
+  % -------------------------------------------------------------
   % IMPLEMENTATION NOTE:
-  % (1) Empty data (empty arrays) from spdfcdfread are known to have the
-  % wrong data type (char). Therefore, do this check after having dealt
-  % with empty data.
+  % (1) Empty data (empty arrays) from spdfcdfread() are known to have the
+  %     wrong data type (char). Therefore, do this check after having dealt
+  %     dealt with empty data.
   % (2) Must do this after converting time strings (char) data to
-  % uint64/tt2000.
-  %======================================================================
+  %     uint64/tt2000.
+  %=========================================================================
   zvDataMatlabClass = class(zvValue);
 
   if ~strcmp( specifiedMatlabClass, zvDataMatlabClass ) && ...
@@ -328,12 +333,12 @@ for i = 1:length(dataobj_Variables(:,1))
 
 
   %============================================================================
-  % Convert specific VariableAttributes values
+  % Convert SPECIFIC VariableAttributes values
   % ------------------------------------------
   % Case 1: tt2000 values as UTC strings : Convert to tt2000.
   % Case 2: All other                    : Convert to the zVariable data type.
   % --------------------------------------------------------------------------
-  % IMPLEMENTATION NOTE: spdfcdfread (not spdfcdfwrite) can crash if not
+  % IMPLEMENTATION NOTE: spdfcdfread() (not spdfcdfwrite()) can crash if not
   % doing this!!! The tt2000 CDF variables are likely the problem(?).
   %
   % BUG: Does not seem to work on SCALEMIN/-MAX specifically despite
@@ -342,6 +347,7 @@ for i = 1:length(dataobj_Variables(:,1))
   for iZvaOfZvDataType = 1:length(ZVA_OF_ZV_DATA_TYPE_NAME_LIST)
     zvaName = ZVA_OF_ZV_DATA_TYPE_NAME_LIST{iZvaOfZvDataType};
     if ~isfield(dataobj_VariableAttributes, zvaName)
+      % CASE: The current ZV zvName (iteration) does not have ZVA zvaName.
       continue
     end
 
@@ -359,8 +365,7 @@ for i = 1:length(dataobj_Variables(:,1))
 
     iDovafRow  = find(strcmp(dovafCa(:,1), zvName));
     if isempty(iDovafRow)
-      % CASE: The current zVariable does not have this attribute
-      % (varAttrName).
+      % CASE: The current zVariable does not have this attribute (zvaName).
       continue
     elseif length(iDovafRow) > 1
       error('write_dataobj:Assertion:OperationNotImplemented', ...
@@ -375,7 +380,7 @@ for i = 1:length(dataobj_Variables(:,1))
 
     elseif ~strcmp(specifiedMatlabClass, class(zvaValue))
       msg = sprintf(...
-        ['Found VariableAttribute %s for CDF variable "%s"', ...
+        ['Found VariableAttribute %s for CDF zVariable "%s"', ...
         ' whose data type did not match the declared one.', ...
         ' specifiedCdfDataType="%s", specifiedMatlabClass="%s",', ...
         ' class(zvaValue)="%s"'], ...
@@ -408,7 +413,7 @@ end    % for
 
 
 %===================================================================================================
-% RELEVANT spdfcdfwrite OPTIONS:
+% RELEVANT spdfcdfwrite() OPTIONS:
 % (Relevant excerpts from spdfcdfwrite.m COPIED here for convenience.)
 % --------------------------------------------------------------------
 %   SPDFCDFWRITE(FILE, VARIABLELIST, ...) writes out a CDF file whose name
@@ -541,12 +546,17 @@ end    % function
 
 
 
+
+
+
+
 % Convert a char array that dataobj returns into a char array that
 % prepare_char_ZV_data() interprets the same way.
 %
 % ARGUMENTS
 % =========
-% charArray : Char array with indices (iRecord,iCharWithinString,)
+% charArray
+%       Char array with indices (iRecord,iCharWithinString,)
 %
 function charArray = convert_dataobj_charZVValue_2_consistent_charZVValue(...
   charArray, nWrd1)
@@ -564,9 +574,13 @@ end
 
 
 
+
+
+
+
 % Function for converting a char array representing a char zVariable using a
 % consistent and logical indexing scheme, into the VERY HARD-TO-UNDERSTAND
-% scheme that spdfcdfwrite requires to produce the desired zVariable.
+% scheme that spdfcdfwrite() requires to produce the desired zVariable.
 %
 % NOTE: If one wants another order of indices for charArray, then one should use
 % permute() rather than change the algorithm.
@@ -574,20 +588,23 @@ end
 %
 % ARGUMENTS
 % =========
-% charArray : Array of chars with indices (iCharWithinString, iRecord, iWrd).
-%             WRD = Within-Record Dimension
-%             Must not have more dimensions than 3.
-%             Must not have 0 elements.
-%             Must not have both multiple records AND multiple strings per
-%             record(!).
+% charArray
+%       Array of chars with indices (iCharWithinString, iRecord, iWrd).
+%       WRD = Within-Record Dimension
+%       Must not have more dimensions than 3.
+%       Must not have 0 elements.
+%       Must not have both multiple records AND multiple strings per
+%       record(!).
 %
 %
 % RETURN VALUES
 % =============
-% zvValue       : The variable that should be passed to spdfcdfwrite. Can be (1)
-%                 char array, or (2) cell array of strings.
-% isRecordBound : True/false. Whether the zVariable should be passed to
-%                 spdfcdfwrite with option "RecordBound" enabled.
+% zvValue
+%       The variable that should be passed to spdfcdfwrite(). Can be (1) char
+%       array, or (2) cell array of strings.
+% isRecordBound
+%       True/false. Whether the zVariable should be passed to spdfcdfwrite()
+%       with option "RecordBound" enabled.
 %
 function [zvValue, isRecordBound] = prepare_char_ZV_data(charArray)
 
@@ -632,11 +649,15 @@ else
 end
 
 isRecordBound = 0;    % Always!
-end
+end    % function
 
 
 
-% Modify zvValue so that it can be passed to spdfcdfwrite and be interpreted
+
+
+
+
+% Modify ZV value so that it can be passed to spdfcdfwrite() and be interpreted
 % correctly.
 %
 % ARGUMENTS
@@ -732,13 +753,13 @@ elseif isnumeric(zvValue)
   %===================================================================================
   % Special behaviour for numeric matrices with >=2D per record
   % -----------------------------------------------------------
-  % For 3D matrices, spdfcdfwrite interprets the last index (not the first
+  % For 3D matrices, spdfcdfwrite() interprets the last index (not the first
   % index!) as the record number. Must therefore permute the indices so that
   % write_cdf2 is consistent for all numbers of dimensions.
   %     write_dataobj data arguments : index 1 = record.
-  %     matrix passed on to spdfcdfwrite : index 3 = record.
-  % NOTE: spdfcdfread (at least with argument "'Structure', 1,
-  % 'KeepEpochAsIs', 1") works like spdfcdfwrite in this regard.
+  %     matrix passed on to spdfcdfwrite() : index 3 = record.
+  % NOTE: spdfcdfread() (at least with argument "'Structure', 1,
+  % 'KeepEpochAsIs', 1") works like spdfcdfwrite() in this regard.
   %
   % Excerpt from the comments in "spdfcdfwrite.m":
   % ----------------------------------------------
@@ -786,7 +807,11 @@ else
   error('write_dataobj:Assertion', 'zvValue is neither char nor numeric.')
 end
 
-end
+end    % function
+
+
+
+
 
 
 
@@ -813,6 +838,10 @@ end
 
 
 
+
+
+
+
 % Handle special case for zero-record zVariables: (1) error, or (2) modify
 % zvValue
 %
@@ -822,7 +851,7 @@ end
 %         if ~turnZeroRecordsIntoOneRecord
 %             error('write_dataobj:Assertion', ...
 %                 ['Can not handle CDF zVariables with zero records', ...
-%                 ' (due to presumed bug in spdfcdfwrite).'])
+%                 ' (due to presumed bug in spdfcdfwrite()).'])
 %         else
 %             %--------------------------------------------------------------------
 %             % EXPERIMENTAL SOLUTION: Store 1 record of data with only pad values
