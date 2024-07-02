@@ -218,7 +218,7 @@ DEFAULT_SETTINGS.strictEmptyZvClass                = 1;
 % Whether zVar attr should have same class as zVar.
 % Exception: When zVar is TT2000 and zVar attr is char.
 % Deactivation is useful for less stringent CDFs.
-DEFAULT_SETTINGS.strictZvAttrClass                 = 'error';   % error, warning, ignore
+DEFAULT_SETTINGS.strictZvAttrClass                 = 'ERROR';   % Legal values: "ERROR", "WARNING", "IGNORE"
 DEFAULT_SETTINGS.calculateMd5Checksum              = 1;
 % Useful for debugging test runs.
 DEFAULT_SETTINGS.disableSpdfcdfwrite               = 0;
@@ -385,11 +385,11 @@ for i = 1:length(dataobj_Variables(:,1))
         specifiedMatlabClass, class(zvaValue));
 
       switch(Settings.strictZvAttrClass)
-        case 'error'
+        case 'ERROR'
           error('write_dataobj:Assertion', msg)
-        case 'warning'
+        case 'WARNING'
           warning('write_dataobj:Assertion', msg)
-        case 'ignore'
+        case 'IGNORE'
           % Do nothing.
         otherwise
           error('Illegal setting Settings.strictZvAttrClass="%s".', ...
