@@ -54,7 +54,7 @@ function write_dataobj(filePath, ...
 %                     on which dimensions the ZV changes. T=True,
 %                     F=False.
 %       {iZv,  6} = NOT USED. dataobj: Uknown meaning. String = 'Full' (always?)
-%       {iZv,  7} = NOT USED. dataobj: Uknown meaning. String = 'None' (always?)
+%       {iZv,  7} = Compression algorithm, if any.
 %       {iZv,  8} = NOT USED. dataobj: Uknown meaning. Scalar number
 %       {iZv,  9} = Pad value
 %       {iZv, 10} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
@@ -387,6 +387,7 @@ spdfcdfwrite(...
   'VariableAttributes', dataobj_VariableAttributes, ...
   'Vardatatypes',       A.zvNameAndDataTypeCa, ...
   'PadValues',          A.zvNameAndPadValueCa, ...
+  'VarCompress',        A.zvNameAndCompressionCa, ...
   'Singleton',          zvNameAllCa, ...
   'Checksum',           checksumFlagArg)
 
@@ -418,9 +419,10 @@ zvNameRecordBoundCa = {};  % Refers to spdfcdfwrite() option "RecordBound".
 % Lists where pairs of successive components contain (a) zVar name, and (b)
 % corresponding zVar value/data type/pad value. These lists are needed as
 % arguments to spdfcdfwrite(), which requires that very format.
-zvNameAndValueCa    = {};
-zvNameAndDataTypeCa = {};
-zvNameAndPadValueCa = {};
+zvNameAndValueCa       = {};
+zvNameAndDataTypeCa    = {};
+zvNameAndPadValueCa    = {};
+zvNameAndCompressionCa = {};
 
 for iZv = 1:length(dataobj_Variables(:,1))
 
@@ -438,6 +440,9 @@ for iZv = 1:length(dataobj_Variables(:,1))
   % standard string for representing data type (not a MATLAB class/type):
   % uint32, tt2000 etc.
   specifiedCdfDataType   = dataobj_Variables{iZv, 4};
+
+  % Whether ZV is compressed or not, and by what method and degree.
+  zvCompression          = dataobj_Variables{iZv, 7};
 
   % This value can NOT be found in dataobj_data. Has to be read from
   % dataobj_Variables.
@@ -506,18 +511,19 @@ for iZv = 1:length(dataobj_Variables(:,1))
     ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA);
 
 
-
-  zvNameAndValueCa   (end+[1,2]) = {zvName, zvValue             };
-  zvNameAndDataTypeCa(end+[1,2]) = {zvName, specifiedCdfDataType};
-  zvNameAndPadValueCa(end+[1,2]) = {zvName, padValue            };
+  zvNameAndValueCa      (end+[1,2]) = {zvName, zvValue             };
+  zvNameAndDataTypeCa   (end+[1,2]) = {zvName, specifiedCdfDataType};
+  zvNameAndPadValueCa   (end+[1,2]) = {zvName, padValue            };
+  zvNameAndCompressionCa(end+[1,2]) = {zvName, zvCompression       };
 end    % for
 
 % Construct function return value.
 A = [];
-A.zvNameAndValueCa    = zvNameAndValueCa;
-A.zvNameAndDataTypeCa = zvNameAndDataTypeCa;
-A.zvNameAndPadValueCa = zvNameAndPadValueCa;
-A.zvNameRecordBoundCa = zvNameRecordBoundCa;
+A.zvNameAndValueCa       = zvNameAndValueCa;
+A.zvNameAndDataTypeCa    = zvNameAndDataTypeCa;
+A.zvNameAndPadValueCa    = zvNameAndPadValueCa;
+A.zvNameRecordBoundCa    = zvNameRecordBoundCa;
+A.zvNameAndCompressionCa = zvNameAndCompressionCa;
 
 end
 
