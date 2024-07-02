@@ -118,26 +118,10 @@ end
 
 
 
-%==============
-% PROCESS DATA
-%==============
-% NPEF = No Processing, Empty File
-[settingNpefValue, settingNpefKey] = Bso.get_fv(...
-  'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
-if ~settingNpefValue
-  %==========================
-  % CALL PRODUCTION FUNCTION
-  %==========================
-  OutputDatasetsMap = SwmInfo.Swmp.production_function(InputDatasetsMap, rctDir, NsoTable, Bso, L);
-else
-  L.logf('warning', ...
-    'Disabled processing due to setting %s.', settingNpefKey)
-
-  % IMPLEMENTATION NOTE: Needed for passing assertion. Maybe to be
-  % considered a hack?!
-  OutputDatasetsMap = struct(...
-    'keys', {{SwmInfo.outputsList.prodFuncOutputKey}});
-end
+%=======================================
+% PROCESS DATA: CALL PRODUCTION FUNCTION
+%=======================================
+OutputDatasetsMap = SwmInfo.Swmp.production_function(InputDatasetsMap, rctDir, NsoTable, Bso, L);
 
 
 
@@ -169,21 +153,15 @@ for iOutputCdf = 1:length(SwmInfo.outputsList)
     OutputInfo.dsi, ...
     OutputInfo.skeletonVersion));
 
-  if ~settingNpefValue
-    % CASE: Nominal
-    OutputDataset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
+  OutputDataset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
 
-    ZvsSubset = OutputDataset.Zv;
+  ZvsSubset = OutputDataset.Zv;
 
-    GaSubset = bicas.derive_output_dataset_GAs(...
-      InputDatasetsMap, OutputDataset, ...
-      irf.fs.get_name(outputFilePath), OutputInfo.dsi, ...
-      Bso, L);
-  else
-    % CASE: No processing.
-    ZvsSubset = [];
-    GaSubset  = struct();
-  end
+  GaSubset = bicas.derive_output_dataset_GAs(...
+    InputDatasetsMap, OutputDataset, ...
+    irf.fs.get_name(outputFilePath), OutputInfo.dsi, ...
+    Bso, L);
+
   bicas.write_dataset_CDF( ...
     ZvsSubset, GaSubset, outputFilePath, masterCdfPath, ...
     Bso, L );

@@ -57,7 +57,7 @@ function Bso = create_default_BSO()
 % PROPOSAL: Abolish settings/functionality:
 %   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
-%   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE
+%   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE                     -- ALREADY ABOLISHED
 %   OUTPUT_CDF.WRITE_FILE_DISABLED
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
@@ -237,10 +237,6 @@ S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',            0)
 % NOTE: Not known if the RCS ICD says anything about what should be the
 % default, or what ROC thinks it should be.
 S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY', 'WARNING');    % ERROR, WARNING.
-% Disable processing, but generate empty output files. Useful for debugging
-% code that calls BICAS many times (batch processing) and when dataset
-% content is unimportant since it speeds up BICAS.
-S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
 
 % "There must be one entry for each entry in the CALIBRATION_TABLE
 % attribute"  /RCS ICD 1.6

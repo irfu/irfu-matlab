@@ -81,18 +81,8 @@ end
 %===========================
 % Create (modified) dataobj
 %===========================
-% NPEF = No Processing, Empty File
-[settingNpefValue, settingNpefKey] = Bso.get_fv(...
-  'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
-if ~settingNpefValue
-
-  DataObj = init_modify_dataobj(...
-    ZvsSubset, GaSubset, masterCdfPath, outputFile, Bso, L);
-  % IMPLEMENTATION NOTE: This call will fail if setting
-  % OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE=1 since processing is disabled and
-  % therefore ZvsSubset=[] (can not be generated). Must therefore check
-  % for this first.
-end
+DataObj = init_modify_dataobj(...
+  ZvsSubset, GaSubset, masterCdfPath, outputFile, Bso, L);
 
 
 
@@ -110,19 +100,12 @@ if settingValue
   return
 end
 
-if ~settingNpefValue
-  %=====================================
-  % CASE: ACTUALLY WRITE OUTPUT DATASET
-  %=====================================
-  write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
-else
-  %=====================================================
-  % CASE: Write EMPTY output dataset file (for testing)
-  %=====================================================
-  L.logf('warning', ...
-    'Writing empty output file due to setting %s.', settingNpefKey)
-  write_empty_file(outputFile)
-end
+
+
+%=====================================
+% CASE: ACTUALLY WRITE OUTPUT DATASET
+%=====================================
+write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
 
 end
 
@@ -588,27 +571,4 @@ irf.cdf.write_dataobj( ...
   'strictEmptyZvClass',                Bso.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyZvClass'), ...
   'strictEmptyNumericZvSizePerRecord', Bso.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord'), ...
   'strictNumericZvSizePerRecord',      strictNumericZvSizePerRecord)
-end
-
-
-
-
-
-
-
-% NOTE: Should always overwrite any pre-existing file.
-%
-function write_empty_file(filePath)
-fileId = fopen(filePath, 'w');
-
-% ~ASSERTION
-if fileId == -1
-  % NOTE: Technically non-BICAS error ID.
-  error(...
-    'BICAS:CanNotOpenFile', ...
-    'Can not open file: "%s"', filePath)
-end
-
-% NOTE: Does not have to write any data to create empty file.
-fclose(fileId);
 end
