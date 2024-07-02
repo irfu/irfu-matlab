@@ -206,11 +206,14 @@ function write_dataobj(filePath, ...
 % PROPOSAL: Write automated tests for suitable helper functions:
 %   construct_spdfcdfwrite_arguments()
 %   prepare_ZV_value()
+%   ensure_ZV_ZVA_data_types_consistent()
+%   --
+%   NOTE: Requires making inner functions, external functions.
 
 
 
 % ZVAs that should reasonably have the same data type as the zVariable itself.
-ZVA_ZV_SAME_DATA_TYPE_CA = {...
+ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA = {...
   'VALIDMIN', 'VALIDMAX', ...
   'SCALEMIN', 'SCALEMAX', ...
   'FILLVAL'};
@@ -253,7 +256,7 @@ clear zvNameAllCa1 zvNameAllCa2
   dataobj_VariableAttributes, ...
   dataobj_data, ...
   Settings, ...
-  ZVA_ZV_SAME_DATA_TYPE_CA);
+  ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA);
 
 
 
@@ -408,17 +411,18 @@ function [A, dataobj_VariableAttributes] = construct_spdfcdfwrite_arguments( ...
   dataobj_VariableAttributes, ...
   dataobj_data, ...
   Settings, ...
-  ZVA_ZV_SAME_DATA_TYPE_CA)
+  ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA)
 
-zvNameRecordBoundCa          = {};   % Refers to spdfcdfwrite() option "RecordBound".
-% Lists where pairs of successive components contain (a) zVar names, and (b)
-% corresponding zVar values/data types/pad values. These lists are needed as
+zvNameRecordBoundCa = {};  % Refers to spdfcdfwrite() option "RecordBound".
+
+% Lists where pairs of successive components contain (a) zVar name, and (b)
+% corresponding zVar value/data type/pad value. These lists are needed as
 % arguments to spdfcdfwrite(), which requires that very format.
 zvNameAndValueCa    = {};
 zvNameAndDataTypeCa = {};
 zvNameAndPadValueCa = {};
 
-for i = 1:length(dataobj_Variables(:,1))
+for iZv = 1:length(dataobj_Variables(:,1))
 
   %===========================================================================
   % Extract ZV data from arguments
@@ -428,16 +432,16 @@ for i = 1:length(dataobj_Variables(:,1))
   % that components of (1) can be empty (contain empty struct fields) and (2)
   % may not cover all variables when obtained via spdfcdfread()!!
   %===========================================================================
-  zvName                 = dataobj_Variables{i, 1};
-  specifiedSizePerRecord = dataobj_Variables{i, 2};
+  zvName                 = dataobj_Variables{iZv, 1};
+  specifiedSizePerRecord = dataobj_Variables{iZv, 2};
   % "CdfDataType" refers to that the value should be interpreted as a CDF
   % standard string for representing data type (not a MATLAB class/type):
   % uint32, tt2000 etc.
-  specifiedCdfDataType   = dataobj_Variables{i, 4};
+  specifiedCdfDataType   = dataobj_Variables{iZv, 4};
 
   % This value can NOT be found in dataobj_data. Has to be read from
   % dataobj_Variables.
-  padValue               = dataobj_Variables{i, 9};
+  padValue               = dataobj_Variables{iZv, 9};
 
   zvValue                = dataobj_data.(zvName).data;
   specifiedMatlabClass   = irf.cdf.convert_CDF_type_to_MATLAB_class(...
@@ -494,89 +498,124 @@ for i = 1:length(dataobj_Variables(:,1))
 
 
 
-  %============================================================================
-  % Convert SPECIFIC VariableAttributes values
-  % ------------------------------------------
-  % Case 1: tt2000 values as UTC strings : Convert to tt2000.
-  % Case 2: All other                    : Convert to the zVariable data type.
-  % --------------------------------------------------------------------------
-  % IMPLEMENTATION NOTE: spdfcdfread() (not spdfcdfwrite()) can crash if not
-  % doing this!!! The tt2000 CDF variables are likely the problem(?).
-  %
-  % BUG: Does not seem to work on SCALEMIN/-MAX specifically despite
-  % identical treatment, for unknown reason.
-  %============================================================================
-  for iZvaOfZvDataType = 1:length(ZVA_ZV_SAME_DATA_TYPE_CA)
-    zvaName = ZVA_ZV_SAME_DATA_TYPE_CA{iZvaOfZvDataType};
-    if ~isfield(dataobj_VariableAttributes, zvaName)
-      % CASE: The current ZV zvName (iteration) does not have ZVA zvaName.
-      continue
-    end
+  dataobj_VariableAttributes = ensure_ZV_ZVA_data_types_consistent(...
+    zvName, ...
+    specifiedCdfDataType, ...
+    specifiedMatlabClass, ...
+    dataobj_VariableAttributes, ...
+    ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA);
 
-    % IMPLEMENTATION NOTE: Can NOT assume that every CDF variable is
-    % represented among the cell arrays in
-    % dataobj_VariableAttributes.(...).
-    % Example: EM2_CAL_BIAS_SWEEP_LFR_CONF1_1M_2016-04-15_Run1__e1d0a9a__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-CWF_e1d0a9a_CNE_V01.cdf
 
-    % Retrieve this ZVA (e.g. VALIDMIN) but for all zVariables (where
-    % present) from argument standard struct dataobj_VariableAttributes.
-    % Nx2 array.
-    %
-    % DOVAF = dataobj VariableAttributes Field
-    dovafCa = dataobj_VariableAttributes.(zvaName);
-
-    iDovafRow  = find(strcmp(dovafCa(:,1), zvName));
-    if isempty(iDovafRow)
-      % CASE: The current zVariable does not have this attribute (zvaName).
-      continue
-    elseif length(iDovafRow) > 1
-      error('write_dataobj:Assertion:OperationNotImplemented', ...
-        ['Can not handle multiple zVariable name matches in', ...
-        ' dataobj_VariableAttributes.%s.'], zvaName)
-    end
-    % CASE: iDovafRow is scalar.
-
-    zvaValue = dovafCa{iDovafRow, 2};
-    if strcmp(specifiedCdfDataType, 'tt2000') && ischar(zvaValue)
-      zvaValue = spdfparsett2000(zvaValue);   % Convert char-->tt2000.
-
-    elseif ~strcmp(specifiedMatlabClass, class(zvaValue))
-      msg = sprintf(...
-        ['Found VariableAttribute %s for CDF zVariable "%s"', ...
-        ' whose data type did not match the declared one.', ...
-        ' specifiedCdfDataType="%s", specifiedMatlabClass="%s",', ...
-        ' class(zvaValue)="%s"'], ...
-        zvaName, zvName, specifiedCdfDataType, ...
-        specifiedMatlabClass, class(zvaValue));
-
-      switch(Settings.strictZvAttrClass)
-        case 'ERROR'
-          error('write_dataobj:Assertion', msg)
-        case 'WARNING'
-          warning('write_dataobj:Assertion', msg)
-        case 'IGNORE'
-          % Do nothing.
-        otherwise
-          error('Illegal setting Settings.strictZvAttrClass="%s".', ...
-            Settings.strictZvAttrClass)
-      end
-    end
-
-    % Modify dataobj_VariableAttributes correspondingly.
-    dovafCa{iDovafRow, 2}                = zvaValue;
-    dataobj_VariableAttributes.(zvaName) = dovafCa;
-  end    % for
 
   zvNameAndValueCa   (end+[1,2]) = {zvName, zvValue             };
   zvNameAndDataTypeCa(end+[1,2]) = {zvName, specifiedCdfDataType};
   zvNameAndPadValueCa(end+[1,2]) = {zvName, padValue            };
 end    % for
 
+% Construct function return value.
 A = [];
 A.zvNameAndValueCa    = zvNameAndValueCa;
 A.zvNameAndDataTypeCa = zvNameAndDataTypeCa;
 A.zvNameAndPadValueCa = zvNameAndPadValueCa;
 A.zvNameRecordBoundCa = zvNameRecordBoundCa;
+
+end
+
+
+
+
+
+
+
+% Ensure that specific ZVAs have a data type that is consistent with the
+% corresponding ZV data type.
+%
+% For specified ZVAs (any ZV):
+% ----------------------------
+% Case 1: ZV is tt2000 and ZVA is UTC string
+%   ==> Convert ZVA to tt2000.
+% Case 2: Anything else
+%   ==> Assert that ZV and ZVA data types are identical.
+%
+% BUG: Does not seem to work on SCALEMIN/-MAX specifically despite
+% identical treatment, for unknown reason.
+%
+% IMPLEMENTATION NOTE: spdfcdfread() (not spdfcdfwrite()) can crash if not
+% doing this!!! The tt2000 CDF variables are likely the problem(?).
+%
+function dataobj_VariableAttributes = ensure_ZV_ZVA_data_types_consistent(...
+  zvName, specifiedCdfDataType, specifiedMatlabClass, ...
+  dataobj_VariableAttributes, ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA)
+
+% Ensure
+% TT2000 ZV is TT2000 ZVA.
+% ZV and ZVA data types consistent
+% selected ZVA
+% ensure_ZVA_ZV_data_types_consistent
+
+for iZvaOfZvDataType = 1:length(ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA)
+  zvaName = ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA{iZvaOfZvDataType};
+  if ~isfield(dataobj_VariableAttributes, zvaName)
+    % CASE: The current ZV zvName (iteration) does not have ZVA zvaName.
+    continue
+  end
+
+  % IMPLEMENTATION NOTE: Can NOT assume that every CDF variable is
+  % represented among the cell arrays in
+  % dataobj_VariableAttributes.(...).
+  % Example: EM2_CAL_BIAS_SWEEP_LFR_CONF1_1M_2016-04-15_Run1__e1d0a9a__CNES/ROC-SGSE_L2R_RPW-LFR-SURV-CWF_e1d0a9a_CNE_V01.cdf
+
+  % Retrieve this ZVA (e.g. VALIDMIN) but for all zVariables (where
+  % present) from argument standard struct dataobj_VariableAttributes.
+  % Nx2 array.
+  %
+  % DOVAF = dataobj VariableAttributes Field
+  dovafCa = dataobj_VariableAttributes.(zvaName);
+
+  iDovafRow = find(strcmp(dovafCa(:,1), zvName));
+  if isempty(iDovafRow)
+    % CASE: The current zVariable does not have this attribute (zvaName).
+    continue
+  elseif length(iDovafRow) > 1
+    error('write_dataobj:Assertion:OperationNotImplemented', ...
+      ['Can not handle multiple zVariable name matches in', ...
+      ' dataobj_VariableAttributes.%s.'], zvaName)
+  end
+  % CASE: iDovafRow is scalar.
+
+  % =========================
+  % Read and modify ZVA value
+  % =========================
+  zvaValue = dovafCa{iDovafRow, 2};
+  if strcmp(specifiedCdfDataType, 'tt2000') && ischar(zvaValue)
+    zvaValue = spdfparsett2000(zvaValue);   % Convert char-->tt2000.
+
+  elseif ~strcmp(specifiedMatlabClass, class(zvaValue))
+    msg = sprintf(...
+      ['Found VariableAttribute %s for CDF zVariable "%s"', ...
+      ' whose data type did not match the declared one.', ...
+      ' specifiedCdfDataType="%s", specifiedMatlabClass="%s",', ...
+      ' class(zvaValue)="%s"'], ...
+      zvaName, zvName, specifiedCdfDataType, ...
+      specifiedMatlabClass, class(zvaValue));
+
+    switch(Settings.strictZvAttrClass)
+      case 'ERROR'
+        error('write_dataobj:Assertion', msg)
+      case 'WARNING'
+        warning('write_dataobj:Assertion', msg)
+      case 'IGNORE'
+        % Do nothing.
+      otherwise
+        error('Illegal setting Settings.strictZvAttrClass="%s".', ...
+          Settings.strictZvAttrClass)
+    end
+  end
+
+  % Modify dataobj_VariableAttributes correspondingly.
+  dovafCa{iDovafRow, 2}                = zvaValue;
+  dataobj_VariableAttributes.(zvaName) = dovafCa;
+end    % for
 
 end
 
