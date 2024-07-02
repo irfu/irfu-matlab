@@ -86,22 +86,6 @@ DataObj = init_modify_dataobj(...
 
 
 
-%===========================================
-% ASSERTIONS / Checks before writing to CDF
-%===========================================
-
-% Check if file writing is deliberately disabled.
-% NOTE: Do this as late as possible, in order to be able to test as much
-% code as possible without writing file.
-[settingValue, settingKey] = Bso.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
-if settingValue
-  L.logf('warning', ...
-    'Writing output CDF file is disabled via setting %s.', settingKey)
-  return
-end
-
-
-
 %=====================================
 % CASE: ACTUALLY WRITE OUTPUT DATASET
 %=====================================

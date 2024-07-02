@@ -58,7 +58,7 @@ function Bso = create_default_BSO()
 %   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
 %   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE                     -- ALREADY ABOLISHED
-%   OUTPUT_CDF.WRITE_FILE_DISABLED
+%   OUTPUT_CDF.WRITE_FILE_DISABLED                          -- ALREADY ABOLISHED
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
 %   --
@@ -229,9 +229,6 @@ S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR'
 % ------------
 % Settings that apply to ALL output datasets
 %############################################
-% Flag to disable writing output files AFTER PROCESSING. Useful for
-% debugging.
-S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',            0)
 % What BICAS should do when there is a pre-existing file on a output dataset
 % file path.
 % NOTE: Not known if the RCS ICD says anything about what should be the
