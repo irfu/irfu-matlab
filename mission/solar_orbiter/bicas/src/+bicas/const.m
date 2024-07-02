@@ -45,7 +45,9 @@ classdef const
     %       R2019b).
     %       Source: e-mail 2024-04-24, Quynh Nhu NGUYEN
     % NOTE: Added MATLAB 2023b since it is currently (2024-05-28) the latest
-    %       MATLAB version running on brain, spis, anna (IRFU servers).
+    %       MATLAB version running on brain, spis, anna (IRFU servers). This
+    %       should be abolished eventually when beforementioned servers support
+    %       MATLAB 2024a.
     PERMITTED_MATLAB_VERSIONS         = {'2023b', '2024a'};
 
     % Path to default config file relative to BICAS's directory root. Note

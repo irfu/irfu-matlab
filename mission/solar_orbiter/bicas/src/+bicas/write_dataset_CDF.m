@@ -128,6 +128,10 @@ end
 
 
 
+
+
+
+
 % Create a modified dataobj, based on a master CDF, that can be written to file.
 %
 % NOTE: Only uses global attribute values from
@@ -275,6 +279,10 @@ end    % init_modify_dataobj
 
 
 
+
+
+
+
 % Enforce global max value for zVar QUALITY_FLAG specified in BSO.
 %
 % NOTE: Ignore fill positions/values.
@@ -308,6 +316,10 @@ bTooHighQfFpa                     = (QfFpa >= qfMax);
 QfFpa(bTooHighQfFpa.array(false)) = bicas.utils.FPArray(qfMax);
 
 end    % modify_QUALITY_FLAG
+
+
+
+
 
 
 
@@ -458,6 +470,10 @@ end
 
 
 
+
+
+
+
 % Function used by init_modify_dataobj() when finding empty zVar.
 %
 % ARGUMENTS
@@ -539,6 +555,10 @@ end
 
 
 
+
+
+
+
 % NOTE: Unclear if can overwrite CDFs. Varies depending on file.
 %
 function write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
@@ -569,6 +589,10 @@ irf.cdf.write_dataobj( ...
   'strictEmptyNumericZvSizePerRecord', Bso.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord'), ...
   'strictNumericZvSizePerRecord',      strictNumericZvSizePerRecord)
 end
+
+
+
+
 
 
 

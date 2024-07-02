@@ -54,12 +54,14 @@ function Bso = create_default_BSO()
 %   PROPOSAL: Do every time settings are set, i.e. for default values,
 %       config file values, CLI argument values.
 %
-% PROPOSAL: Abolish settings
+% PROPOSAL: Abolish settings/functionality:
 %   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
 %   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE
+%   OUTPUT_CDF.WRITE_FILE_DISABLED
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
+%   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
 %
@@ -242,6 +244,7 @@ S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
 
 % "There must be one entry for each entry in the CALIBRATION_TABLE
 % attribute"  /RCS ICD 1.6
+% NOTE: None of these disabled settings are actually used in the code.
 % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
 % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
 % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.TDS',         'TDS team')
@@ -287,6 +290,7 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1
 S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
 
 % Whether to enable setting glob.attr. MODS.
+%
 % 2021-05-05: Disabled on request by ROC, until next full reprocessing at
 % ROC.
 % """"""""
