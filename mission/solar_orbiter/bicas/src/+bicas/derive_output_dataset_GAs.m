@@ -240,11 +240,8 @@ OutGaSubset.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
 
 
 
-enableMods = Bso.get_fv('OUTPUT_CDF.GA_MODS_ENABLED');
-if enableMods
-  MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
-  OutGaSubset.MODS = MODS;
-end
+MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
+OutGaSubset.MODS = MODS;
 
 
 

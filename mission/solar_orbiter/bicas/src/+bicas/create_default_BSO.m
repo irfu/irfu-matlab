@@ -282,25 +282,6 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1
 % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
 S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
 
-% Whether to enable setting glob.attr. MODS.
-%
-% 2021-05-05: Disabled on request by ROC, until next full reprocessing at
-% ROC.
-% """"""""
-% Using MODS attribute has been indeed in « standby » for a while. It is
-% true that we are very in late on the LESIA side from the initial planning
-% concerning the « big L1 data re-processing ». Especially, the
-% implementation in the ROC pipeline of the QUALITY_BITMASK L1 CDF zVariable
-% setting has been several times delayed the last few months due to more
-% urgent activities. This implementation is now done, but I still need to
-% find time to check everything works well before passing to the next step.
-%
-% I would like to plan a new RCS telecon before the summer to discuss about
-% the remaining activities on RPW data processing. I will let you know.
-% """""""" /Xavier Bonnin, e-mail 2022-04-20
-%
-S.define_setting('OUTPUT_CDF.GA_MODS_ENABLED', 1)    % 0/false, 1/true
-
 
 
 %##############
