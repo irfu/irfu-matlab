@@ -162,7 +162,7 @@ end
 
 
 
-OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.name');
+OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.identifier');
 OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
 
 % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
