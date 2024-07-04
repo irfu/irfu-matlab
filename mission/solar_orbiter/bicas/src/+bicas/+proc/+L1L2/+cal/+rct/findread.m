@@ -35,11 +35,6 @@ classdef findread
   %               PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS
   %
   % PROPOSAL: Normalize TDS & LFR by creating a fake zv_BW for TDS.
-  %
-  % PROBLEM: RCTT_MAP does not really belong in this class but there is no
-  %          obvious other place to put it, except in
-  %          bicas.proc.L1L2.cal.rct.RctType which can not host it due to
-  %          recursive class definitions.
 
 
 
@@ -51,22 +46,6 @@ classdef findread
   properties(Access=private, Constant)
 
     READING_RCT_PATH_LL = 'info';
-  end
-
-
-
-  %##########################
-  %##########################
-  % PUBLIC STATIC PROPERTIES
-  %##########################
-  %##########################
-  properties(Constant, Access=public)
-
-    % Map of singleton RCTT objects
-    % -----------------------------
-    % containers.Map: RCTTID --> RCTT
-    % Its keys defines the set of RCTTID strings.
-    RCTT_MAP = bicas.proc.L1L2.cal.rct.findread.init_RCTT_MAP();
   end
 
 
@@ -118,8 +97,10 @@ classdef findread
         rcttid = rcttidCa{i};
 
         % Find path to RCT.
-        settingKey     = bicas.proc.L1L2.cal.rct.findread.RCTT_MAP(...
+        settingKey     = bicas.proc.L1L2.cal.rct.RctType.RCTT_MAP(...
           rcttid).filenameRegexpSettingKey;
+
+
         filenameRegexp = Bso.get_fv(settingKey);
         filePath       = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
           rctDir, filenameRegexp, L);
@@ -353,25 +334,13 @@ classdef findread
       L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
         'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
 
-      Rctt = bicas.proc.L1L2.cal.rct.findread.RCTT_MAP(rcttid);
+      RcttInfo = bicas.proc.L1L2.cal.rct.RctType.RCTT_MAP(rcttid);
 
-      RctDataTemp = Rctt.read_RCT(filePath);
-      RctData     = Rctt.modify_RCT_data(RctDataTemp);
-      Rctt.log_RCT(RctData, L);
-    end
+      Rctt = feval(RcttInfo.className, filePath);
 
+      Rctt.log_RCT(Rctt.RctData, L);
 
-
-    % Code to initialize hard-coded static constant (map of singleton
-    % RCTTs).
-    %
-    function RcttMap = init_RCTT_MAP()
-      RcttMap = containers.Map();
-
-      RcttMap('BIAS')     = bicas.proc.L1L2.cal.rct.RctTypeBias();
-      RcttMap('LFR')      = bicas.proc.L1L2.cal.rct.RctTypeLfr();
-      RcttMap('TDS-CWF')  = bicas.proc.L1L2.cal.rct.RctTypeTdsCwf();
-      RcttMap('TDS-RSWF') = bicas.proc.L1L2.cal.rct.RctTypeTdsRswf();
+      RctData = Rctt.RctData;
     end
 
 

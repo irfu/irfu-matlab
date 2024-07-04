@@ -10,9 +10,29 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
   % INSTANCE PROPERTIES
   %#####################
   %#####################
-  properties(Constant, GetAccess=public)
-    filenameRegexpSettingKey = 'PROCESSING.RCT_REGEXP.TDS-LFM-CWF';
-  end
+
+
+
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
+
+
+
+    function obj = RctTypeTdsCwf(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
+
+      % NOTE: RCT contains no TFs and data is therefore trivial to use as it is
+      % in the RCT.
+      obj.RctData = bicas.proc.L1L2.cal.rct.RctTypeTdsCwf.read_RCT(filePath);
+    end
+
+
+
+  end    % methods(Access=public)
 
 
 
@@ -58,14 +78,6 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
         Exc2 = Exc2.addCause(Exc1);
         throw(Exc2);
       end
-    end
-
-
-
-    % NOTE: Contains no TFs. Data is therefore trivial to use as it is in
-    % the RCT.
-    function RctData2 = modify_RCT_data(RctData1)
-      RctData2 = RctData1;
     end
 
 

@@ -7,10 +7,9 @@
 %
 % IMPLEMENTATION NOTES
 % ====================
-% * Subclasses effectively collect code associated with each RCT type so that
-%   RCTs can processed without knowing the type (to some extent).
-% * Class can not contain map to singleton objects of subclasses since MATLAB
-%   prevents that due recursive definitions.
+% * Subclasses effectively collect code (static methods) associated with each
+%   RCT type.
+% * Instances of subclasses contain data loaded from one RCT.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -40,6 +39,28 @@ classdef(Abstract) RctType
   % PROPOSAL: Assert/warn (depending on setting?) when CDF metadata imply that the RCT zVariables have the wrong units.
   % PROPOSAL: Use utility function for reading every zVariable.
   %   PROPOSAL: Assert units from zVar attributes.
+  %
+  % PROPOSAL: Change name to something indicating a store of data.
+  %   NOTE: RctType is a historical name.
+  %     PROPOSAL: RCTD=RctData
+  %       ~data, ~RCT
+
+
+
+
+  %##########################
+  %##########################
+  % PUBLIC STATIC PROPERTIES
+  %##########################
+  %##########################
+  properties(Constant, Access=public)
+
+    % Map of singleton RCTT objects
+    % -----------------------------
+    % containers.Map: RCTTID --> struct containing information on every RCTT.
+    % Its keys defines the set of RCTTID strings.
+    RCTT_MAP = bicas.proc.L1L2.cal.rct.RctType.init_RCTT_MAP();
+  end
 
 
 
@@ -48,11 +69,6 @@ classdef(Abstract) RctType
   % INSTANCE PROPERTIES
   %#####################
   %#####################
-  properties(Abstract, Constant, GetAccess=public)
-    % Settings key for value that defines the regular expression that is
-    % used for finding the corresponding RCT(s).
-    filenameRegexpSettingKey
-  end
   properties(GetAccess=public, Constant)
 
     % Minimum number of expected entries in tabulated transfer functions in
@@ -62,6 +78,32 @@ classdef(Abstract) RctType
     % LL = Log Level
     RCT_DATA_LL = 'debug';
   end
+  properties(GetAccess=public)
+    % Modified RCT file data to be used by BICAS itself.
+    RctData
+    filePath
+  end
+
+
+
+
+
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
+
+
+
+    function obj = RctType(filePath)
+        obj.filePath = filePath;
+    end
+
+
+
+  end    % methods(Access=public)
 
 
 
@@ -95,18 +137,47 @@ classdef(Abstract) RctType
     %
     [RctData] = read_RCT(filePath);
 
-    % Modify the data structure read by bicas.proc.L1L2.cal.rct.read_RCT()
-    % to a data structure that BICAS can use.
-    %
-    % IMPLEMENTATION NOTE: There is a need to distinguish between (1) the
-    % data structures in RCT files, which one may want to inspect manually,
-    % or log, and should be quite analogous to the RCT file content, and (2)
-    % the calibration data data structures which are convenient for BICAS to
-    % use.
-    [RctData] = modify_RCT_data(RctData);
-
     % Custom logging of modified RCT data.
     log_RCT(RctData, L);
+
+
+
+  end    % methods(Static, Abstract)
+
+
+
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
+  methods(Static)
+
+    % Code to initialize hard-coded static constant RCTT_MAP.
+    %
+    % IMPLEMENTATION NOTE: This data structure includes the filename reg.exp.
+    % setting keys since it does not appear that MATLAB allows one to access a
+    % "Constant instance field" of a class without instantiating it
+    % (bicas.proc.L1L2.cal.rct.RctType subclasses). MATLAB does not have true
+    % static variables (constant instance fields are the closest).
+    %
+    function RcttMap = init_RCTT_MAP()
+      RcttMap = containers.Map();
+
+      % (1) Reference to class.
+      % (2) Settings key for value that defines the regular expression that is
+      %     used for finding the corresponding RCT(s).
+      function S = info(className, filenameRegexpSettingKey)
+        S = struct( ...
+          'className',                className, ...
+          'filenameRegexpSettingKey', filenameRegexpSettingKey);
+      end
+
+      RcttMap('BIAS')     = info('bicas.proc.L1L2.cal.rct.RctTypeBias',    'PROCESSING.RCT_REGEXP.BIAS');
+      RcttMap('LFR')      = info('bicas.proc.L1L2.cal.rct.RctTypeLfr',     'PROCESSING.RCT_REGEXP.LFR');
+      RcttMap('TDS-CWF')  = info('bicas.proc.L1L2.cal.rct.RctTypeTdsCwf',  'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
+      RcttMap('TDS-RSWF') = info('bicas.proc.L1L2.cal.rct.RctTypeTdsRswf', 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
+    end
 
 
 

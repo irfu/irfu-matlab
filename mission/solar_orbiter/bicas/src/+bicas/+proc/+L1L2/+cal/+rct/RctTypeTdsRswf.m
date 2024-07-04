@@ -10,9 +10,28 @@ classdef RctTypeTdsRswf < bicas.proc.L1L2.cal.rct.RctType
   % INSTANCE PROPERTIES
   %#####################
   %#####################
-  properties(Constant, GetAccess=public)
-    filenameRegexpSettingKey = 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF';
-  end
+
+
+
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
+
+
+
+    function obj = RctTypeTdsRswf(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
+
+      FileData = bicas.proc.L1L2.cal.rct.RctTypeTdsRswf.read_RCT(filePath);
+      obj.RctData = obj.modify_RCT_data(FileData);
+    end
+
+
+
+  end    % methods(Access=public)
 
 
 
@@ -81,20 +100,20 @@ classdef RctTypeTdsRswf < bicas.proc.L1L2.cal.rct.RctType
 
 
 
-    function RctData2 = modify_RCT_data(RctData1)
-      RctData2 = [];
+    function RctData = modify_RCT_data(FileData)
+      RctData = [];
 
       % Modify tabulated TDS-RSWF TFs.
-      for iBlts = 1:numel(RctData1.ItfIvptList)
+      for iBlts = 1:numel(FileData.ItfIvptList)
         % NOTE: Overwriting.
 
-        ItfRctIvpt = RctData1.ItfIvptList{iBlts};
+        ItfRctIvpt = FileData.ItfIvptList{iBlts};
 
         % Store tabulated ITF EXACTLY AS THEY ARE in the RCT (before
         % modification).
         % NOTE: Struct field does not need to be
         % pre-initialized/pre-allocated.
-        RctData2.ItfRctIvptCa{iBlts} = ItfRctIvpt;
+        RctData.ItfRctIvptCa{iBlts} = ItfRctIvpt;
 
         % MODIFY __tabulated__ ITF
         % (Does NOT wrap function handle in function handle.)
@@ -109,7 +128,7 @@ classdef RctTypeTdsRswf < bicas.proc.L1L2.cal.rct.RctType
         itfModifIvpt = @(omegaRps) (bicas.proc.L1L2.cal.utils.eval_tabulated_TF(...
           ItfModifIvpt, omegaRps, VALUE_OUTSIDE_TABLE));
 
-        RctData2.itfModifIvptCa{iBlts} = itfModifIvpt;
+        RctData.itfModifIvptCa{iBlts} = itfModifIvpt;
 
       end
 

@@ -10,9 +10,28 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
   % INSTANCE PROPERTIES
   %#####################
   %#####################
-  properties(Constant, GetAccess=public)
-    filenameRegexpSettingKey = 'PROCESSING.RCT_REGEXP.LFR';
-  end
+
+
+
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
+
+
+
+    function obj = RctTypeLfr(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
+
+      FileData = bicas.proc.L1L2.cal.rct.RctTypeLfr.read_RCT(filePath);
+      obj.RctData = obj.modify_RCT_data(FileData);
+    end
+
+
+
+  end    % methods(Access=public)
 
 
 
@@ -114,9 +133,9 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
 
 
 
-    function RctData2 = modify_RCT_data(RctData1)
+    function RctData = modify_RCT_data(FileData)
 
-      FtfRctTpivCaCa = RctData1.FtfTpivTable;
+      FtfRctTpivCaCa = FileData.FtfTpivTable;
 
       % Read LFR FTFs, derive ITFs and modify them.
       itfModifIvptCaCa = {};
@@ -158,10 +177,10 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
         end
       end
 
-      RctData2 = [];
+      RctData = [];
       % NOTE: RctData.FtfRctTpivCaCa is still kept (for debugging).
-      RctData2.FtfRctTpivCaCa   = FtfRctTpivCaCa;    % Just copied.
-      RctData2.ItfModifIvptCaCa = itfModifIvptCaCa;
+      RctData.FtfRctTpivCaCa   = FtfRctTpivCaCa;    % Just copied.
+      RctData.ItfModifIvptCaCa = itfModifIvptCaCa;
     end
 
 

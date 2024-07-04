@@ -10,14 +10,33 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
   % INSTANCE PROPERTIES
   %#####################
   %#####################
-  properties(Constant, GetAccess=public)
-    filenameRegexpSettingKey = 'PROCESSING.RCT_REGEXP.BIAS';
-  end
   properties(Constant, GetAccess=private)
 
     % Minimum number of numerator or denominator coefficients in the BIAS RCT.
     N_MIN_TF_NUMER_DENOM_COEFFS = 8;
   end
+
+
+
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
+
+
+
+    function obj = RctTypeBias(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
+
+      FileData = bicas.proc.L1L2.cal.rct.RctTypeBias.read_RCT(filePath);
+      obj.RctData = obj.modify_RCT_data(FileData);
+    end
+
+
+
+  end    % methods(Access=public)
 
 
 
@@ -163,15 +182,9 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
 
 
 
-    function RctData = modify_RCT_data(RctData)
+    function RctData = modify_RCT_data(FileData)
 
-      FtfRctSet = RctData.FtfSet;
-
-      % Change name of field (sic!).
-      % (There are many fields which are just kept untouched by this
-      % function.)
-      RctData = rmfield(RctData, 'FtfSet');
-      RctData.FtfRctSet = FtfRctSet;
+      FtfRctSet = FileData.FtfSet;
 
       % ASSERTIONS
       nTime = irf.assert.sizes(...
@@ -189,19 +202,25 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         % anonymous functions later.
         % * Might speed up code by eliminating calls to method .inverse()
         % * Reduces size of individual expressions.
-        TempItfDcSingleAvpiv = FtfRctSet.DcSingleAvpiv{  iTf}.inverse();
-        TempItfDcDiffAvpiv   = FtfRctSet.DcDiffAvpiv{    iTf}.inverse();
-        TempItfAclgAvpiv     = FtfRctSet.AclgAvpiv{ iTf}.inverse();
-        TempItfAchgAvpiv     = FtfRctSet.AchgAvpiv{iTf}.inverse();
+        TempItfDcSingleAvpiv = FtfRctSet.DcSingleAvpiv{iTf}.inverse();
+        TempItfDcDiffAvpiv   = FtfRctSet.DcDiffAvpiv  {iTf}.inverse();
+        TempItfAclgAvpiv     = FtfRctSet.AclgAvpiv    {iTf}.inverse();
+        TempItfAchgAvpiv     = FtfRctSet.AchgAvpiv    {iTf}.inverse();
 
         ItfSet.dcSingleAvpiv{iTf} = @(omegaRps) (TempItfDcSingleAvpiv.eval(omegaRps));
-        ItfSet.dcDiffAvpiv{  iTf} = @(omegaRps) (TempItfDcDiffAvpiv.eval(omegaRps));
-        ItfSet.aclgAvpiv{    iTf} = @(omegaRps) (TempItfAclgAvpiv.eval(omegaRps));
-        ItfSet.achgAvpiv{    iTf} = @(omegaRps) (TempItfAchgAvpiv.eval(omegaRps));
+        ItfSet.dcDiffAvpiv  {iTf} = @(omegaRps) (TempItfDcDiffAvpiv  .eval(omegaRps));
+        ItfSet.aclgAvpiv    {iTf} = @(omegaRps) (TempItfAclgAvpiv    .eval(omegaRps));
+        ItfSet.achgAvpiv    {iTf} = @(omegaRps) (TempItfAchgAvpiv    .eval(omegaRps));
       end
 
-      RctData.ItfSet = ItfSet;
-
+      RctData = [];
+      RctData.epochL               = FileData.epochL;
+      RctData.epochH               = FileData.epochH;
+      RctData.Current              = FileData.Current;
+      RctData.FtfRctSet            = FtfRctSet;  % Change name of field (sic!).
+      RctData.ItfSet               = ItfSet;
+      RctData.dcSingleOffsetsAVolt = FileData.dcSingleOffsetsAVolt;
+      RctData.DcDiffOffsets        = FileData.DcDiffOffsets;
     end
 
 
