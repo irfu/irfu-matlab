@@ -191,52 +191,48 @@ OutGaSubset.Datetime         = timeIntervalStr;
 % NOTE: Could almost overwrite "Descriptor" too (can be derived from
 % Logical_source or DATASET_ID), but it also includes human-readable text.
 
-%---------------------------------------------------------------------------
-% "Metadata Definition for Solar Orbiter Science Data", SOL-SGS-TN-0009:
+%===============================================================================
+% "Metadata Definition for Solar Orbiter Science Data", SOL-SGS-TN-0009, 2/4:
 %   "TIME_MIN   The date and time of the beginning of the first acquisition
 %               for the data contained in the file"
 %   "TIME_MAX   The date and time of the end of the last acquisition for the
 %               data contained in the file"
-%   States that TIME_MIN, TIME_MAX should be "Julian day" (not "modified
-%   Julian day", which e.g. OVT uses internally).
 %
-% NOTE: Implementation does not consider the integration time of each
-% sample.
-% NOTE: juliandate() is consistent with Julian date converter at
-% https://www.onlineconversion.com/julian_date.htm
-% NOTE: ZvsSubset.Epoch already asserted to be monotonically increasing.
+% NOTE: The implementation does not consider the integration time of each
+%       sample.
+% NOTE: ZvsSubset.Epoch is already asserted to be increasing.
 %
-% NOTE: Exact format unclear from documentation, autochecks.
-% NOTE: Issue for autochecks on L3:
-%       https://gitlab.obspm.fr/ROC/DataPool/-/issues/16
-% check_cdf_istp.solo_L3_rpw-bia.txt:
-%   """"
-% 	Global attribute TIME_MAX is of type CDF_DOUBLE.
-% 	    Datatypes other than CDF_CHAR may be problematic.
-% 	Global attribute TIME_MIN is of type CDF_DOUBLE.
-% 	    Datatypes other than CDF_CHAR may be problematic.""""
-% NOTE: ROC data reprocessed ~2021-01-25,
-% solo_L1_rpw-bia-current-cdag_20201201-20201231_V01.cdf (version number
-% probably not part of official versioning) uses
-%     TIME_MIN (1 entry):
-%         0 (CDF_CHAR/17):        "2459184.982450046"
-%     TIME_MAX (1 entry):
-%         0 (CDF_CHAR/17):        "2459215.007218565"
-% Note the number of decimals. No exponent. Other files with ten decimals.
+% NOTE: The exact format has historically been unclear and confused. Previously
+%       interpreted as being Julian date and now as "ISO" (interpreted as
+%       YYYY-MM-DDThh:mm:ss.xyz...")
+%       ------------------------------------------------------------------------
+%       https://gitlab.obspm.fr/ROC/DataPool/-/issues/16#note_19377
+%       check_cdf_istp.solo_L3_rpw-bia.txt:
+%       """"
+%     	Global attribute TIME_MAX is of type CDF_DOUBLE.
+% 	        Datatypes other than CDF_CHAR may be problematic.
+%     	Global attribute TIME_MIN is of type CDF_DOUBLE.
+% 	        Datatypes other than CDF_CHAR may be problematic.""""
+%       ------------------------------------------------------------------------
+%       https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/84
+%       """"
+%       TIME_MIN is ['2460091.5010676757']
+%       TIME_MIN from metadata equates to 2000-01-01T11:58:55.818460091
+%       Start time from filename: 20230527
+%       Start time from epoch variable: 2023-05-27T00:01:32.247168768
 %
-% PROPOSAL: Copy values from the corresponding values from the relevant input dataset.
-%   CON: Does not work for downsampled.
-%   CON: There has historically been problems with copying bad values from
-%        not-up-to-date input datasets.
-%---------------------------------------------------------------------------
-% NOTE: Choosing 10 decimals (instead of 9) so that time resolution is
-% higher than highest LFR sampling frequency (not sure of highest for
-% TDS-LFM).
-TIME_MINMAX_FORMAT = '%.10f';
-gaTimeMinNbr = juliandate(irf.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(1  )));
-gaTimeMaxNbr = juliandate(irf.cdf.TT2000_to_datevec(OutputDataset.Zv.Epoch(end)));
-OutGaSubset.TIME_MIN = sprintf(TIME_MINMAX_FORMAT, gaTimeMinNbr);
-OutGaSubset.TIME_MAX = sprintf(TIME_MINMAX_FORMAT, gaTimeMaxNbr);
+%
+%       TIME_MAX is ['2460092.5010688445']
+%       TIME_MAX from metadata equates to 2000-01-01T11:58:55.818460092
+%       End time from filename:
+%       End time from epoch variable: 2023-05-28T00:01:32.348148608
+%       """"
+%       ------------------------------------------------------------------------
+%       https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/85
+%       has the same complaint as above.
+%===============================================================================
+OutGaSubset.TIME_MIN = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(1  ));
+OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end));
 
 
 
