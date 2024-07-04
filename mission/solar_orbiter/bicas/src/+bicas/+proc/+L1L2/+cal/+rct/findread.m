@@ -128,9 +128,8 @@ classdef findread
         RctDataList    = {bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           rcttid, filePath, L)};
 
-        % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so
-        % that they are stored analogously with when using ga.
-        % CALIBRATION_TABLE.
+        % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so that
+        % they are stored analogously with when using L1R GA CALIBRATION_TABLE.
         RctDataMap(rcttid) = RctDataList;
       end
     end

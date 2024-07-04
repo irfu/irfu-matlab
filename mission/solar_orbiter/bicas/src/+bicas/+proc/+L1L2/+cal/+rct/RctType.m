@@ -20,11 +20,16 @@ classdef(Abstract) RctType
   %   PRO: BIAS data has many fields.
   %   PRO: More well-defined data structs.
   %   PRO: Automatic assertions.
-  %   CON: Structs are modified when cal.m uses them, i.e. one could just as well
-  %        have classes for the format cal.m uses. ==> Too many classes.
+  %   CON: Structs are modified when bicas.proc.L1L2.cal.Cal uses them, i.e. one
+  %        could just as well have classes for the format
+  %        bicas.proc.L1L2.cal.Cal uses. ==> Too many classes.
+  %     TODO-NI: Where does bicas.proc.L1L2.cal.Cal modify the structs?
+  %       Does not RctType.modify_RCT_data() in subclasses do all modification
+  %       in RctType.read_RCT_modify_log()? Has the question been obsoleted due
+  %       to refactoring?
   %   PROPOSAL: Convert subclasses to stores of RCT data too.
-  %       CON: Can have multiple non-BIAS RCTs loaded. Multiple instances of same
-  %            RCT type has no meaning.
+  %       CON: Can have multiple non-BIAS RCTs loaded. Multiple instances of the
+  %            same RCT type has no meaning.
   %
   % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
   % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
@@ -60,11 +65,11 @@ classdef(Abstract) RctType
 
 
 
-  %#######################
-  %#######################
-  % PUBLIC STATIC METHODS
-  %#######################
-  %#######################
+  %################################
+  %################################
+  % PUBLIC STATIC ABSTRACT METHODS
+  %################################
+  %################################
   methods(Static, Abstract)
 
 
@@ -74,11 +79,13 @@ classdef(Abstract) RctType
     %
     % DESIGN INTENT
     % =============
-    % Should be implemented so that no calibration data is modified/added
-    % to/removed from. The returned data structures reflect the content of
-    % the RCTs, not necessarily the data used by BICAS. Modification of data
-    % should be done elsewhere, in particular modifications of transfer
-    % functions, e.g. extrapolation, cut-offs, inversions.
+    % It is useful to be able to read an RCT into memory with as few
+    % modifications as possible. Therefore, the returned data structures reflect
+    % the content of the RCTs, but not necessarily on the form used by BICAS.
+    % Changing the format of data should be done elsewhere, in particular
+    % modifications of transfer functions, e.g. extrapolation, cut-offs,
+    % inversions. For the same reason, the function should be independent of the
+    % class instances (which format the data for BICAS to use).
     % --
     % NOTE: BIAS & LFR RCTs: contain FTFs which are not inverted in this code.
     %       TDS RCTs:        contain ITFs.
