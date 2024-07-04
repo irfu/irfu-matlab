@@ -329,7 +329,7 @@ classdef findread
     % (2) separate the logging from the RCT-reading code, so that external
     %     code can read RCTs without BICAS.
     %
-    function RctData = read_RCT_modify_log(rcttid, filePath, L)
+    function Rctt = read_RCT_modify_log(rcttid, filePath, L)
 
       L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
         'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
@@ -338,9 +338,7 @@ classdef findread
 
       Rctt = feval(RcttInfo.className, filePath);
 
-      Rctt.log_RCT(Rctt.RctData, L);
-
-      RctData = Rctt.RctData;
+      Rctt.log_RCT(L);
     end
 
 

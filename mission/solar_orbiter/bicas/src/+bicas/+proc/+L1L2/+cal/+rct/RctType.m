@@ -79,8 +79,7 @@ classdef(Abstract) RctType
     RCT_DATA_LL = 'debug';
   end
   properties(GetAccess=public)
-    % Modified RCT file data to be used by BICAS itself.
-    RctData
+    % Path to RCT file from which data was loaded.
     filePath
   end
 
@@ -100,6 +99,24 @@ classdef(Abstract) RctType
     function obj = RctType(filePath)
         obj.filePath = filePath;
     end
+
+
+
+  end    % methods(Access=public)
+
+
+
+  %##################################
+  %##################################
+  % PUBLIC INSTANCE ABSTRACT METHODS
+  %##################################
+  %##################################
+  methods(Access=public)
+
+
+
+    % Custom logging of modified RCT data.
+    log_RCT(obj, L);
 
 
 
@@ -136,9 +153,6 @@ classdef(Abstract) RctType
     %   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
     %
     [RctData] = read_RCT(filePath);
-
-    % Custom logging of modified RCT data.
-    log_RCT(RctData, L);
 
 
 

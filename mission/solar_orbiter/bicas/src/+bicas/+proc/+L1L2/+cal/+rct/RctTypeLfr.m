@@ -10,6 +10,10 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
   % INSTANCE PROPERTIES
   %#####################
   %#####################
+  properties(SetAccess=immutable)
+    FtfRctTpivCaCa
+    ItfModifIvptCaCa
+  end
 
 
 
@@ -26,7 +30,95 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
       obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
 
       FileData = bicas.proc.L1L2.cal.rct.RctTypeLfr.read_RCT(filePath);
-      obj.RctData = obj.modify_RCT_data(FileData);
+
+
+
+      %=============================================
+      % Modify file data and store it in the object
+      %=============================================
+      FtfRctTpivCaCa = FileData.FtfTpivTable;
+
+      % Read LFR FTFs, derive ITFs and modify them.
+      itfModifIvptCaCa = {};
+      for iLsf = 1:numel(FtfRctTpivCaCa)
+
+        itfModifIvptCaCa{end+1} = {};
+        for iBlts = 1:numel(FtfRctTpivCaCa{iLsf})
+
+          % INVERT: tabulated FTF --> tabulated ITF
+          ItfIvpt = FtfRctTpivCaCa{iLsf}{iBlts}.inverse();
+
+          % MODIFY tabulated ITF
+          ItfModifIvpt = bicas.proc.L1L2.cal.utils.extrapolate_tabulated_TF_to_zero_Hz(ItfIvpt);
+
+          % MODIFY tabulated ITF --> Function TF
+          %
+          % NOTE: Can not blindly forbid extrapolation (beyond the
+          % extrapolation to 0 Hz already done above) by setting value
+          % outside table=NaN (which deliberately triggers error
+          % elsewhere). LFR's tabulated TFs do in theory cover
+          % frequencies up to the Nyquist frequency, but in practice,
+          % the actual sampling frequency varies slightly. This means
+          % that when the Nyquist frequency also varies slightly and
+          % sometimes it exceeds the tabulated frequencies.
+          % Ex: solo_L1R_rpw-lfr-surv-cwf-e-cdag_20201102_V01.cd
+          %
+          % 2020-11-06: LFR tables (RCT):
+          % F0=24576 Hz: f={  12--12288} [Hz]
+          % F1= 4096 Hz: f={0.01-- 2048} [Hz]
+          % F2=  256 Hz: f={0.01--  128} [Hz]
+          % F3=   16 Hz: f={0.01--    8} [Hz]
+          VALUE_OUTSIDE_TABLE = 0;
+          %VALUE_OUTSIDE_TABLE = NaN;   % Does not work. See comments above.
+          itfModifIvpt = @(omegaRps) (bicas.proc.L1L2.cal.utils.eval_tabulated_TF(...
+            ItfModifIvpt, omegaRps, VALUE_OUTSIDE_TABLE));
+          clear ItfModifIvpt
+
+          itfModifIvptCaCa{iLsf}{iBlts} = itfModifIvpt;
+        end
+      end
+
+      % NOTE: RctData.FtfRctTpivCaCa is still kept (for debugging).
+      obj.FtfRctTpivCaCa   = FtfRctTpivCaCa;    % Just copied.
+      obj.ItfModifIvptCaCa = itfModifIvptCaCa;
+    end
+
+
+
+    function log_RCT(obj, L)
+      % NOTE: Frequencies may go outside of tabulated data.
+      %FREQ_HZ = [0, 1, 5];
+      FREQ_HZ = [0, 1, 100];
+
+      % CASE: This index corresponds to an actually loaded RCT (some are
+      % intentionally empty).
+      for iLsf = 1:4
+        if iLsf ~= 4   nBltsMax = 5;
+        else           nBltsMax = 3;
+        end
+
+        for iBlts = 1:nBltsMax
+
+          itfNamePrefix = sprintf('LFR, F%i, BLTS/BIAS_%i', iLsf-1, iBlts);
+
+          itfName = sprintf('%s FTF (as in RCT)', itfNamePrefix);
+          bicas.proc.L1L2.cal.utils.log_TF_tabulated(...
+            bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
+            itfName, ...
+            obj.FtfRctTpivCaCa{iLsf}{iBlts}, ...
+            L);
+
+          itfIvpt = obj.ItfModifIvptCaCa{iLsf}{iBlts};
+          itfName = sprintf('%s ITF (modif., interp.)', itfNamePrefix);
+
+          bicas.proc.L1L2.cal.utils.log_TF_function_handle(...
+            bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
+            itfName, ...
+            'ivolt/TM unit', FREQ_HZ, itfIvpt, L)
+
+        end
+      end    % for
+
     end
 
 
@@ -129,96 +221,6 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
         Exc2 = Exc2.addCause(Exc1);
         throw(Exc2);
       end
-    end
-
-
-
-    function RctData = modify_RCT_data(FileData)
-
-      FtfRctTpivCaCa = FileData.FtfTpivTable;
-
-      % Read LFR FTFs, derive ITFs and modify them.
-      itfModifIvptCaCa = {};
-      for iLsf = 1:numel(FtfRctTpivCaCa)
-
-        itfModifIvptCaCa{end+1} = {};
-        for iBlts = 1:numel(FtfRctTpivCaCa{iLsf})
-
-          % INVERT: tabulated FTF --> tabulated ITF
-          ItfIvpt = FtfRctTpivCaCa{iLsf}{iBlts}.inverse();
-
-          % MODIFY tabulated ITF
-          ItfModifIvpt = bicas.proc.L1L2.cal.utils.extrapolate_tabulated_TF_to_zero_Hz(ItfIvpt);
-
-          % MODIFY tabulated ITF --> Function TF
-          %
-          % NOTE: Can not blindly forbid extrapolation (beyond the
-          % extrapolation to 0 Hz already done above) by setting value
-          % outside table=NaN (which deliberately triggers error
-          % elsewhere). LFR's tabulated TFs do in theory cover
-          % frequencies up to the Nyquist frequency, but in practice,
-          % the actual sampling frequency varies slightly. This means
-          % that when the Nyquist frequency also varies slightly and
-          % sometimes it exceeds the tabulated frequencies.
-          % Ex: solo_L1R_rpw-lfr-surv-cwf-e-cdag_20201102_V01.cd
-          %
-          % 2020-11-06: LFR tables (RCT):
-          % F0=24576 Hz: f={  12--12288} [Hz]
-          % F1= 4096 Hz: f={0.01-- 2048} [Hz]
-          % F2=  256 Hz: f={0.01--  128} [Hz]
-          % F3=   16 Hz: f={0.01--    8} [Hz]
-          VALUE_OUTSIDE_TABLE = 0;
-          %VALUE_OUTSIDE_TABLE = NaN;   % Does not work. See comments above.
-          itfModifIvpt = @(omegaRps) (bicas.proc.L1L2.cal.utils.eval_tabulated_TF(...
-            ItfModifIvpt, omegaRps, VALUE_OUTSIDE_TABLE));
-          clear ItfModifIvpt
-
-          itfModifIvptCaCa{iLsf}{iBlts} = itfModifIvpt;
-        end
-      end
-
-      RctData = [];
-      % NOTE: RctData.FtfRctTpivCaCa is still kept (for debugging).
-      RctData.FtfRctTpivCaCa   = FtfRctTpivCaCa;    % Just copied.
-      RctData.ItfModifIvptCaCa = itfModifIvptCaCa;
-    end
-
-
-
-    function log_RCT(RctData, L)
-      % NOTE: Frequencies may go outside of tabulated data.
-      %FREQ_HZ = [0, 1, 5];
-      FREQ_HZ = [0, 1, 100];
-
-      % CASE: This index corresponds to an actually loaded RCT (some are
-      % intentionally empty).
-      for iLsf = 1:4
-        if iLsf ~= 4   nBltsMax = 5;
-        else           nBltsMax = 3;
-        end
-
-        for iBlts = 1:nBltsMax
-
-          itfNamePrefix = sprintf('LFR, F%i, BLTS/BIAS_%i', iLsf-1, iBlts);
-
-          itfName = sprintf('%s FTF (as in RCT)', itfNamePrefix);
-          bicas.proc.L1L2.cal.utils.log_TF_tabulated(...
-            bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
-            itfName, ...
-            RctData.FtfRctTpivCaCa{iLsf}{iBlts}, ...
-            L);
-
-          itfIvpt          = RctData.ItfModifIvptCaCa{iLsf}{iBlts};
-          itfName = sprintf('%s ITF (modif., interp.)', itfNamePrefix);
-
-          bicas.proc.L1L2.cal.utils.log_TF_function_handle(...
-            bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
-            itfName, ...
-            'ivolt/TM unit', FREQ_HZ, itfIvpt, L)
-
-        end
-      end    % for
-
     end
 
 

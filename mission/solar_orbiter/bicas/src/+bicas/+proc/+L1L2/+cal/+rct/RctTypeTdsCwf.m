@@ -10,6 +10,9 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
   % INSTANCE PROPERTIES
   %#####################
   %#####################
+  properties(SetAccess=immutable)
+    factorsIvpt
+  end
 
 
 
@@ -27,7 +30,17 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
 
       % NOTE: RCT contains no TFs and data is therefore trivial to use as it is
       % in the RCT.
-      obj.RctData = bicas.proc.L1L2.cal.rct.RctTypeTdsCwf.read_RCT(filePath);
+      RctData = bicas.proc.L1L2.cal.rct.RctTypeTdsCwf.read_RCT(filePath);
+      obj.factorsIvpt = RctData.factorsIvpt;
+    end
+
+
+
+    function log_RCT(obj, L)
+
+      L.logf(bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
+        'TDS CWF calibration factors: %s [ivolt/TM]', ...
+        bicas.proc.L1L2.cal.utils.vector_string('%g', obj.factorsIvpt));
     end
 
 
@@ -78,15 +91,6 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
         Exc2 = Exc2.addCause(Exc1);
         throw(Exc2);
       end
-    end
-
-
-
-    function log_RCT(RctData, L)
-
-      L.logf(bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
-        'TDS CWF calibration factors: %s [ivolt/TM]', ...
-        bicas.proc.L1L2.cal.utils.vector_string('%g', RctData.factorsIvpt));
     end
 
 

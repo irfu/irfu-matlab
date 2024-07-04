@@ -15,6 +15,15 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
     % Minimum number of numerator or denominator coefficients in the BIAS RCT.
     N_MIN_TF_NUMER_DENOM_COEFFS = 8;
   end
+  properties(SetAccess=immutable)
+    epochL
+    epochH
+    Current
+    FtfRctSet
+    ItfSet
+    dcSingleOffsetsAVolt
+    DcDiffOffsets
+  end
 
 
 
@@ -31,7 +40,120 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
       obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
 
       FileData = bicas.proc.L1L2.cal.rct.RctTypeBias.read_RCT(filePath);
-      obj.RctData = obj.modify_RCT_data(FileData);
+
+      %=============================================
+      % Modify file data and store it in the object
+      %=============================================
+      FtfRctSet = FileData.FtfSet;
+
+      % ASSERTIONS
+      nTime = irf.assert.sizes(...
+        FtfRctSet.DcSingleAvpiv, [-1, 1], ...
+        FtfRctSet.DcDiffAvpiv,   [-1, 1], ...
+        FtfRctSet.AclgAvpiv,     [-1, 1], ...
+        FtfRctSet.AchgAvpiv,     [-1, 1]);
+
+      % NOTE: Derive ITFs.
+      ItfSet = [];
+      for iTf = 1:nTime
+        % INVERT: FTF --> ITF
+
+        % Temporary variables which are stored in the definitions of
+        % anonymous functions later.
+        % * Might speed up code by eliminating calls to method .inverse()
+        % * Reduces size of individual expressions.
+        TempItfDcSingleAvpiv = FtfRctSet.DcSingleAvpiv{iTf}.inverse();
+        TempItfDcDiffAvpiv   = FtfRctSet.DcDiffAvpiv  {iTf}.inverse();
+        TempItfAclgAvpiv     = FtfRctSet.AclgAvpiv    {iTf}.inverse();
+        TempItfAchgAvpiv     = FtfRctSet.AchgAvpiv    {iTf}.inverse();
+
+        ItfSet.dcSingleAvpiv{iTf} = @(omegaRps) (TempItfDcSingleAvpiv.eval(omegaRps));
+        ItfSet.dcDiffAvpiv  {iTf} = @(omegaRps) (TempItfDcDiffAvpiv  .eval(omegaRps));
+        ItfSet.aclgAvpiv    {iTf} = @(omegaRps) (TempItfAclgAvpiv    .eval(omegaRps));
+        ItfSet.achgAvpiv    {iTf} = @(omegaRps) (TempItfAchgAvpiv    .eval(omegaRps));
+      end
+
+      obj.epochL               = FileData.epochL;
+      obj.epochH               = FileData.epochH;
+      obj.Current              = FileData.Current;
+      obj.FtfRctSet            = FtfRctSet;  % Change name of field (sic!).
+      obj.ItfSet               = ItfSet;
+      obj.dcSingleOffsetsAVolt = FileData.dcSingleOffsetsAVolt;
+      obj.DcDiffOffsets        = FileData.DcDiffOffsets;
+    end
+
+
+
+    % Log some indicative value(s) for a BIAS RCT.
+    %
+    % NOTE: Does not log file path. Caller is assumed to do that.
+    function log_RCT(obj, L)
+
+      % Logging parameters
+      DC_FREQ_HZ       = [0];   % Single & diffs.
+      AC_DIFF_FREQS_HZ = [0, 1000];
+      LL               = bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL;
+
+      %=====================
+      % Iterate over EpochL
+      %=====================
+      for iEpochL = 1:numel(obj.epochL)
+
+        L.logf(LL, 'Below values are used for data beginning %s:', ...
+          irf.cdf.TT2000_to_UTC_str(obj.epochL(iEpochL)))
+
+        % Log bias current calibration
+        L.logf(LL, '    BIAS current offsets: %s [aampere]',         ...
+          bicas.proc.L1L2.cal.utils.vector_string(...
+          '% 10e', obj.Current.offsetsAAmpere(iEpochL, :)))
+        L.logf(LL, '    BIAS current gain   : %s [aampere/TM unit]', ...
+          bicas.proc.L1L2.cal.utils.vector_string(...
+          '% 10e', obj.Current.gainsAapt(     iEpochL, :)))
+
+        % Log transfer functions (frequency domain) at selected
+        % frequencies.
+        L.logf(LL, ...
+          ['    Note: Not logging the exact RCT BIAS TFs', ...
+          ' (FTFs; RctData.FtfRctSet) since the inversion is trivial.'])
+        log_TF('    BIAS ITF DC single',          DC_FREQ_HZ,       obj.ItfSet.dcSingleAvpiv)
+        log_TF('    BIAS ITF DC diff',            DC_FREQ_HZ,       obj.ItfSet.dcDiffAvpiv)
+        log_TF('    BIAS ITF AC diff, low  gain', AC_DIFF_FREQS_HZ, obj.ItfSet.aclgAvpiv)
+        log_TF('    BIAS ITF AC diff, high gain', AC_DIFF_FREQS_HZ, obj.ItfSet.achgAvpiv)
+      end
+
+      %=====================
+      % Iterate over EpochH
+      %=====================
+      % NOTE: Must work for multiple CDF records.
+      dcDiffOffsetsAVolt = [...
+        obj.DcDiffOffsets.E12AVolt, ...
+        obj.DcDiffOffsets.E13AVolt, ...
+        obj.DcDiffOffsets.E23AVolt];
+      irf.assert.sizes(dcDiffOffsetsAVolt, [NaN, 3]);
+      for iEpochH = 1:numel(obj.epochH)
+
+        L.logf(LL, 'Below values are used for data beginning %s:', ...
+          irf.cdf.TT2000_to_UTC_str(obj.epochH(iEpochH)))
+
+        L.logf(LL, ...
+          '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
+          bicas.proc.L1L2.cal.utils.vector_string('%g', ...
+          obj.dcSingleOffsetsAVolt(iEpochH, :)))
+        L.logf(LL, ...
+          '    BIAS DC diff   voltage offsets (E12,E13,E23): %s [avolt]', ...
+          bicas.proc.L1L2.cal.utils.vector_string('%g', ...
+          dcDiffOffsetsAVolt(iEpochH)))
+      end
+
+      %###################################################################
+      % Nested utility function.
+      % NOTE: Implicitly function of iEpochL, L, LL.
+      function log_TF(name, freqArray, ItfList)
+        bicas.proc.L1L2.cal.utils.log_TF_function_handle(...
+          LL, name, 'avolt/ivolt', freqArray, ...
+          ItfList{iEpochL}, L);
+      end
+      %###################################################################
     end
 
 
@@ -178,123 +300,6 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         Exc2 = Exc2.addCause(Exc1);
         throw(Exc2)
       end
-    end
-
-
-
-    function RctData = modify_RCT_data(FileData)
-
-      FtfRctSet = FileData.FtfSet;
-
-      % ASSERTIONS
-      nTime = irf.assert.sizes(...
-        FtfRctSet.DcSingleAvpiv, [-1, 1], ...
-        FtfRctSet.DcDiffAvpiv,   [-1, 1], ...
-        FtfRctSet.AclgAvpiv,     [-1, 1], ...
-        FtfRctSet.AchgAvpiv,     [-1, 1]);
-
-      % NOTE: Derive ITFs.
-      ItfSet = [];
-      for iTf = 1:nTime
-        % INVERT: FTF --> ITF
-
-        % Temporary variables which are stored in the definitions of
-        % anonymous functions later.
-        % * Might speed up code by eliminating calls to method .inverse()
-        % * Reduces size of individual expressions.
-        TempItfDcSingleAvpiv = FtfRctSet.DcSingleAvpiv{iTf}.inverse();
-        TempItfDcDiffAvpiv   = FtfRctSet.DcDiffAvpiv  {iTf}.inverse();
-        TempItfAclgAvpiv     = FtfRctSet.AclgAvpiv    {iTf}.inverse();
-        TempItfAchgAvpiv     = FtfRctSet.AchgAvpiv    {iTf}.inverse();
-
-        ItfSet.dcSingleAvpiv{iTf} = @(omegaRps) (TempItfDcSingleAvpiv.eval(omegaRps));
-        ItfSet.dcDiffAvpiv  {iTf} = @(omegaRps) (TempItfDcDiffAvpiv  .eval(omegaRps));
-        ItfSet.aclgAvpiv    {iTf} = @(omegaRps) (TempItfAclgAvpiv    .eval(omegaRps));
-        ItfSet.achgAvpiv    {iTf} = @(omegaRps) (TempItfAchgAvpiv    .eval(omegaRps));
-      end
-
-      RctData = [];
-      RctData.epochL               = FileData.epochL;
-      RctData.epochH               = FileData.epochH;
-      RctData.Current              = FileData.Current;
-      RctData.FtfRctSet            = FtfRctSet;  % Change name of field (sic!).
-      RctData.ItfSet               = ItfSet;
-      RctData.dcSingleOffsetsAVolt = FileData.dcSingleOffsetsAVolt;
-      RctData.DcDiffOffsets        = FileData.DcDiffOffsets;
-    end
-
-
-
-    % Log some indicative value(s) for a BIAS RCT.
-    %
-    % NOTE: Does not log file path. Caller is assumed to do that.
-    function log_RCT(RctData, L)
-
-      % Logging parameters
-      DC_FREQ_HZ       = [0];   % Single & diffs.
-      AC_DIFF_FREQS_HZ = [0, 1000];
-      LL               = bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL;
-
-      %=====================
-      % Iterate over EpochL
-      %=====================
-      for iEpochL = 1:numel(RctData.epochL)
-
-        L.logf(LL, 'Below values are used for data beginning %s:', ...
-          irf.cdf.TT2000_to_UTC_str(RctData.epochL(iEpochL)))
-
-        % Log bias current calibration
-        L.logf(LL, '    BIAS current offsets: %s [aampere]',         ...
-          bicas.proc.L1L2.cal.utils.vector_string(...
-          '% 10e', RctData.Current.offsetsAAmpere(iEpochL, :)))
-        L.logf(LL, '    BIAS current gain   : %s [aampere/TM unit]', ...
-          bicas.proc.L1L2.cal.utils.vector_string(...
-          '% 10e', RctData.Current.gainsAapt(     iEpochL, :)))
-
-        % Log transfer functions (frequency domain) at selected
-        % frequencies.
-        L.logf(LL, ...
-          ['    Note: Not logging the exact RCT BIAS TFs', ...
-          ' (FTFs; RctData.FtfRctSet) since the inversion is trivial.'])
-        log_TF('    BIAS ITF DC single',          DC_FREQ_HZ,       RctData.ItfSet.dcSingleAvpiv)
-        log_TF('    BIAS ITF DC diff',            DC_FREQ_HZ,       RctData.ItfSet.dcDiffAvpiv)
-        log_TF('    BIAS ITF AC diff, low  gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.aclgAvpiv)
-        log_TF('    BIAS ITF AC diff, high gain', AC_DIFF_FREQS_HZ, RctData.ItfSet.achgAvpiv)
-      end
-
-      %=====================
-      % Iterate over EpochH
-      %=====================
-      % NOTE: Must work for multiple CDF records.
-      dcDiffOffsetsAVolt = [...
-        RctData.DcDiffOffsets.E12AVolt, ...
-        RctData.DcDiffOffsets.E13AVolt, ...
-        RctData.DcDiffOffsets.E23AVolt];
-      irf.assert.sizes(dcDiffOffsetsAVolt, [NaN, 3]);
-      for iEpochH = 1:numel(RctData.epochH)
-
-        L.logf(LL, 'Below values are used for data beginning %s:', ...
-          irf.cdf.TT2000_to_UTC_str(RctData.epochH(iEpochH)))
-
-        L.logf(LL, ...
-          '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
-          bicas.proc.L1L2.cal.utils.vector_string('%g', ...
-          RctData.dcSingleOffsetsAVolt(iEpochH, :)))
-        L.logf(LL, ...
-          '    BIAS DC diff   voltage offsets (E12,E13,E23): %s [avolt]', ...
-          bicas.proc.L1L2.cal.utils.vector_string('%g', ...
-          dcDiffOffsetsAVolt(iEpochH)))
-      end
-
-      %###################################################################
-      % Nested utility function.
-      % NOTE: Implicitly function of iEpochL, L, LL.
-      function log_TF(name, freqArray, ItfList)
-        bicas.proc.L1L2.cal.utils.log_TF_function_handle(...
-          LL, name, 'avolt/ivolt', freqArray, ...
-          ItfList{iEpochL}, L);
-      end
-      %###################################################################
     end
 
 
