@@ -154,6 +154,7 @@ for iOutputCdf = 1:length(SwmInfo.outputsList)
     OutputInfo.skeletonVersion));
 
   OutputDataset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
+  assert(isa(OutputDataset, 'bicas.OutputDataset'))
 
   ZvsSubset = OutputDataset.Zv;
 

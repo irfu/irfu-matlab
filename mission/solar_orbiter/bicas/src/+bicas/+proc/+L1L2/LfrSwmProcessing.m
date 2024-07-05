@@ -95,7 +95,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
       OutputDatasetsMap = containers.Map();
-      OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
+      OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga);
     end
 
 
