@@ -59,7 +59,7 @@ classdef findread
 
 
 
-    % Load one RCT per selected RCT type using assumptions on filenames.
+    % Load one RCT per selected RCTTID using assumptions on filenames.
     %
     %
     % NOTES
@@ -68,9 +68,9 @@ classdef findread
     %       (and L1) data.
     % NOTE: Necessary when processing L1-->L2 (unofficially) since L1 does
     %       not have CALIBRATION_TABLE+CALIBRATION_TABLE_INDEX.
-    % NOTE: Will only load ONE of each RCT type (no potential RCT time
+    % NOTE: Will only load ONE RCT per RCTTID (no potential RCT time
     %       dependence as per global attribute CALIBRATION_TABLE) and
-    %       requires user to not use CALIBRATION_TABLE_INDEX.
+    %       requires the user to not use CALIBRATION_TABLE_INDEX.
     %
     % IMPLEMENTATION NOTE: BICAS only needs one non-BIAS RCT type at a time.
     % However, it is useful to be able to initialize bicas.proc.L1L2.cal.Cal so
@@ -99,7 +99,6 @@ classdef findread
         % Find path to RCT.
         settingKey     = bicas.proc.L1L2.cal.rct.RctType.RCTT_MAP(...
           rcttid).filenameRegexpSettingKey;
-
 
         filenameRegexp = Bso.get_fv(settingKey);
         filePath       = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
@@ -198,6 +197,7 @@ classdef findread
     function path = find_RCT_regexp(rctDir, filenameRegexp, L)
       % PROPOSAL: Better name.
       %   ~path, ~file, ~select
+      %   find_RCT_by_regexp
       %   find_select_RCT_by_regexp
       %   NOTE: Does not read the file.
       %   NOTE: Cf. bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp()
@@ -277,7 +277,7 @@ classdef findread
         zv_BW, L)
       % PROPOSAL: Separate function for extracting filenames from ZVs.
 
-      % CT = glob.attr. CALIBRATION_TABLE
+      % CT = L1/L1R GA CALIBRATION_TABLE
 
       % ASSERTION
       assert(iscell(ga_CALIBRATION_TABLE))

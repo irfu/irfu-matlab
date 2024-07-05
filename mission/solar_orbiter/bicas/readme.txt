@@ -267,8 +267,8 @@ RCT
 RCTT
     Class bicas.proc.L1L2.cal.rct.RctType.
 RCTTID
-    RCT Type ID. String constant that represents a type of RCT. Permitted
-    values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
+    RCT Type ID. String constant that represents a *type* of RCT, not a
+    particular RT file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
 RCTS
     RCT CALIBRATION_TABLE (glob.attr) + CALIBRATION_TABLE_INDEX (zVariable).
     S = plural.

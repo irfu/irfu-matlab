@@ -78,11 +78,10 @@ classdef(Abstract) RctType
     % LL = Log Level
     RCT_DATA_LL = 'debug';
   end
-  properties(GetAccess=public)
+  properties(GetAccess=public, SetAccess=immutable)
     % Path to RCT file from which data was loaded.
     filePath
   end
-
 
 
 

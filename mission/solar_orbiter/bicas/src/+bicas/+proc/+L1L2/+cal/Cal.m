@@ -280,7 +280,7 @@ classdef Cal < handle
     % CALIBRATION_TABLE_INDEX(:,1) when those are used. May thus contain
     % empty cells for non-BIAS RCTs which should not (and can not) be
     % loaded.
-    RctDataMap = containers.Map();
+    RctDataMap;
 
     % Non-RCT calibration data
     % ------------------------
@@ -382,10 +382,21 @@ classdef Cal < handle
 
       % ASSERTIONS: Arguments
       assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
+      %
       irf.assert.subset(...
         RctDataMap.keys, ...
         bicas.proc.L1L2.cal.rct.RctType.RCTT_MAP.keys)
       assert(isscalar(RctDataMap('BIAS')))
+      RcttidCa = RctDataMap.keys;
+      for iRcttid = 1:numel(RcttidCa)
+        rcttid = RcttidCa{iRcttid};
+        RcttCa = RctDataMap(rcttid);
+        assert(iscell(RcttCa) && iscolumn(RcttCa))
+        for iRctt = 1:numel(RcttCa)
+          Rctt = RcttCa{iRctt};
+          assert(isempty(Rctt) | isa(Rctt, 'bicas.proc.L1L2.cal.rct.RctType'))
+        end
+      end
 
 
 
