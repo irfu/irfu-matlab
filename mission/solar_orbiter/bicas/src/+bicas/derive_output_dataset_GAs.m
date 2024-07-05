@@ -26,11 +26,7 @@
 %       input (contains ZVs) but the function uses that input argument since
 %       it is easily accessible where this function is called.
 % OutputDataset
-%       Struct from processing with fields
-%           .Ga.(globAttrName)
-%               Subset of GA values that should be used.
-%           .Zv.(zvName)
-%               zVariables.
+%       Class bicas.OutputDataset
 % outputFilename
 %       Output dataset filename. Could potentially be used for deriving
 %       Glob.attrs. Datetime (time interval string), Data_version,
@@ -61,6 +57,7 @@ function OutGaSubset = derive_output_dataset_GAs(...
 % ASSERTIONS
 irf.assert.struct(OutputDataset.Ga, ...
   {'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
+
 
 
 OutGaSubset = OutputDataset.Ga;

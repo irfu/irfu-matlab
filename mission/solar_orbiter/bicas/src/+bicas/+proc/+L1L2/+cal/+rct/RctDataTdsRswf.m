@@ -5,6 +5,17 @@ classdef RctDataTdsRswf < bicas.proc.L1L2.cal.rct.RctData
 
 
 
+  %##########################
+  %##########################
+  % PUBLIC STATIC PROPERTIES
+  %##########################
+  %##########################
+  % properties(Constant)
+  %   RCTTID = 'TDS-RSWF'
+  % end
+
+
+
   %#####################
   %#####################
   % INSTANCE PROPERTIES

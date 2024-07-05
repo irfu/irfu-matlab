@@ -22,6 +22,17 @@ classdef utils
 
 
 
+    % Get path to the root of the BICAS directory structure.
+    function bicasRootPath = get_BICAS_root_path()
+      % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
+      % Use path of the current MATLAB file.
+      [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
+      bicasRootPath         = irf.fs.get_abs_path(...
+        fullfile(matlabSrcPath, '..', '..'));
+    end
+
+
+
     % Whether two sets (arrays) of arbitrary objects are set equal.
     %
     % NOTE: Compare objects, not handles. NaN == NaN.
@@ -33,17 +44,6 @@ classdef utils
       % but good enough.
       equal = bicas.utils.is_subset_isequaln(Ar1, Ar2) ...
         && bicas.utils.is_subset_isequaln(Ar2, Ar1);
-    end
-
-
-
-    % Get path to the root of the BICAS directory structure.
-    function bicasRootPath = get_BICAS_root_path()
-      % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
-      % Use path of the current MATLAB file.
-      [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
-      bicasRootPath         = irf.fs.get_abs_path(...
-        fullfile(matlabSrcPath, '..', '..'));
     end
 
 
@@ -211,6 +211,8 @@ classdef utils
 
 
   end    % methods(Static)
+
+
 
   %########################
   %########################

@@ -8,16 +8,6 @@ classdef TestSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-  %#####################
-  %#####################
-  % INSTANCE PROPERTIES
-  %#####################
-  %#####################
-  properties(SetAccess=immutable)
-  end    % properties(SetAccess=immutable)
-
-
-
   %#########################
   %#########################
   % PUBLIC INSTANCE METHODS

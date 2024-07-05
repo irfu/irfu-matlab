@@ -5,6 +5,17 @@ classdef RctDataTdsCwf < bicas.proc.L1L2.cal.rct.RctData
 
 
 
+  %##########################
+  %##########################
+  % PUBLIC STATIC PROPERTIES
+  %##########################
+  %##########################
+  % properties(Constant)
+  %   RCTTID = 'TDS-CWF'
+  % end
+
+
+
   %#####################
   %#####################
   % INSTANCE PROPERTIES

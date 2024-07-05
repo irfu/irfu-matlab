@@ -127,10 +127,14 @@ CLI
     Command-line interface
 CM3
     cm^-3
+COHB
+    CLI Option Header Body. The section of an CLI argument option/flag which
+    excludes the prefix, e.g. "-" or "--". See bicas.utils.parse_CLI_options().
 CTI
-    CALIBRATION_TABLE_INDEX (zVariable).
+    CALIBRATION_TABLE_INDEX (L1R zVariable).
 CTI2
-    Second value in a CDF record of zVariable CALIBRATION_TABLE_INDEX.
+    Element within a CDF L1R zVariable for a given CDF record,
+    CALIBRATION_TABLE_INDEX(iCdfRecord, 2).
 CWF
     Continuous WaveForm. Data on the form of samples over longer periods of
     time than a snapshot. Cf. SWF.

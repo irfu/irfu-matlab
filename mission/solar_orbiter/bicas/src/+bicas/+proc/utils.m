@@ -571,8 +571,7 @@ classdef utils
       % PROPOSAL: Implement using new features in irf.assert.sizes().
       % TODO-NI: Function only used for cases where ALL fields should have
       %          same number of rows? (Due to previous refactoring.)
-      % PROBLEM: Function is an obstacle to converting AsrSamplesAVoltSrm to
-      %          a class.
+      % PROBLEM: Function is an obstacle to converting variable(s) to a class.
       %   NOTE: An AsrSamplesAVoltSrm class should ensure INTERNALLY consistent array
       %         sizes, but not consistent with a parent struct.
       %   PROPOSAL: Special case for the specific class.

@@ -232,9 +232,9 @@ msg = [msg, sprintf('Exception.message    = "%s"\n', Exception.message)];
 %=========================================================================
 msgIdentifierParts = strsplit(Exception.identifier, ':');
 % Cell array of message identifier parts (strings) only.
-emidpList = msgIdentifierParts(bicas.const.EMIDP_2_INFO.isKey(msgIdentifierParts));
-if isempty(emidpList)
-  emidpList = {'UntranslatableErrorMsgId'};
+emidpCa = msgIdentifierParts(bicas.const.EMIDP_2_INFO.isKey(msgIdentifierParts));
+if isempty(emidpCa)
+  emidpCa = {'UntranslatableErrorMsgId'};
 end
 
 %===================================
@@ -243,14 +243,14 @@ end
 msg = [msg, sprintf(...
   ['Matching MATLAB error message identifier parts (error types', ...
   ' derived from Exception1.identifier):\n'])];
-for i = 1:numel(emidpList)
-  emidp = emidpList{i};
+for i = 1:numel(emidpCa)
+  emidp = emidpCa{i};
   msg  = [msg, sprintf('    %-24s : %s\n', ...
     emidp, bicas.const.EMIDP_2_INFO(emidp).description)];
 end
 % NOTE: Choice - Uses the last part of the message ID for determining error
 % code to return.
-errorCode = bicas.const.EMIDP_2_INFO(emidpList{end}).errorCode;
+errorCode = bicas.const.EMIDP_2_INFO(emidpCa{end}).errorCode;
 
 %======================
 % Print the call stack
@@ -286,9 +286,12 @@ end
 
 
 
+%#########################################################
+%#########################################################
 % BICAS's de facto main function, without error handling.
-%
-function main_without_error_handling(cliArgumentsList, L)
+%#########################################################
+%#########################################################
+function main_without_error_handling(cliArgumentsCa, L)
 
 Tmk = bicas.utils.Timekeeper('main_without_error_handling', L);
 
@@ -355,20 +358,20 @@ L.logf('info', 'BICAS software root path:  bicasRootPath = "%s"', bicasRootPath)
 L.logf('info', 'Current working directory: pwd           = "%s"', pwd);
 L.logf('info', '\nCOMMAND-LINE INTERFACE (CLI) ARGUMENTS TO BICAS\n')
 L.logf('info',   '===============================================')
-cliArgumentsQuotedList = {};
-for i = 1:length(cliArgumentsList)
+cliArgumentsQuotedCa = {};
+for i = 1:length(cliArgumentsCa)
   % UI ASSERTION
   % IMPLEMENTATION NOTE: This check useful when calling BICAS from MATLAB
   % (not bash).
-  if ~ischar(cliArgumentsList{i})
+  if ~ischar(cliArgumentsCa{i})
     error('BICAS:CLISyntax', 'Argument %i is not a string.', i)
   end
 
-  L.logf('info', '%2i: "%s"', i, cliArgumentsList{i})
-  cliArgumentsQuotedList{i} = ['''', cliArgumentsList{i}, ''''];
+  L.logf('info', '%2i: "%s"', i, cliArgumentsCa{i})
+  cliArgumentsQuotedCa{i} = ['''', cliArgumentsCa{i}, ''''];
 end
-cliArgStrWhSpaceSep = strjoin(cliArgumentsQuotedList, ' ');
-cliArgStrCommaSep   = strjoin(cliArgumentsQuotedList, ', ');
+cliArgStrWhSpaceSep = strjoin(cliArgumentsQuotedCa, ' ');
+cliArgStrCommaSep   = strjoin(cliArgumentsQuotedCa, ', ');
 % IMPLEMENTATION NOTE: Printing the entire sequence of arguments, quoted
 % with apostophe, is useful for copy-pasting to both MATLAB command prompt
 % and bash.
@@ -391,7 +394,7 @@ Bso  = bicas.create_default_BSO();
 %=============================================
 % First-round interpretation of CLI arguments
 %=============================================
-CliData = bicas.interpret_CLI_args(cliArgumentsList);
+CliData = bicas.interpret_CLI_args(cliArgumentsCa);
 
 
 
@@ -489,20 +492,20 @@ switch(CliData.bfm)
     % mode
     %=================================================================
 
-    % Extract INPUT dataset files from SIP arguments.
-    InputFilesMap = extract_rename_Map_keys(...
+    % Select only the INPUT dataset files from the SIP arguments.
+    InputFilePathMap = select_rename_Map_keys(...
       CliData.SipMap, ...
       {Swm.inputsList(:).cliOptionHeaderBody}, ...
       {Swm.inputsList(:).prodFuncInputKey});
 
-    % Extract OUTPUT dataset files from SIP arguments.
-    OutputFilesMap = extract_rename_Map_keys(...
+    % Select only the OUTPUT dataset files from the SIP arguments.
+    OutputFilePathMap = select_rename_Map_keys(...
       CliData.SipMap, ...
       {Swm.outputsList(:).cliOptionHeaderBody}, ...
       {Swm.outputsList(:).prodFuncOutputKey});
 
     % ASSERTION: Assume correct number of arguments (the only thing not
-    % implicitly checked by extract_rename_Map_keys above).
+    % implicitly checked by select_rename_Map_keys above).
     nSipExpected = numel(Swm.inputsList) + numel(Swm.outputsList);
     nSipActual   = numel(CliData.SipMap.keys);
     if nSipExpected ~= nSipActual
@@ -552,7 +555,7 @@ switch(CliData.bfm)
     % EXECUTE S/W MODE
     %==================
     bicas.execute_SWM(...
-      Swm, InputFilesMap, OutputFilesMap, ...
+      Swm, InputFilePathMap, OutputFilePathMap, ...
       masterCdfDir, rctDir, NsoTable, Bso, L )
 
   otherwise
@@ -567,17 +570,20 @@ end    % main_without_error_handling
 
 
 
-function NewMap = extract_rename_Map_keys(SrcMap, srcKeysList, newKeysList)
-assert(numel(srcKeysList) == numel(newKeysList))
+% (1) Select and copy entries (key+value) in a pre-existing containers.Map into
+%     a new (empty) containers.Map, and
+% (2) simultaneously rename the selected keys.
+function NewMap = select_rename_Map_keys(SrcMap, srcKeysCa, newKeysCa)
+assert(numel(srcKeysCa) == numel(newKeysCa))
 NewMap = containers.Map();
 
-for i = 1:numel(srcKeysList)
-  srcKey = srcKeysList{i};
+for i = 1:numel(srcKeysCa)
+  srcKey = srcKeysCa{i};
 
   if ~SrcMap.isKey(srcKey)
     error('BICAS:Assertion', 'Can not find source key "%s"', srcKey)
   end
-  NewMap(newKeysList{i}) = SrcMap(srcKey);
+  NewMap(newKeysCa{i}) = SrcMap(srcKey);
 end
 end
 
@@ -666,18 +672,18 @@ bicas.stdout_print(sprint_constants());
 % Print error codes & types
 %==========================
 % Array of (unsorted) error codes.
-errorCodesList = cellfun(@(x) (x.errorCode), bicas.const.EMIDP_2_INFO.values);
-[~, iSort] = sort(errorCodesList);
-empidList          = bicas.const.EMIDP_2_INFO.keys;
-errorTypesInfoList = bicas.const.EMIDP_2_INFO.values;   % Cell array of structs (unsorted).
-empidList          = empidList(iSort);
-errorTypesInfoList = errorTypesInfoList(iSort);    % Cell array of structs sorted by error code.
+errorCodesCa = cellfun(@(x) (x.errorCode), bicas.const.EMIDP_2_INFO.values);
+[~, iSort] = sort(errorCodesCa);
+empidCa          = bicas.const.EMIDP_2_INFO.keys;
+errorTypesInfoCa = bicas.const.EMIDP_2_INFO.values;   % Cell array of structs (unsorted).
+empidCa          = empidCa(iSort);
+errorTypesInfoCa = errorTypesInfoCa(iSort);    % Cell array of structs sorted by error code.
 bicas.stdout_printf('\nERROR CODES, ERROR MESSAGE IDENTIFIERS, HUMAN-READABLE DESCRIPTIONS\n')
 bicas.stdout_printf(  '===================================================================')
-for i = 1:numel(errorTypesInfoList)
-  errorType = errorTypesInfoList{i};
+for i = 1:numel(errorTypesInfoCa)
+  errorType = errorTypesInfoCa{i};
   bicas.stdout_printf(['    %1i : %s\n', ...
-    '        %s\n'], errorType.errorCode, empidList{i}, errorType.description)
+    '        %s\n'], errorType.errorCode, empidCa{i}, errorType.description)
 end
 
 % Print settings

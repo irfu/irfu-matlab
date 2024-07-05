@@ -5,6 +5,17 @@ classdef RctDataLfr < bicas.proc.L1L2.cal.rct.RctData
 
 
 
+  %##########################
+  %##########################
+  % PUBLIC STATIC PROPERTIES
+  %##########################
+  %##########################
+  % properties(Constant)
+  %   RCTTID = 'LFR'
+  % end
+
+
+
   %#####################
   %#####################
   % INSTANCE PROPERTIES
@@ -209,7 +220,7 @@ classdef RctDataLfr < bicas.proc.L1L2.cal.rct.RctData
 
         % NOTE: Storing data in struct field to clarify the nature of
         % the content to the caller.
-        D = [];
+        D = struct();
         D.FtfTpivTable = FtfTpivTable;
 
       catch Exc1

@@ -279,7 +279,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %============
       if     obj.inputSci.isLfrSbm1   zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
       elseif obj.inputSci.isLfrSbm2   zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
-      else                 zvILsf = InSci.Zv.FREQ + 1;
+      else                            zvILsf = InSci.Zv.FREQ + 1;
         % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
         % index values (1=F0) used in loaded RCT data structs.
       end

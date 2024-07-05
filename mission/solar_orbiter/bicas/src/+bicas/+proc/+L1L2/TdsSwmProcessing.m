@@ -393,12 +393,6 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %======================
       zv_WAVEFORM_DATA_modif = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
 
-      %             Zv.bltsSamplesTmCa    = cell(5,1);
-      %             Zv.bltsSamplesTmCa{1} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
-      %             Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
-      %             Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
-      %             Zv.bltsSamplesTmCa{4} = nan(nRecords, nCdfSamplesPerRecord);
-      %             Zv.bltsSamplesTmCa{5} = nan(nRecords, nCdfSamplesPerRecord);
       Zv.bltsSamplesTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
       Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
       Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
@@ -408,8 +402,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
       Ga = [];
-      Ga.OBS_ID         = InSci.Ga.OBS_ID;
-      Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
+      Ga.OBS_ID    = InSci.Ga.OBS_ID;
+      Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
 
       % Only set because the code shared with LFR requires it.
       Zv.iLsf           = nan(nRecords, 1);

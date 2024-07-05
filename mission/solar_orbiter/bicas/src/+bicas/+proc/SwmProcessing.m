@@ -38,12 +38,16 @@ classdef(Abstract) SwmProcessing
     %                  bicas.swm.SoftwareModeList).
     %       <values> : A struct with data corresponding to a CDF file
     %                  (zVariables+global attributes).
+    %
+    % RETURN VALUE
+    % ============
     % OutputsMap
     %       containers.Map with
     %       <keys>   : String defining a name of an output ("prodFuncOutputKey" in
     %                  bicas.swm.SoftwareModeList).
     %       <values> : A struct with data corresponding to a CDF file (zVariables).
-    % --
+    %
+    %
     % Production functions should not assume/specify any particular input
     % dataset version, but should read it out from global attributes (part
     % of the PDV) if necessary.
@@ -52,7 +56,6 @@ classdef(Abstract) SwmProcessing
     % PROPOSAL: Rename
     %   process
     %   process_data
-    %   process_method
     %
     % PROPOSAL: Remove argument rctDir, NsoTable.
     %   PRO: Not used for L2-L2, L2-L3.

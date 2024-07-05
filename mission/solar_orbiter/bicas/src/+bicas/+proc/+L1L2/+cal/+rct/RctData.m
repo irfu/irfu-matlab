@@ -1,35 +1,14 @@
 %
-% Abstract class of which instances of subclasses represent one RCT TYPE (*not*
-% the data stored in an RCT). Subclasses should therefore only need to be
-% instantiated once, in principle, and should NOT contain any actual RCT data.
+% Abstract class of which instances of subclasses represent the (massaged,
+% prepared) content of one RCT FILE. The *static* components of the subclasses
+% also effecitvely represent one RCTTID each.
 %
-% NOTE: BICAS may load multiple RCTs for the same RCT type.
-%
-% IMPLEMENTATION NOTES
-% ====================
-% * Subclasses effectively collect code (static methods) associated with each
-%   RCT type.
-% * Instances of subclasses contain data loaded from one RCT.
+% NOTE: BICAS may load multiple RCTs for the same RCTTID (LFR).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef(Abstract) RctData
-  % PROPOSAL: Classes for RCT data (not just RCT type).
-  %   PRO: BIAS data has many fields.
-  %   PRO: More well-defined data structs.
-  %   PRO: Automatic assertions.
-  %   CON: Structs are modified when bicas.proc.L1L2.cal.Cal uses them, i.e. one
-  %        could just as well have classes for the format
-  %        bicas.proc.L1L2.cal.Cal uses. ==> Too many classes.
-  %     TODO-NI: Where does bicas.proc.L1L2.cal.Cal modify the structs?
-  %       Does not RctData.modify_RCT_data() in subclasses do all modification
-  %       in RctData.read_RCT_modify_log()? Has the question been obsoleted due
-  %       to refactoring?
-  %   PROPOSAL: Convert subclasses to stores of RCT data too.
-  %       CON: Can have multiple non-BIAS RCTs loaded. Multiple instances of the
-  %            same RCT type has no meaning.
-  %
   % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
   % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
   % PROPOSAL: Assert CDF skeleton/master version number.
@@ -40,11 +19,7 @@ classdef(Abstract) RctData
   % PROPOSAL: Use utility function for reading every zVariable.
   %   PROPOSAL: Assert units from zVar attributes.
   %
-  % PROPOSAL: Change name to something indicating a store of data.
-  %   NOTE: RctData is a historical name.
-  %     PROPOSAL: RCTD=RctData
-  %       ~data, ~RCT
-
+  % PROPOSAL: Move RCTD_METADATA_MAP to bicas.const.
 
 
 
@@ -61,6 +36,9 @@ classdef(Abstract) RctData
     % Its keys defines the set of RCTTID strings.
     RCTD_METADATA_MAP = bicas.proc.L1L2.cal.rct.RctData.init_RCTD_METADATA_MAP();
   end
+  % properties(Constant, Abstract)
+  %   RCTTID
+  % end
 
 
 
@@ -180,6 +158,8 @@ classdef(Abstract) RctData
   %#######################
   methods(Static)
 
+
+
     % Code to initialize hard-coded static constant RCTD_METADATA_MAP.
     %
     % IMPLEMENTATION NOTE: This data structure includes the filename reg.exp.
@@ -199,6 +179,19 @@ classdef(Abstract) RctData
           'className',                className, ...
           'filenameRegexpSettingKey', filenameRegexpSettingKey);
       end
+
+      % SUBCLASSES_CA = {...
+      %   'bicas.proc.L1L2.cal.rct.RctDataBias', ...
+      %   'bicas.proc.L1L2.cal.rct.RctDataLfr', ...
+      %   'bicas.proc.L1L2.cal.rct.RctDataTdsCwf', ...
+      %   'bicas.proc.L1L2.cal.rct.RctDataTdsRswf' ...
+      % }
+      %
+      % for iSubclass = 1:numel(SUBCLASSES_CA)
+      %   SUBCLASSES_CA{iSubclass}
+      %
+      %   RctdMetadataMap('BIAS') = info('bicas.proc.L1L2.cal.rct.RctDataBias',    'PROCESSING.RCT_REGEXP.BIAS');
+      % end
 
       RctdMetadataMap('BIAS')     = info('bicas.proc.L1L2.cal.rct.RctDataBias',    'PROCESSING.RCT_REGEXP.BIAS');
       RctdMetadataMap('LFR')      = info('bicas.proc.L1L2.cal.rct.RctDataLfr',     'PROCESSING.RCT_REGEXP.LFR');

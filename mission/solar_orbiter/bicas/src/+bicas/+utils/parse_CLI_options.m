@@ -46,7 +46,7 @@
 %
 % ARGUMENTS
 % =========
-% cliArgumentsList
+% cliArgumentsCa
 %       1D cell array of strings representing a sequence of CLI arguments.
 % OptionsConfigMap
 %       containers.Map
@@ -99,7 +99,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-02, reworked 2017-02-09, reworked 2019-07-22.
 %
-function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
+function OptionValuesMap = parse_CLI_options(cliArgumentsCa, OptionsConfigMap)
 %
 % PROPOSAL: Return some kind of help information to display proper user-friendly error message.
 % PROPOSAL: Somehow return the order/argument number/position of the arguments found.
@@ -121,8 +121,8 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsList, OptionsConfigMap)
 
 
 % ASSERTIONS: Check argument types, sizes.
-assert(iscell(cliArgumentsList), 'cliArgumentsList is not a cell array.')
-irf.assert.vector(cliArgumentsList)
+assert(iscell(cliArgumentsCa), 'cliArgumentsCa is not a cell array.')
+irf.assert.vector(cliArgumentsCa)
 irf.assert.isa(OptionsConfigMap, 'containers.Map')
 
 
@@ -137,9 +137,9 @@ OptionsConfigArray = cellfun(@(x) (x), OptionsConfigMap.values);
 % Iterate over list of CLI arguments
 %====================================
 iCliArg = 1;
-while iCliArg <= length(cliArgumentsList)
+while iCliArg <= length(cliArgumentsCa)
   [OptionValuesMap, iCliArgLastValue] = try_interpret_option(...
-    cliArgumentsList, iCliArg, OptionsConfigArray, OptionValuesMap);
+    cliArgumentsCa, iCliArg, OptionsConfigArray, OptionValuesMap);
   iCliArg = iCliArgLastValue + 1;
 end   % while
 
@@ -186,9 +186,9 @@ end
 % variables.
 %
 function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(...
-  cliArgumentsList, iCliArg, OptionsConfigArray, OptionValuesMap)
+  cliArgumentsCa, iCliArg, OptionsConfigArray, OptionValuesMap)
 
-cliArgument = cliArgumentsList{iCliArg};
+cliArgument = cliArgumentsCa{iCliArg};
 
 %=========================================
 % Search for a matching CLI option string
@@ -234,7 +234,7 @@ optionValues = OptionValuesMap(optionId);
 
 iCliArgLastValue = iCliArg + OptionConfig.nValues;
 % ASSERTION: Argument list does not conform to configuration.
-if iCliArgLastValue > length(cliArgumentsList)
+if iCliArgLastValue > length(cliArgumentsCa)
   error('BICAS:CLISyntax', ...
     ['Can not find the argument(s) that is/are expected to follow', ...
     ' command-line option header "%s".'], ...
@@ -242,11 +242,11 @@ if iCliArgLastValue > length(cliArgumentsList)
 end
 
 % Extract option values associated with the option header.
-%optionValues{end+1} = cliArgumentsList(iCliArg:iCliArgLastValue);
+%optionValues{end+1} = cliArgumentsCa(iCliArg:iCliArgLastValue);
 optionValues(end+1) = struct(...
   'iOptionHeaderCliArgument', iCliArg, ...
-  'optionHeader',             cliArgumentsList(iCliArg), ...
-  'optionValues',             {cliArgumentsList(iCliArg+1:iCliArgLastValue)'});
+  'optionHeader',             cliArgumentsCa(iCliArg), ...
+  'optionValues',             {cliArgumentsCa(iCliArg+1:iCliArgLastValue)'});
 OptionValuesMap(optionId) = optionValues;
 end
 
@@ -270,10 +270,10 @@ function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(...
 EmptyOptionValuesMap      = containers.Map;
 OptionsConfigMapModifCopy = containers.Map;
 % List to iterate over map.
-optionIdsList             = OptionsConfigMap.keys;
-for iOption = 1:length(optionIdsList)
+optionIdCa                = OptionsConfigMap.keys;
+for iOption = 1:length(optionIdCa)
 
-  optionId          = optionIdsList{iOption};
+  optionId          = optionIdCa{iOption};
   ModifOptionConfig = OptionsConfigMap(optionId);
 
   % ASSERTION: OptionConfig is the right struct.

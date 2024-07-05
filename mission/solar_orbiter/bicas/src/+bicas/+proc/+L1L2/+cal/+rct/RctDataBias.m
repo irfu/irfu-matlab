@@ -5,6 +5,17 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
 
 
 
+  %##########################
+  %##########################
+  % PUBLIC STATIC PROPERTIES
+  %##########################
+  %##########################
+  % properties(Constant)
+  %   RCTTID = 'BIAS'
+  % end
+
+
+
   %#####################
   %#####################
   % INSTANCE PROPERTIES
@@ -231,6 +242,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
         %================================
         % Assign struct that is returned
         %================================
+        D = struct();
         D.epochL = epochL;
         D.epochH = epochH;
 

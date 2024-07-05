@@ -9,6 +9,21 @@
 %
 classdef OutputDataset
   % PROPOSAL: Automatic test code.
+  %
+  % PROBLEM: Accepts RctdCaMap, despite that this format is a function of
+  %          processing, and should not be useful outside of processing.
+  %   PROPOSAL: Constructor argument for array of RCTDs. -- IMPLEMENTED
+  %     CON: Multiple callers have to convert format.
+  %   PROPOSAL: Constructor converts RctdCaMap to array of RCTDs.
+  %
+  % PROPOSAL: Argument and field for DSI. Replace OutputDatasetsMap with array.
+  %   PRO: Should not need OutputDatasetsMap keys like "DSR_cdf",
+  %        "EFIELD_DSR_cdf", "SCI_cdf" which make up its own namespace.
+  %     NOTE: LfrSwmProcessing, TdsSwmProcessing are used for multiple SWMs with
+  %           different output DSIs for the same OutputDatasetsMap key
+  %           "SCI_cdf".
+  %     NOTE: This is identical to bicas.swm.OutputDataset.prodFuncOutputKey.
+  %   NOTE: Must match DSI in corresponding SWM.
 
 
 

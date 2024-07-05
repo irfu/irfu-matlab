@@ -39,8 +39,8 @@
 % Note: See readme.txt.
 %
 %
-% HOW CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX (L1R) WORK
-% ==========================================================
+% HOW USING L1R CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX (L1R) WORK
+% ====================================================================
 % CALIBRATION_TABLE       : CDF L1R global attribute
 %   """"Filename of the calibration table(s).""""
 %   """"There must as many as entries than the number of calibration table files
@@ -54,7 +54,7 @@
 %   entry, 1 for the second, etc.). The second element must refer to the index
 %   of the value to be used inside the calibration table file.""""
 %
-% NOTE: Neither exist in L1 datasets.
+% NOTE: Neither exists in L1 datasets.
 %
 % Source: ROC-PRO-DAT-NTT-00006-LES_Iss01_Rev02(ROC_Data_Products).Draft2020-04-06.pdf
 %
@@ -165,14 +165,6 @@ classdef Cal < handle
   %           PRO: Plot
   %           PRO: Save to file.
   %
-  % PROPOSAL: Be able to return values for glob.attrs.
-  %       CAL_ENTITY_NAME,
-  %       CAL_ENTITY_AFFILIATION,
-  %       CAL_EQUIPMENT
-  %       since there is one value per RCT (CALIBRATION_TABLE entries).
-  %
-  %
-  %
   % PROPOSAL: Refactor to facilitate automated testing.
   %   PROBLEM: Though it does not read RCTs, the corresponding data
   %            structures are complex and would be hard to create test data for(?)
@@ -200,25 +192,6 @@ classdef Cal < handle
   %                 unit is ambiguous when a unit uses/call other unit(s).
   %
   %
-  %
-  % PROPOSAL: Replace obj.RcttCaMap with separate fields for different RCT types.
-  %   ~PRO: There is no need to iterate over RCT types in class.
-  %   PRO: Shorten code.
-  %       Ex: obj.RcttCaMap('BIAS') which now always returns a 1x1 cell which first
-  %           has to be "opened" via temporary variable. No cell array needed. Can
-  %           be asserted to be 1x1 immediately.
-  %       CON: Can only assign those class fields for which RCT data are available.
-  %           ==> if statements ==> longer code.
-  %       CON: Not that much code can actually be removed:
-  %               1+7 rows + some shortened rows.
-  % PROPOSAL: Specifically replace obj.RcttCaMap('BIAS'){1} --> obj. BiasRctData.
-  %   CON: Does not shorten code.
-  %       PRO: RcttCaMap should not contain BIAS RCT data.
-  %           PRO: Code to remove.
-  %           PRO: Modifies the argument since containers.Map is an argument
-  %                class, unless copies it (==> more code).
-  %       PRO: RcttCaMap should be renamed RcttCaMap-->NonBiasRcttCaMap.
-  %       CON: Might still move/collect code to better place.
   %
   % PROPOSAL: Rename/redefine cti2 (as did with cti1).
   %   PROPOSAL: iNonBiasRctCalib
