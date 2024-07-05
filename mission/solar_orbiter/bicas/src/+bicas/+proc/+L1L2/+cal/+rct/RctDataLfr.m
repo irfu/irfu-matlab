@@ -1,7 +1,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
+classdef RctDataLfr < bicas.proc.L1L2.cal.rct.RctData
 
 
 
@@ -26,10 +26,10 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
 
 
 
-    function obj = RctTypeLfr(filePath)
-      obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
+    function obj = RctDataLfr(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctData(filePath)
 
-      RctRawData = bicas.proc.L1L2.cal.rct.RctTypeLfr.read_RCT(filePath);
+      RctRawData = bicas.proc.L1L2.cal.rct.RctDataLfr.read_RCT(filePath);
 
 
 
@@ -103,7 +103,7 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
 
           itfName = sprintf('%s FTF (as in RCT)', itfNamePrefix);
           bicas.proc.L1L2.cal.utils.log_TF_tabulated(...
-            bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
+            bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL, ...
             itfName, ...
             obj.FtfRctTpivCaCa{iLsf}{iBlts}, ...
             L);
@@ -112,7 +112,7 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
           itfName = sprintf('%s ITF (modif., interp.)', itfNamePrefix);
 
           bicas.proc.L1L2.cal.utils.log_TF_function_handle(...
-            bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
+            bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL, ...
             itfName, ...
             'ivolt/TM unit', FREQ_HZ, itfIvpt, L)
 
@@ -187,7 +187,7 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
             lsfFreqTableHz,   [-1,       1 ], ...
             lsfAmplTableTpiv, [-1, nBlts], ...
             lsfPhaseTableDeg, [-1, nBlts]);
-          assert(nFreqs >= bicas.proc.L1L2.cal.rct.RctType.TF_TABLE_MIN_LENGTH)
+          assert(nFreqs >= bicas.proc.L1L2.cal.rct.RctData.TF_TABLE_MIN_LENGTH)
 
           for iBlts = 1:nBlts
 

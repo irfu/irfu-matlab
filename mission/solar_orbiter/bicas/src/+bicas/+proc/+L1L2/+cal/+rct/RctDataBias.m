@@ -1,7 +1,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
+classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
 
 
 
@@ -36,10 +36,10 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
 
 
 
-    function obj = RctTypeBias(filePath)
-      obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
+    function obj = RctDataBias(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctData(filePath)
 
-      RctRawData = bicas.proc.L1L2.cal.rct.RctTypeBias.read_RCT(filePath);
+      RctRawData = bicas.proc.L1L2.cal.rct.RctDataBias.read_RCT(filePath);
 
       %=============================================
       % Modify file data and store it in the object
@@ -92,7 +92,7 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
       % Logging parameters
       DC_FREQ_HZ       = [0];   % Single & diffs.
       AC_DIFF_FREQS_HZ = [0, 1000];
-      LL               = bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL;
+      LL               = bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL;
 
       %=====================
       % Iterate over EpochL
@@ -197,13 +197,13 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         % NOTE: Assumes 1 CDF record or many (time-dependent values).
         % ==> Must handle that dataobj assigns differently for these two
         %     cases.
-        epochL                    = bicas.proc.L1L2.cal.rct.RctTypeBias.normalize_dataobj_ZV(Do.data.Epoch_L);
-        epochH                    = bicas.proc.L1L2.cal.rct.RctTypeBias.normalize_dataobj_ZV(Do.data.Epoch_H);
-        biasCurrentOffsetsAAmpere = bicas.proc.L1L2.cal.rct.RctTypeBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
-        biasCurrentGainsAapt      = bicas.proc.L1L2.cal.rct.RctTypeBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
-        dcSingleOffsetsAVolt      = bicas.proc.L1L2.cal.rct.RctTypeBias.normalize_dataobj_ZV(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
-        dcDiffOffsetsAVolt        = bicas.proc.L1L2.cal.rct.RctTypeBias.normalize_dataobj_ZV(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
-        ftfCoeffs                 = bicas.proc.L1L2.cal.rct.RctTypeBias.normalize_dataobj_ZV(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
+        epochL                    = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.Epoch_L);
+        epochH                    = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.Epoch_H);
+        biasCurrentOffsetsAAmpere = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
+        biasCurrentGainsAapt      = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
+        dcSingleOffsetsAVolt      = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
+        dcDiffOffsetsAVolt        = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
+        ftfCoeffs                 = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
         nEpochL = size(epochL, 1);
         nEpochH = size(epochH, 1);
@@ -226,7 +226,7 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         %=======================================================
         % ND = Numerator Denominator
         nNdCoeffs = irf.assert.sizes(ftfCoeffs, [nEpochL, -1, 2, 4]);
-        assert(nNdCoeffs >= bicas.proc.L1L2.cal.rct.RctTypeBias.N_MIN_TF_NUMER_DENOM_COEFFS)
+        assert(nNdCoeffs >= bicas.proc.L1L2.cal.rct.RctDataBias.N_MIN_TF_NUMER_DENOM_COEFFS)
 
         %================================
         % Assign struct that is returned
@@ -243,19 +243,19 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
 
         % NOTE: Using name "FtfSet" only to avoid "Ftfs" (plural).
         % (List, Table would be wrong? Use "FtfTable"?)
-        D.FtfSet.DcSingleAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+        D.FtfSet.DcSingleAvpiv = bicas.proc.L1L2.cal.rct.RctDataBias.create_TF_sequence(...
           ftfCoeffs(:, :, I_NUMERATOR,   I_DC_SINGLE), ...
           ftfCoeffs(:, :, I_DENOMINATOR, I_DC_SINGLE));
 
-        D.FtfSet.DcDiffAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+        D.FtfSet.DcDiffAvpiv = bicas.proc.L1L2.cal.rct.RctDataBias.create_TF_sequence(...
           ftfCoeffs(:, :, I_NUMERATOR,   I_DC_DIFF), ...
           ftfCoeffs(:, :, I_DENOMINATOR, I_DC_DIFF));
 
-        D.FtfSet.AclgAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+        D.FtfSet.AclgAvpiv = bicas.proc.L1L2.cal.rct.RctDataBias.create_TF_sequence(...
           ftfCoeffs(:, :, I_NUMERATOR,   I_AC_LG), ...
           ftfCoeffs(:, :, I_DENOMINATOR, I_AC_LG));
 
-        D.FtfSet.AchgAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+        D.FtfSet.AchgAvpiv = bicas.proc.L1L2.cal.rct.RctDataBias.create_TF_sequence(...
           ftfCoeffs(:, :, I_NUMERATOR,   I_AC_HG), ...
           ftfCoeffs(:, :, I_DENOMINATOR, I_AC_HG));
 

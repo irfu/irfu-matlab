@@ -264,8 +264,8 @@ RCS ICD
     and then referred to the ROC-SGSE and RODP pipeline separately(?).
 RCT
     RPW Calibration Table. CDF with calibration data. See RCS ICD. ROC-defined.
-RCTT
-    Class bicas.proc.L1L2.cal.rct.RctType.
+RCTD
+    Class bicas.proc.L1L2.cal.rct.RctData.
 RCTTID
     RCT Type ID. String constant that represents a *type* of RCT, not a
     particular RT file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".

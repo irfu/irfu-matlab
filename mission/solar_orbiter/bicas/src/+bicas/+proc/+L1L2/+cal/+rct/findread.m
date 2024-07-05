@@ -80,24 +80,24 @@ classdef findread
     %
     % RETURN VALUE
     % ============
-    % RcttCaMap
+    % RctdCaMap
     %       containers.Map. Can be used for bicas.proc.L1L2.cal.Cal
     %       constructor even if there is no zVar CALIBRATION_TABLE.
     %       One key per specified RCTTID in argument rcttidCa.
     %       Exactly one RCT per RCT type.
     %
-    function RcttCaMap = find_read_RCTs_by_regexp(...
+    function RctdCaMap = find_read_RCTs_by_regexp(...
         rcttidCa, rctDir, Bso, L)
 
       assert(iscell(rcttidCa))
 
-      RcttCaMap = containers.Map();
+      RctdCaMap = containers.Map();
 
       for i = 1:numel(rcttidCa)
         rcttid = rcttidCa{i};
 
         % Find path to RCT.
-        settingKey     = bicas.proc.L1L2.cal.rct.RctType.RCTT_MAP(...
+        settingKey     = bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP(...
           rcttid).filenameRegexpSettingKey;
 
         filenameRegexp = Bso.get_fv(settingKey);
@@ -105,12 +105,12 @@ classdef findread
           rctDir, filenameRegexp, L);
 
         % Read RCT file.
-        RcttCa    = {bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+        RctdCa    = {bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           rcttid, filePath, L)};
 
         % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so that
         % they are stored analogously with when using L1R GA CALIBRATION_TABLE.
-        RcttCaMap(rcttid) = RcttCa;
+        RctdCaMap(rcttid) = RctdCa;
       end
     end
 
@@ -150,11 +150,11 @@ classdef findread
     %
     % RETURN VALUE
     % ============
-    % RcttCaMap
+    % RctdCaMap
     %       Returns containers.Map that can be used for bicas.proc.L1L2.cal.Cal
     %       constructor.
     %
-    function RcttCaMap = find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
+    function RctdCaMap = find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
         nonBiasRcttid, rctDir, ...
         ga_CALIBRATION_TABLE, ...
         zv_CALIBRATION_TABLE_INDEX, ...
@@ -167,22 +167,22 @@ classdef findread
       %========================================================================
       % Read BIAS RCT, IN ADDITION TO what argument "nonBiasRcttid" specifies.
       %========================================================================
-      BiasRcttCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
+      BiasRctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
         {'BIAS'}, rctDir, Bso, L);
 
       %==================================================================
       % Read potentially MULTIPLE NON-BIAS RCTs as specified by argument
       % "nonBiasRcttid".
       %==================================================================
-      NonBiasRcttCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
+      NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
         nonBiasRcttid, rctDir, ...
         ga_CALIBRATION_TABLE, ...
         zv_CALIBRATION_TABLE_INDEX, ...
         zv_BW, L);
 
-      RcttCaMap                = containers.Map();
-      RcttCaMap('BIAS')        = BiasRcttCaMap('BIAS');
-      RcttCaMap(nonBiasRcttid) = NonBiasRcttCa;
+      RctdCaMap                = containers.Map();
+      RctdCaMap('BIAS')        = BiasRctdCaMap('BIAS');
+      RctdCaMap(nonBiasRcttid) = NonBiasRctdCa;
     end
 
 
@@ -277,7 +277,7 @@ classdef findread
     %       L1/L1R), then the caller should (!) create a fake one and submit
     %       it (normalize input).
     %
-    function RcttCa = find_read_RCTs_by_CALIBRATION_TABLE(...
+    function RctdCa = find_read_RCTs_by_CALIBRATION_TABLE(...
         nonBiasRcttid, rctDir, ...
         ga_CALIBRATION_TABLE, ...
         zv_CALIBRATION_TABLE_INDEX, ...
@@ -302,7 +302,7 @@ classdef findread
 
 
       % Cell array of paths to RCTs of the same RCT type.
-      RcttCa = cell(nCt, 1);
+      RctdCa = cell(nCt, 1);
 
       % IMPLEMENTATION NOTE: Iterate over those entries in
       % CALIBRATION_TABLE that should be CONSIDERED, i.e. NOT all indices.
@@ -311,7 +311,7 @@ classdef findread
         % NOTE: Cell array index is one greater than the stored value.
         j              = iCtArray(i) + 1;
         filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
-        RcttCa{j} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+        RctdCa{j} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           nonBiasRcttid, filePath, L);
       end
 
@@ -336,16 +336,16 @@ classdef findread
     % (2) separate the logging from the RCT-reading code, so that external
     %     code can read RCTs without BICAS.
     %
-    function Rctt = read_RCT_modify_log(rcttid, filePath, L)
+    function Rctd = read_RCT_modify_log(rcttid, filePath, L)
 
       L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
         'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
 
-      RcttInfo = bicas.proc.L1L2.cal.rct.RctType.RCTT_MAP(rcttid);
+      RctdMetadata = bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP(rcttid);
 
-      Rctt = feval(RcttInfo.className, filePath);
+      Rctd = feval(RctdMetadata.className, filePath);
 
-      Rctt.log_RCT(L);
+      Rctd.log_RCT(L);
     end
 
 

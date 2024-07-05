@@ -1,7 +1,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
+classdef RctDataTdsCwf < bicas.proc.L1L2.cal.rct.RctData
 
 
 
@@ -25,12 +25,12 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
 
 
 
-    function obj = RctTypeTdsCwf(filePath)
-      obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
+    function obj = RctDataTdsCwf(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctData(filePath)
 
       % NOTE: RCT contains no TFs and data is therefore trivial to use as it is
       % in the RCT.
-      RctRawData = bicas.proc.L1L2.cal.rct.RctTypeTdsCwf.read_RCT(filePath);
+      RctRawData = bicas.proc.L1L2.cal.rct.RctDataTdsCwf.read_RCT(filePath);
       obj.factorsIvpt = RctRawData.factorsIvpt;
     end
 
@@ -38,7 +38,7 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
 
     function log_RCT(obj, L)
 
-      L.logf(bicas.proc.L1L2.cal.rct.RctType.RCT_DATA_LL, ...
+      L.logf(bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL, ...
         'TDS CWF calibration factors: %s [ivolt/TM]', ...
         bicas.proc.L1L2.cal.utils.vector_string('%g', obj.factorsIvpt));
     end

@@ -14,7 +14,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef(Abstract) RctType
+classdef(Abstract) RctData
   % PROPOSAL: Classes for RCT data (not just RCT type).
   %   PRO: BIAS data has many fields.
   %   PRO: More well-defined data structs.
@@ -23,8 +23,8 @@ classdef(Abstract) RctType
   %        could just as well have classes for the format
   %        bicas.proc.L1L2.cal.Cal uses. ==> Too many classes.
   %     TODO-NI: Where does bicas.proc.L1L2.cal.Cal modify the structs?
-  %       Does not RctType.modify_RCT_data() in subclasses do all modification
-  %       in RctType.read_RCT_modify_log()? Has the question been obsoleted due
+  %       Does not RctData.modify_RCT_data() in subclasses do all modification
+  %       in RctData.read_RCT_modify_log()? Has the question been obsoleted due
   %       to refactoring?
   %   PROPOSAL: Convert subclasses to stores of RCT data too.
   %       CON: Can have multiple non-BIAS RCTs loaded. Multiple instances of the
@@ -41,7 +41,7 @@ classdef(Abstract) RctType
   %   PROPOSAL: Assert units from zVar attributes.
   %
   % PROPOSAL: Change name to something indicating a store of data.
-  %   NOTE: RctType is a historical name.
+  %   NOTE: RctData is a historical name.
   %     PROPOSAL: RCTD=RctData
   %       ~data, ~RCT
 
@@ -59,7 +59,7 @@ classdef(Abstract) RctType
     % -----------------------------
     % containers.Map: RCTTID --> struct containing information on every RCTT.
     % Its keys defines the set of RCTTID strings.
-    RCTT_MAP = bicas.proc.L1L2.cal.rct.RctType.init_RCTT_MAP();
+    RCTD_METADATA_MAP = bicas.proc.L1L2.cal.rct.RctData.init_RCTD_METADATA_MAP();
   end
 
 
@@ -95,7 +95,7 @@ classdef(Abstract) RctType
 
 
 
-    function obj = RctType(filePath)
+    function obj = RctData(filePath)
         obj.filePath = filePath;
     end
 
@@ -166,16 +166,16 @@ classdef(Abstract) RctType
   %#######################
   methods(Static)
 
-    % Code to initialize hard-coded static constant RCTT_MAP.
+    % Code to initialize hard-coded static constant RCTD_METADATA_MAP.
     %
     % IMPLEMENTATION NOTE: This data structure includes the filename reg.exp.
     % setting keys since it does not appear that MATLAB allows one to access a
     % "Constant instance field" of a class without instantiating it
-    % (bicas.proc.L1L2.cal.rct.RctType subclasses). MATLAB does not have true
+    % (bicas.proc.L1L2.cal.rct.RctData subclasses). MATLAB does not have true
     % static variables (constant instance fields are the closest).
     %
-    function RcttMap = init_RCTT_MAP()
-      RcttMap = containers.Map();
+    function RctdMetadataMap = init_RCTD_METADATA_MAP()
+      RctdMetadataMap = containers.Map();
 
       % (1) Reference to class.
       % (2) Settings key for value that defines the regular expression that is
@@ -186,10 +186,10 @@ classdef(Abstract) RctType
           'filenameRegexpSettingKey', filenameRegexpSettingKey);
       end
 
-      RcttMap('BIAS')     = info('bicas.proc.L1L2.cal.rct.RctTypeBias',    'PROCESSING.RCT_REGEXP.BIAS');
-      RcttMap('LFR')      = info('bicas.proc.L1L2.cal.rct.RctTypeLfr',     'PROCESSING.RCT_REGEXP.LFR');
-      RcttMap('TDS-CWF')  = info('bicas.proc.L1L2.cal.rct.RctTypeTdsCwf',  'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
-      RcttMap('TDS-RSWF') = info('bicas.proc.L1L2.cal.rct.RctTypeTdsRswf', 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
+      RctdMetadataMap('BIAS')     = info('bicas.proc.L1L2.cal.rct.RctDataBias',    'PROCESSING.RCT_REGEXP.BIAS');
+      RctdMetadataMap('LFR')      = info('bicas.proc.L1L2.cal.rct.RctDataLfr',     'PROCESSING.RCT_REGEXP.LFR');
+      RctdMetadataMap('TDS-CWF')  = info('bicas.proc.L1L2.cal.rct.RctDataTdsCwf',  'PROCESSING.RCT_REGEXP.TDS-LFM-CWF');
+      RctdMetadataMap('TDS-RSWF') = info('bicas.proc.L1L2.cal.rct.RctDataTdsRswf', 'PROCESSING.RCT_REGEXP.TDS-LFM-RSWF');
     end
 
 
