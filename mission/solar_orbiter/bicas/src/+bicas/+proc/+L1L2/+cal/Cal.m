@@ -201,23 +201,23 @@ classdef Cal < handle
   %
   %
   %
-  % PROPOSAL: Replace obj.RctDataMap with separate fields for different RCT types.
+  % PROPOSAL: Replace obj.RcttCaMap with separate fields for different RCT types.
   %   ~PRO: There is no need to iterate over RCT types in class.
   %   PRO: Shorten code.
-  %       Ex: obj.RctDataMap('BIAS') which now always returns a 1x1 cell which first
+  %       Ex: obj.RcttCaMap('BIAS') which now always returns a 1x1 cell which first
   %           has to be "opened" via temporary variable. No cell array needed. Can
   %           be asserted to be 1x1 immediately.
   %       CON: Can only assign those class fields for which RCT data are available.
   %           ==> if statements ==> longer code.
   %       CON: Not that much code can actually be removed:
   %               1+7 rows + some shortened rows.
-  % PROPOSAL: Specifically replace obj.RctDataMap('BIAS'){1} --> obj. BiasRctData.
+  % PROPOSAL: Specifically replace obj.RcttCaMap('BIAS'){1} --> obj. BiasRctData.
   %   CON: Does not shorten code.
-  %       PRO: RctDataMap should not contain BIAS RCT data.
+  %       PRO: RcttCaMap should not contain BIAS RCT data.
   %           PRO: Code to remove.
   %           PRO: Modifies the argument since containers.Map is an argument
   %                class, unless copies it (==> more code).
-  %       PRO: RctDataMap should be renamed RctDataMap-->NonBiasRctDataMap.
+  %       PRO: RcttCaMap should be renamed RcttCaMap-->NonBiasRcttCaMap.
   %       CON: Might still move/collect code to better place.
   %
   % PROPOSAL: Rename/redefine cti2 (as did with cti1).
@@ -226,7 +226,7 @@ classdef Cal < handle
   % PROPOSAL: Move (charge) current calibration to separate class.
   %   NOTE: Functions
   %       calibrate_current_TM_to_aampere()
-  %           Uses BiasRctDataCa == Uses RCT.
+  %           Uses BiasRctt == Uses RCT.
   %       calibrate_current_HK_TM_to_aampere()
   %           Uses
   %               obj.HkBiasCurrent.gainAapt
@@ -280,7 +280,7 @@ classdef Cal < handle
     % CALIBRATION_TABLE_INDEX(:,1) when those are used. May thus contain
     % empty cells for non-BIAS RCTs which should not (and can not) be
     % loaded.
-    RctDataMap;
+    RcttCaMap;
 
     % Non-RCT calibration data
     % ------------------------
@@ -339,9 +339,9 @@ classdef Cal < handle
     %
     % ARGUMENTS
     % =========
-    % RctDataMap
+    % RcttCaMap
     %       containers.Map with keys RCTTID --> values = 1D cell array of
-    %       RCT data. Must include BIAS RCT data.
+    %       RCTTs. Must include BIAS RCTT.
     %       The content in non-empty indices {iRct} come from the RCT which
     %       is determined by the combination zVar BW, zVar
     %       CALIBRATION_TABLE_INDEX(i,1), glob.attr. CALIBRATION_TABLE  (or
@@ -351,7 +351,7 @@ classdef Cal < handle
     % NOTES ON INTENDED USAGE
     % =======================
     % The nominal use is that the caller first initializes (argument)
-    % RctDataMap
+    % RcttCaMap
     % (1) by loading all RCTs using
     %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(),
     % (2) by loading relevant RCT(s) using
@@ -375,22 +375,22 @@ classdef Cal < handle
     % ** it simplifies the constructor.
     %
     function obj = Cal(...
-        RctDataMap, ...
+        RcttCaMap, ...
         use_CALIBRATION_TABLE_rcts, ...
         use_CALIBRATION_TABLE_INDEX2, ...
         Bso)
 
       % ASSERTIONS: Arguments
       assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
-      %
+      % RcttCaMap
       irf.assert.subset(...
-        RctDataMap.keys, ...
+        RcttCaMap.keys, ...
         bicas.proc.L1L2.cal.rct.RctType.RCTT_MAP.keys)
-      assert(isscalar(RctDataMap('BIAS')))
-      RcttidCa = RctDataMap.keys;
+      assert(isscalar(RcttCaMap('BIAS')))
+      RcttidCa = RcttCaMap.keys;
       for iRcttid = 1:numel(RcttidCa)
         rcttid = RcttidCa{iRcttid};
-        RcttCa = RctDataMap(rcttid);
+        RcttCa = RcttCaMap(rcttid);
         assert(iscell(RcttCa) && iscolumn(RcttCa))
         for iRctt = 1:numel(RcttCa)
           Rctt = RcttCa{iRctt};
@@ -400,10 +400,10 @@ classdef Cal < handle
 
 
 
-      %====================
-      % Set obj.RctDataMap
-      %====================
-      obj.RctDataMap = RctDataMap;
+      %===================
+      % Set obj.RcttCaMap
+      %===================
+      obj.RcttCaMap = RcttCaMap;
 
 
 
@@ -492,9 +492,9 @@ classdef Cal < handle
       %==============================
       % Obtain calibration constants
       %==============================
-      BiasRctDataCa = obj.RctDataMap('BIAS');
-      offsetAAmpere = BiasRctDataCa{1}.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
-      gainAapt      = BiasRctDataCa{1}.Current.gainsAapt(     iCalibTimeL, iAntenna);
+      BiasRcttCa    = obj.RcttCaMap('BIAS');
+      offsetAAmpere = BiasRcttCa{1}.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
+      gainAapt      = BiasRcttCa{1}.Current.gainsAapt(     iCalibTimeL, iAntenna);
 
       % CALIBRATE
       %
@@ -749,8 +749,8 @@ classdef Cal < handle
         if obj.lfrTdsTfDisabled
           tdsFactorIvpt = 1;
         else
-          RctList       = obj.RctDataMap('TDS-CWF');
-          tdsFactorIvpt = RctList{iNonBiasRct}.factorsIvpt(iBlts);
+          RcttCa        = obj.RcttCaMap('TDS-CWF');
+          tdsFactorIvpt = RcttCa{iNonBiasRct}.factorsIvpt(iBlts);
         end
 
         for i = 1:numel(bltsSamplesTmCa)
@@ -844,8 +844,8 @@ classdef Cal < handle
         if obj.lfrTdsTfDisabled
           tdsItfIvpt = @(omegaRps) (ones(omegaRps));
         else
-          RctList    = obj.RctDataMap('TDS-RSWF');
-          tdsItfIvpt = RctList{iNonBiasRct}.itfModifIvptCa{iBlts};
+          RcttCa     = obj.RcttCaMap('TDS-RSWF');
+          tdsItfIvpt = RcttCa{iNonBiasRct}.itfModifIvptCa{iBlts};
         end
 
         itfAvpt = @(omegaRps) (...
@@ -887,19 +887,19 @@ classdef Cal < handle
 
 
     function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
-      BiasRctDataCa = obj.RctDataMap('BIAS');
+      BiasRcttCa = obj.RcttCaMap('BIAS');
 
       iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
-        Epoch, BiasRctDataCa{1}.epochL);
+        Epoch, BiasRcttCa{1}.epochL);
     end
 
 
 
     function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
-      BiasRctDataCa = obj.RctDataMap('BIAS');
+      BiasRcttCa = obj.RcttCaMap('BIAS');
 
       iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
-        Epoch, BiasRctDataCa{1}.epochH);
+        Epoch, BiasRcttCa{1}.epochH);
     end
 
 
@@ -934,8 +934,8 @@ classdef Cal < handle
       assert(isscalar(iCalibTimeL))
       assert(isscalar(iCalibTimeH))
 
-      BiasRctCa = obj.RctDataMap('BIAS');
-      BiasRct   = BiasRctCa{1};
+      BiasRcttCa = obj.RcttCaMap('BIAS');
+      BiasRctt   = BiasRcttCa{1};
 
       %###################################################################
       % kIvpav = Multiplication factor "k" that represents/replaces the
@@ -944,18 +944,18 @@ classdef Cal < handle
         case 'DC single'
 
           % NOTE: List of ITFs for different times.
-          biasItfAvpiv = BiasRct.ItfSet.dcSingleAvpiv{iCalibTimeL};
+          biasItfAvpiv = BiasRctt.ItfSet.dcSingleAvpiv{iCalibTimeL};
           kFtfIvpav    = obj.BiasScalarGain.alphaIvpav;
-          offsetAVolt  = BiasRct.dcSingleOffsetsAVolt(...
+          offsetAVolt  = BiasRctt.dcSingleOffsetsAVolt(...
             iCalibTimeH, Ssid.Asid.antennas);
 
         case 'DC diff'
 
-          biasItfAvpiv = BiasRct.ItfSet.dcDiffAvpiv{iCalibTimeL};
+          biasItfAvpiv = BiasRctt.ItfSet.dcDiffAvpiv{iCalibTimeL};
           kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
-          if     isequal(Ssid.Asid.antennas(:)', [1,2]);   offsetAVolt = BiasRct.DcDiffOffsets.E12AVolt(iCalibTimeH);
-          elseif isequal(Ssid.Asid.antennas(:)', [1,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E13AVolt(iCalibTimeH);
-          elseif isequal(Ssid.Asid.antennas(:)', [2,3]);   offsetAVolt = BiasRct.DcDiffOffsets.E23AVolt(iCalibTimeH);
+          if     isequal(Ssid.Asid.antennas(:)', [1,2]);   offsetAVolt = BiasRctt.DcDiffOffsets.E12AVolt(iCalibTimeH);
+          elseif isequal(Ssid.Asid.antennas(:)', [1,3]);   offsetAVolt = BiasRctt.DcDiffOffsets.E13AVolt(iCalibTimeH);
+          elseif isequal(Ssid.Asid.antennas(:)', [2,3]);   offsetAVolt = BiasRctt.DcDiffOffsets.E23AVolt(iCalibTimeH);
           else
             error('BICAS:Assertion:IllegalArgument', ...
               'Illegal Ssid.');
@@ -964,11 +964,11 @@ classdef Cal < handle
         case 'AC diff'
 
           if     isAchg == 0
-            biasItfAvpiv = BiasRct.ItfSet.aclgAvpiv{iCalibTimeL};
+            biasItfAvpiv = BiasRctt.ItfSet.aclgAvpiv{iCalibTimeL};
             kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.aclg;
             offsetAVolt  = 0;
           elseif isAchg == 1
-            biasItfAvpiv = BiasRct.ItfSet.achgAvpiv{iCalibTimeL};
+            biasItfAvpiv = BiasRctt.ItfSet.achgAvpiv{iCalibTimeL};
             kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.achg;
             offsetAVolt  = 0;
           elseif isnan(isAchg)
@@ -1012,9 +1012,9 @@ classdef Cal < handle
     % returns NaN instead. BICAS may still iterate over that combination
     % though when calibrating.
     %
-    function lfrItfIvpt = get_LFR_ITF(obj, iNonBiasRct, iBlts, iLsf)
+    function lfrItfIvpt = get_LFR_ITF(obj, iLfrRctt, iBlts, iLsf)
       % ASSERTIONS
-      assert(iNonBiasRct >= 1)
+      assert(iLfrRctt >= 1)
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
       bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
 
@@ -1025,29 +1025,29 @@ classdef Cal < handle
         % signal route, so the TF can not be returned even in principle.
         lfrItfIvpt = bicas.proc.L1L2.cal.Cal.NAN_TF;
       else
-        RctDataList = obj.RctDataMap('LFR');
+        LfrRcttDataCa = obj.RcttCaMap('LFR');
 
         % ASSERTION
         % IMPLEMENTATION NOTE: Anonymous function below will fail at a
         % later stage if these assertions are false. Checking for these
         % criteria here makes it easier to understand these particular
         % types of error.
-        assert(numel(RctDataList) <= iNonBiasRct, ...
+        assert(numel(LfrRcttDataCa) <= iLfrRctt, ...
           'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
-          ['LFR RctDataList is too small for argument iNonBiasRct=%g.', ...
+          ['LFR LfrRcttDataCa is too small for argument iLfrRctt=%g.', ...
           ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
           ' value is larger than glob. attr. CALIBRATION TABLE allows.'], ...
-          iNonBiasRct)
-        assert(~isempty(RctDataList{iNonBiasRct}), ...
+          iLfrRctt)
+        assert(~isempty(LfrRcttDataCa{iLfrRctt}), ...
           'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
-          ['LFR RctDataList contains no RCT data corresponding', ...
-          ' to argument iNonBiasRct=%g. This may indicate that', ...
+          ['LFR LfrRcttDataCa contains no RCT data corresponding', ...
+          ' to argument iLfrRctt=%g. This may indicate that', ...
           ' a zVar CALIBRATION_TABLE_INDEX(:,1) value is wrong or', ...
           ' that BICAS did not try to load the corresponding RCT', ...
           ' in glob. attr. CALIBRATION_TABLE.'], ...
-          iNonBiasRct)
+          iLfrRctt)
 
-        lfrItfIvpt = RctDataList{iNonBiasRct}.ItfModifIvptCaCa{iLsf}{iBlts};
+        lfrItfIvpt = LfrRcttDataCa{iLfrRctt}.ItfModifIvptCaCa{iLsf}{iBlts};
       end
     end
 
