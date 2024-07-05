@@ -39,12 +39,12 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
     function obj = RctTypeBias(filePath)
       obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
 
-      FileData = bicas.proc.L1L2.cal.rct.RctTypeBias.read_RCT(filePath);
+      RctRawData = bicas.proc.L1L2.cal.rct.RctTypeBias.read_RCT(filePath);
 
       %=============================================
       % Modify file data and store it in the object
       %=============================================
-      FtfRctSet = FileData.FtfSet;
+      FtfRctSet = RctRawData.FtfSet;
 
       % ASSERTIONS
       nTime = irf.assert.sizes(...
@@ -73,13 +73,13 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         ItfSet.achgAvpiv    {iTf} = @(omegaRps) (TempItfAchgAvpiv    .eval(omegaRps));
       end
 
-      obj.epochL               = FileData.epochL;
-      obj.epochH               = FileData.epochH;
-      obj.Current              = FileData.Current;
+      obj.epochL               = RctRawData.epochL;
+      obj.epochH               = RctRawData.epochH;
+      obj.Current              = RctRawData.Current;
       obj.FtfRctSet            = FtfRctSet;  % Change name of field (sic!).
       obj.ItfSet               = ItfSet;
-      obj.dcSingleOffsetsAVolt = FileData.dcSingleOffsetsAVolt;
-      obj.DcDiffOffsets        = FileData.DcDiffOffsets;
+      obj.dcSingleOffsetsAVolt = RctRawData.dcSingleOffsetsAVolt;
+      obj.DcDiffOffsets        = RctRawData.DcDiffOffsets;
     end
 
 
@@ -114,7 +114,7 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         % frequencies.
         L.logf(LL, ...
           ['    Note: Not logging the exact RCT BIAS TFs', ...
-          ' (FTFs; RctData.FtfRctSet) since the inversion is trivial.'])
+          ' (FTFs; obj.FtfRctSet) since the inversion is trivial.'])
         log_TF('    BIAS ITF DC single',          DC_FREQ_HZ,       obj.ItfSet.dcSingleAvpiv)
         log_TF('    BIAS ITF DC diff',            DC_FREQ_HZ,       obj.ItfSet.dcDiffAvpiv)
         log_TF('    BIAS ITF AC diff, low  gain', AC_DIFF_FREQS_HZ, obj.ItfSet.aclgAvpiv)
@@ -171,7 +171,7 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
 
 
 
-    function [RctData] = read_RCT(filePath)
+    function [RctRawData] = read_RCT(filePath)
       % TODO-DEC: How handle time?
       %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting
       %             indices in a data struct.
@@ -231,40 +231,40 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         %================================
         % Assign struct that is returned
         %================================
-        RctData.epochL = epochL;
-        RctData.epochH = epochH;
+        D.epochL = epochL;
+        D.epochH = epochH;
 
-        RctData.Current.offsetsAAmpere = biasCurrentOffsetsAAmpere;
-        RctData.Current.gainsAapt      = biasCurrentGainsAapt;
-        RctData.dcSingleOffsetsAVolt   = dcSingleOffsetsAVolt;
-        RctData.DcDiffOffsets.E12AVolt = dcDiffOffsetsAVolt(:, I_E12);
-        RctData.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, I_E13);
-        RctData.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, I_E23);
+        D.Current.offsetsAAmpere = biasCurrentOffsetsAAmpere;
+        D.Current.gainsAapt      = biasCurrentGainsAapt;
+        D.dcSingleOffsetsAVolt   = dcSingleOffsetsAVolt;
+        D.DcDiffOffsets.E12AVolt = dcDiffOffsetsAVolt(:, I_E12);
+        D.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, I_E13);
+        D.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, I_E23);
 
         % NOTE: Using name "FtfSet" only to avoid "Ftfs" (plural).
         % (List, Table would be wrong? Use "FtfTable"?)
-        RctData.FtfSet.DcSingleAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+        D.FtfSet.DcSingleAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
           ftfCoeffs(:, :, I_NUMERATOR,   I_DC_SINGLE), ...
           ftfCoeffs(:, :, I_DENOMINATOR, I_DC_SINGLE));
 
-        RctData.FtfSet.DcDiffAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+        D.FtfSet.DcDiffAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
           ftfCoeffs(:, :, I_NUMERATOR,   I_DC_DIFF), ...
           ftfCoeffs(:, :, I_DENOMINATOR, I_DC_DIFF));
 
-        RctData.FtfSet.AclgAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+        D.FtfSet.AclgAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
           ftfCoeffs(:, :, I_NUMERATOR,   I_AC_LG), ...
           ftfCoeffs(:, :, I_DENOMINATOR, I_AC_LG));
 
-        RctData.FtfSet.AchgAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
+        D.FtfSet.AchgAvpiv = bicas.proc.L1L2.cal.rct.RctTypeBias.create_TF_sequence(...
           ftfCoeffs(:, :, I_NUMERATOR,   I_AC_HG), ...
           ftfCoeffs(:, :, I_DENOMINATOR, I_AC_HG));
 
         % ASSERTIONS
         irf.assert.sizes(...
-          RctData.FtfSet.DcSingleAvpiv, [nEpochL, 1], ...
-          RctData.FtfSet.DcDiffAvpiv,   [nEpochL, 1], ...
-          RctData.FtfSet.AclgAvpiv,     [nEpochL, 1], ...
-          RctData.FtfSet.AchgAvpiv,     [nEpochL, 1]);
+          D.FtfSet.DcSingleAvpiv, [nEpochL, 1], ...
+          D.FtfSet.DcDiffAvpiv,   [nEpochL, 1], ...
+          D.FtfSet.AclgAvpiv,     [nEpochL, 1], ...
+          D.FtfSet.AchgAvpiv,     [nEpochL, 1]);
         for iEpochL = 1:nEpochL
           %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
           %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
@@ -279,18 +279,18 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         % ASSERTIONS:
         % All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
         %==============================================================
-        bicas.utils.assert_ZV_Epoch(RctData.epochL)
-        bicas.utils.assert_ZV_Epoch(RctData.epochH)
-        validateattributes(RctData.epochL, {'numeric'}, {'increasing'})
-        validateattributes(RctData.epochH, {'numeric'}, {'increasing'})
+        bicas.utils.assert_ZV_Epoch(D.epochL)
+        bicas.utils.assert_ZV_Epoch(D.epochH)
+        validateattributes(D.epochL, {'numeric'}, {'increasing'})
+        validateattributes(D.epochH, {'numeric'}, {'increasing'})
 
         irf.assert.sizes(...
-          RctData.Current.offsetsAAmpere, [nEpochL, 3], ...
-          RctData.Current.gainsAapt,      [nEpochL, 3], ...
-          RctData.dcSingleOffsetsAVolt,   [nEpochH, 3]);
+          D.Current.offsetsAAmpere, [nEpochL, 3], ...
+          D.Current.gainsAapt,      [nEpochL, 3], ...
+          D.dcSingleOffsetsAVolt,   [nEpochH, 3]);
 
-        for fn = fieldnames(RctData.DcDiffOffsets)'
-          irf.assert.sizes(RctData.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
+        for fn = fieldnames(D.DcDiffOffsets)'
+          irf.assert.sizes(D.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
         end
 
       catch Exc1
@@ -300,6 +300,8 @@ classdef RctTypeBias < bicas.proc.L1L2.cal.rct.RctType
         Exc2 = Exc2.addCause(Exc1);
         throw(Exc2)
       end
+
+      RctRawData = D;
     end
 
 

@@ -30,8 +30,8 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
 
       % NOTE: RCT contains no TFs and data is therefore trivial to use as it is
       % in the RCT.
-      RctData = bicas.proc.L1L2.cal.rct.RctTypeTdsCwf.read_RCT(filePath);
-      obj.factorsIvpt = RctData.factorsIvpt;
+      RctRawData = bicas.proc.L1L2.cal.rct.RctTypeTdsCwf.read_RCT(filePath);
+      obj.factorsIvpt = RctRawData.factorsIvpt;
     end
 
 
@@ -60,7 +60,7 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
 
     % NOTE: TDS CWF cwfFactorsIvpt are already inverted (can be seen from
     % units).
-    function RctData = read_RCT(filePath)
+    function RctRawData = read_RCT(filePath)
 
       Do = dataobj(filePath);
 
@@ -79,8 +79,8 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
         % ASSERTIONS: Check CDF array sizes, no change in format.
         irf.assert.sizes(factorsIvpt, [3,1])
 
-        RctData = [];
-        RctData.factorsIvpt = factorsIvpt;
+        D = [];
+        D.factorsIvpt = factorsIvpt;
 
       catch Exc1
         Exc2 = MException(...
@@ -91,6 +91,8 @@ classdef RctTypeTdsCwf < bicas.proc.L1L2.cal.rct.RctType
         Exc2 = Exc2.addCause(Exc1);
         throw(Exc2);
       end
+
+      RctRawData = D;
     end
 
 

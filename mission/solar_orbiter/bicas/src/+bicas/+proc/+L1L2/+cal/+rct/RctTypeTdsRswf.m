@@ -29,7 +29,7 @@ classdef RctTypeTdsRswf < bicas.proc.L1L2.cal.rct.RctType
     function obj = RctTypeTdsRswf(filePath)
       obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
 
-      FileData = bicas.proc.L1L2.cal.rct.RctTypeTdsRswf.read_RCT(filePath);
+      RctRawData = bicas.proc.L1L2.cal.rct.RctTypeTdsRswf.read_RCT(filePath);
 
 
 
@@ -37,10 +37,10 @@ classdef RctTypeTdsRswf < bicas.proc.L1L2.cal.rct.RctType
       % Modify file data and store it in the object
       %=============================================
       % Modify tabulated TDS-RSWF TFs.
-      for iBlts = 1:numel(FileData.ItfIvptList)
+      for iBlts = 1:numel(RctRawData.ItfIvptList)
         % NOTE: Overwriting.
 
-        ItfRctIvpt = FileData.ItfIvptList{iBlts};
+        ItfRctIvpt = RctRawData.ItfIvptList{iBlts};
 
         % Store tabulated ITF EXACTLY AS THEY ARE in the RCT (before
         % modification).
@@ -106,7 +106,7 @@ classdef RctTypeTdsRswf < bicas.proc.L1L2.cal.rct.RctType
 
     % NOTE: The TDS RSWF RCT contains ITFs, not FTFs.
     %
-    function RctData = read_RCT(filePath)
+    function RctRawData = read_RCT(filePath)
 
       Do = dataobj(filePath);
 
@@ -144,8 +144,8 @@ classdef RctTypeTdsRswf < bicas.proc.L1L2.cal.rct.RctType
           ItfIvptList{iBlts} = ItfIvpt;
         end
 
-        RctData = [];
-        RctData.ItfIvptList = ItfIvptList;
+        D = [];
+        D.ItfIvptList = ItfIvptList;
 
       catch Exc1
         Exc2 = MException(...
@@ -156,6 +156,8 @@ classdef RctTypeTdsRswf < bicas.proc.L1L2.cal.rct.RctType
         Exc2 = Exc2.addCause(Exc1);
         throw(Exc2);
       end
+
+      RctRawData = D;
     end
 
 

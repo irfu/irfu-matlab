@@ -29,14 +29,14 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
     function obj = RctTypeLfr(filePath)
       obj@bicas.proc.L1L2.cal.rct.RctType(filePath)
 
-      FileData = bicas.proc.L1L2.cal.rct.RctTypeLfr.read_RCT(filePath);
+      RctRawData = bicas.proc.L1L2.cal.rct.RctTypeLfr.read_RCT(filePath);
 
 
 
       %=============================================
       % Modify file data and store it in the object
       %=============================================
-      FtfRctTpivCaCa = FileData.FtfTpivTable;
+      FtfRctTpivCaCa = RctRawData.FtfTpivTable;
 
       % Read LFR FTFs, derive ITFs and modify them.
       itfModifIvptCaCa = {};
@@ -78,7 +78,7 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
         end
       end
 
-      % NOTE: RctData.FtfRctTpivCaCa is still kept (for debugging).
+      % NOTE: FtfRctTpivCaCa is still kept (for debugging).
       obj.FtfRctTpivCaCa   = FtfRctTpivCaCa;    % Just copied.
       obj.ItfModifIvptCaCa = itfModifIvptCaCa;
     end
@@ -139,7 +139,7 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
     % LfrFtfTpivTable : {iLsf}{iBlts}. Table of LFR FTFs.
     %                   iLsf=1..3 : iBlts=1..5 for BLTS 1-5.
     %                   iLsf=4    : iBlts=1..3 for BIAS 1-3.
-    function RctData = read_RCT(filePath)
+    function RctRawData = read_RCT(filePath)
       Do = dataobj(filePath);
 
       try
@@ -209,8 +209,8 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
 
         % NOTE: Storing data in struct field to clarify the nature of
         % the content to the caller.
-        RctData = [];
-        RctData.FtfTpivTable = FtfTpivTable;
+        D = [];
+        D.FtfTpivTable = FtfTpivTable;
 
       catch Exc1
         Exc2 = MException(...
@@ -221,6 +221,8 @@ classdef RctTypeLfr < bicas.proc.L1L2.cal.rct.RctType
         Exc2 = Exc2.addCause(Exc1);
         throw(Exc2);
       end
+
+      RctRawData = D;
     end
 
 

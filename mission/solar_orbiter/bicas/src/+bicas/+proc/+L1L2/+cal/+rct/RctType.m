@@ -151,7 +151,7 @@ classdef(Abstract) RctType
     %   frequency      : Hz    --> rad/s
     %   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
     %
-    [RctData] = read_RCT(filePath);
+    [RctRawData] = read_RCT(filePath);
 
 
 
