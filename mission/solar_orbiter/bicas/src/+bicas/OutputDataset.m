@@ -20,6 +20,7 @@ classdef OutputDataset
   properties(SetAccess=immutable)
     Zv
     Ga
+    RctdCaMap
   end
 
 
@@ -33,9 +34,12 @@ classdef OutputDataset
 
 
 
-    function obj = OutputDataset(Zv, Ga)
+    function obj = OutputDataset(Zv, Ga, RctdCaMap)
+      assert(isa(RctdCaMap, 'containers.Map'))
+
       obj.Zv = Zv;
       obj.Ga = Ga;
+      obj.RctdCaMap = RctdCaMap;
     end
 
 

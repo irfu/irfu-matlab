@@ -110,7 +110,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
       OutputDatasetsMap = containers.Map();
-      OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga);
+      OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCaMap);
     end
 
 
