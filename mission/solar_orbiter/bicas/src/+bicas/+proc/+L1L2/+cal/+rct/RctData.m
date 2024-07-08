@@ -81,6 +81,12 @@ classdef(Abstract) RctData
   properties(GetAccess=public, SetAccess=immutable)
     % Path to RCT file from which data was loaded.
     filePath
+
+    % Global attribute "Data_version" in RCT file as a string.
+    % NOTE: Data_version is not always set correctly in RCT.
+    %   Ex: SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
+    %       SOLO_CAL_RPW-BIAS_V202011191204.cdf
+    ga_Data_version
   end
 
 
@@ -95,8 +101,16 @@ classdef(Abstract) RctData
 
 
 
+    % NOTE: Reads RCT on its own, just for obtaining GA Data_version.
     function obj = RctData(filePath)
-        obj.filePath = filePath;
+      Do = dataobj(filePath);
+
+      ga_Data_version = Do.GlobalAttributes.Data_version;
+      assert(isscalar(ga_Data_version))
+      assert(ischar(ga_Data_version{1}))
+
+      obj.filePath        = filePath;
+      obj.ga_Data_version = ga_Data_version{1};
     end
 
 
