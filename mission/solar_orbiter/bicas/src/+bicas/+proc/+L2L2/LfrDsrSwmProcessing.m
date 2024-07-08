@@ -31,7 +31,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       OutputDatasetsMap = containers.Map();
       OutputDatasetsMap('DSR_cdf') = bicas.OutputDataset(...
-        OutLfrCwfDsr.Zv, OutLfrCwfDsr.Ga, containers.Map);
+        OutLfrCwfDsr.Zv, OutLfrCwfDsr.Ga, cell(0, 1));
     end
 
 

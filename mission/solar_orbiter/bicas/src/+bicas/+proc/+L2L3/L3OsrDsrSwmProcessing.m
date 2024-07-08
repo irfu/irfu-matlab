@@ -275,7 +275,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
       Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
 
-      Out = bicas.OutputDataset(Out.Zv, Out.Ga, containers.Map);
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -291,7 +291,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         Out.Zv.PSP.fpAr;
       Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
 
-      Out = bicas.OutputDataset(Out.Zv, Out.Ga, containers.Map);
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -315,7 +315,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
       Out.Zv.L3_QUALITY_BITMASK(bFp)   = bicas.utils.FPArray.FP_UINT16;
 
-      Out = bicas.OutputDataset(Out.Zv, Out.Ga, containers.Map);
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -334,7 +334,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
       Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
 
-      Out = bicas.OutputDataset(Out.Zv, Out.Ga, containers.Map);
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -364,7 +364,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         Out.Zv.PSP.fpAr;
       Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
 
-      Out = bicas.OutputDataset(Out.Zv, Out.Ga, containers.Map);
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -386,7 +386,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         osr_L3_QUALITY_BITMASK, iRecordsInBinCa);
       Out.Zv.L3_QUALITY_BITMASK(bFp) = bicas.utils.FPArray.FP_UINT16;   % ?!
 
-      Out = bicas.OutputDataset(Out.Zv, Out.Ga, containers.Map);
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
