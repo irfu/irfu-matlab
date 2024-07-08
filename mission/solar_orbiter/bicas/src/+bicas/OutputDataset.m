@@ -22,7 +22,7 @@ classdef OutputDataset
   %     NOTE: LfrSwmProcessing, TdsSwmProcessing are used for multiple SWMs with
   %           different output DSIs for the same OutputDatasetsMap key
   %           "SCI_cdf".
-  %     NOTE: This is identical to bicas.swm.OutputDataset.prodFuncOutputKey.
+  %     NOTE: This is identical to bicas.swm.OutputDataset.pfoid.
   %   NOTE: Must match DSI in corresponding SWM.
 
 

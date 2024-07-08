@@ -20,7 +20,7 @@ classdef OutputDataset
     cliOptionHeaderBody
     dsi
     datasetLevel
-    prodFuncOutputKey
+    pfoid
 
     % "name" in SWD: Human-readable name, but shorter than swdDescription.
     swdName
@@ -42,7 +42,7 @@ classdef OutputDataset
 
 
     function obj = OutputDataset(...
-        cliOptionHeaderBody, dsi, prodFuncOutputKey, ...
+        cliOptionHeaderBody, dsi, pfoid, ...
         swdName, swdDescription, skeletonVersion)
 
       [~, datasetLevel, ~] = solo.adm.disassemble_DATASET_ID(dsi);
@@ -51,7 +51,7 @@ classdef OutputDataset
       obj.dsi                 = dsi;
       obj.datasetLevel        = datasetLevel;
 
-      obj.prodFuncOutputKey   = prodFuncOutputKey;   % Ex: 'SCI_cdf';
+      obj.pfoid               = pfoid;
       obj.swdName             = swdName;
       obj.swdDescription      = swdDescription;
       obj.skeletonVersion     = skeletonVersion;

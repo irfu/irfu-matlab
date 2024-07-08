@@ -30,27 +30,27 @@ classdef(Abstract) SwmProcessing
 
 
 
+    % Function which does the core of processing for the selected SWM.
+    %
+    % Production functions should not assume/specify any particular input
+    % dataset version, but should read it out from global attributes (part
+    % of the PDV) if necessary.
+    %
+    %
     % ARGUMENTS
     % =========
     % InputsMap
     %       containers.Map with
-    %       <keys>   : String defining a name of an input ("prodFuncInputKey" in
-    %                  bicas.swm.SoftwareModeList).
-    %       <values> : A struct with data corresponding to a CDF file
-    %                  (zVariables+global attributes).
+    %       <keys>   : PFIID.
+    %       <values> : Instance of bicas.InputDataset.
+    %
     %
     % RETURN VALUE
     % ============
     % OutputsMap
     %       containers.Map with
-    %       <keys>   : String defining a name of an output ("prodFuncOutputKey" in
-    %                  bicas.swm.SoftwareModeList).
-    %       <values> : A struct with data corresponding to a CDF file (zVariables).
-    %
-    %
-    % Production functions should not assume/specify any particular input
-    % dataset version, but should read it out from global attributes (part
-    % of the PDV) if necessary.
+    %       <keys>   : PFIID.
+    %       <values> : Instance of bicas.OutputDataset.
     OutputDatasetsMap = production_function(obj, ...
       InputDatasetsMap, rctDir, NsoTable, Bso, L)
     % PROPOSAL: Rename

@@ -7,10 +7,10 @@
 % ===========================
 % SwmInfo
 % InputFilePathMap  : containers.Map with
-%    key   = prodFuncInputKey
+%    key   = PFIID
 %    value = Path to input file
 % OutputFilePathMap : containers.Map with
-%    key   = prodFuncOutputKey
+%    key   = PFOID
 %    value = Path to output file
 %
 %
@@ -73,15 +73,15 @@ assert(numel(unique(datasetFileCa)) == numel(datasetFileCa), ...
 %=============================
 InputDatasetsMap = containers.Map();
 for i = 1:length(SwmInfo.inputsList)
-  prodFuncInputKey = SwmInfo.inputsList(i).prodFuncInputKey;
-  inputFilePath    = InputFilePathMap(prodFuncInputKey);
+  pfiid         = SwmInfo.inputsList(i).pfiid;
+  inputFilePath = InputFilePathMap(pfiid);
 
   %=======================
   % Read dataset CDF file
   %=======================
   InputDataset = bicas.read_dataset_CDF(inputFilePath, Bso, L);
 
-  InputDatasetsMap(prodFuncInputKey) = InputDataset;
+  InputDatasetsMap(pfiid) = InputDataset;
 
 
 
@@ -134,13 +134,13 @@ OutputDatasetsMap = SwmInfo.Swmp.production_function(InputDatasetsMap, rctDir, N
 % required by the s/w mode.
 irf.assert.castring_sets_equal(...
   OutputDatasetsMap.keys, ...
-  {SwmInfo.outputsList.prodFuncOutputKey});
+  {SwmInfo.outputsList.pfoid});
 %
 for iOutputCdf = 1:length(SwmInfo.outputsList)
-  OutputInfo = SwmInfo.outputsList(iOutputCdf);
+  SwmOutputDataset = SwmInfo.outputsList(iOutputCdf);
 
-  prodFuncOutputKey = OutputInfo.prodFuncOutputKey;
-  outputFilePath    = OutputFilePathMap(prodFuncOutputKey);
+  pfoid            = SwmOutputDataset.pfoid;
+  outputFilePath   = OutputFilePathMap(pfoid);
 
 
 
@@ -150,17 +150,17 @@ for iOutputCdf = 1:length(SwmInfo.outputsList)
   masterCdfPath = fullfile(...
     masterCdfDir, ...
     bicas.get_master_CDF_filename(...
-    OutputInfo.dsi, ...
-    OutputInfo.skeletonVersion));
+    SwmOutputDataset.dsi, ...
+    SwmOutputDataset.skeletonVersion));
 
-  OutputDataset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
+  OutputDataset = OutputDatasetsMap(SwmOutputDataset.pfoid);
   assert(isa(OutputDataset, 'bicas.OutputDataset'))
 
   ZvsSubset = OutputDataset.Zv;
 
   GaSubset = bicas.derive_output_dataset_GAs(...
     InputDatasetsMap, OutputDataset, ...
-    irf.fs.get_name(outputFilePath), OutputInfo.dsi, ...
+    irf.fs.get_name(outputFilePath), SwmOutputDataset.dsi, ...
     Bso, L);
 
   bicas.write_dataset_CDF( ...

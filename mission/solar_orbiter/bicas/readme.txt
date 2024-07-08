@@ -244,6 +244,16 @@ Offset
     value during the calibration process.
 OSR
     Original Sampling Rate. Used in the context of downsampling. Cf DSR.
+PFIID
+    Production Function Input ID. String constant which is used to distinguish
+    between different input values (datasets) to production functions. Different
+    DSIs can be used for the same PFIID.
+PFOID
+    Production Function Output ID. Analogous with PFIID, but for output (return
+    values).
+Production Function
+    Abstract method bicas.proc.SwmProcessing.production_function() which
+    implementations in subclasses do the core of data processing.
 QF
     zVariable QUALITY_FLAG.
 QRC
