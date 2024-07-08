@@ -406,8 +406,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
 
       % Only set because the code shared with LFR requires it.
-      Zv.iLsf           = nan(nRecords, 1);
-      Zv.lrx            = ones(nRecords, 1);
+      Zv.iLsf      = nan( nRecords, 1);
+      Zv.lrx       = ones(nRecords, 1);
+      Zv.BW        = true(nRecords, 1);
 
       PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
     end    % process_CDF_to_PreDc
