@@ -57,6 +57,8 @@ function str = JSON_object_str(JsonObj, indentSize)
 % PROPOSAL: Automatic test.
 %
 % PROPOSAL: Permit arbitrary line break?
+%
+% PROPOSAL: Implement/replace with MATLAB's own support for JSON: jsonencode().
 
 Settings.lineBreakStr = newline;    % Line feed
 Settings.indentSize   = indentSize;

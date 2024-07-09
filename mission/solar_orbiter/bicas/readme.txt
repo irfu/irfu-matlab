@@ -277,7 +277,8 @@ RCS ICD
     NOTE: For a period in the past, both documents were simultaneously valid
     and then referred to the ROC-SGSE and RODP pipeline separately(?).
 RCT
-    RPW Calibration Table. CDF with calibration data. See RCS ICD. ROC-defined.
+    RPW Calibration Table. A CDF file with calibration data. See RCS ICD.
+    ROC-defined term.
 RCTD
     Class bicas.proc.L1L2.cal.rct.RctData.
 RCTTID

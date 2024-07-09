@@ -12,7 +12,7 @@ classdef dc
   % PROPOSAL: Better name.
   %   PRO: Processing includes quality "processing" which is not in "DC".
   %   PROPOSAL: dcq = Demux, Calibrate, Quality
-
+  %
   % PROPOSAL: Automatic test code.
   %
   % PROPOSAL:   process_calibrate_demux()

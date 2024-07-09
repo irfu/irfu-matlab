@@ -69,17 +69,10 @@
 % First created 2020-06-24.
 %
 function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename)
-% PROPOSAL: Other function name.
-%   PROPOSAL: create_RCT_JSON(parentDirPath, biasRct)
-%
-% PROPOSAL: Use bicas.utils.JSON_object_str.
-%   CON: Function interface requires using RCT filenames as struct field names which is disallowed by MATLAB.
-%
 % TODO-NI: Should the JSON file only include the teams own RCT? I.e. BIAS RCT, but not LFR & TDS RCTs?
 %   NOTE: L1R files contain the filenames of the LFR/TDS RCTs.
-%
-% PROPOSAL: Move RCT_JSON_FILENAME to BSO.
-%   CON: This code an additional tool. Not part of BICAS itself and is never launhed by BICAS.
+% PROPOSAL: Do not use bicas.utils.JSON_object_str(). Use MATLAB's own support
+%           for JSON files: jsonencode().
 
 
 

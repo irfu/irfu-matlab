@@ -462,13 +462,15 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 
 %============================================================================
 % PROCESSING.RCT_REGEXP.*
-% Regular expressions for the filenames of RCTs
-% ---------------------------------------------
+% Regular expressions for RCT filenames
+% -------------------------------------
 %
 % NOTES
 % -----
-% ** Regular expressions for RCT filenames are only needed when using L1
-%    voltage datasets instead of L1R.
+% ** (a) When reading *L1* (voltage) datasets, then regular expression are
+%        needed for identifying all necessary RCTs.
+%    (b) When reading *L1R* (voltage) datasets, then regular expressions are
+%        only needed for identifying the BIAS RCT
 % ** BIAS & TDS have previously not followed the correct filenaming
 %    convention but does now (2020-11-20).
 % ** LFR do not seem to follow the filenaming convenction (2020-11-20)
