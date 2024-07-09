@@ -45,7 +45,39 @@
 % =======================
 % See implementation for comments.
 % See comments for settings PROCESSING.RCT_REGEXP.* (all RCTs), in
-% bicas.create_default_BSO.
+% bicas.create_default_BSO().
+%
+% """"""""
+% 4.2.3 File naming
+% The RPW CAL file shall comply the following file naming convention [AD1]:
+% solo_[LEVEL]_[Descriptor]_[Datetime]_V[CALIBRATION_VERSION].cdf
+% Where:
+% - [Descriptor] is the prefix of the Descriptor CDF global attribute value (before “>”).
+% It shall be of the form rpw-[equipment]-[*], where is the name of the RPW
+% equipment, e.g., “tds”, “lfr”, “bia”, “scm”, ... and [*] is an optional field that can be
+% used to specify the content of the file (e.g., “bias-f0”)
+% - [LEVEL] is the RCT data processing level as defined in [AD1]. It shall be “CAL”.
+% - [Datetime] gives the date when the RCT CDF file has been released. The format is
+% “yyyymmdd”.
+% - [CALIBRATION_VERSION] is a 2-digit number of the version of the calibration table
+% file (e.g., “01”).
+% IMPORTANT:
+% - Each field in the file name shall be separated by an underscore “_” (use hyphens “-“
+% inside each field to distinguish sub-strings).
+% - The RPW CAL file shall use lower case convention, except for the level and the version.
+%
+% 4.2.4 Data versioning
+% The version of a RPW CAL CDF file is a 2-digit number, which shall be iterated each time a
+% new version of the file is released for a given descriptor and date.
+% Initial version number shall be “01”.
+% In the RPW CAL filename, the version number shall appear with the “V” prefix in capital letter
+% (e.g., “V02”).
+% The value of the CALIBRATION_VERSION global attribute (see next section) shall be set
+% with the file version number.
+% """"""""
+% /ROC-PRO-PIP-ICD-00037-LES, RCS ICD, version 1/7
+
+%
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

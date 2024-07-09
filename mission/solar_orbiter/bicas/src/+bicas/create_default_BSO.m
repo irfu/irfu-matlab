@@ -480,45 +480,11 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %
 % OFFICIAL DOCUMENTATION ON RCT FILENAMING CONVENTION
 % ---------------------------------------------------
-% RCT filenaming convention is described in ROC-PRO-DAT-NTT-00006-LES. This
-% document refers to the RODP.
+% The RCT filenaming has changed over time and de facto filenaming is confusing.
+% One may therefore be forced to set these reqular expression to match filenames
+% which do not follow the official filenaming conventions.
+% See bicas.tools.rct.create_RCT() for RCT filenaming conventions.
 %
-% Version 1/1:
-% """"""""
-%   4.3.2 RCT data versioning convention
-%
-%   The version of the RCT CDF data file must be the local date and time of
-%   creation of the file, in the format: “YYYYMMDDHHNN”, where “YYYY”, “MM”,
-%   “DD”, “HH” and “NN” are respectively the 4-digits year, 2-digits month,
-%   2-digits day, 2-digits hours, 2-digits minutes of the file creation.
-%   In the RCT filename, the version number must appear with the “V” prefix
-%   (e.g., “V202210122359”.
-%
-%
-%   4.3.3 RCT file naming convention
-%
-%   The RCT shall comply the following file naming convention:
-%   SOLO_CAL_RPW-[receiver]_[free-field]_[Version].cdf
-%   Where [receiver] is the name of the receiver in uppercase characters
-%   (i.e., “TDS” or “LFR”) of the corresponding RPW L1R dataset,
-%   [free-field] is a field that can be used to specify the content of the
-%   file (e.g., “BIAS-F0”) and [Version] is the version of the calibration
-%   table file (see previous section). Note that this RCT naming convention
-%   is not fully compliant with the SOC definition [AD1]. /.../
-% """"""""
-% Version 1/2, draft:
-% Section 2.2.6.3-4: Slightly different filenaming convention:
-% """"""""
-%   2.2.6.3 File naming
-%   The CAL file must comply the following naming convention:
-%   SOLO_CAL_[Descriptor]_[free-field]_V[CALIBRATION_VERSION].cdf
-%
-%   Where [Descriptor], [free-field] and [CALIBRATION_VERSION] correspond
-%   respectively to the short value in the “Descriptor”, “Free_field” and
-%   “CALIBRATION_VERSION” global attributes (see section 2.2.6.6).
-%   N.B. The CAL file naming convention is not fully compliant with the SOC
-%   definition [AD1]. /.../
-% """"""""
 %
 % Xavier Bonnin, 2020-07-02:
 %   Wrong:   SOLO_CAL_RPW_BIAS_V202004062127.cdf   # NOTE: No minus!
