@@ -1,15 +1,15 @@
 %
 % Create dataset filename according to filenaming convention.
 %
-% NOTE: Is the inverse of solo.adm.parse_dataset_filename(). See
-% that function for filename formats.
 %
-% NOTE: Uses the exact set of fields to determine which naming convention to
-% follow, not just the field values.
-%
-% NOTE: Will not (yet) work for
-% solo_L1_swa-eas2-NM3D_20201027T000007-20201027T030817_V01.cdf
-% which has upper case outside of level.
+% NOTES
+% =====
+% * Function is the inverse of solo.adm.parse_dataset_filename(). See that
+%   function for different dataset filename formats.
+% * Function uses the exact set of fields to determine which naming convention
+%   to follow, not just the field values.
+% * Will not (yet) work for dataset filenames which uppercase outside of archiving level
+%   Ex: solo_L1_swa-eas2-NM3D_20201027T000007-20201027T030817_V01.cdf
 %
 %
 % RATIONALE
@@ -127,27 +127,27 @@ end
 
 
 
-fnList = fieldnames(R);
+fnCa = fieldnames(R);
 
 % NOTE: Ignores R.timeIntervalStr (if present) but derives it instead.
 timeIntervalStr = create_time_interval_str(R);
 
 
 
-if sets_equal(fnList, {'dateVec1', 'dateVec2', 'lesTestStr'})
+if sets_equal(fnCa, {'dateVec1', 'dateVec2', 'lesTestStr'})
   filename = sprintf('%s%s_%s_V%02s_%s%s.cdf', ...
     datasetId, cdagStr, timeIntervalStr, versionStr, R.lesTestStr, unoffExtension);
 
-elseif sets_equal(fnList, {'cneTestStr'})
+elseif sets_equal(fnCa, {'cneTestStr'})
   % ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
   filename = sprintf('%s%s_%s_V%02s%s.cdf', ...
     datasetId, cdagStr, R.cneTestStr, versionStr, unoffExtension);
 
-elseif sets_equal(fnList, {'dateVec'}) || sets_equal(fnList, {'dateVec1', 'dateVec2'})
+elseif sets_equal(fnCa, {'dateVec'}) || sets_equal(fnCa, {'dateVec1', 'dateVec2'})
   filename = sprintf('%s%s_%s_V%02s%s.cdf', ...
     datasetId, cdagStr, timeIntervalStr, versionStr, unoffExtension);
 
-  %     elseif sets_equal(fnList, {})
+  %     elseif sets_equal(fnCa, {})
   %
   %         % SOLO_L2_RPW-LFR-SURV-CWF-E_V04.cdf
   %         % NOTE: No timeIntervalStr.
