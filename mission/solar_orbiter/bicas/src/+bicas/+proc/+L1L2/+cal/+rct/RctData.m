@@ -65,6 +65,9 @@ classdef(Abstract) RctData
     %   Ex: SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
     %       SOLO_CAL_RPW-BIAS_V202011191204.cdf
     ga_Data_version
+    ga_CAL_ENTITY_NAME
+    ga_CAL_ENTITY_AFFILIATION
+    ga_CAL_EQUIPMENT
   end
 
 
@@ -79,16 +82,37 @@ classdef(Abstract) RctData
 
 
 
-    % NOTE: Reads RCT on its own, just for obtaining GA Data_version.
+    % NOTE: Constructor reads RCT on its own, just for obtaining relevant GAs.
+    % NOTE: GAs are represented as [] if they can not be found in the RCT.
     function obj = RctData(filePath)
+
+      function gaValue = get_GA(gaName)
+        if isfield(Do.GlobalAttributes, gaName)
+          gaValue = Do.GlobalAttributes.(gaName);
+          assert(iscell(gaValue))
+          if numel(gaValue) ~= 1
+            error(...
+              'BICAS:FailedToReadInterpretRCT', ...
+              ['Global attribute "%s" in RCT "%s" does not have exactly one', ...
+              ' entry. Can therefore not interpret this.'], ...
+              gaName, filePath)
+          end
+        else
+          gaValue = [];
+        end
+      end
+
       Do = dataobj(filePath);
 
       ga_Data_version = Do.GlobalAttributes.Data_version;
       assert(isscalar(ga_Data_version))
       assert(ischar(ga_Data_version{1}))
 
-      obj.filePath        = filePath;
-      obj.ga_Data_version = ga_Data_version{1};
+      obj.filePath                  = filePath;
+      obj.ga_Data_version           = ga_Data_version{1};
+      obj.ga_CAL_ENTITY_NAME        = get_GA('CAL_ENTITY_NAME');
+      obj.ga_CAL_ENTITY_AFFILIATION = get_GA('CAL_ENTITY_AFFILIATION');
+      obj.ga_CAL_EQUIPMENT          = get_GA('CAL_EQUIPMENT');
     end
 
 
