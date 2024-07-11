@@ -140,7 +140,8 @@ CWF
     time than a snapshot. Cf. SWF.
 Dataset (data set)
     A CDF file on any one of a number standardized formats specified by the
-    various RPW teams. All CDF files in the context of BICAS are datasets.
+    various RPW teams. All CDF files in the context of BICAS are datasets,
+    except for RCTs, where it is ambiguous.
 Deg
     Degrees (angle). 1 revolution=360 degrees=2*pi radians.
 DLR
@@ -156,13 +157,18 @@ DLR
 DSI, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
-    NOTE: Must be uppercase by definition (when used as string constants),
-    though dataset IDs are represented as (mostly) lowercase in the official
-    filenaming convention are (mostly) lowercase).
-    NOTE: Dataset IDs exclude the "-cdag" suffix. "-cdag" is a LESIA invention
-    for internal datasets.
+    NOTE: DSI is defined by ROC, but the abbreviation "DSI" is defined by
+    BICAS. DSI does not formally exist in SolO outside RPW, though the same
+    string components (source+level+descriptor) can be used to define DSI
+    analogously for SolO datasets outside RPW.
+    NOTE: Must be uppercase by definition (at least when used as string
+    constants by BICAS), though DSIs are represented in lowercase in the official
+    dataset filenaming convention (except the "level"). Uppercase DSI has been
+    used for some old ground-test datasets.
+    NOTE: DSIs exclude the "-cdag" suffix. "-cdag" is defined by ROC
+    for RPW-internal datasets only.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical
-    variants thereof) are not abbreviated "DSI", but to the GA name, in
+    variants thereof) are not abbreviated "DSI", but to the GA name in
     analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
@@ -297,6 +303,9 @@ ROC Engineering Guidelines
     Engineering Guidelines for External Users"
 RPS
     Radians Per Second
+RSWF
+    Regular Snapshot WafeForm. The term is used for TDS data, but is (at least
+    for the purpose of BICAS) exactly the same as SWF.
 RUM
     Document ROC-PRO-SFT-SUM-00080, "RCS User Manual"
 RV

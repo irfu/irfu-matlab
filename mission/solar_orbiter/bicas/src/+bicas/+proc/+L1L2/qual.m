@@ -543,6 +543,7 @@ classdef qual
     % Log UFV records
     %
     % NOTE: Only logs (including header) if there are records to remove.
+    %
     function log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
       % PROPOSAL: Redefine, rework to function that can be used for
       % logging separate UFVs obtained in different ways.
@@ -567,8 +568,8 @@ classdef qual
         for iRi = 1:nUfvIntervals
           iCdfRecord1 = i1Array(iRi);
           iCdfRecord2 = i2Array(iRi);
-          utc1  = irf.cdf.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1));
-          utc2  = irf.cdf.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2));
+          utc1  = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1));
+          utc2  = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2));
           L.logf(LL, '    Records %8i-%8i, %s -- %s', ...
             iCdfRecord1, iCdfRecord2, utc1, utc2);
         end

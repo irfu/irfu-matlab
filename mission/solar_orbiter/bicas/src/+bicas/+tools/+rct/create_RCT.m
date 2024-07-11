@@ -5,8 +5,8 @@
 %
 % NOTE: The actual calibration data is hard-coded in this file.
 % NOTE: Will overwrite old RCT file.
-%
-% RCT = RPW Calibration Table
+% NOTE: Generates using the default CDF format version. Might not be the one
+%       that is expected for archiving purposes.
 %
 %
 % ARGUMENTS
@@ -56,14 +56,12 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir, beginDt, endDt, version
 %        deriving the calibration values (e.g. curve fitting) can be independent
 %        of BICAS.
 
-DSI = 'SOLO_CAL_RPW-BIAS';
-
-GMDB = bicas.gamods.Database({DSI});
-% NOTE: Using BICAS version. Not obvious that one should.
-GMDB.add_GMVE({DSI}, ...
-  bicas.gamods.VersionEntry('2024-07-11', '8.1.0', ...
+GMDB = bicas.gamods.Database({bicas.const.RCT_DSI});
+% NOTE: Using BICAS version in MODS. Not obvious that one should.
+GMDB.add_GMVE({bicas.const.RCT_DSI}, ...
+  bicas.gamods.VersionEntry('2024-07-12', '8.1.0', ...
   {'Updated with compliant metadata and filename.'}))
-GA_MODS = GMDB.get_MODS_strings_CA(DSI);
+GA_MODS = GMDB.get_MODS_strings_CA(bicas.const.RCT_DSI);
 
 
 
@@ -430,6 +428,8 @@ DataObj.data.BIAS_CURRENT_GAIN.data        = RctL.BIAS_CURRENT_GAIN;           %
 DataObj.data.TRANSFER_FUNCTION_COEFFS.data = RctL.TRANSFER_FUNCTION_COEFFS;    % Epoch_L
 DataObj.data.E_OFFSET.data                 = RctH.E_OFFSET;                    % Epoch_H
 DataObj.data.V_OFFSET.data                 = RctH.V_OFFSET;                    % Epoch_H
+
+
 
 %============
 % Create CDF

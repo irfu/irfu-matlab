@@ -100,13 +100,13 @@ classdef utils
           % CASE: Epoch-like variable.
 
           ColumnStrs(end+1) = bicas.utils.get_array_statistics_strings(...
-            zvName, zvValue, 'Epoch', Bso);
+            zvName, zvValue, 'Epoch_LIKE_ZV', Bso);
 
         elseif isnumeric(zvValue)
           % CASE: Non-Epoch-like numeric variable.
 
           ColumnStrs(end+1) = bicas.utils.get_array_statistics_strings(...
-            zvName, zvValue, 'numeric', Bso);
+            zvName, zvValue, 'NUMERIC_ZV', Bso);
 
         elseif ischar(zvValue)
 
@@ -276,7 +276,7 @@ classdef utils
       % varName
       % varValue
       % varType
-      %       String constant. 'numeric' or 'Epoch'.
+      %       String constant. 'NUMERIC_ZV' or 'Epoch_LIKE_ZV'.
       %       Determines how varValue is interpreted.
       %
       %
@@ -313,7 +313,7 @@ classdef utils
 
       switch(varType)
 
-        case 'numeric'
+        case 'NUMERIC_ZV'
           % ASSERTION
           assert(ndims(varValue) <= 3, ...
             'BICAS:Assertion:IllegalArgument', ...
@@ -346,7 +346,7 @@ classdef utils
             end
           end
 
-        case 'Epoch'
+        case 'Epoch_LIKE_ZV'
           % ASSERTIONS
           bicas.utils.assert_ZV_Epoch(varValue)
 

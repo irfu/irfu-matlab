@@ -471,8 +471,8 @@ classdef dc
       %===================================================================
       if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
         curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
-        sciEpochUtcStr    = irf.cdf.TT2000_to_UTC_str(min(sciEpoch));
-        curEpochMinUtcStr = irf.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
+        sciEpochUtcStr    = bicas.utils.TT2000_to_UTC_str(min(sciEpoch));
+        curEpochMinUtcStr = bicas.utils.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
 
         [settingValue, settingKey] = Bso.get_fv(...
           'PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');

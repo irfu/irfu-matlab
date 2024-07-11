@@ -4,15 +4,15 @@
 %
 % NOTE
 % ====
-% NOTE: There is no SWM for generating VHT datasets. VHT processing is therefore
-%       not represented here.
+% NOTE: There is no SWM for generating VHT datasets(!). VHT processing is
+%       therefore not represented here.
 % NOTE: The SWMs implemented in the body of BICAS must always be compatible
 %       with the SWMs specified here.
 %
 %
 % RETURN VALUES
 % =============
-% Official bicas.swm.SoftwareModeList object (singleton) that is actually used
+% Official bicas.swm.SoftwareModeList object (~singleton) that is actually used
 % by BICAS.
 %
 %

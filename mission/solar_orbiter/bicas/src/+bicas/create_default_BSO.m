@@ -470,7 +470,7 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 % ** (a) When reading *L1* (voltage) datasets, then regular expression are
 %        needed for identifying all necessary RCTs.
 %    (b) When reading *L1R* (voltage) datasets, then regular expressions are
-%        only needed for identifying the BIAS RCT
+%        only needed for identifying the BIAS RCT.
 % ** BIAS & TDS have previously not followed the correct filenaming
 %    convention but does now (2020-11-20).
 % ** LFR do not seem to follow the filenaming convenction (2020-11-20)
@@ -486,11 +486,6 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 % One may therefore be forced to set these reqular expression to match filenames
 % which do not follow the official filenaming conventions.
 % See bicas.tools.rct.create_RCT() for RCT filenaming conventions.
-%
-%
-% Xavier Bonnin, 2020-07-02:
-%   Wrong:   SOLO_CAL_RPW_BIAS_V202004062127.cdf   # NOTE: No minus!
-%   Correct: SOLO_CAL_RPW-BIAS_V202004062127.cdf   # NOTE: Minus!
 %
 %
 % EXAMPLES OF DE FACTO RCT FILENAMES (2019 SEPT + LATER)
@@ -521,9 +516,6 @@ S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['solo_CAL_rpw-bias_[0-9]
 S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',               CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',          CDF_SUFFIX_REGEXP]);
 S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}',         CDF_SUFFIX_REGEXP]);
-% Old/illegal filenaming convention.
-%S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
-%S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
 
 
 

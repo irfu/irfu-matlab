@@ -61,7 +61,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function destFilename = create_RCT_filename(beginDt, endDt, versionNbr)
+function destFilename = create_RCT_filename(DtBegin, DtEnd, versionNbr)
 % PROPOSAL: Use solo.adm.create_dataset_filename().
 %   NOTE: Should be able to handle it.
 
@@ -71,14 +71,14 @@ function destFilename = create_RCT_filename(beginDt, endDt, versionNbr)
     assert(Dt.Second == 0)
   end
 
-assert_DT(beginDt)
-assert_DT(endDt)
+assert_DT(DtBegin)
+assert_DT(DtEnd)
 assert(isnumeric(versionNbr) && versionNbr >= 1)
 
 DT_FORMAT_STR = 'yyyyMMdd';
 
-beginStr = char(datetime(beginDt, 'Format', DT_FORMAT_STR));
-endStr   = char(datetime(endDt,   'Format', DT_FORMAT_STR));
+beginStr = char(datetime(DtBegin, 'Format', DT_FORMAT_STR));
+endStr   = char(datetime(DtEnd,   'Format', DT_FORMAT_STR));
 
 
 % IMPLEMENTATION NOTE: The official filenaming convention is not followed

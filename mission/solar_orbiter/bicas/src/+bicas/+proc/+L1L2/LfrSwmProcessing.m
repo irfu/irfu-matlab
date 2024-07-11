@@ -61,9 +61,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %======================================
+      %==========================================
       % Configure bicas.proc.L1L2.cal.Cal object
-      %======================================
+      %==========================================
       useCtRcts = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
       useCti2   = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
 

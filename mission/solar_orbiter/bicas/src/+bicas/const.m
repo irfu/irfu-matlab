@@ -30,6 +30,9 @@ classdef const
   %           Custom objects.
   %       PROPOSAL: Only log those which are easy.
   % PROPOSAL: Move bicas.const.N_BLTS to solo.hwzv.const.
+  %
+  % PROPOSAL: Derive lists of datasets using
+  %           bicas.classify_BICAS_L1_L1R_to_L2_DSI() or reverse.
 
 
 
@@ -187,14 +190,15 @@ classdef const
     L2_TDS_DSI_CA = {...
       'SOLO_L2_RPW-TDS-LFM-CWF-E'; ...
       'SOLO_L2_RPW-TDS-LFM-RSWF-E'};
-    L2_CWF_CA = {
+    L2_CWF_DSI_CA = {
       'SOLO_L2_RPW-LFR-SBM1-CWF-E'; ...
       'SOLO_L2_RPW-LFR-SBM2-CWF-E'; ...
       'SOLO_L2_RPW-LFR-SURV-CWF-E'; ...
       'SOLO_L2_RPW-TDS-LFM-CWF-E'}
-    L2_SWF_CA = {
+    L2_SWF_DSI_CA = {
       'SOLO_L2_RPW-LFR-SURV-SWF-E', ...
       'SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+    RCT_DSI = 'SOLO_CAL_RPW-BIAS';
 
 
 
@@ -786,15 +790,15 @@ classdef const
 
 
 
-      % FUTURE YET-TO-BE-DETERMINED BICAS VERSION
+      % FUTURE ADDITIONS TO ADD WHEN RELEASING THE NEXT BICAS VERSION
       if 0
         DATE_STR    = '2024-01-01';   % TEST VALUE
         VERSION_STR = 'x.x.x';        % TEST VALUE
 
-        Gmdb.add_GMVE(bicas.const.L2_CWF_CA, ...
+        Gmdb.add_GMVE(bicas.const.L2_CWF_DSI_CA, ...
           bicas.gamods.VersionEntry('2024-07-12', '8.1.0', ...
           {'Added zVariable CHANNEL_IDX (ISTP metadata).'}))
-        Gmdb.add_GMVE(bicas.const.L2_SWF_CA, ...
+        Gmdb.add_GMVE(bicas.const.L2_SWF_DSI_CA, ...
           bicas.gamods.VersionEntry('2024-07-12', '8.1.0', ...
           {'Added zVariables CHANNEL_IDX and SAMPLE_IDX (ISTP metadata).'}))
         Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...

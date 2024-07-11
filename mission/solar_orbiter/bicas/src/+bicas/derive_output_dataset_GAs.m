@@ -182,8 +182,8 @@ end
 
 
 
-% Set GAs "Parents".
-function [Parents] = set_Parents(InputDatasetsMap)
+% Set GA "Parents".
+function Parents = set_Parents(InputDatasetsMap)
 
 % Parent_version = {};
 Parents        = {};
@@ -256,6 +256,9 @@ for i = 1:numel(keysCa)
   % dataset, which might be a good or bad source.
   % Ex: SOLO_L2_RPW-LFR-SBM1-CWF-E_V11.skt:
   %   "Parent_version"      1:    CDF_CHAR     { " " }
+  %-----------------------------------------------------------------------
+  % 2024-07-12: GAs "Provider", "Parent_version" have been abolished
+  %             according to RCS ICD 01/07, and SOL-SGS-TN-0009, 02/06.
   %-----------------------------------------------------------------------
 
   % if isfield(InputGa, 'Provider')

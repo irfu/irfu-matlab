@@ -36,17 +36,6 @@ function execute_SWM(...
 %   PROPOSAL: function matchesMaster(DataObj, MasterDataobj)
 %       PRO: Want to use dataobj to avoid reading file (input dataset) twice.
 %
-% NOTE: Things that need to be done when writing PDV-->CDF
-%       Read master CDF file.
-%       Compare PDV variables with master CDF variables (only write a subset).
-%       Check variable types, sizes against master CDF.
-%       Write GlobalAttributes:
-%           Parents, Parent_version,
-%           Generation_date, Logical_file_id,
-%           Software_version, SPECTRAL_RANGE_MIN/-MAX (optional?), TIME_MIN/-MAX
-%       Write VariableAttributes: pad value? (if master CDF does not contain
-%           a correct value), SCALE_MIN/-MAX
-%
 % PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
 %   NOTE: These do not use NaN, but fill values.
 
