@@ -392,7 +392,7 @@ DataObj = dataobj(rctMasterCdfFile);
 % NOTE: Overwriting previous value in skeleton (SOLO_CAL_RPW-BIAS_V02.cdf). The
 %       value should be empty in the skeleton to be less deceiving.
 rctFilename = irf.fs.get_name(rctFilePath);
-% R = solo.adm.dsfn.parse_dataset_filename(rctFilename);
+R = solo.adm.dsfn.parse_dataset_filename(rctFilename);
 assert(strcmp(rctFilename(end-3:end), '.cdf'))
 ga_CALIBRATION_TABLE = rctFilename(1:end-4);
 DataObj.GlobalAttributes.CALIBRATION_TABLE   = {ga_CALIBRATION_TABLE};
