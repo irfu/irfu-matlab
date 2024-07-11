@@ -70,7 +70,7 @@ function filename = create_dataset_filename(R)
 %                 1x1 cell with string = Extension.
 %           NOTE: Why that empty size?
 %
-% PROPOSAL: Require isCdag boolean/logical.
+% PROPOSAL: dsicdagCase in uppercase.
 
 % ASSERTION
 % NOTE: Useful, so that later code does not need to be as rigorous when
@@ -84,6 +84,7 @@ irf.assert.struct(R, ...
     'fnDatasetIdCdag', 'timeIntervalStr', ...
     'cneTestStr', 'lesTestStr' ...
   })
+assert(islogical(R.isCdag) & isscalar(R.isCdag))
 
 
 
