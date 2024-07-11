@@ -24,6 +24,10 @@
 % NOTE/BUG: Can not handle e.g.
 %       solo_L1_swa-eas2-NM3D_20201027T000007-20201027T030817_V01.cdf
 %       since it has mixed case in the descriptor (not level).
+% NOTE: RCTs counts as datasets in this context since the conform to the same
+%       filenaming convention and are described in SOL-SGS-TN-0009, "Metadata
+%       Definition for Solar Orbiter Science Data", 01/06, though using its own
+%       level "CAL".
 %
 %
 % RECOGNIZED FILENAMING CONVENTION
@@ -267,8 +271,8 @@ end
 %
 % NOTE: Lowercase DATASET_ID+CDAG always have uppercase dataset level.
 [fnDatasetIdCdag, str, n] = irf.str.read_token(trueBasename, 1, ...
-  '(SOLO|ROC-SGSE)_(HK|L1|L1R|L2|L3)_[A-Z0-2-]*', ...
-  '(solo|roc-sgse)_(HK|L1|L1R|L2|L3)_[a-z0-2-]*');
+  '(SOLO|ROC-SGSE)_(HK|L1|L1R|L2|L3|CAL)_[A-Z0-2-]*', ...
+  '(solo|roc-sgse)_(HK|L1|L1R|L2|L3|CAL)_[a-z0-2-]*');
 switch(n)
   case 1
     R.dsicdagCase = 'upper';
