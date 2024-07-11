@@ -2590,12 +2590,18 @@ classdef PDist < TSeries
 
       % prepare data to be plotted
       plot_data = squeeze(mean(dist.data,1)); % average data over time indices
+      if doContour
+        plot_data_contour = plot_data;
+      end
       if doFLim % put values outside given interval to NaN, default is [0 Inf]
         plot_data(plot_data<=flim(1)) = NaN;
         plot_data(plot_data>flim(2)) = NaN;
       end
       if doLog10 % take log10 of data
         plot_data = log10(plot_data);
+        if doContour
+         plot_data_contour = log10(plot_data_contour);
+        end
       end
       if doSmooth
         plot_data = smooth2(plot_data,nSmooth);
@@ -2649,6 +2655,8 @@ classdef PDist < TSeries
         integrated_p12 = dist.mass*nansum(nansum(plot_data.*(dv1*dv2'))); % kg*m-3*m/s*m/s = kg*m*s-2 = Pa
         % pascal is kg*m*s-2, so go to nPa
         integrated_p12 = integrated_p12*1e9; % Pa -> nPa
+
+       
       end
       % main surface plot
       % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
@@ -2692,7 +2700,7 @@ classdef PDist < TSeries
         end
         %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
         %irf_legend(ax,sprintf('p = %.6f nPa',integrated_p12),[0.02 0.02],'color',sumf_color)
-        irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
+        %irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
       end
       %if doP12 % add info about integrated value
         %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
@@ -2722,11 +2730,11 @@ classdef PDist < TSeries
           plot_y = squeeze(irf.nanmean(dist.depend{2},1))*v_scale;
         end
         if doContourFill
-          [~,h_contour] = contourf(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+          [~,h_contour] = contourf(ax,plot_x,plot_y,plot_data_contour',contour_levels,'k');
         else
-          [~,h_contour] = contour(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+          [~,h_contour] = contour(ax,plot_x,plot_y,plot_data_contour',contour_levels,'k');
         end
-        h_contour.LineWidth = 1.5;
+        h_contour.LineWidth = 0.5;
         hold(ax,'off')
         all_handles.Contour = h_contour;
       end
