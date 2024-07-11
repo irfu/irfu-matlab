@@ -40,9 +40,9 @@ classdef parse_dataset_filename___UTEST < matlab.unittest.TestCase
 
 
 
-      %==========================
-      % NOT dataset, but similar
-      %==========================
+      %=========================================
+      % NOT dataset, but similar (all failures)
+      %=========================================
       test_parse('SOLO_HK_RPW-BIA_V01.skt', ...
         []);
       test_parse('SOLO_HK_RPW-BIA_V01.CDF', ...

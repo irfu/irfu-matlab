@@ -69,6 +69,8 @@ function filename = create_dataset_filename(R)
 %       PROPOSAL: 0x1 cell = No extension
 %                 1x1 cell with string = Extension.
 %           NOTE: Why that empty size?
+%
+% PROPOSAL: Require isCdag boolean/logical.
 
 % ASSERTION
 % NOTE: Useful, so that later code does not need to be as rigorous when
@@ -154,18 +156,12 @@ elseif sets_equal(fnCa, {'dateVec'}) || sets_equal(fnCa, {'dateVec1', 'dateVec2'
   filename = sprintf('%s%s_%s_V%02s%s.cdf', ...
     datasetId, cdagStr, timeIntervalStr, versionStr, unoffExtension);
 
-  %     elseif sets_equal(fnCa, {})
-  %
-  %         % SOLO_L2_RPW-LFR-SURV-CWF-E_V04.cdf
-  %         % NOTE: No timeIntervalStr.
-  %         filename = sprintf('%s%s_V%02s%s.cdf', ...
-  %         datasetId, cdagStr, versionStr, unoffExtension);
 else
 
   error('Illegal argument R.')
 end
 
-end
+end    % create_dataset_filename()
 
 
 

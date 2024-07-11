@@ -14,6 +14,7 @@
 % NOTE: Meant to cover DATASET_IDs widely.
 %   ** Old DATASET_IDs beginning with ROC-SGSE, in order to cover old filenames.
 %   ** Datasets unrelated to BIAS processing, including other instruments.
+%   ** RCTs / CAL level.
 %   ** Lower case filenames.
 %   ** Recognize -cdag
 % NOTE: Lowercase DATASET_ID in filenames are recognized, and returned as
@@ -148,6 +149,11 @@
 %
 function R = parse_dataset_filename(filename)
 %
+% PROPOSAL: MATLAB package for filenames: solo.adm.dsfn (DataSet FileNames)
+% PROPOSAL: Class with static methods for filenames.
+%   CON: Too large.
+%   CON: Can not define class for argument and return value in it.
+%
 % PROPOSAL: Return version NUMBER, not string.
 %   CON: Harder to adapt to changing versioning scheme.
 %       Ex: V2.3.4, V2_3_4
@@ -183,20 +189,11 @@ function R = parse_dataset_filename(filename)
 %       * Reversible way (varying format)
 %       * Non-reversible way that describes nominal time coverage
 %         (start-stop; one constant format)
+% PROPOSAL: Convert parse_time_interval_str() and create_time_interval_str() (in
+%           solo.adm.create_dataset_filename()) to public functions which are
+%           inverses of each other (are already?) and can be tested separately.
 % PROPOSAL: Separate return struct for time vectors. Time interval string in
 %           return value.
-%
-% PROPOSAL: Move
-%       solo.adm.parse_dataset_filename(), and
-%       solo.adm.create_dataset_filename()
-%       into a class.
-%   PRO: Can share constants.
-%       Ex: Regular expressions for assertions, parsing.
-%   PRO: More natural to have one test code function.
-%   PRO: More natural to have shared comments.
-%       Ex: Shared filenaming conventionts.
-%   PROPOSAL: Class name dataset_filename, dsfn.
-%       Methods create, parse.
 %
 % PROPOSAL: Abolish dsicdagCase. Should be regarded as part of the
 %           respective filenaming conventions.
@@ -227,6 +224,8 @@ function R = parse_dataset_filename(filename)
 %           extension.
 %
 % PROPOSAL: Refactor to return class.
+%   PROBLEM: solo.adm.parse_dataset_filename_many() adds field "path" to return
+%            value and passes it on in its own return value.
 %   PROBLEM: Class should work with solo.adm.create_dataset_filename().
 %     PROBLEM: How handle fields which
 %          (1) are returned from parsing, but are simultaneously
@@ -379,7 +378,7 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
 if perfectMatch
-  R = parse_time_interval_str(R, subStrCa{2});
+  R                 = parse_time_interval_str(R, subStrCa{2});
   R.timeIntervalStr = subStrCa{2};
   R.versionStr      = ver_2_versionStr(subStrCa{4});
   R.unoffExtension  = unoff_extension_RE_to_str(subStrCa{5});
@@ -393,7 +392,7 @@ end
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', ...
   LES_TESTSTR_RE, UNOFF_EXTENSION_RE}, 'permit non-match');
 if perfectMatch
-  R = parse_time_interval_str(R, subStrCa{2});
+  R                 = parse_time_interval_str(R, subStrCa{2});
   R.timeIntervalStr = subStrCa{2};
   R.versionStr      = ver_2_versionStr(         subStrCa{4});
   R.lesTestStr      =                           subStrCa{6};
@@ -417,7 +416,7 @@ end
 % CASE: Could not match filename to anything.
 
 R = NO_MATCH_RETURN_VALUE;
-end
+end    % parse_dataset_filename()
 
 
 
