@@ -401,21 +401,23 @@ DataObj.GlobalAttributes.CALIBRATION_TABLE   = {ga_CALIBRATION_TABLE};
 
 DataObj.GlobalAttributes.CALIBRATION_VERSION = {sprintf('%02i', rctVersionNbr)};
 
+% Uncertain if GAs "Data_version" and "CALIBRATION_VERSION" should be identical in
+% RCTs, but it does make some sense. They are different science datasets.
+DataObj.GlobalAttributes.Data_version = DataObj.GlobalAttributes.CALIBRATION_VERSION;
+DataObj.GlobalAttributes.MODS         = ga_MODS;
+% GA Datetime is not required by RCS ICD (ROC-PRO-PIP-ICD-00037-LES, 01/07), but
+% Xavier Bonnin requested it in e-mail 2024-07-08.
+DataObj.GlobalAttributes.Datetime     = R.timeIntervalStr;
+
 % TIME_MIN, TIME_MAX are not required for CAL, but they are in the skeleton, so
-% one can just as well set them in tthe same way they are set for datasets (or
+% one can just as well set them in the same way they are set for datasets (or
 % remove them from the skeleton)
 % beginStr = char(datetime(beginDt, 'Format', DT_FORMAT_STR));
 % endStr   = char(datetime(endDt,   'Format', DT_FORMAT_STR));
-% DataObj.TIME_MIN = beginStr;
-% DataObj.TIME_MAX = endStr;
+% DataObj.GlobalAttributes.TIME_MIN    = beginStr;
+% DataObj.GlobalAttributes.TIME_MAX    = endStr;
 
-DataObj.GlobalAttributes.MODS = ga_MODS;
 
-% DataObj.Data_version          = DataObj.GlobalAttributes.CALIBRATION_VERSION;
-
-% GA Datetime is not required by RCS ICD (ROC-PRO-PIP-ICD-00037-LES, 01/07), but
-% Xavier Bonnin requested it in e-mail 2024-07-08 (mistake by him?).
-% DataObj.GlobalAttributes.Datetime =
 
 %================
 % Set zVariables
