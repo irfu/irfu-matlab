@@ -76,10 +76,14 @@ function filename = create_dataset_filename(R)
 % NOTE: Useful, so that later code does not need to be as rigorous when
 % determining case.
 irf.assert.struct(R, ...
-  {'isCdag', 'datasetId', 'dsicdagCase', 'versionStr', 'unoffExtension'}, ...
-  {'fnDatasetIdCdag', 'timeIntervalStr', ...
-  'dateVec', 'dateVec1', 'dateVec2', ...
-  'cneTestStr', 'lesTestStr'})
+  { ...
+    'isCdag', 'datasetId', 'dsicdagCase', 'versionStr', 'unoffExtension' ...
+    'dateVec1', 'dateVec2', 'timeIntervalFormat' ...
+  }, ...
+  { ...
+    'fnDatasetIdCdag', 'timeIntervalStr', ...
+    'cneTestStr', 'lesTestStr' ...
+  })
 
 
 
@@ -114,6 +118,14 @@ else
 end
 
 
+assert(isrow(R.dateVec1) & (numel(R.dateVec1) == 6))
+assert(isrow(R.dateVec2) & (numel(R.dateVec2) == 6))
+irf.assert.castring(R.timeIntervalFormat)
+dateVec1           = R.dateVec1;
+dateVec2           = R.dateVec2;
+timeIntervalFormat = R.timeIntervalFormat;
+
+
 
 % Remove all mandatory field names
 % --------------------------------
@@ -121,7 +133,10 @@ end
 % convention from set of fields.
 assert(ischar(R.versionStr));
 versionStr = R.versionStr;
-R = rmfield(R, {'datasetId', 'versionStr', 'unoffExtension', 'isCdag', 'dsicdagCase'});
+R = rmfield(R, {...
+  'datasetId', 'versionStr', 'unoffExtension', 'isCdag', 'dsicdagCase', ...
+  'dateVec1', 'dateVec2', 'timeIntervalFormat' ...
+ });
 
 % Remove some optional field names
 % --------------------------------
@@ -139,20 +154,20 @@ end
 fnCa = fieldnames(R);
 
 % NOTE: Ignores R.timeIntervalStr (if present) but derives it instead.
-timeIntervalStr = create_time_interval_str(R);
+timeIntervalStr = create_time_interval_str(dateVec1, dateVec2, timeIntervalFormat);
 
 
 
-if sets_equal(fnCa, {'dateVec1', 'dateVec2', 'lesTestStr'})
+if sets_equal(fnCa, {'lesTestStr'}) && ismember(timeIntervalFormat, {'DAY_TO_DAY', 'SECOND_TO_SECOND'})
   filename = sprintf('%s%s_%s_V%02s_%s%s.cdf', ...
     datasetId, cdagStr, timeIntervalStr, versionStr, R.lesTestStr, unoffExtension);
 
-elseif sets_equal(fnCa, {'cneTestStr'})
+elseif sets_equal(fnCa, {'cneTestStr'}) && strcmp(timeIntervalFormat, {'NO_TIME_INTERVAL'})
   % ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
   filename = sprintf('%s%s_%s_V%02s%s.cdf', ...
     datasetId, cdagStr, R.cneTestStr, versionStr, unoffExtension);
 
-elseif sets_equal(fnCa, {'dateVec'}) || sets_equal(fnCa, {'dateVec1', 'dateVec2'})
+elseif sets_equal(fnCa, {}) && ismember(timeIntervalFormat, {'DAY', 'DAY_TO_DAY', 'SECOND_TO_SECOND'})
   filename = sprintf('%s%s_%s_V%02s%s.cdf', ...
     datasetId, cdagStr, timeIntervalStr, versionStr, unoffExtension);
 
@@ -165,35 +180,37 @@ end    % create_dataset_filename()
 
 
 
-function s = create_time_interval_str(R)
-  function b = is_FV(fnName, nComp)
-    b = isfield(R, fnName) && (numel(R.(fnName)) == nComp);
-  end
+function s = create_time_interval_str(dateVec1, dateVec2, timeIntervalFormat)
 
-dv  = isfield(R, 'dateVec');
-dv1 = isfield(R, 'dateVec1');
-dv2 = isfield(R, 'dateVec2');
+if strcmp(timeIntervalFormat, 'DAY')
+  assert(isequal(dateVec1(4:6), [0,0,0]))
+  assert(isequal(dateVec2(4:6), [0,0,0]))
+  expDateVec2 = datevec(datetime(dateVec1) + caldays(1));
+  assert(isequal(dateVec2, expDateVec2))
 
-if     is_FV('dateVec', 3) && ~dv1 && ~dv2
   s = sprintf(...
     '%04i%02i%02i', ...
-    R.dateVec);
+    dateVec1(1:3));
 
-elseif ~dv && is_FV('dateVec1', 3) && is_FV('dateVec2', 3)
+elseif strcmp(timeIntervalFormat, 'DAY_TO_DAY')
+  assert(isequal(dateVec1(4:6), [0,0,0]))
+  assert(isequal(dateVec2(4:6), [0,0,0]))
+  dateVec2 = datevec(datetime(dateVec2) - caldays(1));
+
   s = sprintf(...
     '%04i%02i%02i-%04i%02i%02i', ...
-    R.dateVec1(:), R.dateVec2(:));
+    dateVec1(1:3), dateVec2(1:3));
 
-elseif ~dv && is_FV('dateVec1', 6) && is_FV('dateVec2', 6)
+elseif strcmp(timeIntervalFormat, 'SECOND_TO_SECOND')
   s = sprintf(...
     '%04i%02i%02iT%02i%02i%02i-%04i%02i%02iT%02i%02i%02i', ...
-    R.dateVec1(:), R.dateVec2(:));
+    dateVec1, dateVec2);
 
-elseif ~dv && ~dv1 && ~dv2
+elseif strcmp(timeIntervalFormat, 'NO_TIME_INTERVAL')
   s = [];
 
 else
-  error('Can not interpret combination of date & time field values.')
+  error('Can not interpret timeIntervalFormat="%s".', timeIntervalFormat)
 end
 end
 

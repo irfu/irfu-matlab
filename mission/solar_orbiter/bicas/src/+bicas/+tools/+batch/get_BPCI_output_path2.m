@@ -162,14 +162,16 @@ UNOFF_BASENAME_EXTENSION = [];
 % Set variables in output dataset filename
 %==========================================
 R = [];
-R.datasetId      = outputDsi;
-R.versionStr     = sprintf('%02i', versionNbr);
-R.isCdag         = outputIsCdag;
-R.dsicdagCase    = 'lower';
-R.unoffExtension = UNOFF_BASENAME_EXTENSION;
+R.datasetId          = outputDsi;
+R.versionStr         = sprintf('%02i', versionNbr);
+R.isCdag             = outputIsCdag;
+R.dsicdagCase        = 'lower';
+R.unoffExtension     = UNOFF_BASENAME_EXTENSION;
+R.dateVec1           = datevec(dt1);
+R.dateVec2           = datevec(dt2);
 
-% Set date vector(s), depending on time range, effectively selecting filename
-% format for the dataset.
+% Set date vector, depending on time range, effectively selecting filename
+% time interval format for the dataset.
 
 % if dt2 <= (dt1 + caldays(1))
 if is_midnight(dt1) && is_midnight(dt2) && (dt2 == dt1 + caldays(1))
@@ -182,19 +184,11 @@ if is_midnight(dt1) && is_midnight(dt2) && (dt2 == dt1 + caldays(1))
   % would yield an output dataset filename on the YYYYMMDD format. This
   % should be unlikely.
 
-  % IMPLEMENTATION NOTE: Using center of day so that can handle DSMD time
-  % boundaries that are slightly on the wrong side of midnight, e.g. if
-  % deriving DSMD from file content.
-  %   Ex: LFR-SURV-CWF test file
-  %       solo_L1R_rpw-lfr-surv-cwf-e-cdag_20200213_V07.cdf begins
-  %       at Epoch = 2020-02-12T23:59:53.305345024
-  dtMiddle = dt1 + (dt2-dt1)/2;
-  R.dateVec  = [dtMiddle.Year, dtMiddle.Month, dtMiddle.Day];
+  R.timeIntervalFormat = 'DAY';
 else
   % CASE: (dt1,dt2) does not exactly cover one day one day.
   % ==> use filenaming format yymmddThhmmss-yymmddThhmmss.
-  R.dateVec1 = datevec(dt1);
-  R.dateVec2 = datevec(dt2);
+  R.timeIntervalFormat = 'SECOND_TO_SECOND';
 end
 
 

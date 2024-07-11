@@ -121,10 +121,11 @@
 %                               interpreted as dataset glob.attr.
 %                               Logical_source, which should include -CDAG when
 %                               present (for now).
+%       .dateVec1
+%       .dateVec2
+%       .timeIntervalFormat   : String constant specifying the time interval
+%                               format.
 %       Fields sometimes present
-%           .dateVec
-%           .dateVec1
-%           .dateVec2
 %           .timeIntervalStr   : Equals "Datetime" in dataset specifications.
 %           + varying fields corresponding to content in filename.
 %       NOTE: dateVec* may be either 1x3 or 1x6.
@@ -253,19 +254,7 @@ function R = parse_dataset_filename(filename)
 %       CON-PROPOSAL: Use parsing function for shared implemention for shared
 %                     parts of naming conventions.
 %
-% PROPOSAL: Always use two timestamps.
-%   NOTE: How handle YYYYMMDD time interval format?
-%       PROPOSAL: Assertion on hour=minute=second=0 for beginning and end?
-%           CON: Not consistent with boundaries if reading time boundaries
-%                from file content.
-%       PROPOSAL: Assertion dt1-dt2 = 1 calendar day?
-%           CON: Not consistent with boundaries if reading time boundaries
-%                from file content.
-%           NOTE/PRO: DSMDs basically use this assumption for bicas.batch.
-%                     It is good enough.
-%           PRO: Returned value should reflect the filename, not the file
-%                content.
-%% PROPOSAL: Replace date vectors with datetime objects (UTC).
+% PROPOSAL: Replace date vectors with datetime objects (UTC).
 %   CON: Currently using the length of date vectors to specify the filename
 %        format (time interval format).
 %        In particular, with datetime only, create_dataset_filename() would
@@ -276,13 +265,13 @@ function R = parse_dataset_filename(filename)
 %   NOTE: Would need assertion on hour=minute=second=0 for YYYYMMDD
 %         format.
 %
-
 % PROPOSAL: Use field names identical to the terms used in specifications (RCS
 %           ICD, SOL-SGS-TN-0009).
 %   Ex: Datetime, descriptor
 %   CON: Terms do not follow variable naming conventions.
 
 NO_MATCH_RETURN_VALUE = [];
+UNUSED_DATE_VECTOR    = [0, 0, 0, 0, 0, 0];
 
 
 
@@ -407,9 +396,13 @@ end
   {'_', CNE_TESTSTR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
 if perfectMatch
-  R.cneTestStr     =                           subStrCa{2};
-  R.versionStr     = ver_2_versionStr(         subStrCa{4});
-  R.unoffExtension = unoff_extension_RE_to_str(subStrCa{5});
+  R.dateVec1           = UNUSED_DATE_VECTOR;
+  R.dateVec2           = UNUSED_DATE_VECTOR;
+  R.timeIntervalFormat = 'NO_TIME_INTERVAL';
+  %
+  R.cneTestStr         =                           subStrCa{2};
+  R.versionStr         = ver_2_versionStr(         subStrCa{4});
+  R.unoffExtension     = unoff_extension_RE_to_str(subStrCa{5});
   return
 end
 
@@ -457,23 +450,28 @@ DATETIME_RE = '20[0-9]{6,6}T[0-9]{6,6}';
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
   {DATE_RE}, 'permit non-match');
 if perfectMatch
-  R.dateVec = date_str_2_dateVec3(subStrCa{1});
+  R.dateVec1 = date_str_2_dateVec(subStrCa{1});
+  R.dateVec2 = datevec(datetime(R.dateVec1) + caldays(1));
+  R.timeIntervalFormat = 'DAY';
   return
 end
 
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
   {DATE_RE, '-', DATE_RE}, 'permit non-match');
 if perfectMatch
-  R.dateVec1 = date_str_2_dateVec3(subStrCa{1});
-  R.dateVec2 = date_str_2_dateVec3(subStrCa{3});
+  R.dateVec1 = date_str_2_dateVec(subStrCa{1});
+  R.dateVec2 = date_str_2_dateVec(subStrCa{3});
+  R.dateVec2 = datevec(datetime(R.dateVec2) + caldays(1));
+  R.timeIntervalFormat = 'DAY_TO_DAY';
   return
 end
 
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
   {DATETIME_RE, '-', DATETIME_RE}, 'permit non-match');
 if perfectMatch
-  R.dateVec1 = date_time_str_2_dateVec6(subStrCa{1});
-  R.dateVec2 = date_time_str_2_dateVec6(subStrCa{3});
+  R.dateVec1 = date_time_str_2_dateVec(subStrCa{1});
+  R.dateVec2 = date_time_str_2_dateVec(subStrCa{3});
+  R.timeIntervalFormat = 'SECOND_TO_SECOND';
   return
 end
 
@@ -483,7 +481,7 @@ end
 
 
 % Utility function
-function dateVec = date_time_str_2_dateVec6(s)
+function dateVec = date_time_str_2_dateVec(s)
 dateVec = str2double({s(1:4), s(5:6), s(7:8), s(10:11), s(12:13), s(14:15)});
 
 % NOTE: Is not a check on filename, but on implementation. read_token()
@@ -494,8 +492,9 @@ end
 
 
 % Utility function
-function dateVec = date_str_2_dateVec3(s)
+function dateVec = date_str_2_dateVec(s)
 dateVec = str2double({s(1:4), s(5:6), s(7:8)});
+dateVec(4:6) = [0, 0, 0];
 
 % NOTE: Is not a check on filename, but on implementation. read_token should
 % guarantee that strings can be parsed as numbers.
