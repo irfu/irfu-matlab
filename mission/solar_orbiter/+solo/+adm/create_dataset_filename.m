@@ -111,15 +111,20 @@ else
   error('Illegal R.unoffExtension. Must be (1) empty non-cell or (2) 1x1 cell array of string.')
 end
 
-% Remove field names which are present for every filenaming convention so
-% that they do not need to be checked for when identifying filenaming
+
+
+% Remove all mandatory field names
+% --------------------------------
+% So that they do not need to be checked for when identifying filenaming
 % convention from set of fields.
 assert(ischar(R.versionStr));
 versionStr = R.versionStr;
 R = rmfield(R, {'datasetId', 'versionStr', 'unoffExtension', 'isCdag', 'dsicdagCase'});
 
+% Remove some optional field names
+% --------------------------------
 % "timeIntervalStr" is not used by this function. Only permitted for
-% compatibility with erikpgohanssons.so.adm.parse_dataset_filename().
+% compatibility with solo.adm.parse_dataset_filename().
 if isfield(R, 'timeIntervalStr')
   R = rmfield(R, 'timeIntervalStr');
 end

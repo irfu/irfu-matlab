@@ -228,6 +228,17 @@ function R = parse_dataset_filename(filename)
 %
 % PROPOSAL: Refactor to return class.
 %   PROBLEM: Class should work with solo.adm.create_dataset_filename().
+%     PROBLEM: How handle fields which
+%          (1) are returned from parsing, but are simultaneously
+%          (2) redundant when creating filenames.
+%       Ex: fnDatasetIdCdag
+%     PROBLEM: How handle fields which are only optional in certain combinations.
+%       Either
+%           {'dateVec1', 'dateVec2', 'lesTestStr'}
+%           {'cneTestStr'}
+%           {'dateVec'}
+%           {'dateVec1', 'dateVec2'}
+%
 %     PRO: Having two timestamps can not make distinction between a single date
 %          and an explicit time interval in filename.
 %       Ex: "20240101" vs "20240101T000000-20240102T000000"
@@ -416,26 +427,6 @@ end
 
 
 
-function dateVec = date_time_str_2_dateVec6(s)
-dateVec = str2double({s(1:4), s(5:6), s(7:8), s(10:11), s(12:13), s(14:15)});
-
-% NOTE: Is not a check on filename, but on implementation. read_token()
-% should guarantee that strings can be parsed as numbers.
-%assert(~any(isnan(dateVec)))
-end
-
-
-
-function dateVec = date_str_2_dateVec3(s)
-dateVec = str2double({s(1:4), s(5:6), s(7:8)});
-
-% NOTE: Is not a check on filename, but on implementation. read_token should
-% guarantee that strings can be parsed as numbers.
-%assert(~any(isnan(dateVec)))
-end
-
-
-
 % "unoff_extension_RE" = The part of string that matches regular expression
 % (RE).
 function unoffExtension = unoff_extension_RE_to_str(s)
@@ -489,3 +480,26 @@ end
 
 error('Can not interpret time interval string "%s".', s)
 end
+
+
+
+% Utility function
+function dateVec = date_time_str_2_dateVec6(s)
+dateVec = str2double({s(1:4), s(5:6), s(7:8), s(10:11), s(12:13), s(14:15)});
+
+% NOTE: Is not a check on filename, but on implementation. read_token()
+% should guarantee that strings can be parsed as numbers.
+%assert(~any(isnan(dateVec)))
+end
+
+
+
+% Utility function
+function dateVec = date_str_2_dateVec3(s)
+dateVec = str2double({s(1:4), s(5:6), s(7:8)});
+
+% NOTE: Is not a check on filename, but on implementation. read_token should
+% guarantee that strings can be parsed as numbers.
+%assert(~any(isnan(dateVec)))
+end
+
