@@ -3,9 +3,12 @@
 %
 % RCT FILENAME CONVENTION
 % =======================
+% NOTE: The official RPW RCT filenaming convention has changed multiple times and can be confused.
+% --
 % See implementation for comments.
 % See comments for settings PROCESSING.RCT_REGEXP.* (all RCTs), in
 % bicas.create_default_BSO().
+%
 %
 % """"""""
 % 4.2.3 File naming
@@ -58,16 +61,35 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function [destFilename, gaCALIBRATION_VERSION] = create_RCT_filename()
+function destFilename = create_RCT_filename(beginDt, endDt, versionNbr)
+% PROPOSAL: Use solo.adm.create_dataset_filename().
+%   NOTE: Should be able to handle it.
+
+  function assert_DT(Dt)
+    assert(Dt.Hour   == 0)
+    assert(Dt.Minute == 0)
+    assert(Dt.Second == 0)
+  end
+
+assert_DT(beginDt)
+assert_DT(endDt)
+assert(isnumeric(versionNbr) && versionNbr >= 1)
+
+DT_FORMAT_STR = 'yyyyMMdd';
+
+beginStr = char(datetime(beginDt, 'Format', DT_FORMAT_STR));
+endStr   = char(datetime(endDt,   'Format', DT_FORMAT_STR));
+
 
 % IMPLEMENTATION NOTE: The official filenaming convention is not followed
 % here!! Not sure how to comply with it either (which receiver should the
 % BIAS RCT specify?).
 
 % NOTE: Should not contain seconds.
-gaCALIBRATION_VERSION = char(datetime("now","Format","uuuuMMddHHmm"));
+% gaCALIBRATION_VERSION = char(datetime("now","Format","uuuuMMddHHmm"));
 
 % NOTE: Minus in "RPW-BIAS".
-destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', gaCALIBRATION_VERSION);
+%destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', gaCALIBRATION_VERSION);
+destFilename = sprintf('solo_CAL_rpwi-bias_%s-%s_V%02i.cdf', beginStr, endStr, versionNbr);
 
 end

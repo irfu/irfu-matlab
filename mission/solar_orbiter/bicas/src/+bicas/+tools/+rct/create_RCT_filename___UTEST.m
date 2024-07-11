@@ -18,7 +18,10 @@ classdef create_RCT_filename___UTEST < matlab.unittest.TestCase
 
 
     function test(testCase)
-      [actDestFilename, actGaCALIBRATION_VERSION] = bicas.tools.rct.create_RCT_filename();
+      beginDt = datetime('2020-01-01T00:00:00');
+      endDt   = datetime('2099-12-31T00:00:00');
+
+      [actDestFilename, actGaCALIBRATION_VERSION] = bicas.tools.rct.create_RCT_filename(beginDt, endDt, 3);
     end
 
 

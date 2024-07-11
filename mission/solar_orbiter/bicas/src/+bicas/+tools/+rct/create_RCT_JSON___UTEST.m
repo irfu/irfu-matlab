@@ -52,7 +52,10 @@ classdef create_RCT_JSON___UTEST < matlab.unittest.TestCase
 
 
     function test(testCase)
-      actRctJsonPath = bicas.tools.rct.create_RCT_JSON(testCase.testDir, 'biasRctFilename.cdf');
+      beginDt = datetime('2020-01-02T03:04:05');
+      endDt   = datetime('2099-12-31T23:59:59');
+
+      actRctJsonPath = bicas.tools.rct.create_RCT_JSON(testCase.testDir, 'biasRctFilename.cdf', beginDt, endDt);
       irf.assert.file_exists(actRctJsonPath)
     end
 

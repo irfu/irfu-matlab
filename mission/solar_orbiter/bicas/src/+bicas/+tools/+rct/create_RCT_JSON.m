@@ -68,21 +68,25 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24.
 %
-function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename)
-% TODO-NI: Should the JSON file only include the teams own RCT? I.e. BIAS RCT, but not LFR & TDS RCTs?
-%   NOTE: L1R files contain the filenames of the LFR/TDS RCTs.
+function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename, beginDt, endDt)
 % PROPOSAL: Do not use bicas.utils.JSON_object_str(). Use MATLAB's own support
 %           for JSON files: jsonencode().
+DT_FORMAT_STR = 'yyyy-MM-dd''T''HH:mm:ss''Z''';
 
+beginStr = char(datetime(beginDt, 'Format', DT_FORMAT_STR));
+endStr   = char(datetime(endDt,   'Format', DT_FORMAT_STR));
 
 
 RCT_JSON_FILENAME = 'bias_rct_validity.json';
 
 % NOTE: Cell array of struct, to conform with XB's format above.
 JsonObj = containers.Map();
-JsonObj(biasRctFilename) = {struct(...
-  'validity_start', '2020-02-09T00:00:00Z', ...
-  'validity_end',   '9999-01-01T00:00:00Z')};
+JsonObj(biasRctFilename) = { ...
+  struct(...
+    'validity_start', beginStr, ...
+    'validity_end',   endStr ...
+  ) ...
+};
 
 str = bicas.utils.JSON_object_str(JsonObj, 4);
 %fprintf(str);    % DEBUG

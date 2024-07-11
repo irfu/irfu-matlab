@@ -44,41 +44,34 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2018-03-09
 %
-function rctPath = create_RCT(rctMasterCdfFile, destDir)
-
-% RCTs in DataPool git repository 2019-01-14 (commit 50cc3d8):
-%  ROC-SGSE_CAL_RCT-BIAS_V01.xlsx
-%  ROC-SGSE_CAL_RCT-BIAS_V02.xlsx        <--- Where is this now?
-%  ROC-SGSE_CAL_RCT-LFR-BIAS_V01.xlsx
-%  ROC-SGSE_CAL_RCT-LFR-SCM_V01.xlsx
-%  ROC-SGSE_CAL_RCT-LFR-VHF_V01.xlsx
-%  ROC-SGSE_CAL_RCT-TDS-LFM-CWF-B_V01.xlsx
-%  ROC-SGSE_CAL_RCT-TDS-LFM-CWF-E_V01.xlsx
-%  ROC-SGSE_CAL_RCT-TDS-LFM-RSWF-B_V01.xlsx
-%  ROC-SGSE_CAL_RCT-TDS-LFM-RSWF-E_V01.xlsx
-%  ROC-SGSE_CAL_RCT-TDS-SURV-SWF-B_V01.xlsx
-%  ROC-SGSE_CAL_RCT-TDS-SURV-SWF-E_V01.xlsx
-%  SOLO_CAL_RCT-BIAS_V01.xlsx
-%  SOLO_CAL_RCT-SCM_V01.xlsx
-%  SOLO_CAL_RCT-TDS-LFM-RSWF-B_V01.xlsx
-%  SOLO_CAL_RCT-TDS-LFM-RSWF-E_V01.xlsx
-%  SOLO_CAL_RCT-TDS-SURV-SWF-B_V01.xlsx
-
-
-
-% TODO-NI: How set time stamps?
-%   NOTE: Time stamps are not copied, nor modifications of existing time stamps.
-%         Can therefor not just reduce to relative times.
+function rctPath = create_RCT(rctMasterCdfFile, destDir, beginDt, endDt, versionNbr)
 % PROPOSAL: Change function name: Something which implies using a master file and "filling it".
 % PROPOSAL: Somehow separate the code with the hard-coded data into a separate file.
+%
+% PROPOSAL: Merge definition of bicas.gamods.Database() with that of BICAS
+%           proper (bicas.const.GA_MODS_DB).
+%   CON: Must then use BICAS versions.
+%   CON: Obscures the definition, since RCTs are a bit separate from BICAS
+%        proper. BICAS must be compatible with the RCT format, but the method of
+%        deriving the calibration values (e.g. curve fitting) can be independent
+%        of BICAS.
+
+DSI = 'SOLO_CAL_RPW-BIAS';
+
+GMDB = bicas.gamods.Database({DSI});
+% NOTE: Using BICAS version. Not obvious that one should.
+GMDB.add_GMVE({DSI}, ...
+  bicas.gamods.VersionEntry('2024-07-11', '8.1.0', ...
+  {'Updated with compliant metadata and filename.'}))
+GA_MODS = GMDB.get_MODS_strings_CA(DSI);
 
 
 
-[rctFilename, gaCALIBRATION_VERSION] = bicas.tools.rct.create_RCT_filename();
+rctFilename = bicas.tools.rct.create_RCT_filename(beginDt, endDt, versionNbr);
 rctPath     = fullfile(destDir, rctFilename);
 
 [RctZvL, RctZvH] = set_RCT_content();
-create_RCT_file(rctMasterCdfFile, rctPath, RctZvL, RctZvH, gaCALIBRATION_VERSION);
+create_RCT_file(rctMasterCdfFile, rctPath, RctZvL, RctZvH, versionNbr, GA_MODS);
 end
 
 
@@ -87,7 +80,7 @@ function [RctZvL, RctZvH] = set_RCT_content()
 
 ADD_DEBUG_RECORD_L = 0;
 ADD_DEBUG_RECORD_H = 0;
-C.N_ZV_COEFF     = 8;
+C.N_ZV_COEFF       = 8;
 
 %===================================================================
 % Create EMPTY (not zero-valued) variables representing zVariables.
@@ -122,7 +115,7 @@ RctZvH.V_OFFSET = zeros(0,3);
 %
 % AC, diff, gamma=100
 %             1.611e24 s^4 - 2.524e30 s^3 - 1.258e35 s^2 - 4.705e39 s + 2.149e40
-% ---------------------------------------------------------------------------------------
+%   ---------------------------------------------------------------------------------------
 %   s^6 + 7.211e17 s^5 + 6.418e23 s^4 + 6.497e28 s^3 + 2.755e33 s^2 + 4.817e37 s + 2.114e39
 %
 % Based on BIAS standalone calibrations 2016-06-21/22, 100 kOhm stimuli,
@@ -226,7 +219,7 @@ if ADD_DEBUG_RECORD_H
   warning('Creating RCT with added test data.')
 end
 
-end
+end    % function set_RCT_content()
 
 
 
@@ -318,19 +311,115 @@ end
 
 
 
-% rctL : Struct with ZVs associated with Epoch_L.
-% rctH : Struct with ZVs associated with Epoch_H.
-function create_RCT_file(rctMasterCdfFile, destPath, RctL, RctH, gaCALIBRATION_VERSION)
+% RCT GLOBAL ATTRIBUTES
+% =====================
+% RCTs should contain multiple GAs. Most can be set in skeletons, but below GAs
+% must be set by code:
+%
+% CALIBRATION_TABLE
+%   "Filename of the calibration table, without the “.cdf” extension."
+%   "Same definition than for RCS output CDF metadata"
+% CALIBRATION_VERSION
+%   "Version of the calibration table."
+%   "Same definition than for RCS output CDF metadata"
+% /Quotes from ROC-PRO-PIP-ICD-00037-LES, RCS ICD, version 1/7, Section 4.2.6
+%
+%
+% Xavier Bonnin also implies that "Datetime" should be set as in datasets:
+% """"""""
+% As a reminder the link between gAttr and filename’s fields is:
+%
+% <Source_name>_<LEVEL>_<Descriptor>_<Datetime>_V<Data_version>_<Free_field>.cdf
+%
+% Where,
+%
+% <Source_name> 	—> Lower case prefix of the Source_name gAttr (here is always "solo")
+% <LEVEL>			—> Upper case prefix of the LEVEL gAttr (here is "CAL")
+% Descriptor 		—> Lower case prefix of the Descriptor gAttr (here is "rpw-scm")
+% Datetime 			—> Datetime gAttr value in upper case (here "20200210-20990101")
+% Data_version		—> Data_version gAttr value
+% Free_field		—> Lower case value of Free_field gAttr (Free_field gAttr and field are optional)
+% """"""""
+% /Xavier Bonnin, e-mail 2024-07-09
+%
+% Datetime
+%   "Datetime field as provided in the CDF file name"
+%   "e.g., “20200301” (for a daily file)"
+% /Quotes from ROC-PRO-PIP-ICD-00037-LES, RCS ICD, version 1/7, Section 4.1.2
+% RCS output CDF metadata setting convention (i.e. when describing datasets, not
+% RCTs directly).
+%
+%
+% ARGUMENTS
+% =========
+% RctL
+%     Struct with ZVs associated with Epoch_L.
+% RctH
+%     Struct with ZVs associated with Epoch_H.
+%
+%
+% NOTES ON RCT
+% ============
+% """"""""
+% Helen has confirmed that only the filename matters on SOAR side.
+% So CAL CDF files do not need to be ISTP compliant.
+%
+% I would just recommend that there enough information inside the CAL CDF to
+% identify the file, namely providing the following global attributes:
+% Source_name, LEVEL, Descriptor, Data_version, Datetime* and Free_field (if
+% any).
+% """"""""   /Xavier Bonnin, e-mail, 2024-07-08
+% NOTE: This is not the same list as in the RCS ICS 01/07
+%
+%
+function create_RCT_file(rctMasterCdfFile, rctFilePath, RctL, RctH, rctVersionNbr, ga_MODS)
 % PROPOSAL: Assertion for matching number of records Epoch_L+data, Epoch_H+data.
 %   PROPOSAL: Read from master file which should match.
 % TODO-DEC: Require correct MATLAB classes (via write_CDF_dataobj)?
+% PROPOSAL: Use BICAS code for writing datasets.
+%   CON: BICAS can not handle CALIBRATION_TABLE, CALIBRATION_VERSION it is intended
+%        here.
 
-assert(ischar(gaCALIBRATION_VERSION))
+assert(isnumeric(rctVersionNbr))
+
+DT_FORMAT_STR = 'yyyy-MM-dd''T''HH:mm:ss''Z''';
+
+
 
 DataObj = dataobj(rctMasterCdfFile);
 
-DataObj.GlobalAttributes.CALIBRATION_VERSION = {gaCALIBRATION_VERSION};
+%=========
+% Set GAs
+%=========
+% NOTE: Overwriting previous value in skeleton (SOLO_CAL_RPW-BIAS_V02.cdf). The
+%       value should be empty in the skeleton to be less deceiving.
+rctFilename = irf.fs.get_name(rctFilePath);
+R = solo.adm.parse_dataset_filename(rctFilename);
+assert(strcmp(rctFilename(end-3:end), '.cdf'))
+ga_CALIBRATION_TABLE = rctFilename(1:end-4);
+DataObj.GlobalAttributes.CALIBRATION_TABLE   = {ga_CALIBRATION_TABLE};
 
+DataObj.GlobalAttributes.CALIBRATION_VERSION = {sprintf('%02i', rctVersionNbr)};
+
+% TIME_MIN, TIME_MAX are not required for CAL, but they are in the skeleton, so
+% one can just as well set them in tthe same way they are set for datasets (or
+% remove them from the skeleton)
+% beginStr = char(datetime(beginDt, 'Format', DT_FORMAT_STR));
+% endStr   = char(datetime(endDt,   'Format', DT_FORMAT_STR));
+% DataObj.TIME_MIN = beginStr;
+% DataObj.TIME_MAX = endStr;
+
+DataObj.GlobalAttributes.MODS = ga_MODS;
+
+% DataObj.Data_version          = DataObj.GlobalAttributes.CALIBRATION_VERSION;
+
+% GA Datetime is not required by RCS ICD (ROC-PRO-PIP-ICD-00037-LES, 01/07), but
+% Xavier Bonnin requested it in e-mail 2024-07-08 (mistake by him?).
+% DataObj.GlobalAttributes.Datetime =
+
+%================
+% Set zVariables
+%================
 DataObj.data.Epoch_L.data = RctL.Epoch_L;
 DataObj.data.Epoch_H.data = RctH.Epoch_H;
 
@@ -340,8 +429,11 @@ DataObj.data.TRANSFER_FUNCTION_COEFFS.data = RctL.TRANSFER_FUNCTION_COEFFS;    %
 DataObj.data.E_OFFSET.data                 = RctH.E_OFFSET;                    % Epoch_H
 DataObj.data.V_OFFSET.data                 = RctH.V_OFFSET;                    % Epoch_H
 
+%============
+% Create CDF
+%============
 irf.cdf.write_dataobj(...
-  destPath, ...
+  rctFilePath, ...
   DataObj.GlobalAttributes, ...
   DataObj.data, ...
   DataObj.VariableAttributes, ...
