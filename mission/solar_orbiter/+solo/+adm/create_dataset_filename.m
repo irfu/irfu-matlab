@@ -36,6 +36,8 @@
 % First created 2020-01-24.
 %
 function filename = create_dataset_filename(R)
+% NOTE: See comments for solo.adm.parse_dataset_filename().
+%
 % PROPOSAL: Ability to add IRF-internal basename suffix.
 %   Ex: solo_L2_rpw-tds-lfm-rswf-e_20200410_V01.suffix1.cdf
 %   PROPOSAL: Ability to add sequence of such suffixes.
@@ -60,7 +62,7 @@ function filename = create_dataset_filename(R)
 %               CON: Waste of space.
 %       PROPOSAL: <basename>_<extension>.cdf
 %   --
-%   TODO-DEC: How store inofficial extension?
+%   TODO-DEC: How store unofficial extension?
 %       NOTE: Want to distinguish absence of extension from empty string represented in extension.
 %       PROPOSAL: [] = No extension
 %                 1x1 cell with string = Extension.

@@ -121,9 +121,10 @@
 %                               Logical_source, which should include -CDAG when
 %                               present (for now).
 %       Fields sometimes present
-%           .dateVec  :
-%           .dateVec1 :
-%           .dateVec2 :
+%           .dateVec
+%           .dateVec1
+%           .dateVec2
+%           .timeIntervalStr   : Equals "Datetime" in dataset specifications.
 %           + varying fields corresponding to content in filename.
 %       NOTE: dateVec* may be either 1x3 or 1x6.
 % --
@@ -157,7 +158,7 @@ function R = parse_dataset_filename(filename)
 % PROPOSAL: Change name dateVec --> timeVec
 %   PROPOSAL: MATLAB seems to use "date vector", and "time vector" for vector of timestamps.
 %
-% PROPOSAL: Reorg to be more similar to python erikpgohansson.so.parse_dataset_filename?
+% PROPOSAL: Reorganize to be more similar to python erikpgohansson.so.parse_dataset_filename?
 %   NOTE: Partly done.
 %   NOTE: python function
 %       * does not cover LES, CNES and time-less filename formats.
@@ -183,7 +184,7 @@ function R = parse_dataset_filename(filename)
 %       * Non-reversible way that describes nominal time coverage
 %         (start-stop; one constant format)
 % PROPOSAL: Separate return struct for time vectors. Time interval string in
-%       R.
+%           return value.
 %
 % PROPOSAL: Move
 %       solo.adm.parse_dataset_filename(), and
@@ -226,8 +227,35 @@ function R = parse_dataset_filename(filename)
 %           extension.
 %
 % PROPOSAL: Refactor to return class.
+%   PROBLEM: Class should work with solo.adm.create_dataset_filename().
+%     PRO: Having two timestamps can not make distinction between a single date
+%          and an explicit time interval in filename.
+%       Ex: "20240101" vs "20240101T000000-20240102T000000"
+%     PROPOSAL: Variable for exact sub-naming convention used for time interval.
+%       Ex: DAY, DAY_TO_DAY, SECOND_TO_SECOND
+%   PRO: More rigorous.
+%   PROBLEM: Must always have the same set of fields. ==> Backwards incompatibility.
+%   PROPOSAL: Different functions for different naming conventions. One function
+%             for official naming convention (+RPW's "-cdag") which (1) does not
+%             return all values, and (2) can be used in most places anyway.
+%     CON: Does not help much with backwards incompatibility.
+%     CON: Too much overlap between implementations.
+%       CON-PROPOSAL: Use parsing function for shared implemention for shared
+%                     parts of naming conventions.
 %
-% PROPOSAL: Replace date vectors with datetime.
+% PROPOSAL: Always use two timestamps.
+%   NOTE: How handle YYYYMMDD time interval format?
+%       PROPOSAL: Assertion on hour=minute=second=0 for beginning and end?
+%           CON: Not consistent with boundaries if reading time boundaries
+%                from file content.
+%       PROPOSAL: Assertion dt1-dt2 = 1 calendar day?
+%           CON: Not consistent with boundaries if reading time boundaries
+%                from file content.
+%           NOTE/PRO: DSMDs basically use this assumption for bicas.batch.
+%                     It is good enough.
+%           PRO: Returned value should reflect the filename, not the file
+%                content.
+%% PROPOSAL: Replace date vectors with datetime objects (UTC).
 %   CON: Currently using the length of date vectors to specify the filename
 %        format (time interval format).
 %        In particular, with datetime only, create_dataset_filename() would
@@ -238,14 +266,11 @@ function R = parse_dataset_filename(filename)
 %   NOTE: Would need assertion on hour=minute=second=0 for YYYYMMDD
 %         format.
 %
-% PROPOSAL: Always use two timestamps.
-%   NOTE: How handle YYYYMMDD time interval format?
-%       PROPOSAL: Assertion on hour=minute=second=0 for beginning and end?
-%           CON: Not consistent with boundaries if reading time boundaries
-%                from file content.
-%       PROPOSAL: Assertion dt1-dt2 = 1 calendar day?
-%           CON: Not consistent with boundaries if reading time boundaries
-%                from file content.
+
+% PROPOSAL: Use field names identical to the terms used in specifications (RCS
+%           ICD, SOL-SGS-TN-0009).
+%   Ex: Datetime, descriptor
+%   CON: Terms do not follow variable naming conventions.
 
 NO_MATCH_RETURN_VALUE = [];
 
@@ -339,42 +364,42 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 %=================================================================
 % Standard filenaming convention (incl. CDAG; tested for earlier)
 %=================================================================
-[subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
+[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
 if perfectMatch
-  R = parse_time_interval_str(R, subStrList{2});
-  R.timeIntervalStr = subStrList{2};
-  R.versionStr      = ver_2_versionStr(subStrList{4});
-  R.unoffExtension  = unoff_extension_RE_to_str(subStrList{5});
+  R = parse_time_interval_str(R, subStrCa{2});
+  R.timeIntervalStr = subStrCa{2};
+  R.versionStr      = ver_2_versionStr(subStrCa{4});
+  R.unoffExtension  = unoff_extension_RE_to_str(subStrCa{5});
   return
 end
 
 %=============================
 % "LES" filenaming convention
 %=============================
-[subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
+[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', ...
   LES_TESTSTR_RE, UNOFF_EXTENSION_RE}, 'permit non-match');
 if perfectMatch
-  R = parse_time_interval_str(R, subStrList{2});
-  R.timeIntervalStr = subStrList{2};
-  R.versionStr      = ver_2_versionStr(         subStrList{4});
-  R.lesTestStr      =                           subStrList{6};
-  R.unoffExtension  = unoff_extension_RE_to_str(subStrList{7});
+  R = parse_time_interval_str(R, subStrCa{2});
+  R.timeIntervalStr = subStrCa{2};
+  R.versionStr      = ver_2_versionStr(         subStrCa{4});
+  R.lesTestStr      =                           subStrCa{6};
+  R.unoffExtension  = unoff_extension_RE_to_str(subStrCa{7});
   return
 end
 
 %===============================
 % "CNES" filenameing convention
 %===============================
-[subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
+[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', CNE_TESTSTR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
 if perfectMatch
-  R.cneTestStr     =                           subStrList{2};
-  R.versionStr     = ver_2_versionStr(         subStrList{4});
-  R.unoffExtension = unoff_extension_RE_to_str(subStrList{5});
+  R.cneTestStr     =                           subStrCa{2};
+  R.versionStr     = ver_2_versionStr(         subStrCa{4});
+  R.unoffExtension = unoff_extension_RE_to_str(subStrCa{5});
   return
 end
 
@@ -439,26 +464,26 @@ DATETIME_RE = '20[0-9]{6,6}T[0-9]{6,6}';
 
 
 
-[subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
+[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
   {DATE_RE}, 'permit non-match');
 if perfectMatch
-  R.dateVec = date_str_2_dateVec3(subStrList{1});
+  R.dateVec = date_str_2_dateVec3(subStrCa{1});
   return
 end
 
-[subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
+[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
   {DATE_RE, '-', DATE_RE}, 'permit non-match');
 if perfectMatch
-  R.dateVec1 = date_str_2_dateVec3(subStrList{1});
-  R.dateVec2 = date_str_2_dateVec3(subStrList{3});
+  R.dateVec1 = date_str_2_dateVec3(subStrCa{1});
+  R.dateVec2 = date_str_2_dateVec3(subStrCa{3});
   return
 end
 
-[subStrList, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
+[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
   {DATETIME_RE, '-', DATETIME_RE}, 'permit non-match');
 if perfectMatch
-  R.dateVec1 = date_time_str_2_dateVec6(subStrList{1});
-  R.dateVec2 = date_time_str_2_dateVec6(subStrList{3});
+  R.dateVec1 = date_time_str_2_dateVec6(subStrCa{1});
+  R.dateVec2 = date_time_str_2_dateVec6(subStrCa{3});
   return
 end
 
