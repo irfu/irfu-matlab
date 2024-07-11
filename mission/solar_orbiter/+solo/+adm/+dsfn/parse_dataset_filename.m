@@ -177,22 +177,12 @@ function R = parse_dataset_filename(filename)
 %
 % PROPOSAL: Use time interval string to denote time in both
 %           parse_dataset_filename() and create_dataset_filename(). No time vectors.
-%           Have instead pre-existing separate functions
-%               parse_time_interval_str(), and
-%               create_time_interval_str()
-%           be globally available.
-%   PRO: No redundant information (that can contradict) in R.
+%           Caller should instead use pre-existing separate functions
+%               solo.adm.dsfn.parse_time_interval_str()
+%               solo.adm.dsfn.create_time_interval_str()
+%   PRO: No redundant (time) information (that can contradict) in R.
 %       PRO: Does not need to ignore but permit time interval string in
 %           create_dataset_filename().
-%   PRO: Naturally puts the varying time vectors in separate struct.
-%       PRO: R does not change in format as much. Fewer cases.
-%   PRO: Can chose to parse time interval string in different ways depending on needs:
-%       * Reversible way (varying format)
-%       * Non-reversible way that describes nominal time coverage
-%         (start-stop; one constant format)
-% PROPOSAL: Convert parse_time_interval_str() and create_time_interval_str() (in
-%           solo.adm.dsfn.create_dataset_filename()) to public functions which are
-%           inverses of each other (are already?) and can be tested separately.
 % PROPOSAL: Separate return struct for time vectors. Time interval string in
 %           return value.
 %
@@ -367,9 +357,9 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
 if perfectMatch
-  R                 = parse_time_interval_str(R, subStrCa{2});
-  R.timeIntervalStr = subStrCa{2};
-  R.versionStr      = ver_2_versionStr(subStrCa{4});
+  [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
+  R.timeIntervalStr =                           subStrCa{2};
+  R.versionStr      = ver_2_versionStr(         subStrCa{4});
   R.unoffExtension  = unoff_extension_RE_to_str(subStrCa{5});
   return
 end
@@ -381,8 +371,8 @@ end
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', ...
   LES_TESTSTR_RE, UNOFF_EXTENSION_RE}, 'permit non-match');
 if perfectMatch
-  R                 = parse_time_interval_str(R, subStrCa{2});
-  R.timeIntervalStr = subStrCa{2};
+  [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
+  R.timeIntervalStr =                           subStrCa{2};
   R.versionStr      = ver_2_versionStr(         subStrCa{4});
   R.lesTestStr      =                           subStrCa{6};
   R.unoffExtension  = unoff_extension_RE_to_str(subStrCa{7});
@@ -430,74 +420,4 @@ end
 end
 
 
-
-% Returns different fields and formats depending on format of time interval
-% string.
-%
-% NOTE: Adds on to existing struct to avoid having to use
-% irf.ds.add_struct_to_struct() (slow?).
-%
-function R = parse_time_interval_str(R, s)
-% yyyymmdd (8 digits).
-DATE_RE     = '20[0-9][0-9][01][0-9][0-3][0-9]';
-
-% NOTE: DATETIME_RE not same as glob.attr. Datetime, but component of.
-% yyyymmddThhmmss (8+1+6=15 digits/T)
-DATETIME_RE = '20[0-9]{6,6}T[0-9]{6,6}';
-
-
-
-[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
-  {DATE_RE}, 'permit non-match');
-if perfectMatch
-  R.dateVec1 = date_str_2_dateVec(subStrCa{1});
-  R.dateVec2 = datevec(datetime(R.dateVec1) + caldays(1));
-  R.timeIntervalFormat = 'DAY';
-  return
-end
-
-[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
-  {DATE_RE, '-', DATE_RE}, 'permit non-match');
-if perfectMatch
-  R.dateVec1 = date_str_2_dateVec(subStrCa{1});
-  R.dateVec2 = date_str_2_dateVec(subStrCa{3});
-  R.dateVec2 = datevec(datetime(R.dateVec2) + caldays(1));
-  R.timeIntervalFormat = 'DAY_TO_DAY';
-  return
-end
-
-[subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(s, ...
-  {DATETIME_RE, '-', DATETIME_RE}, 'permit non-match');
-if perfectMatch
-  R.dateVec1 = date_time_str_2_dateVec(subStrCa{1});
-  R.dateVec2 = date_time_str_2_dateVec(subStrCa{3});
-  R.timeIntervalFormat = 'SECOND_TO_SECOND';
-  return
-end
-
-error('Can not interpret time interval string "%s".', s)
-end
-
-
-
-% Utility function
-function dateVec = date_time_str_2_dateVec(s)
-dateVec = str2double({s(1:4), s(5:6), s(7:8), s(10:11), s(12:13), s(14:15)});
-
-% NOTE: Is not a check on filename, but on implementation. read_token()
-% should guarantee that strings can be parsed as numbers.
-%assert(~any(isnan(dateVec)))
-end
-
-
-
-% Utility function
-function dateVec = date_str_2_dateVec(s)
-dateVec = str2double({s(1:4), s(5:6), s(7:8)});
-dateVec(4:6) = [0, 0, 0];
-
-% NOTE: Is not a check on filename, but on implementation. read_token should
-% guarantee that strings can be parsed as numbers.
-%assert(~any(isnan(dateVec)))
-end
 
