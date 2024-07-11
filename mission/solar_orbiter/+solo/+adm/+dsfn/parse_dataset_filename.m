@@ -150,11 +150,6 @@
 %
 function R = parse_dataset_filename(filename)
 %
-% PROPOSAL: MATLAB package for filenames: solo.adm.dsfn (DataSet FileNames)
-% PROPOSAL: Class with static methods for filenames.
-%   CON: Too large.
-%   CON: Can not define class for argument and return value in it.
-%
 % PROPOSAL: Return version NUMBER, not string.
 %   CON: Harder to adapt to changing versioning scheme.
 %       Ex: V2.3.4, V2_3_4
@@ -188,6 +183,7 @@ function R = parse_dataset_filename(filename)
 %
 % PROPOSAL: Abolish dsicdagCase. Should be regarded as part of the
 %           respective filenaming conventions.
+%   NOTE: Useful internally for recognizing conventions though.
 % PROPOSAL: Abolish unoffExtension.
 %   PRO: Causes some filenames to unexpectedly be intepreted as compliant.
 %     Ex: "solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf"
@@ -222,18 +218,7 @@ function R = parse_dataset_filename(filename)
 %          (1) are returned from parsing, but are simultaneously
 %          (2) redundant when creating filenames.
 %       Ex: fnDatasetIdCdag
-%     PROBLEM: How handle fields which are only optional in certain combinations.
-%       Either
-%           {'dateVec1', 'dateVec2', 'lesTestStr'}
-%           {'cneTestStr'}
-%           {'dateVec'}
-%           {'dateVec1', 'dateVec2'}
 %
-%     PRO: Having two timestamps can not make distinction between a single date
-%          and an explicit time interval in filename.
-%       Ex: "20240101" vs "20240101T000000-20240102T000000"
-%     PROPOSAL: Variable for exact sub-naming convention used for time interval.
-%       Ex: DAY, DAY_TO_DAY, SECOND_TO_SECOND
 %   PRO: More rigorous.
 %   PROBLEM: Must always have the same set of fields. ==> Backwards incompatibility.
 %   PROPOSAL: Different functions for different naming conventions. One function
@@ -244,16 +229,10 @@ function R = parse_dataset_filename(filename)
 %       CON-PROPOSAL: Use parsing function for shared implemention for shared
 %                     parts of naming conventions.
 %
+% PROPOSAL: Abolish dsicdagCase. Require it for different formats (LES, CNES,
+%           standard datasets).
+%
 % PROPOSAL: Replace date vectors with datetime objects (UTC).
-%   CON: Currently using the length of date vectors to specify the filename
-%        format (time interval format).
-%        In particular, with datetime only, create_dataset_filename() would
-%        not know which time interval format to use!
-%        YYYYMMDD, YYYYMMDD-YYYYMMDD, or YYYYMMDThhmmss-YYYYMMDThhmmss.
-%       PROPOSAL: Separate argument for time interval format.
-%           PROPOSAL: String constant.
-%   NOTE: Would need assertion on hour=minute=second=0 for YYYYMMDD
-%         format.
 %
 % PROPOSAL: Use field names identical to the terms used in specifications (RCS
 %           ICD, SOL-SGS-TN-0009).
