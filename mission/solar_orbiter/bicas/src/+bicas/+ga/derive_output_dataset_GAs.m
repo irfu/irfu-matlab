@@ -312,7 +312,7 @@ end
 % official RCS test package.
 %
 % NOTE: Does not change case.
-% NOTE: Is effectively a wrapper around solo.adm.parse_dataset_filename().
+% NOTE: Wrapper around solo.adm.dsfn.parse_dataset_filename().
 %
 function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] ...
   = parse_dataset_filename(filename)
@@ -322,7 +322,7 @@ function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] ...
 logicalFileId = basename;
 
 % Actually parse the dataset filename.
-R = solo.adm.parse_dataset_filename(filename);
+R = solo.adm.dsfn.parse_dataset_filename(filename);
 assert(~isempty(R), 'BICAS:Assertion', ...
   ['Can not parse dataset filename "%s" and therefore not', ...
   ' derive values for global attributes', ...

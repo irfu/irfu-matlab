@@ -421,7 +421,7 @@ classdef assert
       % PROPOSAL: Separate out condition function.
       %   PRO: Useful for distinguishing between multiple "struct
       %   formats".
-      %       Ex: solo.adm.create_dataset_filename().
+      %       Ex: solo.adm.dsfn.create_dataset_filename().
 
       assert(isstruct(S))
       structFnSet          = fieldnames(S);

@@ -395,7 +395,7 @@ classdef db_list_files___UTEST < matlab.unittest.TestCase
       testFile          = fullfile(testCase.testDir, 'remote', 'data', fileRpath);
       testFileName      = irf.fs.get_name(testFile);
       testFileParentDir = fileparts(testFile);
-      R = solo.adm.parse_dataset_filename(testFileName);
+      R = solo.adm.dsfn.parse_dataset_filename(testFileName);
       filePrefix        = R.fnDatasetIdCdag;
 
       solo.db_list_files___UTEST.write_CDF(testFile, cdfUtcCa{:})

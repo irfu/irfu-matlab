@@ -58,7 +58,7 @@ for i = 1:numel(dsiCa)
   % Ex: Over multiple rows. ==> Exclude line feed in filename.
   % Ex: On the same row.    ==> Exclude period in filename (except before file suffix).
   %
-  % NOTE: solo.adm.parse_dataset_filename()'s support for the unofficial
+  % NOTE: solo.adm.dsfn.parse_dataset_filename()'s support for the unofficial
   % basename extension can cause problems if there are multiple dataset
   % filenames on the same row and one does not exclude e.g. period.
   % NOTE: Must permit filenames with and without "-cdag".

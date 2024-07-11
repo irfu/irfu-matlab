@@ -196,7 +196,7 @@ end
 %================================
 % Create output dataset filename
 %================================
-outputFileName = solo.adm.create_dataset_filename(R);
+outputFileName = solo.adm.dsfn.create_dataset_filename(R);
 end
 
 

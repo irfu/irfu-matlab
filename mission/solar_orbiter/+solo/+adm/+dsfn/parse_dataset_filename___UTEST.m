@@ -1,7 +1,7 @@
 %
 % matlab.unittest automatic test code for both
-% solo.adm.parse_dataset_filename(), AND
-% solo.adm.create_dataset_filename().
+% solo.adm.dsfn.parse_dataset_filename(), AND
+% solo.adm.dsfn.create_dataset_filename().
 %
 %
 % NOTE: Tests TWO functions which are each other's inverses.
@@ -24,11 +24,11 @@ classdef parse_dataset_filename___UTEST < matlab.unittest.TestCase
       % PROPOSAL: Test more non-matches.
 
       function test_parse(filename, expR)
-        actR = solo.adm.parse_dataset_filename(filename);
+        actR = solo.adm.dsfn.parse_dataset_filename(filename);
         testCase.assertEqual(actR, expR)
       end
       function test_create(R, expFilename)
-        actFilename = solo.adm.create_dataset_filename(R);
+        actFilename = solo.adm.dsfn.create_dataset_filename(R);
         testCase.assertEqual(actFilename, expFilename)
       end
 

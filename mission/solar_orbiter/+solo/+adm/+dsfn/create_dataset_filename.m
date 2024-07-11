@@ -4,7 +4,7 @@
 %
 % NOTES
 % =====
-% * Function is the inverse of solo.adm.parse_dataset_filename(). See that
+% * Function is the inverse of solo.adm.dsfn.parse_dataset_filename(). See that
 %   function for different dataset filename formats.
 % * Function uses the exact set of fields to determine which naming convention
 %   to follow, not just the field values.
@@ -17,7 +17,7 @@
 % Useful for creating filenames to be output from BICAS during IRF-internal
 % testing, so that they can be analogous with the input datasets. The
 % functionality is in a way overkill, but the function is easy to write and
-% useful to have together with solo.adm.parse_dataset_filename,
+% useful to have together with solo.adm.dsfn.parse_dataset_filename,
 % since having both, and having them be inverses of each other make both of them
 % easy to automatically test, and make it easy to test that they are compatible
 % with each other.
@@ -28,7 +28,7 @@
 % R
 %       Struct with varying set of fieldnames, depending on which filenaming
 %       convention to follow. Identical to the one in
-%       solo.adm.parse_dataset_filename(), except timeIntervalStr
+%       solo.adm.dsfn.parse_dataset_filename(), except timeIntervalStr
 %       which is optional.
 %
 %
@@ -36,7 +36,7 @@
 % First created 2020-01-24.
 %
 function filename = create_dataset_filename(R)
-% NOTE: See comments for solo.adm.parse_dataset_filename().
+% NOTE: See comments for solo.adm.dsfn.parse_dataset_filename().
 %
 % PROPOSAL: Ability to add IRF-internal basename suffix.
 %   Ex: solo_L2_rpw-tds-lfm-rswf-e_20200410_V01.suffix1.cdf
@@ -141,7 +141,7 @@ R = rmfield(R, {...
 % Remove some optional field names
 % --------------------------------
 % "timeIntervalStr" is not used by this function. Only permitted for
-% compatibility with solo.adm.parse_dataset_filename().
+% compatibility with solo.adm.dsfn.parse_dataset_filename().
 if isfield(R, 'timeIntervalStr')
   R = rmfield(R, 'timeIntervalStr');
 end

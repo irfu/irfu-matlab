@@ -62,7 +62,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function destFilename = create_RCT_filename(DtBegin, DtEnd, versionNbr)
-% PROPOSAL: Use solo.adm.create_dataset_filename().
+% PROPOSAL: Use solo.adm.dsfn.create_dataset_filename().
 %   NOTE: Should be able to handle it.
 
   function assert_DT(Dt)

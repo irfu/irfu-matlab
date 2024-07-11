@@ -51,7 +51,7 @@ function [DsmdArray, bIsDatasetArray] = paths_to_DSMD_array(filePathCa)
 %   NOTE: Needs support in parse_dataset_filename(_many).
 
 % FI = File Info
-[fiCa, bIsDatasetArray] = solo.adm.parse_dataset_filename_many(filePathCa);
+[fiCa, bIsDatasetArray] = solo.adm.dsfn.parse_dataset_filename_many(filePathCa);
 
 DsmdArray = solo.adm.DSMD.empty(0, 1);
 

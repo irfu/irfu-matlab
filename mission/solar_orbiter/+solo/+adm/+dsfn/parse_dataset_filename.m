@@ -21,7 +21,7 @@
 %       uppercase DATASET_ID.
 % NOTE: Does not work on RCTs (technically has no DATASET_ID).
 % NOTE: Should be possible to use together with
-%       solo.adm.create_dataset_filename().
+%       solo.adm.dsfn.create_dataset_filename().
 % NOTE/BUG: Can not handle e.g.
 %       solo_L1_swa-eas2-NM3D_20201027T000007-20201027T030817_V01.cdf
 %       since it has mixed case in the descriptor (not level).
@@ -191,7 +191,7 @@ function R = parse_dataset_filename(filename)
 %       * Non-reversible way that describes nominal time coverage
 %         (start-stop; one constant format)
 % PROPOSAL: Convert parse_time_interval_str() and create_time_interval_str() (in
-%           solo.adm.create_dataset_filename()) to public functions which are
+%           solo.adm.dsfn.create_dataset_filename()) to public functions which are
 %           inverses of each other (are already?) and can be tested separately.
 % PROPOSAL: Separate return struct for time vectors. Time interval string in
 %           return value.
@@ -225,9 +225,9 @@ function R = parse_dataset_filename(filename)
 %           extension.
 %
 % PROPOSAL: Refactor to return class.
-%   PROBLEM: solo.adm.parse_dataset_filename_many() adds field "path" to return
+%   PROBLEM: solo.adm.dsfn.parse_dataset_filename_many() adds field "path" to return
 %            value and passes it on in its own return value.
-%   PROBLEM: Class should work with solo.adm.create_dataset_filename().
+%   PROBLEM: Class should work with solo.adm.dsfn.create_dataset_filename().
 %     PROBLEM: How handle fields which
 %          (1) are returned from parsing, but are simultaneously
 %          (2) redundant when creating filenames.
