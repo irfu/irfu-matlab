@@ -501,6 +501,7 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %                                                  closer to documentation)
 %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old impl convention)
 %           SOLO_CAL_RPW_BIAS_V202004062127.cdf   (almost correct)
+%           solo_CAL_rpw-bias_20220210-20990101_V01.cdf
 % LFR:
 %       ROC-SGSE_CAL_RCT-LFR-BIAS_V20180724165443.cdf
 %           SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
@@ -513,11 +514,13 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %
 %============================================================================
 CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',           CDF_SUFFIX_REGEXP]);
+%S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',                    CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention
+S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['solo_CAL_rpw-bias_[0-9]{8}-[0-9]{8}_V[0-9][0-9]+', CDF_SUFFIX_REGEXP]);
+
 % 2020-11-20: LFR still uses old/illegal RCT filenaming convention.
-S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',       CDF_SUFFIX_REGEXP]);
-S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',  CDF_SUFFIX_REGEXP]);
-S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}', CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',               CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',          CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}',         CDF_SUFFIX_REGEXP]);
 % Old/illegal filenaming convention.
 %S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
 %S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
