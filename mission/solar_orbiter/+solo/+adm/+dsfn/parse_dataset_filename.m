@@ -31,13 +31,6 @@
 %       level "CAL".
 %
 %
-% RECOGNIZED FILENAMING CONVENTION
-% ================================
-% 1    = Basename suffix
-% 2    = Additions to filename that
-% LCUC = LowerCase or UpperCase
-%
-%
 % RECOGNIZED FILENAMING CONVENTION: EXAMPLES
 % ==========================================
 %
@@ -223,15 +216,22 @@ function R = parse_dataset_filename(filename)
 %       CON-PROPOSAL: Use parsing function for shared implemention for shared
 %                     parts of naming conventions.
 %
-% PROPOSAL: Abolish dsicdagCase. Require it for different formats (LES, CNES,
-%           standard datasets).
-%
 % PROPOSAL: Replace date vectors with datetime objects (UTC).
 %
 % PROPOSAL: Use field names identical to the terms used in specifications (RCS
 %           ICD, SOL-SGS-TN-0009).
 %   Ex: Datetime, descriptor
 %   CON: Terms do not follow variable naming conventions.
+%
+% PROPOSAL: Abolish fnDatasetIdCdag.
+%   TODO-NI: Is is used/useful for anything?
+%     Ex: derive_output_dataset_GAs.m: logicalSource = R.fnDatasetIdCdag
+%   PROPOSAL: Separate CDAG string.
+%     CON: Information overlaps with isCdag.
+%   PROPOSAL: Function for easily converting DSI+isCdag --> dsicdag
+% PROPOSAL: datasetId --> DSI
+%   NOTE: Includes "fnDatasetIdCdag"
+% PROPOSAL: Abolish isCdag for non-standard filenaming conventions (LES & CNES).
 
 NO_MATCH_RETURN_VALUE = [];
 UNUSED_DATE_VECTOR    = [0, 0, 0, 0, 0, 0];
@@ -323,9 +323,9 @@ UNOFF_EXTENSION_RE = '(\..*|)';
 
 TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 
-%=================================================================
-% Standard filenaming convention (incl. CDAG; tested for earlier)
-%=================================================================
+%===========================================================================
+% Standard in-flight filenaming convention (incl. CDAG; tested for earlier)
+%===========================================================================
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
@@ -369,7 +369,9 @@ if perfectMatch & dsicdagUppercase
   return
 end
 
+%============================================
 % CASE: Could not match filename to anything.
+%============================================
 
 R = NO_MATCH_RETURN_VALUE;
 end    % parse_dataset_filename()

@@ -175,8 +175,8 @@ end    % create_dataset_filename()
 
 
 
-% dsiStr
-%       DSI, but with the case to be used in the filename.
+% dsicdagStr
+%       DSI+optional CDAG, but with the case to be used in the filename.
 function [dsicdagStr] = get_cased_DSICDAG(dsi, dsicdagUppercase, isCdag)
 
 if isCdag
