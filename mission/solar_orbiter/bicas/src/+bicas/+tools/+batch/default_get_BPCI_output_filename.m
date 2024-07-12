@@ -94,19 +94,21 @@ InputDsmd = BpciInputDsmdArray(iDsmd);
 %==========================================
 % Set variables in output dataset filename
 %==========================================
-R = struct();
-R.isCdag         = logical(Settings.isCdagPolicy);
-R.datasetId      = outputDsi;
-R.versionStr     = versionStr;
-R.unoffExtension = Settings.unoffBasenameExtension;
-R.dateVec1 = datevec(dt1);
-R.dateVec2 = datevec(dt2);
 
 % Set date vector(s), depending on time range, effectively selecting filename
 % format for the dataset.
 dt1 = InputDsmd.dt1;
 dt2 = InputDsmd.dt2;
-if dt2 <= (dt1 + caldays(1))
+
+R = struct();
+R.isCdag         = logical(Settings.isCdagPolicy);
+R.datasetId      = outputDsi;
+R.versionStr     = versionStr;
+R.unoffExtension = Settings.unoffBasenameExtension;
+R.dateVec1       = datevec(dt1);
+R.dateVec2       = datevec(dt2);
+
+if is_midnight(dt1) & is_midnight(dt2) & (dt2 == dt1 + caldays(1))
   % CASE: (dt1,dt2) covers less than or equal to a calendar day.
   % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
 
@@ -121,4 +123,10 @@ end
 % Create output dataset filename
 %================================
 filename = solo.adm.dsfn.create_dataset_filename(R);
+end
+
+
+
+function isMidnight = is_midnight(Dt)
+isMidnight = dateshift(Dt, 'start', 'day') == Dt;
 end
