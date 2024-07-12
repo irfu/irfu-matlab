@@ -98,7 +98,6 @@ R = struct();
 R.isCdag         = logical(Settings.isCdagPolicy);
 R.datasetId      = outputDsi;
 R.versionStr     = versionStr;
-R.dsicdagCase    = 'lower';
 R.unoffExtension = Settings.unoffBasenameExtension;
 R.dateVec1 = datevec(dt1);
 R.dateVec2 = datevec(dt2);

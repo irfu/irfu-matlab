@@ -165,7 +165,6 @@ R = [];
 R.datasetId          = outputDsi;
 R.versionStr         = sprintf('%02i', versionNbr);
 R.isCdag             = outputIsCdag;
-R.dsicdagCase        = 'lower';
 R.unoffExtension     = UNOFF_BASENAME_EXTENSION;
 R.dateVec1           = datevec(dt1);
 R.dateVec2           = datevec(dt2);

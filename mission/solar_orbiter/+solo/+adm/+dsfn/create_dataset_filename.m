@@ -69,41 +69,20 @@ function filename = create_dataset_filename(R)
 %       PROPOSAL: 0x1 cell = No extension
 %                 1x1 cell with string = Extension.
 %           NOTE: Why that empty size?
-%
-% PROPOSAL: dsicdagCase in uppercase.
 
 % ASSERTION
 % NOTE: Useful, so that later code does not need to be as rigorous when
 % determining case.
 irf.assert.struct(R, ...
   { ...
-    'isCdag', 'datasetId', 'dsicdagCase', 'versionStr', 'unoffExtension' ...
+    'isCdag', 'datasetId', 'versionStr', 'unoffExtension' ...
     'dateVec1', 'dateVec2', 'timeIntervalFormat' ...
   }, ...
   { ...
     'fnDatasetIdCdag', 'timeIntervalStr', ...
     'cneTestStr', 'lesTestStr' ...
   })
-assert(islogical(R.isCdag) & isscalar(R.isCdag))
 
-
-
-if R.isCdag
-  cdagStr = '-CDAG';
-else
-  cdagStr = '';
-end
-
-switch(R.dsicdagCase)
-  case 'upper'
-    cdagStr   = upper(cdagStr);
-    datasetId = upper(R.datasetId());
-  case 'lower'
-    cdagStr   = lower(cdagStr);
-    datasetId = lowercase_DATASET_ID(R.datasetId());
-  otherwise
-    error('Illegal R.dsicdagCase.')
-end
 
 
 % Convert R.unoffExtension to actual string to add to basename
@@ -122,9 +101,12 @@ end
 assert(isrow(R.dateVec1) & (numel(R.dateVec1) == 6))
 assert(isrow(R.dateVec2) & (numel(R.dateVec2) == 6))
 irf.assert.castring(R.timeIntervalFormat)
+assert(islogical(R.isCdag) & isscalar(R.isCdag))
 dateVec1           = R.dateVec1;
 dateVec2           = R.dateVec2;
 timeIntervalFormat = R.timeIntervalFormat;
+dsi                = R.datasetId;
+isCdag             = R.isCdag;
 
 
 
@@ -135,7 +117,7 @@ timeIntervalFormat = R.timeIntervalFormat;
 assert(ischar(R.versionStr));
 versionStr = R.versionStr;
 R = rmfield(R, {...
-  'datasetId', 'versionStr', 'unoffExtension', 'isCdag', 'dsicdagCase', ...
+  'datasetId', 'versionStr', 'unoffExtension', 'isCdag', ...
   'dateVec1', 'dateVec2', 'timeIntervalFormat' ...
  });
 
@@ -160,17 +142,29 @@ timeIntervalStr = solo.adm.dsfn.create_time_interval_str(dateVec1, dateVec2, tim
 
 
 if sets_equal(fnCa, {'lesTestStr'}) && ismember(timeIntervalFormat, {'DAY_TO_DAY', 'SECOND_TO_SECOND'})
-  filename = sprintf('%s%s_%s_V%02s_%s%s.cdf', ...
-    datasetId, cdagStr, timeIntervalStr, versionStr, R.lesTestStr, unoffExtension);
+  %=============================
+  % "LES" filenaming convention
+  %=============================
+  dsicdagStr = get_cased_DSICDAG(dsi, false, isCdag);
+  filename = sprintf('%s_%s_V%02s_%s%s.cdf', ...
+    dsicdagStr, timeIntervalStr, versionStr, R.lesTestStr, unoffExtension);
 
 elseif sets_equal(fnCa, {'cneTestStr'}) && strcmp(timeIntervalFormat, {'NO_TIME_INTERVAL'})
-  % ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
-  filename = sprintf('%s%s_%s_V%02s%s.cdf', ...
-    datasetId, cdagStr, R.cneTestStr, versionStr, unoffExtension);
+  %===============================
+  % "CNES" filenameing convention
+  %===============================
+  % Ex: ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
+  dsicdagStr = get_cased_DSICDAG(dsi, true, isCdag);
+  filename = sprintf('%s_%s_V%02s%s.cdf', ...
+    dsicdagStr, R.cneTestStr, versionStr, unoffExtension);
 
 elseif sets_equal(fnCa, {}) && ismember(timeIntervalFormat, {'DAY', 'DAY_TO_DAY', 'SECOND_TO_SECOND'})
-  filename = sprintf('%s%s_%s_V%02s%s.cdf', ...
-    datasetId, cdagStr, timeIntervalStr, versionStr, unoffExtension);
+  %===========================================
+  % In-space filename convention (incl. CDAG)
+  %===========================================
+  dsicdagStr = get_cased_DSICDAG(dsi, false, isCdag);
+  filename = sprintf('%s_%s_V%02s%s.cdf', ...
+    dsicdagStr, timeIntervalStr, versionStr, unoffExtension);
 
 else
 
@@ -181,11 +175,37 @@ end    % create_dataset_filename()
 
 
 
-function lcDatasetId = lowercase_DATASET_ID(datasetId)
+% dsiStr
+%       DSI, but with the case to be used in the filename.
+function [dsicdagStr] = get_cased_DSICDAG(dsi, dsicdagUppercase, isCdag)
 
-[sourceName, level, descriptor] = solo.adm.disassemble_DATASET_ID(datasetId);
+if isCdag
+  cdagStr = '-CDAG';
+else
+  cdagStr = '';
+end
 
-lcDatasetId = sprintf('%s_%s_%s', lower(sourceName), level, lower(descriptor));
+if dsicdagUppercase
+    cdagStr = upper(cdagStr);
+    dsiStr  = upper(dsi);
+else
+    cdagStr = lower(cdagStr);
+    dsiStr  = lowercase_DSI(dsi);
+end
+
+dsicdagStr = [dsiStr, cdagStr];
+
+end
+
+
+
+function lowercaseDsi = lowercase_DSI(dsi)
+
+[sourceName, level, descriptor] = solo.adm.disassemble_DATASET_ID(dsi);
+
+% NOTE: The "level" is always uppercase.
+lowercaseDsi = sprintf('%s_%s_%s', lower(sourceName), level, lower(descriptor));
+
 end
 
 

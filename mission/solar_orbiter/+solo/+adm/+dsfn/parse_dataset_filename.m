@@ -109,8 +109,6 @@
 %       .isCdag               : Logical. Whether or not the file is a CDAG
 %                               (DATASET_ID in filename is appended with
 %                               "-CDAG"/"-cdag").
-%       .dsicdagCase          : String constant describing the case of
-%                               DATASET_ID+CDAG: 'upper', 'lower'.
 %       .versionStr           : String (not number). Excludes "V".
 %       .unoffExtension       : []       : There is no unofficial basename
 %                                          extension.
@@ -181,9 +179,6 @@ function R = parse_dataset_filename(filename)
 % PROPOSAL: Separate return struct for time vectors. Time interval string in
 %           return value.
 %
-% PROPOSAL: Abolish dsicdagCase. Should be regarded as part of the
-%           respective filenaming conventions.
-%   NOTE: Useful internally for recognizing conventions though.
 % PROPOSAL: Abolish unoffExtension.
 %   PRO: Causes some filenames to unexpectedly be intepreted as compliant.
 %     Ex: "solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf"
@@ -197,9 +192,8 @@ function R = parse_dataset_filename(filename)
 %       PRO: Consistent return format.
 %           CON: Not true for time vectors which reflect format of time
 %                interval string.
-%       PRO: Can easily have different requirements for different filenaming conventions
-%           Ex: case (always the same for a given convention)
-%               ==> Can eliminate dsicdagCase.
+%       PRO: Can easily have different requirements for different filenaming
+%            conventions.
 %           Ex: isCdag (only for official; not LES and CNES filenaming).
 %   PROPOSAL: One class "fn" with shared code
 %       Ex: utility functions (used by top-level functions)
@@ -263,26 +257,26 @@ end
 % and uppercase anyway. Might also be slower because of negative lookahead.
 %
 % NOTE: Lowercase DATASET_ID+CDAG always have uppercase dataset level.
-[fnDatasetIdCdag, str, n] = irf.str.read_token(trueBasename, 1, ...
+[fnDsicdag, str, n] = irf.str.read_token(trueBasename, 1, ...
   '(SOLO|ROC-SGSE)_(HK|L1|L1R|L2|L3|CAL)_[A-Z0-2-]*', ...
   '(solo|roc-sgse)_(HK|L1|L1R|L2|L3|CAL)_[a-z0-2-]*');
 switch(n)
   case 1
-    R.dsicdagCase = 'upper';
-    R.isCdag      = strcmp(fnDatasetIdCdag(end-4:end), '-CDAG');
+    dsicdagUppercase = true;
+    R.isCdag         = strcmp(fnDsicdag(end-4:end), '-CDAG');
   case 2
-    R.dsicdagCase = 'lower';
-    R.isCdag      = strcmp(fnDatasetIdCdag(end-4:end), '-cdag');
+    dsicdagUppercase = false;
+    R.isCdag         = strcmp(fnDsicdag(end-4:end), '-cdag');
   otherwise
     R = NO_MATCH_RETURN_VALUE;
     return
 end
 if R.isCdag
-  R.datasetId = upper(fnDatasetIdCdag(1:end-5));
+  R.datasetId = upper(fnDsicdag(1:end-5));
 else
-  R.datasetId = upper(fnDatasetIdCdag);
+  R.datasetId = upper(fnDsicdag);
 end
-R.fnDatasetIdCdag = fnDatasetIdCdag;
+R.fnDatasetIdCdag = fnDsicdag;
 
 
 
@@ -335,7 +329,7 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
-if perfectMatch
+if perfectMatch & ~dsicdagUppercase
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
   R.timeIntervalStr =                           subStrCa{2};
   R.versionStr      = ver_2_versionStr(         subStrCa{4});
@@ -349,7 +343,7 @@ end
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', ...
   LES_TESTSTR_RE, UNOFF_EXTENSION_RE}, 'permit non-match');
-if perfectMatch
+if perfectMatch & ~dsicdagUppercase
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
   R.timeIntervalStr =                           subStrCa{2};
   R.versionStr      = ver_2_versionStr(         subStrCa{4});
@@ -364,7 +358,7 @@ end
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', CNE_TESTSTR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
-if perfectMatch
+if perfectMatch & dsicdagUppercase
   R.dateVec1           = UNUSED_DATE_VECTOR;
   R.dateVec2           = UNUSED_DATE_VECTOR;
   R.timeIntervalFormat = 'NO_TIME_INTERVAL';
