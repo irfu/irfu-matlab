@@ -154,7 +154,7 @@ end
 
 
 function outputFileName = get_BPCI_output_filename2(...
-  dt1, dt2, outputDsi, outputIsCdag, versionNbr)
+  Dt1, Dt2, outputDsi, outputIsCdag, versionNbr)
 
 UNOFF_BASENAME_EXTENSION = [];
 
@@ -166,14 +166,14 @@ R.datasetId          = outputDsi;
 R.versionStr         = sprintf('%02i', versionNbr);
 R.isCdag             = outputIsCdag;
 R.unoffExtension     = UNOFF_BASENAME_EXTENSION;
-R.dateVec1           = datevec(dt1);
-R.dateVec2           = datevec(dt2);
+R.dateVec1           = datevec(Dt1);
+R.dateVec2           = datevec(Dt2);
 
 % Set date vector, depending on time range, effectively selecting filename
 % time interval format for the dataset.
 
 % if dt2 <= (dt1 + caldays(1))
-if is_midnight(dt1) && is_midnight(dt2) && (dt2 == dt1 + caldays(1))
+if is_midnight(Dt1) && is_midnight(Dt2) && (Dt2 == Dt1 + caldays(1))
   % CASE: (dt1,dt2) covers exactly one calender day.
   % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
   %
@@ -200,6 +200,6 @@ end
 
 
 
-function isMidnight = is_midnight(dt)
-isMidnight = dateshift(dt, 'start', 'day') == dt;
+function isMidnight = is_midnight(Dt)
+isMidnight = dateshift(Dt, 'start', 'day') == Dt;
 end

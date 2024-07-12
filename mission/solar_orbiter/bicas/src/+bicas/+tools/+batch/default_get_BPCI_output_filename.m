@@ -97,18 +97,18 @@ InputDsmd = BpciInputDsmdArray(iDsmd);
 
 % Set date vector(s), depending on time range, effectively selecting filename
 % format for the dataset.
-dt1 = InputDsmd.dt1;
-dt2 = InputDsmd.dt2;
+Dt1 = InputDsmd.dt1;
+Dt2 = InputDsmd.dt2;
 
 R = struct();
 R.isCdag         = logical(Settings.isCdagPolicy);
 R.datasetId      = outputDsi;
 R.versionStr     = versionStr;
 R.unoffExtension = Settings.unoffBasenameExtension;
-R.dateVec1       = datevec(dt1);
-R.dateVec2       = datevec(dt2);
+R.dateVec1       = datevec(Dt1);
+R.dateVec2       = datevec(Dt2);
 
-if is_midnight(dt1) & is_midnight(dt2) & (dt2 == dt1 + caldays(1))
+if is_midnight(Dt1) & is_midnight(Dt2) & (Dt2 == Dt1 + caldays(1))
   % CASE: (dt1,dt2) covers less than or equal to a calendar day.
   % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
 

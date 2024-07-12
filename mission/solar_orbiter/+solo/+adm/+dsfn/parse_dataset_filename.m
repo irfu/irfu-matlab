@@ -224,7 +224,7 @@ function R = parse_dataset_filename(filename)
 %   CON: Terms do not follow variable naming conventions.
 %
 % PROPOSAL: Abolish fnDatasetIdCdag.
-%   TODO-NI: Is is used/useful for anything?
+%   TODO-NI: Is it used/useful for anything?
 %     Ex: derive_output_dataset_GAs.m: logicalSource = R.fnDatasetIdCdag
 %   PROPOSAL: Separate CDAG string.
 %     CON: Information overlaps with isCdag.
