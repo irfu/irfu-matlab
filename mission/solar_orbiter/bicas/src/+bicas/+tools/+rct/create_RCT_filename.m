@@ -90,6 +90,6 @@ endStr   = char(datetime(endDt,   'Format', DT_FORMAT_STR));
 
 % NOTE: Minus in "RPW-BIAS".
 %destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', gaCALIBRATION_VERSION);
-destFilename = sprintf('solo_CAL_rpwi-bias_%s-%s_V%02i.cdf', beginStr, endStr, versionNbr);
+destFilename = sprintf('solo_CAL_rpw-bias_%s-%s_V%02i.cdf', beginStr, endStr, versionNbr);
 
 end
