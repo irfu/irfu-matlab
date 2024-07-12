@@ -145,6 +145,7 @@ if sets_equal(fnCa, {'lesTestStr'}) && ismember(timeIntervalFormat, {'DAY_TO_DAY
   %=============================
   % "LES" filenaming convention
   %=============================
+  assert(~isCdag)
   dsicdagStr = get_cased_DSICDAG(dsi, false, isCdag);
   filename = sprintf('%s_%s_V%02s_%s%s.cdf', ...
     dsicdagStr, timeIntervalStr, versionStr, R.lesTestStr, unoffExtension);
@@ -154,6 +155,7 @@ elseif sets_equal(fnCa, {'cneTestStr'}) && strcmp(timeIntervalFormat, {'NO_TIME_
   % "CNES" filenameing convention
   %===============================
   % Ex: ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
+  assert(~isCdag)
   dsicdagStr = get_cased_DSICDAG(dsi, true, isCdag);
   filename = sprintf('%s_%s_V%02s%s.cdf', ...
     dsicdagStr, R.cneTestStr, versionStr, unoffExtension);

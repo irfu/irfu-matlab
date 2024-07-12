@@ -231,7 +231,6 @@ function R = parse_dataset_filename(filename)
 %   PROPOSAL: Function for easily converting DSI+isCdag --> dsicdag
 % PROPOSAL: datasetId --> DSI
 %   NOTE: Includes "fnDatasetIdCdag"
-% PROPOSAL: Abolish isCdag for non-standard filenaming conventions (LES & CNES).
 
 NO_MATCH_RETURN_VALUE = [];
 UNUSED_DATE_VECTOR    = [0, 0, 0, 0, 0, 0];
@@ -344,6 +343,7 @@ end
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', ...
   LES_TESTSTR_RE, UNOFF_EXTENSION_RE}, 'permit non-match');
 if perfectMatch & ~dsicdagUppercase
+  assert(~R.isCdag)
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
   R.timeIntervalStr =                           subStrCa{2};
   R.versionStr      = ver_2_versionStr(         subStrCa{4});
@@ -359,6 +359,7 @@ end
   {'_', CNE_TESTSTR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
   'permit non-match');
 if perfectMatch & dsicdagUppercase
+  assert(~R.isCdag)
   R.dateVec1           = UNUSED_DATE_VECTOR;
   R.dateVec2           = UNUSED_DATE_VECTOR;
   R.timeIntervalFormat = 'NO_TIME_INTERVAL';
