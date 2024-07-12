@@ -45,7 +45,6 @@ function write_dataset_CDF(...
 %       TODO-NI: Is there any overlap in functionality?
 %===========================================================================
 % This function needs GlobalAttributes values from the input files:
-%    One value per file:      Data_version (for setting Parent_version).
 %    Data_version ??!!
 %
 % PROPOSAL: Accept GlobalAttributes for all input datasets?!

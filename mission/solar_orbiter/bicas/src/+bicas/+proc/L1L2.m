@@ -366,6 +366,9 @@ classdef L1L2
         OutSci.Zv.EAC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
         OutSci.Zv.EAC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
 
+        % ASSERTION
+        bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
+
       elseif C.isSwf
 
         if     C.isLfr
@@ -406,6 +409,13 @@ classdef L1L2
         OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
         OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
 
+        % ASSERTION
+        % NOTE: Must exclude ZV "SAMPLE_IDX".
+        bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
+
+        % Set CDF metadata ZV that is too large to set in the skeletons.
+        OutSci.Zv.SAMPLE_IDX = [0:(SAMPLES_PER_RECORD_CHANNEL-1)];
+
       else
         error('BICAS:Assertion:IllegalArgument', ...
           'Function can not produce outputDsi=%s.', outputDsi)
@@ -413,14 +423,14 @@ classdef L1L2
 
 
 
-      % ASSERTION
-      bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
       % NOTE: Not really necessary since the list of ZVs will be checked
       % against the master CDF?
+      % ZV "SAMPLE_IDX" only exists for SWF (not CWF).
       irf.assert.struct(OutSci.Zv, {...
         'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
         'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
-        'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, {})
+        'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, ...
+        {'SAMPLE_IDX'})
 
     end    % process_PostDc_to_CDF
 

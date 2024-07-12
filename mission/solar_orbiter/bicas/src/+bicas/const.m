@@ -187,6 +187,14 @@ classdef const
     L2_TDS_DSI_CA = {...
       'SOLO_L2_RPW-TDS-LFM-CWF-E'; ...
       'SOLO_L2_RPW-TDS-LFM-RSWF-E'};
+    L2_CWF_CA = {
+      'SOLO_L2_RPW-LFR-SBM1-CWF-E'; ...
+      'SOLO_L2_RPW-LFR-SBM2-CWF-E'; ...
+      'SOLO_L2_RPW-LFR-SURV-CWF-E'; ...
+      'SOLO_L2_RPW-TDS-LFM-CWF-E'}
+    L2_SWF_CA = {
+      'SOLO_L2_RPW-LFR-SURV-SWF-E', ...
+      'SOLO_L2_RPW-TDS-LFM-RSWF-E'}
 
 
 
@@ -298,8 +306,8 @@ classdef const
         ' L1 (not L1R) to L2, and BIAS L2 to L3 data', ...
         ' (both disabled by default).'];
 
-      % 2023-01-17: Latest RCS ICD version is 01/06
-      MAP('SWD.identification.icd_version') = '1.4';
+      % 2024-07-12: Latest RCS ICD version is 01/07
+      MAP('SWD.identification.icd_version') = '1.7';
 
       % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
       % Users":
@@ -782,6 +790,13 @@ classdef const
       if 0
         DATE_STR    = '2024-01-01';   % TEST VALUE
         VERSION_STR = 'x.x.x';        % TEST VALUE
+
+        Gmdb.add_GMVE(bicas.const.L2_CWF_CA, ...
+          bicas.gamods.VersionEntry('2024-07-12', '8.1.0', ...
+          {'Added zVariable CHANNEL_IDX (ISTP metadata).'}))
+        Gmdb.add_GMVE(bicas.const.L2_SWF_CA, ...
+          bicas.gamods.VersionEntry('2024-07-12', '8.1.0', ...
+          {'Added zVariables CHANNEL_IDX and SAMPLE_IDX (ISTP metadata).'}))
       end
     end    % init_GA_MODS_DB
 

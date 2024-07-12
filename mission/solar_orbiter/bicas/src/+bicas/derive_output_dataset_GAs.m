@@ -62,11 +62,12 @@ irf.assert.struct(OutputDataset.Ga, ...
 
 OutGaSubset = OutputDataset.Ga;
 
-[...
-  OutGaSubset.Provider, ...
-  OutGaSubset.Parents, ...
-  OutGaSubset.Parent_version ...
-] = set_Provider_Parents_Parent_version(InputDatasetsMap);
+% [...
+% %  OutGaSubset.Provider, ...
+%   OutGaSubset.Parents ...
+% %  OutGaSubset.Parent_version ...
+% ] = set_Parents(InputDatasetsMap);
+OutGaSubset.Parents = set_Parents(InputDatasetsMap);
 
 OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.identifier');
 OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
@@ -171,7 +172,7 @@ end
 % TODO-DEC: Is this assertion sensible? There are many permanent GAs not
 %           mentioned here. Remove assertion?
 irf.assert.struct(OutGaSubset, ...
-  {'Parents', 'Parent_version', 'Provider', ...
+  {'Parents', ...
   'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
 end
 
@@ -181,13 +182,12 @@ end
 
 
 
-% Set GAs Provider, Parents, Parent_version.
-function [Provider, Parents, Parent_version] = ...
-  set_Provider_Parents_Parent_version(InputDatasetsMap)
+% Set GAs "Parents".
+function [Parents] = set_Parents(InputDatasetsMap)
 
-Parent_version = {};
+% Parent_version = {};
 Parents        = {};
-Provider       = {};
+% Provider       = {};
 
 %=============================
 % Iterate over INPUT datasets
@@ -258,23 +258,23 @@ for i = 1:numel(keysCa)
   %   "Parent_version"      1:    CDF_CHAR     { " " }
   %-----------------------------------------------------------------------
 
-  if isfield(InputGa, 'Provider')
-    Provider = union(Provider, InputGa.Provider);
-  else
-    % IMPLEMENTATION NOTE: MAG datasets have been observed to not have
-    % glob.attr. "Provider". VHT datasets have MAG datasets as parents.
-    % /2021-05-05
-    % Ex: solo_L2_mag-srf-normal_20200701_V02.cdf
-    L.logf('warning', ...
-      'Input dataset "%s"\ndoes not have CDF global attribute "Provider".\n', ...
-      InputDatasetInfo.filePath)
-  end
+  % if isfield(InputGa, 'Provider')
+  %   Provider = union(Provider, InputGa.Provider);
+  % else
+  %   % IMPLEMENTATION NOTE: MAG datasets have been observed to not have
+  %   % glob.attr. "Provider". VHT datasets have MAG datasets as parents.
+  %   % /2021-05-05
+  %   % Ex: solo_L2_mag-srf-normal_20200701_V02.cdf
+  %   L.logf('warning', ...
+  %     'Input dataset "%s"\ndoes not have CDF global attribute "Provider".\n', ...
+  %     InputDatasetInfo.filePath)
+  % end
 
   % NOTE: Parsing INPUT dataset filename to set some GAs.
-  [logicalFileId, ~, dataVersionStr, ~] = parse_dataset_filename(...
+  [logicalFileId, ~, ~, ~] = parse_dataset_filename(...
     irf.fs.get_name(InputDatasetInfo.filePath));
   % Sets string, not number. Correct?
-  Parent_version{end+1} = dataVersionStr;
+  % Parent_version{end+1} = dataVersionStr;
   Parents       {end+1} = ['CDF>', logicalFileId];
 
 end    % for
