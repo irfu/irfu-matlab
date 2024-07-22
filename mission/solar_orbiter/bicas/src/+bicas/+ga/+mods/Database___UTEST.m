@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.gamods.Database.
+% matlab.unittest automatic test code for bicas.ga.mods.Database.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -22,8 +22,8 @@ classdef Database___UTEST < matlab.unittest.TestCase
       % Constructor
       % ===========
 
-      Gmdb = bicas.gamods.Database({});
-      Gmdb = bicas.gamods.Database({'DSI_1', 'DSI_2'});
+      Gmdb = bicas.ga.mods.Database({});
+      Gmdb = bicas.ga.mods.Database({'DSI_1', 'DSI_2'});
 
 
 
@@ -32,16 +32,16 @@ classdef Database___UTEST < matlab.unittest.TestCase
       % ==========
 
       % Add GMVE to zero DSIs.
-      Gmve0 = bicas.gamods.VersionEntry('2020-01-01', '1.0.0', {'Comment for zero DSIs.'});
+      Gmve0 = bicas.ga.mods.VersionEntry('2020-01-01', '1.0.0', {'Comment for zero DSIs.'});
       Gmdb.add_GMVE({}, Gmve0)
 
       % Add to one DSI.
-      Gmve1 = bicas.gamods.VersionEntry('2020-01-01', '3.0.0', {...
+      Gmve1 = bicas.ga.mods.VersionEntry('2020-01-01', '3.0.0', {...
         'Comment1.'});
       Gmdb.add_GMVE({'DSI_1'}, Gmve1)
 
       % Add to two DSIs.
-      Gmve2 = bicas.gamods.VersionEntry('2021-01-01', '4.0.0', {...
+      Gmve2 = bicas.ga.mods.VersionEntry('2021-01-01', '4.0.0', {...
         'Comment2.'});
       Gmdb.add_GMVE({'DSI_1', 'DSI_2'}, Gmve2)
 

@@ -193,11 +193,11 @@ FV
 GA
     (CDF) Global Attribute(s).
 GMDB
-    "GA MODS DataBase", i.e. class bicas.gamods.Database.
+    "GA MODS DataBase", i.e. class bicas.ga.mods.Database.
 GMDE
-    "GA MODS DSI Entry", i.e. class bicas.gamods.DsiEntry.
+    "GA MODS DSI Entry", i.e. class bicas.ga.mods.DsiEntry.
 GMVE
-    "GA MODS Version Entry", i.e. class bicas.gamods.VersionEntry.
+    "GA MODS Version Entry", i.e. class bicas.ga.mods.VersionEntry.
 ICD
     Interface Control Document
 ITF

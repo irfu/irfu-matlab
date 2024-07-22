@@ -54,8 +54,6 @@ function OutGaSubset = derive_output_dataset_GAs(...
   Bso, L)
 
 % PROPOSAL: Automatic test code.
-%   PROPOSAL: Replace this function with class/package for separate (public)
-%             functions.
 %
 % PROPOSAL: Create class for storing GAs.
 %   PRO: Can detect accidental overwriting/reuse of keys.
@@ -206,7 +204,6 @@ end
 
 
 
-% Set GA "Parents".
 function Parents = get_GA_Parents(InputDatasetsMap)
 
 Parents = {};
@@ -230,7 +227,6 @@ end
 
 
 
-% Set GA "SPICE_KERNELS".
 function SPICE_KERNELS = get_GA_SPICE_KERNELS(InputDatasetsMap)
 
 keysCa = InputDatasetsMap.keys;

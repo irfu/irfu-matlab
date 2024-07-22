@@ -1,6 +1,6 @@
 %
 % Class that represents the GA "MODS" information for one DSI.
-% Contains list of instances of bicas.gamods.VersionEntry.
+% Contains list of instances of bicas.ga.mods.VersionEntry.
 %
 %
 % MUTABLE. HANDLE CLASS.
@@ -35,7 +35,7 @@ classdef DsiEntry < handle
 
 
     function obj = DsiEntry()
-      obj.GmveAr = bicas.gamods.VersionEntry.empty(0, 1);
+      obj.GmveAr = bicas.ga.mods.VersionEntry.empty(0, 1);
     end
 
 
@@ -58,7 +58,7 @@ classdef DsiEntry < handle
     %       NOTE: There is no constraint on the BICAS version number(!).
     function add_GMVE(obj, GmveNew)
 
-      assert(isa(GmveNew, 'bicas.gamods.VersionEntry'))
+      assert(isa(GmveNew, 'bicas.ga.mods.VersionEntry'))
 
       if isempty(obj.GmveAr)
         obj.GmveAr(1, 1) = GmveNew;

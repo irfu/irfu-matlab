@@ -4,7 +4,7 @@
 % (1) with a lot of overlap between dataset IDs and entries, and
 % (2) that conforms to certain format specified by the RCS ICD.
 %
-% Contains map DSI-->bicas.gamods.DsiEntry.
+% Contains map DSI-->bicas.ga.mods.DsiEntry.
 %
 % MUTABLE. HANDLE CLASS.
 %
@@ -43,7 +43,7 @@ classdef Database < handle
 
 
     % Constructor. Creates database which is initialized with empty
-    % bicas.gamods.DsiEntry for specified DSIs.
+    % bicas.ga.mods.DsiEntry for specified DSIs.
     function obj = Database(dsiCa)
       obj.DsiGmdeMap = containers.Map('KeyType', 'char', 'ValueType', 'Any');
 
@@ -63,7 +63,7 @@ classdef Database < handle
 
         % NOTE: Effectively (additional) assertion on that "dsi" is a
         % valid key.
-        obj.DsiGmdeMap(dsi) = bicas.gamods.DsiEntry();
+        obj.DsiGmdeMap(dsi) = bicas.ga.mods.DsiEntry();
       end
 
     end
@@ -73,7 +73,7 @@ classdef Database < handle
     % Add one GMVE to multiple DSIs.
     function add_GMVE(obj, dsiCa, Gmve)
       irf.assert.castring_set(dsiCa)
-      assert(isa(Gmve, 'bicas.gamods.VersionEntry'))
+      assert(isa(Gmve, 'bicas.ga.mods.VersionEntry'))
 
       for i = 1:numel(dsiCa)
         dsi = dsiCa{i};

@@ -48,7 +48,7 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir, beginDt, endDt, version
 % PROPOSAL: Change function name: Something which implies using a master file and "filling it".
 % PROPOSAL: Somehow separate the code with the hard-coded data into a separate file.
 %
-% PROPOSAL: Merge definition of bicas.gamods.Database() with that of BICAS
+% PROPOSAL: Merge definition of bicas.ga.mods.Database() with that of BICAS
 %           proper (bicas.const.GA_MODS_DB).
 %   CON: Must then use BICAS versions.
 %   CON: Obscures the definition, since RCTs are a bit separate from BICAS
@@ -56,10 +56,10 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir, beginDt, endDt, version
 %        deriving the calibration values (e.g. curve fitting) can be independent
 %        of BICAS.
 
-GMDB = bicas.gamods.Database({bicas.const.RCT_DSI});
+GMDB = bicas.ga.mods.Database({bicas.const.RCT_DSI});
 % NOTE: Using BICAS version in MODS. Not obvious that one should.
 GMDB.add_GMVE({bicas.const.RCT_DSI}, ...
-  bicas.gamods.VersionEntry('2024-07-12', '8.1.0', ...
+  bicas.ga.mods.VersionEntry('2024-07-12', '8.1.0', ...
   {'Updated with compliant metadata and filename.'}))
 GA_MODS = GMDB.get_MODS_strings_CA(bicas.const.RCT_DSI);
 
