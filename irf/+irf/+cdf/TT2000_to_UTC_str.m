@@ -11,7 +11,8 @@
 %
 % RETURN VALUE
 % ============
-% utcStr : String. Example: 2020-04-01T01:23:45.678901234
+% utcStr
+%       String. Example: 2020-04-01T01:23:45.678901234
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
