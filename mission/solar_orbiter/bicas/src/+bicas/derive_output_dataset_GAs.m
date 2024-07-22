@@ -61,11 +61,19 @@ function OutGaSubset = derive_output_dataset_GAs(...
 irf.assert.struct(OutputDataset.Ga, ...
   {'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
 
+[~, level, ~] = solo.adm.disassemble_DATASET_ID(outputDsi);
+
 
 
 OutGaSubset = OutputDataset.Ga;
 
-OutGaSubset.Parents = set_Parents(InputDatasetsMap);
+OutGaSubset.Parents       = get_GA_Parents(InputDatasetsMap);
+
+% IMPLEMENTATION NOTE: SPICE_KERNELS should be set also for L3, but this has not
+% yet been implemented in skeletons.
+if strcmp(level, 'L2')
+  OutGaSubset.SPICE_KERNELS = get_GA_SPICE_KERNELS(InputDatasetsMap);
+end
 
 OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.identifier');
 OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
@@ -181,25 +189,58 @@ end
 
 
 % Set GA "Parents".
-function Parents = set_Parents(InputDatasetsMap)
+function Parents = get_GA_Parents(InputDatasetsMap)
 
-Parents  = {};
+Parents = {};
 
-%=============================
-% Iterate over INPUT datasets
-%=============================
 keysCa = InputDatasetsMap.keys;
 for i = 1:numel(keysCa)
 
-  InputDatasetInfo = InputDatasetsMap(keysCa{i});
+  InputDataset = InputDatasetsMap(keysCa{i});
 
   % NOTE: Parsing INPUT dataset filename to set some GAs.
   [logicalFileId, ~, ~, ~] = parse_dataset_filename(...
-    irf.fs.get_name(InputDatasetInfo.filePath));
+    irf.fs.get_name(InputDataset.filePath));
   Parents{end+1} = ['CDF>', logicalFileId];
 
 end    % for
+end
 
+
+
+
+
+
+
+% Set GA "SPICE_KERNELS".
+function SPICE_KERNELS = get_GA_SPICE_KERNELS(InputDatasetsMap)
+
+keysCa = InputDatasetsMap.keys;
+SPICE_KERNELS = cell(0, 1);
+
+for i = 1:numel(keysCa)
+
+  InputDataset = InputDatasetsMap(keysCa{i});
+
+  % Read GA, but convert to format which represents zero kernels as empty cell
+  % array, since that is convenient for algorithm.
+  if isfield(InputDataset.Ga, 'SPICE_KERNELS')
+    parent_SPICE_KERNELS = InputDataset.Ga.SPICE_KERNELS;
+
+    if isscalar(parent_SPICE_KERNELS) && any(ismember(parent_SPICE_KERNELS{1}, {'none', ' '}))
+      parent_SPICE_KERNELS = cell(0, 1);
+    end
+  else
+    parent_SPICE_KERNELS = cell(0, 1);
+  end
+
+  SPICE_KERNELS = unique([SPICE_KERNELS; parent_SPICE_KERNELS]);
+end    % for
+
+% Normalize to the data format used in datasets.
+if isempty(SPICE_KERNELS)
+  SPICE_KERNELS = {'none'};
+end
 end
 
 
