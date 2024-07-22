@@ -22,9 +22,12 @@
 %
 % RETURN VALUES
 % =============
-% sourceName : String.
-% level      : String. NOTE: Includes "L" in e.g. "L2".
-% descriptor : String.
+% sourceName
+%       String. "ROC-SGSE" or "SOLO".
+% level
+%       String. NOTE: Includes "L" in e.g. "L2".
+% descriptor
+%       String.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

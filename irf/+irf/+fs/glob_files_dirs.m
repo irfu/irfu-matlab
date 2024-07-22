@@ -41,9 +41,7 @@
 % NOTES
 % =====
 % MATLAB does not appear to have any similar functionality. "glob" in the
-% function name is misleading since it really uses regular expressions. Compare
-% irf.fs.get_all_files_dirs(). Note that it does not return the same
-% struct fields.
+% function name is misleading since it really uses regular expressions.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -67,9 +65,6 @@ function objectInfoList = glob_files_dirs(rootDirPath, regexPatternList, varargi
 % PROPOSAL: Option for specifying regexp for entire (relative) path, including slash.
 %   TODO-NI: Path details become important. Paths ending/not ending with slash; current directory, parent directory.
 %   PROPOSAL: If regexPatternList is a string (not cell array of strings).
-%
-% PROPOSAL: Return same fields as irf.fs.get_all_files_dirs.
-%   Ex: "isDir" instead of "isdir"; fileSizeBytes, modificationSdn.
 
 
 % ASSERTION

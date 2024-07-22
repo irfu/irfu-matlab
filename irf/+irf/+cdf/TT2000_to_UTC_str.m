@@ -1,12 +1,13 @@
 %
-% Convert one CDF tt2000 value to one UTC string with nanoseconds resolution.
+% Convert one CDF TT2000 value to one UTC string with nanoseconds resolution.
 %
 % NOTE: spdfparsett2000 seems to work well as an inverse without wrapper.
 %
 %
 % ARGUMENT
 % ========
-% tt2000 : Scalar numeric value. Does not have to be int64.
+% tt2000
+%       Scalar numeric value. Does not have to be int64.
 %
 %
 % RETURN VALUE
