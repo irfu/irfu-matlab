@@ -333,16 +333,18 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
       % TODO-NI: Why convert to double? To avoid precision problems when
       % doing math with other variables?
-      freqHzZv = double(InSci.Zv.SAMPLING_RATE);
+      zvFreqHz = double(InSci.Zv.SAMPLING_RATE);
 
 
 
       Zv    = [];
 
       Zv.Epoch                   = InSci.Zv.Epoch;
+      % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
+      % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
-        freqHzZv, nCdfSamplesPerRecord);
-      Zv.freqHz                  = freqHzZv;
+        zvFreqHz, 1);
+      Zv.freqHz                  = zvFreqHz;
       Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
       Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
       Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;

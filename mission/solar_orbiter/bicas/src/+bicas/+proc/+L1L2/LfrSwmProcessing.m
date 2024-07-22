@@ -343,8 +343,10 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.bltsSamplesTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
 
       Zv.Epoch                   = InSci.Zv.Epoch;
+      % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
+      % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
-        zvFreqHz, nCdfSamplesPerRecord);
+        zvFreqHz, 1);
       Zv.freqHz                  = zvFreqHz;
       Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
       Zv.BW                      = InSci.Zv.BW;
