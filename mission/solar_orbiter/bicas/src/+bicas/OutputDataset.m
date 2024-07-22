@@ -10,7 +10,10 @@
 classdef OutputDataset
   % PROPOSAL: Automatic test code.
   %
-  % PROBLEM: Accepts RctdCaMap, despite that this format is a function of
+  % PROPOSAL: Use abbrevatiation.
+  %   See bicas.InputDataset comments.
+  %
+  % PROBLEM: Accepts RctdCa, despite that this format is a function of
   %          processing, and should not be useful outside of processing.
   %   PROPOSAL: Constructor argument for array of RCTDs. -- IMPLEMENTED
   %     CON: Multiple callers have to convert format.
@@ -24,6 +27,20 @@ classdef OutputDataset
   %           "SCI_cdf".
   %     NOTE: This is identical to bicas.swm.OutputDataset.pfoid.
   %   NOTE: Must match DSI in corresponding SWM.
+  %
+  % TODO-DEC: How handle modifications before writing dataset? How handle
+  %           modifications to GAs? Should this class represent output dataset
+  %           before/after deriving GAs?
+  %   NOTE: Using master CDFs is also a kind of modification of the output
+  %         dataset (conceptually).
+  %   PROPOSAL: Modify (create new) OutputDataset from old one.
+  % PROPOSAL: Use class as argument to bicas.write_dataset_CDF().
+  %   CON: May contain unimportant information for actual file-writing.
+  %     Ex: RctdCa
+  %     Ex: BICAS-internal metadata
+  %       Ex: DSI (not currently)
+  %       Ex: File path (not currently)
+
 
 
 

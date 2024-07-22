@@ -54,8 +54,23 @@ function OutGaSubset = derive_output_dataset_GAs(...
   Bso, L)
 
 % PROPOSAL: Automatic test code.
-% PROPOSAL: Create class for GAs.
+%   PROPOSAL: Replace this function with class/package for separate (public)
+%             functions.
+%
+% PROPOSAL: Create class for storing GAs.
 %   PRO: Can detect accidental overwriting/reuse of keys.
+%
+% PROPOSAL: Move from setting constants in skeletons to setting them here.
+%   TODO-NI: Allowed by ROC?!
+%   NOTE: Only applies to GAs. Skeletons also set ZVAs and available ZVs.
+%   Ex: Acknowledgements, Instrument, Instrument_type, APPLICABLE.
+%   PRO: Easier to set overlapping constants in code.
+%   CON: Can not inspect differences/similarities by diffing skeletons.
+%   CON: Rare to change them.
+%   CON/PROBLEM: Risk of setting values in skeletons without realizing they are
+%                overridden by BICAS. ==> Confusion ==> Wasted time.
+%     PROPOSAL: Set to special human-readable value in skeleton.
+%       Ex: "Value overwritten by RCS."
 
 % ASSERTIONS
 irf.assert.struct(OutputDataset.Ga, ...
@@ -82,7 +97,8 @@ OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
 OutGaSubset.Generation_date  = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
 
 % NOTE: Parsing OUTPUT dataset filename to set some GAs.
-[logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] = parse_dataset_filename(outputFilename);
+[logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] = ...
+  parse_dataset_filename(outputFilename);
 
 % Ex: Logical_file_id="solo_L1_rpw-tds-surv-hist2d_20220301_V01"
 OutGaSubset.Logical_file_id  = logicalFileId;
@@ -103,6 +119,8 @@ OutGaSubset.Datetime         = timeIntervalStr;
 % one did, should one not do so for other values as well?
 % NOTE: Could almost overwrite "Descriptor" too (can be derived from
 % Logical_source or DATASET_ID), but it also includes human-readable text.
+
+
 
 %===============================================================================
 % "Metadata Definition for Solar Orbiter Science Data", SOL-SGS-TN-0009, 2/4:
@@ -255,7 +273,7 @@ end
 % official RCS test package.
 %
 % NOTE: Does not change case.
-% NOTE: Wrapper around solo.adm.parse_dataset_filename().
+% NOTE: Is effectively a wrapper around solo.adm.parse_dataset_filename().
 %
 function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] ...
   = parse_dataset_filename(filename)

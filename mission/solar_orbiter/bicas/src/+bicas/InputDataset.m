@@ -10,6 +10,13 @@
 classdef InputDataset
   % PROPOSAL: Make all properties/instance variables immutable. Modify by
   %           creating modified copy of class instance.
+  %
+  % PROPOSAL: Use abbreviation for bicas.InputDataset and bicas.OutputDataset.
+  %   NOTE: Should be consistent
+  %     PROPOSAL: DS=DataSet
+  %       PRO: Consistent with DSI=DataSet ID
+  %     IDS, ODS
+  %     IPDS, OPDS
 
 
 
