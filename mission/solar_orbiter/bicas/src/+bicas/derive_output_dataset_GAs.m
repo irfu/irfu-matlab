@@ -17,6 +17,9 @@
 % input L1R datasets, CURRENT datasets, and BIAS HK datasets. Not true for old
 % SBM1 datasets (at least).
 % Exception: OBS_ID is not in BIAS HK. /2020-09-17
+%--
+% GAs "Provider", "Parent_version" have been abolished according to RCS ICD
+% 01/07, and SOL-SGS-TN-0009, 02/06.
 %
 %
 % ARGUMENTS
@@ -62,11 +65,6 @@ irf.assert.struct(OutputDataset.Ga, ...
 
 OutGaSubset = OutputDataset.Ga;
 
-% [...
-% %  OutGaSubset.Provider, ...
-%   OutGaSubset.Parents ...
-% %  OutGaSubset.Parent_version ...
-% ] = set_Parents(InputDatasetsMap);
 OutGaSubset.Parents = set_Parents(InputDatasetsMap);
 
 OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.identifier');
@@ -185,9 +183,7 @@ end
 % Set GA "Parents".
 function Parents = set_Parents(InputDatasetsMap)
 
-% Parent_version = {};
-Parents        = {};
-% Provider       = {};
+Parents  = {};
 
 %=============================
 % Iterate over INPUT datasets
@@ -196,89 +192,11 @@ keysCa = InputDatasetsMap.keys;
 for i = 1:numel(keysCa)
 
   InputDatasetInfo = InputDatasetsMap(keysCa{i});
-  InputGa          = InputDatasetInfo.Ga;
-
-  % ASSERTION
-  % NOTE: ROC DFMD is not completely clear on which version number should
-  % be used.
-  % NOTE: Stores all values to be safe.
-  assert(isscalar(InputGa.Data_version), ...
-    'BICAS:DatasetFormat', ...
-    ['Global attribute "Data_version" for input dataset', ...
-    ' with key=%s is not a MATLAB scalar (i.e. the global attribute is', ...
-    ' not exactly ONE string).'], ...
-    keysCa{i})
-
-  % 2020-12-16, EJ: Has found input datasets to have global
-  % attribute "Data_version" values which are either NUMERIC or STRINGS
-  % (e.g. "02"). Varies.
-  %
-  %-----------------------------------------------------------------------
-  % Ex: solo_L2_rpw-lfr-surv-bp1-cdag_20200625_V10.cdf:
-  % NOTE: Seems to take last two digits from basename as Parent_version
-  % values, even for RCTs (i.e. a BUG)!!!
-  % Parent_version (9 entries):
-  %       0 (CDF_CHAR/2):         "09"
-  %       1 (CDF_CHAR/2):         "08"
-  %       2 (CDF_CHAR/2):         "08"
-  %       3 (CDF_CHAR/2):         "20"
-  %       4 (CDF_CHAR/2):         "20"
-  %       5 (CDF_CHAR/2):         "43"
-  %       6 (CDF_CHAR/2):         "00"
-  %       7 (CDF_CHAR/2):         "07"
-  %       8 (CDF_CHAR/2):         "00"
-  % Parents (9 entries):
-  %       0 (CDF_CHAR/46):        "solo_L1_rpw-lfr-surv-bp1-cdag_20200625_V09.cdf"
-  %       1 (CDF_CHAR/32):        "solo_HK_rpw-lfr_20200625_V08.cdf"
-  %       2 (CDF_CHAR/32):        "solo_HK_rpw-bia_20200625_V08.cdf"
-  %       3 (CDF_CHAR/40):        "SOLO_CAL_RCT-LFR-SCM_V20190123171020.cdf"
-  %       4 (CDF_CHAR/41):        "SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf"
-  %       5 (CDF_CHAR/40):        "SOLO_CAL_RCT-LFR-VHF_V20200720165743.cdf"
-  %       6 (CDF_CHAR/55):        "SOLO_CAL_RCT-SCM_RPW_SCM-FM-MEB-PFM_V20190519120000.cdf"
-  %       7 (CDF_CHAR/35):        "SOLO_CAL_RPW_BIAS_V202003101607.cdf"
-  %       8 (CDF_CHAR/42):        "SOLO_CAL_RPW-HF-PREAMP_V20200624000000.cdf"
-  %-----------------------------------------------------------------------
-  % Ex: solo_L1_rpw-lfr-surv-bp2-cdag_20200625_V09.cdf
-  % Parent_version (1 entry):
-  %   0 (CDF_INT8/1):         8
-  % Parents (1 entry):
-  %   0 (CDF_CHAR/33):        "CDF>solo_L0_rpw-cdag_20200625_V08"
-  %-----------------------------------------------------------------------
-  % Ex: solo_L1_rpw-lfr-surv-bp2-cdag_20201225_V01.cdf, at internal
-  % reprocessing (2021-01), not part of regular versioning.
-  % Parent_version (1 entry):
-  %      0 (CDF_CHAR/2):         "05"
-  % Parents (1 entry):
-  %      0 (CDF_CHAR/33):        "CDF>solo_L0_rpw-cdag_20201225_V05"
-  %-----------------------------------------------------------------------
-  % NOTE: Skeletons imply that Parent_version should be strings
-  % (CDF_CHAR), though that setting should be inherited from some other
-  % dataset, which might be a good or bad source.
-  % Ex: SOLO_L2_RPW-LFR-SBM1-CWF-E_V11.skt:
-  %   "Parent_version"      1:    CDF_CHAR     { " " }
-  %-----------------------------------------------------------------------
-  % 2024-07-12: GAs "Provider", "Parent_version" have been abolished
-  %             according to RCS ICD 01/07, and SOL-SGS-TN-0009, 02/06.
-  %-----------------------------------------------------------------------
-
-  % if isfield(InputGa, 'Provider')
-  %   Provider = union(Provider, InputGa.Provider);
-  % else
-  %   % IMPLEMENTATION NOTE: MAG datasets have been observed to not have
-  %   % glob.attr. "Provider". VHT datasets have MAG datasets as parents.
-  %   % /2021-05-05
-  %   % Ex: solo_L2_mag-srf-normal_20200701_V02.cdf
-  %   L.logf('warning', ...
-  %     'Input dataset "%s"\ndoes not have CDF global attribute "Provider".\n', ...
-  %     InputDatasetInfo.filePath)
-  % end
 
   % NOTE: Parsing INPUT dataset filename to set some GAs.
   [logicalFileId, ~, ~, ~] = parse_dataset_filename(...
     irf.fs.get_name(InputDatasetInfo.filePath));
-  % Sets string, not number. Correct?
-  % Parent_version{end+1} = dataVersionStr;
-  Parents       {end+1} = ['CDF>', logicalFileId];
+  Parents{end+1} = ['CDF>', logicalFileId];
 
 end    % for
 
