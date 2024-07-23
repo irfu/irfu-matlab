@@ -44,42 +44,7 @@ function [DatasetsDtArray, logFilePath] = extract_dataset_dates_from_logs(...
 %   PROBLEM: Has no way of obtaining the QLI FMDs for selected dates. Must
 %            retreive QLI FMDs for all dates (which is somewhat slow).
 
-% FSOI = File System Object Info
-FsoiArray = dir(logFileDirPattern);
-FsoiArray = FsoiArray(~[FsoiArray.isdir]);
-
-% Require non-zero matching log files
-% -----------------------------------
-% IMPLEMENTATION NOTE: This is a failsafe against setting the wrong path
-% pattern.
-if isempty(FsoiArray)
-  error('No files match logFileDirPattern=%s.', logFileDirPattern)
-end
-
-
-
-% Select log file: File with last filename, if filenames are sorted
-% -----------------------------------------------------------------
-% PROBLEM: Not obvious how to select log file when there are multiple
-% simultaneous log files being built on simultaneously (most relevant when
-% running multiple batch BICAS processing runs). Can use the last file name
-% (last in alphabetic order) or last file modification timestamp, but neither
-% truly solves the problem alone.
-
-% IMPLEMENTATION NOTE: Could use file modification date, but this is bad when
-% running multiple processes simultaneously since that means multiple files are
-% modified simultaneously.
-%
-% For example, if this function is called after one BICAS batch processing has
-% just finished, but another BICAS batch processing is still underway, the
-% latter's log file is still continuously updated and may have a later file
-% modification date.
-
-%[~, iSort] = sort([FsioArray.datenum], 'ascend');   % Sort by log file modification date.
-[~, iSort]  = sort({FsoiArray.name});   % Sort by log filename (not entire path).
-Fsoi        = FsoiArray(iSort(end));
-logFilePath = fullfile(Fsoi.folder, Fsoi.name);
-
+logFilePath = select_log_file(logFileDirPattern);
 s = fileread(logFilePath);
 
 datasetFileNameCa = cell(0, 1);
@@ -124,5 +89,54 @@ Dt1Array = unique(Dt1Array);
 Dt1Array = sort(Dt1Array);
 
 DatasetsDtArray = Dt1Array(:);
+
+end
+
+
+
+
+
+
+
+% Select log file: File with last filename, if filenames are sorted
+% alphabetically.
+%
+%
+% NOTES
+% -----
+% PROBLEM: It is not obvious how to select log file when there are multiple
+% simultaneous log files being built on simultaneously (most relevant when
+% running multiple batch BICAS processing runs). One could use (1) the last file
+% name (last in alphabetic order) or (2) last file modification timestamp, but
+% neither truly solves the problem alone.
+%
+% IMPLEMENTATION NOTE: One could use file modification date, but this is bad
+% when running multiple processes simultaneously since that means multiple files
+% are modified simultaneously.
+%
+% For example, if this function is called after one BICAS batch processing has
+% just finished, but another BICAS batch processing is still underway, the
+% latter's log file is still continuously updated and may have a later file
+% modification date.
+function logFilePath = select_log_file(logFileDirPattern)
+
+% FSOI = File System Object Info
+FsoiArray = dir(logFileDirPattern);
+FsoiArray = FsoiArray(~[FsoiArray.isdir]);
+
+% Require non-zero matching log files
+% -----------------------------------
+% IMPLEMENTATION NOTE: This is a failsafe against setting the wrong path
+% pattern.
+if isempty(FsoiArray)
+  error('No files match logFileDirPattern=%s.', logFileDirPattern)
+end
+
+
+
+%[~, iSort] = sort([FsioArray.datenum], 'ascend');   % Sort by log file modification date.
+[~, iSort]  = sort({FsoiArray.name});   % Sort by log filename (not entire path).
+Fsoi        = FsoiArray(iSort(end));
+logFilePath = fullfile(Fsoi.folder, Fsoi.name);
 
 end
