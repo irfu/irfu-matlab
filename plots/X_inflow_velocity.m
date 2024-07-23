@@ -1,4 +1,4 @@
-% plot inflow velocity as a funciton of distance to current sheet
+% plot inflow velocity as a function of distance to current sheet
 %
 % model 2D reconnection. y- out of plane direction, x-normal direction,
 % z-along the outflow

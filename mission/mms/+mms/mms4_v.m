@@ -18,10 +18,15 @@ function v = mms4_v(t, coord_sys)
 %
 %   See also c_v
 
+% min #args=1, max #args=2
 narginchk(1,2);
 
+% R and V will retain their value between function calls
 persistent R V
 
+% set R and V if they don't exist or are empty
+% struct() will create an array where R.time corresponds to the next
+% element. i.e. s = struct(field1,value1,...,fieldN,valueN)
 if ~exist('R','var') || isempty(R)
   R = struct('time',[], 'gseR1',[], 'gseR2',[], 'gseR3',[], 'gseR4',[], ...
     'gsmR1',[], 'gsmR2',[], 'gsmR3',[], 'gsmR4',[]);
@@ -30,6 +35,8 @@ if ~exist('V','var') || isempty(V)
   V = struct('time',[], 'gseV1',[], 'gseV2',[], 'gseV3',[], 'gseV4',[], ...
     'gsmV1',[], 'gsmV2',[], 'gsmV3',[], 'gsmV4',[]);
 end
+
+% i.e. GSE are default coords
 if nargin==1, coord_sys = 'gse'; end
 
 if isa(t, 'TSeries')
@@ -53,7 +60,7 @@ else
   error(errStr);
 end
 
-% Begin by looking for locally saved mat files of positon and velocity to load (quickest)
+% Begin by looking for locally saved mat files of position and velocity to load (quickest)
 if ~is_R_ok && exist(['.' filesep, 'mmsR.mat'],'file') && ...
     exist(['.' filesep, 'mmsV.mat'],'file')
   % Local files found

@@ -289,6 +289,40 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
+    % Test that only recognizes specified log files.
+    %
+    % NOTE: Test creates two log files, and checks if code can recognize either
+    % file separately.
+    function test___matching_nonmatching_logs___one_dataset(testCase)
+      logFileDirPattern1 = testCase.fullfile('processing*.log');
+      logFileDirPattern2 = testCase.fullfile('PROCESSING*.LOG');
+      logFilePath1       = testCase.fullfile('processing2024-01-01T12.00.00.log');
+      logFilePath2       = testCase.fullfile('PROCESSING2024-01-01T12.00.00.LOG');
+
+      % NOTE: Log file which will be ignored.
+      solo.qli.batch.utils.write_file(logFilePath1, ...
+        {'solo_L3_rpw-bia-density_20230101_V01.cdf'})         % Matching filename.
+
+      solo.qli.batch.utils.write_file(logFilePath2, ...
+        {'solo_L3_rpw-bia-density_20240101_V01.cdf'})         % Matching filename.
+
+      EXP_DT_ARRAY_1 = solo.qli.utils.umddt({'2023-01-01'});
+      EXP_DT_ARRAY_2 = solo.qli.utils.umddt({'2024-01-01'});
+
+      function test(logFileDirPattern, ExpDtArray, expLogFilePath)
+        [ActDtArray, actLogFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
+          logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
+
+        testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
+        testCase.assertEqual(actLogFilePath, expLogFilePath)
+      end
+
+      test(logFileDirPattern1, EXP_DT_ARRAY_1, logFilePath1)
+      test(logFileDirPattern2, EXP_DT_ARRAY_2, logFilePath2)
+    end
+
+
+
   end    % methods(Test)
 
 

@@ -71,7 +71,7 @@
 % outputDir
 %       Path to output directory.
 % configFilePath
-%       Path to config file (see other section in documentaiton).
+%       Path to config file (see other section in documentation).
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
 %       One-character strings. Whether to generate ("1" or "0") non-weekly (2h,
 %       6h, 24h) quicklooks and/or weekly quicklooks.

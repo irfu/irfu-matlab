@@ -42,7 +42,8 @@
 % Agyrotropies are removed for n_e < 1 cm^-3
 
 %% Time interval selection
-Tint = irf.tint('2015-12-14T01:17:38.00Z/2015-12-14T01:17:41.00Z');
+Tint = irf.tint('2017-07-06T00:54:00.00Z/2017-07-06T00:54:45.00Z');
+%Tint = irf.tint('2015-12-14T01:17:38.00Z/2015-12-14T01:17:41.00Z');
 
 %% Load data
 ic = 1:4;

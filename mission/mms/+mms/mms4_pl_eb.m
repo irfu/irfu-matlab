@@ -117,7 +117,7 @@ end
 
 irf_zoom(h,'x',Tint)
 irf_plot_axis_align(h)
-add_position(h(end),gseR)
+add_position(h(end),gseR, 'obj','earth')
 xlabel(h(end),'')
 title(h(1),Tint.start.utc)
 
