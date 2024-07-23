@@ -1,11 +1,14 @@
 %
-% Given a file path pattern which matches on or multiple log files, select the
-% file with the "last" filename if filenames sorted alphabetically. Search that
-% one log file for day-long dataset filenames with specified dataset IDs. Return
-% the set of unique (starting) timestamps (midnight) for those datasets.
+% Given a file path pattern which matches one or multiple log files:
+% (1) Select the file with the "last" filename if filenames are sorted
+%     alphabetically.
+% (2) Search that one log file for day-long dataset filenames with specified
+%     dataset IDs.
+% (3) Return the set of unique (starting) timestamps (midnight) for the found
+%     datasets.
 %
-% Is primarily intended to be used for selecting dates for which to generate
-% quicklooks (QLIs).
+% Function is primarily intended to be used for selecting dates for which to
+% generate quicklooks (QLIs).
 %
 %
 % ARGUMENTS
@@ -33,7 +36,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function [DatasetsDtArray, logFilePath] = extract_dataset_dates_from_logs(...
+function [DatasetsUmdDtArray, logFilePath] = extract_dataset_dates_from_logs(...
   logFileDirPattern, dsiCa)
 
 % PROPOSAL: Specify dataset filename patterns (not DSIs).
@@ -64,7 +67,7 @@ for i = 1:numel(dsiCa)
   % NOTE: Must permit filenames with and without "-cdag".
   pattern = sprintf('%s(|-cdag)_[^\\n.]*\\.cdf', dsi);
 
-  % IMPLEMENTATION NOTE: Using case-insensitive reg. exp. matching to handle
+  % IMPLEMENTATION NOTE: Using case-insensitive reg. expr. matching to handle
   % that (1) dataset filenames contain DSI in lowercase (mostly), and (2) that
   % uppercase dataset IDs have not been historically required in this code.
   % Note: Some dataset filenames actually have mixed case in the dataset ID part
@@ -81,14 +84,14 @@ DsmdArray = solo.adm.paths_to_DSMD_array(datasetFileNameCa(:));
 % [DsmdArray.dt1] behaves differently for empty DSMD array (it returns 0x0
 % double).
 if isempty(DsmdArray)
-  Dt1Array = solo.qli.const.EMPTY_DT_ARRAY;
+  UmdDt1Array = solo.qli.const.EMPTY_DT_ARRAY;
 else
-  Dt1Array = [DsmdArray.dt1];
+  UmdDt1Array = [DsmdArray.dt1];
 end
-Dt1Array = unique(Dt1Array);
-Dt1Array = sort(Dt1Array);
+UmdDt1Array = unique(UmdDt1Array);
+UmdDt1Array = sort(UmdDt1Array);
 
-DatasetsDtArray = Dt1Array(:);
+DatasetsUmdDtArray = UmdDt1Array(:);
 
 end
 
@@ -118,6 +121,13 @@ end
 % just finished, but another BICAS batch processing is still underway, the
 % latter's log file is still continuously updated and may have a later file
 % modification date.
+%
+% PROBLEM: SOAR and LESIA log filenames contain the host name in the filename.
+% The same log file name pattern therefore does not work on both anna and brain,
+% and one only wants to read the host's logs when running on the host.
+% Ex: so_qli2.anna.2024-07-19_18.34.20.log
+% Ex: pull.so.data.cron.brain.2024-07-23_05.40.01.log
+%
 function logFilePath = select_log_file(logFileDirPattern)
 
 % FSOI = File System Object Info

@@ -25,7 +25,7 @@ classdef utils
       %     irf.fs.read_file()      reads  byte array.
       %     irf.fs.read_text_file() reads rows.
       %   CON: Not generic enough.
-      %     CON: Could be made more generic if backwards-compatible extensions
+      %     CON: Could be made more generic with backwards-compatible extensions
       %          if needed.
 
       fileId = fopen(filePath, 'w');

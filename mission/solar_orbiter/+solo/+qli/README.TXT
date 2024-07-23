@@ -38,7 +38,7 @@ generate_quicklook_7days_using_DB_SPICE.m
 ==========================================================
  Various source code and documentation naming conventions
 ==========================================================
-NOTE: Additionally tries to follow BICAS conventions. See
+NOTE: The source code additionally tries to follow BICAS naming conventions. See
       irfu-matlab/mission/solar_orbiter/bicas/readme.txt
 --
 DASA
@@ -74,4 +74,5 @@ SolO DB
 UFD
     Class solo.qli.batch.UmdFmdDictionary. Models a dictionary UMD-->FMD.
 UMD
-    UTC Midnight Date (timestamp).
+    UTC Midnight Date (timestamp). Timestamp in UTC at midnight. Used for
+    uniquely representing an entire day as a whole.
