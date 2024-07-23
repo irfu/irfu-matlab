@@ -2656,7 +2656,7 @@ classdef PDist < TSeries
         % pascal is kg*m*s-2, so go to nPa
         integrated_p12 = integrated_p12*1e9; % Pa -> nPa
 
-       
+
       end
       % main surface plot
       % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
@@ -4413,21 +4413,21 @@ classdef PDist < TSeries
       % PDIST.MOVMEAN Executes a running average of the distribution.
       %   PDIST.MOVMEAN(pdist,N)
       %   PDIST.MOVMEAN(pdist,N,'RemoveOneCounts',pdist_counts)
-      % 
+      %
       %     N - number of data points for the moving mean
-      %     pdist_counts - PDist object with number of counts, defined as in the example below  
-      % 
-      %   Example:      
-      %     ic = 3;            
+      %     pdist_counts - PDist object with number of counts, defined as in the example below
+      %
+      %   Example:
+      %     ic = 3;
       %     tint = irf.tint('2017-07-11T22:31:00.00Z/2017-07-11T22:37:20.00Z');
       %     iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
       %     iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
       %     iPDist_counts = iPDist; iPDist_counts.data = (iPDist.data./iPDistErr.data).^2;
       %
-      %     iPD_03 = iPDist3.movmean(3);      
+      %     iPD_03 = iPDist3.movmean(3);
       %     iPD_11 = iPDist3.movmean(11);
-      %         
-      %     iPD_03_rem = iPDist3.movmean(3,'RemoveOneCounts',iPDist_counts);      
+      %
+      %     iPD_03_rem = iPDist3.movmean(3,'RemoveOneCounts',iPDist_counts);
       %     iPD_11_rem = iPDist3.movmean(11,'RemoveOneCounts',iPDist_counts);
       %
       %     h = irf_plot({iPDist.omni.deflux.specrec,...
@@ -4476,8 +4476,8 @@ classdef PDist < TSeries
 
       PD = obj;
       PD.data = new_data;
-      %PD = PDist(obj.time,new_data,'skymap',obj.depend{:})      
-    end    
+      %PD = PDist(obj.time,new_data,'skymap',obj.depend{:})
+    end
 
   end
   % Plotting and other functions
