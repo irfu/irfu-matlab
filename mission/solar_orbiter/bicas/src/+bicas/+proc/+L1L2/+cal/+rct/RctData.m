@@ -57,19 +57,20 @@ classdef(Abstract) RctData
     RCT_DATA_LL = 'debug';
   end
   properties(GetAccess=public, SetAccess=immutable)
-    % Path to RCT file from which data was loaded.
-    filePath
+    % File name (not path) of RCT file from which data was loaded.
+    fileName
 
     % Global attribute "Data_version" in RCT file as a string.
     % NOTE: Data_version is not always set correctly in RCT.
     %   Ex: SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
     %       SOLO_CAL_RPW-BIAS_V202011191204.cdf
-    ga_Data_version
-    ga_CAL_ENTITY_NAME
-    ga_CAL_ENTITY_AFFILIATION
-    ga_CAL_EQUIPMENT
+    % NOTE: "scalarGa" refers to that GAs are asserted to be scalar (one GA
+    %       entry).
+    scalarGa_Data_version
+    scalarGa_CAL_ENTITY_NAME
+    scalarGa_CAL_ENTITY_AFFILIATION
+    scalarGa_CAL_EQUIPMENT
   end
-
 
 
 
@@ -84,17 +85,26 @@ classdef(Abstract) RctData
 
     % NOTE: Constructor reads RCT on its own, just for obtaining relevant GAs.
     %       RCT is reloaded again by subclasses for loading the bulk data.
-    % NOTE: GAs are represented as [] if they can not be found in the RCT.
     function obj = RctData(filePath)
 
       % Get specified GA from RCT.
-      function gaValue = get_GA(gaName)
+      %
+      % NOTE: GAs are asserted to be scalar (one entry), if found.
+      %
+      %
+      % RETURN VALUE
+      % ============
+      % scalarGaValue
+      %       [], if GA can not be found in the RCT.
+      %       Not cell array.
+      function scalarGaValue = get_scalar_GA(gaName)
 
         if isfield(Do.GlobalAttributes, gaName)
           % CASE: Found GA
 
           gaValue = Do.GlobalAttributes.(gaName);
           assert(iscell(gaValue))
+
           if numel(gaValue) ~= 1
             error(...
               'BICAS:FailedToReadInterpretRCT', ...
@@ -103,10 +113,12 @@ classdef(Abstract) RctData
               gaName, filePath)
           end
 
+          scalarGaValue = gaValue{1};
+
         else
 
           % CASE: Did not find GA
-          gaValue = [];
+          scalarGaValue = [];
 
         end
       end
@@ -117,11 +129,11 @@ classdef(Abstract) RctData
       assert(isscalar(ga_Data_version))
       assert(ischar(  ga_Data_version{1}))
 
-      obj.filePath                  = filePath;
-      obj.ga_Data_version           = ga_Data_version{1};
-      obj.ga_CAL_ENTITY_NAME        = get_GA('CAL_ENTITY_NAME');
-      obj.ga_CAL_ENTITY_AFFILIATION = get_GA('CAL_ENTITY_AFFILIATION');
-      obj.ga_CAL_EQUIPMENT          = get_GA('CAL_EQUIPMENT');
+      obj.fileName                        = irf.fs.get_name(filePath);
+      obj.scalarGa_Data_version           = ga_Data_version{1};
+      obj.scalarGa_CAL_ENTITY_NAME        = get_scalar_GA('CAL_ENTITY_NAME');
+      obj.scalarGa_CAL_ENTITY_AFFILIATION = get_scalar_GA('CAL_ENTITY_AFFILIATION');
+      obj.scalarGa_CAL_EQUIPMENT          = get_scalar_GA('CAL_EQUIPMENT');
     end
 
 

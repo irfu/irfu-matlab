@@ -80,7 +80,18 @@ irf.assert.struct(OutputDataset.Ga, ...
 
 OutGaSubset = OutputDataset.Ga;
 
-OutGaSubset.Parents       = get_GA_Parents(InputDatasetsMap);
+
+
+RctdCa = OutputDataset.RctdCa;
+OutGaSubset.CAL_ENTITY_AFFILIATION = get_RCTD_field_CA_GA(RctdCa, 'scalarGa_CAL_ENTITY_AFFILIATION');
+OutGaSubset.CAL_ENTITY_NAME        = get_RCTD_field_CA_GA(RctdCa, 'scalarGa_CAL_ENTITY_NAME');
+OutGaSubset.CAL_EQUIPMENT          = get_RCTD_field_CA_GA(RctdCa, 'scalarGa_CAL_EQUIPMENT');
+OutGaSubset.CALIBRATION_TABLE      = get_RCTD_field_CA_GA(RctdCa, 'fileName');
+OutGaSubset.CALIBRATION_VERSION    = get_RCTD_field_CA_GA(RctdCa, 'scalarGa_Data_version');
+
+
+
+OutGaSubset.Parents         = get_GA_Parents(InputDatasetsMap);
 
 % IMPLEMENTATION NOTE: SPICE_KERNELS should be set also for L3, but this has not
 % yet been implemented in skeletons.
@@ -240,22 +251,53 @@ for i = 1:numel(keysCa)
   % Read GA, but convert to format which represents zero kernels as empty cell
   % array, since that is convenient for algorithm.
   if isfield(InputDataset.Ga, 'SPICE_KERNELS')
-    parent_SPICE_KERNELS = InputDataset.Ga.SPICE_KERNELS;
+    parentGa_SPICE_KERNELS = InputDataset.Ga.SPICE_KERNELS;
 
-    if isscalar(parent_SPICE_KERNELS) && any(ismember(parent_SPICE_KERNELS{1}, {'none', ' '}))
-      parent_SPICE_KERNELS = cell(0, 1);
-    end
+    parentGa_SPICE_KERNELS = bicas.ga.normalize(...
+      parentGa_SPICE_KERNELS, ...
+      {{'none'}, {' '}}', ...
+      cell(0, 1));
   else
-    parent_SPICE_KERNELS = cell(0, 1);
+    parentGa_SPICE_KERNELS = cell(0, 1);
   end
 
-  ga_SPICE_KERNELS = unique([ga_SPICE_KERNELS; parent_SPICE_KERNELS]);
+  ga_SPICE_KERNELS = unique([ga_SPICE_KERNELS; parentGa_SPICE_KERNELS]);
 end    % for
 
 % Normalize to the data format used in datasets.
 if isempty(ga_SPICE_KERNELS)
-  ga_SPICE_KERNELS = {'none'};
+  ga_SPICE_KERNELS = {' '};
 end
+end
+
+
+
+
+
+
+
+% (1) Given a set of RCTDs, obtain (column) cell array with elements equal to the
+% field value of every RCTD.
+% (2) Normalize empty, absent values.
+%
+% NOTE: Zero RCTDs ==> Zero GA enties (*NOT* one GA entry with one whitespace).
+%
+% RATIONALE: Exists to easily set RCT-related GAs.
+function gaCa = get_RCTD_field_CA_GA(RctdCa, rctdFieldName)
+  gaCa = cell(0, 1);
+
+  for i = 1:numel(RctdCa)
+    Rctd = RctdCa{i};
+
+    rctdValue = Rctd.(rctdFieldName);
+    assert(~iscell(rctdValue))
+
+    % NOTE: Rctd.ga_* values use [] to represent absent GAs.
+    rctdValue = bicas.ga.normalize(rctdValue, {{'none'}, {' '}, []}', ' ');
+
+    gaCa{i, 1} = rctdValue;
+  end
+
 end
 
 

@@ -180,9 +180,9 @@ Version x.x.x
 * Use zVariable compression used in master CDFs.
 * Requires new L2 master CDFs V15, updated for compliance with archiving
   conventions. Some code updates for the same reason:
-  setting "SPICE_KERNELS",
-  not setting "Provider", "Parent_version",
-  correctly(?) setting TIME_MIN/TIME_MAX.
+  * Correctly(?) setting TIME_MIN/TIME_MAX.
+  * Setting "SPICE_KERNELS", "CAL_*", "CALIBRATION_*".
+  * Not setting "Provider", "Parent_version".
 * Requires BIAS RCT on new filenaming convention, e.g.
   "solo_CAL_rpw-bias_20220210-20990101_V01.cdf", by changing the default
   value for setting PROCESSING.RCT_REGEXP.BIAS.
