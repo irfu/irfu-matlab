@@ -153,7 +153,7 @@ DLR
     0/false = V12
     1/true  = V13
     2023-08-29, EJ: Variable is constant for the entire mission except when it
-    flips from zero to one at about 2023-08-21T12:04.
+    flips from zero to one at about 2023-08-21T12:04Z.
 DSI, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
@@ -162,9 +162,9 @@ DSI, "dataset ID"
     string components (source+level+descriptor) can be used to define DSI
     analogously for SolO datasets outside RPW.
     NOTE: Must be uppercase by definition (at least when used as string
-    constants by BICAS), though DSIs are represented in lowercase in the official
-    dataset filenaming convention (except the "level"). Uppercase DSI has been
-    used for some old ground-test datasets.
+    constants by BICAS), though DSIs are represented in lowercase in the
+    official dataset file naming convention (except the "level"). Uppercase DSI
+    has been used in file names for some old ground-test datasets.
     NOTE: DSIs exclude the "-cdag" suffix. "-cdag" is defined by ROC
     for RPW-internal datasets only.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical

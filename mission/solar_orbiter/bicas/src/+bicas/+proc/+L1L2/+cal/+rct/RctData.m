@@ -83,11 +83,16 @@ classdef(Abstract) RctData
 
 
     % NOTE: Constructor reads RCT on its own, just for obtaining relevant GAs.
+    %       RCT is reloaded again by subclasses for loading the bulk data.
     % NOTE: GAs are represented as [] if they can not be found in the RCT.
     function obj = RctData(filePath)
 
+      % Get specified GA from RCT.
       function gaValue = get_GA(gaName)
+
         if isfield(Do.GlobalAttributes, gaName)
+          % CASE: Found GA
+
           gaValue = Do.GlobalAttributes.(gaName);
           assert(iscell(gaValue))
           if numel(gaValue) ~= 1
@@ -97,8 +102,12 @@ classdef(Abstract) RctData
               ' entry. Can therefore not interpret this.'], ...
               gaName, filePath)
           end
+
         else
+
+          % CASE: Did not find GA
           gaValue = [];
+
         end
       end
 
@@ -106,7 +115,7 @@ classdef(Abstract) RctData
 
       ga_Data_version = Do.GlobalAttributes.Data_version;
       assert(isscalar(ga_Data_version))
-      assert(ischar(ga_Data_version{1}))
+      assert(ischar(  ga_Data_version{1}))
 
       obj.filePath                  = filePath;
       obj.ga_Data_version           = ga_Data_version{1};

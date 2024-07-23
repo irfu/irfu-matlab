@@ -100,6 +100,7 @@ OutGaSubset.Generation_date  = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:
 
 % Ex: Logical_file_id="solo_L1_rpw-tds-surv-hist2d_20220301_V01"
 OutGaSubset.Logical_file_id  = logicalFileId;
+
 % Logical_source:
 % NOTE: Overwrites skeleton value. Can otherwise not handle -cdag.
 % NOTE: Could in principle be set by assuming
@@ -109,9 +110,10 @@ OutGaSubset.Logical_source   = logicalSource;   % Override skeleton.
 OutGaSubset.Data_version     = dataVersionStr;
 OutGaSubset.Datetime         = timeIntervalStr;
 % OutGaSubset.Dataset_ID       = outputDsi; % Override skeleton. Wise?
-% IMPLEMENTATION NOTE: Unclear if it is wise to overwrite GA Dataset_ID and
-% Logical_source. In principle, the skeletons should contain the correct
-% values. In principle, the ideal solution is to assert that GA Dataset_ID
+
+% IMPLEMENTATION NOTE: Unclear if it is wise to overwrite GAs (1) Dataset_ID and
+% (2) Logical_source. In principle, the skeletons should contain the correct
+% values. In principle, the ideal solution is to assert that GAs Dataset_ID
 % and Logical_source in the master CDF are the expected ones, but it is
 % unclear if this fits well with how master CDFs are currently loaded and if
 % one did, should one not do so for other values as well?
@@ -165,8 +167,7 @@ OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end)
 
 
 
-MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
-OutGaSubset.MODS = MODS;
+OutGaSubset.MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
 
 
 
@@ -204,9 +205,9 @@ end
 
 
 
-function Parents = get_GA_Parents(InputDatasetsMap)
+function ga_Parents = get_GA_Parents(InputDatasetsMap)
 
-Parents = {};
+ga_Parents = {};
 
 keysCa = InputDatasetsMap.keys;
 for i = 1:numel(keysCa)
@@ -216,7 +217,7 @@ for i = 1:numel(keysCa)
   % NOTE: Parsing INPUT dataset filename to set some GAs.
   [logicalFileId, ~, ~, ~] = parse_dataset_filename(...
     irf.fs.get_name(InputDataset.filePath));
-  Parents{end+1} = ['CDF>', logicalFileId];
+  ga_Parents{end+1} = ['CDF>', logicalFileId];
 
 end    % for
 end
@@ -227,10 +228,10 @@ end
 
 
 
-function SPICE_KERNELS = get_GA_SPICE_KERNELS(InputDatasetsMap)
+function ga_SPICE_KERNELS = get_GA_SPICE_KERNELS(InputDatasetsMap)
 
 keysCa = InputDatasetsMap.keys;
-SPICE_KERNELS = cell(0, 1);
+ga_SPICE_KERNELS = cell(0, 1);
 
 for i = 1:numel(keysCa)
 
@@ -248,12 +249,12 @@ for i = 1:numel(keysCa)
     parent_SPICE_KERNELS = cell(0, 1);
   end
 
-  SPICE_KERNELS = unique([SPICE_KERNELS; parent_SPICE_KERNELS]);
+  ga_SPICE_KERNELS = unique([ga_SPICE_KERNELS; parent_SPICE_KERNELS]);
 end    % for
 
 % Normalize to the data format used in datasets.
-if isempty(SPICE_KERNELS)
-  SPICE_KERNELS = {'none'};
+if isempty(ga_SPICE_KERNELS)
+  ga_SPICE_KERNELS = {'none'};
 end
 end
 
