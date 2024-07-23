@@ -1,149 +1,175 @@
 Release notes
 =============
-Note: This list includes updates to unofficial functionality, e.g. for processing L2 to L3.
+Note: This list includes updates to unofficial functionality, e.g. for
+processing L2 to L3.
 
 
 Version 1.0.0
 -------------
-Almost-complete support for LFR & TDS datasets (voltages) with transfer
-functions (partially tested). No parasitic capacitance.
+* Almost-complete support for LFR & TDS datasets (voltages) with transfer
+  functions (partially tested). No parasitic capacitance.
 
 
 Version 2.0.0
 -------------
-Added support for L1 input bias current datasets; supports updated L1R input
-datasets, and updated L2 master CDFs (V08).
+* Added support for L1 input bias current datasets; supports updated L1R input
+  datasets, and updated L2 master CDFs (V08).
 
 
 Version 2.0.1
 -------------
-Bugfix: Reads bias current zVars as nA (not uA)
+* Bugfix: Reads bias current zVars as nA (not uA)
 
 
 Version 3.0.0
 -------------
-Functionality for ITF high freq. cutoff.
-Uses master CDFs V09 (instead of V08).
-Copies zVar BW from LFR datasets.
-Searches for BIAS RCT using other filenaming scheme: *RPW-BIAS*.
-L2 bias current in nA (not ampere).
-Uses LFR mux mode.
+* Functionality for ITF high freq. cutoff.
+* Uses master CDFs V09 (instead of V08).
+* Copies zVar BW from LFR datasets.
+* Searches for BIAS RCT using other filenaming scheme: *RPW-BIAS*.
+* L2 bias current in nA (not ampere).
+* Uses LFR mux mode.
 
 
 Version 3.1.0
 -------------
-Bugfix to handle LFR L1 zVar BW=0.
-Preliminary sweep removal.
-Performance improvement (speed-up).
-Preliminary setting of zVar QUALITY_FLAG (max 2).
-Unofficial preliminary support for producing L2-->L3.
+* Bugfix to handle LFR L1 zVar BW=0.
+* Preliminary sweep removal.
+* Performance improvement (speed-up).
+* Preliminary setting of zVar QUALITY_FLAG (max 2).
+* Unofficial preliminary support for producing L2-->L3.
 
 
 Version 3.1.1
 -------------
-Modified default settings:
-(1) inverted transfer function cutoff at 0.8*omega_Nyquist (instead of 0.7)
-(2) duplicate bias current gives error (instead of using mitigation)
+* Modified default settings:
+  (1) inverted transfer function cutoff at 0.8*omega_Nyquist (instead of 0.7)
+  (2) duplicate bias current gives error (instead of using mitigation)
 
 
 Version 4.0.0
 -------------
-Non-Standard Operations (NSO) table for setting QUALITY_FLAG, L2_QUALITY_BITMASK (new)
-Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX
-Modified default setting: PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR
+* Non-Standard Operations (NSO) table for setting QUALITY_FLAG,
+  L2_QUALITY_BITMASK (new)
+* Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX
+* Modified default setting:
+  PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR
 
 
 Version 4.1.0
 -------------
-Added setting quality variables based on thruster firings in
-Non-Standard Operations (NSO) table. List complete until 2020-12-05.
-Zero order AC de-trending (remove mean, not linear fit), no AC re-trending
-(~bugfix; re-trending makes no sense for high-pass filtered data).
-Combined transfer functions (LFR+BIAS) for AC data are modified during
-execution to have constant gain for low freqs (prevents low frequency noise
-from being amplified.)
-Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE
-Bugfix: not crashing when reading CURRENT datasets with one bias setting.
-Note: Requires new RCT to not crash.
+* Added setting quality variables based on thruster firings in
+* Non-Standard Operations (NSO) table. List complete until 2020-12-05.
+* Zero order AC de-trending (remove mean, not linear fit), no AC re-trending
+  (~bugfix; re-trending makes no sense for high-pass filtered data).
+* Combined transfer functions (LFR+BIAS) for AC data are modified during
+  execution to have constant gain for low freqs (prevents low frequency noise
+  from being amplified.)
+* Bugfix: glob.attr. Datetime, OBS_ID, SOOP_TYPE
+* Bugfix: not crashing when reading CURRENT datasets with one bias setting.
+* Note: Requires updated BIAS RCT to not crash.
 
 
 Version 5.0.0
 -------------
-Non-Standard Operations (NSO) table for thruster firings & saturation up until 2021-01-26.
-Better output CDF standards compliance.
-Using new L2 master CDFs.
+* Non-Standard Operations (NSO) table for thruster firings & saturation up until
+  2021-01-26.
+* Better output CDF standards compliance.
+* Using new L2 master CDFs.
 
 
 Version 6.0.0
 -------------
-Non-Standard Operations (NSO) table thruster firings updated for until 2021-09-11.
-Using new L2 master CDFs.
-Sets CDF zVariable attributes SCALEMIN & SCALEMAX using zVar min & max values.
-Disabled excessive log messages for processing L1/L1R-->L2 LFR SWF representing sequences of CDF records.
-Permits HK and science input datasets to not overlap at all in order to salvage some LFR DC data. Previously only allowed for partial datasets (otherwise error).
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2021-09-11.
+* Using new L2 master CDFs.
+* Sets CDF zVariable attributes SCALEMIN & SCALEMAX using zVar min & max values.
+* Disabled excessive log messages for processing L1/L1R-->L2 LFR SWF
+  representing sequences of CDF records.
+* Permits HK and science input datasets to not overlap at all in order to
+  salvage some LFR DC data. Previously only allowed for partial datasets
+  (otherwise error).
 
 
 Version 6.0.1
 -------------
-Non-Standard Operations (NSO) table thruster firings updated for until 2022-09-03.
-Bugfix: Use LFR's R0/R1/R2 for splitting into time intervals. This bugfix should keep some LFR L2 data that was previously deleted.
-Addresses https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/71 by not producing any .matlab_datastore_* file.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2022-09-03.
+* Bugfix: Use LFR's R0/R1/R2 for splitting into time intervals. This bugfix
+  should keep some LFR L2 data that was previously deleted.
+* Addresses https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/71 by not producing
+  any .matlab_datastore_* file.
 
 
 Version 6.0.2
 -------------
-Bugfix: Corrected algorithm/formula for calculating Ez_SRF (vdccal.m).
-Recalculated and added E-field calibration data. Now covers 2020-02-28 to 2022-12-03.
-Non-Standard Operations (NSO) table thruster firings updated for until 2022-12-17.
+* Bugfix: Corrected algorithm/formula for calculating Ez_SRF (vdccal.m).
+* Recalculated and added E-field calibration data. Now covers 2020-02-28 to
+  2022-12-03.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2022-12-17.
 
 
 Version 7.0.0
 -------------
-Using new L2 master CDFs with corrections for DELTA_PLUS/MINUS_VAR, APPLICABLE, Data_type.
-Non-Standard Operations (NSO) table thruster firings updated for until 2023-02-05.
+* Using new L2 master CDFs with corrections for DELTA_PLUS/MINUS_VAR,
+  APPLICABLE, Data_type.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2023-02-05.
 
 
 Version 8.0.0
 -------------
-Changed setting names:
-    PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN
---> PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN
-    SW_MODES.L2-L2_CWF-DWNS_ENABLED
---> SWM.L2-L2_CWF-DSR_ENABLED
-    SW_MODES.L1-L2_ENABLED
---> SWM.L1-L2_ENABLED
-    SW_MODES.L2-L2_CWF-DSR_ENABLED
---> SWM.L2-L2_CWF-DSR_ENABLED
-    SW_MODES.L2-L3_ENABLED
---> SWM.L2-L3_ENABLED
-    INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY
---> INPUT_CDF.GA_DSI_MISMATCH_POLICY
-Change name of unofficial s/w mode (L2-->L3):
-    LFR-SURV-CWF-E-DWNS
---> LFR-SURV-CWF-E-DSR
-Enable glob. attr. "MODS".
-Read and use setting for demultiplexer latching relay in BIAS HK (HK_BIA_MODE_DIFF_PROBE).
-Use automatic saturation detection for setting full saturation bit in L2_QUALITY_BITMASK and for capping QUALITY_FLAG.
-Use measured BIAS HK currents for detecting sweeps for data beginning 2023-12-16. Use mux mode for detecting sweeps before this date.
-    Note: This should be a temporary measure until BICAS can detect sweeps via QUALITY_BITMASK (L1).
-Add zVariable L3_QUALITY_BITMASK to L3 density datasets and set quality bit for bad density quality in it.
-Non-Standard Operations (NSO) table thruster firings updated for until 2024-01-11.
-Much refactoring (internal code reorganization).
+* Changed setting names:
+      PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN
+  --> PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN
+      SW_MODES.L2-L2_CWF-DWNS_ENABLED
+  --> SWM.L2-L2_CWF-DSR_ENABLED
+      SW_MODES.L1-L2_ENABLED
+  --> SWM.L1-L2_ENABLED
+      SW_MODES.L2-L2_CWF-DSR_ENABLED
+  --> SWM.L2-L2_CWF-DSR_ENABLED
+      SW_MODES.L2-L3_ENABLED
+  --> SWM.L2-L3_ENABLED
+      INPUT_CDF.GA_DATASET_ID_MISMATCH_POLICY
+  --> INPUT_CDF.GA_DSI_MISMATCH_POLICY
+* Change name of unofficial s/w mode (L2-->L3):
+      LFR-SURV-CWF-E-DWNS
+  --> LFR-SURV-CWF-E-DSR
+* Enable glob. attr. "MODS".
+* Read and use setting for demultiplexer latching relay in BIAS HK
+  (HK_BIA_MODE_DIFF_PROBE).
+* Use automatic saturation detection for setting full saturation bit in
+  L2_QUALITY_BITMASK and for capping QUALITY_FLAG.
+* Use measured BIAS HK currents for detecting sweeps for data beginning
+  2023-12-16. Use mux mode for detecting sweeps before this date.
+  Note: This should be a temporary measure until BICAS can detect sweeps
+        via QUALITY_BITMASK (L1).
+* Add zVariable L3_QUALITY_BITMASK to L3 density datasets and set quality bit
+  for bad density quality in it.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2024-01-11.
+* Much refactoring (internal code reorganization).
 --
-NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely stated that a later CDF format was used.
+NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
+      stated that a later CDF format was used.
 
 
 Version 8.0.1
 -------------
-Corrected documentation w.r.t. the CDF format version used in BICAS v8.0.0. This version still uses CDF 3.7.1.
-Changed source code style: Two whitespace indentation, no trailing whitespace.
-QUALITY_FLAG is now capped at 3 (previously 2).
-Non-Standard Operations (NSO) table thruster firings updated for until 2024-01-30.
-Bugfix: Automatic sweep detection (SCDA) no longer removes data due to labelling data as sweeps when constant BIAS HK currents are very different.
-Changed setting names relating to autodetection of sweeps.
+* Corrected documentation w.r.t. the CDF format version used in BICAS v8.0.0.
+  This version still uses CDF 3.7.1.
+* Changed source code style: Two whitespace indentation, no trailing whitespace.
+* QUALITY_FLAG is now capped at 3 (previously 2).
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2024-01-30.
+* Bugfix: Automatic sweep detection (SCDA) no longer removes data due to
+  labelling data as sweeps when constant BIAS HK currents are very different.
+* Changed setting names relating to autodetection of sweeps.
 
 
 Version 8.1.0
 -------------
-Require and use MATLAB R2024a (instead of MATLAB R2019b).
-Non-Standard Operations (NSO) table thruster firings updated for until 2024-05-05.
+* Require and use MATLAB R2024a (instead of MATLAB R2019b).
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2024-05-05.
