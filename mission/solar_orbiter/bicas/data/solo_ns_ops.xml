@@ -2268,6 +2268,12 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2024-04-11T20:39:17</startTimeUtc>
+            <stopTimeUtc> 2024-04-11T21:12:35</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
             <startTimeUtc>2024-04-17T01:04:23</startTimeUtc>
             <stopTimeUtc> 2024-04-17T01:43:49</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
