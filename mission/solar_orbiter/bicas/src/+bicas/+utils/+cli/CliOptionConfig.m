@@ -9,8 +9,6 @@
 classdef CliOptionConfig
   % PROPOSAL: Better name
   %   PRO: "CLI" is unnecessary given the location in package "cli".
-  % PROPOSAL: Abbreviation
-  %   PROPOSAL: COPC (not COC)
 
 
 

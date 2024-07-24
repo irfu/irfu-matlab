@@ -1,18 +1,17 @@
 %
-% UNFINISHED / EXPERIMENTAL
-%
 % Class for defining return value from bicas.utils.cli.parse_CLI_options().
+%
+% Immutable.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef CliOptionValue   % < handle
-  % PROPOSAL: Automatic test code.
-  %
+classdef CliOptionValue
   % PROPOSAL: Better name.
   %   PRO: "CLI" is unnecessary given the location in package "cli".
   %   PRO: Natural abbreviation "COV" (no yet used) is bad ("cover", "coverage").
   %   NOTE: Has also used term "option occurrence".
+  %     ~Occurrence, finding
   %
   % PROPOSAL: Rename optionValues --> optionValuesCa
   %   PRO: Is CA.

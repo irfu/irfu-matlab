@@ -60,10 +60,7 @@ function CliData = interpret_CLI_args(cliArgumentsCa)
 %       application) into one variable value.
 %       Ex: Flags for BFMs.
 %
-% PROPOSAL: Include assertion for unique input and output dataset paths.
-%   NOTE: Assertion is presently in execute_SWM.
-%
-% PROPOSAL: Use classes instead of structs.
+% PROPOSAL: Use class for return value.
 
 SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 
@@ -75,20 +72,20 @@ SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 % NOTE: Exclude the SWM argument.
 %===============================================================================
 COPC_ARRAY = [...
-  bicas.utils.cli.CliOptionConfig('VERSION_OPTION_ID',           '--version',          '0-1',   0, 0); ...
-  bicas.utils.cli.CliOptionConfig('IDENTIFICATION_OPTION_ID',    '--identification',   '0-1',   0, 0); ...
-  bicas.utils.cli.CliOptionConfig('SWD_OPTION_ID',               '--swdescriptor',     '0-1',   0, 0); ...
-  bicas.utils.cli.CliOptionConfig('HELP_OPTION_ID',              '--help',             '0-1',   0, 0); ...
-  bicas.utils.cli.CliOptionConfig('SWM_OPTION_ID',               SWM_CLI_OPTION_REGEX, '0-1',   0, 0); ...
+  bicas.utils.cli.CliOptionConfig('VERSION_OPTION_ID',           '--version',          '0-1',   0,  0); ...
+  bicas.utils.cli.CliOptionConfig('IDENTIFICATION_OPTION_ID',    '--identification',   '0-1',   0,  0); ...
+  bicas.utils.cli.CliOptionConfig('SWD_OPTION_ID',               '--swdescriptor',     '0-1',   0,  0); ...
+  bicas.utils.cli.CliOptionConfig('HELP_OPTION_ID',              '--help',             '0-1',   0,  0); ...
+  bicas.utils.cli.CliOptionConfig('SWM_OPTION_ID',               SWM_CLI_OPTION_REGEX, '0-1',   0,  0); ...
   ...
 % NOTE: ICD_LOG_FILE_OPTION_ID is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
   bicas.utils.cli.CliOptionConfig('SIP_OPTION_ID',               '--(..*)',            '0-inf', 1, -1); ...
-  bicas.utils.cli.CliOptionConfig('ICD_LOG_FILE_OPTION_ID',      '--log',              '0-1',   1, 0); ...
-  bicas.utils.cli.CliOptionConfig('MATLAB_LOG_FILE_OPTION_ID',   '--log-matlab',       '0-1',   1, 0); ...
-  bicas.utils.cli.CliOptionConfig('CONFIG_FILE_OPTION_ID',       '--config',           '0-1',   1, 0); ...
+  bicas.utils.cli.CliOptionConfig('ICD_LOG_FILE_OPTION_ID',      '--log',              '0-1',   1,  0); ...
+  bicas.utils.cli.CliOptionConfig('MATLAB_LOG_FILE_OPTION_ID',   '--log-matlab',       '0-1',   1,  0); ...
+  bicas.utils.cli.CliOptionConfig('CONFIG_FILE_OPTION_ID',       '--config',           '0-1',   1,  0); ...
   ...
 % Unofficial arguments
-  bicas.utils.cli.CliOptionConfig('MODIFIED_SETTINGS_OPTION_ID', '--set',           '0-inf', 2, 0); ...
+  bicas.utils.cli.CliOptionConfig('MODIFIED_SETTINGS_OPTION_ID', '--set',              '0-inf', 2,  0); ...
 ];
 
 
@@ -98,11 +95,11 @@ CliData = [];
 
 
 %============================================================================
-% Extract the modified settings from the unofficial CLI arguments
-% ---------------------------------------------------------------
+% Extract the modified BICAS settings from the unofficial CLI arguments
+% ---------------------------------------------------------------------
 % IMPLEMENTATION NOTE: CliSettingsVsMap corresponds to one definition of ONE
-% option (in the meaning of bicas.utils.cli.parse_CLI_options) and is filled with
-% the corresponding option values in the order of the CLI arguments.
+% option (in the meaning of bicas.utils.cli.parse_CLI_options) and is filled
+% with the corresponding option values in the order of the CLI arguments.
 %   ==> A later occurrence of an option with the same first option
 %       value, overwrites previous occurrences of the option with the same
 %       first option value. This is the intended behaviour (not a side
@@ -116,20 +113,12 @@ CliData.ModifiedSettingsMap = convert_modif_settings_COPVs_to_SettingsMap(...
 
 
 
-%=====================================================================
+%=============================================================================
 % Parse RCS ICD arguments
 % -----------------------
-% NOTE: Interprets RCS ICD as permitting (official) arguments next to
-% non-SWM BFM mode arguments.
-%=====================================================================
-CliData.SipMap = irf.ds.create_containers_Map(...
-  'char', 'char', {}, {});
-
-
-
-SipCovpArray = CovcMap('SIP_OPTION_ID');
-
-
+% NOTE: Interprets RCS ICD as permitting (official) arguments next to non-SWM
+% BFM mode arguments.
+%=============================================================================
 
 % Convert presence of BFM flag (mutually exclusive) into the correct constant.
 % {i, 1} = false/true
@@ -146,11 +135,14 @@ assert(...
   'Illegal combination of arguments.')
 CliData.bfm = LogicalBfmTable{[LogicalBfmTable{:, 1}], 2};
 
+SipCovpArray = CovcMap('SIP_OPTION_ID');
+
 switch CliData.bfm
 
   case {'VERSION_BFM', 'IDENTIFICATION_BFM', 'SWD_BFM', 'HELP_BFM'}
 
     CliData.swmArg = [];
+    CliData.SipMap = irf.ds.create_containers_Map('char', 'char', {}, {});
     assert(...
       isempty(SipCovpArray), ...
       'Specified illegal specific input parameters (SIP).')

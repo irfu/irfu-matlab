@@ -123,12 +123,35 @@ BSO
 CA
     Cell Array.
 CLI
-    Command-line interface
+    Command-Line Interface. In particular, "CLI arguments" refers to an array of
+    string arguments submitted to BICAS via the OS.
+CLI option
+      The combination of an option header and the immediately subsequent (and
+      associated) option values.
+      Ex: --version
+      Ex: --file  /home/fleksnes/BICAS/conf/bicas.conf
+      Ex: --setting varX 123
+CLI option header
+      A predefined (hard-coded, more or less, or many by e.g. reg.expr.)
+      string meant to match a single argument. It does not have to begin with
+      "--" or "-" though that is the convention.
+      Ex: --verbose
+      Ex: --setting
+CLI option ID
+      String constant. Represents the definition of an option and the
+      corresponding results from parsing CLI arguments using that definition.
+CLI option value(s)
+      A sequence of arguments (could be zero arguments) following an option
+      header with which they are associated. The number of expected option
+      values should be predefined for the option.
+      Ex: --version    # Zero option values
+      Ex: --setting OPTION_VALUE_1 OPTION_VALUE_2
 CM3
     cm^-3
 COHB
     CLI Option Header Body. The section of an CLI argument option/flag which
-    excludes the prefix, e.g. "-" or "--". See bicas.utils.cli.parse_CLI_options().
+    excludes the prefix, e.g. "-" or "--".
+    See bicas.utils.cli.parse_CLI_options().
 COPC
     Class bicas.utils.cli.CliOptionConfig.
 COPV

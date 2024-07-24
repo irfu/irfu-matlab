@@ -24,24 +24,6 @@
 %
 % DEFINITIONS OF TERMS
 % ====================
-% Example argument list referred to below:
-%       --verbose --file ~/bicas.conf --setting varX 123
-% --
-% Option header
-%       A predefined (hard-coded, more or less) string meant to match a single
-%       argument, e.g. "--verbose", "--file", "--setting". It does not have to
-%       begin with "--" or "-" though that is the convention.
-% Option value(s)
-%       A sequence of arguments (could be zero arguments) following an option
-%       header with which they are associated, e.g. none, "bicas.conf", or "X" &
-%       "123". The number of expected option values should be predefined for the
-%       option.
-% Option
-%       The combination of an option header and the immediately subsequent (and
-%       associated) option values.
-% Option ID
-%       Unique, arbitrary string used to refer to the definition of an option
-%       and the corresponding results from parsing CLI arguments.
 %
 %
 % ARGUMENTS
@@ -170,7 +152,7 @@ cliArgument = cliArgumentsCa{iCliArg};
 %=========================================
 % Search for a matching CLI option string
 %=========================================
-% NOTE: It is more convenient to work with arrays than maps here.
+% NOTE: It is more convenient to work with arrays than containers.Map here.
 iRegexpMatches  = find(irf.str.regexpf(...
   cliArgument, {CopcArray.optionHeaderRegexp}));
 
@@ -182,7 +164,7 @@ iMatch  = iRegexpMatches(ip == ipArray);
 
 
 
-% ASSERTION
+% ASSERTION: There is exactly one matching (after priority) COPC.
 nMatchingOptions = numel(iMatch);
 if nMatchingOptions == 0
   % CASE: Argument list does not conform to configuration.
@@ -193,11 +175,13 @@ if nMatchingOptions == 0
     ['Can not interpret command-line argument "%s". It is not a', ...
     ' permitted option header in this sequence of arguments.'], ...
     cliArgument)
+
 elseif nMatchingOptions >= 2
   % CASE: Configuration is bad (ill-defined).
   error('BICAS:Assertion', ...
     ['Can interpret CLI option in multiple ways, because the', ...
     ' interpretation of CLI arguments is badly configured.'])
+
 end
 
 
