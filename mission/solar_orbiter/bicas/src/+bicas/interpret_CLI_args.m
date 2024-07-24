@@ -109,10 +109,10 @@ CliData = [];
 %       effect).
 %       Ex: --set SETTING_NAME 0 --setting SETTING_NAME 1
 %============================================================================
-OptionValuesMap = bicas.utils.cli.parse_CLI_options(...
+CovcMap = bicas.utils.cli.parse_CLI_options(...
   cliArgumentsCa, COPC_ARRAY);
-CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
-  OptionValuesMap('MODIFIED_SETTINGS_OPTION_ID'));
+CliData.ModifiedSettingsMap = convert_modif_settings_COPVs_to_SettingsMap(...
+  CovcMap('MODIFIED_SETTINGS_OPTION_ID'));
 
 
 
@@ -127,7 +127,7 @@ CliData.SipMap = irf.ds.create_containers_Map(...
 
 
 
-sipOptionValues = OptionValuesMap('SIP_OPTION_ID');
+SipCovpArray = CovcMap('SIP_OPTION_ID');
 
 
 
@@ -135,11 +135,11 @@ sipOptionValues = OptionValuesMap('SIP_OPTION_ID');
 % {i, 1} = false/true
 % {i, 2} = BFM string constant
 LogicalBfmTable = {
-  ~isempty(OptionValuesMap('VERSION_OPTION_ID')),        'VERSION_BFM'; ...
-  ~isempty(OptionValuesMap('IDENTIFICATION_OPTION_ID')), 'IDENTIFICATION_BFM'; ...
-  ~isempty(OptionValuesMap('SWD_OPTION_ID')),            'SWD_BFM'; ...
-  ~isempty(OptionValuesMap('HELP_OPTION_ID')),           'HELP_BFM'; ...
-  ~isempty(OptionValuesMap('SWM_OPTION_ID')),            'SWM_BFM'};
+  ~isempty(CovcMap('VERSION_OPTION_ID')),        'VERSION_BFM'; ...
+  ~isempty(CovcMap('IDENTIFICATION_OPTION_ID')), 'IDENTIFICATION_BFM'; ...
+  ~isempty(CovcMap('SWD_OPTION_ID')),            'SWD_BFM'; ...
+  ~isempty(CovcMap('HELP_OPTION_ID')),           'HELP_BFM'; ...
+  ~isempty(CovcMap('SWM_OPTION_ID')),            'SWM_BFM'};
 assert(...
   sum([LogicalBfmTable{:,1}]) == 1, ...
   'BICAS:interpret_CLI_syntax:CLISyntax', ...
@@ -152,32 +152,30 @@ switch CliData.bfm
 
     CliData.swmArg = [];
     assert(...
-      isempty(sipOptionValues), ...
-      'Specified illegal specific input parameters.')
+      isempty(SipCovpArray), ...
+      'Specified illegal specific input parameters (SIP).')
 
   case 'SWM_BFM'
 
-    OptionValues = OptionValuesMap('SWM_OPTION_ID');
+    CopvArray = CovcMap('SWM_OPTION_ID');
 
     % ASSERTION
     % NOTE: Somewhat of a hack, since can not read out from using
     % bicas.utils.cli.parse_CLI_options where the SWM option is located
     % among the arguments. The code knows it should be somewhere.
-    if numel(OptionValues) ~= 1
+    if numel(CopvArray) ~= 1
       % Somewhat misleading error message. Hard to be accurate without
       % too much effort or by explaining the argument-parsing
       % algorithm to the user.
       error('BICAS:CLISyntax', 'Can not interpret argument(s).')
-    elseif OptionValues.iOptionHeaderCliArgument ~= 1
+    elseif CopvArray.iOptionHeaderCliArgument ~= 1
       error('BICAS:CLISyntax', ...
         ['First argument can not be interpreted as', ...
         ' a S/W mode as expected.'])
     end
 
-    CliData.swmArg = OptionValues.optionHeader;
-
-    CliData.SipMap = convert_SIP_OptionValues_2_Map(...
-      sipOptionValues);
+    CliData.swmArg = CopvArray.optionHeader;
+    CliData.SipMap = convert_SIP_COPVs_to_Map(SipCovpArray);
 
   otherwise
     error('BICAS:Assertion', 'Illegal CliData.bfm value.')
@@ -185,20 +183,22 @@ end
 
 
 
-temp = OptionValuesMap('ICD_LOG_FILE_OPTION_ID');
-if isempty(temp)   CliData.icdLogFile = [];
-else               CliData.icdLogFile = temp(end).optionValues{1};
+CovcArray = CovcMap('ICD_LOG_FILE_OPTION_ID');
+if isempty(CovcArray)   CliData.icdLogFile = [];
+else                    CliData.icdLogFile = CovcArray(end).optionValues{1};
 end
 
-temp = OptionValuesMap('MATLAB_LOG_FILE_OPTION_ID');
-if isempty(temp)   CliData.matlabLogFile = [];
-else               CliData.matlabLogFile = temp(end).optionValues{1};
+CovcArray = CovcMap('MATLAB_LOG_FILE_OPTION_ID');
+if isempty(CovcArray)   CliData.matlabLogFile = [];
+else                    CliData.matlabLogFile = CovcArray(end).optionValues{1};
 end
 
-temp = OptionValuesMap('CONFIG_FILE_OPTION_ID');
-if isempty(temp)   CliData.configFile = [];
-else               CliData.configFile = temp(end).optionValues{1};
+CovcArray = CovcMap('CONFIG_FILE_OPTION_ID');
+if isempty(CovcArray)   CliData.configFile = [];
+else                    CliData.configFile = CovcArray(end).optionValues{1};
 end
+
+
 
 irf.assert.struct(CliData, ...
   {'bfm', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
@@ -210,31 +210,29 @@ end
 
 
 % NOTE: Checks (assertion) for doubles.
-function Map = convert_SIP_OptionValues_2_Map(optionValues)
-Map = irf.ds.create_containers_Map('char', 'char', {}, {});
+function SipMap = convert_SIP_COPVs_to_Map(CopvArray)
+SipMap = irf.ds.create_containers_Map('char', 'char', {}, {});
 
-for iSip = 1:numel(optionValues)
-  %temp = optionValues{iSip}{1};
-  key = optionValues(iSip).optionHeader(3:end);
-  %key = temp(3:end);
-  if Map.isKey(key)
+for iSip = 1:numel(CopvArray)
+  key = CopvArray(iSip).optionHeader(3:end);
+  if SipMap.isKey(key)
     error('BICAS:CLISyntax', ...
       ['Specifying same specific input parameter (argument)', ...
       ' more than once.'])
   end
-  Map(key) = optionValues(iSip).optionValues{1};
+  SipMap(key) = CopvArray(iSip).optionValues{1};
 end
 end
 
 
 
 % NOTE: Deliberately does not check for doubles.
-function Map = convert_modif_settings_OptionValues_2_Map(optionValues)
-Map = irf.ds.create_containers_Map('char', 'char', {}, {});
+function SettingsMap = convert_modif_settings_COPVs_to_SettingsMap(CovcArray)
+SettingsMap = irf.ds.create_containers_Map('char', 'char', {}, {});
 
-for iSetting = 1:length(optionValues)
-  settingKey   = optionValues(iSetting).optionValues{1};
-  settingValue = optionValues(iSetting).optionValues{2};
-  Map(settingKey) = settingValue;
+for iSetting = 1:length(CovcArray)
+  settingKey   = CovcArray(iSetting).optionValues{1};
+  settingValue = CovcArray(iSetting).optionValues{2};
+  SettingsMap(settingKey) = settingValue;
 end
 end

@@ -48,18 +48,18 @@
 % =========
 % cliArgumentsCa
 %       Column cell array of strings representing a sequence of CLI arguments.
-% CliOptionConfigArray
-%       Column array of instances of class bicas.utils.cli.CliOptionConfig.
+% CopcArray
+%       Column array of instances of COPC.
 %
 %
 % RETURN VALUES
 % =============
-% OptionValuesMap
+% CopvMap
 %       containers.Map with
 %       <keys>
 %         Option ID.
 %       <values>
-%         Column array of instances of class bicas.utils.cli.CliOptionValue.
+%         Column array of instances of COPV.
 %       NOTE: From this one can always read out whether an option was found
 %       or not: even an option without option values contains a list of zero
 %       values.
@@ -70,44 +70,25 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-02, reworked 2017-02-09, reworked 2019-07-22.
 %
-function CliOptionValuesMap = parse_CLI_options(cliArgumentsCa, CliOptionConfigArray)
+function CopvMap = parse_CLI_options(cliArgumentsCa, CopcArray)
 %
 % PROPOSAL: Return some kind of help information to display proper user-friendly error message.
-% PROPOSAL: Return struct array, one index for every option header+values (combined).
-%   .index/.location : Number. Tells the order of (the groups of) arguments.
-%   .optionId      :
-%   .optionHeader  : String
-%   .optionValues  : Cell array of strings
-%   NOTE: Might want to sort/search by either .index or .optionId .
-%   Therefore not Map. When there are several occurrences, then one can use
-%   e.g. syntax
-%           s=struct('x', {1,3,2,3}, 'y', {9,8,7,6})
-%           xa = [s.x]; s(find(xa==3, 1, 'last')).y
-%   CON: Return format is harder to search through when searching.
-%       CON: Mostly/only when there are many occurrences.
 
 
 
 % ASSERTIONS: Check argument types, sizes.
 assert(iscell(cliArgumentsCa), 'cliArgumentsCa is not a cell array.')
 assert(iscolumn(cliArgumentsCa))
-assert(isa(CliOptionConfigArray, 'bicas.utils.cli.CliOptionConfig') & iscolumn(CliOptionConfigArray))
-irf.assert.castring_set({CliOptionConfigArray.optionId})
+assert(isa(CopcArray, 'bicas.utils.cli.CliOptionConfig') & iscolumn(CopcArray))
+irf.assert.castring_set({CopcArray.optionId})
 
 
 
-% Create CliOptionValuesMap:
-%       containers.Map with
-%       <Keys>
-%         Same as OptionsConfigMap
-%       <Values>
-%         Empty column array with instances of bicas.utils.cli.CliOptionValue.
-%         NOTE: Applies to both options with and without values!
-%
-CliOptionValuesMap = containers.Map;
-for iOption = 1:length(CliOptionConfigArray)
-  optionId = CliOptionConfigArray(iOption).optionId;
-  CliOptionValuesMap(optionId) = bicas.utils.cli.CliOptionValue.empty(0, 1);
+% Create CopvMap: containers.Map
+CopvMap = containers.Map;
+for iOption = 1:length(CopcArray)
+  optionId = CopcArray(iOption).optionId;
+  CopvMap(optionId) = bicas.utils.cli.CliOptionValue.empty(0, 1);
 end
 
 
@@ -117,8 +98,9 @@ end
 %====================================
 iCliArg = 1;
 while iCliArg <= length(cliArgumentsCa)
-  [CliOptionValuesMap, iCliArgLastValue] = try_interpret_option(...
-    cliArgumentsCa, iCliArg, CliOptionConfigArray, CliOptionValuesMap);
+  % NOTE: MODIFIES THE ARGUMENT "CopvMap" (handle object)!
+  iCliArgLastValue = try_interpret_option(...
+    cliArgumentsCa, iCliArg, CopcArray, CopvMap);
 
   iCliArg = iCliArgLastValue + 1;
 end   % while
@@ -128,35 +110,35 @@ end   % while
 %=====================================================
 % ASSERTION: Check that all required options were set
 %=====================================================
-for iOption = 1:length(CliOptionConfigArray)
-  optionId          = CliOptionConfigArray(iOption).optionId;
-  OptionConfig      = CliOptionConfigArray(iOption);
-  OptionValuesArray = CliOptionValuesMap(optionId);
+for iOption = 1:length(CopcArray)
+  optionId  = CopcArray(iOption).optionId;
+  Copc      = CopcArray(iOption);
+  CopvArray = CopvMap(optionId);
 
-  if strcmp(OptionConfig.occurrenceRequirement, '0-1')
+  if strcmp(Copc.occurrenceRequirement, '0-1')
 
-    if numel(OptionValuesArray) > 1
+    if numel(CopvArray) > 1
       error('BICAS:CLISyntax', ...
         'Found more than one occurrence of command-line option "%s".', ...
-        OptionConfig.optionHeaderRegexp)
+        Copc.optionHeaderRegexp)
     end
 
-  elseif strcmp(OptionConfig.occurrenceRequirement, '1')
+  elseif strcmp(Copc.occurrenceRequirement, '1')
 
-    if numel(OptionValuesArray) ~= 1
+    if numel(CopvArray) ~= 1
       error('BICAS:CLISyntax', ...
         ['Could not find required command-line option matching', ...
         ' regular expression "%s".'], ...
-        OptionConfig.optionHeaderRegexp)
+        Copc.optionHeaderRegexp)
     end
 
-  elseif strcmp(OptionConfig.occurrenceRequirement, '0-inf')
+  elseif strcmp(Copc.occurrenceRequirement, '0-inf')
     % Do nothing.
 
   else
     error('BICAS:Assertion', ...
       'Can not interpret OptionConfig.occurrenceRequirement="%s".', ...
-      OptionConfig.occurrenceRequirement)
+      Copc.occurrenceRequirement)
 
   end
 end
@@ -175,8 +157,13 @@ end
 % IMPLEMENTATION NOTE: Implemented as separate function to insulate the use of
 % variables.
 %
-function [OptionValuesMap, iCliArgLastValue] = try_interpret_option(...
-  cliArgumentsCa, iCliArg, OptionsConfigArray, OptionValuesMap)
+% ARGUMENTS
+% =========
+% CopvMap
+%     NOTE: MODIFIES THIS ARGUMENT (handle object).
+%
+function iCliArgLastValue = try_interpret_option(...
+  cliArgumentsCa, iCliArg, CopcArray, CopvMap)
 
 cliArgument = cliArgumentsCa{iCliArg};
 
@@ -185,11 +172,11 @@ cliArgument = cliArgumentsCa{iCliArg};
 %=========================================
 % NOTE: It is more convenient to work with arrays than maps here.
 iRegexpMatches  = find(irf.str.regexpf(...
-  cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
+  cliArgument, {CopcArray.optionHeaderRegexp}));
 
 % IP = Interpretation Priority
 % Array over regexp matches.
-ipArray = [OptionsConfigArray(iRegexpMatches).interprPriority];
+ipArray = [CopcArray(iRegexpMatches).interprPriority];
 ip      = max(ipArray);    % Scalar
 iMatch  = iRegexpMatches(ip == ipArray);
 
@@ -218,13 +205,13 @@ end
 %===========================================
 % CASE: There is exacly one matching option
 %===========================================
-optionId = OptionsConfigArray(iMatch).optionId;
+optionId = CopcArray(iMatch).optionId;
 
 % Store values for this option. (May be zero option values).
-OptionConfig = OptionsConfigArray(iMatch);
-OptionValues = OptionValuesMap(optionId);
+Copc      = CopcArray(iMatch);
+CopvArray = CopvMap(optionId);
 
-iCliArgLastValue = iCliArg + OptionConfig.nValues;
+iCliArgLastValue = iCliArg + Copc.nValues;
 % ASSERTION: Argument list does not conform to configuration.
 if iCliArgLastValue > length(cliArgumentsCa)
   error('BICAS:CLISyntax', ...
@@ -234,10 +221,11 @@ if iCliArgLastValue > length(cliArgumentsCa)
 end
 
 % Extract option values associated with the option header.
-OptionValues(end+1) = bicas.utils.cli.CliOptionValue(...
+CopvArray(end+1) = bicas.utils.cli.CliOptionValue(...
   iCliArg, ...
   cliArgumentsCa{iCliArg}, ...
   cliArgumentsCa(iCliArg+1:iCliArgLastValue, 1));
 
-OptionValuesMap(optionId) = OptionValues;
+% NOTE: MODIFIES THIS ARGUMENT (handle object).
+CopvMap(optionId) = CopvArray;
 end

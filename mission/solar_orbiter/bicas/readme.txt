@@ -129,6 +129,10 @@ CM3
 COHB
     CLI Option Header Body. The section of an CLI argument option/flag which
     excludes the prefix, e.g. "-" or "--". See bicas.utils.cli.parse_CLI_options().
+COPC
+    Class bicas.utils.cli.CliOptionConfig.
+COPV
+    Class bicas.utils.cli.CliOptionValue.
 CTI
     CALIBRATION_TABLE_INDEX (L1R zVariable).
 CTI2
