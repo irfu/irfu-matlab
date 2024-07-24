@@ -175,7 +175,7 @@ Version 8.1.0
   2024-05-05.
 
 
-Version x.x.x
+Version 8.2.0
 -------------
 * Uses zVariable compression used in master CDFs.
 * Requires new L2 master CDFs V15, updated for compliance with archiving

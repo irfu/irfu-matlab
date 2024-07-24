@@ -7,12 +7,12 @@
     "icd_version": "1.7"
   },
   "release": {
-    "version": "8.1.0",
-    "date": "2024-06-11T15:00:00Z",
+    "version": "8.2.0",
+    "date": "2024-07-25T11:00:00Z",
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "Require MATLAB R2024a (instead of R2019b); Non-Standard Operations (NSO) table for thruster firings updated for up until 2024-05-05",
+    "modification": "Updates for L2 dataset compliance, requiring new master CDFs (V15); Require RCT on new filenaming convention; Non-Standard Operations (NSO) table for thruster firings updated for up until 2024-05-19",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {
