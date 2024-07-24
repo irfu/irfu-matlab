@@ -70,7 +70,7 @@ classdef generate_official_SWD_file___UTEST < matlab.unittest.TestCase
 
 
 
-      if 0
+      if 1
         %================================================================
         % Compare generated SWD file with SWD file stored with BICAS (as
         % specified by RCS ICD).
