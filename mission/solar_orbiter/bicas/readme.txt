@@ -2,8 +2,6 @@
 #############
  About BICAS
 #############
-BICAS = BIAS Calibration Software
-
 This software, BICAS, is created for the calibration of the BIAS subsystem in
 the RPW instrument on the Solar Orbiter spacecraft. The principle author of
 this software is Erik P G Johansson, Swedish Institute of Space Physics (IRF),
@@ -28,10 +26,9 @@ see RCS ICD and RUM documents (see below).
 The naming conventions are partly inconsistent for historical reasons.
 The code should however converge on the following:
 - Use the defined abbreviations in identifiers.
-- Variables names: Should use camelCase.
-    - Variables containing structs or instances of classes: Should have an
-      uppercase initial.
-    - All other variables: Should use a lowercase initial.
+- Variables names: Should use camelCase/CamelCase.
+    - Structs, instances of classes: Uppercase initial.
+    - All other variables: Lowercase initial.
     - Exception: Variables which are direct analogues to zVariables are named
       as the corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of
       the time.
@@ -105,6 +102,8 @@ BIAS_1, ..., BIAS_5 (BIAS_i, i=1..5)
     the physical boundary between BIAS and LFR/TDS. Unit: Interface volt.
     Should be, and mostly is, replaced by BLTS+specified unit in
     the implementation.
+BICAS
+    BIAS Calibration Software
 BLTS = BIAS-LFR/TDS SIGNAL
     Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the
     BIAS demuxer including the BIAS transfer functions. Like BIAS_i, i=1..5,
@@ -143,7 +142,7 @@ Dataset (data set)
     various RPW teams. All CDF files in the context of BICAS are datasets,
     except for RCTs, where it is ambiguous.
 Deg
-    Degrees (angle). 1 revolution=360 degrees=2*pi radians.
+    Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
 DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
     of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",
@@ -157,10 +156,12 @@ DLR
 DSI, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
-    NOTE: DSI is defined by ROC, but the abbreviation "DSI" is defined by
-    BICAS. DSI does not formally exist in SolO outside RPW, though the same
-    string components (source+level+descriptor) can be used to define DSI
-    analogously for SolO datasets outside RPW.
+    NOTE: The concept of "dataset ID" is defined by RPW/ROC, but
+    the abbreviation "DSI" is defined by BICAS. DSI does not formally exist in
+    SolO outside RPW, though the SolO metadata standards define metadata and
+    filenames with components ("source"+"level"+"descriptor") which together are
+    identical to DSI for RPW datasets and can be used to define DSI analogously
+    for SolO datasets outside RPW.
     NOTE: Must be uppercase by definition (at least when used as string
     constants by BICAS), though DSIs are represented in lowercase in the
     official dataset file naming convention (except the "level"). Uppercase DSI
@@ -303,6 +304,9 @@ ROC Engineering Guidelines
     Engineering Guidelines for External Users"
 RPS
     Radians Per Second
+RPW
+    Radio and Plasma Waves instrument. Instrument on the Solar Orbiter
+    spacecraft.
 RSWF
     Regular Snapshot WafeForm. The term is used for TDS data, but is (at least
     for the purpose of BICAS) exactly the same as SWF.
@@ -343,6 +347,8 @@ SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not
     very clearly. (Defined by the RCS ICD.)
+    Stored as "descriptor.json" in the BICAS root directory (required by the RCS
+    ICD).
 SWF
     Snapshot WaveForm. Snapshot data. Cf. CWF.
 SWM, S/W mode
