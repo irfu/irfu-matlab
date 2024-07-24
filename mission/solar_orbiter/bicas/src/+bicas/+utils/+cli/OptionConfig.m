@@ -6,9 +6,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef CliOptionConfig
-  % PROPOSAL: Better name
-  %   PRO: "CLI" is unnecessary given the location in package "cli".
+classdef OptionConfig
 
 
 
@@ -59,7 +57,7 @@ classdef CliOptionConfig
 
 
 
-    function obj = CliOptionConfig(...
+    function obj = OptionConfig(...
         optionId, ...
         optionHeaderRegexp, occurrenceRequirement, nValues, interprPriority)
 

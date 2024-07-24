@@ -6,10 +6,8 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef CliOptionValue
+classdef OptionValue
   % PROPOSAL: Better name.
-  %   PRO: "CLI" is unnecessary given the location in package "cli".
-  %   PRO: Natural abbreviation "COV" (no yet used) is bad ("cover", "coverage").
   %   NOTE: Has also used term "option occurrence".
   %     ~Occurrence, finding
   %
@@ -43,7 +41,7 @@ classdef CliOptionValue
 
 
 
-    function obj = CliOptionValue(...
+    function obj = OptionValue(...
         iOptionHeaderCliArgument, optionHeader, optionValues)
 
       assert(isnumeric(iOptionHeaderCliArgument) && iOptionHeaderCliArgument >= 1)

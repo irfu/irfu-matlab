@@ -153,9 +153,9 @@ COHB
     excludes the prefix, e.g. "-" or "--".
     See bicas.utils.cli.parse_CLI_options().
 COPC
-    Class bicas.utils.cli.CliOptionConfig.
+    Class bicas.utils.cli.OptionConfig.
 COPV
-    Class bicas.utils.cli.CliOptionValue.
+    Class bicas.utils.cli.OptionValue.
 CTI
     CALIBRATION_TABLE_INDEX (L1R zVariable).
 CTI2

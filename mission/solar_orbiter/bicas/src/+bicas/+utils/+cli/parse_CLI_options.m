@@ -61,7 +61,7 @@ function CopvMap = parse_CLI_options(cliArgumentsCa, CopcArray)
 % ASSERTIONS: Check argument types, sizes.
 assert(iscell(cliArgumentsCa), 'cliArgumentsCa is not a cell array.')
 assert(iscolumn(cliArgumentsCa))
-assert(isa(CopcArray, 'bicas.utils.cli.CliOptionConfig') & iscolumn(CopcArray))
+assert(isa(CopcArray, 'bicas.utils.cli.OptionConfig') & iscolumn(CopcArray))
 irf.assert.castring_set({CopcArray.optionId})
 
 
@@ -70,7 +70,7 @@ irf.assert.castring_set({CopcArray.optionId})
 CopvMap = containers.Map;
 for iOption = 1:length(CopcArray)
   optionId = CopcArray(iOption).optionId;
-  CopvMap(optionId) = bicas.utils.cli.CliOptionValue.empty(0, 1);
+  CopvMap(optionId) = bicas.utils.cli.OptionValue.empty(0, 1);
 end
 
 
@@ -205,7 +205,7 @@ if iCliArgLastValue > length(cliArgumentsCa)
 end
 
 % Extract option values associated with the option header.
-CopvArray(end+1) = bicas.utils.cli.CliOptionValue(...
+CopvArray(end+1) = bicas.utils.cli.OptionValue(...
   iCliArg, ...
   cliArgumentsCa{iCliArg}, ...
   cliArgumentsCa(iCliArg+1:iCliArgLastValue, 1));
