@@ -196,3 +196,4 @@ Version x.x.x
 * Rename setting
   INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY
   -->INPUT_CDF.GA_PARENTS_MISMATCH_POLICY
+* Abolish unofficial --swdescriptor argument and mode.

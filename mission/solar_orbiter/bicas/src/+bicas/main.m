@@ -466,8 +466,8 @@ switch(CliData.bfmid)
   case 'IDENTIFICATION_BFM'
     print_identification(Swml, Bso)
 
-  case 'SWD_BFM'
-    print_SWD(Swml, Bso)
+  % case 'SWD_BFM'
+  %   print_SWD(Swml, Bso)
 
   case 'HELP_BFM'
     print_help(Bso)
@@ -637,21 +637,21 @@ end
 
 
 
-% Print the JSON S/W descriptor.
+% Print the JSON SWD.
 %
 % NOTE: Argument is *not* an instance of bicas.swm.SoftwareModeList.
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24
 %
-function print_SWD(Swml, Bso)
-
-JsonSwd = bicas.get_SWD(Swml.List);
-strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
-  Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
-bicas.stdout_print(strSwd);
-
-end
+% function print_SWD(Swml, Bso)
+%
+% JsonSwd = bicas.get_SWD(Swml.List);
+% strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
+%   Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+% bicas.stdout_print(strSwd);
+%
+% end
 
 
 

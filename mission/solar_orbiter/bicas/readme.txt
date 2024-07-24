@@ -443,7 +443,7 @@ ZVS
 #############################
 NOTE: The official CLI parameter syntax is defined in RCS ICD, Iss02 Rev02, Section 3.2.
 
-SYNTAX 1: ( --version | --identification | --swdescriptor | --help ) <General parameters>
+SYNTAX 1: ( --version | --identification | --help ) <General parameters>
 SYNTAX 2: <S/W mode> <General parameters, Output parameter, Specific inputs parameters>
 
 NOTE: In syntax 2, the position of the first arguments is important. The order
@@ -451,7 +451,6 @@ of all other (groups of) arguments is arbitrary.
 
 --version          Print the software version.
 --identification   Print the S/W descriptor release segment.
---swdescriptor     Print the S/W descriptor (not RCS ICD requirement).
 --help             Print "help-ish" text
 
 
