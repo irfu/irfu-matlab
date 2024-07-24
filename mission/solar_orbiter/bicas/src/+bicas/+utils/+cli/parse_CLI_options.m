@@ -63,7 +63,7 @@
 %       <keys>
 %         Option ID.
 %       <values>
-%         Array of class bicas.utils.cli.CliOptionValue.
+%         Column array of instances of class bicas.utils.cli.CliOptionValue.
 %       NOTE: From this one can always read out whether an option was found
 %       or not: even an option without option values contains a list of zero
 %       values.
@@ -77,9 +77,6 @@
 function OptionValuesMap = parse_CLI_options(cliArgumentsCa, OptionsConfigMap)
 %
 % PROPOSAL: Return some kind of help information to display proper user-friendly error message.
-% PROPOSAL: Somehow return the order/argument number/position of the arguments found.
-%   PRO: Can test for order, e.g. S/W mode must come first.
-%   PRO: Useful for printing/logging arguments, grouped by option?
 % PROPOSAL: Return struct array, one index for every option header+values (combined).
 %   .index/.location : Number. Tells the order of (the groups of) arguments.
 %   .optionId      :
@@ -130,24 +127,30 @@ for iOption = 1:length(OptionsConfigArray)
   optionValues = OptionValuesMap(optionId);
 
   if strcmp(OptionConfig.occurrenceRequirement, '0-1')
+
     if numel(optionValues) > 1
       error('BICAS:CLISyntax', ...
         'Found more than one occurrence of command-line option "%s".', ...
         OptionConfig.optionHeaderRegexp)
     end
+
   elseif strcmp(OptionConfig.occurrenceRequirement, '1')
+
     if numel(optionValues) ~= 1
       error('BICAS:CLISyntax', ...
         ['Could not find required command-line option matching', ...
         ' regular expression "%s".'], ...
         OptionConfig.optionHeaderRegexp)
     end
+
   elseif strcmp(OptionConfig.occurrenceRequirement, '0-inf')
     % Do nothing.
+
   else
     error('BICAS:Assertion', ...
-      'Can not interpret occurrenceRequirement="%s".', ...
+      'Can not interpret OptionConfig.occurrenceRequirement="%s".', ...
       OptionConfig.occurrenceRequirement)
+
   end
 end
 
@@ -159,8 +162,8 @@ end
 
 
 
-% Try interpret a specific argument as an option header, followed by option
-% values.
+% Try interpret a specific argument as an option header, followed by the
+% expected number of option values.
 %
 % IMPLEMENTATION NOTE: Implemented as separate function to insulate the use of
 % variables.
@@ -173,7 +176,7 @@ cliArgument = cliArgumentsCa{iCliArg};
 %=========================================
 % Search for a matching CLI option string
 %=========================================
-% NOTE: More convenient to work with arrays than maps here.
+% NOTE: It is more convenient to work with arrays than maps here.
 iRegexpMatches  = find(irf.str.regexpf(...
   cliArgument, {OptionsConfigArray.optionHeaderRegexp}));
 
@@ -197,7 +200,7 @@ if nMatchingOptions == 0
     ' permitted option header in this sequence of arguments.'], ...
     cliArgument)
 elseif nMatchingOptions >= 2
-  % CASE: Configuration is wrong.
+  % CASE: Configuration is bad (ill-defined).
   error('BICAS:Assertion', ...
     ['Can interpret CLI option in multiple ways, because the', ...
     ' interpretation of CLI arguments is badly configured.'])
@@ -205,7 +208,9 @@ end
 
 
 
-% CASE: There is exacly one matching option.
+%===========================================
+% CASE: There is exacly one matching option
+%===========================================
 optionId = OptionsConfigArray(iMatch).optionId;
 
 % Store values for this option. (May be zero option values).
@@ -222,9 +227,10 @@ if iCliArgLastValue > length(cliArgumentsCa)
 end
 
 % Extract option values associated with the option header.
-optionValuesCa = cliArgumentsCa(iCliArg+1:iCliArgLastValue, 1);
-assert(iscolumn(optionValuesCa))
-OptionValues(end+1) = bicas.utils.cli.CliOptionValue(iCliArg, cliArgumentsCa{iCliArg}, optionValuesCa);
+OptionValues(end+1) = bicas.utils.cli.CliOptionValue(...
+  iCliArg, ...
+  cliArgumentsCa{iCliArg}, ...
+  cliArgumentsCa(iCliArg+1:iCliArgLastValue, 1));
 
 OptionValuesMap(optionId) = OptionValues;
 end
@@ -240,7 +246,7 @@ end
 % RETURN VALUES
 % =============
 % OptionsConfigMapModifCopy
-%       Normalized deep copy of OptionsConfigMap.
+%       Normalized and modified (added .optionId) deep copy of OptionsConfigMap.
 % EmptyOptionValuesMap
 %       containers.Map with
 %       <Keys>
@@ -272,11 +278,6 @@ for iOption = 1:length(optionIdCa)
     {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, ...
     {'interprPriority'})
 
-  % Normalize ModifOptionConfig: Ensure there is always a "interprPriority".
-  % if ~isfield(ModifOptionConfig, 'interprPriority')
-  %   % Use priority default value.
-  %   ModifOptionConfig.interprPriority = 0;
-  % end
   % ASSERTION
   assert(isfinite(ModifOptionConfig.interprPriority))
 
