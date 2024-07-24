@@ -33,7 +33,7 @@ Bso.make_read_only();
 
 Swml    = bicas.swm.get_SWML(Bso);
 JsonSwd = bicas.get_SWD(Swml.List);
-strSwd  = bicas.utils.JSON_object_str(JsonSwd, Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+strSwd  = bicas.utils.JSON_object_str(JsonSwd);
 
 irf.fs.write_file(filePath, uint8(strSwd(:)))
 end

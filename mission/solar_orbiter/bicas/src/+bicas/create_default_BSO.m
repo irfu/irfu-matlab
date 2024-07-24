@@ -144,10 +144,6 @@ S.define_setting('MATLAB_COMMAND', '');
 %S.define_setting('STDOUT_PREFIX',               'STDOUT: ');
 % NOTE: Analogous LOG_PREFIX is hard-coded for safety.
 
-% Parameters influencing how JSON objects are printed with function
-% JSON_object_str.
-S.define_setting('JSON_OBJECT_STR.INDENT_SIZE', 4);
-
 % When logging contents of matrix/vector, maximum number of unique values
 % printed before switching to shorter representation (min-max range)
 S.define_setting('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED', 5);

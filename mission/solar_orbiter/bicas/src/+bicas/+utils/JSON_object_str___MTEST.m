@@ -6,6 +6,10 @@
 %
 function JSON_object_str___MTEST
 % PROPOSAL: Delete.
+%   CON: Useful for verifying BICAS's old implementation (obsoleted but only
+%        commented out).
+%   CON-PROPOSAL: Delete when deleting commented-out old implementation.
+%     NOTE: There is no automated test code.
 
 obj = define_descriptor1();
 str = bicas.utils.JSON_object_str(obj, 4);

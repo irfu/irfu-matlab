@@ -88,7 +88,7 @@ JsonObj(biasRctFilename) = { ...
   ) ...
 };
 
-str = bicas.utils.JSON_object_str(JsonObj, 4);
+str = bicas.utils.JSON_object_str(JsonObj);
 %fprintf(str);    % DEBUG
 
 rctJsonPath = fullfile(destDir, RCT_JSON_FILENAME);

@@ -611,8 +611,7 @@ JsonSwd = bicas.get_SWD(Swml.List);
 JsonVersion = [];
 JsonVersion.version = JsonSwd.release.version;
 
-strVersion = bicas.utils.JSON_object_str(JsonVersion, ...
-  Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+strVersion = bicas.utils.JSON_object_str(JsonVersion);
 bicas.stdout_print(strVersion);
 end
 
@@ -628,8 +627,7 @@ end
 function print_identification(Swml, Bso)
 
 JsonSwd = bicas.get_SWD(Swml.List);
-strSwd = bicas.utils.JSON_object_str(JsonSwd.identification, ...
-  Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
+strSwd = bicas.utils.JSON_object_str(JsonSwd.identification);
 bicas.stdout_print(strSwd);
 
 end
