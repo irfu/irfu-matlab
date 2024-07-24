@@ -120,7 +120,7 @@ Version 7.0.0
 
 Version 8.0.0
 -------------
-* Changed setting names:
+* Renamed settings:
       PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN
   --> PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN
       SW_MODES.L2-L2_CWF-DWNS_ENABLED
@@ -177,7 +177,7 @@ Version 8.1.0
 
 Version x.x.x
 -------------
-* Use zVariable compression used in master CDFs.
+* Uses zVariable compression used in master CDFs.
 * Requires new L2 master CDFs V15, updated for compliance with archiving
   conventions. Some code updates for the same reason:
   * Correctly(?) setting TIME_MIN/TIME_MAX.
@@ -188,13 +188,13 @@ Version x.x.x
   value for setting PROCESSING.RCT_REGEXP.BIAS.
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2024-05-19, and previously missing thruster firing for 2024-04-11.
-* Produce datasets using CDF version 3.9.0.
-* Removes obsoleted settings:
+* Produces datasets using CDF version 3.9.0.
+* Removed obsoleted settings:
   OUTPUT_CDF.GA_MODS_ENABLED
   OUTPUT_CDF.WRITE_FILE_DISABLED
   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE
   JSON_OBJECT_STR.INDENT_SIZE
-* Rename setting
-  INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY
+* Renamed setting:
+     INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY
   -->INPUT_CDF.GA_PARENTS_MISMATCH_POLICY
-* Abolish unofficial --swdescriptor argument and mode.
+* Abolishes the unofficial --swdescriptor argument and mode.

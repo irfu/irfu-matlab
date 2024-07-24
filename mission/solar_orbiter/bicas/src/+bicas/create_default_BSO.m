@@ -72,6 +72,7 @@ function Bso = create_default_BSO()
 % =========================
 % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
 % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
+%   PROPOSAL: OUTPUT_CDF.ALL
 %
 % PROPOSAL: Use naming convention for settings keys for testing ONLY:
 %

@@ -292,6 +292,8 @@ classdef const
       % IMPLEMENTATION NOTE: Using a nested function merely to keep the
       % function call short.
       function ErrorTypeInfo = init_struct(errorCode, errorDescription)
+        % PROPOSAL: Replace with class.
+
         ErrorTypeInfo = struct(...
           'errorCode',   errorCode, ...
           'description', errorDescription);
@@ -336,21 +338,20 @@ classdef const
       % """"""""
       %
       %  ROC-PRO-PIP-ICD-00037-LES, "RPW Calibration Software Interface
-      %  Control Document", 01/04:
+      %  Control Document", 01/07:
       % """"""""
-      % "version" : Current version of the S/W. The RCS version shall be a
-      % unique number sequence identifier “X.Y.Z”, where “X” is an integer
-      % indicating the release (major changes, not necessarily
-      % retro-compatible), “Y” is an integer indicating the issue (minor
-      % changes, necessarily retro-compatible) and “Z” is an integer
-      % indicating a revision (e.g., bug correction). The first stable
-      % release of software (S/W) must have its major number “X” equals to
-      % 1, its minor number “Y” equals to 0 and its revision number “Z”
-      % equals to 0 (i.e., “1.0.0”). S/W preliminary versions (e.g.,
-      % alpha, beta, etc.) must have their version number “X” equals to 0
-      % and must not have a character as a prefix/suffix (“0.Y.Zb” for the
-      % 0.Y.Z beta version for instance). In all cases, any change in the
-      % S/W must lead to update the version number.
+      % "version": Current version of the S/W. The RCS version shall be a unique
+      % number sequence identifier “X.Y.Z”, where “X” is an integer indicating
+      % the release (major changes, not necessarily retro-compatible), “Y” is an
+      % integer indicating the issue (minor changes, necessarily
+      % retro-compatible) and “Z” is an integer indicating a revision (e.g., bug
+      % correction). The first stable release of software (S/W) must have its
+      % major number “X” equals to 1, its minor number “Y” equals to 0 and its
+      % revision number “Z” equals to 0 (i.e., “1.0.0”). S/W preliminary
+      % versions (e.g., alpha, beta, etc.) must have their version number “X”
+      % equals to 0 and must not have a character as a prefix/suffix (“0.Y.Zb”
+      % for the 0.Y.Z beta version for instance). In all cases, any change in
+      % the S/W must lead to update the version number.
       % """"""""
       MAP('SWD.release.version')            = '8.1.0';
       MAP('SWD.release.date')               = '2024-06-11T15:00:00Z';
