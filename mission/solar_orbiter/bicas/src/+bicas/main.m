@@ -389,7 +389,7 @@ L.logf('info', '\n\n')
 %========================================
 % Initialize global settings & constants
 %========================================
-Bso  = bicas.create_default_BSO();
+Bso = bicas.create_default_BSO();
 
 
 
@@ -408,7 +408,7 @@ if ~isempty(CliData.matlabLogFile)
   % writing to log file.
   L.set_log_file(CliData.matlabLogFile);
 else
-  % There should be no log file, (generated from within MATLAB).
+  % There should be no log file (that is generated from within MATLAB).
   L.set_log_file([]);
 end
 
@@ -442,8 +442,7 @@ Bso.override_values_from_strings(...
 
 
 Bso.make_read_only();
-% CASE: BSO has now been finalized and is read-only (by assertion)
-% after this.
+% CASE: BSO has now been finalized and is read-only (by assertion) after this.
 
 
 
@@ -639,10 +638,8 @@ end
 
 % Print the JSON SWD.
 %
-% NOTE: Argument is *not* an instance of bicas.swm.SoftwareModeList.
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2016-06-07/2019-09-24
+% First created 2016-06-07/2019-09-24.
 %
 % function print_SWD(Swml, Bso)
 %

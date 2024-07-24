@@ -92,7 +92,7 @@ BDM, "mux mode"
     not in the interface.
 BFM
     BICAS Functionality Mode. One of the basic modes of BICAS operations:
-    Print version, print identifiction, print version, print help, or process
+    Print version, print identifiction, print help, or process
     datasets. Exactly one of these must apply every time BICAS is run.
 BFMID
     String constant which uniquely represents a particular BFM.

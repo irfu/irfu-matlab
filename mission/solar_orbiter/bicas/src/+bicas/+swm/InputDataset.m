@@ -7,11 +7,13 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef InputDataset
-  % PROPOSAL: Rename to not be same as bicas.InputDataset.
+  % PROPOSAL: Rename to not be same as bicas.InputDataset and bicas.OutputDataset.
   %   InputSwmDataset
   %       CON: SWM already in path (MATLAB package name).
   %   InputMetadataDataset, InputDatasetMetadata
   %       CON: 2x "data"
+  % PROPOSAL: Use abbreviations which are different from bicas.InputDataset
+  %           abbrevations.
 
 
 

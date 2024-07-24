@@ -1,9 +1,11 @@
 %
-% Informal non-automated test code.
+% Informal manual test code.
 %
-% NOTE: Example s/w descriptor is outdated, but that does not really matter.
+% NOTE: The example s/w descriptor is outdated, but that does not really matter
+% for the purpose of manually testing the JSON format.
 %
 function JSON_object_str___MTEST
+% PROPOSAL: Delete.
 
 obj = define_descriptor1();
 str = bicas.utils.JSON_object_str(obj, 4);

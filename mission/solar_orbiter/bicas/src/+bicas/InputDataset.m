@@ -12,11 +12,13 @@ classdef InputDataset
   %           creating modified copy of class instance.
   %
   % PROPOSAL: Use abbreviation for bicas.InputDataset and bicas.OutputDataset.
-  %   NOTE: Should be consistent
-  %     PROPOSAL: DS=DataSet
-  %       PRO: Consistent with DSI=DataSet ID
-  %     IDS, ODS
-  %     IPDS, OPDS
+  %   NOTE: Be consistent with bicas.swm.InputDataset, bicas.swm.OutputDataset.
+  %   PROPOSAL: DS=DataSet
+  %     PRO: Consistent with DSI=DataSet ID
+  %   IDS, ODS
+  %   IPDS, OPDS
+  %   SIDS = SWM Input DataSet = bicas.swm.InputDataset
+  %     NOTE: Unclear what should replace SWM for bicas.InputDataset
 
 
 

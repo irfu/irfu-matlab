@@ -9,9 +9,14 @@
 % SWM.L2-L2_CWF-DSR_ENABLED, SWM.L2-L3_ENABLED),
 %
 %
+% NOTE: The SWD file should ideally also be validated against the RCS ICD SWD
+%       validation schema.
+%
+%
 % ARGUMENTS
 % =========
 % filePath
+%       Optional. If not specified, use <BICAS root dir.>/descriptor.json .
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

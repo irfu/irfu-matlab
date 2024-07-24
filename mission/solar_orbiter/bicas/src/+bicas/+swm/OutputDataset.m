@@ -1,13 +1,14 @@
 %
 % Class that stores metadata for one SWD output dataset.
 %
+% NOTE: Not to be confused with bicas.OutputDataset
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef OutputDataset
   % PROPOSAL: Rename
-  %   OutputMetadataDataset, OutputDatasetMetadata
-  %       CON: 2x "data"
+  %   See bicas.swm.InputDataset comments.
 
 
 
