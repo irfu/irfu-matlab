@@ -33,6 +33,12 @@ classdef utils
 
 
 
+    function swdFilePath = get_SWD_file_path()
+      swdFilePath = fullfile(bicas.utils.get_BICAS_root_path(), 'descriptor.json');
+    end
+
+
+
     % Whether two sets (arrays) of arbitrary objects are set equal.
     %
     % NOTE: Compare objects, not handles. NaN == NaN.

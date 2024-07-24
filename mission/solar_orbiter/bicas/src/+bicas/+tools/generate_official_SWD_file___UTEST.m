@@ -59,8 +59,8 @@ classdef generate_official_SWD_file___UTEST < matlab.unittest.TestCase
       %==========================
       % Test generating SWF file
       %==========================
-      officialSwdFile = fullfile(bicas.utils.get_BICAS_root_path(), 'descriptor.json');
-      testSwdFile     = fullfile(testCase.testDir,                  'descriptor.json');
+      officialSwdFile = bicas.utils.get_SWD_file_path();
+      testSwdFile     = fullfile(testCase.testDir, 'descriptor.json');
 
       bicas.tools.generate_official_SWD_file(testSwdFile)
 
