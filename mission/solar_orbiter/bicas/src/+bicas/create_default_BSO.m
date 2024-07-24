@@ -278,6 +278,16 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1
 % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
 S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
 
+% Permitted CDF versions as a reg.expr.. Entire CDF version string must match
+% the reg.expr..
+% CDF format version 3.9 is required by ROC (Solo?). /2024-07-24
+%
+% NOTE: If irfu-matlab and BICAS (as delivered to ROC) use different CDF format
+% versions, then BICAS should be called in irfu-matlab in such a way that this
+% setting is overriden. (The default value should be what is required by
+% ROC/SolO, as with all other settings.)
+S.define_setting('OUTPUT_CDF.FORMAT_VERSION_REGEXP', '3\.9\.[0-9]+')
+
 
 
 %##############

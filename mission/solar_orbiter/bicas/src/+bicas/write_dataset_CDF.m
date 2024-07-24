@@ -90,6 +90,34 @@ DataObj = init_modify_dataobj(...
 %=====================================
 write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
 
+
+
+%====================================
+% Assert expected CDF format version
+%====================================
+% IMPLEMENTATION NOTE: There does not seem to be a way of checking this without
+% reading a CDF file. Also, this check would make a bad automated test since
+% BICAS is developed in irfu-matlab, which may have one CDF format version,
+% while the officially compliant may use another CDF format version.
+CdfMetadata = spdfcdfinfo(outputFile);
+
+% spdfcdfinfo help text:
+%   FormatVersion        A string containing the version of the CDF
+%                        library used to create the file
+CdfVersion       = CdfMetadata.FormatVersion;
+CdfVersionRegexp = Bso.get_fv('OUTPUT_CDF.FORMAT_VERSION_REGEXP');
+
+L.logf('info', 'Output dataset CDF format version: %s', CdfVersion)
+
+if isempty(regexp(CdfVersion, ['^', CdfVersionRegexp, '$'], 'once'))
+  error( ...
+    'BICAS:IllegalOutputCdfFormatVersion', ...
+    ['Generated file "%s" has CDF format version "%s" which incompatible', ...
+    ' with the permitted CDF format version in regular expression "%s"', ...
+    ' (setting OUTPUT_CDF.FORMAT_VERSION_REGEXP).'], ...
+    outputFile, CdfVersion, CdfVersionRegexp)
+end
+
 end
 
 
