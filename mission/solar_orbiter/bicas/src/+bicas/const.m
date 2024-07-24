@@ -308,7 +308,7 @@ classdef const
         ' electric L1R LFR and TDS-LFM data, and', ...
         ' (2) calibrate bias currents from L1R data.', ...
         ' Also has undocumented support for processing', ...
-        ' L1 (not L1R) to L2, and BIAS L2 to L3 data', ...
+        ' L1 (instead of L1R) to L2, and BIAS L2 to L3 data', ...
         ' (both disabled by default).'];
 
       % 2024-07-12: Latest RCS ICD version is 01/07
@@ -346,7 +346,7 @@ classdef const
       MAP('SWD.release.version')            = '8.1.0';
       MAP('SWD.release.date')               = '2024-06-11T15:00:00Z';
       MAP('SWD.release.author')             = 'Erik P G Johansson, BIAS team, IRF';
-      MAP('SWD.release.contact')            = 'erjo@irf.se';
+      MAP('SWD.release.contact')            = 'erik.johansson@irf.se';
       MAP('SWD.release.institute')          = IRF_LONG_NAME;   % Full name or abbreviation?
       % 'Various updates and refactoring; close to complete support for
       % LFR & TDS datasets (but untested); Removed ROC-SGSE_* dataset
