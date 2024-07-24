@@ -100,7 +100,7 @@ CliData = [];
 % Extract the modified settings from the unofficial CLI arguments
 % ---------------------------------------------------------------
 % IMPLEMENTATION NOTE: CliSettingsVsMap corresponds to one definition of ONE
-% option (in the meaning of bicas.utils.parse_CLI_options) and is filled with
+% option (in the meaning of bicas.utils.cli.parse_CLI_options) and is filled with
 % the corresponding option values in the order of the CLI arguments.
 %   ==> A later occurrence of an option with the same first option
 %       value, overwrites previous occurrences of the option with the same
@@ -108,7 +108,7 @@ CliData = [];
 %       effect).
 %       Ex: --set SETTING_NAME 0 --setting SETTING_NAME 1
 %============================================================================
-OptionValuesMap = bicas.utils.parse_CLI_options(...
+OptionValuesMap = bicas.utils.cli.parse_CLI_options(...
   cliArgumentsCa, OPTIONS_CONFIG_MAP);
 CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
   OptionValuesMap('MODIFIED_SETTINGS_OPTION_ID'));
@@ -160,7 +160,7 @@ switch CliData.bfm
 
     % ASSERTION
     % NOTE: Somewhat of a hack, since can not read out from using
-    % bicas.utils.parse_CLI_options where the SWM option is located
+    % bicas.utils.cli.parse_CLI_options where the SWM option is located
     % among the arguments. The code knows it should be somewhere.
     if numel(OptionValues) ~= 1
       % Somewhat misleading error message. Hard to be accurate without

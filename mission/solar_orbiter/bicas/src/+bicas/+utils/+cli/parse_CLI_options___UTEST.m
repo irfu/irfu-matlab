@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.utils.parse_CLI_options().
+% matlab.unittest automatic test code for bicas.utils.cli.parse_CLI_options().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -27,7 +27,7 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
 
         ExpOptionValuesMap = containers.Map(outputMapKeys, outputMapValues);
 
-        ActOptionValuesMap = bicas.utils.parse_CLI_options(...
+        ActOptionValuesMap = bicas.utils.cli.parse_CLI_options(...
           cliArgumentsCa, OptionsConfigMap);
 
         testCase.assertEqual(ActOptionValuesMap, ExpOptionValuesMap)
@@ -41,14 +41,14 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
         cliArgumentsCa = strsplit(inputStr)';
 
         testCase.assertError(...
-          @() bicas.utils.parse_CLI_options(...
+          @() bicas.utils.cli.parse_CLI_options(...
           cliArgumentsCa, OptionsConfigMap), ...
           ?MException)
       end
 
       %===================================================================
-      import bicas.utils.parse_CLI_options___UTEST.ocme
-      import bicas.utils.parse_CLI_options___UTEST.oo
+      import bicas.utils.cli.parse_CLI_options___UTEST.ocme
+      import bicas.utils.cli.parse_CLI_options___UTEST.oo
 
 
 
