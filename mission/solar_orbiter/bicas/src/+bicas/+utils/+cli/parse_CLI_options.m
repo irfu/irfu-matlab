@@ -48,12 +48,8 @@
 % =========
 % cliArgumentsCa
 %       Column cell array of strings representing a sequence of CLI arguments.
-% OptionsConfigMap
-%       containers.Map
-%       <keys>
-%           Option ID.
-%       <values>
-%           One instance of class bicas.utils.cli.CliOptionConfig.
+% CliOptionConfigArray
+%       Column array of instances of class bicas.utils.cli.CliOptionConfig.
 %
 %
 % RETURN VALUES
@@ -74,7 +70,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-02, reworked 2017-02-09, reworked 2019-07-22.
 %
-function OptionValuesMap = parse_CLI_options(cliArgumentsCa, OptionsConfigMap)
+function CliOptionValuesMap = parse_CLI_options(cliArgumentsCa, CliOptionConfigArray)
 %
 % PROPOSAL: Return some kind of help information to display proper user-friendly error message.
 % PROPOSAL: Return struct array, one index for every option header+values (combined).
@@ -95,13 +91,24 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsCa, OptionsConfigMap)
 % ASSERTIONS: Check argument types, sizes.
 assert(iscell(cliArgumentsCa), 'cliArgumentsCa is not a cell array.')
 assert(iscolumn(cliArgumentsCa))
-assert(isa(OptionsConfigMap, 'containers.Map'))
+assert(isa(CliOptionConfigArray, 'bicas.utils.cli.CliOptionConfig') & iscolumn(CliOptionConfigArray))
+irf.assert.castring_set({CliOptionConfigArray.optionId})
 
 
 
-[OptionsConfigMap, OptionValuesMap] = init_assert(OptionsConfigMap);
-% Convert to struct array (NOT cell array of structs).
-OptionsConfigArray = cellfun(@(x) (x), OptionsConfigMap.values);
+% Create CliOptionValuesMap:
+%       containers.Map with
+%       <Keys>
+%         Same as OptionsConfigMap
+%       <Values>
+%         Empty column array with instances of bicas.utils.cli.CliOptionValue.
+%         NOTE: Applies to both options with and without values!
+%
+CliOptionValuesMap = containers.Map;
+for iOption = 1:length(CliOptionConfigArray)
+  optionId = CliOptionConfigArray(iOption).optionId;
+  CliOptionValuesMap(optionId) = bicas.utils.cli.CliOptionValue.empty(0, 1);
+end
 
 
 
@@ -110,8 +117,8 @@ OptionsConfigArray = cellfun(@(x) (x), OptionsConfigMap.values);
 %====================================
 iCliArg = 1;
 while iCliArg <= length(cliArgumentsCa)
-  [OptionValuesMap, iCliArgLastValue] = try_interpret_option(...
-    cliArgumentsCa, iCliArg, OptionsConfigArray, OptionValuesMap);
+  [CliOptionValuesMap, iCliArgLastValue] = try_interpret_option(...
+    cliArgumentsCa, iCliArg, CliOptionConfigArray, CliOptionValuesMap);
 
   iCliArg = iCliArgLastValue + 1;
 end   % while
@@ -121,14 +128,14 @@ end   % while
 %=====================================================
 % ASSERTION: Check that all required options were set
 %=====================================================
-for iOption = 1:length(OptionsConfigArray)
-  optionId     = OptionsConfigArray(iOption).optionId;
-  OptionConfig = OptionsConfigMap(optionId);
-  optionValues = OptionValuesMap(optionId);
+for iOption = 1:length(CliOptionConfigArray)
+  optionId          = CliOptionConfigArray(iOption).optionId;
+  OptionConfig      = CliOptionConfigArray(iOption);
+  OptionValuesArray = CliOptionValuesMap(optionId);
 
   if strcmp(OptionConfig.occurrenceRequirement, '0-1')
 
-    if numel(optionValues) > 1
+    if numel(OptionValuesArray) > 1
       error('BICAS:CLISyntax', ...
         'Found more than one occurrence of command-line option "%s".', ...
         OptionConfig.optionHeaderRegexp)
@@ -136,7 +143,7 @@ for iOption = 1:length(OptionsConfigArray)
 
   elseif strcmp(OptionConfig.occurrenceRequirement, '1')
 
-    if numel(optionValues) ~= 1
+    if numel(OptionValuesArray) ~= 1
       error('BICAS:CLISyntax', ...
         ['Could not find required command-line option matching', ...
         ' regular expression "%s".'], ...
@@ -233,63 +240,4 @@ OptionValues(end+1) = bicas.utils.cli.CliOptionValue(...
   cliArgumentsCa(iCliArg+1:iCliArgLastValue, 1));
 
 OptionValuesMap(optionId) = OptionValues;
-end
-
-
-
-
-
-
-
-% Various initializations and assertions.
-%
-% RETURN VALUES
-% =============
-% OptionsConfigMapModifCopy
-%       Normalized and modified (added .optionId) deep copy of OptionsConfigMap.
-% EmptyOptionValuesMap
-%       containers.Map with
-%       <Keys>
-%         Same as OptionsConfigMap
-%       <Values>
-%         Empty struct array with pre-defined fields.
-%         NOTE: Applies to both options with and without values!
-%
-function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(...
-  OptionsConfigMap)
-
-% Copy filled with modified OptionsValuesMap.
-EmptyOptionValuesMap      = containers.Map;
-OptionsConfigMapModifCopy = containers.Map;
-
-% List to iterate over map.
-optionIdCa                = OptionsConfigMap.keys;
-for iOption = 1:length(optionIdCa)
-  optionId = optionIdCa{iOption};
-
-  %===============================
-  % Set OptionsConfigMapModifCopy
-  %===============================
-  assert(isa(OptionsConfigMap(optionId), 'bicas.utils.cli.CliOptionConfig'))
-  ModifOptionConfig = struct(OptionsConfigMap(optionId));
-
-  % ASSERTION: OptionConfig is the right struct.
-  irf.assert.struct(ModifOptionConfig, ...
-    {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, ...
-    {'interprPriority'})
-
-  % ASSERTION
-  assert(isfinite(ModifOptionConfig.interprPriority))
-
-  % Add .optionId
-  ModifOptionConfig.optionId          = optionId;
-
-  OptionsConfigMapModifCopy(optionId) = ModifOptionConfig;
-
-  %==========================
-  % Set EmptyOptionValuesMap
-  %==========================
-  EmptyOptionValuesMap(optionId) = bicas.utils.cli.CliOptionValue.empty(0, 1);
-end
-
 end

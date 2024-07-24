@@ -20,6 +20,10 @@ classdef CliOptionConfig
   %#####################
   %#####################
   properties(SetAccess=immutable)
+    % String constant which uniquely represents the definition of this
+    % particular option among other options used simultaneously.
+    optionId
+
     % The option header, including any prefix (e.g. dash) expressed as a
     % regular expression.
     optionHeaderRegexp
@@ -58,13 +62,16 @@ classdef CliOptionConfig
 
 
     function obj = CliOptionConfig(...
+        optionId, ...
         optionHeaderRegexp, occurrenceRequirement, nValues, interprPriority)
 
+      irf.assert.castring(optionId)
       irf.assert.castring(optionHeaderRegexp)
       irf.assert.castring(occurrenceRequirement)
       assert(isnumeric(nValues) && nValues >= 0)
-      assert(isnumeric(interprPriority))
+      assert(isnumeric(interprPriority) && isfinite(interprPriority))
 
+      obj.optionId              = optionId;
       obj.optionHeaderRegexp    = optionHeaderRegexp;
       obj.occurrenceRequirement = occurrenceRequirement;
       obj.nValues               = nValues;
