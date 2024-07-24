@@ -84,17 +84,15 @@
 %       <keys>
 %           Option ID.
 %       <values>
-%           Cell array of cell arrays of option values,
-%           {iOptionOccurrence}{iValue}.
-%           iValue = 1..(nValues+1), where iValue==1 corresponds to the exact
-%           option header found (can vary because of regular expressions).
-%           NOTE: From this one can always read out whether an option was found
-%           or not: even an option without option values contains a list of zero
-%           values.
-%           NOTE: Can read out the order of occurrence, e.g. for having a later
-%           occurrence override a preceding one.
-%           NOTE: An option occurrence with zero values has a 1x0 cell array
-%           (not 0x0).
+%           Array of struct:
+%             .iOptionHeaderCliArgument
+%             .optionHeader
+%             .optionValues
+%         NOTE: From this one can always read out whether an option was found
+%         or not: even an option without option values contains a list of zero
+%         values.
+%         NOTE: Can read out the order of occurrence, e.g. for having a later
+%         occurrence override a preceding one.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -248,7 +246,6 @@ if iCliArgLastValue > length(cliArgumentsCa)
 end
 
 % Extract option values associated with the option header.
-%optionValues{end+1} = cliArgumentsCa(iCliArg:iCliArgLastValue);
 optionValuesCa = cliArgumentsCa(iCliArg+1:iCliArgLastValue, 1);
 assert(iscolumn(optionValuesCa))
 OptionValues(end+1) = struct(...
