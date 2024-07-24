@@ -14,7 +14,7 @@
 % ============
 % CliData
 %       Struct with fields:
-%       .bfm                 : String constant
+%       .bfmid               : String constant
 %       .swmArg              : String constant
 %       .icdLogFile          : Empty if argument not given.
 %       .matlabLogFile       : Empty if argument not given.
@@ -122,22 +122,22 @@ CliData.ModifiedSettingsMap = convert_modif_settings_COPVs_to_SettingsMap(...
 
 % Convert presence of BFM flag (mutually exclusive) into the correct constant.
 % {i, 1} = false/true
-% {i, 2} = BFM string constant
-LogicalBfmTable = {
+% {i, 2} = BFMID
+LogicalBfmidTable = {
   ~isempty(CovcMap('VERSION_OPTION_ID')),        'VERSION_BFM'; ...
   ~isempty(CovcMap('IDENTIFICATION_OPTION_ID')), 'IDENTIFICATION_BFM'; ...
   ~isempty(CovcMap('SWD_OPTION_ID')),            'SWD_BFM'; ...
   ~isempty(CovcMap('HELP_OPTION_ID')),           'HELP_BFM'; ...
   ~isempty(CovcMap('SWM_OPTION_ID')),            'SWM_BFM'};
 assert(...
-  sum([LogicalBfmTable{:,1}]) == 1, ...
+  sum([LogicalBfmidTable{:,1}]) == 1, ...
   'BICAS:interpret_CLI_syntax:CLISyntax', ...
   'Illegal combination of arguments.')
-CliData.bfm = LogicalBfmTable{[LogicalBfmTable{:, 1}], 2};
+CliData.bfmid = LogicalBfmidTable{[LogicalBfmidTable{:, 1}], 2};
 
 SipCovpArray = CovcMap('SIP_OPTION_ID');
 
-switch CliData.bfm
+switch CliData.bfmid
 
   case {'VERSION_BFM', 'IDENTIFICATION_BFM', 'SWD_BFM', 'HELP_BFM'}
 
@@ -170,7 +170,7 @@ switch CliData.bfm
     CliData.SipMap = convert_SIP_COPVs_to_Map(SipCovpArray);
 
   otherwise
-    error('BICAS:Assertion', 'Illegal CliData.bfm value.')
+    error('BICAS:Assertion', 'Illegal CliData.bfmid value.')
 end
 
 
@@ -193,7 +193,7 @@ end
 
 
 irf.assert.struct(CliData, ...
-  {'bfm', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
+  {'bfmid', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
   'configFile', 'SipMap', ...
   'ModifiedSettingsMap'}, {})
 

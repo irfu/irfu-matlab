@@ -94,6 +94,8 @@ BFM
     BICAS Functionality Mode. One of the basic modes of BICAS operations:
     Print version, print identifiction, print version, print help, or process
     datasets. Exactly one of these must apply every time BICAS is run.
+BFMID
+    String constant which uniquely represents a particular BFM.
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
     Specification".
