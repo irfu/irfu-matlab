@@ -10,9 +10,6 @@ classdef OptionValue
   % PROPOSAL: Better name.
   %   NOTE: Has also used term "option occurrence".
   %     ~Occurrence, finding
-  %
-  % PROPOSAL: Rename optionValues --> optionValuesCa
-  %   PRO: Is CA.
 
 
 
@@ -27,7 +24,7 @@ classdef OptionValue
     iOptionHeaderCliArgument
 
     optionHeader
-    optionValues
+    optionValuesCa
   end
 
 
@@ -42,15 +39,15 @@ classdef OptionValue
 
 
     function obj = OptionValue(...
-        iOptionHeaderCliArgument, optionHeader, optionValues)
+        iOptionHeaderCliArgument, optionHeader, optionValuesCa)
 
       assert(isnumeric(iOptionHeaderCliArgument) && iOptionHeaderCliArgument >= 1)
       irf.assert.castring(optionHeader)
-      assert(iscell(optionValues) & iscolumn(optionValues))
+      assert(iscell(optionValuesCa) & iscolumn(optionValuesCa))
 
       obj.iOptionHeaderCliArgument = iOptionHeaderCliArgument;
       obj.optionHeader             = optionHeader;
-      obj.optionValues             = optionValues;
+      obj.optionValuesCa           = optionValuesCa;
     end
 
 

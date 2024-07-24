@@ -177,17 +177,17 @@ end
 
 CovcArray = CovcMap('ICD_LOG_FILE_OPTION_ID');
 if isempty(CovcArray)   CliData.icdLogFile = [];
-else                    CliData.icdLogFile = CovcArray(end).optionValues{1};
+else                    CliData.icdLogFile = CovcArray(end).optionValuesCa{1};
 end
 
 CovcArray = CovcMap('MATLAB_LOG_FILE_OPTION_ID');
 if isempty(CovcArray)   CliData.matlabLogFile = [];
-else                    CliData.matlabLogFile = CovcArray(end).optionValues{1};
+else                    CliData.matlabLogFile = CovcArray(end).optionValuesCa{1};
 end
 
 CovcArray = CovcMap('CONFIG_FILE_OPTION_ID');
 if isempty(CovcArray)   CliData.configFile = [];
-else                    CliData.configFile = CovcArray(end).optionValues{1};
+else                    CliData.configFile = CovcArray(end).optionValuesCa{1};
 end
 
 
@@ -212,7 +212,7 @@ for iSip = 1:numel(CopvArray)
       ['Specifying same specific input parameter (argument)', ...
       ' more than once.'])
   end
-  SipMap(key) = CopvArray(iSip).optionValues{1};
+  SipMap(key) = CopvArray(iSip).optionValuesCa{1};
 end
 end
 
@@ -223,8 +223,8 @@ function SettingsMap = convert_modif_settings_COPVs_to_SettingsMap(CovcArray)
 SettingsMap = irf.ds.create_containers_Map('char', 'char', {}, {});
 
 for iSetting = 1:length(CovcArray)
-  settingKey   = CovcArray(iSetting).optionValues{1};
-  settingValue = CovcArray(iSetting).optionValues{2};
+  settingKey   = CovcArray(iSetting).optionValuesCa{1};
+  settingValue = CovcArray(iSetting).optionValuesCa{2};
   SettingsMap(settingKey) = settingValue;
 end
 end
