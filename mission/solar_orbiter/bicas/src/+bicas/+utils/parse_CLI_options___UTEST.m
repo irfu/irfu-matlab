@@ -23,14 +23,14 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
       % NOTE: Arguments OptionsConfigMap, inputStr switch places to make
       %       test code look better.
       function test(OptionsConfigMap, inputStr, outputMapKeys, outputMapValues)
-        cliArgumentsList = strsplit(inputStr);
+        cliArgumentsCa = strsplit(inputStr);
 
-        expOutput = containers.Map(outputMapKeys, outputMapValues);
+        ExpOptionValuesMap = containers.Map(outputMapKeys, outputMapValues);
 
-        actOutput = bicas.utils.parse_CLI_options(...
-          cliArgumentsList, OptionsConfigMap);
+        ActOptionValuesMap = bicas.utils.parse_CLI_options(...
+          cliArgumentsCa, OptionsConfigMap);
 
-        testCase.verifyEqual(actOutput, expOutput)
+        testCase.assertEqual(ActOptionValuesMap, ExpOptionValuesMap)
       end
 
 
@@ -38,11 +38,11 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
       % NOTE: Arguments OptionsConfigMap, inputStr switch places to make
       %       test code look better.
       function test_exc(OptionsConfigMap, inputStr)
-        cliArgumentsList = strsplit(inputStr);
+        cliArgumentsCa = strsplit(inputStr);
 
-        testCase.verifyError(...
+        testCase.assertError(...
           @() bicas.utils.parse_CLI_options(...
-          cliArgumentsList, OptionsConfigMap), ...
+          cliArgumentsCa, OptionsConfigMap), ...
           ?MException)
       end
 
@@ -151,16 +151,16 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
 
 
     function Ocme = ocme(optionHeaderRegexp, occurrenceRequirement, nValues, interprPriority)
-      args = {...
+      StructArgsCa = {...
         'optionHeaderRegexp',    optionHeaderRegexp, ...
         'occurrenceRequirement', occurrenceRequirement, ...
         'nValues',               nValues};
       if nargin == 4
-        args(end+1:end+2) = {...
+        StructArgsCa(end+1:end+2) = {...
           'interprPriority', interprPriority};
       end
 
-      Ocme = struct(args{:});
+      Ocme = struct(StructArgsCa{:});
     end
 
 

@@ -6,18 +6,19 @@
 %
 % RETURN VALUE
 % ============
-% CliData : struct with fields:
-%   .bfm                 : String constant
-%   .swmArg              : String constant
-%   .icdLogFile          : Empty if argument not given.
-%   .matlabLogFile       : Empty if argument not given.
-%   .configFile          : Empty if argument not given.
-%   .SipMap              : containers.Map with SIPs.
-%                            key   = CLI argument without prefix
-%                            value = file path (argument)
-%   .ModifiedSettingsMap : containers.Map.
-%                            key   = settings key (argument)
-%                            value = settings value (argument)
+% CliData
+%       Struct with fields:
+%       .bfm                 : String constant
+%       .swmArg              : String constant
+%       .icdLogFile          : Empty if argument not given.
+%       .matlabLogFile       : Empty if argument not given.
+%       .configFile          : Empty if argument not given.
+%       .SipMap              : containers.Map with SIPs.
+%                              key   = CLI argument without prefix
+%                              value = file path (argument)
+%       .ModifiedSettingsMap : containers.Map.
+%                              key   = settings key (argument)
+%                              value = settings value (argument)
 %
 %
 % IMPLEMENTATION NOTES
@@ -36,7 +37,7 @@
 %
 % RATIONALE
 % =========
-% Reasons for having as separate function:
+% Reasons for having this function as separate function:
 % -- Enable separate manual & automatic testing.
 % -- Separate BICAS' "functionality" from "CLI syntax".
 %    ==> Easier to change CLI syntax.
@@ -46,7 +47,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-22.
 %
-function CliData = interpret_CLI_args(cliArgumentList)
+function CliData = interpret_CLI_args(cliArgumentsCa)
 % PROPOSAL: Generic utility function for converting list of mutually
 %       exclusive (assertion) booleans into one unique value.
 %   Ex: Convert list of booleans for various argument flags (any
@@ -60,13 +61,13 @@ function CliData = interpret_CLI_args(cliArgumentList)
 
 SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 
-%==================================================================================
+%===============================================================================
 % Configure
 % (1) permitted RCS ICD CLI options COMMON for all BFMs
 % (2) RCS ICD CLI options for SIPs
 % (2) unofficial options
 % NOTE: Exclude the SWM argument.
-%==================================================================================
+%===============================================================================
 OPTIONS_CONFIG_MAP = containers.Map();
 OPTIONS_CONFIG_MAP('VERSION_OPTION_ID')           = struct('optionHeaderRegexp', '--version',          'occurrenceRequirement', '0-1',   'nValues', 0);
 OPTIONS_CONFIG_MAP('IDENTIFICATION_OPTION_ID')    = struct('optionHeaderRegexp', '--identification',   'occurrenceRequirement', '0-1',   'nValues', 0);
@@ -93,8 +94,8 @@ CliData = [];
 % Extract the modified settings from the unofficial CLI arguments
 % ---------------------------------------------------------------
 % IMPLEMENTATION NOTE: CliSettingsVsMap corresponds to one definition of ONE
-% option (in the meaning of parse_CLI_options) and is filled with the
-% corresponding option values in the order of the CLI arguments.
+% option (in the meaning of bicas.utils.parse_CLI_options) and is filled with
+% the corresponding option values in the order of the CLI arguments.
 %   ==> A later occurrence of an option with the same first option
 %       value, overwrites previous occurrences of the option with the same
 %       first option value. This is the intended behaviour (not a side
@@ -102,7 +103,7 @@ CliData = [];
 %       Ex: --set SETTING_NAME 0 --setting SETTING_NAME 1
 %============================================================================
 OptionValuesMap = bicas.utils.parse_CLI_options(...
-  cliArgumentList, OPTIONS_CONFIG_MAP);
+  cliArgumentsCa, OPTIONS_CONFIG_MAP);
 CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
   OptionValuesMap('MODIFIED_SETTINGS_OPTION_ID'));
 
@@ -126,17 +127,17 @@ sipOptionValues = OptionValuesMap('SIP_OPTION_ID');
 % Convert presence of BFM flag (mutually exclusive) into the correct constant.
 % {i, 1} = false/true
 % {i, 2} = BFM string constant
-tempTable = {
+LogicalBfmTable = {
   ~isempty(OptionValuesMap('VERSION_OPTION_ID')),        'VERSION_BFM'; ...
   ~isempty(OptionValuesMap('IDENTIFICATION_OPTION_ID')), 'IDENTIFICATION_BFM'; ...
   ~isempty(OptionValuesMap('SWD_OPTION_ID')),            'SWD_BFM'; ...
   ~isempty(OptionValuesMap('HELP_OPTION_ID')),           'HELP_BFM'; ...
   ~isempty(OptionValuesMap('SWM_OPTION_ID')),            'SWM_BFM'};
 assert(...
-  sum([tempTable{:,1}]) == 1, ...
+  sum([LogicalBfmTable{:,1}]) == 1, ...
   'BICAS:interpret_CLI_syntax:CLISyntax', ...
   'Illegal combination of arguments.')
-CliData.bfm = tempTable{[tempTable{:, 1}], 2};
+CliData.bfm = LogicalBfmTable{[LogicalBfmTable{:, 1}], 2};
 
 switch CliData.bfm
 

@@ -79,7 +79,8 @@
 %
 % RETURN VALUES
 % =============
-% OptionValuesMap : containers.Map
+% OptionValuesMap
+%       containers.Map with
 %       <keys>
 %           Option ID.
 %       <values>
@@ -140,6 +141,7 @@ iCliArg = 1;
 while iCliArg <= length(cliArgumentsCa)
   [OptionValuesMap, iCliArgLastValue] = try_interpret_option(...
     cliArgumentsCa, iCliArg, OptionsConfigArray, OptionValuesMap);
+
   iCliArg = iCliArgLastValue + 1;
 end   % while
 
@@ -176,6 +178,10 @@ for iOption = 1:length(OptionsConfigArray)
 end
 
 end
+
+
+
+
 
 
 
@@ -230,7 +236,7 @@ optionId = OptionsConfigArray(iMatch).optionId;
 
 % Store values for this option. (May be zero option values).
 OptionConfig = OptionsConfigArray(iMatch);
-optionValues = OptionValuesMap(optionId);
+OptionValues = OptionValuesMap(optionId);
 
 iCliArgLastValue = iCliArg + OptionConfig.nValues;
 % ASSERTION: Argument list does not conform to configuration.
@@ -243,37 +249,48 @@ end
 
 % Extract option values associated with the option header.
 %optionValues{end+1} = cliArgumentsCa(iCliArg:iCliArgLastValue);
-optionValues(end+1) = struct(...
+OptionValues(end+1) = struct(...
   'iOptionHeaderCliArgument', iCliArg, ...
   'optionHeader',             cliArgumentsCa(iCliArg), ...
   'optionValues',             {cliArgumentsCa(iCliArg+1:iCliArgLastValue)'});
-OptionValuesMap(optionId) = optionValues;
+OptionValuesMap(optionId) = OptionValues;
 end
+
+
+
+
 
 
 
 % Various initializations and assertions.
 %
-% NOTE: Returns modified "deepish" copy of OptionsConfigMap since containers.Map
-% is a handle object.
+% RETURN VALUES
+% =============
+% OptionsConfigMapModifCopy
+%       Normalized deep copy of OptionsConfigMap.
+% EmptyOptionValuesMap
+%       containers.Map with
+%       <Keys>
+%         Same as OptionsConfigMap
+%       <Values>
+%         Empty struct array with pre-defined fields.
+%         NOTE: Applies to both options with and without values!
 %
 function [OptionsConfigMapModifCopy, EmptyOptionValuesMap] = init_assert(...
   OptionsConfigMap)
 
-%===========================================
-% Initializations before algorithm.
-%
-% 1) Assertions
-% 2) Initialize empty OptionValuesMap
-%===========================================
 % Copy filled with modified OptionsValuesMap.
 EmptyOptionValuesMap      = containers.Map;
 OptionsConfigMapModifCopy = containers.Map;
+
 % List to iterate over map.
 optionIdCa                = OptionsConfigMap.keys;
 for iOption = 1:length(optionIdCa)
+  optionId = optionIdCa{iOption};
 
-  optionId          = optionIdCa{iOption};
+  %===============================
+  % Set OptionsConfigMapModifCopy
+  %===============================
   ModifOptionConfig = OptionsConfigMap(optionId);
 
   % ASSERTION: OptionConfig is the right struct.
@@ -281,21 +298,22 @@ for iOption = 1:length(optionIdCa)
     {'optionHeaderRegexp', 'occurrenceRequirement', 'nValues'}, ...
     {'interprPriority'})
 
-  % Use priority default value, if there is none.
+  % Normalize ModifOptionConfig: Ensure there is always a "interprPriority".
   if ~isfield(ModifOptionConfig, 'interprPriority')
+    % Use priority default value.
     ModifOptionConfig.interprPriority = 0;
   end
-
-  ModifOptionConfig.optionId               = optionId;
-  OptionsConfigMapModifCopy(optionId) = ModifOptionConfig;
-
   % ASSERTION
   assert(isfinite(ModifOptionConfig.interprPriority))
 
-  % Create empty return structure (default value) with the same keys
-  % (optionId values).
-  % NOTE: Applies to both options with and without values!
-  %EmptyOptionValuesMap(optionId) = {};
+  % Add .optionId
+  ModifOptionConfig.optionId          = optionId;
+
+  OptionsConfigMapModifCopy(optionId) = ModifOptionConfig;
+
+  %==========================
+  % Set EmptyOptionValuesMap
+  %==========================
   EmptyOptionValuesMap(optionId) = irf.ds.empty_struct(...
     [0,1], 'iOptionHeaderCliArgument', 'optionHeader', 'optionValues');
 end
