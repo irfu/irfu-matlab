@@ -75,20 +75,20 @@ SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 % NOTE: Exclude the SWM argument.
 %===============================================================================
 OPTIONS_CONFIG_MAP = containers.Map();
-OPTIONS_CONFIG_MAP('VERSION_OPTION_ID')           = struct('optionHeaderRegexp', '--version',          'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('IDENTIFICATION_OPTION_ID')    = struct('optionHeaderRegexp', '--identification',   'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('SWD_OPTION_ID')               = struct('optionHeaderRegexp', '--swdescriptor',     'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('HELP_OPTION_ID')              = struct('optionHeaderRegexp', '--help',             'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('SWM_OPTION_ID')               = struct('optionHeaderRegexp', SWM_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
+OPTIONS_CONFIG_MAP('VERSION_OPTION_ID')           = bicas.utils.cli.CliOptionConfig('--version',          '0-1',   0, 0);
+OPTIONS_CONFIG_MAP('IDENTIFICATION_OPTION_ID')    = bicas.utils.cli.CliOptionConfig('--identification',   '0-1',   0, 0);
+OPTIONS_CONFIG_MAP('SWD_OPTION_ID')               = bicas.utils.cli.CliOptionConfig('--swdescriptor',     '0-1',   0, 0);
+OPTIONS_CONFIG_MAP('HELP_OPTION_ID')              = bicas.utils.cli.CliOptionConfig('--help',             '0-1',   0, 0);
+OPTIONS_CONFIG_MAP('SWM_OPTION_ID')               = bicas.utils.cli.CliOptionConfig(SWM_CLI_OPTION_REGEX, '0-1',   0, 0);
 
 % NOTE: ICD_LOG_FILE_OPTION_ID is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
-OPTIONS_CONFIG_MAP('SIP_OPTION_ID')               = struct('optionHeaderRegexp', '--(..*)',      'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
-OPTIONS_CONFIG_MAP('ICD_LOG_FILE_OPTION_ID')      = struct('optionHeaderRegexp', '--log',        'occurrenceRequirement', '0-1',   'nValues', 1);
-OPTIONS_CONFIG_MAP('MATLAB_LOG_FILE_OPTION_ID')   = struct('optionHeaderRegexp', '--log-matlab', 'occurrenceRequirement', '0-1',   'nValues', 1);
-OPTIONS_CONFIG_MAP('CONFIG_FILE_OPTION_ID')       = struct('optionHeaderRegexp', '--config',     'occurrenceRequirement', '0-1',   'nValues', 1);
+OPTIONS_CONFIG_MAP('SIP_OPTION_ID')               = bicas.utils.cli.CliOptionConfig('--(..*)',            '0-inf', 1, -1);
+OPTIONS_CONFIG_MAP('ICD_LOG_FILE_OPTION_ID')      = bicas.utils.cli.CliOptionConfig('--log',              '0-1',   1, 0);
+OPTIONS_CONFIG_MAP('MATLAB_LOG_FILE_OPTION_ID')   = bicas.utils.cli.CliOptionConfig('--log-matlab',       '0-1',   1, 0);
+OPTIONS_CONFIG_MAP('CONFIG_FILE_OPTION_ID')       = bicas.utils.cli.CliOptionConfig('--config',           '0-1',   1, 0);
 
 % Unofficial arguments
-OPTIONS_CONFIG_MAP('MODIFIED_SETTINGS_OPTION_ID') = struct('optionHeaderRegexp', '--set',        'occurrenceRequirement', '0-inf', 'nValues', 2);
+OPTIONS_CONFIG_MAP('MODIFIED_SETTINGS_OPTION_ID') = bicas.utils.cli.CliOptionConfig('--set',              '0-inf', 2, 0);
 
 
 

@@ -53,28 +53,7 @@
 %       <keys>
 %           Option ID.
 %       <values>
-%           Struct. Information about each specified option (syntax).
-%           .optionHeaderRegexp
-%               The option header, including any prefix (e.g. dash) expressed as
-%               regular expression.
-%           .interprPriority
-%               Optional. Default=0. "Interpretation Priority". In case of
-%               multiple regexp matches, the priority determines which
-%               interpretation is used. If multiple options have the same
-%               priority, then assertion error.
-%           .occurrenceRequirement
-%               String specifying the number of times the option may occur.
-%               Permitted alternatives (strings):
-%               '0-1'   = Option must occur once or never.
-%               '1'     = Option must occur exactly once.
-%               '0-inf' = Option may occur any number of times (zero or more).
-%               IMPLEMENTATION NOTE: This option exists so that multiple
-%               optionHeaderRegexp can be allowed to overlap in their coverage.
-%               Regexps can not express negation ("match all of this, except
-%               this") which can create problems and this tries to mitigate
-%               that.
-%           .nValues
-%               The number of option values that must follow the option header.
+%           One instance of class bicas.utils.cli.CliOptionConfig.
 %
 %
 % RETURN VALUES
@@ -290,7 +269,8 @@ for iOption = 1:length(optionIdCa)
   %===============================
   % Set OptionsConfigMapModifCopy
   %===============================
-  ModifOptionConfig = OptionsConfigMap(optionId);
+  assert(isa(OptionsConfigMap(optionId), 'bicas.utils.cli.CliOptionConfig'))
+  ModifOptionConfig = struct(OptionsConfigMap(optionId));
 
   % ASSERTION: OptionConfig is the right struct.
   irf.assert.struct(ModifOptionConfig, ...
@@ -298,10 +278,10 @@ for iOption = 1:length(optionIdCa)
     {'interprPriority'})
 
   % Normalize ModifOptionConfig: Ensure there is always a "interprPriority".
-  if ~isfield(ModifOptionConfig, 'interprPriority')
-    % Use priority default value.
-    ModifOptionConfig.interprPriority = 0;
-  end
+  % if ~isfield(ModifOptionConfig, 'interprPriority')
+  %   % Use priority default value.
+  %   ModifOptionConfig.interprPriority = 0;
+  % end
   % ASSERTION
   assert(isfinite(ModifOptionConfig.interprPriority))
 

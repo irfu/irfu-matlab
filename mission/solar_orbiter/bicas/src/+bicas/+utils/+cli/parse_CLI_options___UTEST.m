@@ -151,16 +151,25 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
 
 
     function Ocme = ocme(optionHeaderRegexp, occurrenceRequirement, nValues, interprPriority)
-      StructArgsCa = {...
-        'optionHeaderRegexp',    optionHeaderRegexp, ...
-        'occurrenceRequirement', occurrenceRequirement, ...
-        'nValues',               nValues};
-      if nargin == 4
-        StructArgsCa(end+1:end+2) = {...
-          'interprPriority', interprPriority};
+      % StructArgsCa = {...
+      %   'optionHeaderRegexp',    optionHeaderRegexp, ...
+      %   'occurrenceRequirement', occurrenceRequirement, ...
+      %   'nValues',               nValues};
+      % if nargin == 4
+      %   StructArgsCa(end+1:end+2) = {...
+      %     'interprPriority', interprPriority};
+      % end
+
+      if nargin == 3
+        interprPriority = 0;
+      elseif nargin == 4
+        ;   % Do nothing.
+      else
+        error('')
       end
 
-      Ocme = struct(StructArgsCa{:});
+      %Ocme = struct(StructArgsCa{:});
+      Ocme = bicas.utils.cli.CliOptionConfig(optionHeaderRegexp, occurrenceRequirement, nValues, interprPriority);
     end
 
 
