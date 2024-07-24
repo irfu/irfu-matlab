@@ -132,7 +132,7 @@ classdef findread___UTEST < matlab.unittest.TestCase
         % Create empty file.
         irf.fs.write_file(...
           fullfile(tempDir, fileCa{1}), ...
-          zeros(1,0,'uint8'))
+          zeros(0, 1, 'uint8'))
       end
 
     end

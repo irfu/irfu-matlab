@@ -92,6 +92,6 @@ str = bicas.utils.JSON_object_str(JsonObj, 4);
 %fprintf(str);    % DEBUG
 
 rctJsonPath = fullfile(destDir, RCT_JSON_FILENAME);
-irf.fs.write_file(rctJsonPath, uint8(str));
+irf.fs.write_file(rctJsonPath, uint8(str(:)));
 
 end
