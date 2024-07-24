@@ -61,17 +61,14 @@
 % OptionValuesMap
 %       containers.Map with
 %       <keys>
-%           Option ID.
+%         Option ID.
 %       <values>
-%           Array of struct:
-%             .iOptionHeaderCliArgument
-%             .optionHeader
-%             .optionValues
-%         NOTE: From this one can always read out whether an option was found
-%         or not: even an option without option values contains a list of zero
-%         values.
-%         NOTE: Can read out the order of occurrence, e.g. for having a later
-%         occurrence override a preceding one.
+%         Array of class bicas.utils.cli.CliOptionValue.
+%       NOTE: From this one can always read out whether an option was found
+%       or not: even an option without option values contains a list of zero
+%       values.
+%       NOTE: Can read out the order of occurrence, e.g. for having a later
+%       occurrence override a preceding one.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -227,10 +224,8 @@ end
 % Extract option values associated with the option header.
 optionValuesCa = cliArgumentsCa(iCliArg+1:iCliArgLastValue, 1);
 assert(iscolumn(optionValuesCa))
-OptionValues(end+1) = struct(...
-  'iOptionHeaderCliArgument', iCliArg, ...
-  'optionHeader',             cliArgumentsCa(iCliArg), ...
-  'optionValues',             {optionValuesCa});
+OptionValues(end+1) = bicas.utils.cli.CliOptionValue(iCliArg, cliArgumentsCa{iCliArg}, optionValuesCa);
+
 OptionValuesMap(optionId) = OptionValues;
 end
 
@@ -293,8 +288,7 @@ for iOption = 1:length(optionIdCa)
   %==========================
   % Set EmptyOptionValuesMap
   %==========================
-  EmptyOptionValuesMap(optionId) = irf.ds.empty_struct(...
-    [0,1], 'iOptionHeaderCliArgument', 'optionHeader', 'optionValues');
+  EmptyOptionValuesMap(optionId) = bicas.utils.cli.CliOptionValue.empty(0, 1);
 end
 
 end
