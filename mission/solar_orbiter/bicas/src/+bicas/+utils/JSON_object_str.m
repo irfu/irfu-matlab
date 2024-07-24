@@ -52,6 +52,10 @@ function str = JSON_object_str(JsonObj)
 % str = print_JSON_object_recursive(JsonObj, 0, false, Settings);
 % str = [str, Settings.lineBreakStr];
 str = jsonencode(JsonObj, 'PrettyPrint', true);
+
+% IMPLEMENTATION NOTE: String ends up in irf.str.add_prefix_on_every_row() which
+% requires multi-row strings to always end with line feed.
+str = [str, newline];    % Add line feed
 end
 
 
