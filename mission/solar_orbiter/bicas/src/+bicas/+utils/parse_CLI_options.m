@@ -47,7 +47,7 @@
 % ARGUMENTS
 % =========
 % cliArgumentsCa
-%       1D cell array of strings representing a sequence of CLI arguments.
+%       Column cell array of strings representing a sequence of CLI arguments.
 % OptionsConfigMap
 %       containers.Map
 %       <keys>
@@ -123,8 +123,8 @@ function OptionValuesMap = parse_CLI_options(cliArgumentsCa, OptionsConfigMap)
 
 % ASSERTIONS: Check argument types, sizes.
 assert(iscell(cliArgumentsCa), 'cliArgumentsCa is not a cell array.')
-irf.assert.vector(cliArgumentsCa)
-irf.assert.isa(OptionsConfigMap, 'containers.Map')
+assert(iscolumn(cliArgumentsCa))
+assert(isa(OptionsConfigMap, 'containers.Map'))
 
 
 
@@ -249,10 +249,12 @@ end
 
 % Extract option values associated with the option header.
 %optionValues{end+1} = cliArgumentsCa(iCliArg:iCliArgLastValue);
+optionValuesCa = cliArgumentsCa(iCliArg+1:iCliArgLastValue, 1);
+assert(iscolumn(optionValuesCa))
 OptionValues(end+1) = struct(...
   'iOptionHeaderCliArgument', iCliArg, ...
   'optionHeader',             cliArgumentsCa(iCliArg), ...
-  'optionValues',             {cliArgumentsCa(iCliArg+1:iCliArgLastValue)'});
+  'optionValues',             {optionValuesCa});
 OptionValuesMap(optionId) = OptionValues;
 end
 

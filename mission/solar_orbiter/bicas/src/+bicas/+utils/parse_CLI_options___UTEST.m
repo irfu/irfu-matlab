@@ -23,7 +23,7 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
       % NOTE: Arguments OptionsConfigMap, inputStr switch places to make
       %       test code look better.
       function test(OptionsConfigMap, inputStr, outputMapKeys, outputMapValues)
-        cliArgumentsCa = strsplit(inputStr);
+        cliArgumentsCa = strsplit(inputStr)';
 
         ExpOptionValuesMap = containers.Map(outputMapKeys, outputMapValues);
 
@@ -38,7 +38,7 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
       % NOTE: Arguments OptionsConfigMap, inputStr switch places to make
       %       test code look better.
       function test_exc(OptionsConfigMap, inputStr)
-        cliArgumentsCa = strsplit(inputStr);
+        cliArgumentsCa = strsplit(inputStr)';
 
         testCase.assertError(...
           @() bicas.utils.parse_CLI_options(...

@@ -505,15 +505,6 @@ classdef assert
 
 
 
-    function isa(v, className)
-      if ~isa(v, className)
-        error(irf.assert.ASSERTION_EMID, ...
-          'Expected class=%s but found class=%s.', className, class(v))
-      end
-    end
-
-
-
     % Assert v has a non-one size in at most one dimension.
     % NOTE: Excludes 0x0, e.g. [], {}, and ''.
     %

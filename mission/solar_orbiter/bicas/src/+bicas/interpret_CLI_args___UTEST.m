@@ -144,6 +144,8 @@ classdef interpret_CLI_args___UTEST < matlab.unittest.TestCase
         icdLogFile, matlabLogFile, ...
         ModifiedSettingsMap, SipMap)
 
+      cliArgCa = cliArgCa(:);
+
       assert(numel(ModifiedSettingsMap) == 2)
       assert(numel(SipMap)              == 2)
 

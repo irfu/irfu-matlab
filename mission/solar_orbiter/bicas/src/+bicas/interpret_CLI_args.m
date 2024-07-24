@@ -1,7 +1,13 @@
 %
 % Function for doing the first interpretation of BICAS' CLI arguments and
-% returns the data as a more easy-to-understand struct. This function covers
-% both official and unofficial arguments.
+% returns the data as a more easy-to-understand struct.
+%
+%
+% ARGUMENTS
+% =========
+% cliArgumentsCa
+%       Column cell array with all BICAS CLI arguments, both official and
+%       unofficial.
 %
 %
 % RETURN VALUE

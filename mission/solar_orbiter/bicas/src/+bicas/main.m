@@ -295,6 +295,8 @@ function main_without_error_handling(cliArgumentsCa, L)
 
 Tmk = bicas.utils.Timekeeper('main_without_error_handling', L);
 
+assert(iscolumn(cliArgumentsCa))
+
 
 
 %==================================
