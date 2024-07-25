@@ -10,6 +10,7 @@
 classdef main___UTEST < matlab.unittest.TestCase
   % NOTE: The irfu-matlab git repo does not contain any BICAS config file. That
   %       "has to" be created by the tests (and ideally should be).
+  %
   % PROBLEM: Not clear how to test the use of config file: Explicit path .default path, content
   % PROBLEM: How be able to both (1) run the tests locally, and (2) test loading
   %          from the default config file path, without overwriting a
@@ -118,7 +119,7 @@ classdef main___UTEST < matlab.unittest.TestCase
 
     function configFileAPath = setup_default_config_file()
       % Create empty BICAS config file in the default location.
-      % (Asserts that no such file pre-exists.
+      % Asserts that no such file pre-exists.
       bicasRootPath = bicas.utils.get_BICAS_root_path();
       configFileAPath = fullfile(bicasRootPath, 'config', 'bicas.conf');
 
@@ -127,7 +128,9 @@ classdef main___UTEST < matlab.unittest.TestCase
       % make sure that the test does not overwrite a legitimate custom
       % config file when running the tests locally.
       if isfile(configFileAPath)
-        error('"%s" already pre-exists. Aborting to avoid overwriting presumed local user-defined config file.', configFileAPath)
+        error(...
+          ['"%s" already pre-exists. Aborting to avoid overwriting presumed', ...
+          ' local user-defined config file.'], configFileAPath)
       end
 
       fclose(fopen(configFileAPath, 'w'));

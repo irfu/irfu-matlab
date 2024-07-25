@@ -179,7 +179,10 @@ Version 8.2.0
 -------------
 * Uses zVariable compression used in master CDFs.
 * Requires new L2 master CDFs V15, updated for compliance with archiving
-  conventions. Some code updates for the same reason:
+  conventions in
+  * SOL-SGS-TN-0009, 02/06, "Metadata Definition for Solar Orbiter Science Data"
+  * ROC-PRO-PIP-ICD-00037-LES, 01/07, RCS ICD
+  Some code updates associated with this:
   * Correctly(?) setting TIME_MIN/TIME_MAX.
   * Setting "SPICE_KERNELS", "CAL_*", "CALIBRATION_*".
   * Not setting "Provider", "Parent_version".
