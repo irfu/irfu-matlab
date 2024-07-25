@@ -7,9 +7,14 @@
 % First created 2021-05-27, with moved from bicas.proc.utils.
 %
 classdef utils
-  % PROPOSAL: Automatic test code.
+  % PROPOSAL: More automatic test code.
   % PROPOSAL: Rename.
-  %   PRO: "utils" implies that code is generic, while code seems to not be.
+  %   PRO: "utils" implies that code is generic, while the code seems to *not* be.
+  %
+  % PROPOSAL: Replace functions returning paths with constants as far as is
+  %           possible (all except bicas.utils.get_BICAS_root_dir()?).
+  %   CON: Abandons any idea of temporarily changing the location of the default
+  %        config file etc. for tests.
 
 
 
@@ -23,18 +28,20 @@ classdef utils
 
 
     % Get path to the root of the BICAS directory structure.
-    function bicasRootPath = get_BICAS_root_dir()
+    function bicasRootDir = get_BICAS_root_dir()
       % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
       % Use path of the current MATLAB file.
-      [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
-      bicasRootPath         = irf.fs.get_abs_path(...
-        fullfile(matlabSrcPath, '..', '..'));
+      [matlabSrcDir, ~, ~] = fileparts(mfilename('fullpath'));
+      bicasRootDir         = fullfile(matlabSrcDir, '..', '..');
+      bicasRootDir         = irf.fs.get_abs_path(bicasRootDir);
     end
 
 
 
-    function swdFilePath = get_SWD_file()
-      swdFilePath = fullfile(bicas.utils.get_BICAS_root_dir(), 'descriptor.json');
+    function swdFile = get_SWD_file()
+      swdFile = fullfile(...
+        bicas.utils.get_BICAS_root_dir(), ...
+        bicas.const.SWD_FILENAME);
     end
 
 

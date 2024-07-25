@@ -303,12 +303,12 @@ assert(iscolumn(cliArgumentsCa))
 % ~ASSERTION: Check MATLAB version
 %==================================
 matlabVersionString = version('-release');
-if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS)
+if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS_CA)
   error('BICAS:BadMatlabVersion', ...
     ['Using unsupported MATLAB version. Found version "%s".', ...
     ' BICAS requires any of the following MATLAB versions: %s.\n'], ...
     matlabVersionString, ...
-    strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS, ', '))
+    strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS_CA, ', '))
 end
 L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
 
@@ -463,7 +463,7 @@ switch(CliData.bfmid)
     print_version(Swml, Bso)
 
   case 'IDENTIFICATION_BFM'
-    print_identification(Swml, Bso)
+    print_identification(Swml)
 
   case 'SWD_BFM'
     print_SWD(Swml)
@@ -619,15 +619,15 @@ end
 
 % Print the JSON S/W descriptor identification section.
 %
-% NOTE: Argument is *not* an instance of bicas.swm.SoftwareModeList.
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07
 %
-function print_identification(Swml, Bso)
+function print_identification(Swml)
+
+assert(isa(Swml, 'bicas.swm.SoftwareModeList'))
 
 JsonSwd = bicas.get_SWD(Swml.List);
-strSwd = bicas.utils.JSON_object_str(JsonSwd.identification);
+strSwd  = bicas.utils.JSON_object_str(JsonSwd.identification);
 bicas.stdout_print(strSwd);
 
 end
@@ -640,6 +640,8 @@ end
 % First created 2016-06-07/2019-09-24.
 %
 function print_SWD(Swml)
+
+assert(isa(Swml, 'bicas.swm.SoftwareModeList'))
 
 JsonSwd = bicas.get_SWD(Swml.List);
 strSwd  = bicas.utils.JSON_object_str(JsonSwd);
@@ -725,7 +727,7 @@ end
 function s = sprint_constants()
 %
 % NOTE: Does not print error codes (bicas.const), but print_help() does.
-% PROPOSAL: PERMITTED_MATLAB_VERSIONS
+% PROPOSAL: bicas.const.PERMITTED_MATLAB_VERSIONS_CA
 
 s = sprintf([...
   '\n', ...

@@ -5,6 +5,22 @@
 % test everything, but only that which is easy.
 %
 %
+% PROBLEMS WITH TESTS WHICH RELY ON THE DEFAULT CONFIG FILE
+% =========================================================
+% BICAS uses a config file which it looks for in a default location (relative to
+% the source code), unless the config file location is explicitly specified with
+% a special (unofficial) CLI option. This creates problems for testing since:
+% (1) It is difficult to set up a truly and completely independent "test
+%     environment" with its own default config file location: It would need at
+%     least (a) its own copy of source code (since the default location is
+%     relative to the source code) and (b) set its own MATLAB paths.
+% (2) A developer who runs the tests likely has his/her own default config file
+%     in the default location already.
+% (3) It is dangerous for a test to move away and then move back a valid config
+%     file in the default location to enable tests to themselves specify the
+%     config file in the default location (e.g. no default cofig file).
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef main___UTEST < matlab.unittest.TestCase
@@ -15,7 +31,7 @@ classdef main___UTEST < matlab.unittest.TestCase
   % PROBLEM: How be able to both (1) run the tests locally, and (2) test loading
   %          from the default config file path, without overwriting a
   %          potentially pre-existing config file in the default location?
-  %   PROPOSAL: Refuse to run tests if there is a config file in the default
+  %   PROPOSAL: Refuse to run tests (fail) if there is a config file in the default
   %             location. -- IMPLEMENTED
   %       PRO: Safe.
   %       CON: Local user has to manually temporarily remove the
@@ -25,6 +41,17 @@ classdef main___UTEST < matlab.unittest.TestCase
   %       CON: Dangerous w.r.t. bugs and failed tests(!).
   %           PROPOSAL: Backup default config file.
   %               CON: Pollutes local file system.
+  %           PROPOSAL: Use try-except. Move back original file in case of test
+  %                     failure.
+  %           PROPOSAL: Use setup & teardown for temporarily moving pre-existing
+  %                     bicas.conf file.
+  %             CON: Tests which specify a config file do not need it.
+  %                  ==> Unnecessary risk.
+  %             NOTE: One can have setup and teardown methods for all tests
+  %                   combined.
+  %                   https://se.mathworks.com/help/matlab/matlab_prog/write-setup-and-teardown-code-using-classes.html
+  %
+  % TODO: Test that it works with default config file which is a symlink.
 
 
 

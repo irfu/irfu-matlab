@@ -17,6 +17,16 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_get_paths(testCase)
+      path = bicas.utils.get_BICAS_root_dir();
+      irf.assert.dir_exists(path)
+
+      path = bicas.utils.get_SWD_file();
+      irf.assert.file_exists(path)
+    end
+
+
+
     function test_object_sets_isequaln(testCase)
 
       % One output variable.

@@ -53,7 +53,7 @@ classdef const
     %       MATLAB version running on brain, spis, anna (IRFU servers). This
     %       should be abolished eventually when beforementioned servers support
     %       MATLAB 2024a.
-    PERMITTED_MATLAB_VERSIONS         = {'2023b', '2024a'};
+    PERMITTED_MATLAB_VERSIONS_CA = {'2023b', '2024a'};
 
     % Path to default config file relative to BICAS's directory root. Note
     % that this is also implicitly the constant for the default config file
@@ -62,11 +62,13 @@ classdef const
 
     % MATLAB stdout prefix to signal to bash wrapper that the log message
     % should be passed on to STDOUT (without the prefix).
-    STDOUT_PREFIX_TBW                 = 'STDOUT: ';
+    STDOUT_PREFIX_TBW            = 'STDOUT: ';
 
     % MATLAB stdout prefix to signal to bash wrapper that the log message
     % should be passed on to LOG FILE (without the prefix).
-    LOG_FILE_PREFIX_TBW               = 'LOG FILE: ';
+    LOG_FILE_PREFIX_TBW          = 'LOG FILE: ';
+
+    SWD_FILENAME                 = 'descriptor.json';
 
     % Information to "interpret" and "translate" captured exceptions
     % --------------------------------------------------------------
