@@ -201,3 +201,8 @@ Version 8.2.0
      INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY
   -->INPUT_CDF.GA_PARENTS_MISMATCH_POLICY
 * Abolishes the unofficial --swdescriptor argument and mode.
+
+
+Version 8.2.1
+-------------
+* Bugfix: Including previously missing source code updates.
