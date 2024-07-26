@@ -344,7 +344,7 @@ L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', ...
 %===============================
 % Derive BICAS's directory root
 %===============================
-bicasRootPath = bicas.utils.get_BICAS_root_path();
+bicasRootPath = bicas.utils.get_BICAS_root_dir();
 
 
 

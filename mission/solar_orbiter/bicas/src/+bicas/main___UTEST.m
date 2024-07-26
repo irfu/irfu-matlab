@@ -120,7 +120,7 @@ classdef main___UTEST < matlab.unittest.TestCase
     function configFileAPath = setup_default_config_file()
       % Create empty BICAS config file in the default location.
       % Asserts that no such file pre-exists.
-      bicasRootPath = bicas.utils.get_BICAS_root_path();
+      bicasRootPath = bicas.utils.get_BICAS_root_dir();
       configFileAPath = fullfile(bicasRootPath, 'config', 'bicas.conf');
 
       % ASSERT: Default path config file does not pre-exists.

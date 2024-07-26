@@ -23,7 +23,7 @@ classdef utils
 
 
     % Get path to the root of the BICAS directory structure.
-    function bicasRootPath = get_BICAS_root_path()
+    function bicasRootPath = get_BICAS_root_dir()
       % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
       % Use path of the current MATLAB file.
       [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
@@ -33,8 +33,8 @@ classdef utils
 
 
 
-    function swdFilePath = get_SWD_file_path()
-      swdFilePath = fullfile(bicas.utils.get_BICAS_root_path(), 'descriptor.json');
+    function swdFilePath = get_SWD_file()
+      swdFilePath = fullfile(bicas.utils.get_BICAS_root_dir(), 'descriptor.json');
     end
 
 

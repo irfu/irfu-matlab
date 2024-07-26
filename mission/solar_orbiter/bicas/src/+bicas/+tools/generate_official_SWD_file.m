@@ -27,7 +27,7 @@ function generate_official_SWD_file(filePath)
 
 % Normalize filePath
 if nargin == 0
-  filePath = bicas.utils.get_SWD_file_path();
+  filePath = bicas.utils.get_SWD_file();
 end
 
 Bso = bicas.create_default_BSO();

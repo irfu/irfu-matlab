@@ -119,7 +119,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
     function test_read_file_BICAS(testCase)
       % NOTE: Only read BICAS's own default file (in BICAS's git repo).
-      bicasRootPath = bicas.utils.get_BICAS_root_path();
+      bicasRootPath = bicas.utils.get_BICAS_root_dir();
 
       Bso = bicas.create_default_BSO();
       Bso.make_read_only()
