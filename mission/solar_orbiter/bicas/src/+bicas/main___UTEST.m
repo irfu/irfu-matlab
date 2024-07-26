@@ -234,14 +234,14 @@ classdef main___UTEST < matlab.unittest.TestCase
     function defaultConfigFileAPath = write_default_config_file()
       % Create empty BICAS config file in the default location.
       % Asserts that no such file pre-exists.
-      defaultConfigFileAPath = irf.fs.create_empty_file({...
+      defaultConfigFileAPath = irf.fs.write_empty_file({...
         bicas.utils.get_BICAS_default_config_file()});
     end
 
 
 
     function configFileAPath = write_specified_config_file(testCase, configFileRPath)
-      configFileAPath = irf.fs.create_empty_file({testCase.testDir, configFileRPath});
+      configFileAPath = irf.fs.write_empty_file({testCase.testDir, configFileRPath});
     end
 
 

@@ -18,6 +18,30 @@ classdef const
   %   PRO: Calling MTEST code could set values (override defaults).
   %
   % PROPOSAL: Abolish CATCH_PLOT_EXCEPTIONS_ENABLED.
+  %
+  % PROBLEM: "EMPTY_DT_ARRAY" does not imply that it is UTCLeapSeconds.
+  %   PROPOSAL: Abbreviation for UTC datetime objects/arrays.
+  %     NOTE: Already exists UMD=UTC Midnight Date. Not defined to be datetime
+  %           specifically, though seems to be datetime in practice.
+  %     PROPOSAL: UDT  = UTC datetime
+  %     PROPOSAL: UMDT = UTC midnight datetime
+  %       PRO: Fits better with simultaneously using MDT = Midnight datetime.
+  %     PROPOSAL: MUDT = Midnight UTC datetime
+  %       PRO: Fits better with simultaneously using UDT.
+  %     --
+  %     CON: There is value in separately specifying (1) the properties of
+  %          timestamps, (2) the time format of the timestamp, and (3) what a
+  %          timestamp signifies.
+  %       Ex:
+  %         Properties:   Midnight, UTC
+  %         Time formats: datetime, SDN, date vector
+  %         Other:        file modification date, ~dataset date
+  %       CON: In practice, only datetime is used for QLI, and should be
+  %            converged upon for other applications.
+  %     CON: More natural to describe "algorithms" in terms of abbreviations
+  %          which do not specify time format, e.g. FMD.
+  %     PRO: Shortens variables.
+  %       Ex: UmdDt-->Umdt, FmdDt-->Fmdt
 
 
 

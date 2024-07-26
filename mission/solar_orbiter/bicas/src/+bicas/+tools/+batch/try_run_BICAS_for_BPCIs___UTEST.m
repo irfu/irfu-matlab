@@ -227,7 +227,7 @@ classdef try_run_BICAS_for_BPCIs___UTEST < matlab.unittest.TestCase
 
             path = Bpci.inputsArray(iFile).path;
 
-            irf.fs.create_empty_file({path});
+            irf.fs.write_empty_file({path});
           end
         end
       end

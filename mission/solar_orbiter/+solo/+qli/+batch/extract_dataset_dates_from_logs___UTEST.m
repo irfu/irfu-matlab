@@ -83,7 +83,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_empty(testCase)
+    function test___one_matching_log___empty_log_file(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -98,7 +98,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_no_match(testCase)
+    function test___one_log___no_dataset(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -116,7 +116,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_one_match_simple(testCase)
+    function test___one_log___one_dataset_match_simple(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -135,7 +135,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_zero_DSIs_simple(testCase)
+    function test___one_log___zero_DSIs_simple(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -152,7 +152,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_two_identical_matches(testCase)
+    function test___one_log___two_identical_datasets(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -173,7 +173,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
     % Test that can detect both CDAG and non-CDAG filenames.
-    function test_one_log_CDAG_nonCDAG(testCase)
+    function test___one_log___CDAG_and_nonCDAG_datasets(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -193,17 +193,17 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_one_DSI_complex(testCase)
+    function test___one_log___one_DSI___multiple_datasets___complex(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
-        '/data/solo_L3_rpw-bia-density_20240101_V01.cdfQWE', ...   % Matching filename
-        '      solo_L3_rpw-bia-density-10-seconds_20240102_V01.cdf   ', ...   % Potentially mistakenly matching filename.
-        '      solo_L3_rpw-bia-density_20240201_V01.cdf   ', ...   % Matching filename.
+        '/data/solo_L3_rpw-bia-density_20240101_V01.cdfQWE', ...              % Matching filename
+        '      solo_L3_rpw-bia-density-10-seconds_20240102_V01.cdf   ', ...   % Not matching filename.
+        '      solo_L3_rpw-bia-density_20240201_V01.cdf   ', ...              % Matching filename.
         'IRRELEVANT TEXT', ...
-        '      solo_L3_rpw-bia-density_20240101_V01.cdf   ', ...   % Same matching filename again.
+        '      solo_L3_rpw-bia-density_20240101_V01.cdf   ', ...              % Same matching filename again.
         })
 
       ExpDtArray = solo.qli.utils.umddt({'2024-01-01'; '2024-02-01'});
@@ -216,7 +216,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_multiple_DSIs_complex(testCase)
+    function test___one_log___multiple_DSIs___complex(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -241,7 +241,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_multiple_matches_on_same_row(testCase)
+    function test___one_log___multiple_matches_on_same_row(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -260,7 +260,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_multiple_logs_multiple_DSIs_complex(testCase)
+    function test___multiple_logs___multiple_DSIs_complex(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath1         = testCase.fullfile('processing2024-01-01T12.00.00.log');
       filePath2         = testCase.fullfile('processing2024-01-01T18.00.00.log');

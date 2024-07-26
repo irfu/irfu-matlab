@@ -180,21 +180,20 @@ classdef interface
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
         'LogFileDirPatternDict defines the wrong set of keys.')
 
-
-
       UmdDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
       for i = 1:numel(dasaArgumentsCa)
-        datasetsSourceId = dasaArgumentsCa{i};
+        % The type of log to use (SOAR sync log, LESIA sync log).
+        logFileDirPatternId = dasaArgumentsCa{i};
 
-        assert(ischar(datasetsSourceId), 'datasetsSourceId{%i} is not a string.', i)
-        if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(datasetsSourceId)
-          error('Illegal datasetsSourceId{%i}="%s"', i, datasetsSourceId)
+        assert(ischar(logFileDirPatternId), 'dasaArgumentsCa{%i} is not a string.', i)
+        if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(logFileDirPatternId)
+          error('dasaArgumentsCa{%i}="%s" does not specify a log file pattern.', i, logFileDirPatternId)
         end
 
-        dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(datasetsSourceId);
+        dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(logFileDirPatternId);
         dsiCa             = dsiCaCa{1};
-        logFileDirPattern = LogFileDirPatternDict(datasetsSourceId);
+        logFileDirPattern = LogFileDirPatternDict(logFileDirPatternId);
 
         [SourceUmdDtArray, logFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
           logFileDirPattern, dsiCa);
@@ -323,8 +322,16 @@ classdef interface
 
 
     % Utility function for filtering an array of days.
+    %
+    % IMPLEMENTATION NOTE: Accepts string arguments assumed to come from user
+    % interface to ensure checking the string-to-value (number, datetime) is
+    % consistent.
     function UmdDtArray = filter_days_array(...
         UmdDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
+
+      % PROPOSAL: Non-string arguments.
+      %   PROPOSAL: Use standardized functions for converting strings to values
+      %   while giving good error messages
 
       solo.qli.utils.assert_UMD_DT(UmdDtArray)
 
