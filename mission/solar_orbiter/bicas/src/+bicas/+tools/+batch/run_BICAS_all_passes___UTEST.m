@@ -75,8 +75,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     function test1_zero_relevant_input(testCase)
       [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
 
-      INPUT_1 = irf.fs.create_empty_file({P.in, 'NOT_DATASET.cdf'});
-      INPUT_2 = irf.fs.create_empty_file({P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
+      INPUT_1 = irf.fs.write_empty_file({P.in, 'NOT_DATASET.cdf'});
+      INPUT_2 = irf.fs.write_empty_file({P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
 
       % ===============================
       % Test specifying input directory
@@ -101,8 +101,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     function test1_1LV_1NLV_to_1(testCase, FN_VER_ALGO)
       [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
 
-      irf.fs.create_empty_file(          {P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
-      INPUT_2 = irf.fs.create_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf'});
+      irf.fs.write_empty_file(          {P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
+      INPUT_2 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf'});
 
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
         {P.in}, '', P.out, FN_VER_ALGO);
@@ -123,8 +123,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % NOTE: Ref. dir. file. is not V01! Still blocks output.
     function test1_1_to_01_ref_collision(testCase, FN_VER_ALGO)
       [testDir, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'ref', 'out'});
-      irf.fs.create_empty_file({P.in,  'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
-      irf.fs.create_empty_file({P.ref, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V05.cdf' });    % Not V01.
+      irf.fs.write_empty_file({P.in,  'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
+      irf.fs.write_empty_file({P.ref, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V05.cdf' });    % Not V01.
 
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
         {P.in}, P.ref, P.out, FN_VER_ALGO);
@@ -158,7 +158,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       end
 
       [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
-      INPUT_1 = irf.fs.create_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
+      INPUT_1 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
 
       % ===============================
       % Test specifying input directory
@@ -190,8 +190,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     function test1_2_to_1_and_crash_to_1(testCase, FN_VER_ALGO)
       [testDir, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
 
-      INPUT_FILE_1 = irf.fs.create_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});  % Crashes
-      irf.fs.create_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240102_V02.cdf'});
+      INPUT_FILE_1 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});  % Crashes
+      irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240102_V02.cdf'});
 
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
         {P.in, P.out}, '', P.out, FN_VER_ALGO, [1]);
@@ -216,8 +216,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % Empty ref. dir..
     function test2_2_to_1_to_2(testCase, FN_VER_ALGO)
       [testDir, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
-      irf.fs.create_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
-      irf.fs.create_empty_file({P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
+      irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
+      irf.fs.write_empty_file({P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
 
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test2(...
         {P.in, P.out}, '', P.out, FN_VER_ALGO);
@@ -237,8 +237,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % which is not in the ref. dir..
     function test2_1_to_2_ref_collision(testCase, FN_VER_ALGO)
       [testDir, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'ref', 'out'});
-      irf.fs.create_empty_file({P.in,  'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'});
-      irf.fs.create_empty_file({P.ref, 'solo_L3_rpw-bia-density_20240101_V01.cdf'});
+      irf.fs.write_empty_file({P.in,  'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'});
+      irf.fs.write_empty_file({P.ref, 'solo_L3_rpw-bia-density_20240101_V01.cdf'});
 
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test2(...
         {P.in, P.out}, P.ref, P.out, FN_VER_ALGO);

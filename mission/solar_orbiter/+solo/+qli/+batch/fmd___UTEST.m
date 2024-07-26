@@ -103,13 +103,13 @@ classdef fmd___UTEST < matlab.unittest.TestCase
       % Create quicklooks and datasets
       %================================
       % NOTE: Quicklook (created first) is older than datasets.
-      [~] = irf.fs.create_empty_file({fmdQliDir, '20240101T00_20240102T00.png'});
+      [~] = irf.fs.write_empty_file({fmdQliDir, '20240101T00_20240102T00.png'});
 
       % Delay does not appear to be needed. Added for safety.
       pause(0.1)
 
-      [~] = irf.fs.create_empty_file({dir1, 'solo_L2_swa-pas-eflux_20240101_V02.cdf'});
-      [~] = irf.fs.create_empty_file({dir2, 'solo_L2_mag-rtn-normal_20240102_V02.cdf'});
+      [~] = irf.fs.write_empty_file({dir1, 'solo_L2_swa-pas-eflux_20240101_V02.cdf'});
+      [~] = irf.fs.write_empty_file({dir2, 'solo_L2_mag-rtn-normal_20240102_V02.cdf'});
 
       % Should be needed since FMDs appear to have a time-resolution of 1 s (?)
       % (Linux).
@@ -119,7 +119,7 @@ classdef fmd___UTEST < matlab.unittest.TestCase
       pause(1.1)
 
       % NOTE: Quicklook (created last) is more recent than datasets.
-      [~] = irf.fs.create_empty_file({fmdQliDir, '20240102T00_20240103T00.png'});
+      [~] = irf.fs.write_empty_file({fmdQliDir, '20240102T00_20240103T00.png'});
 
 
 
