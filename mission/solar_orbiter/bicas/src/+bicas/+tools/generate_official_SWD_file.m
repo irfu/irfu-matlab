@@ -22,6 +22,8 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function generate_official_SWD_file(filePath)
+% PROPOSAL: Abolish the --swdescriptor argument.
+%   CON: No longer needed.
 
 % Normalize filePath
 if nargin == 0

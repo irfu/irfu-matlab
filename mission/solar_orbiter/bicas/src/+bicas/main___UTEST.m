@@ -55,7 +55,7 @@ classdef main___UTEST < matlab.unittest.TestCase
       test('--help')
       test('--version')
       test('--identification')
-      %test('--swdescriptor')
+      test('--swdescriptor')
 
       test('--help', '--set', 'SWM.L1-L2_ENABLED', '0')
       test('--help', '--set', 'SWM.L1-L2_ENABLED', '1')
