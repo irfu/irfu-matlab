@@ -46,6 +46,23 @@ classdef utils
 
 
 
+    function bicasConfigDir = get_BICAS_config_dir()
+      bicasConfigDir = fullfile(...
+        bicas.utils.get_BICAS_root_dir(), ...
+        bicas.const.DEFAULT_CONFIG_DIR_RPATH);
+    end
+
+
+
+    function bicasDefaultConfigFile = get_BICAS_default_config_file()
+      bicasDefaultConfigFile = fullfile(...
+        bicas.utils.get_BICAS_root_dir(), ...
+        bicas.const.DEFAULT_CONFIG_DIR_RPATH, ...
+        bicas.const.DEFAULT_CONFIG_FILENAME);
+    end
+
+
+
     % Whether two sets (arrays) of arbitrary objects are set equal.
     %
     % NOTE: Compare objects, not handles. NaN == NaN.

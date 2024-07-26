@@ -87,7 +87,9 @@ JsonSwd.release.source             = SwdMetadataMap('SWD.release.source');
 
 JsonSwd.environment.executable     = SwdMetadataMap('SWD.environment.executable');
 % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
-JsonSwd.environment.configuration  = bicas.const.DEFAULT_CONFIG_FILE_RELATIVE_PATH;
+JsonSwd.environment.configuration  = fullfile(...
+  bicas.const.DEFAULT_CONFIG_DIR_RPATH, ...
+  bicas.const.DEFAULT_CONFIG_FILENAME);
 
 JsonSwd.modes = {};
 for i = 1:length(SwmList)

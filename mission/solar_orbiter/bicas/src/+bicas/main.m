@@ -420,9 +420,7 @@ end
 if ~isempty(CliData.configFile)
   configFile = CliData.configFile;
 else
-  configFile = fullfile(...
-    bicasRootPath, ...
-    bicas.const.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
+  configFile = bicas.utils.get_BICAS_default_config_file();
 end
 L.logf('info', 'configFile = "%s"', configFile)
 L.log('info', 'Overriding subset of in-memory settings using config file.')

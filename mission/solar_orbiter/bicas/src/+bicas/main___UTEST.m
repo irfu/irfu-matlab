@@ -20,38 +20,212 @@
 %     file in the default location to enable tests to themselves specify the
 %     config file in the default location (e.g. no default cofig file).
 %
+% NOTE: The tests (2024-07-26) do temporarily replace any (optinally)
+%       pre-existing BICAS default config file (or directory, symlink), and then
+%       moves it back when the tests have completed (setup+teardown).
+%
+% NOTE: The irfu-matlab git repo does not contain any BICAS config file. That
+%       "has to" be created by the tests (and ideally should be).
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef main___UTEST < matlab.unittest.TestCase
-  % NOTE: The irfu-matlab git repo does not contain any BICAS config file. That
-  %       "has to" be created by the tests (and ideally should be).
+
+
+
+  %############
+  %############
+  % PROPERTIES
+  %############
+  %############
+  properties
+    testDir
+
+    % Path to config file which was found in the default location before the
+    % tests launched. Empty if there was no such file.
+    oldDefaultConfigFile
+  end
+
+
+
+  %#######
+  %#######
+  % SETUP
+  %#######
+  %#######
+  methods(TestClassSetup)
+
+
+
+    function setup(testCase)
+      defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
+
+      %==============================================================
+      % Temporarily move/rename default config file, if there is one
+      %==============================================================
+      if ismember(exist(defaultConfigFile), [2, 7])
+        Dt        = datetime();
+        Dt.Format = 'yyyy-MM-dd''T''hhmmss';
+        timestampStr = char(Dt);
+
+        filename = sprintf('%s.%s.%s', ...
+          bicas.const.DEFAULT_CONFIG_FILENAME, ...
+          mfilename(), timestampStr);
+
+        testCase.oldDefaultConfigFile = fullfile(...
+          bicas.utils.get_BICAS_config_dir(), filename);
+
+        [success, errorMessage, ~] = movefile(defaultConfigFile, testCase.oldDefaultConfigFile);
+        assert(success, errorMessage)
+      else
+        testCase.oldDefaultConfigFile = [];
+      end
+
+      Fixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      testCase.testDir = Fixture.Folder;
+    end
+
+
+
+  end
+
+
+
+  %##########
+  %##########
+  % TEARDOWN
+  %##########
+  %##########
+  methods(TestClassTeardown)
+
+
+
+    % NOTE: Empirically, this method is executed also if
+    % (1) tests are manually interrupted (Ctrl-C), or
+    % (2) tests raise exception.
+    function teardown(testCase)
+      defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
+
+      if isfile(defaultConfigFile)
+        % NOTE: delete() does not return any error info!
+        delete(defaultConfigFile)
+      end
+
+      %===================================================
+      % Restore old default config file, if there was one
+      %===================================================
+      if ~isempty(testCase.oldDefaultConfigFile)
+        [success, errorMessage, ~] = movefile(testCase.oldDefaultConfigFile, defaultConfigFile);
+        assert(success, ...
+          'Failed to restore old default config file from saved copy "%s".', ...
+          testCase.oldDefaultConfigFile, errorMessage)
+      end
+    end
+
+
+
+  end
+
+
+
+  %############
+  %############
+  % PROPERTIES
+  %############
+  %############
+  properties
+    testDir
+
+    % Path to config file which was found in the default location before the
+    % tests launched. Empty if there was no such file.
+    oldDefaultConfigFile
+  end
+
+
+
+  %#######
+  %#######
+  % SETUP
+  %#######
+  %#######
+  methods(TestClassSetup)
+
+
+
+    function setup(testCase)
+      defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
+
+      %==============================================================
+      % Temporarily move/rename default config file, if there is one
+      %==============================================================
+      if ismember(exist(defaultConfigFile), [2, 7])
+        Dt        = datetime();
+        Dt.Format = 'yyyy-MM-dd''T''hh:mm:ss';
+        timestampStr = char(Dt);
+
+        filename = sprintf('%s.%s.%s', ...
+          bicas.const.DEFAULT_CONFIG_FILENAME, ...
+          mfilename(), timestampStr);
+
+        testCase.oldDefaultConfigFile = fullfile(...
+          bicas.utils.get_BICAS_config_dir(), filename);
+
+        [success, errorMessage, ~] = movefile(defaultConfigFile, testCase.oldDefaultConfigFile);
+        assert(success, errorMessage)
+      else
+        testCase.oldDefaultConfigFile = [];
+      end
+
+
+      % movefile()
+    end
+
+
+
+  end
+  % methods(TestMethodSetup)
   %
-  % PROBLEM: Not clear how to test the use of config file: Explicit path .default path, content
-  % PROBLEM: How be able to both (1) run the tests locally, and (2) test loading
-  %          from the default config file path, without overwriting a
-  %          potentially pre-existing config file in the default location?
-  %   PROPOSAL: Refuse to run tests (fail) if there is a config file in the default
-  %             location. -- IMPLEMENTED
-  %       PRO: Safe.
-  %       CON: Local user has to manually temporarily remove the
-  %            pre-existing config file on default path.
-  %   PROPOSAL: Tests move a pre-existing default path config file out of the way,
-  %             and move it back after the tests.
-  %       CON: Dangerous w.r.t. bugs and failed tests(!).
-  %           PROPOSAL: Backup default config file.
-  %               CON: Pollutes local file system.
-  %           PROPOSAL: Use try-except. Move back original file in case of test
-  %                     failure.
-  %           PROPOSAL: Use setup & teardown for temporarily moving pre-existing
-  %                     bicas.conf file.
-  %             CON: Tests which specify a config file do not need it.
-  %                  ==> Unnecessary risk.
-  %             NOTE: One can have setup and teardown methods for all tests
-  %                   combined.
-  %                   https://se.mathworks.com/help/matlab/matlab_prog/write-setup-and-teardown-code-using-classes.html
+  %   function setup(testCase)
+  %     Fixture = testCase.applyFixture(...
+  %       matlab.unittest.fixtures.TemporaryFolderFixture);
+  %     % NOTE: The same fixture should always return the same directory.
+  %     testCase.testDir = Fixture.Folder;
+  %   end
   %
-  % TODO: Test that it works with default config file which is a symlink.
+  % end
+
+
+
+  %##########
+  %##########
+  % TEARDOWN
+  %##########
+  %##########
+  methods(TestClassTeardown)
+
+
+
+    function teardown(testCase)
+      defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
+
+      % NOTE: delete() does not return any error info!
+      delete(defaultConfigFile)
+
+      %===================================================
+      % Restore old default config file, if there was one
+      %===================================================
+      if ~isempty(testCase.oldDefaultConfigFile)
+        [success, errorMessage, ~] = movefile(testCase.oldDefaultConfigFile, defaultConfigFile);
+        assert(success, ...
+          'Failed to restore old default config file from saved copy "%s".', ...
+          testCase.oldDefaultConfigFile, errorMessage)
+      end
+    end
+
+
+
+  end
 
 
 
@@ -64,49 +238,64 @@ classdef main___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_no_error(testCase)
-      % IMPLEMENTATION NOTE: Code makes sure to always remove the created
-      % default path config file so that it does not pollute the local
-      % file system, if tests are run locally.
+    % Use default path config file (location).
+    function test_no_error_default_config_file(testCase)
 
-      % Test successful call (error code).
       function test(varargin)
         errorCode = bicas.main(varargin{:});
         testCase.assertEqual(errorCode, 0)
       end
 
-      %===================================================================
+      configFileAPath = bicas.main___UTEST.write_default_config_file();
 
-      % Use default path config file.
-      configFileAPath = bicas.main___UTEST.setup_default_config_file();
       test('--help')
       test('--version')
       test('--identification')
       test('--swdescriptor')
 
-      test('--help', '--set', 'SWM.L1-L2_ENABLED', '0')
+      test('--swdescriptor', ...
+        '--set', 'SWM.L1-L2_ENABLED',         '1', ...
+        '--set', 'SWM.L2-L2_CWF-DSR_ENABLED', '1', ...
+        '--set', 'SWM.L2-L3_ENABLED',         '1')
       test('--help', '--set', 'SWM.L1-L2_ENABLED', '1')
-      test('--version', '--log', '/ignored_path_to_log_file')
-      delete(configFileAPath)
 
-      % Test specifying config file path.
-      configFileAPath = bicas.main___UTEST.setup_specified_config_file(testCase, 'test.conf');
+      test('--version', '--log', '/ignored_path_to_log_file')
+
+      delete(configFileAPath)
+    end
+
+
+
+    % Test specifying config file path.
+    function test_no_error_explicit_config_file(testCase)
+
+      function test(varargin)
+        errorCode = bicas.main(varargin{:});
+        testCase.assertEqual(errorCode, 0)
+      end
+
+      configFileAPath = bicas.main___UTEST.write_specified_config_file(testCase, 'test.conf');
+
       test('--help', '--config', configFileAPath, '--set', 'SWM.L1-L2_ENABLED', '1')
 
       % ----------------------------------
       % --log-matlab : Log file is created
       % ----------------------------------
-      configFileAPath = bicas.main___UTEST.setup_default_config_file();
-      logFilePath = fullfile(bicas.main___UTEST.get_temp_dir(testCase), 'bicas.log');
+      configFileAPath = bicas.main___UTEST.write_default_config_file();
+      logFilePath     = fullfile(testCase.testDir, 'bicas.log');
+
       testCase.assertFalse(isfile(logFilePath))
+
       test('--version', '--log-matlab', logFilePath)
       testCase.assertTrue(isfile(logFilePath))
+
       delete(configFileAPath)
     end
 
 
 
     function test_error(testCase)
+
       % Test unsuccessful call (non-zero error code)
       % NOTE: bicas.main() raises exception but catches it itself.
       function test_error(varargin)
@@ -115,7 +304,7 @@ classdef main___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(errorCode, 1)
       end
 
-      configFileAPath = bicas.main___UTEST.setup_default_config_file();
+      configFileAPath = bicas.main___UTEST.write_default_config_file();
       test_error()    % Zero CLI arguments.
       test_error('illegal_argument')
       test_error('--illegal_argument')
@@ -137,37 +326,17 @@ classdef main___UTEST < matlab.unittest.TestCase
 
 
 
-    function tempDir = get_temp_dir(testCase)
-      fixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-      tempDir = fixture.Folder;
-    end
-
-
-
-    function configFileAPath = setup_default_config_file()
+    function defaultConfigFileAPath = write_default_config_file()
       % Create empty BICAS config file in the default location.
       % Asserts that no such file pre-exists.
-      bicasRootPath = bicas.utils.get_BICAS_root_dir();
-      configFileAPath = fullfile(bicasRootPath, 'config', 'bicas.conf');
-
-      % ASSERT: Default path config file does not pre-exists.
-      % IMPLEMENTATION NOTE: Refuse to overwrite pre-existing file to
-      % make sure that the test does not overwrite a legitimate custom
-      % config file when running the tests locally.
-      if isfile(configFileAPath)
-        error(...
-          ['"%s" already pre-exists. Aborting to avoid overwriting presumed', ...
-          ' local user-defined config file.'], configFileAPath)
-      end
-
-      fclose(fopen(configFileAPath, 'w'));
+      defaultConfigFileAPath = irf.fs.create_empty_file({...
+        bicas.utils.get_BICAS_default_config_file()});
     end
 
 
 
-    function configFileAPath = setup_specified_config_file(testCase, configFileRPath)
-      configFileAPath = fullfile(bicas.main___UTEST.get_temp_dir(testCase), configFileRPath);
-      fclose(fopen(configFileAPath, 'w'));
+    function configFileAPath = write_specified_config_file(testCase, configFileRPath)
+      configFileAPath = irf.fs.create_empty_file({testCase.testDir, configFileRPath});
     end
 
 

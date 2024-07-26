@@ -55,10 +55,11 @@ classdef const
     %       MATLAB 2024a.
     PERMITTED_MATLAB_VERSIONS_CA = {'2023b', '2024a'};
 
-    % Path to default config file relative to BICAS's directory root. Note
-    % that this is also implicitly the constant for the default config file
-    % filename.
-    DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');
+    % Path to "config directory" (the directory where the default config file is
+    % located, if any) relative to BICAS's directory root.
+    DEFAULT_CONFIG_DIR_RPATH     = 'config';
+
+    DEFAULT_CONFIG_FILENAME      = 'bicas.conf';
 
     % MATLAB stdout prefix to signal to bash wrapper that the log message
     % should be passed on to STDOUT (without the prefix).
