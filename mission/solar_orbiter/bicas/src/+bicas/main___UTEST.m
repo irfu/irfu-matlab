@@ -58,7 +58,7 @@ classdef main___UTEST < matlab.unittest.TestCase
 
 
 
-    function setup(testCase)
+    function setup_class(testCase)
       defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
 
       %==============================================================
@@ -81,7 +81,16 @@ classdef main___UTEST < matlab.unittest.TestCase
       else
         testCase.oldDefaultConfigFile = [];
       end
+    end
 
+
+
+  end
+  methods(TestMethodSetup)
+
+
+
+    function setup_method(testCase)
       Fixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
       testCase.testDir = Fixture.Folder;
     end
@@ -104,7 +113,7 @@ classdef main___UTEST < matlab.unittest.TestCase
     % NOTE: Empirically, this method is executed also if
     % (1) tests are manually interrupted (Ctrl-C), or
     % (2) tests raise exception.
-    function teardown(testCase)
+    function teardown_class(testCase)
       defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
 
       if isfile(defaultConfigFile)
