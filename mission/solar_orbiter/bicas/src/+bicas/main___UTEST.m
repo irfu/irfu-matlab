@@ -129,106 +129,6 @@ classdef main___UTEST < matlab.unittest.TestCase
 
 
 
-  %############
-  %############
-  % PROPERTIES
-  %############
-  %############
-  properties
-    testDir
-
-    % Path to config file which was found in the default location before the
-    % tests launched. Empty if there was no such file.
-    oldDefaultConfigFile
-  end
-
-
-
-  %#######
-  %#######
-  % SETUP
-  %#######
-  %#######
-  methods(TestClassSetup)
-
-
-
-    function setup(testCase)
-      defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
-
-      %==============================================================
-      % Temporarily move/rename default config file, if there is one
-      %==============================================================
-      if ismember(exist(defaultConfigFile), [2, 7])
-        Dt        = datetime();
-        Dt.Format = 'yyyy-MM-dd''T''hh:mm:ss';
-        timestampStr = char(Dt);
-
-        filename = sprintf('%s.%s.%s', ...
-          bicas.const.DEFAULT_CONFIG_FILENAME, ...
-          mfilename(), timestampStr);
-
-        testCase.oldDefaultConfigFile = fullfile(...
-          bicas.utils.get_BICAS_config_dir(), filename);
-
-        [success, errorMessage, ~] = movefile(defaultConfigFile, testCase.oldDefaultConfigFile);
-        assert(success, errorMessage)
-      else
-        testCase.oldDefaultConfigFile = [];
-      end
-
-
-      % movefile()
-    end
-
-
-
-  end
-  % methods(TestMethodSetup)
-  %
-  %   function setup(testCase)
-  %     Fixture = testCase.applyFixture(...
-  %       matlab.unittest.fixtures.TemporaryFolderFixture);
-  %     % NOTE: The same fixture should always return the same directory.
-  %     testCase.testDir = Fixture.Folder;
-  %   end
-  %
-  % end
-
-
-
-  %##########
-  %##########
-  % TEARDOWN
-  %##########
-  %##########
-  methods(TestClassTeardown)
-
-
-
-    function teardown(testCase)
-      defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
-
-      % NOTE: delete() does not return any error info!
-      delete(defaultConfigFile)
-
-      %===================================================
-      % Restore old default config file, if there was one
-      %===================================================
-      if ~isempty(testCase.oldDefaultConfigFile)
-        [success, errorMessage, ~] = movefile(testCase.oldDefaultConfigFile, defaultConfigFile);
-        assert(success, ...
-          'Failed to restore old default config file from saved copy "%s".', ...
-          testCase.oldDefaultConfigFile, errorMessage)
-      end
-    end
-
-
-
-  end
-
-
-
   %##############
   %##############
   % TEST METHODS
@@ -261,6 +161,15 @@ classdef main___UTEST < matlab.unittest.TestCase
 
       test('--version', '--log', '/ignored_path_to_log_file')
 
+      % ----------------------------------
+      % --log-matlab : Log file is created
+      % ----------------------------------
+      logFilePath     = fullfile(testCase.testDir, 'bicas.log');
+      testCase.assertFalse(isfile(logFilePath))
+
+      test('--version', '--log-matlab', logFilePath)
+      testCase.assertTrue(isfile(logFilePath))
+
       delete(configFileAPath)
     end
 
@@ -277,19 +186,6 @@ classdef main___UTEST < matlab.unittest.TestCase
       configFileAPath = bicas.main___UTEST.write_specified_config_file(testCase, 'test.conf');
 
       test('--help', '--config', configFileAPath, '--set', 'SWM.L1-L2_ENABLED', '1')
-
-      % ----------------------------------
-      % --log-matlab : Log file is created
-      % ----------------------------------
-      configFileAPath = bicas.main___UTEST.write_default_config_file();
-      logFilePath     = fullfile(testCase.testDir, 'bicas.log');
-
-      testCase.assertFalse(isfile(logFilePath))
-
-      test('--version', '--log-matlab', logFilePath)
-      testCase.assertTrue(isfile(logFilePath))
-
-      delete(configFileAPath)
     end
 
 
