@@ -29,7 +29,9 @@ function [pst] = irf_int_sph_dist(F,v,phi,th,vg,varargin)
 %   've'    -   velocity edges of instrument (from delta_energy) with same
 %               units as v and one element longer than v
 %   'dphi'  -   array of dphi in cases where phi are not evenly separated
-%   'dth'  -   array of dth in cases where phi are not evenly separated
+%   'dth'   -   array of dth in cases where phi are not evenly separated
+%   'counts'-   if F is a PDist converted to counts, this flag should be
+%               set to 1. It is 0 by default.
 %
 %
 %   Output is a structure that contains the fields:
@@ -76,6 +78,7 @@ weight = 'none'; % how number of MC points is weighted to data
 base = 'pol'; % If 1D then this does not matter
 veInput = 0; % input energy differences
 veInputEdges = 0; %
+counts = 0;
 
 args = varargin;
 nargs = length(varargin);
@@ -115,6 +118,8 @@ while have_options
       dPhi = args{2};
     case 'dth'
       dTh = args{2};
+    case 'counts'
+      counts = args{2};
   end
   args = args(3:end);
   if isempty(args), break, end
@@ -319,9 +324,17 @@ for i = 1:nV % velocity (energy)
         for l = 1:nMCt
           % add value to appropriate projection bin
           if usePoint(l) && ~isempty(iAzg(l)) && ~isempty(iVg(l)) && (iAzg(l)<nAzg+1 || iAzg(l)==1) && iVg(l)<nVg+1
-            Fg(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
+            if counts
+              Fg(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)/nMCt; % no dtau/dAg weighting
+            else
+              Fg(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
+            end
             if projDim == 2
-              Fg_(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
+              if counts
+                Fg_(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)/nMCt; % no dtau/dAg weighting
+              else
+                Fg_(iAzg(l),iVg(l)) = Fg(iAzg(l),iVg(l))+F(i,j,k)*dtau(i,j,k)/dAg(iVg(l))/nMCt;
+              end
             end
           end
         end
@@ -341,7 +354,11 @@ for i = 1:nV % velocity (energy)
         % appropriate projection bin
         for l = 1:nMCt
           if usePoint(l) && vxp(l)>min(vg_edges) && vxp(l)<max(vg_edges) && vyp(l)>min(vg_edges) && vyp(l)<max(vg_edges)
-            Fg(iVxg(l),iVyg(l)) = Fg(iVxg(l),iVyg(l))+F(i,j,k)*dtau(i,j,k)/dAg/nMCt;
+            if counts
+              Fg(iVxg(l),iVyg(l)) = Fg(iVxg(l),iVyg(l))+F(i,j,k)/nMCt; % no dtau/dAg weighting
+            else
+              Fg(iVxg(l),iVyg(l)) = Fg(iVxg(l),iVyg(l))+F(i,j,k)*dtau(i,j,k)/dAg/nMCt;
+            end
           end
         end
       end
