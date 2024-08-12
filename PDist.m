@@ -1023,7 +1023,8 @@ classdef PDist < TSeries
       %     'weight' - how the number of MC iterations per bin is weighted,
       %                can be 'none' (default), 'lin' or 'log'
       %     'counts' - if obj is converted to counts, this flag should be
-      %                set to 1. It is 0 by default.
+      %                set to 1. It is 0 by default. Note: need to ensure
+      %                counts are not unitless, but in SI units (s^3/m^6)
       %
       %
       %   The output is a PDist object with the reduced distribution where
