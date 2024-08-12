@@ -8,7 +8,8 @@
 %   function for different dataset filename formats.
 % * Function uses the exact set of fields to determine which naming convention
 %   to follow, not just the field values.
-% * Will not (yet) work for dataset filenames which uppercase outside of archiving level
+% * Will not (yet) work for dataset filenames which uppercase outside of
+%   the archiving level.
 %   Ex: solo_L1_swa-eas2-NM3D_20201027T000007-20201027T030817_V01.cdf
 %
 %
@@ -38,7 +39,7 @@
 function filename = create_dataset_filename(R)
 % NOTE: See comments for solo.adm.dsfn.parse_dataset_filename().
 %
-% PROPOSAL: Ability to add IRF-internal basename suffix.
+% PROPOSAL: Ability to add IRF-internal basename suffix. -- IMPLEMENTED
 %   Ex: solo_L2_rpw-tds-lfm-rswf-e_20200410_V01.suffix1.cdf
 %   PROPOSAL: Ability to add sequence of such suffixes.
 %       Ex: solo_L2_rpw-tds-lfm-rswf-e_20200410_V01.suffix1.suffix2.cdf
@@ -87,8 +88,8 @@ irf.assert.struct(R, ...
 
 % Convert R.unoffExtension to actual string to add to basename
 % ------------------------------------------------------------
-% IMPLEMENTATION NOTE: Thorougly check R.unoffExtension format since it
-% often gets wrong.
+% IMPLEMENTATION NOTE: Thoroughly check R.unoffExtension format since one
+% often gets it wrong.
 if isempty(R.unoffExtension) && ~iscell(R.unoffExtension)
   unoffExtension = '';
 elseif isscalar(R.unoffExtension) && iscell(R.unoffExtension) && ischar(R.unoffExtension{1})

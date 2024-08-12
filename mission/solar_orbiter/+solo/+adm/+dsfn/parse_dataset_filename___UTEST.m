@@ -40,13 +40,13 @@ classdef parse_dataset_filename___UTEST < matlab.unittest.TestCase
 
 
 
-      %=========================================
-      % NOT dataset, but similar (all failures)
-      %=========================================
+      %=====================================================
+      % NOT dataset filenames, but similar (all unsupported)
+      %=====================================================
       test_parse('SOLO_HK_RPW-BIA_V01.skt', ...
         []);
       test_parse('SOLO_HK_RPW-BIA_V01.CDF', ...
-        []);   % Uppercase suffix.
+        []);   % Uppercase suffix, no time interval string.
       test_parse('solo_l2_rpw-lfr-surv-swf-e-cdag_20200213_V01.cdf', ...
         []);   % Lowercase L2.
       test_parse('solo_L3_rpw-lfr-surv-cwf-e_20200423_V01.png', ...
@@ -118,9 +118,9 @@ classdef parse_dataset_filename___UTEST < matlab.unittest.TestCase
         'cneTestStr',         '4129f0b_CNE', ...
         'unoffExtension',     {{'modified'}}));
 
-      %=================
-      % In-flight, date
-      %=================
+      %===========
+      % In-flight
+      %===========
       test_both(...
         'solo_L2_rpw-lfr-surv-swf-e_20200213_V01.cdf', ...
         struct(...
@@ -174,9 +174,6 @@ classdef parse_dataset_filename___UTEST < matlab.unittest.TestCase
         'timeIntervalStr',    '20220210-20990101', ...
         'unoffExtension',     []));    % Test longer version string.
 
-      %==========================
-      % In-flight, time interval
-      %==========================
       test_both(...
         'solo_L1_rpw-bia-sweep-cdag_20190102T030405-20201112T131415_V01.cdf', ...
         struct(...

@@ -1,5 +1,5 @@
 %
-% Given a filename, interpret it as a SO dataset and parse it.
+% Given a filename, parse it as a SolO dataset filename if possible.
 %
 % Primarily meant to:
 % ** Distinguish between datasets and non-datasets.
@@ -31,13 +31,16 @@
 %       level "CAL".
 %
 %
-% RECOGNIZED FILENAMING CONVENTION: EXAMPLES
+% SUPPORTED FILENAMING CONVENTIONS: EXAMPLES
 % ==========================================
 %
-% Datasets from ground testing:
-% -----------------------------
+% Datasets from (early) RPW ground testing
+% ----------------------------------------
+% "LES" filenaming:
 %   solo_L1_rpw-tds-lfm-rswf_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
+% "CNES" filenaming:
 %   ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
+%   NOTE: No time interval string.
 %
 % Datasets from flight
 % --------------------
@@ -53,14 +56,14 @@
 %             /EJ+XB-mail 2020-05-27
 %
 %
-% UN-RECOGNIZED FILENAMING CONVENTIONS: EXAMPLES
-% ==============================================
+% UNSUPPORTED FILENAMING CONVENTIONS: EXAMPLES
+% ============================================
 % Master CDFs:
 %   SOLO_HK_RPW-BIA_V01.cdf
 %   SOLO_L2_RPW-LFR-SURV-CWF-E_V04.cdf
 % Draft Master CDFs:
 %   SOLO_L1_RPW-BIA-CURRENT_V01.Draft.cdf
-%       (Probably not official; probably ROC ad hoc)
+%       (Probably not even official; probably ROC ad hoc filenames)
 % Summary plots (which BTW are NOT datasets!):
 %   solo_L3_rpw-lfr-surv-cwf-e_20200423_V01.png
 %   solo_L3_rpw-lfr-surv-swf-e_20200423_V01.png
@@ -68,19 +71,19 @@
 %
 % IMPLEMENTATION NOTES
 % ====================
-% Designed to be easy to
-% ** understand which and how filenaming conventions are recognized
-% ** edit filenaming conventions
-% ** add filenaming conventions
-% ** modify the behaviour upon partial recognition, i.e. when to signal
-%   ** filename is not a dataset
-%   ** filename seems like dataset, but with corrupted filename (not
+% Designed to be easy to:
+% * understand which and how filenaming conventions are recognized
+% * edit filenaming conventions
+% * add filenaming conventions
+% * modify the behaviour upon partial recognition, i.e. when to signal
+%   * filename is not a dataset
+%   * filename seems like dataset, but with corrupted filename (not
 %      implemented)
-% ** make it possible to completely reconstruct the filename from the return
-%    values.
-%    This may change though due to e.g.
-%       -- permitting both file suffix cases,
-%       -- permitting own extensions to filenaming conventions.
+% * make it possible to completely reconstruct the filename from the return
+%   values.
+%   This may change though due to e.g.
+%       - permitting both file suffix cases,
+%       - permitting own extensions to filenaming conventions.
 %
 %
 % ARGUMENTS
@@ -92,7 +95,7 @@
 %
 % RETURN VALUES
 % =============
-% Result
+% R
 %       If not a recognizable dataset filename, then: []
 %       If     a recognizable dataset filename, then:
 %           Struct with a varying set of fields, depending on the filenaming
@@ -141,40 +144,47 @@
 %
 function R = parse_dataset_filename(filename)
 %
+% PROPOSAL: Abolish unoffExtension.
+%   PRO: Causes some filenames to unexpectedly be intepreted as compliant.
+%     Ex: "solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf"
+%
 % PROPOSAL: Return version NUMBER, not string.
 %   CON: Harder to adapt to changing versioning scheme.
 %       Ex: V2.3.4, V2_3_4
-%       CON: Unlikely to happen
-%   PRO: Often want to do this anyway.
+%       CON: Unlikely to happen.
+%   PRO: Often want version number anyway.
 %       Ex: Find latest version.
 %
 % PROPOSAL: Change name dateVec --> timeVec
 %   PROPOSAL: MATLAB seems to use "date vector", and "time vector" for vector of timestamps.
 %
-% PROPOSAL: Reorganize to be more similar to python erikpgohansson.so.parse_dataset_filename?
+% PROPOSAL: Replace date vectors with datetime objects (UTC).
+%   CON: CNES and LES filenaming *might* not have used UTC.
+%        ==> Better to use date vectors.
+%     CON-PROPOSAL: Use datetime without UTCLeapSeconds.
+%
+% PROPOSAL: Reorganize to be more similar to python erikpgohansson.solo.utils.parse_dataset_filename()?
 %   NOTE: Partly done.
-%   NOTE: python function
-%       * does not cover LES, CNES and time-less filename formats.
-%       * always returns same "struct" format, including time format.
-%       * can not reconstruct filename.
+%   NOTE: Python function (not MATLAB).
+%       * Does not cover LES, CNES and time-less filename formats.
+%       * Always returns same "struct" format, including time format.
+%       * Can not reconstruct filename.
 %   PROPOSAL: Just ONE topmost regex_str_parts. Then regex_str_parts on parts.
 %       CON: Impossible(?) to reduce number of top-level case due to special
 %            cases for LES and CNES test files.
 %
 % PROPOSAL: Use time interval string to denote time in both
-%           parse_dataset_filename() and create_dataset_filename(). No time vectors.
+%           parse_dataset_filename() and create_dataset_filename(). No timestamps.
 %           Caller should instead use pre-existing separate functions
 %               solo.adm.dsfn.parse_time_interval_str()
 %               solo.adm.dsfn.create_time_interval_str()
 %   PRO: No redundant (time) information (that can contradict) in R.
 %       PRO: Does not need to ignore but permit time interval string in
 %           create_dataset_filename().
+%   CON: Turns the filename parsing into a two stage process. ==> Bad for
+%        quickly identifying filenames as datasets/non-datasets.
 % PROPOSAL: Separate return struct for time vectors. Time interval string in
 %           return value.
-%
-% PROPOSAL: Abolish unoffExtension.
-%   PRO: Causes some filenames to unexpectedly be intepreted as compliant.
-%     Ex: "solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf"
 %
 % PROPOSAL: Separate (globally available) parse/create functions for every
 %           separate filenaming scheme.
@@ -198,8 +208,8 @@ function R = parse_dataset_filename(filename)
 %           extension.
 %
 % PROPOSAL: Refactor to return class.
-%   PROBLEM: solo.adm.dsfn.parse_dataset_filename_many() adds field "path" to return
-%            value and passes it on in its own return value.
+%   PROBLEM: solo.adm.dsfn.parse_dataset_filename_many() adds field "path" to
+%            return value and passes it on in its own return value.
 %   PROBLEM: Class should work with solo.adm.dsfn.create_dataset_filename().
 %     PROBLEM: How handle fields which
 %          (1) are returned from parsing, but are simultaneously
@@ -216,12 +226,10 @@ function R = parse_dataset_filename(filename)
 %       CON-PROPOSAL: Use parsing function for shared implemention for shared
 %                     parts of naming conventions.
 %
-% PROPOSAL: Replace date vectors with datetime objects (UTC).
-%
 % PROPOSAL: Use field names identical to the terms used in specifications (RCS
 %           ICD, SOL-SGS-TN-0009).
 %   Ex: Datetime, descriptor
-%   CON: Terms do not follow variable naming conventions.
+%   CON: Terms do not follow own variable naming conventions.
 %
 % PROPOSAL: Abolish fnDatasetIdCdag.
 %   TODO-NI: Is it used/useful for anything?
@@ -229,8 +237,13 @@ function R = parse_dataset_filename(filename)
 %   PROPOSAL: Separate CDAG string.
 %     CON: Information overlaps with isCdag.
 %   PROPOSAL: Function for easily converting DSI+isCdag --> dsicdag
-% PROPOSAL: datasetId --> DSI
+%
+% PROPOSAL: datasetId --> DSID
 %   NOTE: Includes "fnDatasetIdCdag"
+%
+% PROPOSAL: Forbid longer version strings beginning with zero.
+%
+% PROPOSAL: Move descriptions of supported filenaming conventions to README.TXT.
 
 NO_MATCH_RETURN_VALUE = [];
 UNUSED_DATE_VECTOR    = [0, 0, 0, 0, 0, 0];
