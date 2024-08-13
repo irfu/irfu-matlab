@@ -29,8 +29,7 @@
 % R
 %       Struct with varying set of fieldnames, depending on which filenaming
 %       convention to follow. Identical to the one in
-%       solo.adm.dsfn.parse_dataset_filename(), except timeIntervalStr
-%       which is optional.
+%       solo.adm.dsfn.parse_dataset_filename().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -48,8 +47,7 @@ irf.assert.struct(R, ...
     'dateVec1', 'dateVec2', 'timeIntervalFormat' ...
   }, ...
   { ...
-    'fnDatasetIdCdag', 'timeIntervalStr', ...
-    'cneTestStr', 'lesTestStr' ...
+    'fnDatasetIdCdag', 'cneTestStr', 'lesTestStr' ...
   })
 
 
@@ -79,11 +77,6 @@ R = rmfield(R, {...
 
 % Remove some optional field names
 % --------------------------------
-% "timeIntervalStr" is not used by this function. Only permitted for
-% compatibility with solo.adm.dsfn.parse_dataset_filename().
-if isfield(R, 'timeIntervalStr')
-  R = rmfield(R, 'timeIntervalStr');
-end
 if isfield(R, 'fnDatasetIdCdag')
   R = rmfield(R, 'fnDatasetIdCdag');
 end
@@ -92,7 +85,6 @@ end
 
 fnCa = fieldnames(R);
 
-% NOTE: Ignores R.timeIntervalStr (if present) but derives it instead.
 timeIntervalStr = solo.adm.dsfn.create_time_interval_str(dateVec1, dateVec2, timeIntervalFormat);
 
 

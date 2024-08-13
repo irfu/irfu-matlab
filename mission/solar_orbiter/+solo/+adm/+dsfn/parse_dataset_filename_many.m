@@ -60,7 +60,7 @@ for iFile = 1:numel(filePathCa)
 
   filename = irf.fs.get_name(filePathCa{iFile});
 
-  R = solo.adm.dsfn.parse_dataset_filename(filename);
+  [R, ~] = solo.adm.dsfn.parse_dataset_filename(filename);
 
   if ~isempty(R)
     % CASE: File can be identified as a dataset.
