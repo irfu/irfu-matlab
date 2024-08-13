@@ -16,14 +16,14 @@
 %       Column cell array of paths to files. Can be both datasets and not.
 %
 %
-% RETURN VALUE
-% ============
+% RETURN VALUES
+% =============
 % fiCa
 %       Nx1 cell array of structs. FI = File Info
 %       {iDataset} : Struct. Fields from
 %           solo.adm.dsfn.parse_dataset_filename() plus extra field
 %           below:
-%               .path : Path in filePathList{iFile}.
+%               .path : Path in filePathCa{iFile}.
 % bIsDatasetArray
 %       Logical column array. Same size as argument. True iff the corresponding
 %       input path was interpreted as a dataset (was translated into a DSMD).
@@ -67,6 +67,8 @@ for iFile = 1:numel(filePathCa)
 
     % NOTE: Ignores .versionStr
     Fi      = R;
+    % NOTE: Adds field ".path" to struct returned from
+    %       solo.adm.dsfn.parse_dataset_filename().
     Fi.path = filePathCa{iFile};
 
     fiCa{           end+1, 1} = Fi;

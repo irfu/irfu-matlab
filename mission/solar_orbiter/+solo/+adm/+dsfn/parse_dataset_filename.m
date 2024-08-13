@@ -31,44 +31,6 @@
 %       level "CAL".
 %
 %
-% SUPPORTED FILENAMING CONVENTIONS: EXAMPLES
-% ==========================================
-%
-% Datasets from (early) RPW ground testing
-% ----------------------------------------
-% "LES" filenaming:
-%   solo_L1_rpw-tds-lfm-rswf_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-% "CNES" filenaming:
-%   ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
-%   NOTE: No time interval string.
-%
-% Datasets from flight
-% --------------------
-%   solo_HK_rpw-bia_20200301_V01.cdf                   # NOTE: No -cdag.
-%   solo_L2_rpw-lfr-surv-cwf-e-cdag_20200213_V01.cdf   # NOTE: -cdag.
-%   solo_L1_rpw-bia-sweep-cdag_20200307T053018-20200307T053330_V01.cdf
-%       NOTE: Time interval, not day.
-%   solo_L1_rpw-bia-current-cdag_20200401T000000-20200421T000000_V01.cdf
-%       NOTE: Should eventually be phased out for currents (not sweeps).
-%             /EJ+XB-mail 2020-05-27
-%   solo_L1_rpw-bia-current-cdag_20200301-20200331_V01.cdf
-%       NOTE: Future replacement for currents (not sweeps).
-%             /EJ+XB-mail 2020-05-27
-%
-%
-% UNSUPPORTED FILENAMING CONVENTIONS: EXAMPLES
-% ============================================
-% Master CDFs:
-%   SOLO_HK_RPW-BIA_V01.cdf
-%   SOLO_L2_RPW-LFR-SURV-CWF-E_V04.cdf
-% Draft Master CDFs:
-%   SOLO_L1_RPW-BIA-CURRENT_V01.Draft.cdf
-%       (Probably not even official; probably ROC ad hoc filenames)
-% Summary plots (which BTW are NOT datasets!):
-%   solo_L3_rpw-lfr-surv-cwf-e_20200423_V01.png
-%   solo_L3_rpw-lfr-surv-swf-e_20200423_V01.png
-%
-%
 % IMPLEMENTATION NOTES
 % ====================
 % Designed to be easy to:
@@ -171,7 +133,27 @@ function R = parse_dataset_filename(filename)
 % PROPOSAL: Separate (globally available) parse/create functions for every
 %           separate filenaming scheme.
 %   CON: Harder to reuse similarities.
-%       Ex: DATASET_ID, version
+%       Ex: DATASET_ID, version, time interval string
+%       CON-PROPOSAL: Use shared RE constants, functions.
+%   CON: Requires one return value class (future) for every filenaming convention.
+%     CON: Requires one pair of parse/create fuctions per filenaming convention already.
+%   CON: Can not build composite function for simultaneously handling all
+%        filenaming conventions (as the current create/parse functions do).
+%     CON: Filenaming conventions are too dissimilar for doing that anyway: Have
+%          different variables.
+%       Ex: "CNE" filenaming convention has hash, has no time interval string.
+%       Ex: "LES" filenaming convention has hash.
+%       Ex: Inflight filenaming has isCdag (has no hash).
+%   CON: solo.adm.dsfn.parse_dataset_filename_many() would only apply to one
+%        filenaming convention.
+%     CON-PROPOSAL: Can call functions for multiple filenaming conventions.
+%       PRO: Functions would be made for making this easy.
+%     NOTE: solo.adm.dsfn.parse_dataset_filename_many() is only used by
+%           solo.adm.paths_to_DSMD_array().
+%     CON-PROPOSAL: Merge solo.adm.dsfn.parse_dataset_filename_many() into
+%                   solo.adm.paths_to_DSMD_array().
+%       CON: No need for a replacement of return value + ".path" field. DSMD is
+%            the "replacement".
 %   PRO: Cleaner functions.
 %       PRO: Consistent return format.
 %           CON: Not true for time vectors which reflect format of time
@@ -179,14 +161,15 @@ function R = parse_dataset_filename(filename)
 %       PRO: Can easily have different requirements for different filenaming
 %            conventions.
 %           Ex: isCdag (only for official; not LES and CNES filenaming).
-%   PROPOSAL: One class "fn" with shared code
+%   PROPOSAL: One MATLAB package per filenaming convention.
+%   PROPOSAL: One class "fn" (filenames) with shared code
 %       Ex: utility functions (used by top-level functions)
 %       Ex: regexp constants
 %   PROPOSAL: One top-level function that handles all filenaming conventions
 %             together. Should assign(?) string for identified convention.
 %
 % PROPOSAL: Refactor to return class.
-%   PROBLEM: solo.adm.dsfn.parse_dataset_filename_many() adds field "path" to
+%   PROBLEM: solo.adm.dsfn.parse_dataset_filename_many() adds field ".path" to
 %            return value and passes it on in its own return value.
 %   PROBLEM: Class should work with solo.adm.dsfn.create_dataset_filename().
 %     PROBLEM: How handle fields which
@@ -220,8 +203,8 @@ function R = parse_dataset_filename(filename)
 %   NOTE: Includes "fnDatasetIdCdag"
 %
 % PROPOSAL: Forbid longer version strings beginning with zero.
-%
-% PROPOSAL: Move descriptions of supported filenaming conventions to README.TXT.
+% PROPOSAL: Forbid uppercase "-CDAG". Should never happen.
+% PROPOSAL: Only permit "-cdag"" for inflight datasets.
 
 NO_MATCH_RETURN_VALUE = [];
 UNUSED_DATE_VECTOR    = [0, 0, 0, 0, 0, 0];
@@ -237,9 +220,9 @@ end
 
 
 
-%==========================
-% Parse DATA_SET_ID + CDAG
-%==========================
+%=========================
+% Parse DATASET_ID + CDAG
+%=========================
 % IMPLEMENTATION NOTE: Could use separate "-CDAG" regexp but then have to
 % use negative lookahead to exclude "-CDAG" from the preceding DATASET_ID
 % (due to maximal munch). Could then use irf.str.read_token()
@@ -278,15 +261,6 @@ CNE_TESTSTR_RE = '[0-9a-f]{7,7}_CNE';
 
 
 %===========================================================================
-% Different types of supported filenaming conventions
-% ---------------------------------------------------
-% solo_L2_rpw-lfr-surv-cwf-e-cdag_20200213_V01.cdf
-% solo_L1_rpw-bia-current-cdag_20200401T000000-20200421T000000_V01.cdf
-% solo_L1_rpw-bia-current-cdag_20200301-20200331_V01.cdf
-% SOLO_L2_RPW-LFR-SURV-CWF-E_V04.cdf
-% ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
-% solo_L1_rpw-tds-lfm-rswf_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-%
 % NOTE: Checks for different naming conventions in assumed order of
 % decreasing likelyhood of being used.
 % ==> Potential speedup.
@@ -302,8 +276,8 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
   'permit non-match');
 if perfectMatch & ~dsicdagUppercase
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
-  R.timeIntervalStr =                  subStrCa{2};
-  R.versionStr      = ver_2_versionStr(subStrCa{4});
+  R.timeIntervalStr =                                subStrCa{2};
+  R.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
   return
 end
 
@@ -316,15 +290,15 @@ end
 if perfectMatch & ~dsicdagUppercase
   assert(~R.isCdag)
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
-  R.timeIntervalStr =                  subStrCa{2};
-  R.versionStr      = ver_2_versionStr(subStrCa{4});
-  R.lesTestStr      =                  subStrCa{6};
+  R.timeIntervalStr =                                subStrCa{2};
+  R.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
+  R.lesTestStr      =                                subStrCa{6};
   return
 end
 
-%===============================
-% "CNES" filenameing convention
-%===============================
+%=============================
+% "CNE" filenaming convention
+%=============================
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', CNE_TESTSTR_RE, '_', VERSION_RE}, ...
   'permit non-match');
@@ -334,8 +308,8 @@ if perfectMatch & dsicdagUppercase
   R.dateVec2           = UNUSED_DATE_VECTOR;
   R.timeIntervalFormat = 'NO_TIME_INTERVAL';
   %
-  R.cneTestStr         =                  subStrCa{2};
-  R.versionStr         = ver_2_versionStr(subStrCa{4});
+  R.cneTestStr         =                                subStrCa{2};
+  R.versionStr         = version_RE_match_to_versionStr(subStrCa{4});
   return
 end
 
@@ -348,6 +322,6 @@ end    % parse_dataset_filename()
 
 
 
-function versionStr = ver_2_versionStr(s)
+function versionStr = version_RE_match_to_versionStr(s)
 versionStr = s(2:end);   % NOTE: No conversion to number.
 end

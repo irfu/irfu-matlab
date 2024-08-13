@@ -1,12 +1,12 @@
 %
-% Create time interval string. Function supports
+% Create time interval string. The function supports
 % solo.adm.dsfn.create_dataset_filename().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function timeIntervalStr = create_time_interval_str(dateVec1, dateVec2, timeIntervalFormat)
-    % PROPOSAL: Automatic test code.
+% PROPOSAL: Automatic test code.
 
 if strcmp(timeIntervalFormat, 'DAY')
   assert(isequal(dateVec1(4:6), [0,0,0]))

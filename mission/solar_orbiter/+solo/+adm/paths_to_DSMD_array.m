@@ -88,6 +88,7 @@ for i = 1:numel(fiCa)
 
     dv1 = [Fi.dateVec, 0, 0, 0];
     dv2 = datevec(datenum(Fi.dateVec)+1);
+
   else
     % Skip file since can not derive any time from it.
     continue
