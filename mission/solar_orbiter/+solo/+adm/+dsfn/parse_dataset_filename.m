@@ -81,11 +81,11 @@
 %       applications.
 %       .timeIntervalStr
 %       .filenameDsiCdag
-%             The combination of DSI and optionally "-cdag" as found in
-%             the filename, including case.
-%             In practice meant to be interpreted as dataset glob.attr.
-%             "Logical_source", which should include -CDAG when present (for
-%             now at least).
+%           The combination of DSI and optionally "-cdag" as found in
+%           the filename, including case.
+%           In practice meant to be interpreted as dataset glob.attr.
+%           "Logical_source", which should include -CDAG when present (for
+%           now at least).
 %       .versionStr
 %           Version number as a string the way it is represented in
 %           the filename. Excludes "V".
@@ -189,8 +189,10 @@ function [R, S] = parse_dataset_filename(filename)
 %     CON: Too much overlap between implementations.
 %       CON-PROPOSAL: Use parsing function for shared implemention for shared
 %                     parts of naming conventions.
-%   PROPOSAL: Return value "S" converted into methods which derive
-%             the corresponding values.
+%   PROPOSAL: Return value "S" converted into methods of future class for R
+%             which then derive the corresponding values.
+%     PRO: Classes good for handling redundant information, information which
+%          can be represented in multiple ways.
 %     ~CON: If the class contains non-redundant information, then it has to
 %           re-derive timeIntervalStr, filenameDsiCdag, (future versionStr).
 %

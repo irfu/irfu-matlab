@@ -64,7 +64,7 @@ classdef DSMD
   %           isCdag? Version number?
   %           Path? Filename?
   %
-  % PROPOSAL: Datetime objects should have uppercase initial
+  % PROPOSAL: Datetime objects should have uppercase initial: dt1,dt2-->Dt1,Dt2
   %     PRO: Consistent with (BICAS) naming conventions.
 
 
@@ -120,8 +120,8 @@ classdef DSMD
       obj.datasetId  = datasetId;
       obj.versionNbr = versionNbr;
       obj.isCdag     = isCdag;
-      obj.dt1 = dt1;
-      obj.dt2 = dt2;
+      obj.dt1        = dt1;
+      obj.dt2        = dt2;
     end
 
 
