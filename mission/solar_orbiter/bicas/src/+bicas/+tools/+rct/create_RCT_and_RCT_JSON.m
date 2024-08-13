@@ -17,6 +17,7 @@
 % First created 2020-07-02.
 %
 function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir, rctVersionNbr)
+% bicas.tools.rct.create_RCT_and_RCT_JSON('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RPW-BIAS_V03.cdf', '~/temp/temp', 3)
 
 % Time interval for which the RCT is valid. Should cover the entire mission.
 % --------------------------------------------------------------------------
@@ -24,8 +25,10 @@ function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir, rctVersionNbr)
 %       but 2022-02-09 local Florida time.
 % NOTE: Cf. solo_CAL_rpw-scm_20200210-20990101_V10.cdf which uses the SolO
 %       launch date and presumably tries to cover the entire mission too.
-% IMPORTANT NOTE: One should presumably not change the time interval in the
-%                 filename since the version number is (presumably) tied to it.
+% IMPORTANT NOTE: One should presumably not change the time interval
+%                 unnecessarily, since it is represented in the filename and
+%                 since the version number is (presumably) tied to the exact
+%                 chosen time interval.
 BEGIN_DT = datetime('2022-02-10T00:00:00');
 END_DT   = datetime('2099-01-01T00:00:00');
 

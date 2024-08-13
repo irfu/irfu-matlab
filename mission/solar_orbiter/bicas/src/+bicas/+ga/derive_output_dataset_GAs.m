@@ -54,6 +54,8 @@ function OutGaSubset = derive_output_dataset_GAs(...
   Bso, L)
 
 % PROPOSAL: Automatic test code.
+% PROPOSAL: Rename "derive"-->"get".
+%   PRO: More conventional name
 %
 % PROPOSAL: Create class for storing GAs.
 %   PRO: Can detect accidental overwriting/reuse of keys.
@@ -306,7 +308,7 @@ end
 
 
 
-% NOTE: Only works correctly for files that follow the official filenaming
+% NOTE: Only works correctly for files which follow the official filenaming
 % scheme. logicalFileId does not work for e.g. IRFU-internal filenaming
 % extension, as e.g. for test files that might be sent to ROC as part of
 % official RCS test package.
@@ -326,8 +328,8 @@ R = solo.adm.dsfn.parse_dataset_filename(filename);
 assert(~isempty(R), 'BICAS:Assertion', ...
   ['Can not parse dataset filename "%s" and therefore not', ...
   ' derive values for global attributes', ...
-  ' (Logical_source, Data_version, Datetime). Filename does not appear', ...
-  ' to follow filenaming conventions.'], filename)
+  ' "Logical_source", "Data_version", and "Datetime".', ...
+  ' The filename does not appear to follow filenaming conventions.'], filename)
 
 logicalSource   = R.fnDatasetIdCdag;
 dataVersionStr  = R.versionStr;

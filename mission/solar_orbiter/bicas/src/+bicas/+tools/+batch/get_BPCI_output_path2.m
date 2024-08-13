@@ -51,6 +51,8 @@ function filePath = get_BPCI_output_path2(...
 %
 % PROPOSAL: Separate function for converting a selected reference input
 %           dataset filename into output dataset filename. -- IMPLEMENTED
+%
+% PROPOSAL: Use shared constants for setting DSI lists.
 
 assert(isa(BpciInputDsmdArray,           'solo.adm.DSMD') && iscolumn(BpciInputDsmdArray))
 assert(isa(PreexistingOutputLvDsmdArray, 'solo.adm.DSMD') && iscolumn(PreexistingOutputLvDsmdArray))

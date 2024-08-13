@@ -40,7 +40,7 @@ function filename = default_get_BPCI_output_filename(...
 %       PRO: More general. Less constraint on SWMs.
 %
 % PROPOSAL: Use shared constants for setting DSI lists.
-
+%
 % PROPOSAL: Add argument for parent directory.
 %   CON: Setting parent directory is a different task. Different from
 %        defining filenaming conventions.
