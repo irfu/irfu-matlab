@@ -39,6 +39,8 @@ function filename = default_get_BPCI_output_filename(...
 %   PROPOSAL: Only use first matching DSI in INPUT_DSI_FOR_OUTPUT_TIME.
 %       PRO: More general. Less constraint on SWMs.
 %
+% PROPOSAL: Use shared constants for setting DSI lists.
+
 % PROPOSAL: Add argument for parent directory.
 %   CON: Setting parent directory is a different task. Different from
 %        defining filenaming conventions.
@@ -63,8 +65,7 @@ INPUT_DSI_FOR_OUTPUT_TIME = { ...
   ...
   'SOLO_L2_RPW-LFR-SURV-CWF-E'};
 
-DEFAULT_SETTINGS.unoffBasenameExtension = [];       % No extension.
-DEFAULT_SETTINGS.isCdagPolicy           = false;    % true/false/<other>
+DEFAULT_SETTINGS.isCdagPolicy = false;    % true/false/<other>
 
 Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
 irf.assert.struct(Settings, fieldnames(Settings), {})
@@ -104,7 +105,6 @@ R = struct();
 R.isCdag         = logical(Settings.isCdagPolicy);
 R.datasetId      = outputDsi;
 R.versionStr     = versionStr;
-R.unoffExtension = Settings.unoffBasenameExtension;
 R.dateVec1       = datevec(Dt1);
 R.dateVec2       = datevec(Dt2);
 

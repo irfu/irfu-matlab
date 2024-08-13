@@ -156,8 +156,6 @@ end
 function outputFileName = get_BPCI_output_filename2(...
   Dt1, Dt2, outputDsi, outputIsCdag, versionNbr)
 
-UNOFF_BASENAME_EXTENSION = [];
-
 %==========================================
 % Set variables in output dataset filename
 %==========================================
@@ -165,7 +163,6 @@ R = [];
 R.datasetId          = outputDsi;
 R.versionStr         = sprintf('%02i', versionNbr);
 R.isCdag             = outputIsCdag;
-R.unoffExtension     = UNOFF_BASENAME_EXTENSION;
 R.dateVec1           = datevec(Dt1);
 R.dateVec2           = datevec(Dt2);
 

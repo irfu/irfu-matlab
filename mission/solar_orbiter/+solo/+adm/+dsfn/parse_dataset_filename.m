@@ -81,9 +81,6 @@
 %      implemented)
 % * make it possible to completely reconstruct the filename from the return
 %   values.
-%   This may change though due to e.g.
-%       - permitting both file suffix cases,
-%       - permitting own extensions to filenaming conventions.
 %
 %
 % ARGUMENTS
@@ -106,10 +103,6 @@
 %                               (DATASET_ID in filename is appended with
 %                               "-CDAG"/"-cdag").
 %       .versionStr           : String (not number). Excludes "V".
-%       .unoffExtension       : []       : There is no unofficial basename
-%                                          extension.
-%                             : 1x1 cell : {1} = String. The arbitrary string
-%                                          part of unofficial basename extension.
 %       .fnDatasetIdCdag      : DATASET_ID + CDAG as present in filename (FN),
 %                               including case. In practice meant to be
 %                               interpreted as dataset glob.attr.
@@ -132,21 +125,10 @@
 %           (optionally) the suffix "-CDAG".
 %
 %
-% ~BUG
-% ====
-% filename == "solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf"
-% is falsely recognized as a legal dataset filename.
-% This is due to the unofficial extension being interpreted as non-empty.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-12-17.
 %
 function R = parse_dataset_filename(filename)
-%
-% PROPOSAL: Abolish unoffExtension.
-%   PRO: Causes some filenames to unexpectedly be intepreted as compliant.
-%     Ex: "solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf"
 %
 % PROPOSAL: Return version NUMBER, not string.
 %   CON: Harder to adapt to changing versioning scheme.
@@ -190,7 +172,6 @@ function R = parse_dataset_filename(filename)
 %           separate filenaming scheme.
 %   CON: Harder to reuse similarities.
 %       Ex: DATASET_ID, version
-%       Ex: Unofficial filenaming scheme
 %   PRO: Cleaner functions.
 %       PRO: Consistent return format.
 %           CON: Not true for time vectors which reflect format of time
@@ -203,9 +184,6 @@ function R = parse_dataset_filename(filename)
 %       Ex: regexp constants
 %   PROPOSAL: One top-level function that handles all filenaming conventions
 %             together. Should assign(?) string for identified convention.
-%
-% PROPOSAL: Return value for basename without IRFU-internal filenaming
-%           extension.
 %
 % PROPOSAL: Refactor to return class.
 %   PROBLEM: solo.adm.dsfn.parse_dataset_filename_many() adds field "path" to
@@ -297,25 +275,6 @@ VERSION_RE     = 'V[0-9][0-9]+';       % NOTE: Permits more than two digits.
 LES_TESTSTR_RE = 'les-[0-9a-f]{7,7}';
 CNE_TESTSTR_RE = '[0-9a-f]{7,7}_CNE';
 
-% Unofficial extension, arbitrary string part amended to the end of the
-% legal basename
-% --------------------------------------------------------------------------
-% IMPORTANT NOTE: Important to require initial separator string between
-% official basename and arbitrary part of extension. Can otherwise not
-% rigorously distinguish (1) some ground-test datasets from (2) some
-% non-CDAG in-flight datasets.
-% IMPORTANT NOTE:
-%   Official filenames do not use this separator string.
-%   ==> Must permit UNOFF_EXTENSION_RE to match empty string.
-%   ==> Can make irf.str.regexp_str_parts mistakenly match
-%       UNOFF_EXTENSION_RE to an EMPTY STRING (when there is an unofficial
-%       extension).
-%   ==> Not "perfect match".
-%   ==> Function classifies filename as not dataset filename.
-% Therefore, must express UNOFF_EXTENSION_RE such that it will try to match
-% a non-empty string FIRST, and an empty string SECOND. THE ORDER MATTERS.
-UNOFF_EXTENSION_RE = '(\..*|)';
-
 
 
 %===========================================================================
@@ -339,13 +298,12 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 % Standard in-flight filenaming convention (incl. CDAG; tested for earlier)
 %===========================================================================
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
-  {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
+  {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE}, ...
   'permit non-match');
 if perfectMatch & ~dsicdagUppercase
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
-  R.timeIntervalStr =                           subStrCa{2};
-  R.versionStr      = ver_2_versionStr(         subStrCa{4});
-  R.unoffExtension  = unoff_extension_RE_to_str(subStrCa{5});
+  R.timeIntervalStr =                  subStrCa{2};
+  R.versionStr      = ver_2_versionStr(subStrCa{4});
   return
 end
 
@@ -353,15 +311,14 @@ end
 % "LES" filenaming convention
 %=============================
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
-  {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', ...
-  LES_TESTSTR_RE, UNOFF_EXTENSION_RE}, 'permit non-match');
+  {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', LES_TESTSTR_RE}, ...
+  'permit non-match');
 if perfectMatch & ~dsicdagUppercase
   assert(~R.isCdag)
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
-  R.timeIntervalStr =                           subStrCa{2};
-  R.versionStr      = ver_2_versionStr(         subStrCa{4});
-  R.lesTestStr      =                           subStrCa{6};
-  R.unoffExtension  = unoff_extension_RE_to_str(subStrCa{7});
+  R.timeIntervalStr =                  subStrCa{2};
+  R.versionStr      = ver_2_versionStr(subStrCa{4});
+  R.lesTestStr      =                  subStrCa{6};
   return
 end
 
@@ -369,7 +326,7 @@ end
 % "CNES" filenameing convention
 %===============================
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
-  {'_', CNE_TESTSTR_RE, '_', VERSION_RE, UNOFF_EXTENSION_RE}, ...
+  {'_', CNE_TESTSTR_RE, '_', VERSION_RE}, ...
   'permit non-match');
 if perfectMatch & dsicdagUppercase
   assert(~R.isCdag)
@@ -377,9 +334,8 @@ if perfectMatch & dsicdagUppercase
   R.dateVec2           = UNUSED_DATE_VECTOR;
   R.timeIntervalFormat = 'NO_TIME_INTERVAL';
   %
-  R.cneTestStr         =                           subStrCa{2};
-  R.versionStr         = ver_2_versionStr(         subStrCa{4});
-  R.unoffExtension     = unoff_extension_RE_to_str(subStrCa{5});
+  R.cneTestStr         =                  subStrCa{2};
+  R.versionStr         = ver_2_versionStr(subStrCa{4});
   return
 end
 
@@ -395,18 +351,3 @@ end    % parse_dataset_filename()
 function versionStr = ver_2_versionStr(s)
 versionStr = s(2:end);   % NOTE: No conversion to number.
 end
-
-
-
-% "unoff_extension_RE" = The part of string that matches regular expression
-% (RE).
-function unoffExtension = unoff_extension_RE_to_str(s)
-if isempty(s)
-  unoffExtension = [];
-else
-  unoffExtension = {s(2:end)};
-end
-end
-
-
-

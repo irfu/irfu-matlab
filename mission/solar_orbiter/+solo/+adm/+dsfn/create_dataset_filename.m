@@ -38,45 +38,13 @@
 %
 function filename = create_dataset_filename(R)
 % NOTE: See comments for solo.adm.dsfn.parse_dataset_filename().
-%
-% PROPOSAL: Ability to add IRF-internal basename suffix. -- IMPLEMENTED
-%   Ex: solo_L2_rpw-tds-lfm-rswf-e_20200410_V01.suffix1.cdf
-%   PROPOSAL: Ability to add sequence of such suffixes.
-%       Ex: solo_L2_rpw-tds-lfm-rswf-e_20200410_V01.suffix1.suffix2.cdf
-%   PROPOSAL: <basename><extension>.cdf
-%       PRO: Covers all reasonable extensions.
-%       CON: Not rigorously parsable if one official basename is an initial substring of another official
-%       basename.
-%           NOTE: Version string always last except for old ground-testing datasets, except
-%           (1) some non-CDAG inflight datasets which filename format is an initial substring of
-%           (2) some ground-test dataset filenaming format.
-%               Ex: solo_L1_rpw-tds-lfm-rswf_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
-%               Ex: solo_L1_rpw-bia-current_20200401T000000-20200421T000000_V01.cdf
-%               NOTE: Unlikely to matter in practice, since using different DATASET_IDs.
-%   --
-%   PROPOSAL: Use special character(s) to always separate extension from official basename.
-%       PROPOSAL: Use character/string never used by ROC.
-%           PROPOSAL: <basename>.<extension>.cdf
-%               CON: Period could cause trouble on some platforms.
-%                   CON: Seems OK on Mac, Linux.
-%           PROPOSAL: <basename>___<extension>.cdf
-%               CON: Waste of space.
-%       PROPOSAL: <basename>_<extension>.cdf
-%   --
-%   TODO-DEC: How store unofficial extension?
-%       NOTE: Want to distinguish absence of extension from empty string represented in extension.
-%       PROPOSAL: [] = No extension
-%                 1x1 cell with string = Extension.
-%       PROPOSAL: 0x1 cell = No extension
-%                 1x1 cell with string = Extension.
-%           NOTE: Why that empty size?
 
 % ASSERTION
 % NOTE: Useful, so that later code does not need to be as rigorous when
 % determining case.
 irf.assert.struct(R, ...
   { ...
-    'isCdag', 'datasetId', 'versionStr', 'unoffExtension' ...
+    'isCdag', 'datasetId', 'versionStr' ...
     'dateVec1', 'dateVec2', 'timeIntervalFormat' ...
   }, ...
   { ...
@@ -84,19 +52,6 @@ irf.assert.struct(R, ...
     'cneTestStr', 'lesTestStr' ...
   })
 
-
-
-% Convert R.unoffExtension to actual string to add to basename
-% ------------------------------------------------------------
-% IMPLEMENTATION NOTE: Thoroughly check R.unoffExtension format since one
-% often gets it wrong.
-if isempty(R.unoffExtension) && ~iscell(R.unoffExtension)
-  unoffExtension = '';
-elseif isscalar(R.unoffExtension) && iscell(R.unoffExtension) && ischar(R.unoffExtension{1})
-  unoffExtension = ['.', R.unoffExtension{1}];
-else
-  error('Illegal R.unoffExtension. Must be (1) empty non-cell or (2) 1x1 cell array of string.')
-end
 
 
 assert(isrow(R.dateVec1) & (numel(R.dateVec1) == 6))
@@ -118,7 +73,7 @@ isCdag             = R.isCdag;
 assert(ischar(R.versionStr));
 versionStr = R.versionStr;
 R = rmfield(R, {...
-  'datasetId', 'versionStr', 'unoffExtension', 'isCdag', ...
+  'datasetId', 'versionStr', 'isCdag', ...
   'dateVec1', 'dateVec2', 'timeIntervalFormat' ...
  });
 
@@ -148,8 +103,8 @@ if sets_equal(fnCa, {'lesTestStr'}) && ismember(timeIntervalFormat, {'DAY_TO_DAY
   %=============================
   assert(~isCdag)
   dsicdagStr = get_cased_DSICDAG(dsi, false, isCdag);
-  filename = sprintf('%s_%s_V%02s_%s%s.cdf', ...
-    dsicdagStr, timeIntervalStr, versionStr, R.lesTestStr, unoffExtension);
+  filename = sprintf('%s_%s_V%02s_%s.cdf', ...
+    dsicdagStr, timeIntervalStr, versionStr, R.lesTestStr);
 
 elseif sets_equal(fnCa, {'cneTestStr'}) && strcmp(timeIntervalFormat, {'NO_TIME_INTERVAL'})
   %===============================
@@ -158,16 +113,16 @@ elseif sets_equal(fnCa, {'cneTestStr'}) && strcmp(timeIntervalFormat, {'NO_TIME_
   % Ex: ROC-SGSE_HK_RPW-BIA_19850de_CNE_V02.cdf
   assert(~isCdag)
   dsicdagStr = get_cased_DSICDAG(dsi, true, isCdag);
-  filename = sprintf('%s_%s_V%02s%s.cdf', ...
-    dsicdagStr, R.cneTestStr, versionStr, unoffExtension);
+  filename = sprintf('%s_%s_V%02s.cdf', ...
+    dsicdagStr, R.cneTestStr, versionStr);
 
 elseif sets_equal(fnCa, {}) && ismember(timeIntervalFormat, {'DAY', 'DAY_TO_DAY', 'SECOND_TO_SECOND'})
   %===========================================
   % In-space filename convention (incl. CDAG)
   %===========================================
   dsicdagStr = get_cased_DSICDAG(dsi, false, isCdag);
-  filename = sprintf('%s_%s_V%02s%s.cdf', ...
-    dsicdagStr, timeIntervalStr, versionStr, unoffExtension);
+  filename = sprintf('%s_%s_V%02s.cdf', ...
+    dsicdagStr, timeIntervalStr, versionStr);
 
 else
 
