@@ -83,7 +83,7 @@ classdef testdata
       close all
       tic
 
-      DT_0 = solo.qli.utils.umddt('2023-01-05');
+      DT_0 = irf.dt.um('2023-01-05');
 
       QUICKLOOKS_TINT = irf.tint(...
         char(DT_0), ...

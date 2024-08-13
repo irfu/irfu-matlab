@@ -17,47 +17,6 @@ classdef utils
 
 
 
-    % Assert that datetime object only contains timestamps which refer to
-    % midnight.
-    %
-    % NOTE: Does not require scalar object. Can be any size.
-    function assert_UMD_DT(Dt)
-      assert(isa(Dt, 'datetime'))
-      assert(strcmp(Dt.TimeZone, 'UTCLeapSeconds'), ...
-        'datetime object is not TimeZone=UTC.')
-      assert(all(Dt == dateshift(Dt, 'start', 'day'), 'all'), ...
-        'datetime object does not only contain timestamps representing midnight.')
-    end
-
-
-
-    % Convert string(s) YYYY-MM-DD to UTC datetime object with timestamp at
-    % midnight. (E.g. format 2024-01-01T00:00:00.000Z does NOT work,
-    % deliberately)
-    %
-    % UMDDT = UMD DT = UTC Midnight Date, datetime
-    %
-    % IMPLEMENTATION NOTE: solo.qli works with many UTC datetime objects for
-    % timestamps at midnight, and tests hardcode many such values. This function
-    % exists to shorten code. Hence the short function name.
-    %
-    % ARGUMENTS
-    % =========
-    % strCa
-    %       Either
-    %       (1) String (one timestamp)
-    %       (2) Cell array of strings (timestamps for corresponding elements).
-    function Dt = umddt(strCa)
-      assert(iscell(strCa) || ischar(strCa))
-      % NOTE: datetime() also accepts other datetime objects, with any
-      % time-of-day. "Must" therefore forbid.
-
-      Dt          = datetime(strCa);
-      Dt.TimeZone = 'UTCLeapSeconds';
-    end
-
-
-
     % Given an array of datetime representing days to be plotted, derive the
     % corresponding weeks which overlap with the specified days.
     %
@@ -77,7 +36,7 @@ classdef utils
     %       (contiguous 7-day period) which begins at that timestamp.
     %
     function WeekUmdDtArray = derive_weeks(UmdDtArray, firstDayOfWeek)
-      solo.qli.utils.assert_UMD_DT(UmdDtArray)
+      irf.dt.assert_UTC_midnight(UmdDtArray)
       assert(iscolumn(UmdDtArray))
 
       % Find nearest previous day with specified weekday

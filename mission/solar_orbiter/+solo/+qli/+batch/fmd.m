@@ -167,7 +167,7 @@ classdef fmd
       UmdDtArray = solo.qli.batch.fmd.get_days_from_DMRQ_algorithm(...
         DatasetsUfd, QliUfd);
 
-      solo.qli.utils.assert_UMD_DT(UmdDtArray)
+      irf.dt.assert_UTC_midnight(UmdDtArray)
     end
 
 
