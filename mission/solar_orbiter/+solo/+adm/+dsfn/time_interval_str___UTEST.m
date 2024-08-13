@@ -40,7 +40,6 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
       testCase.test_create_exc([2021, 2, 3, 0, 0, 1], [2021, 2, 4, 0, 0, 0], 'DAY')
       testCase.test_create_exc([2021, 2, 3, 0, 0, 0], [2021, 2, 4, 0, 0, 1], 'DAY')
       testCase.test_create_exc([2021, 2, 3, 0, 0, 1], [2021, 2, 4, 0, 0, 1], 'DAY')
-      testCase.test_create_exc([2021, 2, 3         ], [2021, 2, 4         ], 'DAY')
 
       testCase.test_parse_exc('210203')
     end
@@ -64,7 +63,6 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
       testCase.test_create_exc([2021, 2, 3, 0, 0, 1], [2021, 3, 4, 0, 0, 0], 'DAY_TO_DAY')
       testCase.test_create_exc([2021, 2, 3, 0, 0, 0], [2021, 3, 4, 0, 0, 1], 'DAY_TO_DAY')
       testCase.test_create_exc([2021, 2, 3, 0, 0, 1], [2021, 3, 4, 0, 0, 1], 'DAY_TO_DAY')
-      testCase.test_create_exc([2021, 2, 3         ], [2021, 3, 4         ], 'DAY_TO_DAY')
     end
 
 
@@ -120,11 +118,14 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
     % Test that converting in both directions is consistent.
     function test_OK(testCase, dateVec1, dateVec2, timeIntervalFormat, timeIntervalStr)
-      [actDateVec1, actDateVec2, actTimeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(timeIntervalStr);
-      actTimeIntervalStr = solo.adm.dsfn.create_time_interval_str(dateVec1, dateVec2, timeIntervalFormat);
+      Dt1 = datetime(dateVec1, 'TimeZone', 'UTCLeapSeconds');
+      Dt2 = datetime(dateVec2, 'TimeZone', 'UTCLeapSeconds');
 
-      testCase.assertEqual(actDateVec1, dateVec1)
-      testCase.assertEqual(actDateVec2, dateVec2)
+      [actDt1, actDt2, actTimeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(timeIntervalStr);
+      actTimeIntervalStr = solo.adm.dsfn.create_time_interval_str(Dt1, Dt2, timeIntervalFormat);
+
+      testCase.assertEqual(actDt1, Dt1)
+      testCase.assertEqual(actDt2, Dt2)
       testCase.assertEqual(actTimeIntervalFormat, timeIntervalFormat)
       testCase.assertEqual(actTimeIntervalStr,    timeIntervalStr)
     end
@@ -132,8 +133,11 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
 
     function test_create_exc(testCase, dateVec1, dateVec2, timeIntervalFormat)
+      Dt1 = datetime(dateVec1, 'TimeZone', 'UTCLeapSeconds');
+      Dt2 = datetime(dateVec2, 'TimeZone', 'UTCLeapSeconds');
+
       testCase.assertError(...
-        @() solo.adm.dsfn.create_time_interval_str(dateVec1, dateVec2, timeIntervalFormat), ...
+        @() solo.adm.dsfn.create_time_interval_str(Dt1, Dt2, timeIntervalFormat), ...
         ?MException)
     end
 

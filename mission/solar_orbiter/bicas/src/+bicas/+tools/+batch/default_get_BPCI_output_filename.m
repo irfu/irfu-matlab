@@ -108,8 +108,8 @@ R = struct();
 R.isCdag         = logical(Settings.isCdagPolicy);
 R.datasetId      = outputDsi;
 R.versionNbr     = str2double(versionStr);
-R.dateVec1       = datevec(Dt1);
-R.dateVec2       = datevec(Dt2);
+R.Dt1            = Dt1;
+R.Dt2            = Dt2;
 
 if is_midnight(Dt1) & is_midnight(Dt2) & (Dt2 == Dt1 + caldays(1))
   % CASE: (dt1,dt2) covers less than or equal to a calendar day.

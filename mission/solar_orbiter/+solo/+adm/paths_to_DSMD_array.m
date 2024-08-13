@@ -58,16 +58,8 @@ DsmdArray = solo.adm.DSMD.empty(0, 1);
 for i = 1:numel(fiCa)
   Fi = fiCa{i};
 
-  dv1 = Fi.dateVec1;
-  dv2 = Fi.dateVec2;
-  assert(numel(dv1) == 6)
-  assert(numel(dv2) == 6)
-
   Dsmd = solo.adm.DSMD(...
-    Fi.path, Fi.datasetId, Fi.versionNbr, Fi.isCdag, ...
-    datetime(dv1, 'TimeZone', 'UTCLeapSeconds'), ...
-    datetime(dv2, 'TimeZone', 'UTCLeapSeconds') ...
-    );
+    Fi.path, Fi.datasetId, Fi.versionNbr, Fi.isCdag, Fi.Dt1, Fi.Dt2);
 
   DsmdArray(end+1, 1) = Dsmd;
 end

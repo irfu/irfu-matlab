@@ -165,8 +165,8 @@ R = [];
 R.datasetId  = outputDsi;
 R.versionNbr = versionNbr;
 R.isCdag     = outputIsCdag;
-R.dateVec1   = datevec(Dt1);
-R.dateVec2   = datevec(Dt2);
+R.Dt1        = Dt1;
+R.Dt2        = Dt2;
 
 % Set date vector, depending on time range, effectively selecting filename
 % time interval format for the dataset.

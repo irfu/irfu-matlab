@@ -5,22 +5,30 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function timeIntervalStr = create_time_interval_str(dateVec1, dateVec2, timeIntervalFormat)
+function timeIntervalStr = create_time_interval_str(Dt1, Dt2, timeIntervalFormat)
+irf.dt.assert_UTC(Dt1)
+irf.dt.assert_UTC(Dt2)
 
 if strcmp(timeIntervalFormat, 'DAY')
-  assert(isequal(dateVec1(4:6), [0,0,0]))
-  assert(isequal(dateVec2(4:6), [0,0,0]))
-  expDateVec2 = datevec(datetime(dateVec1) + caldays(1));
-  assert(isequal(dateVec2, expDateVec2))
+  irf.dt.assert_UTC_midnight(Dt1)
+  irf.dt.assert_UTC_midnight(Dt2)
+  expDt2 = datetime(Dt1) + caldays(1);
+  assert(isequal(Dt2, expDt2))
+
+  dateVec1 = datevec(Dt1);
 
   timeIntervalStr = sprintf(...
     '%04i%02i%02i', ...
     dateVec1(1:3));
 
 elseif strcmp(timeIntervalFormat, 'DAY_TO_DAY')
-  assert(isequal(dateVec1(4:6), [0,0,0]))
-  assert(isequal(dateVec2(4:6), [0,0,0]))
-  dateVec2 = datevec(datetime(dateVec2) - caldays(1));
+  irf.dt.assert_UTC_midnight(Dt1)
+  irf.dt.assert_UTC_midnight(Dt2)
+
+  Dt2 = Dt2 - caldays(1);   % Decrease by one day, since end day is inclusive.
+
+  dateVec1 = datevec(Dt1);
+  dateVec2 = datevec(Dt2);
 
   timeIntervalStr = sprintf(...
     '%04i%02i%02i-%04i%02i%02i', ...
@@ -29,11 +37,13 @@ elseif strcmp(timeIntervalFormat, 'DAY_TO_DAY')
 elseif strcmp(timeIntervalFormat, 'SECOND_TO_SECOND')
   timeIntervalStr = sprintf(...
     '%04i%02i%02iT%02i%02i%02i-%04i%02i%02iT%02i%02i%02i', ...
-    dateVec1, dateVec2);
+    datevec(Dt1), datevec(Dt2));
 
 elseif strcmp(timeIntervalFormat, 'NO_TIME_INTERVAL')
-  assert(isequal(dateVec1, [0,0,0,0,0,0]))
-  assert(isequal(dateVec2, [0,0,0,0,0,0]))
+  NAT = datetime('NaT', 'TimeZone', 'UTCLeapSeconds');
+  assert(isequaln(Dt1, NAT))
+  assert(isequaln(Dt2, NAT))
+
   timeIntervalStr = [];
 
 else

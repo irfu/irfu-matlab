@@ -67,8 +67,10 @@
 %           (DATASET_ID in filename is appended with "-CDAG"/"-cdag").
 %       .versionNbr
 %           Version number.
-%       .dateVec1
-%       .dateVec2
+%       .Dt1
+%           Start time (datetime).
+%       .Dt2
+%           End time (datetime).
 %       .timeIntervalFormat
 %           String constant specifying the time interval format.
 %       Fields sometimes present
@@ -101,14 +103,6 @@
 % First created 2019-12-17.
 %
 function [R, S] = parse_dataset_filename(filename)
-%
-% PROPOSAL: Change name dateVec --> timeVec
-%   PROPOSAL: MATLAB seems to use "date vector", and "time vector" for vector of timestamps.
-%
-% PROPOSAL: Replace date vectors with datetime objects (UTC).
-%   CON: CNES and LES filenaming *might* not have used UTC.
-%        ==> Better to use date vectors.
-%     CON-PROPOSAL: Use datetime without UTCLeapSeconds.
 %
 % PROPOSAL: Reorganize to be more similar to python erikpgohansson.solo.utils.parse_dataset_filename()?
 %   NOTE: Partly done.
@@ -196,12 +190,8 @@ function [R, S] = parse_dataset_filename(filename)
 %     ~CON: If the class contains non-redundant information, then it has to
 %           re-derive timeIntervalStr, filenameDsiCdag, (future versionStr).
 %
-% PROPOSAL: Return time interval string separately from struct. -- IMPLEMENTED
-%   PRO: Used by bicas.ga.derive_output_dataset_GAs().
 % PROPOSAL: Return file basename separately from struct.
 %   PRO: Used by bicas.ga.derive_output_dataset_GAs().
-% PROPOSAL: Return filenameDsiCdag separately from struct. -- IMPLEMENTED
-%   PRO: Used by bicas.ga.derive_output_dataset_GAs(), solo.db_list_files___UTEST.
 %
 % PROPOSAL: Use field names identical to the terms used in specifications (RCS
 %           ICD, SOL-SGS-TN-0009).
@@ -215,7 +205,7 @@ function [R, S] = parse_dataset_filename(filename)
 % PROPOSAL: Only permit "-cdag"" for inflight datasets.
 
 NO_MATCH_RETURN_VALUE = [];
-UNUSED_DATE_VECTOR    = [0, 0, 0, 0, 0, 0];
+UNUSED_DT             = datetime('NaT', 'TimeZone', 'UTCLeapSeconds');
 
 
 
@@ -287,7 +277,7 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 if perfectMatch & ~dsicdagUppercase
   S.timeIntervalStr = subStrCa{2};
 
-  [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = ...
+  [R.Dt1, R.Dt2, R.timeIntervalFormat] = ...
     solo.adm.dsfn.parse_time_interval_str(S.timeIntervalStr);
   S.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
   R.versionNbr      = str2double(S.versionStr);
@@ -305,7 +295,7 @@ if perfectMatch & ~dsicdagUppercase
 
   S.timeIntervalStr = subStrCa{2};
 
-  [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = ...
+  [R.Dt1, R.Dt2, R.timeIntervalFormat] = ...
     solo.adm.dsfn.parse_time_interval_str(S.timeIntervalStr);
   S.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
   R.versionNbr      = str2double(S.versionStr);
@@ -324,8 +314,8 @@ if perfectMatch & dsicdagUppercase
 
   S.timeIntervalStr    = NO_MATCH_RETURN_VALUE;
 
-  R.dateVec1           = UNUSED_DATE_VECTOR;
-  R.dateVec2           = UNUSED_DATE_VECTOR;
+  R.Dt1                = UNUSED_DT;
+  R.Dt2                = UNUSED_DT;
   R.timeIntervalFormat = 'NO_TIME_INTERVAL';
   %
   R.cneTestStr         = subStrCa{2};
