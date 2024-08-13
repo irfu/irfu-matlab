@@ -6,7 +6,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function [dateVec1, dateVec2, timeIntervalFormat] = parse_time_interval_str(timeIntervalStr)
-% PROPOSAL: Automatic test code.
 % PROPOSAL: Return special value(s) for illegal string.
 %   PRO: Useful for rigorously distinguishing datasets/non-datasets.
 %   PROPOSAL: Return struct (not class!).
