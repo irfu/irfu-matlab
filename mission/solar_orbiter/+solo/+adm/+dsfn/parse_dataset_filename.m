@@ -60,15 +60,18 @@
 %       Struct with a varying set of fields, depending on the filenaming
 %       convention the filename adheres to.
 %       Fields always present:
-%       .datasetId            : DATASET_ID. (Always uppercase.)
-%       .isCdag               : Logical. Whether or not the file is a CDAG
-%                               (DATASET_ID in filename is appended with
-%                               "-CDAG"/"-cdag").
-%       .versionStr           : String (not number). Excludes "V".
+%       .datasetId
+%           DATASET_ID. (Always uppercase.)
+%       .isCdag
+%           Logical. Whether or not the file is a CDAG
+%           (DATASET_ID in filename is appended with "-CDAG"/"-cdag").
+%       .versionStr
+%           Version number as a string the way it is represented in
+%           the filename. Excludes "V".
 %       .dateVec1
 %       .dateVec2
-%       .timeIntervalFormat   : String constant specifying the time interval
-%                               format.
+%       .timeIntervalFormat
+%           String constant specifying the time interval format.
 %       Fields sometimes present
 %           Varying fields corresponding to content in filename.
 % S
@@ -101,6 +104,7 @@ function [R, S] = parse_dataset_filename(filename)
 %   CON: Harder to adapt to changing versioning scheme.
 %       Ex: V2.3.4, V2_3_4
 %       CON: Unlikely to happen.
+%   CON: bicas.ga.derive_output_dataset_GAs() uses the version string.
 %   PRO: Often want version number anyway.
 %       Ex: Find latest version.
 %
@@ -191,6 +195,10 @@ function [R, S] = parse_dataset_filename(filename)
 %     CON: Too much overlap between implementations.
 %       CON-PROPOSAL: Use parsing function for shared implemention for shared
 %                     parts of naming conventions.
+%   PROPOSAL: Return value "S" converted into methods which derive
+%             the corresponding values.
+%     ~CON: If the class contains non-redundant information, then it has to
+%           re-derive timeIntervalStr, filenameDsiCdag, (future versionStr).
 %
 % PROPOSAL: Return time interval string separately from struct. -- IMPLEMENTED
 %   PRO: Used by bicas.ga.derive_output_dataset_GAs().

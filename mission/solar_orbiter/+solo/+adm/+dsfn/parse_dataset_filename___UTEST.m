@@ -10,6 +10,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef parse_dataset_filename___UTEST < matlab.unittest.TestCase
+% PROPOSAL: Rename file
+% PROPOSAL: Split upp tests into multiple methods.
+
+
 
   %##############
   %##############
@@ -211,5 +215,7 @@ classdef parse_dataset_filename___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
+
+
 
 end

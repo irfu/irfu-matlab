@@ -161,5 +161,6 @@ end
 
 
 function equal = sets_equal(set1, set2)
+% NOTE: There does not appear to be a generic function for this.
 equal = isempty(setxor(set1, set2));
 end

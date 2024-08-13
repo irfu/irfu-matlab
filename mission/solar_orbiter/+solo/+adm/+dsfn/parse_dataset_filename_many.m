@@ -44,9 +44,6 @@ function [fiCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
 %   CON: Function adds functionality of filtering/ignoring non-datasets.
 %
 % PROPOSAL: Policy argument for reacting to unparsable filenames.
-%   TODO-DEC: Different policy for suffix .cdf and not?
-% PROPOSAL: Assertion for parsable *.cdf filenames. Ignore filenames without
-%           suffix ".cdf".
 %
 % NOTE: Has no separate test code. Is indirectly tested by
 %       solo.adm.paths_to_DSMD_array___UTEST.

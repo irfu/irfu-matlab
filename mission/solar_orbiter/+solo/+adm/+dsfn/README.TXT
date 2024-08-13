@@ -74,4 +74,12 @@ Summary plots (which BTW are NOT datasets!):
   solo_L3_rpw-lfr-surv-swf-e_20200423_V01.png
 
 
+====================
+Time Interval String
+====================
+Part of filename which specifies the time interval covered by the dataset.
+Equals "Datetime" in dataset specifications.
+
+
+
 /Erik P G Johansson 2024-08-13

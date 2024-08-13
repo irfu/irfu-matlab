@@ -71,4 +71,5 @@ for i = 1:numel(fiCa)
 
   DsmdArray(end+1, 1) = Dsmd;
 end
+
 end
