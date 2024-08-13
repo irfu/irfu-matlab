@@ -57,27 +57,33 @@
 % R
 %       If not a recognizable dataset filename, then: []
 %       If     a recognizable dataset filename, then:
-%           Struct with a varying set of fields, depending on the filenaming
-%           convention the filename adheres to.
+%       Struct with a varying set of fields, depending on the filenaming
+%       convention the filename adheres to.
 %       Fields always present:
 %       .datasetId            : DATASET_ID. (Always uppercase.)
 %       .isCdag               : Logical. Whether or not the file is a CDAG
 %                               (DATASET_ID in filename is appended with
 %                               "-CDAG"/"-cdag").
 %       .versionStr           : String (not number). Excludes "V".
-%       .fnDatasetIdCdag      : DATASET_ID + CDAG as present in filename (FN),
-%                               including case. In practice meant to be
-%                               interpreted as dataset glob.attr.
-%                               Logical_source, which should include -CDAG when
-%                               present (for now).
 %       .dateVec1
 %       .dateVec2
 %       .timeIntervalFormat   : String constant specifying the time interval
 %                               format.
 %       Fields sometimes present
 %           Varying fields corresponding to content in filename.
-% timeIntervalStr
-% --
+% S
+%       If not a recognizable dataset filename, then: []
+%       If     a recognizable dataset filename, then:
+%       Struct with information which is technically redundant when combined
+%       with return value "R", but which can be useful to have for certain
+%       applications.
+%       .timeIntervalStr
+%       .filenameDsiCdag
+%             The combination of DSI and optionally "-cdag" as found in
+%             the filename, including case.
+%             In practice meant to be interpreted as dataset glob.attr.
+%             "Logical_source", which should include -CDAG when present (for
+%             now at least).
 %
 %
 % VARIABLE NAMING CONVENTION
@@ -89,7 +95,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-12-17.
 %
-function [R, timeIntervalStr] = parse_dataset_filename(filename)
+function [R, S] = parse_dataset_filename(filename)
 %
 % PROPOSAL: Return version NUMBER, not string.
 %   CON: Harder to adapt to changing versioning scheme.
@@ -174,7 +180,7 @@ function [R, timeIntervalStr] = parse_dataset_filename(filename)
 %     PROBLEM: How handle fields which
 %          (1) are returned from parsing, but are simultaneously
 %          (2) redundant when creating filenames.
-%       Ex: fnDatasetIdCdag
+%       Ex: filenameDsiCdag
 %
 %   PRO: More rigorous.
 %   PROBLEM: Must always have the same set of fields. ==> Backwards incompatibility.
@@ -190,21 +196,15 @@ function [R, timeIntervalStr] = parse_dataset_filename(filename)
 %   PRO: Used by bicas.ga.derive_output_dataset_GAs().
 % PROPOSAL: Return file basename separately from struct.
 %   PRO: Used by bicas.ga.derive_output_dataset_GAs().
+% PROPOSAL: Return filenameDsiCdag separately from struct. -- IMPLEMENTED
+%   PRO: Used by bicas.ga.derive_output_dataset_GAs(), solo.db_list_files___UTEST.
 %
 % PROPOSAL: Use field names identical to the terms used in specifications (RCS
 %           ICD, SOL-SGS-TN-0009).
 %   Ex: Datetime, descriptor
 %   CON: Terms do not follow own variable naming conventions.
 %
-% PROPOSAL: Abolish fnDatasetIdCdag.
-%   TODO-NI: Is it used/useful for anything?
-%     Ex: derive_output_dataset_GAs.m: logicalSource = R.fnDatasetIdCdag
-%   PROPOSAL: Separate CDAG string.
-%     CON: Information overlaps with isCdag.
-%   PROPOSAL: Function for easily converting DSI+isCdag --> dsicdag
-%
 % PROPOSAL: datasetId --> DSID
-%   NOTE: Includes "fnDatasetIdCdag"
 %
 % PROPOSAL: Forbid longer version strings beginning with zero.
 % PROPOSAL: Forbid uppercase "-CDAG". Should never happen.
@@ -218,8 +218,8 @@ UNUSED_DATE_VECTOR    = [0, 0, 0, 0, 0, 0];
 % NOTE: Parse from the END.
 [~, trueBasename, n] = irf.str.read_token(filename, -1, '\.cdf');
 if n == -1
-  R               = NO_MATCH_RETURN_VALUE;
-  timeIntervalStr = NO_MATCH_RETURN_VALUE;
+  R = NO_MATCH_RETURN_VALUE;
+  S = NO_MATCH_RETURN_VALUE;
   return
 end
 
@@ -235,27 +235,27 @@ end
 % and uppercase anyway. Might also be slower because of negative lookahead.
 %
 % NOTE: Lowercase DATASET_ID+CDAG always have uppercase dataset level.
-[fnDsicdag, str, n] = irf.str.read_token(trueBasename, 1, ...
+[filenameDsicdag, str, n] = irf.str.read_token(trueBasename, 1, ...
   '(SOLO|ROC-SGSE)_(HK|L1|L1R|L2|L3|CAL)_[A-Z0-2-]*', ...
   '(solo|roc-sgse)_(HK|L1|L1R|L2|L3|CAL)_[a-z0-2-]*');
 switch(n)
   case 1
     dsicdagUppercase = true;
-    R.isCdag         = strcmp(fnDsicdag(end-4:end), '-CDAG');
+    R.isCdag         = strcmp(filenameDsicdag(end-4:end), '-CDAG');
   case 2
     dsicdagUppercase = false;
-    R.isCdag         = strcmp(fnDsicdag(end-4:end), '-cdag');
+    R.isCdag         = strcmp(filenameDsicdag(end-4:end), '-cdag');
   otherwise
-    R               = NO_MATCH_RETURN_VALUE;
-    timeIntervalStr = NO_MATCH_RETURN_VALUE;
+    R = NO_MATCH_RETURN_VALUE;
+    S = NO_MATCH_RETURN_VALUE;
     return
 end
 if R.isCdag
-  R.datasetId = upper(fnDsicdag(1:end-5));
+  R.datasetId = upper(filenameDsicdag(1:end-5));
 else
-  R.datasetId = upper(fnDsicdag);
+  R.datasetId = upper(filenameDsicdag);
 end
-R.fnDatasetIdCdag = fnDsicdag;
+S.filenameDsiCdag = filenameDsicdag;
 
 
 
@@ -281,8 +281,10 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE}, ...
   'permit non-match');
 if perfectMatch & ~dsicdagUppercase
-  timeIntervalStr   = subStrCa{2};
-  [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(timeIntervalStr);
+  S.timeIntervalStr = subStrCa{2};
+
+  [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = ...
+    solo.adm.dsfn.parse_time_interval_str(S.timeIntervalStr);
   R.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
   return
 end
@@ -295,8 +297,11 @@ end
   'permit non-match');
 if perfectMatch & ~dsicdagUppercase
   assert(~R.isCdag)
-  timeIntervalStr   = subStrCa{2};
-  [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(timeIntervalStr);
+
+  S.timeIntervalStr = subStrCa{2};
+
+  [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = ...
+    solo.adm.dsfn.parse_time_interval_str(S.timeIntervalStr);
   R.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
   R.lesTestStr      =                                subStrCa{6};
   return
@@ -310,7 +315,9 @@ end
   'permit non-match');
 if perfectMatch & dsicdagUppercase
   assert(~R.isCdag)
-  timeIntervalStr      = NO_MATCH_RETURN_VALUE;
+
+  S.timeIntervalStr    = NO_MATCH_RETURN_VALUE;
+
   R.dateVec1           = UNUSED_DATE_VECTOR;
   R.dateVec2           = UNUSED_DATE_VECTOR;
   R.timeIntervalFormat = 'NO_TIME_INTERVAL';
@@ -321,11 +328,10 @@ if perfectMatch & dsicdagUppercase
 end
 
 %============================================
-% CASE: Could not match filename to anything.
+% CASE: Could not match filename to anything
 %============================================
-
-R               = NO_MATCH_RETURN_VALUE;
-timeIntervalStr = NO_MATCH_RETURN_VALUE;
+R = NO_MATCH_RETURN_VALUE;
+S = NO_MATCH_RETURN_VALUE;
 end    % parse_dataset_filename()
 
 
