@@ -162,11 +162,11 @@ function outputFileName = get_BPCI_output_filename2(...
 % Set variables in output dataset filename
 %==========================================
 R = [];
-R.datasetId          = outputDsi;
-R.versionStr         = sprintf('%02i', versionNbr);
-R.isCdag             = outputIsCdag;
-R.dateVec1           = datevec(Dt1);
-R.dateVec2           = datevec(Dt2);
+R.datasetId  = outputDsi;
+R.versionNbr = versionNbr;
+R.isCdag     = outputIsCdag;
+R.dateVec1   = datevec(Dt1);
+R.dateVec2   = datevec(Dt2);
 
 % Set date vector, depending on time range, effectively selecting filename
 % time interval format for the dataset.

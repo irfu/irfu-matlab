@@ -65,9 +65,8 @@
 %       .isCdag
 %           Logical. Whether or not the file is a CDAG
 %           (DATASET_ID in filename is appended with "-CDAG"/"-cdag").
-%       .versionStr
-%           Version number as a string the way it is represented in
-%           the filename. Excludes "V".
+%       .versionNbr
+%           Version number.
 %       .dateVec1
 %       .dateVec2
 %       .timeIntervalFormat
@@ -87,6 +86,9 @@
 %             In practice meant to be interpreted as dataset glob.attr.
 %             "Logical_source", which should include -CDAG when present (for
 %             now at least).
+%       .versionStr
+%           Version number as a string the way it is represented in
+%           the filename. Excludes "V".
 %
 %
 % VARIABLE NAMING CONVENTION
@@ -99,14 +101,6 @@
 % First created 2019-12-17.
 %
 function [R, S] = parse_dataset_filename(filename)
-%
-% PROPOSAL: Return version NUMBER, not string.
-%   CON: Harder to adapt to changing versioning scheme.
-%       Ex: V2.3.4, V2_3_4
-%       CON: Unlikely to happen.
-%   CON: bicas.ga.derive_output_dataset_GAs() uses the version string.
-%   PRO: Often want version number anyway.
-%       Ex: Find latest version.
 %
 % PROPOSAL: Change name dateVec --> timeVec
 %   PROPOSAL: MATLAB seems to use "date vector", and "time vector" for vector of timestamps.
@@ -293,7 +287,8 @@ if perfectMatch & ~dsicdagUppercase
 
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = ...
     solo.adm.dsfn.parse_time_interval_str(S.timeIntervalStr);
-  R.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
+  S.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
+  R.versionNbr      = str2double(S.versionStr);
   return
 end
 
@@ -310,8 +305,9 @@ if perfectMatch & ~dsicdagUppercase
 
   [R.dateVec1, R.dateVec2, R.timeIntervalFormat] = ...
     solo.adm.dsfn.parse_time_interval_str(S.timeIntervalStr);
-  R.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
-  R.lesTestStr      =                                subStrCa{6};
+  S.versionStr      = version_RE_match_to_versionStr(subStrCa{4});
+  R.versionNbr      = str2double(S.versionStr);
+  R.lesTestStr      = subStrCa{6};
   return
 end
 
@@ -330,8 +326,9 @@ if perfectMatch & dsicdagUppercase
   R.dateVec2           = UNUSED_DATE_VECTOR;
   R.timeIntervalFormat = 'NO_TIME_INTERVAL';
   %
-  R.cneTestStr         =                                subStrCa{2};
-  R.versionStr         = version_RE_match_to_versionStr(subStrCa{4});
+  R.cneTestStr         = subStrCa{2};
+  S.versionStr         = version_RE_match_to_versionStr(subStrCa{4});
+  R.versionNbr         = str2double(S.versionStr);
   return
 end
 

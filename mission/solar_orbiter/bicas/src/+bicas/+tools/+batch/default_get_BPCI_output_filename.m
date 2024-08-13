@@ -35,6 +35,9 @@ function filename = default_get_BPCI_output_filename(...
 
 % PROPOSAL: Automatic test code.
 %
+% PROPOSAL: Convert argument "versionStr" to versionNbr"?
+%   TODO-NI: Changes interface for other function handles?
+%
 % PROPOSAL: INPUT_DSI_FOR_OUTPUT_TIME --> argument
 %   PROPOSAL: Only use first matching DSI in INPUT_DSI_FOR_OUTPUT_TIME.
 %       PRO: More general. Less constraint on SWMs.
@@ -104,7 +107,7 @@ Dt2 = InputDsmd.dt2;
 R = struct();
 R.isCdag         = logical(Settings.isCdagPolicy);
 R.datasetId      = outputDsi;
-R.versionStr     = versionStr;
+R.versionNbr     = str2double(versionStr);
 R.dateVec1       = datevec(Dt1);
 R.dateVec2       = datevec(Dt2);
 

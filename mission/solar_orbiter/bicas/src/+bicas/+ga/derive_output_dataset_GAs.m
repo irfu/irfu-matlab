@@ -331,7 +331,7 @@ assert(~isempty(R), 'BICAS:Assertion', ...
   ' "Logical_source", "Data_version", and "Datetime".', ...
   ' The filename does not appear to follow filenaming conventions.'], filename)
 
-dataVersionStr  = R.versionStr;
+dataVersionStr  = S.versionStr;
 logicalSource   = S.filenameDsiCdag;
 timeIntervalStr = S.timeIntervalStr;
 end
