@@ -155,24 +155,26 @@ end
 
 
 
-function outputFileName = get_BPCI_output_filename2(...
+function outputFilename = get_BPCI_output_filename2(...
   Dt1, Dt2, outputDsi, outputIsCdag, versionNbr)
 
-%==========================================
-% Set variables in output dataset filename
-%==========================================
-R = [];
-R.datasetId  = outputDsi;
-R.versionNbr = versionNbr;
-R.isCdag     = outputIsCdag;
-R.Dt1        = Dt1;
-R.Dt2        = Dt2;
+%================================
+% Create output dataset filename
+%================================
+S = struct();
+S.datasetId  = outputDsi;
+S.versionNbr = versionNbr;
+S.isCdag     = outputIsCdag;
+S.Dt1        = Dt1;
+S.Dt2        = Dt2;
+S.lesTestStr = [];
+S.cneTestStr = [];
 
-% Set date vector, depending on time range, effectively selecting filename
+% Set timestamps, depending on time range, effectively selecting filename
 % time interval format for the dataset.
 
 % if dt2 <= (dt1 + caldays(1))
-if is_midnight(Dt1) && is_midnight(Dt2) && (Dt2 == Dt1 + caldays(1))
+if irf.dt.is_midnight(Dt1) && irf.dt.is_midnight(Dt2) && (Dt2 == Dt1 + caldays(1))
   % CASE: (dt1,dt2) covers exactly one calender day.
   % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
   %
@@ -182,23 +184,12 @@ if is_midnight(Dt1) && is_midnight(Dt2) && (Dt2 == Dt1 + caldays(1))
   % would yield an output dataset filename on the YYYYMMDD format. This
   % should be unlikely.
 
-  R.timeIntervalFormat = 'DAY';
+  S.timeIntervalFormat = 'DAY';
 else
   % CASE: (dt1,dt2) does not exactly cover one day one day.
   % ==> use filenaming format yymmddThhmmss-yymmddThhmmss.
-  R.timeIntervalFormat = 'SECOND_TO_SECOND';
+  S.timeIntervalFormat = 'SECOND_TO_SECOND';
 end
 
-
-
-%================================
-% Create output dataset filename
-%================================
-outputFileName = solo.adm.dsfn.create_dataset_filename(R);
-end
-
-
-
-function isMidnight = is_midnight(Dt)
-isMidnight = dateshift(Dt, 'start', 'day') == Dt;
+outputFilename = solo.adm.dsfn.DatasetFilename(S).filename;
 end

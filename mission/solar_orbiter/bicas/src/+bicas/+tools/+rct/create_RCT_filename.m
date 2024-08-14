@@ -39,6 +39,9 @@
 % with the file version number.
 % """"""""
 % /ROC-PRO-PIP-ICD-00037-LES, RCS ICD, version 1/7
+% NOTE: The "Datetime" description appears to be wrong and contradicts
+% SOL-SGS-TN-0009, "Metadata Definition for Solar Orbiter Science Data", version
+% 2/6, Section 2.1.3.5
 %
 %
 % """"""""
@@ -62,34 +65,24 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function destFilename = create_RCT_filename(DtBegin, DtEnd, versionNbr)
-% PROPOSAL: Use solo.adm.dsfn.create_dataset_filename().
-%   NOTE: Should be able to handle it.
 
-  function assert_DT(Dt)
-    assert(Dt.Hour   == 0)
-    assert(Dt.Minute == 0)
-    assert(Dt.Second == 0)
-  end
-
-assert_DT(DtBegin)
-assert_DT(DtEnd)
-assert(isnumeric(versionNbr) && versionNbr >= 1)
-
-DT_FORMAT_STR = 'yyyyMMdd';
-
-beginStr = char(datetime(DtBegin, 'Format', DT_FORMAT_STR));
-endStr   = char(datetime(DtEnd,   'Format', DT_FORMAT_STR));
-
-
-% IMPLEMENTATION NOTE: The official filenaming convention is not followed
-% here!! Not sure how to comply with it either (which receiver should the
-% BIAS RCT specify?).
+irf.dt.assert_UTC_midnight(DtBegin)
+irf.dt.assert_UTC_midnight(DtEnd)
 
 % NOTE: Should not contain seconds.
 % gaCALIBRATION_VERSION = char(datetime("now","Format","uuuuMMddHHmm"));
 
-% NOTE: Minus in "RPW-BIAS".
-%destFilename = sprintf('SOLO_CAL_RPW-BIAS_V%s.cdf', gaCALIBRATION_VERSION);
-destFilename = sprintf('solo_CAL_rpw-bias_%s-%s_V%02i.cdf', beginStr, endStr, versionNbr);
+% IMPLEMENTATION NOTE: The official filenaming convention is not followed
+% here!! Not sure how to comply with it either (which receiver should the
+% BIAS RCT specify?).
+S.datasetId          = 'SOLO_CAL_RPW-BIAS';
+S.isCdag             = false;
+S.Dt1                = DtBegin;
+S.Dt2                = DtEnd;
+S.timeIntervalFormat = 'DAY_TO_DAY';
+S.versionNbr = versionNbr;
+S.lesTestStr = [];
+S.cneTestStr = [];
+destFilename = solo.adm.dsfn.DatasetFilename(S).filename;
 
 end

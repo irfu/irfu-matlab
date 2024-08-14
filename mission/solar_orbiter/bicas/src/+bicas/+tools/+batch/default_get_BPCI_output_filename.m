@@ -29,7 +29,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-15.
 %
-function filename = default_get_BPCI_output_filename(...
+function outputFilename = default_get_BPCI_output_filename(...
   outputDsi, BpciInputDsmdArray, ...
   versionStr, varargin)
 
@@ -95,41 +95,34 @@ InputDsmd = BpciInputDsmdArray(iDsmd);
 
 
 
-%==========================================
-% Set variables in output dataset filename
-%==========================================
-
-% Set date vector(s), depending on time range, effectively selecting filename
-% format for the dataset.
-Dt1 = InputDsmd.dt1;
-Dt2 = InputDsmd.dt2;
-
-R = struct();
-R.isCdag         = logical(Settings.isCdagPolicy);
-R.datasetId      = outputDsi;
-R.versionNbr     = str2double(versionStr);
-R.Dt1            = Dt1;
-R.Dt2            = Dt2;
-
-if is_midnight(Dt1) & is_midnight(Dt2) & (Dt2 == Dt1 + caldays(1))
-  % CASE: (dt1,dt2) covers less than or equal to a calendar day.
-  % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
-
-  R.timeIntervalFormat = 'DAY';
-else
-  % CASE: (dt1,dt2) covers more than one day.
-  % ==> use filenaming format yymmddThhmmss-yymmddThhmmss.
-  R.timeIntervalFormat = 'SECOND_TO_SECOND';
-end
-
 %================================
 % Create output dataset filename
 %================================
-filename = solo.adm.dsfn.create_dataset_filename(R);
+
+Dt1 = InputDsmd.dt1;
+Dt2 = InputDsmd.dt2;
+
+S = struct();
+S.isCdag     = logical(Settings.isCdagPolicy);
+S.datasetId  = outputDsi;
+S.versionNbr = str2double(versionStr);
+S.Dt1        = Dt1;
+S.Dt2        = Dt2;
+S.lesTestStr = [];
+S.cneTestStr = [];
+
+% Set timestamps, depending on time range, effectively selecting filename
+% time interval format for the dataset.
+if irf.dt.is_midnight(Dt1) && irf.dt.is_midnight(Dt2) && (Dt2 == Dt1 + caldays(1))
+  % CASE: (dt1,dt2) covers less than or equal to a calendar day.
+  % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
+
+  S.timeIntervalFormat = 'DAY';
+else
+  % CASE: (Dt1,Dt2) covers more than one day.
+  % ==> use filenaming format yymmddThhmmss-yymmddThhmmss.
+  S.timeIntervalFormat = 'SECOND_TO_SECOND';
 end
 
-
-
-function isMidnight = is_midnight(Dt)
-isMidnight = dateshift(Dt, 'start', 'day') == Dt;
+outputFilename = solo.adm.dsfn.DatasetFilename(S).filename;
 end

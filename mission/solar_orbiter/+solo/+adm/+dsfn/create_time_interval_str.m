@@ -1,6 +1,6 @@
 %
 % Create time interval string. The function supports
-% solo.adm.dsfn.create_dataset_filename().
+% solo.adm.dsfn.DatasetFilename().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
