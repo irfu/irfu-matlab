@@ -138,8 +138,6 @@ function [R, S] = parse_dataset_filename(filename)
 %           solo.adm.paths_to_DSMD_array().
 %     CON-PROPOSAL: Merge solo.adm.dsfn.parse_dataset_filename_many() into
 %                   solo.adm.paths_to_DSMD_array().
-%       CON: No need for a replacement of return value + ".path" field. DSMD is
-%            the "replacement".
 %   PRO: Cleaner functions.
 %       PRO: Consistent return format.
 %           CON: Not true for time vectors which reflect format of time
@@ -157,8 +155,6 @@ function [R, S] = parse_dataset_filename(filename)
 %
 %
 % PROPOSAL: Refactor to return class.
-%   PROBLEM: solo.adm.dsfn.parse_dataset_filename_many() adds field ".path" to
-%            return value and passes it on in its own return value.
 %   PROBLEM: Class should work with solo.adm.dsfn.create_dataset_filename().
 %     PROBLEM: How handle fields which
 %          (1) are returned from parsing, but are simultaneously

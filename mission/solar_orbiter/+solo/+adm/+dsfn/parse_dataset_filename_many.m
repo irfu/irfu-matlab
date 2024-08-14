@@ -18,12 +18,10 @@
 %
 % RETURN VALUES
 % =============
-% fiCa
-%       Nx1 cell array of structs. FI = File Info
+% diCa
+%       Nx1 cell array of structs. DI = Dataset Info
 %       {iDataset} : Struct. Fields from
-%           solo.adm.dsfn.parse_dataset_filename() plus extra field
-%           below:
-%               .path : Path in filePathCa{iFile}.
+%           solo.adm.dsfn.parse_dataset_filename().
 % bIsDatasetArray
 %       Logical column array. Same size as argument. True iff the corresponding
 %       input path was interpreted as a dataset.
@@ -32,7 +30,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-04-25.
 %
-function [fiCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
+function [diCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
 % PROPOSAL: Change name
 %   PROPOSAL: parse_dataset_filenames_many  ("FILENAMES" in plural)
 %   PROPOSAL: parse_dataset_filename_many_paths
@@ -51,7 +49,7 @@ function [fiCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
 assert(iscell(filePathCa),   'filePathCa is not a cell array.')
 assert(iscolumn(filePathCa), 'filePathCa is not a column array.')
 
-fiCa            = cell(0, 1);
+diCa            = cell(0, 1);
 bIsDatasetArray = false(numel(filePathCa), 1);
 for iFile = 1:numel(filePathCa)
 
@@ -62,13 +60,7 @@ for iFile = 1:numel(filePathCa)
   if ~isempty(R)
     % CASE: File can be identified as a dataset.
 
-    % NOTE: Ignores .versionStr
-    Fi      = R;
-    % NOTE: Adds field ".path" to struct returned from
-    %       solo.adm.dsfn.parse_dataset_filename().
-    Fi.path = filePathCa{iFile};
-
-    fiCa{           end+1, 1} = Fi;
+    diCa{           end+1, 1} = R;
     bIsDatasetArray(iFile, 1) = true;
   else
     % CASE: File can *NOT* be identified as dataset.
