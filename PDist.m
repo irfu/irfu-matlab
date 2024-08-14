@@ -1022,6 +1022,9 @@ classdef PDist < TSeries
       %                Tseries, for example 2*scpot
       %     'weight' - how the number of MC iterations per bin is weighted,
       %                can be 'none' (default), 'lin' or 'log'
+      %     'counts' - if obj is converted to counts, this flag should be
+      %                set to 1. It is 0 by default. Note: need to ensure
+      %                counts are not unitless, but in SI units (s^3/m^6)
       %
       %
       %   The output is a PDist object with the reduced distribution where
@@ -1133,6 +1136,7 @@ classdef PDist < TSeries
       weight = 'none';
       correct4scpot = 0;
       base = 'cart'; % coordinate base, cart or pol
+      counts = 0;
 
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
 
@@ -1196,6 +1200,8 @@ classdef PDist < TSeries
           case 'base' %
             l = 2;
             base = args{2};
+          case 'counts'
+            counts = args{2};
         end
         args = args((l+1):end);
         if isempty(args), break, end
@@ -1360,15 +1366,15 @@ classdef PDist < TSeries
           % v, phi, th corresponds to the bins of F3d
           if vgInputEdges
             if flag_dphi && flag_dtheta
-              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges,'dphi',deltaphi,'dth',deltatheta);
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges,'dphi',deltaphi,'dth',deltatheta,'counts',counts);
             else
-              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges);
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges,'counts',counts);
             end
           else
             if flag_dphi && flag_dtheta
-              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'dphi',deltaphi,'dth',deltatheta);
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'dphi',deltaphi,'dth',deltatheta,'counts',counts);
             else
-              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'counts',counts);
             end
           end
           all_vg(i,:) = tmpst.v; % normally vg, but if vg_edges is used, vg is overriden
@@ -1377,9 +1383,9 @@ classdef PDist < TSeries
           %tmpst = irf_int_sph_dist_mod(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
           % is 'vg_edges' implemented for 2d?
           if flag_dphi && flag_dtheta
-            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base,'dphi',deltaphi,'dth',deltatheta);
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base,'dphi',deltaphi,'dth',deltatheta,'counts',counts);
           else
-            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base,'counts',counts);
           end
           all_vx(i,:,:) = tmpst.vx;
           all_vy(i,:,:) = tmpst.vy;

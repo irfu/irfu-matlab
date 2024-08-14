@@ -97,7 +97,7 @@ while haveoptions
   args = args(l+1:end);
   if isempty(args), haveoptions=0; end
 end
-TSeries
+
 % resample the B and R data at the B1 data sampling rate
 c_eval('B? = B?.resample(B1);',ic);
 c_eval('R? = R?.resample(B1);',ic);

@@ -139,7 +139,7 @@ classdef reader_DCC_DCV_TF_IC < handle
   % PROPOSAL: Functions for reading files in separate file (or static functions in separate class).
   % PROPOSAL: Function for recognizing and parsing data/CTable filenames.
   % Eliminate cTableFilesPattern, testLogbookFile.
-  %   NOTE: Compare solo.adm.dsfn.parse_dataset_filename().
+  %   NOTE: Compare solo.adm.dsfn.DatasetFilename.
   %   PROBLEM: May not be able to eliminate testLogbookFile since there are
   %            multiple logbooks and no known algorithm for selecting the correct
   %            one.

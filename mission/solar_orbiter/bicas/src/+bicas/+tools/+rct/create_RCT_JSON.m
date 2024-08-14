@@ -62,20 +62,19 @@
 %
 % RETURN VALUE
 % ============
-% rctJsonPath : Path to the file created. Useful for printing log messages.
+% rctJsonPath
+%       Path to the file created. Useful for printing log messages.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24.
 %
-function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename, beginDt, endDt)
+function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename, DtBegin, DtEnd)
 % PROPOSAL: Do not use bicas.utils.JSON_object_str(). Use MATLAB's own support
 %           for JSON files: jsonencode().
-DT_FORMAT_STR = 'yyyy-MM-dd''T''HH:mm:ss''Z''';
 
-beginStr = char(datetime(beginDt, 'Format', DT_FORMAT_STR));
-endStr   = char(datetime(endDt,   'Format', DT_FORMAT_STR));
-
+beginStr = DT_to_str(DtBegin);
+endStr   = DT_to_str(DtEnd);
 
 RCT_JSON_FILENAME = 'bias_rct_validity.json';
 
@@ -89,9 +88,14 @@ JsonObj(biasRctFilename) = { ...
 };
 
 str = bicas.utils.JSON_object_str(JsonObj);
-%fprintf(str);    % DEBUG
 
 rctJsonPath = fullfile(destDir, RCT_JSON_FILENAME);
 irf.fs.write_file(rctJsonPath, uint8(str(:)));
 
+end
+
+
+
+function s = DT_to_str(Dt)
+  s = sprintf('%04i-%02i-%02iT%02i:%02i:%02iZ', Dt.Year, Dt.Month, Dt.Day, Dt.Hour, Dt.Minute, Dt.Second);
 end

@@ -28,11 +28,11 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
   properties(TestParameter)
     EXC_24H6H2H = {...
       solo.qli.const.EMPTY_DT_ARRAY, ...
-      solo.qli.utils.umddt('2024-01-01') ...
+      irf.dt.um('2024-01-01') ...
       }
     EXC_7DAYS = {...
       solo.qli.const.EMPTY_DT_ARRAY, ...
-      solo.qli.utils.umddt('2023-12-27') ...
+      irf.dt.um('2023-12-27') ...
       }
   end
 
@@ -88,7 +88,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
 
 
     function test_one_day_24h6h2h(testCase)
-      UmdDtArray = solo.qli.utils.umddt('2024-01-01');
+      UmdDtArray = irf.dt.um('2024-01-01');
 
       Gql = solo.qli.batch.GenerateQuicklooksTest();
 
@@ -103,8 +103,8 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
 
 
     function test_one_day_week_7days(testCase)
-      UmdDtArray              = solo.qli.utils.umddt('2024-01-01');
-      ExpUmdDt7daysCallsArray = solo.qli.utils.umddt('2023-12-27');
+      UmdDtArray              = irf.dt.um('2024-01-01');
+      ExpUmdDt7daysCallsArray = irf.dt.um('2023-12-27');
       Gql = solo.qli.batch.GenerateQuicklooksTest();
 
       solo.qli.batch.generate_quicklooks(...
@@ -119,7 +119,7 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
 
     % Generate two days, but raise exception for the first one.
     function test_two_days_24h6h2h_exception(testCase)
-      UmdDtArray = solo.qli.utils.umddt('2024-01-01') + caldays([0; 1]);
+      UmdDtArray = irf.dt.um('2024-01-01') + caldays([0; 1]);
 
       Gql = solo.qli.batch.GenerateQuicklooksTest(...
         UmdDtArray(1), ...
@@ -139,8 +139,8 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
 
     % Generate two weeks, but raise exception for the first one.
     function test_two_weeks_7days_exception(testCase)
-      UmdDtArray              = solo.qli.utils.umddt('2024-01-01') + caldays( [0; 2]);  % Mon, Wed
-      ExpUmdDt7daysCallsArray = solo.qli.utils.umddt('2023-12-27') + calweeks([0; 1]);
+      UmdDtArray              = irf.dt.um('2024-01-01') + caldays( [0; 2]);  % Mon, Wed
+      ExpUmdDt7daysCallsArray = irf.dt.um('2023-12-27') + calweeks([0; 1]);
       Gql = solo.qli.batch.GenerateQuicklooksTest(...
         solo.qli.const.EMPTY_DT_ARRAY, ...
         ExpUmdDt7daysCallsArray(1));
@@ -158,8 +158,8 @@ classdef generate_quicklooks___UTEST < matlab.unittest.TestCase
 
 
     function test_complex(testCase)
-      UmdDtArray              = solo.qli.utils.umddt('2024-01-01') + caldays([0; 1; 10; 11]); % Mon-Tue, Wed-Thu
-      ExpUmdDt7daysCallsArray = solo.qli.utils.umddt('2023-12-27') + calweeks([0; 2]);        % Skip middle week.
+      UmdDtArray              = irf.dt.um('2024-01-01') + caldays([0; 1; 10; 11]); % Mon-Tue, Wed-Thu
+      ExpUmdDt7daysCallsArray = irf.dt.um('2023-12-27') + calweeks([0; 2]);        % Skip middle week.
 
       Gql = solo.qli.batch.GenerateQuicklooksTest(...
         UmdDtArray(2), ...

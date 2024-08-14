@@ -17,83 +17,11 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_umddt(testCase)
-      function test(strCa, expStrCa)
-        assert(iscell(expStrCa))
-        ActDt = solo.qli.utils.umddt(strCa);
-
-        ExpDt = datetime(expStrCa, 'TimeZone', 'UTCLeapSeconds');
-
-        testCase.assertEqual(ActDt, ExpDt)
-        testCase.assertEqual(size(ActDt), size(expStrCa))
-      end
-
-      test(...
-        '2024-02-03', ...
-        {'2024-02-03T00:00:00Z'})
-      test(...
-        cell(0, 1), ...
-        cell(0, 1))
-      test(...
-        {'2024-02-03'}, ...
-        {'2024-02-03T00:00:00Z'})
-      test(...
-        {'2024-02-03';           '2024-03-04'}, ...
-        {'2024-02-03T00:00:00Z'; '2024-03-04T00:00:00Z'})
-
-      testCase.assertError(...
-        @() solo.qli.utils.umddt('2024-02-03T00:00:00Z'), ...
-        ?MException)
-      testCase.assertError(...
-        @() solo.qli.utils.umddt(datetime('2024-02-03')), ...
-        ?MException)
-    end
-
-
-
-    function test_assert_UMD_DT(testCase)
-
-      function test_OK(Dt)
-        % Check that does not crash/raise exception.
-        solo.qli.utils.assert_UMD_DT(Dt);
-      end
-
-      function test_exc(Dt)
-        testCase.verifyError(...
-          @() solo.qli.utils.assert_UMD_DT(Dt), ...
-          ?MException)
-      end
-
-      EDT          = datetime.empty(0, 0);
-      EDT.TimeZone = 'UTCLeapSeconds';
-
-      test_OK( EDT )
-      test_OK( datetime('2024-03-06T00:00:00Z', 'TimeZone', 'UTCLeapSeconds') )
-      test_OK( [
-        datetime('2024-03-06T00:00:00Z', 'TimeZone', 'UTCLeapSeconds'), ...
-        datetime('2024-03-07T00:00:00Z', 'TimeZone', 'UTCLeapSeconds'); ...
-        datetime('2024-03-08T00:00:00Z', 'TimeZone', 'UTCLeapSeconds'), ...
-        datetime('2024-03-09T00:00:00Z', 'TimeZone', 'UTCLeapSeconds'); ...
-        ])
-
-      test_exc(datetime('2024-03-06T00:00:00.001Z', 'TimeZone', 'UTCLeapSeconds'))
-      test_exc(datetime('2024-03-06T23:59:59.999Z', 'TimeZone', 'UTCLeapSeconds'))
-      test_exc(datetime('2024-03-06 00:00:00'))   % Not UTC.
-      test_exc( [
-        datetime('2024-03-06T00:00:00Z', 'TimeZone', 'UTCLeapSeconds'), ...
-        datetime('2024-03-07T00:00:00Z', 'TimeZone', 'UTCLeapSeconds'); ...
-        datetime('2024-03-08T00:00:00Z', 'TimeZone', 'UTCLeapSeconds'), ...
-        datetime('2024-03-09T00:00:01Z', 'TimeZone', 'UTCLeapSeconds'); ...
-        ])
-    end
-
-
-
     function test_derive_weeks(testCase)
 
       function test(DayBeginStrCa, firstDayOfWeek, ExpWeekBeginStrCa)
-        DayBeginDtArray     = solo.qli.utils.umddt(DayBeginStrCa);
-        ExpWeekBeginDtArray = solo.qli.utils.umddt(ExpWeekBeginStrCa);
+        DayBeginDtArray     = irf.dt.um(DayBeginStrCa);
+        ExpWeekBeginDtArray = irf.dt.um(ExpWeekBeginStrCa);
 
         ActWeekBeginDtArray = solo.qli.utils.derive_weeks(DayBeginDtArray, firstDayOfWeek);
 

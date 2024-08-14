@@ -45,7 +45,7 @@ for iProbe=1:3
   if isempty(dataI) & isempty(dataV)
     % NOTE: A sweep dataset may lack data for one probe, which then results in
     %       empty data arrays which can not be truncated.
-    % Example: solo_L1_rpw-bia-sweep-cdag_20240522T020342-20240529T020451_V02.cdf
+    %       Ex: solo_L1_rpw-bia-sweep-cdag_20240522T020342-20240529T020451_V02.cdf
     irf.log('w', sprintf('"%s" does not contain any data for antenna %i.', fName, iProbe))
   else
     %Remove initial jumps

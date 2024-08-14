@@ -125,12 +125,12 @@ classdef interface
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
-      BeginDayInclDt = solo.qli.utils.umddt(beginDayUtcInclStr);
-      EndDayExclDt   = solo.qli.utils.umddt(endDayUtcExclStr);
+      BeginDayInclDt = irf.dt.um(beginDayUtcInclStr);
+      EndDayExclDt   = irf.dt.um(endDayUtcExclStr);
 
       % NOTE: Indirectly assertion on the string timestamps.
-      solo.qli.utils.assert_UMD_DT(BeginDayInclDt)
-      solo.qli.utils.assert_UMD_DT(EndDayExclDt)
+      irf.dt.assert_UTC_midnight(BeginDayInclDt)
+      irf.dt.assert_UTC_midnight(EndDayExclDt)
 
 
 
@@ -333,13 +333,13 @@ classdef interface
       %   PROPOSAL: Use standardized functions for converting strings to values
       %   while giving good error messages
 
-      solo.qli.utils.assert_UMD_DT(UmdDtArray)
+      irf.dt.assert_UTC_midnight(UmdDtArray)
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
-      Dt1      = solo.qli.utils.umddt(beginDayUtcInclStr);
-      Dt2      = solo.qli.utils.umddt(endDayUtcExclStr);
+      Dt1      = irf.dt.um(beginDayUtcInclStr);
+      Dt2      = irf.dt.um(endDayUtcExclStr);
       maxNDays = str2double(maxNDaysStr);
 
       if ~isnumeric(maxNDays)

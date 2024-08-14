@@ -2,7 +2,7 @@
 % Write empty file, including parent directories recursively if not already
 % pre-existing. Also return path to newly create file.
 %
-% This function is useful for creating automated tests and debugging.
+% This function is useful for creating automated tests and for debugging.
 %
 %
 % ARGUMENTS
@@ -24,6 +24,9 @@ function filePath = write_empty_file(pathPartsCa)
 % IMPLEMENTATION NOTE: Having one argument instead of using varargin in order to
 %                      make it possible to add optional arguments in the future.
 
+% PROPOSAL: Rename to write_empty_file().
+%   PRO: More analogous to write_file() (which in turn is a more conventional name).
+%
 % PROPOSAL: Error if fails to create file.
 % PROPOSAL: Policy arguments
 %   (1) Whether to permit path not available:

@@ -69,7 +69,7 @@ rctFilename = bicas.tools.rct.create_RCT_filename(beginDt, endDt, versionNbr);
 rctPath     = fullfile(destDir, rctFilename);
 
 [RctZvL, RctZvH] = set_RCT_content();
-create_RCT_file(rctMasterCdfFile, rctPath, RctZvL, RctZvH, versionNbr, GA_MODS);
+create_RCT_file(rctMasterCdfFile, rctPath, RctZvL, RctZvH, GA_MODS);
 end
 
 
@@ -370,15 +370,13 @@ end
 % NOTE: This is not the same list as in the RCS ICS 01/07
 %
 %
-function create_RCT_file(rctMasterCdfFile, rctFilePath, RctL, RctH, rctVersionNbr, ga_MODS)
+function create_RCT_file(rctMasterCdfFile, rctFilePath, RctL, RctH, ga_MODS)
 % PROPOSAL: Assertion for matching number of records Epoch_L+data, Epoch_H+data.
 %   PROPOSAL: Read from master file which should match.
 % TODO-DEC: Require correct MATLAB classes (via write_CDF_dataobj)?
 % PROPOSAL: Use BICAS code for writing datasets.
 %   CON: BICAS can not handle CALIBRATION_TABLE, CALIBRATION_VERSION it is intended
 %        here.
-
-assert(isnumeric(rctVersionNbr))
 
 DT_FORMAT_STR = 'yyyy-MM-dd''T''HH:mm:ss''Z''';
 
@@ -392,12 +390,13 @@ DataObj = dataobj(rctMasterCdfFile);
 % NOTE: Overwriting previous value in skeleton (SOLO_CAL_RPW-BIAS_V02.cdf). The
 %       value should be empty in the skeleton to be less deceiving.
 rctFilename = irf.fs.get_name(rctFilePath);
-R = solo.adm.dsfn.parse_dataset_filename(rctFilename);
-assert(strcmp(rctFilename(end-3:end), '.cdf'))
+Df = solo.adm.dsfn.DatasetFilename.parse_filename(rctFilename);
+assert(~isempty(Df), 'Can not parse filename "%s".', rctFilename)
+
 ga_CALIBRATION_TABLE = rctFilename(1:end-4);
 DataObj.GlobalAttributes.CALIBRATION_TABLE   = {ga_CALIBRATION_TABLE};
 
-DataObj.GlobalAttributes.CALIBRATION_VERSION = {sprintf('%02i', rctVersionNbr)};
+DataObj.GlobalAttributes.CALIBRATION_VERSION = {Df.versionStr};
 
 % Uncertain if GAs "Data_version" and "CALIBRATION_VERSION" should be identical in
 % RCTs, but it does make some sense. They are different science datasets.
@@ -405,7 +404,7 @@ DataObj.GlobalAttributes.Data_version = DataObj.GlobalAttributes.CALIBRATION_VER
 DataObj.GlobalAttributes.MODS         = ga_MODS;
 % GA Datetime is not required by RCS ICD (ROC-PRO-PIP-ICD-00037-LES, 01/07), but
 % Xavier Bonnin requested it in e-mail 2024-07-08.
-DataObj.GlobalAttributes.Datetime     = R.timeIntervalStr;
+DataObj.GlobalAttributes.Datetime     = Df.timeIntervalStr;
 
 % TIME_MIN, TIME_MAX are not required for CAL, but they are in the skeleton, so
 % one can just as well set them in the same way they are set for datasets (or

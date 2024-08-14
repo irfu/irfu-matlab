@@ -419,9 +419,7 @@ classdef assert
       % PROPOSAL: Assertion: Intersection requiredFnSet-optionalFnSet is empty.
       %
       % PROPOSAL: Separate out condition function.
-      %   PRO: Useful for distinguishing between multiple "struct
-      %   formats".
-      %       Ex: solo.adm.dsfn.create_dataset_filename().
+      %   PRO: Useful for distinguishing between multiple "struct formats".
 
       assert(isstruct(S))
       structFnSet          = fieldnames(S);

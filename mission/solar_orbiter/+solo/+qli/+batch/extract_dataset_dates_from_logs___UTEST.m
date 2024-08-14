@@ -125,7 +125,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L3_rpw-bia-density_20240101_V01.cdf', ...
         })
 
-      ExpDtArray = solo.qli.utils.umddt('2024-01-01');
+      ExpDtArray = irf.dt.um('2024-01-01');
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -162,7 +162,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L3_rpw-bia-density_20240101_V01.cdf', ...    % Same filename.
         })
 
-      ExpDtArray = solo.qli.utils.umddt('2024-01-01');
+      ExpDtArray = irf.dt.um('2024-01-01');
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -183,7 +183,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L3_rpw-bia-density-cdag_20240201_V01.cdf', ...    % Same filename, CDAG.
         })
 
-      ExpDtArray = solo.qli.utils.umddt({'2024-01-01'; '2024-02-01'});
+      ExpDtArray = irf.dt.um({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -206,7 +206,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         '      solo_L3_rpw-bia-density_20240101_V01.cdf   ', ...              % Same matching filename again.
         })
 
-      ExpDtArray = solo.qli.utils.umddt({'2024-01-01'; '2024-02-01'});
+      ExpDtArray = irf.dt.um({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -232,7 +232,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L2_mag-rtn-normal-1-minute_20240401_V03.cdf', ... % Matching filename
         })
 
-      ExpDtArray = solo.qli.utils.umddt('2024-01-01') + calmonths([0;1;2;3]);
+      ExpDtArray = irf.dt.um('2024-01-01') + calmonths([0;1;2;3]);
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY', 'SOLO_L2_MAG-RTN-NORMAL-1-MINUTE'});
 
@@ -250,7 +250,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf', ...   % Two matching filenames.
         })
 
-      ExpDtArray = solo.qli.utils.umddt({'2024-01-01'; '2024-02-01'});
+      ExpDtArray = irf.dt.um({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -278,7 +278,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L2_mag-rtn-normal-1-minute_20250201_V03.cdf', ... % Matching filename
         })
 
-      ExpDtArray = solo.qli.utils.umddt({'2025-01-01'; '2025-02-01'});
+      ExpDtArray = irf.dt.um({'2025-01-01'; '2025-02-01'});
 
       [ActDtArray, actLogFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY', 'SOLO_L2_MAG-RTN-NORMAL-1-MINUTE'});
@@ -306,8 +306,8 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
       solo.qli.batch.utils.write_file(logFilePath2, ...
         {'solo_L3_rpw-bia-density_20240101_V01.cdf'})         % Matching filename.
 
-      EXP_DT_ARRAY_1 = solo.qli.utils.umddt({'2023-01-01'});
-      EXP_DT_ARRAY_2 = solo.qli.utils.umddt({'2024-01-01'});
+      EXP_DT_ARRAY_1 = irf.dt.um({'2023-01-01'});
+      EXP_DT_ARRAY_2 = irf.dt.um({'2024-01-01'});
 
       function test(logFileDirPattern, ExpDtArray, expLogFilePath)
         [ActDtArray, actLogFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
