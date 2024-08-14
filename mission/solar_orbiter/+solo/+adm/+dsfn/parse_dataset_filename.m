@@ -184,7 +184,7 @@ function [R, S] = parse_dataset_filename(filename)
 %
 % PROPOSAL: Class-based implementation: *DatasetFilename
 %   Potentially but not necessarily one class per filenaming convention.
-%   Class instance represents one dataset filename.
+%   Class instance represents the information contained in one dataset filename.
 %   Class instance stores filename, presumably indirectly as fields which are
 %   always legal+consistent.
 %   --
@@ -224,7 +224,6 @@ function [R, S] = parse_dataset_filename(filename)
 % PROPOSAL: datasetId --> DSID
 %
 % PROPOSAL: Forbid longer version strings beginning with zero.
-% PROPOSAL: Forbid uppercase "-CDAG". Should never happen.
 
 NO_MATCH_RETURN_VALUE = [];
 UNUSED_DT             = datetime('NaT', 'TimeZone', 'UTCLeapSeconds');
