@@ -25,7 +25,7 @@
 % NOTE/BUG: Can not handle e.g.
 %       solo_L1_swa-eas2-NM3D_20201027T000007-20201027T030817_V01.cdf
 %       since it has mixed case in the descriptor (not level).
-% NOTE: RCTs counts as datasets in this context since the conform to the same
+% NOTE: RCTs counts as datasets in this context since they conform to the same
 %       filenaming convention and are described in SOL-SGS-TN-0009, "Metadata
 %       Definition for Solar Orbiter Science Data", 01/06, though using its own
 %       level "CAL".
@@ -114,18 +114,7 @@ function [R, S] = parse_dataset_filename(filename)
 %       CON: Impossible(?) to reduce number of top-level case due to special
 %            cases for LES and CNES test files.
 %
-% PROPOSAL: Use time interval string to denote time in both
-%           parse_dataset_filename() and create_dataset_filename(). No timestamps.
-%           Caller should instead use pre-existing separate functions
-%               solo.adm.dsfn.parse_time_interval_str()
-%               solo.adm.dsfn.create_time_interval_str()
-%   PRO: No redundant (time) information (that can contradict) in R.
-%       PRO: Does not need to ignore but permit time interval string in
-%           create_dataset_filename().
-%   CON: Turns the filename parsing into a two stage process. ==> Bad for
-%        quickly identifying filenames as datasets/non-datasets.
-% PROPOSAL: Separate return struct for time vectors. Time interval string in
-%           return value.
+%
 %
 % PROPOSAL: Separate (globally available) parse/create functions for every
 %           separate filenaming scheme.
@@ -165,6 +154,8 @@ function [R, S] = parse_dataset_filename(filename)
 %   PROPOSAL: One top-level function that handles all filenaming conventions
 %             together. Should assign(?) string for identified convention.
 %
+%
+%
 % PROPOSAL: Refactor to return class.
 %   PROBLEM: solo.adm.dsfn.parse_dataset_filename_many() adds field ".path" to
 %            return value and passes it on in its own return value.
@@ -190,6 +181,42 @@ function [R, S] = parse_dataset_filename(filename)
 %     ~CON: If the class contains non-redundant information, then it has to
 %           re-derive timeIntervalStr, filenameDsiCdag, (future versionStr).
 %
+%   PROBLEM: Risk of duplicating assertions on consistent fields. Which code
+%            should be responsible? Constructor? create/parse_dataset_filename?
+%
+%
+%
+% PROPOSAL: Class-based implementation: *DatasetFilename
+%   Potentially but not necessarily one class per filenaming convention.
+%   Class instance represents one dataset filename.
+%   Class instance stores filename, presumably indirectly as fields which are
+%   always legal+consistent.
+%   --
+%   PROPOSAL:
+%     create_dataset_filename() --> Constructor + Method create_string()
+%     parse_dataset_filename()  --> Static method parse(), which calls constructor.
+%     --
+%     CON: Ambiguity on which code asserts legal+consistent fields.
+%   PROPOSAL: Constructor for two cases:
+%     create_dataset_filename() --> Constructor (mult. arguments) + Method create_string()
+%     parse_dataset_filename()  --> Constructor (one argument)
+%     --
+%     PRO: No ambiguity on which code asserts legal+consistent fields.
+%   PROPOSAL: Metods/properties for redundant information.
+%     Ex: Basename, time interval string, version string
+%   PROPOSAL: Immutable
+%     PRO: Always self-consistent.
+%     CON: Always many constructor arguments.
+%   --
+%   NOTE: ~Presumes 1:1 correspondence between fields and filename. Can not
+%         have multiple filenames for same fields (e.g. varying number of
+%         initial version number zeroes).
+%
+%
+%
+% PROPOSAL: Field (string constant) for type of filenaming convention.
+%   NOTE: Only if multiple filenaming conventions in the same code.
+%
 % PROPOSAL: Return file basename separately from struct.
 %   PRO: Used by bicas.ga.derive_output_dataset_GAs().
 %
@@ -202,7 +229,6 @@ function [R, S] = parse_dataset_filename(filename)
 %
 % PROPOSAL: Forbid longer version strings beginning with zero.
 % PROPOSAL: Forbid uppercase "-CDAG". Should never happen.
-% PROPOSAL: Only permit "-cdag"" for inflight datasets.
 
 NO_MATCH_RETURN_VALUE = [];
 UNUSED_DT             = datetime('NaT', 'TimeZone', 'UTCLeapSeconds');
@@ -274,7 +300,8 @@ TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE}, ...
   'permit non-match');
-if perfectMatch & ~dsicdagUppercase
+if perfectMatch && ~dsicdagUppercase
+
   S.timeIntervalStr = subStrCa{2};
 
   [R.Dt1, R.Dt2, R.timeIntervalFormat] = ...
@@ -290,8 +317,7 @@ end
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', LES_TESTSTR_RE}, ...
   'permit non-match');
-if perfectMatch & ~dsicdagUppercase
-  assert(~R.isCdag)
+if perfectMatch && ~dsicdagUppercase && ~R.isCdag
 
   S.timeIntervalStr = subStrCa{2};
 
@@ -309,8 +335,7 @@ end
 [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
   {'_', CNE_TESTSTR_RE, '_', VERSION_RE}, ...
   'permit non-match');
-if perfectMatch & dsicdagUppercase
-  assert(~R.isCdag)
+if perfectMatch && dsicdagUppercase && ~R.isCdag
 
   S.timeIntervalStr    = NO_MATCH_RETURN_VALUE;
 

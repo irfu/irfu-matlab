@@ -1,11 +1,12 @@
 %
-% matlab.unittest automatic test code for
-% solo.adm.paths_to_DSMD_array().
+% matlab.unittest automatic test code for solo.adm.paths_to_DSMD_array().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef paths_to_DSMD_array___UTEST < matlab.unittest.TestCase
+
+
 
   %##############
   %##############
@@ -93,5 +94,7 @@ classdef paths_to_DSMD_array___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
+
+
 
 end

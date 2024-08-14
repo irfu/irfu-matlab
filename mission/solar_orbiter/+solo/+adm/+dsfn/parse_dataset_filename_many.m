@@ -26,7 +26,7 @@
 %               .path : Path in filePathCa{iFile}.
 % bIsDatasetArray
 %       Logical column array. Same size as argument. True iff the corresponding
-%       input path was interpreted as a dataset (was translated into a DSMD).
+%       input path was interpreted as a dataset.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -71,11 +71,12 @@ for iFile = 1:numel(filePathCa)
     fiCa{           end+1, 1} = Fi;
     bIsDatasetArray(iFile, 1) = true;
   else
-    % CASE: Can not identify as dataset filename.
+    % CASE: File can *NOT* be identified as dataset.
 
     % Do nothing. (Silently ignore files that can not be identified as
     % datasets.)
     bIsDatasetArray(iFile, 1) = false;
   end
 end
+
 end

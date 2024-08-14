@@ -11,6 +11,8 @@
 %
 classdef parse_dataset_filename___UTEST < matlab.unittest.TestCase
 % PROPOSAL: Rename file
+%   dataset_filename___UTEST
+%   create_parse_dataset_filename___UTEST
 % PROPOSAL: Split upp tests into multiple methods.
 
 

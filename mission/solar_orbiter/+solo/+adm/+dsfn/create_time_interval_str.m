@@ -47,6 +47,7 @@ elseif strcmp(timeIntervalFormat, 'NO_TIME_INTERVAL')
   timeIntervalStr = [];
 
 else
+
   error('Can not interpret timeIntervalFormat="%s".', timeIntervalFormat)
 end
 
