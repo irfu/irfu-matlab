@@ -50,14 +50,14 @@ DASAID
 DICT
     MATLAB dictionary object.
 DMRQ
-    Datasets More Recent than QLI (file) algorithm. A particular DASA.
+    "Datasets More Recent than QLI (file)" DASA.
     A day is included if (1) the most recent QLI FMD (for that day) is
     more recent than the most recent input dataset (for that day), or (2) there
     is no QLI for that day.
 DSMD
     Class solo.adm.DatasetMetadata.
 DT
-    datetime (class)
+    datetime (class).
 FMD
     File Modification Date (timestamp).
     If represented as datetime, then always without TimeZone.
