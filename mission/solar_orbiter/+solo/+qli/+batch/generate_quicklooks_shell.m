@@ -168,6 +168,19 @@ solo.db_cache('on', 'save')
 
 
 
+%=============================
+% Configure the parallel pool
+%=============================
+% NOTE: This requires there to not be a pre-existing parallel pool (will
+% otherwise crash).
+% --
+% spmdEnabled=false : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
+% anna.irfu.se. /2024-08-16.
+% NOTE: spmdEnabled=false makes it illegal to use the "spmd" commands.
+parpool('SpmdEnabled', false);
+
+
+
 %=====================
 % Generate quicklooks
 %=====================
