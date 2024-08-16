@@ -185,7 +185,16 @@ irf.log('n', sprintf('NONWEEKLY_6H_2H_PLOTS_ENABLED = %d',   solo.qli.const.NONW
 % Log current working directory so that relative paths can be interpreted.
 irf.log('n', sprintf('Current working directory     = %s',   pwd))
 
-
+% Get current (preexisting) parallel pool (PP). Create one if none has already
+% been created. The parallel pool is used indirectly by the plotting code, at
+% least by irf_ebsp() using "parfor".
+pp = gcp();
+irf.log('n', 'Parameters for the parallel pool:')
+irf.log('n', sprintf('pp.Connected   = %d', pp.Connected))     % Logical
+irf.log('n', sprintf('pp.NumWorkers  = %d', pp.NumWorkers))
+irf.log('n', sprintf('pp.SpmdEnabled = %d', pp.SpmdEnabled))   % Logical
+irf.log('n', sprintf('pp.IdleTimeout = %d', pp.IdleTimeout))
+irf.log('n', sprintf('pp.Busy        = %d', pp.Busy))          % Logical
 
 tSec = tic();
 
