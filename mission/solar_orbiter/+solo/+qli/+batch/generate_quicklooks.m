@@ -114,6 +114,8 @@ function generate_quicklooks(...
 %   PROPOSAL: Set reference timestamp to FMD of relevant log(s).
 %   PROPOSAL: Caller sets the reference timestamp.
 %
+% NOTE: Is not able to handle (catch and log/store) ParallelException.
+%
 %
 % generate_quicklooks_24h_6h_2h(), generate_quicklook_7day()
 % ============================================================
@@ -169,7 +171,9 @@ end
 
 
 
-% Log arguments
+%====================
+% Log arguments etc.
+%====================
 irf.log('n', sprintf('irfLogoPath                   = "%s"', irfLogoPath))
 irf.log('n', sprintf('vhtDataDir                    = "%s"', vhtDataDir))
 irf.log('n', sprintf('outputDir                     = "%s"', outputDir))
