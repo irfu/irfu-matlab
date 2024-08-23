@@ -67,18 +67,19 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
       if obj.inputSci.isTdsCwf
         settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid = 'TDS-CWF';
+        tdsRcttid    = 'TDS-CWF';
       else
         settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid = 'TDS-RSWF';
+        tdsRcttid    = 'TDS-RSWF';
       end
       useCtRcts = obj.inputSci.isL1r && Bso.get_fv(settingUseCt);
       useCti2   = false;    % Always false for TDS.
 
       if useCtRcts
         % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
-        % NOTE: This should not be regarded as a hack but as
-        % ~normalization to avoid later special cases.
+        % --
+        % NOTE: This should not be regarded as a hack but as ~normalization to
+        % avoid later special cases.
         zv_BW = uint8(ones(...
           size(InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, 1), ...
           1));

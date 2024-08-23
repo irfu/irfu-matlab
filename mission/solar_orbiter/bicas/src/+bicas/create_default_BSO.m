@@ -4,7 +4,8 @@
 % (2) set all settings keys to their initial default values.
 % Note: Does NOT make the object write-only.
 %
-% NOTE: Slightly deceiving name, since it defines which keys are permitted.
+% NOTE: Slightly deceiving function name, since it defines which keys are
+%       permitted.
 %
 %
 % NAMING CONVENTIONS
@@ -57,8 +58,6 @@ function Bso = create_default_BSO()
 % PROPOSAL: Abolish settings/functionality:
 %   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
-%   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE                     -- ALREADY ABOLISHED
-%   OUTPUT_CDF.WRITE_FILE_DISABLED                          -- ALREADY ABOLISHED
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
 %   --
@@ -517,7 +516,7 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %
 %============================================================================
 CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-%S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',                    CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention
+%S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',                   CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention.
 S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['solo_CAL_rpw-bias_[0-9]{8}-[0-9]{8}_V[0-9][0-9]+', CDF_SUFFIX_REGEXP]);
 
 % NOTE: 2024-09-02: TDS still uses old/illegal RCT filenaming convention.
@@ -529,14 +528,15 @@ S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RS
 
 
 
-% CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX
+% CALIBRATION_TABLE_INDEX2 = Second value in L1R ZV CALIBRATION_TABLE_INDEX
 % (in every record), that contains an index to calibration data inside a
 % given RCT.
+% CALIBRATION_TABLE_INDEX2 is not set for TDS. Therefore no such settings for
+% TDS.
 % "L1R" refers to when using L1R datasets as input, as opposed to L1.
 S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      1)
 S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    1)
 S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',  1)
-% CALIBRATION_TABLE_INDEX is not set for TDS. Therefore no such setting for TDS.
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', 1)
 
 
@@ -544,10 +544,11 @@ S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', 1)
 %============================================================================
 % Calibration constants for the "scalar" calibration mode
 % -------------------------------------------------------
-% Unit: IVPAV = Interface volt per antenna volt.
+% Unit: IVPAV
 %
 % Calibration constants that are used instead of the corresponding BIAS
 % transfer functions.
+
 % NOTE: These values do not influence the nominal, "full" calibration. They
 %       are entirely separate.
 % NOTE: The sign should preferably be consistent with the BIAS transfer

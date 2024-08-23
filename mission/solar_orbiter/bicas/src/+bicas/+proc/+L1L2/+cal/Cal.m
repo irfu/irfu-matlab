@@ -43,8 +43,8 @@
 % ====================================================================
 % CALIBRATION_TABLE       : CDF L1R global attribute
 %   """"Filename of the calibration table(s).""""
-%   """"There must as many as entries than the number of calibration table files
-%   associated to the L1R file.""""
+%   """"There must as many as entries than the number of calibration table
+%   files associated to the L1R file.""""
 %
 % CALIBRATION_TABLE_INDEX : CDF L1R zVariable
 %   """"Index of the calibration table(s) value required to generate L2 data
@@ -193,9 +193,6 @@ classdef Cal < handle
   %
   %
   %
-  % PROPOSAL: Rename/redefine cti2 (as did with cti1).
-  %   PROPOSAL: iNonBiasRctCalib
-  %
   % PROPOSAL: Move (charge) current calibration to separate class.
   %   NOTE: Functions
   %       calibrate_current_TM_to_aampere()
@@ -215,15 +212,17 @@ classdef Cal < handle
   %   PROPOSAL: Rename remaining class: Only about voltage calibration.
   %       ~cal_volt
   %
-  % PROPOSAL: Move shared definitions and naming conventions to a
-  %           ~MISC_NAMING_CONVENTIONS.md file analogous with for
-  %           JUICE/RPWI_pipeline git repo.
+  % PROPOSAL: Separate classes for different types of data. At least separate
+  %           for LFR and TDS.
+  %   NOTE: Should then have separate class for current calibration.
   %
   % PROPOSAL: Refactor to use a struct constant for those arguments to
   %           bicas.tf.apply_TF() which are constant.
   %
-  % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least not
-  %      for LFR.
+  % PROPOSAL: Convert RctdCaMap into dedicated class.
+  %
+  % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least
+  %      not for LFR.
   %   PROPOSAL: Tests.
 
 
@@ -422,9 +421,9 @@ classdef Cal < handle
       settingBiasTf                      = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
       switch(settingBiasTf)
         case 'FULL'
-          obj.useBiasTfScalar = 0;
+          obj.useBiasTfScalar = false;
         case 'SCALAR'
-          obj.useBiasTfScalar = 1;
+          obj.useBiasTfScalar = true;
         otherwise
           error(...
             'BICAS:Assertion:ConfigurationBug', ...
@@ -588,8 +587,8 @@ classdef Cal < handle
           if ufv
             % CASE: Set voltages to NaN.
 
-            % IMPLEMENTATION NOTE: Potentially overwrites TM value
-            % set in above "if" statement.
+            % IMPLEMENTATION NOTE: Potentially overwrites TM value set in above
+            % "if" statement.
             bltsSamplesAVoltCa{i} = nan(size(bltsSamplesTmCa{i}));
           end
         end

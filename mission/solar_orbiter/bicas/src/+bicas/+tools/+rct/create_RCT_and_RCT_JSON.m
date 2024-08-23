@@ -17,7 +17,7 @@
 % First created 2020-07-02.
 %
 function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir, rctVersionNbr)
-% bicas.tools.rct.create_RCT_and_RCT_JSON('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RPW-BIAS_V03.cdf', '~/temp/temp', 3)
+% bicas.tools.rct.create_RCT_and_RCT_JSON('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RPW-BIAS_V03.cdf', '~/temp/temp', 1)
 
 % Time interval for which the RCT is valid. Should cover the entire mission.
 % --------------------------------------------------------------------------
@@ -25,10 +25,12 @@ function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir, rctVersionNbr)
 %       but 2022-02-09 local Florida time.
 % NOTE: Cf. solo_CAL_rpw-scm_20200210-20990101_V10.cdf which uses the SolO
 %       launch date and presumably tries to cover the entire mission too.
-% NOTE: The end of the time interval is badly chosen (easthetically) but it does
-%       not really matter.
-%       2099-01-02T00:00:00Z in JSON file. ==> 2099-01-01 in the RCT filename
-%       (since end date is inclusive).
+% NOTE: The end of the time interval in END_DT is represented differently in
+%       (1) the RCT filename and (2) the JSON file content.
+%       since the RCT filename (a) only specifies dates (not time) and
+%       (b) the RCT filename end date is inclusive.
+%       Ex:     2100-01-01T00:00:00Z in JSON file content.
+%           ==> 2099-12-31 in the RCT filename.
 % IMPORTANT NOTE: One should presumably not change the time interval
 %                 unnecessarily, since it is represented in the filename and
 %                 since the version number is (presumably) tied to the exact

@@ -33,8 +33,6 @@ classdef findread
   %               PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
   %               PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS
   %               PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS
-  %
-  % PROPOSAL: Normalize TDS & LFR by creating a fake zv_BW for TDS.
 
 
 
@@ -59,7 +57,8 @@ classdef findread
 
 
 
-    % Load one RCT per selected RCTTID using assumptions on filenames.
+    % Load one RCT per selected RCTTID by only using assumptions on filenames
+    % (and directory).
     %
     %
     % NOTES
@@ -86,8 +85,7 @@ classdef findread
     %       One key per specified RCTTID in argument rcttidCa.
     %       Exactly one RCT per RCT type.
     %
-    function RctdCaMap = find_read_RCTs_by_regexp(...
-        rcttidCa, rctDir, Bso, L)
+    function RctdCaMap = find_read_RCTs_by_regexp(rcttidCa, rctDir, Bso, L)
 
       assert(iscell(rcttidCa))
 
@@ -117,20 +115,19 @@ classdef findread
 
 
     % (1) Load one BIAS RCT by regular expression.
-    % (2) Load one or multiple non-BIAS RCT(s) of the selected type
-    % (rcttid) using CDF global attribute CALIBRATION_TABLE and ZVs
-    % CALIBRATION_TABLE_INDEX and BW.
+    % (2) Load one or multiple non-BIAS RCT(s) for the selected RCTTID using
+    % CDF global attribute CALIBRATION_TABLE and ZVs CALIBRATION_TABLE_INDEX
+    % and BW.
     %
     %
     % IMPLEMENTATION NOTE
     % ===================
-    % May load MULTIPLE RCTs of the same RCT type, but will only load those
-    % RCTs which are actually needed, as indicated by
-    % zVariables CALIBRATION_TABLE_INDEX and BW. This is necessary since
-    % CALIBRATION_TABLE may reference unnecessary RCTs of types not
-    % recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf
-    % /2019-12-16), and which are therefore unreadable by BICAS (BICAS will
-    % crash).
+    % May load MULTIPLE RCTs with the same RCTTID, but will only load those RCTs
+    % which are actually needed, as indicated by zVariables
+    % CALIBRATION_TABLE_INDEX and BW. This is necessary since CALIBRATION_TABLE
+    % may reference unnecessary RCTs of types not recognized by BICAS (LFR's
+    % ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf /2019-12-16), and which are therefore
+    % unreadable by BICAS (BICAS will crash).
     %
     %
     % ARGUMENTS
@@ -151,8 +148,8 @@ classdef findread
     % RETURN VALUE
     % ============
     % RctdCaMap
-    %       Returns containers.Map that can be used for bicas.proc.L1L2.cal.Cal
-    %       constructor.
+    %       Returns containers.Map that can be used to initialize an instance
+    %       of bicas.proc.L1L2.cal.Cal.
     %
     function RctdCaMap = find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
         nonBiasRcttid, rctDir, ...
@@ -301,7 +298,7 @@ classdef findread
 
 
 
-      % Cell array of paths to RCTs of the same RCT type.
+      % Pre-allocate array of RCTDs with the same RCTTID.
       RctdCa = cell(nCt, 1);
 
       % IMPLEMENTATION NOTE: Iterate over those entries in

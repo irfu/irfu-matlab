@@ -10,18 +10,6 @@
 %   data, use the first MATLAB array index to represent CDF records.
 %
 %
-% SOME INTERMEDIATE PROCESSING DATA FORMATS
-% =========================================
-% - PreDc = Pre-(Demuxing & Calibration) Data
-%       Generic data format that can represent all forms of input datasets
-%       before demuxing and calibration. Can use an arbitrary number of samples
-%       per record. Some variables are therefore not used in CWF output
-%       datasets.
-% - PostDc = Post-(Demuxing & Calibration) Data
-%       Data format that includes calibrated currents & calibrated & demuxed
-%       voltages.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-10, with source code from data_manager_old.m.
 %

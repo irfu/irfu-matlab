@@ -172,6 +172,10 @@ Dataset (data set)
     except for RCTs, where it is ambiguous.
 Deg
     Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
+DCIP
+    Class bicas.proc.L1L2.DemultiplexingCalibrationInput.
+DCOP
+    Class bicas.proc.L1L2.DemultiplexingCalibrationOutput
 DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
     of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",
@@ -275,6 +279,7 @@ NSO table
     manually labeled as NSOs. BICAS uses this list for potentially modifying
     processed data. Every NSO in the table is categorized using exactly one
     QRCID.
+    Located at irfu-matlab/mission/solar_orbiter/bicas/data/solo_ns_ops.xml .
 Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
@@ -321,7 +326,8 @@ RCTTID
     RCT Type ID. String constant that represents a *type* of RCT, not a
     particular RT file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
 RCTS
-    RCT CALIBRATION_TABLE (glob.attr) + CALIBRATION_TABLE_INDEX (zVariable).
+    RCT (as specified by) CALIBRATION_TABLE (L1R GA) and
+    CALIBRATION_TABLE_INDEX (L1R ZV).
     S = plural.
 ROC
     RPW Operations Center.

@@ -2,6 +2,8 @@
 % Interprets a MATLAB variable as a JSON object and turns it into a string for
 % printing/writing to file.
 %
+% NOTE: Can not set indentation length.
+%
 %
 % ARGUMENTS AND RETURN VALUE
 % ==========================
@@ -23,9 +25,6 @@
 %       NOTE: Uses line feed character for line breaks.
 %
 %
-% NOTE: Can not set indentation length.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-05-31
 %
@@ -34,7 +33,7 @@ function str = JSON_object_str(JsonObj)
 
 str = jsonencode(JsonObj, 'PrettyPrint', true);
 
-% IMPLEMENTATION NOTE: String ends up in irf.str.add_prefix_on_every_row() which
-% requires multi-row strings to always end with line feed.
+% IMPLEMENTATION NOTE: String ends up in irf.str.add_prefix_on_every_row()
+% which requires multi-row strings to always end with line feed.
 str = [str, newline];    % Add line feed
 end

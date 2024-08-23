@@ -73,10 +73,10 @@ function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename, DtBegin, DtEnd)
 % PROPOSAL: Do not use bicas.utils.JSON_object_str(). Use MATLAB's own support
 %           for JSON files: jsonencode().
 
+RCT_JSON_FILENAME = 'bias_rct_validity.json';
+
 beginStr = DT_to_str(DtBegin);
 endStr   = DT_to_str(DtEnd);
-
-RCT_JSON_FILENAME = 'bias_rct_validity.json';
 
 % NOTE: Cell array of struct, to conform with XB's format above.
 JsonObj = containers.Map();

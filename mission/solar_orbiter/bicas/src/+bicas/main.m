@@ -452,7 +452,7 @@ Swml = bicas.swm.get_SWML(Bso);
 
 switch(CliData.bfmid)
   case 'VERSION_BFM'
-    print_version(Swml, Bso)
+    print_version(Swml)
 
   case 'IDENTIFICATION_BFM'
     print_identification(Swml)
@@ -509,12 +509,11 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created <<2019-08-05
 %
-function print_version(Swml, Bso)
-
-% IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor
-% rather than the in the BICAS constants since the RCS ICD specifies that it
-% should be that specific version. This is in principle inefficient but also
-% "precise".
+function print_version(Swml)
+% IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather
+% than the in the BICAS constants since the RCS ICD specifies that it should be
+% that specific version. This is in principle an inefficient imlementation but
+% it should also be more reliable.
 
 JsonSwd = bicas.get_SWD(Swml.List);
 

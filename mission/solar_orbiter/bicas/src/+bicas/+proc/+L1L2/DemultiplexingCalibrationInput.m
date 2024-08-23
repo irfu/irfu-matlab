@@ -19,6 +19,14 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef DemultiplexingCalibrationInput
+  % PROPOSAL: Shorten DemultiplexingCalibrationInput/Output
+  %   PROPOSAL: Demultiplexing -->
+  %             Demuxing
+  %   PROPOSAL: Calibration -->
+  %             Calib
+  %   DemuxingCalibrationInput/Output
+  %   DemuxingCalibInput/Output
+  %
   % PROPOSAL: Refactor code to only represent three data channels (those
   %           BLTS's which (nominally) contain actual data for the given
   %           timestamp). Store iBlts for the channels that represent BLTS 2/4
