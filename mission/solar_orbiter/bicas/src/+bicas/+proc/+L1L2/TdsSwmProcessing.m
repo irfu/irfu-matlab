@@ -104,8 +104,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf,              Bso, L);
       SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd);
-      SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
-      OutputSciCdf = bicas.proc.L1L2.process_PostDc_to_CDF(           SciDcip, SciPostDc, obj.outputDsi);
+      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
+      OutputSciCdf = bicas.proc.L1L2.process_DCOP_to_CDF(             SciDcip, SciDcop, obj.outputDsi);
 
 
 

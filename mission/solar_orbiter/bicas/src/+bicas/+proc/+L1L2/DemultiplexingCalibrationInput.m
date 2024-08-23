@@ -19,19 +19,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef DemultiplexingCalibrationInput
-  % PROPOSAL: Proper abbreviation for classes PDIP and PostDc.
-  %   pre/post
-  %   input/output
-  %   before/after
-  %   demultiplexing
-  %   calibration
-  %   data
-  % --
-  %   PRDC, PODC = Pre/Post Demuxing, Calibration
-  %   DCI/DCO = Demuxing, Calibration Input/Output
-  %     CON: DCO found in much code: "oldcode", "idcode", "hardcopy",  "backgroundcolor"
-  %   DCIP/DCOP = Demuxing, Calibration Input/Output
-  %
   % PROPOSAL: Refactor code to only represent three data channels (those
   %           BLTS's which (nominally) contain actual data for the given
   %           timestamp). Store iBlts for the channels that represent BLTS 2/4

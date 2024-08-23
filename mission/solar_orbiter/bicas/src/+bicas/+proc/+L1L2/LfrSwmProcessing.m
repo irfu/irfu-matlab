@@ -89,8 +89,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf, Bso, L);
       SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd, Bso, L);
-      SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
-      OutputSciCdf = obj.process_PostDc_to_CDF(                       SciDcip, SciPostDc);
+      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
+      OutputSciCdf = obj.process_DCOP_to_CDF(                         SciDcip, SciDcop);
 
 
 
@@ -403,11 +403,11 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    function [OutSci] = process_PostDc_to_CDF(obj, SciDcip, SciPostDc)
+    function [OutSci] = process_DCOP_to_CDF(obj, SciDcip, SciDcop)
       % NOTE: Most processing is done in function shared between LFR and
       %       TDS.
-      OutSci = bicas.proc.L1L2.process_PostDc_to_CDF(...
-        SciDcip, SciPostDc, obj.outputDsi);
+      OutSci = bicas.proc.L1L2.process_DCOP_to_CDF(...
+        SciDcip, SciDcop, obj.outputDsi);
 
       OutSci.Zv.BW = SciDcip.Zv.BW;
     end

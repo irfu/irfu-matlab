@@ -32,7 +32,7 @@ classdef dc
 
 
 
-    % Derive PostDc from DCIP, i.e.
+    % Derive DCOP from DCIP, i.e.
     % (1) demux (demultiplex),
     % (2) calibrate data, and
     % (3) set quality variables.
@@ -40,7 +40,7 @@ classdef dc
     % NOTE: Public function as opposed to the other demuxing/calibration
     % functions.
     %
-    function PostDc = process_calibrate_demux(Dcip, InCurPd, Cal, NsoTable, Bso, L)
+    function Dcop = process_calibrate_demux(Dcip, InCurPd, Cal, NsoTable, Bso, L)
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
@@ -128,7 +128,7 @@ classdef dc
       % ############
       % END FUNCTION
       % ############
-      PostDc = bicas.proc.L1L2.PostDc(Zv);
+      Dcop = bicas.proc.L1L2.DemultiplexingCalibrationOutput(Zv);
 
       nRecords = size(Dcip.Zv.Epoch, 1);
       Tmk.stop_log(nRecords, 'record')

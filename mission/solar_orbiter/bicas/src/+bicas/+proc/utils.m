@@ -514,7 +514,7 @@ classdef utils
       %
       % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
       % ===========================================================
-      % PostDc.Zv.AsrSamplesAVolt : bicas.utils.SameRowsMap.
+      % Dcop.Zv.AsrSamplesAVolt : bicas.utils.SameRowsMap.
 
       % NOTE: Function name somewhat bad.
       % PROPOSAL: Make recursive?!

@@ -1,6 +1,6 @@
 %
-% Store of all output information from processing (DC = Demuxing+Calibration)
-% that is common for all L1/L1R-->L2 LFR+TDS processing.
+% Store of all output information from processing that is common for all
+% L1/L1R-->L2 LFR+TDS processing (i.e. demultiplexing and calibration).
 %
 % Class is admittedly small, but the corresponding data structure has
 % historically been more larger(?), is partly an analogue to
@@ -9,7 +9,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef PostDc
+classdef DemultiplexingCalibrationOutput
 
   %#####################
   %#####################
@@ -29,7 +29,7 @@ classdef PostDc
   %#########################
   methods(Access=public)
 
-    function obj = PostDc(Zv)
+    function obj = DemultiplexingCalibrationOutput(Zv)
       irf.assert.struct(Zv, ...
         {'AsrSamplesAVoltSrm', 'currentAAmpere', 'QUALITY_FLAG', 'L2_QUALITY_BITMASK'}, {});
       bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);

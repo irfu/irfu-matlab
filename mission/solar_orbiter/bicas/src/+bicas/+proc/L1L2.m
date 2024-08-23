@@ -283,7 +283,7 @@ classdef L1L2
 
 
 
-    % Convert DCIP+PostDc to something that
+    % Convert DCIP+DCOP to something that
     % (1) represents a TDS dataset (hence the name), and
     % (2) ALMOST REPRESENTS an LFR dataset (the rest is done in a wrapper).
     %
@@ -294,35 +294,35 @@ classdef L1L2
     % L2 output datasets are very similar, despite that the input L1/L1R LFR
     % & TDS datasets are very dissimilar.
     %
-    function [OutSci] = process_PostDc_to_CDF(SciDcip, SciPostDc, outputDsi)
+    function [OutSci] = process_DCOP_to_CDF(SciDcip, SciDcop, outputDsi)
       % PROPOSAL: Rename to something shared between LFR and TDS, then use
       %           two wrappers.
-      %   PROPOSAL: process_PostDc_to_LFR_TDS_CDF_core
+      %   PROPOSAL: process_DCOP_to_LFR_TDS_CDF_core
       %   TODO-DEC: Put in which future file?
 
       % ASSERTIONS
-      assert(isa(SciDcip,  'bicas.proc.L1L2.DemultiplexingCalibrationInput'))
-      assert(isa(SciPostDc, 'bicas.proc.L1L2.PostDc'))
+      assert(isa(SciDcip, 'bicas.proc.L1L2.DemultiplexingCalibrationInput'))
+      assert(isa(SciDcop, 'bicas.proc.L1L2.DemultiplexingCalibrationOutput'))
 
 
 
       nRecords                 = size(SciDcip.Zv.Epoch, 1);
-      nSamplesPerRecordChannel = size(SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1'), 2);
+      nSamplesPerRecordChannel = size(SciDcop.Zv.AsrSamplesAVoltSrm('DC_V1'), 2);
 
       OutSci = [];
 
       OutSci.Zv.Epoch              = SciDcip.Zv.Epoch;
       OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.QUALITY_BITMASK;
-      OutSci.Zv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
-      OutSci.Zv.QUALITY_FLAG       = SciPostDc.Zv.QUALITY_FLAG;
+      OutSci.Zv.L2_QUALITY_BITMASK = SciDcop.Zv.L2_QUALITY_BITMASK;
+      OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QUALITY_FLAG;
       OutSci.Zv.DELTA_PLUS_MINUS   = SciDcip.Zv.DELTA_PLUS_MINUS;
       OutSci.Zv.SYNCHRO_FLAG       = SciDcip.Zv.SYNCHRO_FLAG;
       OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.freqHz;
 
       % NOTE: Convert aampere --> nano-aampere
-      OutSci.Zv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
-      OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
-      OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
+      OutSci.Zv.IBIAS1 = SciDcop.Zv.currentAAmpere(:, 1) * 1e9;
+      OutSci.Zv.IBIAS2 = SciDcop.Zv.currentAAmpere(:, 2) * 1e9;
+      OutSci.Zv.IBIAS3 = SciDcop.Zv.currentAAmpere(:, 3) * 1e9;
 
       OutSci.Ga.OBS_ID    = SciDcip.Ga.OBS_ID;
       OutSci.Ga.SOOP_TYPE = SciDcip.Ga.SOOP_TYPE;
@@ -353,17 +353,17 @@ classdef L1L2
         OutSci.Zv.EDC = tempNaN;
         OutSci.Zv.EAC = tempNaN;
 
-        OutSci.Zv.VDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
-        OutSci.Zv.VDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
-        OutSci.Zv.VDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
+        OutSci.Zv.VDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V1');
+        OutSci.Zv.VDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V2');
+        OutSci.Zv.VDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V3');
 
-        OutSci.Zv.EDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
-        OutSci.Zv.EDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
-        OutSci.Zv.EDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
+        OutSci.Zv.EDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V12');
+        OutSci.Zv.EDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V13');
+        OutSci.Zv.EDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V23');
 
-        OutSci.Zv.EAC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
-        OutSci.Zv.EAC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
-        OutSci.Zv.EAC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
+        OutSci.Zv.EAC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm('AC_V12');
+        OutSci.Zv.EAC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm('AC_V13');
+        OutSci.Zv.EAC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm('AC_V23');
 
         % ASSERTION
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
@@ -399,17 +399,17 @@ classdef L1L2
         OutSci.Zv.EDC = tempNaN;
         OutSci.Zv.EAC = tempNaN;
 
-        OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
-        OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
-        OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
+        OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V1');
+        OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V2');
+        OutSci.Zv.VDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V3');
 
-        OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
-        OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
-        OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
+        OutSci.Zv.EDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V12');
+        OutSci.Zv.EDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V13');
+        OutSci.Zv.EDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm('DC_V23');
 
-        OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
-        OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
-        OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
+        OutSci.Zv.EAC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm('AC_V12');
+        OutSci.Zv.EAC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm('AC_V13');
+        OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm('AC_V23');
 
         % ASSERTION
         % NOTE: Must exclude ZV "SAMPLE_IDX".
@@ -434,7 +434,7 @@ classdef L1L2
         'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, ...
         {'SAMPLE_IDX'})
 
-    end    % process_PostDc_to_CDF
+    end    % process_DCOP_to_CDF
 
 
 
