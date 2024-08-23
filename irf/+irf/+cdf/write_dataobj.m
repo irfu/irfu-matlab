@@ -13,7 +13,8 @@ function write_dataobj(filePath, ...
 % to a CDF file. Originally based on write_cdf.m/write_cdf_spdfcdfread.m.
 % Primarily used by BICAS (SolO; BIAS CAlibration Software).
 %
-% NOTE: The function is not fully generic, but quite. See comments.
+% NOTE: This function is not fully generic, but quite (i.e. it can not handle
+% all cases). See comments.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

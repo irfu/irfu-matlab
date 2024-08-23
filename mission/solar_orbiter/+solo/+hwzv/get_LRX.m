@@ -29,6 +29,9 @@
 %
 function zvLrx = get_LRX(zvR0, zvR1, zvR2, iLsf)
 % TODO-DEC: Should convey iLsf=NaN as NaN, or assert that iLsf ~= NaN?
+% PROPOSAL: Use abbreviations "LRX" (as defined by BICAS).
+%   Ex: Function name (used both in irfu-matlab and outside).
+%   Ex: Implementation.
 
 irf.assert.sizes(...
   zvR0, [-1, 1], ...
