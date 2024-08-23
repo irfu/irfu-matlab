@@ -103,9 +103,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %==============
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf,              Bso, L);
-      SciPreDc     = obj.process_CDF_to_PreDc(                        InputSciCdf, HkSciTimePd);
-      SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
-      OutputSciCdf = bicas.proc.L1L2.process_PostDc_to_CDF(           SciPreDc, SciPostDc, obj.outputDsi);
+      SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd);
+      SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
+      OutputSciCdf = bicas.proc.L1L2.process_PostDc_to_CDF(           SciDcip, SciPostDc, obj.outputDsi);
 
 
 
@@ -279,8 +279,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % Convert TDS CDF data (PDs) to PreDc.
-    function PreDc = process_CDF_to_PreDc(obj, InSci, HkSciTime)
+    % Convert TDS CDF data (PDs) to DCIP.
+    function Dcip = process_CDF_to_DCIP(obj, InSci, HkSciTime)
       %
       % BUG?: Does not use CHANNEL_STATUS_INFO.
       % NOTE: BIAS output datasets do not have a variable for the length of
@@ -412,8 +412,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.lrx       = ones(nRecords, 1);
       Zv.BW        = true(nRecords, 1);
 
-      PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
-    end    % process_CDF_to_PreDc
+      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
+    end    % process_CDF_to_DCIP
 
 
 

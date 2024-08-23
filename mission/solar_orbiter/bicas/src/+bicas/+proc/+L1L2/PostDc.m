@@ -4,7 +4,7 @@
 %
 % Class is admittedly small, but the corresponding data structure has
 % historically been more larger(?), is partly an analogue to
-% bicas.proc.L1L2.PreDc, and does indeed clarify the code.
+% bicas.proc.L1L2.DemultiplexingCalibrationInput, and does indeed clarify the code.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

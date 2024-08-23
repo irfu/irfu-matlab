@@ -88,9 +88,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %==============
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf, Bso, L);
-      SciPreDc     = obj.process_CDF_to_PreDc(                        InputSciCdf, HkSciTimePd, Bso, L);
-      SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
-      OutputSciCdf = obj.process_PostDc_to_CDF(                       SciPreDc, SciPostDc);
+      SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd, Bso, L);
+      SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
+      OutputSciCdf = obj.process_PostDc_to_CDF(                       SciDcip, SciPostDc);
 
 
 
@@ -250,12 +250,12 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % Convert LFR CDF data to PreDc.
+    % Convert LFR CDF data to DCIP.
     %
     % IMPLEMENTATION NOTE: Does not modify InSci in an attempt to save RAM
     % (should help MATLAB's optimization). Unclear if actually works.
     %
-    function PreDc = process_CDF_to_PreDc(obj, InSci, HkSciTime, Bso, L)
+    function Dcip = process_CDF_to_DCIP(obj, InSci, HkSciTime, Bso, L)
       %
       % PROBLEM: Hard-coded CDF data types (MATLAB classes).
       % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining
@@ -397,19 +397,19 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Ga.OBS_ID    = InSci.Ga.OBS_ID;
       Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
 
-      PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
+      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
 
-    end    % process_CDF_to_PreDc
+    end    % process_CDF_to_DCIP
 
 
 
-    function [OutSci] = process_PostDc_to_CDF(obj, SciPreDc, SciPostDc)
+    function [OutSci] = process_PostDc_to_CDF(obj, SciDcip, SciPostDc)
       % NOTE: Most processing is done in function shared between LFR and
       %       TDS.
       OutSci = bicas.proc.L1L2.process_PostDc_to_CDF(...
-        SciPreDc, SciPostDc, obj.outputDsi);
+        SciDcip, SciPostDc, obj.outputDsi);
 
-      OutSci.Zv.BW = SciPreDc.Zv.BW;
+      OutSci.Zv.BW = SciDcip.Zv.BW;
     end
 
 

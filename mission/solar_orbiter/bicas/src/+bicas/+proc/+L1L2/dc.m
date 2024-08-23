@@ -32,7 +32,7 @@ classdef dc
 
 
 
-    % Derive PostDc from PreDc, i.e.
+    % Derive PostDc from DCIP, i.e.
     % (1) demux (demultiplex),
     % (2) calibrate data, and
     % (3) set quality variables.
@@ -40,12 +40,12 @@ classdef dc
     % NOTE: Public function as opposed to the other demuxing/calibration
     % functions.
     %
-    function PostDc = process_calibrate_demux(PreDc, InCurPd, Cal, NsoTable, Bso, L)
+    function PostDc = process_calibrate_demux(Dcip, InCurPd, Cal, NsoTable, Bso, L)
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
       % ASSERTION
-      assert(isa(PreDc, 'bicas.proc.L1L2.PreDc'));
+      assert(isa(Dcip, 'bicas.proc.L1L2.DemultiplexingCalibrationInput'));
 
 
 
@@ -53,7 +53,7 @@ classdef dc
       % DEMUX & CALIBRATE VOLTAGES
       %############################
       AsrSamplesAVoltSrm = ...
-        bicas.proc.L1L2.dc.calibrate_demux_voltages(PreDc, Cal, L);
+        bicas.proc.L1L2.dc.calibrate_demux_voltages(Dcip, Cal, L);
 
 
 
@@ -61,11 +61,11 @@ classdef dc
       % Calibrate bias CURRENTS
       %#########################
       currentSAmpere = bicas.proc.L1L2.dc.convert_CUR_to_CUR_on_SCI_TIME(...
-        PreDc.Zv.Epoch, InCurPd, Bso, L);
+        Dcip.Zv.Epoch, InCurPd, Bso, L);
       currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
       currentAAmpere          = nan(size(currentSAmpere));    % Preallocate.
-      iCalibLZv               = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
+      iCalibLZv               = Cal.get_BIAS_calibration_time_L(Dcip.Zv.Epoch);
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
       L.logf('info', ...
         ['Calibrating currents -', ...
@@ -78,8 +78,8 @@ classdef dc
 
         L.logf('info', 'Records %8i-%8i : %s -- %s', ...
           iRec1, iRec2, ...
-          bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iRec1)), ...
-          bicas.utils.TT2000_to_UTC_str(PreDc.Zv.Epoch(iRec2)))
+          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.Epoch(iRec1)), ...
+          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.Epoch(iRec2)))
 
         for iAnt = 1:3
           %--------------------
@@ -98,28 +98,28 @@ classdef dc
       % AUTODETECT SATURATION.
       Sat = bicas.proc.L1L2.Saturation(Bso);
       isAutodetectedSaturation = Sat.get_voltage_saturation_quality_bit(...
-        PreDc.Zv.Epoch, ...
+        Dcip.Zv.Epoch, ...
         AsrSamplesAVoltSrm, ...
-        PreDc.Zv.nValidSamplesPerRecord, ...
-        PreDc.Zv.bdmFpa, PreDc.Zv.dlrFpa, ...
-        PreDc.Zv.lrx,    PreDc.Zv.isAchgFpa, ...
-        PreDc.hasSwfFormat, L);
+        Dcip.Zv.nValidSamplesPerRecord, ...
+        Dcip.Zv.bdmFpa, Dcip.Zv.dlrFpa, ...
+        Dcip.Zv.lrx,    Dcip.Zv.isAchgFpa, ...
+        Dcip.hasSwfFormat, L);
 
       ZvIn = struct(...
-        'Epoch',            PreDc.Zv.Epoch, ...
-        'bdmFpa',           PreDc.Zv.bdmFpa, ...
+        'Epoch',            Dcip.Zv.Epoch, ...
+        'bdmFpa',           Dcip.Zv.bdmFpa, ...
         'isFullSaturation', isAutodetectedSaturation);
       [zvUfv, QUALITY_FLAG, Zv.L2_QUALITY_BITMASK] = ...
         bicas.proc.L1L2.qual.get_UFV_quality_ZVs(...
-        ZvIn, PreDc.isLfr, NsoTable, Bso, L);
+        ZvIn, Dcip.isLfr, NsoTable, Bso, L);
       clear ZvIn
 
-      Zv.QUALITY_FLAG = PreDc.Zv.QUALITY_FLAG.min(bicas.utils.FPArray(QUALITY_FLAG));
-      zvUfv           = PreDc.Zv.ufv | zvUfv;
+      Zv.QUALITY_FLAG = Dcip.Zv.QUALITY_FLAG.min(bicas.utils.FPArray(QUALITY_FLAG));
+      zvUfv           = Dcip.Zv.ufv | zvUfv;
 
       % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
       Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
-        PreDc.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
+        Dcip.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
       Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
       clear AsrSamplesAVoltSrm
 
@@ -130,7 +130,7 @@ classdef dc
       % ############
       PostDc = bicas.proc.L1L2.PostDc(Zv);
 
-      nRecords = size(PreDc.Zv.Epoch, 1);
+      nRecords = size(Dcip.Zv.Epoch, 1);
       Tmk.stop_log(nRecords, 'record')
     end    % process_calibrate_demux
 
@@ -153,7 +153,7 @@ classdef dc
     %
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %
-    function AsrSamplesAVoltSrm = calibrate_demux_voltages(PreDc, Cal, L)
+    function AsrSamplesAVoltSrm = calibrate_demux_voltages(Dcip, Cal, L)
       % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN for CWF.
       %
       % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
@@ -164,12 +164,12 @@ classdef dc
       % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
 
       % ASSERTIONS
-      assert(isscalar( PreDc.hasSwfFormat))
-      assert(isnumeric(PreDc.Zv.bltsSamplesTm))
+      assert(isscalar( Dcip.hasSwfFormat))
+      assert(isnumeric(Dcip.Zv.bltsSamplesTm))
       [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
-        PreDc.Zv.bdmFpa,        [-1,  1], ...
-        PreDc.Zv.isAchgFpa,     [-1,  1], ...
-        PreDc.Zv.bltsSamplesTm, [-1, -2, bicas.const.N_BLTS]);
+        Dcip.Zv.bdmFpa,        [-1,  1], ...
+        Dcip.Zv.isAchgFpa,     [-1,  1], ...
+        Dcip.Zv.bltsSamplesTm, [-1, -2, bicas.const.N_BLTS]);
 
 
 
@@ -182,8 +182,8 @@ classdef dc
         nan(nRecords, nSamplesPerRecordChannel), ...
         bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA);
 
-      iCalibLZv = Cal.get_BIAS_calibration_time_L(PreDc.Zv.Epoch);
-      iCalibHZv = Cal.get_BIAS_calibration_time_H(PreDc.Zv.Epoch);
+      iCalibLZv = Cal.get_BIAS_calibration_time_L(Dcip.Zv.Epoch);
+      iCalibHZv = Cal.get_BIAS_calibration_time_H(Dcip.Zv.Epoch);
 
 
 
@@ -201,14 +201,14 @@ classdef dc
       % SS = Subsequence
       %===================================================================
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        PreDc.Zv.bdmFpa.int2doubleNan(), ...
-        PreDc.Zv.isAchgFpa.logical2doubleNan(), ...
-        PreDc.Zv.freqHz, ...
-        PreDc.Zv.iLsf, ...
-        PreDc.Zv.CALIBRATION_TABLE_INDEX, ...
-        PreDc.Zv.ufv, ...
-        PreDc.Zv.dlrFpa.logical2doubleNan(), ...
-        PreDc.Zv.lrx, ...
+        Dcip.Zv.bdmFpa.int2doubleNan(), ...
+        Dcip.Zv.isAchgFpa.logical2doubleNan(), ...
+        Dcip.Zv.freqHz, ...
+        Dcip.Zv.iLsf, ...
+        Dcip.Zv.CALIBRATION_TABLE_INDEX, ...
+        Dcip.Zv.ufv, ...
+        Dcip.Zv.dlrFpa.logical2doubleNan(), ...
+        Dcip.Zv.lrx, ...
         iCalibLZv, ...
         iCalibHZv);
 
@@ -220,7 +220,7 @@ classdef dc
         iRec2 = iRec2Ar(iSs);
 
         % ==============================================================
-        % IMPLEMENTATION NOTE: Below extraction of data from PreDc etc.
+        % IMPLEMENTATION NOTE: Below extraction of data from Dcip etc.
         % may seem awkward but actually clarifies the code associated
         % with bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence()
         % as compared to earlier version before refactoring.
@@ -239,28 +239,28 @@ classdef dc
         % CV = Constant Values = Values which are constant for the
         %      entire subsequence of records.
         Cv = [];
-        Cv.bdmFpa                  = PreDc.Zv.bdmFpa(                 iRec1);
-        Cv.isAchgFpa               = PreDc.Zv.isAchgFpa(              iRec1);
-        Cv.freqHz                  = PreDc.Zv.freqHz(                 iRec1);
-        Cv.iLsf                    = PreDc.Zv.iLsf(                   iRec1);
-        Cv.CALIBRATION_TABLE_INDEX = PreDc.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
-        Cv.ufv                     = PreDc.Zv.ufv(                    iRec1);
-        Cv.dlrFpa                  = PreDc.Zv.dlrFpa(                 iRec1);
-        % NOTE: Excluding PreDc.Zv.lrx since it is only need for
+        Cv.bdmFpa                  = Dcip.Zv.bdmFpa(                 iRec1);
+        Cv.isAchgFpa               = Dcip.Zv.isAchgFpa(              iRec1);
+        Cv.freqHz                  = Dcip.Zv.freqHz(                 iRec1);
+        Cv.iLsf                    = Dcip.Zv.iLsf(                   iRec1);
+        Cv.CALIBRATION_TABLE_INDEX = Dcip.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
+        Cv.ufv                     = Dcip.Zv.ufv(                    iRec1);
+        Cv.dlrFpa                  = Dcip.Zv.dlrFpa(                 iRec1);
+        % NOTE: Excluding Dcip.Zv.lrx since it is only need for
         %       splitting time/CDF record intervals, not for calibration
         %       since calibration can handle sequences of only NaN.
         Cv.iCalibL                 = iCalibLZv(                       iRec1);
         Cv.iCalibH                 = iCalibHZv(                       iRec1);
         % NOTE: Below variables do not vary over CDF records anyhow.
-        Cv.hasSwfFormat            = PreDc.hasSwfFormat;
-        Cv.isLfr                   = PreDc.isLfr;
-        Cv.isTdsCwf                = PreDc.isTdsCwf;
+        Cv.hasSwfFormat            = Dcip.hasSwfFormat;
+        Cv.isLfr                   = Dcip.isLfr;
+        Cv.isTdsCwf                = Dcip.isTdsCwf;
 
         % VV = (Record-)Varying Values
         Vv = [];
-        Vv.Epoch                    = PreDc.Zv.Epoch(                  iRec1:iRec2);
-        Vv.bltsSamplesTm            = PreDc.Zv.bltsSamplesTm(          iRec1:iRec2, :, :);
-        Vv.zvNValidSamplesPerRecord = PreDc.Zv.nValidSamplesPerRecord( iRec1:iRec2);
+        Vv.Epoch                    = Dcip.Zv.Epoch(                  iRec1:iRec2);
+        Vv.bltsSamplesTm            = Dcip.Zv.bltsSamplesTm(          iRec1:iRec2, :, :);
+        Vv.zvNValidSamplesPerRecord = Dcip.Zv.nValidSamplesPerRecord( iRec1:iRec2);
 
         if ~(Cv.hasSwfFormat && Cv.isLfr)
           % IMPLEMENTATION NOTE: Do not log for LFR SWF since it
@@ -373,7 +373,7 @@ classdef dc
       %   PROPOSAL: Add values to CalSettings: isLfr, isTdsCwf, CALIBRATION_TABLE_INDEX
       %       CON: cal does not seem to use more values.
       % PROPOSAL: Reorder arguments to group them.
-      %   PROPOSAL: Group arguments from PreDc.
+      %   PROPOSAL: Group arguments from DCIP.
 
       % IMPLEMENTATION NOTE: It seems that data processing submits
       % different types of floats for LFR and TDS. This difference in

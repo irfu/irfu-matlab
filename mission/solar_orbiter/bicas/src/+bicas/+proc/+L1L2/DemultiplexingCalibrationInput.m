@@ -1,11 +1,11 @@
 %
-% Store of all input information for processing (DC = Demuxing+Calibration) that
-% is common for all L1/L1R-->L2 LFR+TDS processing.
+% Store of all input information for processing that is common for all
+% L1/L1R-->L2 LFR+TDS processing (i.e. demultiplexing and calibration).
 %
 %
 % IMPLEMENTATION NOTE: bltsSamplesTm and lrx
 % ==========================================
-% PreDc always represents (has variables/elements for) all five BLTS's,
+% DCIP always represents (has variables/elements for) all five BLTS's,
 % despite that only three are used at any given time. The channels not used
 % are set to NaN. Which ones are actually used can be switched at any given
 % time due to lrx changing.
@@ -18,8 +18,8 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef PreDc
-  % PROPOSAL: Proper abbreviation for class PreDc and PostDc.
+classdef DemultiplexingCalibrationInput
+  % PROPOSAL: Proper abbreviation for classes PDIP and PostDc.
   %   pre/post
   %   input/output
   %   before/after
@@ -40,7 +40,7 @@ classdef PreDc
   %        are greater in number.
   %       CON: Should be easy to implement.
   %   CON: This increases the assumptions which the ~demultiplexer code and
-  %        the PreDc class make.
+  %        the DCIP class make.
   %       CON: No, it does not. Which?
   %           CON: There are always 3 channels worth of data. BLTS 2-3/4-5 are
   %                different from BLTS 1
@@ -96,7 +96,7 @@ classdef PreDc
   %#########################
   methods(Access=public)
 
-    function obj = PreDc(Zv, Ga, hasSwfFormat, isLfr, isTdsCwf)
+    function obj = DemultiplexingCalibrationInput(Zv, Ga, hasSwfFormat, isLfr, isTdsCwf)
 
       irf.assert.struct(Zv, ...
         {'Epoch', 'bltsSamplesTm', 'freqHz', 'nValidSamplesPerRecord', ...

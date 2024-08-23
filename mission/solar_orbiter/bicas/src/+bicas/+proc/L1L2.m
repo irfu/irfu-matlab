@@ -192,7 +192,7 @@ classdef L1L2
       %       ==> Can not change BDM in the middle of a record.
       % NOTE: Can potentially also obtain BDM from LFR SCI, but that
       %       decision should not be made here.
-      %       See bicas.proc.L1L2.lfr.process_CDF_to_PreDc().
+      %       See bicas.proc.L1L2.lfr.process_CDF_to_DCIP().
       %=============================================================
       bdmDoubleNan = bicas.utils.interpolate_nearest(...
         hkEpochExtrapMargin, ...
@@ -283,7 +283,7 @@ classdef L1L2
 
 
 
-    % Convert PreDc+PostDc to something that
+    % Convert DCIP+PostDc to something that
     % (1) represents a TDS dataset (hence the name), and
     % (2) ALMOST REPRESENTS an LFR dataset (the rest is done in a wrapper).
     %
@@ -294,38 +294,38 @@ classdef L1L2
     % L2 output datasets are very similar, despite that the input L1/L1R LFR
     % & TDS datasets are very dissimilar.
     %
-    function [OutSci] = process_PostDc_to_CDF(SciPreDc, SciPostDc, outputDsi)
+    function [OutSci] = process_PostDc_to_CDF(SciDcip, SciPostDc, outputDsi)
       % PROPOSAL: Rename to something shared between LFR and TDS, then use
       %           two wrappers.
       %   PROPOSAL: process_PostDc_to_LFR_TDS_CDF_core
       %   TODO-DEC: Put in which future file?
 
       % ASSERTIONS
-      assert(isa(SciPreDc,  'bicas.proc.L1L2.PreDc'))
+      assert(isa(SciDcip,  'bicas.proc.L1L2.DemultiplexingCalibrationInput'))
       assert(isa(SciPostDc, 'bicas.proc.L1L2.PostDc'))
 
 
 
-      nRecords                 = size(SciPreDc.Zv.Epoch, 1);
+      nRecords                 = size(SciDcip.Zv.Epoch, 1);
       nSamplesPerRecordChannel = size(SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1'), 2);
 
       OutSci = [];
 
-      OutSci.Zv.Epoch              = SciPreDc.Zv.Epoch;
-      OutSci.Zv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
+      OutSci.Zv.Epoch              = SciDcip.Zv.Epoch;
+      OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.QUALITY_BITMASK;
       OutSci.Zv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
       OutSci.Zv.QUALITY_FLAG       = SciPostDc.Zv.QUALITY_FLAG;
-      OutSci.Zv.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
-      OutSci.Zv.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
-      OutSci.Zv.SAMPLING_RATE      = SciPreDc.Zv.freqHz;
+      OutSci.Zv.DELTA_PLUS_MINUS   = SciDcip.Zv.DELTA_PLUS_MINUS;
+      OutSci.Zv.SYNCHRO_FLAG       = SciDcip.Zv.SYNCHRO_FLAG;
+      OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.freqHz;
 
       % NOTE: Convert aampere --> nano-aampere
       OutSci.Zv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
       OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
       OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
 
-      OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
-      OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
+      OutSci.Ga.OBS_ID    = SciDcip.Ga.OBS_ID;
+      OutSci.Ga.SOOP_TYPE = SciDcip.Ga.SOOP_TYPE;
 
 
 

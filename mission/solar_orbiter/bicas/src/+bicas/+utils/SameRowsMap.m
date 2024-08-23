@@ -70,7 +70,7 @@ classdef SameRowsMap < handle
   % NOTE: Examples of usage for ZV collections:
   %   AsrMap (while building) (until bicas.utils.SameSizeTypeMap)
   %   AsrMap (final)          (until bicas.utils.SameSizeTypeMap)
-  %   PreDc/PostDc.Zv
+  %   DemultiplexingCalibrationInput/PostDc.Zv
   %   bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(): Arguments which represent
   %       a subsequence (a shorter interval of CDF records).
   %
