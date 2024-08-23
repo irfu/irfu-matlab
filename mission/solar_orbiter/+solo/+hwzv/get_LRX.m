@@ -2,6 +2,9 @@
 % Return the relevant value of LFR CDF zVariables R0, R1, or R2, or a
 % hypothetical but analogous "R3" which is always 1.
 %
+% The abbreviation LRX is defined in BICAS
+% (irfu-matlab/mission/solar_orbiter/bicas/readme.txt).
+%
 %
 % ARGUMENTS
 % =========
@@ -11,7 +14,7 @@
 %
 % RETURN VALUE
 % ============
-% Rx
+% zvLrx
 %       Same size array as arguments. The relevant values are copied,
 %       respectively, from R0, R1, R2, or an analogous hypothetical "R3" that is
 %       a constant (=1), depending on the value of iLsf in the corresponding
@@ -24,7 +27,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created earliest 2016-10-10 and latest 2019.
 %
-function zvRx = get_LFR_Rx(zvR0, zvR1, zvR2, iLsf)
+function zvLrx = get_LRX(zvR0, zvR1, zvR2, iLsf)
 % TODO-DEC: Should convey iLsf=NaN as NaN, or assert that iLsf ~= NaN?
 
 irf.assert.sizes(...
@@ -35,17 +38,17 @@ irf.assert.sizes(...
 
 % Set to NaN (should always be overwritten if code works) and iLsf has
 % correct values.
-zvRx = nan(size(iLsf));
+zvLrx = nan(size(iLsf));
 
-b = (iLsf==1);   zvRx(b) = zvR0(b);
-b = (iLsf==2);   zvRx(b) = zvR1(b);
-b = (iLsf==3);   zvRx(b) = zvR2(b);
-b = (iLsf==4);   zvRx(b) = 1;
-% Last one is the value of a hypothetical (non-existent, constant) analogous
-% zVariable "R3".
+b = (iLsf==1);   zvLrx(b) = zvR0(b);
+b = (iLsf==2);   zvLrx(b) = zvR1(b);
+b = (iLsf==3);   zvLrx(b) = zvR2(b);
+b = (iLsf==4);   zvLrx(b) = 1;
+% Last value for (iLsf==4) is the value of a hypothetical (non-existent,
+% constant) analogous zVariable "R3".
 
 % NOTE: Prevents that iLsf=NaN ==> NaN. Desirable?
-assert(all(~isnan(zvRx)), ...
+assert(all(~isnan(zvLrx)), ...
   ['Likely that argument iLsf has illegal values (not an integer', ...
   ' 1-4). Are you using zVar FREQ (integers 0-3)?'])
 end
