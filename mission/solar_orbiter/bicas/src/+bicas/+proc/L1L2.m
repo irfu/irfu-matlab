@@ -26,7 +26,7 @@
 % First created 2017-02-10, with source code from data_manager_old.m.
 %
 classdef L1L2
-  %#######################################################################################################################
+  %############################################################################
   %
   % PROPOSAL: Move normalize_CALIBRATION_TABLE_INDEX() to some collection of utils.
   %   PROPOSAL: bicas.proc.utils
@@ -35,16 +35,12 @@ classdef L1L2
   %
   % PROPOSAL: Submit ZV attributes.
   %   PRO: Can interpret fill values.
-  %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems
-  %           to be bad).
-  %
-  % PROPOSAL: Return (to execute_SWM), global attributes.
-  %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
-  %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
+  %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and
+  %           compare with zVar SAMPS_PER_CH (which seems to be bad).
   %
   % PROPOSAL: Class for HkSciTime.
   %
-  %#######################################################################################################################
+  %############################################################################
 
 
 

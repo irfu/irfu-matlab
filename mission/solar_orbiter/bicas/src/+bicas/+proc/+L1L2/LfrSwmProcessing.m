@@ -114,13 +114,15 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % Only "normalizes" data to account for technically
-    % illegal input LFR datasets. It should try to:
+    % Only "normalizes" data to account for technically illegal input LFR
+    % datasets. It should try to:
     % ** modify L1 data to look like L1R
     % ** mitigate historical bugs in input datasets
     % ** mitigate for not yet implemented features in input datasets
     %
     function InSciNorm = process_normalize_CDF(obj, InSci, Bso, L)
+      % ASSERTIONS: VARIABLES
+      assert(isa(InSci, 'bicas.InputDataset'))
 
       % Default behaviour: Copy values, except for values which are
       % modified later
@@ -277,9 +279,12 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %============
       % Set iLsfZv
       %============
-      if     obj.inputSci.isLfrSbm1   zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
-      elseif obj.inputSci.isLfrSbm2   zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
-      else                            zvILsf = InSci.Zv.FREQ + 1;
+      if     obj.inputSci.isLfrSbm1
+        zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
+      elseif obj.inputSci.isLfrSbm2
+        zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
+      else
+        zvILsf = InSci.Zv.FREQ + 1;
         % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
         % index values (1=F0) used in loaded RCT data structs.
       end
@@ -323,15 +328,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      Zv    = [];
+      Zv = [];
 
-      %             Zv.bltsSamplesTmCa    = cell(5,1);
-      %             Zv.bltsSamplesTmCa{1} = single(InSci.Zv.V);
-      %             % Copy values, except when zvLrx==0 (==>NaN).
-      %             Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
-      %             Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==0 );
-      %             Zv.bltsSamplesTmCa{4} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
-      %             Zv.bltsSamplesTmCa{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
       Zv.bltsSamplesTm(:, :, 1) = single(InSci.Zv.V);
       % Copy values when there is actual data for that BLTS as determined
       % by zvLrx. Otherwise NaN.

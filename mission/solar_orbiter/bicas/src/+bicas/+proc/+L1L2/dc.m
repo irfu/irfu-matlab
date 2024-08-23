@@ -166,8 +166,6 @@ classdef dc
       % ASSERTIONS
       assert(isscalar( PreDc.hasSwfFormat))
       assert(isnumeric(PreDc.Zv.bltsSamplesTm))
-      %             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(...
-      %                 PreDc.Zv)
       [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
         PreDc.Zv.bdmFpa,        [-1,  1], ...
         PreDc.Zv.isAchgFpa,     [-1,  1], ...
@@ -327,9 +325,9 @@ classdef dc
         dtSec = double( Vv.Epoch(end) - Vv.Epoch(1) ) / (nRows-1) * 1e-9;
       end
 
-      %=====================
-      % ITERATE OVER BLTS's
-      %=====================
+      %====================
+      % CALIBRATE VOLTAGES
+      %====================
       ssBltsSamplesAVolt = [];
       for iBlts = 1:bicas.const.N_BLTS
         ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...

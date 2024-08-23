@@ -20,11 +20,17 @@
 %
 classdef PreDc
   % PROPOSAL: Proper abbreviation for class PreDc and PostDc.
-  %   PRDC, PODC
+  %   pre/post
+  %   input/output
   %   before/after
-  %   calibration
   %   demultiplexing
+  %   calibration
   %   data
+  % --
+  %   PRDC, PODC = Pre/Post Demuxing, Calibration
+  %   DCI/DCO = Demuxing, Calibration Input/Output
+  %     CON: DCO found in much code: "oldcode", "idcode", "hardcopy",  "backgroundcolor"
+  %   DCIP/DCOP = Demuxing, Calibration Input/Output
   %
   % PROPOSAL: Refactor code to only represent three data channels (those
   %           BLTS's which (nominally) contain actual data for the given
@@ -36,7 +42,8 @@ classdef PreDc
   %   CON: This increases the assumptions which the ~demultiplexer code and
   %        the PreDc class make.
   %       CON: No, it does not. Which?
-  %           CON: Always 3 channels worth of data. BLTS 2-3/4-5 are different from BLTS 1
+  %           CON: There are always 3 channels worth of data. BLTS 2-3/4-5 are
+  %                different from BLTS 1
   %                and can change meaning due to LRX.
   %   CON: Must invent a new concept (type of index) to represent these three
   %        data channels.
@@ -56,7 +63,8 @@ classdef PreDc
   %       PROPOSAL: Separate iBltsArray (Nx3) for labelling the data source.
   %           CON: iBltsArray(:, 1) == 1 always.
   %
-  % PROPOSAL: Separate representations (variables) for CWF and SWF (snapshots).
+  % PROPOSAL: Separate representations (variables) for
+  %           (1) CWF and (2) SWF (snapshots) data.
   %   PRO: Could clarify code.
   %   PROBLEM: How handle the absent form of data? There will always be
   %            timestamps and other ZVs.

@@ -364,12 +364,14 @@ SIP
     an input or output dataset.
     The phrase (but not the abbreviation) is defined by the RCS ICD.
 SKV
-    bicas.SettingsKeyValue class.
+    Class bicas.SettingsKeyValue.
 SPR
     Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.
 SRF
     Name of a particular s/c coordinate system. "Spacecraft Reference Frame"?
+SRM
+    Class bicas.utils.SameRowsMap.
 SSID
     Class bicas.proc.L1L2.SignalSourceId.
 SWD, S/W descriptor

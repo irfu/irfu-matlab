@@ -219,7 +219,7 @@ classdef demuxer
         bltsSamplesAVolt, SdidArray);
 
       % Set those ASRs for which there is NO data.
-      % NOTE: Argument (handle object) is modified.
+      % NOTE: The function modifies the ARGUMENT (handle object).
       bicas.proc.L1L2.demuxer.complement_ASR(AsrSamplesAVoltSrm);
     end
 
@@ -331,7 +331,7 @@ classdef demuxer
       assert(isnumeric(bltsSamplesAVolt))
       irf.assert.sizes(bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS])
 
-      nRows = size(bltsSamplesAVolt, 1);
+      nRows         = size(bltsSamplesAVolt, 1);
       AsrSamplesSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
       for iBlts = 1:bicas.const.N_BLTS
         if ~SdidArray(iBlts).isNowhere

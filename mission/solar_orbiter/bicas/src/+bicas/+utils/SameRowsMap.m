@@ -184,6 +184,8 @@ classdef SameRowsMap < handle
 
     % ARGUMENTS
     % =========
+    % keyType
+    %       keyType to use for containers.Map().
     % varargin
     %       initType == 'EMPTY':    Zero length.
     %       initType == 'CONSTANT':

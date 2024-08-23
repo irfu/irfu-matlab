@@ -1,6 +1,6 @@
 %
 % Immutable class which instances represent the destination of a signal, i.e.
-% either:
+% where the data should ultimately go, i.e. either:
 % (1) an ASR (to determine how to store the signal in the dataset), or
 % (2) "nowhere" (when BDM is unknown).
 %
