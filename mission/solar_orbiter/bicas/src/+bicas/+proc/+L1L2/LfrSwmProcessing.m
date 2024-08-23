@@ -293,7 +293,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
       % NOTE: Needed also for 1 SPR.
-      zvFreqHz = solo.hwzv.get_LFR_frequency( zvILsf );
+      zvFreqHz = solo.hwzv.get_LSF( zvILsf );
 
       % Obtain the relevant values (one per record) from zVariables R0,
       % R1, R2, and the virtual "R3".
