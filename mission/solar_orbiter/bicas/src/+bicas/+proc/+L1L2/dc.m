@@ -12,7 +12,7 @@ classdef dc
   % PROPOSAL: Better name.
   %   PRO: Processing includes quality "processing" which is not in "DC".
   %   PROPOSAL: dcq = Demux, Calibrate, Quality
-
+  %
   % PROPOSAL: Automatic test code.
   %
   % PROPOSAL:   process_calibrate_demux()
@@ -32,8 +32,10 @@ classdef dc
 
 
 
-    % Derive PostDc from PreDc, i.e. demux, calibrate data, and set quality
-    % variables.
+    % Derive PostDc from PreDc, i.e.
+    % (1) demux (demultiplex),
+    % (2) calibrate data, and
+    % (3) set quality variables.
     %
     % NOTE: Public function as opposed to the other demuxing/calibration
     % functions.
@@ -93,19 +95,15 @@ classdef dc
       % ##############################################
       % Set quality variables, and apply UFV (to data)
       % ##############################################
-      if 1
-        % AUTODETECT SATURATION.
-        Sat = bicas.proc.L1L2.Saturation(Bso);
-        isAutodetectedSaturation = Sat.get_voltage_saturation_quality_bit(...
-          PreDc.Zv.Epoch, ...
-          AsrSamplesAVoltSrm, ...
-          PreDc.Zv.nValidSamplesPerRecord, ...
-          PreDc.Zv.bdmFpa, PreDc.Zv.dlrFpa, ...
-          PreDc.Zv.lrx,    PreDc.Zv.isAchgFpa, ...
-          PreDc.hasSwfFormat, L);
-      else
-        isAutodetectedSaturation = false(size(PreDc.Zv.Epoch));
-      end
+      % AUTODETECT SATURATION.
+      Sat = bicas.proc.L1L2.Saturation(Bso);
+      isAutodetectedSaturation = Sat.get_voltage_saturation_quality_bit(...
+        PreDc.Zv.Epoch, ...
+        AsrSamplesAVoltSrm, ...
+        PreDc.Zv.nValidSamplesPerRecord, ...
+        PreDc.Zv.bdmFpa, PreDc.Zv.dlrFpa, ...
+        PreDc.Zv.lrx,    PreDc.Zv.isAchgFpa, ...
+        PreDc.hasSwfFormat, L);
 
       ZvIn = struct(...
         'Epoch',            PreDc.Zv.Epoch, ...
@@ -473,8 +471,8 @@ classdef dc
       %===================================================================
       if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
         curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
-        sciEpochUtcStr    = irf.cdf.TT2000_to_UTC_str(min(sciEpoch));
-        curEpochMinUtcStr = irf.cdf.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
+        sciEpochUtcStr    = bicas.utils.TT2000_to_UTC_str(min(sciEpoch));
+        curEpochMinUtcStr = bicas.utils.TT2000_to_UTC_str(min(InCur.Zv.Epoch));
 
         [settingValue, settingKey] = Bso.get_fv(...
           'PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');

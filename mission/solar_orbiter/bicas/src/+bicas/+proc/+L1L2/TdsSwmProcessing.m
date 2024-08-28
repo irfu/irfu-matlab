@@ -83,18 +83,18 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
           size(InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, 1), ...
           1));
 
-        RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
+        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
           tdsRcttid, rctDir, ...
           InputSciCdf.Ga.CALIBRATION_TABLE, ...
           InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
           zv_BW, ...
           Bso, L);
       else
-        RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
+        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
           {'BIAS', tdsRcttid}, rctDir, Bso, L);
       end
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useCtRcts, useCti2, Bso);
 
 
 
@@ -110,7 +110,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
       OutputDatasetsMap = containers.Map();
-      OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
+      RctdCa = bicas.proc.utils.convert_RctdCaMap_to_CA(RctdCaMap);
+      OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCa);
     end
 
 
@@ -332,16 +333,18 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
       % TODO-NI: Why convert to double? To avoid precision problems when
       % doing math with other variables?
-      freqHzZv = double(InSci.Zv.SAMPLING_RATE);
+      zvFreqHz = double(InSci.Zv.SAMPLING_RATE);
 
 
 
       Zv    = [];
 
       Zv.Epoch                   = InSci.Zv.Epoch;
+      % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
+      % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
-        freqHzZv, nCdfSamplesPerRecord);
-      Zv.freqHz                  = freqHzZv;
+        zvFreqHz, 1);
+      Zv.freqHz                  = zvFreqHz;
       Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
       Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
       Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
@@ -392,12 +395,6 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %======================
       zv_WAVEFORM_DATA_modif = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
 
-      %             Zv.bltsSamplesTmCa    = cell(5,1);
-      %             Zv.bltsSamplesTmCa{1} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
-      %             Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
-      %             Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
-      %             Zv.bltsSamplesTmCa{4} = nan(nRecords, nCdfSamplesPerRecord);
-      %             Zv.bltsSamplesTmCa{5} = nan(nRecords, nCdfSamplesPerRecord);
       Zv.bltsSamplesTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
       Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
       Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
@@ -407,12 +404,13 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
       Ga = [];
-      Ga.OBS_ID         = InSci.Ga.OBS_ID;
-      Ga.SOOP_TYPE      = InSci.Ga.SOOP_TYPE;
+      Ga.OBS_ID    = InSci.Ga.OBS_ID;
+      Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
 
       % Only set because the code shared with LFR requires it.
-      Zv.iLsf           = nan(nRecords, 1);
-      Zv.lrx            = ones(nRecords, 1);
+      Zv.iLsf      = nan( nRecords, 1);
+      Zv.lrx       = ones(nRecords, 1);
+      Zv.BW        = true(nRecords, 1);
 
       PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
     end    % process_CDF_to_PreDc

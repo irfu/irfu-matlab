@@ -9,7 +9,8 @@
 %
 % RETURN VALUE
 % ============
-% JsonSwd : See bicas.utils.JSON_object_str for the exact format.
+% JsonSwd
+%       See bicas.utils.JSON_object_str() for the exact format.
 %
 %
 % IMPLEMENTATION NOTE
@@ -22,8 +23,8 @@
 %     ("name", "dataset versions", "dataset IDs") which would (reasonably) have
 %     to be represented by MATLAB variables with the same names.
 % (2) Some of the S/W descriptor variables are grouped in a way which does not
-%     fit the rest of the code (e.g. modes[i].outputs.(output_XX).release in the
-%     S/W descriptor structure).
+%     fit the rest of the code (e.g. modes[i].outputs.(output_XX).release in
+%     the S/W descriptor structure).
 % (3) Some of the S/W descriptor values are really structure field NAMES, but
 %     would be better as structure field VALUES (e.g. input CLI parameter,
 %     output JSON identifier string).

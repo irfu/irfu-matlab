@@ -274,6 +274,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
       Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
+
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -288,6 +290,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       bFp = Out.Zv.SCPOT.fpAr & ...
         Out.Zv.PSP.fpAr;
       Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
+
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -310,6 +314,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       bFp = Out.Zv.DENSITY.fpAr;
       Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
       Out.Zv.L3_QUALITY_BITMASK(bFp)   = bicas.utils.FPArray.FP_UINT16;
+
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -327,6 +333,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
       Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
+
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -355,6 +363,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       bFp = Out.Zv.SCPOT.fpAr & ...
         Out.Zv.PSP.fpAr;
       Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
+
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
@@ -375,6 +385,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.L3_QUALITY_BITMASK      = bicas.proc.dsr.downsample_ZV_bitmask(...
         osr_L3_QUALITY_BITMASK, iRecordsInBinCa);
       Out.Zv.L3_QUALITY_BITMASK(bFp) = bicas.utils.FPArray.FP_UINT16;   % ?!
+
+      Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 

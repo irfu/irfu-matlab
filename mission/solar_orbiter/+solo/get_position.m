@@ -5,7 +5,7 @@ function soloPosition = get_position(Tint, varargin)
 %
 % A function to get the position of Solar Orbiter for a given time interval
 % Output is a TSeries object with position in the data variable "pos",
-% if any positons found for the time interval "tint".
+% if any positions found for the time interval "tint".
 %
 % Note: Always returns coordinates with a sampling rate of one position per hour
 %       (hardcoded).

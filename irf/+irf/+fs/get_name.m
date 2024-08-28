@@ -4,11 +4,13 @@
 %
 % ARGUMENTS
 % =========
-% path : NOTE: Will interpret anything after last filesep as filename, including
-%        ".." or ".", or empty string for paths that end with filesep.
-%        NOTE: Path is not required to exist, since it is only used for a string
-%        operation.
-%        IMPORTANT NOTE: If path ends with slash, then the name is an empty string.
+% path
+%       NOTE: Will interpret anything after last filesep as filename, including
+%       ".." or ".", or empty string for paths that end with filesep.
+%       NOTE: Path is not required to exist, since it is only used for a string
+%       operation.
+%       IMPORTANT NOTE: If path ends with slash, then the name is an empty
+%       string.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

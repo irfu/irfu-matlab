@@ -140,7 +140,7 @@ while true
   BpciInputArray = bicas.tools.batch.autocreate_input_BPCIs(...
     InputDsmdArray, get_BPCI_output_path_fh, SwmArray, ...
     Settings.currentDatasetExtensionDays);
-  fprintf('Number of possible BPCIs:         %3i\n', numel(BpciInputArray))
+  fprintf('Number of possible BPCIs:         %4i\n', numel(BpciInputArray))
 
   %=======================================================================
   % Find out which subset of BPCIs that should actually be run
@@ -161,7 +161,7 @@ while true
     tpdFilenamesCa);
   BpciRunArray = bicas.tools.batch.filter_BPCIs_to_run(...
     BpciInputArray, doNotNeedToGenerateFilenamesCa);
-  fprintf('Number of BPCIs that will be run: %3i\n', numel(BpciRunArray))
+  fprintf('Number of BPCIs that will be run: %4i\n', numel(BpciRunArray))
 
   if isempty(BpciRunArray)
     % CASE: NO MORE BPCIs TO RUN

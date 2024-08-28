@@ -22,6 +22,23 @@ classdef utils
 
 
 
+    % Get path to the root of the BICAS directory structure.
+    function bicasRootPath = get_BICAS_root_path()
+      % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
+      % Use path of the current MATLAB file.
+      [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
+      bicasRootPath         = irf.fs.get_abs_path(...
+        fullfile(matlabSrcPath, '..', '..'));
+    end
+
+
+
+    function swdFilePath = get_SWD_file_path()
+      swdFilePath = fullfile(bicas.utils.get_BICAS_root_path(), 'descriptor.json');
+    end
+
+
+
     % Whether two sets (arrays) of arbitrary objects are set equal.
     %
     % NOTE: Compare objects, not handles. NaN == NaN.
@@ -33,17 +50,6 @@ classdef utils
       % but good enough.
       equal = bicas.utils.is_subset_isequaln(Ar1, Ar2) ...
         && bicas.utils.is_subset_isequaln(Ar2, Ar1);
-    end
-
-
-
-    % Get path to the root of the BICAS directory structure.
-    function bicasRootPath = get_BICAS_root_path()
-      % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
-      % Use path of the current MATLAB file.
-      [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
-      bicasRootPath         = irf.fs.get_abs_path(...
-        fullfile(matlabSrcPath, '..', '..'));
     end
 
 
@@ -100,13 +106,13 @@ classdef utils
           % CASE: Epoch-like variable.
 
           ColumnStrs(end+1) = bicas.utils.get_array_statistics_strings(...
-            zvName, zvValue, 'Epoch', Bso);
+            zvName, zvValue, 'Epoch_LIKE_ZV', Bso);
 
         elseif isnumeric(zvValue)
           % CASE: Non-Epoch-like numeric variable.
 
           ColumnStrs(end+1) = bicas.utils.get_array_statistics_strings(...
-            zvName, zvValue, 'numeric', Bso);
+            zvName, zvValue, 'NUMERIC_ZV', Bso);
 
         elseif ischar(zvValue)
 
@@ -212,6 +218,8 @@ classdef utils
 
   end    % methods(Static)
 
+
+
   %########################
   %########################
   % PRIVATE STATIC METHODS
@@ -274,7 +282,7 @@ classdef utils
       % varName
       % varValue
       % varType
-      %       String constant. 'numeric' or 'Epoch'.
+      %       String constant. 'NUMERIC_ZV' or 'Epoch_LIKE_ZV'.
       %       Determines how varValue is interpreted.
       %
       %
@@ -311,7 +319,7 @@ classdef utils
 
       switch(varType)
 
-        case 'numeric'
+        case 'NUMERIC_ZV'
           % ASSERTION
           assert(ndims(varValue) <= 3, ...
             'BICAS:Assertion:IllegalArgument', ...
@@ -344,7 +352,7 @@ classdef utils
             end
           end
 
-        case 'Epoch'
+        case 'Epoch_LIKE_ZV'
           % ASSERTIONS
           bicas.utils.assert_ZV_Epoch(varValue)
 

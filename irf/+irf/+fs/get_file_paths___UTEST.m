@@ -55,7 +55,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
     % variables; error messages are are not printed on screen when using
     % runtest()). Otherwise not a great test.
     function test_nonexisting(testCase)
-      existingFilePath = irf.fs.create_empty_file({testCase.testDir, 'existing_file'});
+      existingFilePath = irf.fs.write_empty_file({testCase.testDir, 'existing_file'});
 
       function test(fileDirPathsCa)
         assert(iscolumn(fileDirPathsCa))
@@ -109,7 +109,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
       dir1     = fullfile(testDir, 'dir1');
       emptyDir = irf.fs.get_file_paths___UTEST.create_directory( testDir, {'empty_dir'});
-      file1    = irf.fs.create_empty_file({testDir, 'dir1', 'dir1', 'file1'});
+      file1    = irf.fs.write_empty_file({testDir, 'dir1', 'dir1', 'file1'});
 
       function test(fileDirPathsCa)
         [actFilePathsCa1, ActFsoiArray1] = irf.fs.get_file_paths___UTEST.test_call(...
@@ -134,21 +134,21 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       [~]                = irf.fs.get_file_paths___UTEST.create_directory( testDir, {'dir_with_empty_subdir', 'dir1'});
 
       dir1     = fullfile(                 testDir, 'dir1');
-      file11   = irf.fs.create_empty_file({testDir, 'dir1', 'file1'});
-      file111  = irf.fs.create_empty_file({testDir, 'dir1', 'dir1', 'file11'});
-      file112  = irf.fs.create_empty_file({testDir, 'dir1', 'dir1', 'file12'});
+      file11   = irf.fs.write_empty_file({testDir, 'dir1', 'file1'});
+      file111  = irf.fs.write_empty_file({testDir, 'dir1', 'dir1', 'file11'});
+      file112  = irf.fs.write_empty_file({testDir, 'dir1', 'dir1', 'file12'});
 
-      file21   = irf.fs.create_empty_file({testDir, 'dir2', 'file1'});
-      file211  = irf.fs.create_empty_file({testDir, 'dir2', 'dir1', 'file11'});
+      file21   = irf.fs.write_empty_file({testDir, 'dir2', 'file1'});
+      file211  = irf.fs.write_empty_file({testDir, 'dir2', 'dir1', 'file11'});
 
       [actFilePathsCa1, ~] = irf.fs.get_file_paths___UTEST.test_call(...
         testCase, {dirWithEmptySubdir; dir1; file21; file211} ...
-      );
+        );
 
       testCase.assertEqual(...
         sort(actFilePathsCa1), ...
         sort({file11; file111; file112; file21; file211})...
-      )
+        )
     end
 
 
@@ -171,7 +171,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
       [actFilePathsCa1, ActFsoiArray1] = irf.fs.get_file_paths(fileDirPathsCa);
 
-       % Check existence of struct fields.
+      % Check existence of struct fields.
       testCase.assertEqual(...
         sort(fieldnames(ActFsoiArray1)), ...
         sort(expFieldNamesCa))
@@ -186,7 +186,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
     function dirPath = create_directory(parentDir, dirRpathPartsCa)
       % PROPOSAL: Make into generic function.
-      %   Cf. irf.fs.create_empty_file().
+      %   Cf. irf.fs.write_empty_file().
 
       dirPath = fullfile(parentDir, dirRpathPartsCa{:});
       mkdir(dirPath)

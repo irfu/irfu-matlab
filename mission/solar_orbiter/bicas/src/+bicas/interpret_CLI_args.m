@@ -1,23 +1,30 @@
 %
 % Function for doing the first interpretation of BICAS' CLI arguments and
-% returns the data as a more easy-to-understand struct. This function covers
-% both official and unofficial arguments.
+% returns the data as a more easy-to-understand struct.
+%
+%
+% ARGUMENTS
+% =========
+% cliArgumentsCa
+%       Column cell array with all BICAS CLI arguments, both official and
+%       unofficial.
 %
 %
 % RETURN VALUE
 % ============
-% CliData : struct with fields:
-%   .bfm                 : String constant
-%   .swmArg              : String constant
-%   .icdLogFile          : Empty if argument not given.
-%   .matlabLogFile       : Empty if argument not given.
-%   .configFile          : Empty if argument not given.
-%   .SipMap              : containers.Map with SIPs.
-%                            key   = CLI argument without prefix
-%                            value = file path (argument)
-%   .ModifiedSettingsMap : containers.Map.
-%                            key   = settings key (argument)
-%                            value = settings value (argument)
+% CliData
+%       Struct with fields:
+%       .bfmid               : String constant
+%       .swmArg              : String constant
+%       .icdLogFile          : Empty if argument not given.
+%       .matlabLogFile       : Empty if argument not given.
+%       .configFile          : Empty if argument not given.
+%       .SipMap              : containers.Map with SIPs.
+%                              key   = CLI argument without prefix
+%                              value = file path (argument)
+%       .ModifiedSettingsMap : containers.Map.
+%                              key   = settings key (argument)
+%                              value = settings value (argument)
 %
 %
 % IMPLEMENTATION NOTES
@@ -36,7 +43,7 @@
 %
 % RATIONALE
 % =========
-% Reasons for having as separate function:
+% Reasons for having this function as separate function:
 % -- Enable separate manual & automatic testing.
 % -- Separate BICAS' "functionality" from "CLI syntax".
 %    ==> Easier to change CLI syntax.
@@ -46,42 +53,40 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-22.
 %
-function CliData = interpret_CLI_args(cliArgumentList)
+function CliData = interpret_CLI_args(cliArgumentsCa)
 % PROPOSAL: Generic utility function for converting list of mutually
 %       exclusive (assertion) booleans into one unique value.
 %   Ex: Convert list of booleans for various argument flags (any
 %       application) into one variable value.
 %       Ex: Flags for BFMs.
 %
-% PROPOSAL: Include assertion for unique input and output dataset paths.
-%   NOTE: Assertion is presently in execute_SWM.
-%
-% PROPOSAL: Use classes instead of structs.
+% PROPOSAL: Use class for return value.
 
 SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 
-%==================================================================================
+%===============================================================================
 % Configure
 % (1) permitted RCS ICD CLI options COMMON for all BFMs
 % (2) RCS ICD CLI options for SIPs
 % (2) unofficial options
 % NOTE: Exclude the SWM argument.
-%==================================================================================
-OPTIONS_CONFIG_MAP = containers.Map();
-OPTIONS_CONFIG_MAP('VERSION_OPTION_ID')           = struct('optionHeaderRegexp', '--version',          'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('IDENTIFICATION_OPTION_ID')    = struct('optionHeaderRegexp', '--identification',   'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('SWD_OPTION_ID')               = struct('optionHeaderRegexp', '--swdescriptor',     'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('HELP_OPTION_ID')              = struct('optionHeaderRegexp', '--help',             'occurrenceRequirement', '0-1',   'nValues', 0);
-OPTIONS_CONFIG_MAP('SWM_OPTION_ID')               = struct('optionHeaderRegexp', SWM_CLI_OPTION_REGEX, 'occurrenceRequirement', '0-1',   'nValues', 0);
-
-% NOTE: ICD_LOG_FILE_OPTION_ID is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
-OPTIONS_CONFIG_MAP('SIP_OPTION_ID')               = struct('optionHeaderRegexp', '--(..*)',      'occurrenceRequirement', '0-inf', 'nValues', 1, 'interprPriority', -1);
-OPTIONS_CONFIG_MAP('ICD_LOG_FILE_OPTION_ID')      = struct('optionHeaderRegexp', '--log',        'occurrenceRequirement', '0-1',   'nValues', 1);
-OPTIONS_CONFIG_MAP('MATLAB_LOG_FILE_OPTION_ID')   = struct('optionHeaderRegexp', '--log-matlab', 'occurrenceRequirement', '0-1',   'nValues', 1);
-OPTIONS_CONFIG_MAP('CONFIG_FILE_OPTION_ID')       = struct('optionHeaderRegexp', '--config',     'occurrenceRequirement', '0-1',   'nValues', 1);
-
-% Unofficial arguments
-OPTIONS_CONFIG_MAP('MODIFIED_SETTINGS_OPTION_ID') = struct('optionHeaderRegexp', '--set',        'occurrenceRequirement', '0-inf', 'nValues', 2);
+%===============================================================================
+COPC_ARRAY = [...
+  bicas.utils.cli.OptionConfig('VERSION_OPTION_ID',           '--version',          '0-1',   0,  0); ...
+  bicas.utils.cli.OptionConfig('IDENTIFICATION_OPTION_ID',    '--identification',   '0-1',   0,  0); ...
+  %bicas.utils.cli.OptionConfig('SWD_OPTION_ID',               '--swdescriptor',     '0-1',   0,  0); ...
+  bicas.utils.cli.OptionConfig('HELP_OPTION_ID',              '--help',             '0-1',   0,  0); ...
+  bicas.utils.cli.OptionConfig('SWM_OPTION_ID',               SWM_CLI_OPTION_REGEX, '0-1',   0,  0); ...
+  ...
+  % NOTE: ICD_LOG_FILE_OPTION_ID is an option to permit but ignore since it is handled by the bash launcher script, not the MATLAB code.
+  bicas.utils.cli.OptionConfig('SIP_OPTION_ID',               '--(..*)',            '0-inf', 1, -1); ...
+  bicas.utils.cli.OptionConfig('ICD_LOG_FILE_OPTION_ID',      '--log',              '0-1',   1,  0); ...
+  bicas.utils.cli.OptionConfig('MATLAB_LOG_FILE_OPTION_ID',   '--log-matlab',       '0-1',   1,  0); ...
+  bicas.utils.cli.OptionConfig('CONFIG_FILE_OPTION_ID',       '--config',           '0-1',   1,  0); ...
+  ...
+  % Unofficial arguments
+  bicas.utils.cli.OptionConfig('MODIFIED_SETTINGS_OPTION_ID', '--set',              '0-inf', 2,  0); ...
+  ];
 
 
 
@@ -90,110 +95,106 @@ CliData = [];
 
 
 %============================================================================
-% Extract the modified settings from the unofficial CLI arguments
-% ---------------------------------------------------------------
+% Extract the modified BICAS settings from the unofficial CLI arguments
+% ---------------------------------------------------------------------
 % IMPLEMENTATION NOTE: CliSettingsVsMap corresponds to one definition of ONE
-% option (in the meaning of parse_CLI_options) and is filled with the
-% corresponding option values in the order of the CLI arguments.
+% option (in the meaning of bicas.utils.cli.parse_CLI_options) and is filled
+% with the corresponding option values in the order of the CLI arguments.
 %   ==> A later occurrence of an option with the same first option
 %       value, overwrites previous occurrences of the option with the same
 %       first option value. This is the intended behaviour (not a side
 %       effect).
 %       Ex: --set SETTING_NAME 0 --setting SETTING_NAME 1
 %============================================================================
-OptionValuesMap = bicas.utils.parse_CLI_options(...
-  cliArgumentList, OPTIONS_CONFIG_MAP);
-CliData.ModifiedSettingsMap = convert_modif_settings_OptionValues_2_Map(...
-  OptionValuesMap('MODIFIED_SETTINGS_OPTION_ID'));
+CovcMap = bicas.utils.cli.parse_CLI_options(...
+  cliArgumentsCa, COPC_ARRAY);
+CliData.ModifiedSettingsMap = convert_modif_settings_COPVs_to_SettingsMap(...
+  CovcMap('MODIFIED_SETTINGS_OPTION_ID'));
 
 
 
-%=====================================================================
+%=============================================================================
 % Parse RCS ICD arguments
 % -----------------------
-% NOTE: Interprets RCS ICD as permitting (official) arguments next to
-% non-SWM BFM mode arguments.
-%=====================================================================
-CliData.SipMap = irf.ds.create_containers_Map(...
-  'char', 'char', {}, {});
-
-
-
-sipOptionValues = OptionValuesMap('SIP_OPTION_ID');
-
-
+% NOTE: Interprets RCS ICD as permitting (official) arguments next to non-SWM
+% BFM mode arguments.
+%=============================================================================
 
 % Convert presence of BFM flag (mutually exclusive) into the correct constant.
 % {i, 1} = false/true
-% {i, 2} = BFM string constant
-tempTable = {
-  ~isempty(OptionValuesMap('VERSION_OPTION_ID')),        'VERSION_BFM'; ...
-  ~isempty(OptionValuesMap('IDENTIFICATION_OPTION_ID')), 'IDENTIFICATION_BFM'; ...
-  ~isempty(OptionValuesMap('SWD_OPTION_ID')),            'SWD_BFM'; ...
-  ~isempty(OptionValuesMap('HELP_OPTION_ID')),           'HELP_BFM'; ...
-  ~isempty(OptionValuesMap('SWM_OPTION_ID')),            'SWM_BFM'};
+% {i, 2} = BFMID
+LogicalBfmidTable = {
+  ~isempty(CovcMap('VERSION_OPTION_ID')),        'VERSION_BFM'; ...
+  ~isempty(CovcMap('IDENTIFICATION_OPTION_ID')), 'IDENTIFICATION_BFM'; ...
+  %~isempty(CovcMap('SWD_OPTION_ID')),            'SWD_BFM'; ...
+  ~isempty(CovcMap('HELP_OPTION_ID')),           'HELP_BFM'; ...
+  ~isempty(CovcMap('SWM_OPTION_ID')),            'SWM_BFM'};
 assert(...
-  sum([tempTable{:,1}]) == 1, ...
+  sum([LogicalBfmidTable{:,1}]) == 1, ...
   'BICAS:interpret_CLI_syntax:CLISyntax', ...
   'Illegal combination of arguments.')
-CliData.bfm = tempTable{[tempTable{:, 1}], 2};
+CliData.bfmid = LogicalBfmidTable{[LogicalBfmidTable{:, 1}], 2};
 
-switch CliData.bfm
+SipCovpArray = CovcMap('SIP_OPTION_ID');
 
-  case {'VERSION_BFM', 'IDENTIFICATION_BFM', 'SWD_BFM', 'HELP_BFM'}
+switch CliData.bfmid
+
+  %case {'VERSION_BFM', 'IDENTIFICATION_BFM', 'SWD_BFM', 'HELP_BFM'}
+  case {'VERSION_BFM', 'IDENTIFICATION_BFM', 'HELP_BFM'}
 
     CliData.swmArg = [];
+    CliData.SipMap = irf.ds.create_containers_Map('char', 'char', {}, {});
     assert(...
-      isempty(sipOptionValues), ...
-      'Specified illegal specific input parameters.')
+      isempty(SipCovpArray), ...
+      'Specified illegal specific input parameters (SIP).')
 
   case 'SWM_BFM'
 
-    OptionValues = OptionValuesMap('SWM_OPTION_ID');
+    CopvArray = CovcMap('SWM_OPTION_ID');
 
     % ASSERTION
     % NOTE: Somewhat of a hack, since can not read out from using
-    % bicas.utils.parse_CLI_options where the SWM option is located
+    % bicas.utils.cli.parse_CLI_options where the SWM option is located
     % among the arguments. The code knows it should be somewhere.
-    if numel(OptionValues) ~= 1
+    if numel(CopvArray) ~= 1
       % Somewhat misleading error message. Hard to be accurate without
       % too much effort or by explaining the argument-parsing
       % algorithm to the user.
       error('BICAS:CLISyntax', 'Can not interpret argument(s).')
-    elseif OptionValues.iOptionHeaderCliArgument ~= 1
+    elseif CopvArray.iOptionHeaderCliArgument ~= 1
       error('BICAS:CLISyntax', ...
         ['First argument can not be interpreted as', ...
         ' a S/W mode as expected.'])
     end
 
-    CliData.swmArg = OptionValues.optionHeader;
-
-    CliData.SipMap = convert_SIP_OptionValues_2_Map(...
-      sipOptionValues);
+    CliData.swmArg = CopvArray.optionHeader;
+    CliData.SipMap = convert_SIP_COPVs_to_Map(SipCovpArray);
 
   otherwise
-    error('BICAS:Assertion', 'Illegal CliData.bfm value.')
+    error('BICAS:Assertion', 'Illegal CliData.bfmid value.')
 end
 
 
 
-temp = OptionValuesMap('ICD_LOG_FILE_OPTION_ID');
-if isempty(temp)   CliData.icdLogFile = [];
-else               CliData.icdLogFile = temp(end).optionValues{1};
+CovcArray = CovcMap('ICD_LOG_FILE_OPTION_ID');
+if isempty(CovcArray)   CliData.icdLogFile = [];
+else                    CliData.icdLogFile = CovcArray(end).optionValuesCa{1};
 end
 
-temp = OptionValuesMap('MATLAB_LOG_FILE_OPTION_ID');
-if isempty(temp)   CliData.matlabLogFile = [];
-else               CliData.matlabLogFile = temp(end).optionValues{1};
+CovcArray = CovcMap('MATLAB_LOG_FILE_OPTION_ID');
+if isempty(CovcArray)   CliData.matlabLogFile = [];
+else                    CliData.matlabLogFile = CovcArray(end).optionValuesCa{1};
 end
 
-temp = OptionValuesMap('CONFIG_FILE_OPTION_ID');
-if isempty(temp)   CliData.configFile = [];
-else               CliData.configFile = temp(end).optionValues{1};
+CovcArray = CovcMap('CONFIG_FILE_OPTION_ID');
+if isempty(CovcArray)   CliData.configFile = [];
+else                    CliData.configFile = CovcArray(end).optionValuesCa{1};
 end
+
+
 
 irf.assert.struct(CliData, ...
-  {'bfm', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
+  {'bfmid', 'swmArg', 'icdLogFile', 'matlabLogFile', ...
   'configFile', 'SipMap', ...
   'ModifiedSettingsMap'}, {})
 
@@ -202,31 +203,29 @@ end
 
 
 % NOTE: Checks (assertion) for doubles.
-function Map = convert_SIP_OptionValues_2_Map(optionValues)
-Map = irf.ds.create_containers_Map('char', 'char', {}, {});
+function SipMap = convert_SIP_COPVs_to_Map(CopvArray)
+SipMap = irf.ds.create_containers_Map('char', 'char', {}, {});
 
-for iSip = 1:numel(optionValues)
-  %temp = optionValues{iSip}{1};
-  key = optionValues(iSip).optionHeader(3:end);
-  %key = temp(3:end);
-  if Map.isKey(key)
+for iSip = 1:numel(CopvArray)
+  key = CopvArray(iSip).optionHeader(3:end);
+  if SipMap.isKey(key)
     error('BICAS:CLISyntax', ...
       ['Specifying same specific input parameter (argument)', ...
       ' more than once.'])
   end
-  Map(key) = optionValues(iSip).optionValues{1};
+  SipMap(key) = CopvArray(iSip).optionValuesCa{1};
 end
 end
 
 
 
 % NOTE: Deliberately does not check for doubles.
-function Map = convert_modif_settings_OptionValues_2_Map(optionValues)
-Map = irf.ds.create_containers_Map('char', 'char', {}, {});
+function SettingsMap = convert_modif_settings_COPVs_to_SettingsMap(CovcArray)
+SettingsMap = irf.ds.create_containers_Map('char', 'char', {}, {});
 
-for iSetting = 1:length(optionValues)
-  settingKey   = optionValues(iSetting).optionValues{1};
-  settingValue = optionValues(iSetting).optionValues{2};
-  Map(settingKey) = settingValue;
+for iSetting = 1:length(CovcArray)
+  settingKey   = CovcArray(iSetting).optionValuesCa{1};
+  settingValue = CovcArray(iSetting).optionValuesCa{2};
+  SettingsMap(settingKey) = settingValue;
 end
 end

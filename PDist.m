@@ -1022,6 +1022,9 @@ classdef PDist < TSeries
       %                Tseries, for example 2*scpot
       %     'weight' - how the number of MC iterations per bin is weighted,
       %                can be 'none' (default), 'lin' or 'log'
+      %     'counts' - if obj is converted to counts, this flag should be
+      %                set to 1. It is 0 by default. Note: need to ensure
+      %                counts are not unitless, but in SI units (s^3/m^6)
       %
       %
       %   The output is a PDist object with the reduced distribution where
@@ -1133,6 +1136,7 @@ classdef PDist < TSeries
       weight = 'none';
       correct4scpot = 0;
       base = 'cart'; % coordinate base, cart or pol
+      counts = 0;
 
       if strcmp(dist.species,'electrons'); isDes = 1; else, isDes = 0; end
 
@@ -1196,6 +1200,8 @@ classdef PDist < TSeries
           case 'base' %
             l = 2;
             base = args{2};
+          case 'counts'
+            counts = args{2};
         end
         args = args((l+1):end);
         if isempty(args), break, end
@@ -1360,15 +1366,15 @@ classdef PDist < TSeries
           % v, phi, th corresponds to the bins of F3d
           if vgInputEdges
             if flag_dphi && flag_dtheta
-              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges,'dphi',deltaphi,'dth',deltatheta);
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges,'dphi',deltaphi,'dth',deltatheta,'counts',counts);
             else
-              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges);
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'vg_edges',vg_edges,'counts',counts);
             end
           else
             if flag_dphi && flag_dtheta
-              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'dphi',deltaphi,'dth',deltatheta);
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'dphi',deltaphi,'dth',deltatheta,'counts',counts);
             else
-              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight);
+              tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'nMC',nMC,'vzint',vint*1e3,'aint',aint,'weight',weight,'counts',counts);
             end
           end
           all_vg(i,:) = tmpst.v; % normally vg, but if vg_edges is used, vg is overriden
@@ -1377,9 +1383,9 @@ classdef PDist < TSeries
           %tmpst = irf_int_sph_dist_mod(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight);
           % is 'vg_edges' implemented for 2d?
           if flag_dphi && flag_dtheta
-            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base,'dphi',deltaphi,'dth',deltatheta);
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base,'dphi',deltaphi,'dth',deltatheta,'counts',counts);
           else
-            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base);
+            tmpst = irf_int_sph_dist(F3d,v,phi,th,vg,'x',xphat,'z',zphat,'phig',phig,'nMC',nMC,'vzint',vint*1e3,'weight',weight,'base',base,'counts',counts);
           end
           all_vx(i,:,:) = tmpst.vx;
           all_vy(i,:,:) = tmpst.vy;
@@ -2114,6 +2120,7 @@ classdef PDist < TSeries
       doPrintInfo = 0;
       doFillGap = 0;
       doRotate = 0;
+      nSmooth = 1;
       T = [1 0 0; 0 1 0; 0 0 1]; % no rotation
 
       % Default formatting
@@ -2140,7 +2147,7 @@ classdef PDist < TSeries
           case {'fill'}
             doFillGap = 1;
             l = 1;
-          case {'val','iso_val','values'}
+          case {'vals','val','iso_val','values'}
             l = 2;
             iso_values = args{2};
           case {'prctile','percentile'}
@@ -2244,7 +2251,7 @@ classdef PDist < TSeries
 
       %Fg = griddedInterpolant(VX,VY,VZ,F);
       %Fq = Fg(VXe,VYe,VZe);
-%      Fq = interp3(VX,VY,VZ,F,VXe,VYe,VZe);
+      %      Fq = interp3(VX,VY,VZ,F,VXe,VYe,VZe);
 
       %F = Fe;
       %VX = VXe;
@@ -2337,6 +2344,7 @@ classdef PDist < TSeries
       view(ax,[2 2 1])
       %view(ax,[0 0 1])
 
+      all_handles.Values = iso_values;
       all_handles.Patch = hps;
       all_handles.Light = hlight;
 
@@ -2588,12 +2596,18 @@ classdef PDist < TSeries
 
       % prepare data to be plotted
       plot_data = squeeze(mean(dist.data,1)); % average data over time indices
+      if doContour
+        plot_data_contour = plot_data;
+      end
       if doFLim % put values outside given interval to NaN, default is [0 Inf]
         plot_data(plot_data<=flim(1)) = NaN;
         plot_data(plot_data>flim(2)) = NaN;
       end
       if doLog10 % take log10 of data
         plot_data = log10(plot_data);
+        if doContour
+          plot_data_contour = log10(plot_data_contour);
+        end
       end
       if doSmooth
         plot_data = smooth2(plot_data,nSmooth);
@@ -2647,6 +2661,8 @@ classdef PDist < TSeries
         integrated_p12 = dist.mass*nansum(nansum(plot_data.*(dv1*dv2'))); % kg*m-3*m/s*m/s = kg*m*s-2 = Pa
         % pascal is kg*m*s-2, so go to nPa
         integrated_p12 = integrated_p12*1e9; % Pa -> nPa
+
+
       end
       % main surface plot
       % NOTE, PCOLOR and SURF uses flipped dimensions of (x,y) and (z), but PDist.reduce does not, there we need to flip the dim of the data
@@ -2690,10 +2706,10 @@ classdef PDist < TSeries
         end
         %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
         %irf_legend(ax,sprintf('p = %.6f nPa',integrated_p12),[0.02 0.02],'color',sumf_color)
-        irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
+        %irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
       end
       %if doP12 % add info about integrated value
-        %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+      %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
       %end
 
       if doContour
@@ -2720,11 +2736,11 @@ classdef PDist < TSeries
           plot_y = squeeze(irf.nanmean(dist.depend{2},1))*v_scale;
         end
         if doContourFill
-          [~,h_contour] = contourf(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+          [~,h_contour] = contourf(ax,plot_x,plot_y,plot_data_contour',contour_levels,'k');
         else
-          [~,h_contour] = contour(ax,plot_x,plot_y,plot_data',contour_levels,'k');
+          [~,h_contour] = contour(ax,plot_x,plot_y,plot_data_contour',contour_levels,'k');
         end
-        h_contour.LineWidth = 1.5;
+        h_contour.LineWidth = 0.5;
         hold(ax,'off')
         all_handles.Contour = h_contour;
       end
@@ -3567,10 +3583,10 @@ classdef PDist < TSeries
         PD.data_ = tmpData;
         PD.units = '1/(cm^2 s sr eV)';
       elseif flagdir == -1
-          reshapedData = reshapedData./matEnergy;
-          tmpData = reshape(reshapedData,sizeData);
-          PD = obj;
-          PD.data_ = tmpData;
+        reshapedData = reshapedData./matEnergy;
+        tmpData = reshape(reshapedData,sizeData);
+        PD = obj;
+        PD.data_ = tmpData;
         switch obj.units
           case '1/(cm^2 s sr eV)'
             PD.units = 's^3/m^6';
@@ -4005,6 +4021,7 @@ classdef PDist < TSeries
 
           % Partial density for each macroparticle
           dn_part = dn/Nbin;
+          df_part = f/Nbin;
 
           Nbin_mat = Nbin*ones(sizedata);
 
@@ -4019,7 +4036,7 @@ classdef PDist < TSeries
             vx_all = repelem(vx(it,:),Nbin_mat(it,:));
             vy_all = repelem(vy(it,:),Nbin_mat(it,:));
             vz_all = repelem(vz(it,:),Nbin_mat(it,:));
-            f_all = repelem(f(it,:),Nbin_mat(it,:));
+            df_all = repelem(f(it,:),Nbin_mat(it,:));
 
             [iDep1,iDep2,iDep3] = ndgrid(1:sizedata(2),1:sizedata(3),1:sizedata(4));
             iDep1_all = repelem(iDep1(:),Nbin_mat(it,:));
@@ -4034,6 +4051,7 @@ classdef PDist < TSeries
             p(it).vx = tocolumn(vx_all);
             p(it).vy = tocolumn(vy_all);
             p(it).vz = tocolumn(vz_all);
+            p(it).df = tocolumn(df_all);
           end
         case 'random' % initialize random positions within each bin
           % First calculate how many particles should g in each bin
@@ -4071,9 +4089,11 @@ classdef PDist < TSeries
 
           % Partial density for each macroparticle
           dn_part = dn./Ntmp_roundup;
+          df_part = f./Ntmp_roundup;
 
           % n_frac = 0 divided by Ntmp_roundup = 0 gives NaN
           dn_part(isnan(dn_part)) = 0;
+          df_part(isnan(df_part)) = 0;
 
           % Edges of energy bins, same for each time step
           energy_minus = obj.depend{1}(1,:) - obj.ancillary.delta_energy_minus;
@@ -4100,6 +4120,7 @@ classdef PDist < TSeries
             vy_all = zeros(sum(Ntmp_roundup(it,:),2),1);
             vz_all = zeros(sum(Ntmp_roundup(it,:),2),1);
             dn_all = zeros(sum(Ntmp_roundup(it,:),2),1);
+            df_all = zeros(sum(Ntmp_roundup(it,:),2),1);
 
             i_part_count = 1;
 
@@ -4162,6 +4183,7 @@ classdef PDist < TSeries
 
                   % Assign particle density to each macro particle
                   tmp_dn = repelem(dn_part(it,iEnergy,iAzim,iPolar),N_bin);
+                  tmp_df = repelem(df_part(it,iEnergy,iAzim,iPolar),N_bin);
                   tmp_iDep1 = repelem(iEnergy,N_bin);
                   tmp_iDep2 = repelem(iAzim,N_bin);
                   tmp_iDep3 = repelem(iPolar,N_bin);
@@ -4174,6 +4196,7 @@ classdef PDist < TSeries
                   vy_all(i_part_count + (0:N_bin-1),:) = tmp_vy;
                   vz_all(i_part_count + (0:N_bin-1),:) = tmp_vz;
                   dn_all(i_part_count + (0:N_bin-1),:) = tmp_dn;
+                  df_all(i_part_count + (0:N_bin-1),:) = tmp_df;
 
                   % Increase counter
                   i_part_count = i_part_count + N_bin;
@@ -4187,6 +4210,7 @@ classdef PDist < TSeries
             p(it).vy = vy_all(1:i_part_count-1);
             p(it).vz = vz_all(1:i_part_count-1);
             p(it).dn = dn_all(1:i_part_count-1);
+            p(it).df = df_all(1:i_part_count-1);
           end % end time loop
       end % end switch method
       particles = p;
@@ -4391,7 +4415,75 @@ classdef PDist < TSeries
       moms.T.siConversion = '11604.50520>K';
       % tensorOrder, representation, etc are read-only, how to add?
     end
+    function PD = movmean(obj,nMean,varargin)
+      % PDIST.MOVMEAN Executes a running average of the distribution.
+      %   PDIST.MOVMEAN(pdist,N)
+      %   PDIST.MOVMEAN(pdist,N,'RemoveOneCounts',pdist_counts)
+      %
+      %     N - number of data points for the moving mean
+      %     pdist_counts - PDist object with number of counts, defined as in the example below
+      %
+      %   Example:
+      %     ic = 3;
+      %     tint = irf.tint('2017-07-11T22:31:00.00Z/2017-07-11T22:37:20.00Z');
+      %     iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
+      %     iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
+      %     iPDist_counts = iPDist; iPDist_counts.data = (iPDist.data./iPDistErr.data).^2;
+      %
+      %     iPD_03 = iPDist3.movmean(3);
+      %     iPD_11 = iPDist3.movmean(11);
+      %
+      %     iPD_03_rem = iPDist3.movmean(3,'RemoveOneCounts',iPDist_counts);
+      %     iPD_11_rem = iPDist3.movmean(11,'RemoveOneCounts',iPDist_counts);
+      %
+      %     h = irf_plot({iPDist.omni.deflux.specrec,...
+      %                   iPD_03.omni.deflux.specrec,iPD_03_rem.omni.deflux.specrec,...
+      %                   iPD_11.omni.deflux.specrec,iPD_11_rem.omni.deflux.specrec});
+      %     c_eval('h(?).YScale = ''log'';',1:numel(h))
+      %     linkprop(h,{'CLim'});
+      %     irf_legend(h(1),{'original'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
+      %     irf_legend(h(2),{'3-point average'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
+      %     irf_legend(h(3),{'3-point average with one-counts removed'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
+      %     irf_legend(h(4),{'11-point average'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
+      %     irf_legend(h(5),{'11-point average with one-counts removed'}',[0.98 0.1],'fontsize',12,'color','k','backgroundcolor','w')
 
+
+      % Default values
+      doRemoveOneCounts = 0;
+
+      if isempty(varargin)
+        nargs = 0;
+        args = {};
+      else
+        [ax,args,nargs] = axescheck_pdist(varargin{:});
+      end
+
+      if nargs > 0; have_options = 1; else have_options = 0; end
+      while have_options
+        l = 1;
+        switch(lower(args{1}))
+          case 'removeonecounts'
+            l = 2;
+            doRemoveOneCounts = 1;
+            tsOneCounts = varargin{2};
+        end
+        args = args(l+1:end);
+        if isempty(args), break, end
+      end
+
+      new_data = movmean(obj.data,nMean,1); % the 1 specifies the dimension along which the moving mean is taken
+
+      if doRemoveOneCounts
+        data_one_counts = tsOneCounts.data;
+        data_one_counts(isnan(data_one_counts)) = 0;
+        counts = movsum(data_one_counts,nMean,1);
+        new_data(counts<1.5) = 0;
+      end
+
+      PD = obj;
+      PD.data = new_data;
+      %PD = PDist(obj.time,new_data,'skymap',obj.depend{:})
+    end
 
   end
   % Plotting and other functions

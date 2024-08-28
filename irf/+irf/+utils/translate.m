@@ -8,7 +8,7 @@
 % Primarily intended as a utility function to avoid common verbose switch-case
 % statements (with an "otherwise" assertion) which interprets and verifies
 % string constants, only to assign new values to some other variable(s) in every
-% case statement. Can then write the code more in the form of a table.
+% case statement. One can then write the code more in the form of a table.
 % ** Can be used to assign multiple variables (output) in every case by having
 %    e.g. cell array as values.
 % ** Can use the same table structure to iterate over all "switch-case"
@@ -32,11 +32,12 @@
 %       hardcoding it using literals.
 % key
 %       String
-% Alt 1:
-%       varargin{1} = nonMatchValue
-% Alt 2:
-%       varargin{1} = errorMsgId
-%       varargin{2} = errorMsg
+% varargin
+%       Alt 1: Permit non-match.
+%         varargin{1} = nonMatchValue
+%       Alt 2: Error on non-match.
+%         varargin{1} = errorMsgId
+%         varargin{2} = errorMsg
 % --
 % NOTE: Empty string matches empty string.
 % NOTE: Counts '' and char(zeros(1,0)) as identical, both for matching and
@@ -46,7 +47,8 @@
 %
 % RETURN VALUE
 % ============
-% value : Same as table{i, 2} for which table{i, 1}==key (string comparison).
+% value
+%       Same as table{i, 2} for which table{i, 1}==key (string comparison).
 %
 %
 % Initially created 2019-09-18 by Erik P G Johansson, IRF, Uppsala, Sweden.
@@ -64,6 +66,7 @@ function value = translate(table, key, varargin)
 % PROPOSITION: Function is unnecessary.
 %   PRO: Does not shorten the code enough to warrant a function.
 %       PRO: Can write case statements on one row.
+%   PRO: Function is only used by bicas.sprint_BSO().  /2024-07-23
 %
 % PROPOSAL: Be able to use non-string key.
 %   PRO: Can not always do with switch-case. ==> Can avoid if-elseif-elseif-...-else statements
@@ -75,6 +78,8 @@ function value = translate(table, key, varargin)
 %
 % PROPOSAL: Return value as multiple return values (varying number).
 %   NOTE: Requires values to be same sized 1D cell arrays.
+%
+% NOTE: Compare bicas.ga.normalize().
 
 [keySetsTable, valuesTable] = convert_table(table);
 

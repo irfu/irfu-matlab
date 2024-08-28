@@ -7,10 +7,10 @@
 % ===========================
 % SwmInfo
 % InputFilePathMap  : containers.Map with
-%    key   = prodFuncInputKey
+%    key   = PFIID
 %    value = Path to input file
 % OutputFilePathMap : containers.Map with
-%    key   = prodFuncOutputKey
+%    key   = PFOID
 %    value = Path to output file
 %
 %
@@ -36,17 +36,6 @@ function execute_SWM(...
 %   PROPOSAL: function matchesMaster(DataObj, MasterDataobj)
 %       PRO: Want to use dataobj to avoid reading file (input dataset) twice.
 %
-% NOTE: Things that need to be done when writing PDV-->CDF
-%       Read master CDF file.
-%       Compare PDV variables with master CDF variables (only write a subset).
-%       Check variable types, sizes against master CDF.
-%       Write GlobalAttributes:
-%           Parents, Parent_version,
-%           Generation_date, Logical_file_id,
-%           Software_version, SPECTRAL_RANGE_MIN/-MAX (optional?), TIME_MIN/-MAX
-%       Write VariableAttributes: pad value? (if master CDF does not contain
-%           a correct value), SCALE_MIN/-MAX
-%
 % PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
 %   NOTE: These do not use NaN, but fill values.
 
@@ -57,12 +46,12 @@ function execute_SWM(...
 % NOTE: Manually entering CLI argument, or copy-pasting BICAS call, can
 % easily lead to reusing the same path by mistake, and e.g. overwriting an
 % input file.
-datasetFileList = [InputFilePathMap.values(), OutputFilePathMap.values()];
-assert(numel(unique(datasetFileList)) == numel(datasetFileList), ...
+datasetFileCa = [InputFilePathMap.values(), OutputFilePathMap.values()];
+assert(numel(unique(datasetFileCa)) == numel(datasetFileCa), ...
   'BICAS:CLISyntax', ...
   ['Input and output dataset paths are not all unique.', ...
   ' This hints of a manual mistake', ...
-  ' in the CLI arguments in call to BICAS.'])
+  ' in the CLI arguments in the call to BICAS.'])
 
 
 
@@ -73,15 +62,15 @@ assert(numel(unique(datasetFileList)) == numel(datasetFileList), ...
 %=============================
 InputDatasetsMap = containers.Map();
 for i = 1:length(SwmInfo.inputsList)
-  prodFuncInputKey = SwmInfo.inputsList(i).prodFuncInputKey;
-  inputFilePath    = InputFilePathMap(prodFuncInputKey);
+  pfiid         = SwmInfo.inputsList(i).pfiid;
+  inputFilePath = InputFilePathMap(pfiid);
 
   %=======================
   % Read dataset CDF file
   %=======================
   InputDataset = bicas.read_dataset_CDF(inputFilePath, Bso, L);
 
-  InputDatasetsMap(prodFuncInputKey) = InputDataset;
+  InputDatasetsMap(pfiid) = InputDataset;
 
 
 
@@ -118,26 +107,10 @@ end
 
 
 
-%==============
-% PROCESS DATA
-%==============
-% NPEF = No Processing, Empty File
-[settingNpefValue, settingNpefKey] = Bso.get_fv(...
-  'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
-if ~settingNpefValue
-  %==========================
-  % CALL PRODUCTION FUNCTION
-  %==========================
-  OutputDatasetsMap = SwmInfo.Swmp.production_function(InputDatasetsMap, rctDir, NsoTable, Bso, L);
-else
-  L.logf('warning', ...
-    'Disabled processing due to setting %s.', settingNpefKey)
-
-  % IMPLEMENTATION NOTE: Needed for passing assertion. Maybe to be
-  % considered a hack?!
-  OutputDatasetsMap = struct(...
-    'keys', {{SwmInfo.outputsList.prodFuncOutputKey}});
-end
+%=======================================
+% PROCESS DATA: CALL PRODUCTION FUNCTION
+%=======================================
+OutputDatasetsMap = SwmInfo.Swmp.production_function(InputDatasetsMap, rctDir, NsoTable, Bso, L);
 
 
 
@@ -150,13 +123,13 @@ end
 % required by the s/w mode.
 irf.assert.castring_sets_equal(...
   OutputDatasetsMap.keys, ...
-  {SwmInfo.outputsList.prodFuncOutputKey});
+  {SwmInfo.outputsList.pfoid});
 %
 for iOutputCdf = 1:length(SwmInfo.outputsList)
-  OutputInfo = SwmInfo.outputsList(iOutputCdf);
+  SwmOutputDataset = SwmInfo.outputsList(iOutputCdf);
 
-  prodFuncOutputKey = OutputInfo.prodFuncOutputKey;
-  outputFilePath    = OutputFilePathMap(prodFuncOutputKey);
+  pfoid            = SwmOutputDataset.pfoid;
+  outputFilePath   = OutputFilePathMap(pfoid);
 
 
 
@@ -166,24 +139,19 @@ for iOutputCdf = 1:length(SwmInfo.outputsList)
   masterCdfPath = fullfile(...
     masterCdfDir, ...
     bicas.get_master_CDF_filename(...
-    OutputInfo.dsi, ...
-    OutputInfo.skeletonVersion));
+    SwmOutputDataset.dsi, ...
+    SwmOutputDataset.skeletonVersion));
 
-  if ~settingNpefValue
-    % CASE: Nominal
-    OutputDataset = OutputDatasetsMap(OutputInfo.prodFuncOutputKey);
+  OutputDataset = OutputDatasetsMap(SwmOutputDataset.pfoid);
+  assert(isa(OutputDataset, 'bicas.OutputDataset'))
 
-    ZvsSubset = OutputDataset.Zv;
+  ZvsSubset = OutputDataset.Zv;
 
-    GaSubset = bicas.derive_output_dataset_GAs(...
-      InputDatasetsMap, OutputDataset, ...
-      irf.fs.get_name(outputFilePath), OutputInfo.dsi, ...
-      Bso, L);
-  else
-    % CASE: No processing.
-    ZvsSubset = [];
-    GaSubset  = struct();
-  end
+  GaSubset = bicas.ga.derive_output_dataset_GAs(...
+    InputDatasetsMap, OutputDataset, ...
+    irf.fs.get_name(outputFilePath), SwmOutputDataset.dsi, ...
+    Bso, L);
+
   bicas.write_dataset_CDF( ...
     ZvsSubset, GaSubset, outputFilePath, masterCdfPath, ...
     Bso, L );

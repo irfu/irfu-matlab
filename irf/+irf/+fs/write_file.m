@@ -1,12 +1,14 @@
 %
 % Write (create/overwrite; open & close) an entire file from a 1D array of
-% bytes. Cf read_file.
+% bytes. Cf irf.fs.read_file().
 %
 %
 % ARGUMENTS
 % =========
+% filePath
+%       Path to file to write.
 % byteArray
-%       uint8 1D array.
+%       uint8 column array.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -14,9 +16,17 @@
 %
 function write_file(filePath, byteArray)
 % PROPOSAL: Flag for permitting overwrite.
+% NOTE: Code works if submitting string (char array), if it were not for the
+%       assertion against it.
+%   PROPOSAL: Permit char array.
+%     CON: The caller can easily convert to uint8.
+%     CON: There might be problems, subtleties relating to character tables,
+%          Unicode, ASCII. Might not work as expected.
 
 assert(isa(byteArray, 'uint8'), 'byteArray is not uint8.')
-irf.assert.vector(byteArray)
+assert(iscolumn(byteArray))
+
+
 
 % fopen options:
 % 'w'     open file for writing; discard existing contents
@@ -26,8 +36,10 @@ if fileId == -1
   error('write_file:CanNotOpenFile', 'Can not open file: "%s"', filePath)
 end
 
+%===============
+% Write to file
+%===============
 fwrite(fileId, byteArray);
-
 
 errorCode = fclose(fileId);
 % ~ASSERTION

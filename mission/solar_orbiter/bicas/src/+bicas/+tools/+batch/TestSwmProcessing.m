@@ -8,16 +8,6 @@ classdef TestSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-  %#####################
-  %#####################
-  % INSTANCE PROPERTIES
-  %#####################
-  %#####################
-  properties(SetAccess=immutable)
-  end    % properties(SetAccess=immutable)
-
-
-
   %#########################
   %#########################
   % PUBLIC INSTANCE METHODS
@@ -27,20 +17,6 @@ classdef TestSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % ARGUMENTS
-    % =========
-    % InputsMap
-    %       containers.Map with
-    %       <keys>   : String defining a name of an input ("prodFuncInputKey" in
-    %                  bicas.swm.SoftwareModeList).
-    %       <values> : A struct with data corresponding to a CDF file
-    %                  (zVariables+global attributes).
-    % OutputsMap
-    %       containers.Map with
-    %       <keys>   : String defining a name of an output ("prodFuncOutputKey" in
-    %                  bicas.swm.SoftwareModeList).
-    %       <values> : A struct with data corresponding to a CDF file (zVariables).
-    %
     % OVERRIDE
     function OutputDatasetsMap = production_function(obj, ...
         InputDatasetsMap, rctDir, NsoTable, Bso, L)

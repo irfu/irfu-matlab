@@ -1,11 +1,12 @@
 %
-% matlab.unittest automatic test code for
-% solo.adm.paths_to_DSMD_array().
+% matlab.unittest automatic test code for solo.adm.paths_to_DSMD_array().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef paths_to_DSMD_array___UTEST < matlab.unittest.TestCase
+
+
 
   %##############
   %##############
@@ -32,28 +33,24 @@ classdef paths_to_DSMD_array___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(actBIsDatasetArray, expBIsDatasetArray)
       end
 
-      function dt = dtu(varargin)
-        dt = datetime(varargin{:}, 'TimeZone', 'UTCLeapSeconds');
-      end
-
       DSMD_1 = solo.adm.DSMD(...
         'solo_HK_rpw-bia_20200301_V01.cdf', ...
         'SOLO_HK_RPW-BIA', 1, false, ...
-        dtu(2020, 03, 01, 00, 00, 00), ...
-        dtu(2020, 03, 02, 00, 00, 00));
+        irf.dt.UTC(2020, 03, 01, 00, 00, 00), ...
+        irf.dt.UTC(2020, 03, 02, 00, 00, 00));
 
       DSMD_2 = solo.adm.DSMD(...
         'dir/solo_L1_rpw-bia-sweep-cdag_20200307T053018-20200307T053330_V02.cdf', ...
         'SOLO_L1_RPW-BIA-SWEEP', 2, true, ...
-        dtu(2020, 03, 07, 05, 30, 18), ...
-        dtu(2020, 03, 07, 05, 33, 30));
+        irf.dt.UTC(2020, 03, 07, 05, 30, 18), ...
+        irf.dt.UTC(2020, 03, 07, 05, 33, 30));
 
       % New filenaming convention for currents. EJ+XB-email 2020-05-27.
       DSMD_3 = solo.adm.DSMD(...
         'solo_L1_rpw-bia-current-cdag_20200301-20200331_V03.cdf', ...
         'SOLO_L1_RPW-BIA-CURRENT', 3, true, ...
-        dtu(2020, 03, 01, 00, 00, 00), ...
-        dtu(2020, 04, 01, 00, 00, 00));
+        irf.dt.UTC(2020, 03, 01, 00, 00, 00), ...
+        irf.dt.UTC(2020, 04, 01, 00, 00, 00));
 
       FILE_CDF_IGNORE    = '/temp/BIAS_RCT.cdf';
       FILE_NONCDF_IGNORE = '/temp/readme.txt';
@@ -97,5 +94,7 @@ classdef paths_to_DSMD_array___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
+
+
 
 end

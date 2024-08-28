@@ -5,12 +5,17 @@
 %
 % NOTES
 % =====
-% NOTE: MATLAB does indeed seem to NOT have a function for getting the absolute
-%       path!
-% NOTE: Also converts "~" to the home directory.
-% NOTE: The resulting path will NOT end with slash/backslash unless it is the
-%       system root directory on Linux ("/").
-% NOTE: Only works with filesep = "/".
+% * MATLAB does indeed seem to NOT have a function for getting the absolute
+%   path!
+% * Also converts "~" to the home directory.
+% * The resulting path will NOT end with slash/backslash unless it is the
+%   system root directory on Linux ("/").
+% * NOTE: Only works with filesep = "/".
+% * Function can convert automounted paths (am-utils) into not automounted
+%   paths. If a s/w converts a path at the outset, then the converted path might
+%   at first work (due to automounting for unreated reasons), and then not work
+%   due to not triggering autmounting itself.
+%   Ex: IRFU's brain:/data/solo/ to /amd/nas8/USBDiskRaid5/solo/.
 %
 %
 % ARGUMENT
@@ -27,12 +32,11 @@ function path = get_abs_path(path)
 % PROPOSAL: Uses Linux's "readlink -f".
 %   CON: Platform-dependent.
 %
-% PROPOSAL: Use "what".
-%   NOTE: Does not work on files.
 % PROPOSAL: Use "fileparts" to make it work for files in existing directories.
 %
 % NOTE: Different use cases, operations.
-%   PROPOSAL: Convert (absolute or relative) to absolute path: add current directory to path.
+%   PROPOSAL: Convert (absolute or relative) to absolute path:
+%             add current directory to path.
 %       NOTE: Does not require existing object.
 %   PROPOSAL: Find canonical path: Replace symlinks with non-links.
 %       NOTE: Requires existing object (or at least up to last link).

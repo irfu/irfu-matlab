@@ -83,7 +83,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_empty(testCase)
+    function test___one_matching_log___empty_log_file(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -98,7 +98,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_no_match(testCase)
+    function test___one_log___no_dataset(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -116,7 +116,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_one_match_simple(testCase)
+    function test___one_log___one_dataset_match_simple(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -125,7 +125,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L3_rpw-bia-density_20240101_V01.cdf', ...
         })
 
-      ExpDtArray = solo.qli.utils.umddt('2024-01-01');
+      ExpDtArray = irf.dt.um('2024-01-01');
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -135,7 +135,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_zero_DSIs_simple(testCase)
+    function test___one_log___zero_DSIs_simple(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -152,7 +152,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_two_identical_matches(testCase)
+    function test___one_log___two_identical_datasets(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -162,7 +162,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L3_rpw-bia-density_20240101_V01.cdf', ...    % Same filename.
         })
 
-      ExpDtArray = solo.qli.utils.umddt('2024-01-01');
+      ExpDtArray = irf.dt.um('2024-01-01');
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -173,7 +173,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
     % Test that can detect both CDAG and non-CDAG filenames.
-    function test_one_log_CDAG_nonCDAG(testCase)
+    function test___one_log___CDAG_and_nonCDAG_datasets(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -183,7 +183,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L3_rpw-bia-density-cdag_20240201_V01.cdf', ...    % Same filename, CDAG.
         })
 
-      ExpDtArray = solo.qli.utils.umddt({'2024-01-01'; '2024-02-01'});
+      ExpDtArray = irf.dt.um({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -193,20 +193,20 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_one_DSI_complex(testCase)
+    function test___one_log___one_DSI___multiple_datasets___complex(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
       solo.qli.batch.utils.write_file(filePath, ...
         {
-        '/data/solo_L3_rpw-bia-density_20240101_V01.cdfQWE', ...   % Matching filename
-        '      solo_L3_rpw-bia-density-10-seconds_20240102_V01.cdf   ', ...   % Potentially mistakenly matching filename.
-        '      solo_L3_rpw-bia-density_20240201_V01.cdf   ', ...   % Matching filename.
+        '/data/solo_L3_rpw-bia-density_20240101_V01.cdfQWE', ...              % Matching filename
+        '      solo_L3_rpw-bia-density-10-seconds_20240102_V01.cdf   ', ...   % Not matching filename.
+        '      solo_L3_rpw-bia-density_20240201_V01.cdf   ', ...              % Matching filename.
         'IRRELEVANT TEXT', ...
-        '      solo_L3_rpw-bia-density_20240101_V01.cdf   ', ...   % Same matching filename again.
+        '      solo_L3_rpw-bia-density_20240101_V01.cdf   ', ...              % Same matching filename again.
         })
 
-      ExpDtArray = solo.qli.utils.umddt({'2024-01-01'; '2024-02-01'});
+      ExpDtArray = irf.dt.um({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -216,7 +216,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_multiple_DSIs_complex(testCase)
+    function test___one_log___multiple_DSIs___complex(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -232,7 +232,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L2_mag-rtn-normal-1-minute_20240401_V03.cdf', ... % Matching filename
         })
 
-      ExpDtArray = solo.qli.utils.umddt('2024-01-01') + calmonths([0;1;2;3]);
+      ExpDtArray = irf.dt.um('2024-01-01') + calmonths([0;1;2;3]);
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY', 'SOLO_L2_MAG-RTN-NORMAL-1-MINUTE'});
 
@@ -241,7 +241,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_log_multiple_matches_on_same_row(testCase)
+    function test___one_log___multiple_matches_on_same_row(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath          = testCase.fullfile('processing2024-01-01.log');
 
@@ -250,7 +250,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L3_rpw-bia-density_20240101_V01.cdf  solo_L3_rpw-bia-density_20240201_V01.cdf', ...   % Two matching filenames.
         })
 
-      ExpDtArray = solo.qli.utils.umddt({'2024-01-01'; '2024-02-01'});
+      ExpDtArray = irf.dt.um({'2024-01-01'; '2024-02-01'});
 
       ActDtArray = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
@@ -260,7 +260,7 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_multiple_logs_multiple_DSIs_complex(testCase)
+    function test___multiple_logs___multiple_DSIs_complex(testCase)
       logFileDirPattern = testCase.fullfile('processing*.log');
       filePath1         = testCase.fullfile('processing2024-01-01T12.00.00.log');
       filePath2         = testCase.fullfile('processing2024-01-01T18.00.00.log');
@@ -278,13 +278,47 @@ classdef extract_dataset_dates_from_logs___UTEST < matlab.unittest.TestCase
         'solo_L2_mag-rtn-normal-1-minute_20250201_V03.cdf', ... % Matching filename
         })
 
-      ExpDtArray = solo.qli.utils.umddt({'2025-01-01'; '2025-02-01'});
+      ExpDtArray = irf.dt.um({'2025-01-01'; '2025-02-01'});
 
       [ActDtArray, actLogFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
         logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY', 'SOLO_L2_MAG-RTN-NORMAL-1-MINUTE'});
 
       testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
       testCase.assertEqual(actLogFilePath, filePath2)
+    end
+
+
+
+    % Test that only recognizes specified log files.
+    %
+    % NOTE: Test creates two log files, and checks if code can recognize either
+    % file separately.
+    function test___matching_nonmatching_logs___one_dataset(testCase)
+      logFileDirPattern1 = testCase.fullfile('processing*.log');
+      logFileDirPattern2 = testCase.fullfile('PROCESSING*.LOG');
+      logFilePath1       = testCase.fullfile('processing2024-01-01T12.00.00.log');
+      logFilePath2       = testCase.fullfile('PROCESSING2024-01-01T12.00.00.LOG');
+
+      % NOTE: Log file which will be ignored.
+      solo.qli.batch.utils.write_file(logFilePath1, ...
+        {'solo_L3_rpw-bia-density_20230101_V01.cdf'})         % Matching filename.
+
+      solo.qli.batch.utils.write_file(logFilePath2, ...
+        {'solo_L3_rpw-bia-density_20240101_V01.cdf'})         % Matching filename.
+
+      EXP_DT_ARRAY_1 = irf.dt.um({'2023-01-01'});
+      EXP_DT_ARRAY_2 = irf.dt.um({'2024-01-01'});
+
+      function test(logFileDirPattern, ExpDtArray, expLogFilePath)
+        [ActDtArray, actLogFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
+          logFileDirPattern, {'SOLO_L3_RPW-BIA-DENSITY'});
+
+        testCase.assertEqual(sort(ActDtArray), sort(ExpDtArray))
+        testCase.assertEqual(actLogFilePath, expLogFilePath)
+      end
+
+      test(logFileDirPattern1, EXP_DT_ARRAY_1, logFilePath1)
+      test(logFileDirPattern2, EXP_DT_ARRAY_2, logFilePath2)
     end
 
 

@@ -174,7 +174,7 @@ switch type
         h2 = h2(:);
       end
     end
-  end
+end
 end
 
 

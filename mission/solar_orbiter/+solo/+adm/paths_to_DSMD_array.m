@@ -51,57 +51,18 @@ function [DsmdArray, bIsDatasetArray] = paths_to_DSMD_array(filePathCa)
 %   NOTE: Needs support in parse_dataset_filename(_many).
 
 % FI = File Info
-[fiCa, bIsDatasetArray] = solo.adm.parse_dataset_filename_many(filePathCa);
+[DfCa, bIsDatasetArray] = solo.adm.dsfn.parse_dataset_filename_many(filePathCa);
+datasetPathCa           = filePathCa(bIsDatasetArray);
 
 DsmdArray = solo.adm.DSMD.empty(0, 1);
 
-for i = 1:numel(fiCa)
-  Fi = fiCa{i};
-
-  %===========================================
-  % Interpret file info from parsing filename
-  % (mostly begin & end time)
-  %===========================================
-  hasDv12 = isfield(Fi, 'dateVec1') && isfield(Fi, 'dateVec2');
-  hasDv   = isfield(Fi, 'dateVec');
-
-  if hasDv12 && ~hasDv
-    dv1Len = numel(Fi.dateVec1);
-    dv2Len = numel(Fi.dateVec2);
-    if (dv1Len == 6) && (dv2Len == 6)
-      dv1 = Fi.dateVec1;
-      dv2 = Fi.dateVec2;
-    elseif (dv1Len == 3) && (dv2Len == 3)
-      dv1 = [Fi.dateVec1, 0, 0, 0];
-      % NOTE: Adding one day since length-3 dateVec2 specifies
-      % midnight, not just day.
-      dv2 = datevec(datenum(Fi.dateVec2) + 1);
-    else
-      error(...
-        ['Can not interpret parsed filename for "s".', ...
-        ' Illegal date vector lengths.'], ...
-        filePathCa)
-    end
-
-  elseif ~hasDv12 && hasDv
-    assert(numel(Fi.dateVec) == 3)
-
-    dv1 = [Fi.dateVec, 0, 0, 0];
-    dv2 = datevec(datenum(Fi.dateVec)+1);
-  else
-    % Skip file since can not derive any time from it.
-    continue
-  end
-
-  assert(numel(dv1) == 6)
-  assert(numel(dv2) == 6)
+for i = 1:numel(DfCa)
+  Df = DfCa{i};
 
   Dsmd = solo.adm.DSMD(...
-    Fi.path, Fi.datasetId, str2double(Fi.versionStr), Fi.isCdag, ...
-    datetime(dv1, 'TimeZone', 'UTCLeapSeconds'), ...
-    datetime(dv2, 'TimeZone', 'UTCLeapSeconds') ...
-    );
+    datasetPathCa{i}, Df.datasetId, Df.versionNbr, Df.isCdag, Df.Dt1, Df.Dt2);
 
   DsmdArray(end+1, 1) = Dsmd;
 end
+
 end

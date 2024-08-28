@@ -1,6 +1,8 @@
 %
 % SolO-related constants.
 %
+% HWZV = HardWare, zVariables
+%
 % NOTE: Not to be confused with BICAS's constants.
 %
 % sampere = set ampere
@@ -10,6 +12,8 @@
 % First created 2020-06-26
 %
 classdef const
+
+
 
   properties(Constant)
 
@@ -65,5 +69,7 @@ classdef const
 
     TM_PER_SAMPERE = 32768 / solo.hwzv.const.MAX_ABS_SAMPERE;
   end
+
+
 
 end

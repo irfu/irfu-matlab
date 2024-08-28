@@ -29,15 +29,20 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-15.
 %
-function filename = default_get_BPCI_output_filename(...
+function outputFilename = default_get_BPCI_output_filename(...
   outputDsi, BpciInputDsmdArray, ...
   versionStr, varargin)
 
 % PROPOSAL: Automatic test code.
 %
+% PROPOSAL: Convert argument "versionStr" to versionNbr"?
+%   TODO-NI: Changes interface for other function handles?
+%
 % PROPOSAL: INPUT_DSI_FOR_OUTPUT_TIME --> argument
 %   PROPOSAL: Only use first matching DSI in INPUT_DSI_FOR_OUTPUT_TIME.
 %       PRO: More general. Less constraint on SWMs.
+%
+% PROPOSAL: Use shared constants for setting DSI lists.
 %
 % PROPOSAL: Add argument for parent directory.
 %   CON: Setting parent directory is a different task. Different from
@@ -63,8 +68,7 @@ INPUT_DSI_FOR_OUTPUT_TIME = { ...
   ...
   'SOLO_L2_RPW-LFR-SURV-CWF-E'};
 
-DEFAULT_SETTINGS.unoffBasenameExtension = [];       % No extension.
-DEFAULT_SETTINGS.isCdagPolicy           = false;    % true/false/<other>
+DEFAULT_SETTINGS.isCdagPolicy = false;    % true/false/<other>
 
 Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
 irf.assert.struct(Settings, fieldnames(Settings), {})
@@ -91,41 +95,34 @@ InputDsmd = BpciInputDsmdArray(iDsmd);
 
 
 
-%==========================================
-% Set variables in output dataset filename
-%==========================================
-R = struct();
-R.isCdag         = logical(Settings.isCdagPolicy);
-R.datasetId      = outputDsi;
-R.versionStr     = versionStr;
-R.dsicdagCase    = 'lower';
-R.unoffExtension = Settings.unoffBasenameExtension;
-
-% Set date vector(s), depending on time range, effectively selecting filename
-% format for the dataset.
-dt1 = InputDsmd.dt1;
-dt2 = InputDsmd.dt2;
-if dt2 <= (dt1 + caldays(1))
-  % CASE: (dt1,dt2) covers less than or equal to a calendar day.
-  % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
-
-  % IMPLEMENTATION NOTE: Using center of day so that can handle DSMD time
-  % boundaries that are slightly on the wrong side of midnight, e.g. if
-  % deriving DSMD from file content.
-  %   Ex: LFR-SURV-CWF test file
-  %       solo_L1R_rpw-lfr-surv-cwf-e-cdag_20200213_V07.cdf begins
-  %       at Epoch = 2020-02-12T23:59:53.305345024
-  dtMiddle = dt1 + (dt2-dt1)/2;
-  R.dateVec  = [dtMiddle.Year, dtMiddle.Month, dtMiddle.Day];
-else
-  % CASE: (dt1,dt2) covers more than one day.
-  % ==> use filenaming format yymmddThhmmss-yymmddThhmmss.
-  R.dateVec1 = datevec(dt1);
-  R.dateVec2 = datevec(dt2);
-end
-
 %================================
 % Create output dataset filename
 %================================
-filename = solo.adm.create_dataset_filename(R);
+
+Dt1 = InputDsmd.dt1;
+Dt2 = InputDsmd.dt2;
+
+S = struct();
+S.isCdag     = logical(Settings.isCdagPolicy);
+S.datasetId  = outputDsi;
+S.versionNbr = str2double(versionStr);
+S.Dt1        = Dt1;
+S.Dt2        = Dt2;
+S.lesTestStr = [];
+S.cneTestStr = [];
+
+% Set timestamps, depending on time range, effectively selecting filename
+% time interval format for the dataset.
+if irf.dt.is_midnight(Dt1) && irf.dt.is_midnight(Dt2) && (Dt2 == Dt1 + caldays(1))
+  % CASE: (dt1,dt2) covers less than or equal to a calendar day.
+  % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
+
+  S.timeIntervalFormat = 'DAY';
+else
+  % CASE: (Dt1,Dt2) covers more than one day.
+  % ==> use filenaming format yymmddThhmmss-yymmddThhmmss.
+  S.timeIntervalFormat = 'SECOND_TO_SECOND';
+end
+
+outputFilename = solo.adm.dsfn.DatasetFilename(S).filename;
 end

@@ -71,7 +71,7 @@
 % outputDir
 %       Path to output directory.
 % configFilePath
-%       Path to config file (see other section in documentaiton).
+%       Path to config file (see other section in documentation).
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
 %       One-character strings. Whether to generate ("1" or "0") non-weekly (2h,
 %       6h, 24h) quicklooks and/or weekly quicklooks.
@@ -90,16 +90,20 @@
 %       for obtaining dates.
 % varargin
 %       Arguments used by the selected DASA (dasaid). Meaning varies depending
-%       on "dasaid".
+%       on "dasaid". See section below.
 %
 %
 % SYNTAX FOR ARGUMENTS "dasaid" AND varargin
 % ==========================================
-% The combination of arguments "dasaid" and varargin specifies how to obtain the
-% dates for which quicklooks should be generated. "dasaid" specifies the
-% "algorithm" (DASA) and varargin specifies the arguments for that specific
-% algorithm.
+% The combination of arguments "dasaid" and varargin specifies how to generate
+% the list of dates for which quicklooks should be generated. "dasaid" specifies
+% the "algorithm" (DASA) and varargin specifies the arguments for that specific
+% algorithm. All arguments are strings. Dates are on the format YYYY-MM-DD. When
+% specifying a range of dates, then the first date is inclusive and the last
+% date is exclusive.
 % --
+% dasaid              varargin
+% -----------------------------------------------------------------------------
 % "TIME_INTERVAL"     firstDate  lastDate
 %     Continuous time interval.
 % "LOGS"              logType1 ... logTypeN
@@ -112,9 +116,6 @@
 %     quicklook.
 % "QLI_FMD_INTERVAL"  maxNbrOfDays  oldestFmd  newestFmd
 %     Use dates within a specific interval(!) of file modification dates (FMD).
-% --
-% Dates are strings on format YYYY-MM-DD. The first date in a range is
-% inclusive, the last date is exclusive.
 %
 %
 % RETURN VALUES

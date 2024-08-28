@@ -67,8 +67,8 @@ classdef SoftwareMode
       assert(isa(obj.inputsList,  'bicas.swm.InputDataset'))
       assert(isa(obj.outputsList, 'bicas.swm.OutputDataset'))
 
-      irf.assert.castring_set( { obj.inputsList(:).prodFuncInputKey   })
-      irf.assert.castring_set( { obj.outputsList(:).prodFuncOutputKey })
+      irf.assert.castring_set( { obj.inputsList(:).pfiid   })
+      irf.assert.castring_set( { obj.outputsList(:).pfoid })
     end
 
 

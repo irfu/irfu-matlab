@@ -54,12 +54,14 @@ function Bso = create_default_BSO()
 %   PROPOSAL: Do every time settings are set, i.e. for default values,
 %       config file values, CLI argument values.
 %
-% PROPOSAL: Abolish settings
+% PROPOSAL: Abolish settings/functionality:
 %   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
-%   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE
+%   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE                     -- ALREADY ABOLISHED
+%   OUTPUT_CDF.WRITE_FILE_DISABLED                          -- ALREADY ABOLISHED
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
+%   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
 %
@@ -70,6 +72,7 @@ function Bso = create_default_BSO()
 % =========================
 % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
 % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
+%   PROPOSAL: OUTPUT_CDF.ALL
 %
 % PROPOSAL: Use naming convention for settings keys for testing ONLY:
 %
@@ -142,10 +145,6 @@ S.define_setting('MATLAB_COMMAND', '');
 %S.define_setting('STDOUT_PREFIX',               'STDOUT: ');
 % NOTE: Analogous LOG_PREFIX is hard-coded for safety.
 
-% Parameters influencing how JSON objects are printed with function
-% JSON_object_str.
-S.define_setting('JSON_OBJECT_STR.INDENT_SIZE', 4);
-
 % When logging contents of matrix/vector, maximum number of unique values
 % printed before switching to shorter representation (min-max range)
 S.define_setting('LOGGING.MAX_NUMERIC_UNIQUES_PRINTED', 5);
@@ -206,7 +205,7 @@ S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',  'WARNING')    % WARN
 % Require input CDF Global Attribute "DSI" to match the expected
 % value.
 S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',        'WARNING')    % ERROR, WARNING
-S.define_setting('INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
+S.define_setting('INPUT_CDF.GA_PARENTS_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
 
 % NOTE: This modification applies BEFORE
 % PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
@@ -227,21 +226,15 @@ S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR'
 % ------------
 % Settings that apply to ALL output datasets
 %############################################
-% Flag to disable writing output files AFTER PROCESSING. Useful for
-% debugging.
-S.define_setting('OUTPUT_CDF.WRITE_FILE_DISABLED',            0)
 % What BICAS should do when there is a pre-existing file on a output dataset
 % file path.
 % NOTE: Not known if the RCS ICD says anything about what should be the
 % default, or what ROC thinks it should be.
 S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY', 'WARNING');    % ERROR, WARNING.
-% Disable processing, but generate empty output files. Useful for debugging
-% code that calls BICAS many times (batch processing) and when dataset
-% content is unimportant since it speeds up BICAS.
-S.define_setting('OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE',       0)
 
 % "There must be one entry for each entry in the CALIBRATION_TABLE
 % attribute"  /RCS ICD 1.6
+% NOTE: None of these disabled settings are actually used in the code.
 % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
 % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
 % S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.TDS',         'TDS team')
@@ -286,23 +279,15 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1
 % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
 S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
 
-% Whether to enable setting glob.attr. MODS.
-% 2021-05-05: Disabled on request by ROC, until next full reprocessing at
-% ROC.
-% """"""""
-% Using MODS attribute has been indeed in « standby » for a while. It is
-% true that we are very in late on the LESIA side from the initial planning
-% concerning the « big L1 data re-processing ». Especially, the
-% implementation in the ROC pipeline of the QUALITY_BITMASK L1 CDF zVariable
-% setting has been several times delayed the last few months due to more
-% urgent activities. This implementation is now done, but I still need to
-% find time to check everything works well before passing to the next step.
+% Permitted CDF versions as a reg.expr.. Entire CDF version string must match
+% the reg.expr..
+% CDF format version 3.9 is required by ROC (Solo?). /2024-07-24
 %
-% I would like to plan a new RCS telecon before the summer to discuss about
-% the remaining activities on RPW data processing. I will let you know.
-% """""""" /Xavier Bonnin, e-mail 2022-04-20
-%
-S.define_setting('OUTPUT_CDF.GA_MODS_ENABLED', 1)    % 0/false, 1/true
+% NOTE: If irfu-matlab and BICAS (as delivered to ROC) use different CDF format
+% versions, then BICAS should be called in irfu-matlab in such a way that this
+% setting is overriden. (The default value should be what is required by
+% ROC/SolO, as with all other settings.)
+S.define_setting('OUTPUT_CDF.FORMAT_VERSION_REGEXP', '3\.9\.[0-9]+')
 
 
 
@@ -484,13 +469,15 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 
 %============================================================================
 % PROCESSING.RCT_REGEXP.*
-% Regular expressions for the filenames of RCTs
-% ---------------------------------------------
+% Regular expressions for RCT filenames
+% -------------------------------------
 %
 % NOTES
 % -----
-% ** Regular expressions for RCT filenames are only needed when using L1
-%    voltage datasets instead of L1R.
+% ** (a) When reading *L1* (voltage) datasets, then regular expression are
+%        needed for identifying all necessary RCTs.
+%    (b) When reading *L1R* (voltage) datasets, then regular expressions are
+%        only needed for identifying the BIAS RCT.
 % ** BIAS & TDS have previously not followed the correct filenaming
 %    convention but does now (2020-11-20).
 % ** LFR do not seem to follow the filenaming convenction (2020-11-20)
@@ -502,49 +489,10 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %
 % OFFICIAL DOCUMENTATION ON RCT FILENAMING CONVENTION
 % ---------------------------------------------------
-% RCT filenaming convention is described in ROC-PRO-DAT-NTT-00006-LES. This
-% document refers to the RODP.
-%
-% Version 1/1:
-% """"""""
-%   4.3.2 RCT data versioning convention
-%
-%   The version of the RCT CDF data file must be the local date and time of
-%   creation of the file, in the format: “YYYYMMDDHHNN”, where “YYYY”, “MM”,
-%   “DD”, “HH” and “NN” are respectively the 4-digits year, 2-digits month,
-%   2-digits day, 2-digits hours, 2-digits minutes of the file creation.
-%   In the RCT filename, the version number must appear with the “V” prefix
-%   (e.g., “V202210122359”.
-%
-%
-%   4.3.3 RCT file naming convention
-%
-%   The RCT shall comply the following file naming convention:
-%   SOLO_CAL_RPW-[receiver]_[free-field]_[Version].cdf
-%   Where [receiver] is the name of the receiver in uppercase characters
-%   (i.e., “TDS” or “LFR”) of the corresponding RPW L1R dataset,
-%   [free-field] is a field that can be used to specify the content of the
-%   file (e.g., “BIAS-F0”) and [Version] is the version of the calibration
-%   table file (see previous section). Note that this RCT naming convention
-%   is not fully compliant with the SOC definition [AD1]. /.../
-% """"""""
-% Version 1/2, draft:
-% Section 2.2.6.3-4: Slightly different filenaming convention:
-% """"""""
-%   2.2.6.3 File naming
-%   The CAL file must comply the following naming convention:
-%   SOLO_CAL_[Descriptor]_[free-field]_V[CALIBRATION_VERSION].cdf
-%
-%   Where [Descriptor], [free-field] and [CALIBRATION_VERSION] correspond
-%   respectively to the short value in the “Descriptor”, “Free_field” and
-%   “CALIBRATION_VERSION” global attributes (see section 2.2.6.6).
-%   N.B. The CAL file naming convention is not fully compliant with the SOC
-%   definition [AD1]. /.../
-% """"""""
-%
-% Xavier Bonnin, 2020-07-02:
-%   Wrong:   SOLO_CAL_RPW_BIAS_V202004062127.cdf   # NOTE: No minus!
-%   Correct: SOLO_CAL_RPW-BIAS_V202004062127.cdf   # NOTE: Minus!
+% The RCT filenaming has changed over time and de facto filenaming is confusing.
+% One may therefore be forced to set these reqular expression to match filenames
+% which do not follow the official filenaming conventions.
+% See bicas.tools.rct.create_RCT() for RCT filenaming conventions.
 %
 %
 % EXAMPLES OF DE FACTO RCT FILENAMES (2019 SEPT + LATER)
@@ -555,6 +503,7 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %                                                  closer to documentation)
 %           SOLO_CAL_RCT-BIAS_V201901141146.cdf   (old impl convention)
 %           SOLO_CAL_RPW_BIAS_V202004062127.cdf   (almost correct)
+%           solo_CAL_rpw-bias_20220210-20990101_V01.cdf
 % LFR:
 %       ROC-SGSE_CAL_RCT-LFR-BIAS_V20180724165443.cdf
 %           SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
@@ -567,14 +516,13 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %
 %============================================================================
 CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',           CDF_SUFFIX_REGEXP]);
+%S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',                    CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention
+S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['solo_CAL_rpw-bias_[0-9]{8}-[0-9]{8}_V[0-9][0-9]+', CDF_SUFFIX_REGEXP]);
+
 % 2020-11-20: LFR still uses old/illegal RCT filenaming convention.
-S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',       CDF_SUFFIX_REGEXP]);
-S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',  CDF_SUFFIX_REGEXP]);
-S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}', CDF_SUFFIX_REGEXP]);
-% Old/illegal filenaming convention.
-%S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RCT-TDS-LFM-CWF-E_V20[0-9]{6}',  CDF_SUFFIX_REGEXP]);
-%S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20[0-9]{6}', CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',               CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',          CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}',         CDF_SUFFIX_REGEXP]);
 
 
 

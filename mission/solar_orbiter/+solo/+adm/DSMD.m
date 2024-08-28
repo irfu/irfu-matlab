@@ -64,7 +64,7 @@ classdef DSMD
   %           isCdag? Version number?
   %           Path? Filename?
   %
-  % PROPOSAL: Datetime objects should have uppercase initial
+  % PROPOSAL: Datetime objects should have uppercase initial: dt1,dt2-->Dt1,Dt2
   %     PRO: Consistent with (BICAS) naming conventions.
 
 
@@ -103,25 +103,25 @@ classdef DSMD
 
 
 
-    function obj = DSMD(path, datasetId, versionNbr, isCdag, dt1, dt2)
+    function obj = DSMD(path, datasetId, versionNbr, isCdag, Dt1, Dt2)
       assert(ischar(path))
       assert(ischar(datasetId))
       assert(isnumeric(versionNbr))
       assert(isscalar(isCdag))
       assert(islogical(isCdag))
-      assert(isa(dt1, 'datetime'))
-      assert(isa(dt2, 'datetime'))
-      assert(strcmp(dt1.TimeZone, 'UTCLeapSeconds'), 'dt1 is not UTC.')
-      assert(strcmp(dt2.TimeZone, 'UTCLeapSeconds'), 'dt2 is not UTC.')
-      assert(~isnat(dt1))
-      assert(~isnat(dt2))
+      assert(isa(Dt1, 'datetime'))
+      assert(isa(Dt2, 'datetime'))
+      assert(strcmp(Dt1.TimeZone, 'UTCLeapSeconds'), 'Dt1 is not UTC.')
+      assert(strcmp(Dt2.TimeZone, 'UTCLeapSeconds'), 'Dt2 is not UTC.')
+      assert(~isnat(Dt1))
+      assert(~isnat(Dt2))
 
       obj.path       = path;
       obj.datasetId  = datasetId;
       obj.versionNbr = versionNbr;
       obj.isCdag     = isCdag;
-      obj.dt1 = dt1;
-      obj.dt2 = dt2;
+      obj.dt1        = Dt1;
+      obj.dt2        = Dt2;
     end
 
 

@@ -17,7 +17,6 @@ classdef read_RSH_file___UTEST < matlab.unittest.TestCase
       'EngineeringValue', {cell(0,1)}, ...
       'TimeStampAsciiA',  {cell(0,1)});
 
-
     FILE_0_TXT = {...
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
       '<ns2:ResponsePart xmlns:ns2="http://edds.egos.esa/model">'
@@ -29,7 +28,6 @@ classdef read_RSH_file___UTEST < matlab.unittest.TestCase
       '  </Response>'
       '</ns2:ResponsePart>'
       };
-
 
     FILE_1_TXT = {...
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
@@ -50,7 +48,6 @@ classdef read_RSH_file___UTEST < matlab.unittest.TestCase
       '  </Response>'
       '</ns2:ResponsePart>'
       }
-
 
     FILE_2_TXT = {...
       '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
@@ -79,7 +76,6 @@ classdef read_RSH_file___UTEST < matlab.unittest.TestCase
       '  </Response>'
       '</ns2:ResponsePart>'
       }
-
   end
 
 
@@ -234,7 +230,7 @@ classdef read_RSH_file___UTEST < matlab.unittest.TestCase
 
       irf.fs.write_file(...
         txtFile, ...
-        uint8(strjoin(rowsCa, newline)))
+        uint8(strjoin(rowsCa, newline))')
 
     end
 

@@ -61,25 +61,25 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %======================================
+      %==========================================
       % Configure bicas.proc.L1L2.cal.Cal object
-      %======================================
+      %==========================================
       useCtRcts = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
       useCti2   = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
 
       if useCtRcts
-        RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
+        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
           'LFR', rctDir, ...
           InputSciCdf.Ga.CALIBRATION_TABLE, ...
           InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
           InputSciCdf.Zv.BW, ...
           Bso, L);
       else
-        RctDataMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
+        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
           {'BIAS', 'LFR'}, rctDir, Bso, L);
       end
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctDataMap, useCtRcts, useCti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useCtRcts, useCti2, Bso);
 
 
 
@@ -95,7 +95,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
       OutputDatasetsMap = containers.Map();
-      OutputDatasetsMap('SCI_cdf') = OutputSciCdf;
+      RctdCa = bicas.proc.utils.convert_RctdCaMap_to_CA(RctdCaMap);
+      OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCa);
     end
 
 
@@ -278,7 +279,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %============
       if     obj.inputSci.isLfrSbm1   zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
       elseif obj.inputSci.isLfrSbm2   zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
-      else                 zvILsf = InSci.Zv.FREQ + 1;
+      else                            zvILsf = InSci.Zv.FREQ + 1;
         % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
         % index values (1=F0) used in loaded RCT data structs.
       end
@@ -342,8 +343,10 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.bltsSamplesTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
 
       Zv.Epoch                   = InSci.Zv.Epoch;
+      % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
+      % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
-        zvFreqHz, nCdfSamplesPerRecord);
+        zvFreqHz, 1);
       Zv.freqHz                  = zvFreqHz;
       Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
       Zv.BW                      = InSci.Zv.BW;

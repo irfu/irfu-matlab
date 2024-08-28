@@ -45,7 +45,6 @@ function write_dataset_CDF(...
 %       TODO-NI: Is there any overlap in functionality?
 %===========================================================================
 % This function needs GlobalAttributes values from the input files:
-%    One value per file:      Data_version (for setting Parent_version).
 %    Data_version ??!!
 %
 % PROPOSAL: Accept GlobalAttributes for all input datasets?!
@@ -81,50 +80,49 @@ end
 %===========================
 % Create (modified) dataobj
 %===========================
-% NPEF = No Processing, Empty File
-[settingNpefValue, settingNpefKey] = Bso.get_fv(...
-  'OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE');
-if ~settingNpefValue
-
-  DataObj = init_modify_dataobj(...
-    ZvsSubset, GaSubset, masterCdfPath, outputFile, Bso, L);
-  % IMPLEMENTATION NOTE: This call will fail if setting
-  % OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE=1 since processing is disabled and
-  % therefore ZvsSubset=[] (can not be generated). Must therefore check
-  % for this first.
-end
+DataObj = init_modify_dataobj(...
+  ZvsSubset, GaSubset, masterCdfPath, outputFile, Bso, L);
 
 
 
-%===========================================
-% ASSERTIONS / Checks before writing to CDF
-%===========================================
+%=====================================
+% CASE: ACTUALLY WRITE OUTPUT DATASET
+%=====================================
+write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
 
-% Check if file writing is deliberately disabled.
-% NOTE: Do this as late as possible, in order to be able to test as much
-% code as possible without writing file.
-[settingValue, settingKey] = Bso.get_fv('OUTPUT_CDF.WRITE_FILE_DISABLED');
-if settingValue
-  L.logf('warning', ...
-    'Writing output CDF file is disabled via setting %s.', settingKey)
-  return
-end
 
-if ~settingNpefValue
-  %=====================================
-  % CASE: ACTUALLY WRITE OUTPUT DATASET
-  %=====================================
-  write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
-else
-  %=====================================================
-  % CASE: Write EMPTY output dataset file (for testing)
-  %=====================================================
-  L.logf('warning', ...
-    'Writing empty output file due to setting %s.', settingNpefKey)
-  write_empty_file(outputFile)
+
+%====================================
+% Assert expected CDF format version
+%====================================
+% IMPLEMENTATION NOTE: There does not seem to be a way of checking this without
+% reading a CDF file. Also, this check would make a bad automated test since
+% BICAS is developed in irfu-matlab, which may have one CDF format version,
+% while the officially compliant may use another CDF format version.
+CdfMetadata = spdfcdfinfo(outputFile);
+
+% spdfcdfinfo help text:
+%   FormatVersion        A string containing the version of the CDF
+%                        library used to create the file
+CdfVersion       = CdfMetadata.FormatVersion;
+CdfVersionRegexp = Bso.get_fv('OUTPUT_CDF.FORMAT_VERSION_REGEXP');
+
+L.logf('info', 'Output dataset CDF format version: %s', CdfVersion)
+
+if isempty(regexp(CdfVersion, ['^', CdfVersionRegexp, '$'], 'once'))
+  error( ...
+    'BICAS:IllegalOutputCdfFormatVersion', ...
+    ['Generated file "%s" has CDF format version "%s" which incompatible', ...
+    ' with the permitted CDF format version in regular expression "%s"', ...
+    ' (setting OUTPUT_CDF.FORMAT_VERSION_REGEXP).'], ...
+    outputFile, CdfVersion, CdfVersionRegexp)
 end
 
 end
+
+
+
+
 
 
 
@@ -275,6 +273,10 @@ end    % init_modify_dataobj
 
 
 
+
+
+
+
 % Enforce global max value for zVar QUALITY_FLAG specified in BSO.
 %
 % NOTE: Ignore fill positions/values.
@@ -308,6 +310,10 @@ bTooHighQfFpa                     = (QfFpa >= qfMax);
 QfFpa(bTooHighQfFpa.array(false)) = bicas.utils.FPArray(qfMax);
 
 end    % modify_QUALITY_FLAG
+
+
+
+
 
 
 
@@ -458,6 +464,10 @@ end
 
 
 
+
+
+
+
 % Function used by init_modify_dataobj() when finding empty zVar.
 %
 % ARGUMENTS
@@ -539,6 +549,10 @@ end
 
 
 
+
+
+
+
 % NOTE: Unclear if can overwrite CDFs. Varies depending on file.
 %
 function write_nominal_dataset_CDF(DataObj, outputFile, Bso, L)
@@ -568,23 +582,4 @@ irf.cdf.write_dataobj( ...
   'strictEmptyZvClass',                Bso.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyZvClass'), ...
   'strictEmptyNumericZvSizePerRecord', Bso.get_fv('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord'), ...
   'strictNumericZvSizePerRecord',      strictNumericZvSizePerRecord)
-end
-
-
-
-% NOTE: Should always overwrite any pre-existing file.
-%
-function write_empty_file(filePath)
-fileId = fopen(filePath, 'w');
-
-% ~ASSERTION
-if fileId == -1
-  % NOTE: Technically non-BICAS error ID.
-  error(...
-    'BICAS:CanNotOpenFile', ...
-    'Can not open file: "%s"', filePath)
-end
-
-% NOTE: Does not have to write any data to create empty file.
-fclose(fileId);
 end

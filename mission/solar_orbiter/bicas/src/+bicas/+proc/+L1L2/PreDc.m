@@ -3,6 +3,19 @@
 % is common for all L1/L1R-->L2 LFR+TDS processing.
 %
 %
+% IMPLEMENTATION NOTE: bltsSamplesTm and lrx
+% ==========================================
+% PreDc always represents (has variables/elements for) all five BLTS's,
+% despite that only three are used at any given time. The channels not used
+% are set to NaN. Which ones are actually used can be switched at any given
+% time due to lrx changing.
+%
+% This handling does in principle differ from the handling of other "data
+% parameters" (BW, LSF, isTdsCwf, freqHz, hasSwfFormat, etc.). LRX
+% determines which channels contain actual data. The BLTS index into the
+% array is used to determine whether one has DC diff or AC diff data.
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef PreDc
@@ -12,18 +25,6 @@ classdef PreDc
   %   calibration
   %   demultiplexing
   %   data
-  %
-  % IMPLEMENTATION NOTE: bltsSamplesTm and lrx
-  % ==========================================
-  % PreDc always represents (has variables/elements for) all five BLTS's,
-  % despite that only three are used at any given time. The channels not used
-  % are set to NaN. Which ones are actually used can be switched at any given
-  % time due to lrx changing.
-  %
-  % This handling does in principle differ from the handling of other "data
-  % parameters" (BW, LSF, isTdsCwf, freqHz, hasSwfFormat, etc.). LRX
-  % determines which channels contain actual data. The BLTS index into the
-  % array is used to determine whether one has DC diff or AC diff data.
   %
   % PROPOSAL: Refactor code to only represent three data channels (those
   %           BLTS's which (nominally) contain actual data for the given
@@ -95,8 +96,7 @@ classdef PreDc
         'iLsf', ...
         'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
         'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', ...
-        'ufv', 'lrx'}, ...
-        {'BW'});
+        'ufv', 'lrx', 'BW'}, {});
       bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
       assert(size(Zv.bltsSamplesTm, 3) == 5)
       assert(isa(Zv.freqHz,    'double' ))

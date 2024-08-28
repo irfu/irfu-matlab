@@ -68,8 +68,8 @@ classdef GenerateQuicklooksTest < solo.qli.batch.GenerateQuicklooksAbstract
           error('Illegal number of arguments.')
       end
 
-      solo.qli.utils.assert_UMD_DT(obj.UmdDt24h6h2ExceptionArray)
-      solo.qli.utils.assert_UMD_DT(obj.UmdDt7daysExceptionArray)
+      irf.dt.assert_UTC_midnight(obj.UmdDt24h6h2ExceptionArray)
+      irf.dt.assert_UTC_midnight(obj.UmdDt7daysExceptionArray)
       assert(iscolumn(obj.UmdDt24h6h2ExceptionArray))
       assert(iscolumn(obj.UmdDt7daysExceptionArray))
     end

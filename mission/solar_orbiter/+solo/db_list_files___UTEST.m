@@ -73,11 +73,11 @@ classdef db_list_files___UTEST < matlab.unittest.TestCase
 
     % Zero CDFs.
     function test_empty(testCase)
-        Tint = irf.tint('2023-12-31T00:00:00/2024-01-02T00:00:00');
-        solo.db_init('local_file_db', testCase.testDir);
+      Tint = irf.tint('2023-12-31T00:00:00/2024-01-02T00:00:00');
+      solo.db_init('local_file_db', testCase.testDir);
 
-        FileList = solo.db_list_files('solo_L2_nonexisting-dataset', Tint);
-        testCase.assertEqual(FileList, [])
+      FileList = solo.db_list_files('solo_L2_nonexisting-dataset', Tint);
+      testCase.assertEqual(FileList, [])
     end
 
 
@@ -395,8 +395,8 @@ classdef db_list_files___UTEST < matlab.unittest.TestCase
       testFile          = fullfile(testCase.testDir, 'remote', 'data', fileRpath);
       testFileName      = irf.fs.get_name(testFile);
       testFileParentDir = fileparts(testFile);
-      R = solo.adm.parse_dataset_filename(testFileName);
-      filePrefix        = R.fnDatasetIdCdag;
+      Df = solo.adm.dsfn.DatasetFilename.parse_filename(testFileName);
+      filePrefix        = Df.filenameDsiCdag;
 
       solo.db_list_files___UTEST.write_CDF(testFile, cdfUtcCa{:})
 
@@ -453,7 +453,7 @@ classdef db_list_files___UTEST < matlab.unittest.TestCase
 
       [parentDir, ~, ~] = fileparts(filePath);
       if ~exist(parentDir, 'dir')
-          mkdir(parentDir)
+        mkdir(parentDir)
       end
 
       spdfcdfwrite(filePath, ...

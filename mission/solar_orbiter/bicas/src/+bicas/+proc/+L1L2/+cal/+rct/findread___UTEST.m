@@ -13,7 +13,7 @@
 %
 classdef findread___UTEST < matlab.unittest.TestCase
   % PROPOSAL: Tests for bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log() for BIAS
-  %           RCT. Creates BIAS RCT using bicas.tools.create_RCT() as part of
+  %           RCT. Creates BIAS RCT using bicas.tools.rct.create_RCT() as part of
   %           the test.
   %
   % PROPOSAL: Use TestMethodSetup and TestMethodTeardown.
@@ -132,7 +132,7 @@ classdef findread___UTEST < matlab.unittest.TestCase
         % Create empty file.
         irf.fs.write_file(...
           fullfile(tempDir, fileCa{1}), ...
-          zeros(1,0,'uint8'))
+          zeros(0, 1, 'uint8'))
       end
 
     end

@@ -37,9 +37,8 @@ suite = testsuite(testsToRun);
 % Add tests for MATLAB packages in which automated test files can be
 % automatically found via MATLAB's filenaming convention.
 %
-% NOTE: Excludes BICAS which requires MATLAB R2019b.
 % NOTE: Searches for tests recursively.
-for pkgPathCa = {'irf.fs', 'irf.str', 'irf.utils', 'solo'}
+for pkgPathCa = {'irf.dt', 'irf.fs', 'irf.str', 'irf.utils', 'solo'}
   suite = [ ...
     suite, matlab.unittest.TestSuite.fromPackage(...
     pkgPathCa{1}, 'IncludingSubpackages', true) ...
@@ -55,7 +54,7 @@ if ~exist(ciPath, 'dir')
 end
 runner.addPlugin(TestReportPlugin.producingPDF(...
   fullfile(ciPath, 'report.pdf'), 'Verbosity', 3 ...
-));
+  ));
 
 % RUN TESTS
 % ---------

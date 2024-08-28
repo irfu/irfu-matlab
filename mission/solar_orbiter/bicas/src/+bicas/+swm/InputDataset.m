@@ -7,11 +7,13 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef InputDataset
-  % PROPOSAL: Rename to not be same as bicas.InputDataset.
+  % PROPOSAL: Rename to not be same as bicas.InputDataset and bicas.OutputDataset.
   %   InputSwmDataset
   %       CON: SWM already in path (MATLAB package name).
   %   InputMetadataDataset, InputDatasetMetadata
   %       CON: 2x "data"
+  % PROPOSAL: Use abbreviations which are different from bicas.InputDataset
+  %           abbrevations.
 
 
 
@@ -22,7 +24,7 @@ classdef InputDataset
   %#####################
   properties(SetAccess=immutable)
     cliOptionHeaderBody
-    prodFuncInputKey
+    pfiid
     dsi
   end
 
@@ -38,11 +40,11 @@ classdef InputDataset
 
 
     function obj = InputDataset(...
-        cliOptionHeaderBody, dsi, prodFuncInputKey)
+        cliOptionHeaderBody, dsi, pfiid)
 
       % NOTE: No dataset/skeleton version.
       obj.cliOptionHeaderBody = cliOptionHeaderBody;
-      obj.prodFuncInputKey    = prodFuncInputKey;
+      obj.pfiid               = pfiid;
       obj.dsi                 = dsi;
 
       bicas.swm.utils.assert_SIP_CLI_option(obj.cliOptionHeaderBody)

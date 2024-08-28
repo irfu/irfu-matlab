@@ -419,9 +419,7 @@ classdef assert
       % PROPOSAL: Assertion: Intersection requiredFnSet-optionalFnSet is empty.
       %
       % PROPOSAL: Separate out condition function.
-      %   PRO: Useful for distinguishing between multiple "struct
-      %   formats".
-      %       Ex: solo.adm.create_dataset_filename().
+      %   PRO: Useful for distinguishing between multiple "struct formats".
 
       assert(isstruct(S))
       structFnSet          = fieldnames(S);
@@ -500,15 +498,6 @@ classdef assert
           ['Expected function handle ("%s") has the wrong number of output', ...
           ' arguments (return values). nargout()=%i, nArgout=%i'], ...
           func2str(funcHandle), nargout(funcHandle), nArgout)
-      end
-    end
-
-
-
-    function isa(v, className)
-      if ~isa(v, className)
-        error(irf.assert.ASSERTION_EMID, ...
-          'Expected class=%s but found class=%s.', className, class(v))
       end
     end
 

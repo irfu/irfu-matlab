@@ -2,8 +2,6 @@
 #############
  About BICAS
 #############
-BICAS = BIAS Calibration Software
-
 This software, BICAS, is created for the calibration of the BIAS subsystem in
 the RPW instrument on the Solar Orbiter spacecraft. The principle author of
 this software is Erik P G Johansson, Swedish Institute of Space Physics (IRF),
@@ -28,10 +26,9 @@ see RCS ICD and RUM documents (see below).
 The naming conventions are partly inconsistent for historical reasons.
 The code should however converge on the following:
 - Use the defined abbreviations in identifiers.
-- Variables names: Should use camelCase.
-    - Variables containing structs or instances of classes: Should have an
-      uppercase initial.
-    - All other variables: Should use a lowercase initial.
+- Variables names: Should use camelCase/CamelCase.
+    - Structs, instances of classes: Uppercase initial.
+    - All other variables: Lowercase initial.
     - Exception: Variables which are direct analogues to zVariables are named
       as the corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of
       the time.
@@ -95,8 +92,10 @@ BDM, "mux mode"
     not in the interface.
 BFM
     BICAS Functionality Mode. One of the basic modes of BICAS operations:
-    Print version, print identifiction, print version, print help, or process
+    Print version, print identifiction, print help, or process
     datasets. Exactly one of these must apply every time BICAS is run.
+BFMID
+    String constant which uniquely represents a particular BFM.
 BIAS specification
     Document RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW Instrument -- BIAS
     Specification".
@@ -105,6 +104,8 @@ BIAS_1, ..., BIAS_5 (BIAS_i, i=1..5)
     the physical boundary between BIAS and LFR/TDS. Unit: Interface volt.
     Should be, and mostly is, replaced by BLTS+specified unit in
     the implementation.
+BICAS
+    BIAS Calibration Software
 BLTS = BIAS-LFR/TDS SIGNAL
     Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the
     BIAS demuxer including the BIAS transfer functions. Like BIAS_i, i=1..5,
@@ -124,21 +125,53 @@ BSO
 CA
     Cell Array.
 CLI
-    Command-line interface
+    Command-Line Interface. In particular, "CLI arguments" refers to an array of
+    string arguments submitted to BICAS via the OS.
+CLI option
+      The combination of an option header and the immediately subsequent (and
+      associated) option values.
+      Ex: --version
+      Ex: --file  /home/fleksnes/BICAS/conf/bicas.conf
+      Ex: --setting varX 123
+CLI option header
+      A predefined (hard-coded, more or less, or many by e.g. reg.expr.)
+      string meant to match a single argument. It does not have to begin with
+      "--" or "-" though that is the convention.
+      Ex: --verbose
+      Ex: --setting
+CLI option ID
+      String constant. Represents the definition of an option and the
+      corresponding results from parsing CLI arguments using that definition.
+CLI option value(s)
+      A sequence of arguments (could be zero arguments) following an option
+      header with which they are associated. The number of expected option
+      values should be predefined for the option.
+      Ex: --version    # Zero option values
+      Ex: --setting OPTION_VALUE_1 OPTION_VALUE_2
 CM3
     cm^-3
+COHB
+    CLI Option Header Body. The section of an CLI argument option/flag which
+    excludes the prefix, e.g. "-" or "--".
+    See bicas.utils.cli.parse_CLI_options().
+COPC
+    Class bicas.utils.cli.OptionConfig.
+COPV
+    Class bicas.utils.cli.OptionValue.
 CTI
-    CALIBRATION_TABLE_INDEX (zVariable).
+    CALIBRATION_TABLE_INDEX (L1R zVariable).
 CTI2
-    Second value in a CDF record of zVariable CALIBRATION_TABLE_INDEX.
+    Element within a CDF L1R zVariable for a given CDF record,
+    CALIBRATION_TABLE_INDEX(iCdfRecord, 2).
 CWF
     Continuous WaveForm. Data on the form of samples over longer periods of
     time than a snapshot. Cf. SWF.
 Dataset (data set)
     A CDF file on any one of a number standardized formats specified by the
-    various RPW teams. All CDF files in the context of BICAS are datasets.
+    various RPW teams. All CDF files in the context of BICAS are datasets,
+    except for RCTs, where it is ambiguous.
 Deg
-    Degrees (angle). 1 revolution=360 degrees=2*pi radians.
+    Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
 DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
     of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",
@@ -148,17 +181,24 @@ DLR
     0/false = V12
     1/true  = V13
     2023-08-29, EJ: Variable is constant for the entire mission except when it
-    flips from zero to one at about 2023-08-21T12:04.
+    flips from zero to one at about 2023-08-21T12:04Z.
 DSI, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
-    NOTE: Must be uppercase by definition (when used as string constants),
-    though dataset IDs are represented as (mostly) lowercase in the official
-    filenaming convention are (mostly) lowercase).
-    NOTE: Dataset IDs exclude the "-cdag" suffix. "-cdag" is a LESIA invention
-    for internal datasets.
+    NOTE: The concept of "dataset ID" is defined by RPW/ROC, but
+    the abbreviation "DSI" is defined by BICAS. DSI does not formally exist in
+    SolO outside RPW, though the SolO metadata standards define metadata and
+    filenames with components ("source"+"level"+"descriptor") which together are
+    identical to DSI for RPW datasets and can be used to define DSI analogously
+    for SolO datasets outside RPW.
+    NOTE: Must be uppercase by definition (at least when used as string
+    constants by BICAS), though DSIs are represented in lowercase in the
+    official dataset file naming convention (except the "level"). Uppercase DSI
+    has been used in file names for some old ground-test datasets.
+    NOTE: DSIs exclude the "-cdag" suffix. "-cdag" is defined by ROC
+    for RPW-internal datasets only.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical
-    variants thereof) are not abbreviated "DSI", but to the GA name, in
+    variants thereof) are not abbreviated "DSI", but to the GA name in
     analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
@@ -183,11 +223,11 @@ FV
 GA
     (CDF) Global Attribute(s).
 GMDB
-    "GA MODS DataBase", i.e. class bicas.gamods.Database.
+    "GA MODS DataBase", i.e. class bicas.ga.mods.Database.
 GMDE
-    "GA MODS DSI Entry", i.e. class bicas.gamods.DsiEntry.
+    "GA MODS DSI Entry", i.e. class bicas.ga.mods.DsiEntry.
 GMVE
-    "GA MODS Version Entry", i.e. class bicas.gamods.VersionEntry.
+    "GA MODS Version Entry", i.e. class bicas.ga.mods.VersionEntry.
 ICD
     Interface Control Document
 ITF
@@ -240,6 +280,16 @@ Offset
     value during the calibration process.
 OSR
     Original Sampling Rate. Used in the context of downsampling. Cf DSR.
+PFIID
+    Production Function Input ID. String constant which is used to distinguish
+    between different input values (datasets) to production functions. Different
+    DSIs can be used for the same PFIID.
+PFOID
+    Production Function Output ID. Analogous with PFIID, but for output (return
+    values).
+Production Function
+    Abstract method bicas.proc.SwmProcessing.production_function() which
+    implementations in subclasses do the core of data processing.
 QF
     zVariable QUALITY_FLAG.
 QRC
@@ -263,12 +313,13 @@ RCS ICD
     NOTE: For a period in the past, both documents were simultaneously valid
     and then referred to the ROC-SGSE and RODP pipeline separately(?).
 RCT
-    RPW Calibration Table. CDF with calibration data. See RCS ICD. ROC-defined.
-RCTT
-    Class bicas.proc.L1L2.cal.rct.RctType.
+    RPW Calibration Table. A CDF file with calibration data. See RCS ICD.
+    ROC-defined term.
+RCTD
+    Class bicas.proc.L1L2.cal.rct.RctData.
 RCTTID
-    RCT Type ID. String constant that represents a type of RCT. Permitted
-    values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
+    RCT Type ID. String constant that represents a *type* of RCT, not a
+    particular RT file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
 RCTS
     RCT CALIBRATION_TABLE (glob.attr) + CALIBRATION_TABLE_INDEX (zVariable).
     S = plural.
@@ -282,6 +333,12 @@ ROC Engineering Guidelines
     Engineering Guidelines for External Users"
 RPS
     Radians Per Second
+RPW
+    Radio and Plasma Waves instrument. Instrument on the Solar Orbiter
+    spacecraft.
+RSWF
+    Regular Snapshot WafeForm. The term is used for TDS data, but is (at least
+    for the purpose of BICAS) exactly the same as SWF.
 RUM
     Document ROC-PRO-SFT-SUM-00080, "RCS User Manual"
 RV
@@ -319,6 +376,8 @@ SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not
     very clearly. (Defined by the RCS ICD.)
+    Stored as "descriptor.json" in the BICAS root directory (required by the RCS
+    ICD).
 SWF
     Snapshot WaveForm. Snapshot data. Cf. CWF.
 SWM, S/W mode
@@ -384,7 +443,7 @@ ZVS
 #############################
 NOTE: The official CLI parameter syntax is defined in RCS ICD, Iss02 Rev02, Section 3.2.
 
-SYNTAX 1: ( --version | --identification | --swdescriptor | --help ) <General parameters>
+SYNTAX 1: ( --version | --identification | --help ) <General parameters>
 SYNTAX 2: <S/W mode> <General parameters, Output parameter, Specific inputs parameters>
 
 NOTE: In syntax 2, the position of the first arguments is important. The order
@@ -392,7 +451,6 @@ of all other (groups of) arguments is arbitrary.
 
 --version          Print the software version.
 --identification   Print the S/W descriptor release segment.
---swdescriptor     Print the S/W descriptor (not RCS ICD requirement).
 --help             Print "help-ish" text
 
 

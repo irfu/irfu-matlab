@@ -125,12 +125,12 @@ classdef interface
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
-      BeginDayInclDt = solo.qli.utils.umddt(beginDayUtcInclStr);
-      EndDayExclDt   = solo.qli.utils.umddt(endDayUtcExclStr);
+      BeginDayInclDt = irf.dt.um(beginDayUtcInclStr);
+      EndDayExclDt   = irf.dt.um(endDayUtcExclStr);
 
       % NOTE: Indirectly assertion on the string timestamps.
-      solo.qli.utils.assert_UMD_DT(BeginDayInclDt)
-      solo.qli.utils.assert_UMD_DT(EndDayExclDt)
+      irf.dt.assert_UTC_midnight(BeginDayInclDt)
+      irf.dt.assert_UTC_midnight(EndDayExclDt)
 
 
 
@@ -180,21 +180,20 @@ classdef interface
         sort(solo.qli.batch.const.SOURCE_DSI_DICT.keys)), ...
         'LogFileDirPatternDict defines the wrong set of keys.')
 
-
-
       UmdDtArray = solo.qli.const.EMPTY_DT_ARRAY;
 
       for i = 1:numel(dasaArgumentsCa)
-        datasetsSourceId = dasaArgumentsCa{i};
+        % The type of log to use (SOAR sync log, LESIA sync log).
+        logFileDirPatternId = dasaArgumentsCa{i};
 
-        assert(ischar(datasetsSourceId), 'datasetsSourceId{%i} is not a string.', i)
-        if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(datasetsSourceId)
-          error('Illegal datasetsSourceId{%i}="%s"', i, datasetsSourceId)
+        assert(ischar(logFileDirPatternId), 'dasaArgumentsCa{%i} is not a string.', i)
+        if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(logFileDirPatternId)
+          error('dasaArgumentsCa{%i}="%s" does not specify a log file pattern.', i, logFileDirPatternId)
         end
 
-        dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(datasetsSourceId);
+        dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(logFileDirPatternId);
         dsiCa             = dsiCaCa{1};
-        logFileDirPattern = LogFileDirPatternDict(datasetsSourceId);
+        logFileDirPattern = LogFileDirPatternDict(logFileDirPatternId);
 
         [SourceUmdDtArray, logFilePath] = solo.qli.batch.extract_dataset_dates_from_logs(...
           logFileDirPattern, dsiCa);
@@ -323,16 +322,24 @@ classdef interface
 
 
     % Utility function for filtering an array of days.
+    %
+    % IMPLEMENTATION NOTE: Accepts string arguments assumed to come from user
+    % interface to ensure checking the string-to-value (number, datetime) is
+    % consistent.
     function UmdDtArray = filter_days_array(...
         UmdDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr)
 
-      solo.qli.utils.assert_UMD_DT(UmdDtArray)
+      % PROPOSAL: Non-string arguments.
+      %   PROPOSAL: Use standardized functions for converting strings to values
+      %   while giving good error messages
+
+      irf.dt.assert_UTC_midnight(UmdDtArray)
 
       solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
       solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
 
-      Dt1      = solo.qli.utils.umddt(beginDayUtcInclStr);
-      Dt2      = solo.qli.utils.umddt(endDayUtcExclStr);
+      Dt1      = irf.dt.um(beginDayUtcInclStr);
+      Dt2      = irf.dt.um(endDayUtcExclStr);
       maxNDays = str2double(maxNDaysStr);
 
       if ~isnumeric(maxNDays)

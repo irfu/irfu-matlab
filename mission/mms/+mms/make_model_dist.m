@@ -15,7 +15,7 @@ function modelPDist = make_model_dist(varargin)
 %
 %   Options:
 %       'isotropic' - set to 1 to make an isotropic model distribution
-%       funciton.
+%       function.
 %
 %   Output:
 %       modelPDist - Distribution function in the same format as PDist.

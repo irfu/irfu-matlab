@@ -4,15 +4,15 @@
 %
 % NOTE
 % ====
-% NOTE: There is no SWM for generating VHT datasets. VHT processing is therefore
-%       not represented here.
+% NOTE: There is no SWM for generating VHT datasets(!). VHT processing is
+%       therefore not represented here.
 % NOTE: The SWMs implemented in the body of BICAS must always be compatible
 %       with the SWMs specified here.
 %
 %
 % RETURN VALUES
 % =============
-% Official bicas.swm.SoftwareModeList object (singleton) that is actually used
+% Official bicas.swm.SoftwareModeList object (~singleton) that is actually used
 % by BICAS.
 %
 %
@@ -91,10 +91,10 @@ LFR_SWM_DATA = struct(...
   'survey mode', ...
   'survey mode' ...
   }, ...
-  'outputSkeletonVersion', {'14', '14', '14', '14'});
+  'outputSkeletonVersion', {'15', '15', '15', '15'});
 TDS_SWM_DATA = struct(...
   'CWF_RSWF',              {'CWF', 'RSWF'}, ...
-  'outputSkeletonVersion', {'14',  '14'});
+  'outputSkeletonVersion', {'15',  '15'});
 
 
 

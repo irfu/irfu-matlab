@@ -1,6 +1,6 @@
 function [B_vector, position] = find_vector_to_time(B, n, t, dt)
 %
-%Input: One matrix containing the time and the B-components, The positon
+%Input: One matrix containing the time and the B-components, The position
 % where the last sample was used. t is the time where you want to sample
 % and ds is the time between samles.
 %

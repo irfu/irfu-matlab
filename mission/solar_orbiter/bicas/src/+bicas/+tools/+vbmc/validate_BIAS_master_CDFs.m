@@ -31,12 +31,12 @@
 %
 % ARGUMENTS
 % =========
-% dirPath        : Directory path
-% filenameRegexp : Regular expression which match the entire filenames of the
-%                  files to validate in the directory. The
-%                  function adds ^ (beginning of string) and $ (end of string)
-%                  are added automatically to the regular
-%                  expression.
+% dirPath
+%       Directory path
+% filenameGlobPattern
+%       Filename globbing pattern (as understood by dir()). Should match the
+%       entire filenames of the files to validate in the directory
+%       (recursively).
 %
 %
 % RETURN VALUE
@@ -49,7 +49,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-06
 %
-function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameRegexp)
+function [varargout] = validate_BIAS_master_CDFs(dirPath, filenameGlobPattern)
 % PROPOSAL: Validate values of VDC/EDC/EAC_LABEL in case they have been deleted by ROC bug.
 %
 % PROPOSAL: Check fill values & pad values vs. zVar data type
@@ -120,9 +120,7 @@ irf('check_path');
 %=====================================
 % Iterate over all files in directory
 %=====================================
-% NOTE: irf.fs.glob_files_dirs does not add ^ and $.
-filenameRegexp = ['^', filenameRegexp, '$'];
-oiList = irf.fs.glob_files_dirs(dirPath, {filenameRegexp});   % OI = Object Info.
+oiList = dir(fullfile(dirPath, '**', filenameGlobPattern));   % OI = Object Info.
 oiList = oiList(~[oiList.isdir]);
 doList = {};             % DO = dataobj
 nFiles = numel(oiList);

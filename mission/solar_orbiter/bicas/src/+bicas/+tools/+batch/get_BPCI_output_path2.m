@@ -51,6 +51,8 @@ function filePath = get_BPCI_output_path2(...
 %
 % PROPOSAL: Separate function for converting a selected reference input
 %           dataset filename into output dataset filename. -- IMPLEMENTED
+%
+% PROPOSAL: Use shared constants for setting DSI lists.
 
 assert(isa(BpciInputDsmdArray,           'solo.adm.DSMD') && iscolumn(BpciInputDsmdArray))
 assert(isa(PreexistingOutputLvDsmdArray, 'solo.adm.DSMD') && iscolumn(PreexistingOutputLvDsmdArray))
@@ -153,26 +155,26 @@ end
 
 
 
-function outputFileName = get_BPCI_output_filename2(...
-  dt1, dt2, outputDsi, outputIsCdag, versionNbr)
+function outputFilename = get_BPCI_output_filename2(...
+  Dt1, Dt2, outputDsi, outputIsCdag, versionNbr)
 
-UNOFF_BASENAME_EXTENSION = [];
+%================================
+% Create output dataset filename
+%================================
+S = struct();
+S.datasetId  = outputDsi;
+S.versionNbr = versionNbr;
+S.isCdag     = outputIsCdag;
+S.Dt1        = Dt1;
+S.Dt2        = Dt2;
+S.lesTestStr = [];
+S.cneTestStr = [];
 
-%==========================================
-% Set variables in output dataset filename
-%==========================================
-R = [];
-R.datasetId      = outputDsi;
-R.versionStr     = sprintf('%02i', versionNbr);
-R.isCdag         = outputIsCdag;
-R.dsicdagCase    = 'lower';
-R.unoffExtension = UNOFF_BASENAME_EXTENSION;
-
-% Set date vector(s), depending on time range, effectively selecting filename
-% format for the dataset.
+% Set timestamps, depending on time range, effectively selecting filename
+% time interval format for the dataset.
 
 % if dt2 <= (dt1 + caldays(1))
-if is_midnight(dt1) && is_midnight(dt2) && (dt2 == dt1 + caldays(1))
+if irf.dt.is_midnight(Dt1) && irf.dt.is_midnight(Dt2) && (Dt2 == Dt1 + caldays(1))
   % CASE: (dt1,dt2) covers exactly one calender day.
   % ==> Use filenaming format yymmdd (no begin-end; just the calendar day).
   %
@@ -182,31 +184,12 @@ if is_midnight(dt1) && is_midnight(dt2) && (dt2 == dt1 + caldays(1))
   % would yield an output dataset filename on the YYYYMMDD format. This
   % should be unlikely.
 
-  % IMPLEMENTATION NOTE: Using center of day so that can handle DSMD time
-  % boundaries that are slightly on the wrong side of midnight, e.g. if
-  % deriving DSMD from file content.
-  %   Ex: LFR-SURV-CWF test file
-  %       solo_L1R_rpw-lfr-surv-cwf-e-cdag_20200213_V07.cdf begins
-  %       at Epoch = 2020-02-12T23:59:53.305345024
-  dtMiddle = dt1 + (dt2-dt1)/2;
-  R.dateVec  = [dtMiddle.Year, dtMiddle.Month, dtMiddle.Day];
+  S.timeIntervalFormat = 'DAY';
 else
   % CASE: (dt1,dt2) does not exactly cover one day one day.
   % ==> use filenaming format yymmddThhmmss-yymmddThhmmss.
-  R.dateVec1 = datevec(dt1);
-  R.dateVec2 = datevec(dt2);
+  S.timeIntervalFormat = 'SECOND_TO_SECOND';
 end
 
-
-
-%================================
-% Create output dataset filename
-%================================
-outputFileName = solo.adm.create_dataset_filename(R);
-end
-
-
-
-function isMidnight = is_midnight(dt)
-isMidnight = dateshift(dt, 'start', 'day') == dt;
+outputFilename = solo.adm.dsfn.DatasetFilename(S).filename;
 end
