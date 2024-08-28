@@ -2,39 +2,146 @@
 # See https://citation-file-format.github.io/
 
 cff-version: 1.2.0
-title: IRFU-Matlab
+title: "IRFU-Matlab"
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
 type: software
-# Note explicit "authors" listed are only the six most prolific
-# contributors to IRFU-Matlab, please see git history for full
-# list of all contributing authors (for now they are covered by
-# "IRFU-Matlab team")...
+# Note listed here are the authors and contributors of IRFU-Matlab,
+# ordered by number of commits at one historic point in time.
+# (That is to say, the order is not strictly updated and enforced as things evolve).
+#
+# A lot of people have contributed over the years,
+# (from start back in 2003-09-10T14:38:26Z), so any and all possibly unknown persons,
+# contributing to IRFU-Matlab, are also included in '-name "IRFU-Matlab team"'.
 authors:
-  - name: "IRFU-Matlab team"
-  - family-names: Khotyaintsev
-    given-names: Yuri
-    affiliation: IRF Uppsala, Sweden
+  - family-names: "Khotyaintsev"
+    given-names: "Yuri"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
     orcid: "https://orcid.org/0000-0001-5550-3113"
-  - family-names: Nilsson
-    given-names: Thomas
-    affiliation: IRF Uppsala, Sweden
+  - family-names: "Nilsson"
+    given-names: "Thomas"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
     orcid: "https://orcid.org/0000-0001-9604-6377"
-  - family-names: Johansson
-    given-names: Erik
-    affiliation: IRF Uppsala, Sweden
+  - family-names: "Johansson"
+    given-names: "Erik P. G."
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
     orcid: "https://orcid.org/0000-0001-9386-8148"
-  - family-names: Vaivads
-    given-names: Andris
-    affiliation: KTH, Sweden
+  - family-names: "Vaivads"
+    given-names: "Andris"
     orcid: "https://orcid.org/0000-0003-1654-841X"
-  - family-names: Graham
-    given-names: Daniel
-    affiliation: IRF Uppsala, Sweden
+  - family-names: "Graham"
+    given-names: "Daniel"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
     orcid: "https://orcid.org/0000-0002-1046-746X"
-  - family-names: Karlsson
-    given-names: Jan
-    affiliation: IRF Uppsala, Sweden
-repository-code: 'https://github.com/irfu/irfu-matlab'
-doi: 10.5281/zenodo.11550091
+  - family-names: "Karlsson"
+    given-names: "Jan"
+    affiliation: "Swedish Institute of Space Physics"
+  - family-names: "Cully"
+    given-names: "Chris"
+    orcid: "https://orcid.org/0000-0001-7242-8872"
+  - family-names: "Norgren"
+    given-names: "Cecilia"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+    orcid: "https://orcid.org/0000-0002-6561-2337"
+  - family-names: "Johlander"
+    given-names: "Andreas"
+    orcid: "https://orcid.org/0000-0001-7714-1870"
+  - family-names: "Li"
+    given-names: "Wenya"
+    affiliation: "National Space Science Center"
+    orcid: "https://orcid.org/0000-0003-1920-2406"
+  - family-names: "Eriksson"
+    given-names: "Elin"
+    orcid: "https://orcid.org/0000-0003-4040-9663"
+  - family-names: "Dimmock"
+    given-names: "Andrew"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+    orcid: "https://orcid.org/0000-0003-1589-6711"
+  - family-names: "Steinvall"
+    given-names: "Konrad"
+    orcid: "https://orcid.org/0000-0002-5861-1643"
+  - family-names: "Mella"
+    given-names: "Meghan"
+  - family-names: "Tigik"
+    given-names: "Sabrina Ferrão"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+    orcid: "https://orcid.org/0000-0002-5968-9637"
+  - family-names: "Boldu"
+    given-names: "Jordi"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+    orcid: "https://orcid.org/0000-0002-0379-9335"
+  - family-names: "Lundberg"
+    given-names: "Mikael"
+  - family-names: "Lindqvist"
+    given-names: "Per-Arne"
+    affiliation: "KTH Royal Institute of Technology"
+    orcid: "https://orcid.org/0000-0001-5617-9765"
+  - family-names: "Lalti"
+    given-names: "Ahmad"
+    affiliation: "Swedish Institute of Space Physics"
+    orcid: "https://orcid.org/0000-0001-8532-3076"
+  - family-names: "Fu"
+    given-names: "Huishan"
+    orcid: "https://orcid.org/0000-0002-4701-7219"
+  - family-names: "Sundkvist"
+    given-names: "David"
+    orcid: "https://orcid.org/0000-0003-2794-7926"
+  - family-names: "Yordanova"
+    given-names: "Emiliya"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+    orcid: "https://orcid.org/0000-0002-9707-3147"
+  - family-names: "Chasapis"
+    given-names: "Alexandros"
+    affiliation: "Laboratory for Atmospheric and Space Physics"
+    orcid: "https://orcid.org/0000-0001-8478-5797"
+  - family-names: "Retinò"
+    given-names: "Alessandro"
+    orcid: "https://orcid.org/0000-0001-5824-2852"
+  - family-names: "Raptis"
+    given-names: "Savvas"
+    affiliation: "Johns Hopkins University Applied Physics Laboratory"
+    orcid: "https://orcid.org/0000-0002-4381-3197"
+  - family-names: "Toledo-Redondo"
+    given-names: "Sergio"
+    orcid: "https://orcid.org/0000-0002-4459-8783"
+  - family-names: "Edberg"
+    given-names: "Niklas"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+    orcid: "https://orcid.org/0000-0002-1261-7580"
+  - family-names: "Eriksson"
+    given-names: "Anders I."
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+    orcid: "https://orcid.org/0000-0003-2926-6761"
+  - family-names: "Benko"
+    given-names: "Ilona"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+    orcid: "https://orcid.org/0009-0006-5627-3675"
+  - family-names: "Spjuth"
+    given-names: "Sofie"
+  - family-names: "Thulstrup"
+    given-names: "Paul"
+  - family-names: "Wiberg"
+    given-names: "Henrik"
+  - family-names: "Lindberg"
+    given-names: "Martin"
+    orcid: "https://orcid.org/0000-0001-6342-225X"
+  - family-names: "White"
+    given-names: "Jack"
+    affiliation: "Swedish Institute of Space Physics"
+    city: "Uppsala"
+  - name: "IRFU-Matlab team"
+repository-code: "https://github.com/irfu/irfu-matlab"
+doi: "10.5281/zenodo.11550090"
