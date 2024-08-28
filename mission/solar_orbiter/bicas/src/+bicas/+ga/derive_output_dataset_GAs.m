@@ -286,19 +286,19 @@ end
 %
 % RATIONALE: Exists to easily set RCT-related GAs.
 function gaCa = get_RCTD_field_CA_GA(RctdCa, rctdFieldName)
-  gaCa = cell(0, 1);
+gaCa = cell(0, 1);
 
-  for i = 1:numel(RctdCa)
-    Rctd = RctdCa{i};
+for i = 1:numel(RctdCa)
+  Rctd = RctdCa{i};
 
-    rctdValue = Rctd.(rctdFieldName);
-    assert(~iscell(rctdValue))
+  rctdValue = Rctd.(rctdFieldName);
+  assert(~iscell(rctdValue))
 
-    % NOTE: Rctd.ga_* values use [] to represent absent GAs.
-    rctdValue = bicas.ga.normalize(rctdValue, {{'none'}, {' '}, []}', ' ');
+  % NOTE: Rctd.ga_* values use [] to represent absent GAs.
+  rctdValue = bicas.ga.normalize(rctdValue, {{'none'}, {' '}, []}', ' ');
 
-    gaCa{i, 1} = rctdValue;
-  end
+  gaCa{i, 1} = rctdValue;
+end
 
 end
 

@@ -100,8 +100,8 @@ it2 = interp1(ePDist.time.epochUnix,1:length(ePDist),t2.epochUnix,'nearest');
 
 % matlab colours
 col = [0.8500    0.3250    0.0980;...
-       0.0000    0.4470    0.7410;...
-       0.0000    0.8000    0.0000];
+  0.0000    0.4470    0.7410;...
+  0.0000    0.8000    0.0000];
 
 % get f_e and v_par
 c_eval('f_e? = f1D(it?).data;',[1,2])
@@ -121,9 +121,9 @@ if mean_fv2 > mean_fv1
   warm_dist = 2; cold_dist = 1;
 end
 c_eval(['f_eb = f_e?; f_eb_thr = f_e?_thr;'...
-        'v_parb = v_par?; v_parb_thr = v_par?_thr;'],warm_dist)
+  'v_parb = v_par?; v_parb_thr = v_par?_thr;'],warm_dist)
 c_eval(['f_ec = f_e?; f_ec_thr = f_e?_thr;' ...
-        'v_parc = v_par?; v_parc_thr = v_par?_thr;'],cold_dist)
+  'v_parc = v_par?; v_parc_thr = v_par?_thr;'],cold_dist)
 
 % Method 1 of finding beam
 % Find gradient sign change to find beam, used to define start of ROI.
@@ -178,24 +178,24 @@ hca = irf_plot(1,'newfigure');
 hold(hca,'on')
 % plot warm and cold dists
 c_eval(['plot(hca,v_par?,f_e?,''Color'',col(?,:),' ...
-        '''linewidth'',2)'],[1,2])
+  '''linewidth'',2)'],[1,2])
 % plot points selected to map from
 c_eval('plot(hca,xb_pts,yb_pts,''x'',''Color'',col(?,:))',warm_dist)
 c_eval(['plot(hca,xc_pts,yc_pts,''o'',''Color'',col(?,:),' ...
-        '''MarkerFaceColor'',col(?,:))'],cold_dist)
+  '''MarkerFaceColor'',col(?,:))'],cold_dist)
 % plot Lioville-mapped points
 plot(hca,xb_liouv,yb_pts,'o','Color',col(3,:),'MarkerFaceColor', ...
-     col(3,:),LineStyle='-')
+  col(3,:),LineStyle='-')
 hold(hca,'off')
 hca.YScale = 'log';
 hca.YLim = clim;
 % legends show time centers
 hca.ColorOrder = col; % set colour order for legends
 irf_legend(hca,{ePDist(it1).time.toUtc; ...
-                ePDist(it2).time.toUtc; ...
-                ['Liouville Mapping, \Delta\phi_{||} = ' ...
-                num2str(phi_mean,3) '±' num2str(phi_err,2) ...
-                'V']},[0.98,0.98])
+  ePDist(it2).time.toUtc; ...
+  ['Liouville Mapping, \Delta\phi_{||} = ' ...
+  num2str(phi_mean,3) '±' num2str(phi_err,2) ...
+  'V']},[0.98,0.98])
 % hca.XLim = [min(vg),max(vg)];
 %labels
 xlabel(hca,'V_{||} [km/s]')

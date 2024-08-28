@@ -346,7 +346,7 @@ for i=1:varsbsize
           irf_log('dsrc',sprintf('p1, p2 & p3 is BAD on sc%d',cl_id))
           continue
         end
-        elseif start_time>toepoch([2015 10 12 12 00 0])
+      elseif start_time>toepoch([2015 10 12 12 00 0])
         % p2 failure
         if any(probe=='1') || any(probe=='2')
           irf_log('dsrc',sprintf('p1 & p2 is BAD on sc%d',cl_id))

@@ -465,8 +465,8 @@ switch(CliData.bfmid)
   case 'IDENTIFICATION_BFM'
     print_identification(Swml, Bso)
 
-  % case 'SWD_BFM'
-  %   print_SWD(Swml, Bso)
+    % case 'SWD_BFM'
+    %   print_SWD(Swml, Bso)
 
   case 'HELP_BFM'
     print_help(Bso)

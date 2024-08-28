@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef DatasetFilename___UTEST < matlab.unittest.TestCase
-% PROPOSAL: Test more filename non-matches.
+  % PROPOSAL: Test more filename non-matches.
 
 
 

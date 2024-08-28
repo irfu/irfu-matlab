@@ -46,59 +46,59 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef DatasetFilename
-% PROPOSAL: datasetId --> dsi
-% PROPOSAL: Require NaT when there is no time interval string.
-% PROPOSAL: Order the filenaming conventions.
-%
-% PROBLEM: Risk of duplicating assertions on consistent fields. Which code
-%          should be responsible? Constructor? create/parse_dataset_filename?
-%
-% PROPOSAL: Field (string constant) for type of filenaming convention.
-%   NOTE: Only if multiple filenaming conventions in the same code.
-%
-% PROPOSAL: Property for file basename.
-%   PRO: Used by bicas.ga.derive_output_dataset_GAs().
-%
-% PROPOSAL: Use field names identical to the terms used in specifications (RCS
-%           ICD, SOL-SGS-TN-0009).
-%   Ex: Datetime, descriptor
-%   CON: Terms do not follow own variable naming conventions.
-%
-% PROPOSAL: Forbid longer version strings beginning with zero.
-%
-%
-%
-% PROPOSAL: Separate classes for every separate filenaming scheme.
-%   CON: Harder to reuse similarities.
-%       Ex: DATASET_ID, version, time interval string
-%       CON-PROPOSAL: Use shared RE constants, functions.
-%   CON: Can not build composite function for simultaneously handling all
-%        filenaming conventions (as the current create/parse functions do).
-%     CON: Filenaming conventions are too dissimilar for doing that anyway: Have
-%          different variables.
-%       Ex: "CNE" filenaming convention has hash, has no time interval string.
-%       Ex: "LES" filenaming convention has hash.
-%       Ex: Inflight filenaming has isCdag (has no hash).
-%   CON: solo.adm.dsfn.parse_dataset_filename_many() would only apply to one
-%        filenaming convention.
-%     CON-PROPOSAL: Can call functions for multiple filenaming conventions.
-%       PRO: Functions would be made for making this easy.
-%     NOTE: solo.adm.dsfn.parse_dataset_filename_many() is only used by
-%           solo.adm.paths_to_DSMD_array().
-%     CON-PROPOSAL: Merge solo.adm.dsfn.parse_dataset_filename_many() into
-%                   solo.adm.paths_to_DSMD_array().
-%   PRO: Cleaner functions, classes (sets of properties).
-%       PRO: Consistent return format.
-%           CON: Not true for time vectors which reflect format of time
-%                interval string.
-%       PRO: Can easily have different requirements for different filenaming
-%            conventions.
-%           Ex: isCdag (only for official; not LES and CNES filenaming).
-%   PROPOSAL: Shared code for shared implementations.
-%       Ex: utility functions (used by top-level functions)
-%       Ex: Reg.exp. constants
-%   PROPOSAL: One top-level function that handles all filenaming conventions
-%             together. Should assign(?) string for identified convention.
+  % PROPOSAL: datasetId --> dsi
+  % PROPOSAL: Require NaT when there is no time interval string.
+  % PROPOSAL: Order the filenaming conventions.
+  %
+  % PROBLEM: Risk of duplicating assertions on consistent fields. Which code
+  %          should be responsible? Constructor? create/parse_dataset_filename?
+  %
+  % PROPOSAL: Field (string constant) for type of filenaming convention.
+  %   NOTE: Only if multiple filenaming conventions in the same code.
+  %
+  % PROPOSAL: Property for file basename.
+  %   PRO: Used by bicas.ga.derive_output_dataset_GAs().
+  %
+  % PROPOSAL: Use field names identical to the terms used in specifications (RCS
+  %           ICD, SOL-SGS-TN-0009).
+  %   Ex: Datetime, descriptor
+  %   CON: Terms do not follow own variable naming conventions.
+  %
+  % PROPOSAL: Forbid longer version strings beginning with zero.
+  %
+  %
+  %
+  % PROPOSAL: Separate classes for every separate filenaming scheme.
+  %   CON: Harder to reuse similarities.
+  %       Ex: DATASET_ID, version, time interval string
+  %       CON-PROPOSAL: Use shared RE constants, functions.
+  %   CON: Can not build composite function for simultaneously handling all
+  %        filenaming conventions (as the current create/parse functions do).
+  %     CON: Filenaming conventions are too dissimilar for doing that anyway: Have
+  %          different variables.
+  %       Ex: "CNE" filenaming convention has hash, has no time interval string.
+  %       Ex: "LES" filenaming convention has hash.
+  %       Ex: Inflight filenaming has isCdag (has no hash).
+  %   CON: solo.adm.dsfn.parse_dataset_filename_many() would only apply to one
+  %        filenaming convention.
+  %     CON-PROPOSAL: Can call functions for multiple filenaming conventions.
+  %       PRO: Functions would be made for making this easy.
+  %     NOTE: solo.adm.dsfn.parse_dataset_filename_many() is only used by
+  %           solo.adm.paths_to_DSMD_array().
+  %     CON-PROPOSAL: Merge solo.adm.dsfn.parse_dataset_filename_many() into
+  %                   solo.adm.paths_to_DSMD_array().
+  %   PRO: Cleaner functions, classes (sets of properties).
+  %       PRO: Consistent return format.
+  %           CON: Not true for time vectors which reflect format of time
+  %                interval string.
+  %       PRO: Can easily have different requirements for different filenaming
+  %            conventions.
+  %           Ex: isCdag (only for official; not LES and CNES filenaming).
+  %   PROPOSAL: Shared code for shared implementations.
+  %       Ex: utility functions (used by top-level functions)
+  %       Ex: Reg.exp. constants
+  %   PROPOSAL: One top-level function that handles all filenaming conventions
+  %             together. Should assign(?) string for identified convention.
 
 
 
@@ -245,15 +245,15 @@ classdef DatasetFilename
       end
 
       if obj.dsicdagUppercase
-          cdagStr        = upper(cdagStr);
-          filenameDsiStr = upper(obj.datasetId);
+        cdagStr        = upper(cdagStr);
+        filenameDsiStr = upper(obj.datasetId);
       else
-          cdagStr        = lower(cdagStr);
+        cdagStr        = lower(cdagStr);
 
-          % NOTE: The DSI "level" is always uppercase. Can therefore not user
-          % lower(datasetId).
-          [sourceName, level, descriptor] = solo.adm.disassemble_DATASET_ID(obj.datasetId);
-          filenameDsiStr = sprintf('%s_%s_%s', lower(sourceName), level, lower(descriptor));
+        % NOTE: The DSI "level" is always uppercase. Can therefore not user
+        % lower(datasetId).
+        [sourceName, level, descriptor] = solo.adm.disassemble_DATASET_ID(obj.datasetId);
+        filenameDsiStr = sprintf('%s_%s_%s', lower(sourceName), level, lower(descriptor));
       end
 
       filenameDsiCdag = [filenameDsiStr, cdagStr];
