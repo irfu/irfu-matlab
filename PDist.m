@@ -1201,6 +1201,7 @@ classdef PDist < TSeries
             l = 2;
             base = args{2};
           case 'counts'
+            l = 2;
             counts = args{2};
         end
         args = args((l+1):end);
