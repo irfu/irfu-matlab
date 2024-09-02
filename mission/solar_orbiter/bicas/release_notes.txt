@@ -211,3 +211,5 @@ Version 8.2.1
 Version x.x.x
 -------------
 * Reinstate the unofficial --swdescriptor argument.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2024-08-04.
