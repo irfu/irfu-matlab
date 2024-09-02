@@ -33,8 +33,8 @@ function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir, rctVersionNbr)
 %                 unnecessarily, since it is represented in the filename and
 %                 since the version number is (presumably) tied to the exact
 %                 chosen time interval.
-BEGIN_DT = datetime('2022-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
-END_DT   = datetime('2099-01-02T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
+BEGIN_DT = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
+END_DT   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
 
 
 
