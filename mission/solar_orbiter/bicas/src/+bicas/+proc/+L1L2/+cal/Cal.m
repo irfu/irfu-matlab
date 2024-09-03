@@ -289,7 +289,7 @@ classdef Cal < handle
     lfrTdsTfDisabled
 
     % Whether to select non-BIAS RCTs using GACT (and ZVCTI).
-    use_CALIBRATION_TABLE_rcts
+    useGactRct
     % Whether to use ZVCTI2 for calibration.
     useZvcti2
 
@@ -346,7 +346,7 @@ classdef Cal < handle
     %
     function obj = Cal(...
         RctdCaMap, ...
-        use_CALIBRATION_TABLE_rcts, ...
+        useGactRct, ...
         useZvcti2, ...
         Bso)
 
@@ -435,8 +435,8 @@ classdef Cal < handle
       %============================
       % Store some argument values
       %============================
-      obj.use_CALIBRATION_TABLE_rcts = use_CALIBRATION_TABLE_rcts;
-      obj.useZvcti2                  = useZvcti2;
+      obj.useGactRct = useGactRct;
+      obj.useZvcti2  = useZvcti2;
     end
 
 
@@ -559,7 +559,7 @@ classdef Cal < handle
 
 
       % Set iNonBiasRct, zvcti2 by extracting values from zvcti or emulating it.
-      if obj.use_CALIBRATION_TABLE_rcts
+      if obj.useGactRct
         % NOTE: Incrementing by one (index into MATLAB array).
         iNonBiasRct = 1 + zvcti(1,1);
       else

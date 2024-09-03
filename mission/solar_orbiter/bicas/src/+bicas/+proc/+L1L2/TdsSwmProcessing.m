@@ -66,16 +66,16 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %==========================================
       % NOTE: TDS L1R never uses ZVCTI2.
       if obj.inputSci.isTdsCwf
-        settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid    = 'TDS-CWF';
+        settingUseGactRct = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
+        tdsRcttid         = 'TDS-CWF';
       else
-        settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid    = 'TDS-RSWF';
+        settingUseGactRct = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
+        tdsRcttid         = 'TDS-RSWF';
       end
-      useCtRcts = obj.inputSci.isL1r && Bso.get_fv(settingUseCt);
-      useZvcti2 = false;    % Always false for TDS.
+      useGactRct = obj.inputSci.isL1r && Bso.get_fv(settingUseGactRct);
+      useZvcti2  = false;    % Always false for TDS.
 
-      if useCtRcts
+      if useGactRct
         % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
         % --
         % NOTE: This should not be regarded as a hack but as ~normalization to
@@ -95,7 +95,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
           {'BIAS', tdsRcttid}, rctDir, Bso, L);
       end
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useCtRcts, useZvcti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useGactRct, useZvcti2, Bso);
 
 
 

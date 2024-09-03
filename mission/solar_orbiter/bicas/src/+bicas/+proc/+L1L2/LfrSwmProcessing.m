@@ -64,10 +64,10 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %==========================================
       % Configure bicas.proc.L1L2.cal.Cal object
       %==========================================
-      useCtRcts = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
-      useZvcti2 = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
+      useGactRct = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
+      useZvcti2  = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
 
-      if useCtRcts
+      if useGactRct
         RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_ZVCTI_GACT(...
           'LFR', rctDir, ...
           InputSciCdf.Ga.CALIBRATION_TABLE, ...
@@ -79,7 +79,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
           {'BIAS', 'LFR'}, rctDir, Bso, L);
       end
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useCtRcts, useZvcti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useGactRct, useZvcti2, Bso);
 
 
 

@@ -302,8 +302,6 @@ RCTD
 RCTTID
     RCT Type ID. String constant that represents a *type* of RCT, not a
     particular RT file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
-RCTS
-    RCT (as specified by) ZVCTI (L1R) and GACT (L1R). "S" = plural.
 ROC
     RPW Operations Center.
 ROC DFMD
