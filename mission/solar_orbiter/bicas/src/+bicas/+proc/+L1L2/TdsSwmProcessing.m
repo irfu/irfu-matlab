@@ -64,7 +64,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %==========================================
       % Configure bicas.proc.L1L2.cal.Cal object
       %==========================================
-      % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
+      % NOTE: TDS L1R never uses CTI2.
       if obj.inputSci.isTdsCwf
         settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
         tdsRcttid    = 'TDS-CWF';

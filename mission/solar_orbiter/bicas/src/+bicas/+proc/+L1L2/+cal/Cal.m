@@ -291,8 +291,8 @@ classdef Cal < handle
     % Whether to select non-BIAS RCT using global attribute
     % CALIBRATION_TABLE (and CALIBRATION_TABLE_INDEX(iRecord,1)).
     use_CALIBRATION_TABLE_rcts
-    % Whether to use CALIBRATION_TABLE_INDEX(iRecord,2) for calibration.
-    use_CALIBRATION_TABLE_INDEX2
+    % Whether to use CTI2 for calibration.
+    useCti2
 
   end
 
@@ -349,11 +349,11 @@ classdef Cal < handle
     function obj = Cal(...
         RctdCaMap, ...
         use_CALIBRATION_TABLE_rcts, ...
-        use_CALIBRATION_TABLE_INDEX2, ...
+        useCti2, ...
         Bso)
 
       % ASSERTIONS: Arguments
-      assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
+      assert(isscalar(useCti2))
       % RctdCaMap
       irf.assert.subset(...
         RctdCaMap.keys, ...
@@ -438,7 +438,7 @@ classdef Cal < handle
       % Store some argument values
       %============================
       obj.use_CALIBRATION_TABLE_rcts   = use_CALIBRATION_TABLE_rcts;
-      obj.use_CALIBRATION_TABLE_INDEX2 = use_CALIBRATION_TABLE_INDEX2;
+      obj.useCti2 = useCti2;
     end
 
 
@@ -697,11 +697,11 @@ classdef Cal < handle
       assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(iNonBiasRct >= 1)
 
-      if obj.use_CALIBRATION_TABLE_INDEX2
+      if obj.useCti2
         % TODO? ASSERTION: cti2 = 0???
         error(...
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-          'TDS-CWF calibration never uses CALIBRATION_TABLE_INDEX2.')
+          'TDS-CWF calibration never uses CTI2.')
       end
 
       % Initialize empty output variable.
@@ -791,11 +791,11 @@ classdef Cal < handle
       assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(iNonBiasRct >= 1)
 
-      if obj.use_CALIBRATION_TABLE_INDEX2
+      if obj.useCti2
         % TODO? ASSERTION: cti2 = 0???
         error(...
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-          'TDS-RSWF calibration never uses CALIBRATION_TABLE_INDEX2.')
+          'TDS-RSWF calibration never uses CTI2.')
       end
 
       %==============================
@@ -1066,7 +1066,7 @@ classdef Cal < handle
       %============================================
       % Only place to potentially make use of cti2
       %============================================
-      if obj.use_CALIBRATION_TABLE_INDEX2
+      if obj.useCti2
         % ASSERTIONS
         assert(isscalar(cti2), ...
           'BICAS:IllegalArgument:Assertion', ...

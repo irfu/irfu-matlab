@@ -161,7 +161,8 @@ COPV
 CTI
     CALIBRATION_TABLE_INDEX (L1R zVariable).
 CTI2
-    Element within a CDF L1R zVariable for a given CDF record,
+    Element within the second column of L1R zVariable CALIBRATION_TABLE_INDEX
+    for a given CDF record, i.e. any value
     CALIBRATION_TABLE_INDEX(iCdfRecord, 2).
 CWF
     Continuous WaveForm. Data on the form of samples over longer periods of
