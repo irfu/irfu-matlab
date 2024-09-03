@@ -27,7 +27,7 @@
 % (1) undiscovered calibration bugs could be considered extra bad,
 % (2) it is expected to be hard to detect certain bugs,
 % (3) it could be hard to use automatic testing here,
-% (4) to detect changing RCT formats, in particular in RCTS from non-BIAS teams.
+% (4) to detect changing RCT formats, in particular in RCTs from non-BIAS teams.
 % --
 % NOTE: All calibration functions of measured data are assumed to accept data
 % from all BLTS (1-5), i.e. including TDS, in order to reduce the number
@@ -288,7 +288,7 @@ classdef Cal < handle
     biasOffsetsDisabled
     lfrTdsTfDisabled
 
-    % Whether to select non-BIAS RCT using GACT (and ZVCTI).
+    % Whether to select non-BIAS RCTs using GACT (and ZVCTI).
     use_CALIBRATION_TABLE_rcts
     % Whether to use ZVCTI2 for calibration.
     useZvcti2

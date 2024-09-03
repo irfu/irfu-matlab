@@ -27,7 +27,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
       path = bicas.utils.get_BICAS_config_dir();
       irf.assert.dir_exists(path)
 
-      ~ = bicas.utils.get_BICAS_default_config_file();
+      junk = bicas.utils.get_BICAS_default_config_file();
       % NOTE: Can not test whether the default config file exists or not, since
       % it depends on the developer setup, and whether running in CI or not. The
       % version delivered to ROC has no default config file (ROC has to specify

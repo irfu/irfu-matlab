@@ -41,7 +41,7 @@ classdef AntennaSignalId
 
 
   properties(SetAccess=immutable, GetAccess=public)
-    % String constant that represents unique object. Name is deliberately
+    % String constant that represents unique object. The name is deliberately
     % short since objects themselves are IDs and should preferably be used
     % except when one has to convert to string. The only reason this exists
     % is to be used as a replacement for objects as keys in containers.Map
