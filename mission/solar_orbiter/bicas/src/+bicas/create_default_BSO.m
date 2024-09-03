@@ -528,8 +528,8 @@ S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RS
 
 
 
-% CALIBRATION_TABLE_INDEX2 = CTI2
-% NOTE: CTI2 is not set (used) for TDS. Therefore no such settings for TDS.
+% CALIBRATION_TABLE_INDEX2 = ZVCTI2
+% NOTE: ZVCTI2 is not set (used) for TDS. Therefore no such settings for TDS.
 % "L1R" refers to when using L1R datasets as input, as opposed to L1.
 S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      1)
 S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    1)

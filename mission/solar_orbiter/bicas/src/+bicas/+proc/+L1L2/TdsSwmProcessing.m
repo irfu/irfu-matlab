@@ -64,7 +64,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %==========================================
       % Configure bicas.proc.L1L2.cal.Cal object
       %==========================================
-      % NOTE: TDS L1R never uses CTI2.
+      % NOTE: TDS L1R never uses ZVCTI2.
       if obj.inputSci.isTdsCwf
         settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
         tdsRcttid    = 'TDS-CWF';
@@ -73,7 +73,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         tdsRcttid    = 'TDS-RSWF';
       end
       useCtRcts = obj.inputSci.isL1r && Bso.get_fv(settingUseCt);
-      useCti2   = false;    % Always false for TDS.
+      useZvcti2 = false;    % Always false for TDS.
 
       if useCtRcts
         % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
@@ -95,7 +95,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
           {'BIAS', tdsRcttid}, rctDir, Bso, L);
       end
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useCtRcts, useCti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useCtRcts, useZvcti2, Bso);
 
 
 

@@ -63,7 +63,7 @@
 % CALIBRATION_TABLE{CALIBRATION_TABLE_INDEX{iRecord, 1} + 1}
 %     == RCT filename
 % CALIBRATION_TABLE_INDEX{iRecord, 2}
-%     == CTI2
+%     == ZVCTI2
 %     == Index/pointer to some calibration value(s) to use in the corresponding
 %        RCT. The exact interpretation depends on the RCT.
 %
@@ -292,8 +292,8 @@ classdef Cal < handle
     % Whether to select non-BIAS RCT using global attribute
     % CALIBRATION_TABLE (and CALIBRATION_TABLE_INDEX(iRecord,1)).
     use_CALIBRATION_TABLE_rcts
-    % Whether to use CTI2 for calibration.
-    useCti2
+    % Whether to use ZVCTI2 for calibration.
+    useZvcti2
 
   end
 
@@ -350,11 +350,11 @@ classdef Cal < handle
     function obj = Cal(...
         RctdCaMap, ...
         use_CALIBRATION_TABLE_rcts, ...
-        useCti2, ...
+        useZvcti2, ...
         Bso)
 
       % ASSERTIONS: Arguments
-      assert(isscalar(useCti2))
+      assert(isscalar(useZvcti2))
       % RctdCaMap
       irf.assert.subset(...
         RctdCaMap.keys, ...
@@ -439,7 +439,7 @@ classdef Cal < handle
       % Store some argument values
       %============================
       obj.use_CALIBRATION_TABLE_rcts = use_CALIBRATION_TABLE_rcts;
-      obj.useCti2                    = useCti2;
+      obj.useZvcti2                  = useZvcti2;
     end
 
 
@@ -562,7 +562,7 @@ classdef Cal < handle
 
 
 
-      % Set iNonBiasRct, cti2 by extracting values from
+      % Set iNonBiasRct, zvcti2 by extracting values from
       % zv_CALIBRATION_TABLE_INDEX or emulating it.
       if obj.use_CALIBRATION_TABLE_rcts
         % NOTE: Incrementing by one (index into MATLAB array).
@@ -572,7 +572,7 @@ classdef Cal < handle
       end
       % NOTE: NOT incrementing value by one, since the variable's meaning
       % can vary between LFR, TDS-CWF, TDS-RSWF.
-      cti2 = zv_CALIBRATION_TABLE_INDEX(1,2);
+      zvcti2 = zv_CALIBRATION_TABLE_INDEX(1,2);
 
 
 
@@ -601,7 +601,7 @@ classdef Cal < handle
           % CASE: LFR
           %===========
           bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_LFR(...
-            dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
+            dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2);
         else
           %===========
           % CASE: TDS
@@ -609,11 +609,11 @@ classdef Cal < handle
           if isTdsCwf
             % CASE: TDS CWF
             bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_TDS_CWF(...
-              dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
+              dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2);
           else
             % CASE: TDS RSWF
             bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_TDS_RSWF(...
-              dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
+              dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2);
           end
         end
 
@@ -631,7 +631,7 @@ classdef Cal < handle
     %   ...
     %
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
-        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
+        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
       % ASSERTIONS
       irf.assert.vector(bltsSamplesTmCa)
@@ -645,7 +645,7 @@ classdef Cal < handle
       % Obtain all calibration data
       %=============================
       CalibData = obj.get_BIAS_LFR_calib_data(...
-        CalSettings, iNonBiasRct, cti2);
+        CalSettings, iNonBiasRct, zvcti2);
 
       %====================================
       % CALIBRATE: LFR TM --> TM --> avolt
@@ -679,7 +679,7 @@ classdef Cal < handle
     % See calibrate_voltage_BIAS_LFR.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
-        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
+        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
       %             irf.assert.struct(CalSettings, {...
       %                 'iBlts', 'Ssid', 'isAchg', ...
@@ -698,11 +698,11 @@ classdef Cal < handle
       assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(iNonBiasRct >= 1)
 
-      if obj.useCti2
-        % TODO? ASSERTION: cti2 = 0???
+      if obj.useZvcti2
+        % TODO? ASSERTION: zvcti2 = 0???
         error(...
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-          'TDS-CWF calibration never uses CTI2.')
+          'TDS-CWF calibration never uses ZVCTI2.')
       end
 
       % Initialize empty output variable.
@@ -773,7 +773,7 @@ classdef Cal < handle
     % See calibrate_voltage_BIAS_LFR.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
-        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
+        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
       %             irf.assert.struct(CalSettings, {...
       %                 'iBlts', 'Ssid', 'isAchg', ...
@@ -792,11 +792,11 @@ classdef Cal < handle
       assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(iNonBiasRct >= 1)
 
-      if obj.useCti2
-        % TODO? ASSERTION: cti2 = 0???
+      if obj.useZvcti2
+        % TODO? ASSERTION: zvcti2 = 0???
         error(...
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-          'TDS-RSWF calibration never uses CTI2.')
+          'TDS-RSWF calibration never uses ZVCTI2.')
       end
 
       %==============================
@@ -1040,7 +1040,7 @@ classdef Cal < handle
     % IMPLEMENTATION NOTE: Return one struct instead of multiple return
     % values to make sure that the caller does not confuse the return values
     % with each other.
-    function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, cti2)
+    function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
 
       % ASSERTIONS
       %             irf.assert.struct(CalSettings, {...
@@ -1060,31 +1060,31 @@ classdef Cal < handle
       bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
       assert(isscalar(iNonBiasRct))
       assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
-      % No assertion on cti2 unless used (determined later).
+      % No assertion on zvcti2 unless used (determined later).
 
 
 
-      %============================================
-      % Only place to potentially make use of cti2
-      %============================================
-      if obj.useCti2
+      %==============================================
+      % Only place to potentially make use of zvcti2
+      %==============================================
+      if obj.useZvcti2
         % ASSERTIONS
-        assert(isscalar(cti2), ...
+        assert(isscalar(zvcti2), ...
           'BICAS:IllegalArgument:Assertion', ...
-          'Argument cti2 is not scalar.')
-        assert(cti2 >= 0, ...
+          'Argument zvcti2 is not scalar.')
+        assert(zvcti2 >= 0, ...
           'BICAS:IllegalArgument:Assertion', ...
-          ['Illegal argument cti2=%g', ...
+          ['Illegal argument zvcti2=%g', ...
           ' (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))'], ...
-          cti2)
-        assert(iLsf == cti2+1, ...
+          zvcti2)
+        assert(iLsf == zvcti2+1, ...
           'BICAS:IllegalArgument:Assertion', ...
-          'cti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
-          cti2+1, iLsf)
+          'zvcti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
+          zvcti2+1, iLsf)
 
         % NOTE: Override earlier iLsf.
-        % NOTE: This is the only place cti2 is used in this class.
-        iLsf = cti2 + 1;
+        % NOTE: This is the only place zvcti2 is used in this class.
+        iLsf = zvcti2 + 1;
       end
 
 
