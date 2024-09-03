@@ -909,7 +909,7 @@ classdef Cal < handle
       % kIvpav = Multiplication factor "k" that represents/replaces the
       % (forward) transfer function.
       switch(Ssid.Asid.category)
-        case 'DC single'
+        case 'DC_SINGLE'
 
           % NOTE: List of ITFs for different times.
           biasItfAvpiv = BiasRctd.ItfSet.dcSingleAvpiv{iCalibTimeL};
@@ -917,7 +917,7 @@ classdef Cal < handle
           offsetAVolt  = BiasRctd.dcSingleOffsetsAVolt(...
             iCalibTimeH, Ssid.Asid.antennas);
 
-        case 'DC diff'
+        case 'DC_DIFF'
 
           biasItfAvpiv = BiasRctd.ItfSet.dcDiffAvpiv{iCalibTimeL};
           kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
@@ -929,7 +929,7 @@ classdef Cal < handle
               'Illegal Ssid.');
           end
 
-        case 'AC diff'
+        case 'AC_DIFF'
 
           if     isAchg == 0
             biasItfAvpiv = BiasRctd.ItfSet.aclgAvpiv{iCalibTimeL};

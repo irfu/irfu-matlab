@@ -187,7 +187,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting
       %             indices in a data struct.
       %       PROPOSAL: (private method) [omegaRps, zVpc] = get_transfer_func(epoch, signalType)
-      %           signalType = 'DC single' etc
+      %           signalType = 'DC_SINGLE' etc
 
       Do = dataobj(filePath);
 

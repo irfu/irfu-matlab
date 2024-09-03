@@ -99,11 +99,11 @@ classdef AntennaSignalId
       % ASSERTIONS: category, antennas
       nAntennas = numel(antennas);
       switch(category)
-        case 'DC single'
+        case 'DC_SINGLE'
           assert(nAntennas == 1)
-        case 'DC diff'
+        case 'DC_DIFF'
           assert(nAntennas == 2)
-        case 'AC diff'
+        case 'AC_DIFF'
           assert(nAntennas == 2)
         otherwise
           % ASSERTION
@@ -121,7 +121,7 @@ classdef AntennaSignalId
 
 
     function isAc = is_AC(obj)
-      isAc = strcmp(obj.category, 'AC diff');
+      isAc = strcmp(obj.category, 'AC_DIFF');
     end
 
 
@@ -176,17 +176,17 @@ classdef AntennaSignalId
       % =====================================
       % Add every possible unique ASID object
       % =====================================
-      add('DC_V1',  'DC single', [1  ]);
-      add('DC_V2',  'DC single', [2  ]);
-      add('DC_V3',  'DC single', [3  ]);
+      add('DC_V1',  'DC_SINGLE', [1   ]);
+      add('DC_V2',  'DC_SINGLE', [2   ]);
+      add('DC_V3',  'DC_SINGLE', [3   ]);
 
-      add('DC_V12', 'DC diff',   [1, 2]);
-      add('DC_V13', 'DC diff',   [1, 3]);
-      add('DC_V23', 'DC diff',   [2, 3]);
+      add('DC_V12', 'DC_DIFF',   [1, 2]);
+      add('DC_V13', 'DC_DIFF',   [1, 3]);
+      add('DC_V23', 'DC_DIFF',   [2, 3]);
 
-      add('AC_V12', 'AC diff',   [1, 2]);
-      add('AC_V13', 'AC diff',   [1, 3]);
-      add('AC_V23', 'AC diff',   [2, 3]);
+      add('AC_V12', 'AC_DIFF',   [1, 2]);
+      add('AC_V13', 'AC_DIFF',   [1, 3]);
+      add('AC_V23', 'AC_DIFF',   [2, 3]);
 
       % =======================================
       % Create lists of all unique ASID objects
