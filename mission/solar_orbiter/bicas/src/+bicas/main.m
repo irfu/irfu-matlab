@@ -341,16 +341,10 @@ L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', ...
 
 
 
-%===============================
-% Derive BICAS's directory root
-%===============================
-bicasRootPath = bicas.utils.get_BICAS_root_dir();
-
-
-
 %=======================================
 % Log misc. paths and all CLI arguments
 %=======================================
+bicasRootPath = bicas.utils.get_BICAS_root_dir();
 % IMPLEMENTATION NOTE: Want this as early as possible, before interpreting
 % arguments. Should therefore not merge this with printing settings. This
 % might help debug why settings were not set.
@@ -470,92 +464,10 @@ switch(CliData.bfmid)
     print_help(Bso)
 
   case 'SWM_BFM'
-    %============================
-    % CASE: Should be a S/W mode
-    %============================
-    try
-      Swm = Swml.get_SWM(CliData.swmArg);
-    catch Exception1
-      % NOTE: Misspelled "--version" etc. would be interpreted as S/W
-      % mode and produce error here too.
-      error('BICAS:CLISyntax', ...
-        ['Can not interpret first argument "%s" as a S/W mode', ...
-        ' (or any other legal first argument).'], ...
-        CliData.swmArg);
-    end
-
-
-
-    %=================================================================
-    % Parse CliData.SipMap arguments depending on S/W
-    % mode
-    %=================================================================
-
-    % Select only the INPUT dataset files from the SIP arguments.
-    InputFilePathMap = select_rename_Map_keys(...
-      CliData.SipMap, ...
-      {Swm.inputsList(:).cliOptionHeaderBody}, ...
-      {Swm.inputsList(:).pfiid});
-
-    % Select only the OUTPUT dataset files from the SIP arguments.
-    OutputFilePathMap = select_rename_Map_keys(...
-      CliData.SipMap, ...
-      {Swm.outputsList(:).cliOptionHeaderBody}, ...
-      {Swm.outputsList(:).pfoid});
-
-    % ASSERTION: Assume correct number of arguments (the only thing not
-    % implicitly checked by select_rename_Map_keys above).
-    nSipExpected = numel(Swm.inputsList) + numel(Swm.outputsList);
-    nSipActual   = numel(CliData.SipMap.keys);
-    if nSipExpected ~= nSipActual
-      error('BICAS:CLISyntax', ...
-        ['Illegal number of "specific input parameters"', ...
-        ' (input & output datasets). Expected %i, but got %i.'], ...
-        nSipExpected, nSipActual)
-    end
-
-
-
     %==========================
-    % Set rctDir, masterCdfDir
+    % CASE: Process a S/W mode
     %==========================
-    % NOTE: Reading environment variables first here, where they are
-    % needed.
-    rctDir       = read_env_variable(Bso, L, ...
-      'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-    masterCdfDir = read_env_variable(Bso, L, ...
-      'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-    L.logf('info', 'rctDir       = "%s"', rctDir)
-    L.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
-
-    irf.assert.dir_exists(rctDir)
-    irf.assert.dir_exists(masterCdfDir)
-
-
-
-    %=====================
-    % Read NSO table file
-    %=====================
-    nsoTableRelativePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH');
-    nsoTableOverridePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH');
-    if isempty(nsoTableOverridePath)
-      nsoTablePath = fullfile(bicasRootPath, nsoTableRelativePath);
-    else
-      nsoTablePath = nsoTableOverridePath;
-    end
-
-    %L.logf('info', 'nsoTablePath = "%s"', nsoTablePath);
-    L.logf('info', 'Loading NSO table XML file "%s"', nsoTablePath)
-    NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath);
-
-
-
-    %==================
-    % EXECUTE S/W MODE
-    %==================
-    bicas.execute_SWM(...
-      Swm, InputFilePathMap, OutputFilePathMap, ...
-      masterCdfDir, rctDir, NsoTable, Bso, L )
+    process_SWM(Swml, CliData.swmArg, CliData.SipMap, Bso, L)
 
   otherwise
     error('BICAS:Assertion', ...
@@ -687,6 +599,95 @@ bicas.stdout_print(bicas.sprint_BSO(Bso))   % Includes title
 
 bicas.stdout_printf('See "readme.txt" and user manual for more help.\n')
 end
+
+
+
+function process_SWM(Swml, swmArg, SipMap, Bso, L)
+try
+  Swm = Swml.get_SWM(swmArg);
+catch Exception1
+  % NOTE: Misspelled "--version" etc. would be interpreted as S/W
+  % mode and produce error here too.
+  error('BICAS:CLISyntax', ...
+    ['Can not interpret first argument "%s" as a S/W mode', ...
+    ' (or any other legal first argument).'], ...
+    swmArg);
+end
+
+
+
+%==============================================
+% Parse SipMap arguments depending on S/W mode
+%==============================================
+
+% Select only the INPUT dataset files from the SIP arguments.
+InputFilePathMap = select_rename_Map_keys(...
+  SipMap, ...
+  {Swm.inputsList(:).cliOptionHeaderBody}, ...
+  {Swm.inputsList(:).pfiid});
+
+% Select only the OUTPUT dataset files from the SIP arguments.
+OutputFilePathMap = select_rename_Map_keys(...
+  SipMap, ...
+  {Swm.outputsList(:).cliOptionHeaderBody}, ...
+  {Swm.outputsList(:).pfoid});
+
+% ASSERTION: Assume correct number of arguments (the only thing not
+% implicitly checked by select_rename_Map_keys above).
+nSipExpected = numel(Swm.inputsList) + numel(Swm.outputsList);
+nSipActual   = numel(SipMap.keys);
+if nSipExpected ~= nSipActual
+  error('BICAS:CLISyntax', ...
+    ['Illegal number of "specific input parameters"', ...
+    ' (input & output datasets). Expected %i, but got %i.'], ...
+    nSipExpected, nSipActual)
+end
+
+
+
+%==========================
+% Set rctDir, masterCdfDir
+%==========================
+% NOTE: Reading environment variables first here, where they are
+% needed.
+rctDir       = read_env_variable(Bso, L, ...
+  'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+masterCdfDir = read_env_variable(Bso, L, ...
+  'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
+L.logf('info', 'rctDir       = "%s"', rctDir)
+L.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
+
+irf.assert.dir_exists(rctDir)
+irf.assert.dir_exists(masterCdfDir)
+
+
+
+%=====================
+% Read NSO table file
+%=====================
+bicasRootPath        = bicas.utils.get_BICAS_root_dir();
+nsoTableRelativePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH');
+nsoTableOverridePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH');
+if isempty(nsoTableOverridePath)
+  nsoTablePath = fullfile(bicasRootPath, nsoTableRelativePath);
+else
+  nsoTablePath = nsoTableOverridePath;
+end
+
+%L.logf('info', 'nsoTablePath = "%s"', nsoTablePath);
+L.logf('info', 'Loading NSO table XML file "%s"', nsoTablePath)
+NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath);
+
+
+
+%==================
+% EXECUTE S/W MODE
+%==================
+bicas.execute_SWM(...
+  Swm, InputFilePathMap, OutputFilePathMap, ...
+  masterCdfDir, rctDir, NsoTable, Bso, L )
+
+end    % process_SWM
 
 
 
