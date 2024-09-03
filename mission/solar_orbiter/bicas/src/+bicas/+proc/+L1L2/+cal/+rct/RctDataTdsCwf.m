@@ -76,9 +76,9 @@ classdef RctDataTdsCwf < bicas.proc.L1L2.cal.rct.RctData
       Do = dataobj(filePath);
 
       try
-        % NOTE: Undocumented in CDF: zVar CALIBRATION_TABLE is
-        % volt/count for just multiplying the TDS signal (for this kind
-        % of data). Is not a frequency-dependent transfer function.
+        % NOTE: Undocumented in CDF: ZV CALIBRATION_TABLE (not to be confused
+        % with GACT is volt/count for just multiplying the TDS signal (for this
+        % kind of data). Is not a frequency-dependent transfer function.
 
         % ASSUMPTION: Exactly 1 CDF record.
         % IMPLEMENTATION NOTE: Does not want to rely on dataobj's

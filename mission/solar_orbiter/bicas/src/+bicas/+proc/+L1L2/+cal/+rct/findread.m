@@ -40,10 +40,10 @@ classdef findread
     % NOTE: Can be useful for manual experimentation with calibration of L1R
     %       (and L1) data.
     % NOTE: Necessary when processing L1-->L2 (unofficially) since L1 does
-    %       not have CALIBRATION_TABLE+ZVCTI.
-    % NOTE: Will only load ONE RCT per RCTTID (no potential RCT time
-    %       dependence as per global attribute CALIBRATION_TABLE) and
-    %       requires the user to not use ZVCTI.
+    %       not have ZVCTI+GACT.
+    % NOTE: Will only load ONE RCT per RCTTID (since there is no potential RCT
+    %       time dependence as there would be if using ZVCTI+GACT) and
+    %       requires the caller to not use ZVCTI.
     %
     % IMPLEMENTATION NOTE: BICAS only needs one non-BIAS RCT type at a time.
     % However, it is useful to be able to initialize bicas.proc.L1L2.cal.Cal so
@@ -55,7 +55,7 @@ classdef findread
     % ============
     % RctdCaMap
     %       containers.Map. Can be used for bicas.proc.L1L2.cal.Cal
-    %       constructor even if there is no zVar CALIBRATION_TABLE.
+    %       constructor even if there is no ZVCTI+GACT.
     %       One key per specified RCTTID in argument rcttidCa.
     %       Exactly one RCT per RCTTID.
     %
@@ -81,7 +81,7 @@ classdef findread
           rcttid, filePath, L)};
 
         % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so that
-        % they are stored analogously with when using L1R GA CALIBRATION_TABLE.
+        % they are stored analogously with when using L1R GACT.
         RctdCaMap(rcttid) = RctdCa;
       end
     end
@@ -90,26 +90,24 @@ classdef findread
 
     % (1) Load one BIAS RCT by regular expression.
     % (2) Load one or multiple non-BIAS RCT(s) for the selected RCTTID using
-    % CDF global attribute CALIBRATION_TABLE and ZVCTI and ZV "BW".
+    %     ZVCTI, GACT, and ZV "BW".
     %
     %
     % IMPLEMENTATION NOTE
     % ===================
     % May load MULTIPLE RCTs with the same RCTTID, but will only load those RCTs
     % which are actually needed, as indicated by ZVCTI and ZV "BW". This is
-    % necessary since CALIBRATION_TABLE may reference unnecessary RCTs of types
-    % not recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf
-    % /2019-12-16), and which are therefore unreadable by BICAS (BICAS will
-    % crash).
+    % necessary since GACT may reference unnecessary RCTs of types not
+    % recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf /2019-12-16),
+    % and which are therefore unreadable by BICAS (BICAS will crash).
     %
     %
     % ARGUMENTS
     % =========
     % nonBiasRcttid
     %       RCTTID for one *non-BIAS* RCT.
-    % ga_CALIBRATION_TABLE
-    %       1D cell array of strings. LFR/TDS RCT global attribute
-    %       CALIBRATION_TABLE.
+    % gact
+    %       1D cell array of strings.
     % zvcti
     % zv_BW
     %       Either
@@ -123,15 +121,11 @@ classdef findread
     %       Returns containers.Map that can be used to initialize an instance
     %       of bicas.proc.L1L2.cal.Cal.
     %
-    function RctdCaMap = find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
-        nonBiasRcttid, rctDir, ...
-        ga_CALIBRATION_TABLE, ...
-        zvcti, ...
-        zv_BW, Bso, L)
+    function RctdCaMap = find_read_RCTs_by_regexp_and_ZVCTI_GACT(...
+        nonBiasRcttid, rctDir, gact, zvcti, zv_BW, Bso, L)
       % PROPOSAL: Better name.
-      %   PRO: Does two things
-      %   find_read_BIAS_RCT_by_regexp_and_nonBIAS_RCT_by_CALIBRATION_TABLE()
-      %     CON: Long
+      %   PRO: The function does two things: One for BIAS RCT, one for non-BIAS
+      %        RCTs.
 
       %========================================================================
       % Read BIAS RCT, IN ADDITION TO what argument "nonBiasRcttid" specifies.
@@ -143,9 +137,9 @@ classdef findread
       % Read potentially MULTIPLE NON-BIAS RCTs as specified by argument
       % "nonBiasRcttid".
       %==================================================================
-      NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
+      NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_ZVCTI_GACT(...
         nonBiasRcttid, rctDir, ...
-        ga_CALIBRATION_TABLE, ...
+        gact, ...
         zvcti, ...
         zv_BW, L);
 
@@ -236,8 +230,7 @@ classdef findread
 
 
     % Potentially reads MULTIPLE NON-BIAS RCTs (for the same RCTDID) from
-    % filenames indirectly specified by arguments ga_CALIBRATION_TABLE, and
-    % zvcti.
+    % filenames indirectly specified by arguments "gact" and "zvcti".
     %
     % ARGUMENTS
     % =========
@@ -246,41 +239,37 @@ classdef findread
     %       L1/L1R), then the caller should (!) create a fake one and submit
     %       it (normalize input).
     %
-    function RctdCa = find_read_RCTs_by_CALIBRATION_TABLE(...
-        nonBiasRcttid, rctDir, ...
-        ga_CALIBRATION_TABLE, ...
-        zvcti, ...
-        zv_BW, L)
+    function RctdCa = find_read_RCTs_by_ZVCTI_GACT(...
+        nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
       % PROPOSAL: Separate function for extracting filenames from ZVs.
 
-      % CT = L1R GA CALIBRATION_TABLE
-
       % ASSERTION
-      assert(iscell(ga_CALIBRATION_TABLE))
-      nCt = irf.assert.sizes(...
-        ga_CALIBRATION_TABLE, [-1, 1], ...
-        zvcti,                [-2, 2], ...
-        zv_BW,                [-2, 1]);
+      assert(iscell(gact))
+      nGactEntries = irf.assert.sizes(...
+        gact,  [-1, 1], ...
+        zvcti, [-2, 2], ...
+        zv_BW, [-2, 1]);
       assert(all(ismember(zv_BW, [0,1])))
 
-      % Obtain indices into glob.attr. CALIBRATION_TABLE
-      % ------------------------------------------------
+      % Obtain indices into GACT
+      % ------------------------
       % NOTE: May exclude some values in "zvcti" due to zv_BW.
-      iCtArray = unique(zvcti(logical(zv_BW), 1));
+      % NOTE: GACT entry index (in MATLAB) is one greater than the value stored
+      % in ZVCTI.
+      iGactEntryArray = unique(zvcti(logical(zv_BW), 1)) + 1;
 
 
 
       % Pre-allocate array of RCTDs with the same RCTTID.
-      RctdCa = cell(nCt, 1);
+      RctdCa = cell(nGactEntries, 1);
 
       % IMPLEMENTATION NOTE: Iterate over those entries in
-      % CALIBRATION_TABLE that should be CONSIDERED, i.e. NOT all indices.
+      % GACT that should be CONSIDERED, i.e. NOT all GACT entries.
       % May therefore legitimately leave some cells in cell array empty.
-      for i = 1:numel(iCtArray)
-        % NOTE: Cell array index is one greater than the stored value.
-        j         = iCtArray(i) + 1;
-        filePath  = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
-        RctdCa{j} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+      for i = 1:numel(iGactEntryArray)
+        iGactEntry         = iGactEntryArray(i);
+        filePath           = fullfile(rctDir, gact{iGactEntry});
+        RctdCa{iGactEntry} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           nonBiasRcttid, filePath, L);
       end
 

@@ -249,9 +249,9 @@ classdef Cal < handle
     % containers.Map: RCTTID --> Data
     % For BIAS, data is a struct (only one BIAS RCT is loaded).
     % For non-BIAS, data is a 1D cell array. {iRct}.
-    % iRct-1 corresponds to ga. CALIBRATION_TABLE and ZVCTI(:,1) when those are
-    % used. May thus contain empty cells for non-BIAS RCTs which should not
-    % (and can not) be loaded.
+    % iRct-1 corresponds to GACT and ZVCTI(:,1) when those are used. May thus
+    % contain empty cells for non-BIAS RCTs which should not (and can not) be
+    % loaded.
     RctdCaMap;
 
     % Non-RCT calibration data
@@ -288,8 +288,7 @@ classdef Cal < handle
     biasOffsetsDisabled
     lfrTdsTfDisabled
 
-    % Whether to select non-BIAS RCT using global attribute CALIBRATION_TABLE
-    % (and ZVCTI).
+    % Whether to select non-BIAS RCT using GACT (and ZVCTI).
     use_CALIBRATION_TABLE_rcts
     % Whether to use ZVCTI2 for calibration.
     useZvcti2
@@ -315,8 +314,8 @@ classdef Cal < handle
     %       containers.Map with keys RCTTID --> values = 1D cell array of
     %       RCTTs. Must include BIAS RCTT.
     %       The content in non-empty indices {iRct} come from the RCT which
-    %       is determined by the combination ZV "BW", ZVCTI(iRecord,1), GA
-    %       CALIBRATION_TABLE (or emulations of all or some).
+    %       is determined by the combination ZV "BW", ZVCTI(iRecord,1), GACT
+    %       (or emulations of all or some).
     %
     %
     % NOTES ON INTENDED USAGE
@@ -326,7 +325,7 @@ classdef Cal < handle
     % (1) by loading all RCTs using
     %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(),
     % (2) by loading relevant RCT(s) using
-    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE()
+    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_ZVCTI_GACT()
     % or
     % (3) manually (for manual debugging/analysis/testing).
     %

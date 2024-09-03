@@ -201,6 +201,8 @@ FV
     (1) Field Value. (2) (CDF) Fill Value.
 GA
     (CDF) Global Attribute(s).
+GACT
+    L1R GA CALIBRATION_TABLE or synthetic versions thereof, e.g. for L1.
 GMDB
     "GA MODS DataBase", i.e. class bicas.ga.mods.Database.
 GMDE
@@ -301,9 +303,7 @@ RCTTID
     RCT Type ID. String constant that represents a *type* of RCT, not a
     particular RT file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
 RCTS
-    RCT (as specified by) CALIBRATION_TABLE (L1R GA) and
-    CALIBRATION_TABLE_INDEX (L1R ZV).
-    S = plural.
+    RCT (as specified by) ZVCTI (L1R) and GACT (L1R). "S" = plural.
 ROC
     RPW Operations Center.
 ROC DFMD

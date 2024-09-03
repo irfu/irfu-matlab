@@ -393,8 +393,8 @@ rctFilename = irf.fs.get_name(rctFilePath);
 Df = solo.adm.dsfn.DatasetFilename.parse_filename(rctFilename);
 assert(~isempty(Df), 'Can not parse filename "%s".', rctFilename)
 
-ga_CALIBRATION_TABLE = rctFilename(1:end-4);
-DataObj.GlobalAttributes.CALIBRATION_TABLE   = {ga_CALIBRATION_TABLE};
+gact = rctFilename(1:end-4);
+DataObj.GlobalAttributes.CALIBRATION_TABLE   = {gact};
 
 DataObj.GlobalAttributes.CALIBRATION_VERSION = {Df.versionStr};
 
