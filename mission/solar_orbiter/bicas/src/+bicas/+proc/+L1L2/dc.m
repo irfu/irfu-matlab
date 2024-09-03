@@ -239,13 +239,13 @@ classdef dc
         % CV = Constant Values = Values which are constant for the
         %      entire subsequence of records.
         Cv = [];
-        Cv.bdmFpa                  = Dcip.Zv.bdmFpa(                 iRec1);
-        Cv.isAchgFpa               = Dcip.Zv.isAchgFpa(              iRec1);
-        Cv.freqHz                  = Dcip.Zv.freqHz(                 iRec1);
-        Cv.iLsf                    = Dcip.Zv.iLsf(                   iRec1);
-        Cv.CALIBRATION_TABLE_INDEX = Dcip.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
-        Cv.ufv                     = Dcip.Zv.ufv(                    iRec1);
-        Cv.dlrFpa                  = Dcip.Zv.dlrFpa(                 iRec1);
+        Cv.bdmFpa    = Dcip.Zv.bdmFpa(                 iRec1);
+        Cv.isAchgFpa = Dcip.Zv.isAchgFpa(              iRec1);
+        Cv.freqHz    = Dcip.Zv.freqHz(                 iRec1);
+        Cv.iLsf      = Dcip.Zv.iLsf(                   iRec1);
+        Cv.zvcti     = Dcip.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
+        Cv.ufv       = Dcip.Zv.ufv(                    iRec1);
+        Cv.dlrFpa    = Dcip.Zv.dlrFpa(                 iRec1);
         % NOTE: Excluding Dcip.Zv.lrx since it is only need for
         %       splitting time/CDF record intervals, not for calibration
         %       since calibration can handle sequences of only NaN.
@@ -287,8 +287,8 @@ classdef dc
             Cv.dlrFpa.logical2doubleNan(), ...
             Cv.freqHz, ...
             Cv.iCalibL, Cv.iCalibH, Cv.ufv, ...
-            Cv.CALIBRATION_TABLE_INDEX(1), ...
-            Cv.CALIBRATION_TABLE_INDEX(2))
+            Cv.zvcti(1), ...
+            Cv.zvcti(2))
         end
 
         SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(...
@@ -342,7 +342,7 @@ classdef dc
           Cv.iLsf, ...
           dtSec, ...
           Cv.isLfr, Cv.isTdsCwf, ...
-          Cv.CALIBRATION_TABLE_INDEX, Cv.ufv, ...
+          Cv.zvcti, Cv.ufv, ...
           Cal);
       end
 
@@ -362,7 +362,7 @@ classdef dc
         zvNValidSamplesPerRecord, isAchg, ...
         iCalibL, iCalibH, iLsf, dtSec, ...
         isLfr, isTdsCwf, ...
-        CALIBRATION_TABLE_INDEX, ufv, ...
+        zvcti, ufv, ...
         Cal)
       % IMPLEMENTATION NOTE: It is ugly to have this many parameters (15!),
       % but the original code made calibrate_demux_voltages() to large and
@@ -370,7 +370,7 @@ classdef dc
       %
       % PROPOSAL: CalSettings as parameter.
       %   PRO: Reduces number of parameters.
-      %   PROPOSAL: Add values to CalSettings: isLfr, isTdsCwf, CALIBRATION_TABLE_INDEX
+      %   PROPOSAL: Add values to CalSettings: isLfr, isTdsCwf, zvcti
       %       CON: cal does not seem to use more values.
       % PROPOSAL: Reorder arguments to group them.
       %   PROPOSAL: Group arguments from DCIP.
@@ -434,7 +434,7 @@ classdef dc
         ssBltsSamplesAVoltCa = Cal.calibrate_voltage_all(...
           dtSec, bltsSamplesTmCa, ...
           isLfr, isTdsCwf, CalSettings, ...
-          CALIBRATION_TABLE_INDEX, ufv);
+          zvcti, ufv);
         %#######################################################
 
         if hasSwfFormat

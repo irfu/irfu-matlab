@@ -138,8 +138,6 @@ COPC
     Class bicas.utils.cli.OptionConfig.
 COPV
     Class bicas.utils.cli.OptionValue.
-CTI
-    CALIBRATION_TABLE_INDEX (L1R zVariable).
 CWF
     Continuous WaveForm. Data on the form of samples over longer periods of
     time than a snapshot. Cf. SWF.
@@ -410,10 +408,12 @@ WOLS
 ZV
     CDF zVariable, or MATLAB variable that is analogous to one. First dimension
     corresponds to CDF record.
+ZVCTI
+    (L1R) ZV CALIBRATION_TABLE_INDEX, and synthetic versions thereof, e.g. for
+    L1.
 ZVCTI2
-    Element within the second column of L1R ZV CALIBRATION_TABLE_INDEX
-    for a given CDF record, i.e. any value
-    CALIBRATION_TABLE_INDEX(iCdfRecord, 2).
+    Element within the second column of ZVCTI for a given CDF record, i.e. any
+    value ZVCTI(iCdfRecord, 2).
 ZVS
     zVariable Struct. Struct where each field emulates the data content of a
     zVariable (either as an array or an FPA).

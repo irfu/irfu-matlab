@@ -249,10 +249,9 @@ classdef Cal < handle
     % containers.Map: RCTTID --> Data
     % For BIAS, data is a struct (only one BIAS RCT is loaded).
     % For non-BIAS, data is a 1D cell array. {iRct}.
-    % iRct-1 corresponds to ga. CALIBRATION_TABLE. and zv.
-    % CALIBRATION_TABLE_INDEX(:,1) when those are used. May thus contain
-    % empty cells for non-BIAS RCTs which should not (and can not) be
-    % loaded.
+    % iRct-1 corresponds to ga. CALIBRATION_TABLE and ZVCTI(:,1) when those are
+    % used. May thus contain empty cells for non-BIAS RCTs which should not
+    % (and can not) be loaded.
     RctdCaMap;
 
     % Non-RCT calibration data
@@ -289,8 +288,8 @@ classdef Cal < handle
     biasOffsetsDisabled
     lfrTdsTfDisabled
 
-    % Whether to select non-BIAS RCT using global attribute
-    % CALIBRATION_TABLE (and CALIBRATION_TABLE_INDEX(iRecord,1)).
+    % Whether to select non-BIAS RCT using global attribute CALIBRATION_TABLE
+    % (and ZVCTI).
     use_CALIBRATION_TABLE_rcts
     % Whether to use ZVCTI2 for calibration.
     useZvcti2
@@ -316,9 +315,8 @@ classdef Cal < handle
     %       containers.Map with keys RCTTID --> values = 1D cell array of
     %       RCTTs. Must include BIAS RCTT.
     %       The content in non-empty indices {iRct} come from the RCT which
-    %       is determined by the combination zVar BW, zVar
-    %       CALIBRATION_TABLE_INDEX(i,1), glob.attr. CALIBRATION_TABLE  (or
-    %       emulations of all or some).
+    %       is determined by the combination ZV "BW", ZVCTI(iRecord,1), GA
+    %       CALIBRATION_TABLE (or emulations of all or some).
     %
     %
     % NOTES ON INTENDED USAGE
@@ -528,9 +526,8 @@ classdef Cal < handle
     %
     % ARGUMENTS
     % =========
-    % zv_CALIBRATION_TABLE_INDEX
-    %       NOTE: Only one record of zVar CALIBRATION_TABLE_INDEX! Not
-    %             entire zVar.
+    % zvcti
+    %       NOTE: Only one record (row) of ZVCTI! Not entire ZV.
     % ufv
     %       Scalar logical.
     %       Whether to set output voltages to NaN (representing fill values)
@@ -540,15 +537,15 @@ classdef Cal < handle
     %           data will be overwritten with fill values later.
     %       (2) avoid executing calibration algorithms when it is
     %           known that there is no calibration configuration anyway
-    %           Ex: LFR zVar BW=0 ==> CALIBRATION_TABLE_INDEX(1,:) is illegal.
+    %           Ex: LFR zVar BW=0 ==> zvcti(1,:) value is illegal.
     %               ==> Can not calibrate.
     %           Note: This means that this function technically accepts
-    %           an illegal calibration configuration when argument is set
+    %           an illegal calibration configuration when this argument is set
     %           to true.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
         dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, ...
-        zv_CALIBRATION_TABLE_INDEX, ufv)
+        zvcti, ufv)
 
       % ASSERTIONS
       assert(isstruct(CalSettings))
@@ -557,22 +554,21 @@ classdef Cal < handle
       %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
       assert(iscell(bltsSamplesTmCa))
       assert(isvector(bltsSamplesTmCa))
-      irf.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
+      irf.assert.sizes(zvcti, [1,2])
       assert(islogical(ufv) && isscalar(ufv))
 
 
 
-      % Set iNonBiasRct, zvcti2 by extracting values from
-      % zv_CALIBRATION_TABLE_INDEX or emulating it.
+      % Set iNonBiasRct, zvcti2 by extracting values from zvcti or emulating it.
       if obj.use_CALIBRATION_TABLE_rcts
         % NOTE: Incrementing by one (index into MATLAB array).
-        iNonBiasRct = 1 + zv_CALIBRATION_TABLE_INDEX(1,1);
+        iNonBiasRct = 1 + zvcti(1,1);
       else
         iNonBiasRct = 1;
       end
       % NOTE: NOT incrementing value by one, since the variable's meaning
       % can vary between LFR, TDS-CWF, TDS-RSWF.
-      zvcti2 = zv_CALIBRATION_TABLE_INDEX(1,2);
+      zvcti2 = zvcti(1,2);
 
 
 

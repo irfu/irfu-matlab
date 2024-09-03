@@ -40,10 +40,10 @@ classdef findread
     % NOTE: Can be useful for manual experimentation with calibration of L1R
     %       (and L1) data.
     % NOTE: Necessary when processing L1-->L2 (unofficially) since L1 does
-    %       not have CALIBRATION_TABLE+CALIBRATION_TABLE_INDEX.
+    %       not have CALIBRATION_TABLE+ZVCTI.
     % NOTE: Will only load ONE RCT per RCTTID (no potential RCT time
     %       dependence as per global attribute CALIBRATION_TABLE) and
-    %       requires the user to not use CALIBRATION_TABLE_INDEX.
+    %       requires the user to not use ZVCTI.
     %
     % IMPLEMENTATION NOTE: BICAS only needs one non-BIAS RCT type at a time.
     % However, it is useful to be able to initialize bicas.proc.L1L2.cal.Cal so
@@ -90,18 +90,17 @@ classdef findread
 
     % (1) Load one BIAS RCT by regular expression.
     % (2) Load one or multiple non-BIAS RCT(s) for the selected RCTTID using
-    % CDF global attribute CALIBRATION_TABLE and ZVs CALIBRATION_TABLE_INDEX
-    % and BW.
+    % CDF global attribute CALIBRATION_TABLE and ZVCTI and ZV "BW".
     %
     %
     % IMPLEMENTATION NOTE
     % ===================
     % May load MULTIPLE RCTs with the same RCTTID, but will only load those RCTs
-    % which are actually needed, as indicated by zVariables
-    % CALIBRATION_TABLE_INDEX and BW. This is necessary since CALIBRATION_TABLE
-    % may reference unnecessary RCTs of types not recognized by BICAS (LFR's
-    % ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf /2019-12-16), and which are therefore
-    % unreadable by BICAS (BICAS will crash).
+    % which are actually needed, as indicated by ZVCTI and ZV "BW". This is
+    % necessary since CALIBRATION_TABLE may reference unnecessary RCTs of types
+    % not recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf
+    % /2019-12-16), and which are therefore unreadable by BICAS (BICAS will
+    % crash).
     %
     %
     % ARGUMENTS
@@ -111,8 +110,7 @@ classdef findread
     % ga_CALIBRATION_TABLE
     %       1D cell array of strings. LFR/TDS RCT global attribute
     %       CALIBRATION_TABLE.
-    % zv_CALIBRATION_TABLE_INDEX
-    %       LFR/TDS BICAS input dataset zVariable CALIBRATION_TABLE_INDEX.
+    % zvcti
     % zv_BW
     %       Either
     %       (1) [] (as for TDS data), or
@@ -128,7 +126,7 @@ classdef findread
     function RctdCaMap = find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
         nonBiasRcttid, rctDir, ...
         ga_CALIBRATION_TABLE, ...
-        zv_CALIBRATION_TABLE_INDEX, ...
+        zvcti, ...
         zv_BW, Bso, L)
       % PROPOSAL: Better name.
       %   PRO: Does two things
@@ -148,7 +146,7 @@ classdef findread
       NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_CALIBRATION_TABLE(...
         nonBiasRcttid, rctDir, ...
         ga_CALIBRATION_TABLE, ...
-        zv_CALIBRATION_TABLE_INDEX, ...
+        zvcti, ...
         zv_BW, L);
 
       RctdCaMap                = containers.Map();
@@ -239,7 +237,7 @@ classdef findread
 
     % Potentially reads MULTIPLE NON-BIAS RCTs (for the same RCTDID) from
     % filenames indirectly specified by arguments ga_CALIBRATION_TABLE, and
-    % zv_CALIBRATION_TABLE_INDEX.
+    % zvcti.
     %
     % ARGUMENTS
     % =========
@@ -251,7 +249,7 @@ classdef findread
     function RctdCa = find_read_RCTs_by_CALIBRATION_TABLE(...
         nonBiasRcttid, rctDir, ...
         ga_CALIBRATION_TABLE, ...
-        zv_CALIBRATION_TABLE_INDEX, ...
+        zvcti, ...
         zv_BW, L)
       % PROPOSAL: Separate function for extracting filenames from ZVs.
 
@@ -260,15 +258,15 @@ classdef findread
       % ASSERTION
       assert(iscell(ga_CALIBRATION_TABLE))
       nCt = irf.assert.sizes(...
-        ga_CALIBRATION_TABLE,       [-1, 1], ...
-        zv_CALIBRATION_TABLE_INDEX, [-2, 2], ...
-        zv_BW,                      [-2, 1]);
+        ga_CALIBRATION_TABLE, [-1, 1], ...
+        zvcti,                [-2, 2], ...
+        zv_BW,                [-2, 1]);
       assert(all(ismember(zv_BW, [0,1])))
 
       % Obtain indices into glob.attr. CALIBRATION_TABLE
       % ------------------------------------------------
-      % NOTE: May exclude some in zv_CALIBRATION_TABLE_INDEX due to zv_BW.
-      iCtArray = unique(zv_CALIBRATION_TABLE_INDEX(logical(zv_BW), 1));
+      % NOTE: May exclude some values in "zvcti" due to zv_BW.
+      iCtArray = unique(zvcti(logical(zv_BW), 1));
 
 
 

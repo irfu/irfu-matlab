@@ -149,7 +149,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %===================================
       % Normalize CALIBRATION_TABLE_INDEX
       %===================================
-      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
+      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_ZVCTI(...
         InSci.Zv, nRecords, obj.inputSciDsi);
 
 

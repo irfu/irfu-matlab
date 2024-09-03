@@ -16,7 +16,7 @@
 classdef L1L2
   %############################################################################
   %
-  % PROPOSAL: Move normalize_CALIBRATION_TABLE_INDEX() to some collection of utils.
+  % PROPOSAL: Move normalize_ZVCTI() to some collection of utils.
   %   PROPOSAL: bicas.proc.utils
   %       CON: Function is too specific. Has inputDsi as argument.
   %           CON: Could be less bad than this file.
@@ -248,25 +248,24 @@ classdef L1L2
 
     % Utility function to shorten code.
     %
-    % NOTE: Operates on entire ZvStruct since CALIBRATION_TABLE_INDEX exists
-    % for L1R, but not L1, and the corresponding field may thus be or not be
-    % present.
-    function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
-        ZvStruct, nRecords, inputDsi)
+    % NOTE: Operates on entire ZvStruct since CALIBRATION_TABLE_INDEX=ZVCTI
+    % exists for L1R, but not L1, and the corresponding field may thus be or not
+    % be present.
+    function zvcti = normalize_ZVCTI(ZvStruct, nRecords, inputDsi)
 
       C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputDsi);
 
       if C.isL1r
-        CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
+        zvcti = ZvStruct.CALIBRATION_TABLE_INDEX;
       elseif C.isL1
-        CALIBRATION_TABLE_INDEX = nan(nRecords, 2);
+        zvcti = nan(nRecords, 2);
       else
         error(...
           ['Can not normalize CALIBRATION_TABLE_INDEX', ...
           ' for this DSI classification.'])
       end
 
-      irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
+      irf.assert.sizes(zvcti, [nRecords, 2])
     end
 
 
