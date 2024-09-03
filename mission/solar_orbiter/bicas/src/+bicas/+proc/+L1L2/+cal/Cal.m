@@ -63,8 +63,9 @@
 % CALIBRATION_TABLE{CALIBRATION_TABLE_INDEX{iRecord, 1} + 1}
 %     == RCT filename
 % CALIBRATION_TABLE_INDEX{iRecord, 2}
-%     == Index/pointer to some calibration value(s) to use in RCT. Exact
-%        interpretation depends on RCT.
+%     == CTI2
+%     == Index/pointer to some calibration value(s) to use in the corresponding
+%        RCT. The exact interpretation depends on the RCT.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -437,8 +438,8 @@ classdef Cal < handle
       %============================
       % Store some argument values
       %============================
-      obj.use_CALIBRATION_TABLE_rcts   = use_CALIBRATION_TABLE_rcts;
-      obj.useCti2 = useCti2;
+      obj.use_CALIBRATION_TABLE_rcts = use_CALIBRATION_TABLE_rcts;
+      obj.useCti2                    = useCti2;
     end
 
 

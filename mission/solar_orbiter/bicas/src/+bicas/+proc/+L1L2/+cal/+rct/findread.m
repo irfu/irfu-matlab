@@ -7,32 +7,6 @@
 % First created 2021-08-16.
 %
 classdef findread
-  % PROPOSAL: Normalize L1 & L1R by creating fake ga_CALIBRATION_TABLE,
-  %           zv_CALIBRATION_TABLE_INDEX for L1.
-  %   PRO: Can eliminate internal special cases in bicas.proc.L1L2.cal.Cal.
-  %   NOTE: There is a function
-  %         bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX() used by
-  %         bicas.proc.L1L2.lfr.process_normalize_CDF() to produce NaN-valued
-  %         ZVs.
-  %
-  %   PROPOSAL: Have LFR&TDS:process_normalize_CDF() normalize
-  %            CALIBRATION_TABLE_INDEX and CALIBRATION_TABLE by creating fake
-  %            values (not NaN) corresponding to the actual values used wrt.
-  %            RCTs (:,1) and maybe also index (:,2).
-  %            produce_L1R_to_L2_LFR/TDS() then reads the values AFTER those
-  %            functions and use them to initialize bicas.proc.L1L2.cal.Cal
-  %            object.
-  %       CON: Does not enable that much simplification. The only code that
-  %            can be simplified is:
-  %                (1) bicas.proc.L1L2.cal.Cal.calibrate_voltage_all()
-  %                       selects between the CALIBRATION_TABLE_INDEX(:,1) and 0 depending on setting.
-  %                (2) bicas.proc.pf.produce_L1R_to_L2_LFR/DS()
-  %                       constructs bicas.proc.L1L2.cal.Cal object.
-  %           NOTE: There is also some code associated with the settings:
-  %               PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
-  %               PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
-  %               PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS
-  %               PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS
 
 
 
@@ -83,7 +57,7 @@ classdef findread
     %       containers.Map. Can be used for bicas.proc.L1L2.cal.Cal
     %       constructor even if there is no zVar CALIBRATION_TABLE.
     %       One key per specified RCTTID in argument rcttidCa.
-    %       Exactly one RCT per RCT type.
+    %       Exactly one RCT per RCTTID.
     %
     function RctdCaMap = find_read_RCTs_by_regexp(rcttidCa, rctDir, Bso, L)
 
@@ -263,14 +237,14 @@ classdef findread
 
 
 
-    % Reads potentially MULTIPLE NON-BIAS RCTs (of the same type) from
+    % Potentially reads MULTIPLE NON-BIAS RCTs (for the same RCTDID) from
     % filenames indirectly specified by arguments ga_CALIBRATION_TABLE, and
     % zv_CALIBRATION_TABLE_INDEX.
     %
     % ARGUMENTS
     % =========
     % zv_BW
-    %       LFR L1/L1R zVar BW. If it does not exist (if processing TDS
+    %       LFR L1/L1R ZV "BW". If it does not exist (i.e. if processing TDS
     %       L1/L1R), then the caller should (!) create a fake one and submit
     %       it (normalize input).
     %
@@ -281,7 +255,7 @@ classdef findread
         zv_BW, L)
       % PROPOSAL: Separate function for extracting filenames from ZVs.
 
-      % CT = L1/L1R GA CALIBRATION_TABLE
+      % CT = L1R GA CALIBRATION_TABLE
 
       % ASSERTION
       assert(iscell(ga_CALIBRATION_TABLE))
@@ -306,8 +280,8 @@ classdef findread
       % May therefore legitimately leave some cells in cell array empty.
       for i = 1:numel(iCtArray)
         % NOTE: Cell array index is one greater than the stored value.
-        j              = iCtArray(i) + 1;
-        filePath       = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
+        j         = iCtArray(i) + 1;
+        filePath  = fullfile(rctDir, ga_CALIBRATION_TABLE{j});
         RctdCa{j} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           nonBiasRcttid, filePath, L);
       end

@@ -415,10 +415,10 @@ classdef dc
         %  CALIBRATE VOLTAGES
         %######################
         %######################
-        % IMPLEMENTATION NOTE: Must explicitly disable
-        % calibration for LFR zVar BW=0
+        % IMPLEMENTATION NOTE: LFR zVar BW=0
         % ==> CALIBRATION_TABLE_INDEX(1,:) illegal value.
         % ==> Can not calibrate.
+        % ==> Must explicitly disable calibration.
         % Therefore uses ufv_ss to disable calibration.
         % It is thus not enough to overwrite the values later.
         % This incidentally also potentially speeds up the code.
