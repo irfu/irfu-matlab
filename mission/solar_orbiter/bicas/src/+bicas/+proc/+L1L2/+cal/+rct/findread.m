@@ -38,6 +38,22 @@ classdef findread
 
 
 
+    function RctdCaMap = get_RctdCaMap(...
+        useGactRct, nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
+
+      if useGactRct
+        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_RCT_JSON_and_ZVCTI_GACT(...
+          nonBiasRcttid, rctDir, ...
+          gact, zvcti, zv_BW, ...
+          L);
+      else
+        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_RCT_JSON_and_regexp(...
+          nonBiasRcttid, rctDir, Bso, L);
+      end
+    end
+
+
+
     % Read the BIAS RCT JSON file and return the content.
     function [biasRctPath, DtValidityBegin, DtValidityEnd] = ...
         read_BIAS_RCT_JSON(rctDir, L)
