@@ -33,7 +33,7 @@ classdef Timekeeper___UTEST < matlab.unittest.TestCase
 
     % Zero quantities
     function test_stop_log_0(testCase)
-      L = bicas.Logger('human-readable', false);
+      L = bicas.Logger('HUMAN_READABLE', false);
 
       Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
       pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
@@ -44,7 +44,7 @@ classdef Timekeeper___UTEST < matlab.unittest.TestCase
 
     % One quantity
     function test_stop_log_1(testCase)
-      L = bicas.Logger('human-readable', false);
+      L = bicas.Logger('HUMAN_READABLE', false);
 
       Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
       pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
@@ -62,7 +62,7 @@ classdef Timekeeper___UTEST < matlab.unittest.TestCase
 
     % Multiple quantities
     function test_stop_log_N(testCase)
-      L = bicas.Logger('human-readable', false);
+      L = bicas.Logger('HUMAN_READABLE', false);
 
       Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
       pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)

@@ -381,7 +381,7 @@ BSO = bicas.create_default_BSO();
 %         bicasSettingsSource)
 
 bicas.override_settings_from_config_file(...
-  bicasConfigFile, BSO, bicas.Logger('none', false));
+  bicasConfigFile, BSO, bicas.Logger('NO_STDOUT', false));
 
 BSO.make_read_only();
 

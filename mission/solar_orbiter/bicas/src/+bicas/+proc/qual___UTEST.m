@@ -23,7 +23,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         % Normalize/modify arguments
         Epoch = int64(Epoch(:));
 
-        L = bicas.Logger('human-readable', false);
+        L = bicas.Logger('HUMAN_READABLE', false);
 
         % CALL TESTED FUNCTION
         ActQrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...

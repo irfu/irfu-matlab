@@ -106,7 +106,7 @@ try
 
   % NOTE: Permitting logging to file from MATLAB instead of bash wrapper
   % in case of using unofficial option.
-  L = bicas.Logger('bash wrapper', true);
+  L = bicas.Logger('BASH_WRAPPER', true);
 
 
 

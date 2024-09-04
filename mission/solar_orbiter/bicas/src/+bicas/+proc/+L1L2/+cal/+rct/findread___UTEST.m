@@ -46,7 +46,7 @@ classdef findread___UTEST < matlab.unittest.TestCase
         matlab.unittest.fixtures.TemporaryFolderFixture);
       % NOTE: The same fixture should always return the same directory.
       testCase.dir = Fixture.Folder;
-      testCase.L   = bicas.Logger('none', false);
+      testCase.L   = bicas.Logger('NO_STDOUT', false);
     end
 
 

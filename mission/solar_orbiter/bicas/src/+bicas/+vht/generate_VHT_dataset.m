@@ -91,7 +91,7 @@ assert(isa(InputDatasetsMap, 'containers.Map'))
 
 Bso     = bicas.create_default_BSO();
 Bso.make_read_only();
-BICAS_L = bicas.Logger('human-readable', false);
+BICAS_L = bicas.Logger('HUMAN_READABLE', false);
 
 
 

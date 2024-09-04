@@ -71,7 +71,7 @@ classdef Logger < handle
 
     LINE_FEED      = newline;
 
-    stdoutOption   = 'none';
+    stdoutOption   = 'NO_STDOUT';
 
     logFileEnabled = false;
     logFileId      = [];
@@ -89,13 +89,13 @@ classdef Logger < handle
     % =========
     % stdoutOption
     %       String constant. Whether and how to log to stdout.
-    %           'none'
+    %           'NO_STDOUT'
     %               Do not log to stdout.
-    %           'human-readable'
+    %           'HUMAN_READABLE'
     %               Log to stdout as is most convenient for a human reader,
     %               i.e. without adding any prefix that later meant to be
     %               removed.
-    %           'bash wrapper'
+    %           'BASH_WRAPPER'
     %               Log to stdout as required by BICAS bash wrapper script,
     %               i.e. add prefix to every tow.
     % logFileEnabled
@@ -116,14 +116,14 @@ classdef Logger < handle
       logFileEnabled = logical(logFileEnabled);
 
       switch(stdoutOption)
-        case 'none'
-          obj.stdoutOption = 'none';
+        case 'NO_STDOUT'
+          obj.stdoutOption = 'NO_STDOUT';
 
-        case 'human-readable'
-          obj.stdoutOption = 'human-readable';
+        case 'HUMAN_READABLE'
+          obj.stdoutOption = 'HUMAN_READABLE';
 
-        case 'bash wrapper'
-          obj.stdoutOption = 'bash wrapper';
+        case 'BASH_WRAPPER'
+          obj.stdoutOption = 'BASH_WRAPPER';
 
         otherwise
           error('BICAS:Assertion', 'Illegal argument "%s".', stdoutOption)
@@ -230,13 +230,13 @@ classdef Logger < handle
       % Print to stdout
       %=================
       switch(obj.stdoutOption)
-        case 'none'
+        case 'NO_STDOUT'
           % Do nothing
 
-        case 'human-readable'
+        case 'HUMAN_READABLE'
           obj.write_to_stdout(rcsIcdLogMsg)
 
-        case 'bash wrapper'
+        case 'BASH_WRAPPER'
           % String that is intended to be read by BICAS bash wrapper
           % as stdout.
           bashWrapperRecipientStr = irf.str.add_prefix_on_every_row(...
