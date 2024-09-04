@@ -455,15 +455,15 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 
 %============================================================================
 % PROCESSING.RCT_REGEXP.*
-% Regular expressions for RCT filenames
-% -------------------------------------
+% Regular expressions for non-BIAS RCT filenames
+% ----------------------------------------------
 %
-% NOTES
-% -----
-% ** (a) When reading *L1* (voltage) datasets, then regular expression are
-%        needed for identifying all necessary RCTs.
-%    (b) When reading *L1R* (voltage) datasets, then regular expressions are
-%        only needed for identifying the BIAS RCT.
+% IMPORTANT NOTES
+% ---------------
+% ** When reading *L1* (voltage) datasets, then regular expression are
+%    needed for identifying all necessary non-BIAS RCTs.
+%    IMPORTANT: This is not needed for (nominal) processing of *L1R* (voltage)
+%               datasets.
 % ** BIAS & TDS have previously not followed the correct filenaming
 %    convention but does now (2020-11-20).
 % ** LFR do not seem to follow the filenaming convenction (2020-11-20)
@@ -503,8 +503,6 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %
 %============================================================================
 CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-%S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',                   CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention.
-S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['solo_CAL_rpw-bias_[0-9]{8}-[0-9]{8}_V[0-9][0-9]+', CDF_SUFFIX_REGEXP]);
 
 % NOTE: 2024-09-02: TDS still uses old/illegal RCT filenaming convention.
 % S.define_setting('PROCESSING.RCT_REGEXP.LFR',

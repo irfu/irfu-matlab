@@ -38,8 +38,58 @@ classdef findread
 
 
 
-    % Load one RCT per selected RCTTID by only using assumptions on filenames
-    % (and directory).
+    % Read the BIAS RCT JSON file and return the content.
+    function [biasRctPath, DtValidityBegin, DtValidityEnd] = ...
+        read_BIAS_RCT_JSON(rctDir, L)
+
+      rctJsonPath = fullfile(rctDir, bicas.const.RCT_JSON_FILENAME);
+      irf.assert.file_exists(rctJsonPath)
+
+      L.logf('info', 'Reading "%s".', rctJsonPath)
+      jsonStr    = fileread(rctJsonPath);
+      JsonStruct = jsondecode(jsonStr);
+
+      fnCa = fieldnames(JsonStruct);
+      assert(length(fnCa) == 1, ...
+        'File "%s" does not reference exactly one BIAS RCT as expected.', ...
+        rctJsonPath)
+
+      rctFilename   = fnCa{1};
+      % NOTE: Renaming "start"-->"begin" since "begin" is more conventional.
+      validityBegin = JsonStruct.(fnCa{1}).validity_start;
+      validityEnd   = JsonStruct.(fnCa{1}).validity_end;
+
+      %=====================================================
+      % Correct the RCT filename returned from jsondecode()
+      %=====================================================
+      % IMPLEMENTATION NOTE: jsondecode() stores the filename in a struct field
+      % name, but struct field names do not permit all characters (such as dash
+      % and period) and replaces them with underscore instead. Must therefore
+      % correct the filename string using knowledge of legal RCT filenames
+      % (sigh...).
+      %
+      % Ex: solo_CAL_rpw-bias_20200210-20991231_V01.cdf
+      %                 ^             ^            ^
+      rctFilename(end-3) = '.';
+      %
+      iDsiDash = strfind(bicas.const.RCT_DSI, '-');
+      assert(isscalar(iDsiDash))
+      rctFilename(iDsiDash) = '-';
+      %
+      assert(strcmp(rctFilename(27), '_'))
+      rctFilename(27) = '-';
+
+      % Construct return values.
+      biasRctPath = fullfile(rctDir, rctFilename);
+      DtValidityBegin = datetime(validityBegin, 'TimeZone', 'UTCLeapSeconds');
+      DtValidityEnd   = datetime(validityEnd,   'TimeZone', 'UTCLeapSeconds');
+    end
+
+
+
+    % (1) Load one BIAS RCT using the RCT JSON, and
+    % (2) load one non-BIAS RCT by only using assumptions on filenames (and
+    %     directory).
     %
     %
     % NOTES
@@ -60,31 +110,41 @@ classdef findread
     %       One key per specified RCTTID in argument rcttidCa.
     %       Exactly one RCT per RCTTID.
     %
-    function RctdCaMap = find_read_RCTs_by_regexp(rcttidCa, rctDir, Bso, L)
-
-      assert(iscell(rcttidCa))
+    function RctdCaMap = find_read_RCTs_by_RCT_JSON_and_regexp(...
+        nonBiasRcttid, rctDir, Bso, L)
+      assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
 
       RctdCaMap = containers.Map();
 
-      for i = 1:numel(rcttidCa)
-        rcttid = rcttidCa{i};
+      %==========
+      % BIAS RCT
+      %==========
+      [biasRctPath, ~, ~] = read_BIAS_RCT_JSON(rctDir, L);
+      RctdCaMap('BIAS') = {...
+          bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+          'BIAS', biasRctPath, L) ...
+          };
 
-        % Find path to RCT.
-        settingKey     = bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP(...
-          rcttid).filenameRegexpSettingKey;
+      %==============
+      % Non-BIAS RCT
+      %==============
+      % Find path to RCT.
+      settingKey     = bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP(...
+        nonBiasRcttid).filenameRegexpSettingKey;
 
-        filenameRegexp = Bso.get_fv(settingKey);
-        filePath       = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
-          rctDir, filenameRegexp, L);
+      filenameRegexp = Bso.get_fv(settingKey);
+      filePath       = bicas.proc.L1L2.cal.rct.findread.get_RCT_path_by_regexp(...
+        rctDir, filenameRegexp, L);
 
-        % Read RCT file.
-        RctdCa    = {bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
-          rcttid, filePath, L)};
+      % Read RCT file.
+      RctdCa         = {...
+        bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+        nonBiasRcttid, filePath, L) ...
+        };
 
-        % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so that
-        % they are stored analogously with when using L1R GACT.
-        RctdCaMap(rcttid) = RctdCa;
-      end
+      % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so that
+      % they are stored analogously with when using L1R ZVCTI1+GACT.
+      RctdCaMap(nonBiasRcttid) = RctdCa;
     end
 
 
@@ -122,30 +182,29 @@ classdef findread
     %       Returns containers.Map that can be used to initialize an instance
     %       of bicas.proc.L1L2.cal.Cal.
     %
-    function RctdCaMap = find_read_RCTs_by_regexp_and_ZVCTI_GACT(...
-        nonBiasRcttid, rctDir, gact, zvcti, zv_BW, Bso, L)
-      % PROPOSAL: Better name.
-      %   PRO: The function does two things: One for BIAS RCT, one for non-BIAS
-      %        RCTs.
+    function RctdCaMap = find_read_RCTs_by_RCT_JSON_and_ZVCTI_GACT(...
+        nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
 
-      %========================================================================
-      % Read BIAS RCT, IN ADDITION TO what argument "nonBiasRcttid" specifies.
-      %========================================================================
-      BiasRctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
-        {'BIAS'}, rctDir, Bso, L);
+      assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
 
-      %==================================================================
-      % Read potentially MULTIPLE NON-BIAS RCTs as specified by argument
-      % "nonBiasRcttid".
-      %==================================================================
+      RctdCaMap = containers.Map();
+
+      %==========
+      % BIAS RCT
+      %==========
+      [biasRctPath, ~, ~] = bicas.proc.L1L2.cal.rct.findread.read_BIAS_RCT_JSON(rctDir, L);
+      RctdCaMap('BIAS') = {...
+          bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+          'BIAS', biasRctPath, L) ...
+          };
+
+      %=========================================
+      % Read potentially MULTIPLE NON-BIAS RCTs
+      %=========================================
       NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_ZVCTI_GACT(...
         nonBiasRcttid, rctDir, ...
-        gact, ...
-        zvcti, ...
+        gact, zvcti, ...
         zv_BW, L);
-
-      RctdCaMap                = containers.Map();
-      RctdCaMap('BIAS')        = BiasRctdCaMap('BIAS');
       RctdCaMap(nonBiasRcttid) = NonBiasRctdCa;
     end
 
@@ -165,13 +224,13 @@ classdef findread
     % --
     % NOTE: Only public due to automatic testing.
     %
-    function path = find_RCT_regexp(rctDir, filenameRegexp, L)
+    function path = get_RCT_path_by_regexp(rctDir, filenameRegexp, L)
       % PROPOSAL: Better name.
       %   ~path, ~file, ~select
       %   find_RCT_by_regexp
       %   find_select_RCT_by_regexp
       %   NOTE: Does not read the file.
-      %   NOTE: Cf. bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp()
+      %   NOTE: Cf. bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_RCT_JSON_and_regexp()
 
       %=================================================
       % Find candidate files and select the correct one
