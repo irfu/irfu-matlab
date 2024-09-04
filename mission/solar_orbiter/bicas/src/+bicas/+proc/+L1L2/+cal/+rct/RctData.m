@@ -1,7 +1,7 @@
 %
 % Abstract class of which instances of subclasses represent the (massaged,
 % prepared) content of one RCT FILE. The *static* components of the subclasses
-% also effecitvely represent one RCTTID each.
+% also effectively represent one RCTTID each (not instances of subclasses).
 %
 % NOTE: BICAS may load multiple RCTs for the same RCTTID (LFR).
 %
@@ -83,7 +83,7 @@ classdef(Abstract) RctData
 
 
 
-    % NOTE: Constructor reads RCT on its own, just for obtaining relevant GAs.
+    % NOTE: The constructor reads RCT on its own, just for obtaining relevant GAs.
     %       RCT is reloaded again by subclasses for loading the bulk data.
     function obj = RctData(filePath)
 
@@ -184,9 +184,10 @@ classdef(Abstract) RctData
     % --
     % NOTE: BIAS & LFR RCTs: contain FTFs which are not inverted in this code.
     %       TDS RCTs:        contain ITFs.
-    % NOTE: Code still converts RCT TFs slightly:
+    % NOTE: Subclass code still converts the RCT TFs slightly:
     %   frequency      : Hz    --> rad/s
-    %   phase+amplitude: degrees,dimensionless real value --> Z (complex number)
+    %   phase+amplitude: degrees + dimensionless real value
+    %                          --> Z (complex number)
     %
     [RctRawData] = read_RCT(filePath);
 
@@ -224,19 +225,6 @@ classdef(Abstract) RctData
           'className',                className, ...
           'filenameRegexpSettingKey', filenameRegexpSettingKey);
       end
-
-      % SUBCLASSES_CA = {...
-      %   'bicas.proc.L1L2.cal.rct.RctDataBias', ...
-      %   'bicas.proc.L1L2.cal.rct.RctDataLfr', ...
-      %   'bicas.proc.L1L2.cal.rct.RctDataTdsCwf', ...
-      %   'bicas.proc.L1L2.cal.rct.RctDataTdsRswf' ...
-      % }
-      %
-      % for iSubclass = 1:numel(SUBCLASSES_CA)
-      %   SUBCLASSES_CA{iSubclass}
-      %
-      %   RctdMetadataMap('BIAS') = info('bicas.proc.L1L2.cal.rct.RctDataBias',    'PROCESSING.RCT_REGEXP.BIAS');
-      % end
 
       RctdMetadataMap('BIAS')     = info('bicas.proc.L1L2.cal.rct.RctDataBias',    'PROCESSING.RCT_REGEXP.BIAS');
       RctdMetadataMap('LFR')      = info('bicas.proc.L1L2.cal.rct.RctDataLfr',     'PROCESSING.RCT_REGEXP.LFR');

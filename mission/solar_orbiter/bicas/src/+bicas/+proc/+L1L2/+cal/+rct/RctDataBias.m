@@ -87,7 +87,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       obj.epochL               = RctRawData.epochL;
       obj.epochH               = RctRawData.epochH;
       obj.Current              = RctRawData.Current;
-      obj.FtfRctSet            = FtfRctSet;  % Change name of field (sic!).
+      obj.FtfRctSet            = FtfRctSet;    % Change name of field (sic!).
       obj.ItfSet               = ItfSet;
       obj.dcSingleOffsetsAVolt = RctRawData.dcSingleOffsetsAVolt;
       obj.DcDiffOffsets        = RctRawData.DcDiffOffsets;

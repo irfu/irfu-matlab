@@ -213,3 +213,5 @@ Version x.x.x
 * Reinstate the unofficial --swdescriptor argument.
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2024-08-04.
+* Default value for setting PROCESSING.RCT_REGEXP.LFR updated for new filenaming
+  convention (though assumes begin and end dates).

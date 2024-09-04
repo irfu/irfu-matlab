@@ -15,13 +15,43 @@ classdef findread___UTEST < matlab.unittest.TestCase
   % PROPOSAL: Tests for bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log() for BIAS
   %           RCT. Creates BIAS RCT using bicas.tools.rct.create_RCT() as part of
   %           the test.
-  %
-  % PROPOSAL: Use TestMethodSetup and TestMethodTeardown.
-  %   CON: Directory and files can only be shared among tests for find_RCT_regexp().
-  %       CON-PROPOSAL: Move find_RCT_regexp() test code to separate file.
-  % PROPOSAL: Use TestClassSetup and TestClassTeardown for logger object.
-  %   PRO: Can share logger object.
-  %
+
+
+
+  %############
+  %############
+  % PROPERTIES
+  %############
+  %############
+  properties
+    % Additional properties of testCase objects. Needed for setup and teardown
+    % methods which store/read their own data from the testCase object.
+    dir
+    L
+  end
+
+
+
+  %#######
+  %#######
+  % SETUP
+  %#######
+  %#######
+  methods(TestMethodSetup)
+
+
+
+    function setup(testCase)
+      Fixture = testCase.applyFixture(...
+        matlab.unittest.fixtures.TemporaryFolderFixture);
+      % NOTE: The same fixture should always return the same directory.
+      testCase.dir = Fixture.Folder;
+      testCase.L   = bicas.Logger('none', false);
+    end
+
+
+
+  end
 
 
 
@@ -35,11 +65,11 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
     function test_find_RCT_regexp_empty(testCase)
-      [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(testCase, {});
+      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(testCase, {});
 
       testCase.verifyError(...
         @() bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
-        tempDir, '20[0-9][0-9]\.cdf', L), ...
+        testCase.dir, '20[0-9][0-9]\.cdf', testCase.L), ...
         'BICAS:CannotFindRegexMatchingRCT')
 
     end
@@ -47,41 +77,41 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
     function test_find_RCT_regexp_no_match(testCase)
-      [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
+      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
         testCase, {'20201.cdf', '2020.CDF'});
 
       testCase.verifyError(...
         @() bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
-        tempDir, '20[0-9][0-9]\.cdf', L), ...
+        testCase.dir, '20[0-9][0-9]\.cdf', testCase.L), ...
         'BICAS:CannotFindRegexMatchingRCT')
     end
 
 
 
     function test_find_RCT_regexp_1_match(testCase)
-      [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
+      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
         testCase, {'2020.cdf', 'asdsf'});
 
       path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
-        tempDir, '20[0-9][0-9]\.cdf', L);
+        testCase.dir, '20[0-9][0-9]\.cdf', testCase.L);
 
       testCase.verifyEqual(...
         path, ...
-        fullfile(tempDir, '2020.cdf'))
+        fullfile(testCase.dir, '2020.cdf'))
     end
 
 
 
     function test_find_RCT_regexp_2_match(testCase)
-      [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
+      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
         testCase, {'2020.cdf', '2021.cdf'});
 
       path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
-        tempDir, '20[0-9][0-9]\.cdf', L);
+        testCase.dir, '20[0-9][0-9]\.cdf', testCase.L);
 
       testCase.verifyEqual(...
         path, ...
-        fullfile(tempDir, '2021.cdf'))
+        fullfile(testCase.dir, '2021.cdf'))
     end
 
 
@@ -90,15 +120,15 @@ classdef findread___UTEST < matlab.unittest.TestCase
       FN_1 = 'SOLO_CAL_RPW-BIAS_V202111191204.cdf';
       FN_2 = 'SOLO_CAL_RPW-BIAS_V202011191204.cdf';
 
-      [tempDir, L] = bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
+      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
         testCase, {FN_1, FN_2});
 
       path = bicas.proc.L1L2.cal.rct.findread.find_RCT_regexp(...
-        tempDir, 'SOLO_CAL_RPW-BIAS_V20[0-9]{10,10}.cdf', L);
+        testCase.dir, 'SOLO_CAL_RPW-BIAS_V20[0-9]{10,10}.cdf', testCase.L);
 
       testCase.verifyEqual(...
         path, ...
-        fullfile(tempDir, FN_1))
+        fullfile(testCase.dir, FN_1))
     end
 
 
@@ -116,25 +146,10 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
 
-    % Create (temporary) directory with specified empty files.
-    %
-    function [tempDir, L] = setup_files(testCase, filenamesCa)
-      L = bicas.Logger('none', false);
-
-      DirFixture = testCase.applyFixture(...
-        matlab.unittest.fixtures.TemporaryFolderFixture(...
-        'WithSuffix', ['.', mfilename()]));
-
-      tempDir = DirFixture.Folder;
-      %fprintf('tempDir = %s\n', tempDir)
-
+    function setup_files(testCase, filenamesCa)
       for fileCa = filenamesCa(:)'
-        % Create empty file.
-        irf.fs.write_file(...
-          fullfile(tempDir, fileCa{1}), ...
-          zeros(0, 1, 'uint8'))
+        irf.fs.write_empty_file({testCase.dir, fileCa{1}});
       end
-
     end
 
 

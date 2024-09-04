@@ -21,8 +21,10 @@ classdef AntennaSignalId
   %   id
   %       CON: Does not imply string(?). The object is an "ID".
   % PROPOSAL: Have abbreviation for "s".
-  % PROPOSAL: Abolish "s" by implementing map object which accepts ASIDs as
-  % keys and using map for implementing SameRowsMap.
+  % PROPOSAL: Abolish "s" by using ~map-like object which accepts ASIDs as
+  %           keys and using map for implementing SameRowsMap.
+  %   PROPOSAL: dictionary?
+  % PROPOSAL: Rename category-->categoryId
 
 
 

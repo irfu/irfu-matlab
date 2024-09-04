@@ -71,6 +71,8 @@ classdef const
 
     SWD_FILENAME                 = 'descriptor.json';
 
+    RCT_JSON_FILENAME            = 'bias_rct_validity.json';
+
     % Information to "interpret" and "translate" captured exceptions
     % --------------------------------------------------------------
     % containers.Map with

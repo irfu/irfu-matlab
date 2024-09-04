@@ -301,7 +301,7 @@ RCTD
     Class bicas.proc.L1L2.cal.rct.RctData.
 RCTTID
     RCT Type ID. String constant that represents a *type* of RCT, not a
-    particular RT file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
+    particular RTC file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
 ROC
     RPW Operations Center.
 ROC DFMD

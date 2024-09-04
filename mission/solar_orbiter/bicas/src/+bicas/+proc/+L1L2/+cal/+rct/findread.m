@@ -7,6 +7,13 @@
 % First created 2021-08-16.
 %
 classdef findread
+  % PROPOSAL: Abbreviation for "bias_rct_validity.json".
+  %   BIAS, RCT, validity, JSON
+  %   file
+  %   BRVJ = BIAS RCT Validity JSON (also the words in the filename)
+  %   BRJ  = BIAS RCT JSON
+  %   BRJF = BIAS RCT JSON File
+  %   BRVF = BIAS RCT Validity File
 
 
 
@@ -44,12 +51,6 @@ classdef findread
     % NOTE: Will only load ONE RCT per RCTTID (since there is no potential RCT
     %       time dependence as there would be if using ZVCTI+GACT) and
     %       requires the caller to not use ZVCTI.
-    %
-    % IMPLEMENTATION NOTE: BICAS only needs one non-BIAS RCT type at a time.
-    % However, it is useful to be able to initialize bicas.proc.L1L2.cal.Cal so
-    % that it can simultanteously calibrate all kinds of data for debugging
-    % purposes. Therefore loads ALL non-BIAS RCT types.
-    %
     %
     % RETURN VALUE
     % ============
@@ -89,7 +90,7 @@ classdef findread
 
 
     % (1) Load one BIAS RCT by regular expression.
-    % (2) Load one or multiple non-BIAS RCT(s) for the selected RCTTID using
+    % (2) Load one or multiple non-BIAS RCT(s) for one selected RCTTID using
     %     ZVCTI, GACT, and ZV "BW".
     %
     %
@@ -277,13 +278,12 @@ classdef findread
 
 
 
-    % For a given RCT file, do the following operations, customized for the
-    % type of RCT:
+    % For a given RCTTID+RCT file, do the following operations, customized for
+    % the type of RCT:
     %   (1) read RCT file,
-    %   (2) modify the content as required (in practice extrapolate TFs),
-    %       and
+    %   (2) modify the content when required (e.g. extrapolate TFs), and
     %   (3) log the modified RCT content.
-    % Effectively wraps the different RCT-reading functions.
+    % Effectively wraps the different RCT-reading functions/methods.
     %
     %
     % IMPLEMENTATION NOTES
@@ -301,6 +301,7 @@ classdef findread
 
       RctdMetadata = bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP(rcttid);
 
+      % Call constructor(!) of specified class.
       Rctd = feval(RctdMetadata.className, filePath);
 
       Rctd.log_RCT(L);
