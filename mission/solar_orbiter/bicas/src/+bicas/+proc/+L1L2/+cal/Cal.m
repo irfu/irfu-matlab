@@ -72,16 +72,88 @@
 % First created 2017-02-15
 %
 classdef Cal < handle
-  % TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
-  % TODO-NI: What parasitic capacitance value(s) should one use?
-  % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
+  % All methods 2024-09-05
+  % ----------------------
+  % function obj = Cal(...
+  % function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
+  % function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
+  % function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
+  %   Delegates to calibrate_voltage_*() but also handles
+  %   allVoltageCalibDisabled, ufv, useGact(=false) itself.
+  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
+  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
+  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
+  % function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
+  % function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
+  % function BiasCalibData = get_BIAS_calib_data(obj, ...
+  % function lfrItfIvpt = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
+  % function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
+  % function biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
   %
-  % PROPOSAL: Assertion function for CalSettings.
-  %   TODO-NI: Same struct, with same fields in all cases?
-  %   NOTE: Function does not know which fields are actually used.
-  % PROPOSAL: Class for CalSettings. Mere container for fields.
-  % PROPOSAL: Shorten CalSettings-->Cs inside functions and do not extract fields.
-  %   CON: Extracting variables makes it clear which fields are expected and used.
+  %
+  %
+  % PROPOSAL: Separate classes for different types of data. At least separate
+  %           for LFR, TDS-CWF, TDS-RSWF.
+  %   NOTE: Should then also have separate class for current calibration.
+  %   PROPOSAL: Functions
+  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
+  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
+  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
+  %   should then be separate implementations of abstract superclass mathod.
+  %     PROPOSAL: Separate non-abstract superclass method (which handles
+  %       allVoltageCalibDisabled, ufv, useGact(=false)) calls the subclass
+  %        method.
+  %
+  %
+  %
+  % PROPOSAL: Refactor to facilitate automated testing.
+  %   PROBLEM: Though it does not read RCTs, the corresponding data
+  %            structures are complex and would be hard to create test data for(?)
+  %   NOTE: Uses BSO, and many of its values.
+  %   PROBLEM: Calls complex function that should (primarily) be tested separately:
+  %            bicas.tf.apply_TF_freq()
+  %       PROPOSAL: Replace with function handle, set in constructor from
+  %                 argument ("dependency injection"). Unit tests can then mock
+  %                 bicas.tf.apply_TF_freq().
+  %           CON?: Introduces more interface (arguments) only due to testing.
+  %       PROPOSAL: Do automatic testing by having the tests call
+  %                 bicas.tf.apply_TF_freq() to generate results to compare with.
+  %           CON: Relies on the implementation of what is being tested.
+  %           CON: Can not test arguments sent to bicas.tf.apply_TF_freq().
+  %               CON: Relies on the implementation of what is being tested.
+  %       NOTE: (1) As a function/code module,
+  %                   bicas.proc.L1L2.cal.Cal encloses/contains/"secretly uses"
+  %                   bicas.tf.apply_TF_freq().
+  %             (2) For testing, one wants to verify the path (both ways) between
+  %                   bicas.proc.L1L2.cal.Cal and
+  %                   bicas.tf.apply_TF_freq().
+  %             ==> One wants to test one unit of code at a time, but what a
+  %                "unit" is ambiguous:
+  %                 one wants small units of code
+  %                 unit is ambiguous when a unit uses/call other unit(s).
+  %
+  %
+  %
+  % PROPOSAL: Move (charge) current calibration to separate class.
+  %   NOTE: Functions
+  %       calibrate_current_TM_to_aampere()
+  %           Uses BiasRctd == Uses RCT.
+  %       calibrate_current_HK_TM_to_aampere()
+  %           Uses
+  %               obj.HkBiasCurrent.gainAapt
+  %               obj.HkBiasCurrent.offsetTm
+  %       calibrate_current_sampere_to_TM()
+  %           Static
+  %           Uses solo.hwzv.const.TM_PER_SAMPERE
+  %   PRO: Class is large, ~1200 rows.
+  %   PRO: Remaining class becomes entirely about voltage calibration.
+  %   CON: Use needs to instantiate two calibration objects.
+  %   TODO-DEC: Name of new class?
+  %       ~cal_curr
+  %   PROPOSAL: Rename remaining class: Only about voltage calibration.
+  %       ~cal_volt
+  %
+  %
   %
   % TODO-DEC: How distribute the calibration formulas/algorithms between
   %   (1) calibrate_* functions,
@@ -128,6 +200,17 @@ classdef Cal < handle
   %
   %
   %
+  % TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
+  % TODO-NI: What parasitic capacitance value(s) should one use?
+  % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
+  %
+  % PROPOSAL: Assertion function for CalSettings.
+  %   TODO-NI: Same struct, with same fields in all cases?
+  %   NOTE: Function does not know which fields are actually used.
+  % PROPOSAL: Class for CalSettings. Mere container for fields.
+  % PROPOSAL: Shorten CalSettings-->Cs inside functions and do not extract fields.
+  %   CON: Extracting variables makes it clear which fields are expected and used.
+  %
   % PROPOSAL: Store all versions of TFs internally.
   %   Ex: FTF, ITF, tabulated ITF with extrapolation+interpolation+modification
   %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
@@ -145,77 +228,6 @@ classdef Cal < handle
   %       NOTE/CON: All structs/TFs must have the same fields if true struct array.
   %
   %
-  %
-  % PROPOSAL: Have
-  %               calibrate_voltage_BIAS_LFR(),
-  %               calibrate_voltage_BIAS_TDS_CWF(),
-  %               calibrate_voltage_BIAS_TDS_RSWF()
-  %           return function handle to a transfer function that does everything,
-  %           including offsets.
-  %   CON: Useful for debugging.
-  %       CON: Aren't the calibration methods available already that, if turned
-  %            into function handles?!!
-  %   PROPOSAL: Have ~special functions/methods for this, so that one does not use
-  %             function handles wrapped in function handles (not too many
-  %             anyway).
-  %   NOTE: CLARIFICATION: Separate TFs with offsets and calibration methods in the
-  %         time domain.
-  %   PROPOSAL: Have special function that returns transfer function for every
-  %             case.
-  %       PRO: Useful for debugging.
-  %           PRO: Plot
-  %           PRO: Save to file.
-  %
-  % PROPOSAL: Refactor to facilitate automated testing.
-  %   PROBLEM: Though it does not read RCTs, the corresponding data
-  %            structures are complex and would be hard to create test data for(?)
-  %   NOTE: Uses BSO, and many of its values.
-  %   PROBLEM: Calls complex function that should (primarily) be tested separately:
-  %            bicas.tf.apply_TF_freq()
-  %       PROPOSAL: Replace with function handle, set in constructor from
-  %                 argument ("dependency injection"). Unit tests can then mock
-  %                 bicas.tf.apply_TF_freq().
-  %           CON?: Introduces more interface (arguments) only due to testing.
-  %       PROPOSAL: Do automatic testing by having the tests call
-  %                 bicas.tf.apply_TF_freq() to generate results to compare with.
-  %           CON: Relies on the implementation of what is being tested.
-  %           CON: Can not test arguments sent to bicas.tf.apply_TF_freq().
-  %               CON: Relies on the implementation of what is being tested.
-  %       NOTE: (1) As a function/code module,
-  %                   bicas.proc.L1L2.cal.Cal encloses/contains/"secretly uses"
-  %                   bicas.tf.apply_TF_freq().
-  %             (2) For testing, one wants to verify the path (both ways) between
-  %                   bicas.proc.L1L2.cal.Cal and
-  %                   bicas.tf.apply_TF_freq().
-  %             ==> One wants to test one unit of code at a time, but what a
-  %                "unit" is ambiguous:
-  %                 one wants small units of code
-  %                 unit is ambiguous when a unit uses/call other unit(s).
-  %
-  %
-  %
-  % PROPOSAL: Move (charge) current calibration to separate class.
-  %   NOTE: Functions
-  %       calibrate_current_TM_to_aampere()
-  %           Uses BiasRctd == Uses RCT.
-  %       calibrate_current_HK_TM_to_aampere()
-  %           Uses
-  %               obj.HkBiasCurrent.gainAapt
-  %               obj.HkBiasCurrent.offsetTm
-  %       calibrate_current_sampere_to_TM()
-  %           Static
-  %           Uses solo.hwzv.const.TM_PER_SAMPERE
-  %   PRO: Class is large, ~1250 rows.
-  %   PRO: Remaining class becomes entirely about voltage calibration.
-  %   CON: Use needs to instantiate two calibration objects.
-  %   TODO-DEC: Name of new class?
-  %       ~cal_curr
-  %   PROPOSAL: Rename remaining class: Only about voltage calibration.
-  %       ~cal_volt
-  %
-  % PROPOSAL: Separate classes for different types of data. At least separate
-  %           for LFR and TDS.
-  %   NOTE: Should then have separate class for current calibration.
   %
   % PROPOSAL: Refactor to use a struct constant for those arguments to
   %           bicas.tf.apply_TF() which are constant.
@@ -517,9 +529,9 @@ classdef Cal < handle
 
       % ASSERTIONS
       assert(isstruct(CalSettings))
-      %             irf.assert.struct(CalSettings, {...
-      %                 'iBlts', 'Ssid', 'isAchg', ...
-      %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+      % irf.assert.struct(CalSettings, {...
+      %     'iBlts', 'Ssid', 'isAchg', ...
+      %     'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
       assert(iscell(bltsSamplesTmCa))
       assert(isvector(bltsSamplesTmCa))
       irf.assert.sizes(zvcti, [1,2])
@@ -678,8 +690,8 @@ classdef Cal < handle
         %==============================
         % Obtain calibration constants
         %==============================
-        % NOTE: Low/high gain is irrelevant for TDS. Argument value
-        % arbitrary.
+        % NOTE: AC low/high gain is irrelevant for TDS. Argument value is
+        % therefore arbitrary.
         BiasCalibData = obj.get_BIAS_calib_data(...
           Ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
@@ -1028,9 +1040,9 @@ classdef Cal < handle
 
 
 
-      %==============================================
-      % Only place to potentially make use of zvcti2
-      %==============================================
+      %==================================================
+      % The only place to potentially make use of zvcti2
+      %==================================================
       if obj.useZvcti2
         % ASSERTIONS
         assert(isscalar(zvcti2), ...

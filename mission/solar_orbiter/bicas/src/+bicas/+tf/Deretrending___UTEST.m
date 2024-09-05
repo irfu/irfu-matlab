@@ -109,8 +109,10 @@ classdef Deretrending___UTEST < matlab.unittest.TestCase
 
 
 
-    % NOTE: Does not modify signal between detrending and retrending
+    % NOTE: Does not modify the signal between detrending and retrending
     % (y1b-->y2b).
+    % NOTE: Can not include testing of data after, since the operation can not
+    % always restore the original data, depending on configuration.
     function [y12b, y2a] = run_DRT(y1a, drtInitArgsCa, retScaleFactor)
 
       Drt = bicas.tf.Deretrending(drtInitArgsCa{:});

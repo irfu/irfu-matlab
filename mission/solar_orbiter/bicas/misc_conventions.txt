@@ -230,7 +230,7 @@ L2QBM
 L3QBM
     zVariable L3_QUALITY_BITMASK.
 LL
-    Log Level
+    Log Level. Used for bicas.Logger.
 LRX
     LFR Rx. Internal ZV-like variable (one boolean per CDF record) that
     determines whether there is data on BLTS 2-3 (LRX=1) or BLTS 4-5 (LRX=0).
