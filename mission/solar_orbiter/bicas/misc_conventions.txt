@@ -153,7 +153,7 @@ Deg
 DCIP
     Class bicas.proc.L1L2.DemultiplexingCalibrationInput.
 DCOP
-    Class bicas.proc.L1L2.DemultiplexingCalibrationOutput
+    Class bicas.proc.L1L2.DemultiplexingCalibrationOutput.
 DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
     of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",
@@ -164,6 +164,8 @@ DLR
     1/true  = V13
     2023-08-29, EJ: Variable is constant for the entire mission except when it
     flips from zero to one at about 2023-08-21T12:04Z.
+DRT
+    Class bicas.tf.drt.
 DSI, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
@@ -349,7 +351,8 @@ SKV
     Class bicas.SettingsKeyValue.
 SNF
     Split By Non-finite.
-    Split time series by non-finite sample values.
+    Split time series by non-finite sample values when processing time series
+    through transfer functions.
 SPR
     Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.

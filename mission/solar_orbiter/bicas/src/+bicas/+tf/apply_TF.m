@@ -83,11 +83,9 @@
 % First created 2020-11-04.
 %
 function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
-% PROPOSAL: Return struct.
-%   PRO: Avoid confusing return arguments.
-%   PRO: Easy to add (and to some extent remove) fields while maintaining
-%        backward compatibility.
-%   CON: Locks in field names.
+% PROPOSAL: Move bicas.tf to bicas.proc.L1L2.tf.
+%   PRO: Code only used for L1/L1R-->L2.
+%   CON: Implies that code is less generic.
 %
 % PROPOSAL: Check that data is finite. Only call bicas.tf.apply_TF_freq
 %           if all data is non-finite.

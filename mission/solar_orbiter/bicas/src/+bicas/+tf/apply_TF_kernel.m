@@ -29,6 +29,7 @@
 %       String constant. Specifies how to handle edges.
 %           NOTE: Edges are never handled as if the signal was cyclic.
 %       'zeros'
+%       'cyclic'
 %       'mirror'
 %           NOTE: Kernel length determines the amount of padding, which is taken
 %           from the signal, which implies that there is a smallest number of

@@ -8,8 +8,11 @@
 %
 classdef findread
   % PROPOSAL: Abbreviation for "bias_rct_validity.json".
-  %   BIAS, RCT, validity, JSON
+  %   BIAS, RCT, validity
+  %   JSON
+  %     CON: Implementation detail.
   %   file
+  %   --
   %   BRJ  = BIAS RCT JSON
   %   BRJF = BIAS RCT JSON File
   %   BRVF = BIAS RCT Validity File -- IMPLEMENTED
@@ -38,8 +41,14 @@ classdef findread
 
 
 
+    % Get an instance of RctdCaMap needed for a nominal instantiation of
+    % bicas.proc.L1L2.cal.Cal.
     function RctdCaMap = get_RctdCaMap(...
         useGactRct, nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
+      % PROPOSAL: Make function instantiate bicas.proc.L1L2.cal.Cal.
+      %   CON: Bad for testing.
+      %     CON: Testing this function is impossible anyway.
+      %   CON: Conceptually bad. Makes function "less generic".
 
       if useGactRct
         RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...

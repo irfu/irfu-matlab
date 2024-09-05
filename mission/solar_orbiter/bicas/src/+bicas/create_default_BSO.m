@@ -628,7 +628,7 @@ S.define_setting('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ', 7)
 % values, before de-trending and applying the (modified) TF. This avoids
 % applying TF to fill values which avoids destroying non-fill value data.
 S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',     true)
-% Minimum number of samples in a time series (after splitting).
+% Minimum number of samples within a time series (after splitting).
 % NOTE: Limit does not apply if there was no splitting (for "backward
 % compatibility").
 S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)

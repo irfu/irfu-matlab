@@ -221,6 +221,14 @@ classdef Cal < handle
   %           bicas.tf.apply_TF() which are constant.
   %
   % PROPOSAL: Convert RctdCaMap into dedicated class.
+  %   PRO: Can remove long assertion in bicas.proc.L1L2.cal.Cal constructor.
+  %   CON: Unclear if data structure is a good one, given how
+  %        bicas.proc.L1L2.cal.Cal uses it.
+  %     CON: Is a another issue with an unclear solution which does not need to
+  %          be addressed now (if ever).
+  %       PRO: A good refactoring is likely to use a class anyway.
+  %     NOTE: Unclear if data structure needs to be a map at all. Only needs
+  %           two RCTDs for nominal use: 1x BIAS RCT and 1x non-BIAS RCTs.
   %
   % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least
   %      not for LFR.
