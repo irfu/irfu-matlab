@@ -11,7 +11,7 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
 
   properties(TestParameter)
     % All legal values for argument edgePolicy.
-    EDGE_POLICY = {'zeros', 'mirror'}
+    EDGE_POLICY = {'ZEROS', 'MIRROR'}
   end
 
 
@@ -71,9 +71,9 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
 
 
 
-    % Special tests for edgeCase == 'zeros'
+    % Special tests for edgeCase == 'ZEROS'
     %
-    function test_zeros(testCase)
+    function test_ZEROS(testCase)
       import bicas.tf.apply_TF_kernel___UTEST.test
 
       y1      = [1,0,0,0,0,2];
@@ -82,56 +82,56 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
 
       for iKc = 1:3
         test(testCase, ...
-          y1, yKernel, iKc, 'zeros', ...
+          y1, yKernel, iKc, 'ZEROS', ...
           y2p(iKc + [0:5]))
       end
 
       % Kernel longer than signal.
       test(testCase, ...
-        [1,0,0], [1,2,3,4], 2, 'zeros', ...
+        [1,0,0], [1,2,3,4], 2, 'ZEROS', ...
         [2,3,4])
     end
 
 
 
-    % Special tests for edgeCase == 'cyclic'
+    % Special tests for edgeCase == 'CYCLIC'
     %
-    function test_cyclic(testCase)
+    function test_CYCLIC(testCase)
       import bicas.tf.apply_TF_kernel___UTEST.test
       import bicas.tf.apply_TF_kernel___UTEST.test_pad
 
       for iKo = 1:3
         test_pad(testCase, ...
-          [0,0,2], [1,0,0,0,0,2], [1,0,0], [1,2,3], iKo, 'cyclic')
+          [0,0,2], [1,0,0,0,0,2], [1,0,0], [1,2,3], iKo, 'CYCLIC')
       end
 
       test_pad(testCase, ...
-        [3,4], [2,1,0,0,3,4], [2,1], [1,2,3,4,5], 3, 'cyclic')
+        [3,4], [2,1,0,0,3,4], [2,1], [1,2,3,4,5], 3, 'CYCLIC')
 
       % Kernel longer than signal (but still legal).
       test_pad(testCase, ...
-        [1,0,0], [1,0,0], [1,0,0], [1,2,3,4], 3, 'cyclic')
+        [1,0,0], [1,0,0], [1,0,0], [1,2,3,4], 3, 'CYCLIC')
     end
 
 
 
-    % Special tests for edgeCase == 'mirror'
+    % Special tests for edgeCase == 'MIRROR'
     %
-    function test_mirror(testCase)
+    function test_MIRROR(testCase)
       import bicas.tf.apply_TF_kernel___UTEST.test
       import bicas.tf.apply_TF_kernel___UTEST.test_pad
 
       for iKo = 1:3
         test_pad(testCase, ...
-          [0,0,1], [1,0,0,0,0,2], [2,0,0], [1,2,3], iKo, 'mirror')
+          [0,0,1], [1,0,0,0,0,2], [2,0,0], [1,2,3], iKo, 'MIRROR')
       end
 
       test_pad(testCase, ...
-        [1,2], [2,1,0,0,3,4], [4,3], [1,2,3,4,5], 3, 'mirror')
+        [1,2], [2,1,0,0,3,4], [4,3], [1,2,3,4,5], 3, 'MIRROR')
 
       % Kernel longer than signal (but still legal).
       test_pad(testCase, ...
-        [0,0,1], [1,0,0], [0,0,1], [1,2,3,4], 2, 'mirror')
+        [0,0,1], [1,0,0], [0,0,1], [1,2,3,4], 2, 'MIRROR')
     end
 
 

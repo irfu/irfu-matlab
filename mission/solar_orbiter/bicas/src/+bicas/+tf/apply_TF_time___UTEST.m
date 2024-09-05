@@ -65,7 +65,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
       % Manually shift/delay signal.
       y2_exp = [zeros(nDelaySmpls, 1); y1(1:end-nDelaySmpls)];
 
-      y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'zeros');
+      y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'ZEROS');
 
       testCase.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
 
@@ -75,7 +75,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
       % Manually pad with mirrored samples and shift.
       y2_exp = [y1(nDelaySmpls:-1:1); y1(1:end-nDelaySmpls)];
 
-      y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'mirror');
+      y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'MIRROR');
 
       testCase.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
     end
@@ -131,7 +131,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
           y2exp = [zeros(nDelaySmpls, 1); y1(1:end-nDelaySmpls)] * hwFactor;
           y2act = bicas.tf.apply_TF_time(...
             dt, y1, tf, lenKernel, ...
-            'zeros', 'hannWindow', true);
+            'ZEROS', 'hannWindow', true);
 
           testCase.verifyEqual(y2act, y2exp, 'AbsTol', 1e-13)
 
@@ -143,7 +143,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
           y2exp = [y1(nDelaySmpls:-1:1); y1(1:end-nDelaySmpls)] * hwFactor;
           y2act = bicas.tf.apply_TF_time(...
             dt, y1, tf, lenKernel, ...
-            'mirror', 'hannWindow', true);
+            'MIRROR', 'hannWindow', true);
 
           testCase.verifyEqual(y2act, y2exp, 'AbsTol', 1e-13)
 

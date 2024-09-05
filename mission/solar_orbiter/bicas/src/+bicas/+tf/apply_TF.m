@@ -153,7 +153,7 @@ DEFAULT_SETTINGS.detrendingDegreeOf         = -1;
 DEFAULT_SETTINGS.retrendingEnabled          = false;
 DEFAULT_SETTINGS.tfHighFreqLimitFraction    = Inf;
 DEFAULT_SETTINGS.method                     = 'FFT';
-DEFAULT_SETTINGS.kernelEdgePolicy           = 'mirror';
+DEFAULT_SETTINGS.kernelEdgePolicy           = 'MIRROR';
 DEFAULT_SETTINGS.kernelHannWindow           = false;
 DEFAULT_SETTINGS.snfEnabled                 = false;
 DEFAULT_SETTINGS.snfSubseqMinSamples        = 1;
@@ -261,7 +261,7 @@ switch(Settings.method)
     y2Modif = bicas.tf.apply_TF_freq(dt, y1Modif, tf);
     %[y2B, tfOmegaLookups, tfZLookups] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
 
-  case 'kernel'
+  case 'KERNEL'
     % TODO-NI: Kernel length == Signal length
     %          ==> Bad for very long time series? E.g. CWF?
     % NOTE: Length also affects amount of allocated memory (kernel,
