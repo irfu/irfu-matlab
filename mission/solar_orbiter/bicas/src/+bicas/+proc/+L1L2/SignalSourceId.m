@@ -8,6 +8,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef SignalSourceId
+  % PROPOSAL: Use for solo.BSACT_utils.
 
 
 
@@ -33,6 +34,8 @@ classdef SignalSourceId
 
   methods(Access=public)
 
+
+
     % Constructor
     function obj = SignalSourceId(value)
       if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
@@ -46,15 +49,21 @@ classdef SignalSourceId
       end
     end
 
+
+
     function isAsr = is_ASR(obj)
       isAsr = isa(obj.Asid, 'bicas.proc.L1L2.AntennaSignalId');
     end
+
+
 
   end    % methods(Access=public)
 
 
 
   methods(Access=private, Static)
+
+
 
     function C = init_const()
       C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
@@ -64,6 +73,8 @@ classdef SignalSourceId
       C.GND      = bicas.proc.L1L2.SignalSourceId('GND');
       C.UNKNOWN  = bicas.proc.L1L2.SignalSourceId('Unknown');
     end
+
+
 
   end
 

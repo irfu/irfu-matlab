@@ -241,7 +241,7 @@ classdef Saturation
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
-      assert(strcmp(bdmFpa.mc, 'uint8'))   % Must be some integer.
+      assert(strcmp(bdmFpa.mc, 'uint8'))
       assert(strcmp(dlrFpa.mc, 'logical'))
       assert(isa(lrx, 'double'))
       nRows = irf.assert.sizes(...
@@ -254,11 +254,11 @@ classdef Saturation
 
 
 
-      %===================================================================
+      %============================================================
       % (1) Find continuous subsequences of records with identical
       %     saturation thresholds.
       % (2) Detect TSFs separately for each such sequence.
-      %===================================================================
+      %============================================================
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         bdmFpa.int2doubleNan(), ...
         dlrFpa.logical2doubleNan(), ...

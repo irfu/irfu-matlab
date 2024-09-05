@@ -45,9 +45,9 @@ ACHG
 ACLG
     (BIAS diff) AC Low Gain.
 ASID
-    Class bicas.proc.L1L2.AntennaSignalId.
+    Class bicas.proc.L1L2.AntennaSignalId. See ASR.
 ASR, Antenna Signal Representation.
-    (1) A reference to a particular "physical antenna signal"
+    (1) A reference to a particular type of "physical antenna signal"
         (a "data channel") which BIAS-LFR/TDS is trying to measure, or
         NOTE: Class ASID represents such a reference.
     (2) a measurement of such.

@@ -121,7 +121,7 @@ classdef findread
 
 
 
-    % Read the BRVF file and return the content.
+    % Read the BRVF and return the content.
     function [biasRctPath, DtValidityBegin, DtValidityEnd] = ...
         read_BRVF(rctDir, L)
 
@@ -185,12 +185,6 @@ classdef findread
     % NOTE: Only public due to automatic testing.
     %
     function path = get_RCT_path_by_regexp(rctDir, filenameRegexp, L)
-      % PROPOSAL: Better name.
-      %   ~path, ~file, ~select
-      %   find_RCT_by_regexp
-      %   find_select_RCT_by_regexp
-      %   NOTE: Does not read the file.
-      %   NOTE: Cf. bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_regexp()
 
       %=================================================
       % Find candidate files and select the correct one
@@ -271,6 +265,7 @@ classdef findread
     function RctdCa = find_read_RCTs_by_ZVCTI_GACT(...
         nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
       % PROPOSAL: Separate function for extracting filenames from ZVs.
+      %   PRO: Easier to test.
 
       % ASSERTION
       assert(iscell(gact))
@@ -292,16 +287,15 @@ classdef findread
       % Pre-allocate array of RCTDs with the same RCTTID.
       RctdCa = cell(nGactEntries, 1);
 
-      % IMPLEMENTATION NOTE: Iterate over those entries in
-      % GACT that should be CONSIDERED, i.e. NOT all GACT entries.
-      % May therefore legitimately leave some cells in cell array empty.
+      % IMPLEMENTATION NOTE: Iterate over those entries in GACT that should be
+      % CONSIDERED, i.e. NOT all GACT entries. May therefore legitimately leave
+      % some cells in cell array empty.
       for i = 1:numel(iGactEntryArray)
         iGactEntry         = iGactEntryArray(i);
         filePath           = fullfile(rctDir, gact{iGactEntry});
         RctdCa{iGactEntry} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           nonBiasRcttid, filePath, L);
       end
-
     end
 
 

@@ -213,7 +213,8 @@ Version x.x.x
 * Reinstate the unofficial --swdescriptor argument.
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2024-08-04.
-* Always use bias_rct_validity.json for selecting BIAS RCT (never reg.exp.)
+* Always use bias_rct_validity.json for selecting BIAS RCT (never uses reg.exp.
+  on filenames)
 * Default value for setting PROCESSING.RCT_REGEXP.LFR updated for new filenaming
   convention (though assumes begin and end dates).
 * Removed setting

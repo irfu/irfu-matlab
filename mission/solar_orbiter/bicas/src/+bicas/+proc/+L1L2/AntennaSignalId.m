@@ -4,8 +4,8 @@
 % (1) a physical source signal, or
 % (2) how a signal (from antennas) should be represented in a dataset, since
 %     output datasets organize output data sorted as if they were physical
-%     signals (though the actual values/samples might actually be e.g. GND, 2.5V
-%     Ref, or unknown).
+%     signals (though the actual values/samples might actually be e.g. GND,
+%     2.5V Ref, or unknown).
 %
 %
 % NOTE: The constant field names used in bicas.proc.L1L2.AntennaSignalId.C
@@ -16,15 +16,32 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef AntennaSignalId
-  % PROPOSAL: Shorten constant field names to DC1, AC23 etc.
+  % PROPOSAL: Rename string constants for diffs: V-->E
+  %   CON: BIAS specification, Table 4 uses abbreviation "V12" etc. for diffs.
+  %
   % PROPOSAL: Rename "s" to something more standard.
   %   id
-  %       CON: Does not imply string(?). The object is an "ID".
-  % PROPOSAL: Have abbreviation for "s".
+  %       CON: Does not imply string(?). The object is also named "ID".
   % PROPOSAL: Abolish "s" by using ~map-like object which accepts ASIDs as
   %           keys and using map for implementing SameRowsMap.
   %   PROPOSAL: dictionary?
   % PROPOSAL: Rename category-->categoryId
+  %
+  % PROPOSAL: Not use term ASR?
+  %
+  % PROPOSAL: Store ASID constants in dictionary.
+  %   PROPOSAL: get_derived_ASR_constants() should return dictionary.
+  % PROPOSAL: Store mapping string-->ASID objects separately from collections
+  %           of string constants and object constants (ALL_ASID_NAMES_CA,
+  %           ALL_ASID_CA).
+  %   PROPOSAL: Use dictionary. Obtain sets of strings/objects via methods.
+  %
+  % PROPOSAL: Private ASID/SSID/SDID constructors. Only instantiate objects for
+  %           unique ASID/SSID/SDID ONCE.
+  %
+  % PROPOSAL: Separate class file for storing ASID/SSID/SDID constants.
+  %   PRO: Shorter path to constants.
+  %   PRO: Better overview.
 
 
 
@@ -50,8 +67,7 @@ classdef AntennaSignalId
     % objects. containers.Map does not accept objects as keys.
     s
 
-    % String constant that represents the type of signal (single/diff,
-    % DC/AC).
+    % String constant that represents the type of signal (single/diff, DC/AC).
     category
 
     % 1x1, or 1x2 numeric array with components representing antennas.
@@ -128,8 +144,6 @@ classdef AntennaSignalId
 
 
 
-    % NOTE: 2023-11-30: CURRENTLY UNUSED, BUT IS PLANNED TO BE USED.
-    %
     function isDiff = is_diff(obj)
       isDiff = numel(obj.antennas) == 2;
     end
@@ -144,10 +158,10 @@ classdef AntennaSignalId
 
 
 
-    % Function for quickly generating struct of constants with the same
-    % names (field names) as the ASID constants, and derived from the
-    % corresponding ASID constants. Can be used by other classes that define
-    % immutable objects using ASIDs.
+    % Function for quickly generating struct of constants with the same names
+    % (field names) as the ASID constants (bicas.proc.L1L2.AntennaSignalId.C),
+    % and derived from the corresponding ASID constants. Can be used by other
+    % classes that define immutable objects using ASIDs.
     function C = get_derived_ASR_constants(fh)
       ASID = bicas.proc.L1L2.AntennaSignalId.C;
       C    = struct();
@@ -172,7 +186,8 @@ classdef AntennaSignalId
       C = struct();
 
       function add(name, asidCategory, asidAntennas)
-        C.(name) = bicas.proc.L1L2.AntennaSignalId(name, asidCategory, asidAntennas);
+        C.(name) = bicas.proc.L1L2.AntennaSignalId(...
+          name, asidCategory, asidAntennas);
       end
 
       % =====================================

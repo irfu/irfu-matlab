@@ -1,8 +1,9 @@
 %
-% Immutable class that represents a particular routing of signals via a
-% particular BLTS given a particular demux mode and DLR setting:
-% (1) where a physical signal comes from (which relates to how
-%     it should be calibrated), and
+% Immutable class that represents one particular routing of signals for one
+% BLTS (but without specifying the BLTS). Given a particular demux mode and DLR
+% setting, specify:
+% (1) where the physical signal comes from (which among other things determines
+%     how it should be calibrated), and
 % (2) how it should be stored in the dataset object (if at all).
 %
 % Immutable.
@@ -10,13 +11,22 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef Routing   % < handle
+classdef Routing
   % PROPOSAL: Better name
+  %   PROPOSAL: Official abbreviation.
+  %     "Routing" (!)
+  %   NOTE: Does not correspond to demultiplexer only, since it also specifies
+  %         how to store non-ASR signals in datasets.
+  %   --
   %   source, destination
-  %   demultiplexer
+  %   demultiplexer, demuxer, demux
+  %   mux(?)
+  %   datasets, zVariables
+  %   --
+  %   DemuxerRouting
   %   DemultiplexerRouting
   %   Source(To)DestinationRouting
-  %       PRO: Can use abbreviation SDR.
+  %       PRO: Can use abbreviation SDR, STDR.
 
 
 
@@ -37,11 +47,10 @@ classdef Routing   % < handle
   %#####################
   %#####################
   properties(SetAccess=immutable)
-    % Where the physical signal in the BLTS ultimately comes from. This is
-    % used to determine how the signal should be calibrated.
+    % Where the BLTS ultimately comes from.
     Ssid
 
-    % How the BLTS should be stored in the datasets.
+    % How the BLTS should be stored in datasets.
     Sdid
   end
 
@@ -66,10 +75,12 @@ classdef Routing   % < handle
 
       switch numel(varargin)
         case 0
-          assert(Ssid.is_ASR())
+          assert(Ssid.is_ASR(), 'Can not use first argument to derive SDID.')
           Sdid = bicas.proc.L1L2.SignalDestinationId(Ssid.Asid);
+
         case 1
           Sdid = varargin{1};
+
         otherwise
           error('BICAS:Assertion:IllegalArgument', ...
             'Illegal number of extra arguments.')
@@ -94,23 +105,24 @@ classdef Routing   % < handle
 
 
 
-    function R = init_const()
+    function C = init_const()
       % PROPOSAL: Distinguish between different "channels" for 2.5V Ref
       %           and GND in the source (SSID).
 
       SSID = bicas.proc.L1L2.SignalSourceId.C;
       SDID = bicas.proc.L1L2.SignalDestinationId.C;
-      R = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants(...
+
+      C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants(...
         @(Asid) (bicas.proc.L1L2.Routing(...
         bicas.proc.L1L2.SignalSourceId(Asid))));
 
-      R.REF25V_TO_DC_V1    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V1);
-      R.REF25V_TO_DC_V2    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V2);
-      R.REF25V_TO_DC_V3    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V3);
-      R.GND_TO_DC_V1       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V1);
-      R.GND_TO_DC_V2       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V2);
-      R.GND_TO_DC_V3       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V3);
-      R.UNKNOWN_TO_NOWHERE = bicas.proc.L1L2.Routing(SSID.UNKNOWN, SDID.NOWHERE);
+      C.REF25V_TO_DC_V1    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V1);
+      C.REF25V_TO_DC_V2    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V2);
+      C.REF25V_TO_DC_V3    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V3);
+      C.GND_TO_DC_V1       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V1);
+      C.GND_TO_DC_V2       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V2);
+      C.GND_TO_DC_V3       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V3);
+      C.UNKNOWN_TO_NOWHERE = bicas.proc.L1L2.Routing(SSID.UNKNOWN, SDID.NOWHERE);
     end
 
 

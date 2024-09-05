@@ -22,12 +22,12 @@
 % RATIONALE
 % =========
 % Class was created for the purpose of managing sets of ZV-like arrays, where
-% the first dimension represent CDF records and is thus equal in size for all
-% arrays. This could be useful for doing indexing operations and enforcing the
-% same number of CDF records/rows. In practice, this seems to not be as useful
-% as intended, and harder to implement than expected. The class is therefore not
-% widely used. Still useful for maintaining a map ASR channel-->samples.
-% /Erik P G Johansson 2023-10-02
+% the first dimension in each array represent CDF records and is thus equal in
+% size for all arrays. This could be useful for doing indexing operations and
+% enforcing the same number of CDF records/rows. In practice, this seems to not
+% be as useful as intended, and harder to implement than expected. The class is
+% therefore not widely used. Still useful for maintaining a map ASR
+% channel-->samples. /Erik P G Johansson 2023-10-02
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -58,7 +58,8 @@ classdef SameRowsMap < handle
   %       NOTE: (:, <rowIndex>) must be supported for assignment.
   %
   % PROPOSAL: Make compatible with bicas.utils.FPArray.
-  %   NOTE: Should be, assuming that FPA implements subsref, subsasgn etc.
+  %   NOTE: Should already be, assuming that FPA implements subsref(),
+  %         subsasgn() etc.
   %
   % NEED: Simultaneously store collections of same-rows ZVs and same-size&type
   %       ZVs and enforce assertions between them.
@@ -257,6 +258,7 @@ classdef SameRowsMap < handle
 
 
     % NOTE: Method name chosen to be identical with containers.Map.isKey().
+    % The name is therefore inconsistent with naming conventions.
     function isKey = isKey(obj, key)
       bicas.utils.SameRowsMap.assert_legal_key(key)
 
@@ -287,16 +289,16 @@ classdef SameRowsMap < handle
     %
     % ARGUMENTS
     % =========
-    % Map2
+    % Srm2
     %       bicas.utils.SameRowsMap. Must have the same set of keys and
     %       value types.
     % iRowsArray
-    %       Column array. Same length as number of rows in Map2 fields.
+    %       Column array. Same length as number of rows in Srm2 fields.
     %       Specifies the rows that shall be overwritten.
     %       NOTE: Can not use logical indexing.
     %
     %
-    function setRows(obj, Map2, iRowsArray)
+    function setRows(obj, Srm2, iRowsArray)
       % NOTE: Could add support for other (future) custom-made types of
       %       Maps.
       % PROPOSAL: Support logical indexing.
@@ -306,18 +308,18 @@ classdef SameRowsMap < handle
       %   PRO: Using subsasgn() for assigning internal arrays might handle
       %        (1) logical indexing), (2) assigning multiple rows with
       %        1-row SRM.
-      assert(isa(Map2, 'bicas.utils.SameRowsMap'))
+      assert(isa(Srm2, 'bicas.utils.SameRowsMap'))
       assert(isnumeric(iRowsArray) && iscolumn(iRowsArray))
-      assert(size(iRowsArray, 1) == Map2.nRows)
+      assert(size(iRowsArray, 1) == Srm2.nRows)
 
-      assert(bicas.utils.object_sets_isequaln(obj.keys, Map2.keys))
+      assert(bicas.utils.object_sets_isequaln(obj.keys, Srm2.keys))
 
       keysCa = obj.keys();
       for keyCa = keysCa(:)'
         key = keyCa{1};
 
         hw1 = obj.Map(key);
-        hw2 = Map2.Map(key);
+        hw2 = Srm2.Map(key);
 
         size1 = size(hw1.v);
         size2 = size(hw2.v);

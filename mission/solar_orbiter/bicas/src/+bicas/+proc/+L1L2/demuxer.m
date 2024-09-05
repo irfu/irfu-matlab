@@ -33,12 +33,11 @@ classdef demuxer
 
 
     % Function that "encodes" the demultiplexer part of the BIAS subsystem.
-    % For a specified BDM and DLR setting, it determines, for every BLTS, it
-    % associates
-    % (1) which (physical) input signal (Antennas, GND, "2.5V Ref",
+    % For a specified BDM and DLR setting, for every BLTS, it determines
+    % (1) the (physical) input signal (Antennas, GND, "2.5V Ref",
     %     unknown), and
-    % (2) as what ASR (if any) should the BLTS be represented in the
-    %     datasets.
+    % (2) as what ASR (SDID) (if any) should the BLTS be represented in
+    %     the datasets.
     %
     %
     % RATIONALE
@@ -50,16 +49,16 @@ classdef demuxer
     % EDGE CASES
     % ==========
     % Function must be able to handle:
-    % ** bdm = NaN
-    %    Unknown BDM, e.g. due to insufficient HK time coverage.
-    % ** BLTS 1-3 signals labelled as "GND" or "2.5V Ref" in BDMs 5-7.
+    % ** bdm = fill position
+    %    Ex: Unknown BDM, e.g. due to insufficient HK time coverage.
+    % ** BLTS 1-3 labelled as "GND" or "2.5V Ref" in BDMs 5-7.
     %
     %
     % ARGUMENTS
     % =========
-    % bdm
+    % bdmFpa
     %       Scalar value. Demultiplexer mode.
-    %       NOTE: Can be NaN to represent unknown BDM.
+    %       NOTE: Can be fill position to represent unknown BDM.
     %       Implies that AsrSamplesVolt fields are correctly
     %       sized with NaN values.
     % dlrFpa
@@ -72,84 +71,86 @@ classdef demuxer
     %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
     %       (iBlts).
     function RoutingArray = get_routings(bdmFpa, dlrFpa)
-      % switch-case checks bdmFpa values.
       assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FPArray') && strcmp(bdmFpa.mc, 'uint8'))
       assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FPArray') && strcmp(dlrFpa.mc, 'logical'))
 
-      R = bicas.proc.L1L2.Routing.C;
+      C = bicas.proc.L1L2.Routing.C;
 
       dlrFloat = dlrFpa.logical2doubleNan();
       if isnan(dlrFloat)
-        R.DC_V1x = R.UNKNOWN_TO_NOWHERE;
-        R.AC_V1x = R.UNKNOWN_TO_NOWHERE;
+        C.DC_V1x = C.UNKNOWN_TO_NOWHERE;
+        C.AC_V1x = C.UNKNOWN_TO_NOWHERE;
       elseif dlrFloat
-        R.DC_V1x = R.DC_V13;
-        R.AC_V1x = R.AC_V13;
+        C.DC_V1x = C.DC_V13;
+        C.AC_V1x = C.AC_V13;
       else
-        R.DC_V1x = R.DC_V12;
-        R.AC_V1x = R.AC_V12;
+        C.DC_V1x = C.DC_V12;
+        C.AC_V1x = C.AC_V12;
       end
 
       % IMPLEMENTATION NOTE: switch-case statement does not work
       % for NaN. Therefore not using NaN for
-      bdmInt = bdmFpa.array(uint8(255));
+      BDM_INT_FV = uint8(255);
+      bdmInt = bdmFpa.array(BDM_INT_FV);
       switch(bdmInt)
 
         case 0   % "Standard operation" : We have all information.
 
           % Summarize the routing.
-          RoutingArray(1) = R.DC_V1;
-          RoutingArray(2) = R.DC_V1x;
-          RoutingArray(3) = R.DC_V23;
+          RoutingArray(1) = C.DC_V1;
+          RoutingArray(2) = C.DC_V1x;
+          RoutingArray(3) = C.DC_V23;
 
         case 1   % Probe 1 fails
 
-          RoutingArray(1) = R.DC_V2;
-          RoutingArray(2) = R.DC_V3;
-          RoutingArray(3) = R.DC_V23;
+          RoutingArray(1) = C.DC_V2;
+          RoutingArray(2) = C.DC_V3;
+          RoutingArray(3) = C.DC_V23;
 
           % NOTE: Can not derive anything extra for DC. BLTS 1-3
           % contain redundant data (regardless of DLR).
 
         case 2   % Probe 2 fails
 
-          RoutingArray(1) = R.DC_V1;
-          RoutingArray(2) = R.DC_V3;
-          RoutingArray(3) = R.DC_V1x;
+          RoutingArray(1) = C.DC_V1;
+          RoutingArray(2) = C.DC_V3;
+          RoutingArray(3) = C.DC_V1x;
 
         case 3   % Probe 3 fails
 
-          RoutingArray(1) = R.DC_V1;
-          RoutingArray(2) = R.DC_V2;
-          RoutingArray(3) = R.DC_V1x;
+          RoutingArray(1) = C.DC_V1;
+          RoutingArray(2) = C.DC_V2;
+          RoutingArray(3) = C.DC_V1x;
 
         case 4   % Calibration mode 0
 
-          RoutingArray(1) = R.DC_V1;
-          RoutingArray(2) = R.DC_V2;
-          RoutingArray(3) = R.DC_V3;
+          RoutingArray(1) = C.DC_V1;
+          RoutingArray(2) = C.DC_V2;
+          RoutingArray(3) = C.DC_V3;
 
         case {5,6,7}   % Calibration mode 1/2/3
 
           switch(bdmInt)
             case 5
-              RoutingArray(1) = R.REF25V_TO_DC_V1;
-              RoutingArray(2) = R.REF25V_TO_DC_V2;
-              RoutingArray(3) = R.REF25V_TO_DC_V3;
+              RoutingArray(1) = C.REF25V_TO_DC_V1;
+              RoutingArray(2) = C.REF25V_TO_DC_V2;
+              RoutingArray(3) = C.REF25V_TO_DC_V3;
             case {6,7}
-              RoutingArray(1) = R.GND_TO_DC_V1;
-              RoutingArray(2) = R.GND_TO_DC_V2;
-              RoutingArray(3) = R.GND_TO_DC_V3;
+              RoutingArray(1) = C.GND_TO_DC_V1;
+              RoutingArray(2) = C.GND_TO_DC_V2;
+              RoutingArray(3) = C.GND_TO_DC_V3;
           end
 
-        case 255
+        case BDM_INT_FV
+          % CASE: Fill position
+          % -------------------
           % NOTE: Could route unknown DC signals to V1-V3, but
           % since this behaviour is probably not very obvious to
           % the user, the code effectively deletes the information
           % instead.
-          RoutingArray(1) = R.UNKNOWN_TO_NOWHERE;
-          RoutingArray(2) = R.UNKNOWN_TO_NOWHERE;
-          RoutingArray(3) = R.UNKNOWN_TO_NOWHERE;
+          RoutingArray(1) = C.UNKNOWN_TO_NOWHERE;
+          RoutingArray(2) = C.UNKNOWN_TO_NOWHERE;
+          RoutingArray(3) = C.UNKNOWN_TO_NOWHERE;
 
           % NOTE: The routing of BLTS 4 & 5 is identical for all BDMs
           % (but does depend on the DLR). Can therefore route them
@@ -160,8 +161,8 @@ classdef demuxer
             'Illegal argument value bdm=%g.', bdm)
       end    % switch
 
-      RoutingArray(4) = R.AC_V1x;
-      RoutingArray(5) = R.AC_V23;
+      RoutingArray(4) = C.AC_V1x;
+      RoutingArray(5) = C.AC_V23;
     end
 
 

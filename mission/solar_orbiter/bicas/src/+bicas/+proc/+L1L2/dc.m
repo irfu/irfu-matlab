@@ -1,6 +1,6 @@
 %
-% Collection of processing functions for demultiplexing and calibrating (DC),
-% and related code (except bicas.proc.L1L2.demuxer).
+% Collection of processing functions for demultiplexing and calibrating, and
+% related code (except bicas.proc.L1L2.demuxer).
 %
 % DC = Demux (demultiplex) & Calibrate
 %
@@ -154,14 +154,17 @@ classdef dc
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %
     function AsrSamplesAVoltSrm = calibrate_demux_voltages(Dcip, Cal, L)
-      % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN for CWF.
+      % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
+      %           for CWF.
       %
       % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
-      % NOTE: Calibration is really separate from the demultiplexer. Demultiplexer only needs to split into
-      %       subsequences based on BDM and DLR, nothing else.
+      % NOTE: Calibration is really separate from the demultiplexer.
+      %       Demultiplexer only needs to split into subsequences based on BDM
+      %       and DLR, nothing else.
       %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
       %
-      % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell arrays) into the calibration function?!!
+      % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell
+      %           arrays) into the calibration function?!!
 
       % ASSERTIONS
       assert(isscalar( Dcip.hasSwfFormat))
@@ -173,8 +176,8 @@ classdef dc
 
 
 
-      % Pre-allocate
-      % ------------
+      % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
+      % -----------------------------------------------------------------
       % IMPLEMENTATION NOTE: Preallocation is very important for speeding
       % up LFR-SWF which tends to be broken into subsequences of 1 record.
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
@@ -187,19 +190,18 @@ classdef dc
 
 
 
-      %===================================================================
-      % (1) Find continuous subsequences of records with identical
-      %     settings.
+      %======================================================================
+      % (1) Find continuous subsequences of records with identical settings.
       % (2) Process data separately for each such sequence.
       % ----------------------------------------------------------
       % NOTE: Just finding continuous subsequences can take a significant
       %       amount of time.
-      % NOTE: Empirically, this is not useful for real LFR SWF datasets
-      %       where the LFR sampling frequency changes in every record,
-      %       meaning that the subsequences are all 1 record long.
+      % NOTE: Empirically, this is not useful for real LFR SWF datasets where
+      %       the LFR sampling frequency changes in every record, meaning that
+      %       the subsequences are all 1 record long.
       %
       % SS = Subsequence
-      %===================================================================
+      %======================================================================
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         Dcip.Zv.bdmFpa.int2doubleNan(), ...
         Dcip.Zv.isAchgFpa.logical2doubleNan(), ...
@@ -263,16 +265,16 @@ classdef dc
         Vv.zvNValidSamplesPerRecord = Dcip.Zv.nValidSamplesPerRecord( iRec1:iRec2);
 
         if ~(Cv.hasSwfFormat && Cv.isLfr)
-          % IMPLEMENTATION NOTE: Do not log for LFR SWF since it
-          % produces unnecessarily many log messages since sampling
-          % frequencies change for every CDF record.
+          % IMPLEMENTATION NOTE: Do not log for LFR SWF since it produces
+          % unnecessarily many log messages since sampling frequencies change
+          % for every CDF record.
           %
           % PROPOSAL: Make into "proper" table with top rows with column names.
           %   NOTE: Can not use irf.str.assist_print_table() since
           %         it requires the entire table to pre-exist before execution.
           %   PROPOSAL: Print after all iterations.
           %
-          % NOTE: DIFF_GAIN needs three characters to fit in "NaN".
+          % NOTE: DIFF_GAIN needs three characters to print the string "NaN".
           L.logf('info', ['Records %8i-%8i : %s -- %s', ...
             ' bdm/HK_BIA_MODE_MUX_SET=%i;', ...
             ' isAchg/DIFF_GAIN=%-3i;', ...
@@ -296,7 +298,7 @@ classdef dc
 
         % Add demuxed sequence to the to-be complete set of records.
         AsrSamplesAVoltSrm.setRows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
-      end
+      end    % for
 
     end    % calibrate_demux_voltages
 
