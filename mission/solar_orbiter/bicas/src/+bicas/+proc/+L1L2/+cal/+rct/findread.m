@@ -52,22 +52,38 @@ classdef findread
       %     CON: Testing this function is impossible anyway.
       %   CON: Conceptually bad. Makes function "less generic".
 
+      Rctdc = bicas.proc.L1L2.cal.RctdCollection();
+
+      %==========
+      % BIAS RCT
+      %==========
+      [biasRctPath, ~, ~] = bicas.proc.L1L2.cal.rct.findread.read_BRVF(rctDir, L);
+      BiasRctd = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+        'BIAS', biasRctPath, L);
+      Rctdc.add_RCTD('BIAS', {BiasRctd});
+
+      %===============
+      % Non-BIAS RCTs
+      %===============
       if useGactRct
-        Rctdc = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...
+        NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_ZVCTI_GACT(...
           nonBiasRcttid, rctDir, ...
-          gact, zvcti, zv_BW, ...
-          L);
+          gact, zvcti, ...
+          zv_BW, L);
+
+        Rctdc.add_RCTD(nonBiasRcttid, NonBiasRctdCa);
       else
-        Rctdc = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_regexp(...
+        NonBiasRctd = bicas.proc.L1L2.cal.rct.findread.find_read_nonBIAS_RCTs_by_regexp(...
           nonBiasRcttid, rctDir, Bso, L);
+
+        Rctdc.add_RCTD(nonBiasRcttid, {NonBiasRctd});
       end
     end
 
 
 
-    % (1) Load one BIAS RCT using the BRVF, and
-    % (2) load one non-BIAS RCT by only using assumptions on filenames (and
-    %     directory).
+    % Load one non-BIAS RCT by only using assumptions on filenames (and
+    % directory).
     %
     %
     % NOTES
@@ -83,32 +99,17 @@ classdef findread
     %
     % RETURN VALUE
     % ============
-    % Rctdc
-    %       Returns RCTDC that can be used to initialize an instance
-    %       of bicas.proc.L1L2.cal.Cal even if there is no ZVCTI+GACT.
-    %       NOTE: Exactly one RCT per RCTTID.
+    % NonBiasRctd
+    %       NOTE: Exactly one RCT (not cell array).
     %
-    function Rctdc = find_read_RCTs_by_BRVF_and_regexp(...
+    function NonBiasRctd = find_read_nonBIAS_RCTs_by_regexp(...
         nonBiasRcttid, rctDir, Bso, L)
+
       assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
 
-      Rctdc = bicas.proc.L1L2.cal.RctdCollection();
-
-      %==========
-      % BIAS RCT
-      %==========
-      [biasRctPath, ~, ~] = read_BRVF(rctDir, L);
-      BiasRctd = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
-          'BIAS', biasRctPath, L);
-      Rctdc.add_RCTD('BIAS', {BiasRctd});
-
-      %==============
-      % Non-BIAS RCT
-      %==============
       % Find path to RCT.
       settingKey     = bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP(...
         nonBiasRcttid).filenameRegexpSettingKey;
-
       filenameRegexp = Bso.get_fv(settingKey);
       filePath       = bicas.proc.L1L2.cal.rct.findread.get_RCT_path_by_regexp(...
         rctDir, filenameRegexp, L);
@@ -116,70 +117,6 @@ classdef findread
       % Read RCT file.
       NonBiasRctd    = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
         nonBiasRcttid, filePath, L);
-
-      % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so that
-      % they are stored analogously with when using L1R ZVCTI1+GACT.
-      Rctdc.add_RCTD(nonBiasRcttid, {NonBiasRctd});
-    end
-
-
-
-    % (1) Load one BIAS RCT by regular expression.
-    % (2) Load one or multiple non-BIAS RCT(s) for one selected RCTTID using
-    %     ZVCTI, GACT, and ZV "BW".
-    %
-    %
-    % IMPLEMENTATION NOTE
-    % ===================
-    % May load MULTIPLE RCTs with the same RCTTID, but will only load those RCTs
-    % which are actually needed, as indicated by ZVCTI and ZV "BW". This is
-    % necessary since GACT may reference unnecessary RCTs of types not
-    % recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf /2019-12-16),
-    % and which are therefore unreadable by BICAS (BICAS will crash).
-    %
-    %
-    % ARGUMENTS
-    % =========
-    % nonBiasRcttid
-    %       RCTTID for one *non-BIAS* RCT.
-    % gact
-    %       1D cell array of strings.
-    % zvcti
-    % zv_BW
-    %       Either
-    %       (1) [] (as for TDS data), or
-    %       (2) LFR input dataset zVariable BW.
-    %
-    %
-    % RETURN VALUE
-    % ============
-    % Rctdc
-    %       Returns RCTDC that can be used to initialize an instance
-    %       of bicas.proc.L1L2.cal.Cal.
-    %
-    function Rctdc = find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...
-        nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
-
-      assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
-
-      Rctdc = bicas.proc.L1L2.cal.RctdCollection();
-
-      %==========
-      % BIAS RCT
-      %==========
-      [biasRctPath, ~, ~] = bicas.proc.L1L2.cal.rct.findread.read_BRVF(rctDir, L);
-      BiasRctd = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
-        'BIAS', biasRctPath, L);
-      Rctdc.add_RCTD('BIAS', {BiasRctd});
-
-      %=========================================
-      % Read potentially MULTIPLE NON-BIAS RCTs
-      %=========================================
-      NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_ZVCTI_GACT(...
-        nonBiasRcttid, rctDir, ...
-        gact, zvcti, ...
-        zv_BW, L);
-      Rctdc.add_RCTD(nonBiasRcttid, NonBiasRctdCa);
     end
 
 
@@ -312,8 +249,17 @@ classdef findread
 
 
 
-    % Potentially reads MULTIPLE NON-BIAS RCTs (for the same RCTDID) from
-    % filenames indirectly specified by arguments "gact" and "zvcti".
+    % Load RCTs from filenames indirectly specified by arguments "gact" and
+    % "zvcti".
+    %
+    % IMPLEMENTATION NOTE
+    % ===================
+    % May load MULTIPLE RCTs with the same RCTTID, but will only load those
+    % RCTs which are actually needed, as indicated byGACT, ZVCTI and ZV "BW".
+    % This is necessary since GACT may reference unnecessary RCTs of types not
+    % recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf /2019-12-16),
+    % and which are therefore unreadable by BICAS (BICAS will crash).
+    %
     %
     % ARGUMENTS
     % =========
