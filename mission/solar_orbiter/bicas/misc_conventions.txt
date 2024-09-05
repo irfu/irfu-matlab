@@ -347,6 +347,9 @@ SIP
     The phrase (but not the abbreviation) is defined by the RCS ICD.
 SKV
     Class bicas.SettingsKeyValue.
+SNF
+    Split By Non-finite.
+    Split time series by non-finite sample values.
 SPR
     Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.

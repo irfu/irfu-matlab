@@ -135,13 +135,20 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 %             non-finite values between intervals of data.
 %       PRO: Good for plotting.
 %
-% PROPOSAL: Abbreviation for splitting by non-finite values (useful for
-%           setting in this file) or fill values (useful for BICAS setting
-%           name).
-%   PROPOSAL: ~split, ~FV, ~nonfinite,
-%   PROPOSAL: SNF = Split by Non-Finite
-%   PROPOSAL: SFV = Split by FV
-%   PROPOSAL: NFS = Non-Finite Splitting
+% PROPOSAL: Better abbbreviation for SNF.
+%   ~split, values, samples, time series
+%   FV
+%     Reflects the sample values in the actual datasets, i.e. what the user
+%     sees. Relevant if using term for settings.
+%     FVs do not represent +-inf.
+%   Non-finite
+%     Reflects the sample values in the input to this function, what the
+%     function actually sees.
+%   --
+%   SNF  = Split by Non-Finite -- IMPLEMENTED
+%   SNFS = Split by Non-Finite Samples
+%   SFV = Split by FV
+%   NFS = Non-Finite Splitting
 
 
 DEFAULT_SETTINGS.detrendingDegreeOf         = -1;
