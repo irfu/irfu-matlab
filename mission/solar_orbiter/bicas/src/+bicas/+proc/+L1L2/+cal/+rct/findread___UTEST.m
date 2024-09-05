@@ -64,17 +64,17 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_read_BIAS_RCT_JSON(testCase)
-      % Create RCT JSON file.
+    function test_read_BRVF(testCase)
+      % Create BRVF.
       ExpDtBegin = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
       ExpDtEnd   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
       biasRctFilename = bicas.tools.rct.create_RCT_filename(ExpDtBegin, ExpDtEnd, 1);
-      bicas.tools.rct.create_RCT_JSON(testCase.dir, biasRctFilename, ExpDtBegin, ExpDtEnd);
+      bicas.tools.rct.create_BRVF(testCase.dir, biasRctFilename, ExpDtBegin, ExpDtEnd);
 
       expBiasRctPath = fullfile(testCase.dir, biasRctFilename);
 
       [actBiasRctPath, ActDtValidityBegin, ActDtValidityEnd] = ...
-        bicas.proc.L1L2.cal.rct.findread.read_BIAS_RCT_JSON(testCase.dir, testCase.L);
+        bicas.proc.L1L2.cal.rct.findread.read_BRVF(testCase.dir, testCase.L);
 
       testCase.assertEqual(actBiasRctPath,     expBiasRctPath)
       testCase.assertEqual(ActDtValidityBegin, ExpDtBegin)

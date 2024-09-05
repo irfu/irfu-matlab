@@ -10,10 +10,10 @@ classdef findread
   % PROPOSAL: Abbreviation for "bias_rct_validity.json".
   %   BIAS, RCT, validity, JSON
   %   file
-  %   BRVJ = BIAS RCT Validity JSON (also the words in the filename)
   %   BRJ  = BIAS RCT JSON
   %   BRJF = BIAS RCT JSON File
-  %   BRVF = BIAS RCT Validity File
+  %   BRVF = BIAS RCT Validity File -- IMPLEMENTED
+  %   BRVJ = BIAS RCT Validity JSON (also the words in the filename)
 
 
 
@@ -42,23 +42,23 @@ classdef findread
         useGactRct, nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
 
       if useGactRct
-        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_RCT_JSON_and_ZVCTI_GACT(...
+        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...
           nonBiasRcttid, rctDir, ...
           gact, zvcti, zv_BW, ...
           L);
       else
-        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_RCT_JSON_and_regexp(...
+        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_regexp(...
           nonBiasRcttid, rctDir, Bso, L);
       end
     end
 
 
 
-    % Read the BIAS RCT JSON file and return the content.
+    % Read the BRVF file and return the content.
     function [biasRctPath, DtValidityBegin, DtValidityEnd] = ...
-        read_BIAS_RCT_JSON(rctDir, L)
+        read_BRVF(rctDir, L)
 
-      rctJsonPath = fullfile(rctDir, bicas.const.RCT_JSON_FILENAME);
+      rctJsonPath = fullfile(rctDir, bicas.const.BRVF_FILENAME);
       irf.assert.file_exists(rctJsonPath)
 
       L.logf('info', 'Reading "%s".', rctJsonPath)
@@ -103,7 +103,7 @@ classdef findread
 
 
 
-    % (1) Load one BIAS RCT using the RCT JSON, and
+    % (1) Load one BIAS RCT using the BRVF, and
     % (2) load one non-BIAS RCT by only using assumptions on filenames (and
     %     directory).
     %
@@ -126,7 +126,7 @@ classdef findread
     %       One key per specified RCTTID in argument rcttidCa.
     %       Exactly one RCT per RCTTID.
     %
-    function RctdCaMap = find_read_RCTs_by_RCT_JSON_and_regexp(...
+    function RctdCaMap = find_read_RCTs_by_BRVF_and_regexp(...
         nonBiasRcttid, rctDir, Bso, L)
       assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
 
@@ -135,7 +135,7 @@ classdef findread
       %==========
       % BIAS RCT
       %==========
-      [biasRctPath, ~, ~] = read_BIAS_RCT_JSON(rctDir, L);
+      [biasRctPath, ~, ~] = read_BRVF(rctDir, L);
       RctdCaMap('BIAS') = {...
           bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           'BIAS', biasRctPath, L) ...
@@ -198,7 +198,7 @@ classdef findread
     %       Returns containers.Map that can be used to initialize an instance
     %       of bicas.proc.L1L2.cal.Cal.
     %
-    function RctdCaMap = find_read_RCTs_by_RCT_JSON_and_ZVCTI_GACT(...
+    function RctdCaMap = find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...
         nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
 
       assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
@@ -208,7 +208,7 @@ classdef findread
       %==========
       % BIAS RCT
       %==========
-      [biasRctPath, ~, ~] = bicas.proc.L1L2.cal.rct.findread.read_BIAS_RCT_JSON(rctDir, L);
+      [biasRctPath, ~, ~] = bicas.proc.L1L2.cal.rct.findread.read_BRVF(rctDir, L);
       RctdCaMap('BIAS') = {...
           bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           'BIAS', biasRctPath, L) ...
@@ -246,7 +246,7 @@ classdef findread
       %   find_RCT_by_regexp
       %   find_select_RCT_by_regexp
       %   NOTE: Does not read the file.
-      %   NOTE: Cf. bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_RCT_JSON_and_regexp()
+      %   NOTE: Cf. bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_regexp()
 
       %=================================================
       % Find candidate files and select the correct one

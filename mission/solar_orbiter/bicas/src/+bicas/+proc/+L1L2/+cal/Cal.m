@@ -322,9 +322,9 @@ classdef Cal < handle
     % The nominal use is that the caller first initializes (argument)
     % RctdCaMap
     % (1) by loading RCTs using
-    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_RCT_JSON_and_regexp(),
+    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_regexp(),
     % (2) by loading RCT(s) using
-    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_RCT_JSON_and_ZVCTI_GACT()
+    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_ZVCTI_GACT()
     % or
     % (3) manually (for manual debugging/analysis/testing).
     %

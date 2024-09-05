@@ -1,8 +1,8 @@
 %
-% Create RCT JSON file, associated with BICAS RCTs.
+% Create BRVF file, associated with BICAS RCTs.
 %
-% NOTE: The RCT JSON filename should be static and is therefore hard-coded.
-% NOTE: Will overwrite old RCT JSON file.
+% NOTE: The BRVF filename should be static and is therefore hard-coded.
+% NOTE: Will overwrite old BRVF file.
 %
 %
 % SPECIFICATION OF JSON FILE
@@ -62,14 +62,14 @@
 %
 % RETURN VALUE
 % ============
-% rctJsonPath
+% brvfPath
 %       Path to the file created. Useful for printing log messages.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-24.
 %
-function rctJsonPath = create_RCT_JSON(destDir, biasRctFilename, DtBegin, DtEnd)
+function brvfPath = create_BRVF(destDir, biasRctFilename, DtBegin, DtEnd)
 
 beginStr = DT_to_str(DtBegin);
 endStr   = DT_to_str(DtEnd);
@@ -85,8 +85,8 @@ JsonObj(biasRctFilename) = { ...
 
 str = bicas.utils.JSON_object_str(JsonObj);
 
-rctJsonPath = fullfile(destDir, bicas.const.RCT_JSON_FILENAME);
-irf.fs.write_file(rctJsonPath, uint8(str(:)));
+brvfPath = fullfile(destDir, bicas.const.BRVF_FILENAME);
+irf.fs.write_file(brvfPath, uint8(str(:)));
 
 end
 

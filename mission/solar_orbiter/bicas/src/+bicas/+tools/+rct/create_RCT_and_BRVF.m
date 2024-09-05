@@ -1,7 +1,7 @@
 %
-% Create RCT and RCT JSON files to be delivered together.
+% Create RCT and BRVF files to be delivered together.
 %
-% NOTE: Should probably ideally generate RCT and RCT JSON files with the
+% NOTE: Should probably ideally generate RCT and BRVF files with the
 % official CDF version, i.e. using the BICAS delivery git repo, not irfu-matlab.
 %
 %
@@ -16,8 +16,8 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-07-02.
 %
-function create_RCT_and_RCT_JSON(rctMasterCdfFile, destDir, rctVersionNbr)
-% bicas.tools.rct.create_RCT_and_RCT_JSON('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RPW-BIAS_V03.cdf', '~/temp/temp', 1)
+function create_RCT_and_BRVF(rctMasterCdfFile, destDir, rctVersionNbr)
+% bicas.tools.rct.create_RCT_and_BRVF('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RPW-BIAS_V03.cdf', '~/temp/temp', 1)
 
 % Time interval for which the RCT is valid. Should cover the entire mission.
 % --------------------------------------------------------------------------
@@ -46,6 +46,6 @@ END_DT   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
 rctPath     = bicas.tools.rct.create_RCT(rctMasterCdfFile, destDir, BEGIN_DT, END_DT, rctVersionNbr);
 fprintf(1, 'Created RCT file      "%s"\n', rctPath);
 
-rctJsonPath = bicas.tools.rct.create_RCT_JSON(destDir, irf.fs.get_name(rctPath), BEGIN_DT, END_DT);
-fprintf(1, 'Created RCT JSON file "%s"\n', rctJsonPath);
+rctJsonPath = bicas.tools.rct.create_BRVF(destDir, irf.fs.get_name(rctPath), BEGIN_DT, END_DT);
+fprintf(1, 'Created BRVF file "%s"\n', rctJsonPath);
 end

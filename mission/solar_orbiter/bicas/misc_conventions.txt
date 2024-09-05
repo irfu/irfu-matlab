@@ -99,6 +99,9 @@ BLTS = BIAS-LFR/TDS SIGNAL
     NOTE: This definition is partly created to avoid using term "BIAS_i" since
     it is easily confused with other things (the subsystem BIAS, bias currents),
     partly to include various stages of calibration.
+BRVF
+    BIAS RCT Validity File. Not ROC term. File "bias_rct_validity.json" as
+    specified by ROC.
 BSO
     Singleton instance of class bicas.Settings which stores the settings for
     BICAS as a whole.
