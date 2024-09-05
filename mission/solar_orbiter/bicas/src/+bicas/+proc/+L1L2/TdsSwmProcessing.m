@@ -83,14 +83,14 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         size(InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, 1), ...
         1));
 
-      RctdCaMap = bicas.proc.L1L2.cal.rct.findread.get_RctdCaMap(...
+      Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
         useGactRct, tdsRcttid, rctDir, ...
         InputSciCdf.Ga.CALIBRATION_TABLE, ...
         InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
         zv_BW, ...
         L);
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useGactRct, useZvcti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(Rctdc, useGactRct, useZvcti2, Bso);
 
 
 
@@ -106,7 +106,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
       OutputDatasetsMap = containers.Map();
-      RctdCa = bicas.proc.utils.convert_RctdCaMap_to_CA(RctdCaMap);
+      RctdCa = Rctdc.get_global_RCTD_CA();
       OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCa);
     end
 

@@ -304,6 +304,8 @@ RCT
     ROC-defined term.
 RCTD
     Class bicas.proc.L1L2.cal.rct.RctData.
+RCTDC
+    Class bicas.proc.L1L2.cal.RctdCollection.
 RCTTID
     RCT Type ID. String constant that represents a *type* of RCT, not a
     particular RTC file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".

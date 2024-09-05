@@ -41,22 +41,24 @@ classdef findread
 
 
 
-    % Get an instance of RctdCaMap needed for a nominal instantiation of
+    % Get an instance of RCTDC needed for a nominal instantiation of
     % bicas.proc.L1L2.cal.Cal.
-    function RctdCaMap = get_RctdCaMap(...
+    function Rctdc = get_nominal_RCTDC(...
         useGactRct, nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
+      % PROPOSAL: Better name.
+      %   nominal
       % PROPOSAL: Make function instantiate bicas.proc.L1L2.cal.Cal.
       %   CON: Bad for testing.
       %     CON: Testing this function is impossible anyway.
       %   CON: Conceptually bad. Makes function "less generic".
 
       if useGactRct
-        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...
+        Rctdc = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...
           nonBiasRcttid, rctDir, ...
           gact, zvcti, zv_BW, ...
           L);
       else
-        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_regexp(...
+        Rctdc = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_regexp(...
           nonBiasRcttid, rctDir, Bso, L);
       end
     end
@@ -127,28 +129,27 @@ classdef findread
     %       time dependence as there would be if using ZVCTI+GACT) and
     %       requires the caller to not use ZVCTI.
     %
+    %
     % RETURN VALUE
     % ============
-    % RctdCaMap
-    %       containers.Map. Can be used for bicas.proc.L1L2.cal.Cal
-    %       constructor even if there is no ZVCTI+GACT.
-    %       One key per specified RCTTID in argument rcttidCa.
-    %       Exactly one RCT per RCTTID.
+    % Rctdc
+    %       Returns RCTDC that can be used to initialize an instance
+    %       of bicas.proc.L1L2.cal.Cal even if there is no ZVCTI+GACT.
+    %       NOTE: Exactly one RCT per RCTTID.
     %
-    function RctdCaMap = find_read_RCTs_by_BRVF_and_regexp(...
+    function Rctdc = find_read_RCTs_by_BRVF_and_regexp(...
         nonBiasRcttid, rctDir, Bso, L)
       assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
 
-      RctdCaMap = containers.Map();
+      Rctdc = bicas.proc.L1L2.cal.RctdCollection();
 
       %==========
       % BIAS RCT
       %==========
       [biasRctPath, ~, ~] = read_BRVF(rctDir, L);
-      RctdCaMap('BIAS') = {...
-          bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
-          'BIAS', biasRctPath, L) ...
-          };
+      BiasRctd = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+          'BIAS', biasRctPath, L);
+      Rctdc.add_RCTD('BIAS', {BiasRctd});
 
       %==============
       % Non-BIAS RCT
@@ -162,14 +163,12 @@ classdef findread
         rctDir, filenameRegexp, L);
 
       % Read RCT file.
-      RctdCa         = {...
-        bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
-        nonBiasRcttid, filePath, L) ...
-        };
+      NonBiasRctd    = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+        nonBiasRcttid, filePath, L);
 
       % NOTE: Placing all non-BIAS RCT data inside 1x1 cell arrays so that
       % they are stored analogously with when using L1R ZVCTI1+GACT.
-      RctdCaMap(nonBiasRcttid) = RctdCa;
+      Rctdc.add_RCTD(nonBiasRcttid, {NonBiasRctd});
     end
 
 
@@ -203,25 +202,24 @@ classdef findread
     %
     % RETURN VALUE
     % ============
-    % RctdCaMap
-    %       Returns containers.Map that can be used to initialize an instance
+    % Rctdc
+    %       Returns RCTDC that can be used to initialize an instance
     %       of bicas.proc.L1L2.cal.Cal.
     %
-    function RctdCaMap = find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...
+    function Rctdc = find_read_RCTs_by_BRVF_and_ZVCTI_GACT(...
         nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
 
       assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
 
-      RctdCaMap = containers.Map();
+      Rctdc = bicas.proc.L1L2.cal.RctdCollection();
 
       %==========
       % BIAS RCT
       %==========
       [biasRctPath, ~, ~] = bicas.proc.L1L2.cal.rct.findread.read_BRVF(rctDir, L);
-      RctdCaMap('BIAS') = {...
-          bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
-          'BIAS', biasRctPath, L) ...
-          };
+      BiasRctd = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
+        'BIAS', biasRctPath, L);
+      Rctdc.add_RCTD('BIAS', {BiasRctd});
 
       %=========================================
       % Read potentially MULTIPLE NON-BIAS RCTs
@@ -230,7 +228,7 @@ classdef findread
         nonBiasRcttid, rctDir, ...
         gact, zvcti, ...
         zv_BW, L);
-      RctdCaMap(nonBiasRcttid) = NonBiasRctdCa;
+      Rctdc.add_RCTD(nonBiasRcttid, NonBiasRctdCa);
     end
 
 

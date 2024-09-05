@@ -115,35 +115,6 @@ classdef utils
 
 
 
-    % Convert RctdCaMap (the way RCTDs are stored internally for L1/L1R-->L2
-    % processing) to RctdCa (plain cell array of RCTDs).
-    function RctdCa = convert_RctdCaMap_to_CA(RctdCaMap)
-      % IMPLEMENTATION NOTE: It appears that MATLAB does not permit one to
-      % create an empty, typed array of instances of suclasses to an abstract
-      % superclass, unless the abstract superclass does not inherit from
-      % matlab.mixin.Heterogeneous, which seems ugly. Therefore using cell
-      % array instead.
-      %
-      % >> bicas.proc.L1L2.cal.rct.RctData.empty(0, 1)
-      % Error using bicas.proc.L1L2.cal.rct.RctData.empty
-      % Abstract classes cannot be instantiated. Class 'bicas.proc.L1L2.cal.rct.RctData' defines abstract methods and/or properties.
-      % bicas.proc.L1L2.cal.rct.RctData.empty(0, 1)
-
-      RctdCa = cell(0, 1);
-
-      RctdCaCa = RctdCaMap.values;
-      for i = 1:numel(RctdCaCa)
-        for j = 1:numel(RctdCaCa{i})
-          Rctd = RctdCaCa{i}{j};
-          if ~isempty(Rctd)
-            RctdCa{end+1, 1} = Rctd;
-          end
-        end
-      end
-    end
-
-
-
     %################################
     % MODIFYING, DERIVING ZVARIABLES
     %################################

@@ -67,14 +67,14 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       useGactRct = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
       useZvcti2  = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
 
-      RctdCaMap = bicas.proc.L1L2.cal.rct.findread.get_RctdCaMap(...
+      Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
         useGactRct, 'LFR', rctDir, ...
         InputSciCdf.Ga.CALIBRATION_TABLE, ...
         InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
         InputSciCdf.Zv.BW, ...
         L);
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useGactRct, useZvcti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(Rctdc, useGactRct, useZvcti2, Bso);
 
 
 
@@ -90,7 +90,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
       OutputDatasetsMap = containers.Map();
-      RctdCa = bicas.proc.utils.convert_RctdCaMap_to_CA(RctdCaMap);
+      RctdCa = Rctdc.get_global_RCTD_CA();
       OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCa);
     end
 

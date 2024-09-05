@@ -220,16 +220,6 @@ classdef Cal < handle
   % PROPOSAL: Refactor to use a struct constant for those arguments to
   %           bicas.tf.apply_TF() which are constant.
   %
-  % PROPOSAL: Convert RctdCaMap into dedicated class.
-  %   PRO: Can remove long assertion in bicas.proc.L1L2.cal.Cal constructor.
-  %   CON: Unclear if data structure is a good one, given how
-  %        bicas.proc.L1L2.cal.Cal uses it.
-  %     CON: Is a another issue with an unclear solution which does not need to
-  %          be addressed now (if ever).
-  %       PRO: A good refactoring is likely to use a class anyway.
-  %     NOTE: Unclear if data structure needs to be a map at all. Only needs
-  %           two RCTDs for nominal use: 1x BIAS RCT and 1x non-BIAS RCTs.
-  %
   % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least
   %      not for LFR.
   %   PROPOSAL: Tests.
@@ -252,14 +242,7 @@ classdef Cal < handle
     %==================
 
     % RCT calibration data
-    % --------------------------------------------------
-    % containers.Map: RCTTID --> Data
-    % For BIAS, data is a struct (only one BIAS RCT is loaded).
-    % For non-BIAS, data is a 1D cell array. {iRct}.
-    % iRct-1 corresponds to GACT and ZVCTI(:,1) when those are used. May thus
-    % contain empty cells for non-BIAS RCTs which should not (and can not) be
-    % loaded.
-    RctdCaMap;
+    Rctdc;
 
     % Non-RCT calibration data
     % ------------------------
@@ -317,18 +300,14 @@ classdef Cal < handle
     %
     % ARGUMENTS
     % =========
-    % RctdCaMap
-    %       containers.Map with keys RCTTID --> values = 1D cell array of
-    %       RCTTs. Must include BIAS RCTT.
-    %       The content in non-empty indices {iRct} come from the RCT which
-    %       is determined by the combination ZV "BW", ZVCTI(iRecord,1), GACT
-    %       (or emulations of all or some).
+    % Rctdc
+    %       Note: Must include BIAS RCTD.
     %
     %
     % NOTES ON INTENDED USAGE
     % =======================
     % The nominal use is that the caller first initializes (argument)
-    % RctdCaMap
+    % RCTDC
     % (1) by loading RCTs using
     %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_regexp(),
     % (2) by loading RCT(s) using
@@ -351,36 +330,19 @@ classdef Cal < handle
     %    submitting it to bicas.proc.L1L2.cal.Cal
     % ** it simplifies the constructor.
     %
-    function obj = Cal(...
-        RctdCaMap, ...
-        useGactRct, ...
-        useZvcti2, ...
-        Bso)
+    function obj = Cal(Rctdc, useGactRct, useZvcti2, Bso)
 
       % ASSERTIONS: Arguments
       assert(isscalar(useZvcti2))
-      % RctdCaMap
-      irf.assert.subset(...
-        RctdCaMap.keys, ...
-        bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP.keys)
-      assert(isscalar(RctdCaMap('BIAS')))
-      RcttidCa = RctdCaMap.keys;
-      for iRcttid = 1:numel(RcttidCa)
-        rcttid = RcttidCa{iRcttid};
-        RctdCa = RctdCaMap(rcttid);
-        assert(iscell(RctdCa) && iscolumn(RctdCa))
-        for iRctd = 1:numel(RctdCa)
-          Rctd = RctdCa{iRctd};
-          assert(isempty(Rctd) | isa(Rctd, 'bicas.proc.L1L2.cal.rct.RctData'))
-        end
-      end
+      % Rctdc
+      assert(isa(Rctdc, 'bicas.proc.L1L2.cal.RctdCollection'))
 
 
 
-      %===================
-      % Set obj.RctdCaMap
-      %===================
-      obj.RctdCaMap = RctdCaMap;
+      %===============
+      % Set obj.Rctdc
+      %===============
+      obj.Rctdc = Rctdc;
 
 
 
@@ -469,7 +431,7 @@ classdef Cal < handle
       %==============================
       % Obtain calibration constants
       %==============================
-      BiasRctdCa    = obj.RctdCaMap('BIAS');
+      BiasRctdCa    = obj.Rctdc.get_RCTD_CA('BIAS');
       offsetAAmpere = BiasRctdCa{1}.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
       gainAapt      = BiasRctdCa{1}.Current.gainsAapt(     iCalibTimeL, iAntenna);
 
@@ -724,7 +686,7 @@ classdef Cal < handle
         if obj.lfrTdsTfDisabled
           tdsFactorIvpt = 1;
         else
-          RctdCa        = obj.RctdCaMap('TDS-CWF');
+          RctdCa        = obj.Rctdc.get_RCTD_CA('TDS-CWF');
           tdsFactorIvpt = RctdCa{iNonBiasRct}.factorsIvpt(iBlts);
         end
 
@@ -819,7 +781,7 @@ classdef Cal < handle
         if obj.lfrTdsTfDisabled
           tdsItfIvpt = @(omegaRps) (ones(omegaRps));
         else
-          RctdCa     = obj.RctdCaMap('TDS-RSWF');
+          RctdCa     = obj.Rctdc.get_RCTD_CA('TDS-RSWF');
           tdsItfIvpt = RctdCa{iNonBiasRct}.itfModifIvptCa{iBlts};
         end
 
@@ -862,7 +824,7 @@ classdef Cal < handle
 
 
     function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
-      BiasRctdCa = obj.RctdCaMap('BIAS');
+      BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
       iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
         Epoch, BiasRctdCa{1}.epochL);
@@ -871,7 +833,7 @@ classdef Cal < handle
 
 
     function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
-      BiasRctdCa = obj.RctdCaMap('BIAS');
+      BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
       iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
         Epoch, BiasRctdCa{1}.epochH);
@@ -909,7 +871,7 @@ classdef Cal < handle
       assert(isscalar(iCalibTimeL))
       assert(isscalar(iCalibTimeH))
 
-      BiasRctdCa = obj.RctdCaMap('BIAS');
+      BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
       BiasRctd   = BiasRctdCa{1};
 
       %###################################################################
@@ -1000,7 +962,7 @@ classdef Cal < handle
         % signal route, so the TF can not be returned even in principle.
         lfrItfIvpt = bicas.proc.L1L2.cal.Cal.NAN_TF;
       else
-        LfrRctdCa = obj.RctdCaMap('LFR');
+        LfrRctdCa = obj.Rctdc.get_RCTD_CA('LFR');
 
         % ASSERTION
         % IMPLEMENTATION NOTE: Anonymous function below will fail at a
