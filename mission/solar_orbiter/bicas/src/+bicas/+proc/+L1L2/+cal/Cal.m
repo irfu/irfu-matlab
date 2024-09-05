@@ -204,13 +204,6 @@ classdef Cal < handle
   % TODO-NI: What parasitic capacitance value(s) should one use?
   % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
   %
-  % PROPOSAL: Assertion function for CalSettings.
-  %   TODO-NI: Same struct, with same fields in all cases?
-  %   NOTE: Function does not know which fields are actually used.
-  % PROPOSAL: Class for CalSettings. Mere container for fields.
-  % PROPOSAL: Shorten CalSettings-->Cs inside functions and do not extract fields.
-  %   CON: Extracting variables makes it clear which fields are expected and used.
-  %
   % PROPOSAL: Store all versions of TFs internally.
   %   Ex: FTF, ITF, tabulated ITF with extrapolation+interpolation+modification
   %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
@@ -528,10 +521,7 @@ classdef Cal < handle
         zvcti, ufv)
 
       % ASSERTIONS
-      assert(isstruct(CalSettings))
-      % irf.assert.struct(CalSettings, {...
-      %     'iBlts', 'Ssid', 'isAchg', ...
-      %     'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
       assert(iscell(bltsSamplesTmCa))
       assert(isvector(bltsSamplesTmCa))
       irf.assert.sizes(zvcti, [1,2])
@@ -602,14 +592,15 @@ classdef Cal < handle
     % =========
     % samplesTm    : 1D cell array of numeric 1D arrays.
     % samplesAVolt : 1D cell array of numeric 1D arrays.
-    % CalSettings  : Struct that groups together arguments.
-    %   .iBlts     : Scalar integer. 1..5.
-    %   ...
     %
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
         dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
       % ASSERTIONS
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+      % IMPLEMENTATION NOTE: bicas.proc.L1L2.CalibrationSettings permits TDS
+      % data for which iLsf=NaN.
+      bicas.proc.L1L2.cal.utils.assert_iLsf(CalSettings.iLsf)
       irf.assert.vector(bltsSamplesTmCa)
       assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
       irf.assert.vector(dtSec)
@@ -657,9 +648,8 @@ classdef Cal < handle
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
         dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
-      %             irf.assert.struct(CalSettings, {...
-      %                 'iBlts', 'Ssid', 'isAchg', ...
-      %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+
       iBlts        = CalSettings.iBlts;
       Ssid         = CalSettings.Ssid;
       isAchg       = CalSettings.isAchg;
@@ -670,8 +660,6 @@ classdef Cal < handle
       irf.assert.vector(dtSec)
       assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
       assert(numel(bltsSamplesTmCa) == numel(dtSec))
-      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(iNonBiasRct >= 1)
 
       if obj.useZvcti2
@@ -751,9 +739,8 @@ classdef Cal < handle
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
         dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
-      %             irf.assert.struct(CalSettings, {...
-      %                 'iBlts', 'Ssid', 'isAchg', ...
-      %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+
       iBlts        = CalSettings.iBlts;
       Ssid         = CalSettings.Ssid;
       isAchg       = CalSettings.isAchg;
@@ -764,8 +751,6 @@ classdef Cal < handle
       irf.assert.vector(dtSec)
       assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
       assert(numel(bltsSamplesTmCa) == numel(dtSec))
-      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(iNonBiasRct >= 1)
 
       if obj.useZvcti2
@@ -1018,10 +1003,8 @@ classdef Cal < handle
     % with each other.
     function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
 
-      % ASSERTIONS
-      %             irf.assert.struct(CalSettings, {...
-      %                 'iBlts', 'Ssid', 'isAchg', ...
-      %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+
       iBlts        = CalSettings.iBlts;
       Ssid         = CalSettings.Ssid;
       isAchg       = CalSettings.isAchg;
@@ -1030,10 +1013,7 @@ classdef Cal < handle
       iLsf         = CalSettings.iLsf;
 
       % ASSERTIONS
-      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(Ssid.is_ASR())
-      bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
       assert(isscalar(iNonBiasRct))
       assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
       % No assertion on zvcti2 unless used (determined later).
@@ -1070,7 +1050,7 @@ classdef Cal < handle
       %====================================================
       % Obtain settings for bicas.tf.apply_TF()
       %====================================================
-      if CalSettings.Ssid.Asid.is_AC()
+      if Ssid.Asid.is_AC()
         % IMPLEMENTATION NOTE: DC is (optionally) detrended via
         % bicas.tf.apply_TF() in the sense of a linear fit
         % being removed, TF applied, and then added back. That same

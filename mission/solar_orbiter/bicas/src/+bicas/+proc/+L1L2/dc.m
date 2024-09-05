@@ -423,13 +423,8 @@ classdef dc
         % It is thus not enough to overwrite the values later.
         % This incidentally also potentially speeds up the code.
         % Ex: LFR SWF 2020-02-25, 2020-02-28.
-        CalSettings = struct();
-        CalSettings.iBlts       = iBlts;
-        CalSettings.Ssid        = Ssid;
-        CalSettings.isAchg      = isAchg;
-        CalSettings.iCalibTimeL = iCalibL;
-        CalSettings.iCalibTimeH = iCalibH;
-        CalSettings.iLsf        = iLsf;
+        CalSettings = bicas.proc.L1L2.CalibrationSettings(...
+          iBlts, Ssid, isAchg, iCalibL, iCalibH, iLsf);
         %#######################################################
         ssBltsSamplesAVoltCa = Cal.calibrate_voltage_all(...
           dtSec, bltsSamplesTmCa, ...
