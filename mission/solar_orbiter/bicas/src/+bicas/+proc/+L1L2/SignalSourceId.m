@@ -41,7 +41,7 @@ classdef SignalSourceId
       if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
         obj.Asid        = value;
         obj.specialCase = [];
-      elseif ischar(value) && ismember(value, {'2.5V Ref', 'GND', 'Unknown'})
+      elseif ischar(value) && ismember(value, {'2.5V_REF', 'GND', 'UNKNOWN'})
         obj.Asid        = [];
         obj.specialCase = value;
       else
@@ -69,9 +69,9 @@ classdef SignalSourceId
       C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
         @(Asid) (bicas.proc.L1L2.SignalSourceId(Asid)));
 
-      C.REF25V   = bicas.proc.L1L2.SignalSourceId('2.5V Ref');
+      C.REF25V   = bicas.proc.L1L2.SignalSourceId('2.5V_REF');
       C.GND      = bicas.proc.L1L2.SignalSourceId('GND');
-      C.UNKNOWN  = bicas.proc.L1L2.SignalSourceId('Unknown');
+      C.UNKNOWN  = bicas.proc.L1L2.SignalSourceId('UNKNOWN');
     end
 
 

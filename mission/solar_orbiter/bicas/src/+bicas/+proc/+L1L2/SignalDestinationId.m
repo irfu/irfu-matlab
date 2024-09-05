@@ -37,7 +37,7 @@ classdef SignalDestinationId
       if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
         obj.Asid      = value;
         obj.isNowhere = false;
-      elseif isequal(value, 'Nowhere')
+      elseif isequal(value, 'NOWHERE')
         obj.Asid      = [];
         obj.isNowhere = true;
       else
@@ -59,7 +59,7 @@ classdef SignalDestinationId
       C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
         @(Asid) (bicas.proc.L1L2.SignalDestinationId(Asid)));
 
-      C.NOWHERE = bicas.proc.L1L2.SignalDestinationId('Nowhere');
+      C.NOWHERE = bicas.proc.L1L2.SignalDestinationId('NOWHERE');
     end
 
 
