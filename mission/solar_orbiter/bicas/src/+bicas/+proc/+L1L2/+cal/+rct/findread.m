@@ -44,7 +44,8 @@ classdef findread
     % Get an instance of RCTDC needed for a nominal instantiation of
     % bicas.proc.L1L2.cal.Cal.
     function Rctdc = get_nominal_RCTDC(...
-        useGactRct, nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
+        useGactRct, nonBiasRcttid, rctDir, ...
+        gact, zvcti, zv_BW, tt2000Begin, tt2000End, L)
       % PROPOSAL: Better name.
       %   nominal
       % PROPOSAL: Make function instantiate bicas.proc.L1L2.cal.Cal.
@@ -52,12 +53,21 @@ classdef findread
       %     CON: Testing this function is impossible anyway.
       %   CON: Conceptually bad. Makes function "less generic".
 
+      % IMPLEMENTATION NOTE: Converts TT2000 --> UTC string --> datetime, which
+      % is ugly, but is reliable since it only uses functions which are known
+      % to be reliable. MATLAB is known to handle at least reading of CDFs
+      % badly, so datetime() might not be reliable w.r.t. TT2000.
+      DtDataBegin = datetime(irf.cdf.TT2000_to_UTC_str(tt2000Begin), 'TimeZone', 'UTCLeapSeconds');
+      DtDataEnd   = datetime(irf.cdf.TT2000_to_UTC_str(tt2000End),   'TimeZone', 'UTCLeapSeconds');
+
       Rctdc = bicas.proc.L1L2.cal.RctdCollection();
 
       %==========
       % BIAS RCT
       %==========
-      [biasRctPath, ~, ~] = bicas.proc.L1L2.cal.rct.findread.read_BRVF(rctDir, L);
+      [biasRctPath, brvfPath] = bicas.proc.L1L2.cal.rct.findread.get_BRVF_RCT_path(...
+        rctDir, DtDataBegin, DtDataEnd);
+      L.logf('info', 'Read "%s".', brvfPath)
       BiasRctd = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
         'BIAS', biasRctPath, L);
       Rctdc.add_RCTD('BIAS', {BiasRctd});
@@ -121,26 +131,62 @@ classdef findread
 
 
 
+    function [biasRctPath, brvfPath] = get_BRVF_RCT_path(rctDir, DtDataBegin, DtDataEnd)
+      [rctFilename, DtValidityBegin, DtValidityEnd, brvfPath] = ...
+        bicas.proc.L1L2.cal.rct.findread.read_BRVF(rctDir);
+
+      %-----------------------------------------------
+      % ASSERT: RCT specified in BRVF covers the data
+      %-----------------------------------------------
+      % IMPLEMENTATION NOTE: Kind of a hypothetical test, since the BIAS RCT
+      % should cover the entire mission.
+      assert(DtValidityBegin <= DtDataBegin, ...
+        'BIAS RCT validity according to "%s" begins at %s but does not cover the beginning of data at %s.', ...
+        brvfPath, DtValidityBegin, DtDataBegin)
+      assert(DtDataEnd      <= DtValidityEnd, ...
+        'BIAS RCT validity according to "%s" ends at %s but does not cover the end of data and %s.', ...
+        brvfPath, DtValidityEnd, DtDataEnd)
+
+
+
+     % Add parent directory to RCT filename.
+      biasRctPath = fullfile(rctDir, rctFilename);
+    end
+
+
+
     % Read the BRVF and return the content.
-    function [biasRctPath, DtValidityBegin, DtValidityEnd] = ...
-        read_BRVF(rctDir, L)
+    %
+    % ARGUMENTS
+    % =========
+    % DtDataBegin, DtDataEnd
+    %       UTC datetime objects for the beginning and end of data so that it
+    %       can be checked against the BRVF validity time interval.
+    function [rctFilename, DtValidityBegin, DtValidityEnd, brvfPath] = ...
+        read_BRVF(rctDir)
 
-      rctJsonPath = fullfile(rctDir, bicas.const.BRVF_FILENAME);
-      irf.assert.file_exists(rctJsonPath)
+      % PROPOSAL: Include checking against validity time interval.
+      % PROPOSAL: Exclude adding parent directory to BIAS RCT filename.
+      % PROPOSAL: ~Wrapper function which adds parent directory to BIAS RCT
+      %           filename and checking of time interval.
 
-      L.logf('info', 'Reading "%s".', rctJsonPath)
-      jsonStr    = fileread(rctJsonPath);
+      brvfPath = fullfile(rctDir, bicas.const.BRVF_FILENAME);
+      irf.assert.file_exists(brvfPath)
+
+      jsonStr    = fileread(brvfPath);
       JsonStruct = jsondecode(jsonStr);
 
       fnCa = fieldnames(JsonStruct);
       assert(length(fnCa) == 1, ...
         'File "%s" does not reference exactly one BIAS RCT as expected.', ...
-        rctJsonPath)
+        brvfPath)
 
       rctFilename   = fnCa{1};
       % NOTE: Renaming "start"-->"begin" since "begin" is more conventional.
       validityBegin = JsonStruct.(fnCa{1}).validity_start;
       validityEnd   = JsonStruct.(fnCa{1}).validity_end;
+
+
 
       %=====================================================
       % Correct the RCT filename returned from jsondecode()
@@ -163,7 +209,6 @@ classdef findread
       rctFilename(27) = '-';
 
       % Construct return values.
-      biasRctPath = fullfile(rctDir, rctFilename);
       DtValidityBegin = datetime(validityBegin, 'TimeZone', 'UTCLeapSeconds');
       DtValidityEnd   = datetime(validityEnd,   'TimeZone', 'UTCLeapSeconds');
     end

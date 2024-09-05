@@ -64,19 +64,52 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_get_BRVF_RCT_path(testCase)
+      % Create BRVF.
+      ExpDtBegin = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
+      ExpDtEnd   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
+      expBiasRctFilename = bicas.tools.rct.create_RCT_filename(ExpDtBegin, ExpDtEnd, 1);
+      bicas.tools.rct.create_BRVF(testCase.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
+
+      expBiasRctPath = fullfile(testCase.dir, expBiasRctFilename);
+      expBrvfPath    = fullfile(testCase.dir, bicas.const.BRVF_FILENAME);
+
+      %========
+      % TEST 1
+      %========
+      [actBiasRctPath, actBrvfPath] = ...
+        bicas.proc.L1L2.cal.rct.findread.get_BRVF_RCT_path(testCase.dir, ExpDtBegin, ExpDtEnd);
+
+      testCase.assertEqual(actBiasRctPath, expBiasRctPath)
+      testCase.assertEqual(actBrvfPath,    expBrvfPath)
+
+
+
+      %========
+      % TEST 2
+      %========
+      Duration = duration('00:00:10');
+      % NOTE: Only checks for non-error time interval case.
+      [actBiasRctPath, actBrvfPath] = ...
+        bicas.proc.L1L2.cal.rct.findread.get_BRVF_RCT_path(...
+        testCase.dir, ...
+        ExpDtBegin + Duration, ...
+        ExpDtEnd   - Duration);
+    end
+
+
+
     function test_read_BRVF(testCase)
       % Create BRVF.
       ExpDtBegin = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
       ExpDtEnd   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
-      biasRctFilename = bicas.tools.rct.create_RCT_filename(ExpDtBegin, ExpDtEnd, 1);
-      bicas.tools.rct.create_BRVF(testCase.dir, biasRctFilename, ExpDtBegin, ExpDtEnd);
+      expBiasRctFilename = bicas.tools.rct.create_RCT_filename(ExpDtBegin, ExpDtEnd, 1);
+      bicas.tools.rct.create_BRVF(testCase.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
 
-      expBiasRctPath = fullfile(testCase.dir, biasRctFilename);
+      [actRctFilename, ActDtValidityBegin, ActDtValidityEnd, actBrvfPath] = ...
+        bicas.proc.L1L2.cal.rct.findread.read_BRVF(testCase.dir);
 
-      [actBiasRctPath, ActDtValidityBegin, ActDtValidityEnd] = ...
-        bicas.proc.L1L2.cal.rct.findread.read_BRVF(testCase.dir, testCase.L);
-
-      testCase.assertEqual(actBiasRctPath,     expBiasRctPath)
+      testCase.assertEqual(actRctFilename,     expBiasRctFilename)
       testCase.assertEqual(ActDtValidityBegin, ExpDtBegin)
       testCase.assertEqual(ActDtValidityEnd,   ExpDtEnd)
     end
