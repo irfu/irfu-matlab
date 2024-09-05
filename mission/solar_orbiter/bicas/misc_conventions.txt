@@ -165,7 +165,7 @@ DLR
     2023-08-29, EJ: Variable is constant for the entire mission except when it
     flips from zero to one at about 2023-08-21T12:04Z.
 DRT
-    Class bicas.tf.drt.
+    Class bicas.tf.Deretrending.
 DSI, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
