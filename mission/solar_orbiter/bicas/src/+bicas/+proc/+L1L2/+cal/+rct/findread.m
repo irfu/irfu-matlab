@@ -65,55 +65,6 @@ classdef findread
 
 
 
-    % Read the BRVF file and return the content.
-    function [biasRctPath, DtValidityBegin, DtValidityEnd] = ...
-        read_BRVF(rctDir, L)
-
-      rctJsonPath = fullfile(rctDir, bicas.const.BRVF_FILENAME);
-      irf.assert.file_exists(rctJsonPath)
-
-      L.logf('info', 'Reading "%s".', rctJsonPath)
-      jsonStr    = fileread(rctJsonPath);
-      JsonStruct = jsondecode(jsonStr);
-
-      fnCa = fieldnames(JsonStruct);
-      assert(length(fnCa) == 1, ...
-        'File "%s" does not reference exactly one BIAS RCT as expected.', ...
-        rctJsonPath)
-
-      rctFilename   = fnCa{1};
-      % NOTE: Renaming "start"-->"begin" since "begin" is more conventional.
-      validityBegin = JsonStruct.(fnCa{1}).validity_start;
-      validityEnd   = JsonStruct.(fnCa{1}).validity_end;
-
-      %=====================================================
-      % Correct the RCT filename returned from jsondecode()
-      %=====================================================
-      % IMPLEMENTATION NOTE: jsondecode() stores the filename in a struct field
-      % name, but struct field names do not permit all characters (such as dash
-      % and period) and replaces them with underscore instead. Must therefore
-      % correct the filename string using knowledge of legal RCT filenames
-      % (sigh...).
-      %
-      % Ex: solo_CAL_rpw-bias_20200210-20991231_V01.cdf
-      %                 ^             ^            ^
-      rctFilename(end-3) = '.';
-      %
-      iDsiDash = strfind(bicas.const.RCT_DSI, '-');
-      assert(isscalar(iDsiDash))
-      rctFilename(iDsiDash) = '-';
-      %
-      assert(strcmp(rctFilename(27), '_'))
-      rctFilename(27) = '-';
-
-      % Construct return values.
-      biasRctPath = fullfile(rctDir, rctFilename);
-      DtValidityBegin = datetime(validityBegin, 'TimeZone', 'UTCLeapSeconds');
-      DtValidityEnd   = datetime(validityEnd,   'TimeZone', 'UTCLeapSeconds');
-    end
-
-
-
     % (1) Load one BIAS RCT using the BRVF, and
     % (2) load one non-BIAS RCT by only using assumptions on filenames (and
     %     directory).
@@ -229,6 +180,55 @@ classdef findread
         gact, zvcti, ...
         zv_BW, L);
       Rctdc.add_RCTD(nonBiasRcttid, NonBiasRctdCa);
+    end
+
+
+
+    % Read the BRVF file and return the content.
+    function [biasRctPath, DtValidityBegin, DtValidityEnd] = ...
+        read_BRVF(rctDir, L)
+
+      rctJsonPath = fullfile(rctDir, bicas.const.BRVF_FILENAME);
+      irf.assert.file_exists(rctJsonPath)
+
+      L.logf('info', 'Reading "%s".', rctJsonPath)
+      jsonStr    = fileread(rctJsonPath);
+      JsonStruct = jsondecode(jsonStr);
+
+      fnCa = fieldnames(JsonStruct);
+      assert(length(fnCa) == 1, ...
+        'File "%s" does not reference exactly one BIAS RCT as expected.', ...
+        rctJsonPath)
+
+      rctFilename   = fnCa{1};
+      % NOTE: Renaming "start"-->"begin" since "begin" is more conventional.
+      validityBegin = JsonStruct.(fnCa{1}).validity_start;
+      validityEnd   = JsonStruct.(fnCa{1}).validity_end;
+
+      %=====================================================
+      % Correct the RCT filename returned from jsondecode()
+      %=====================================================
+      % IMPLEMENTATION NOTE: jsondecode() stores the filename in a struct field
+      % name, but struct field names do not permit all characters (such as dash
+      % and period) and replaces them with underscore instead. Must therefore
+      % correct the filename string using knowledge of legal RCT filenames
+      % (sigh...).
+      %
+      % Ex: solo_CAL_rpw-bias_20200210-20991231_V01.cdf
+      %                 ^             ^            ^
+      rctFilename(end-3) = '.';
+      %
+      iDsiDash = strfind(bicas.const.RCT_DSI, '-');
+      assert(isscalar(iDsiDash))
+      rctFilename(iDsiDash) = '-';
+      %
+      assert(strcmp(rctFilename(27), '_'))
+      rctFilename(27) = '-';
+
+      % Construct return values.
+      biasRctPath = fullfile(rctDir, rctFilename);
+      DtValidityBegin = datetime(validityBegin, 'TimeZone', 'UTCLeapSeconds');
+      DtValidityEnd   = datetime(validityEnd,   'TimeZone', 'UTCLeapSeconds');
     end
 
 
