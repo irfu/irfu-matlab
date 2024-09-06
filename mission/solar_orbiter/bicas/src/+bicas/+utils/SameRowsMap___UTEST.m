@@ -19,7 +19,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
     function test_basic(testCase)
       % Test sequences of operations on a single Map.
-      % Exlude setRows().
+      % Exclude setRows().
 
       % ==============================================
       % Adds key-values, zero rows, char keys, 'EMPTY'
@@ -27,48 +27,48 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       V1 = zeros(0, 1);
       V2 = ones( 0, 1, 2);
 
-      M = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
+      Srm = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
 
-      testCase.assertEqual(M.keys(), cell(0, 1))
-      testCase.assertEqual(M.length, 0)
-      testCase.assertEqual(M.nRows,  0)
-      bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {}, {})
+      testCase.assertEqual(Srm.keys(), cell(0, 1))
+      testCase.assertEqual(Srm.length, 0)
+      testCase.assertEqual(Srm.nRows,  0)
+      testCase.test_keys_values(testCase, Srm, {}, {})
 
-      M.add('K1', V1)
+      Srm.add('K1', V1)
 
-      testCase.assertEqual(M.keys,   {'K1'})
-      testCase.assertEqual(M.length, 1)
-      bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {'K1'}, {V1})
-      testCase.assertFalse(M.isKey('K2'))
+      testCase.assertEqual(Srm.keys, {'K1'})
+      testCase.assertEqual(Srm.length, 1)
+      testCase.test_keys_values(testCase, Srm, {'K1'}, {V1})
+      testCase.assertFalse(Srm.isKey('K2'))
 
-      M.add('K2', V2)
+      Srm.add('K2', V2)
 
-      testCase.assertEqual(M.length, 2)
-      testCase.assertTrue( M.isKey('K2'))
+      testCase.assertEqual(Srm.length, 2)
+      testCase.assertTrue( Srm.isKey('K2'))
 
       % Test different orders. ==> Effectively testing the helper
       % function "test_keys_values()".
-      bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {'K2', 'K1'}, {V2, V1})
-      bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {'K1', 'K2'}, {V1, V2})
+      testCase.test_keys_values(testCase, Srm, {'K2', 'K1'}, {V2, V1})
+      testCase.test_keys_values(testCase, Srm, {'K1', 'K2'}, {V1, V2})
 
-      testCase.assertEqual(M('K1'), V1);
-      testCase.assertEqual(M('K2'), V2);
-      testCase.assertEqual(M.nRows,  0)
+      testCase.assertEqual(Srm('K1'), V1);
+      testCase.assertEqual(Srm('K2'), V2);
+      testCase.assertEqual(Srm.nRows,  0)
 
       % =================================================
       % Zero number of constant values (test constructor)
       % =================================================
-      M = bicas.utils.SameRowsMap('double', 3, 'CONSTANT', [1;2;3], {});
-      testCase.assertEqual(M.nRows, 3)
+      Srm = bicas.utils.SameRowsMap('double', 3, 'CONSTANT', [1;2;3], {});
+      testCase.assertEqual(Srm.nRows, 3)
 
       % ======================================
       % double keys, non-zero rows, 'CONSTANT'
       % ======================================
       V = [1;2;3];
-      M = bicas.utils.SameRowsMap('double', 3, 'CONSTANT', V, {9});
-      testCase.assertEqual(M.nRows, 3)
-      testCase.assertEqual(M(9), V)
-      bicas.utils.SameRowsMap___UTEST.test_keys_values(testCase, M, {9}, {V})
+      Srm = bicas.utils.SameRowsMap('double', 3, 'CONSTANT', V, {9});
+      testCase.assertEqual(Srm.nRows, 3)
+      testCase.assertEqual(Srm(9), V)
+      testCase.test_keys_values(testCase, Srm, {9}, {V})
 
       % =============================================
       % Initial value has inconsistent number of rows
@@ -83,28 +83,28 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
     function test_setRows(testCase)
 
       % Insert zero rows into zero rows.
-      M1 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
-      M1.add('K2', zeros(0,0))
-      M2 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
-      M2.add('K2', zeros(0,0))
-      M1.setRows(M2, zeros(0,1))
-      testCase.assertEqual(M1('K2'), zeros(0,0))
+      Srm1 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
+      Srm1.add('K2', zeros(0,0))
+      Srm2 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
+      Srm2.add('K2', zeros(0,0))
+      Srm1.setRows(Srm2, zeros(0,1))
+      testCase.assertEqual(Srm1('K2'), zeros(0,0))
 
       % Insert zero rows into non-zero rows.
-      M1 = bicas.utils.SameRowsMap('char', 3, 'EMPTY');
-      M1.add('K2', zeros(3,0))
-      M2 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
-      M2.add('K2', zeros(0,0))
-      M1.setRows(M2, zeros(0,1))
-      testCase.assertEqual(M1('K2'), zeros(3,0))
+      Srm1 = bicas.utils.SameRowsMap('char', 3, 'EMPTY');
+      Srm1.add('K2', zeros(3,0))
+      Srm2 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
+      Srm2.add('K2', zeros(0,0))
+      Srm1.setRows(Srm2, zeros(0,1))
+      testCase.assertEqual(Srm1('K2'), zeros(3,0))
 
       % Preserve type
-      M1 = bicas.utils.SameRowsMap('char', 4, 'EMPTY');
-      M1.add('K2', int16([1;2;3;4]))
-      M2 = bicas.utils.SameRowsMap('char', 2, 'EMPTY');
-      M2.add('K2', int16([[8;9]]))
-      M1.setRows(M2, [2;3])
-      testCase.assertEqual(M1('K2'), int16([1;8;9;4]))
+      Srm1 = bicas.utils.SameRowsMap('char', 4, 'EMPTY');
+      Srm1.add('K2', int16([1;2;3;4]))
+      Srm2 = bicas.utils.SameRowsMap('char', 2, 'EMPTY');
+      Srm2.add('K2', int16([[8;9]]))
+      Srm1.setRows(Srm2, [2;3])
+      testCase.assertEqual(Srm1('K2'), int16([1;8;9;4]))
 
 
 
@@ -127,13 +127,13 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
         412, 422, 432 ...
         ];
 
-      M1 = bicas.utils.SameRowsMap('char', 4, 'CONSTANT', V1,            {'K'});
-      M2 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', V1(1:2, :, :), {'K'});
-      M1.setRows(M2, [3;2])    % NOTE: Decrementing indices.
+      Srm1 = bicas.utils.SameRowsMap('char', 4, 'CONSTANT', V1,            {'K'});
+      Srm2 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', V1(1:2, :, :), {'K'});
+      Srm1.setRows(Srm2, [3;2])    % NOTE: Decrementing indices.
 
       V2              = V1;
       V2([3,2], :, :) = V1(1:2, :, :);
-      testCase.assertEqual(M1('K'), V2)
+      testCase.assertEqual(Srm1('K'), V2)
 
 
 
@@ -141,22 +141,22 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       % Illegal
       % =======
       % Incompatible types
-      M1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', int8([1;2]), {'K'});
-      M2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],         {'K'});
+      Srm1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', int8([1;2]), {'K'});
+      Srm2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],         {'K'});
       testCase.assertError(...
-        @() (M1.setRows(M2, [1])), ...
+        @() (Srm1.setRows(Srm2, [1])), ...
         ?MException)
       % Incompatible array sizes
-      M1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', [1 2;3 4], {'K'});
-      M2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],       {'K'});
+      Srm1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', [1 2;3 4], {'K'});
+      Srm2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],       {'K'});
       testCase.assertError(...
-        @() (M1.setRows(M2, [1])), ...
+        @() (Srm1.setRows(Srm2, [1])), ...
         ?MException)
       % Different sets of keys.
-      M1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', [1;2], {'K1', 'K2a'});
-      M2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],   {'K1', 'K2b'});
+      Srm1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', [1;2], {'K1', 'K2a'});
+      Srm2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],   {'K1', 'K2b'});
       testCase.assertError(...
-        @() (M1.setRows(M2, [1])), ...
+        @() (Srm1.setRows(Srm2, [1])), ...
         ?MException)
     end
 
@@ -167,62 +167,62 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
       % NOTE: Having no keys with different KeyType means that the key
       % values do not distinguish the KeyTypes.
-      M1a = bicas.utils.SameRowsMap('char',   1, 'EMPTY');
-      M1b = bicas.utils.SameRowsMap('char',   1, 'EMPTY');
-      M2a = bicas.utils.SameRowsMap('double', 1, 'EMPTY');
-      M2b = bicas.utils.SameRowsMap('double', 1, 'EMPTY');
-      M3  = bicas.utils.SameRowsMap('char',   2, 'EMPTY');
+      Srm1a = bicas.utils.SameRowsMap('char',   1, 'EMPTY');
+      Srm1b = bicas.utils.SameRowsMap('char',   1, 'EMPTY');
+      Srm2a = bicas.utils.SameRowsMap('double', 1, 'EMPTY');
+      Srm2b = bicas.utils.SameRowsMap('double', 1, 'EMPTY');
+      Srm3  = bicas.utils.SameRowsMap('char',   2, 'EMPTY');
 
-      testCase.assertTrue( M1a == M1b)
-      testCase.assertFalse(M1a == M2a)
-      testCase.assertTrue( M2a == M2b)
-      testCase.assertFalse(M1a == M3 )
+      testCase.assertTrue( Srm1a == Srm1b)
+      testCase.assertFalse(Srm1a == Srm2a)
+      testCase.assertTrue( Srm2a == Srm2b)
+      testCase.assertFalse(Srm1a == Srm3 )
 
-      M1a = bicas.utils.SameRowsMap('char',   1, 'CONSTANT', [1],   {'K1', 'K2'});
-      M1b = bicas.utils.SameRowsMap('char',   1, 'CONSTANT', [1],   {'K1', 'K2'});
-      M2a = bicas.utils.SameRowsMap('double', 1, 'CONSTANT', [9],   {1, 2});
-      M2b = bicas.utils.SameRowsMap('double', 1, 'CONSTANT', [9],   {1, 2});
-      M3  = bicas.utils.SameRowsMap('char',   1, 'CONSTANT', [9],   {'K1', 'K2'});
-      M4  = bicas.utils.SameRowsMap('char',   2, 'CONSTANT', [1;2], {'K1', 'K2'});
+      Srm1a = bicas.utils.SameRowsMap('char',   1, 'CONSTANT', [1],   {'K1', 'K2'});
+      Srm1b = bicas.utils.SameRowsMap('char',   1, 'CONSTANT', [1],   {'K1', 'K2'});
+      Srm2a = bicas.utils.SameRowsMap('double', 1, 'CONSTANT', [9],   {1, 2});
+      Srm2b = bicas.utils.SameRowsMap('double', 1, 'CONSTANT', [9],   {1, 2});
+      Srm3  = bicas.utils.SameRowsMap('char',   1, 'CONSTANT', [9],   {'K1', 'K2'});
+      Srm4  = bicas.utils.SameRowsMap('char',   2, 'CONSTANT', [1;2], {'K1', 'K2'});
 
-      testCase.assertTrue( M1a == M1b)
-      testCase.assertTrue( M2a == M2b)
-      testCase.assertFalse(M1a == M3 )
-      testCase.assertFalse(M1a == M4)
-      testCase.assertFalse(M2a == M3)
-      testCase.assertFalse(M2a == M4)
+      testCase.assertTrue( Srm1a == Srm1b)
+      testCase.assertTrue( Srm2a == Srm2b)
+      testCase.assertFalse(Srm1a == Srm3 )
+      testCase.assertFalse(Srm1a == Srm4)
+      testCase.assertFalse(Srm2a == Srm3)
+      testCase.assertFalse(Srm2a == Srm4)
 
       % NaN, different key order.
-      M1a = bicas.utils.SameRowsMap('char', 1, 'EMPTY');
-      M1a.add('K1', [NaN])
-      M1a.add('K2', [2])
-      M1b = bicas.utils.SameRowsMap('char', 1, 'EMPTY');
-      M1b.add('K2', [2])
-      M1b.add('K1', [NaN])
+      Srm1a = bicas.utils.SameRowsMap('char', 1, 'EMPTY');
+      Srm1a.add('K1', [NaN])
+      Srm1a.add('K2', [2])
+      Srm1b = bicas.utils.SameRowsMap('char', 1, 'EMPTY');
+      Srm1b.add('K2', [2])
+      Srm1b.add('K1', [NaN])
 
-      testCase.assertTrue( M1a == M1b)
-      testCase.assertTrue( M1a == M1b)
-      testCase.assertFalse(M1a == M3 )
+      testCase.assertTrue( Srm1a == Srm1b)
+      testCase.assertTrue( Srm1a == Srm1b)
+      testCase.assertFalse(Srm1a == Srm3 )
 
       % Different MATLAB classes.
-      M1  = bicas.utils.SameRowsMap('char', 1, 'EMPTY');
-      M1.add('K1', [1])
-      M3  = bicas.utils.SameRowsMap('char', 1, 'EMPTY');
-      M3.add('K1', int8([1]))
-      testCase.assertFalse(M1a == M3 )
+      Srm1  = bicas.utils.SameRowsMap('char', 1, 'EMPTY');
+      Srm1.add('K1', [1])
+      Srm3  = bicas.utils.SameRowsMap('char', 1, 'EMPTY');
+      Srm3.add('K1', int8([1]))
+      testCase.assertFalse(Srm1a == Srm3 )
     end
 
 
 
     function test_display(testCase)
-      M  = bicas.utils.SameRowsMap('char', 0, 'CONSTANT', uint8(ones(0,2)), {'K1'});
-      disp(M)
+      Srm = bicas.utils.SameRowsMap('char',   0, 'CONSTANT', uint8(ones(0,2)), {'K1'});
+      disp(Srm)
 
-      M  = bicas.utils.SameRowsMap('double', 1, 'CONSTANT', [9], {1});
-      disp(M)
+      Srm = bicas.utils.SameRowsMap('double', 1, 'CONSTANT', [9], {1});
+      disp(Srm)
 
-      M  = bicas.utils.SameRowsMap('char', 3, 'CONSTANT', [1,2;3,4;5,6], {'K1', 'K2'});
-      disp(M)
+      Srm = bicas.utils.SameRowsMap('char',   3, 'CONSTANT', [1,2;3,4;5,6], {'K1', 'K2'});
+      disp(Srm)
     end
 
 
@@ -243,12 +243,14 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
     % Helper function. Test that Map returns correct values for methods
     % .keys() and .values(). Takes into account that keys/values may be in
     % a different order than specified.
-    function test_keys_values(testCase, Map, expKeysCa, expValuesCa)
+    function test_keys_values(testCase, Srm, expKeysCa, expValuesCa)
       % NOTE: Implementation should permit both numbers and strings as
       % keys, mixed.
 
-      actKeysCa   = Map.keys();
-      actValuesCa = Map.values();
+      assert(isa(Srm, 'bicas.utils.SameRowsMap'))
+
+      actKeysCa   = Srm.keys();
+      actValuesCa = Srm.values();
 
       testCase.assertTrue(bicas.utils.object_sets_isequaln(actKeysCa, expKeysCa))
 
