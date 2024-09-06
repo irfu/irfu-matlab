@@ -296,7 +296,6 @@ classdef demuxer
       % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
       % for deriving the entire size (samples per record), until possibly
       % using a future bicas.utils.SameSizeTypeMap instead.
-      %tempNaN = nan(AsMap.nRows(), 1);
       tempNaN = nan(size(AsrSamplesAVoltSrm(keysCa{1})));
 
       for asidNameCa = bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA'
@@ -347,16 +346,16 @@ classdef demuxer
 
     % Utility function. Derive missing ASR fields from other fields. If
     % exactly two of the Map keys exist in S, then derive the third using
-    % the relationship AsMap(Asid1.s) == AsMap(Asid2.s) + AsMap(Asid3.s).
+    % the relationship AsSrm(Asid1.s) == AsSrm(Asid2.s) + AsSrm(Asid3.s).
     %
     % ARGUMENTS
     % =========
     % Asid1, Asid2, Asid3
-    %       ASIDs whose ID strings may or may not be keys in AsMap. If
+    %       ASIDs whose ID strings may or may not be keys in AsSrm. If
     %       exactly one of them is missing in "As", then the key+value is
     %       created with values assuming that the field contents are related
     %       through the relationship value1 = value2 + value3. In other
-    %       cases, "AsMap" is returned unmodified.
+    %       cases, "AsSrm" is returned unmodified.
     %
     function AsSrm = complete_relation(AsSrm, Asid1, Asid2, Asid3)
       assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))

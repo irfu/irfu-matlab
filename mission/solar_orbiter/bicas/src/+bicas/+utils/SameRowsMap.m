@@ -9,14 +9,14 @@
 % IMPLEMENTATION NOTE
 % ===================
 % bicas.utils.SameRowsMap.set_rows() can be slow *IF* the implementation stores
-% data directly as (non-handle) values in containers.Map, presumably since
-% preallocation does not work. To avoid this, the implementation instead stores
-% all values indirectly via handle class objects (bicas.utils.HandleWrapper),
-% which (apparently) makes it possible to modify arrays without implicit copying
-% by MATLAB, thus increasing performance. Does seem to work. Since the class's
-% internal data structure uses handle objects, the class itself also has to be a
-% handle class, to avoid that internal handle objects are shared between
-% different instances of bicas.utils.SameRowsMap.
+% data directly as (non-handle) values in containers.Map (and presumably in
+% dictionary, presumably since preallocation does not work. To avoid this, the
+% implementation instead stores all values indirectly via handle class objects
+% (bicas.utils.HandleWrapper), which (apparently) makes it possible to modify
+% arrays without implicit copying by MATLAB, thus increasing performance. Does
+% seem to work. Since the class's internal data structure uses handle objects,
+% the class itself also has to be a handle class, to avoid that internal handle
+% objects are shared between different instances of bicas.utils.SameRowsMap.
 %
 %
 % RATIONALE
@@ -41,6 +41,9 @@ classdef SameRowsMap < handle
   %       CON: Unnecessary since they are read-only, and methods can be called
   %            without brackets.
   %       PRO: Values become part of the default human-readable text represention(?)
+  %
+  % PROPOSAL: Rename method length().
+  %   PRO: Does not refer to length of object as in object emulating an array.
   %
   % TODO-DEC: How handle ~indexing (overload)? What should it be used for?
   %   PROBLEM: Would like to use indexing for (1) specifying variables, and
@@ -152,6 +155,8 @@ classdef SameRowsMap < handle
   %   CON: Can not make distinction between pointing to objects/structs and not.
   %       CON: Does not need to. Pointed-to objects are always objects.
   %
+  %
+  %
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   % TODO: Check that pre-allocation works when using subsasgn.
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -190,7 +195,7 @@ classdef SameRowsMap < handle
     % varargin
     %       initType == 'EMPTY':    Zero length.
     %       initType == 'CONSTANT':
-    %           varargin{1} = array
+    %           varargin{1} = Array of values
     %           varargin{2} = Cell array of keys which should have this
     %                         value.
     %
@@ -232,7 +237,7 @@ classdef SameRowsMap < handle
 
 
 
-    % Number of variables inside object. Unrelated to their size (e.g.
+    % Number of variables inside the object. Unrelated to their size (e.g.
     % rows).
     function n = length(obj)
       n = obj.Map.length;
@@ -272,7 +277,7 @@ classdef SameRowsMap < handle
       bicas.utils.SameRowsMap.assert_legal_key(key)
       assert(~obj.Map.isKey(key))
       assert(obj.nRows2 == size(value, 1), ...
-        'The argument''s number of rows (%i) is not equal to the objects number of rows (%i).', ...
+        'The argument''s number of rows (%i) is not equal to the object''s number of rows (%i).', ...
         obj.nRows2, size(value, 1))
 
       obj.Map(key) = bicas.utils.HandleWrapper(value);
@@ -280,7 +285,7 @@ classdef SameRowsMap < handle
 
 
 
-    % Use another map to overwrite selected rows in this map.
+    % Use another SRM to overwrite selected rows in this SRM.
     %
     % IMPLEMENTATION NOTE: Method is important for speeding up LFR-SWF which
     % tends to be broken into subsequences of 1 record. This can be done by
@@ -299,8 +304,6 @@ classdef SameRowsMap < handle
     %
     %
     function set_rows(obj, Srm2, iRowsArray)
-      % NOTE: Could add support for other (future) custom-made types of
-      %       Maps.
       % PROPOSAL: Support logical indexing.
       % PROPOSAL: Support using an 1-row SRM for overwriting N rows.
       % PROPOSAL: Implement method by overloading indexing notation:
