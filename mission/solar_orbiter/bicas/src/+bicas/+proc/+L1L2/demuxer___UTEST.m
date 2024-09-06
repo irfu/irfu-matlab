@@ -21,22 +21,25 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       %                 channels).
       A = bicas.proc.L1L2.AntennaSignalId.C;
       TEST_DATA_CA = { ...
-        A.DC_V1.s,  10; ...
-        A.DC_V2.s,  11; ...
-        A.DC_V3.s,  13; ...
-        A.DC_V12.s, 10-11; ...
-        A.DC_V13.s, 10-13; ...
-        A.DC_V23.s, 11-13; ...
-        A.AC_V12.s, 45-56; ...
-        A.AC_V13.s, 45-69; ...
-        A.AC_V23.s, 56-69 ...
+        A.DC_V1,  10; ...
+        A.DC_V2,  11; ...
+        A.DC_V3,  13; ...
+        A.DC_V12, 10-11; ...
+        A.DC_V13, 10-13; ...
+        A.DC_V23, 11-13; ...
+        A.AC_V12, 45-56; ...
+        A.AC_V13, 45-69; ...
+        A.AC_V23, 56-69 ...
         };
 
       % Multiply the sample values with matrix to test multiple records
       % with "snapshots" (SPR>1).
-      TEST_DATA_CA(:, 2) = cellfun(@(x) (x * ones(sampleSize)), TEST_DATA_CA(:, 2), 'UniformOutput', false);
+      TEST_DATA_CA(:, 2) = cellfun( ...
+        @(x) (x * ones(sampleSize)), TEST_DATA_CA(:, 2), ...
+        'UniformOutput', false);
 
-      AsidTestSamplesSrm = bicas.utils.SameRowsMap('string', sampleSize(1), 'EMPTY');
+      AsidTestSamplesSrm = bicas.utils.SameRowsMap( ...
+        "bicas.proc.L1L2.AntennaSignalId", sampleSize(1), 'EMPTY');
       for i = 1:size(TEST_DATA_CA, 1)
         AsidTestSamplesSrm.add( ...
           TEST_DATA_CA{i, 1}, ...
@@ -103,7 +106,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % Function for testing BDM 0-4. All those all those map (route) ASR
       % to ASR (no GNS, no 2.5V REF, no "unknown", no "nowhere").
       function test_BDM01234(bdmFloatNan, dlrFloatNan, ExpRoutingArray, ExpAsrSamplesAVoltSrm)
-        assert(isa(ExpAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
+        assert(isa(ExpAsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
         assert(ismember(bdmFloatNan, [0:4]))
 
         % Autogenerate bltsSamplesCa (test argument) using
@@ -121,7 +124,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         for i = 1:numel(RoutingArray)
           Routing = RoutingArray(i);
           if Routing.Ssid.is_ASR()
-            tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(Routing.Ssid.Asid.s);
+            tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(Routing.Ssid.Asid);
           else
             tempBltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
           end
@@ -144,10 +147,10 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
           A.DC_V12, A.DC_V13, A.DC_V23, ...
           A.AC_V12, A.AC_V13, A.AC_V23 ...
           };
-        AsSrm = bicas.utils.SameRowsMap('string', nRows, 'EMPTY');
+        AsSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", nRows, 'EMPTY');
 
         for iAsid = 1:9
-          asidName = ASID_CA{iAsid}.s;
+          asidName = ASID_CA{iAsid};
 
           samplesAVolt = AsidTestSamplesSrm(asidName);
           if ~varargin{iAsid}
@@ -205,11 +208,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % ==============
       % BDM = 5, DLR 1
       % ==============
-      bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1.s);
-      bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2.s);
-      bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3.s);
-      bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V13.s);
-      bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23.s);
+      bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1);
+      bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2);
+      bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3);
+      bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V13);
+      bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23);
       test(5, 1, ...
         bltsSamplesAVolt, ...
         [R.REF25V_TO_DC_V1, R.REF25V_TO_DC_V2, R.REF25V_TO_DC_V3, R.AC_V13, R.AC_V23], ...
@@ -218,11 +221,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % ==============
       % BDM = 6, DLR 0
       % ==============
-      bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1.s);
-      bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2.s);
-      bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3.s);
-      bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V12.s);
-      bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23.s);
+      bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1);
+      bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2);
+      bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3);
+      bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V12);
+      bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23);
       test(6, 0, ...
         bltsSamplesAVolt, ...
         [R.GND_TO_DC_V1, R.GND_TO_DC_V2, R.GND_TO_DC_V3, R.AC_V12, R.AC_V23], ...
@@ -231,11 +234,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % ==============
       % BDM = Unknwon, DLR Unknown
       % ==============
-      bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1.s);
-      bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2.s);
-      bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3.s);
-      bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V12.s);
-      bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23.s);
+      bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A.DC_V1);
+      bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A.DC_V2);
+      bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A.DC_V3);
+      bltsSamplesAVolt(:, :, 4) = AsidTestSamplesSrm(A.AC_V12);
+      bltsSamplesAVolt(:, :, 5) = AsidTestSamplesSrm(A.AC_V23);
       test(NaN, NaN, ...
         bltsSamplesAVolt, ...
         [R.UNKNOWN_TO_NOWHERE, ...
@@ -269,11 +272,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % BUG/NOTE: Will fail if function returns NaN when it should not!
       function test(inputFieldsCa)
         nRows = size(inputFieldsCa{2}, 1);
-        AsSrm = bicas.utils.SameRowsMap('string', nRows, 'EMPTY');
+        AsSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", nRows, 'EMPTY');
         for i = 1:(numel(inputFieldsCa)/2)
           Asid   = inputFieldsCa{2*i-1};
           sample = inputFieldsCa{2*i  };
-          AsSrm.add(Asid.s, sample)
+          AsSrm.add(Asid, sample)
         end
 
         % RUN FUNCTION TO BE TESTED
@@ -285,15 +288,15 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         % NOTE: Implicitly asserts that all fields are present.
         % NOTE: Must account for that some fields may be NaN, and
         %       therefore can not be checked against relations.
-        assert_relation(ActAsSrm(C.DC_V1.s),  ActAsSrm(C.DC_V12.s), ActAsSrm(C.DC_V2.s))
-        assert_relation(ActAsSrm(C.DC_V2.s),  ActAsSrm(C.DC_V23.s), ActAsSrm(C.DC_V3.s))
-        assert_relation(ActAsSrm(C.DC_V1.s),  ActAsSrm(C.DC_V13.s), ActAsSrm(C.DC_V3.s))
+        assert_relation(ActAsSrm(C.DC_V1),  ActAsSrm(C.DC_V12), ActAsSrm(C.DC_V2))
+        assert_relation(ActAsSrm(C.DC_V2),  ActAsSrm(C.DC_V23), ActAsSrm(C.DC_V3))
+        assert_relation(ActAsSrm(C.DC_V1),  ActAsSrm(C.DC_V13), ActAsSrm(C.DC_V3))
 
         % DC. All diffs
-        assert_relation(ActAsSrm(C.DC_V13.s), ActAsSrm(C.DC_V12.s), ActAsSrm(C.DC_V23.s))
+        assert_relation(ActAsSrm(C.DC_V13), ActAsSrm(C.DC_V12), ActAsSrm(C.DC_V23))
 
         % AC. All diffs
-        assert_relation(ActAsSrm(C.AC_V13.s), ActAsSrm(C.AC_V12.s), ActAsSrm(C.AC_V23.s))
+        assert_relation(ActAsSrm(C.AC_V13), ActAsSrm(C.AC_V12), ActAsSrm(C.AC_V23))
       end
 
 

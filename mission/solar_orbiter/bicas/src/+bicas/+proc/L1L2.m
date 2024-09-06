@@ -293,8 +293,12 @@ classdef L1L2
 
 
 
+      A = bicas.proc.L1L2.AntennaSignalId.C;
+
+
+
       nRecords                 = size(SciDcip.Zv.Epoch, 1);
-      nSamplesPerRecordChannel = size(SciDcop.Zv.AsrSamplesAVoltSrm("DC_V1"), 2);
+      nSamplesPerRecordChannel = size(SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V1), 2);
 
       OutSci = [];
 
@@ -340,17 +344,17 @@ classdef L1L2
         OutSci.Zv.EDC = tempNaN;
         OutSci.Zv.EAC = tempNaN;
 
-        OutSci.Zv.VDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V1");
-        OutSci.Zv.VDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V2");
-        OutSci.Zv.VDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V3");
+        OutSci.Zv.VDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V1);
+        OutSci.Zv.VDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V2);
+        OutSci.Zv.VDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V3);
 
-        OutSci.Zv.EDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V12");
-        OutSci.Zv.EDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V13");
-        OutSci.Zv.EDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V23");
+        OutSci.Zv.EDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V12);
+        OutSci.Zv.EDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V13);
+        OutSci.Zv.EDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V23);
 
-        OutSci.Zv.EAC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm("AC_V12");
-        OutSci.Zv.EAC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm("AC_V13");
-        OutSci.Zv.EAC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm("AC_V23");
+        OutSci.Zv.EAC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V12);
+        OutSci.Zv.EAC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V13);
+        OutSci.Zv.EAC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V23);
 
         % ASSERTION
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
@@ -386,17 +390,17 @@ classdef L1L2
         OutSci.Zv.EDC = tempNaN;
         OutSci.Zv.EAC = tempNaN;
 
-        OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V1");
-        OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V2");
-        OutSci.Zv.VDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V3");
+        OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V1);
+        OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V2);
+        OutSci.Zv.VDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V3);
 
-        OutSci.Zv.EDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V12");
-        OutSci.Zv.EDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V13");
-        OutSci.Zv.EDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm("DC_V23");
+        OutSci.Zv.EDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V12);
+        OutSci.Zv.EDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V13);
+        OutSci.Zv.EDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V23);
 
-        OutSci.Zv.EAC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm("AC_V12");
-        OutSci.Zv.EAC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm("AC_V13");
-        OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm("AC_V23");
+        OutSci.Zv.EAC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V12);
+        OutSci.Zv.EAC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V13);
+        OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V23);
 
         % ASSERTION
         % NOTE: Must exclude ZV "SAMPLE_IDX".

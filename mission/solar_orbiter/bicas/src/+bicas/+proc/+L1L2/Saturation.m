@@ -306,7 +306,7 @@ classdef Saturation
           Ssid = RoutingAr(iBlts).Ssid;
 
           if Ssid.is_ASR()
-            bltsSamplesAVolt   = AsrSamplesAVoltSrm(Ssid.Asid.s);
+            bltsSamplesAVolt   = AsrSamplesAVoltSrm(Ssid.Asid);
             ssBltsSamplesAVolt = bltsSamplesAVolt(iRec1:iRec2, :);
 
             % Set ssBltsBitAr=bits for the current subsequence and
