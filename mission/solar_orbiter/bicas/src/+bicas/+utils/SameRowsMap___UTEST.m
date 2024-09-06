@@ -30,20 +30,20 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       Srm = bicas.utils.SameRowsMap('string', 0, 'EMPTY');
 
       testCase.assertEqual(Srm.keys(), cell(0, 1))
-      testCase.assertEqual(Srm.length, 0)
+      testCase.assertEqual(Srm.numEntries, 0)
       testCase.assertEqual(Srm.nRows,  0)
       testCase.test_keys_values(testCase, Srm, {}, {})
 
       Srm.add("K1", V1)
 
       testCase.assertEqual(Srm.keys, {"K1"})
-      testCase.assertEqual(Srm.length, 1)
+      testCase.assertEqual(Srm.numEntries, 1)
       testCase.test_keys_values(testCase, Srm, {"K1"}, {V1})
       testCase.assertFalse(Srm.isKey("K2"))
 
       Srm.add("K2", V2)
 
-      testCase.assertEqual(Srm.length, 2)
+      testCase.assertEqual(Srm.numEntries, 2)
       testCase.assertTrue( Srm.isKey("K2"))
 
       % Test different orders. ==> Effectively testing the helper

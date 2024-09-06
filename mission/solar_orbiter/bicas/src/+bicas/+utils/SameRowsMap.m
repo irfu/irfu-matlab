@@ -46,9 +46,6 @@ classdef SameRowsMap < handle
   %            without brackets.
   %       PRO: Values become part of the default human-readable text represention(?)
   %
-  % PROPOSAL: Rename method length().
-  %   PRO: Does not refer to length of object as in object emulating an array.
-  %
   % TODO-DEC: How handle ~indexing (overload)? What should it be used for?
   %   PROBLEM: Would like to use indexing for (1) specifying variables, and
   %            (2) specifying rows.
@@ -247,7 +244,8 @@ classdef SameRowsMap < handle
 
     % Number of variables inside the object. Unrelated to their size (e.g.
     % rows).
-    function n = length(obj)
+    % NOTE: Method name chosen to be identical with dictionary.numEntries().
+    function n = numEntries(obj)
       n = obj.Dict.numEntries;
     end
 

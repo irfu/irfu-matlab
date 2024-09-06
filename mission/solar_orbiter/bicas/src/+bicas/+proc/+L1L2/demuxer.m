@@ -264,7 +264,7 @@ classdef demuxer
       %================
       % Derive DC ASRs
       %================
-      nAsidBefore = AsSrm.length;
+      nAsidBefore = AsSrm.numEntries;
       while true
         % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for
         % deriving diffs since it is better to derive a diff from
@@ -275,7 +275,7 @@ classdef demuxer
         AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V1,  C.DC_V12, C.DC_V2);
         AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V1,  C.DC_V13, C.DC_V3);
         AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V2,  C.DC_V23, C.DC_V3);
-        nAsidAfter = AsSrm.length;
+        nAsidAfter = AsSrm.numEntries;
 
         if (nAsidBefore == nAsidAfter) || (nAsidAfter == 9)
           break
