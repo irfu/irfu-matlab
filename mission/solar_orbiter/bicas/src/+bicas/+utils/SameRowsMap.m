@@ -8,7 +8,7 @@
 %
 % IMPLEMENTATION NOTE
 % ===================
-% bicas.utils.SameRowsMap.setRows() can be slow *IF* the implementation stores
+% bicas.utils.SameRowsMap.set_rows() can be slow *IF* the implementation stores
 % data directly as (non-handle) values in containers.Map, presumably since
 % preallocation does not work. To avoid this, the implementation instead stores
 % all values indirectly via handle class objects (bicas.utils.HandleWrapper),
@@ -134,7 +134,7 @@ classdef SameRowsMap < handle
   %           PRO: assert(isa(x, 'SameRowsMap')) on an argument for reading
   %                makes sense, but not on an argument for writing to.
   %       PROPOSAL: Make immutable.
-  %           CON: Can not implement setRows()
+  %           CON: Can not implement set_rows()
   %                as method (without creating new object).
   %   PROPOSAL: SameSizeTypeMap, SameRowsMap are subclasses of the same
   %             abstract superclass.
@@ -298,7 +298,7 @@ classdef SameRowsMap < handle
     %       NOTE: Can not use logical indexing.
     %
     %
-    function setRows(obj, Srm2, iRowsArray)
+    function set_rows(obj, Srm2, iRowsArray)
       % NOTE: Could add support for other (future) custom-made types of
       %       Maps.
       % PROPOSAL: Support logical indexing.

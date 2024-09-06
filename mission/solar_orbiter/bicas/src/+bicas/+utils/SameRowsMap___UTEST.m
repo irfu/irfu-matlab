@@ -19,7 +19,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
     function test_basic(testCase)
       % Test sequences of operations on a single Map.
-      % Exclude setRows().
+      % Exclude set_rows().
 
       % ==============================================
       % Adds key-values, zero rows, char keys, 'EMPTY'
@@ -80,14 +80,14 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_setRows(testCase)
+    function test_set_rows(testCase)
 
       % Insert zero rows into zero rows.
       Srm1 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
       Srm1.add('K2', zeros(0,0))
       Srm2 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
       Srm2.add('K2', zeros(0,0))
-      Srm1.setRows(Srm2, zeros(0,1))
+      Srm1.set_rows(Srm2, zeros(0,1))
       testCase.assertEqual(Srm1('K2'), zeros(0,0))
 
       % Insert zero rows into non-zero rows.
@@ -95,7 +95,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       Srm1.add('K2', zeros(3,0))
       Srm2 = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
       Srm2.add('K2', zeros(0,0))
-      Srm1.setRows(Srm2, zeros(0,1))
+      Srm1.set_rows(Srm2, zeros(0,1))
       testCase.assertEqual(Srm1('K2'), zeros(3,0))
 
       % Preserve type
@@ -103,7 +103,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       Srm1.add('K2', int16([1;2;3;4]))
       Srm2 = bicas.utils.SameRowsMap('char', 2, 'EMPTY');
       Srm2.add('K2', int16([[8;9]]))
-      Srm1.setRows(Srm2, [2;3])
+      Srm1.set_rows(Srm2, [2;3])
       testCase.assertEqual(Srm1('K2'), int16([1;8;9;4]))
 
 
@@ -129,7 +129,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
       Srm1 = bicas.utils.SameRowsMap('char', 4, 'CONSTANT', V1,            {'K'});
       Srm2 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', V1(1:2, :, :), {'K'});
-      Srm1.setRows(Srm2, [3;2])    % NOTE: Decrementing indices.
+      Srm1.set_rows(Srm2, [3;2])    % NOTE: Decrementing indices.
 
       V2              = V1;
       V2([3,2], :, :) = V1(1:2, :, :);
@@ -144,19 +144,19 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       Srm1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', int8([1;2]), {'K'});
       Srm2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],         {'K'});
       testCase.assertError(...
-        @() (Srm1.setRows(Srm2, [1])), ...
+        @() (Srm1.set_rows(Srm2, [1])), ...
         ?MException)
       % Incompatible array sizes
       Srm1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', [1 2;3 4], {'K'});
       Srm2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],       {'K'});
       testCase.assertError(...
-        @() (Srm1.setRows(Srm2, [1])), ...
+        @() (Srm1.set_rows(Srm2, [1])), ...
         ?MException)
       % Different sets of keys.
       Srm1 = bicas.utils.SameRowsMap('char', 2, 'CONSTANT', [1;2], {'K1', 'K2a'});
       Srm2 = bicas.utils.SameRowsMap('char', 1, 'CONSTANT', [9],   {'K1', 'K2b'});
       testCase.assertError(...
-        @() (Srm1.setRows(Srm2, [1])), ...
+        @() (Srm1.set_rows(Srm2, [1])), ...
         ?MException)
     end
 

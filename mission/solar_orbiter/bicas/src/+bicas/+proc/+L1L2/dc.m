@@ -297,7 +297,7 @@ classdef dc
           Cv, Vv, Cal);
 
         % Add demuxed sequence to the to-be complete set of records.
-        AsrSamplesAVoltSrm.setRows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
+        AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
       end    % for
 
     end    % calibrate_demux_voltages

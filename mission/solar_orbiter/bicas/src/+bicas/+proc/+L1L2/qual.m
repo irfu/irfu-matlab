@@ -138,14 +138,14 @@ classdef qual
       keysCa = zvAsrSamplesAVoltSrm.keys;
       nSpr   = size(zvAsrSamplesAVoltSrm(keysCa{1}), 2);
 
-      % IMPLEMENTATION NOTE: bicas.utils.SameRowsMap.setRows() can not
+      % IMPLEMENTATION NOTE: bicas.utils.SameRowsMap.set_rows() can not
       % handle logical indexing.
       iUfv = find(zvUfv);
       nanArray = NaN(size(iUfv, 1), nSpr);
       tempSrm = bicas.utils.SameRowsMap(...
         'char', size(nanArray, 1), ...
         'CONSTANT', nanArray, zvAsrSamplesAVoltSrm.keys);
-      zvAsrSamplesAVoltSrm.setRows(tempSrm, iUfv);
+      zvAsrSamplesAVoltSrm.set_rows(tempSrm, iUfv);
     end
 
 
