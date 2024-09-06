@@ -135,8 +135,8 @@ classdef qual
       % ====================================
       % NOTE: Should really use future bicas.utils.SameSizeTypeMap here
       %       which contains size on other dimensions.
-      keysCa = zvAsrSamplesAVoltSrm.keys;
-      nSpr   = size(zvAsrSamplesAVoltSrm(keysCa{1}), 2);
+      keyArray = zvAsrSamplesAVoltSrm.keys;
+      nSpr     = size(zvAsrSamplesAVoltSrm(keyArray), 2);
 
       % IMPLEMENTATION NOTE: bicas.utils.SameRowsMap.set_rows() can not
       % handle logical indexing.

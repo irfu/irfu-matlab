@@ -31,10 +31,6 @@ classdef AntennaSignalId
   %
   % PROPOSAL: Store ASID constants in dictionary.
   %   PROPOSAL: get_derived_ASR_constants() should return dictionary.
-  % PROPOSAL: Store mapping string-->ASID objects separately from collections
-  %           of string constants and object constants (ALL_ASID_NAMES_CA,
-  %           ALL_ASID_CA).
-  %   PROPOSAL: Use dictionary. Obtain sets of strings/objects via methods.
   %
   % PROPOSAL: Private ASID/SSID/SDID constructors. Only instantiate objects for
   %           unique ASID/SSID/SDID ONCE.
@@ -55,18 +51,14 @@ classdef AntennaSignalId
     % (2) Makes it possible to access constants through a variable copy of
     %     this constant rather than using the long qualifiers.
     C = bicas.proc.L1L2.AntennaSignalId.init_const()
+
+    % Array of all ASIDs in "C".
+    ALL_ARRAY = bicas.proc.L1L2.AntennaSignalId.init_const_array()
   end
 
 
 
   properties(SetAccess=immutable, GetAccess=public)
-    % String constant that represents unique object. The name is deliberately
-    % short since objects themselves are IDs and should preferably be used
-    % except when one has to convert to string. The only reason this exists
-    % is to be used as a replacement for objects as keys in containers.Map
-    % objects. containers.Map does not accept objects as keys.
-    s
-
     % String constant that represents the type of signal (single/diff, DC/AC).
     category
 
@@ -86,9 +78,7 @@ classdef AntennaSignalId
 
 
     % Constructor
-    function obj = AntennaSignalId(name, category, antennas)
-      assert(isstring(name))
-
+    function obj = AntennaSignalId(category, antennas)
       % ASSERTIONS: antennas
       assert(isnumeric(antennas))
       % NOTE: Assertion permits empty value, []. Assert vector length
@@ -131,7 +121,6 @@ classdef AntennaSignalId
       end
 
       % Assign object.
-      obj.s        = name;
       obj.antennas = antennas;
       obj.category = category;
     end
@@ -166,9 +155,9 @@ classdef AntennaSignalId
       ASID = bicas.proc.L1L2.AntennaSignalId.C;
       C    = struct();
 
-      for asidNameCa = ASID.ALL_ASID_NAMES_CA'
-        asidName     = asidNameCa{1};
-        C.(asidName) = fh(ASID.(asidName));
+      for fnCa = fieldnames(ASID)'
+        fn     = fnCa{1};
+        C.(fn) = fh(ASID.(fn));
       end
     end
 
@@ -185,9 +174,11 @@ classdef AntennaSignalId
     function C = init_const()
       C = struct();
 
-      function add(name, asidCategory, asidAntennas)
-        C.(name) = bicas.proc.L1L2.AntennaSignalId(...
-          name, asidCategory, asidAntennas);
+      function add(fn, asidCategory, asidAntennas)
+        Asid = bicas.proc.L1L2.AntennaSignalId(...
+          asidCategory, asidAntennas);
+
+        C.(fn)                  = Asid;
       end
 
       % =====================================
@@ -204,18 +195,13 @@ classdef AntennaSignalId
       add("AC_V12", 'AC_DIFF',   [1, 2]);
       add("AC_V13", 'AC_DIFF',   [1, 3]);
       add("AC_V23", 'AC_DIFF',   [2, 3]);
+    end
 
-      % =======================================
-      % Create lists of all unique ASID objects
-      % =======================================
-      ALL_ASID_NAMES_CA = {};    % All ASID names.
-      ALL_ASID_CA       = {};    % All ASID objects.
-      for fnCa = fieldnames(C)'
-        ALL_ASID_NAMES_CA{end+1, 1} = string(fnCa{1});
-        ALL_ASID_CA{      end+1, 1} =     C.(fnCa{1});
-      end
-      C.ALL_ASID_NAMES_CA = ALL_ASID_NAMES_CA;
-      C.ALL_ASID_CA       = ALL_ASID_CA;
+
+
+    function AsidArray = init_const_array()
+      ca = struct2cell(bicas.proc.L1L2.AntennaSignalId.C);
+      AsidArray = [ca{:}]';
     end
 
 

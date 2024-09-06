@@ -203,7 +203,7 @@ classdef SameRowsMap < handle
     %       initType == 'EMPTY':    Zero length.
     %       initType == 'CONSTANT':
     %           varargin{1} = Array of values
-    %           varargin{2} = Cell array of keys which should have this
+    %           varargin{2} = Array of keys which should have the specified
     %                         value.
     %
     % NOTE: To initialize with multiple keys with unique values, use both
@@ -225,12 +225,12 @@ classdef SameRowsMap < handle
           % Same (constant) initial value for all keys.
 
           assert(numel(varargin) == 2)
-          value  = varargin{1};
-          keysCa = varargin{2};
+          value     = varargin{1};
+          keysArray = varargin{2};
 
           % NOTE: Implicitly checks for unique keys.
-          for keyCa = keysCa(:)'
-            obj.add(keyCa{1}, value);
+          for key = keysArray(:)'
+            obj.add(key, value);
           end
 
         otherwise
@@ -251,9 +251,11 @@ classdef SameRowsMap < handle
 
 
 
+    % Return array of key values.
+    %
     % NOTE: Method name chosen to be identical with dictionary.keys().
-    function keysCa = keys(obj)
-      keysCa = num2cell(obj.Dict.keys);
+    function keysArray = keys(obj)
+      keysArray = obj.Dict.keys;
     end
 
 
@@ -322,9 +324,9 @@ classdef SameRowsMap < handle
 
       assert(bicas.utils.object_sets_isequaln(obj.keys, Srm2.keys))
 
-      keysCa = obj.keys();
-      for keyCa = keysCa(:)'
-        key = keyCa{1};
+      keyArray = obj.keys();
+      for i = 1:numel(keyArray)
+        key = keyArray(i);
 
         hw1 = obj.Dict(key);
         hw2 = Srm2.Dict(key);
@@ -401,9 +403,9 @@ classdef SameRowsMap < handle
         return
       end
 
-      keysCa = obj1.Dict.keys;
-      for i = 1:numel(keysCa)
-        key = keysCa(i);
+      keyArray = obj1.keys;
+      for i = 1:numel(keyArray)
+        key = keyArray(i);
 
         value1 = obj1.Dict(key).v;
         value2 = obj2.Dict(key).v;
@@ -431,11 +433,11 @@ classdef SameRowsMap < handle
     % Unclear if works for non-numeric, non-char key values. Probably not.
     %
     function s = disp(obj)
-      keysCa = obj.Dict.keys();
+      keyArray = obj.keys;
 
       sCa = {sprintf('%i row(s)', obj.nRows())};
-      for i = 1:numel(keysCa)
-        key   = keysCa(i);
+      for i = 1:numel(keyArray)
+        key   = keyArray(i);
         value = subsref(obj, substruct('()', {key}));
 
         if isnumeric(value) || ischar(value)

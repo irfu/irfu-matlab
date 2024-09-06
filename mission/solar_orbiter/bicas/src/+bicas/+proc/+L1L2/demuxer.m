@@ -291,15 +291,14 @@ classdef demuxer
       %   Ex: bdm=1,2,3
       %===================================================================
 
-      keysCa = AsSrm.keys;
+      keyArray = AsSrm.keys;
 
       % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
       % for deriving the entire size (samples per record), until possibly
       % using a future bicas.utils.SameSizeTypeMap instead.
-      tempNaN = nan(size(AsrSamplesAVoltSrm(keysCa{1})));
+      tempNaN = nan(size(AsrSamplesAVoltSrm(keyArray)));
 
-      for asidCa = bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_CA'
-        Asid = asidCa{1};
+      for Asid = bicas.proc.L1L2.AntennaSignalId.ALL_ARRAY'
         if ~AsSrm.isKey(Asid)
           AsSrm.add(Asid, tempNaN);
         end
