@@ -6,6 +6,12 @@
 % Some method names are chosen to be identical with dictionary.
 %
 %
+% NOTE: Enforces that the MATLAB class for keys is consistent, i.e. treating
+% (1) char array<>string, and
+% (2) all numeric MATLAB classes are distinct (different).
+% This is different from dictionary keys.
+%
+%
 % IMPLEMENTATION NOTE
 % ===================
 % bicas.utils.SameRowsMap.set_rows() can be slow *IF* the implementation stores
@@ -18,9 +24,6 @@
 % uses handle objects, the class itself also has to be a handle class, to avoid
 % that internal handle objects are shared between different instances of
 % bicas.utils.SameRowsMap.
-% --
-% Enforces that the MATLAB class for keys is consistent, treating char
-% array<>string as opposed to the dictionary implementation.
 %
 %
 % RATIONALE
@@ -69,8 +72,6 @@ classdef SameRowsMap < handle
   %       ZVs and enforce assertions between them.
   %   PROPOSAL: Class(es) which support a hierarchy of collections.
   %       SameSizeType inside/under SameRows.
-  %   PROPOSAL: Collections which are connected to each other (keep
-  %       references).
   %
   % NOTE: Examples of usage for ZV collections:
   %   AsrMap (while building) (until bicas.utils.SameSizeTypeMap)
@@ -87,6 +88,8 @@ classdef SameRowsMap < handle
   %       PROPOSAL: Build content using dictionary. Submit to constructor.
   %           CON: Can never extend to accept wider set of keys, e.g. objects.
   %           PRO: Easier to implement.
+  %
+  % PROPOSAL: Require identical value MCs.
   %
   %
   %
@@ -224,11 +227,8 @@ classdef SameRowsMap < handle
           assert(numel(varargin) == 2)
           value  = varargin{1};
           keysCa = varargin{2};
-          % NOTE: Does not check for unique keys.
-          for keyCa = keysCa(:)'
-            bicas.utils.SameRowsMap.assert_legal_key(keyCa{1})
-          end
 
+          % NOTE: Implicitly checks for unique keys.
           for keyCa = keysCa(:)'
             obj.add(keyCa{1}, value);
           end
@@ -270,7 +270,7 @@ classdef SameRowsMap < handle
     % NOTE: Method name chosen to be identical with dictionary.isKey().
     % The name is therefore inconsistent with naming conventions.
     function isKey = isKey(obj, key)
-      bicas.utils.SameRowsMap.assert_legal_key(key)
+      assert(isa(key, obj.mcKeys), 'Inconsistent key MATLAB class.')
 
       isKey = obj.Dict.isKey(key);
     end
@@ -279,8 +279,7 @@ classdef SameRowsMap < handle
 
     % Add NEW key-value pair. Disallow overwriting.
     function add(obj, key, value)
-      bicas.utils.SameRowsMap.assert_legal_key(key)
-      assert(isa(key, obj.mcKeys))
+      assert(isa(key, obj.mcKeys), 'Inconsistent key MATLAB class.')
       assert(~obj.Dict.isKey(key))
       assert(obj.nRows2 == size(value, 1), ...
         'The argument''s number of rows (%i) is not equal to the object''s number of rows (%i).', ...
@@ -332,12 +331,10 @@ classdef SameRowsMap < handle
 
         size1 = size(hw1.v);
         size2 = size(hw2.v);
-        % IMPLEMENTATION NOTE: Using num2str(key) since it can handle
-        % both strings and numbers.
-        assert(isequal(size1(2:end), size2(2:end)    ), ...
-          'Values for key="%s" have inconsistent sizes.', num2str(key))
         assert(isequal(class(hw1.v), class(hw2.v)), ...
-          'Values for key="%s" have inconsistent MATLAB classes.', num2str(key))
+          'The values in the two SRMs have inconsistent MATLAB classes.')
+        assert(isequal(size1(2:end), size2(2:end)), ...
+          'The values in the two SRMs have inconsistent non-row sizes.')
 
         % IMPLEMENTATION NOTE: Unsure, but think that explicitly setting
         % second dimension to ":" makes the command handle any
@@ -369,7 +366,7 @@ classdef SameRowsMap < handle
           % whether strings or numbers. Should not support indices
           % like "1,2", colons, or "end".
           key = S.subs{1};
-          assert(isa(key, obj.mcKeys))
+          assert(isa(key, obj.mcKeys), 'Inconsistent key MATLAB class.')
           varargout = {obj.Dict(key).v};
 
         otherwise
@@ -441,7 +438,12 @@ classdef SameRowsMap < handle
         key   = keysCa(i);
         value = subsref(obj, substruct('()', {key}));
 
-        sCa{end+1} = sprintf('%s : %s (%s)', num2str(key), mat2str(value), class(value));
+        if isnumeric(value) || ischar(value)
+          valueStr = sprintf('%s (%s)', mat2str(value), class(value));
+        else
+          valueStr = class(value);
+        end
+        sCa{end+1} = sprintf('%s : %s', num2str(key), valueStr);
       end
 
       s = strjoin(sCa, '\n');
@@ -450,25 +452,6 @@ classdef SameRowsMap < handle
 
 
   end    % methods(Access=public)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-
-
-
-    function assert_legal_key(key)
-      assert(isnumeric(key) || isstring(key))
-    end
-
-
-
-  end    % methods
 
 
 

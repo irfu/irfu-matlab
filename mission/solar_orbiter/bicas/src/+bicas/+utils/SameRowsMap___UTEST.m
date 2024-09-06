@@ -18,7 +18,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
 
     function test_basic(testCase)
-      % Test sequences of operations on a single Map.
+      % Test sequences of operations on a single SRM.
       % Exclude set_rows().
 
       % ==============================================
@@ -96,6 +96,20 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       testCase.assertError(...
           @() SrmDouble.add(uint8(3), 123), ...
           ?MException)
+    end
+
+
+
+    function test_object_keys(testCase)
+      Asid1 = bicas.proc.L1L2.AntennaSignalId.C.DC_V1;
+      Asid2 = bicas.proc.L1L2.AntennaSignalId.C.DC_V12;
+      Asid3 = bicas.proc.L1L2.AntennaSignalId.C.DC_V3;
+      Srm = bicas.utils.SameRowsMap('bicas.proc.L1L2.AntennaSignalId', 1, 'EMPTY');
+
+      Srm.add(Asid1, 1)
+      Srm.add(Asid2, 1)
+      testCase.assertTrue(Srm.isKey(Asid1))
+      testCase.assertFalse(Srm.isKey(Asid3))
     end
 
 
@@ -243,6 +257,11 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
       Srm = bicas.utils.SameRowsMap('string', 3, 'CONSTANT', [1,2;3,4;5,6], {"K1", "K2"});
       disp(Srm)
+
+      Asid1 = bicas.proc.L1L2.AntennaSignalId.C.DC_V1;
+      Asid2 = bicas.proc.L1L2.AntennaSignalId.C.DC_V12;
+      Srm = bicas.utils.SameRowsMap('string', 1, 'CONSTANT', [Asid1, Asid2], {"K1", "K2"});
+      disp(Srm)
     end
 
 
@@ -260,7 +279,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
 
 
-    % Helper function. Test that Map returns correct values for methods
+    % Helper function. Test that SRM returns correct values for methods
     % .keys() and .values(). Takes into account that keys/values may be in
     % a different order than specified.
     function test_keys_values(testCase, Srm, expKeysCa, expValuesCa)
