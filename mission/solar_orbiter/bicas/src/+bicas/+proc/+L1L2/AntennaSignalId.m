@@ -87,7 +87,7 @@ classdef AntennaSignalId
 
     % Constructor
     function obj = AntennaSignalId(name, category, antennas)
-      assert(ischar(name))
+      assert(isstring(name))
 
       % ASSERTIONS: antennas
       assert(isnumeric(antennas))
@@ -193,17 +193,17 @@ classdef AntennaSignalId
       % =====================================
       % Add every possible unique ASID object
       % =====================================
-      add('DC_V1',  'DC_SINGLE', [1   ]);
-      add('DC_V2',  'DC_SINGLE', [2   ]);
-      add('DC_V3',  'DC_SINGLE', [3   ]);
+      add("DC_V1",  'DC_SINGLE', [1   ]);
+      add("DC_V2",  'DC_SINGLE', [2   ]);
+      add("DC_V3",  'DC_SINGLE', [3   ]);
 
-      add('DC_V12', 'DC_DIFF',   [1, 2]);
-      add('DC_V13', 'DC_DIFF',   [1, 3]);
-      add('DC_V23', 'DC_DIFF',   [2, 3]);
+      add("DC_V12", 'DC_DIFF',   [1, 2]);
+      add("DC_V13", 'DC_DIFF',   [1, 3]);
+      add("DC_V23", 'DC_DIFF',   [2, 3]);
 
-      add('AC_V12', 'AC_DIFF',   [1, 2]);
-      add('AC_V13', 'AC_DIFF',   [1, 3]);
-      add('AC_V23', 'AC_DIFF',   [2, 3]);
+      add("AC_V12", 'AC_DIFF',   [1, 2]);
+      add("AC_V13", 'AC_DIFF',   [1, 3]);
+      add("AC_V23", 'AC_DIFF',   [2, 3]);
 
       % =======================================
       % Create lists of all unique ASID objects
@@ -211,8 +211,8 @@ classdef AntennaSignalId
       ALL_ASID_NAMES_CA = {};    % All ASID names.
       ALL_ASID_CA       = {};    % All ASID objects.
       for fnCa = fieldnames(C)'
-        ALL_ASID_NAMES_CA{end+1, 1} =    fnCa{1};
-        ALL_ASID_CA{      end+1, 1} = C.(fnCa{1});
+        ALL_ASID_NAMES_CA{end+1, 1} = string(fnCa{1});
+        ALL_ASID_CA{      end+1, 1} =     C.(fnCa{1});
       end
       C.ALL_ASID_NAMES_CA = ALL_ASID_NAMES_CA;
       C.ALL_ASID_CA       = ALL_ASID_CA;

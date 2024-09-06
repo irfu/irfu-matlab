@@ -13,7 +13,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
   methods(Static, Access=private)
 
-    function [channelIdStringsCa, testSamplesCa] = create_channel_test_data(sampleSize)
+
+
+    function AsidTestSamplesSrm = create_channel_test_data(sampleSize)
       % (iChannel, 1) = ASID ID string.
       % (iChannel, 2) = Sample value (that is consistent with other
       %                 channels).
@@ -34,9 +36,12 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % with "snapshots" (SPR>1).
       TEST_DATA_CA(:, 2) = cellfun(@(x) (x * ones(sampleSize)), TEST_DATA_CA(:, 2), 'UniformOutput', false);
 
-      channelIdStringsCa = TEST_DATA_CA(:, 1);
-      testSamplesCa      = TEST_DATA_CA(:, 2);
-
+      AsidTestSamplesSrm = bicas.utils.SameRowsMap('string', sampleSize(1), 'EMPTY');
+      for i = 1:size(TEST_DATA_CA, 1)
+        AsidTestSamplesSrm.add( ...
+          TEST_DATA_CA{i, 1}, ...
+          TEST_DATA_CA{i, 2})
+      end
     end
 
 
@@ -70,9 +75,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       SAMPLES_SIZE      = [3,2];
 
       nRows = SAMPLES_SIZE(1);
-      [channelIdStringsCa, testSamplesCa] = bicas.proc.L1L2.demuxer___UTEST.create_channel_test_data(SAMPLES_SIZE);
-
-      AsidTestSamplesSrm = containers.Map(channelIdStringsCa, testSamplesCa);
+      %[channelIdStringsCa, testSamplesCa] = testCase.create_channel_test_data(SAMPLES_SIZE);
+      AsidTestSamplesSrm = testCase.create_channel_test_data(SAMPLES_SIZE);
 
 
 
@@ -140,7 +144,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
           A.DC_V12, A.DC_V13, A.DC_V23, ...
           A.AC_V12, A.AC_V13, A.AC_V23 ...
           };
-        AsSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
+        AsSrm = bicas.utils.SameRowsMap('string', nRows, 'EMPTY');
 
         for iAsid = 1:9
           asidName = ASID_CA{iAsid}.s;
@@ -265,7 +269,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % BUG/NOTE: Will fail if function returns NaN when it should not!
       function test(inputFieldsCa)
         nRows = size(inputFieldsCa{2}, 1);
-        AsSrm = bicas.utils.SameRowsMap('char', nRows, 'EMPTY');
+        AsSrm = bicas.utils.SameRowsMap('string', nRows, 'EMPTY');
         for i = 1:(numel(inputFieldsCa)/2)
           Asid   = inputFieldsCa{2*i-1};
           sample = inputFieldsCa{2*i  };

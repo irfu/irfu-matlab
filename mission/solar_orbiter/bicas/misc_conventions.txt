@@ -154,6 +154,8 @@ DCIP
     Class bicas.proc.L1L2.DemultiplexingCalibrationInput.
 DCOP
     Class bicas.proc.L1L2.DemultiplexingCalibrationOutput.
+Dict
+    MATLAB dictionary.
 DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
     of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",

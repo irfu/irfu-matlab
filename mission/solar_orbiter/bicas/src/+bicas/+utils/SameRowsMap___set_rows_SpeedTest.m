@@ -49,16 +49,16 @@ function tSec = speed_test_set_rows(nArrayRows, nArrayCols)
 bigArray   = repmat(linspace(1, nArrayRows, nArrayRows)', 1, nArrayCols);
 smallArray = NaN(1, nArrayCols);
 
-M1 = bicas.utils.SameRowsMap('char', nArrayRows, 'CONSTANT', bigArray,   {'K'});
-M2 = bicas.utils.SameRowsMap('char', 1,          'CONSTANT', smallArray, {'K'});
+Srm1 = bicas.utils.SameRowsMap('string', nArrayRows, 'CONSTANT', bigArray,   {"K"});
+Srm2 = bicas.utils.SameRowsMap('string', 1,          'CONSTANT', smallArray, {"K"});
 
 t = tic();
 for i = 1:nArrayRows
-  M1.set_rows(M2, i)
+  Srm1.set_rows(Srm2, i)
 end
 tSec = toc(t);
 
-assert(all(isnan(M1('K')), 'all'))
+assert(all(isnan(Srm1("K")), 'all'))
 end
 
 

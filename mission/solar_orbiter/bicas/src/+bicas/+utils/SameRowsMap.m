@@ -3,20 +3,24 @@
 % (size in first dimension). Values must be immutable.
 %
 % Intended for zVariables. Implementation may be upgraded to require FPAs.
-% Some method names are chosen to be identical with containers.Map.
+% Some method names are chosen to be identical with dictionary.
 %
 %
 % IMPLEMENTATION NOTE
 % ===================
 % bicas.utils.SameRowsMap.set_rows() can be slow *IF* the implementation stores
-% data directly as (non-handle) values in containers.Map (and presumably in
-% dictionary, presumably since preallocation does not work. To avoid this, the
-% implementation instead stores all values indirectly via handle class objects
-% (bicas.utils.HandleWrapper), which (apparently) makes it possible to modify
-% arrays without implicit copying by MATLAB, thus increasing performance. Does
-% seem to work. Since the class's internal data structure uses handle objects,
-% the class itself also has to be a handle class, to avoid that internal handle
-% objects are shared between different instances of bicas.utils.SameRowsMap.
+% data directly as (non-handle) values in containers.Map (old implementation)
+% and presumably in dictionary, presumably since preallocation does not work.
+% To avoid this, the implementation instead stores all values indirectly via
+% handle class objects (bicas.utils.HandleWrapper), which (apparently) makes it
+% possible to modify arrays without implicit copying by MATLAB, thus increasing
+% performance. Does seem to work. Since the class's internal data structure
+% uses handle objects, the class itself also has to be a handle class, to avoid
+% that internal handle objects are shared between different instances of
+% bicas.utils.SameRowsMap.
+% --
+% Enforces that the MATLAB class for keys is consistent, treating char
+% array<>string as opposed to the dictionary implementation.
 %
 %
 % RATIONALE
@@ -83,13 +87,11 @@ classdef SameRowsMap < handle
   %   PRO: Makes inheritance SameRowsMap-->SameSizeTypeMap natural.
   %   CON: Less convenient for building AsrMap which can be variable-number of
   %        variables.
-  %       PROPOSAL: Build content using containers.Map. Submit to constructor.
+  %       PROPOSAL: Build content using dictionary. Submit to constructor.
   %           CON: Can never extend to accept wider set of keys, e.g. objects.
   %           PRO: Easier to implement.
   %
-  % PROPOSAL: Constrain MATLAB classes of values: numeric, logical(?)
-  %   CON: Unnatural constraint. Assertion on same rows will reveal whether
-  %        values are ~array/matrix-like or not.
+  %
   %
   % TODO-DEC: How implement relationships between similar classes of variable
   %           collections?
@@ -169,12 +171,17 @@ classdef SameRowsMap < handle
   %#####################
   %#####################
   properties(Access=private)
-    % containers.Map
-    Map
+    Dict
 
     % IMPLEMENTATION NOTE: Can not use name "nRows" since it coincides with
     % method name.
     nRows2
+
+    % MC for keys.
+    % IMPLEMENTATION NOTE: Does not rely on the dictionary.types since
+    % dictionary treats (1) char array == string, and (2) different number
+    % types as equal.
+    mcKeys
   end
 
 
@@ -190,8 +197,8 @@ classdef SameRowsMap < handle
 
     % ARGUMENTS
     % =========
-    % keyType
-    %       keyType to use for containers.Map().
+    % mcKeys
+    %       MATLAB class for keys.
     % varargin
     %       initType == 'EMPTY':    Zero length.
     %       initType == 'CONSTANT':
@@ -201,11 +208,12 @@ classdef SameRowsMap < handle
     %
     % NOTE: To initialize with multiple keys with unique values, use both
     %       constructor and method "add".
-    function obj = SameRowsMap(keyType, nRows, initType, varargin)
-      assert(isnumeric(nRows) && nRows >= 0)
+    function obj = SameRowsMap(mcKeys, nRows, initType, varargin)
+      assert(isnumeric(nRows) && nRows >= 0, 'nRows is not a non-negative number.')
 
       obj.nRows2 = nRows;
-      obj.Map    = containers.Map('KeyType', keyType, 'ValueType', 'any');
+      obj.Dict   = configureDictionary(mcKeys, 'bicas.utils.HandleWrapper');
+      obj.mcKeys = mcKeys;
 
       switch(initType)
         case 'EMPTY'
@@ -240,34 +248,33 @@ classdef SameRowsMap < handle
     % Number of variables inside the object. Unrelated to their size (e.g.
     % rows).
     function n = length(obj)
-      n = obj.Map.length;
+      n = obj.Dict.numEntries;
     end
 
 
 
-    % NOTE: Method name chosen to be identical with containers.Map.keys().
+    % NOTE: Method name chosen to be identical with dictionary.keys().
     function keysCa = keys(obj)
-      keysCa = obj.Map.keys();
-      keysCa = keysCa(:);
+      keysCa = num2cell(obj.Dict.keys);
     end
 
 
 
     % Mostly for debugging.
     function valuesCa = values(obj)
-      hwCa     = obj.Map.values();
-      valuesCa = cellfun(@(x) (x.v), hwCa, 'UniformOutput', false);
+      hwCa     = obj.Dict.values();
+      valuesCa = arrayfun(@(x) (x.v), hwCa, 'UniformOutput', false);
       valuesCa = valuesCa(:);
     end
 
 
 
-    % NOTE: Method name chosen to be identical with containers.Map.isKey().
+    % NOTE: Method name chosen to be identical with dictionary.isKey().
     % The name is therefore inconsistent with naming conventions.
     function isKey = isKey(obj, key)
       bicas.utils.SameRowsMap.assert_legal_key(key)
 
-      isKey = obj.Map.isKey(key);
+      isKey = obj.Dict.isKey(key);
     end
 
 
@@ -275,12 +282,13 @@ classdef SameRowsMap < handle
     % Add NEW key-value pair. Disallow overwriting.
     function add(obj, key, value)
       bicas.utils.SameRowsMap.assert_legal_key(key)
-      assert(~obj.Map.isKey(key))
+      assert(isa(key, obj.mcKeys))
+      assert(~obj.Dict.isKey(key))
       assert(obj.nRows2 == size(value, 1), ...
         'The argument''s number of rows (%i) is not equal to the object''s number of rows (%i).', ...
         obj.nRows2, size(value, 1))
 
-      obj.Map(key) = bicas.utils.HandleWrapper(value);
+      obj.Dict(key) = bicas.utils.HandleWrapper(value);
     end
 
 
@@ -321,8 +329,8 @@ classdef SameRowsMap < handle
       for keyCa = keysCa(:)'
         key = keyCa{1};
 
-        hw1 = obj.Map(key);
-        hw2 = Srm2.Map(key);
+        hw1 = obj.Dict(key);
+        hw2 = Srm2.Dict(key);
 
         size1 = size(hw1.v);
         size2 = size(hw2.v);
@@ -339,7 +347,7 @@ classdef SameRowsMap < handle
         % consistent).
         hw1.v(iRowsArray, :) = hw2.v(:, :);
 
-        % IMPLEMENTATION NOTE: Does not need to set obj.Map(key) since
+        % IMPLEMENTATION NOTE: Does not need to set obj.Dict(key) since
         % using handle classes.
       end
     end
@@ -362,7 +370,9 @@ classdef SameRowsMap < handle
           % IMPLEMENTATION NOTE: Only intended for singular values,
           % whether strings or numbers. Should not support indices
           % like "1,2", colons, or "end".
-          varargout = {obj.Map(S.subs{1}).v};
+          key = S.subs{1};
+          assert(isa(key, obj.mcKeys))
+          varargout = {obj.Dict(key).v};
 
         otherwise
           % CASE: {} or .
@@ -381,9 +391,9 @@ classdef SameRowsMap < handle
 
 
     function equals = eq(obj1, obj2)
-      assert(isa(obj2, 'bicas.utils.SameRowsMap'))
-
       % IMPLEMENTATION NOTE: Must support the case of zero keys.
+
+      assert(isa(obj2, 'bicas.utils.SameRowsMap'))
 
       if ~bicas.utils.object_sets_isequaln(obj1.keys, obj2.keys)
         equals = false;
@@ -391,17 +401,17 @@ classdef SameRowsMap < handle
       elseif obj1.nRows ~= obj2.nRows
         equals = false;
         return
-      elseif ~isequaln(obj1.Map.KeyType, obj2.Map.KeyType)
+      elseif ~isequaln(obj1.mcKeys, obj2.mcKeys)
         equals = false;
         return
       end
 
-      keysCa = obj1.Map.keys;
+      keysCa = obj1.Dict.keys;
       for i = 1:numel(keysCa)
-        key = keysCa{i};
+        key = keysCa(i);
 
-        value1 = obj1.Map(key).v;
-        value2 = obj2.Map(key).v;
+        value1 = obj1.Dict(key).v;
+        value2 = obj2.Dict(key).v;
 
         % NOTE: NaN == NaN ==> Use isequaln().
         if ~isequaln(value1, value2) || ~isequaln(class(value1), class(value2))
@@ -426,10 +436,11 @@ classdef SameRowsMap < handle
     % Unclear if works for non-numeric, non-char key values. Probably not.
     %
     function s = disp(obj)
-      keysCa = obj.Map.keys();
+      keysCa = obj.Dict.keys();
+
       sCa = {sprintf('%i row(s)', obj.nRows())};
       for i = 1:numel(keysCa)
-        key = keysCa{i};
+        key   = keysCa(i);
         value = subsref(obj, substruct('()', {key}));
 
         sCa{end+1} = sprintf('%s : %s (%s)', num2str(key), mat2str(value), class(value));
@@ -454,7 +465,7 @@ classdef SameRowsMap < handle
 
 
     function assert_legal_key(key)
-      assert(isnumeric(key) || ischar(key))
+      assert(isnumeric(key) || isstring(key))
     end
 
 
