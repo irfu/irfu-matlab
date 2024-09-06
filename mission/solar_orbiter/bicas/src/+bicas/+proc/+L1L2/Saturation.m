@@ -250,6 +250,7 @@ classdef Saturation
         bdmFpa,                   [-1], ...
         dlrFpa,                   [-1], ...
         lrx,                      [-1]);
+      assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
       assert(AsrSamplesAVoltSrm.nRows == nRows)
 
 

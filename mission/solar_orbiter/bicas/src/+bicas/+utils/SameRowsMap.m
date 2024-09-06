@@ -212,7 +212,7 @@ classdef SameRowsMap < handle
       assert(isnumeric(nRows) && nRows >= 0, 'nRows is not a non-negative number.')
 
       obj.nRows2 = nRows;
-      obj.Dict   = configureDictionary(mcKeys, 'bicas.utils.HandleWrapper');
+      obj.Dict   = configureDictionary(mcKeys, "bicas.utils.HandleWrapper");
       obj.mcKeys = mcKeys;
 
       switch(initType)

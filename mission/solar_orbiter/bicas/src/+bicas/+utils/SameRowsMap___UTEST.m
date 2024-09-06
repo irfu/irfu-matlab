@@ -104,7 +104,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       Asid1 = bicas.proc.L1L2.AntennaSignalId.C.DC_V1;
       Asid2 = bicas.proc.L1L2.AntennaSignalId.C.DC_V12;
       Asid3 = bicas.proc.L1L2.AntennaSignalId.C.DC_V3;
-      Srm = bicas.utils.SameRowsMap('bicas.proc.L1L2.AntennaSignalId', 1, 'EMPTY');
+      Srm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 1, 'EMPTY');
 
       Srm.add(Asid1, 1)
       Srm.add(Asid2, 1)
