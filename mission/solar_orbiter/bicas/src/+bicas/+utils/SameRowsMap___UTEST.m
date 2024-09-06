@@ -58,7 +58,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       % =================================================
       % Zero number of constant values (test constructor)
       % =================================================
-      Srm = bicas.utils.SameRowsMap('double', 3, 'CONSTANT', [1;2;3], {});
+      Srm = bicas.utils.SameRowsMap('double', 3, 'CONSTANT', [1;2;3], ones(0, 1));
       testCase.assertEqual(Srm.nRows, 3)
 
       % ======================================

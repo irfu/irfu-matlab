@@ -203,8 +203,8 @@ classdef SameRowsMap < handle
     %       initType == 'EMPTY':    Zero length.
     %       initType == 'CONSTANT':
     %           varargin{1} = Array of values
-    %           varargin{2} = Array of keys which should have the specified
-    %                         value.
+    %           varargin{2} = Column array of keys which all should have the
+    %                         specified value.
     %
     % NOTE: To initialize with multiple keys with unique values, use both
     %       constructor and method "add".
@@ -227,6 +227,7 @@ classdef SameRowsMap < handle
           assert(numel(varargin) == 2)
           value     = varargin{1};
           keysArray = varargin{2};
+          assert(iscolumn(keysArray))
 
           % NOTE: Implicitly checks for unique keys.
           for key = keysArray(:)'
