@@ -10,6 +10,7 @@
 % (1) char array<>string, and
 % (2) all numeric MATLAB classes are distinct (different).
 % This is different from dictionary keys.
+% NOTE: Does not enforce the same MATLAB class for values.
 %
 %
 % IMPLEMENTATION NOTE

@@ -19,18 +19,17 @@ classdef AntennaSignalId
   % PROPOSAL: Rename string constants for diffs: V-->E
   %   CON: BIAS specification, Table 4 uses abbreviation "V12" etc. for diffs.
   %
-  % PROPOSAL: Rename "s" to something more standard.
-  %   id
-  %       CON: Does not imply string(?). The object is also named "ID".
-  % PROPOSAL: Abolish "s" by using ~map-like object which accepts ASIDs as
-  %           keys and using map for implementing SameRowsMap.
-  %   PROPOSAL: dictionary?
   % PROPOSAL: Rename category-->categoryId
-  %
-  % PROPOSAL: Not use term ASR?
   %
   % PROPOSAL: Store ASID constants in dictionary.
   %   PROPOSAL: get_derived_ASR_constants() should return dictionary.
+  %   CON: Longer code to invoke object constants.
+  %     Ex: C.DC_V1 --> C("DC_V1") ==> -1+2+2=3 extra characters.
+  %   PRO: Can abolish both field and method
+  %     ALL_ARRAY = bicas.proc.L1L2.AntennaSignalId.init_const_array()
+  %     Same for SSID, SDID.
+  %   PRO: More consistent with potential future dictionary for
+  %        integer-->ASID/SSID/SDID.
   %
   % PROPOSAL: Private ASID/SSID/SDID constructors. Only instantiate objects for
   %           unique ASID/SSID/SDID ONCE.
