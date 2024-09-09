@@ -219,3 +219,4 @@ Version x.x.x
   convention (though assumes begin and end dates).
 * Removed setting
   PROCESSING.RCT_REGEXP.BIAS
+* Changed glob.attributes TIME_MIN, TIME_MAX to only have six decimals.

@@ -174,9 +174,12 @@ OutGaSubset.Datetime         = timeIntervalStr;
 %       ------------------------------------------------------------------------
 %       https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/85
 %       has the same complaint as above.
+%
+% NOTE: Datapool's check_rpw_cdf.py validator implies that the number of second
+%       decimals must be 6 (or at least not 9).
 %===============================================================================
-OutGaSubset.TIME_MIN = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(1  ), 9);
-OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end), 9);
+OutGaSubset.TIME_MIN = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(1  ), 6);
+OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end), 6);
 
 
 
