@@ -73,11 +73,11 @@ classdef db_list_files___UTEST < matlab.unittest.TestCase
 
     % Zero CDFs.
     function test_empty(testCase)
-        Tint = irf.tint('2023-12-31T00:00:00/2024-01-02T00:00:00');
-        solo.db_init('local_file_db', testCase.testDir);
+      Tint = irf.tint('2023-12-31T00:00:00/2024-01-02T00:00:00');
+      solo.db_init('local_file_db', testCase.testDir);
 
-        FileList = solo.db_list_files('solo_L2_nonexisting-dataset', Tint);
-        testCase.assertEqual(FileList, [])
+      FileList = solo.db_list_files('solo_L2_nonexisting-dataset', Tint);
+      testCase.assertEqual(FileList, [])
     end
 
 
@@ -453,7 +453,7 @@ classdef db_list_files___UTEST < matlab.unittest.TestCase
 
       [parentDir, ~, ~] = fileparts(filePath);
       if ~exist(parentDir, 'dir')
-          mkdir(parentDir)
+        mkdir(parentDir)
       end
 
       spdfcdfwrite(filePath, ...

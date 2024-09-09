@@ -62,9 +62,9 @@ t2GSE = irf.ts_vec_xyz(B.time,repmat(t2vec,length(B),1));
 % rotate vectors to DMPA
 c_eval('defatt?=mms.db_get_variable(''mms?_ancillary_defatt'',''zra'',tint);',ic);
 c_eval('defatt?.zdec=mms.db_get_variable(''mms?_ancillary_defatt'',''zdec'',tint).zdec;',ic);
-c_eval('nDMPA = mms_dsl2gse(nGSE,defatt?);', ic);
-c_eval('t1DMPA = mms_dsl2gse(t1GSE,defatt?);', ic);
-c_eval('t2DMPA = mms_dsl2gse(t2GSE,defatt?);', ic);
+c_eval('nDMPA = mms_dsl2gse(nGSE,defatt?,-1);', ic);
+c_eval('t1DMPA = mms_dsl2gse(t1GSE,defatt?,-1);', ic);
+c_eval('t2DMPA = mms_dsl2gse(t2GSE,defatt?,-1);', ic);
 
 
 %% Reduce distribution along the three vectors

@@ -1201,6 +1201,7 @@ classdef PDist < TSeries
             l = 2;
             base = args{2};
           case 'counts'
+            l = 2;
             counts = args{2};
         end
         args = args((l+1):end);
@@ -2251,7 +2252,7 @@ classdef PDist < TSeries
 
       %Fg = griddedInterpolant(VX,VY,VZ,F);
       %Fq = Fg(VXe,VYe,VZe);
-%      Fq = interp3(VX,VY,VZ,F,VXe,VYe,VZe);
+      %      Fq = interp3(VX,VY,VZ,F,VXe,VYe,VZe);
 
       %F = Fe;
       %VX = VXe;
@@ -2606,7 +2607,7 @@ classdef PDist < TSeries
       if doLog10 % take log10 of data
         plot_data = log10(plot_data);
         if doContour
-         plot_data_contour = log10(plot_data_contour);
+          plot_data_contour = log10(plot_data_contour);
         end
       end
       if doSmooth
@@ -2709,7 +2710,7 @@ classdef PDist < TSeries
         %irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
       end
       %if doP12 % add info about integrated value
-        %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+      %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
       %end
 
       if doContour
@@ -3583,10 +3584,10 @@ classdef PDist < TSeries
         PD.data_ = tmpData;
         PD.units = '1/(cm^2 s sr eV)';
       elseif flagdir == -1
-          reshapedData = reshapedData./matEnergy;
-          tmpData = reshape(reshapedData,sizeData);
-          PD = obj;
-          PD.data_ = tmpData;
+        reshapedData = reshapedData./matEnergy;
+        tmpData = reshape(reshapedData,sizeData);
+        PD = obj;
+        PD.data_ = tmpData;
         switch obj.units
           case '1/(cm^2 s sr eV)'
             PD.units = 's^3/m^6';
