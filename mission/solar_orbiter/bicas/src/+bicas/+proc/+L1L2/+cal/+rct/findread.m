@@ -53,12 +53,8 @@ classdef findread
       %     CON: Testing this function is impossible anyway.
       %   CON: Conceptually bad. Makes function "less generic".
 
-      % IMPLEMENTATION NOTE: Converts TT2000 --> UTC string --> datetime, which
-      % is ugly, but is reliable since it only uses functions which are known
-      % to be reliable. MATLAB is known to handle at least reading of CDFs
-      % badly, so datetime() might not be reliable w.r.t. TT2000.
-      DtDataBegin = datetime(irf.cdf.TT2000_to_UTC_str(tt2000Begin), 'TimeZone', 'UTCLeapSeconds');
-      DtDataEnd   = datetime(irf.cdf.TT2000_to_UTC_str(tt2000End),   'TimeZone', 'UTCLeapSeconds');
+      DtDataBegin = datetime(irf.cdf.TT2000_to_datevec(tt2000Begin), 'TimeZone', 'UTCLeapSeconds');
+      DtDataEnd   = datetime(irf.cdf.TT2000_to_datevec(tt2000End),   'TimeZone', 'UTCLeapSeconds');
 
       Rctdc = bicas.proc.L1L2.cal.RctdCollection();
 

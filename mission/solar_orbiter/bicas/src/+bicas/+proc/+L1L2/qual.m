@@ -568,10 +568,10 @@ classdef qual
         for iRi = 1:nUfvIntervals
           iCdfRecord1 = i1Array(iRi);
           iCdfRecord2 = i2Array(iRi);
-          utc1  = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1));
-          utc2  = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2));
+          utcStr1 = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1), 9);
+          utcStr2 = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2), 9);
           L.logf(LL, '    Records %8i-%8i, %s -- %s', ...
-            iCdfRecord1, iCdfRecord2, utc1, utc2);
+            iCdfRecord1, iCdfRecord2, utcStr1, utcStr2);
         end
       end
 

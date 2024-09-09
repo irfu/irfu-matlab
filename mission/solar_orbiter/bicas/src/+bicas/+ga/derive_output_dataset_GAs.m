@@ -175,8 +175,8 @@ OutGaSubset.Datetime         = timeIntervalStr;
 %       https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/85
 %       has the same complaint as above.
 %===============================================================================
-OutGaSubset.TIME_MIN = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(1  ));
-OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end));
+OutGaSubset.TIME_MIN = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(1  ), 9);
+OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end), 9);
 
 
 

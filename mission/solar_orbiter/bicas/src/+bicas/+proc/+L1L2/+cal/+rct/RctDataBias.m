@@ -111,7 +111,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       for iEpochL = 1:numel(obj.epochL)
 
         L.logf(LL, 'Below values are used for data beginning %s:', ...
-          bicas.utils.TT2000_to_UTC_str(obj.epochL(iEpochL)))
+          bicas.utils.TT2000_to_UTC_str(obj.epochL(iEpochL), 9))
 
         % Log bias current calibration
         L.logf(LL, '    BIAS current offsets: %s [aampere]',         ...
@@ -144,7 +144,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       for iEpochH = 1:numel(obj.epochH)
 
         L.logf(LL, 'Below values are used for data beginning %s:', ...
-          bicas.utils.TT2000_to_UTC_str(obj.epochH(iEpochH)))
+          bicas.utils.TT2000_to_UTC_str(obj.epochH(iEpochH), 9))
 
         L.logf(LL, ...
           '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
