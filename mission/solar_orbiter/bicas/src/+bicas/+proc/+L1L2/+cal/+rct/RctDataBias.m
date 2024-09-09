@@ -1,18 +1,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
-
-
-
-  %##########################
-  %##########################
-  % PUBLIC STATIC PROPERTIES
-  %##########################
-  %##########################
-  % properties(Constant)
-  %   RCTTID = 'BIAS'
-  % end
+classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
 
 
 
@@ -48,7 +37,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
 
 
     function obj = RctDataBias(filePath)
-      obj@bicas.proc.L1L2.cal.rct.RctData(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctDataImpl(filePath)
 
       RctRawData = bicas.proc.L1L2.cal.rct.RctDataBias.read_RCT(filePath);
 
@@ -103,7 +92,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       % Logging parameters
       DC_FREQ_HZ       = [0];   % Single & diffs.
       AC_DIFF_FREQS_HZ = [0, 1000];
-      LL               = bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL;
+      LL               = bicas.proc.L1L2.cal.rct.RctDataImpl.RCT_DATA_LL;
 
       %=====================
       % Iterate over EpochL

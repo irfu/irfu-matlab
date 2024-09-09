@@ -1,18 +1,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef RctDataTdsRswf < bicas.proc.L1L2.cal.rct.RctData
-
-
-
-  %##########################
-  %##########################
-  % PUBLIC STATIC PROPERTIES
-  %##########################
-  %##########################
-  % properties(Constant)
-  %   RCTTID = 'TDS-RSWF'
-  % end
+classdef RctDataTdsRswf < bicas.proc.L1L2.cal.rct.RctDataImpl
 
 
 
@@ -38,7 +27,7 @@ classdef RctDataTdsRswf < bicas.proc.L1L2.cal.rct.RctData
 
 
     function obj = RctDataTdsRswf(filePath)
-      obj@bicas.proc.L1L2.cal.rct.RctData(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctDataImpl(filePath)
 
       RctRawData = bicas.proc.L1L2.cal.rct.RctDataTdsRswf.read_RCT(filePath);
 
@@ -88,13 +77,13 @@ classdef RctDataTdsRswf < bicas.proc.L1L2.cal.rct.RctData
         itfNamePrefix = sprintf('TDS RSWF, BLTS/BIAS_%i, ITF', iBlts);
 
         bicas.proc.L1L2.cal.utils.log_TF_tabulated(...
-          bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL, ...
+          bicas.proc.L1L2.cal.rct.RctDataImpl.RCT_DATA_LL, ...
           sprintf('%s (as in RCT)', itfNamePrefix), ...
           obj.ItfRctIvptCa{iBlts}, ...
           L);
 
         bicas.proc.L1L2.cal.utils.log_TF_function_handle(...
-          bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL, ...
+          bicas.proc.L1L2.cal.rct.RctDataImpl.RCT_DATA_LL, ...
           sprintf('%s (modif., interp.)', itfNamePrefix), ...
           'ivolt/TM unit', FREQ_HZ, obj.itfModifIvptCa{iBlts}, L)
       end
@@ -136,7 +125,7 @@ classdef RctDataTdsRswf < bicas.proc.L1L2.cal.rct.RctData
           freqsHz,  [-1,  1], ...
           amplIvpt, [ 3, -1], ...
           phaseDeg, [ 3, -1]);
-        assert(nFreqs >= bicas.proc.L1L2.cal.rct.RctData.TF_TABLE_MIN_LENGTH)
+        assert(nFreqs >= bicas.proc.L1L2.cal.rct.RctDataImpl.TF_TABLE_MIN_LENGTH)
 
         for iBlts = 1:3
           % NOTE: RCT contains ITF, not FTF.

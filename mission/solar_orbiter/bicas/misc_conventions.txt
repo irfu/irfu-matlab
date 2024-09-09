@@ -305,7 +305,7 @@ RCT
     RPW Calibration Table. A CDF file with calibration data. See RCS ICD.
     ROC-defined term.
 RCTD
-    Class bicas.proc.L1L2.cal.rct.RctData.
+    Class bicas.proc.L1L2.cal.rct.RctDataAbstract and subclasses thereof.
 RCTDC
     Class bicas.proc.L1L2.cal.RctdCollection.
 RCTTID

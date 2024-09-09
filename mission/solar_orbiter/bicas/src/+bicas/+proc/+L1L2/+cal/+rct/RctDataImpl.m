@@ -1,14 +1,10 @@
 %
-% Abstract class of which instances of subclasses represent the (massaged,
-% prepared) content of one RCT FILE. The *static* components of the subclasses
-% also effectively represent one RCTTID each (not instances of subclasses).
-%
-% NOTE: BICAS may load multiple RCTs for the same RCTTID (LFR).
+% See superclass.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef(Abstract) RctData
+classdef(Abstract) RctDataImpl < bicas.proc.L1L2.cal.rct.RctDataAbstract
   % PROPOSAL: Use same code/function for reading calibration table, as for
   %           reading dataset (and master CDFs)?
   % PROPOSAL: Create general-purpose read_CDF function which handles indices
@@ -37,42 +33,7 @@ classdef(Abstract) RctData
     % ------------------------------------
     % containers.Map: RCTTID --> struct containing information on every RCTT.
     % Its keys defines the set of RCTTID strings.
-    RCTD_METADATA_MAP = bicas.proc.L1L2.cal.rct.RctData.init_RCTD_METADATA_MAP();
-  end
-  % properties(Constant, Abstract)
-  %   RCTTID
-  % end
-
-
-
-  %#####################
-  %#####################
-  % INSTANCE PROPERTIES
-  %#####################
-  %#####################
-  properties(GetAccess=public, Constant)
-
-    % Minimum number of expected entries in tabulated transfer functions in
-    % RCTs.
-    TF_TABLE_MIN_LENGTH = 10;
-
-    % LL = Log Level
-    RCT_DATA_LL = 'debug';
-  end
-  properties(GetAccess=public, SetAccess=immutable)
-    % File name (not path) of RCT file from which data was loaded.
-    fileName
-
-    % Global attribute "Data_version" in RCT file as a string.
-    % NOTE: Data_version is not always set correctly in RCT.
-    %   Ex: SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
-    %       SOLO_CAL_RPW-BIAS_V202011191204.cdf
-    % NOTE: "scalarGa" refers to that GAs are asserted to be scalar (one GA
-    %       entry).
-    scalarGa_Data_version
-    scalarGa_CAL_ENTITY_NAME
-    scalarGa_CAL_ENTITY_AFFILIATION
-    scalarGa_CAL_EQUIPMENT
+    RCTD_METADATA_MAP = bicas.proc.L1L2.cal.rct.RctDataImpl.init_RCTD_METADATA_MAP();
   end
 
 
@@ -86,9 +47,10 @@ classdef(Abstract) RctData
 
 
 
-    % NOTE: The constructor reads RCT on its own, just for obtaining relevant GAs.
-    %       RCT is reloaded again by subclasses for loading the bulk data.
-    function obj = RctData(filePath)
+    % NOTE: The constructor reads the RCT (file) on its own, just for obtaining
+    %       relevant GAs. The RCT is reloaded again by subclasses for loading
+    %       the bulk data.
+    function obj = RctDataImpl(filePath)
 
       % Get specified GA from RCT.
       %
@@ -132,71 +94,17 @@ classdef(Abstract) RctData
       assert(isscalar(ga_Data_version))
       assert(ischar(  ga_Data_version{1}))
 
-      obj.fileName                        = irf.fs.get_name(filePath);
-      obj.scalarGa_Data_version           = ga_Data_version{1};
-      obj.scalarGa_CAL_ENTITY_NAME        = get_scalar_GA('CAL_ENTITY_NAME');
-      obj.scalarGa_CAL_ENTITY_AFFILIATION = get_scalar_GA('CAL_ENTITY_AFFILIATION');
-      obj.scalarGa_CAL_EQUIPMENT          = get_scalar_GA('CAL_EQUIPMENT');
+      obj@bicas.proc.L1L2.cal.rct.RctDataAbstract(...
+        filePath, ...
+        ga_Data_version{1}, ...
+        get_scalar_GA('CAL_ENTITY_NAME'), ...
+        get_scalar_GA('CAL_ENTITY_AFFILIATION'), ...
+        get_scalar_GA('CAL_EQUIPMENT'))
     end
 
 
 
   end    % methods(Access=public)
-
-
-
-  %##################################
-  %##################################
-  % PUBLIC INSTANCE ABSTRACT METHODS
-  %##################################
-  %##################################
-  methods(Access=public)
-
-
-
-    % Custom logging of modified RCT data.
-    log_RCT(obj, L);
-
-
-
-  end    % methods(Access=public)
-
-
-
-  %################################
-  %################################
-  % PUBLIC STATIC ABSTRACT METHODS
-  %################################
-  %################################
-  methods(Static, Abstract)
-
-
-
-    % Read RCT file.
-    %
-    %
-    % DESIGN INTENT
-    % =============
-    % It is useful to be able to read an RCT into memory with as few
-    % modifications as possible. Therefore, the returned data structures reflect
-    % the content of the RCTs, but not necessarily on the form used by BICAS.
-    % Changing the format of data should be done elsewhere, in particular
-    % modifications of transfer functions, e.g. extrapolation, cut-offs,
-    % inversions. For the same reason, the function should be independent of the
-    % class instances (which format the data for BICAS to use).
-    % --
-    % NOTE: BIAS & LFR RCTs: contain FTFs which are not inverted in this code.
-    %       TDS RCTs:        contain ITFs.
-    % NOTE: Subclass code still converts the RCT TFs slightly:
-    %   frequency      : Hz    --> rad/s
-    %   phase+amplitude: degrees + dimensionless real value
-    %                          --> Z (complex number)
-    %
-    [RctRawData] = read_RCT(filePath);
-
-
-
-  end    % methods(Static, Abstract)
 
 
 
@@ -214,7 +122,7 @@ classdef(Abstract) RctData
     % IMPLEMENTATION NOTE: This data structure includes the filename reg.exp.
     % setting keys since it does not appear that MATLAB allows one to access a
     % "Constant instance field" of a class without instantiating it
-    % (bicas.proc.L1L2.cal.rct.RctData subclasses). MATLAB does not have true
+    % (bicas.proc.L1L2.cal.rct.RctDataImpl subclasses). MATLAB does not have true
     % static variables (constant instance fields are the closest).
     %
     function RctdMetadataMap = init_RCTD_METADATA_MAP()

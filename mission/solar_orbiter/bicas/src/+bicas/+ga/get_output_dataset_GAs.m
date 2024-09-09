@@ -53,9 +53,6 @@ function OutGaSubset = get_output_dataset_GAs(...
   InputDatasetsMap, OutputDataset, outputFilename, outputDsi, ...
   Bso, L)
 
-% PROPOSAL: Automatic test code.
-%   PROBLEM: InputDatasetsMap is big?
-%
 % PROPOSAL: Create class for storing GAs.
 %   PRO: Can detect accidental overwriting/reuse of keys.
 %

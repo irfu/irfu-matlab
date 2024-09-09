@@ -114,7 +114,7 @@ classdef findread
       assert(ischar(nonBiasRcttid) & ~strcmp(nonBiasRcttid, 'BIAS'))
 
       % Find path to RCT.
-      settingKey     = bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP(...
+      settingKey     = bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP(...
         nonBiasRcttid).filenameRegexpSettingKey;
       filenameRegexp = Bso.get_fv(settingKey);
       filePath       = bicas.proc.L1L2.cal.rct.findread.get_RCT_path_by_regexp(...
@@ -362,7 +362,7 @@ classdef findread
       L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
         'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
 
-      RctdMetadata = bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP(rcttid);
+      RctdMetadata = bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP(rcttid);
 
       % Call constructor(!) of specified class.
       Rctd = feval(RctdMetadata.className, filePath);

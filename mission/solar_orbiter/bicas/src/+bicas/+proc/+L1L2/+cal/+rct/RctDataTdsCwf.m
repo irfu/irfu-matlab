@@ -1,18 +1,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef RctDataTdsCwf < bicas.proc.L1L2.cal.rct.RctData
-
-
-
-  %##########################
-  %##########################
-  % PUBLIC STATIC PROPERTIES
-  %##########################
-  %##########################
-  % properties(Constant)
-  %   RCTTID = 'TDS-CWF'
-  % end
+classdef RctDataTdsCwf < bicas.proc.L1L2.cal.rct.RctDataImpl
 
 
 
@@ -37,7 +26,7 @@ classdef RctDataTdsCwf < bicas.proc.L1L2.cal.rct.RctData
 
 
     function obj = RctDataTdsCwf(filePath)
-      obj@bicas.proc.L1L2.cal.rct.RctData(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctDataImpl(filePath)
 
       % NOTE: RCT contains no TFs and data is therefore trivial to use as it is
       % in the RCT.
@@ -49,7 +38,7 @@ classdef RctDataTdsCwf < bicas.proc.L1L2.cal.rct.RctData
 
     function log_RCT(obj, L)
 
-      L.logf(bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL, ...
+      L.logf(bicas.proc.L1L2.cal.rct.RctDataImpl.RCT_DATA_LL, ...
         'TDS CWF calibration factors: %s [ivolt/TM]', ...
         bicas.proc.L1L2.cal.utils.vector_string('%g', obj.factorsIvpt));
     end

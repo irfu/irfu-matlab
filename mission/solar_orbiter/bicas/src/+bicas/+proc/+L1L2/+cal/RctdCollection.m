@@ -52,7 +52,7 @@ classdef RctdCollection
       assert(~obj.RctdCaMap.isKey(rcttid))
       assert(ismember(...
         rcttid, ...
-        bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP.keys))
+        bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP.keys))
 
       assert(iscell(RctdCa) && iscolumn(RctdCa))
       for iRctd = 1:numel(RctdCa)
@@ -61,7 +61,7 @@ classdef RctdCollection
         % NOTE: Deliberately permits empty cell array elements (avoid loading
         % RCTs specified in GACT but for data which does not exist in any BICAS
         % input dataset).
-        assert(isempty(Rctd) | isa(Rctd, 'bicas.proc.L1L2.cal.rct.RctData'))
+        assert(isempty(Rctd) | isa(Rctd, 'bicas.proc.L1L2.cal.rct.RctDataAbstract'))
       end
 
       obj.RctdCaMap(rcttid) = RctdCa;
@@ -84,10 +84,10 @@ classdef RctdCollection
       % matlab.mixin.Heterogeneous, which seems ugly. Therefore returning cell
       % array instead.
       %
-      % >> bicas.proc.L1L2.cal.rct.RctData.empty(0, 1)
-      % Error using bicas.proc.L1L2.cal.rct.RctData.empty
+      % >> bicas.proc.L1L2.cal.rct.RctDataImpl.empty(0, 1)
+      % Error using bicas.proc.L1L2.cal.rct.RctDataImpl.empty
       % Abstract classes cannot be instantiated. Class
-      % 'bicas.proc.L1L2.cal.rct.RctData' defines abstract methods and/or
+      % 'bicas.proc.L1L2.cal.rct.RctDataImpl' defines abstract methods and/or
       % properties.
 
       RctdCa = cell(0, 1);
