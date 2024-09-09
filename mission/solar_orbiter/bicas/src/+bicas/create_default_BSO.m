@@ -34,6 +34,8 @@
 % First created 2018-01-24
 %
 function Bso = create_default_BSO()
+% PROPOSAL: Rename function: get_*()
+%
 % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM.
 %                                                            Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
@@ -60,6 +62,7 @@ function Bso = create_default_BSO()
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
+%   PROCESSING.L2.REMOVE_DATA.MUX_MODES
 %   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
@@ -347,7 +350,6 @@ S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_
 % practice, this functionality is there as a temporary solution for removing
 % sweeps.
 %============================================================================
-%S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
 S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
 
 % Unit: S = Seconds

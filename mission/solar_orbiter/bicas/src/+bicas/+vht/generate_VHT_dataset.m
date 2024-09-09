@@ -178,14 +178,14 @@ OutputDataset.Ga = Ga;
 
 %---------------------------------------------------------------------------
 % IMPORTANT NOTE: BICAS uses
-% execute_SWM:derive_output_dataset_GAs() to derive many
+% execute_SWM:get_output_dataset_GAs() to derive many
 % global attributes.
-%   NOTE: OutGaSubset = derive_output_dataset_GAs(...
+%   NOTE: OutGaSubset = get_output_dataset_GAs(...
 %       InputDatasetsMap, OutputDataset, outputFilename, Bso, L)
 %   Ex: Generation_date, Parents, Software_name (BICAS), Datetime (time
 %   interval string from filename)
 %---------------------------------------------------------------------------
-GaSubset = bicas.ga.derive_output_dataset_GAs(...
+GaSubset = bicas.ga.get_output_dataset_GAs(...
   InputDatasetsMap, OutputDataset, ...
   irf.fs.get_name(outputFile), Bso, BICAS_L);
 

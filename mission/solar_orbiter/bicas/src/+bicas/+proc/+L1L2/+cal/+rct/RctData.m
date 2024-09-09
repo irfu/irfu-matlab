@@ -9,13 +9,16 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef(Abstract) RctData
-  % PROPOSAL: Use same code/function for reading calibration table, as for reading dataset (and master cdfs)?
-  % PROPOSAL: Create general-purpose read_CDF function which handles indices correctly (1 vs many records).
+  % PROPOSAL: Use same code/function for reading calibration table, as for
+  %           reading dataset (and master CDFs)?
+  % PROPOSAL: Create general-purpose read_CDF function which handles indices
+  %           correctly (1 vs many records).
   % PROPOSAL: Assert CDF skeleton/master version number.
   % PROPOSAL: Assert skeleton/master.
   %   PRO: Can give better error message when reading the wrong RCT.
   %
-  % PROPOSAL: Assert/warn (depending on setting?) when CDF metadata imply that the RCT zVariables have the wrong units.
+  % PROPOSAL: Assert/warn (depending on setting?) when CDF metadata imply that
+  %           the RCT zVariables have the wrong units.
   % PROPOSAL: Use utility function for reading every zVariable.
   %   PROPOSAL: Assert units from zVar attributes.
   %
@@ -30,8 +33,8 @@ classdef(Abstract) RctData
   %##########################
   properties(Constant, Access=public)
 
-    % Map of singleton RCTT objects
-    % -----------------------------
+    % Map to metadata for all RCTD classes
+    % ------------------------------------
     % containers.Map: RCTTID --> struct containing information on every RCTT.
     % Its keys defines the set of RCTTID strings.
     RCTD_METADATA_MAP = bicas.proc.L1L2.cal.rct.RctData.init_RCTD_METADATA_MAP();
