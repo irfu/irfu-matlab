@@ -60,7 +60,7 @@ function CliData = interpret_CLI_args(cliArgumentsCa)
 %       application) into one variable value.
 %       Ex: Flags for BFMs.
 %
-% PROPOSAL: Use class for return value.
+% PROPOSAL: Use class for return value CliData.
 
 SWM_CLI_OPTION_REGEX = bicas.const.SWM_CLI_OPTION_REGEX;
 

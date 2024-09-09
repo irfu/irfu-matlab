@@ -204,8 +204,7 @@ end
 % TODO-DEC: Is this assertion sensible? There are many permanent GAs not
 %           mentioned here. Remove assertion?
 irf.assert.struct(OutGaSubset, ...
-  {'Parents', ...
-  'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
+  {'Parents', 'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
 end
 
 
