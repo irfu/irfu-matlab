@@ -1,7 +1,7 @@
 %
-% Convert CDF tt2000 value to UTC string with nanoseconds.
+% Convert CDF TT2000 value to UTC string.
 %
-% NOTE: spdfparsett2000 seems to work well as an inverse without wrapper.
+% NOTE: spdfparsett2000() seems to work well as an inverse without wrapper.
 %
 %
 % ARGUMENT
@@ -13,7 +13,8 @@
 % RETURN VALUE
 % ============
 % utcStrCa
-%       Cell array of strings. Same array size as argument "tt2000".
+%       Cell array of strings (char arrays). Same array size as argument
+%       "tt2000".
 %       Example: '2020-04-01T01:23:45.678901234Z'
 % nSecondDecimals
 %       Number of decimals with which the number of seconds should be printed.
@@ -26,14 +27,8 @@
 function utcStrCa = TT2000_to_UTC_str_many(tt2000Array, nSecondDecimals)
 % PROPOSAL: Assertions on argument being int64 as they are in CDF?
 %   NOTE: bicas.utils.TT2000_to_UTC_str() adds such an assertion.
-% PROPOSAL: Handle array.
-%   NOTE: Return value must be cell array.
-%   NOTE: Special case for empty array unless backward-incompatible.
-%   NOTE: Useful to be able to return string, not cell. See actually made calls.
-%   PROPOSAL: Separate function TT2000_to_UTC_str_many.
-%       CON: Might duplicate future functionality.
-%       PROPOSAL: Implement this function using *many function.
-%   PROPOSAL: Flag for returning cell or string.
+%   CON: Not needed. The value only needs to be a number, conceptually. Meaning
+%        is clear without int64.
 %
 % NOTE: Should be analogous to any future inverted conversion function.
 

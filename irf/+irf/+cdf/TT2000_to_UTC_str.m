@@ -1,7 +1,7 @@
 %
 % Convert one CDF TT2000 value to one UTC string with nanoseconds resolution.
 %
-% NOTE: spdfparsett2000 seems to work well as an inverse without wrapper.
+% NOTE: spdfparsett2000() seems to work well as an inverse without wrapper.
 %
 %
 % ARGUMENT
