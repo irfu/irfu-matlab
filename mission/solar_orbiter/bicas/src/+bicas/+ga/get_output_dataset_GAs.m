@@ -92,14 +92,8 @@ OutGaSubset.CALIBRATION_VERSION    = get_RCTD_field_CA_GA(RctdCa, 'scalarGa_Data
 
 
 
-OutGaSubset.Parents         = get_GA_Parents(InputDatasetsMap);
-
-% IMPLEMENTATION NOTE: SPICE_KERNELS should be set also for L3, but this has not
-% yet been implemented in skeletons.
-if strcmp(level, 'L2')
-  OutGaSubset.SPICE_KERNELS = get_GA_SPICE_KERNELS(InputDatasetsMap);
-end
-
+OutGaSubset.Parents          = get_GA_Parents(InputDatasetsMap);
+OutGaSubset.SPICE_KERNELS    = get_GA_SPICE_KERNELS(InputDatasetsMap);
 OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.identifier');
 OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
 

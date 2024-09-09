@@ -40,7 +40,7 @@
           "name": "LFR L2 CWF science electric selective burst mode 1 data",
           "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 1, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-LFR-SBM1-CWF-E_V15.cdf"
+          "template": "SOLO_L2_RPW-LFR-SBM1-CWF-E_V16.cdf"
         }
       }
     },
@@ -64,7 +64,7 @@
           "name": "LFR L2 CWF science electric selective burst mode 2 data",
           "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 2, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-LFR-SBM2-CWF-E_V15.cdf"
+          "template": "SOLO_L2_RPW-LFR-SBM2-CWF-E_V16.cdf"
         }
       }
     },
@@ -88,7 +88,7 @@
           "name": "LFR L2 CWF science electric survey mode data",
           "description": "RPW LFR L2 CWF science electric (potential difference) data in survey mode, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-LFR-SURV-CWF-E_V15.cdf"
+          "template": "SOLO_L2_RPW-LFR-SURV-CWF-E_V16.cdf"
         }
       }
     },
@@ -112,7 +112,7 @@
           "name": "LFR L2 SWF science electric survey mode data",
           "description": "RPW LFR L2 SWF science electric (potential difference) data in survey mode, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-LFR-SURV-SWF-E_V15.cdf"
+          "template": "SOLO_L2_RPW-LFR-SURV-SWF-E_V16.cdf"
         }
       }
     },
@@ -136,7 +136,7 @@
           "name": "LFR L2 CWF science electric LF mode data",
           "description": "RPW TDS L2 CWF science electric (potential difference) data in LF mode, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-TDS-LFM-CWF-E_V15.cdf"
+          "template": "SOLO_L2_RPW-TDS-LFM-CWF-E_V16.cdf"
         }
       }
     },
@@ -160,7 +160,7 @@
           "name": "LFR L2 RSWF science electric LF mode data",
           "description": "RPW TDS L2 RSWF science electric (potential difference) data in LF mode, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-TDS-LFM-RSWF-E_V15.cdf"
+          "template": "SOLO_L2_RPW-TDS-LFM-RSWF-E_V16.cdf"
         }
       }
     }
