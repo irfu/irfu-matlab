@@ -814,7 +814,7 @@ classdef const
         {'Bugfix for automatic sweep detection (SCDA).'}))
 
 
-      % BICAS v8.2.0
+      % BICAS v8.2.1
       Gmdb.add_GMVE(bicas.const.L2_CWF_DSI_CA, ...
         bicas.ga.mods.VersionEntry('2024-07-24', '8.2.1', ...
         {'Added zVariable CHANNEL_IDX (ISTP metadata).'}))
@@ -827,11 +827,6 @@ classdef const
 
 
 
-      % FUTURE ADDITIONS TO ADD WHEN RELEASING THE NEXT BICAS VERSION
-      if 0
-        DATE_STR    = '2099-07-24';   % TEST VALUE
-        VERSION_STR = '99.3.0';        % TEST VALUE
-      end
     end    % init_GA_MODS_DB
 
 

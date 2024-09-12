@@ -3,6 +3,9 @@
 <!--
     NOTE: XML file format is designed so that the content can be converted to a more easy-to-read HTML file using e.g. a command like
     > xsltproc   solo_ns_ops2html.xsl   solo_ns_ops.xml   >   solo_ns_ops.xml.html
+
+    PROPOSAL: Test for automatically checking whether HTML file has been updated from the xml file (cf. test for SWD).
+        CON: Must call system command.
 -->
 
     <!-- NOTE: Can not get HTML element <B> to pass through XSLT yet.-->
@@ -17,7 +20,7 @@
             2020-11-12, Erik P G Johansson: I have not managed to manually find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </note>
         <note>
-            2021-05-24, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06.
+            2024-09-12, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06. After the creation of this form of labeling, functionality for automatically detecting saturation has been added to BICAS. This functionality does however not distinguish between full and partial saturation. One should therefore not need to manually add more saturated time intervalls than the ones already labelled.
         </note>
         <note>
             2024-02-01, Erik P G Johansson: Table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2024-08-04 (inclusive). Only contains manually identified thuster firings.
@@ -2387,4 +2390,4 @@
     </eventsTable>
 
 </main>
-    
+

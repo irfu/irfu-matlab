@@ -27,8 +27,8 @@
 % RATIONALE
 % =========
 % An alternative to using this function is to modify the master RCT manually
-% with cdfedit (from NASA SPDF's CDF software). Using this function is however
-% better because
+% with cdfedit (from NASA SPDF's CDF software). Using this MATLAB function is
+% however better because
 % (1) There are two RCTs with identical calibration data content (ROC-SGSE +
 %     RODP),
 % (2) it saves work when updating the master RCT .cdf (generated from master
