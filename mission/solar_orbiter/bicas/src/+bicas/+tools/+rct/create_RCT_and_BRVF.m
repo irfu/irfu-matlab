@@ -17,7 +17,7 @@
 % First created 2020-07-02.
 %
 function create_RCT_and_BRVF(rctMasterCdfFile, destDir, rctVersionNbr)
-% bicas.tools.rct.create_RCT_and_BRVF('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RPW-BIAS_V03.cdf', '~/temp/temp', 1)
+% bicas.tools.rct.create_RCT_and_BRVF('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_CAL_RPW-BIAS_V04.cdf', '~/temp/temp', 2)
 
 % Time interval for which the RCT is valid. Should cover the entire mission.
 % --------------------------------------------------------------------------
@@ -35,17 +35,24 @@ function create_RCT_and_BRVF(rctMasterCdfFile, destDir, rctVersionNbr)
 %                 unnecessarily, since it is represented in the filename and
 %                 since the version number is (presumably) tied to the exact
 %                 chosen time interval.
-BEGIN_DT = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
-END_DT   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
+%
+% "If a given RPW CAL CDF file is used over the whole Solar Orbiter mission,
+% the following values should be applied for validity_start and validity_end
+% respectively: "2010-02-10T00:00:00Z" and "9999-01-01T00:00:00Z" "
+% /RCS ICD, Rev 01/08 draft.
+RCT_BEGIN_DT  = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
+BRVF_BEGIN_DT = RCT_BEGIN_DT;
+RCT_END_DT    = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
+BRVF_END_DT   = datetime('9999-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
 
 
 
 % IMPLEMENTATION NOTE: Log messages run AFTER the completion of sub-tasks, since
 % one wants to log the paths to the created files.
 
-rctPath     = bicas.tools.rct.create_RCT(rctMasterCdfFile, destDir, BEGIN_DT, END_DT, rctVersionNbr);
-fprintf(1, 'Created RCT file      "%s"\n', rctPath);
+rctPath     = bicas.tools.rct.create_RCT(rctMasterCdfFile, destDir, RCT_BEGIN_DT, RCT_END_DT, rctVersionNbr);
+fprintf(1, 'Created RCT file  "%s"\n', rctPath);
 
-rctJsonPath = bicas.tools.rct.create_BRVF(destDir, irf.fs.get_name(rctPath), BEGIN_DT, END_DT);
+rctJsonPath = bicas.tools.rct.create_BRVF(destDir, irf.fs.get_name(rctPath), BRVF_BEGIN_DT, BRVF_END_DT);
 fprintf(1, 'Created BRVF file "%s"\n', rctJsonPath);
 end
