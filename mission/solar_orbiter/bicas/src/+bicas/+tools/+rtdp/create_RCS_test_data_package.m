@@ -31,8 +31,8 @@
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-function main(outputParentDir, letterVersion, configFile)
-% bicas.tools.rtdp.main('/nonhome_data/SOLAR_ORBITER/bicas_test_packages/temp', 'A', '/nonhome_data/work_files/SOLAR_ORBITER/rtdp_config.json')
+function create_RCS_test_data_package(outputParentDir, letterVersion, configFile)
+% bicas.tools.rtdp.create_RCS_test_data_package('/nonhome_data/SOLAR_ORBITER/bicas_test_packages/temp', 'A', '/nonhome_data/work_files/SOLAR_ORBITER/rtdp_config.json')
 %
 % PROPOSAL: Better name for function.
 %     create
@@ -51,6 +51,6 @@ function main(outputParentDir, letterVersion, configFile)
 %     rcstdpkg  (TD = Test Data)
 %     rtdp      (= RCS Test Data Package)
 
-bicas.tools.rtdp.misc.create_RCS_test_pkg(...
+bicas.tools.rtdp.misc.create_RCS_test_data_package(...
   outputParentDir, letterVersion, configFile, false)
 end

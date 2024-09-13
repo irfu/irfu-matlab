@@ -30,22 +30,22 @@ classdef misc
 
 
 
-    % De facto top-level function for the bicas.tools.rtdp package, with
-    % the added argument automatedTestRun for tests. The nominal user is
-    % supposed to call bicas.tools.rtdp.main() (a trivial wrapper) but
-    % tests should call this function.
+    % De facto top-level function for the bicas.tools.rtdp package, with the
+    % added argument automatedTestRun for tests. The nominal user is supposed
+    % to call bicas.tools.rtdp.create_RCS_test_data_package() (a trivial
+    % wrapper) but tests should call this function.
     %
     %
     % ARGUMENTS
     % =========
-    % See bicas.tools.rtdp.main().
+    % See bicas.tools.rtdp.create_RCS_test_data_package().
     % automatedTestRun
     %       Whether the function is called by an automated test or not.
     %       NOTE: This is substitute for submitting a class for calling BICAS
     %       (or a function handle), which would then be mocked for tests, which
     %       would be overkill for this application.
     %
-    function create_RCS_test_pkg( ...
+    function create_RCS_test_data_package( ...
         outputParentDir, letterVersion, configFile, automatedTestRun)
       %
       % PROPOSAL: Separate function file.
