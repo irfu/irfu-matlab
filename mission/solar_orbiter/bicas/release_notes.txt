@@ -208,7 +208,7 @@ Version 8.2.1
 * Bugfix: Including previously missing source code updates.
 
 
-Version x.x.x
+Version 8.3.0
 -------------
 * Reinstate the unofficial --swdescriptor argument.
 * Non-Standard Operations (NSO) table thruster firings updated for until
@@ -216,8 +216,9 @@ Version x.x.x
 * Always use bias_rct_validity.json for selecting BIAS RCT (never uses reg.exp.
   on filenames)
 * Default value for setting PROCESSING.RCT_REGEXP.LFR updated for new filenaming
-  convention (though assumes begin and end dates).
+  convention (though assumes begin and end dates). Does not affect nominal
+  processing.
 * Removed setting
   PROCESSING.RCT_REGEXP.BIAS
 * Changed glob.attributes TIME_MIN, TIME_MAX to only have six decimals.
-* Requires updated master CDF versions (better metadata).
+* Requires updated master CDF versions (better metadata) for all datasets.

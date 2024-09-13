@@ -331,7 +331,7 @@ classdef const
         ' L1 (instead of L1R; partial support) to L2, and BIAS L2 to L3 data', ...
         ' (both disabled by default).'];
 
-      % 2024-07-12: Latest RCS ICD version is 01/07
+      % 2024-09-13: Latest released RCS ICD version is 01/07.
       MAP('SWD.identification.icd_version') = '1.7';
 
       % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
@@ -362,8 +362,8 @@ classdef const
       % for the 0.Y.Z beta version for instance). In all cases, any change in
       % the S/W must lead to update the version number.
       % """"""""
-      MAP('SWD.release.version')   = '8.2.1';
-      MAP('SWD.release.date')      = '2024-07-25T18:30:00Z';
+      MAP('SWD.release.version')   = '8.3.0';
+      MAP('SWD.release.date')      = '2024-09-13T12:00:00Z';
       MAP('SWD.release.author')    = 'Erik P G Johansson, BIAS team, IRF';
       MAP('SWD.release.contact')   = 'erik.johansson@irf.se';
       MAP('SWD.release.institute') = IRF_LONG_NAME;   % Full name or abbreviation?
@@ -455,9 +455,14 @@ classdef const
       %   '; Non-Standard Operations (NSO) table for thruster firings', ...
       %   ' updated for up until 2024-05-19', ...
       %   ]; % v8.2.0
+      % MAP('SWD.release.modification')  = [...
+      %   'Bugfix: Including previously missing source code updates.', ...
+      %   ]; % v8.2.1
       MAP('SWD.release.modification')  = [...
-        'Bugfix: Including previously missing source code updates.', ...
-        ]; % v8.2.1
+        'Non-Standard Operations (NSO) table for thruster firings updated', ...
+        ' for until 2024-08-04', ...
+        '; Use bias_rct_validity.json to locate BIAS RCT', ...
+        ]; % v8.3.0
 
       MAP('SWD.release.source')        = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
       % Appropriate branch? "master" instead?
@@ -828,6 +833,12 @@ classdef const
       Gmdb.add_GMVE(L2_LFR_TDS_DSI_CA, ...
         bicas.ga.mods.VersionEntry('2024-07-24', '8.2.1', ...
         {'Added compression for zVariables.'}))
+
+
+      % BICAS v8.3.0
+      Gmdb.add_GMVE(ALL_DSI_CA, ...
+        bicas.ga.mods.VersionEntry('2024-09-12', '8.3.0', ...
+        {'Improved CDF metadata.'}))
 
 
 

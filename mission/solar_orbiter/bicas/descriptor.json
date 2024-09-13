@@ -7,12 +7,12 @@
     "icd_version": "1.7"
   },
   "release": {
-    "version": "8.2.1",
-    "date": "2024-07-25T18:30:00Z",
+    "version": "8.3.0",
+    "date": "2024-09-13T12:00:00Z",
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "Bugfix: Including previously missing source code updates.",
+    "modification": "Non-Standard Operations (NSO) table for thruster firings updated for until 2024-08-04; Use bias_rct_validity.json to locate BIAS RCT",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {
