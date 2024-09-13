@@ -8,16 +8,6 @@ classdef misc___UTEST < matlab.unittest.TestCase
 
 
 
-  %#####################
-  %#####################
-  % CONSTANT PROPERTIES
-  %#####################
-  %#####################
-  properties(Constant)
-  end
-
-
-
   %############
   %############
   % PROPERTIES
@@ -97,7 +87,7 @@ classdef misc___UTEST < matlab.unittest.TestCase
       %   PRO: Better test.
 
       % NOTE: Input filenames (versions) have been modified to not be duplicated
-      % (avoid naming collisions).
+      %       (avoid naming collisions).
       ROWS_CA = {
       '{'
       '  "bicasRootDir": "<BICAS_ROOT_DIR>",'

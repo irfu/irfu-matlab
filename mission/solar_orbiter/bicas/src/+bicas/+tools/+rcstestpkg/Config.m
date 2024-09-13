@@ -1,11 +1,10 @@
 %
-% Store for the content of the config file.
+% Store for the content of one config file.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef Config
-  % PROPOSAL: Automatic test code.
 
 
 
@@ -82,8 +81,13 @@ classdef Config
 
 
 
+    % Convert arbitrary string to string that will be used by MATLAB as a
+    % corresponding field name in the structs which represent the content of a
+    % JSON file. Since MATLAB represents the content of JSON files as structs,
+    % the JSON keys can not be arbitrary strings, but are converted to strings
+    % which are legal struct field names.
     function jsonKeyStr = JSON_key_str(s)
-      s(s=='-') = '_';
+      s(s=='-')  = '_';
       jsonKeyStr = s;
     end
 

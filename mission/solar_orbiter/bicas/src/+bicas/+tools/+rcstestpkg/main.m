@@ -20,8 +20,9 @@
 %       One capital letter to be used in the test package version.
 %       NOTE: The BICAS version is automatically used.
 % configFile
-%       JSON file with paths to input CDFs. See
-%       bicas.tools.rcstestpkg.main___UTEST for an "example".
+%       JSON file with (1) paths to input CDFs, and (2) expected BICAS source
+%       directory. See bicas.tools.rcstestpkg.misc___UTEST.create_config_file()
+%       for an "example".
 %
 %
 % RETURN VALUES
@@ -31,9 +32,14 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 function main(outputParentDir, letterVersion, configFile)
+% bicas.tools.rcstestpkg.main('/nonhome_data/SOLAR_ORBITER/bicas_test_packages/temp', 'A', '/nonhome_data/work_files/SOLAR_ORBITER/rcstestpkg_config.json')
+%
 % PROPOSAL: Better name for function.
 %     create
 %     create_package
+%     create_RCS_test_package
+%     create_RCS_test_data_package
+%     create_RTDP
 % PROPOSAL: Better name for package/tool?
 %     BICAS
 %     ROC
@@ -41,9 +47,10 @@ function main(outputParentDir, letterVersion, configFile)
 %     create
 %     --
 %     rcstestpkg
+%     testpkg
 %     rcstdpkg  (TD = Test Data)
 %     rtdp      (= RCS Test Data Package)
-%
+
 bicas.tools.rcstestpkg.misc.create_RCS_test_pkg(...
   outputParentDir, letterVersion, configFile, false)
 end

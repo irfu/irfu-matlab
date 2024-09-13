@@ -31,10 +31,11 @@ Unit tests (classes) have suffix "___UTEST".
  Abbreviations, dictionary
 ###########################
 NOTE: This list primarily applies to comments and identifiers in the source
-code, but it may also be relevant for understanding log messages and the names
-of settings. Most of the abbreviations are not "official" and have been created
-specifically for BICAS. The list exists to centralize all definitions in one
-place. This list is therefore very important for understanding BICAS.
+code, including package names, but it may also be relevant for understanding
+log messages and the names of settings. Most of the abbreviations are not
+"official" and have been created specifically for BICAS. The list exists to
+centralize all definitions in one place. This list is therefore very important
+for understanding BICAS.
 --
 AA, aampere
     Antenna Ampere. Calibrated ampere at the antenna.

@@ -8,6 +8,16 @@
 %       permitted.
 %
 %
+% DEFAULT VALUE POLICY
+% ====================
+% * Default values must be the ones usable when BICAS is run at ROC/LESIA for
+%   official processing L1R-->L2.
+% * Default values should make errors crash BICAS, except for temporary
+%   solutions to known problems while they are being worked on.
+%   This may not be lived up to in practice. Settings should probably be
+%   checked for this.
+%
+%
 % NAMING CONVENTIONS
 % ==================
 % CUR : CURRENT (type of data, dataset)

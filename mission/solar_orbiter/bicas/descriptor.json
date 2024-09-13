@@ -3,7 +3,7 @@
     "project": "ROC",
     "name": "BIAS Calibration Software (BICAS)",
     "identifier": "BICAS",
-    "description": "Calibration software meant to be run at LESIA/ROC to (1) calibrate electric field L2 data from electric L1R LFR and TDS-LFM data, and (2) calibrate bias currents from L1R data. Also has undocumented support for processing L1 (instead of L1R) to L2, and BIAS L2 to L3 data (both disabled by default).",
+    "description": "Calibration software meant to be run at LESIA/ROC to (1) calibrate electric field L2 data from electric L1R LFR and TDS-LFM data, and (2) calibrate bias currents from L1R data. Also has additional support for processing L1 (instead of L1R; partial support) to L2, and BIAS L2 to L3 data (both disabled by default).",
     "icd_version": "1.7"
   },
   "release": {

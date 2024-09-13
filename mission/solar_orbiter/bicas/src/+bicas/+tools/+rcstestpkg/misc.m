@@ -1,5 +1,5 @@
 %
-% Collection of various functions. Name is likely temporary. Exact set of
+% Collection of various functions. Class name is likely temporary. Exact set of
 % functions is likely temporary until a better organization of code is found.
 %
 %
@@ -48,6 +48,10 @@ classdef misc
     function create_RCS_test_pkg( ...
         outputParentDir, letterVersion, configFile, automatedTestRun)
       %
+      % PROPOSAL: Separate function file.
+      %   CON: Name will likely be confusing compare to the actual top-level
+      %        function file for nominal users.
+      %
       % PROPOSAL: Zip package.
       %   CON: Can not manually update readme.txt, release_notes.txt
       %   NOTE: There is zip support in MATLAB.
@@ -71,7 +75,6 @@ classdef misc
       assert(islogical(automatedTestRun))
 
 
-
       Bso = bicas.create_default_BSO();
       Bso.make_read_only();
 
@@ -91,7 +94,7 @@ classdef misc
         error( ...
           ['The actual BICAS root directory and the expected BICAS root' ...
           ' directory are not the same. You might be using the wrong git repo.\n' ...
-          'Actual: "%s"\nExpected: "%s"'], ...
+          'Actual:   "%s"\nExpected: "%s"'], ...
           actBicasRootDir, expBicasRootDir)
       end
 
@@ -264,7 +267,7 @@ classdef misc
 
     function create_release_notes_file(parentDir, letterVersion)
       dateStr = string(datetime('now','TimeZone','local','Format','yyyy-mm-d'));
-      s = sprintf('Version %s; %s; %s:', letterVersion, dateStr, bicas.tools.rcstestpkg.misc.CONTACT_PERSON);
+      s = sprintf('Version %s; %s; %s:\n', letterVersion, dateStr, bicas.tools.rcstestpkg.misc.CONTACT_PERSON);
 
       readmePath = fullfile(parentDir, "release_notes.txt");
       irf.fs.write_file(readmePath, uint8(s)')
@@ -273,16 +276,6 @@ classdef misc
 
 
   end    % methods(Static)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-  end    % methods(Static, Access=private)
 
 
 
