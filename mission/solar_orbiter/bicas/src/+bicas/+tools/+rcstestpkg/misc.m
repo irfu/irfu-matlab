@@ -30,6 +30,8 @@ classdef misc
 
 
 
+    % De facto top-level function for the package, with the added argument
+    % automatedTestRun for testing purposes.
     function create_RCS_test_pkg(outputParentDir, letterVersion, configFile, automatedTestRun)
       % PROPOSAL: Zip package.
       %   CON: Can not manually update readme.txt, release_notes.txt
@@ -85,14 +87,14 @@ classdef misc
       for iSwm = 1:numel(Swml.List)
         Swm = Swml.List(iSwm);
 
-        bicas.tools.rcstestpkg.misc.create_SWM_directory(pkgDir, Swm, Config)
+        bicas.tools.rcstestpkg.misc.create_SWM_directory(pkgDir, Swm, Config, automatedTestRun)
       end
 
     end
 
 
 
-    function create_SWM_directory(parentDir, Swm, Config)
+    function create_SWM_directory(parentDir, Swm, Config, automatedTestRun)
       swmDir = bicas.tools.rcstestpkg.misc.mkdir(parentDir, Swm.cliOption);
 
       inputsDir  = bicas.tools.rcstestpkg.misc.mkdir(swmDir, 'inputs');
@@ -154,8 +156,13 @@ classdef misc
 
 
 
-      %errorCode = bicas.main(bicasArgsCa{:})
-      %assert(errorCode == 0)
+      if ~automatedTestRun
+        %============
+        % CALL BICAS
+        %============
+        errorCode = bicas.main(bicasArgsCa{:});
+        assert(errorCode == 0)
+      end
     end
 
 
