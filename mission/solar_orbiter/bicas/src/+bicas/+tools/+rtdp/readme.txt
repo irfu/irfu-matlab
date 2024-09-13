@@ -1,6 +1,11 @@
-===========================================
-EXAMPLE DIRECTORY TREE FOR RCS TEST PACKAGE
-===========================================
+MATLAB package for creating RTDPs. See
+bicas.tools.rtdp.create_RCS_test_data_package().
+
+
+==========================================================
+EXAMPLE DIRECTORY TREE FOR AN RCS TEST DATA PACKAGE (RTDP)
+==========================================================
+
 TESTDATA_RODP_BICAS_V8.2.1A
 ├── LFR-SBM1-CWF-E
 │   ├── expected_outputs

@@ -45,7 +45,7 @@ classdef misc
     %       (or a function handle), which would then be mocked for tests, which
     %       would be overkill for this application.
     %
-    function create_RCS_test_data_package( ...
+    function rtdpDir = create_RCS_test_data_package( ...
         outputParentDir, letterVersion, configFile, automatedTestRun)
       %
       % PROPOSAL: Separate function file.
@@ -58,6 +58,7 @@ classdef misc
       %         https://se.mathworks.com/help/matlab/ref/zip.html
       %   PROPOSAL: Separate command.
       %     CON: ~Superfluous?
+      %   PROPOSAL: Flag
       %
       % PROPOSAL: Use bicas.tools.batch functionality.
       %   Ex: bicas.tools.batch.autocreate_input_BPCIs()
@@ -123,16 +124,16 @@ classdef misc
       end
 
       % Create root directory.
-      pkgDirName = bicas.tools.rtdp.misc.create_test_package_directory_name(letterVersion);
-      pkgDir     = bicas.tools.rtdp.misc.mkdir(outputParentDir, pkgDirName);
+      rtdpDirName = bicas.tools.rtdp.misc.create_RTDP_directory_name(letterVersion);
+      rtdpDir     = bicas.tools.rtdp.misc.mkdir(outputParentDir, rtdpDirName);
 
-      bicas.tools.rtdp.misc.create_readme_file(pkgDir)
-      bicas.tools.rtdp.misc.create_release_notes_file(pkgDir, letterVersion)
+      bicas.tools.rtdp.misc.create_readme_file(rtdpDir)
+      bicas.tools.rtdp.misc.create_release_notes_file(rtdpDir, letterVersion)
 
       for iSwm = 1:numel(Swml.List)
         Swm = Swml.List(iSwm);
 
-        bicas.tools.rtdp.misc.create_SWM_directory(pkgDir, Swm, Config, automatedTestRun)
+        bicas.tools.rtdp.misc.create_SWM_directory(rtdpDir, Swm, Config, automatedTestRun)
       end
 
     end
@@ -212,13 +213,13 @@ classdef misc
 
 
 
-    function pkgDirName = create_test_package_directory_name(letterVersion)
+    function rtdpDirName = create_RTDP_directory_name(letterVersion)
       irf.assert.castring_regexp(letterVersion, '[A-Z]')
 
       % Ex: TESTDATA_RODP_BICAS_V8.2.1A
       bicasVerStr = bicas.const.SWD_METADATA('SWD.release.version');
 
-      pkgDirName = sprintf('TESTDATA_RODP_BICAS_V%s%s', bicasVerStr, letterVersion);
+      rtdpDirName = sprintf('TESTDATA_RODP_BICAS_V%s%s', bicasVerStr, letterVersion);
     end
 
 
@@ -227,7 +228,7 @@ classdef misc
       newDirPath = fullfile(parentDir, dirName);
 
       % IMPLEMENTATION NOTE: Checking for pre-existing directory for preventing
-      % the user from overwriting(?) a pre-existing test package.
+      % the user from overwriting(?) a pre-existing RTDP directory.
       irf.assert.path_is_available(newDirPath)
 
       [success, message, errorMessageId] = mkdir(parentDir, dirName);
@@ -257,7 +258,7 @@ classdef misc
 
 
     function create_readme_file(parentDir)
-      s = sprintf('Contact person; %s', bicas.tools.rtdp.misc.CONTACT_PERSON);
+      s = sprintf('Contact person; %s\n', bicas.tools.rtdp.misc.CONTACT_PERSON);
 
       readmePath = fullfile(parentDir, "readme.txt");
       irf.fs.write_file(readmePath, uint8(s)')
