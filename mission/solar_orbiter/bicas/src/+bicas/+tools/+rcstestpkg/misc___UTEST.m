@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for bicas.tools.rcstestpkg.main().
+% matlab.unittest automatic test code for bicas.tools.rcstestpkg.misc().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef main___UTEST < matlab.unittest.TestCase
+classdef misc___UTEST < matlab.unittest.TestCase
 
 
 
@@ -50,7 +50,7 @@ classdef main___UTEST < matlab.unittest.TestCase
       testCase.configFile = fullfile(testCase.dir, 'config.json');
       testCase.create_config_file(testCase.configFile)
 
-      testCase.create_config_file_input_datasets(testCase.configFile)
+      testCase.create_empty_config_file_datasets(testCase.configFile)
     end
 
 
@@ -69,9 +69,11 @@ classdef main___UTEST < matlab.unittest.TestCase
 
 
     function test0(testCase)
+      % TEMP_CONFIG_FILE = '/home/erjo/temp/temp/roctestpkg.json';
+      TEMP_CONFIG_FILE = testCase.configFile;
 
-      TEMP_CONFIG_FILE = '/home/erjo/temp/temp/roctestpkg.json';
-      bicas.tools.rcstestpkg.main(testCase.dir, 'A', TEMP_CONFIG_FILE)
+      bicas.tools.rcstestpkg.misc.create_RCS_test_pkg(...
+        testCase.dir, 'A', TEMP_CONFIG_FILE, true)
     end
 
 
@@ -94,51 +96,52 @@ classdef main___UTEST < matlab.unittest.TestCase
       %   PRO: Avoids filenaming collisions.
       %   PRO: Better test.
 
-      % NOTE: Input filenames (versions) modified to not be duplicated (avoid
-      % naming collisions).
+      % NOTE: Input filenames (versions) have been modified to not be duplicated
+      % (avoid naming collisions).
       ROWS_CA = {
       '{'
       '  "LFR-SBM1-CWF-E": {'
-      '    "in_hk":  "PARENT_DIR/solo_HK_rpw-bia_20210715_V05.cdf",'
-      '    "in_sci": "PARENT_DIR/solo_L1R_rpw-lfr-sbm1-cwf-e-cdag_20210715T234148-20210715T235548_V02.cdf",'
-      '    "in_cur": "PARENT_DIR/solo_L1_rpw-bia-current-cdag_20210701-20210731_V34.cdf"'
+      '    "in_hk":  "<PARENT_DIR>/solo_HK_rpw-bia_20210715_V05.cdf",'
+      '    "in_sci": "<PARENT_DIR>/solo_L1R_rpw-lfr-sbm1-cwf-e-cdag_20210715T234148-20210715T235548_V02.cdf",'
+      '    "in_cur": "<PARENT_DIR>/solo_L1_rpw-bia-current-cdag_20210701-20210731_V34.cdf"'
       '  },'
       '  "LFR-SBM2-CWF-E": {'
-      '    "in_hk":  "PARENT_DIR/solo_HK_rpw-bia_20220922_V06.cdf",'
-      '    "in_sci": "PARENT_DIR/solo_L1R_rpw-lfr-sbm2-cwf-e-cdag_20220922T134335-20220922T154536_V01.cdf",'
-      '    "in_cur": "PARENT_DIR/solo_L1_rpw-bia-current-cdag_20220901-20220930_V37.cdf"'
+      '    "in_hk":  "<PARENT_DIR>/solo_HK_rpw-bia_20220922_V06.cdf",'
+      '    "in_sci": "<PARENT_DIR>/solo_L1R_rpw-lfr-sbm2-cwf-e-cdag_20220922T134335-20220922T154536_V01.cdf",'
+      '    "in_cur": "<PARENT_DIR>/solo_L1_rpw-bia-current-cdag_20220901-20220930_V37.cdf"'
       '  },'
       '  "LFR-SURV-CWF-E": {'
-      '    "in_hk":  "PARENT_DIR/solo_HK_rpw-bia_20200213_V06.cdf",'
-      '    "in_sci": "PARENT_DIR/solo_L1R_rpw-lfr-surv-cwf-e-cdag_20200213_V10.cdf",'
-      '    "in_cur": "PARENT_DIR/solo_L1_rpw-bia-current-cdag_20200211-20200229_V02.cdf"'
+      '    "in_hk":  "<PARENT_DIR>/solo_HK_rpw-bia_20200213_V06.cdf",'
+      '    "in_sci": "<PARENT_DIR>/solo_L1R_rpw-lfr-surv-cwf-e-cdag_20200213_V10.cdf",'
+      '    "in_cur": "<PARENT_DIR>/solo_L1_rpw-bia-current-cdag_20200211-20200229_V02.cdf"'
       '  },'
       '  "LFR-SURV-SWF-E": {'
-      '    "in_hk":  "PARENT_DIR/solo_HK_rpw-bia_20200213_V07.cdf",'
-      '    "in_sci": "PARENT_DIR/solo_L1R_rpw-lfr-surv-swf-e-cdag_20200213_V10.cdf",'
-      '    "in_cur": "PARENT_DIR/solo_L1_rpw-bia-current-cdag_20200211-20200229_V03.cdf"'
+      '    "in_hk":  "<PARENT_DIR>/solo_HK_rpw-bia_20200213_V07.cdf",'
+      '    "in_sci": "<PARENT_DIR>/solo_L1R_rpw-lfr-surv-swf-e-cdag_20200213_V10.cdf",'
+      '    "in_cur": "<PARENT_DIR>/solo_L1_rpw-bia-current-cdag_20200211-20200229_V03.cdf"'
       '  },'
       '  "TDS-LFM-CWF-E": {'
-      '    "in_hk":  "PARENT_DIR/solo_HK_rpw-bia_20200225_V06.cdf",'
-      '    "in_sci": "PARENT_DIR/solo_L1R_rpw-tds-lfm-cwf-e-cdag_20200225_V07.cdf",'
-      '    "in_cur": "PARENT_DIR/solo_L1_rpw-bia-current-cdag_20200211-20200229_V04.cdf"'
+      '    "in_hk":  "<PARENT_DIR>/solo_HK_rpw-bia_20200225_V06.cdf",'
+      '    "in_sci": "<PARENT_DIR>/solo_L1R_rpw-tds-lfm-cwf-e-cdag_20200225_V07.cdf",'
+      '    "in_cur": "<PARENT_DIR>/solo_L1_rpw-bia-current-cdag_20200211-20200229_V04.cdf"'
       '  },'
       '  "TDS-LFM-RSWF-E": {'
-      '    "in_hk":  "PARENT_DIR/solo_HK_rpw-bia_20200409_V08.cdf",'
-      '    "in_sci": "PARENT_DIR/solo_L1R_rpw-tds-lfm-rswf-e-cdag_20200409_V08.cdf",'
-      '    "in_cur": "PARENT_DIR/solo_L1_rpw-bia-current-cdag_20200401-20200430_V03.cdf"'
+      '    "in_hk":  "<PARENT_DIR>/solo_HK_rpw-bia_20200409_V08.cdf",'
+      '    "in_sci": "<PARENT_DIR>/solo_L1R_rpw-tds-lfm-rswf-e-cdag_20200409_V08.cdf",'
+      '    "in_cur": "<PARENT_DIR>/solo_L1_rpw-bia-current-cdag_20200401-20200430_V03.cdf"'
       '  }'
       '}'
       };
 
       s = strjoin(ROWS_CA, '\n');
-      s = replace(s, 'PARENT_DIR', testCase.dir);
+      s = replace(s, '<PARENT_DIR>', testCase.dir);
       irf.fs.write_file(configFile, uint8(s)')
     end
 
 
 
-    function create_config_file_input_datasets(obj, configFile)
+    % Read config file and create empty files for the specified datasets.
+    function create_empty_config_file_datasets(testCase, configFile)
       uint8Array = irf.fs.read_file(configFile);
       FileJson = jsondecode(char(uint8Array)');
 

@@ -6,7 +6,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef misc
-  % PROPOSAL: Automatic test code.
 
 
 
@@ -16,7 +15,8 @@ classdef misc
   %#####################
   %#####################
   properties(Constant)
-    CONTACT_PERSON = "Erik P G Johansson, IRF";
+    % PROPOSAL: Copy from bicas.const.SWD_METADATA('SWD.release.author').
+    CONTACT_PERSON = bicas.const.SWD_METADATA('SWD.release.author');
   end
 
 
@@ -27,6 +27,68 @@ classdef misc
   %#######################
   %#######################
   methods(Static)
+
+
+
+    function create_RCS_test_pkg(outputParentDir, letterVersion, configFile, automatedTestRun)
+      % PROPOSAL: Zip package.
+      %   CON: Can not manually update readme.txt, release_notes.txt
+      %   NOTE: There is zip support in MATLAB.
+      %         https://se.mathworks.com/help/matlab/ref/zip.html
+      %   PROPOSAL: Separate command.
+      %     CON: ~Superfluous?
+      %
+      % PROPOSAL: Use bicas.tools.batch functionality.
+      %   Ex: bicas.tools.batch.autocreate_input_BPCIs()
+      %
+      % PROPOSAL: Check the MATLAB version when calling BICAS.
+      %   TODO-NI/TODO-DEC: Where is this authoritatively specified where?
+      % PROPOSAL: Check the git repo version when calling BICAS.
+      %   PROPOSAL: Specify in config file.
+      %
+      % TODO-DEC: How handle BICAS call in tests?
+      %   PROPOSAL: Mock object.
+      %     CON: Overkill for such a simple application. Needs abstract object+2
+      %          subclasses.
+      %   PROPOSAL: Switch/flag for whether to call BICAS or not.
+      %
+      % PROPOSAL: Call test for SWD file.
+      %   CON: Related to BICAS deliveries, but unrelated to RCS test data packages.
+      % PROPOSAL: Verify existence of all .txt files.
+      %
+      % PROPOSAL: Check that using the correct directory with source code (bicas_ROC
+      %           git repo). Specify in config file.
+      %   NOTE: Must be able to run the TEST code in arbitrary irfu-matlab directory.
+      %         Tests can specify the current irfu-matlab directory when generating
+      %         the config file.
+      %
+      % PROBLEM: Not checking BICAS bash file.
+
+      assert(islogical(automatedTestRun))
+
+
+
+      Bso = bicas.create_default_BSO();
+      Bso.make_read_only();
+
+      Swml = bicas.swm.get_SWML(Bso);
+
+      Config = bicas.tools.rcstestpkg.Config(configFile);
+
+      % Create root directory.
+      pkgDirName = bicas.tools.rcstestpkg.misc.create_test_package_directory_name(letterVersion);
+      pkgDir     = bicas.tools.rcstestpkg.misc.mkdir(outputParentDir, pkgDirName);
+
+      bicas.tools.rcstestpkg.misc.create_readme_file(pkgDir)
+      bicas.tools.rcstestpkg.misc.create_release_notes_file(pkgDir, letterVersion)
+
+      for iSwm = 1:numel(Swml.List)
+        Swm = Swml.List(iSwm);
+
+        bicas.tools.rcstestpkg.misc.create_SWM_directory(pkgDir, Swm, Config)
+      end
+
+    end
 
 
 
