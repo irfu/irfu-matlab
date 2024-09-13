@@ -1,11 +1,11 @@
 %
-% Create an (unzipped) RCS test package for BICAS.
+% Create an (unzipped) RTDP for BICAS.
 %
 % Every official BICAS delivery to ROC must, by agreement, be accompanied with
-% a "test package" containing CDF files corresponding to the BICAS input &
-% output for all official SWMs, i.e. L1R->L2.
+% an "RCS test data package" containing CDF files corresponding to the BICAS
+% input & output for all official SWMs, i.e. L1R->L2.
 %
-% RCS test data packages are described in "ROC Engineering Guidelines For
+% RTDPs are described in "ROC Engineering Guidelines For
 % External Users", ROC-GEN-SYS-NTT-00019-LES, Iss.02, Rev.01 draft, Section 2.3
 % (which is quite different from iss2rev0).
 %
@@ -21,7 +21,7 @@
 %       NOTE: The BICAS version is automatically used.
 % configFile
 %       JSON file with (1) paths to input CDFs, and (2) expected BICAS source
-%       directory. See bicas.tools.rcstestpkg.misc___UTEST.create_config_file()
+%       directory. See bicas.tools.rtdp.misc___UTEST.create_config_file()
 %       for an "example".
 %
 %
@@ -32,7 +32,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 function main(outputParentDir, letterVersion, configFile)
-% bicas.tools.rcstestpkg.main('/nonhome_data/SOLAR_ORBITER/bicas_test_packages/temp', 'A', '/nonhome_data/work_files/SOLAR_ORBITER/rcstestpkg_config.json')
+% bicas.tools.rtdp.main('/nonhome_data/SOLAR_ORBITER/bicas_test_packages/temp', 'A', '/nonhome_data/work_files/SOLAR_ORBITER/rtdp_config.json')
 %
 % PROPOSAL: Better name for function.
 %     create
@@ -46,11 +46,11 @@ function main(outputParentDir, letterVersion, configFile)
 %     "RCS test data package" (~formal term)
 %     create
 %     --
-%     rcstestpkg
+%     rtdp
 %     testpkg
 %     rcstdpkg  (TD = Test Data)
 %     rtdp      (= RCS Test Data Package)
 
-bicas.tools.rcstestpkg.misc.create_RCS_test_pkg(...
+bicas.tools.rtdp.misc.create_RCS_test_pkg(...
   outputParentDir, letterVersion, configFile, false)
 end

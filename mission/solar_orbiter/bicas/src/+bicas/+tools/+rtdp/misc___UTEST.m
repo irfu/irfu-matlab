@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.tools.rcstestpkg.misc().
+% matlab.unittest automatic test code for bicas.tools.rtdp.misc().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -62,7 +62,7 @@ classdef misc___UTEST < matlab.unittest.TestCase
       % TEMP_CONFIG_FILE = '/home/erjo/temp/temp/roctestpkg.json';
       TEMP_CONFIG_FILE = testCase.configFile;
 
-      bicas.tools.rcstestpkg.misc.create_RCS_test_pkg(...
+      bicas.tools.rtdp.misc.create_RCS_test_pkg(...
         testCase.dir, 'A', TEMP_CONFIG_FILE, true)
     end
 

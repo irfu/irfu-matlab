@@ -30,15 +30,15 @@ classdef misc
 
 
 
-    % De facto top-level function for the bicas.tools.rcstestpkg package, with
+    % De facto top-level function for the bicas.tools.rtdp package, with
     % the added argument automatedTestRun for tests. The nominal user is
-    % supposed to call bicas.tools.rcstestpkg.main() (a trivial wrapper) but
+    % supposed to call bicas.tools.rtdp.main() (a trivial wrapper) but
     % tests should call this function.
     %
     %
     % ARGUMENTS
     % =========
-    % See bicas.tools.rcstestpkg.main().
+    % See bicas.tools.rtdp.main().
     % automatedTestRun
     %       Whether the function is called by an automated test or not.
     %       NOTE: This is substitute for submitting a class for calling BICAS
@@ -80,7 +80,7 @@ classdef misc
 
       Swml = bicas.swm.get_SWML(Bso);
 
-      Config = bicas.tools.rcstestpkg.Config(configFile);
+      Config = bicas.tools.rtdp.Config(configFile);
 
       %====================================
       % ASSERT: Expected BICAS source code
@@ -123,16 +123,16 @@ classdef misc
       end
 
       % Create root directory.
-      pkgDirName = bicas.tools.rcstestpkg.misc.create_test_package_directory_name(letterVersion);
-      pkgDir     = bicas.tools.rcstestpkg.misc.mkdir(outputParentDir, pkgDirName);
+      pkgDirName = bicas.tools.rtdp.misc.create_test_package_directory_name(letterVersion);
+      pkgDir     = bicas.tools.rtdp.misc.mkdir(outputParentDir, pkgDirName);
 
-      bicas.tools.rcstestpkg.misc.create_readme_file(pkgDir)
-      bicas.tools.rcstestpkg.misc.create_release_notes_file(pkgDir, letterVersion)
+      bicas.tools.rtdp.misc.create_readme_file(pkgDir)
+      bicas.tools.rtdp.misc.create_release_notes_file(pkgDir, letterVersion)
 
       for iSwm = 1:numel(Swml.List)
         Swm = Swml.List(iSwm);
 
-        bicas.tools.rcstestpkg.misc.create_SWM_directory(pkgDir, Swm, Config, automatedTestRun)
+        bicas.tools.rtdp.misc.create_SWM_directory(pkgDir, Swm, Config, automatedTestRun)
       end
 
     end
@@ -140,10 +140,10 @@ classdef misc
 
 
     function create_SWM_directory(parentDir, Swm, Config, automatedTestRun)
-      swmDir = bicas.tools.rcstestpkg.misc.mkdir(parentDir, Swm.cliOption);
+      swmDir = bicas.tools.rtdp.misc.mkdir(parentDir, Swm.cliOption);
 
-      inputsDir  = bicas.tools.rcstestpkg.misc.mkdir(swmDir, 'inputs');
-      outputsDir = bicas.tools.rcstestpkg.misc.mkdir(swmDir, 'expected_outputs');
+      inputsDir  = bicas.tools.rtdp.misc.mkdir(swmDir, 'inputs');
+      outputsDir = bicas.tools.rtdp.misc.mkdir(swmDir, 'expected_outputs');
 
       bicasArgsCa        = {Swm.cliOption};
 
@@ -172,7 +172,7 @@ classdef misc
 
         copyfile(inputSrcFile, inputsDir)
       end
-      bicas.tools.rcstestpkg.misc.create_manifest_file(...
+      bicas.tools.rtdp.misc.create_manifest_file(...
         inputsDir, inputFilenamesCa, inputCohbCa)
 
 
@@ -196,7 +196,7 @@ classdef misc
         outputFilenamesCa{end+1, 1} = irf.fs.get_name(inputSrcFile);
         outputCohbCa     {end+1, 1} = cohb;
       end
-      bicas.tools.rcstestpkg.misc.create_manifest_file(...
+      bicas.tools.rtdp.misc.create_manifest_file(...
         outputsDir, outputFilenamesCa, outputCohbCa)
 
 
@@ -257,7 +257,7 @@ classdef misc
 
 
     function create_readme_file(parentDir)
-      s = sprintf('Contact person; %s', bicas.tools.rcstestpkg.misc.CONTACT_PERSON);
+      s = sprintf('Contact person; %s', bicas.tools.rtdp.misc.CONTACT_PERSON);
 
       readmePath = fullfile(parentDir, "readme.txt");
       irf.fs.write_file(readmePath, uint8(s)')
@@ -267,7 +267,7 @@ classdef misc
 
     function create_release_notes_file(parentDir, letterVersion)
       dateStr = string(datetime('now','TimeZone','local','Format','yyyy-mm-d'));
-      s = sprintf('Version %s; %s; %s:\n', letterVersion, dateStr, bicas.tools.rcstestpkg.misc.CONTACT_PERSON);
+      s = sprintf('Version %s; %s; %s:\n', letterVersion, dateStr, bicas.tools.rtdp.misc.CONTACT_PERSON);
 
       readmePath = fullfile(parentDir, "release_notes.txt");
       irf.fs.write_file(readmePath, uint8(s)')

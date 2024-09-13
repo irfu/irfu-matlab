@@ -328,6 +328,11 @@ RPW
 RSWF
     Regular Snapshot WafeForm. The term is used for TDS data, but is (at least
     for the purpose of BICAS) exactly the same as SWF.
+RTDP
+    RCS Test Data Package. Defined in ROC-GEN-SYS-NTT-00019-LES, "ROC
+    Engineering Guidelines For External Users", 02/01, Section 2.3. Zipped
+    directory structure containing BICAS example (official) input and output
+    datasets for ROC to compare with their own (official) processing.
 RUM
     Document ROC-PRO-SFT-SUM-00080, "RCS User Manual"
 RV
