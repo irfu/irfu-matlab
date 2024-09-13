@@ -38,22 +38,26 @@ classdef const
 
   properties(Constant)
 
+    % MATLAB version which shall be used when officially running BICAS (value
+    % returned by version('-release')).
+    % NOTE: Not to be confused with bicas.const.PERMITTED_MATLAB_VERSIONS_CA.
+    OFFICIAL_MATLAB_VERSION      = '2024a';
 
-
-    % Permissible string values returned by "version('-release')" when using
-    % the correct MATLAB version.
+    % Permissible string values when running BICAS in general, both officially
+    % and unofficially (value returned by version('-release')).
     %
+    % NOTE: This value is more permissable than
+    %       bicas.const.OFFICIAL_MATLAB_VERSION since it is sometimes useful to
+    %       run BICAS for other than the official version.
     % NOTE: BICAS originally required MATLAB R2016a.
     %       This was later changed to only require MATLAB R2019b.
     %       Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
-    % NOTE: Added MATLAB 2024a since ROC is planning to support it (replacing
-    %       R2019b).
-    %       Source: e-mail 2024-04-24, Quynh Nhu NGUYEN
+    %       Official MATLAB version again was later changed to MATLAB R2024a.
     % NOTE: Added MATLAB 2023b since it is currently (2024-05-28) the latest
     %       MATLAB version running on brain, spis, anna (IRFU servers). This
-    %       should be abolished eventually when beforementioned servers support
-    %       MATLAB 2024a.
-    PERMITTED_MATLAB_VERSIONS_CA = {'2023b', '2024a'};
+    %       should be abolished eventually when beforementioned IRFU servers
+    %       support MATLAB 2024a.
+    PERMITTED_MATLAB_VERSIONS_CA = {'2023b', bicas.const.OFFICIAL_MATLAB_VERSION};
 
     % Path to "config directory" (the directory where the default config file is
     % located, if any) relative to BICAS's directory root.

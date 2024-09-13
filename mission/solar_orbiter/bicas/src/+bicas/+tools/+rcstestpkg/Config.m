@@ -36,10 +36,25 @@ classdef Config
 
 
 
-    function inputFile = get_input_file(obj, swmCliOption, inputCohb)
-      SwmJson = obj.JsonStruct.(obj.JSON_key_str(swmCliOption));
+    function inputFile = get_input_dataset(obj, swmCliOption, inputCohb)
+      jsonSwmCliOption = obj.JSON_key_str(swmCliOption);
+      if ~isfield(obj.JsonStruct.inputDatasets, jsonSwmCliOption)
+        error('Can not find SWM "%s" in configuration.', swmCliOption)
+      end
+      SwmJson = obj.JsonStruct.inputDatasets.(jsonSwmCliOption);
 
-      inputFile = SwmJson.(obj.JSON_key_str(inputCohb));
+      jsonInputCohb = obj.JSON_key_str(inputCohb);
+      if ~isfield(SwmJson, jsonInputCohb)
+        error('Can not find input dataset "%s" for SWM "%s" in configuration.', ...
+          inputCohb, swmCliOption)
+      end
+      inputFile = SwmJson.(jsonInputCohb);
+    end
+
+
+
+    function bicasRootDir = get_BICAS_root_dir(obj)
+      bicasRootDir = obj.JsonStruct.bicasRootDir;
     end
 
 

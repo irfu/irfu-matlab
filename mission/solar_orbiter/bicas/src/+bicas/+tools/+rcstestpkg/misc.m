@@ -30,9 +30,24 @@ classdef misc
 
 
 
-    % De facto top-level function for the package, with the added argument
-    % automatedTestRun for testing purposes.
-    function create_RCS_test_pkg(outputParentDir, letterVersion, configFile, automatedTestRun)
+    % De facto top-level function for the bicas.tools.rcstestpkg package, with
+    % the added argument automatedTestRun for tests. The nominal user is
+    % supposed to call bicas.tools.rcstestpkg.main() (a trivial wrapper) but
+    % tests should call this function.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % See bicas.tools.rcstestpkg.main().
+    % automatedTestRun
+    %       Whether the function is called by an automated test or not.
+    %       NOTE: This is substitute for submitting a class for calling BICAS
+    %       (or a function handle), which would then be mocked for tests, which
+    %       would be overkill for this application.
+    %
+    function create_RCS_test_pkg( ...
+        outputParentDir, letterVersion, configFile, automatedTestRun)
+      %
       % PROPOSAL: Zip package.
       %   CON: Can not manually update readme.txt, release_notes.txt
       %   NOTE: There is zip support in MATLAB.
@@ -43,19 +58,6 @@ classdef misc
       % PROPOSAL: Use bicas.tools.batch functionality.
       %   Ex: bicas.tools.batch.autocreate_input_BPCIs()
       %
-      % PROPOSAL: Check the MATLAB version when calling BICAS.
-      %   TODO-NI/TODO-DEC: Where is this authoritatively specified where?
-      % PROPOSAL: Check the git repo version when calling BICAS.
-      %   PROPOSAL: Specify in config file.
-      %
-      % TODO-DEC: How handle BICAS call in tests?
-      %   PROPOSAL: Mock object.
-      %     CON: Overkill for such a simple application. Needs abstract object+2
-      %          subclasses.
-      %   PROPOSAL: Switch/flag for whether to call BICAS or not.
-      %
-      % PROPOSAL: Call test for SWD file.
-      %   CON: Related to BICAS deliveries, but unrelated to RCS test data packages.
       % PROPOSAL: Verify existence of all .txt files.
       %
       % PROPOSAL: Check that using the correct directory with source code (bicas_ROC
@@ -76,6 +78,46 @@ classdef misc
       Swml = bicas.swm.get_SWML(Bso);
 
       Config = bicas.tools.rcstestpkg.Config(configFile);
+
+      %====================================
+      % ASSERT: Expected BICAS source code
+      %====================================
+      % NOTE: Only checked for non-automated tests, since automated tests may
+      % be run on other MATLAB versions (though in theory they should not).
+      % This degrades the value of the test (very) slightly.
+      actBicasRootDir = irf.fs.remove_trailing_slash(bicas.utils.get_BICAS_root_dir());
+      expBicasRootDir = irf.fs.remove_trailing_slash(Config.get_BICAS_root_dir());
+      if ~strcmp(actBicasRootDir, expBicasRootDir)
+        error( ...
+          ['The actual BICAS root directory and the expected BICAS root' ...
+          ' directory are not the same. You might be using the wrong git repo.\n' ...
+          'Actual: "%s"\nExpected: "%s"'], ...
+          actBicasRootDir, expBicasRootDir)
+      end
+
+      %========================
+      % ASSERT: MATLAB version
+      %========================
+      actMatlabVersion = version('-release');
+      expMatlabVersion = bicas.const.OFFICIAL_MATLAB_VERSION;
+      if ~strcmp(actMatlabVersion, expMatlabVersion) && ~automatedTestRun
+        error( ...
+          ['The actual MATLAB version (%s) and the expected MATLAB version' ...
+          ' (%s) are not the same.'], ...
+          actMatlabVersion, expMatlabVersion)
+      end
+
+      %===========================
+      % ASSERT: SWD is up-to-date
+      %===========================
+      % IMPLEMENTATION NOTE: Not really related to generating an RCS test
+      % package, but since test packages are generated for deliveries, this is
+      % still useful to run.
+      TestResult = runtests('bicas.tools.generate_official_SWD_file___UTEST');
+      if TestResult.Failed
+        error(['The SWD file is not up-to-date (does not correspond to' ...
+          ' the BICAS implementation).'])
+      end
 
       % Create root directory.
       pkgDirName = bicas.tools.rcstestpkg.misc.create_test_package_directory_name(letterVersion);
@@ -109,7 +151,7 @@ classdef misc
         InputDataset = Swm.inputsList(i);
         cohb         = InputDataset.cliOptionHeaderBody;
 
-        inputSrcFile = Config.get_input_file(Swm.cliOption, cohb);
+        inputSrcFile = Config.get_input_dataset(Swm.cliOption, cohb);
         irf.assert.file_exists(inputSrcFile)
 
         bicasArgsCa = [bicasArgsCa; {['--', cohb]}; {inputSrcFile}];
