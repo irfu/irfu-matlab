@@ -143,12 +143,12 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
       [actFilePathsCa1, ~] = irf.fs.get_file_paths___UTEST.test_call(...
         testCase, {dirWithEmptySubdir; dir1; file21; file211} ...
-      );
+        );
 
       testCase.assertEqual(...
         sort(actFilePathsCa1), ...
         sort({file11; file111; file112; file21; file211})...
-      )
+        )
     end
 
 
@@ -171,7 +171,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
       [actFilePathsCa1, ActFsoiArray1] = irf.fs.get_file_paths(fileDirPathsCa);
 
-       % Check existence of struct fields.
+      % Check existence of struct fields.
       testCase.assertEqual(...
         sort(fieldnames(ActFsoiArray1)), ...
         sort(expFieldNamesCa))

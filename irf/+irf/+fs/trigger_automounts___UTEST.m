@@ -37,7 +37,7 @@ classdef trigger_automounts___UTEST < matlab.unittest.TestCase
       testCase.dirPath  = Fixture.Folder;
       testCase.filePath = irf.fs.write_empty_file(...
         {testCase.dirPath, 'empty_test_file.dat'} ...
-      );
+        );
       testCase.nonexistentFilePath = fullfile(testCase.dirPath, 'nonexistent_file.dat');
     end
 

@@ -219,7 +219,7 @@ ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA = {...
   'FILLVAL'};
 
 DEFAULT_SETTINGS = struct();...
-% Whether zVariable value size per record must fit the submitted metadata
+  % Whether zVariable value size per record must fit the submitted metadata
 % specified in dataobj_Variables{i, 2}.
 DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = 1;
 % Default 1/true since dataobj is not strict about SIZE  of empty zVars.

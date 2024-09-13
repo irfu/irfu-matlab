@@ -1201,6 +1201,7 @@ classdef PDist < TSeries
             l = 2;
             base = args{2};
           case 'counts'
+            l = 2;
             counts = args{2};
         end
         args = args((l+1):end);
@@ -1756,28 +1757,21 @@ classdef PDist < TSeries
       %%% t2z, bx, by, bz are the dsl components of the t1 and t2
       %%% vectors (perpendicular to the magnetic field) and b vector (parallel to
       %%% the magnetic field.
-      %%%
-      %%% The flag returndiff if set to 1 returns the descrete phase space volume
-      %%% elements d3v. It is 0 by default.
       %%% The flag new_grid allows the user to input their own new grid. After the
       %%% flag the user have to give in order: edges of new energy bins (in eV), edges of
-      %%% new polar bins (in degrees), and edges of new azimuthal bins (in degrees).
+      %%% new azimuthal bins (in degrees), and edges of new polar bins (in degrees).
 
       Var = varargin;
 
-      returndiff = 0;%%by default don't return differentials
-      flag_newgrid = 0;%%by default take the same old grid but change first and last energy bins to capture full distribution in new frame.
+       flag_newgrid = 0;%%by default take the same old grid but change first and last energy bins to capture full distribution in new frame.
       while ~isempty(Var)
         flag = Var{1};
         switch flag
-          case 'returndiff'
-            returndiff =Var{2};
-            Var(1:2) =[];
           case 'new_grid'
             flag_newgrid = 1;
             Eedgesn = Var{2};
-            thedgesn = Var{3}; % CN: illogical order because th is depend{3}
-            phedgesn = Var{4}; % CN: illogical order because ph is depend{2}
+            phedgesn = Var{3};
+            thedgesn = Var{4};
             Var(1:4) = [];
           otherwise
             error(['undefined input flag: ' flag])
@@ -2009,7 +2003,6 @@ classdef PDist < TSeries
 
       end
       %%
-      % fd3vn(fd3vn == 0 ) = nan; % CN: nan not compatible with other PDist methods
       fn = fd3vn./d3vn;
       Fn = zeros([1,size(fn)]);
       Fn(1,:,:,:) = fn;
@@ -2028,17 +2021,9 @@ classdef PDist < TSeries
       PDistn.ancillary.delta_energy_plus = -En + Eedgesn(2:end);
       PDistn.ancillary.delta_energy_minus = En - Eedgesn(1:end-1);
 
-      if returndiff
+      varargout{1} = PDistn;
 
-        differentials.dV3 = dV3;
-        differentials.dcosTh = dcosTH;
-        differentials.dPH = dPH;
-        differentials.d3v = d3vn;
-        varargout{1} = PDistn;
-        varargout{2} = differentials;
-      else
-        varargout{1} = PDistn;
-      end
+
 
     end
     function PD = smooth(obj,step)
@@ -2251,7 +2236,7 @@ classdef PDist < TSeries
 
       %Fg = griddedInterpolant(VX,VY,VZ,F);
       %Fq = Fg(VXe,VYe,VZe);
-%      Fq = interp3(VX,VY,VZ,F,VXe,VYe,VZe);
+      %      Fq = interp3(VX,VY,VZ,F,VXe,VYe,VZe);
 
       %F = Fe;
       %VX = VXe;
@@ -2606,7 +2591,7 @@ classdef PDist < TSeries
       if doLog10 % take log10 of data
         plot_data = log10(plot_data);
         if doContour
-         plot_data_contour = log10(plot_data_contour);
+          plot_data_contour = log10(plot_data_contour);
         end
       end
       if doSmooth
@@ -2709,7 +2694,7 @@ classdef PDist < TSeries
         %irf_legend(ax,sprintf('p = %.3f pPa',integrated_p12*1e3),[0.98 0.98],'color',sumf_color,'fontsize',12)
       end
       %if doP12 % add info about integrated value
-        %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
+      %irf_legend(ax,sprintf('m*int f vv dv2 = %.6f nPa',integrated_p12),[0.02 0.02],'k')
       %end
 
       if doContour
@@ -3583,10 +3568,10 @@ classdef PDist < TSeries
         PD.data_ = tmpData;
         PD.units = '1/(cm^2 s sr eV)';
       elseif flagdir == -1
-          reshapedData = reshapedData./matEnergy;
-          tmpData = reshape(reshapedData,sizeData);
-          PD = obj;
-          PD.data_ = tmpData;
+        reshapedData = reshapedData./matEnergy;
+        tmpData = reshape(reshapedData,sizeData);
+        PD = obj;
+        PD.data_ = tmpData;
         switch obj.units
           case '1/(cm^2 s sr eV)'
             PD.units = 's^3/m^6';

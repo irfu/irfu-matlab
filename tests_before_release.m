@@ -54,7 +54,7 @@ if ~exist(ciPath, 'dir')
 end
 runner.addPlugin(TestReportPlugin.producingPDF(...
   fullfile(ciPath, 'report.pdf'), 'Verbosity', 3 ...
-));
+  ));
 
 % RUN TESTS
 % ---------
