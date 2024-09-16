@@ -62,8 +62,11 @@ classdef misc___UTEST < matlab.unittest.TestCase
       % TEMP_CONFIG_FILE = '/home/erjo/temp/temp/roctestpkg.json';
       TEMP_CONFIG_FILE = testCase.configFile;
 
-      bicas.tools.rtdp.misc.create_RCS_test_data_package(...
-        testCase.dir, 'A', TEMP_CONFIG_FILE, true)
+      [actRtpdDir, actZippedRtdp] = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
+        testCase.dir, 'A', TEMP_CONFIG_FILE, true);
+
+      irf.assert.dir_exists(actRtpdDir)
+      irf.assert.file_exists(actZippedRtdp)
     end
 
 

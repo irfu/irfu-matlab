@@ -45,20 +45,21 @@ classdef misc
     %       (or a function handle), which would then be mocked for tests, which
     %       would be overkill for this application.
     %
-    function rtdpDir = create_RCS_test_data_package( ...
+    function [rtdpDir, rdtpZipFile] = create_RCS_test_data_package( ...
         outputParentDir, letterVersion, configFile, automatedTestRun)
       %
       % PROPOSAL: Separate function file.
       %   CON: Name will likely be confusing compare to the actual top-level
       %        function file for nominal users.
       %
-      % PROPOSAL: Zip package.
+      % PROPOSAL: Zip package. -- IMPLEMENTED
       %   CON: Can not manually update readme.txt, release_notes.txt
       %   NOTE: There is zip support in MATLAB.
       %         https://se.mathworks.com/help/matlab/ref/zip.html
       %   PROPOSAL: Separate command.
       %     CON: ~Superfluous?
       %   PROPOSAL: Flag
+      %   PROPOSAL: Only zip for letterVersion="A".
       %
       % PROPOSAL: Use bicas.tools.batch functionality.
       %   Ex: bicas.tools.batch.autocreate_input_BPCIs()
@@ -136,6 +137,17 @@ classdef misc
         bicas.tools.rtdp.misc.create_SWM_directory(rtdpDir, Swm, Config, automatedTestRun)
       end
 
+      rdtpZipFile = bicas.tools.rtdp.misc.zip_RTDP_directory(rtdpDir);
+    end
+
+
+
+    function zippedRtdp = zip_RTDP_directory(rtdpDir)
+      zippedRtdp = [irf.fs.remove_trailing_slash(rtdpDir), '.zip'];
+
+      irf.assert.path_is_available(zippedRtdp)
+
+      zip(zippedRtdp, rtdpDir)
     end
 
 

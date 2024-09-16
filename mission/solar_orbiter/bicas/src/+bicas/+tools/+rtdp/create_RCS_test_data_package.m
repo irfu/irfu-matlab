@@ -1,5 +1,6 @@
-%
-% Create an (unzipped) RTDP for BICAS.
+% Function for creating
+% (1) an (unzipped) RTDP, and
+% (2) a zipped RDTP.
 %
 % Every official BICAS delivery to ROC must, by agreement, be accompanied with
 % an "RCS test data package" containing CDF files corresponding to the BICAS
@@ -13,7 +14,9 @@
 % test data package.
 %
 % ~BUG: For letter versions other than "A", release_notes.txt will only contain
-%       a reference to the specified version and not previous ones.
+%       a reference to the specified version and not previous ones. For this
+%       case, the file must be added manually and the zipped RDTP must be
+%       created manually.
 %
 %
 % ARGUMENTS
@@ -32,11 +35,13 @@
 %
 % RETURN VALUES
 % =============
-% (none)
+% rtdpDir
+% rtdpZippedFile
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-function rtdpDir = create_RCS_test_data_package(outputParentDir, letterVersion, configFile)
+function [rtdpDir, rtdpZipFile] = create_RCS_test_data_package(...
+  outputParentDir, letterVersion, configFile)
 % bicas.tools.rtdp.create_RCS_test_data_package('/nonhome_data/SOLAR_ORBITER/bicas_test_packages/temp', 'A', '/nonhome_data/work_files/SOLAR_ORBITER/rtdp_config.json')
 %
 % PROPOSAL: Better name for function.
@@ -56,6 +61,6 @@ function rtdpDir = create_RCS_test_data_package(outputParentDir, letterVersion, 
 %     rcstdpkg  (TD = Test Data)
 %     rtdp      (= RCS Test Data Package)
 
-rtdpDir = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
+[rtdpDir, rtdpZipFile] = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
   outputParentDir, letterVersion, configFile, false);
 end
