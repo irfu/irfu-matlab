@@ -28,9 +28,29 @@ classdef Config
 
 
 
-    function obj = Config(configFile)
+    function obj = Config(configFile, Swml)
+      assert(isa(Swml, 'bicas.swm.SoftwareModeList'))
+
       uint8Array     = irf.fs.read_file(configFile);
       obj.JsonStruct = jsondecode(char(uint8Array)');
+
+      % ASSERT: Input datasets exist
+      % ----------------------------
+      % IMPLEMENTATION NOTE: creating an RTDP can take some time (~minutes).
+      % Assertion is useful for ensuring that code fails early for non-existing
+      % input datasets.
+      for iSwm = 1:numel(Swml.List)
+        Swm = Swml.List(iSwm);
+        jsonSwmCliOption = obj.JSON_key_str(Swm.cliOption);
+
+        for i = 1:numel(Swm.inputsList)
+          InputDataset = Swm.inputsList(i);
+          cohb         = InputDataset.cliOptionHeaderBody;
+
+          inputDatasetPath = obj.JsonStruct.inputDatasets.(jsonSwmCliOption).(cohb);
+          irf.assert.file_exists(inputDatasetPath)
+        end
+      end
     end
 
 

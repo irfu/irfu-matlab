@@ -82,7 +82,7 @@ classdef misc
 
       Swml = bicas.swm.get_SWML(Bso);
 
-      Config = bicas.tools.rtdp.Config(configFile);
+      Config = bicas.tools.rtdp.Config(configFile, Swml);
 
       %====================================
       % ASSERT: Expected BICAS source code
