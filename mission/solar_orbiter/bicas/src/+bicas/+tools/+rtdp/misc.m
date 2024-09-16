@@ -6,6 +6,8 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef misc
+  % PROPOSAL: Support wildcards in config file input dataset paths.
+  %   PRO: Easier to link to ROC-mirrored datasets.
 
 
 
@@ -54,8 +56,6 @@ classdef misc
       %
       % PROPOSAL: Zip package. -- IMPLEMENTED
       %   CON: Can not manually update readme.txt, release_notes.txt
-      %   NOTE: There is zip support in MATLAB.
-      %         https://se.mathworks.com/help/matlab/ref/zip.html
       %   PROPOSAL: Separate command.
       %     CON: ~Superfluous?
       %   PROPOSAL: Flag
@@ -64,8 +64,6 @@ classdef misc
       % PROPOSAL: Use bicas.tools.batch functionality.
       %   Ex: bicas.tools.batch.autocreate_input_BPCIs()
       %
-      % PROPOSAL: Verify existence of all .txt files.
-      %
       % PROPOSAL: Check that using the correct directory with source code (bicas_ROC
       %           git repo). Specify in config file.
       %   NOTE: Must be able to run the TEST code in arbitrary irfu-matlab directory.
@@ -73,6 +71,8 @@ classdef misc
       %         the config file.
       %
       % PROBLEM: Not checking BICAS bash file.
+      %
+      % PROPOSAL: Should verify that the config file input datasets do exist.
 
       assert(islogical(automatedTestRun))
 

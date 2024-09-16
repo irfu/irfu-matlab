@@ -59,7 +59,7 @@ Version 4.0.0
 Version 4.1.0
 -------------
 * Added setting quality variables based on thruster firings in
-* Non-Standard Operations (NSO) table. List complete until 2020-12-05.
+  Non-Standard Operations (NSO) table. List complete until 2020-12-05.
 * Zero order AC de-trending (remove mean, not linear fit), no AC re-trending
   (~bugfix; re-trending makes no sense for high-pass filtered data).
 * Combined transfer functions (LFR+BIAS) for AC data are modified during

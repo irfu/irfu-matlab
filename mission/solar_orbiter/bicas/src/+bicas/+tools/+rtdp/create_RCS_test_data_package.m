@@ -3,8 +3,8 @@
 % (2) a zipped RDTP.
 %
 % Every official BICAS delivery to ROC must, by agreement, be accompanied with
-% an "RCS test data package" containing CDF files corresponding to the BICAS
-% input & output for all official SWMs, i.e. L1R->L2.
+% an "RCS test data package" (RDTP) containing CDF files corresponding to the
+% BICAS input & output for all official SWMs, i.e. L1R->L2.
 %
 % RTDPs are described in "ROC Engineering Guidelines For
 % External Users", ROC-GEN-SYS-NTT-00019-LES, Iss.02, Rev.01 draft, Section 2.3
@@ -17,6 +17,9 @@
 %       a reference to the specified version and not previous ones. For this
 %       case, the file must be added manually and the zipped RDTP must be
 %       created manually.
+%
+% NOTE: Never calls bash wrapper script "bicas", which that it is also never
+%       tested (should also not be necessary).
 %
 %
 % ARGUMENTS
@@ -61,6 +64,8 @@ function [rtdpDir, rtdpZipFile] = create_RCS_test_data_package(...
 %     rcstdpkg  (TD = Test Data)
 %     rtdp      (= RCS Test Data Package)
 
+tic
 [rtdpDir, rtdpZipFile] = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
   outputParentDir, letterVersion, configFile, false);
+toc
 end

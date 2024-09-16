@@ -5,6 +5,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef misc___UTEST < matlab.unittest.TestCase
+% PROPOSAL: Verify existence of all .txt files.
 
 
 
