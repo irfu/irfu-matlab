@@ -363,7 +363,7 @@ classdef const
       % the S/W must lead to update the version number.
       % """"""""
       MAP('SWD.release.version')   = '8.3.0';
-      MAP('SWD.release.date')      = '2024-09-13T12:00:00Z';
+      MAP('SWD.release.date')      = '2024-09-16T16:00:00Z';
       MAP('SWD.release.author')    = 'Erik P G Johansson, BIAS team, IRF';
       MAP('SWD.release.contact')   = 'erik.johansson@irf.se';
       MAP('SWD.release.institute') = IRF_LONG_NAME;   % Full name or abbreviation?
@@ -837,7 +837,7 @@ classdef const
 
       % BICAS v8.3.0
       Gmdb.add_GMVE(ALL_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-09-12', '8.3.0', ...
+        bicas.ga.mods.VersionEntry('2024-09-16', '8.3.0', ...
         {'Improved CDF metadata.'}))
 
 
