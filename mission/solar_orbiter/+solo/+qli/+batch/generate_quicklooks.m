@@ -114,6 +114,8 @@ function generate_quicklooks(...
 %   PROPOSAL: Set reference timestamp to FMD of relevant log(s).
 %   PROPOSAL: Caller sets the reference timestamp.
 %
+% NOTE: Is not able to handle (catch and log/store) ParallelException.
+%
 %
 % generate_quicklooks_24h_6h_2h(), generate_quicklook_7day()
 % ============================================================
@@ -169,7 +171,9 @@ end
 
 
 
-% Log arguments
+%====================
+% Log arguments etc.
+%====================
 irf.log('n', sprintf('irfLogoPath                   = "%s"', irfLogoPath))
 irf.log('n', sprintf('vhtDataDir                    = "%s"', vhtDataDir))
 irf.log('n', sprintf('outputDir                     = "%s"', outputDir))
@@ -185,7 +189,23 @@ irf.log('n', sprintf('NONWEEKLY_6H_2H_PLOTS_ENABLED = %d',   solo.qli.const.NONW
 % Log current working directory so that relative paths can be interpreted.
 irf.log('n', sprintf('Current working directory     = %s',   pwd))
 
-
+% Get current (preexisting) parallel pool (PP). gcp() creates one if none has
+% already been created. The parallel pool is used indirectly by the plotting
+% code, at least by irf_ebsp() using "parfor".
+pp = gcp();
+irf.log(  'n', 'Parameters for the parallel pool:')
+irf.log(  'n', sprintf('class(pp)      = %s', class(pp)))
+irf.log(  'n', sprintf('pp.NumWorkers  = %d', pp.NumWorkers))
+if isa(pp, 'parallel.ProcessPool')
+  irf.log('n', sprintf('pp.Connected   = %d', pp.Connected))     % Logical
+  irf.log('n', sprintf('pp.SpmdEnabled = %d', pp.SpmdEnabled))   % Logical
+  irf.log('n', sprintf('pp.IdleTimeout = %d', pp.IdleTimeout))
+  irf.log('n', sprintf('pp.Busy        = %d', pp.Busy))          % Logical
+elseif isa(pp, 'parallel.ThreadPool')
+  ;
+else
+  error('Can not handle this class of parallel pool object.')
+end
 
 tSec = tic();
 

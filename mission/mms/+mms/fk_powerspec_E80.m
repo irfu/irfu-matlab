@@ -42,8 +42,11 @@ function out = fk_powerspec_E80(varargin)
 %
 % f - frequency range for the wavelet transform
 %
+% expand_t1 - flag to expand the time interval enough to mitigate for the
+% edge effects of the wavelet transform
+%
 % return_fields - flag to return electric fields in E80 and E120 coordinate
-% system along with all 6 probe potentials
+% system along with all 6 probe potentials and T1 (original or expanded)
 %
 % correct_timeshifts - default is 1 where the time lag between probes is
 % accounted for. 0 do not account for time lag.
@@ -72,7 +75,7 @@ numk = 100;
 f_range_flag = 0;
 return_fields = 0;
 correct_timeshifts = 1;
-
+expand_t1 = 0;
 %% defining different options
 if numel(varargin)>2
 
@@ -126,6 +129,10 @@ while flag
       correct_timeshifts = in{2};
       in(1:2) = [];
       flag = ~isempty(in);
+    case 'expand_t1'
+      expand_t1 = in{2};
+      in(1:2) = [];
+      flag = ~isempty(in);
     otherwise
 
       irf.log('warning',['Unknown flag: ' in{1}]);
@@ -135,6 +142,8 @@ while flag
 
 
 end
+
+
 
 %% define baseline
 
@@ -181,13 +190,15 @@ if correct_timeshifts
   clear V1 V2 V3 V4 V5 V6 E12 E34 E56
 end
 
+
+
 %% defining Tseries and focusing on the waveburst
 
 V=SCpot.data;Time=SCpot.time;
 V1=irf.ts_scalar(Time,V(:,1));V2=irf.ts_scalar(Time,V(:,2));
 V3=irf.ts_scalar(Time,V(:,3));V4=irf.ts_scalar(Time,V(:,4));
 V5=irf.ts_scalar(Time,V(:,5));V6=irf.ts_scalar(Time,V(:,6));
-V1=V1.tlim(T1);V2=V2.tlim(T1);V3=V3.tlim(T1);V4=V4.tlim(T1);V5=V5.tlim(T1);V6=V6.tlim(T1);
+% V1=V1.tlim(T1);V2=V2.tlim(T1);V3=V3.tlim(T1);V4=V4.tlim(T1);V5=V5.tlim(T1);V6=V6.tlim(T1);
 V1.name='V1';V2.name='V2';V3.name='V3';V4.name='V4';V5.name='V5';V6.name='V6';
 
 
@@ -210,17 +221,44 @@ E12=-(V2-V1)/dl12;E34=-(V4-V3)/dl12;
 E120=[-E12.data,-E34.data,E56.data]*1000;E120=irf.ts_vec_xyz(V1.time,E120);%%the negative sign is to have the positive x in the direction of probe 1
 E120.coordinateSystem = 'E120';
 
-%% calculating wavelet transforms
-
-fmin=E80.time(2)-E80.time(1);fmin=1/fmin;fmin=fmin/length(E80.data);fmin=ceil(fmin);
+%% if frange is not given, calculate fmin from T1
+fmin=T1(2)-T1(1);fmin=1/fmin;fmin=ceil(fmin);
 if ~ f_range_flag
   frange = [fmin 4000];
 end
 
-w80=irf_wavelet(E80,'nf',numf,'returnpower',0,'f',frange,'wavelet_width',w0);
-w80_2=irf_wavelet(E80_2,'nf',numf,'returnpower',0,'f',frange,'wavelet_width',w0);
+%% Expand T1 to account for edge effects
+
+if expand_t1
+  dt = E80.time(2)-E80.time(1); %sampling time
+  Fs = 1/dt; %sampling frequency
+
+  amax=log10(0.5*Fs/fmin);
+  na = floor(2*10.^amax);%number of samples that are affected by the edge effect for the lowest frequency
+
+  dtedge = 2*na*dt;
+  T1 = T1 + [-dtedge/2 dtedge/2];
+
+end
+
+
+%% calculating wavelet transforms
+
+w80=irf_wavelet(E80.tlim(T1),'nf',numf,'returnpower',0,'f',frange,'wavelet_width',w0);
+w80_2=irf_wavelet(E80_2.tlim(T1),'nf',numf,'returnpower',0,'f',frange,'wavelet_width',w0);
 f=w80.f;
 
+if expand_t1%after accounting for the edge effect, zoom in on the original interval
+  w80.p{1} =w80.p{1}(na+1:end-na,:);
+  w80.p{2} =w80.p{2}(na+1:end-na,:);
+  w80.p{3} =w80.p{3}(na+1:end-na,:);
+  w80.t =w80.t(na+1:end-na,:);
+
+  w80_2.p{1} =w80_2.p{1}(na+1:end-na,:);
+  w80_2.p{2} =w80_2.p{2}(na+1:end-na,:);
+  w80_2.p{3} =w80_2.p{3}(na+1:end-na,:);
+  w80_2.t =w80_2.t(na+1:end-na,:);
+end
 %% calculating powerspectrum in the f,k_x space
 
 p80x=w80.p{2};p80x_2=w80_2.p{2};
@@ -233,7 +271,7 @@ p80y=w80.p{1};p80y_2=w80_2.p{1};
 
 out{1} = struct('pow_x',pow_80_x,'k_x',k_80_x,'f',f);
 out{2} = struct('pow_y',pow_80_y,'k_y',k_80_y,'f',f);
-TS = struct('E80',E80,'E80_2',E80_2,'E120',E120,'V1',V1,'V2',V2,'V3',V3,'V4',V4,'V5',V5,'V6',V6);
+TS = struct('E80',E80,'E80_2',E80_2,'E120',E120,'V1',V1,'V2',V2,'V3',V3,'V4',V4,'V5',V5,'V6',V6,'T1',T1);
 if return_fields
   out{length(out)+1} = TS;
 end
