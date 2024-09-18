@@ -206,7 +206,7 @@ classdef misc
 
         bicasArgsCa = [bicasArgsCa; {['--', cohb]}; {outputFile}];
 
-        outputFilenamesCa{end+1, 1} = irf.fs.get_name(inputSrcFile);
+        outputFilenamesCa{end+1, 1} = irf.fs.get_name(outputFile);
         outputCohbCa     {end+1, 1} = cohb;
       end
       bicas.tools.rtdp.misc.create_manifest_file(...
