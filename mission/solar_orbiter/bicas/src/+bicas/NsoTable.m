@@ -182,12 +182,12 @@ classdef NsoTable
     % RETURN VALUES
     % =============
     % bEvtArraysCa
-    %       Cell array of arrays of logical indices into tt2000Array.
+    %       Column cell array of arrays of logical indices into tt2000Array.
     %       {iMatchingEvent}(iTimestamp) = logical
     % evtQrcidCa
-    %       List of QRCIDs. {iMatchingEvent} = qrcid
+    %       Column cell array of QRCIDs. {iMatchingEvent} = qrcid
     % iGlobalEventsArray
-    %       1D array of indices into NSO event list. Can be used for logging
+    %       Column array of indices into NSO event list. Can be used for logging
     %       the tabulated (global) NSO events that affect e.g. a particular
     %       CDF.
     %       (iMatchingEvent) = iGlobalEvt

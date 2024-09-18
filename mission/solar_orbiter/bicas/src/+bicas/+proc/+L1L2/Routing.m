@@ -71,8 +71,11 @@ classdef Routing
     % Syntax 2: Ssid, Sdid
     function obj = Routing(Ssid, varargin)
       assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
+
+      % Set SSID
       obj.Ssid = Ssid;
 
+      % Set SDID
       switch numel(varargin)
         case 0
           assert(Ssid.is_ASR(), 'Can not use first argument to derive SDID.')
