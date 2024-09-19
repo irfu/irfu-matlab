@@ -57,10 +57,8 @@ classdef demuxer
     % ARGUMENTS
     % =========
     % bdmFpa
-    %       Scalar value. Demultiplexer mode.
+    %       Scalar value.
     %       NOTE: Can be fill position to represent unknown BDM.
-    %       Implies that AsrSamplesVolt fields are correctly
-    %       sized with NaN values.
     % dlrFpa
     %       Scalar value.
     %
@@ -88,8 +86,8 @@ classdef demuxer
         C.AC_V1x = C.AC_V12;
       end
 
-      % IMPLEMENTATION NOTE: switch-case statement does not work
-      % for NaN. Therefore not using NaN for
+      % IMPLEMENTATION NOTE: switch-case statement does not work for NaN.
+      % Therefore using local non-NaN fill value.
       BDM_INT_FV = uint8(255);
       bdmInt = bdmFpa.array(BDM_INT_FV);
       switch(bdmInt)

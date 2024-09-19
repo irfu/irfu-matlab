@@ -37,6 +37,7 @@ classdef AntennaSignalId
   % PROPOSAL: Separate class file for storing ASID/SSID/SDID constants.
   %   PRO: Shorter path to constants.
   %   PRO: Better overview.
+  %   PROPOSAL: Use bicas.const. Use prefixes to distinguish between classes.
 
 
 

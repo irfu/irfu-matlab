@@ -1,13 +1,17 @@
 %
 % Immutable class which instances represent the destination of a signal, i.e.
-% where the data should ultimately go, i.e. either:
-% (1) an ASR (to determine how to store the signal in the dataset), or
+% where the data should ultimately be stored in the output datasets, i.e.
+% either:
+% (1) an ASR (to determine which zVariable to store it in in the output
+%     dataset), or
 % (2) "nowhere" (when BDM is unknown).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef SignalDestinationId
+  % PROPOSAL: Better name.
+  %   (output) dataset, zVariables
 
 
 

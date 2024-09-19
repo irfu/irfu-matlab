@@ -1,6 +1,6 @@
 %
-% Immutable class that represents one particular routing of signals for one
-% BLTS (but without specifying the BLTS). Given a particular demux mode and DLR
+% Immutable class that represents one particular routing of signals for one BLTS
+% (but without specifying which BLTS). Given a particular demux mode and DLR
 % setting, specify:
 % (1) where the physical signal comes from (which among other things determines
 %     how it should be calibrated), and
@@ -15,18 +15,25 @@ classdef Routing
   % PROPOSAL: Better name
   %   PROPOSAL: Official abbreviation.
   %     "Routing" (!)
-  %   NOTE: Does not correspond to demultiplexer only, since it also specifies
-  %         how to store non-ASR signals in datasets.
+  %   PROBLEM: Class is not really related to the demultiplexer as the name
+  %     "Routing" may imply. It really describes how to store (or not store)
+  %     signals in datasets. Demuxer routing really refers to pairs (iBlts,
+  %     SSID).
   %   --
   %   source, destination
+  %   input, output
   %   demultiplexer, demuxer, demux
   %   mux(?)
-  %   datasets, zVariables
+  %   dataset, zVariables
+  %   ~dataset representation
   %   --
   %   DemuxerRouting
   %   DemultiplexerRouting
   %   Source(To)DestinationRouting
   %       PRO: Can use abbreviation SDR, STDR.
+  %   DSRP : DatasetRepresentation
+  %     "DSR" already used abbreviation.
+  %   ZVR = zVariable Representation.
 
 
 

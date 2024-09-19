@@ -12,6 +12,7 @@ classdef dc
   % PROPOSAL: Better name.
   %   PRO: Processing includes quality "processing" which is not in "DC".
   %   PROPOSAL: dcq = Demux, Calibrate, Quality
+  %   process()
   %
   % PROPOSAL: Automatic test code.
   %
@@ -241,28 +242,28 @@ classdef dc
         % CV = Constant Values = Values which are constant for the
         %      entire subsequence of records.
         Cv = [];
-        Cv.bdmFpa    = Dcip.Zv.bdmFpa(                 iRec1);
-        Cv.isAchgFpa = Dcip.Zv.isAchgFpa(              iRec1);
-        Cv.freqHz    = Dcip.Zv.freqHz(                 iRec1);
-        Cv.iLsf      = Dcip.Zv.iLsf(                   iRec1);
-        Cv.zvcti     = Dcip.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
-        Cv.ufv       = Dcip.Zv.ufv(                    iRec1);
-        Cv.dlrFpa    = Dcip.Zv.dlrFpa(                 iRec1);
+        Cv.bdmFpa       = Dcip.Zv.bdmFpa(                 iRec1);
+        Cv.isAchgFpa    = Dcip.Zv.isAchgFpa(              iRec1);
+        Cv.freqHz       = Dcip.Zv.freqHz(                 iRec1);
+        Cv.iLsf         = Dcip.Zv.iLsf(                   iRec1);
+        Cv.zvcti        = Dcip.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
+        Cv.ufv          = Dcip.Zv.ufv(                    iRec1);
+        Cv.dlrFpa       = Dcip.Zv.dlrFpa(                 iRec1);
         % NOTE: Excluding Dcip.Zv.lrx since it is only need for
         %       splitting time/CDF record intervals, not for calibration
         %       since calibration can handle sequences of only NaN.
-        Cv.iCalibL                 = iCalibLZv(                       iRec1);
-        Cv.iCalibH                 = iCalibHZv(                       iRec1);
+        Cv.iCalibL      = iCalibLZv(                      iRec1);
+        Cv.iCalibH      = iCalibHZv(                      iRec1);
         % NOTE: Below variables do not vary over CDF records anyhow.
-        Cv.hasSwfFormat            = Dcip.hasSwfFormat;
-        Cv.isLfr                   = Dcip.isLfr;
-        Cv.isTdsCwf                = Dcip.isTdsCwf;
+        Cv.hasSwfFormat = Dcip.hasSwfFormat;
+        Cv.isLfr        = Dcip.isLfr;
+        Cv.isTdsCwf     = Dcip.isTdsCwf;
 
         % VV = (Record-)Varying Values
         Vv = [];
-        Vv.Epoch                    = Dcip.Zv.Epoch(                  iRec1:iRec2);
-        Vv.bltsSamplesTm            = Dcip.Zv.bltsSamplesTm(          iRec1:iRec2, :, :);
-        Vv.zvNValidSamplesPerRecord = Dcip.Zv.nValidSamplesPerRecord( iRec1:iRec2);
+        Vv.Epoch                    = Dcip.Zv.Epoch(                 iRec1:iRec2);
+        Vv.bltsSamplesTm            = Dcip.Zv.bltsSamplesTm(         iRec1:iRec2, :, :);
+        Vv.zvNValidSamplesPerRecord = Dcip.Zv.nValidSamplesPerRecord(iRec1:iRec2);
 
         if ~(Cv.hasSwfFormat && Cv.isLfr)
           % IMPLEMENTATION NOTE: Do not log for LFR SWF since it produces
@@ -333,19 +334,21 @@ classdef dc
       ssBltsSamplesAVolt = [];
       for iBlts = 1:bicas.const.N_BLTS
         ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
-          DemuxerRoutingArray(iBlts).Ssid, ...
-          Vv.bltsSamplesTm(:, :, iBlts), ...
-          iBlts, ...
-          Cv.hasSwfFormat, ...
-          Vv.zvNValidSamplesPerRecord, ...
-          Cv.isAchgFpa.logical2doubleNan(), ...
-          Cv.iCalibL, ...
-          Cv.iCalibH, ...
-          Cv.iLsf, ...
-          dtSec, ...
-          Cv.isLfr, Cv.isTdsCwf, ...
-          Cv.zvcti, Cv.ufv, ...
-          Cal);
+          Ssid                    =DemuxerRoutingArray(iBlts).Ssid, ...
+          samplesTm               =Vv.bltsSamplesTm(:, :, iBlts), ...
+          iBlts                   =iBlts, ...
+          hasSwfFormat            =Cv.hasSwfFormat, ...
+          zvNValidSamplesPerRecord=Vv.zvNValidSamplesPerRecord, ...
+          isAchg                  =Cv.isAchgFpa.logical2doubleNan(), ...
+          iCalibL                 =Cv.iCalibL, ...
+          iCalibH                 =Cv.iCalibH, ...
+          iLsf                    =Cv.iLsf, ...
+          dtSec                   =dtSec, ...
+          isLfr                   =Cv.isLfr, ...
+          isTdsCwf                =Cv.isTdsCwf, ...
+          zvcti                   =Cv.zvcti, ...
+          ufv                     =Cv.ufv, ...
+          Cal                     =Cal);
       end
 
       %========================================================
@@ -358,17 +361,27 @@ classdef dc
 
 
     % Calibrate one BLTS channel.
-    function samplesAVolt = calibrate_BLTS(...
-        Ssid, samplesTm, iBlts, ...
-        hasSwfFormat, ...
-        zvNValidSamplesPerRecord, isAchg, ...
-        iCalibL, iCalibH, iLsf, dtSec, ...
-        isLfr, isTdsCwf, ...
-        zvcti, ufv, ...
-        Cal)
+    function samplesAVolt = calibrate_BLTS(A)
+      arguments
+        A.Ssid
+        A.samplesTm
+        A.iBlts
+        A.hasSwfFormat
+        A.zvNValidSamplesPerRecord
+        A.isAchg
+        A.iCalibL
+        A.iCalibH
+        A.iLsf
+        A.dtSec
+        A.isLfr
+        A.isTdsCwf
+        A.zvcti
+        A.ufv
+        A.Cal
+      end
       % IMPLEMENTATION NOTE: It is ugly to have this many parameters (15!),
       % but the original code made calibrate_demux_voltages() to large and
-      % unwieldy. It also highlights the dependencies.
+      % unwieldy. Having many arguments also highlights the exact dependencies.
       %
       % PROPOSAL: CalSettings as parameter.
       %   PRO: Reduces number of parameters.
@@ -380,36 +393,36 @@ classdef dc
       % IMPLEMENTATION NOTE: It seems that data processing submits
       % different types of floats for LFR and TDS. This difference in
       % processing is unintended and should probably ideally be
-      % eliminated.
+      % eliminated. Can use integers or bicas.utils.FPArray?
       % NOTE: Storing TM units with floats!
-      if isLfr
-        assert(isa(samplesTm, 'single'))
+      if A.isLfr
+        assert(isa(A.samplesTm, 'single'))
       else
-        assert(isa(samplesTm, 'double'))
+        assert(isa(A.samplesTm, 'double'))
       end
-      irf.assert.sizes(samplesTm, [-1, -2])   % One BLTS channel.
+      irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel.
 
-      if isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.UNKNOWN)
+      if isequaln(A.Ssid, bicas.proc.L1L2.SignalSourceId.C.UNKNOWN)
         % ==> Calibrated data set to NaN.
-        samplesAVolt = nan(size(samplesTm));
+        samplesAVolt = nan(size(A.samplesTm));
 
-      elseif isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.GND) || ...
-          isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.REF25V)
+      elseif isequaln(A.Ssid, bicas.proc.L1L2.SignalSourceId.C.GND) || ...
+          isequaln(A.Ssid, bicas.proc.L1L2.SignalSourceId.C.REF25V)
         % ==> No calibration.
         % NOTE: samplesTm stores TM units using float!
-        samplesAVolt = samplesTm;
+        samplesAVolt = A.samplesTm;
 
       else
-        assert(Ssid.is_ASR())
+        assert(A.Ssid.is_ASR())
         % ==> Calibrate (unless explicitly stated that should not)
 
-        if hasSwfFormat
+        if A.hasSwfFormat
           bltsSamplesTmCa = ...
             bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
-            double(samplesTm), zvNValidSamplesPerRecord);
+            double(A.samplesTm), A.zvNValidSamplesPerRecord);
         else
-          assert(all(zvNValidSamplesPerRecord == 1))
-          bltsSamplesTmCa = {double(samplesTm)};
+          assert(all(A.zvNValidSamplesPerRecord == 1))
+          bltsSamplesTmCa = {double(A.samplesTm)};
         end
 
         %######################
@@ -426,19 +439,19 @@ classdef dc
         % This incidentally also potentially speeds up the code.
         % Ex: LFR SWF 2020-02-25, 2020-02-28.
         CalSettings = bicas.proc.L1L2.CalibrationSettings(...
-          iBlts, Ssid, isAchg, iCalibL, iCalibH, iLsf);
+          A.iBlts, A.Ssid, A.isAchg, A.iCalibL, A.iCalibH, A.iLsf);
         %#######################################################
-        ssBltsSamplesAVoltCa = Cal.calibrate_voltage_all(...
-          dtSec, bltsSamplesTmCa, ...
-          isLfr, isTdsCwf, CalSettings, ...
-          zvcti, ufv);
+        ssBltsSamplesAVoltCa = A.Cal.calibrate_voltage_all(...
+          A.dtSec, bltsSamplesTmCa, ...
+          A.isLfr, A.isTdsCwf, CalSettings, ...
+          A.zvcti, A.ufv);
         %#######################################################
 
-        if hasSwfFormat
+        if A.hasSwfFormat
           [samplesAVolt, ~] = ...
             bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
             ssBltsSamplesAVoltCa, ...
-            size(samplesTm, 2));
+            size(A.samplesTm, 2));
         else
           % Scalar cell array since not snapshot.
           assert(isscalar(ssBltsSamplesAVoltCa))
