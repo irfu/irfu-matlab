@@ -141,8 +141,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       function AsSrm = get_ASR_samples(varargin)
         assert(nargin == 9)
 
-        % Define which varargin{i} corresponds to which ASID.
-        ASID_ARRAY = A([
+        % Define which varargin{i} corresponds to which ASID
+        % --------------------------------------------------
+        % NOTE: This is not (necessarily) the same as
+        % bicas.sconst.C.S_ASID_DICT.values.
+        ARGS_ASID_ARRAY = A([
           "DC_V1",  "DC_V2",  "DC_V3",  ...
           "DC_V12", "DC_V13", "DC_V23", ...
           "AC_V12", "AC_V13", "AC_V23" ...
@@ -150,13 +153,13 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         AsSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", nRows, 'EMPTY');
 
         for iAsid = 1:9
-          asidName = ASID_ARRAY(iAsid);
+          Asid = ARGS_ASID_ARRAY(iAsid);
 
-          samplesAVolt = AsidTestSamplesSrm(asidName);
+          samplesAVolt = AsidTestSamplesSrm(Asid);
           if ~varargin{iAsid}
             samplesAVolt = samplesAVolt * NaN;
           end
-          AsSrm.add(asidName, samplesAVolt);
+          AsSrm.add(Asid, samplesAVolt);
         end
       end
 

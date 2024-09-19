@@ -296,7 +296,7 @@ classdef demuxer
       % using a future bicas.utils.SameSizeTypeMap instead.
       tempNaN = nan(size(AsrSamplesAVoltSrm(keyArray)));
 
-      for Asid = bicas.sconst.C.ASID_ARRAY'
+      for Asid = bicas.sconst.C.S_ASID_DICT.values'
         if ~AsSrm.isKey(Asid)
           AsSrm.add(Asid, tempNaN);
         end

@@ -120,8 +120,6 @@ classdef sconst
         C.S_ROUTING_DICT("GND_TO_DC_V3")       = bicas.proc.L1L2.Routing(C.S_SSID_DICT("GND"),     C.S_SDID_DICT("DC_V3"));
         C.S_ROUTING_DICT("UNKNOWN_TO_NOWHERE") = bicas.proc.L1L2.Routing(C.S_SSID_DICT("UNKNOWN"), C.S_SDID_DICT("NOWHERE"));
 
-        C.ASID_ARRAY = C.S_ASID_DICT.values;
-
         assert(~ismember(255, kGlobalArray))
         assert(~ismember(0,   kGlobalArray))
       end
