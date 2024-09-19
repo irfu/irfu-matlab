@@ -26,7 +26,7 @@
 %       Numeric column arrays. First and last index in all sequences where
 %       arguments have constant values in the first dimension. Never contains
 %       zero-length sequences (e.g. end before beginning).
-%       NOTE: i1Array <= i2Array.
+%       NOTE: all(i1Array <= i2Array).
 %       NOTE: 0x1 if arguments have zero rows.
 % n
 %       Number of subsequences. numel(i1Array).
@@ -42,6 +42,9 @@ function [i1Array, i2Array, n] = split_by_change(varargin)
 %   Ex: BICAS UFV=1 ==> voltageNaN=true ==> One block, regardless of other
 %       arguments.
 % PROPOSAL: Return the constant values found.
+% PROPOSAL: Not use irf.utils.find_equalities().
+% PROPOSAL: Recursive call.
+%   PRO: Potentially faster.
 
 % ASSERTION
 % Require at least one argument, since size of return values is ~undefined
