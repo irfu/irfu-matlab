@@ -32,18 +32,18 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       end
 
       function main()
-        S = bicas.const.C.SSID;
+        S = bicas.sconst.C.S_SSID_DICT;
 
         for isAchg = [0, 1, NaN]
           % DC single, 1x6
           test(...
-            {99, 0.6, 3, 99,99,99}, S.DC_V1,  isAchg, ...
+            {99, 0.6, 3, 99,99,99}, S("DC_V1"),  isAchg, ...
             [-5, -1, 0, 1, 5, NaN], ...
             [ 1,  0, 0, 0, 1,   0])
 
           % DC diff, 3x2
           test(...
-            {99, 0.6, 99, 3,99,99}, S.DC_V12, isAchg, ...
+            {99, 0.6, 99, 3,99,99}, S("DC_V12"), isAchg, ...
             [-5, -1, 0; 1, 5, NaN], ...
             [ 1,  0, 0; 0, 1,   0])
         end
@@ -51,7 +51,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         % AC, low gain, 6x1
         for achgThreshold = [1, 7]
           test(...
-            {99, 0.6, 99, 99, 3, achgThreshold}, S.AC_V12, 0, ...
+            {99, 0.6, 99, 99, 3, achgThreshold}, S("AC_V12"), 0, ...
             [-5, -1, 0, 1, 5, NaN]', ...
             [ 1,  0, 0, 0, 1,   0]')
         end
@@ -59,14 +59,14 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         % AC, high gain, 1x6
         for aclgThreshold = [1, 7]
           test(...
-            {99, 0.6, 99, 99, aclgThreshold,  3}, S.AC_V23, 1, ...
+            {99, 0.6, 99, 99, aclgThreshold,  3}, S("AC_V23"), 1, ...
             [-5, -1, 0, 1, 5, NaN], ...
             [ 1,  0, 0, 0, 1,   0])
         end
 
         % AC, unknown gain, 1x6
         for aclgThreshold = [1, 7]
-          test({99, 0.6, 99, 99, aclgThreshold,  3}, S.AC_V23, NaN, ...
+          test({99, 0.6, 99, 99, aclgThreshold,  3}, S("AC_V23"), NaN, ...
             [-5, -1, 0, 1, 5, NaN], ...
             [ 0,  0, 0, 0, 0,   0])
         end
@@ -91,7 +91,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       end
 
       function main()
-        S = bicas.const.C.SSID;
+        S = bicas.sconst.C.S_SSID_DICT;
 
         % IMPLEMENTATION NOTE: Maybe somewhat overkill since
         % test_get_TSF() tests the different types of thresholds. The
@@ -100,34 +100,34 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
         for isAchg = [0, 1, NaN]
           % Empty snapshot.
-          test({99, 0.6, 3, 99,99,99}, zeros(1,0), S.DC_V1, isAchg, false)
+          test({99, 0.6, 3, 99,99,99}, zeros(1,0), S("DC_V1"), isAchg, false)
           % Length-one snapshot.
-          test({99, 0.6, 3, 99,99,99}, [5],        S.DC_V1, isAchg, true)
+          test({99, 0.6, 3, 99,99,99}, [5],        S("DC_V1"), isAchg, true)
 
           % DC single
-          test({99, 0.6, 3, 99,99,99}, [ 0, 0], S.DC_V1, isAchg, false)
-          test({99, 0.6, 3, 99,99,99}, [ 0, 5], S.DC_V1, isAchg, false)
-          test({99, 0.6, 3, 99,99,99}, [-5, 5], S.DC_V1, isAchg, true)
+          test({99, 0.6, 3, 99,99,99}, [ 0, 0], S("DC_V1"), isAchg, false)
+          test({99, 0.6, 3, 99,99,99}, [ 0, 5], S("DC_V1"), isAchg, false)
+          test({99, 0.6, 3, 99,99,99}, [-5, 5], S("DC_V1"), isAchg, true)
 
           % DC diff
-          test({99, 0.6, 99, 3, 99,99}, [0,  0], S.DC_V12, isAchg, false)
-          test({99, 0.6, 99, 3, 99,99}, [5, -5], S.DC_V13, isAchg, true)
+          test({99, 0.6, 99, 3, 99,99}, [0,  0], S("DC_V12"), isAchg, false)
+          test({99, 0.6, 99, 3, 99,99}, [5, -5], S("DC_V13"), isAchg, true)
         end
 
         for unusedGainThreshold = [1, 7]
           % AC, low gain
-          test({99, 0.6, 99, 99, 3, unusedGainThreshold}, [0,  0], S.AC_V12, 0, false)
-          test({99, 0.6, 99, 99, 3, unusedGainThreshold}, [5, -5], S.AC_V13, 0, true)
+          test({99, 0.6, 99, 99, 3, unusedGainThreshold}, [0,  0], S("AC_V12"), 0, false)
+          test({99, 0.6, 99, 99, 3, unusedGainThreshold}, [5, -5], S("AC_V13"), 0, true)
 
           % AC, high gain
-          test({99, 0.6, 99, 99, unusedGainThreshold, 3}, [0,  0], S.AC_V23, 1, false)
-          test({99, 0.6, 99, 99, unusedGainThreshold, 3}, [5, -5], S.AC_V23, 1, true)
+          test({99, 0.6, 99, 99, unusedGainThreshold, 3}, [0,  0], S("AC_V23"), 1, false)
+          test({99, 0.6, 99, 99, unusedGainThreshold, 3}, [5, -5], S("AC_V23"), 1, true)
         end
 
         % NaN samples
-        test({99, 0.6, 3, 99,99,99}, [ NaN, NaN], S.DC_V1, 0, false)
-        test({99, 0.6, 3, 99,99,99}, [ NaN,   5], S.DC_V1, 0, false)
-        test({99, 0.6, 3, 99,99,99}, [-5,     5], S.DC_V1, 0, true)
+        test({99, 0.6, 3, 99,99,99}, [ NaN, NaN], S("DC_V1"), 0, false)
+        test({99, 0.6, 3, 99,99,99}, [ NaN,   5], S("DC_V1"), 0, false)
+        test({99, 0.6, 3, 99,99,99}, [-5,     5], S("DC_V1"), 0, true)
       end
 
       main()
@@ -153,7 +153,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       end
 
       function main()
-        S = bicas.const.C.SSID;
+        S = bicas.sconst.C.S_SSID_DICT;
 
         % IMPLEMENTATION NOTE: Maybe somewhat overkill since
         % test_get_TSF() tests the different types of thresholds. The
@@ -163,34 +163,34 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           % DC single
           % ---------
           % Zero snapshots
-          test({99, 0.6, 99,99,99,99}, zeros(0,1), zeros(0,0),   S.DC_V1, isAchg, false(0,1))
+          test({99, 0.6, 99,99,99,99}, zeros(0,1), zeros(0,0),   S("DC_V1"), isAchg, false(0,1))
 
           % One snapshot of varying length.
-          test({99, 0.6, 3, 99,99,99}, [0],        [5, 0, 5],    S.DC_V1, isAchg, [0])
-          test({99, 0.6, 3, 99,99,99}, [1],        [5, 0, 5],    S.DC_V1, isAchg, [1])
-          test({99, 0.6, 3, 99,99,99}, [2],        [5, 0, 5],    S.DC_V1, isAchg, [0])
-          test({99, 0.6, 3, 99,99,99}, [3],        [5, 0, 5],    S.DC_V1, isAchg, [1])
+          test({99, 0.6, 3, 99,99,99}, [0],        [5, 0, 5],    S("DC_V1"), isAchg, [0])
+          test({99, 0.6, 3, 99,99,99}, [1],        [5, 0, 5],    S("DC_V1"), isAchg, [1])
+          test({99, 0.6, 3, 99,99,99}, [2],        [5, 0, 5],    S("DC_V1"), isAchg, [0])
+          test({99, 0.6, 3, 99,99,99}, [3],        [5, 0, 5],    S("DC_V1"), isAchg, [1])
 
           % Many snapshots
-          test({99, 0.6, 3, 99,99,99}, [0;1;2;3], [5 0 5; 5 0 5; 5 0 5; 5 0 5],    S.DC_V1, isAchg, [0; 1; 0; 1])
+          test({99, 0.6, 3, 99,99,99}, [0;1;2;3], [5 0 5; 5 0 5; 5 0 5; 5 0 5],    S("DC_V1"), isAchg, [0; 1; 0; 1])
 
           % DC diff
-          test({99, 0.6, 99, 3, 99,99}, 2, [0,  0], S.DC_V12, isAchg, [0])
-          test({99, 0.6, 99, 3, 99,99}, 2, [5, -5], S.DC_V13, isAchg, [1])
+          test({99, 0.6, 99, 3, 99,99}, 2, [0,  0], S("DC_V12"), isAchg, [0])
+          test({99, 0.6, 99, 3, 99,99}, 2, [5, -5], S("DC_V13"), isAchg, [1])
         end
 
         for unusedGainThreshold = [1, 7]
           % AC, low gain
-          test({99, 0.6, 99, 99, 3, unusedGainThreshold}, [1; 1], [0  0; 5 -5], S.AC_V12, 0, [0; 1])
+          test({99, 0.6, 99, 99, 3, unusedGainThreshold}, [1; 1], [0  0; 5 -5], S("AC_V12"), 0, [0; 1])
 
           % AC, high gain
-          test({99, 0.6, 99, 99, unusedGainThreshold, 3}, [1],    [0,  0],      S.AC_V23, 1, [0])
-          test({99, 0.6, 99, 99, unusedGainThreshold, 3}, [1],    [5, -5],      S.AC_V23, 1, [1])
+          test({99, 0.6, 99, 99, unusedGainThreshold, 3}, [1],    [0,  0],      S("AC_V23"), 1, [0])
+          test({99, 0.6, 99, 99, unusedGainThreshold, 3}, [1],    [5, -5],      S("AC_V23"), 1, [1])
         end
 
         % NaN samples
-        test({99, 0.6, 3, 99,99,99}, [2], [ NaN,   5], S.DC_V1, 0, false)
-        test({99, 0.6, 3, 99,99,99}, [2], [-5,     5], S.DC_V1, 0, true)
+        test({99, 0.6, 3, 99,99,99}, [2], [ NaN,   5], S("DC_V1"), 0, false)
+        test({99, 0.6, 3, 99,99,99}, [2], [-5,     5], S("DC_V1"), 0, true)
       end
 
       main()
@@ -211,7 +211,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         expIsSaturatedAr = logical(expIsSaturatedAr);
 
         L = bicas.Logger('NO_STDOUT', false);
-        S = bicas.proc.L1L2.Saturation___UTEST.init_object(...
+        Sat = bicas.proc.L1L2.Saturation___UTEST.init_object(...
           V.cwfSlidingWindowLengthSec, ...
           V.tsfFractionThreshold, ...
           V.thresholdAVoltDcSingle, ...
@@ -220,14 +220,14 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           V.thresholdAVoltAchg);
 
         % CALL FUNCTION
-        actIsSaturatedAr = S.get_voltage_saturation_quality_bit(...
+        actIsSaturatedAr = Sat.get_voltage_saturation_quality_bit(...
           V.tt2000Ar, V.AsrSamplesAVoltSrm, V.zvNValidSamplesPerRecord, ...
           V.bdmFpa, V.dlrFpa, V.lrx, V.isAchgFpa, V.hasSwfFormat, L);
 
         testCase.assertEqual(actIsSaturatedAr, expIsSaturatedAr)
       end
 
-      C = bicas.const.C.SSID;
+      S = bicas.sconst.C.S_SSID_DICT;
       ALL_ENABLED = true;
       %ALL_ENABLED = false;
 
@@ -244,9 +244,9 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           %
           V.tt2000Ar                  = zeros(0, 1);
           V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 0, 'EMPTY');
-          V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid, zeros(0, 1))
-          V.AsrSamplesAVoltSrm.add(C.DC_V2.Asid, zeros(0, 1))
-          V.AsrSamplesAVoltSrm.add(C.DC_V3.Asid, zeros(0, 1))
+          V.AsrSamplesAVoltSrm.add(S("DC_V1").Asid, zeros(0, 1))
+          V.AsrSamplesAVoltSrm.add(S("DC_V2").Asid, zeros(0, 1))
+          V.AsrSamplesAVoltSrm.add(S("DC_V3").Asid, zeros(0, 1))
           V.zvNValidSamplesPerRecord  = zeros(0, 1);
           V.bdm                       = zeros(0, 1);
           V.dlr                       = zeros(0, 1);
@@ -274,9 +274,9 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         %
         V.tt2000Ar                  = [10 11 12]' * 1e9;
         V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 3, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid,  [2 0 2]')
-        V.AsrSamplesAVoltSrm.add(C.DC_V12.Asid, [2 0 2]'+1)
-        V.AsrSamplesAVoltSrm.add(C.DC_V23.Asid, [2 0 2]'+1)
+        V.AsrSamplesAVoltSrm.add(S("DC_V1").Asid,  [2 0 2]')
+        V.AsrSamplesAVoltSrm.add(S("DC_V12").Asid, [2 0 2]'+1)
+        V.AsrSamplesAVoltSrm.add(S("DC_V23").Asid, [2 0 2]'+1)
         V.zvNValidSamplesPerRecord  = [1 1 1]';
         V.bdm                       = [0 0 0]';
         V.dlr                       = [0 0 0]';
@@ -301,9 +301,9 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         %
         V.tt2000Ar                  = [10:19]' * 1e9;
         V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 10, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid,  [2 2 0 0 0 0 0 0 0 0]')
-        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid, [0 0 0 2 2 0 0 0 0 0]'+2)
-        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid, [0 0 0 0 0 0 2 2 0 0]'+2)
+        V.AsrSamplesAVoltSrm.add(S("DC_V1").Asid,  [2 2 0 0 0 0 0 0 0 0]')
+        V.AsrSamplesAVoltSrm.add(S("AC_V12").Asid, [0 0 0 2 2 0 0 0 0 0]'+2)
+        V.AsrSamplesAVoltSrm.add(S("AC_V23").Asid, [0 0 0 0 0 0 2 2 0 0]'+2)
         V.zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1 1 1]';
         V.bdm                       = [0 0 0 0 0 0 0 0 0 0]';
         V.dlr                       = [0 0 0 0 0 0 0 0 0 0]';
@@ -328,11 +328,11 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         %
         V.tt2000Ar                  = [10:17]' * 1e9;
         V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 8, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid,  [0 0 2 2 0 0 0 0]')
-        V.AsrSamplesAVoltSrm.add(C.DC_V12.Asid, [0 0 0 0 0 0 2 2]'+2)
-        V.AsrSamplesAVoltSrm.add(C.DC_V23.Asid, [0 0 0 0 0 0 0 0]'+2)
-        V.AsrSamplesAVoltSrm.add(C.DC_V2.Asid,  [2 2 0 0 0 0 0 0]')
-        V.AsrSamplesAVoltSrm.add(C.DC_V3.Asid,  [0 0 0 0 2 2 0 0]')
+        V.AsrSamplesAVoltSrm.add(S("DC_V1").Asid,  [0 0 2 2 0 0 0 0]')
+        V.AsrSamplesAVoltSrm.add(S("DC_V12").Asid, [0 0 0 0 0 0 2 2]'+2)
+        V.AsrSamplesAVoltSrm.add(S("DC_V23").Asid, [0 0 0 0 0 0 0 0]'+2)
+        V.AsrSamplesAVoltSrm.add(S("DC_V2").Asid,  [2 2 0 0 0 0 0 0]')
+        V.AsrSamplesAVoltSrm.add(S("DC_V3").Asid,  [0 0 0 0 2 2 0 0]')
         V.zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1]';
         V.bdm                       = [0 0 0 0 4 4 4 4]';
         V.dlr                       = [0 0 0 0 0 0 0 0]';
@@ -360,17 +360,17 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         %
         V.tt2000Ar                  = [10 11]' * 1e9;
         V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 2, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid, ...
+        V.AsrSamplesAVoltSrm.add(S("DC_V1").Asid, ...
           [
           [2 2 2 0 0 0 0] + 0; ...   % Saturated
           [0 0 0 2 2 2 2] + 0;
           ])
-        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid, ...
+        V.AsrSamplesAVoltSrm.add(S("AC_V12").Asid, ...
           [
           [0 0 0 0 0 0 0] + 4; ...
           [0 0 0 2 2 2 2] + 6;
           ]+1)
-        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid, ...
+        V.AsrSamplesAVoltSrm.add(S("AC_V23").Asid, ...
           [
           [0 0 0 0 0 0 0] + 4; ...
           [0 0 0 2 2 2 2] + 6;
@@ -400,21 +400,21 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         %
         V.tt2000Ar                  = [10:13]' * 1e9;
         V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 4, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid, ...
+        V.AsrSamplesAVoltSrm.add(S("DC_V1").Asid, ...
           [
           [0 0 0 0 0 0 0] + 0; ...
           [0 2 2 2 2 2 2] + 0; ...
           [0 0 0 0 0 0 0] + 0; ...
           [0 0 0 2 2 2 2] + 0;
           ])
-        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid, ...
+        V.AsrSamplesAVoltSrm.add(S("AC_V12").Asid, ...
           [
           [2 0 0 0 0 0 0] + 4; ...   % Saturated.
           [0 2 2 2 2 2 2] + 4; ...
           [2 2 2 0 0 0 0] + 6; ...   % Saturated.
           [0 0 0 2 2 2 2] + 6;
           ]+1)
-        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid, ...
+        V.AsrSamplesAVoltSrm.add(S("AC_V23").Asid, ...
           [
           [0 0 0 0 0 0 0] + 4; ...
           [0 2 2 2 2 2 2] + 4; ...

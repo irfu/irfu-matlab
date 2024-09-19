@@ -184,7 +184,7 @@ classdef dc
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
         "bicas.proc.L1L2.AntennaSignalId", nRecords, 'CONSTANT', ...
         nan(nRecords, nSamplesPerRecordChannel), ...
-        bicas.const.C.ASID_ARRAY);
+        bicas.sconst.C.ASID_ARRAY);
 
       iCalibLZv = Cal.get_BIAS_calibration_time_L(Dcip.Zv.Epoch);
       iCalibHZv = Cal.get_BIAS_calibration_time_H(Dcip.Zv.Epoch);
@@ -412,12 +412,12 @@ classdef dc
       end
       irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel.
 
-      if isequaln(A.Ssid, bicas.const.C.SSID.UNKNOWN)
+      if isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
         samplesAVolt = nan(size(A.samplesTm));
 
-      elseif isequaln(A.Ssid, bicas.const.C.SSID.GND) || ...
-          isequaln(A.Ssid, bicas.const.C.SSID.REF25V)
+      elseif isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("GND")) || ...
+          isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("REF25V"))
         % ==> No calibration.
         % NOTE: samplesTm stores TM units using float!
         samplesAVolt = A.samplesTm;

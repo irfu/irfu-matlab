@@ -72,18 +72,18 @@ classdef demuxer
       assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FPArray') && strcmp(bdmFpa.mc, 'uint8'))
       assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FPArray') && strcmp(dlrFpa.mc, 'logical'))
 
-      C = bicas.const.C.ROUTING;
+      R = bicas.sconst.C.S_ROUTING_DICT;
 
       dlrFloat = dlrFpa.logical2doubleNan();
       if isnan(dlrFloat)
-        C.DC_V1x = C.UNKNOWN_TO_NOWHERE;
-        C.AC_V1x = C.UNKNOWN_TO_NOWHERE;
+        DC_V1x = R("UNKNOWN_TO_NOWHERE");
+        AC_V1x = R("UNKNOWN_TO_NOWHERE");
       elseif dlrFloat
-        C.DC_V1x = C.DC_V13;
-        C.AC_V1x = C.AC_V13;
+        DC_V1x = R("DC_V13");
+        AC_V1x = R("AC_V13");
       else
-        C.DC_V1x = C.DC_V12;
-        C.AC_V1x = C.AC_V12;
+        DC_V1x = R("DC_V12");
+        AC_V1x = R("AC_V12");
       end
 
       % IMPLEMENTATION NOTE: switch-case statement does not work for NaN.
@@ -95,48 +95,48 @@ classdef demuxer
         case 0   % "Standard operation" : We have all information.
 
           % Summarize the routing.
-          RoutingArray(1) = C.DC_V1;
-          RoutingArray(2) = C.DC_V1x;
-          RoutingArray(3) = C.DC_V23;
+          RoutingArray(1) = R("DC_V1");
+          RoutingArray(2) =    DC_V1x;
+          RoutingArray(3) = R("DC_V23");
 
         case 1   % Probe 1 fails
 
-          RoutingArray(1) = C.DC_V2;
-          RoutingArray(2) = C.DC_V3;
-          RoutingArray(3) = C.DC_V23;
+          RoutingArray(1) = R("DC_V2");
+          RoutingArray(2) = R("DC_V3");
+          RoutingArray(3) = R("DC_V23");
 
           % NOTE: Can not derive anything extra for DC. BLTS 1-3
           % contain redundant data (regardless of DLR).
 
         case 2   % Probe 2 fails
 
-          RoutingArray(1) = C.DC_V1;
-          RoutingArray(2) = C.DC_V3;
-          RoutingArray(3) = C.DC_V1x;
+          RoutingArray(1) = R("DC_V1");
+          RoutingArray(2) = R("DC_V3");
+          RoutingArray(3) =   DC_V1x;
 
         case 3   % Probe 3 fails
 
-          RoutingArray(1) = C.DC_V1;
-          RoutingArray(2) = C.DC_V2;
-          RoutingArray(3) = C.DC_V1x;
+          RoutingArray(1) = R("DC_V1");
+          RoutingArray(2) = R("DC_V2");
+          RoutingArray(3) =    DC_V1x;
 
         case 4   % Calibration mode 0
 
-          RoutingArray(1) = C.DC_V1;
-          RoutingArray(2) = C.DC_V2;
-          RoutingArray(3) = C.DC_V3;
+          RoutingArray(1) = R("DC_V1");
+          RoutingArray(2) = R("DC_V2");
+          RoutingArray(3) = R("DC_V3");
 
         case {5,6,7}   % Calibration mode 1/2/3
 
           switch(bdmInt)
             case 5
-              RoutingArray(1) = C.REF25V_TO_DC_V1;
-              RoutingArray(2) = C.REF25V_TO_DC_V2;
-              RoutingArray(3) = C.REF25V_TO_DC_V3;
+              RoutingArray(1) = R("REF25V_TO_DC_V1");
+              RoutingArray(2) = R("REF25V_TO_DC_V2");
+              RoutingArray(3) = R("REF25V_TO_DC_V3");
             case {6,7}
-              RoutingArray(1) = C.GND_TO_DC_V1;
-              RoutingArray(2) = C.GND_TO_DC_V2;
-              RoutingArray(3) = C.GND_TO_DC_V3;
+              RoutingArray(1) = R("GND_TO_DC_V1");
+              RoutingArray(2) = R("GND_TO_DC_V2");
+              RoutingArray(3) = R("GND_TO_DC_V3");
           end
 
         case BDM_INT_FV
@@ -146,9 +146,9 @@ classdef demuxer
           % since this behaviour is probably not very obvious to
           % the user, the code effectively deletes the information
           % instead.
-          RoutingArray(1) = C.UNKNOWN_TO_NOWHERE;
-          RoutingArray(2) = C.UNKNOWN_TO_NOWHERE;
-          RoutingArray(3) = C.UNKNOWN_TO_NOWHERE;
+          RoutingArray(1) = R("UNKNOWN_TO_NOWHERE");
+          RoutingArray(2) = R("UNKNOWN_TO_NOWHERE");
+          RoutingArray(3) = R("UNKNOWN_TO_NOWHERE");
 
           % NOTE: The routing of BLTS 4 & 5 is identical for all BDMs
           % (but does depend on the DLR). Can therefore route them
@@ -159,8 +159,8 @@ classdef demuxer
             'Illegal argument value bdm=%g.', bdm)
       end    % switch
 
-      RoutingArray(4) = C.AC_V1x;
-      RoutingArray(5) = C.AC_V23;
+      RoutingArray(4) = AC_V1x;
+      RoutingArray(5) = R("AC_V23");
     end
 
 
@@ -248,7 +248,7 @@ classdef demuxer
       assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
 
       % Shorten variable names.
-      C     = bicas.const.C.ASID;
+      A     = bicas.sconst.C.S_ASID_DICT;
       AsSrm = AsrSamplesAVoltSrm;
 
       %================
@@ -257,7 +257,7 @@ classdef demuxer
       % AC ASRs are separate from DC. Does not have to be in loop.
       % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
       % nFnAfter == 9 condition does not work.
-      AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.AC_V13, C.AC_V12, C.AC_V23);
+      AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("AC_V13"), A("AC_V12"), A("AC_V23"));
 
       %================
       % Derive DC ASRs
@@ -268,11 +268,11 @@ classdef demuxer
         % deriving diffs since it is better to derive a diff from
         % (initially available) diffs rather than singles, directly or
         % indirectly, if possible.
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V13, C.DC_V12, C.DC_V23);
+        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V13"), A("DC_V12"), A("DC_V23"));
 
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V1,  C.DC_V12, C.DC_V2);
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V1,  C.DC_V13, C.DC_V3);
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, C.DC_V2,  C.DC_V23, C.DC_V3);
+        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V1"),  A("DC_V12"), A("DC_V2"));
+        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V1"),  A("DC_V13"), A("DC_V3"));
+        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V2"),  A("DC_V23"), A("DC_V3"));
         nAsidAfter = AsSrm.numEntries;
 
         if (nAsidBefore == nAsidAfter) || (nAsidAfter == 9)
@@ -296,7 +296,7 @@ classdef demuxer
       % using a future bicas.utils.SameSizeTypeMap instead.
       tempNaN = nan(size(AsrSamplesAVoltSrm(keyArray)));
 
-      for Asid = bicas.const.C.ASID_ARRAY'
+      for Asid = bicas.sconst.C.ASID_ARRAY'
         if ~AsSrm.isKey(Asid)
           AsSrm.add(Asid, tempNaN);
         end
