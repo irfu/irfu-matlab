@@ -37,6 +37,7 @@ classdef AntennaSignalId
   % PROPOSAL: Separate class file for storing ASID/SSID/SDID constants.
   %   PRO: Shorter path to constants.
   %   PRO: Better overview.
+  %   PRO: Can use the same loop for iterating over all ASRs.
   %   PROPOSAL: Use bicas.const. Use prefixes to distinguish between classes.
 
 
@@ -58,6 +59,11 @@ classdef AntennaSignalId
 
 
 
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(SetAccess=immutable, GetAccess=public)
     % String constant that represents the type of signal (single/diff, DC/AC).
     category
@@ -73,6 +79,11 @@ classdef AntennaSignalId
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
 
 

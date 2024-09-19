@@ -191,10 +191,10 @@ classdef dc
 
 
 
-      %======================================================================
+      %========================================================================
       % (1) Find continuous subsequences of records with identical settings.
       % (2) Process data separately for each such sequence.
-      % ----------------------------------------------------------
+      % --------------------------------------------------------------------
       % NOTE: Just finding continuous subsequences can take a significant
       %       amount of time.
       % NOTE: Empirically, this is not useful for real LFR SWF datasets where
@@ -202,7 +202,7 @@ classdef dc
       %       the subsequences are all 1 record long.
       %
       % SS = Subsequence
-      %======================================================================
+      %========================================================================
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         Dcip.Zv.bdmFpa.int2doubleNan(), ...
         Dcip.Zv.isAchgFpa.logical2doubleNan(), ...
@@ -274,6 +274,8 @@ classdef dc
           %   NOTE: Can not use irf.str.assist_print_table() since
           %         it requires the entire table to pre-exist before execution.
           %   PROPOSAL: Print after all iterations.
+          % PROPOSAL: Move logging to
+          %           bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence().
           %
           % NOTE: DIFF_GAIN needs three characters to print the string "NaN".
           L.logf('info', ['Records %8i-%8i : %s -- %s', ...
@@ -307,6 +309,14 @@ classdef dc
 
     % Calibrate and demux all BLTS channels for one subsequence with various
     % constant settings/values.
+    %
+    % ARGUMENTS
+    % =========
+    % Cv
+    %       Constant values. Struct with (scalar) values which do not vary by
+    %       CDF record.
+    % Vv
+    %       Varying values. Struct with values which do vary by CDF record.
     function AsrSamplesAVoltSrm = calibrate_demux_voltages_subsequence(Cv, Vv, Cal)
       % PROPOSAL: Rename "subsequence".
       %   ~time interval

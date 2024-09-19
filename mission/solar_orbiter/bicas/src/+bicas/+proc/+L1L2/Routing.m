@@ -71,6 +71,7 @@ classdef Routing
   methods(Access=public)
 
 
+
     % ARGUMENTS
     % =========
     % Syntax 1: Ssid

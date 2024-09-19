@@ -18,12 +18,14 @@ classdef SignalSourceId
 
 
 
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(SetAccess=immutable, GetAccess=public)
     Asid
   end
-
-
-
   properties(SetAccess=immutable, GetAccess=private)
     % NOTE: Private value. Value can (and should) be indirectly accessed by
     %       comparing the object (isequaln) with one of the object constants.
@@ -32,6 +34,11 @@ classdef SignalSourceId
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
 
 

@@ -21,6 +21,11 @@ classdef SignalDestinationId
 
 
 
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(SetAccess=immutable, GetAccess=public)
     % ASID object or empty.
     Asid
@@ -32,6 +37,11 @@ classdef SignalDestinationId
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
 
 
