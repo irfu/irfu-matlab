@@ -12,12 +12,6 @@ classdef SignalSourceId
 
 
 
-  properties(GetAccess=public, Constant)
-    C = bicas.proc.L1L2.SignalSourceId.init_const()
-  end
-
-
-
   %#####################
   %#####################
   % INSTANCE PROPERTIES
@@ -65,25 +59,6 @@ classdef SignalSourceId
 
 
   end    % methods(Access=public)
-
-
-
-  methods(Access=private, Static)
-
-
-
-    function C = init_const()
-      C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
-        @(Asid) (bicas.proc.L1L2.SignalSourceId(Asid)));
-
-      C.REF25V   = bicas.proc.L1L2.SignalSourceId('2.5V_REF');
-      C.GND      = bicas.proc.L1L2.SignalSourceId('GND');
-      C.UNKNOWN  = bicas.proc.L1L2.SignalSourceId('UNKNOWN');
-    end
-
-
-
-  end
 
 
 

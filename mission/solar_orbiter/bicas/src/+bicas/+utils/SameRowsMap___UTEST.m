@@ -101,9 +101,9 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
 
     function test_object_keys(testCase)
-      Asid1 = bicas.proc.L1L2.AntennaSignalId.C.DC_V1;
-      Asid2 = bicas.proc.L1L2.AntennaSignalId.C.DC_V12;
-      Asid3 = bicas.proc.L1L2.AntennaSignalId.C.DC_V3;
+      Asid1 = bicas.const.C.ASID.DC_V1;
+      Asid2 = bicas.const.C.ASID.DC_V12;
+      Asid3 = bicas.const.C.ASID.DC_V3;
       Srm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 1, 'EMPTY');
 
       Srm.add(Asid1, 1)
@@ -258,8 +258,8 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       Srm = bicas.utils.SameRowsMap('string', 3, 'CONSTANT', [1,2;3,4;5,6], ["K1"; "K2"]);
       disp(Srm)
 
-      Asid1 = bicas.proc.L1L2.AntennaSignalId.C.DC_V1;
-      Asid2 = bicas.proc.L1L2.AntennaSignalId.C.DC_V12;
+      Asid1 = bicas.const.C.ASID.DC_V1;
+      Asid2 = bicas.const.C.ASID.DC_V12;
       Srm = bicas.utils.SameRowsMap('string', 1, 'CONSTANT', [Asid1, Asid2], ["K1"; "K2"]);
       disp(Srm)
     end

@@ -33,7 +33,13 @@ classdef const
   %
   % PROPOSAL: Derive lists of datasets using
   %           bicas.classify_BICAS_L1_L1R_to_L2_DSI() or reverse.
-
+  %
+  % PROPOSAL: Store ASID, SSID, SDID constants in dictionaries.
+  %   CON: Longer code to invoke object constants.
+  %     Ex: C.DC_V1 --> C("DC_V1") ==> -1+2+2=3 extra characters.
+  %   PRO: Can abolish code for generating arrays of constant.
+  %   PRO: More consistent with potential future dictionaries for
+  %        integer<-->ASID/SSID/SDID.
 
 
 
@@ -210,6 +216,10 @@ classdef const
       'SOLO_L2_RPW-LFR-SURV-SWF-E', ...
       'SOLO_L2_RPW-TDS-LFM-RSWF-E'}
     RCT_DSI = 'SOLO_CAL_RPW-BIAS';
+
+
+
+    C = bicas.const.init_const();
 
 
 
@@ -844,6 +854,63 @@ classdef const
 
 
     end    % init_GA_MODS_DB
+
+
+
+    % Defines all constants for ASID, SSID, SDID, and Routing.
+    %
+    % IMPLEMENTATION NOTE: Defining one constant struct, which contains
+    % multiple constants as fields. Makes it possible to access constants
+    % through a variable copy of this constant rather than using the long
+    % qualifiers.
+    function C = init_const()
+      C.ASID = struct();
+      C.SSID = struct();
+      C.SDID = struct();
+
+      function add_ASR(fn, asidCategory, asidAntennas)
+        Asid = bicas.proc.L1L2.AntennaSignalId(asidCategory, asidAntennas);
+        Ssid = bicas.proc.L1L2.SignalSourceId(Asid);
+
+        C.ASID.(fn)    = Asid;
+        C.SSID.(fn)    = Ssid;
+        C.SDID.(fn)    = bicas.proc.L1L2.SignalDestinationId(Asid);
+        C.ROUTING.(fn) = bicas.proc.L1L2.Routing(Ssid);
+      end
+
+      % =====================================
+      % Add every possible unique ASID object
+      % =====================================
+      add_ASR("DC_V1",  'DC_SINGLE', [1   ]);
+      add_ASR("DC_V2",  'DC_SINGLE', [2   ]);
+      add_ASR("DC_V3",  'DC_SINGLE', [3   ]);
+
+      add_ASR("DC_V12", 'DC_DIFF',   [1, 2]);
+      add_ASR("DC_V13", 'DC_DIFF',   [1, 3]);
+      add_ASR("DC_V23", 'DC_DIFF',   [2, 3]);
+
+      add_ASR("AC_V12", 'AC_DIFF',   [1, 2]);
+      add_ASR("AC_V13", 'AC_DIFF',   [1, 3]);
+      add_ASR("AC_V23", 'AC_DIFF',   [2, 3]);
+
+      C.SSID.REF25V  = bicas.proc.L1L2.SignalSourceId('2.5V_REF');
+      C.SSID.GND     = bicas.proc.L1L2.SignalSourceId('GND');
+      C.SSID.UNKNOWN = bicas.proc.L1L2.SignalSourceId('UNKNOWN');
+
+      C.SDID.NOWHERE = bicas.proc.L1L2.SignalDestinationId('NOWHERE');
+
+      C.ROUTING.REF25V_TO_DC_V1    = bicas.proc.L1L2.Routing(C.SSID.REF25V,  C.SDID.DC_V1);
+      C.ROUTING.REF25V_TO_DC_V2    = bicas.proc.L1L2.Routing(C.SSID.REF25V,  C.SDID.DC_V2);
+      C.ROUTING.REF25V_TO_DC_V3    = bicas.proc.L1L2.Routing(C.SSID.REF25V,  C.SDID.DC_V3);
+      C.ROUTING.GND_TO_DC_V1       = bicas.proc.L1L2.Routing(C.SSID.GND,     C.SDID.DC_V1);
+      C.ROUTING.GND_TO_DC_V2       = bicas.proc.L1L2.Routing(C.SSID.GND,     C.SDID.DC_V2);
+      C.ROUTING.GND_TO_DC_V3       = bicas.proc.L1L2.Routing(C.SSID.GND,     C.SDID.DC_V3);
+      C.ROUTING.UNKNOWN_TO_NOWHERE = bicas.proc.L1L2.Routing(C.SSID.UNKNOWN, C.SDID.NOWHERE);
+
+      ca = struct2cell(C.ASID);   C.ASID_ARRAY = [ca{:}]';
+      %ca = struct2cell(C.SSID);   C.SSID_ARRAY = [ca{:}]';
+      %ca = struct2cell(C.SDID);   C.SDID_ARRAY = [ca{:}]';
+    end
 
 
 

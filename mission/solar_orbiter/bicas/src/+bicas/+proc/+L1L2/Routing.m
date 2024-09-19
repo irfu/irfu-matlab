@@ -37,17 +37,6 @@ classdef Routing
 
 
 
-  %###################
-  %###################
-  % STATIC PROPERTIES
-  %###################
-  %###################
-  properties(GetAccess=public, Constant)
-    C = bicas.proc.L1L2.Routing.init_const();
-  end
-
-
-
   %#####################
   %#####################
   % INSTANCE PROPERTIES
@@ -104,41 +93,6 @@ classdef Routing
 
 
   end    % methods(Access=public)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Access=private, Static)
-
-
-
-    function C = init_const()
-      % PROPOSAL: Distinguish between different "channels" for 2.5V Ref
-      %           and GND in the source (SSID).
-
-      SSID = bicas.proc.L1L2.SignalSourceId.C;
-      SDID = bicas.proc.L1L2.SignalDestinationId.C;
-
-      C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants(...
-        @(Asid) (bicas.proc.L1L2.Routing(...
-        bicas.proc.L1L2.SignalSourceId(Asid))));
-
-      C.REF25V_TO_DC_V1    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V1);
-      C.REF25V_TO_DC_V2    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V2);
-      C.REF25V_TO_DC_V3    = bicas.proc.L1L2.Routing(SSID.REF25V,  SDID.DC_V3);
-      C.GND_TO_DC_V1       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V1);
-      C.GND_TO_DC_V2       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V2);
-      C.GND_TO_DC_V3       = bicas.proc.L1L2.Routing(SSID.GND,     SDID.DC_V3);
-      C.UNKNOWN_TO_NOWHERE = bicas.proc.L1L2.Routing(SSID.UNKNOWN, SDID.NOWHERE);
-    end
-
-
-
-  end
 
 
 

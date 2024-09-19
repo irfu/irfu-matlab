@@ -293,7 +293,7 @@ classdef L1L2
 
 
 
-      A = bicas.proc.L1L2.AntennaSignalId.C;
+      A = bicas.const.C.ASID;
 
 
 

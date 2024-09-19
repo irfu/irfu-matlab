@@ -8,11 +8,6 @@
 %     2.5V Ref, or unknown).
 %
 %
-% NOTE: The constant field names used in bicas.proc.L1L2.AntennaSignalId.C
-% auto-propagate(!) to constant field names in bicas.proc.L1L2.SignalSourceId.C
-% and bicas.proc.L1L2.SignalDestinationId.C.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef AntennaSignalId
@@ -20,43 +15,6 @@ classdef AntennaSignalId
   %   CON: BIAS specification, Table 4 uses abbreviation "V12" etc. for diffs.
   %
   % PROPOSAL: Rename category-->categoryId
-  %
-  % PROPOSAL: Store ASID constants in dictionary.
-  %   PROPOSAL: get_derived_ASR_constants() should return dictionary.
-  %   CON: Longer code to invoke object constants.
-  %     Ex: C.DC_V1 --> C("DC_V1") ==> -1+2+2=3 extra characters.
-  %   PRO: Can abolish both field and method
-  %     ALL_ARRAY = bicas.proc.L1L2.AntennaSignalId.init_const_array()
-  %     Same for SSID, SDID.
-  %   PRO: More consistent with potential future dictionary for
-  %        integer-->ASID/SSID/SDID.
-  %
-  % PROPOSAL: Private ASID/SSID/SDID constructors. Only instantiate objects for
-  %           unique ASID/SSID/SDID ONCE.
-  %
-  % PROPOSAL: Separate class file for storing ASID/SSID/SDID constants.
-  %   PRO: Shorter path to constants.
-  %   PRO: Better overview.
-  %   PRO: Can use the same loop for iterating over all ASRs.
-  %   PROPOSAL: Use bicas.const. Use prefixes to distinguish between classes.
-
-
-
-  properties(Access=public, Constant)
-    % IMPLEMENTATION NOTE: Defining one constant struct, which contains
-    % multiple constants as fields. Advantages:
-    % (1) Some constants need to be defined using other constants (in this
-    %     class) and MATLAB then requires that one uses the full qualifiers,
-    %     i.e. bicas.proc.L1L2.AntennaSignalId.* which makes the code very
-    %     long. One can also *not* use "import".
-    % (2) Makes it possible to access constants through a variable copy of
-    %     this constant rather than using the long qualifiers.
-    C = bicas.proc.L1L2.AntennaSignalId.init_const()
-
-    % Array of all ASIDs in "C".
-    ALL_ARRAY = bicas.proc.L1L2.AntennaSignalId.init_const_array()
-  end
-
 
 
   %#####################
@@ -151,73 +109,6 @@ classdef AntennaSignalId
 
 
   end    % methods(Access=public)
-
-
-
-  methods(Access=public, Static)
-
-
-
-    % Function for quickly generating struct of constants with the same names
-    % (field names) as the ASID constants (bicas.proc.L1L2.AntennaSignalId.C),
-    % and derived from the corresponding ASID constants. Can be used by other
-    % classes that define immutable objects using ASIDs.
-    function C = get_derived_ASR_constants(fh)
-      ASID = bicas.proc.L1L2.AntennaSignalId.C;
-      C    = struct();
-
-      for fnCa = fieldnames(ASID)'
-        fn     = fnCa{1};
-        C.(fn) = fh(ASID.(fn));
-      end
-    end
-
-
-
-  end
-
-
-
-  methods(Access=private, Static)
-
-
-
-    function C = init_const()
-      C = struct();
-
-      function add(fn, asidCategory, asidAntennas)
-        Asid = bicas.proc.L1L2.AntennaSignalId(...
-          asidCategory, asidAntennas);
-
-        C.(fn)                  = Asid;
-      end
-
-      % =====================================
-      % Add every possible unique ASID object
-      % =====================================
-      add("DC_V1",  'DC_SINGLE', [1   ]);
-      add("DC_V2",  'DC_SINGLE', [2   ]);
-      add("DC_V3",  'DC_SINGLE', [3   ]);
-
-      add("DC_V12", 'DC_DIFF',   [1, 2]);
-      add("DC_V13", 'DC_DIFF',   [1, 3]);
-      add("DC_V23", 'DC_DIFF',   [2, 3]);
-
-      add("AC_V12", 'AC_DIFF',   [1, 2]);
-      add("AC_V13", 'AC_DIFF',   [1, 3]);
-      add("AC_V23", 'AC_DIFF',   [2, 3]);
-    end
-
-
-
-    function AsidArray = init_const_array()
-      ca = struct2cell(bicas.proc.L1L2.AntennaSignalId.C);
-      AsidArray = [ca{:}]';
-    end
-
-
-
-  end
 
 
 

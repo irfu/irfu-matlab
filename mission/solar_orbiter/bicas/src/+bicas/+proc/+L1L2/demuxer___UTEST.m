@@ -19,7 +19,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % (iChannel, 1) = ASID ID string.
       % (iChannel, 2) = Sample value (that is consistent with other
       %                 channels).
-      A = bicas.proc.L1L2.AntennaSignalId.C;
+      A = bicas.const.C.ASID;
       TEST_DATA_CA = { ...
         A.DC_V1,  10; ...
         A.DC_V2,  11; ...
@@ -68,8 +68,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     % two functions were split up.
     function test_get_routings_calibrated_BLTSs_to_all_ASRs(testCase)
 
-      A = bicas.proc.L1L2.AntennaSignalId.C;
-      R = bicas.proc.L1L2.Routing.C;
+      A = bicas.const.C.ASID;
+      R = bicas.const.C.ROUTING;
 
       % =========
       % Test data
@@ -253,7 +253,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
     function test_complement_ASR(testCase)
 
-      C = bicas.proc.L1L2.AntennaSignalId.C;
+      C = bicas.const.C.ASID;
 
 
 

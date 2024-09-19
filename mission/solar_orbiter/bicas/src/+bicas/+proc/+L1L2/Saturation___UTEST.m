@@ -32,7 +32,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       end
 
       function main()
-        S = bicas.proc.L1L2.SignalSourceId.C;
+        S = bicas.const.C.SSID;
 
         for isAchg = [0, 1, NaN]
           % DC single, 1x6
@@ -91,7 +91,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       end
 
       function main()
-        S = bicas.proc.L1L2.SignalSourceId.C;
+        S = bicas.const.C.SSID;
 
         % IMPLEMENTATION NOTE: Maybe somewhat overkill since
         % test_get_TSF() tests the different types of thresholds. The
@@ -153,7 +153,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       end
 
       function main()
-        S = bicas.proc.L1L2.SignalSourceId.C;
+        S = bicas.const.C.SSID;
 
         % IMPLEMENTATION NOTE: Maybe somewhat overkill since
         % test_get_TSF() tests the different types of thresholds. The
@@ -227,7 +227,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(actIsSaturatedAr, expIsSaturatedAr)
       end
 
-      C = bicas.proc.L1L2.SignalSourceId.C;
+      C = bicas.const.C.SSID;
       ALL_ENABLED = true;
       %ALL_ENABLED = false;
 

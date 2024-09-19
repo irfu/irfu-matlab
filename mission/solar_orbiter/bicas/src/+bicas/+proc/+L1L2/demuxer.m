@@ -72,7 +72,7 @@ classdef demuxer
       assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FPArray') && strcmp(bdmFpa.mc, 'uint8'))
       assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FPArray') && strcmp(dlrFpa.mc, 'logical'))
 
-      C = bicas.proc.L1L2.Routing.C;
+      C = bicas.const.C.ROUTING;
 
       dlrFloat = dlrFpa.logical2doubleNan();
       if isnan(dlrFloat)
@@ -248,7 +248,7 @@ classdef demuxer
       assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
 
       % Shorten variable names.
-      C     = bicas.proc.L1L2.AntennaSignalId.C;
+      C     = bicas.const.C.ASID;
       AsSrm = AsrSamplesAVoltSrm;
 
       %================
@@ -296,7 +296,7 @@ classdef demuxer
       % using a future bicas.utils.SameSizeTypeMap instead.
       tempNaN = nan(size(AsrSamplesAVoltSrm(keyArray)));
 
-      for Asid = bicas.proc.L1L2.AntennaSignalId.ALL_ARRAY'
+      for Asid = bicas.const.C.ASID_ARRAY'
         if ~AsSrm.isKey(Asid)
           AsSrm.add(Asid, tempNaN);
         end
