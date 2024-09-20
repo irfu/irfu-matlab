@@ -363,36 +363,31 @@ classdef dc
         %      variables version for (a) entire interval of time and (b)
         %      the selected interval of time.
         % ==============================================================
-
-        % CV = Constant Values = Values which are constant for the
-        %      entire subsequence of records.
-        Cv = [];
-        Cv.isAchgFpa      = Dcip.Zv.isAchgFpa(              iRec1);
-        Cv.freqHz         = Dcip.Zv.freqHz(                 iRec1);
-        Cv.iLsf           = Dcip.Zv.iLsf(                   iRec1);
-        Cv.zvcti          = Dcip.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
-        Cv.ufv            = Dcip.Zv.ufv(                    iRec1);
-        Cv.bltsKSsidArray = bltsKSsidArray(                 iRec1, :);
-        Cv.bltsKSdidArray = bltsKSdidArray(                 iRec1, :);
-
-        % NOTE: Excluding Dcip.Zv.lrx since it is only need for
-        %       splitting time/CDF record intervals, not for calibration
-        %       since calibration can handle sequences of only NaN.
-        Cv.iCalibL      = iCalibLZv(iRec1);
-        Cv.iCalibH      = iCalibHZv(iRec1);
-        % NOTE: Below variables do not vary over CDF records anyhow.
-        Cv.hasSwfFormat = Dcip.hasSwfFormat;
-        Cv.isLfr        = Dcip.isLfr;
-        Cv.isTdsCwf     = Dcip.isTdsCwf;
-
-        % VV = (Record-)Varying Values
-        Vv = [];
-        Vv.Epoch                    = Dcip.Zv.Epoch(                 iRec1:iRec2);
-        Vv.bltsSamplesTm            = Dcip.Zv.bltsSamplesTm(         iRec1:iRec2, :, :);
-        Vv.zvNValidSamplesPerRecord = Dcip.Zv.nValidSamplesPerRecord(iRec1:iRec2);
-
-        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(...
-          Cv, Vv, Cal);
+        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence( ...
+          Cal, ...
+          ... % ===============================================================
+          ... % NOTE: Variables which do VARY over CDF records.
+          isAchgFpa      = Dcip.Zv.isAchgFpa(              iRec1), ...
+          freqHz         = Dcip.Zv.freqHz(                 iRec1), ...
+          iLsf           = Dcip.Zv.iLsf(                   iRec1), ...
+          zvcti          = Dcip.Zv.CALIBRATION_TABLE_INDEX(iRec1, :), ...
+          ufv            = Dcip.Zv.ufv(                    iRec1), ...
+          bltsKSsidArray = bltsKSsidArray(                 iRec1, :), ...
+          bltsKSdidArray = bltsKSdidArray(                 iRec1, :), ...
+          ... % NOTE: Excluding Dcip.Zv.lrx since it is only need for
+          ... %       splitting time/CDF record intervals, not for calibration
+          ... %       since calibration can handle sequences of only NaN.
+          iCalibL        = iCalibLZv(iRec1), ...
+          iCalibH        = iCalibHZv(iRec1), ...
+          ... % ===============================================================
+          ... % NOTE: Variables which do not vary over CDF records.
+          hasSwfFormat   = Dcip.hasSwfFormat, ...
+          isLfr          = Dcip.isLfr, ...
+          isTdsCwf       = Dcip.isTdsCwf, ...
+          ...   % Variables which vary by CDF records.
+          Epoch                    = Dcip.Zv.Epoch(                 iRec1:iRec2), ...
+          bltsSamplesTm            = Dcip.Zv.bltsSamplesTm(         iRec1:iRec2, :, :), ...
+          zvNValidSamplesPerRecord = Dcip.Zv.nValidSamplesPerRecord(iRec1:iRec2));
 
         % Add demuxed sequence to the to-be complete set of records.
         AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
@@ -408,12 +403,34 @@ classdef dc
     % ARGUMENTS
     % =========
     % Cv
-    %       Constant values. Struct with (scalar) values which do not vary by
-    %       CDF record.
+    %       Constant values. Scalar values which do NOT VARY by CDF record.
     % Vv
-    %       Varying values. Struct with values which do vary by CDF record.
-    function AsrSamplesAVoltSrm = calibrate_demux_voltages_subsequence(Cv, Vv, Cal)
-      % PROPOSAL: Use keyword arguments instead of structs.
+    %       Varying values. Struct with values which DO VARY by CDF record.
+    function AsrSamplesAVoltSrm = calibrate_demux_voltages_subsequence(Cal, Cv, Vv)
+      arguments
+        Cal
+        %
+        % NOTE: Excluding LRX since it is only need for splitting time/CDF
+        %       record intervals, not for calibration since calibration can
+        %       handle sequences of only NaN.
+        Cv.isAchgFpa
+        Cv.freqHz
+        Cv.iLsf
+        Cv.zvcti
+        Cv.ufv
+        Cv.bltsKSsidArray
+        Cv.bltsKSdidArray
+        Cv.iCalibL
+        Cv.iCalibH
+        % NOTE: Below variables do not vary over CDF records anyhow.
+        Cv.hasSwfFormat
+        Cv.isLfr
+        Cv.isTdsCwf
+
+        Vv.Epoch
+        Vv.bltsSamplesTm
+        Vv.zvNValidSamplesPerRecord
+      end
 
       nRows = numel(Vv.Epoch);
 
