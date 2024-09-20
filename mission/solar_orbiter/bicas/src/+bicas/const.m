@@ -43,6 +43,11 @@ classdef const
 
 
 
+  %###########
+  %###########
+  % CONSTANTS
+  %###########
+  %###########
   properties(Constant)
 
     % MATLAB version which shall be used when officially running BICAS (value

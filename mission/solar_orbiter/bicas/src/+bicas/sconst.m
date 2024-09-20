@@ -42,6 +42,9 @@ classdef sconst
     % through a variable copy of this constant rather than using the long
     % qualifiers.
     function C = init_const()
+      % PROPOSAL: Naming convention that is consistent for k<-->s dictionaries.
+      %   PROPOSAL: "O" = object = ASID/SSID/SDID/Routing
+
       C = struct();
       C.S_ASID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.AntennaSignalId');
       C.S_SSID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.SignalSourceId');
@@ -52,7 +55,9 @@ classdef sconst
       C.SDID_S_K_DICT  = configureDictionary('string', 'uint8');
       C.SSID_K_DICT    = configureDictionary('bicas.proc.L1L2.SignalSourceId',      'uint8');
       C.SDID_K_DICT    = configureDictionary('bicas.proc.L1L2.SignalDestinationId', 'uint8');
-      kGlobalArray = [];   % Global list of k values for all classes.
+
+      % Global list of k values for ALL classes. For avoiding collisions.
+      kGlobalArray = [];
 
       function add_ASR(fn, k, asidCategory, asidAntennas)
         Asid = bicas.proc.L1L2.AntennaSignalId(asidCategory, asidAntennas);
@@ -129,7 +134,7 @@ classdef sconst
 
 
 
-  end    % methods(Static, Access=private)
+  end    % methods(Static, Access=public)
 
 
 

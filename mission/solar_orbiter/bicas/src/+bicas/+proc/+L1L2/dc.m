@@ -203,6 +203,10 @@ classdef dc
       %
       % SS = Subsequence
       %========================================================================
+      % PROPOSAL: Do not use irf.utils.split_by_change() for SWF data. It is
+      %           enough to group by identical values (not use continuous
+      %           blocks of CDF records).
+      %   PRO: Faster
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         Dcip.Zv.bdmFpa.int2doubleNan(), ...
         Dcip.Zv.isAchgFpa.logical2doubleNan(), ...
@@ -276,6 +280,8 @@ classdef dc
           %   PROPOSAL: Print after all iterations.
           % PROPOSAL: Move logging to
           %           bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence().
+          % PROPOSAL: Run logging in its own loop (in its own function),
+          %           outside of any processing function.
           %
           % NOTE: DIFF_GAIN needs three characters to print the string "NaN".
           L.logf('info', ['Records %8i-%8i : %s -- %s', ...
@@ -318,9 +324,7 @@ classdef dc
     % Vv
     %       Varying values. Struct with values which do vary by CDF record.
     function AsrSamplesAVoltSrm = calibrate_demux_voltages_subsequence(Cv, Vv, Cal)
-      % PROPOSAL: Rename "subsequence".
-      %   ~time interval
-      %   ~constant settings time interval
+      % PROPOSAL: Use keyword arguments instead of structs.
 
       nRows = numel(Vv.Epoch);
 
