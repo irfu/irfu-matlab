@@ -48,7 +48,9 @@ classdef sconst
       C = struct();
       C.S_ASID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.AntennaSignalId');
       C.S_SSID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.SignalSourceId');
+      C.K_SSID_DICT    = configureDictionary('uint8',  'bicas.proc.L1L2.SignalSourceId');
       C.S_SDID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.SignalDestinationId');
+      C.K_SDID_DICT    = configureDictionary('uint8',  'bicas.proc.L1L2.SignalDestinationId');
       C.S_ROUTING_DICT = configureDictionary('string', 'bicas.proc.L1L2.Routing');
 
       C.SSID_S_K_DICT  = configureDictionary('string', 'uint8');
@@ -81,7 +83,7 @@ classdef sconst
 
         C.S_SSID_DICT(fn)   = Ssid;
         C.SSID_S_K_DICT(fn) = k2;
-        %C.K_SSID_DICT = add_key_value(C.K_SSID_DICT, k+100, Ssid);
+        C.K_SSID_DICT(k2)   = Ssid;
         C.SSID_K_DICT(Ssid) = uint8(k2);
       end
 
@@ -91,7 +93,7 @@ classdef sconst
 
         C.S_SDID_DICT(fn)   = Sdid;
         C.SDID_S_K_DICT(fn) = k2;
-        %C.K_SDID_DICT = add_key_value(C.K_SDID_DICT, k+200, Sdid);
+        C.K_SDID_DICT(k2)   = Sdid;
         C.SDID_K_DICT(Sdid) = uint8(k2);
       end
 
