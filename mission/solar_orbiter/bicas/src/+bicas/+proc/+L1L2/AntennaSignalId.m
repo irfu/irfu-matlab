@@ -108,6 +108,15 @@ classdef AntennaSignalId
 
 
 
+    % IMPLEMENTATION NOTE: Implemented for the purpose of performance testing
+    % potential future refactoring.
+    % function isEqual = eq(obj1, obj2)
+    %   assert(isa(obj2, 'bicas.proc.L1L2.AntennaSignalId'))
+    %   isEqual = isequal(obj1.category, obj2.category) && isequal(obj1.antennas, obj2.antennas);
+    % end
+
+
+
   end    % methods(Access=public)
 
 
