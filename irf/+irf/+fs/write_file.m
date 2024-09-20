@@ -24,7 +24,7 @@ function write_file(filePath, byteArray)
 %          Unicode, ASCII. Might not work as expected.
 
 assert(isa(byteArray, 'uint8'), 'byteArray is not uint8.')
-assert(iscolumn(byteArray))
+assert(iscolumn(byteArray), 'byteArray is not a column array.')
 
 
 

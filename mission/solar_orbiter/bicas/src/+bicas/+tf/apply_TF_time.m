@@ -127,7 +127,7 @@ end
 %================
 % Process signal
 %================
-Drt = bicas.tf.drt(Settings.detrendingDegreeOf, Settings.retrendingEnabled);
+Drt = bicas.tf.Deretrending(Settings.detrendingDegreeOf, Settings.retrendingEnabled);
 y1b = Drt.detrend(y1);
 
 y2b = bicas.tf.apply_TF_kernel(y1b, yKernelB, iKernelOrigin, edgePolicy);

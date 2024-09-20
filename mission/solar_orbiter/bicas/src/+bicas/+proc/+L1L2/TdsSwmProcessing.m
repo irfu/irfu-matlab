@@ -64,37 +64,35 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %==========================================
       % Configure bicas.proc.L1L2.cal.Cal object
       %==========================================
-      % NOTE: TDS L1R never uses CALIBRATION_TABLE_INDEX2
+      % NOTE: TDS L1R never uses ZVCTI2.
       if obj.inputSci.isTdsCwf
-        settingUseCt = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid = 'TDS-CWF';
+        settingUseGactRct = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
+        tdsRcttid         = 'TDS-CWF';
       else
-        settingUseCt = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid = 'TDS-RSWF';
+        settingUseGactRct = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
+        tdsRcttid         = 'TDS-RSWF';
       end
-      useCtRcts = obj.inputSci.isL1r && Bso.get_fv(settingUseCt);
-      useCti2   = false;    % Always false for TDS.
+      useGactRct = obj.inputSci.isL1r && Bso.get_fv(settingUseGactRct);
+      useZvcti2  = false;    % Always false for TDS.
 
-      if useCtRcts
-        % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
-        % NOTE: This should not be regarded as a hack but as
-        % ~normalization to avoid later special cases.
-        zv_BW = uint8(ones(...
-          size(InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, 1), ...
-          1));
+      % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
+      % --
+      % NOTE: This should not be regarded as a hack but as ~normalization to
+      % avoid later special cases.
+      zv_BW = uint8(ones(...
+        size(InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, 1), ...
+        1));
 
-        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
-          tdsRcttid, rctDir, ...
-          InputSciCdf.Ga.CALIBRATION_TABLE, ...
-          InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
-          zv_BW, ...
-          Bso, L);
-      else
-        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
-          {'BIAS', tdsRcttid}, rctDir, Bso, L);
-      end
+      Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
+        useGactRct, tdsRcttid, rctDir, ...
+        InputSciCdf.Ga.CALIBRATION_TABLE, ...
+        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+        zv_BW, ...
+        min(InputSciCdf.Zv.Epoch), ...
+        max(InputSciCdf.Zv.Epoch), ...
+        L);
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useCtRcts, useCti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(Rctdc, useGactRct, useZvcti2, Bso);
 
 
 
@@ -103,14 +101,14 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %==============
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf,              Bso, L);
-      SciPreDc     = obj.process_CDF_to_PreDc(                        InputSciCdf, HkSciTimePd);
-      SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
-      OutputSciCdf = bicas.proc.L1L2.process_PostDc_to_CDF(           SciPreDc, SciPostDc, obj.outputDsi);
+      SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd);
+      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
+      OutputSciCdf = bicas.proc.L1L2.process_DCOP_to_CDF(             SciDcip, SciDcop, obj.outputDsi);
 
 
 
       OutputDatasetsMap = containers.Map();
-      RctdCa = bicas.proc.utils.convert_RctdCaMap_to_CA(RctdCaMap);
+      RctdCa = Rctdc.get_global_RCTD_CA();
       OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCa);
     end
 
@@ -148,7 +146,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %===================================
       % Normalize CALIBRATION_TABLE_INDEX
       %===================================
-      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
+      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_ZVCTI(...
         InSci.Zv, nRecords, obj.inputSciDsi);
 
 
@@ -279,8 +277,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % Convert TDS CDF data (PDs) to PreDc.
-    function PreDc = process_CDF_to_PreDc(obj, InSci, HkSciTime)
+    % Convert TDS CDF data (PDs) to DCIP.
+    function Dcip = process_CDF_to_DCIP(obj, InSci, HkSciTime)
       %
       % BUG?: Does not use CHANNEL_STATUS_INFO.
       % NOTE: BIAS output datasets do not have a variable for the length of
@@ -412,8 +410,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.lrx       = ones(nRecords, 1);
       Zv.BW        = true(nRecords, 1);
 
-      PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
-    end    % process_CDF_to_PreDc
+      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
+    end    % process_CDF_to_DCIP
 
 
 

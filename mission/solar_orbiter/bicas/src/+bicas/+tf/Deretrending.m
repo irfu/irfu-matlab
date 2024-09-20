@@ -2,8 +2,6 @@
 % Class for detrending and retrending a signal e.g. before & after the
 % application of a TF to it.
 %
-% DRT = De/Re-Trending
-%
 %
 % IMPLEMENTATION NOTES
 % ====================
@@ -34,13 +32,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-12
 %
-classdef drt < handle
-  %
+classdef Deretrending < handle
   % PROPOSAL: Better name.
-  %   PRO: "drt" violates current naming conventions.
-  %   Deretrending
-  %   Deretr
-  %   Detrending
+  %   Deretrending -- IMPLEMENTED
   %   DetrendingRetrending
 
 
@@ -72,7 +66,7 @@ classdef drt < handle
 
 
 
-    function obj = drt(detDegreeOf, retEnabled)
+    function obj = Deretrending(detDegreeOf, retEnabled)
       % ASSERTIONS
       assert(obj.state == 0)
       assert(isscalar(detDegreeOf) & isnumeric(detDegreeOf))

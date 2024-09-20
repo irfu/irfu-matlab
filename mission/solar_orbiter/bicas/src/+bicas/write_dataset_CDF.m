@@ -131,7 +131,7 @@ end
 % NOTE: Only uses global attribute values from
 %   (1) GaSubset, and
 %   (2) master CDF.
-% bicas.execute_SWM: derive_output_dataset_GAs() which sets
+% bicas.execute_SWM: get_output_dataset_GAs() which sets
 % global attributes dynamically.
 %
 % NOTE: Assertions require that ZvsSubset contains records of data. Can not

@@ -83,11 +83,9 @@
 % First created 2020-11-04.
 %
 function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
-% PROPOSAL: Return struct.
-%   PRO: Avoid confusing return arguments.
-%   PRO: Easy to add (and to some extent remove) fields while maintaining
-%        backward compatibility.
-%   CON: Locks in field names.
+% PROPOSAL: Move bicas.tf to bicas.proc.L1L2.tf.
+%   PRO: Code only used for L1/L1R-->L2.
+%   CON: Implies that code is less generic.
 %
 % PROPOSAL: Check that data is finite. Only call bicas.tf.apply_TF_freq
 %           if all data is non-finite.
@@ -135,20 +133,27 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 %             non-finite values between intervals of data.
 %       PRO: Good for plotting.
 %
-% PROPOSAL: Abbreviation for splitting by non-finite values (useful for
-%           setting in this file) or fill values (useful for BICAS setting
-%           name).
-%   PROPOSAL: ~split, ~FV, ~nonfinite,
-%   PROPOSAL: SNF = Split by Non-Finite
-%   PROPOSAL: SFV = Split by FV
-%   PROPOSAL: NFS = Non-Finite Splitting
+% PROPOSAL: Better abbbreviation for SNF.
+%   ~split, values, samples, time series
+%   FV
+%     Reflects the sample values in the actual datasets, i.e. what the user
+%     sees. Relevant if using term for settings.
+%     FVs do not represent +-inf.
+%   Non-finite
+%     Reflects the sample values in the input to this function, what the
+%     function actually sees.
+%   --
+%   SNF  = Split by Non-Finite -- IMPLEMENTED
+%   SNFS = Split by Non-Finite Samples
+%   SFV = Split by FV
+%   NFS = Non-Finite Splitting
 
 
 DEFAULT_SETTINGS.detrendingDegreeOf         = -1;
 DEFAULT_SETTINGS.retrendingEnabled          = false;
 DEFAULT_SETTINGS.tfHighFreqLimitFraction    = Inf;
 DEFAULT_SETTINGS.method                     = 'FFT';
-DEFAULT_SETTINGS.kernelEdgePolicy           = 'mirror';
+DEFAULT_SETTINGS.kernelEdgePolicy           = 'MIRROR';
 DEFAULT_SETTINGS.kernelHannWindow           = false;
 DEFAULT_SETTINGS.snfEnabled                 = false;
 DEFAULT_SETTINGS.snfSubseqMinSamples        = 1;
@@ -240,7 +245,7 @@ function [y2, Debug] = apply_TF_with_DRT(dt, y1, tf, Settings)
 %#####################
 % Optionally DE-trend
 %#####################
-Drt = bicas.tf.drt(...
+Drt = bicas.tf.Deretrending(...
   Settings.detrendingDegreeOf, ...
   Settings.retrendingEnabled);
 y1Modif = Drt.detrend(y1);
@@ -256,7 +261,7 @@ switch(Settings.method)
     y2Modif = bicas.tf.apply_TF_freq(dt, y1Modif, tf);
     %[y2B, tfOmegaLookups, tfZLookups] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
 
-  case 'kernel'
+  case 'KERNEL'
     % TODO-NI: Kernel length == Signal length
     %          ==> Bad for very long time series? E.g. CWF?
     % NOTE: Length also affects amount of allocated memory (kernel,

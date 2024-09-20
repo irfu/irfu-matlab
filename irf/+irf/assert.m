@@ -325,7 +325,7 @@ classdef assert
 
     % Either regular file or symlink to regular file (i.e. not directory or
     % symlink to directory).
-    % Cf. path_is_available
+    % Cf. path_is_available().
     function file_exists(filePath)
       if ~(exist(filePath, 'file') == 2)
         error(irf.assert.ASSERTION_EMID, ...

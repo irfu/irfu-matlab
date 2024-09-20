@@ -1,11 +1,11 @@
 %
-% Store of all input information for processing (DC = Demuxing+Calibration) that
-% is common for all L1/L1R-->L2 LFR+TDS processing.
+% Store of all input information for processing that is common for all
+% L1/L1R-->L2 LFR+TDS processing (i.e. demultiplexing and calibration).
 %
 %
 % IMPLEMENTATION NOTE: bltsSamplesTm and lrx
 % ==========================================
-% PreDc always represents (has variables/elements for) all five BLTS's,
+% DCIP always represents (has variables/elements for) all five BLTS's,
 % despite that only three are used at any given time. The channels not used
 % are set to NaN. Which ones are actually used can be switched at any given
 % time due to lrx changing.
@@ -18,13 +18,14 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef PreDc
-  % PROPOSAL: Proper abbreviation for class PreDc and PostDc.
-  %   PRDC, PODC
-  %   before/after
-  %   calibration
-  %   demultiplexing
-  %   data
+classdef DemultiplexingCalibrationInput
+  % PROPOSAL: Shorten DemultiplexingCalibrationInput/Output
+  %   PROPOSAL: Demultiplexing -->
+  %             Demuxing
+  %   PROPOSAL: Calibration -->
+  %             Calib
+  %   DemuxingCalibrationInput/Output
+  %   DemuxingCalibInput/Output
   %
   % PROPOSAL: Refactor code to only represent three data channels (those
   %           BLTS's which (nominally) contain actual data for the given
@@ -34,9 +35,10 @@ classdef PreDc
   %        are greater in number.
   %       CON: Should be easy to implement.
   %   CON: This increases the assumptions which the ~demultiplexer code and
-  %        the PreDc class make.
+  %        the DCIP class make.
   %       CON: No, it does not. Which?
-  %           CON: Always 3 channels worth of data. BLTS 2-3/4-5 are different from BLTS 1
+  %           CON: There are always 3 channels worth of data. BLTS 2-3/4-5 are
+  %                different from BLTS 1
   %                and can change meaning due to LRX.
   %   CON: Must invent a new concept (type of index) to represent these three
   %        data channels.
@@ -56,7 +58,8 @@ classdef PreDc
   %       PROPOSAL: Separate iBltsArray (Nx3) for labelling the data source.
   %           CON: iBltsArray(:, 1) == 1 always.
   %
-  % PROPOSAL: Separate representations (variables) for CWF and SWF (snapshots).
+  % PROPOSAL: Separate representations (variables) for
+  %           (1) CWF and (2) SWF (snapshots) data.
   %   PRO: Could clarify code.
   %   PROBLEM: How handle the absent form of data? There will always be
   %            timestamps and other ZVs.
@@ -88,7 +91,7 @@ classdef PreDc
   %#########################
   methods(Access=public)
 
-    function obj = PreDc(Zv, Ga, hasSwfFormat, isLfr, isTdsCwf)
+    function obj = DemultiplexingCalibrationInput(Zv, Ga, hasSwfFormat, isLfr, isTdsCwf)
 
       irf.assert.struct(Zv, ...
         {'Epoch', 'bltsSamplesTm', 'freqHz', 'nValidSamplesPerRecord', ...

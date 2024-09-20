@@ -27,8 +27,8 @@
 % RATIONALE
 % =========
 % An alternative to using this function is to modify the master RCT manually
-% with cdfedit (from NASA SPDF's CDF software). Using this function is however
-% better because
+% with cdfedit (from NASA SPDF's CDF software). Using this MATLAB function is
+% however better because
 % (1) There are two RCTs with identical calibration data content (ROC-SGSE +
 %     RODP),
 % (2) it saves work when updating the master RCT .cdf (generated from master
@@ -57,10 +57,14 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir, beginDt, endDt, version
 %        of BICAS.
 
 GMDB = bicas.ga.mods.Database({bicas.const.RCT_DSI});
-% NOTE: Using BICAS version in MODS. Not obvious that one should.
+% NOTE: Using BICAS version in MODS. Not obvious that one should, or how to make
+% sure it is consistent with BICAS.
 GMDB.add_GMVE({bicas.const.RCT_DSI}, ...
   bicas.ga.mods.VersionEntry('2024-07-12', '8.1.0', ...
   {'Updated with compliant metadata and filename.'}))
+GMDB.add_GMVE({bicas.const.RCT_DSI}, ...
+  bicas.ga.mods.VersionEntry('2024-09-12', '8.3.0', ...
+  {'Updated metadata.'}))
 GA_MODS = GMDB.get_MODS_strings_CA(bicas.const.RCT_DSI);
 
 
@@ -393,8 +397,8 @@ rctFilename = irf.fs.get_name(rctFilePath);
 Df = solo.adm.dsfn.DatasetFilename.parse_filename(rctFilename);
 assert(~isempty(Df), 'Can not parse filename "%s".', rctFilename)
 
-ga_CALIBRATION_TABLE = rctFilename(1:end-4);
-DataObj.GlobalAttributes.CALIBRATION_TABLE   = {ga_CALIBRATION_TABLE};
+gact = rctFilename(1:end-4);
+DataObj.GlobalAttributes.CALIBRATION_TABLE   = {gact};
 
 DataObj.GlobalAttributes.CALIBRATION_VERSION = {Df.versionStr};
 

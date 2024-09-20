@@ -135,17 +135,17 @@ classdef qual
       % ====================================
       % NOTE: Should really use future bicas.utils.SameSizeTypeMap here
       %       which contains size on other dimensions.
-      keysCa = zvAsrSamplesAVoltSrm.keys;
-      nSpr   = size(zvAsrSamplesAVoltSrm(keysCa{1}), 2);
+      keyArray = zvAsrSamplesAVoltSrm.keys;
+      nSpr     = size(zvAsrSamplesAVoltSrm(keyArray), 2);
 
-      % IMPLEMENTATION NOTE: bicas.utils.SameRowsMap.setRows() can not
+      % IMPLEMENTATION NOTE: bicas.utils.SameRowsMap.set_rows() can not
       % handle logical indexing.
       iUfv = find(zvUfv);
       nanArray = NaN(size(iUfv, 1), nSpr);
       tempSrm = bicas.utils.SameRowsMap(...
-        'char', size(nanArray, 1), ...
+        "bicas.proc.L1L2.AntennaSignalId", size(nanArray, 1), ...
         'CONSTANT', nanArray, zvAsrSamplesAVoltSrm.keys);
-      zvAsrSamplesAVoltSrm.setRows(tempSrm, iUfv);
+      zvAsrSamplesAVoltSrm.set_rows(tempSrm, iUfv);
     end
 
 
@@ -568,10 +568,10 @@ classdef qual
         for iRi = 1:nUfvIntervals
           iCdfRecord1 = i1Array(iRi);
           iCdfRecord2 = i2Array(iRi);
-          utc1  = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1));
-          utc2  = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2));
+          utcStr1 = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1), 9);
+          utcStr2 = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2), 9);
           L.logf(LL, '    Records %8i-%8i, %s -- %s', ...
-            iCdfRecord1, iCdfRecord2, utc1, utc2);
+            iCdfRecord1, iCdfRecord2, utcStr1, utcStr2);
         end
       end
 

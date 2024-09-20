@@ -4,7 +4,18 @@
 % (2) set all settings keys to their initial default values.
 % Note: Does NOT make the object write-only.
 %
-% NOTE: Slightly deceiving name, since it defines which keys are permitted.
+% NOTE: Slightly deceiving function name, since it defines which keys are
+%       permitted.
+%
+%
+% DEFAULT VALUE POLICY
+% ====================
+% * Default values must be the ones usable when BICAS is run at ROC/LESIA for
+%   official processing L1R-->L2.
+% * Default values should make errors crash BICAS, except for temporary
+%   solutions to known problems while they are being worked on.
+%   This may not be lived up to in practice. Settings should probably be
+%   checked for this.
 %
 %
 % NAMING CONVENTIONS
@@ -33,6 +44,8 @@
 % First created 2018-01-24
 %
 function Bso = create_default_BSO()
+% PROPOSAL: Rename function: get_*()
+%
 % PROPOSAL: PROCESSING.CALIBRATION.CURRENT.HK.DISABLE      : Whether to calibrate HK current or use HK TM.
 %                                                            Not which data to use (HK or TC).
 %           PROCESSING.CALIBRATION.CURRENT.SOURCE = TC, HK : Which data to use.
@@ -57,10 +70,9 @@ function Bso = create_default_BSO()
 % PROPOSAL: Abolish settings/functionality:
 %   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
-%   OUTPUT_CDF.NO_PROCESSING_EMPTY_FILE                     -- ALREADY ABOLISHED
-%   OUTPUT_CDF.WRITE_FILE_DISABLED                          -- ALREADY ABOLISHED
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
+%   PROCESSING.L2.REMOVE_DATA.MUX_MODES
 %   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
@@ -232,19 +244,6 @@ S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR'
 % default, or what ROC thinks it should be.
 S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY', 'WARNING');    % ERROR, WARNING.
 
-% "There must be one entry for each entry in the CALIBRATION_TABLE
-% attribute"  /RCS ICD 1.6
-% NOTE: None of these disabled settings are actually used in the code.
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.BIAS',        'BIAS team')
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.LFR',         'LFR team')
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_NAME.TDS',         'TDS team')
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_AFFILIATION.BIAS', IRF_LONG_NAME)
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_AFFILIATION.LFR',  'Laboratoire de Physique des Plasmas (LPP)')      % Should be checked.
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_ENTITY_AFFILIATION.TDS',  'Institute of Atmospheric Physics AS CR (IAP)')   % Should be checked.
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.BIAS', 'BIAS')   % Abolish?
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.LFR',  'LFR')    % Abolish?
-% S.define_setting('OUTPUT_CDF.GLOBAL_ATTRIBUTES.CAL_EQUIPMENT.TDS',  'TDS')    % Abolish?
-
 
 
 % What to do with zVariables which are still empty after copying data into
@@ -361,7 +360,6 @@ S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_
 % practice, this functionality is there as a temporary solution for removing
 % sweeps.
 %============================================================================
-%S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', [1,2,3,4,5,6,7])
 S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
 
 % Unit: S = Seconds
@@ -469,15 +467,15 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 
 %============================================================================
 % PROCESSING.RCT_REGEXP.*
-% Regular expressions for RCT filenames
-% -------------------------------------
+% Regular expressions for non-BIAS RCT filenames
+% ----------------------------------------------
 %
-% NOTES
-% -----
-% ** (a) When reading *L1* (voltage) datasets, then regular expression are
-%        needed for identifying all necessary RCTs.
-%    (b) When reading *L1R* (voltage) datasets, then regular expressions are
-%        only needed for identifying the BIAS RCT.
+% IMPORTANT NOTES
+% ---------------
+% ** When reading *L1* (voltage) datasets, then regular expression are
+%    needed for identifying all necessary non-BIAS RCTs.
+%    IMPORTANT: This is not needed for (nominal) processing of *L1R* (voltage)
+%               datasets.
 % ** BIAS & TDS have previously not followed the correct filenaming
 %    convention but does now (2020-11-20).
 % ** LFR do not seem to follow the filenaming convenction (2020-11-20)
@@ -507,6 +505,7 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 % LFR:
 %       ROC-SGSE_CAL_RCT-LFR-BIAS_V20180724165443.cdf
 %           SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf
+%           solo_CAL_rpw-lfr-bias_20200210-20990101_V01.cdf
 % TDS:
 %           SOLO_CAL_RCT-TDS-LFM-CWF-E_V20190128.cdf
 %           SOLO_CAL_RCT-TDS-LFM-RSWF-E_V20190128.cdf
@@ -516,24 +515,22 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %
 %============================================================================
 CDF_SUFFIX_REGEXP = '\.(cdf|CDF)';
-%S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['SOLO_CAL_RPW-BIAS_V20[0-9]{10}',                    CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention
-S.define_setting('PROCESSING.RCT_REGEXP.BIAS',         ['solo_CAL_rpw-bias_[0-9]{8}-[0-9]{8}_V[0-9][0-9]+', CDF_SUFFIX_REGEXP]);
 
-% 2020-11-20: LFR still uses old/illegal RCT filenaming convention.
-S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',               CDF_SUFFIX_REGEXP]);
-S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',          CDF_SUFFIX_REGEXP]);
-S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}',         CDF_SUFFIX_REGEXP]);
+% NOTE: 2024-09-02: TDS still uses old/illegal RCT filenaming convention.
+% S.define_setting('PROCESSING.RCT_REGEXP.LFR',
+% ['SOLO_CAL_RCT-LFR-BIAS_V20[0-9]{12}',                   CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention.
+S.define_setting('PROCESSING.RCT_REGEXP.LFR',          ['solo_CAL_rpw-lfr-bias_20200210-20990101_V[0-9][0-9]+', CDF_SUFFIX_REGEXP]);
+S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-CWF',  ['SOLO_CAL_RPW-TDS-LFM-CWF-E_V20[0-9]{12}',              CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention.
+S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RSWF-E_V20[0-9]{12}',             CDF_SUFFIX_REGEXP]);   % Old illegal filenaming convention.
 
 
 
-% CALIBRATION_TABLE_INDEX2 = Second value in zVar CALIBRATION_TABLE_INDEX
-% (in every record), that contains an index to calibration data inside a
-% given RCT.
+% CALIBRATION_TABLE_INDEX2 = ZVCTI2
+% NOTE: ZVCTI2 is not set (used) for TDS. Therefore no such settings for TDS.
 % "L1R" refers to when using L1R datasets as input, as opposed to L1.
 S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      1)
 S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    1)
 S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',  1)
-% CALIBRATION_TABLE_INDEX is not set for TDS. Therefore no such setting for TDS.
 S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', 1)
 
 
@@ -541,10 +538,11 @@ S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', 1)
 %============================================================================
 % Calibration constants for the "scalar" calibration mode
 % -------------------------------------------------------
-% Unit: IVPAV = Interface volt per antenna volt.
+% Unit: IVPAV
 %
 % Calibration constants that are used instead of the corresponding BIAS
 % transfer functions.
+
 % NOTE: These values do not influence the nominal, "full" calibration. They
 %       are entirely separate.
 % NOTE: The sign should preferably be consistent with the BIAS transfer
@@ -585,10 +583,10 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', 0);
 % the LFR/TDS transfer functions.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
 
-S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT, kernel
-%S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'kernel')   % FFT, kernel
-%S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'zeros')   % zeros, cyclic, mirror
-S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'mirror')   % zeros, cyclic, mirror
+S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT, KERNEL
+%S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'KERNEL')   % FFT, KERNEL
+%S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'ZEROS')   % ZEROS, CYCLIC, MIRROR
+S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'MIRROR')   % ZEROS, CYCLIC, MIRROR
 S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)   % false, true
 
 
@@ -642,7 +640,7 @@ S.define_setting('PROCESSING.CALIBRATION.TF.AC_CONST_GAIN_LOW_FREQ_HZ', 7)
 % values, before de-trending and applying the (modified) TF. This avoids
 % applying TF to fill values which avoids destroying non-fill value data.
 S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',     true)
-% Minimum number of samples in a time series (after splitting).
+% Minimum number of samples within a time series (after splitting).
 % NOTE: Limit does not apply if there was no splitting (for "backward
 % compatibility").
 S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)

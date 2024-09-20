@@ -59,7 +59,7 @@ Version 4.0.0
 Version 4.1.0
 -------------
 * Added setting quality variables based on thruster firings in
-* Non-Standard Operations (NSO) table. List complete until 2020-12-05.
+  Non-Standard Operations (NSO) table. List complete until 2020-12-05.
 * Zero order AC de-trending (remove mean, not linear fit), no AC re-trending
   (~bugfix; re-trending makes no sense for high-pass filtered data).
 * Combined transfer functions (LFR+BIAS) for AC data are modified during
@@ -200,9 +200,25 @@ Version 8.2.0
 * Renamed setting:
      INPUT_CDF.GA_PROVIDER_MISMATCH_POLICY
   -->INPUT_CDF.GA_PARENTS_MISMATCH_POLICY
-* Abolishes the unofficial --swdescriptor argument and mode.
+* Abolishes the unofficial --swdescriptor argument.
 
 
 Version 8.2.1
 -------------
 * Bugfix: Including previously missing source code updates.
+
+
+Version 8.3.0
+-------------
+* Reinstate the unofficial --swdescriptor argument.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2024-08-04.
+* Always use bias_rct_validity.json for selecting BIAS RCT (never uses reg.exp.
+  on filenames)
+* Default value for setting PROCESSING.RCT_REGEXP.LFR updated for new filenaming
+  convention (though assumes begin and end dates). Does not affect nominal
+  processing.
+* Removed setting
+  PROCESSING.RCT_REGEXP.BIAS
+* Changed glob.attributes TIME_MIN, TIME_MAX to only have six decimals.
+* Requires updated master CDF versions (better metadata) for all datasets.

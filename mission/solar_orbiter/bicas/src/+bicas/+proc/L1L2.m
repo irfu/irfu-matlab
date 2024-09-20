@@ -10,41 +10,25 @@
 %   data, use the first MATLAB array index to represent CDF records.
 %
 %
-% SOME INTERMEDIATE PROCESSING DATA FORMATS
-% =========================================
-% - PreDc = Pre-(Demuxing & Calibration) Data
-%       Generic data format that can represent all forms of input datasets
-%       before demuxing and calibration. Can use an arbitrary number of samples
-%       per record. Some variables are therefore not used in CWF output
-%       datasets.
-% - PostDc = Post-(Demuxing & Calibration) Data
-%       Data format that includes calibrated currents & calibrated & demuxed
-%       voltages.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-10, with source code from data_manager_old.m.
 %
 classdef L1L2
-  %#######################################################################################################################
+  %############################################################################
   %
-  % PROPOSAL: Move normalize_CALIBRATION_TABLE_INDEX() to some collection of utils.
+  % PROPOSAL: Move normalize_ZVCTI() to some collection of utils.
   %   PROPOSAL: bicas.proc.utils
   %       CON: Function is too specific. Has inputDsi as argument.
   %           CON: Could be less bad than this file.
   %
   % PROPOSAL: Submit ZV attributes.
   %   PRO: Can interpret fill values.
-  %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and compare with zVar SAMPS_PER_CH (which seems
-  %           to be bad).
-  %
-  % PROPOSAL: Return (to execute_SWM), global attributes.
-  %   PRO: Needed for output datasets: CALIBRATION_TABLE, CALIBRATION_VERSION
-  %       ~CON: CALIBRATION_VERSION refers to algorithm and should maybe be a SETTING.
+  %       Ex: Can doublecheck TDS RSWF snapshot length using fill values and
+  %           compare with zVar SAMPS_PER_CH (which seems to be bad).
   %
   % PROPOSAL: Class for HkSciTime.
   %
-  %#######################################################################################################################
+  %############################################################################
 
 
 
@@ -196,7 +180,7 @@ classdef L1L2
       %       ==> Can not change BDM in the middle of a record.
       % NOTE: Can potentially also obtain BDM from LFR SCI, but that
       %       decision should not be made here.
-      %       See bicas.proc.L1L2.lfr.process_CDF_to_PreDc().
+      %       See bicas.proc.L1L2.lfr.process_CDF_to_DCIP().
       %=============================================================
       bdmDoubleNan = bicas.utils.interpolate_nearest(...
         hkEpochExtrapMargin, ...
@@ -264,30 +248,29 @@ classdef L1L2
 
     % Utility function to shorten code.
     %
-    % NOTE: Operates on entire ZvStruct since CALIBRATION_TABLE_INDEX exists
-    % for L1R, but not L1, and the corresponding field may thus be or not be
-    % present.
-    function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
-        ZvStruct, nRecords, inputDsi)
+    % NOTE: Operates on entire ZvStruct since CALIBRATION_TABLE_INDEX=ZVCTI
+    % exists for L1R, but not L1, and the corresponding field may thus be or not
+    % be present.
+    function zvcti = normalize_ZVCTI(ZvStruct, nRecords, inputDsi)
 
       C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputDsi);
 
       if C.isL1r
-        CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
+        zvcti = ZvStruct.CALIBRATION_TABLE_INDEX;
       elseif C.isL1
-        CALIBRATION_TABLE_INDEX = nan(nRecords, 2);
+        zvcti = nan(nRecords, 2);
       else
         error(...
           ['Can not normalize CALIBRATION_TABLE_INDEX', ...
           ' for this DSI classification.'])
       end
 
-      irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
+      irf.assert.sizes(zvcti, [nRecords, 2])
     end
 
 
 
-    % Convert PreDc+PostDc to something that
+    % Convert DCIP+DCOP to something that
     % (1) represents a TDS dataset (hence the name), and
     % (2) ALMOST REPRESENTS an LFR dataset (the rest is done in a wrapper).
     %
@@ -298,38 +281,42 @@ classdef L1L2
     % L2 output datasets are very similar, despite that the input L1/L1R LFR
     % & TDS datasets are very dissimilar.
     %
-    function [OutSci] = process_PostDc_to_CDF(SciPreDc, SciPostDc, outputDsi)
+    function [OutSci] = process_DCOP_to_CDF(SciDcip, SciDcop, outputDsi)
       % PROPOSAL: Rename to something shared between LFR and TDS, then use
       %           two wrappers.
-      %   PROPOSAL: process_PostDc_to_LFR_TDS_CDF_core
+      %   PROPOSAL: process_DCOP_to_LFR_TDS_CDF_core
       %   TODO-DEC: Put in which future file?
 
       % ASSERTIONS
-      assert(isa(SciPreDc,  'bicas.proc.L1L2.PreDc'))
-      assert(isa(SciPostDc, 'bicas.proc.L1L2.PostDc'))
+      assert(isa(SciDcip, 'bicas.proc.L1L2.DemultiplexingCalibrationInput'))
+      assert(isa(SciDcop, 'bicas.proc.L1L2.DemultiplexingCalibrationOutput'))
 
 
 
-      nRecords                 = size(SciPreDc.Zv.Epoch, 1);
-      nSamplesPerRecordChannel = size(SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1'), 2);
+      A = bicas.proc.L1L2.AntennaSignalId.C;
+
+
+
+      nRecords                 = size(SciDcip.Zv.Epoch, 1);
+      nSamplesPerRecordChannel = size(SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V1), 2);
 
       OutSci = [];
 
-      OutSci.Zv.Epoch              = SciPreDc.Zv.Epoch;
-      OutSci.Zv.QUALITY_BITMASK    = SciPreDc.Zv.QUALITY_BITMASK;
-      OutSci.Zv.L2_QUALITY_BITMASK = SciPostDc.Zv.L2_QUALITY_BITMASK;
-      OutSci.Zv.QUALITY_FLAG       = SciPostDc.Zv.QUALITY_FLAG;
-      OutSci.Zv.DELTA_PLUS_MINUS   = SciPreDc.Zv.DELTA_PLUS_MINUS;
-      OutSci.Zv.SYNCHRO_FLAG       = SciPreDc.Zv.SYNCHRO_FLAG;
-      OutSci.Zv.SAMPLING_RATE      = SciPreDc.Zv.freqHz;
+      OutSci.Zv.Epoch              = SciDcip.Zv.Epoch;
+      OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.QUALITY_BITMASK;
+      OutSci.Zv.L2_QUALITY_BITMASK = SciDcop.Zv.L2_QUALITY_BITMASK;
+      OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QUALITY_FLAG;
+      OutSci.Zv.DELTA_PLUS_MINUS   = SciDcip.Zv.DELTA_PLUS_MINUS;
+      OutSci.Zv.SYNCHRO_FLAG       = SciDcip.Zv.SYNCHRO_FLAG;
+      OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.freqHz;
 
       % NOTE: Convert aampere --> nano-aampere
-      OutSci.Zv.IBIAS1 = SciPostDc.Zv.currentAAmpere(:, 1) * 1e9;
-      OutSci.Zv.IBIAS2 = SciPostDc.Zv.currentAAmpere(:, 2) * 1e9;
-      OutSci.Zv.IBIAS3 = SciPostDc.Zv.currentAAmpere(:, 3) * 1e9;
+      OutSci.Zv.IBIAS1 = SciDcop.Zv.currentAAmpere(:, 1) * 1e9;
+      OutSci.Zv.IBIAS2 = SciDcop.Zv.currentAAmpere(:, 2) * 1e9;
+      OutSci.Zv.IBIAS3 = SciDcop.Zv.currentAAmpere(:, 3) * 1e9;
 
-      OutSci.Ga.OBS_ID    = SciPreDc.Ga.OBS_ID;
-      OutSci.Ga.SOOP_TYPE = SciPreDc.Ga.SOOP_TYPE;
+      OutSci.Ga.OBS_ID    = SciDcip.Ga.OBS_ID;
+      OutSci.Ga.SOOP_TYPE = SciDcip.Ga.SOOP_TYPE;
 
 
 
@@ -357,17 +344,17 @@ classdef L1L2
         OutSci.Zv.EDC = tempNaN;
         OutSci.Zv.EAC = tempNaN;
 
-        OutSci.Zv.VDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
-        OutSci.Zv.VDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
-        OutSci.Zv.VDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
+        OutSci.Zv.VDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V1);
+        OutSci.Zv.VDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V2);
+        OutSci.Zv.VDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V3);
 
-        OutSci.Zv.EDC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
-        OutSci.Zv.EDC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
-        OutSci.Zv.EDC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
+        OutSci.Zv.EDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V12);
+        OutSci.Zv.EDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V13);
+        OutSci.Zv.EDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V23);
 
-        OutSci.Zv.EAC(:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
-        OutSci.Zv.EAC(:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
-        OutSci.Zv.EAC(:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
+        OutSci.Zv.EAC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V12);
+        OutSci.Zv.EAC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V13);
+        OutSci.Zv.EAC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V23);
 
         % ASSERTION
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
@@ -403,17 +390,17 @@ classdef L1L2
         OutSci.Zv.EDC = tempNaN;
         OutSci.Zv.EAC = tempNaN;
 
-        OutSci.Zv.VDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V1');
-        OutSci.Zv.VDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V2');
-        OutSci.Zv.VDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V3');
+        OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V1);
+        OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V2);
+        OutSci.Zv.VDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V3);
 
-        OutSci.Zv.EDC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V12');
-        OutSci.Zv.EDC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V13');
-        OutSci.Zv.EDC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('DC_V23');
+        OutSci.Zv.EDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V12);
+        OutSci.Zv.EDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V13);
+        OutSci.Zv.EDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.DC_V23);
 
-        OutSci.Zv.EAC(:,:,1) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V12');
-        OutSci.Zv.EAC(:,:,2) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V13');
-        OutSci.Zv.EAC(:,:,3) = SciPostDc.Zv.AsrSamplesAVoltSrm('AC_V23');
+        OutSci.Zv.EAC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V12);
+        OutSci.Zv.EAC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V13);
+        OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A.AC_V23);
 
         % ASSERTION
         % NOTE: Must exclude ZV "SAMPLE_IDX".
@@ -438,7 +425,7 @@ classdef L1L2
         'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, ...
         {'SAMPLE_IDX'})
 
-    end    % process_PostDc_to_CDF
+    end    % process_DCOP_to_CDF
 
 
 

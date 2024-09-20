@@ -106,7 +106,7 @@ try
 
   % NOTE: Permitting logging to file from MATLAB instead of bash wrapper
   % in case of using unofficial option.
-  L = bicas.Logger('bash wrapper', true);
+  L = bicas.Logger('BASH_WRAPPER', true);
 
 
 
@@ -303,12 +303,12 @@ assert(iscolumn(cliArgumentsCa))
 % ~ASSERTION: Check MATLAB version
 %==================================
 matlabVersionString = version('-release');
-if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS)
+if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS_CA)
   error('BICAS:BadMatlabVersion', ...
     ['Using unsupported MATLAB version. Found version "%s".', ...
     ' BICAS requires any of the following MATLAB versions: %s.\n'], ...
     matlabVersionString, ...
-    strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS, ', '))
+    strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS_CA, ', '))
 end
 L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
 
@@ -341,16 +341,10 @@ L.logf('debug', 'OS environment variable CDF_LEAPSECONDSTABLE = "%s"', ...
 
 
 
-%===============================
-% Derive BICAS's directory root
-%===============================
-bicasRootPath = bicas.utils.get_BICAS_root_path();
-
-
-
 %=======================================
 % Log misc. paths and all CLI arguments
 %=======================================
+bicasRootPath = bicas.utils.get_BICAS_root_dir();
 % IMPLEMENTATION NOTE: Want this as early as possible, before interpreting
 % arguments. Should therefore not merge this with printing settings. This
 % might help debug why settings were not set.
@@ -420,9 +414,7 @@ end
 if ~isempty(CliData.configFile)
   configFile = CliData.configFile;
 else
-  configFile = fullfile(...
-    bicasRootPath, ...
-    bicas.const.DEFAULT_CONFIG_FILE_RELATIVE_PATH);
+  configFile = bicas.utils.get_BICAS_default_config_file();
 end
 L.logf('info', 'configFile = "%s"', configFile)
 L.log('info', 'Overriding subset of in-memory settings using config file.')
@@ -460,104 +452,22 @@ Swml = bicas.swm.get_SWML(Bso);
 
 switch(CliData.bfmid)
   case 'VERSION_BFM'
-    print_version(Swml, Bso)
+    print_version(Swml)
 
   case 'IDENTIFICATION_BFM'
-    print_identification(Swml, Bso)
+    print_identification(Swml)
 
-    % case 'SWD_BFM'
-    %   print_SWD(Swml, Bso)
+  case 'SWD_BFM'
+    print_SWD(Swml)
 
   case 'HELP_BFM'
     print_help(Bso)
 
   case 'SWM_BFM'
-    %============================
-    % CASE: Should be a S/W mode
-    %============================
-    try
-      Swm = Swml.get_SWM(CliData.swmArg);
-    catch Exception1
-      % NOTE: Misspelled "--version" etc. would be interpreted as S/W
-      % mode and produce error here too.
-      error('BICAS:CLISyntax', ...
-        ['Can not interpret first argument "%s" as a S/W mode', ...
-        ' (or any other legal first argument).'], ...
-        CliData.swmArg);
-    end
-
-
-
-    %=================================================================
-    % Parse CliData.SipMap arguments depending on S/W
-    % mode
-    %=================================================================
-
-    % Select only the INPUT dataset files from the SIP arguments.
-    InputFilePathMap = select_rename_Map_keys(...
-      CliData.SipMap, ...
-      {Swm.inputsList(:).cliOptionHeaderBody}, ...
-      {Swm.inputsList(:).pfiid});
-
-    % Select only the OUTPUT dataset files from the SIP arguments.
-    OutputFilePathMap = select_rename_Map_keys(...
-      CliData.SipMap, ...
-      {Swm.outputsList(:).cliOptionHeaderBody}, ...
-      {Swm.outputsList(:).pfoid});
-
-    % ASSERTION: Assume correct number of arguments (the only thing not
-    % implicitly checked by select_rename_Map_keys above).
-    nSipExpected = numel(Swm.inputsList) + numel(Swm.outputsList);
-    nSipActual   = numel(CliData.SipMap.keys);
-    if nSipExpected ~= nSipActual
-      error('BICAS:CLISyntax', ...
-        ['Illegal number of "specific input parameters"', ...
-        ' (input & output datasets). Expected %i, but got %i.'], ...
-        nSipExpected, nSipActual)
-    end
-
-
-
     %==========================
-    % Set rctDir, masterCdfDir
+    % CASE: Process a S/W mode
     %==========================
-    % NOTE: Reading environment variables first here, where they are
-    % needed.
-    rctDir       = read_env_variable(Bso, L, ...
-      'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
-    masterCdfDir = read_env_variable(Bso, L, ...
-      'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
-    L.logf('info', 'rctDir       = "%s"', rctDir)
-    L.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
-
-    irf.assert.dir_exists(rctDir)
-    irf.assert.dir_exists(masterCdfDir)
-
-
-
-    %=====================
-    % Read NSO table file
-    %=====================
-    nsoTableRelativePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH');
-    nsoTableOverridePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH');
-    if isempty(nsoTableOverridePath)
-      nsoTablePath = fullfile(bicasRootPath, nsoTableRelativePath);
-    else
-      nsoTablePath = nsoTableOverridePath;
-    end
-
-    %L.logf('info', 'nsoTablePath = "%s"', nsoTablePath);
-    L.logf('info', 'Loading NSO table XML file "%s"', nsoTablePath)
-    NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath);
-
-
-
-    %==================
-    % EXECUTE S/W MODE
-    %==================
-    bicas.execute_SWM(...
-      Swm, InputFilePathMap, OutputFilePathMap, ...
-      masterCdfDir, rctDir, NsoTable, Bso, L )
+    process_SWM(Swml, CliData.swmArg, CliData.SipMap, Bso, L)
 
   otherwise
     error('BICAS:Assertion', ...
@@ -599,12 +509,11 @@ end
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created <<2019-08-05
 %
-function print_version(Swml, Bso)
-
-% IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor
-% rather than the in the BICAS constants since the RCS ICD specifies that it
-% should be that specific version. This is in principle inefficient but also
-% "precise".
+function print_version(Swml)
+% IMPLEMENTATION NOTE: Uses the software version in the S/W descriptor rather
+% than the in the BICAS constants since the RCS ICD specifies that it should be
+% that specific version. This is in principle an inefficient imlementation but
+% it should also be more reliable.
 
 JsonSwd = bicas.get_SWD(Swml.List);
 
@@ -619,34 +528,35 @@ end
 
 % Print the JSON S/W descriptor identification section.
 %
-% NOTE: Argument is *not* an instance of bicas.swm.SoftwareModeList.
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07
 %
-function print_identification(Swml, Bso)
+function print_identification(Swml)
+
+assert(isa(Swml, 'bicas.swm.SoftwareModeList'))
 
 JsonSwd = bicas.get_SWD(Swml.List);
-strSwd = bicas.utils.JSON_object_str(JsonSwd.identification);
+strSwd  = bicas.utils.JSON_object_str(JsonSwd.identification);
 bicas.stdout_print(strSwd);
 
 end
 
 
 
-% Print the JSON SWD.
+% Print the JSON S/W descriptor.
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-06-07/2019-09-24.
 %
-% function print_SWD(Swml, Bso)
-%
-% JsonSwd = bicas.get_SWD(Swml.List);
-% strSwd = bicas.utils.JSON_object_str(JsonSwd, ...
-%   Bso.get_fv('JSON_OBJECT_STR.INDENT_SIZE'));
-% bicas.stdout_print(strSwd);
-%
-% end
+function print_SWD(Swml)
+
+assert(isa(Swml, 'bicas.swm.SoftwareModeList'))
+
+JsonSwd = bicas.get_SWD(Swml.List);
+strSwd  = bicas.utils.JSON_object_str(JsonSwd);
+bicas.stdout_print(strSwd);
+
+end
 
 
 
@@ -691,6 +601,95 @@ end
 
 
 
+function process_SWM(Swml, swmArg, SipMap, Bso, L)
+try
+  Swm = Swml.get_SWM(swmArg);
+catch Exception1
+  % NOTE: Misspelled "--version" etc. would be interpreted as S/W
+  % mode and produce error here too.
+  error('BICAS:CLISyntax', ...
+    ['Can not interpret first argument "%s" as a S/W mode', ...
+    ' (or any other legal first argument).'], ...
+    swmArg);
+end
+
+
+
+%==============================================
+% Parse SipMap arguments depending on S/W mode
+%==============================================
+
+% Select only the INPUT dataset files from the SIP arguments.
+InputFilePathMap = select_rename_Map_keys(...
+  SipMap, ...
+  {Swm.inputsList(:).cliOptionHeaderBody}, ...
+  {Swm.inputsList(:).pfiid});
+
+% Select only the OUTPUT dataset files from the SIP arguments.
+OutputFilePathMap = select_rename_Map_keys(...
+  SipMap, ...
+  {Swm.outputsList(:).cliOptionHeaderBody}, ...
+  {Swm.outputsList(:).pfoid});
+
+% ASSERTION: Assume correct number of arguments (the only thing not
+% implicitly checked by select_rename_Map_keys above).
+nSipExpected = numel(Swm.inputsList) + numel(Swm.outputsList);
+nSipActual   = numel(SipMap.keys);
+if nSipExpected ~= nSipActual
+  error('BICAS:CLISyntax', ...
+    ['Illegal number of "specific input parameters"', ...
+    ' (input & output datasets). Expected %i, but got %i.'], ...
+    nSipExpected, nSipActual)
+end
+
+
+
+%==========================
+% Set rctDir, masterCdfDir
+%==========================
+% NOTE: Reading environment variables first here, where they are
+% needed.
+rctDir       = read_env_variable(Bso, L, ...
+  'ROC_RCS_CAL_PATH',    'ENV_VAR_OVERRIDE.ROC_RCS_CAL_PATH');
+masterCdfDir = read_env_variable(Bso, L, ...
+  'ROC_RCS_MASTER_PATH', 'ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH');
+L.logf('info', 'rctDir       = "%s"', rctDir)
+L.logf('info', 'masterCdfDir = "%s"', masterCdfDir)
+
+irf.assert.dir_exists(rctDir)
+irf.assert.dir_exists(masterCdfDir)
+
+
+
+%=====================
+% Read NSO table file
+%=====================
+bicasRootPath        = bicas.utils.get_BICAS_root_dir();
+nsoTableRelativePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH');
+nsoTableOverridePath = Bso.get_fv('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH');
+if isempty(nsoTableOverridePath)
+  nsoTablePath = fullfile(bicasRootPath, nsoTableRelativePath);
+else
+  nsoTablePath = nsoTableOverridePath;
+end
+
+%L.logf('info', 'nsoTablePath = "%s"', nsoTablePath);
+L.logf('info', 'Loading NSO table XML file "%s"', nsoTablePath)
+NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath);
+
+
+
+%==================
+% EXECUTE S/W MODE
+%==================
+bicas.execute_SWM(...
+  Swm, InputFilePathMap, OutputFilePathMap, ...
+  masterCdfDir, rctDir, NsoTable, Bso, L )
+
+end    % process_SWM
+
+
+
 % Read environment variable, but allow the value to be overriden by a settings
 % variable.
 function v = read_env_variable(Bso, L, envVarName, overrideSettingKey)
@@ -726,7 +725,7 @@ end
 function s = sprint_constants()
 %
 % NOTE: Does not print error codes (bicas.const), but print_help() does.
-% PROPOSAL: PERMITTED_MATLAB_VERSIONS
+% PROPOSAL: bicas.const.PERMITTED_MATLAB_VERSIONS_CA
 
 s = sprintf([...
   '\n', ...

@@ -168,6 +168,36 @@ solo.db_cache('on', 'save')
 
 
 
+%=============================
+% Configure the parallel pool
+%=============================
+% NOTE: This requires there to not be a pre-existing parallel pool (will
+% otherwise crash).
+% --
+% spmdEnabled=false : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
+% anna.irfu.se. /2024-08-16.
+% NumWorkers=2 : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
+% anna.irfu.se. /2024-08-19.
+% NOTE: spmdEnabled=false makes it illegal to use the "spmd" commands.
+parpool('SpmdEnabled', false);
+% if isunix()
+%   [~, hostName] = system('hostname');
+%   hostName      = strtrim(hostName);
+%   isServerAnna  = strcmp(hostName, 'anna');
+% else
+%   isServerAnna  = false;
+% end
+% ppArgsCa = {'Processes', 'SpmdEnabled', false};
+% if isServerAnna
+%   % Set number of workers to a lower value than the default on anna (4).
+%   ppArgsCa = {'Processes', 1, 'SpmdEnabled', false};
+% else
+%   ppArgsCa = {'Processes', 'SpmdEnabled', false};
+% end
+% parpool(ppArgsCa{:});
+
+
+
 %=====================
 % Generate quicklooks
 %=====================

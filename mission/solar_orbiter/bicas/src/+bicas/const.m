@@ -38,35 +38,44 @@ classdef const
 
   properties(Constant)
 
+    % MATLAB version which shall be used when officially running BICAS (value
+    % returned by version('-release')).
+    % NOTE: Not to be confused with bicas.const.PERMITTED_MATLAB_VERSIONS_CA.
+    OFFICIAL_MATLAB_VERSION      = '2024a';
 
-
-    % Permissible string values returned by "version('-release')" when using
-    % the correct MATLAB version.
+    % Permissible string values when running BICAS in general, both officially
+    % and unofficially (value returned by version('-release')).
     %
+    % NOTE: This value is more permissable than
+    %       bicas.const.OFFICIAL_MATLAB_VERSION since it is sometimes useful to
+    %       run BICAS for other than the official version.
     % NOTE: BICAS originally required MATLAB R2016a.
     %       This was later changed to only require MATLAB R2019b.
     %       Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
-    % NOTE: Added MATLAB 2024a since ROC is planning to support it (replacing
-    %       R2019b).
-    %       Source: e-mail 2024-04-24, Quynh Nhu NGUYEN
+    %       Official MATLAB version again was later changed to MATLAB R2024a.
     % NOTE: Added MATLAB 2023b since it is currently (2024-05-28) the latest
     %       MATLAB version running on brain, spis, anna (IRFU servers). This
-    %       should be abolished eventually when beforementioned servers support
-    %       MATLAB 2024a.
-    PERMITTED_MATLAB_VERSIONS         = {'2023b', '2024a'};
+    %       should be abolished eventually when beforementioned IRFU servers
+    %       support MATLAB 2024a.
+    PERMITTED_MATLAB_VERSIONS_CA = {'2023b', bicas.const.OFFICIAL_MATLAB_VERSION};
 
-    % Path to default config file relative to BICAS's directory root. Note
-    % that this is also implicitly the constant for the default config file
-    % filename.
-    DEFAULT_CONFIG_FILE_RELATIVE_PATH = fullfile('config', 'bicas.conf');
+    % Path to "config directory" (the directory where the default config file is
+    % located, if any) relative to BICAS's directory root.
+    DEFAULT_CONFIG_DIR_RPATH     = 'config';
+
+    DEFAULT_CONFIG_FILENAME      = 'bicas.conf';
 
     % MATLAB stdout prefix to signal to bash wrapper that the log message
     % should be passed on to STDOUT (without the prefix).
-    STDOUT_PREFIX_TBW                 = 'STDOUT: ';
+    STDOUT_PREFIX_TBW            = 'STDOUT: ';
 
     % MATLAB stdout prefix to signal to bash wrapper that the log message
     % should be passed on to LOG FILE (without the prefix).
-    LOG_FILE_PREFIX_TBW               = 'LOG FILE: ';
+    LOG_FILE_PREFIX_TBW          = 'LOG FILE: ';
+
+    SWD_FILENAME                 = 'descriptor.json';
+
+    BRVF_FILENAME                = 'bias_rct_validity.json';
 
     % Information to "interpret" and "translate" captured exceptions
     % --------------------------------------------------------------
@@ -314,15 +323,15 @@ classdef const
       MAP('SWD.identification.name')        = 'BIAS Calibration Software (BICAS)';
       MAP('SWD.identification.identifier')  = 'BICAS';
       MAP('SWD.identification.description') = ...
-        ['Calibration software meant to be run at LESIA/ROC to', ...
-        ' (1) calibrate electric field L2 data from', ...
-        ' electric L1R LFR and TDS-LFM data, and', ...
-        ' (2) calibrate bias currents from L1R data.', ...
-        ' Also has undocumented support for processing', ...
-        ' L1 (instead of L1R) to L2, and BIAS L2 to L3 data', ...
+        ['Calibration software meant to be run at LESIA/ROC to' ...
+        ' (1) calibrate electric field L2 data from' ...
+        ' electric L1R LFR and TDS-LFM data, and' ...
+        ' (2) calibrate bias currents from L1R data.' ...
+        ' Also has additional support for processing' ...
+        ' L1 (instead of L1R; partial support) to L2, and BIAS L2 to L3 data', ...
         ' (both disabled by default).'];
 
-      % 2024-07-12: Latest RCS ICD version is 01/07
+      % 2024-09-13: Latest released RCS ICD version is 01/07.
       MAP('SWD.identification.icd_version') = '1.7';
 
       % ROC-GEN-SYS-NTT-00019-LES, "ROC Engineering Guidelines for External
@@ -353,8 +362,8 @@ classdef const
       % for the 0.Y.Z beta version for instance). In all cases, any change in
       % the S/W must lead to update the version number.
       % """"""""
-      MAP('SWD.release.version')   = '8.2.1';
-      MAP('SWD.release.date')      = '2024-07-25T18:30:00Z';
+      MAP('SWD.release.version')   = '8.3.0';
+      MAP('SWD.release.date')      = '2024-09-16T16:00:00Z';
       MAP('SWD.release.author')    = 'Erik P G Johansson, BIAS team, IRF';
       MAP('SWD.release.contact')   = 'erik.johansson@irf.se';
       MAP('SWD.release.institute') = IRF_LONG_NAME;   % Full name or abbreviation?
@@ -446,9 +455,14 @@ classdef const
       %   '; Non-Standard Operations (NSO) table for thruster firings', ...
       %   ' updated for up until 2024-05-19', ...
       %   ]; % v8.2.0
+      % MAP('SWD.release.modification')  = [...
+      %   'Bugfix: Including previously missing source code updates.', ...
+      %   ]; % v8.2.1
       MAP('SWD.release.modification')  = [...
-        'Bugfix: Including previously missing source code updates.', ...
-        ]; % v8.2.1
+        'Non-Standard Operations (NSO) table for thruster firings updated', ...
+        ' for until 2024-08-04', ...
+        '; Use bias_rct_validity.json to locate BIAS RCT', ...
+        ]; % v8.3.0
 
       MAP('SWD.release.source')        = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
       % Appropriate branch? "master" instead?
@@ -622,7 +636,7 @@ classdef const
       % NOTE: L3 dates are effectively determined by deliveries to ROC.
       % NOTE: Including VHT, since VHT uses the same BICAS functions for
       %       writing datasets (including
-      %       bicas.ga.derive_output_dataset_GAs).
+      %       bicas.ga.get_output_dataset_GAs).
       %===================================================================
 
       % BICAS v1.0.0 : No MODS needed since there are no changes compared
@@ -809,7 +823,7 @@ classdef const
         {'Bugfix for automatic sweep detection (SCDA).'}))
 
 
-      % BICAS v8.2.0
+      % BICAS v8.2.1
       Gmdb.add_GMVE(bicas.const.L2_CWF_DSI_CA, ...
         bicas.ga.mods.VersionEntry('2024-07-24', '8.2.1', ...
         {'Added zVariable CHANNEL_IDX (ISTP metadata).'}))
@@ -821,12 +835,13 @@ classdef const
         {'Added compression for zVariables.'}))
 
 
+      % BICAS v8.3.0
+      Gmdb.add_GMVE(ALL_DSI_CA, ...
+        bicas.ga.mods.VersionEntry('2024-09-16', '8.3.0', ...
+        {'Improved CDF metadata.'}))
 
-      % FUTURE ADDITIONS TO ADD WHEN RELEASING THE NEXT BICAS VERSION
-      if 0
-        DATE_STR    = '2099-07-24';   % TEST VALUE
-        VERSION_STR = '99.3.0';        % TEST VALUE
-      end
+
+
     end    % init_GA_MODS_DB
 
 

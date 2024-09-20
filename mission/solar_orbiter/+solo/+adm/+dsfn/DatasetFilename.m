@@ -57,7 +57,7 @@ classdef DatasetFilename
   %   NOTE: Only if multiple filenaming conventions in the same code.
   %
   % PROPOSAL: Property for file basename.
-  %   PRO: Used by bicas.ga.derive_output_dataset_GAs().
+  %   PRO: Used by bicas.ga.get_output_dataset_GAs().
   %
   % PROPOSAL: Use field names identical to the terms used in specifications (RCS
   %           ICD, SOL-SGS-TN-0009).

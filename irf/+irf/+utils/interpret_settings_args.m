@@ -15,7 +15,12 @@
 % returned struct. Note that if there are default values for all keys, then
 % DefaultSettings can be used to obtain the list of field names.
 %   Ex: irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
-%
+% --
+% NOTE: One could conceivably use MATLAB's inputParser instead to achieve
+% similar ends, but that was not known by the autor at the time of writing this
+% code. irf.utils.interpret_settings_args() also provides functionality for
+% overriding settings in bulk and in sequence (submit a struct) which
+% inputParser does not.
 %
 %
 % ALGORITHM

@@ -16,11 +16,11 @@ function [Dt1, Dt2, timeIntervalFormat] = parse_time_interval_str(timeIntervalSt
 % PROPOSAL: Only use column arrays.
 
 % yyyymmdd (8 digits).
-DATE_RE     = '20[0-9][0-9][01][0-9][0-3][0-9]';
+DATE_RE     = '[0-9][0-9][0-9][0-9][01][0-9][0-3][0-9]';
 
 % NOTE: DATETIME_RE not same as glob.attr. Datetime, but a component of it.
 % yyyymmddThhmmss (8+1+6=15 digits/T)
-DATETIME_RE = '20[0-9]{6,6}T[0-9]{6,6}';
+DATETIME_RE = '[0-9][0-9][0-9]{6,6}T[0-9]{6,6}';
 
 
 

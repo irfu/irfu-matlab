@@ -1,5 +1,5 @@
 %
-% Performance test for bicas.utils.SameRowsMap.setRows().
+% Performance test for bicas.utils.SameRowsMap.set_rows().
 %
 % The performance of that function is critical to the performance of LFR-SWF
 % processing. This code tests how modifying subsets of internal values scales
@@ -8,14 +8,14 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function SameRowsMap___setRows_SpeedTest
+function SameRowsMap___set_rows_SpeedTest
 clear classes
 
 N_DATA_POINTS    = 20;
 N_ARRAY_COLS     = 1024;
 N_ARRAY_ROWS_MIN = 1e1;
 N_ARRAY_ROWS_MAX = 1e4;
-FH = @speed_test_setRows;
+FH = @speed_test_set_rows;
 %FH = @speed_test_growing_array;
 %FH = @speed_test_preallocated_array;
 
@@ -44,21 +44,21 @@ end
 
 
 
-function tSec = speed_test_setRows(nArrayRows, nArrayCols)
+function tSec = speed_test_set_rows(nArrayRows, nArrayCols)
 
 bigArray   = repmat(linspace(1, nArrayRows, nArrayRows)', 1, nArrayCols);
 smallArray = NaN(1, nArrayCols);
 
-M1 = bicas.utils.SameRowsMap('char', nArrayRows, 'CONSTANT', bigArray,   {'K'});
-M2 = bicas.utils.SameRowsMap('char', 1,          'CONSTANT', smallArray, {'K'});
+Srm1 = bicas.utils.SameRowsMap('string', nArrayRows, 'CONSTANT', bigArray,   {"K"});
+Srm2 = bicas.utils.SameRowsMap('string', 1,          'CONSTANT', smallArray, {"K"});
 
 t = tic();
 for i = 1:nArrayRows
-  M1.setRows(M2, i)
+  Srm1.set_rows(Srm2, i)
 end
 tSec = toc(t);
 
-assert(all(isnan(M1('K')), 'all'))
+assert(all(isnan(Srm1("K")), 'all'))
 end
 
 

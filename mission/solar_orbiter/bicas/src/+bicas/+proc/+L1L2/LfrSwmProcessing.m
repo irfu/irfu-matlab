@@ -64,22 +64,19 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %==========================================
       % Configure bicas.proc.L1L2.cal.Cal object
       %==========================================
-      useCtRcts = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
-      useCti2   = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
+      useGactRct = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
+      useZvcti2  = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
 
-      if useCtRcts
-        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE(...
-          'LFR', rctDir, ...
-          InputSciCdf.Ga.CALIBRATION_TABLE, ...
-          InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
-          InputSciCdf.Zv.BW, ...
-          Bso, L);
-      else
-        RctdCaMap = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(...
-          {'BIAS', 'LFR'}, rctDir, Bso, L);
-      end
+      Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
+        useGactRct, 'LFR', rctDir, ...
+        InputSciCdf.Ga.CALIBRATION_TABLE, ...
+        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+        InputSciCdf.Zv.BW, ...
+        min(InputSciCdf.Zv.Epoch), ...
+        max(InputSciCdf.Zv.Epoch), ...
+        L);
 
-      Cal = bicas.proc.L1L2.cal.Cal(RctdCaMap, useCtRcts, useCti2, Bso);
+      Cal = bicas.proc.L1L2.cal.Cal(Rctdc, useGactRct, useZvcti2, Bso);
 
 
 
@@ -88,14 +85,14 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %==============
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf, Bso, L);
-      SciPreDc     = obj.process_CDF_to_PreDc(                        InputSciCdf, HkSciTimePd, Bso, L);
-      SciPostDc    = bicas.proc.L1L2.dc.process_calibrate_demux(      SciPreDc, InputCurCdf, Cal, NsoTable, Bso, L);
-      OutputSciCdf = obj.process_PostDc_to_CDF(                       SciPreDc, SciPostDc);
+      SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd, Bso, L);
+      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
+      OutputSciCdf = obj.process_DCOP_to_CDF(                         SciDcip, SciDcop);
 
 
 
       OutputDatasetsMap = containers.Map();
-      RctdCa = bicas.proc.utils.convert_RctdCaMap_to_CA(RctdCaMap);
+      RctdCa = Rctdc.get_global_RCTD_CA();
       OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCa);
     end
 
@@ -114,13 +111,15 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % Only "normalizes" data to account for technically
-    % illegal input LFR datasets. It should try to:
+    % Only "normalizes" data to account for technically illegal input LFR
+    % datasets. It should try to:
     % ** modify L1 data to look like L1R
     % ** mitigate historical bugs in input datasets
     % ** mitigate for not yet implemented features in input datasets
     %
     function InSciNorm = process_normalize_CDF(obj, InSci, Bso, L)
+      % ASSERTIONS: VARIABLES
+      assert(isa(InSci, 'bicas.InputDataset'))
 
       % Default behaviour: Copy values, except for values which are
       % modified later
@@ -147,7 +146,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       % Normalize CALIBRATION_TABLE_INDEX
       %===================================
       InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
-        bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
+        bicas.proc.L1L2.normalize_ZVCTI(...
         InSci.Zv, nRecords, obj.inputSciDsi);
 
 
@@ -248,12 +247,12 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % Convert LFR CDF data to PreDc.
+    % Convert LFR CDF data to DCIP.
     %
     % IMPLEMENTATION NOTE: Does not modify InSci in an attempt to save RAM
     % (should help MATLAB's optimization). Unclear if actually works.
     %
-    function PreDc = process_CDF_to_PreDc(obj, InSci, HkSciTime, Bso, L)
+    function Dcip = process_CDF_to_DCIP(obj, InSci, HkSciTime, Bso, L)
       %
       % PROBLEM: Hard-coded CDF data types (MATLAB classes).
       % MINOR PROBLEM: Still does not handle LFR zVar TYPE for determining
@@ -277,9 +276,12 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %============
       % Set iLsfZv
       %============
-      if     obj.inputSci.isLfrSbm1   zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
-      elseif obj.inputSci.isLfrSbm2   zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
-      else                            zvILsf = InSci.Zv.FREQ + 1;
+      if     obj.inputSci.isLfrSbm1
+        zvILsf = ones(nRecords, 1) * 2;   % Always value "2" (F1, "FREQ = 1").
+      elseif obj.inputSci.isLfrSbm2
+        zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
+      else
+        zvILsf = InSci.Zv.FREQ + 1;
         % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
         % index values (1=F0) used in loaded RCT data structs.
       end
@@ -288,11 +290,11 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
       % NOTE: Needed also for 1 SPR.
-      zvFreqHz = solo.hwzv.get_LFR_frequency( zvILsf );
+      zvFreqHz = solo.hwzv.get_LSF( zvILsf );
 
       % Obtain the relevant values (one per record) from zVariables R0,
       % R1, R2, and the virtual "R3".
-      zvLrx = solo.hwzv.get_LFR_Rx(...
+      zvLrx = solo.hwzv.get_LRX(...
         InSci.Zv.R0, ...
         InSci.Zv.R1, ...
         InSci.Zv.R2, ...
@@ -323,15 +325,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      Zv    = [];
+      Zv = [];
 
-      %             Zv.bltsSamplesTmCa    = cell(5,1);
-      %             Zv.bltsSamplesTmCa{1} = single(InSci.Zv.V);
-      %             % Copy values, except when zvLrx==0 (==>NaN).
-      %             Zv.bltsSamplesTmCa{2} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
-      %             Zv.bltsSamplesTmCa{3} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==0 );
-      %             Zv.bltsSamplesTmCa{4} = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
-      %             Zv.bltsSamplesTmCa{5} = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
       Zv.bltsSamplesTm(:, :, 1) = single(InSci.Zv.V);
       % Copy values when there is actual data for that BLTS as determined
       % by zvLrx. Otherwise NaN.
@@ -399,19 +394,19 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Ga.OBS_ID    = InSci.Ga.OBS_ID;
       Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
 
-      PreDc = bicas.proc.L1L2.PreDc(Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
+      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
 
-    end    % process_CDF_to_PreDc
+    end    % process_CDF_to_DCIP
 
 
 
-    function [OutSci] = process_PostDc_to_CDF(obj, SciPreDc, SciPostDc)
+    function [OutSci] = process_DCOP_to_CDF(obj, SciDcip, SciDcop)
       % NOTE: Most processing is done in function shared between LFR and
       %       TDS.
-      OutSci = bicas.proc.L1L2.process_PostDc_to_CDF(...
-        SciPreDc, SciPostDc, obj.outputDsi);
+      OutSci = bicas.proc.L1L2.process_DCOP_to_CDF(...
+        SciDcip, SciDcop, obj.outputDsi);
 
-      OutSci.Zv.BW = SciPreDc.Zv.BW;
+      OutSci.Zv.BW = SciDcip.Zv.BW;
     end
 
 

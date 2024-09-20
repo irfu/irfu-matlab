@@ -124,7 +124,7 @@ classdef NsoTable
         assert(~isempty(iEvt));
 
         utcCa = irf.cdf.TT2000_to_UTC_str_many(...
-          evtStartTt2000Array(iEvt));
+          evtStartTt2000Array(iEvt), 9);
 
         sCa = irf.str.sprintf_many('    %s\n', utcCa);
         timestampsListStr = strjoin(sCa);

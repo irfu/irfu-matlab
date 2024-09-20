@@ -10,8 +10,8 @@
 %
 % SOOP_TYPE, Datetime, OBS_ID
 % ===========================
-% XB on RCS telecon 2020-09-17: SOOP_TYPE, Datetime, OBS_ID should be taken from
-% L1 (not HK, unless implicit that it should).
+% XB on RCS telecon 2020-09-17: SOOP_TYPE, Datetime, OBS_ID should be taken
+% from L1 (not HK, unless implicit that it should).
 % --
 % Global attributes Datetime, OBS_ID, SOOP_TYPE appear to be present in BICAS
 % input L1R datasets, CURRENT datasets, and BIAS HK datasets. Not true for old
@@ -49,14 +49,10 @@
 % First created 2021-03-31, based on two functions broken out of
 % execute_SWM().
 %
-function OutGaSubset = derive_output_dataset_GAs(...
+function OutGaSubset = get_output_dataset_GAs(...
   InputDatasetsMap, OutputDataset, outputFilename, outputDsi, ...
   Bso, L)
 
-% PROPOSAL: Automatic test code.
-% PROPOSAL: Rename "derive"-->"get".
-%   PRO: More conventional name
-%
 % PROPOSAL: Create class for storing GAs.
 %   PRO: Can detect accidental overwriting/reuse of keys.
 %
@@ -73,8 +69,11 @@ function OutGaSubset = derive_output_dataset_GAs(...
 %       Ex: "Value overwritten by RCS."
 
 % ASSERTIONS
+assert(isa(OutputDataset, 'bicas.OutputDataset'))
 irf.assert.struct(OutputDataset.Ga, ...
   {'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
+% TODO-NI: Only checking these GAs to make sure that they are there, not
+% necessarily to use their values.
 
 [~, level, ~] = solo.adm.disassemble_DATASET_ID(outputDsi);
 
@@ -93,14 +92,8 @@ OutGaSubset.CALIBRATION_VERSION    = get_RCTD_field_CA_GA(RctdCa, 'scalarGa_Data
 
 
 
-OutGaSubset.Parents         = get_GA_Parents(InputDatasetsMap);
-
-% IMPLEMENTATION NOTE: SPICE_KERNELS should be set also for L3, but this has not
-% yet been implemented in skeletons.
-if strcmp(level, 'L2')
-  OutGaSubset.SPICE_KERNELS = get_GA_SPICE_KERNELS(InputDatasetsMap);
-end
-
+OutGaSubset.Parents          = get_GA_Parents(InputDatasetsMap);
+OutGaSubset.SPICE_KERNELS    = get_GA_SPICE_KERNELS(InputDatasetsMap);
 OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.identifier');
 OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
 
@@ -174,9 +167,12 @@ OutGaSubset.Datetime         = timeIntervalStr;
 %       ------------------------------------------------------------------------
 %       https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/85
 %       has the same complaint as above.
+%
+% NOTE: Datapool's check_rpw_cdf.py validator implies that the number of second
+%       decimals must be 6 (or at least not 9).
 %===============================================================================
-OutGaSubset.TIME_MIN = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(1  ));
-OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end));
+OutGaSubset.TIME_MIN = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(1  ), 6);
+OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end), 6);
 
 
 
@@ -208,8 +204,7 @@ end
 % TODO-DEC: Is this assertion sensible? There are many permanent GAs not
 %           mentioned here. Remove assertion?
 irf.assert.struct(OutGaSubset, ...
-  {'Parents', ...
-  'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
+  {'Parents', 'Datetime', 'OBS_ID', 'SOOP_TYPE'}, 'all')
 end
 
 
@@ -220,7 +215,7 @@ end
 
 function ga_Parents = get_GA_Parents(InputDatasetsMap)
 
-ga_Parents = {};
+ga_Parents = cell(0, 1);
 
 keysCa = InputDatasetsMap.keys;
 for i = 1:numel(keysCa)
@@ -230,7 +225,7 @@ for i = 1:numel(keysCa)
   % NOTE: Parsing INPUT dataset filename to set some GAs.
   [logicalFileId, ~, ~, ~] = parse_dataset_filename(...
     irf.fs.get_name(InputDataset.filePath));
-  ga_Parents{end+1} = ['CDF>', logicalFileId];
+  ga_Parents{end+1, 1} = ['CDF>', logicalFileId];
 
 end    % for
 end

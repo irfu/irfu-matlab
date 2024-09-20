@@ -1,6 +1,4 @@
 %
-% UNFINISHED
-%
 % matlab.unittest automatic test code for ?().
 %
 %
@@ -59,29 +57,33 @@ classdef generate_official_SWD_file___UTEST < matlab.unittest.TestCase
       %==========================
       % Test generating SWF file
       %==========================
-      officialSwdFile = bicas.utils.get_SWD_file_path();
-      testSwdFile     = fullfile(testCase.testDir, 'descriptor.json');
+      officialSwdFile  = bicas.utils.get_SWD_file();
+      generatedSwdFile = fullfile(testCase.testDir, bicas.const.SWD_FILENAME);
 
-      bicas.tools.generate_official_SWD_file(testSwdFile)
+      bicas.tools.generate_official_SWD_file(generatedSwdFile)
 
       % ASSERT: File exists and is non-empty.
-      irf.assert.file_exists(testSwdFile)
-      testCase.assertTrue(dir(testSwdFile).bytes > 0)
+      irf.assert.file_exists(generatedSwdFile)
+      testCase.assertTrue(dir(generatedSwdFile).bytes > 0)
 
 
 
       if 1
-        %================================================================
-        % Compare generated SWD file with SWD file stored with BICAS (as
+        %=======================================================================
+        % Compare (1) generated SWD file with (2) SWD file stored with BICAS (as
         % specified by RCS ICD).
-        %================================================================
-        officialBytesArray = irf.fs.read_file(officialSwdFile);
-        testBytesArray     = irf.fs.read_file(testSwdFile);
+        %=======================================================================
+        officialSwdBytesArray  = irf.fs.read_file(officialSwdFile);
+        generatedSwdBytesArray = irf.fs.read_file(generatedSwdFile);
 
-        if ~isequaln(officialBytesArray, testBytesArray)
+        if ~isequaln(officialSwdBytesArray, generatedSwdBytesArray)
           error( ...
-            'The official SWD ("%s") stored in BICAS root directory is not identical to the generated SWD ("%s").', ...
-            officialBytesArray, testBytesArray)
+            ['The official SWD ("%s") stored in BICAS root directory is', ...
+            ' not identical to the generated SWD ("%s").', ...
+            ' NOTE: You can generate a new one in-place by calling', ...
+            ' bicas.tools.generate_official_SWD_file().' ...
+            ], ...
+            officialSwdFile, generatedSwdFile)
         end
       end
     end

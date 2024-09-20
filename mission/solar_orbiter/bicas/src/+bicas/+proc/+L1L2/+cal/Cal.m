@@ -27,7 +27,7 @@
 % (1) undiscovered calibration bugs could be considered extra bad,
 % (2) it is expected to be hard to detect certain bugs,
 % (3) it could be hard to use automatic testing here,
-% (4) to detect changing RCT formats, in particular in RCTS from non-BIAS teams.
+% (4) to detect changing RCT formats, in particular in RCTs from non-BIAS teams.
 % --
 % NOTE: All calibration functions of measured data are assumed to accept data
 % from all BLTS (1-5), i.e. including TDS, in order to reduce the number
@@ -43,8 +43,8 @@
 % ====================================================================
 % CALIBRATION_TABLE       : CDF L1R global attribute
 %   """"Filename of the calibration table(s).""""
-%   """"There must as many as entries than the number of calibration table files
-%   associated to the L1R file.""""
+%   """"There must as many as entries than the number of calibration table
+%   files associated to the L1R file.""""
 %
 % CALIBRATION_TABLE_INDEX : CDF L1R zVariable
 %   """"Index of the calibration table(s) value required to generate L2 data
@@ -63,24 +63,97 @@
 % CALIBRATION_TABLE{CALIBRATION_TABLE_INDEX{iRecord, 1} + 1}
 %     == RCT filename
 % CALIBRATION_TABLE_INDEX{iRecord, 2}
-%     == Index/pointer to some calibration value(s) to use in RCT. Exact
-%        interpretation depends on RCT.
+%     == ZVCTI2
+%     == Index/pointer to some calibration value(s) to use in the corresponding
+%        RCT. The exact interpretation depends on the RCT.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-15
 %
 classdef Cal < handle
-  % TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
-  % TODO-NI: What parasitic capacitance value(s) should one use?
-  % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
+  % All methods 2024-09-05
+  % ----------------------
+  % function obj = Cal(...
+  % function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
+  % function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
+  % function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
+  %   Delegates to calibrate_voltage_*() but also handles
+  %   allVoltageCalibDisabled, ufv, useGact(=false) itself.
+  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
+  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
+  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
+  % function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
+  % function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
+  % function BiasCalibData = get_BIAS_calib_data(obj, ...
+  % function lfrItfIvpt = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
+  % function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
+  % function biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
   %
-  % PROPOSAL: Assertion function for CalSettings.
-  %   TODO-NI: Same struct, with same fields in all cases?
-  %   NOTE: Function does not know which fields are actually used.
-  % PROPOSAL: Class for CalSettings. Mere container for fields.
-  % PROPOSAL: Shorten CalSettings-->Cs inside functions and do not extract fields.
-  %   CON: Extracting variables makes it clear which fields are expected and used.
+  %
+  %
+  % PROPOSAL: Separate classes for different types of data. At least separate
+  %           for LFR, TDS-CWF, TDS-RSWF.
+  %   NOTE: Should then also have separate class for current calibration.
+  %   PROPOSAL: Functions
+  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
+  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
+  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
+  %   should then be separate implementations of abstract superclass mathod.
+  %     PROPOSAL: Separate non-abstract superclass method (which handles
+  %       allVoltageCalibDisabled, ufv, useGact(=false)) calls the subclass
+  %        method.
+  %
+  %
+  %
+  % PROPOSAL: Refactor to facilitate automated testing.
+  %   PROBLEM: Though it does not read RCTs, the corresponding data
+  %            structures are complex and would be hard to create test data for(?)
+  %   NOTE: Uses BSO, and many of its values.
+  %   PROBLEM: Calls complex function that should (primarily) be tested separately:
+  %            bicas.tf.apply_TF_freq()
+  %       PROPOSAL: Replace with function handle, set in constructor from
+  %                 argument ("dependency injection"). Unit tests can then mock
+  %                 bicas.tf.apply_TF_freq().
+  %           CON?: Introduces more interface (arguments) only due to testing.
+  %       PROPOSAL: Do automatic testing by having the tests call
+  %                 bicas.tf.apply_TF_freq() to generate results to compare with.
+  %           CON: Relies on the implementation of what is being tested.
+  %           CON: Can not test arguments sent to bicas.tf.apply_TF_freq().
+  %               CON: Relies on the implementation of what is being tested.
+  %       NOTE: (1) As a function/code module,
+  %                   bicas.proc.L1L2.cal.Cal encloses/contains/"secretly uses"
+  %                   bicas.tf.apply_TF_freq().
+  %             (2) For testing, one wants to verify the path (both ways) between
+  %                   bicas.proc.L1L2.cal.Cal and
+  %                   bicas.tf.apply_TF_freq().
+  %             ==> One wants to test one unit of code at a time, but what a
+  %                "unit" is ambiguous:
+  %                 one wants small units of code
+  %                 unit is ambiguous when a unit uses/call other unit(s).
+  %
+  %
+  %
+  % PROPOSAL: Move (charge) current calibration to separate class.
+  %   NOTE: Functions
+  %       calibrate_current_TM_to_aampere()
+  %           Uses BiasRctd == Uses RCT.
+  %       calibrate_current_HK_TM_to_aampere()
+  %           Uses
+  %               obj.HkBiasCurrent.gainAapt
+  %               obj.HkBiasCurrent.offsetTm
+  %       calibrate_current_sampere_to_TM()
+  %           Static
+  %           Uses solo.hwzv.const.TM_PER_SAMPERE
+  %   PRO: Class is large, ~1200 rows.
+  %   PRO: Remaining class becomes entirely about voltage calibration.
+  %   CON: Use needs to instantiate two calibration objects.
+  %   TODO-DEC: Name of new class?
+  %       ~cal_curr
+  %   PROPOSAL: Rename remaining class: Only about voltage calibration.
+  %       ~cal_volt
+  %
+  %
   %
   % TODO-DEC: How distribute the calibration formulas/algorithms between
   %   (1) calibrate_* functions,
@@ -127,6 +200,10 @@ classdef Cal < handle
   %
   %
   %
+  % TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
+  % TODO-NI: What parasitic capacitance value(s) should one use?
+  % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
+  %
   % PROPOSAL: Store all versions of TFs internally.
   %   Ex: FTF, ITF, tabulated ITF with extrapolation+interpolation+modification
   %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
@@ -145,87 +222,12 @@ classdef Cal < handle
   %
   %
   %
-  % PROPOSAL: Have
-  %               calibrate_voltage_BIAS_LFR(),
-  %               calibrate_voltage_BIAS_TDS_CWF(),
-  %               calibrate_voltage_BIAS_TDS_RSWF()
-  %           return function handle to a transfer function that does everything,
-  %           including offsets.
-  %   CON: Useful for debugging.
-  %       CON: Aren't the calibration methods available already that, if turned
-  %            into function handles?!!
-  %   PROPOSAL: Have ~special functions/methods for this, so that one does not use
-  %             function handles wrapped in function handles (not too many
-  %             anyway).
-  %   NOTE: CLARIFICATION: Separate TFs with offsets and calibration methods in the
-  %         time domain.
-  %   PROPOSAL: Have special function that returns transfer function for every
-  %             case.
-  %       PRO: Useful for debugging.
-  %           PRO: Plot
-  %           PRO: Save to file.
-  %
-  % PROPOSAL: Refactor to facilitate automated testing.
-  %   PROBLEM: Though it does not read RCTs, the corresponding data
-  %            structures are complex and would be hard to create test data for(?)
-  %   NOTE: Uses BSO, and many of its values.
-  %   PROBLEM: Calls complex function that should (primarily) be tested separately:
-  %            bicas.tf.apply_TF_freq()
-  %       PROPOSAL: Replace with function handle, set in constructor from
-  %                 argument ("dependency injection"). Unit tests can then mock
-  %                 bicas.tf.apply_TF_freq().
-  %           CON?: Introduces more interface (arguments) only due to testing.
-  %       PROPOSAL: Do automatic testing by having the tests call
-  %                 bicas.tf.apply_TF_freq() to generate results to compare with.
-  %           CON: Relies on the implementation of what is being tested.
-  %           CON: Can not test arguments sent to bicas.tf.apply_TF_freq().
-  %               CON: Relies on the implementation of what is being tested.
-  %       NOTE: (1) As a function/code module,
-  %                   bicas.proc.L1L2.cal.Cal encloses/contains/"secretly uses"
-  %                   bicas.tf.apply_TF_freq().
-  %             (2) For testing, one wants to verify the path (both ways) between
-  %                   bicas.proc.L1L2.cal.Cal and
-  %                   bicas.tf.apply_TF_freq().
-  %             ==> One wants to test one unit of code at a time, but what a
-  %                "unit" is ambiguous:
-  %                 one wants small units of code
-  %                 unit is ambiguous when a unit uses/call other unit(s).
-  %
-  %
-  %
-  % PROPOSAL: Rename/redefine cti2 (as did with cti1).
-  %   PROPOSAL: iNonBiasRctCalib
-  %
-  % PROPOSAL: Move (charge) current calibration to separate class.
-  %   NOTE: Functions
-  %       calibrate_current_TM_to_aampere()
-  %           Uses BiasRctd == Uses RCT.
-  %       calibrate_current_HK_TM_to_aampere()
-  %           Uses
-  %               obj.HkBiasCurrent.gainAapt
-  %               obj.HkBiasCurrent.offsetTm
-  %       calibrate_current_sampere_to_TM()
-  %           Static
-  %           Uses solo.hwzv.const.TM_PER_SAMPERE
-  %   PRO: Class is large, ~1250 rows.
-  %   PRO: Remaining class becomes entirely about voltage calibration.
-  %   CON: Use needs to instantiate two calibration objects.
-  %   TODO-DEC: Name of new class?
-  %       ~cal_curr
-  %   PROPOSAL: Rename remaining class: Only about voltage calibration.
-  %       ~cal_volt
-  %
-  % PROPOSAL: Move shared definitions and naming conventions to a
-  %           ~MISC_NAMING_CONVENTIONS.md file analogous with for
-  %           JUICE/RPWI_pipeline git repo.
-  %
   % PROPOSAL: Refactor to use a struct constant for those arguments to
   %           bicas.tf.apply_TF() which are constant.
   %
-  % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least not
-  %      for LFR.
+  % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least
+  %      not for LFR.
   %   PROPOSAL: Tests.
-
 
 
 
@@ -245,15 +247,7 @@ classdef Cal < handle
     %==================
 
     % RCT calibration data
-    % --------------------------------------------------
-    % containers.Map: RCTTID --> Data
-    % For BIAS, data is a struct (only one BIAS RCT is loaded).
-    % For non-BIAS, data is a 1D cell array. {iRct}.
-    % iRct-1 corresponds to ga. CALIBRATION_TABLE. and zv.
-    % CALIBRATION_TABLE_INDEX(:,1) when those are used. May thus contain
-    % empty cells for non-BIAS RCTs which should not (and can not) be
-    % loaded.
-    RctdCaMap;
+    Rctdc;
 
     % Non-RCT calibration data
     % ------------------------
@@ -289,11 +283,10 @@ classdef Cal < handle
     biasOffsetsDisabled
     lfrTdsTfDisabled
 
-    % Whether to select non-BIAS RCT using global attribute
-    % CALIBRATION_TABLE (and CALIBRATION_TABLE_INDEX(iRecord,1)).
-    use_CALIBRATION_TABLE_rcts
-    % Whether to use CALIBRATION_TABLE_INDEX(iRecord,2) for calibration.
-    use_CALIBRATION_TABLE_INDEX2
+    % Whether to select non-BIAS RCTs using GACT (and ZVCTI).
+    useGactRct
+    % Whether to use ZVCTI2 for calibration.
+    useZvcti2
 
   end
 
@@ -312,23 +305,18 @@ classdef Cal < handle
     %
     % ARGUMENTS
     % =========
-    % RctdCaMap
-    %       containers.Map with keys RCTTID --> values = 1D cell array of
-    %       RCTTs. Must include BIAS RCTT.
-    %       The content in non-empty indices {iRct} come from the RCT which
-    %       is determined by the combination zVar BW, zVar
-    %       CALIBRATION_TABLE_INDEX(i,1), glob.attr. CALIBRATION_TABLE  (or
-    %       emulations of all or some).
+    % Rctdc
+    %       Note: Must include BIAS RCTD.
     %
     %
     % NOTES ON INTENDED USAGE
     % =======================
     % The nominal use is that the caller first initializes (argument)
-    % RctdCaMap
-    % (1) by loading all RCTs using
-    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp(),
-    % (2) by loading relevant RCT(s) using
-    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_regexp_and_CALIBRATION_TABLE()
+    % RCTDC
+    % (1) by loading RCTs using
+    %     bicas.proc.L1L2.cal.rct.findread.find_read_nonBIAS_RCTs_by_regexp(),
+    % (2) by loading RCT(s) using
+    %     bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_BRVF_and_ZVCTI_GACT()
     % or
     % (3) manually (for manual debugging/analysis/testing).
     %
@@ -347,36 +335,19 @@ classdef Cal < handle
     %    submitting it to bicas.proc.L1L2.cal.Cal
     % ** it simplifies the constructor.
     %
-    function obj = Cal(...
-        RctdCaMap, ...
-        use_CALIBRATION_TABLE_rcts, ...
-        use_CALIBRATION_TABLE_INDEX2, ...
-        Bso)
+    function obj = Cal(Rctdc, useGactRct, useZvcti2, Bso)
 
       % ASSERTIONS: Arguments
-      assert(isscalar(use_CALIBRATION_TABLE_INDEX2))
-      % RctdCaMap
-      irf.assert.subset(...
-        RctdCaMap.keys, ...
-        bicas.proc.L1L2.cal.rct.RctData.RCTD_METADATA_MAP.keys)
-      assert(isscalar(RctdCaMap('BIAS')))
-      RcttidCa = RctdCaMap.keys;
-      for iRcttid = 1:numel(RcttidCa)
-        rcttid = RcttidCa{iRcttid};
-        RctdCa = RctdCaMap(rcttid);
-        assert(iscell(RctdCa) && iscolumn(RctdCa))
-        for iRctd = 1:numel(RctdCa)
-          Rctd = RctdCa{iRctd};
-          assert(isempty(Rctd) | isa(Rctd, 'bicas.proc.L1L2.cal.rct.RctData'))
-        end
-      end
+      assert(isscalar(useZvcti2))
+      % Rctdc
+      assert(isa(Rctdc, 'bicas.proc.L1L2.cal.RctdCollection'))
 
 
 
-      %===================
-      % Set obj.RctdCaMap
-      %===================
-      obj.RctdCaMap = RctdCaMap;
+      %===============
+      % Set obj.Rctdc
+      %===============
+      obj.Rctdc = Rctdc;
 
 
 
@@ -422,9 +393,9 @@ classdef Cal < handle
       settingBiasTf                      = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
       switch(settingBiasTf)
         case 'FULL'
-          obj.useBiasTfScalar = 0;
+          obj.useBiasTfScalar = false;
         case 'SCALAR'
-          obj.useBiasTfScalar = 1;
+          obj.useBiasTfScalar = true;
         otherwise
           error(...
             'BICAS:Assertion:ConfigurationBug', ...
@@ -438,8 +409,8 @@ classdef Cal < handle
       %============================
       % Store some argument values
       %============================
-      obj.use_CALIBRATION_TABLE_rcts   = use_CALIBRATION_TABLE_rcts;
-      obj.use_CALIBRATION_TABLE_INDEX2 = use_CALIBRATION_TABLE_INDEX2;
+      obj.useGactRct = useGactRct;
+      obj.useZvcti2  = useZvcti2;
     end
 
 
@@ -465,7 +436,7 @@ classdef Cal < handle
       %==============================
       % Obtain calibration constants
       %==============================
-      BiasRctdCa    = obj.RctdCaMap('BIAS');
+      BiasRctdCa    = obj.Rctdc.get_RCTD_CA('BIAS');
       offsetAAmpere = BiasRctdCa{1}.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
       gainAapt      = BiasRctdCa{1}.Current.gainsAapt(     iCalibTimeL, iAntenna);
 
@@ -528,9 +499,8 @@ classdef Cal < handle
     %
     % ARGUMENTS
     % =========
-    % zv_CALIBRATION_TABLE_INDEX
-    %       NOTE: Only one record of zVar CALIBRATION_TABLE_INDEX! Not
-    %             entire zVar.
+    % zvcti
+    %       NOTE: Only one record (row) of ZVCTI! Not entire ZV.
     % ufv
     %       Scalar logical.
     %       Whether to set output voltages to NaN (representing fill values)
@@ -540,39 +510,35 @@ classdef Cal < handle
     %           data will be overwritten with fill values later.
     %       (2) avoid executing calibration algorithms when it is
     %           known that there is no calibration configuration anyway
-    %           Ex: LFR zVar BW=0 ==> CALIBRATION_TABLE_INDEX(1,:) is illegal.
+    %           Ex: LFR zVar BW=0 ==> zvcti(1,:) value is illegal.
     %               ==> Can not calibrate.
     %           Note: This means that this function technically accepts
-    %           an illegal calibration configuration when argument is set
+    %           an illegal calibration configuration when this argument is set
     %           to true.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
         dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, ...
-        zv_CALIBRATION_TABLE_INDEX, ufv)
+        zvcti, ufv)
 
       % ASSERTIONS
-      assert(isstruct(CalSettings))
-      %             irf.assert.struct(CalSettings, {...
-      %                 'iBlts', 'Ssid', 'isAchg', ...
-      %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
       assert(iscell(bltsSamplesTmCa))
       assert(isvector(bltsSamplesTmCa))
-      irf.assert.sizes(zv_CALIBRATION_TABLE_INDEX, [1,2])
+      irf.assert.sizes(zvcti, [1,2])
       assert(islogical(ufv) && isscalar(ufv))
 
 
 
-      % Set iNonBiasRct, cti2 by extracting values from
-      % zv_CALIBRATION_TABLE_INDEX or emulating it.
-      if obj.use_CALIBRATION_TABLE_rcts
+      % Set iNonBiasRct, zvcti2 by extracting values from zvcti or emulating it.
+      if obj.useGactRct
         % NOTE: Incrementing by one (index into MATLAB array).
-        iNonBiasRct = 1 + zv_CALIBRATION_TABLE_INDEX(1,1);
+        iNonBiasRct = 1 + zvcti(1,1);
       else
         iNonBiasRct = 1;
       end
       % NOTE: NOT incrementing value by one, since the variable's meaning
       % can vary between LFR, TDS-CWF, TDS-RSWF.
-      cti2 = zv_CALIBRATION_TABLE_INDEX(1,2);
+      zvcti2 = zvcti(1,2);
 
 
 
@@ -588,8 +554,8 @@ classdef Cal < handle
           if ufv
             % CASE: Set voltages to NaN.
 
-            % IMPLEMENTATION NOTE: Potentially overwrites TM value
-            % set in above "if" statement.
+            % IMPLEMENTATION NOTE: Potentially overwrites TM value set in above
+            % "if" statement.
             bltsSamplesAVoltCa{i} = nan(size(bltsSamplesTmCa{i}));
           end
         end
@@ -601,7 +567,7 @@ classdef Cal < handle
           % CASE: LFR
           %===========
           bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_LFR(...
-            dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
+            dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2);
         else
           %===========
           % CASE: TDS
@@ -609,11 +575,11 @@ classdef Cal < handle
           if isTdsCwf
             % CASE: TDS CWF
             bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_TDS_CWF(...
-              dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
+              dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2);
           else
             % CASE: TDS RSWF
             bltsSamplesAVoltCa = obj.calibrate_voltage_BIAS_TDS_RSWF(...
-              dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2);
+              dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2);
           end
         end
 
@@ -626,14 +592,15 @@ classdef Cal < handle
     % =========
     % samplesTm    : 1D cell array of numeric 1D arrays.
     % samplesAVolt : 1D cell array of numeric 1D arrays.
-    % CalSettings  : Struct that groups together arguments.
-    %   .iBlts     : Scalar integer. 1..5.
-    %   ...
     %
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
-        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
+        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
       % ASSERTIONS
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+      % IMPLEMENTATION NOTE: bicas.proc.L1L2.CalibrationSettings permits TDS
+      % data for which iLsf=NaN.
+      bicas.proc.L1L2.cal.utils.assert_iLsf(CalSettings.iLsf)
       irf.assert.vector(bltsSamplesTmCa)
       assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
       irf.assert.vector(dtSec)
@@ -645,7 +612,7 @@ classdef Cal < handle
       % Obtain all calibration data
       %=============================
       CalibData = obj.get_BIAS_LFR_calib_data(...
-        CalSettings, iNonBiasRct, cti2);
+        CalSettings, iNonBiasRct, zvcti2);
 
       %====================================
       % CALIBRATE: LFR TM --> TM --> avolt
@@ -679,11 +646,10 @@ classdef Cal < handle
     % See calibrate_voltage_BIAS_LFR.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
-        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
+        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
-      %             irf.assert.struct(CalSettings, {...
-      %                 'iBlts', 'Ssid', 'isAchg', ...
-      %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+
       iBlts        = CalSettings.iBlts;
       Ssid         = CalSettings.Ssid;
       isAchg       = CalSettings.isAchg;
@@ -694,15 +660,13 @@ classdef Cal < handle
       irf.assert.vector(dtSec)
       assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
       assert(numel(bltsSamplesTmCa) == numel(dtSec))
-      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(iNonBiasRct >= 1)
 
-      if obj.use_CALIBRATION_TABLE_INDEX2
-        % TODO? ASSERTION: cti2 = 0???
+      if obj.useZvcti2
+        % TODO? ASSERTION: zvcti2 = 0???
         error(...
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-          'TDS-CWF calibration never uses CALIBRATION_TABLE_INDEX2.')
+          'TDS-CWF calibration never uses ZVCTI2.')
       end
 
       % Initialize empty output variable.
@@ -714,15 +678,15 @@ classdef Cal < handle
         %==============================
         % Obtain calibration constants
         %==============================
-        % NOTE: Low/high gain is irrelevant for TDS. Argument value
-        % arbitrary.
+        % NOTE: AC low/high gain is irrelevant for TDS. Argument value is
+        % therefore arbitrary.
         BiasCalibData = obj.get_BIAS_calib_data(...
           Ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
         if obj.lfrTdsTfDisabled
           tdsFactorIvpt = 1;
         else
-          RctdCa        = obj.RctdCaMap('TDS-CWF');
+          RctdCa        = obj.Rctdc.get_RCTD_CA('TDS-CWF');
           tdsFactorIvpt = RctdCa{iNonBiasRct}.factorsIvpt(iBlts);
         end
 
@@ -773,11 +737,10 @@ classdef Cal < handle
     % See calibrate_voltage_BIAS_LFR.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
-        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, cti2)
+        dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
 
-      %             irf.assert.struct(CalSettings, {...
-      %                 'iBlts', 'Ssid', 'isAchg', ...
-      %                 'iCalibTimeL', 'iCalibTimeH'}, {'iLsf'})   % Too slow?
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+
       iBlts        = CalSettings.iBlts;
       Ssid         = CalSettings.Ssid;
       isAchg       = CalSettings.isAchg;
@@ -788,15 +751,13 @@ classdef Cal < handle
       irf.assert.vector(dtSec)
       assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
       assert(numel(bltsSamplesTmCa) == numel(dtSec))
-      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(iNonBiasRct >= 1)
 
-      if obj.use_CALIBRATION_TABLE_INDEX2
-        % TODO? ASSERTION: cti2 = 0???
+      if obj.useZvcti2
+        % TODO? ASSERTION: zvcti2 = 0???
         error(...
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-          'TDS-RSWF calibration never uses CALIBRATION_TABLE_INDEX2.')
+          'TDS-RSWF calibration never uses ZVCTI2.')
       end
 
       %==============================
@@ -817,7 +778,7 @@ classdef Cal < handle
         if obj.lfrTdsTfDisabled
           tdsItfIvpt = @(omegaRps) (ones(omegaRps));
         else
-          RctdCa     = obj.RctdCaMap('TDS-RSWF');
+          RctdCa     = obj.Rctdc.get_RCTD_CA('TDS-RSWF');
           tdsItfIvpt = RctdCa{iNonBiasRct}.itfModifIvptCa{iBlts};
         end
 
@@ -860,7 +821,7 @@ classdef Cal < handle
 
 
     function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
-      BiasRctdCa = obj.RctdCaMap('BIAS');
+      BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
       iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
         Epoch, BiasRctdCa{1}.epochL);
@@ -869,7 +830,7 @@ classdef Cal < handle
 
 
     function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
-      BiasRctdCa = obj.RctdCaMap('BIAS');
+      BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
       iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
         Epoch, BiasRctdCa{1}.epochH);
@@ -907,14 +868,14 @@ classdef Cal < handle
       assert(isscalar(iCalibTimeL))
       assert(isscalar(iCalibTimeH))
 
-      BiasRctdCa = obj.RctdCaMap('BIAS');
+      BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
       BiasRctd   = BiasRctdCa{1};
 
       %###################################################################
       % kIvpav = Multiplication factor "k" that represents/replaces the
       % (forward) transfer function.
       switch(Ssid.Asid.category)
-        case 'DC single'
+        case 'DC_SINGLE'
 
           % NOTE: List of ITFs for different times.
           biasItfAvpiv = BiasRctd.ItfSet.dcSingleAvpiv{iCalibTimeL};
@@ -922,7 +883,7 @@ classdef Cal < handle
           offsetAVolt  = BiasRctd.dcSingleOffsetsAVolt(...
             iCalibTimeH, Ssid.Asid.antennas);
 
-        case 'DC diff'
+        case 'DC_DIFF'
 
           biasItfAvpiv = BiasRctd.ItfSet.dcDiffAvpiv{iCalibTimeL};
           kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
@@ -934,7 +895,7 @@ classdef Cal < handle
               'Illegal Ssid.');
           end
 
-        case 'AC diff'
+        case 'AC_DIFF'
 
           if     isAchg == 0
             biasItfAvpiv = BiasRctd.ItfSet.aclgAvpiv{iCalibTimeL};
@@ -998,7 +959,7 @@ classdef Cal < handle
         % signal route, so the TF can not be returned even in principle.
         lfrItfIvpt = bicas.proc.L1L2.cal.Cal.NAN_TF;
       else
-        LfrRctdCa = obj.RctdCaMap('LFR');
+        LfrRctdCa = obj.Rctdc.get_RCTD_CA('LFR');
 
         % ASSERTION
         % IMPLEMENTATION NOTE: Anonymous function below will fail at a
@@ -1040,12 +1001,10 @@ classdef Cal < handle
     % IMPLEMENTATION NOTE: Return one struct instead of multiple return
     % values to make sure that the caller does not confuse the return values
     % with each other.
-    function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, cti2)
+    function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
 
-      % ASSERTIONS
-      %             irf.assert.struct(CalSettings, {...
-      %                 'iBlts', 'Ssid', 'isAchg', ...
-      %                 'iCalibTimeL', 'iCalibTimeH', 'iLsf'}, {})   % Too slow?
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+
       iBlts        = CalSettings.iBlts;
       Ssid         = CalSettings.Ssid;
       isAchg       = CalSettings.isAchg;
@@ -1054,37 +1013,34 @@ classdef Cal < handle
       iLsf         = CalSettings.iLsf;
 
       % ASSERTIONS
-      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
       assert(Ssid.is_ASR())
-      bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
       assert(isscalar(iNonBiasRct))
       assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
-      % No assertion on cti2 unless used (determined later).
+      % No assertion on zvcti2 unless used (determined later).
 
 
 
-      %============================================
-      % Only place to potentially make use of cti2
-      %============================================
-      if obj.use_CALIBRATION_TABLE_INDEX2
+      %==================================================
+      % The only place to potentially make use of zvcti2
+      %==================================================
+      if obj.useZvcti2
         % ASSERTIONS
-        assert(isscalar(cti2), ...
+        assert(isscalar(zvcti2), ...
           'BICAS:IllegalArgument:Assertion', ...
-          'Argument cti2 is not scalar.')
-        assert(cti2 >= 0, ...
+          'Argument zvcti2 is not scalar.')
+        assert(zvcti2 >= 0, ...
           'BICAS:IllegalArgument:Assertion', ...
-          ['Illegal argument cti2=%g', ...
+          ['Illegal argument zvcti2=%g', ...
           ' (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))'], ...
-          cti2)
-        assert(iLsf == cti2+1, ...
+          zvcti2)
+        assert(iLsf == zvcti2+1, ...
           'BICAS:IllegalArgument:Assertion', ...
-          'cti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
-          cti2+1, iLsf)
+          'zvcti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
+          zvcti2+1, iLsf)
 
         % NOTE: Override earlier iLsf.
-        % NOTE: This is the only place cti2 is used in this class.
-        iLsf = cti2 + 1;
+        % NOTE: This is the only place zvcti2 is used in this class.
+        iLsf = zvcti2 + 1;
       end
 
 
@@ -1094,7 +1050,7 @@ classdef Cal < handle
       %====================================================
       % Obtain settings for bicas.tf.apply_TF()
       %====================================================
-      if CalSettings.Ssid.Asid.is_AC()
+      if Ssid.Asid.is_AC()
         % IMPLEMENTATION NOTE: DC is (optionally) detrended via
         % bicas.tf.apply_TF() in the sense of a linear fit
         % being removed, TF applied, and then added back. That same

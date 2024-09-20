@@ -16,12 +16,13 @@
 %
 % IMPLEMENTATION NOTES
 % ====================
-% The class essentially consists of one large struct, and a constructor that
-% builds it. The large data struct contains many parts which are similar but not
-% the same. To do this, much of the data is "generated" with hard-coded strings
-% (mostly the same in every iteration), in which specific codes/substrings are
-% substituted algorithmically (different in different iterations). To avoid
-% mistakes, the code uses a lot of assertions to protect against mistakes, e.g.
+% The class essentially consists of one array of objects and a constructor that
+% builds it. The large data structure contains of many parts which are similar
+% but not the same. To do this, much of the data is "generated" in
+% bicas.swm.get_SWML() with hard-coded strings (mostly the same in every
+% iteration), in which specific codes/substrings are substituted
+% algorithmically (different in different iterations). To avoid mistakes, the
+% code uses a lot of assertions to protect against mistakes, e.g.
 % -- algorithmic bugs
 % -- mistyped hard-coded info
 % -- mistakenly confused arguments with each other.
@@ -53,12 +54,12 @@ classdef SoftwareModeList
   % PROPOSAL: Pick SWD name/descriptions from master CDFs.
   % PROPOSAL: Obtain output dataset level from production function metadata?!!
   %
-  % PROPOSAL: Always produce all possible s/w modes (both pipelines, incl. L1),
+  % PROPOSAL: Always produce all possible SWMs (both pipelines, incl. L1),
   %           then filter out the undesired ones using internal metadata for
-  %           every S/W mode.
+  %           every SWM.
   %
   % PROPOSAL: Same input CDF can have multiple DSIs, but only one is
-  %           shown in the s/w descriptor.
+  %           shown in the SWD.
   %   PRO: Can handle old datasets with ROG-SGSE DSIs, and otherwise
   %        only use RODP DSIs.
   %
@@ -80,15 +81,13 @@ classdef SoftwareModeList
   %   Ex: Bso, L, rctDir, NsoTable
   %
   % PROPOSAL: Abolish this class. Only need SWM class + object array/list.
-  %   PROPOSAL: Use containers.Map.
-  %   NOTE: Alters the BICAS interface which bicas.batch uses.
+  %   CON: Implements good to have method Swm = get_SWM(obj, swmCliOption).
+  %     CON-PROPOSAL: Use dictionary.
+  %   CON: Alters the BICAS interface which bicas.batch uses.
   %
   % PROPOSAL: Better class name
   %   PROPOSAL: SwmSet
   %       PRO: There is no inherent ordering of SWMs.
-  %   PROPOSAL: SwmList
-  %       CON: List implies ordering.
-  %       CON: Conflicts with variable naming for plain list of SWM objects.
 
 
   % PUBLIC, IMMUTABLE
@@ -127,10 +126,10 @@ classdef SoftwareModeList
 
 
 
-    function swm = get_SWM(obj, swmCliOption)
+    function Swm = get_SWM(obj, swmCliOption)
       i = find(strcmp(swmCliOption, {obj.List(:).cliOption}));
       irf.assert.scalar(i)
-      swm = obj.List(i);
+      Swm = obj.List(i);
     end
 
 

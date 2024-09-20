@@ -1,11 +1,11 @@
 %
-% matlab.unittest automatic test code for bicas.tf.drt___UTEST().
+% matlab.unittest automatic test code for bicas.tf.Deretrending___UTEST().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-12
 %
-classdef drt___UTEST < matlab.unittest.TestCase
+classdef Deretrending___UTEST < matlab.unittest.TestCase
 
 
 
@@ -37,7 +37,7 @@ classdef drt___UTEST < matlab.unittest.TestCase
       % Complex, arbitrary function.
       y1a = exp(t) .* cos(t) + t.^3;
 
-      [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, {-2, false}, 29);
+      [y12b, y2a] = testCase.run_DRT(y1a, {-2, false}, 29);
 
       testCase.verifyEqual(y1a, y12b)
       testCase.verifyEqual(y12b, y2a)
@@ -54,7 +54,7 @@ classdef drt___UTEST < matlab.unittest.TestCase
       y1a = exp(t) .* cos(5*t) + t.^3;
 
       % NOTE: Must use scale=1 to obtain original function.
-      [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, UNITY_DET_RET_SETTINGS, 1);
+      [y12b, y2a] = testCase.run_DRT(y1a, UNITY_DET_RET_SETTINGS, 1);
 
       % ASSERTIONS
       testCase.verifyEqual(y1a, y2a, 'AbsTol', 1e-15)
@@ -71,7 +71,7 @@ classdef drt___UTEST < matlab.unittest.TestCase
 
       y1a = 2 + 3*x;
 
-      [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, {0, true}, 1);
+      [y12b, y2a] = testCase.run_DRT(y1a, {0, true}, 1);
 
       testCase.verifyEqual(y12b, 3*x,   'AbsTol', 1e-15)
       testCase.verifyEqual(y2a,  2+3*x, 'AbsTol', 1e-15)
@@ -79,7 +79,7 @@ classdef drt___UTEST < matlab.unittest.TestCase
 
 
       % NOTE: Test retrending scaling.
-      [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, {1, true}, 2);
+      [y12b, y2a] = testCase.run_DRT(y1a, {1, true}, 2);
 
       % 1e-15 works on irony but fails in GitHub CI.
       testCase.verifyEqual(y12b,   0*x, 'AbsTol', 1e-14)
@@ -87,7 +87,7 @@ classdef drt___UTEST < matlab.unittest.TestCase
 
 
 
-      [y12b, y2a] = bicas.tf.drt___UTEST.run_drt(y1a, {0, false}, 1);
+      [y12b, y2a] = testCase.run_DRT(y1a, {0, false}, 1);
 
       testCase.verifyEqual(y12b,   3*x, 'AbsTol', 1e-15)
       testCase.verifyEqual(y2a,    3*x, 'AbsTol', 1e-15)
@@ -109,11 +109,13 @@ classdef drt___UTEST < matlab.unittest.TestCase
 
 
 
-    % NOTE: Does not modify signal between detrending and retrending
+    % NOTE: Does not modify the signal between detrending and retrending
     % (y1b-->y2b).
-    function [y12b, y2a] = run_drt(y1a, drtInitArgsCa, retScaleFactor)
+    % NOTE: Can not include testing of data after, since the operation can not
+    % always restore the original data, depending on configuration.
+    function [y12b, y2a] = run_DRT(y1a, drtInitArgsCa, retScaleFactor)
 
-      Drt = bicas.tf.drt(drtInitArgsCa{:});
+      Drt = bicas.tf.Deretrending(drtInitArgsCa{:});
       y12b = Drt.detrend(y1a);
 
       y2a = Drt.retrend(y12b, retScaleFactor);

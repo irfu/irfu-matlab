@@ -72,6 +72,8 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         end
       end
 
+
+
       main()
     end
 
@@ -208,7 +210,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
         expIsSaturatedAr = logical(expIsSaturatedAr);
 
-        L = bicas.Logger('none', false);
+        L = bicas.Logger('NO_STDOUT', false);
         S = bicas.proc.L1L2.Saturation___UTEST.init_object(...
           V.cwfSlidingWindowLengthSec, ...
           V.tsfFractionThreshold, ...
@@ -241,10 +243,10 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           V.thresholdAVoltAchg        = 4;
           %
           V.tt2000Ar                  = zeros(0, 1);
-          V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 0, 'EMPTY');
-          V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s, zeros(0, 1))
-          V.AsrSamplesAVoltSrm.add(C.DC_V2.Asid.s, zeros(0, 1))
-          V.AsrSamplesAVoltSrm.add(C.DC_V3.Asid.s, zeros(0, 1))
+          V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 0, 'EMPTY');
+          V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid, zeros(0, 1))
+          V.AsrSamplesAVoltSrm.add(C.DC_V2.Asid, zeros(0, 1))
+          V.AsrSamplesAVoltSrm.add(C.DC_V3.Asid, zeros(0, 1))
           V.zvNValidSamplesPerRecord  = zeros(0, 1);
           V.bdm                       = zeros(0, 1);
           V.dlr                       = zeros(0, 1);
@@ -271,10 +273,10 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg        = 4;
         %
         V.tt2000Ar                  = [10 11 12]' * 1e9;
-        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 3, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s,  [2 0 2]')
-        V.AsrSamplesAVoltSrm.add(C.DC_V12.Asid.s, [2 0 2]'+1)
-        V.AsrSamplesAVoltSrm.add(C.DC_V23.Asid.s, [2 0 2]'+1)
+        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 3, 'EMPTY');
+        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid,  [2 0 2]')
+        V.AsrSamplesAVoltSrm.add(C.DC_V12.Asid, [2 0 2]'+1)
+        V.AsrSamplesAVoltSrm.add(C.DC_V23.Asid, [2 0 2]'+1)
         V.zvNValidSamplesPerRecord  = [1 1 1]';
         V.bdm                       = [0 0 0]';
         V.dlr                       = [0 0 0]';
@@ -298,10 +300,10 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg        = 4;
         %
         V.tt2000Ar                  = [10:19]' * 1e9;
-        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 10, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s,  [2 2 0 0 0 0 0 0 0 0]')
-        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid.s, [0 0 0 2 2 0 0 0 0 0]'+2)
-        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid.s, [0 0 0 0 0 0 2 2 0 0]'+2)
+        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 10, 'EMPTY');
+        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid,  [2 2 0 0 0 0 0 0 0 0]')
+        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid, [0 0 0 2 2 0 0 0 0 0]'+2)
+        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid, [0 0 0 0 0 0 2 2 0 0]'+2)
         V.zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1 1 1]';
         V.bdm                       = [0 0 0 0 0 0 0 0 0 0]';
         V.dlr                       = [0 0 0 0 0 0 0 0 0 0]';
@@ -325,12 +327,12 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg        = 4;
         %
         V.tt2000Ar                  = [10:17]' * 1e9;
-        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 8, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s,  [0 0 2 2 0 0 0 0]')
-        V.AsrSamplesAVoltSrm.add(C.DC_V12.Asid.s, [0 0 0 0 0 0 2 2]'+2)
-        V.AsrSamplesAVoltSrm.add(C.DC_V23.Asid.s, [0 0 0 0 0 0 0 0]'+2)
-        V.AsrSamplesAVoltSrm.add(C.DC_V2.Asid.s,  [2 2 0 0 0 0 0 0]')
-        V.AsrSamplesAVoltSrm.add(C.DC_V3.Asid.s,  [0 0 0 0 2 2 0 0]')
+        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 8, 'EMPTY');
+        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid,  [0 0 2 2 0 0 0 0]')
+        V.AsrSamplesAVoltSrm.add(C.DC_V12.Asid, [0 0 0 0 0 0 2 2]'+2)
+        V.AsrSamplesAVoltSrm.add(C.DC_V23.Asid, [0 0 0 0 0 0 0 0]'+2)
+        V.AsrSamplesAVoltSrm.add(C.DC_V2.Asid,  [2 2 0 0 0 0 0 0]')
+        V.AsrSamplesAVoltSrm.add(C.DC_V3.Asid,  [0 0 0 0 2 2 0 0]')
         V.zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1]';
         V.bdm                       = [0 0 0 0 4 4 4 4]';
         V.dlr                       = [0 0 0 0 0 0 0 0]';
@@ -357,18 +359,18 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg        = 7;
         %
         V.tt2000Ar                  = [10 11]' * 1e9;
-        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 2, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s, ...
+        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 2, 'EMPTY');
+        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid, ...
           [
           [2 2 2 0 0 0 0] + 0; ...   % Saturated
           [0 0 0 2 2 2 2] + 0;
           ])
-        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid.s, ...
+        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid, ...
           [
           [0 0 0 0 0 0 0] + 4; ...
           [0 0 0 2 2 2 2] + 6;
           ]+1)
-        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid.s, ...
+        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid, ...
           [
           [0 0 0 0 0 0 0] + 4; ...
           [0 0 0 2 2 2 2] + 6;
@@ -397,22 +399,22 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg        = 7;
         %
         V.tt2000Ar                  = [10:13]' * 1e9;
-        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap('char', 4, 'EMPTY');
-        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid.s, ...
+        V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 4, 'EMPTY');
+        V.AsrSamplesAVoltSrm.add(C.DC_V1.Asid, ...
           [
           [0 0 0 0 0 0 0] + 0; ...
           [0 2 2 2 2 2 2] + 0; ...
           [0 0 0 0 0 0 0] + 0; ...
           [0 0 0 2 2 2 2] + 0;
           ])
-        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid.s, ...
+        V.AsrSamplesAVoltSrm.add(C.AC_V12.Asid, ...
           [
           [2 0 0 0 0 0 0] + 4; ...   % Saturated.
           [0 2 2 2 2 2 2] + 4; ...
           [2 2 2 0 0 0 0] + 6; ...   % Saturated.
           [0 0 0 2 2 2 2] + 6;
           ]+1)
-        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid.s, ...
+        V.AsrSamplesAVoltSrm.add(C.AC_V23.Asid, ...
           [
           [0 0 0 0 0 0 0] + 4; ...
           [0 2 2 2 2 2 2] + 4; ...

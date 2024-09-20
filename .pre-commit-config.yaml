@@ -19,7 +19,13 @@ repos:
       - id: check-merge-conflict
       - id: check-xml
       - id: check-yaml
-      # In Matlab files remove trailing whitespace, excluding contributed code
+      # Remove trailing whitespace in MATLAB code, excluding contributed code.
+      # NOTE: One could conceivably also remove trailing whitespace in XML & XSL
+      # files, but this would modify cluster XML & XSL files for which it is not
+      # known whether this is acceptable or not.
       - id: trailing-whitespace
-        files: '.*\.(m|txt|TXT)$'
+        files: '.*\.(m|txt|TXT|json)$'
         exclude: 'contrib/'
+      - id: trailing-whitespace
+        files: '.*\.(xml|xsl)$'
+        exclude: 'mission/cluster/caa/'

@@ -28,7 +28,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
           zv_Epoch,         [-1], ...
           zvCurrentAAmpere, [-1, 3]);
         assert(zvAsrSamplesAVoltSrm.nRows == nRows)
-        L = bicas.Logger('none', false);
+        L = bicas.Logger('NO_STDOUT', false);
 
         % NOTE: Modifies argument zvAsrSamplesAVoltSrm (handle object).
         actZvCurrentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
@@ -96,7 +96,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         Bso.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', tdsBdmMarginSec, 'test')
         Bso.make_read_only()
 
-        L = bicas.Logger('none', false);
+        L = bicas.Logger('NO_STDOUT', false);
 
         actZvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
           zv_Epoch, zvBdmFpa, isLfr, Bso, L);
@@ -188,8 +188,8 @@ classdef qual___UTEST < matlab.unittest.TestCase
     function AsrSamplesAVoltSrm = AsSrm(v)
       assert(iscolumn(v))
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
-        'char', size(v, 1), 'CONSTANT', v, ...
-        bicas.proc.L1L2.AntennaSignalId.C.ALL_ASID_NAMES_CA(:));
+        "bicas.proc.L1L2.AntennaSignalId", size(v, 1), 'CONSTANT', v, ...
+        bicas.proc.L1L2.AntennaSignalId.ALL_ARRAY);
     end
 
 

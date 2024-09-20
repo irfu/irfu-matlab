@@ -2,7 +2,8 @@
 % Convert LFR sampling frequency index value to LSF in Hz, for entire array.
 % Useful for converting e.g. LFR zVariable FREQ to LSF.
 %
-% LSF = LFR Sampling Frequency (an explicit frequency value; not e.g. F0)
+% The abbreviation LSF is defined in BICAS
+% (irfu-matlab/mission/solar_orbiter/bicas/readme.txt).
 %
 %
 % ARGUMENTS
@@ -24,7 +25,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-26, when broken out from other code.
 %
-function freqHz = get_LFR_frequency(iLsf)
+function freqHz = get_LSF(iLsf)
 % PROPOSAL: Change name:
 %   get_LSF()
 %       CON: Too BICAS-specific abbreviation.
@@ -37,6 +38,8 @@ LSF_HZ = solo.hwzv.const.LSF_HZ;
 % ASSERTION
 uniqueValues = unique(iLsf);
 if ~all(ismember(uniqueValues, [1:4]))
+  % CASE: ERROR
+
   % NOTE: Has to print without \n to keep all values on a single-line
   % string.
   %uniqueValuesStr = sprintf('%d ', uniqueValues);

@@ -1,18 +1,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
-
-
-
-  %##########################
-  %##########################
-  % PUBLIC STATIC PROPERTIES
-  %##########################
-  %##########################
-  % properties(Constant)
-  %   RCTTID = 'BIAS'
-  % end
+classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
 
 
 
@@ -48,7 +37,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
 
 
     function obj = RctDataBias(filePath)
-      obj@bicas.proc.L1L2.cal.rct.RctData(filePath)
+      obj@bicas.proc.L1L2.cal.rct.RctDataImpl(filePath)
 
       RctRawData = bicas.proc.L1L2.cal.rct.RctDataBias.read_RCT(filePath);
 
@@ -87,7 +76,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       obj.epochL               = RctRawData.epochL;
       obj.epochH               = RctRawData.epochH;
       obj.Current              = RctRawData.Current;
-      obj.FtfRctSet            = FtfRctSet;  % Change name of field (sic!).
+      obj.FtfRctSet            = FtfRctSet;    % Change name of field (sic!).
       obj.ItfSet               = ItfSet;
       obj.dcSingleOffsetsAVolt = RctRawData.dcSingleOffsetsAVolt;
       obj.DcDiffOffsets        = RctRawData.DcDiffOffsets;
@@ -103,7 +92,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       % Logging parameters
       DC_FREQ_HZ       = [0];   % Single & diffs.
       AC_DIFF_FREQS_HZ = [0, 1000];
-      LL               = bicas.proc.L1L2.cal.rct.RctData.RCT_DATA_LL;
+      LL               = bicas.proc.L1L2.cal.rct.RctDataImpl.RCT_DATA_LL;
 
       %=====================
       % Iterate over EpochL
@@ -111,7 +100,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       for iEpochL = 1:numel(obj.epochL)
 
         L.logf(LL, 'Below values are used for data beginning %s:', ...
-          bicas.utils.TT2000_to_UTC_str(obj.epochL(iEpochL)))
+          bicas.utils.TT2000_to_UTC_str(obj.epochL(iEpochL), 9))
 
         % Log bias current calibration
         L.logf(LL, '    BIAS current offsets: %s [aampere]',         ...
@@ -144,7 +133,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       for iEpochH = 1:numel(obj.epochH)
 
         L.logf(LL, 'Below values are used for data beginning %s:', ...
-          bicas.utils.TT2000_to_UTC_str(obj.epochH(iEpochH)))
+          bicas.utils.TT2000_to_UTC_str(obj.epochH(iEpochH), 9))
 
         L.logf(LL, ...
           '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
@@ -187,7 +176,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctData
       %   PROPOSAL: "Only" access the BIAS values (trans.func and other) through a function instead of selecting
       %             indices in a data struct.
       %       PROPOSAL: (private method) [omegaRps, zVpc] = get_transfer_func(epoch, signalType)
-      %           signalType = 'DC single' etc
+      %           signalType = 'DC_SINGLE' etc
 
       Do = dataobj(filePath);
 

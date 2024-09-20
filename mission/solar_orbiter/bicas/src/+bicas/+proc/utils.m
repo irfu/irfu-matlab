@@ -21,8 +21,6 @@ classdef utils
   %           Ex: LFR:      bicas.proc.utils.set_NaN_rows
   %           Ex: TDS:      set_NaN_end_of_rows
   %           Ex: dc.m:
-  %                   select_row_range_from_cell_comps
-  %                   assert_cell_array_comps_have_same_N_rows (used by select_row_range_from_cell_comps)
   %                   convert_matrix_to_cell_array_of_vectors
   %           Ex: L1L2.m:   ACQUISITION_TIME_to_TT2000
   %                         (not used in processing directly, only indirectly)
@@ -44,7 +42,6 @@ classdef utils
   %
   % PROPOSAL: Replace functions
   %               set_struct_field_rows()                     -- DONE
-  %               select_row_range_from_cell_comps()          -- ABOLISHED
   %               assert_struct_num_fields_have_same_N_rows()
   %       with new class that has a map from arbitrary value to arrays and/or
   %       instances of same class (recursive).
@@ -52,10 +49,8 @@ classdef utils
   %   PRO: Can simultaneously (1) iterate over fields, and (2) identify fields
   %        using non-number, e.g. strings.
   %   PROPOSAL: Permit cell arrays. Replace functions
-  %           select_row_range_from_cell_comps()
   %           convert_matrix_to_cell_array_of_vectors()
   %           convert_cell_array_of_vectors_to_matrix()
-  %           assert_cell_array_comps_have_same_N_rows() -- ABOLISHED
   %       with methods.
 
 
@@ -116,35 +111,6 @@ classdef utils
         end
       end
 
-    end
-
-
-
-    % Convert RctdCaMap (the way RCTDs are stored internally for L1/L1R-->L2
-    % processing) to RctdCa (plain cell array of RCTDs).
-    function RctdCa = convert_RctdCaMap_to_CA(RctdCaMap)
-      % IMPLEMENTATION NOTE: It appears that MATLAB does not permit one to
-      % create an empty, typed array of instances of suclasses to an abstract
-      % superclass, unless the abstract superclass does not inherit from
-      % matlab.mixin.Heterogeneous, which seems ugly. Therefore using cell
-      % array instead.
-      %
-      % >> bicas.proc.L1L2.cal.rct.RctData.empty(0, 1)
-      % Error using bicas.proc.L1L2.cal.rct.RctData.empty
-      % Abstract classes cannot be instantiated. Class 'bicas.proc.L1L2.cal.rct.RctData' defines abstract methods and/or properties.
-      % bicas.proc.L1L2.cal.rct.RctData.empty(0, 1)
-
-      RctdCa = cell(0, 1);
-
-      RctdCaCa = RctdCaMap.values;
-      for i = 1:numel(RctdCaCa)
-        for j = 1:numel(RctdCaCa{i})
-          Rctd = RctdCaCa{i}{j};
-          if ~isempty(Rctd)
-            RctdCa{end+1, 1} = Rctd;
-          end
-        end
-      end
     end
 
 
@@ -394,7 +360,6 @@ classdef utils
 
 
       zv_DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
-      %DELTA_PLUS_MINUS = zeros([nRecords, 1]);    % Always 1 sample/record.
       for i = 1:nRecords
         % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
         % that the unit is the same as for Epoch.
@@ -487,50 +452,6 @@ classdef utils
 
 
 
-    %######################################
-    % Cell array of arrays (cell/non-cell)
-    %######################################
-
-
-
-    % Assert that all cell array components have the same number of rows.
-    % This is useful when cell array components represent zVar-like data,
-    % where rows represent CDF records.
-    %
-    % ARGUMENTS
-    % =========
-    % ca
-    %       N-dim cell array.
-    %       size(ca{i}, 1) for all "i" must evaluate to the same value for
-    %       assertion to pass.
-    %
-    %         function assert_cell_array_comps_have_same_N_rows(ca)
-    %             nRowsArray = cellfun(@(v) (size(v, 1)), ca, 'UniformOutput', true);
-    %             irf.assert.all_equal( nRowsArray )
-    %         end
-
-
-
-    % For every cell in a cell array, select a (non-cell array) index range
-    % in the first dimension for every cell array component.
-    %
-    % RETURN VALUE
-    % ============
-    % ca2
-    %       ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
-    %
-    %         function ca2 = select_row_range_from_cell_comps(ca1, iFirst, iLast)
-    %
-    %             % ASSERTIONS
-    %             bicas.proc.utils.assert_cell_array_comps_have_same_N_rows(ca1)
-    %
-    %             for i = 1:numel(ca1)
-    %                 ca2{i} = ca1{i}(iFirst:iLast, :, :,:,:,:);
-    %             end
-    %         end
-
-
-
     %####################
     % ~Struct of arrays
     %####################
@@ -564,7 +485,7 @@ classdef utils
       %
       % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
       % ===========================================================
-      % PostDc.Zv.AsrSamplesAVolt : bicas.utils.SameRowsMap.
+      % Dcop.Zv.AsrSamplesAVolt : bicas.utils.SameRowsMap.
 
       % NOTE: Function name somewhat bad.
       % PROPOSAL: Make recursive?!
@@ -580,6 +501,8 @@ classdef utils
       %   PROPOSAL: Redefine as  ~assert_ZV_struct().
       %       PRO: Special case for future class AsrSamplesAVoltSrm is more
       %            natural.
+      %   PROPOSAL: Create class for collections of variables for which this is
+      %             a method.
 
       fieldNamesList1 = fieldnames(S);
       nRowsArray = [];

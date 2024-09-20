@@ -188,7 +188,9 @@ classdef interface
 
         assert(ischar(logFileDirPatternId), 'dasaArgumentsCa{%i} is not a string.', i)
         if ~solo.qli.batch.const.SOURCE_DSI_DICT.isKey(logFileDirPatternId)
-          error('dasaArgumentsCa{%i}="%s" does not specify a log file pattern.', i, logFileDirPatternId)
+          error(...
+            'dasaArgumentsCa{%i}="%s" does not specify a valid log file pattern ID.', ...
+            i, logFileDirPatternId)
         end
 
         dsiCaCa           = solo.qli.batch.const.SOURCE_DSI_DICT(logFileDirPatternId);

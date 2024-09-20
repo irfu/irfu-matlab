@@ -7,9 +7,14 @@
 % First created 2021-05-27, with moved from bicas.proc.utils.
 %
 classdef utils
-  % PROPOSAL: Automatic test code.
+  % PROPOSAL: More automatic test code.
   % PROPOSAL: Rename.
-  %   PRO: "utils" implies that code is generic, while code seems to not be.
+  %   PRO: "utils" implies that code is generic, while the code seems to *not* be.
+  %
+  % PROPOSAL: Replace functions returning paths with constants as far as is
+  %           possible (all except bicas.utils.get_BICAS_root_dir()?).
+  %   CON: Abandons any idea of temporarily changing the location of the default
+  %        config file etc. for tests.
 
 
 
@@ -23,18 +28,37 @@ classdef utils
 
 
     % Get path to the root of the BICAS directory structure.
-    function bicasRootPath = get_BICAS_root_path()
+    function bicasRootDir = get_BICAS_root_dir()
       % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
       % Use path of the current MATLAB file.
-      [matlabSrcPath, ~, ~] = fileparts(mfilename('fullpath'));
-      bicasRootPath         = irf.fs.get_abs_path(...
-        fullfile(matlabSrcPath, '..', '..'));
+      [matlabSrcDir, ~, ~] = fileparts(mfilename('fullpath'));
+      bicasRootDir         = fullfile(matlabSrcDir, '..', '..');
+      bicasRootDir         = irf.fs.get_abs_path(bicasRootDir);
     end
 
 
 
-    function swdFilePath = get_SWD_file_path()
-      swdFilePath = fullfile(bicas.utils.get_BICAS_root_path(), 'descriptor.json');
+    function swdFile = get_SWD_file()
+      swdFile = fullfile(...
+        bicas.utils.get_BICAS_root_dir(), ...
+        bicas.const.SWD_FILENAME);
+    end
+
+
+
+    function bicasConfigDir = get_BICAS_config_dir()
+      bicasConfigDir = fullfile(...
+        bicas.utils.get_BICAS_root_dir(), ...
+        bicas.const.DEFAULT_CONFIG_DIR_RPATH);
+    end
+
+
+
+    function bicasDefaultConfigFile = get_BICAS_default_config_file()
+      bicasDefaultConfigFile = fullfile(...
+        bicas.utils.get_BICAS_root_dir(), ...
+        bicas.const.DEFAULT_CONFIG_DIR_RPATH, ...
+        bicas.const.DEFAULT_CONFIG_FILENAME);
     end
 
 
@@ -54,12 +78,9 @@ classdef utils
 
 
 
-    % Convert tt2000 value to UTC string with nanoseconds.
-    function utcStr = TT2000_to_UTC_str(zvTt2000)
-
+    function utcStr = TT2000_to_UTC_str(zvTt2000, nSecondDecimals)
       bicas.utils.assert_ZV_Epoch(zvTt2000)
-
-      utcStr = irf.cdf.TT2000_to_UTC_str(zvTt2000);
+      utcStr = irf.cdf.TT2000_to_UTC_str(zvTt2000, nSecondDecimals);
     end
 
 
@@ -360,12 +381,12 @@ classdef utils
           percentageNanStr = '- ';   % NOTE: Extra whitespace.
 
           if nUniqueValues > Bso.get_fv('LOGGING.MAX_TT2000_UNIQUES_PRINTED')
-            epochMinStr = bicas.utils.TT2000_to_UTC_str(min(varValue));
-            epochMaxStr = bicas.utils.TT2000_to_UTC_str(max(varValue));
+            epochMinStr = bicas.utils.TT2000_to_UTC_str(min(varValue), 9);
+            epochMaxStr = bicas.utils.TT2000_to_UTC_str(max(varValue), 9);
             valuesStr   = sprintf('Mm: %s -- %s', epochMinStr, epochMaxStr);
           elseif nValues >= 1
             bicas.utils.assert_ZV_Epoch(uniqueValues)
-            valueStrs = irf.cdf.TT2000_to_UTC_str_many(uniqueValues);
+            valueStrs = irf.cdf.TT2000_to_UTC_str_many(uniqueValues, 9);
             valuesStr = ['Us: ', strjoin(valueStrs, ', ')];
           else
             valuesStr = '-';

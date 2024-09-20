@@ -28,8 +28,9 @@
 % edgePolicy
 %       String constant. Specifies how to handle edges.
 %           NOTE: Edges are never handled as if the signal was cyclic.
-%       'zeros'
-%       'mirror'
+%       'ZEROS'
+%       'CYCLIC'
+%       'MIRROR'
 %           NOTE: Kernel length determines the amount of padding, which is taken
 %           from the signal, which implies that there is a smallest number of
 %           signal samples required.
@@ -153,7 +154,7 @@ nPad2 = iKernelOrigin - 1;
 % Pad signal y1 depending on setting
 %====================================
 switch(edgePolicy)
-  case 'zeros'
+  case 'ZEROS'
     %================
     % Pad with zeros
     %================
@@ -164,7 +165,7 @@ switch(edgePolicy)
     yPad1 = zeros(nPad1, 1);
     yPad2 = zeros(nPad2, 1);
 
-  case 'cyclic'
+  case 'CYCLIC'
     %==============================================
     % Pad with signal itself, as if it were cyclic
     %==============================================
@@ -185,7 +186,7 @@ switch(edgePolicy)
     yPad1 = y1(end-nPad1+1 : end,   1);
     yPad2 = y1(1           : nPad2, 1);
 
-  case 'mirror'
+  case 'MIRROR'
     %=============================================================
     % Pad edges with mirrored signals (mirrored around the edges)
     %=============================================================

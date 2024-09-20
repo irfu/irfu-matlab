@@ -1,6 +1,6 @@
 %
 % Immutable class which instances represent the destination of a signal, i.e.
-% either:
+% where the data should ultimately go, i.e. either:
 % (1) an ASR (to determine how to store the signal in the dataset), or
 % (2) "nowhere" (when BDM is unknown).
 %
@@ -21,7 +21,7 @@ classdef SignalDestinationId
     % ASID object or empty.
     Asid
 
-    % Whether destination is "nowhere", i.e. the signal does not have a
+    % Whether destination is "NOWHERE", i.e. the signal does not have a
     % destination and should be ignored.
     isNowhere
   end
@@ -37,7 +37,7 @@ classdef SignalDestinationId
       if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
         obj.Asid      = value;
         obj.isNowhere = false;
-      elseif isequal(value, 'Nowhere')
+      elseif isequal(value, 'NOWHERE')
         obj.Asid      = [];
         obj.isNowhere = true;
       else
@@ -59,7 +59,7 @@ classdef SignalDestinationId
       C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
         @(Asid) (bicas.proc.L1L2.SignalDestinationId(Asid)));
 
-      C.NOWHERE = bicas.proc.L1L2.SignalDestinationId('Nowhere');
+      C.NOWHERE = bicas.proc.L1L2.SignalDestinationId('NOWHERE');
     end
 
 
