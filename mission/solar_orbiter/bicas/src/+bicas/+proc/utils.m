@@ -207,39 +207,39 @@ classdef utils
     % lrx
     %       Scalar float. May be NaN=Unknown.
     %
-    function [iBltsAr] = interpret_LRX(lrx)
-      % NEED: Handle LRX=unknown
-
-      % PRO: One interpretation of values for all of BICAS.
-      % PROBLEM: How fit with possible future implementation that stores
-      %          all data in 3 channels with nominally always data
-      %          (instead of 5 BLTS's, with some missing data)?
-      %     PROPOSAL: Always return 3x1 array, with one value per such
-      %               channel.
-      % PROPOSAL: LRX (Nx1) --> iBltsArray (Nx3)
-      %     PRO: Can possibly be used for copying CDF ZV elements
-      %          into internal variables (split by BLTS).
-      %     NOTE: Unnecessary if BICAS internally stores samples in
-      %           3 data channels instead, since that is what both LFR and
-      %           TDS L1R datasets effecitvely do.
-      % PROPOSAL: Return variables describing conversion in "both
-      %           directions" between 3 data channels and 5 BLTS's.
-      %           LRX (1xN) -->
-      %               iBltsArray=[iBltsA, iBltsB, iBltsC]
-      %                   iBltsX = 1,2,3,4,5,NaN/FP
-      %               hasBltsData=[blts1HasData, ..., blts5HasData]
-      %                   bltsXhasData = true,false,NaN/FP
-
-      assert(isscalar(lrx) && isfloat(lrx) && ismember(lrx, [0, 1, NaN]))
-
-      if lrx == 0
-        iBltsAr = [1,4,5];
-      elseif lrx == 1
-        iBltsAr = [1,2,3];
-      else
-        iBltsAr = [1];
-      end
-    end
+    % function [iBltsAr] = interpret_LRX(lrx)
+    %   % NEED: Handle LRX=unknown
+    %
+    %   % PRO: One interpretation of values for all of BICAS.
+    %   % PROBLEM: How fit with possible future implementation that stores
+    %   %          all data in 3 channels with nominally always data
+    %   %          (instead of 5 BLTS's, with some missing data)?
+    %   %     PROPOSAL: Always return 3x1 array, with one value per such
+    %   %               channel.
+    %   % PROPOSAL: LRX (Nx1) --> iBltsArray (Nx3)
+    %   %     PRO: Can possibly be used for copying CDF ZV elements
+    %   %          into internal variables (split by BLTS).
+    %   %     NOTE: Unnecessary if BICAS internally stores samples in
+    %   %           3 data channels instead, since that is what both LFR and
+    %   %           TDS L1R datasets effecitvely do.
+    %   % PROPOSAL: Return variables describing conversion in "both
+    %   %           directions" between 3 data channels and 5 BLTS's.
+    %   %           LRX (1xN) -->
+    %   %               iBltsArray=[iBltsA, iBltsB, iBltsC]
+    %   %                   iBltsX = 1,2,3,4,5,NaN/FP
+    %   %               hasBltsData=[blts1HasData, ..., blts5HasData]
+    %   %                   bltsXhasData = true,false,NaN/FP
+    %
+    %   assert(isscalar(lrx) && isfloat(lrx) && ismember(lrx, [0, 1, NaN]))
+    %
+    %   if lrx == 0
+    %     iBltsAr = [1,4,5];
+    %   elseif lrx == 1
+    %     iBltsAr = [1,2,3];
+    %   else
+    %     iBltsAr = [1];
+    %   end
+    % end
 
 
 

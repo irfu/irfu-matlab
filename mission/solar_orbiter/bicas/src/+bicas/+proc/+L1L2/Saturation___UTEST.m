@@ -203,8 +203,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       function test(V, expIsSaturatedAr)
         % Modify/normalize arguments.
         V.tt2000Ar     = int64(V.tt2000Ar);
-        V.dlrFpa       = bicas.utils.FPArray(logical(V.dlr),    'FILL_POSITIONS', isnan(V.dlr));
-        V.bdmFpa       = bicas.utils.FPArray(uint8(V.bdm),      'FILL_POSITIONS', isnan(V.bdm));
+        V.bltsKSsidAr  = bicas.sconst.C.SSID_S_K_DICT(V.bltsKSsidAr);
         V.isAchgFpa    = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
         V.hasSwfFormat = logical(V.hasSwfFormat);
 
@@ -222,7 +221,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         % CALL FUNCTION
         actIsSaturatedAr = Sat.get_voltage_saturation_quality_bit(...
           V.tt2000Ar, V.AsrSamplesAVoltSrm, V.zvNValidSamplesPerRecord, ...
-          V.bdmFpa, V.dlrFpa, V.lrx, V.isAchgFpa, V.hasSwfFormat, L);
+          V.bltsKSsidAr, V.isAchgFpa, V.hasSwfFormat, L);
 
         testCase.assertEqual(actIsSaturatedAr, expIsSaturatedAr)
       end
@@ -250,9 +249,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           V.AsrSamplesAVoltSrm.add(S("DC_V2").Asid, zeros(0, 1))
           V.AsrSamplesAVoltSrm.add(S("DC_V3").Asid, zeros(0, 1))
           V.zvNValidSamplesPerRecord  = zeros(0, 1);
-          V.bdm                       = zeros(0, 1);
-          V.dlr                       = zeros(0, 1);
-          V.lrx                       = zeros(0, 1);
+          V.bltsKSsidAr               = string.empty(0, bicas.const.N_BLTS);
           V.isAchg                    = zeros(0, 1);
           V.hasSwfFormat              = logical(hasSwfFormat);
 
@@ -260,6 +257,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         end
       end
 
+      BDM0_DLR0_ROW = ["DC_V1", "DC_V12", "DC_V23", "AC_V12", "AC_V23"];
       %#####
       % CWF
       %#####
@@ -280,9 +278,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.AsrSamplesAVoltSrm.add(S("DC_V12").Asid, [2 0 2]'+1)
         V.AsrSamplesAVoltSrm.add(S("DC_V23").Asid, [2 0 2]'+1)
         V.zvNValidSamplesPerRecord  = [1 1 1]';
-        V.bdm                       = [0 0 0]';
-        V.dlr                       = [0 0 0]';
-        V.lrx                       = [1 1 1]';
+        V.bltsKSsidAr               = repmat(BDM0_DLR0_ROW, 3, 1);
         V.isAchg                    = [0 0 0]';
         V.hasSwfFormat              = false;
 
@@ -307,18 +303,22 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.AsrSamplesAVoltSrm.add(S("AC_V12").Asid, [0 0 0 2 2 0 0 0 0 0]'+2)
         V.AsrSamplesAVoltSrm.add(S("AC_V23").Asid, [0 0 0 0 0 0 2 2 0 0]'+2)
         V.zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1 1 1]';
-        V.bdm                       = [0 0 0 0 0 0 0 0 0 0]';
-        V.dlr                       = [0 0 0 0 0 0 0 0 0 0]';
-        V.lrx                       = [0 0 0 0 0 0 0 0 0 0]';
+        V.bltsKSsidAr               = repmat(BDM0_DLR0_ROW, 10, 1);
         V.isAchg                    = [0 0 0 0 0 0 0 0 0 0]';
         V.hasSwfFormat              = false;
 
         test(V, [1 1 0 1 1 0 1 1 0 0]');
       end
 
+      BDM4_DLR0_ROW = ["DC_V1", "DC_V2", "DC_V3", "AC_V12", "AC_V23"];
       % Multiple subsequences
-      % Separate episodes of saturation on different channels.
+      % Separate episodes of saturation on different channels, with different
+      % thresholds, which together combine saturation always set.
       % CWF, BDM=0, LRX=1/AC diff.
+      %
+      % NOTE: Correct function behaviour, but unrealistic input data. Function
+      % should never simultaneously receive DC and AC diffs, but the function
+      % is also not aware of LRX and should not care.
       if ALL_ENABLED
         V = [];
         V.cwfSlidingWindowLengthSec = 2.1;
@@ -331,18 +331,19 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.tt2000Ar                  = [10:17]' * 1e9;
         V.AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 8, 'EMPTY');
         V.AsrSamplesAVoltSrm.add(S("DC_V1").Asid,  [0 0 2 2 0 0 0 0]')
-        V.AsrSamplesAVoltSrm.add(S("DC_V12").Asid, [0 0 0 0 0 0 2 2]'+2)
-        V.AsrSamplesAVoltSrm.add(S("DC_V23").Asid, [0 0 0 0 0 0 0 0]'+2)
-        V.AsrSamplesAVoltSrm.add(S("DC_V2").Asid,  [2 2 0 0 0 0 0 0]')
+        V.AsrSamplesAVoltSrm.add(S("DC_V12").Asid, [0 0 0 0 0 0 3 3]')
+        V.AsrSamplesAVoltSrm.add(S("DC_V23").Asid, [0 0 0 0 0 0 0 0]')
+        V.AsrSamplesAVoltSrm.add(S("DC_V2").Asid,  [3 3 0 0 0 0 0 0]')
         V.AsrSamplesAVoltSrm.add(S("DC_V3").Asid,  [0 0 0 0 2 2 0 0]')
         V.zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1]';
-        V.bdm                       = [0 0 0 0 4 4 4 4]';
-        V.dlr                       = [0 0 0 0 0 0 0 0]';
-        V.lrx                       = [1 1 1 1 1 1 1 1]';
+        V.bltsKSsidAr               = [
+          repmat(BDM0_DLR0_ROW, 4, 1);
+          repmat(BDM4_DLR0_ROW, 4, 1);
+        ];
         V.isAchg                    = [0 0 0 0 0 0 0 0]';
         V.hasSwfFormat              = false;
 
-        test(V, [0 0 1 1 1 1 0 0]');
+        test(V, [1 1 1 1 1 1 1 1]');
       end
 
       %#####
@@ -378,9 +379,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           [0 0 0 2 2 2 2] + 6;
           ]+1)
         V.zvNValidSamplesPerRecord  = [5 5]';
-        V.bdm                       = [0 0]';
-        V.dlr                       = [0 0]';
-        V.lrx                       = [0 0]';
+        V.bltsKSsidAr               = repmat(BDM0_DLR0_ROW, 2, 1);
         V.isAchg                    = [0 1]';
         V.hasSwfFormat              = true;
 
@@ -424,9 +423,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           [0 0 0 2 2 2 2] + 6;
           ]+1)
         V.zvNValidSamplesPerRecord  = [1 1 3 3]';
-        V.bdm                       = [0 0 0 0]';
-        V.dlr                       = [0 0 0 0]';
-        V.lrx                       = [0 0 0 0]';
+        V.bltsKSsidAr               = repmat(BDM0_DLR0_ROW, 4, 1);
         V.isAchg                    = [0 0 1 1]';
         V.hasSwfFormat              = true;
 
@@ -434,6 +431,58 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       end
 
     end    % test_get_voltage_saturation_quality_bit
+
+
+
+    function test_get_one_ASR_CWF_channel_TSF_bit_array___DC(testCase)
+      testCase.test_get_one_ASR_CWF_channel_TSF_bit_array(testCase, ...
+        thresholdAVoltDcSingle    = 1, ...
+        thresholdAVoltDcDiff      = 3, ...
+        thresholdAVoltAclg        = 5, ...
+        thresholdAVoltAchg        = 7, ...
+        sSsid                     = "DC_V1", ...
+        hasSwfFormat              = false, ...
+        isAchg                    = [0,   0]', ...
+        samplesAVolt              = [0.9, 1.1, ]', ...
+        expTsfAr                  = [0,   1]')
+    end
+
+
+
+    function test_get_one_ASR_CWF_channel_TSF_bit_array___AC(testCase)
+      testCase.test_get_one_ASR_CWF_channel_TSF_bit_array(testCase, ...
+        thresholdAVoltDcSingle    = 1, ...
+        thresholdAVoltDcDiff      = 3, ...
+        thresholdAVoltAclg        = 5, ...
+        thresholdAVoltAchg        = 7, ...
+        sSsid                     = "AC_V12", ...
+        hasSwfFormat              = false, ...
+        isAchg                    = [0,   0,   1,   1  ]', ...
+        samplesAVolt              = [4.9, 5.1, 6.9, 7.1]', ...
+        expTsfAr                  = [0,   1,   0,   1]')
+    end
+
+
+
+    function test_get_one_ASR_SWF_channel_saturation_bit_array___AC(testCase)
+      testCase.test_get_one_ASR_SWF_channel_saturation_bit_array(testCase, ...
+        tsfFractionThreshold      = 0.4, ...
+        thresholdAVoltDcSingle    = 1, ...
+        thresholdAVoltDcDiff      = 3, ...
+        thresholdAVoltAclg        = 5, ...
+        thresholdAVoltAchg        = 7, ...
+        sSsid                     = "AC_V12", ...
+        hasSwfFormat              = true, ...
+        isAchg                    = [0; 0; 1; 1], ...
+        samplesAVolt              = [
+        4.9, 4.9, 9, 9;
+        4.9, 5.1, 9, 9;
+        6.9, 7.1, 0, 0;
+        7.1, 7.1, 0, 0;
+        ], ...
+        zvNValidSamplesPerRecord  = [2; 2; 2; 2], ...
+        expTsfAr                  = [0; 1; 1; 1])
+    end
 
 
 
@@ -447,6 +496,87 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
   %########################
   %########################
   methods(Static, Access=private)
+
+
+
+    function test_get_one_ASR_CWF_channel_TSF_bit_array(testCase, V)
+      arguments
+        testCase
+        V.cwfSlidingWindowLengthSec
+        V.tsfFractionThreshold
+        V.thresholdAVoltDcSingle
+        V.thresholdAVoltDcDiff
+        V.thresholdAVoltAclg
+        V.thresholdAVoltAchg
+        V.sSsid
+        V.hasSwfFormat
+        V.isAchg
+        V.samplesAVolt
+        V.expTsfAr
+      end
+
+      % Should be irrelevant for this test.
+      cwfSlidingWindowLengthSec = 99;
+      tsfFractionThreshold      = 0.5;
+
+      % Modify/normalize arguments.
+      V.isAchgFpa = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
+      V.expTsfAr  = logical(V.expTsfAr);
+
+      Sat = testCase.init_object(...
+        cwfSlidingWindowLengthSec, ...
+        tsfFractionThreshold, ...
+        V.thresholdAVoltDcSingle, ...
+        V.thresholdAVoltDcDiff, ...
+        V.thresholdAVoltAclg, ...
+        V.thresholdAVoltAchg);
+
+      actTsfAr = Sat.get_one_ASR_CWF_channel_TSF_bit_array(...
+        bicas.sconst.C.S_SSID_DICT(V.sSsid), V.isAchgFpa, V.samplesAVolt);
+
+      testCase.assertEqual(actTsfAr, V.expTsfAr)
+    end
+
+
+
+    function test_get_one_ASR_SWF_channel_saturation_bit_array(testCase, V)
+      arguments
+        testCase
+        V.cwfSlidingWindowLengthSec
+        V.tsfFractionThreshold
+        V.thresholdAVoltDcSingle
+        V.thresholdAVoltDcDiff
+        V.thresholdAVoltAclg
+        V.thresholdAVoltAchg
+        V.sSsid
+        V.hasSwfFormat
+        V.isAchg
+        V.samplesAVolt
+        V.zvNValidSamplesPerRecord
+        V.expTsfAr
+      end
+
+      % Should be irrelevant for this test.
+      cwfSlidingWindowLengthSec = 99;
+
+      % Modify/normalize arguments.
+      V.isAchgFpa = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
+      V.expTsfAr  = logical(V.expTsfAr);
+
+      Sat = testCase.init_object(...
+        cwfSlidingWindowLengthSec, ...
+        V.tsfFractionThreshold, ...
+        V.thresholdAVoltDcSingle, ...
+        V.thresholdAVoltDcDiff, ...
+        V.thresholdAVoltAclg, ...
+        V.thresholdAVoltAchg);
+
+      actTsfAr = Sat.get_one_ASR_SWF_channel_saturation_bit_array(...
+        bicas.sconst.C.S_SSID_DICT(V.sSsid), V.isAchgFpa, ...
+        V.samplesAVolt, V.zvNValidSamplesPerRecord);
+
+      testCase.assertEqual(actTsfAr, V.expTsfAr)
+    end
 
 
 
