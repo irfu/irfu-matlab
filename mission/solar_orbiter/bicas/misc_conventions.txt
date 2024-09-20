@@ -40,11 +40,14 @@ for understanding BICAS.
 AA, aampere
     Antenna Ampere. Calibrated ampere at the antenna.
 AAPT
-    Antenna Ampere/TM
+    Antenna Ampere/TM (unit).
 ACHG
     (BIAS diff) AC High Gain.
 ACLG
     (BIAS diff) AC Low Gain.
+AR
+    (Non-cell) Array. Experimental notation found in small number of places. See
+    "CA".
 ASID
     Class bicas.proc.L1L2.AntennaSignalId. See ASR.
 ASR, Antenna Signal Representation.
@@ -59,12 +62,13 @@ ASR, Antenna Signal Representation.
     NOTE: There are 9 ASRs (DC: 3 singles, 3 diffs; AC: 3 diffs), i.e. they
     can refer also to signals not represented by any single BLTS, given a
     chosen mux mode (BDM) and demultiplexer latching relay (DLR) setting.
+    Cf. ASID.
 AV, avolt, Antenna Volt
     Calibrated volt at the antennas, i.e. the final calibrated (measured)
     value, including for reconstructed signals (e.g. diffs calculated from
     singles). May also refer to offsets and values without offsets.
 AVPIV
-    Antenna Volt / (Per) Interface Volt
+    AV/IV = Antenna Volt Per Interface Volt (unit).
 BDM, "mux mode"
     BIAS Demultiplexer Mode. Corresponds to BIAS HK ZV "HK_BIA_MODE_MUX_SET".
     Abbreviation partly just to have one consistent name (replacing "mux",
@@ -107,7 +111,7 @@ BSO
     Singleton instance of class bicas.Settings which stores the settings for
     BICAS as a whole.
 CA
-    Cell Array.
+    Cell Array. See "AR".
 CLI
     Command-Line Interface. In particular, "CLI arguments" refers to an array of
     string arguments submitted to BICAS via the OS.
@@ -225,9 +229,9 @@ ITF
 IV, ivolt, Interface Volt
     Calibrated volt at the interface between BIAS and LFR/TDS.
 IVPAV
-    Interface volt/antenna volt
+    IV/AV = Interface volt Per Antenna volt (unit).
 IVPT
-    Interface volt Per TM unit. IV/TM.
+    IV/TM = Interface volt Per TM unit.
 L2QBM
     zVariable L2_QUALITY_BITMASK.
 L3QBM
@@ -406,12 +410,16 @@ TPIV
 TS
     irfu-matlab's TSeries object/class.
 TSF
-    Threshold Saturation Flag. Bit for a sample that is set iff the sample
-    value exceeds specified thresholds, i.e. it does not take any context
-    into account, except for determining which thresholds to use. This is in
-    contrast with (1) saturation flags for snapshots, which may summarize
-    the saturation of the entire snapshot, or (2) saturation flags for CWF
-    data which may take saturation before or after into account.
+
+    Threshold Saturation Flag. Internal bit used by the implementation. The bit
+    is set/unset for an individual sample iff the sample value exceeds specified
+    thresholds, i.e. it does not take any context into account, except for
+    determining which thresholds to use. This is in contrast with
+    (1) saturation flags for snapshots, which may summarize the saturation of
+        the entire snapshot, or
+    (2) saturation flags for CWF data which may take saturation before or after
+        into account.
+    Not to be confused actual saturation bit(s) set in quality zVariables.
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV

@@ -9,6 +9,9 @@
 %
 classdef SignalSourceId
   % PROPOSAL: Use for solo.BSACT_utils.
+  %
+  % PROPOSAL: Should include three separate cases for 2.5V_REF and GND
+  %           respectively (i.e. 2 cases --> 2x3 cases).
 
 
 

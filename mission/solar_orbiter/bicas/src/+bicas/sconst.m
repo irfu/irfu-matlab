@@ -44,6 +44,12 @@ classdef sconst
     function C = init_const()
       % PROPOSAL: Naming convention that is consistent for k<-->s dictionaries.
       %   PROPOSAL: "O" = object = ASID/SSID/SDID/Routing
+      % PROPOSAL: Replace dictionaries with string keys with structs.
+      %   PRO: Given the existence of k values, should never need to convert to
+      %        strings. Strings should only be useful for hardcoding.
+      %   CON: Useful to convert arrays of strings to arrays of k
+      %        values/objects?
+      %     Ex: Some tests.
 
       C = struct();
       C.S_ASID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.AntennaSignalId');
@@ -53,8 +59,8 @@ classdef sconst
       C.K_SDID_DICT    = configureDictionary('uint8',  'bicas.proc.L1L2.SignalDestinationId');
       C.S_ROUTING_DICT = configureDictionary('string', 'bicas.proc.L1L2.Routing');
 
-      C.SSID_S_K_DICT  = configureDictionary('string', 'uint8');
-      C.SDID_S_K_DICT  = configureDictionary('string', 'uint8');
+      C.SSID_S_K_DICT  = configureDictionary('string',                              'uint8');
+      C.SDID_S_K_DICT  = configureDictionary('string',                              'uint8');
       C.SSID_K_DICT    = configureDictionary('bicas.proc.L1L2.SignalSourceId',      'uint8');
       C.SDID_K_DICT    = configureDictionary('bicas.proc.L1L2.SignalDestinationId', 'uint8');
 

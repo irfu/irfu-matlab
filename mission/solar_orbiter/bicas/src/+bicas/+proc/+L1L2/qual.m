@@ -288,17 +288,8 @@ classdef qual
       %   bit, flag
       %
       % PROPOSAL: Move to bicas.utils.
-      %   PRO: More generic that quality variables.
+      %   PRO: More generic than quality variables.
       %   PRO: Independent of L1/L1R-L2 proessing in principle.
-      %
-      % TODO-NI: Distinguishing name for set bits before & after?
-      %   PROPOSAL: Suffix 1 & 2
-      %   PROPOSAL: Suffix before & after
-      %   PROPOSAL: rawFlag vs slidingWindowFlag
-      %   PROPOSAL: TSF=Threshold Saturation Flag,
-      %             SWSF=Sliding Window Saturation Flag.
-      %       CON: Function is generic. Should not make reference to
-      %            saturation.
       %
       % TODO-DEC: Exact algorithm to use? How implement?
       %   NOTE: Most data is not saturated.

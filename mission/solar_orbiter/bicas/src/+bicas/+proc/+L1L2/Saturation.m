@@ -18,6 +18,21 @@
 %
 classdef Saturation
   % PROPOSAL: Merge higherThresholdAVolt* to a struct somehow.
+  %
+  % PROBLEM: Can not deduce saturation limits for channels reconstructed from
+  %          other channels.
+  %   Ex: BDM=4 ==> Have DC_V1/V2/V3 ==> Derives DC_V12/V13/V23 ==> Saturation
+  %       on DC diffs can only be deduced from the samples from which the
+  %       samples originate.
+  % PROBLEM: get_voltage_saturation_quality_bit() can not correctly handle
+  %          AsrSamplesAVoltSrm data which derives from non-ASR channels.
+  %   Ex: BDM=5-7 ==> 2.5V Ref/GND stored in AsrSamplesAVoltSrm, but are
+  %       represented by ASIDs.
+  %
+  % PROPOSAL: Only detect saturation in BLTSs (which are true antenna signals).
+  %   Have saturation bits propagate to all signals in (not-yet-implemented)
+  %   _Sdid_SamplesAVoltSrm in the same way as signals do.
+  %   PROPOSAL: Separate SDID SRM for quality bits.
 
 
 
@@ -30,9 +45,10 @@ classdef Saturation
     % How long the sliding window should be when using CDF data.
     cwfSlidingWindowLengthSec
 
-    % Threshold for the sample-length weighted fraction of TSF-labelled
-    % samples within a sliding window (CWF) or snapshot for that entire
-    % sliding window or snapshot to be labelled as saturated.
+    % Threshold for the sample-length weighted fraction of TSF-labelled samples
+    % within either (1) a sliding window (CWF), or (2) snapshot. If fraction of
+    % TSF-labelled samples excedes this fraction, then the entire sliding window
+    % or snapshot is labelled as saturated.
     tsfFractionThreshold
 
     % Higher thresholds for saturation. Sample values above these values, or
@@ -102,7 +118,7 @@ classdef Saturation
     % ARGUMENTS
     % =========
     % samplesAVolt
-    %       Arbitrarily size array. May contain NaN.
+    %       Arbitrary-size array. May contain NaN.
     %
     %
     % RETURN VALUE
@@ -117,7 +133,6 @@ classdef Saturation
     function tsfAr = get_TSF(obj, samplesAVolt, Ssid, isAchgFpa)
       % PROPOSAL: Better name.
       %   ~sample-to-TSF
-      %       PRO: Can use same maing scheme for TSF-to-SWSF function (for CWF).
       %   ~threshold_saturation
 
       assert(isfloat(samplesAVolt))
@@ -208,7 +223,7 @@ classdef Saturation
     % zvSamplesAVolt
     %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
     function isSaturatedAr = get_snapshot_saturation_many(obj, ...
-        zvNValidSamplesPerRecord, zvSamplesAVolt, Ssid, isAchg)
+        zvNValidSamplesPerRecord, zvSamplesAVolt, Ssid, isAchgFpa)
 
       nRecs = irf.assert.sizes(...
         zvNValidSamplesPerRecord, [-1],  ...
@@ -218,7 +233,7 @@ classdef Saturation
       for iRec = 1:nRecs
         isSaturatedAr(iRec) = obj.get_snapshot_saturation(...
           zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
-          Ssid, isAchg);
+          Ssid, isAchgFpa);
       end
     end
 
@@ -227,6 +242,9 @@ classdef Saturation
     % Given ZV-like variables, get saturation bits for quality bitmask.
     %
     % NOTE: Applies to both CWF and SWF data.
+    %
+    % PROBLEM: Function is conceptually bad (buggy) for edge cases (non-antenna
+    % signals, reconstructed signals). See unofficial class comments.
     %
     %
     % RETURN VALUE

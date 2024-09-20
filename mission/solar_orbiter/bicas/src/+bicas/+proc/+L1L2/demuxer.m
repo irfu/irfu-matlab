@@ -357,6 +357,26 @@ classdef demuxer
     %       cases, "AsSrm" is returned unmodified.
     %
     function AsSrm = complete_relation(AsSrm, Asid1, Asid2, Asid3)
+      % PROPOSAL: Handle propagating quality bits derived from BLTSs.
+      %   NOTE: BLTS saturation bits should propagate.
+      %   This is thus a qualitatively different behaviour from samples which
+      %   are reconstructed.
+      % PROPOSAL: More generic implementation independent of SRMs and ASIDs.
+      %   PROBLEM: Needs way to detect missing data (channels) and a way to add
+      %            the reconstructed data.
+      %     PROPOSAL: Input is FPAs for all ASRs/SDIDs.
+      % PROPOSAL: Handle both samples and quality bits.
+      %
+      % NOTE: Truly generic vectorized algorithm. FP = Fill Position as in FPAs.
+      %   NOTE: Can handle both
+      %     (1) reconstructing data (e.g. diffs from singles), and
+      %     (2) "spread" of data (e.g. saturation bits).
+      %   bSet1 =  bFp1 & ~bFp2 & ~bFp3
+      %   bSet2 = ~bFp1 &  bFp2 & ~bFp3
+      %   bSet3 = ~bFp1 & ~bFp2 &  bFp3
+      %   A1(bSet1) = func_1_from_23(A2(bSet1), A3(bSet1))
+      %   A2(bSet2) = func_2_from_13(A1(bSet2), A3(bSet2))
+      %   A3(bSet3) = func_3_from_12(A1(bSet3), A2(bSet3))
       assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))
 
       e1 = AsSrm.isKey(Asid1);

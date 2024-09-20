@@ -143,7 +143,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           Ssid, isAchg, expIsSaturatedAr)
 
         expIsSaturatedAr = logical(expIsSaturatedAr);
-        isAchgFpa  = bicas.utils.FPArray.floatNan2logical(isAchg);
+        isAchgFpa        = bicas.utils.FPArray.floatNan2logical(isAchg);
         Sat = bicas.proc.L1L2.Saturation___UTEST.init_object(satArgsCa{:});
 
         actIsSaturatedAr = Sat.get_snapshot_saturation_many(...
@@ -211,7 +211,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         expIsSaturatedAr = logical(expIsSaturatedAr);
 
         L = bicas.Logger('NO_STDOUT', false);
-        Sat = bicas.proc.L1L2.Saturation___UTEST.init_object(...
+        Sat = testCase.init_object(...
           V.cwfSlidingWindowLengthSec, ...
           V.tsfFractionThreshold, ...
           V.thresholdAVoltDcSingle, ...
@@ -231,8 +231,10 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       ALL_ENABLED = true;
       %ALL_ENABLED = false;
 
+      %##############
+      % Zero records
+      %##############
       if ALL_ENABLED
-        % Zero records.
         for hasSwfFormat = 0:1
           V = [];
           V.cwfSlidingWindowLengthSec = 10;
