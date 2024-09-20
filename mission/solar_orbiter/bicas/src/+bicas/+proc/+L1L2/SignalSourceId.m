@@ -4,6 +4,9 @@
 % (1) an ASR (ASID), or
 % (2) various special cases.
 %
+% NOTE: Can not represent the source of a reconstructed signal, e.g. a diff
+% calculated by subtracting to (calibrated) singles.
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %

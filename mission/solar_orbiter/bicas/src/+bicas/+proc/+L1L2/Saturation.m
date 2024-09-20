@@ -257,7 +257,7 @@ classdef Saturation
         bltsKSsidAr, isAchgFpa, hasSwfFormat, L)
       % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
       %           look for saturation.
-      %   NOTE: Only ACHG influences the calibration thresholds each channel
+      %   NOTE: Only ACHG influences the calibration thresholds for each channel
       %         (SDID/ASR). Could otherwise have scalar values per channel.
       %   PRO: Easier to keep track of what thresholds are a function of.
 

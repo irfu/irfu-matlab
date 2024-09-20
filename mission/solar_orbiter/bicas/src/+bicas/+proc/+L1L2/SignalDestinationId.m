@@ -12,6 +12,18 @@
 classdef SignalDestinationId
   % PROPOSAL: Better name.
   %   (output) dataset, zVariables
+  %   destination
+  %   ZDID = zVariable Destination ID
+  %     CON: Does not contain "signal".
+  %   DDID = Dataset Destination ID
+  %     CON: Does not contain "signal".
+  %   SZID = Signal zVariable ID
+  %   PROPOSAL: Redefine to represent where in dataset to store signal.
+  %
+  % PROPOSAL: Re-define to include SSID.
+  %   CON-PROPOSAL: Separate class for representing both SDID and SSID.
+  %     NOTE: Resembles bicas.proc.L1L2.Routing.
+  %   NOTE: Still needs SSID to represent where to store data.
 
 
 
