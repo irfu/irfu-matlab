@@ -174,6 +174,10 @@ solo.db_cache('on', 'save')
 % NOTE: This requires there to not be a pre-existing parallel pool (will
 % otherwise crash).
 % --
+
+% Delete any optionally pre-existing parallel pool.
+delete(gcp('nocreate'))
+
 % spmdEnabled=false : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
 % anna.irfu.se. /2024-08-16.
 % NumWorkers=2 : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
