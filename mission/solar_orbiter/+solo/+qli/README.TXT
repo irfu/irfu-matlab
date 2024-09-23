@@ -43,8 +43,8 @@ NOTE: The source code additionally tries to follow BICAS naming conventions. See
       irfu-matlab/mission/solar_orbiter/bicas/readme.txt
 --
 DASA
-    Date Array Selection Algorithm. One of any of a set of algorithms for
-    selecting which dates for which to generate quicklooks.
+    Date Array Selection Algorithm. One of multiple  algorithms for selecting
+    the dates for which to generate quicklooks.
     Ex: DMRQ
 DASAID
     DASA ID. String constant which represents a specific DASA.

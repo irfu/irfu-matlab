@@ -14,12 +14,17 @@
 classdef interface
   % PROPOSAL: Better automatic tests.
   % PROBLEM: Name "interface" could imply that users should look for functions
-  %          to call in this file (which is wrong).
+  %          to call manually in this file (which is wrong).
   %          Cf. JUICE/RPWI GS TM-to-L1a (python).
   %   PROPOSAL: Better name.
   %     ~interface
+  %     ~ui
   %     ~utils
+  %       NOTE: There is already a solo.qli.batch.utils.
   %     ~DASA
+  %   PROPOSAL: Separate class "dasa" for collecting DASAs only.
+  %   PROPOSAL: New package "interface" for MATLAB functions to be called
+  %             manually or from bash.
   %
   % PROPOSAL: Merge TIME_INTERVAL and QLI_FMD_INTERVAL.
   %   maxNDays fmdMinDate fmdMaxDate dataMinDate dataMaxDate

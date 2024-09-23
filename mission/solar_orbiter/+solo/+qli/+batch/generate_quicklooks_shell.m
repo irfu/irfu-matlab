@@ -179,10 +179,10 @@ solo.db_cache('on', 'save')
 delete(gcp('nocreate'))
 
 % spmdEnabled=false : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
-% anna.irfu.se. /2024-08-16.
-% NumWorkers=2 : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
-% anna.irfu.se. /2024-08-19.
+% anna.irfu.se. Does not seem to work. /2024-09-23.
 % NOTE: spmdEnabled=false makes it illegal to use the "spmd" commands.
+% NOTE: This command will fail if a parallel pool already exists. This might be
+%       important for making automated tests work(?).
 parpool('SpmdEnabled', false);
 % if isunix()
 %   [~, hostName] = system('hostname');
@@ -194,6 +194,8 @@ parpool('SpmdEnabled', false);
 % ppArgsCa = {'Processes', 'SpmdEnabled', false};
 % if isServerAnna
 %   % Set number of workers to a lower value than the default on anna (4).
+%   % NumWorkers=1 : EXPERIMENTAL. Attempt at prevent solo.qli.batch from crashing
+%   % on anna.irfu.se. Does not seem to work. /2024-09-23.
 %   ppArgsCa = {'Processes', 1, 'SpmdEnabled', false};
 % else
 %   ppArgsCa = {'Processes', 'SpmdEnabled', false};
