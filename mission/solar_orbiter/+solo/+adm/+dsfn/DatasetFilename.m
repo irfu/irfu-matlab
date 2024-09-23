@@ -182,7 +182,30 @@ classdef DatasetFilename
       assert(islogical(S.isCdag))
       irf.dt.assert_UTC(S.Dt1)
       irf.dt.assert_UTC(S.Dt2)
-      assert(isnumeric(S.versionNbr) && (S.versionNbr >= 1))
+
+      %=========================================================================
+      % Lowest legal version number
+      % ---------------------------
+      % The lowest dataset version number should FORMALLY be 1.
+      % """"The value of the version shall be consistent with the "version"
+      % field in the filename and shall be an integer increment starting at
+      % 01.""""
+      % Source: SOL-SGS-TN-0009, 02/06, Section 3.2.2.1 "ISTP Global Attributes"
+      % Table 3-16 "ISTP Global Attributes for Solar Orbiter Files", entry for
+      % "Data_version".
+      %
+      % CAL files should have lowest version 1.
+      % """"Initial version number shall be "01".""""
+      % Source: ROC-PRO-PIP-ICD-00037-LES, 01/07, Section 4.2.4
+      % "Data versioning",
+      %
+      % HOWEVER, there are datasets on SOAR with "V00" in the filename and these
+      % are mirrored at IRFU.
+      % Ex: solo_L1_swa-his-pha_20200310_V00.cdf
+      %     solo_L1_swa-his-sensorrates_20200310_V00.cdf
+      % NOTE: These files appear to have GA Data_version = "00" too.
+      %=========================================================================
+      assert(isnumeric(S.versionNbr) && (S.versionNbr >= 0))
       assert(ischar(S.timeIntervalFormat))
       assert(isempty(S.lesTestStr) || ischar(S.lesTestStr))
       assert(isempty(S.cneTestStr) || ischar(S.cneTestStr))
