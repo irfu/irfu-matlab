@@ -1,6 +1,6 @@
 %
 % matlab.unittest automatic test code for inverse functions
-% solo.adm.dsfn.create_time_interval_str() and .
+% solo.adm.dsfn.create_time_interval_str() and
 % solo.adm.dsfn.parse_time_interval_str().
 %
 %
