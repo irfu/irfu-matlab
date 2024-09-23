@@ -171,7 +171,7 @@ classdef DatasetFilename
     % ARGUMENTS
     % =========
     % S
-    %       Struct.
+    %       Struct which de facto serves as a way to supply named arguments.
     function obj = DatasetFilename(S)
       assert(isstruct(S))
 
