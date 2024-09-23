@@ -41,16 +41,13 @@ TestArray = testsuite(explicitTestFiles);
 % NOTE: Excluding solo.qli since (1) solo.qli.batch tests fail due to not being
 % able to launch/access processing pool for unknown reasons (tested code only
 % uses processing pool pool for logging some if its parameters), and (2) some
-% of those particular tests are slow. See GitHub CI/CD log for commit where CI
-% failed: ecbb4b13a Erik P G Johansson (2024-09-16 16:37:07 +0200) Merge branch
-% 'devel' into SOdevel.
-% --
-% 2024-09-23: Testing to include solo.qli after possibly relevant modification:
-% commit 669019b4c Erik P G Johansson (2024-09-23 13:22:23 +0200).
-% solo.qli.batch: delete(gcp('nocreate')) before creating parpool()
+% of those particular tests are slow. See GitHub CI/CD log for commits where CI
+% failed:
+% ecbb4b13a Erik P G Johansson (2024-09-16 16:37:07 +0200) Merge branch 'devel' into SOdevel.
+% 5e092160e Erik P G Johansson (2024-09-23 15:23:37 +0200) CI/CD: Include solo.qli tests (experimental)
 for pkgPathCa = {...
     'irf', ...
-    'solo.BSACT_utils', 'solo.adm', 'solo.hwzv', 'solo.shk', 'solo.qli'}
+    'solo.BSACT_utils', 'solo.adm', 'solo.hwzv', 'solo.shk'}
   TestArray = [ ...
     TestArray, matlab.unittest.TestSuite.fromPackage(...
     pkgPathCa{1}, 'IncludingSubpackages', true) ...
