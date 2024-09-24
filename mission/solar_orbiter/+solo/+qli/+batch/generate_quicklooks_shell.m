@@ -13,7 +13,7 @@
 % * This script is intended for being used for official official generation of
 %   QLIs, including cron jobs.
 % * This function is designed for being called from bash/the OS (not from
-%   MATLAB). All arguments are therefore strings.
+%   MATLAB). All arguments are therefore strings (char arrays).
 % * See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT for the meaning
 %   of abbreviations.
 %
@@ -175,7 +175,7 @@ solo.db_cache('on', 'save')
 % otherwise crash).
 % --
 
-% Delete any optionally pre-existing parallel pool.
+% Delete any pre-existing parallel pool.
 delete(gcp('nocreate'))
 
 % spmdEnabled=false : EXPERIMENTAL. May prevent solo.qli.batch from crashing on

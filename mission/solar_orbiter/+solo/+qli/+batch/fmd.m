@@ -177,20 +177,20 @@ classdef fmd
     function ChangedDatasetsUmdDtArray = get_days_from_DMRQ_algorithm(...
         DatasetsUfd, QliUfd)
 
-      AllDatasetsDtArray = intersect(...
+      AllDatasetsUmdDtArray = intersect(...
         DatasetsUfd.UmdDtArray(), QliUfd.UmdDtArray());
 
       % Preallocate.
       ChangedDatasetsUmdDtArray = NaT(...
-        size((AllDatasetsDtArray)), 'TimeZone', 'UTCLeapSeconds');
+        size((AllDatasetsUmdDtArray)), 'TimeZone', 'UTCLeapSeconds');
 
       nChangedDatasets = 0;
-      for iDatasetDt = 1:numel(AllDatasetsDtArray)
-        DatasetDt = AllDatasetsDtArray(iDatasetDt);
+      for iDatasetDt = 1:numel(AllDatasetsUmdDtArray)
+        DatasetUmdDt = AllDatasetsUmdDtArray(iDatasetDt);
 
-        if DatasetsUfd(DatasetDt) >= QliUfd(DatasetDt)
+        if DatasetsUfd(DatasetUmdDt) >= QliUfd(DatasetUmdDt)
           nChangedDatasets = nChangedDatasets + 1;
-          ChangedDatasetsUmdDtArray(nChangedDatasets, 1) = DatasetDt;
+          ChangedDatasetsUmdDtArray(nChangedDatasets, 1) = DatasetUmdDt;
         end
       end
 
