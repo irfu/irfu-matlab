@@ -300,7 +300,7 @@ classdef DatasetFilename
 
 
     function timeIntervalStr = get.timeIntervalStr(obj)
-      timeIntervalStr = solo.adm.dsfn.create_time_interval_str(...
+      timeIntervalStr = solo.adm.dsfn.time_interval_str.create(...
         obj.Dt1, obj.Dt2, obj.timeIntervalFormat);
     end
 
@@ -431,7 +431,7 @@ classdef DatasetFilename
       %===================================================================
 
       % Non-rigorous reg.exp. for time interval string. A more rigorous check
-      % is made in solo.adm.dsfn.parse_time_interval_str().
+      % is made in solo.adm.dsfn.time_interval_str.parse().
       TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 
       %==========================================
@@ -444,7 +444,7 @@ classdef DatasetFilename
       if perfectMatch && ~dsicdagUppercase
 
         [S.Dt1, S.Dt2, S.timeIntervalFormat] = ...
-          solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
+          solo.adm.dsfn.time_interval_str.parse(subStrCa{2});
         S.versionNbr      = version_RE_match_to_versionNbr(subStrCa{4});
         S.lesTestStr      = [];
         S.cneTestStr      = [];
@@ -462,7 +462,7 @@ classdef DatasetFilename
       if perfectMatch && ~dsicdagUppercase && ~S.isCdag
 
         [S.Dt1, S.Dt2, S.timeIntervalFormat] = ...
-          solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
+          solo.adm.dsfn.time_interval_str.parse(subStrCa{2});
         S.versionNbr      = version_RE_match_to_versionNbr(subStrCa{4});
         S.lesTestStr      = subStrCa{6};
         S.cneTestStr      = [];

@@ -1,7 +1,7 @@
 %
 % matlab.unittest automatic test code for inverse functions
-% solo.adm.dsfn.create_time_interval_str() and
-% solo.adm.dsfn.parse_time_interval_str().
+% solo.adm.dsfn.time_interval_str.create() and
+% solo.adm.dsfn.time_interval_str.parse().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -124,9 +124,9 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
       Dt2 = datetime(dateVec2, 'TimeZone', 'UTCLeapSeconds');
 
       [actDt1, actDt2, actTimeIntervalFormat] = ...
-        solo.adm.dsfn.parse_time_interval_str(timeIntervalStr);
+        solo.adm.dsfn.time_interval_str.parse(timeIntervalStr);
       actTimeIntervalStr                      = ...
-        solo.adm.dsfn.create_time_interval_str(Dt1, Dt2, timeIntervalFormat);
+        solo.adm.dsfn.time_interval_str.create(Dt1, Dt2, timeIntervalFormat);
 
       testCase.assertEqual(actDt1, Dt1)
       testCase.assertEqual(actDt2, Dt2)
@@ -141,7 +141,7 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
       Dt2 = datetime(dateVec2, 'TimeZone', 'UTCLeapSeconds');
 
       testCase.assertError(...
-        @() solo.adm.dsfn.create_time_interval_str(Dt1, Dt2, timeIntervalFormat), ...
+        @() solo.adm.dsfn.time_interval_str.create(Dt1, Dt2, timeIntervalFormat), ...
         ?MException)
     end
 
@@ -149,7 +149,7 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
     function test_parse_exc(testCase, timeIntervalStr)
       testCase.assertError(...
-        @() solo.adm.dsfn.parse_time_interval_str(timeIntervalStr), ...
+        @() solo.adm.dsfn.time_interval_str.parse(timeIntervalStr), ...
         ?MException)
     end
 
