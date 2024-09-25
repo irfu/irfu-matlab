@@ -54,6 +54,12 @@ classdef DatasetFilename
   % PROPOSAL: Require NaT when there is no time interval string.
   % PROPOSAL: Order the filenaming conventions.
   % PROPOSAL: Official abbreviation: DSFN = solo.adm.dsfn.DatasetFilename.
+  % PROPOSAL: Rename parse_filename() --> parse().
+  %   PRO: Shorter.
+  %   PRO: Analogous with solo.adm.dsfn.time_interval_str.parse().
+  % PROPOSAL: parse(): Return flag for whether conversion worked. Eliminate
+  %           special value.
+  %   PRO: Analogous with solo.adm.dsfn.time_interval_str.parse().
   %
   % PROBLEM: Risk of duplicating assertions on consistent fields. Which code
   %          should be responsible? Constructor? create/parse_dataset_filename?
@@ -71,10 +77,9 @@ classdef DatasetFilename
   %
   % PROPOSAL: Forbid >2 char-length version strings beginning with zero.
   %
-  % PROPOSAL: parse(): Return flag for whether conversion worked. Eliminate
-  %           special value.
   %
   % PROPOSAL: Use name-value arguments for create().
+  %   NOTE: Check use cases first. Structs can be useful for repeated calls.
   %
   %
   %
@@ -372,7 +377,7 @@ classdef DatasetFilename
       end
 
       NO_MATCH_RETURN_VALUE = [];
-      UNUSED_DT             = datetime('NaT', 'TimeZone', 'UTCLeapSeconds');
+      UNUSED_DT             = irf.dt.UTC('NaT');
 
 
 
@@ -487,8 +492,6 @@ classdef DatasetFilename
         {'_', CNE_TESTSTR_RE, '_', VERSION_RE}, ...
         'permit non-match');
       if perfectMatch && dsicdagUppercase && ~S.isCdag
-
-        % S.timeIntervalStr    = NO_MATCH_RETURN_VALUE;
 
         S.Dt1                = UNUSED_DT;
         S.Dt2                = UNUSED_DT;

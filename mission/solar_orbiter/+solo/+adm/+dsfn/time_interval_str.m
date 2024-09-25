@@ -90,7 +90,7 @@ classdef time_interval_str
           datevec(Dt1), datevec(Dt2));
 
       elseif strcmp(timeIntervalFormat, 'NO_TIME_INTERVAL')
-        NAT = datetime('NaT', 'TimeZone', 'UTCLeapSeconds');
+        NAT = irf.dt.UTC('NaT');
         assert(isequaln(Dt1, NAT))
         assert(isequaln(Dt2, NAT))
 
@@ -111,8 +111,8 @@ classdef time_interval_str
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(timeIntervalStr, ...
         {solo.adm.dsfn.time_interval_str.DATE_RE}, 'permit non-match');
       if perfectMatch
-        Dt1 = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{1});
-        Dt2 = Dt1 + caldays(1);   % Increment by 1 day.
+        Dt1                = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{1});
+        Dt2                = Dt1 + caldays(1);   % Increment by 1 day.
         timeIntervalFormat = 'DAY';
         bSuccess           = true;
         return
@@ -122,9 +122,9 @@ classdef time_interval_str
         {solo.adm.dsfn.time_interval_str.DATE_RE, '-', ...
         solo.adm.dsfn.time_interval_str.DATE_RE}, 'permit non-match');
       if perfectMatch
-        Dt1 = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{1});
-        Dt2 = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{3});
-        Dt2 = Dt2 + caldays(1);   % Increment by 1 day since end day is inclusive.
+        Dt1                = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{1});
+        Dt2                = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{3});
+        Dt2                = Dt2 + caldays(1);   % Increment by 1 day since end day is inclusive.
         timeIntervalFormat = 'DAY_TO_DAY';
         bSuccess           = true;
         return
@@ -134,8 +134,8 @@ classdef time_interval_str
         {solo.adm.dsfn.time_interval_str.DATETIME_RE, '-', ...
         solo.adm.dsfn.time_interval_str.DATETIME_RE}, 'permit non-match');
       if perfectMatch
-        Dt1 = solo.adm.dsfn.time_interval_str.second_str_to_DT(subStrCa{1});
-        Dt2 = solo.adm.dsfn.time_interval_str.second_str_to_DT(subStrCa{3});
+        Dt1                = solo.adm.dsfn.time_interval_str.second_str_to_DT(subStrCa{1});
+        Dt2                = solo.adm.dsfn.time_interval_str.second_str_to_DT(subStrCa{3});
         timeIntervalFormat = 'SECOND_TO_SECOND';
         bSuccess           = true;
         return
@@ -165,7 +165,7 @@ classdef time_interval_str
     % Utility function
     function Dt = second_str_to_DT(s)
       dateVec = str2double({s(1:4), s(5:6), s(7:8), s(10:11), s(12:13), s(14:15)});
-      Dt      = datetime(dateVec, 'TimeZone', 'UTCLeapSeconds');
+      Dt      = irf.dt.UTC(dateVec);
     end
 
 
@@ -174,7 +174,7 @@ classdef time_interval_str
     function Dt = day_str_to_DT(s)
       dateVec      = str2double({s(1:4), s(5:6), s(7:8)});
       dateVec(4:6) = [0, 0, 0];
-      Dt           = datetime(dateVec, 'TimeZone', 'UTCLeapSeconds');
+      Dt           = irf.dt.UTC(dateVec);
     end
 
 

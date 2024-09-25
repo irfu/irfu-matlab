@@ -134,8 +134,8 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
     % Test that conversions in both directions are consistent.
     function test_OK(testCase, dateVec1, dateVec2, timeIntervalFormat, timeIntervalStr)
-      Dt1 = datetime(dateVec1, 'TimeZone', 'UTCLeapSeconds');
-      Dt2 = datetime(dateVec2, 'TimeZone', 'UTCLeapSeconds');
+      Dt1 = irf.dt.UTC(dateVec1);
+      Dt2 = irf.dt.UTC(dateVec2);
 
       [actDt1, actDt2, actTimeIntervalFormat, actBSuccess] = ...
         solo.adm.dsfn.time_interval_str.parse(timeIntervalStr);
@@ -152,8 +152,8 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
 
     function test_create_exc(testCase, dateVec1, dateVec2, timeIntervalFormat)
-      Dt1 = datetime(dateVec1, 'TimeZone', 'UTCLeapSeconds');
-      Dt2 = datetime(dateVec2, 'TimeZone', 'UTCLeapSeconds');
+      Dt1 = irf.dt.UTC(dateVec1);
+      Dt2 = irf.dt.UTC(dateVec2);
 
       testCase.assertError(...
         @() solo.adm.dsfn.time_interval_str.create(Dt1, Dt2, timeIntervalFormat), ...
