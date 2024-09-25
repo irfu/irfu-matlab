@@ -283,6 +283,18 @@ classdef dc
       %
       % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell
       %           arrays) into the calibration function?!!
+      %
+      % PROPOSAL: Replace Rcip with name-value arguments.
+      % arguments
+      %   A.hasSwfFormat
+      %   Zv.Epoch
+      %   Zv.bltsSamplesTm
+      %   A.bltsKSsidArray
+      %   Zv.isAchgFpa
+      %   CALIBRATION_TABLE_INDEX
+      %   ufv
+      %   nValidSamplesPerRecord
+      % end
 
       % ASSERTIONS
       assert(isscalar( Dcip.hasSwfFormat))
@@ -290,7 +302,6 @@ classdef dc
       assert(isa(bltsKSsidArray, 'uint8'))
       assert(isa(bltsKSdidArray, 'uint8'))
       [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
-        Dcip.Zv.bdmFpa,        [-1,  1], ...
         Dcip.Zv.isAchgFpa,     [-1,  1], ...
         bltsKSsidArray,        [-1,  bicas.const.N_BLTS], ...
         bltsKSsidArray,        [-1,  bicas.const.N_BLTS], ...
