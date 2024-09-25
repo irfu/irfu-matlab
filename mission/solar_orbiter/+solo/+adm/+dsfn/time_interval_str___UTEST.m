@@ -58,7 +58,8 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
 
     function test_DAY_TO_DAY(testCase)
-      testCase.test_OK(        [2021, 2, 3, 0, 0, 0], [2021, 3, 4, 0, 0, 0], 'DAY_TO_DAY', '20210203-20210303')
+      testCase.test_OK(        [2021, 2, 3, 0, 0, 0], [ 2021,  3,  4, 0, 0, 0], 'DAY_TO_DAY', '20210203-20210303')
+      testCase.test_OK(        [2020, 1, 1, 0, 0, 0], [10000, 01, 01, 0, 0, 0], 'DAY_TO_DAY', '20200101-99991231')
 
       testCase.test_create_exc([2021, 2, 3, 0, 0, 1], [2021, 3, 4, 0, 0, 0], 'DAY_TO_DAY')
       testCase.test_create_exc([2021, 2, 3, 0, 0, 0], [2021, 3, 4, 0, 0, 1], 'DAY_TO_DAY')
@@ -68,7 +69,8 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
 
     function test_SECOND_TO_SECOND(testCase)
-      testCase.test_OK([2020,12,31, 23,58,59], [2021,1,2,3,4,5], 'SECOND_TO_SECOND', '20201231T235859-20210102T030405')
+      testCase.test_OK([2020,12,31, 23,58,59], [2021, 1, 2, 3, 4, 5], 'SECOND_TO_SECOND', '20201231T235859-20210102T030405')
+      testCase.test_OK([2020, 1, 1,  0, 0, 0], [9999,12,31,23,59,59], 'SECOND_TO_SECOND', '20200101T000000-99991231T235959')
     end
 
 
