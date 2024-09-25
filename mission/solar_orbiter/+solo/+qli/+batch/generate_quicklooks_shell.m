@@ -39,7 +39,7 @@
 %   # Directories with datasets which will effectively be used by
 %   # solo.db_get_ts() and solo.db_list_files() for locating requested data.
 %   # Must be consistent with "solo_db_init_local_file_db".
-%   # See solo.qli.batch.interface.get_days_from_DMRQ().
+%   # See solo.qli.batch.dasa.get_days_from_DMRQ().
 %   "datasetDirs": [
 %     "/data/solo/remote/data",
 %     "/data/solo/soar"
@@ -55,7 +55,7 @@
 %
 %   # Paths with globbing filename patterns for log files which contain
 %   # the names of new datasets.
-%   # See solo.qli.batch.interface.get_days_from_logs().
+%   # See solo.qli.batch.dasa.get_days_from_logs().
 %   "logFileDirPatterns": {
 %     "LESIA": "/home/erjo/logs/pull.so.data.cron.brain.*.log",
 %     "SOAR":  "/home/erjo/logs/so_soar_irfu_mirror_sync.*.log"
@@ -144,8 +144,8 @@ irf.log('notice')
 
 
 
-generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);
-generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(generateWeeklyQuicklooks);
+generateNonweeklyQuicklooks = solo.qli.batch.utils.interpret_boolean_flag(generateNonweeklyQuicklooks);
+generateWeeklyQuicklooks    = solo.qli.batch.utils.interpret_boolean_flag(generateWeeklyQuicklooks);
 dasaArgumentsCa             = varargin(:);    % Column array.
 
 Config = solo.qli.batch.utils.read_config_file(configFilePath);

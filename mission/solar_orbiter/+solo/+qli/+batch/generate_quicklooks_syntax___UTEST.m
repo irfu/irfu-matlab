@@ -1,7 +1,7 @@
 %
 % matlab.unittest automatic test code for
 % solo.qli.batch.generate_quicklooks_syntax() and indirectly
-% solo.qli.batch.interface.get_days_from_time_interval().
+% solo.qli.batch.dasa.get_days_from_time_interval().
 %
 %
 % NOTES
@@ -11,13 +11,13 @@
 %   * solo.qli.batch.generate_quicklooks___UTEST
 %   * solo.qli.batch.extract_dataset_dates_from_logs___UTEST
 %   * solo.qli.batch.fmd___UTEST
-%   * solo.qli.batch.interface_*_UTEST
+%   * solo.qli.batch.dasa_*_UTEST
 % --
 % Only testing the TIME_INTERVAL DASA since it is the easiest one to use here.
 % Other DASAS are tested through the corresponding subfunctions.
 % --
 % Indirectly testing the TIME_INTERVAL subfunction
-% (solo.qli.batch.interface.get_days_from_time_interval()) which thus does
+% (solo.qli.batch.dasa.get_days_from_time_interval()) which thus does
 % not really need any other tests.
 %
 %

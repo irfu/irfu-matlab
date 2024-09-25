@@ -1,9 +1,9 @@
 %
-% Code associated with the "interface".
+% Code directly associated with DASAs.
 %
-% Many functions have string arguments suitable for being passed on from the
-% user in e.g. bash scripts calling MATLAB code. Code should thus have
-% human-readable error messages for bad arguments.
+% Many functions have string arguments intended for being set with values
+% passed on from the user in e.g. bash scripts calling MATLAB code. Code should
+% thus have human-readable error messages for bad arguments.
 %
 % Therefore also giving better error messages for illegal arguments (and number
 % of arguments) supplied from the top-level caller (e.g. bash wrapper).
@@ -11,20 +11,8 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef interface
+classdef dasa
   % PROPOSAL: Better automatic tests.
-  % PROBLEM: Name "interface" could imply that users should look for functions
-  %          to call manually in this file (which is wrong).
-  %          Cf. JUICE/RPWI GS TM-to-L1a (python).
-  %   PROPOSAL: Better name.
-  %     ~interface
-  %     ~ui
-  %     ~utils
-  %       NOTE: There is already a solo.qli.batch.utils.
-  %     ~DASA
-  %   PROPOSAL: Separate class "dasa" for collecting DASAs only.
-  %   PROPOSAL: New package "interface" for MATLAB functions to be called
-  %             manually or from bash.
   %
   % PROPOSAL: Merge TIME_INTERVAL and QLI_FMD_INTERVAL.
   %   maxNDays fmdMinDate fmdMaxDate dataMinDate dataMaxDate
@@ -69,21 +57,21 @@ classdef interface
 
       switch(dasaid)
         case 'TIME_INTERVAL'
-          UmdDtArray = solo.qli.batch.interface.get_days_from_time_interval(...
+          UmdDtArray = solo.qli.batch.dasa.get_days_from_time_interval(...
             dasaArgumentsCa);
 
         case 'LOGS'
-          UmdDtArray = solo.qli.batch.interface.get_days_from_logs(...
+          UmdDtArray = solo.qli.batch.dasa.get_days_from_logs(...
             LogFileDirPatternDict, ...
             dasaArgumentsCa);
 
         case 'DMRQ'
-          UmdDtArray = solo.qli.batch.interface.get_days_from_DMRQ(...
+          UmdDtArray = solo.qli.batch.dasa.get_days_from_DMRQ(...
             datasetDirsCa, fmdQliDir, Fsr, ...
             dasaArgumentsCa);
 
         case 'QLI_FMD_INTERVAL'
-          UmdDtArray = solo.qli.batch.interface.get_days_from_QLI_FMD_interval( ...
+          UmdDtArray = solo.qli.batch.dasa.get_days_from_QLI_FMD_interval( ...
             fmdQliDir, Fsr, dasaArgumentsCa);
 
         otherwise
@@ -122,13 +110,13 @@ classdef interface
     function UmdDtArray = get_days_from_time_interval(...
         dasaArgumentsCa)
 
-      solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 2)
+      solo.qli.batch.dasa.check_nbr_of_DASA_arguments(dasaArgumentsCa, 2)
 
       beginDayUtcInclStr = dasaArgumentsCa{1};
       endDayUtcExclStr   = dasaArgumentsCa{2};
 
-      solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
-      solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
+      solo.qli.batch.dasa.check_interface_date_str(beginDayUtcInclStr)
+      solo.qli.batch.dasa.check_interface_date_str(endDayUtcExclStr)
 
       BeginDayInclDt = irf.dt.um(beginDayUtcInclStr);
       EndDayExclDt   = irf.dt.um(endDayUtcExclStr);
@@ -229,14 +217,14 @@ classdef interface
     function UmdDtArray = get_days_from_DMRQ(...
         datasetDirsCa, qliDir, Fsr, dasaArgumentsCa)
 
-      solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 3)
+      solo.qli.batch.dasa.check_nbr_of_DASA_arguments(dasaArgumentsCa, 3)
 
       maxNDaysStr        = dasaArgumentsCa{1};
       beginDayUtcInclStr = dasaArgumentsCa{2};
       endDayUtcExclStr   = dasaArgumentsCa{3};
 
-      solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
-      solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
+      solo.qli.batch.dasa.check_interface_date_str(beginDayUtcInclStr)
+      solo.qli.batch.dasa.check_interface_date_str(endDayUtcExclStr)
 
 
 
@@ -247,7 +235,7 @@ classdef interface
         datasetDirsCa, qliDir, dsiCa, Fsr);
 
       % Filter list of days.
-      UmdDtArray = solo.qli.batch.interface.filter_days_array(...
+      UmdDtArray = solo.qli.batch.dasa.filter_days_array(...
         UmdDtArray, maxNDaysStr, beginDayUtcInclStr, endDayUtcExclStr);
     end
 
@@ -256,7 +244,7 @@ classdef interface
     function UmdDtArray = get_days_from_QLI_FMD_interval(...
         qliDir, Fsr, dasaArgumentsCa)
 
-      solo.qli.batch.interface.check_nbr_of_DASA_arguments(dasaArgumentsCa, 3)
+      solo.qli.batch.dasa.check_nbr_of_DASA_arguments(dasaArgumentsCa, 3)
 
       maxNDaysStr    = dasaArgumentsCa{1};
       startInclFmdDt = datetime(dasaArgumentsCa{2});
@@ -273,7 +261,7 @@ classdef interface
         UmdDtArray = QliUfd.UmdDtArray;
       end
 
-      UmdDtArray = solo.qli.batch.interface.filter_days_array(...
+      UmdDtArray = solo.qli.batch.dasa.filter_days_array(...
         UmdDtArray, maxNDaysStr, '0000-01-01', '9999-12-31');
     end
 
@@ -284,24 +272,6 @@ classdef interface
     % MISCELLANEOUS
     %###############
     %###############
-
-
-
-    % Interpret argument for main function interface.
-    %
-    function value = interpret_boolean_flag(arg)
-      % NOTE: num2str() converts string/number-->string.
-      assert(isscalar(arg), 'Flag argument "%s" is not scalar.',   num2str(arg))
-      assert(ischar(arg),   'Flag argument "%s" is not a string.', num2str(arg))
-
-      if     ischar(arg) && arg=='0'
-        value = false;
-      elseif ischar(arg) && arg=='1'
-        value = true;
-      else
-        error('Can not interpret argument flag="%s". Illegal value.', arg)
-      end
-    end
 
 
 
@@ -342,8 +312,8 @@ classdef interface
 
       irf.dt.assert_UTC_midnight(UmdDtArray)
 
-      solo.qli.batch.interface.check_interface_date_str(beginDayUtcInclStr)
-      solo.qli.batch.interface.check_interface_date_str(endDayUtcExclStr)
+      solo.qli.batch.dasa.check_interface_date_str(beginDayUtcInclStr)
+      solo.qli.batch.dasa.check_interface_date_str(endDayUtcExclStr)
 
       Dt1      = irf.dt.um(beginDayUtcInclStr);
       Dt2      = irf.dt.um(endDayUtcExclStr);

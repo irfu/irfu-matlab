@@ -32,7 +32,7 @@ solo.qli.batch.generate_quicklooks_shell()
 
 solo.qli.batch.generate_quicklooks_syntax()
     (1) Obtains list of days to generate QLIs by calling
-        solo.qli.batch.interface.get_days_from_DASA().
+        solo.qli.batch.dasa.get_days_from_DASA().
     (2) (Nominally) generates QLIs by calling
         solo.qli.batch.generate_quicklooks()
 

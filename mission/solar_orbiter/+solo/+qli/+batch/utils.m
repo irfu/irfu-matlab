@@ -89,6 +89,25 @@ classdef utils
 
 
 
+    % Interpret user argument for main function interface. Should therefore
+    % have human-readable error message.
+    %
+    function value = interpret_boolean_flag(arg)
+      % NOTE: num2str() converts string/number-->string.
+      assert(isscalar(arg), 'Flag argument "%s" is not scalar.',   num2str(arg))
+      assert(ischar(arg),   'Flag argument "%s" is not a string.', num2str(arg))
+
+      if     ischar(arg) && arg=='0'
+        value = false;
+      elseif ischar(arg) && arg=='1'
+        value = true;
+      else
+        error('Can not interpret argument flag="%s". Illegal value.', arg)
+      end
+    end
+
+
+
   end    % methods(Static)
 
 
