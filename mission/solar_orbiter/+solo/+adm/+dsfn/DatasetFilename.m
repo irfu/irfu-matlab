@@ -446,7 +446,7 @@ classdef DatasetFilename
       %==========================================
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
         {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE}, ...
-        'permit non-match');
+        'PERMIT_NON_MATCH');
       if perfectMatch && ~dsicdagUppercase
 
         [S.Dt1, S.Dt2, S.timeIntervalFormat, bSuccess] = ...
@@ -468,7 +468,7 @@ classdef DatasetFilename
       %=============================
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
         {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', LES_TESTSTR_RE}, ...
-        'permit non-match');
+        'PERMIT_NON_MATCH');
       if perfectMatch && ~dsicdagUppercase && ~S.isCdag
 
         [S.Dt1, S.Dt2, S.timeIntervalFormat, bSuccess] = ...
@@ -490,7 +490,7 @@ classdef DatasetFilename
       %=============================
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
         {'_', CNE_TESTSTR_RE, '_', VERSION_RE}, ...
-        'permit non-match');
+        'PERMIT_NON_MATCH');
       if perfectMatch && dsicdagUppercase && ~S.isCdag
 
         S.Dt1                = UNUSED_DT;

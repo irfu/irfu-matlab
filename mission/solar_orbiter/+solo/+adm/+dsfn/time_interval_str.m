@@ -109,7 +109,7 @@ classdef time_interval_str
     %
     function [Dt1, Dt2, timeIntervalFormat, bSuccess] = parse(timeIntervalStr)
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(timeIntervalStr, ...
-        {solo.adm.dsfn.time_interval_str.DATE_RE}, 'permit non-match');
+        {solo.adm.dsfn.time_interval_str.DATE_RE}, 'PERMIT_NON_MATCH');
       if perfectMatch
         Dt1                = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{1});
         Dt2                = Dt1 + caldays(1);   % Increment by 1 day.
@@ -120,7 +120,7 @@ classdef time_interval_str
 
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(timeIntervalStr, ...
         {solo.adm.dsfn.time_interval_str.DATE_RE, '-', ...
-        solo.adm.dsfn.time_interval_str.DATE_RE}, 'permit non-match');
+        solo.adm.dsfn.time_interval_str.DATE_RE}, 'PERMIT_NON_MATCH');
       if perfectMatch
         Dt1                = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{1});
         Dt2                = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{3});
@@ -132,7 +132,7 @@ classdef time_interval_str
 
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(timeIntervalStr, ...
         {solo.adm.dsfn.time_interval_str.DATETIME_RE, '-', ...
-        solo.adm.dsfn.time_interval_str.DATETIME_RE}, 'permit non-match');
+        solo.adm.dsfn.time_interval_str.DATETIME_RE}, 'PERMIT_NON_MATCH');
       if perfectMatch
         Dt1                = solo.adm.dsfn.time_interval_str.second_str_to_DT(subStrCa{1});
         Dt2                = solo.adm.dsfn.time_interval_str.second_str_to_DT(subStrCa{3});
