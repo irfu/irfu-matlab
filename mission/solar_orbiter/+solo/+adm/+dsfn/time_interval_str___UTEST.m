@@ -41,7 +41,8 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
       testCase.test_create_exc([2021, 2, 3, 0, 0, 0], [2021, 2, 4, 0, 0, 1], 'DAY')
       testCase.test_create_exc([2021, 2, 3, 0, 0, 1], [2021, 2, 4, 0, 0, 1], 'DAY')
 
-      testCase.test_parse_exc('210203')
+      testCase.test_parse_fail('210203')
+      testCase.test_parse_fail('2021203')
     end
 
 
@@ -52,7 +53,7 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
       end
 
       s = sprintf('2021%s02%s03', DATE_SEPARATOR, DATE_SEPARATOR);
-      testCase.test_parse_exc(s)
+      testCase.test_parse_fail(s)
     end
 
 
@@ -75,14 +76,27 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SECOND_TO_SECOND_parse_exc(testCase, DATE_SEPARATOR, TIME_SEPARATOR)
+    % Test timestamps using illegal timestamp field separators.
+    function test_SECOND_TO_SECOND_separator_parse_fail(testCase, DATE_SEPARATOR, TIME_SEPARATOR)
       if isempty(DATE_SEPARATOR) && isempty(TIME_SEPARATOR)
+        % Skip, since there are no field separators (which is legal/required).
         return
       end
 
-      s = sprintf('2021%s02%s03T23%s59%s59', DATE_SEPARATOR, DATE_SEPARATOR, TIME_SEPARATOR, TIME_SEPARATOR);
+      s = sprintf('2021%s02%s03T23%s59%s59', ...
+        DATE_SEPARATOR, DATE_SEPARATOR, ...
+        TIME_SEPARATOR, TIME_SEPARATOR);
       s2 = [s, '-', s];
-      testCase.test_parse_exc(s2)
+      testCase.test_parse_fail(s2)
+    end
+
+
+
+    function test_SECOND_TO_SECOND_length_parse_fail(testCase)
+      testCase.test_parse_fail('2020121T235859-20210102T030405')
+      testCase.test_parse_fail('20201231T23585-20210102T030405')
+      testCase.test_parse_fail('20201231T235859-2021102T030405')
+      testCase.test_parse_fail('20201231T235859-20210102T03040')
     end
 
 
@@ -123,7 +137,7 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
       Dt1 = datetime(dateVec1, 'TimeZone', 'UTCLeapSeconds');
       Dt2 = datetime(dateVec2, 'TimeZone', 'UTCLeapSeconds');
 
-      [actDt1, actDt2, actTimeIntervalFormat] = ...
+      [actDt1, actDt2, actTimeIntervalFormat, actBSuccess] = ...
         solo.adm.dsfn.time_interval_str.parse(timeIntervalStr);
       actTimeIntervalStr                      = ...
         solo.adm.dsfn.time_interval_str.create(Dt1, Dt2, timeIntervalFormat);
@@ -131,6 +145,7 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
       testCase.assertEqual(actDt1, Dt1)
       testCase.assertEqual(actDt2, Dt2)
       testCase.assertEqual(actTimeIntervalFormat, timeIntervalFormat)
+      testCase.assertTrue( actBSuccess)
       testCase.assertEqual(actTimeIntervalStr,    timeIntervalStr)
     end
 
@@ -147,10 +162,14 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_parse_exc(testCase, timeIntervalStr)
-      testCase.assertError(...
-        @() solo.adm.dsfn.time_interval_str.parse(timeIntervalStr), ...
-        ?MException)
+    function test_parse_fail(testCase, timeIntervalStr)
+      [actDt1, actDt2, actTimeIntervalFormat, actBSuccess] = ...
+          solo.adm.dsfn.time_interval_str.parse(timeIntervalStr);
+
+      testCase.assertEqual(actDt1, irf.dt.UTC('NaT'))
+      testCase.assertEqual(actDt2, irf.dt.UTC('NaT'))
+      testCase.assertEqual(actTimeIntervalFormat, [])
+      testCase.assertFalse(actBSuccess)
     end
 
 

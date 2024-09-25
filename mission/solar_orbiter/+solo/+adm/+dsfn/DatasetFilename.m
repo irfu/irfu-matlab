@@ -376,10 +376,11 @@ classdef DatasetFilename
 
 
 
+      Df = NO_MATCH_RETURN_VALUE;
+
       % NOTE: Parse from the END.
       [~, trueBasename, n] = irf.str.read_token(filename, -1, '\.cdf');
       if n == -1
-        Df = NO_MATCH_RETURN_VALUE;
         return
       end
 
@@ -443,11 +444,15 @@ classdef DatasetFilename
         'permit non-match');
       if perfectMatch && ~dsicdagUppercase
 
-        [S.Dt1, S.Dt2, S.timeIntervalFormat] = ...
+        [S.Dt1, S.Dt2, S.timeIntervalFormat, bSuccess] = ...
           solo.adm.dsfn.time_interval_str.parse(subStrCa{2});
-        S.versionNbr      = version_RE_match_to_versionNbr(subStrCa{4});
-        S.lesTestStr      = [];
-        S.cneTestStr      = [];
+        if ~bSuccess
+          return
+        end
+
+        S.versionNbr = version_RE_match_to_versionNbr(subStrCa{4});
+        S.lesTestStr = [];
+        S.cneTestStr = [];
 
         Df = solo.adm.dsfn.DatasetFilename(S);
         return
@@ -461,11 +466,15 @@ classdef DatasetFilename
         'permit non-match');
       if perfectMatch && ~dsicdagUppercase && ~S.isCdag
 
-        [S.Dt1, S.Dt2, S.timeIntervalFormat] = ...
+        [S.Dt1, S.Dt2, S.timeIntervalFormat, bSuccess] = ...
           solo.adm.dsfn.time_interval_str.parse(subStrCa{2});
-        S.versionNbr      = version_RE_match_to_versionNbr(subStrCa{4});
-        S.lesTestStr      = subStrCa{6};
-        S.cneTestStr      = [];
+        if ~bSuccess
+          return
+        end
+
+        S.versionNbr = version_RE_match_to_versionNbr(subStrCa{4});
+        S.lesTestStr = subStrCa{6};
+        S.cneTestStr = [];
 
         Df = solo.adm.dsfn.DatasetFilename(S);
         return
@@ -496,7 +505,6 @@ classdef DatasetFilename
       %============================================
       % CASE: Could not match filename to anything
       %============================================
-      Df = NO_MATCH_RETURN_VALUE;
 
     end    % parse_filename()
 

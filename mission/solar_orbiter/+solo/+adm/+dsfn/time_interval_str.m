@@ -107,13 +107,14 @@ classdef time_interval_str
 
     % Parse time interval string.
     %
-    function [Dt1, Dt2, timeIntervalFormat] = parse(timeIntervalStr)
+    function [Dt1, Dt2, timeIntervalFormat, bSuccess] = parse(timeIntervalStr)
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(timeIntervalStr, ...
         {solo.adm.dsfn.time_interval_str.DATE_RE}, 'permit non-match');
       if perfectMatch
         Dt1 = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{1});
         Dt2 = Dt1 + caldays(1);   % Increment by 1 day.
         timeIntervalFormat = 'DAY';
+        bSuccess           = true;
         return
       end
 
@@ -125,6 +126,7 @@ classdef time_interval_str
         Dt2 = solo.adm.dsfn.time_interval_str.day_str_to_DT(subStrCa{3});
         Dt2 = Dt2 + caldays(1);   % Increment by 1 day since end day is inclusive.
         timeIntervalFormat = 'DAY_TO_DAY';
+        bSuccess           = true;
         return
       end
 
@@ -135,10 +137,14 @@ classdef time_interval_str
         Dt1 = solo.adm.dsfn.time_interval_str.second_str_to_DT(subStrCa{1});
         Dt2 = solo.adm.dsfn.time_interval_str.second_str_to_DT(subStrCa{3});
         timeIntervalFormat = 'SECOND_TO_SECOND';
+        bSuccess           = true;
         return
       end
 
-      error('Can not interpret time interval string "%s".', timeIntervalStr)
+      Dt1                = irf.dt.UTC('NaT');
+      Dt2                = irf.dt.UTC('NaT');
+      timeIntervalFormat = [];
+      bSuccess           = false;
     end
 
 
