@@ -118,13 +118,15 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
 
 
-    % Test that converting in both directions is consistent.
+    % Test that conversions in both directions are consistent.
     function test_OK(testCase, dateVec1, dateVec2, timeIntervalFormat, timeIntervalStr)
       Dt1 = datetime(dateVec1, 'TimeZone', 'UTCLeapSeconds');
       Dt2 = datetime(dateVec2, 'TimeZone', 'UTCLeapSeconds');
 
-      [actDt1, actDt2, actTimeIntervalFormat] = solo.adm.dsfn.parse_time_interval_str(timeIntervalStr);
-      actTimeIntervalStr = solo.adm.dsfn.create_time_interval_str(Dt1, Dt2, timeIntervalFormat);
+      [actDt1, actDt2, actTimeIntervalFormat] = ...
+        solo.adm.dsfn.parse_time_interval_str(timeIntervalStr);
+      actTimeIntervalStr                      = ...
+        solo.adm.dsfn.create_time_interval_str(Dt1, Dt2, timeIntervalFormat);
 
       testCase.assertEqual(actDt1, Dt1)
       testCase.assertEqual(actDt2, Dt2)

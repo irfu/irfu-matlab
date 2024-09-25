@@ -71,6 +71,11 @@ classdef DatasetFilename
   %
   % PROPOSAL: Forbid >2 char-length version strings beginning with zero.
   %
+  % PROPOSAL: parse(): Return flag for whether conversion worked. Eliminate
+  %           special value.
+  %
+  % PROPOSAL: Use name-value arguments for create().
+  %
   %
   %
   % PROPOSAL: Separate classes for every separate filenaming scheme.
@@ -354,6 +359,12 @@ classdef DatasetFilename
 
 
 
+    % RETURN VALUES
+    % =============
+    % Df
+    %       Instance of solo.adm.dsfn.DatasetFilename if the string can be
+    %       parsed as a filename on official dataset filenaming convention.
+    %       Empty [] if it can not.
     function Df = parse_filename(filename)
 
       function versionStr = version_RE_match_to_versionNbr(s)

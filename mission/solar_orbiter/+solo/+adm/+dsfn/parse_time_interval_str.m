@@ -2,6 +2,9 @@
 % Parse time interval string. The function supports
 % solo.adm.dsfn.DatasetFilename.
 %
+% NOTE: Tested directly via solo.adm.dsfn.time_interval_str___UTEST and
+% indirectly bia solo.adm.dsfn.DatasetFilename___UTEST.
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
@@ -11,9 +14,18 @@ function [Dt1, Dt2, timeIntervalFormat] = parse_time_interval_str(timeIntervalSt
 %   PROPOSAL: Return struct (not class!).
 %   PROPOSAL: timeIntervalFormat == special value, e.g. [].
 %
-% PROPOSAL: TIFID = Time Interval Format ID
+% PROPOSAL: New abbrev. TIFID = Time Interval Format ID
 %
-% PROPOSAL: Only use column arrays.
+% PROPOSAL: Class with static methods for parse_time_interval_str() and
+%           create_time_interval_str().
+%   PRO: Natural to group parse+create functions.
+%   PRO: Natural to have test for class.
+%   TODO-DEC: Name?
+%     tis=time interval string
+%     time_interval_string
+%       PROPOSAL: Shorter function names since class name is informative.
+%       time_interval_string.create()
+%       time_interval_string.parse()
 
 % yyyymmdd (8 digits).
 DATE_RE     = '[0-9][0-9][0-9][0-9][01][0-9][0-3][0-9]';
