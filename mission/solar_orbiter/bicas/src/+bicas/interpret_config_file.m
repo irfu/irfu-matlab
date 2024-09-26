@@ -59,7 +59,7 @@ for iRow = 1:numel(configFileRowsCa)
     % CASE: Row is a setting key assignment.
     [subStrList, ~, isPerfectMatch] = ...
       irf.str.regexp_str_parts(...
-      row, ASSIGNMENT_RE_LIST, 'permit non-match');
+      row, ASSIGNMENT_RE_LIST, 'PERMIT_NON_MATCH');
 
     % ASSERTION
     if ~isPerfectMatch

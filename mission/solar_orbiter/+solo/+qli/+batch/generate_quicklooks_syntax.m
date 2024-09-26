@@ -17,7 +17,7 @@
 % Gql
 %       See solo.qli.batch.generate_quicklooks().
 % Fsr
-%       See solo.qli.batch.interface.get_days_from_DASA().
+%       See solo.qli.batch.dasa.get_days_from_DASA().
 % outputDir
 % generateNonweeklyQuicklooks, generateWeeklyQuicklooks
 % operationId
@@ -67,7 +67,7 @@ irf.log('n', sprintf('dasaid      = "%s"', dasaid))
 
 
 
-UmdDtArray = solo.qli.batch.interface.get_days_from_DASA(...
+UmdDtArray = solo.qli.batch.dasa.get_days_from_DASA(...
   Config.datasetDirsCa, ...
   Config.LogFileDirPatternDict, ...
   Fsr, ...

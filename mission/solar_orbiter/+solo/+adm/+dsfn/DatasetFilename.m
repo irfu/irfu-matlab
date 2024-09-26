@@ -1,14 +1,18 @@
 %
 % Class which represents a parsable dataset filename on an ~official filenaming
-% convention. Contains code for both converting between filename <--> separate
-% filename fields.
+% convention. Contains code for converting between (a) filename and (b)
+% separate filename fields.
 %
 %
 % RATIONALE
 % =========
-% Useful for identifying and grouping datasets (based on filenames) for input to
-% BICAS during e.g. IRFU-local batch processing. Useful for creating filenames
-% to be output from BICAS during e.g. IRFU-local batch processing.
+% Useful for
+% * identifying and grouping datasets (based on filenames) for input to
+%   BICAS during e.g. IRFU-local batch processing
+% * creating filenames to be output from BICAS during e.g. IRFU-local batch
+%   processing.
+% * identifying datasets when comparing file modification dates for datasets
+%   and QLI files.
 % --
 % Primarily meant for making it easy to
 % * Distinguish between datasets and non-datasets.
@@ -49,6 +53,13 @@ classdef DatasetFilename
   % PROPOSAL: datasetId --> dsi
   % PROPOSAL: Require NaT when there is no time interval string.
   % PROPOSAL: Order the filenaming conventions.
+  % PROPOSAL: Official abbreviation: DSFN = solo.adm.dsfn.DatasetFilename.
+  % PROPOSAL: Rename parse_filename() --> parse().
+  %   PRO: Shorter.
+  %   PRO: Analogous with solo.adm.dsfn.time_interval_str.parse().
+  % PROPOSAL: parse(): Return flag for whether conversion worked. Eliminate
+  %           special value.
+  %   PRO: Analogous with solo.adm.dsfn.time_interval_str.parse().
   %
   % PROBLEM: Risk of duplicating assertions on consistent fields. Which code
   %          should be responsible? Constructor? create/parse_dataset_filename?
@@ -64,7 +75,11 @@ classdef DatasetFilename
   %   Ex: Datetime, descriptor
   %   CON: Terms do not follow own variable naming conventions.
   %
-  % PROPOSAL: Forbid longer version strings beginning with zero.
+  % PROPOSAL: Forbid >2 char-length version strings beginning with zero.
+  %
+  %
+  % PROPOSAL: Use name-value arguments for create().
+  %   NOTE: Check use cases first. Structs can be useful for repeated calls.
   %
   %
   %
@@ -130,9 +145,11 @@ classdef DatasetFilename
     lesTestStr
     cneTestStr
   end
+
   properties(GetAccess=private, SetAccess=immutable)
     dsicdagUppercase
   end
+
   properties(Dependent)
     % The combination of DSI and optionally "-cdag" as found in
     % the filename, including case.
@@ -164,7 +181,7 @@ classdef DatasetFilename
     % ARGUMENTS
     % =========
     % S
-    %       Struct.
+    %       Struct which de facto serves as a way to supply named arguments.
     function obj = DatasetFilename(S)
       assert(isstruct(S))
 
@@ -175,7 +192,30 @@ classdef DatasetFilename
       assert(islogical(S.isCdag))
       irf.dt.assert_UTC(S.Dt1)
       irf.dt.assert_UTC(S.Dt2)
-      assert(isnumeric(S.versionNbr) && (S.versionNbr >= 1))
+
+      %=========================================================================
+      % Lowest legal version number
+      % ---------------------------
+      % The lowest dataset version number should FORMALLY be 1.
+      % """"The value of the version shall be consistent with the "version"
+      % field in the filename and shall be an integer increment starting at
+      % 01.""""
+      % Source: SOL-SGS-TN-0009, 02/06, Section 3.2.2.1 "ISTP Global Attributes"
+      % Table 3-16 "ISTP Global Attributes for Solar Orbiter Files", entry for
+      % "Data_version".
+      %
+      % CAL files should have lowest version 1.
+      % """"Initial version number shall be "01".""""
+      % Source: ROC-PRO-PIP-ICD-00037-LES, 01/07, Section 4.2.4
+      % "Data versioning",
+      %
+      % HOWEVER, there are datasets on SOAR with "V00" in the filename and these
+      % are mirrored at IRFU.
+      % Ex: solo_L1_swa-his-pha_20200310_V00.cdf
+      %     solo_L1_swa-his-sensorrates_20200310_V00.cdf
+      % NOTE: These files appear to have GA Data_version = "00" too.
+      %=========================================================================
+      assert(isnumeric(S.versionNbr) && (S.versionNbr >= 0))
       assert(ischar(S.timeIntervalFormat))
       assert(isempty(S.lesTestStr) || ischar(S.lesTestStr))
       assert(isempty(S.cneTestStr) || ischar(S.cneTestStr))
@@ -195,19 +235,22 @@ classdef DatasetFilename
       %===========================================
       % Check consistency between variables, etc.
       %===========================================
-      if ~isempty(S.lesTestStr) && isempty(S.cneTestStr) && ~obj.isCdag && ismember(obj.timeIntervalFormat, {'DAY_TO_DAY', 'SECOND_TO_SECOND'})
+      if ~isempty(S.lesTestStr) && isempty(S.cneTestStr) && ~obj.isCdag ...
+          && ismember(obj.timeIntervalFormat, {'DAY_TO_DAY', 'SECOND_TO_SECOND'})
         %=============================
         % "LES" filenaming convention
         %=============================
         obj.dsicdagUppercase = false;
 
-      elseif isempty(S.lesTestStr) && ~isempty(S.cneTestStr) && ~obj.isCdag && strcmp(obj.timeIntervalFormat, {'NO_TIME_INTERVAL'})
+      elseif isempty(S.lesTestStr) && ~isempty(S.cneTestStr) && ~obj.isCdag ...
+          && strcmp(obj.timeIntervalFormat, {'NO_TIME_INTERVAL'})
         %=============================
         % "CNE" filenaming convention
         %=============================
         obj.dsicdagUppercase = true;
 
-      elseif isempty(S.lesTestStr) && isempty(S.cneTestStr) && ismember(obj.timeIntervalFormat, {'DAY', 'DAY_TO_DAY', 'SECOND_TO_SECOND'})
+      elseif isempty(S.lesTestStr) && isempty(S.cneTestStr) ...
+          && ismember(obj.timeIntervalFormat, {'DAY', 'DAY_TO_DAY', 'SECOND_TO_SECOND'})
         %=================================
         % In-flight filenaming convention
         %=================================
@@ -262,7 +305,7 @@ classdef DatasetFilename
 
 
     function timeIntervalStr = get.timeIntervalStr(obj)
-      timeIntervalStr = solo.adm.dsfn.create_time_interval_str(...
+      timeIntervalStr = solo.adm.dsfn.time_interval_str.create(...
         obj.Dt1, obj.Dt2, obj.timeIntervalFormat);
     end
 
@@ -276,14 +319,16 @@ classdef DatasetFilename
 
     function filename = get.filename(obj)
 
-      if ~isempty(obj.lesTestStr) && ismember(obj.timeIntervalFormat, {'DAY_TO_DAY', 'SECOND_TO_SECOND'})
+      if ~isempty(obj.lesTestStr) ...
+          && ismember(obj.timeIntervalFormat, {'DAY_TO_DAY', 'SECOND_TO_SECOND'})
         %=============================
         % "LES" filenaming convention
         %=============================
         filename = sprintf('%s_%s_V%s_%s.cdf', ...
           obj.filenameDsiCdag, obj.timeIntervalStr, obj.versionStr, obj.lesTestStr);
 
-      elseif ~isempty(obj.cneTestStr) && strcmp(obj.timeIntervalFormat, {'NO_TIME_INTERVAL'})
+      elseif ~isempty(obj.cneTestStr) ...
+          && strcmp(obj.timeIntervalFormat, {'NO_TIME_INTERVAL'})
         %=============================
         % "CNE" filenaming convention
         %=============================
@@ -319,6 +364,12 @@ classdef DatasetFilename
 
 
 
+    % RETURN VALUES
+    % =============
+    % Df
+    %       Instance of solo.adm.dsfn.DatasetFilename if the string can be
+    %       parsed as a filename on official dataset filenaming convention.
+    %       Empty [] if it can not.
     function Df = parse_filename(filename)
 
       function versionStr = version_RE_match_to_versionNbr(s)
@@ -326,14 +377,15 @@ classdef DatasetFilename
       end
 
       NO_MATCH_RETURN_VALUE = [];
-      UNUSED_DT             = datetime('NaT', 'TimeZone', 'UTCLeapSeconds');
+      UNUSED_DT             = irf.dt.UTC('NaT');
 
 
+
+      Df = NO_MATCH_RETURN_VALUE;
 
       % NOTE: Parse from the END.
       [~, trueBasename, n] = irf.str.read_token(filename, -1, '\.cdf');
       if n == -1
-        Df = NO_MATCH_RETURN_VALUE;
         return
       end
 
@@ -372,35 +424,40 @@ classdef DatasetFilename
 
 
       % Recurring regular expressions.
-      VERSION_RE     = 'V[0-9][0-9]+';       % NOTE: Permits more than two digits.
+      VERSION_RE     = 'V[0-9][0-9]+';    % NOTE: Permits more than two digits.
       LES_TESTSTR_RE = 'les-[0-9a-f]{7,7}';
       CNE_TESTSTR_RE = '[0-9a-f]{7,7}_CNE';
 
 
 
-      %===========================================================================
+      %===================================================================
       % NOTE: Checks for different naming conventions in assumed order of
       % decreasing likelyhood of being used.
       % ==> Potential speedup.
-      %===========================================================================
+      %===================================================================
 
-      % Non-rigorous reg.exp. for time interval string. A more rigorous check is made
-      % in solo.adm.dsfn.parse_time_interval_str().
+      % Non-rigorous reg.exp. for time interval string. A more rigorous check
+      % is made in solo.adm.dsfn.time_interval_str.parse().
       TIME_INTERVAL_STR_RE = '[0-9T-]{8,31}';
 
-      %===========================================================================
-      % Standard in-flight filenaming convention (incl. CDAG; tested for earlier)
-      %===========================================================================
+      %==========================================
+      % Standard in-flight filenaming convention
+      % (incl. CDAG; tested for earlier)
+      %==========================================
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
         {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE}, ...
-        'permit non-match');
+        'PERMIT_NON_MATCH');
       if perfectMatch && ~dsicdagUppercase
 
-        [S.Dt1, S.Dt2, S.timeIntervalFormat] = ...
-          solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
-        S.versionNbr      = version_RE_match_to_versionNbr(subStrCa{4});
-        S.lesTestStr      = [];
-        S.cneTestStr      = [];
+        [S.Dt1, S.Dt2, S.timeIntervalFormat, bSuccess] = ...
+          solo.adm.dsfn.time_interval_str.parse(subStrCa{2});
+        if ~bSuccess
+          return
+        end
+
+        S.versionNbr = version_RE_match_to_versionNbr(subStrCa{4});
+        S.lesTestStr = [];
+        S.cneTestStr = [];
 
         Df = solo.adm.dsfn.DatasetFilename(S);
         return
@@ -411,14 +468,18 @@ classdef DatasetFilename
       %=============================
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
         {'_', TIME_INTERVAL_STR_RE, '_', VERSION_RE, '_', LES_TESTSTR_RE}, ...
-        'permit non-match');
+        'PERMIT_NON_MATCH');
       if perfectMatch && ~dsicdagUppercase && ~S.isCdag
 
-        [S.Dt1, S.Dt2, S.timeIntervalFormat] = ...
-          solo.adm.dsfn.parse_time_interval_str(subStrCa{2});
-        S.versionNbr      = version_RE_match_to_versionNbr(subStrCa{4});
-        S.lesTestStr      = subStrCa{6};
-        S.cneTestStr      = [];
+        [S.Dt1, S.Dt2, S.timeIntervalFormat, bSuccess] = ...
+          solo.adm.dsfn.time_interval_str.parse(subStrCa{2});
+        if ~bSuccess
+          return
+        end
+
+        S.versionNbr = version_RE_match_to_versionNbr(subStrCa{4});
+        S.lesTestStr = subStrCa{6};
+        S.cneTestStr = [];
 
         Df = solo.adm.dsfn.DatasetFilename(S);
         return
@@ -429,10 +490,8 @@ classdef DatasetFilename
       %=============================
       [subStrCa, ~, perfectMatch] = irf.str.regexp_str_parts(str, ...
         {'_', CNE_TESTSTR_RE, '_', VERSION_RE}, ...
-        'permit non-match');
+        'PERMIT_NON_MATCH');
       if perfectMatch && dsicdagUppercase && ~S.isCdag
-
-        % S.timeIntervalStr    = NO_MATCH_RETURN_VALUE;
 
         S.Dt1                = UNUSED_DT;
         S.Dt2                = UNUSED_DT;
@@ -449,7 +508,6 @@ classdef DatasetFilename
       %============================================
       % CASE: Could not match filename to anything
       %============================================
-      Df = NO_MATCH_RETURN_VALUE;
 
     end    % parse_filename()
 

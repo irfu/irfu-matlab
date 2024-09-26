@@ -39,7 +39,7 @@ classdef fmd
   %   PRO: Avoids dependence on explicitly specifying dataset directories.
   %        Uses exactly the CDF directories which SolO DB would use, and as
   %        function of DSI.
-  %   PRO: Resolves bug ("Implementetion checks for *all* DSIs in *all*
+  %   PRO: Resolves bug ("Implementation checks for *all* DSIs in *all*
   %        specified dataset directories.")
   %   --
   %   CON: Preliminary tests (on local mount) indicate that it takes much more
@@ -137,7 +137,7 @@ classdef fmd
 
 
 
-    % Derive array of dates from the DMRQ and by reading file system data
+    % Derive array of dates from the DMRQ and by reading file system (FS) data
     % itself.
     function UmdDtArray = get_days_from_DMRQ_and_FS(datasetDirsCa, qliDir, dsiCa, Fsr)
       assert(iscell(datasetDirsCa) && iscolumn(datasetDirsCa))
@@ -174,27 +174,27 @@ classdef fmd
 
     % Derive array of dates from the DMRQ and arguments containing file system
     % data (i.e. do not read from file system itself).
-    function ChangedDatasetsDtArray = get_days_from_DMRQ_algorithm(...
+    function ChangedDatasetsUmdDtArray = get_days_from_DMRQ_algorithm(...
         DatasetsUfd, QliUfd)
 
-      AllDatasetsDtArray = intersect(...
+      AllDatasetsUmdDtArray = intersect(...
         DatasetsUfd.UmdDtArray(), QliUfd.UmdDtArray());
 
       % Preallocate.
-      ChangedDatasetsDtArray = NaT(...
-        size((AllDatasetsDtArray)), 'TimeZone', 'UTCLeapSeconds');
+      ChangedDatasetsUmdDtArray = NaT(...
+        size((AllDatasetsUmdDtArray)), 'TimeZone', 'UTCLeapSeconds');
 
       nChangedDatasets = 0;
-      for iDatasetDt = 1:numel(AllDatasetsDtArray)
-        DatasetDt = AllDatasetsDtArray(iDatasetDt);
+      for iDatasetDt = 1:numel(AllDatasetsUmdDtArray)
+        DatasetUmdDt = AllDatasetsUmdDtArray(iDatasetDt);
 
-        if DatasetsUfd(DatasetDt) >= QliUfd(DatasetDt)
+        if DatasetsUfd(DatasetUmdDt) >= QliUfd(DatasetUmdDt)
           nChangedDatasets = nChangedDatasets + 1;
-          ChangedDatasetsDtArray(nChangedDatasets, 1) = DatasetDt;
+          ChangedDatasetsUmdDtArray(nChangedDatasets, 1) = DatasetUmdDt;
         end
       end
 
-      ChangedDatasetsDtArray = ChangedDatasetsDtArray(1:nChangedDatasets, 1);
+      ChangedDatasetsUmdDtArray = ChangedDatasetsUmdDtArray(1:nChangedDatasets, 1);
     end
 
 

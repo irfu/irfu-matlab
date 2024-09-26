@@ -481,7 +481,7 @@ classdef utils
 
       % Ex: 20240313T20_20240313T22.png
       [subStrCa, ~, isPerfectMatch] = irf.str.regexp_str_parts(...
-        filename, {TIMESTAMP_RE_CA{:}, '_', TIMESTAMP_RE_CA{:}, '.png'}, 'permit non-match');
+        filename, {TIMESTAMP_RE_CA{:}, '_', TIMESTAMP_RE_CA{:}, '.png'}, 'PERMIT_NON_MATCH');
 
       if isPerfectMatch
         year1  = str2double(subStrCa{1});
