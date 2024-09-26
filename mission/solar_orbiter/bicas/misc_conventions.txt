@@ -51,10 +51,12 @@ AR
 ASID
     Class bicas.proc.L1L2.AntennaSignalId. See ASR.
 ASR, Antenna Signal Representation.
-    (1) A reference to a particular type of "physical antenna signal"
-        (a "data channel") which BIAS-LFR/TDS is trying to measure, or
-        NOTE: Class ASID represents such a reference.
-    (2) a measurement of such.
+    Either of:
+    (1) A reference to a particular type of "physical antenna signal channel"
+        which BIAS-LFR/TDS is trying to measure.
+        NOTE: Class ASID represents a reference to such a channel, but not
+              the samples.
+    (2) the sample values in a measurement of such, whether indirect or not.
     In reality, the terminology is:
     ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF
                   (DC diff, antenna 1-2)

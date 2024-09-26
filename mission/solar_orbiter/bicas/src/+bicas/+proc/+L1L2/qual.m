@@ -127,11 +127,13 @@ classdef qual
         ' to fill values (i.e. removed), regardless of reason.\n']);
       bicas.proc.L1L2.qual.log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
 
-      % Set current values to fill value/NaN.
+      % ====================================
+      % Set CURRENT values to fill value/NaN
+      % ====================================
       zvCurrentAAmpere(zvUfv, :) = NaN;
 
       % ====================================
-      % Set voltage values to fill value/NaN
+      % Set VOLTAGE values to fill value/NaN
       % ====================================
       % NOTE: Should really use future bicas.utils.SameSizeTypeMap here
       %       which contains size on other dimensions.

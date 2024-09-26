@@ -208,16 +208,17 @@ classdef demuxer
       % PROPOSAL: Log message for BDM=NaN.
 
       % ASSERTIONS
-      assert(numel(SdidArray) == bicas.const.N_BLTS)
       assert(isa(SdidArray, 'bicas.proc.L1L2.SignalDestinationId'))
       assert(isnumeric(bltsSamplesAVolt))
-      irf.assert.sizes(bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS])
+      irf.assert.sizes(...
+        bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
+        SdidArray,        [ 1,     bicas.const.N_BLTS])
 
-      % Set only those ASRs for which there is data.
+      % Assign arrays only for those ASIDs for which there is data.
       AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
         bltsSamplesAVolt, SdidArray);
 
-      % Set those ASRs for which there is NO data.
+      % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
       % NOTE: The function modifies the ARGUMENT (handle object).
       bicas.proc.L1L2.demuxer.reconstruct_missing_ASRs(AsrSamplesAVoltSrm);
     end
@@ -235,6 +236,8 @@ classdef demuxer
     %   not know this.
     %   NOTE: Unlikely that this will ever happen, or that the
     %   instrument RPW is even able to return data for this situation.
+    %   PROBLEM: Can happen if blanking data in future implementations due to
+    %   NSOs.
     %
     % NOTE: Only public for the purpose of automatic testing.
     %
@@ -242,9 +245,31 @@ classdef demuxer
     % ARGUMENTS
     % =========
     % AsrSamplesAVoltSrm
-    %       NOTE: Modifies argument.
+    %       NOTE: Function modifies the argument (handle class)!
     %
     function reconstruct_missing_ASRs(AsrSamplesAVoltSrm)
+      % PROPOSAL: Better name
+      %   NOTE: Can not always reconstruct all signals.
+      %   --
+      %   ASR
+      %   ASID
+      %   complete
+      %   complement
+      %   reconstruct
+      %   signals
+      %   missing (antenna) signals
+      %   singles, diffs
+      %   --
+      %   reconstruct_missing_signals
+      %   reconstruct_missing_antenna_signals
+      %   reconstruct_missing_ASRs
+      %   add_missing_ASRs
+      %   add_missing_ASIDs
+      %   add_reconstruct_missing_ASRs
+      %   --
+      %   If using SDID keys (in the future), then
+      %     add_missing_SDIDs
+
       assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
 
       % Shorten variable names.
@@ -257,7 +282,8 @@ classdef demuxer
       % AC ASRs are separate from DC. Does not have to be in loop.
       % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
       % nFnAfter == 9 condition does not work.
-      AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("AC_V13"), A("AC_V12"), A("AC_V23"));
+      AsSrm = bicas.proc.L1L2.demuxer.complete_relation(...
+        AsSrm, A("AC_V13"), A("AC_V12"), A("AC_V23"));
 
       %================
       % Derive DC ASRs
@@ -318,24 +344,27 @@ classdef demuxer
 
 
 
-    % Given FIVE BLTS sample arrays, copy those which correspond to ASRs
-    % (five or fewer!) into a bicas.utils.SameRowsMap.
+    % Given FIVE BLTS sample arrays, copy those which correspond to ASRs (five
+    % or fewer!) into an SRM with correct ASID keys for the corresponding
+    % arrays.
     function AsrSamplesSrm = assign_ASR_samples_from_BLTS(...
         bltsSamplesAVolt, SdidArray)
 
       % ASSERTIONS
       assert(numel(SdidArray) == bicas.const.N_BLTS)
       assert(isnumeric(bltsSamplesAVolt))
-      irf.assert.sizes(bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS])
+      nRows = irf.assert.sizes( ...
+        bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
+        SdidArray,        [ 1,     bicas.const.N_BLTS]);
 
-      nRows         = size(bltsSamplesAVolt, 1);
       AsrSamplesSrm = bicas.utils.SameRowsMap( ...
         "bicas.proc.L1L2.AntennaSignalId", nRows, 'EMPTY');
       for iBlts = 1:bicas.const.N_BLTS
         if ~SdidArray(iBlts).isNowhere
-          AsrSamplesSrm.add(...
-            SdidArray(iBlts).Asid, ...
-            bltsSamplesAVolt(:, :, iBlts));
+          % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
+          % if conceptually sensible.
+          Asid = SdidArray(iBlts).Asid;
+          AsrSamplesSrm.add(Asid, bltsSamplesAVolt(:, :, iBlts));
         end
       end
     end

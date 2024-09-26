@@ -432,7 +432,8 @@ classdef SameRowsMap < handle
 
     % Overload disp(Srm). Useful for debugging e.g. tests.
     %
-    % Unclear if works for non-numeric, non-char key values. Probably not.
+    % Unclear if works for non-numeric, non-char key values. Probably not. Does
+    % not work for ASID keys.
     %
     function s = disp(obj)
       keyArray = obj.keys;
