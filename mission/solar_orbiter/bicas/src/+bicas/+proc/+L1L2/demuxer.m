@@ -220,7 +220,7 @@ classdef demuxer
 
       % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
       % NOTE: The function modifies the ARGUMENT (handle object).
-      bicas.proc.L1L2.demuxer.reconstruct_missing_ASRs(AsrSamplesAVoltSrm);
+      bicas.proc.L1L2.demuxer.reconstruct_missing_ASR_samples(AsrSamplesAVoltSrm);
     end
 
 
@@ -247,7 +247,7 @@ classdef demuxer
     % AsrSamplesAVoltSrm
     %       NOTE: Function modifies the argument (handle class)!
     %
-    function reconstruct_missing_ASRs(AsrSamplesAVoltSrm)
+    function reconstruct_missing_ASR_samples(AsrSamplesAVoltSrm)
       % PROPOSAL: Better name
       %   NOTE: Can not always reconstruct all signals.
       %   --
