@@ -219,7 +219,7 @@ classdef demuxer
 
       % Set those ASRs for which there is NO data.
       % NOTE: The function modifies the ARGUMENT (handle object).
-      bicas.proc.L1L2.demuxer.complement_ASR(AsrSamplesAVoltSrm);
+      bicas.proc.L1L2.demuxer.reconstruct_missing_ASRs(AsrSamplesAVoltSrm);
     end
 
 
@@ -244,7 +244,7 @@ classdef demuxer
     % AsrSamplesAVoltSrm
     %       NOTE: Modifies argument.
     %
-    function complement_ASR(AsrSamplesAVoltSrm)
+    function reconstruct_missing_ASRs(AsrSamplesAVoltSrm)
       assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
 
       % Shorten variable names.

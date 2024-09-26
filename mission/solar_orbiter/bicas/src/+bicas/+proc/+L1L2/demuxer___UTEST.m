@@ -256,7 +256,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_complement_ASR(testCase)
+    function test_reconstruct_missing_ASRs(testCase)
 
       A = bicas.sconst.C.S_ASID_DICT;
 
@@ -285,7 +285,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         end
 
         % RUN FUNCTION TO BE TESTED
-        bicas.proc.L1L2.demuxer.complement_ASR(AsSrm);
+        bicas.proc.L1L2.demuxer.reconstruct_missing_ASRs(AsSrm);
         ActAsSrm = AsSrm;
 
         % Test all possible relationsships.
