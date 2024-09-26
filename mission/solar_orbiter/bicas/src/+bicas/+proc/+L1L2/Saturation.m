@@ -281,7 +281,7 @@ classdef Saturation
 
       % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
       % code, but it is difficult to use the same implementation for both
-      % without (1) making the impleementation harder to understand and (2)
+      % without (1) making the implementation harder to understand and (2)
       % having one particular variable with different meanings in the two cases.
       if ~hasSwfFormat
         %===========

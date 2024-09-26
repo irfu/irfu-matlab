@@ -351,7 +351,6 @@ classdef demuxer
         bltsSamplesAVolt, SdidArray)
 
       % ASSERTIONS
-      assert(numel(SdidArray) == bicas.const.N_BLTS)
       assert(isnumeric(bltsSamplesAVolt))
       nRows = irf.assert.sizes( ...
         bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
