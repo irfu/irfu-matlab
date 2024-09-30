@@ -204,7 +204,8 @@ classdef demuxer
     % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote
     % that they are organized by BLTS and ASRs respectively.
     %
-    function AsrSamplesAVoltSrm = calibrated_BLTSs_to_all_ASRs(SdidArray, bltsSamplesAVolt)
+    function AsrSamplesAVoltSrm = calibrated_BLTSs_to_all_ASRs(...
+        SdidArray, bltsSamplesAVolt)
       % PROPOSAL: Log message for BDM=NaN.
 
       % ASSERTIONS

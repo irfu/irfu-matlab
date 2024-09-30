@@ -17,7 +17,7 @@ classdef dc
   % PROPOSAL: Automatic test code.
   %
   % PROPOSAL:   process_calibrate_demux()
-  %           & calibrate_demux_voltages()
+  %           & calibrate_voltages()
   %           should only accept the needed ZVs and variables.
   %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
   %         from struct.
@@ -60,10 +60,10 @@ classdef dc
 
 
 
-      %############################
-      % DEMUX & CALIBRATE VOLTAGES
-      %############################
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages(...
+      %####################
+      % CALIBRATE VOLTAGES
+      %####################
+      bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages(...
         Epoch                   = Dcip.Zv.Epoch, ...
         bltsSamplesTm           = Dcip.Zv.bltsSamplesTm, ...
         isAchgFpa               = Dcip.Zv.isAchgFpa, ...
@@ -71,7 +71,6 @@ classdef dc
         freqHz                  = Dcip.Zv.freqHz, ...
         iLsf                    = Dcip.Zv.iLsf, ...
         ufv                     = Dcip.Zv.ufv, ...
-        lrx                     = Dcip.Zv.lrx, ...
         bltsKSsidArray          = bltsKSsidArray, ...
         bltsKSdidArray          = bltsKSdidArray, ...
         isTdsCwf                = Dcip.isTdsCwf, ...
@@ -80,6 +79,17 @@ classdef dc
         nValidSamplesPerRecord  = Dcip.Zv.nValidSamplesPerRecord, ...
         Cal                     = Cal, ...
         L                       = L);
+
+
+
+      %#########################################################
+      % ~"DEMUX" VOLTAGES
+      % (SIGNALS LABELLED BY BLTS --> SIGNALS LABELLED BY DSID)
+      %#########################################################
+      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.distribute_BLTS_to_ASRs(...
+        bltsSamplesAVolt, ...
+        bltsKSsidArray, ...
+        bltsKSdidArray, L);
 
 
 
@@ -286,7 +296,7 @@ classdef dc
     %
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %
-    function AsrSamplesAVoltSrm = calibrate_demux_voltages(Zv, A)
+    function bltsSamplesAVolt = calibrate_voltages(Zv, A)
       % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
       %           for CWF.
       %
@@ -303,7 +313,6 @@ classdef dc
         Zv.freqHz
         Zv.iLsf
         Zv.ufv
-        Zv.lrx
         Zv.bltsKSsidArray
         Zv.bltsKSdidArray
         Zv.nValidSamplesPerRecord
@@ -327,14 +336,11 @@ classdef dc
 
 
 
-      % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
-      % -----------------------------------------------------------------
+      % Pre-allocate calibrated array. All (BLTS) channels, all records
+      % ---------------------------------------------------------------
       % IMPLEMENTATION NOTE: Preallocation is very important for speeding
       % up LFR-SWF which tends to be broken into subsequences of 1 record.
-      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
-        "bicas.proc.L1L2.AntennaSignalId", nRecords, 'CONSTANT', ...
-        nan(nRecords, nSamplesPerRecordChannel), ...
-        bicas.sconst.C.S_ASID_DICT.values);
+      bltsSamplesAVolt = nan(nRecords, nSamplesPerRecordChannel, bicas.const.N_BLTS);
 
       iCalibLZv = A.Cal.get_BIAS_calibration_time_L(Zv.Epoch);
       iCalibHZv = A.Cal.get_BIAS_calibration_time_H(Zv.Epoch);
@@ -363,7 +369,6 @@ classdef dc
         Zv.iLsf, ...
         Zv.CALIBRATION_TABLE_INDEX, ...
         Zv.ufv, ...
-        Zv.lrx, ...
         Zv.bltsKSsidArray, ...
         Zv.bltsKSdidArray, ...
         iCalibLZv, ...
@@ -376,23 +381,7 @@ classdef dc
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        % ==============================================================
-        % IMPLEMENTATION NOTE: Below extraction of data from Dcip etc.
-        % may seem awkward but actually clarifies the code associated
-        % with bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence()
-        % as compared to earlier version before refactoring.
-        %
-        % PRO: Clearly divides the variables/arguments into (a) constant
-        %      and (2) varying variables.
-        % PRO: Clarifies the information which the function needs.
-        %      = Minimizes the amount of information that goes into the
-        %      function.
-        % PRO: Prevents the function from having to do the same.
-        % PRO: Prevents the function from simultaneously having
-        %      variables version for (a) entire interval of time and (b)
-        %      the selected interval of time.
-        % ==============================================================
-        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence( ...
+        ssBltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_subsequence( ...
           Cal                      = A.Cal, ...
           ... % ===============================================================
           ... % NOTE: Variables which do VARY over CDF records.
@@ -403,9 +392,6 @@ classdef dc
           ufv                      = Zv.ufv(                    iRec1), ...
           bltsKSsidArray           = Zv.bltsKSsidArray(         iRec1, :), ...
           bltsKSdidArray           = Zv.bltsKSdidArray(         iRec1, :), ...
-          ... % NOTE: Excluding Dcip.Zv.lrx since it is only need for
-          ... %       splitting time/CDF record intervals, not for calibration
-          ... %       since calibration can handle sequences of only NaN.
           iCalibL                  = iCalibLZv(iRec1), ...
           iCalibH                  = iCalibHZv(iRec1), ...
           ... % ===============================================================
@@ -413,16 +399,17 @@ classdef dc
           hasSwfFormat             = A.hasSwfFormat, ...
           isLfr                    = A.isLfr, ...
           isTdsCwf                 = A.isTdsCwf, ...
+          nSamplesPerRecordChannel = nSamplesPerRecordChannel, ...
           ...   % Variables which vary by CDF records.
           Epoch                    = Zv.Epoch(                 iRec1:iRec2), ...
           bltsSamplesTm            = Zv.bltsSamplesTm(         iRec1:iRec2, :, :), ...
           zvNValidSamplesPerRecord = Zv.nValidSamplesPerRecord(iRec1:iRec2));
 
-        % Add demuxed sequence signals to the global arrays (all records).
-        AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
+        % Add subsequence signals to the global array (all records).
+        bltsSamplesAVolt(iRec1:iRec2, :, :) = ssBltsSamplesAVolt;
       end    % for
 
-    end    % calibrate_demux_voltages
+    end    % calibrate_voltages
 
 
 
@@ -435,7 +422,7 @@ classdef dc
     %       Constant values. Scalar values which do NOT VARY by CDF record.
     % Vv
     %       Varying values. Struct with values which DO VARY by CDF record.
-    function AsrSamplesAVoltSrm = calibrate_demux_voltages_subsequence(A, Cv, Vv)
+    function ssBltsSamplesAVolt = calibrate_voltages_subsequence(A, Cv, Vv)
       arguments
         A.Cal
         %
@@ -452,6 +439,7 @@ classdef dc
         Cv.iCalibL
         Cv.iCalibH
         % NOTE: Below variables do not vary over CDF records at all.
+        Cv.nSamplesPerRecordChannel
         Cv.hasSwfFormat
         Cv.isLfr
         Cv.isTdsCwf
@@ -474,7 +462,7 @@ classdef dc
       %====================
       % CALIBRATE VOLTAGES
       %====================
-      ssBltsSamplesAVolt = [];
+      ssBltsSamplesAVolt = nan(nRows, Cv.nSamplesPerRecordChannel, bicas.const.N_BLTS);
       for iBlts = 1:bicas.const.N_BLTS
         ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
           Ssid                     = bicas.sconst.C.K_SSID_DICT(Cv.bltsKSsidArray(iBlts)), ...
@@ -493,14 +481,7 @@ classdef dc
           ufv                      = Cv.ufv, ...
           Cal                      = A.Cal);
       end
-
-      %========================================================
-      % DEMULTIPLEXER: DERIVE AND COMPLEMENT WITH MISSING ASRs
-      %========================================================
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
-        bicas.sconst.C.K_SDID_DICT(Cv.bltsKSdidArray), ...
-        ssBltsSamplesAVolt);
-    end    % calibrate_demux_voltages_subsequence
+    end    % calibrate_voltages_subsequence
 
 
 
@@ -524,7 +505,7 @@ classdef dc
         A.Cal
       end
       % IMPLEMENTATION NOTE: It is ugly to have this many parameters (15!),
-      % but the original code made calibrate_demux_voltages() to large and
+      % but the original code made calibrate_voltages() to large and
       % unwieldy. Having many arguments also highlights the exact dependencies.
       %
       % PROPOSAL: CalSettings as parameter.
@@ -604,6 +585,51 @@ classdef dc
         end
       end
     end    % calibrate_BLTS
+
+
+
+    function AsrSamplesAVoltSrm = distribute_BLTS_to_ASRs(...
+        bltsSamplesAvolt, bltsKSsidArray, bltsKSdidArray, L)
+      % PROPOSAL: Automated tests.
+
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.distribute_BLTS_to_ASRs', L);
+
+      [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
+        bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
+        bltsKSsidArray,   [-1,     bicas.const.N_BLTS], ...
+        bltsKSdidArray,   [-1,     bicas.const.N_BLTS]);
+
+
+      % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
+      % -----------------------------------------------------------------
+      % IMPLEMENTATION NOTE: Preallocation is very important for speeding
+      % up LFR-SWF which tends to be broken into subsequences of 1 record.
+      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
+        "bicas.proc.L1L2.AntennaSignalId", nRecTot, 'CONSTANT', ...
+        nan(nRecTot, nSamplesPerRecordChannel), ...
+        bicas.sconst.C.S_ASID_DICT.values);
+
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+        bltsKSsidArray, ...
+        bltsKSdidArray);
+
+      for iSs = 1:nSs
+        iRec1 = iRec1Ar(iSs);
+        iRec2 = iRec2Ar(iSs);
+
+        %=========================================
+        % LABEL SIGNALS BY ASR (INSTEAD OF iBLTS)
+        %=========================================
+        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
+          bicas.sconst.C.K_SDID_DICT(bltsKSdidArray(iRec1,          :)), ...
+          bltsSamplesAvolt(                         iRec1:iRec2, :, :));
+
+        % Add demuxed sequence signals to the global arrays (all records).
+        AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
+      end
+
+      Tmk.stop_log(nRecTot, 'record', nSs, 'subsequence')
+    end
 
 
 

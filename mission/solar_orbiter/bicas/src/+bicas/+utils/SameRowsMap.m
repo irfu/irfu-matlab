@@ -78,7 +78,7 @@ classdef SameRowsMap < handle
   %   AsrMap (while building) (until bicas.utils.SameSizeTypeMap)
   %   AsrMap (final)          (until bicas.utils.SameSizeTypeMap)
   %   DemultiplexingCalibrationInput/DemultiplexingCalibrationOutput.Zv
-  %   bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(): Arguments which represent
+  %   bicas.proc.L1L2.dc.calibrate_voltages_subsequence(): Arguments which represent
   %       a subsequence (a shorter interval of CDF records).
   %
   % PROPOSAL: Fixed set of keys.
