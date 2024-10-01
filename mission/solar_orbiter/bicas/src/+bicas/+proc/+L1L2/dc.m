@@ -9,18 +9,107 @@
 % First created 2021-05-25
 %
 classdef dc
-  % PROPOSAL: Better name.
-  %   PRO: Processing includes quality "processing" which is not in "DC".
-  %   PROPOSAL: dcq = Demux, Calibrate, Quality
-  %   process()
-  %
-  % PROPOSAL: Automatic test code.
-  %
-  % PROPOSAL:   process_calibrate_demux()
-  %           & calibrate_voltages()
-  %           should only accept the needed ZVs and variables.
-  %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
-  %         from struct.
+% PROPOSAL: Better name.
+%   PRO: Processing includes quality "processing" which is not in "DC".
+%   PROPOSAL: dcq = Demux, Calibrate, Quality
+%   process()
+%
+% PROPOSAL: Automatic test code.
+%
+% PROPOSAL:   process_calibrate_demux()
+%           & calibrate_voltages()
+%           should only accept the needed ZVs and variables.
+%   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
+%         from struct.
+%
+% PROPOSAL: Reorg. code to
+%   * Consist of more isolated/modular/generic separate steps.
+%   * Be more easily testable.
+%   * Be easier to understand.
+%   * Not require splitting up in subsequences with constant "settings" (values
+%     for specific zVariables not varying as a function of CDF record), in
+%     particular not require many constant "settings".
+%   * Use more vector operations.
+%   * More natural to implement
+%
+%
+% #############################################################################
+% PROPOSAL: Class for one ASR/ZV/SDIS-labelled channel (with samples). Not
+%           SDID="unknown". Can be used BEFORE and AFTER after deriving data
+%           using ASR relationships.
+%     class ZvLabelledChannelSamples
+%         % Ideally FPA.
+%         samplesAVolt          [nRows, spr]
+%         % TSF? Before/after windowing?
+%         bSaturated            [nRows]
+%         % Unknown is not really meant for this case, but should work. Can vary by CDF record.
+%         kssid / None/unknown  [nRows]
+%         % NOTE: SDID excluded. Is constant.
+%         function bFpArray = is_FP()
+%         function subsref()
+%         function subsasgn()
+%         function size(), ndims(), ...
+%     --
+%     Replace SRM with dictionary (or custom class; Can not use SRM).
+%         SDID-->class Channel
+%     PROPOSAL: Class can contain static methods describing ASR relationships,
+%               and which can be used for reconstructing ASR channels (by
+%               generic function derive_missing_data()).
+%     CON: bSaturated not meaningful until has derived it. Should ideally be
+%          possible to add it after deriving it.
+%         CON-PROPOSAL: Separate dictionary SDID-->bSaturation
+%             PRO: Proliferation of saturation bits is independent of other channel data.
+%                  Assuming has fill positions. 0=FP does not work for proliferation.
+%             CON: Can not ensure identical proliferation derivations (or not clear; risky).
+%                  Should ideally have "proliferation functions"
+%                  X=func_X_from_Y_and_Z(Y,Z) which set all variables and use
+%                  one single source of ~FP flags.
+%
+% #############################################################################
+% PROPOSAL: Generic function for deriving data using ASR relationships (below).
+%
+% IMPLEMENTATION NOTE: Deliberately separates
+% (1a) the notion of data arrays from
+% (1b) the notion of fill positions (missing data),
+% and
+% (2) the operations used for obtaining data.
+%   PRO: More generic.
+%   PRO: More easily testable.
+%
+% IMPLEMENTATION NOTE: Deliberately does NOT create new arrays (data structures)
+% for missing data. Instead fills in pre-existing data structures.
+% ==> Same type of arrays/classes as input and as output (conceptually, and
+%     MATLAB classes).
+%
+% IMPLEMENTATION NOTE: Deliberately uses vectorized operations.
+%   PRO: Does not have to assume the same operation (fh12to3, fh13to2, fh23to1)
+%        acting on entire arrays.
+%       PRO: Does not have to split records/arrays in sections with identical
+%            operation.
+%   PRO: Presumably faster when applied to all data.
+%
+% function derive_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh12to3, fh13to2, fh23to1)
+% % PROPOSAL: Require 1D arrays.
+% %   PRO: ~More generic.
+% %   CON: "Must" use classes for SWF data.
+% %       CON-PROPOSAL: Use 1D cell arrays of snapshots/1D arrays.
+% %       CON: Might want to do that anyway.
+% %           Ex: Samples (2D per channel) + TSF (1D) + SDID.
+% %           Ex: Tests.
+% % PROPOSAL: Require same array size for all arrays (in practice 1D or 2D).
+%
+%     bDerive1 =  bFp1 & ~bFp2 & ~bFp3;
+%     bDerive2 = ~bFp1 &  bFp2 & ~bFp3;
+%     bDerive3 = ~bFp1 & ~bFp2 &  bFp3;
+%
+%     % If using actual arrays for samples, then need at least one more dimension
+%     % for SWF (1 record=1 snapshot): Ax(b, :) = func(Ay(b, :), Az(b, :).
+%     %
+%     A1(bDerive1) = fh23to1(A2(bDerive1), A3(bDerive1));
+%     A2(bDerive2) = fh13to2(A1(bDerive2), A3(bDerive2));
+%     A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
+% end
+% % #############################################################################
 
 
 

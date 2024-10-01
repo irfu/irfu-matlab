@@ -11,6 +11,9 @@
 %
 classdef SignalDestinationId
   % PROPOSAL: Better name.
+  %   NOTE: Abbreviation SDID = Intended future abbreviation for "dataset
+  %         ID"/DSI.
+  %   --
   %   (output) dataset, zVariables
   %   destination
   %   ZDID = zVariable Destination ID
