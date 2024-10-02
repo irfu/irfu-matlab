@@ -406,6 +406,90 @@ classdef demuxer
 
 
 
+    % EXPERIMENTAL, UNUSED FUNCTION
+    %
+    % INCOMPLETE
+    %
+    % Intended as future conceptual replacement for
+    % bicas.proc.L1L2.demuxer.reconstruct_missing_ASR_samples().
+    % function reconstruct_missing_ASR_samples2(DsidChannelsDict, fh12to3, fh13to2, fh23to1)
+    %   % PROPOSAL: FH arguments as static functions in class.
+    %   %   CON: Makes tests harder: Require class.
+    %   %   PROPOSAL: Same class as implementing DsidChannelsDict.
+    %   %     CON-PROPOSAL: FH args. can be set using static methods in such a class.
+    %   %
+    %   % PROPOSAL: Functions for determining FP in same class as implementing DsidChannelsDict.
+    %   %   CON: Makes tests harder: Require class.
+    %   %
+    %   % PROPOSAL: Class for DsidChannelsDict with static/instance methods for
+    %   %           relationship functions. Class for individual channels with
+    %   %           methods/properties for bFp.
+    %   %           Set reconstruct_missing_ASR_samples2() FH arguments using
+    %   %           those methods.
+    %   %
+    %   % PROPOSAL: Class for DsidChannelsDict with STATIC methods for
+    %   %           relationship functions. Class for individual channels with
+    %   %           methods/properties for bFp.
+    %   %           reconstruct_missing_ASR_samples2() uses those methods
+    %   %           directly. Test class can implement INSTANCE methods which
+    %   %           behaviour is dependent on initialization (variables).
+    %
+    %   assert(isa(DsidChannelsDict, 'dictionary'))
+    %
+    %   % Shorten variable names.
+    %   D   = bicas.sconst.C.S_DSID_DICT;
+    %   DCD = DsidChannelsDict;
+    %
+    %   function derive_missing_data(sdidStr1, sdidStr2, sdidStr3)
+    %     [
+    %       DCD(D(sdidStr1)), ...
+    %       DCD(D(sdidStr2)), ...
+    %       DCD(D(sdidStr3))...
+    %     ] = ...
+    %       bicas.proc.L1L2.demuxer.derive_missing_data(...
+    %       DCD(D(sdidStr1)), ...
+    %       DCD(D(sdidStr2)), ...
+    %       DCD(D(sdidStr3)), ...
+    %       DCD(D(sdidStr1)).bFp, ...
+    %       DCD(D(sdidStr2)).bFp, ...
+    %       DCD(D(sdidStr3)).bFp, ...
+    %       fh12to3, ...
+    %       fh13to2, ...
+    %       fh23to1);
+    %   end
+    %
+    %   %================
+    %   % Derive AC ASRs
+    %   %================
+    %   % AC ASRs are separate from DC ASRs and only satisfy one relationship.
+    %   % Does not have to be in loop.
+    %   derive_missing_data("AC_V13", "AC_V12", "AC_V23")
+    %
+    %   %================
+    %   % Derive DC ASRs
+    %   %================
+    %   nFp0 = DCD.nFp;
+    %   while true
+    %     % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for
+    %     % deriving diffs since it is better to derive a diff from
+    %     % (initially available) diffs rather than singles, directly or
+    %     % indirectly, if possible.
+    %     derive_missing_data("DC_V13", "DC_V12", "DC_V23");
+    %
+    %     derive_missing_data("DC_V1",  "DC_V12", "DC_V2");
+    %     derive_missing_data("DC_V1",  "DC_V13", "DC_V3");
+    %     derive_missing_data("DC_V2",  "DC_V23", "DC_V3");
+    %
+    %     % NOTE: Impossible to get DCD.nFp == 0...
+    %     if (DCD.nFp == nFp0) || (DCD.nFp == 0)
+    %       break
+    %     end
+    %     nFp0 = DCD.nFp;
+    %   end
+    % end
+
+
+
   end    % methods(Static, Access=public)
 
 
