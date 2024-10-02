@@ -1,10 +1,11 @@
-%%Example script on calculating the 1 count level for the electron
-%distribution function measured by MMS. For more details on the various
-%formulas used see the FPI instrument paper Pollock et al. 2016. In
-%addition the Cluster RAPID calibration report is very useful as well,
-%specifically Appendices A,B, and C
+%%Example script for calculating the 1 count level for the electron
+%distribution function measured by MMS.
+%For more details on the various formulas used see the FPI instrument
+%paper Pollock et al. 2016. In addition the Cluster RAPID calibration
+%report is very useful as well, specifically Appendices A,B, and C
 %( https://www2.mps.mpg.de/dokumente/projekte/cluster/rapid/caa_rap_cal.pdf )
-
+%
+%Written by Ahmad Lalti.
 %% Define time interval and sampling rate of interest (a shock crossing)
 clearvars
 Tint = irf.tint('2023-04-24T03:49:00.000000000Z','2023-04-24T03:50:40.000000000Z');
