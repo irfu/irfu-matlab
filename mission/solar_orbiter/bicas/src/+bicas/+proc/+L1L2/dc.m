@@ -66,7 +66,7 @@ classdef dc
 %                  one single source of ~FP flags.
 %
 % #############################################################################
-% PROPOSAL: Generic function for deriving data using ASR relationships (below).
+% PROPOSAL: Generic function for deriving data using ASR relationships.
 %
 % IMPLEMENTATION NOTE: Deliberately separates
 % (1a) the notion of data arrays from
@@ -87,28 +87,6 @@ classdef dc
 %       PRO: Does not have to split records/arrays in sections with identical
 %            operation.
 %   PRO: Presumably faster when applied to all data.
-%
-% function derive_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh12to3, fh13to2, fh23to1)
-% % PROPOSAL: Require 1D arrays.
-% %   PRO: ~More generic.
-% %   CON: "Must" use classes for SWF data.
-% %       CON-PROPOSAL: Use 1D cell arrays of snapshots/1D arrays.
-% %       CON: Might want to do that anyway.
-% %           Ex: Samples (2D per channel) + TSF (1D) + SDID.
-% %           Ex: Tests.
-% % PROPOSAL: Require same array size for all arrays (in practice 1D or 2D).
-%
-%     bDerive1 =  bFp1 & ~bFp2 & ~bFp3;
-%     bDerive2 = ~bFp1 &  bFp2 & ~bFp3;
-%     bDerive3 = ~bFp1 & ~bFp2 &  bFp3;
-%
-%     % If using actual arrays for samples, then need at least one more dimension
-%     % for SWF (1 record=1 snapshot): Ax(b, :) = func(Ay(b, :), Az(b, :).
-%     %
-%     A1(bDerive1) = fh23to1(A2(bDerive1), A3(bDerive1));
-%     A2(bDerive2) = fh13to2(A1(bDerive2), A3(bDerive2));
-%     A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
-% end
 % % #############################################################################
 
 

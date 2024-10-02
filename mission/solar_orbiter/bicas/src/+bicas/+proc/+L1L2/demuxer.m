@@ -333,6 +333,79 @@ classdef demuxer
 
 
 
+    % EXPERIMENTAL, UNUSED FUNCTION
+    %
+    % Intended as future conceptual replacement for
+    % bicas.proc.L1L2.demuxer.complete_relation().
+    %
+    % Complement/derive redundant data in three related arrays. If one element
+    % is missing (labelled as a fill position) while the corresponding elements
+    % in the two other arrays are not, then it is derived from them.
+    %
+    % The function does not verify that pre-existing data is consistent with
+    % the specified functions which define the relationship between the
+    % functions.
+    %
+    % ARGUMENTS
+    % =========
+    % A1, A2, A3
+    %       Data arrays of the same MATLAB class and size.
+    % bFp1, bFp2, bFp3
+    %       Logical arrays of the same size as A1.
+    %       True=fill position in corresponding A* array.
+    %
+    function [A1,A2,A3] = derive_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh12to3, fh13to2, fh23to1)
+      % PROPOSAL: Require 1D arrays.
+      %   PRO: ~More generic.
+      %   CON: "Must" use classes for SWF data.
+      %       CON-PROPOSAL: Use 1D cell arrays of snapshots/1D arrays.
+      %       CON: Might want to do that anyway.
+      %           Ex: Samples (2D per channel) + TSF (1D) + SDID.
+      %           Ex: Tests.
+      % PROPOSAL: Require same array size for all arrays (in practice 1D or 2D).
+      % PROPOSAL: Cell arrays of data arrays, FP arrays, return arrays.
+      %
+      % TODO-NI: Will lead to memory problems for large arrays?
+      %   TODO: Test.
+      %   NOTE: Using cell array for return value may cause more in-memory data
+      %         copying.
+      %
+      % TODO-DEC: Natural order of FHs?
+      %   PROPOSAL: Cyclic: 12-3, 23-1, 31-2
+      %     PRO: Clean
+      %     CON: Can not generalize to greater number of values than three. Is
+      %          fundamentally a list of N values taken from M values.
+      %   PROPOSAL: Incrementing argument numbers: 12-3, 13-2, 23-1
+      %     PRO: Equivalent to natural ordering of subsets (selecting 2 from 3).
+      %     PRO: Same as dataset ordering of diffs.
+
+      assert(strcmp(class(A1), class(A2)))
+      assert(strcmp(class(A1), class(A3)))
+
+      assert(islogical(bFp1))
+      assert(islogical(bFp2))
+      assert(islogical(bFp3))
+
+      assert(isequal(size(A1), size(A2)))
+      assert(isequal(size(A1), size(A3)))
+      assert(isequal(size(A1), size(bFp1)))
+      assert(isequal(size(A1), size(bFp2)))
+      assert(isequal(size(A1), size(bFp3)))
+
+      bDerive1 =  bFp1 & ~bFp2 & ~bFp3;
+      bDerive2 = ~bFp1 &  bFp2 & ~bFp3;
+      bDerive3 = ~bFp1 & ~bFp2 &  bFp3;
+
+      % If using actual arrays for samples, then need at least one more dimension
+      % for SWF (1 record=1 snapshot): Ax(b, :) = func(Ay(b, :), Az(b, :).
+      %
+      A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
+      A2(bDerive2) = fh13to2(A1(bDerive2), A3(bDerive2));
+      A1(bDerive1) = fh23to1(A2(bDerive1), A3(bDerive1));
+    end
+
+
+
   end    % methods(Static, Access=public)
 
 

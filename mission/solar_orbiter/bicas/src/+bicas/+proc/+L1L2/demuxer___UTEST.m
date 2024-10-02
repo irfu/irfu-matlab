@@ -320,6 +320,64 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_derive_missing_data(testCase)
+
+      % Test relationship a1+a2=a3 for non-NaN.
+      function test_sum(ACa, expACa)
+        [actA1,actA2,actA3] = bicas.proc.L1L2.demuxer.derive_missing_data( ...
+          ACa{1},        ACa{2},        ACa{3}, ...
+          isnan(ACa{1}), isnan(ACa{2}), isnan(ACa{3}), ...
+          @(a1, a2) (a1+a2), ...
+          @(a1, a3) (a3-a1), ...
+          @(a2, a3) (a3-a2));
+
+        testCase.assertEqual(actA1, expACa{1})
+        testCase.assertEqual(actA2, expACa{2})
+        testCase.assertEqual(actA3, expACa{3})
+      end
+
+      %==============
+      % Empty arrays
+      %==============
+      for sizeCa = {[0,0], [1,0], [0,1], [0,0,1]}
+        A = zeros(sizeCa{1});
+        test_sum({A, A, A}, {A, A, A})
+      end
+
+      %====================
+      % Scalars, all cases
+      %====================
+      % Inconsistent existing relationship.
+      test_sum({1, 3, 9}, {1, 3, 9})
+
+      % Reconstruct
+      test_sum({nan, 3, 5}, {2, 3, 5})
+      test_sum({2, nan, 5}, {2, 3, 5})
+      test_sum({2, 3, nan}, {2, 3, 5})
+
+      % Can not reconstruct values.
+      test_sum({2, nan, nan}, {2, nan, nan})
+      test_sum({nan, 3, nan}, {nan, 3, nan})
+      test_sum({nan, nan, 5}, {nan, nan, 5})
+      %
+      test_sum({nan, nan, nan}, {nan, nan, nan})
+
+      %==========================================
+      % Non-scalar array, multiple cases at once
+      %==========================================
+      test_sum({ ...
+        [1, nan,   4;   7, nan, nan], ...
+        [3,   3, nan;   8,   9, nan], ...
+        [9,   5,  10; nan, nan, nan] ...
+        }, { ...
+        [1,   2,   4;   7, nan, nan], ...
+        [3,   3,   6;   8,   9, nan], ...
+        [9,   5,  10;  15, nan, nan] ...
+        })
+    end
+
+
+
   end    % methods(Test)
 
 
