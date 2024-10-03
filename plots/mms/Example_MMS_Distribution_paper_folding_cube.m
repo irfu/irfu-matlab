@@ -80,10 +80,8 @@ h(4) = subplot('position',[0.6466    0.5175    0.2583    0.2037]);
 h(5) = subplot('position',[0.3883    0.3138    0.2583    0.2037]);
 h(6) = subplot('position',[0.3883    0.1101    0.2583    0.2037]);
 
-%compact_panels(h,0.0,0.0)
-
 % Plot distributions
-nSmooth = 0;
+% nSmooth = 1; % has some bug it seems
 doPlotB = 1;
 doPlotExB = 1;
 vlim = 2500;
@@ -99,10 +97,11 @@ isub = 1;
 if 1 % f(L,M)
   hca = h(isub); isub = isub + 1;
   vdf = pdist.reduce('2D',Ldsl,Mdsl,'vint',vint_N);
-  vdf.plot_plane(hca,'smooth',nSmooth)
+  vdf.plot_plane(hca)
   axis(hca,'square')
   hca.XLabel.String = 'v_L (km/s)';
   hca.YLabel.String = 'v_M (km/s)';
+  
   if doPlotB % plot B direction
     xlim = hca.XLim; % not needed, because done later
     ylim = hca.YLim;
@@ -124,7 +123,7 @@ isub = 3;
 if 1 % f(L,N)
   hca = h(isub); isub = isub + 1;
   vdf = pdist.reduce('2D',Ldsl,Ndsl,'vint',vint_M);
-  vdf.plot_plane(hca,'smooth',nSmooth)
+  vdf.plot_plane(hca)
   axis(hca,'square')
   hca.XLabel.String = 'v_L (km/s)';
   hca.YLabel.String = 'v_N (km/s)';
@@ -149,7 +148,7 @@ isub = 4;
 if 1 % f(M,N)
   hca = h(isub); isub = isub + 1;
   vdf = pdist.reduce('2D',Mdsl,Ndsl,'vint',vint_L);
-  vdf.plot_plane(hca,'smooth',nSmooth)
+  vdf.plot_plane(hca)
   axis(hca,'square')
   hca.XLabel.String = 'v_M (km/s)';
   hca.YLabel.String = 'v_N (km/s)';
@@ -174,7 +173,7 @@ isub = 2;
 if 1 % f(M,N)
   hca = h(isub); isub = isub + 1;
   vdf = pdist.reduce('2D',Mdsl,Ndsl,'vint',vint_L);
-  vdf.plot_plane(hca,'smooth',nSmooth)
+  vdf.plot_plane(hca)
   axis(hca,'square')
   hca.XLabel.String = 'v_M (km/s)';
   hca.YLabel.String = 'v_N (km/s)';
@@ -201,7 +200,7 @@ isub = 5;
 if 1 % f(L,M)
   hca = h(isub); isub = isub + 1;
   vdf = pdist.reduce('2D',Ldsl,Mdsl,'vint',vint_N);
-  vdf.plot_plane(hca,'smooth',nSmooth)
+  vdf.plot_plane(hca)
   axis(hca,'square')
   hca.XLabel.String = 'v_L (km/s)';
   hca.YLabel.String = 'v_M (km/s)';
@@ -228,7 +227,7 @@ isub = 6;
 if 1 % f(L,N)
   hca = h(isub); isub = isub + 1;
   vdf = pdist.reduce('2D',Ldsl,Ndsl,'vint',vint_M);
-  vdf.plot_plane(hca,'smooth',nSmooth)
+  vdf.plot_plane(hca)
   axis(hca,'square')
   hca.XLabel.String = 'v_L (km/s)';
   hca.YLabel.String = 'v_N (km/s)';
