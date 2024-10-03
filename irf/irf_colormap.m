@@ -602,6 +602,20 @@ if nargs > 0
         0.982703, 0.794068, 0.962895;
         0.982048, 0.797228, 0.972070;
         0.981354, 0.800406, 0.981267];
+    case 'thermal'
+      c = [255 255 255;
+           253,223,144;...
+           251,173,104;...
+           242,109,074;...
+           211,064,082;...
+           100,054,082;...        
+           0.3*[100,054,082];...        
+           ]/255;
+      c = flipdim(c,1);
+      colors = interp1(linspace(1,101,size(c,1)),c,1:101);
+      % add 2 extra white rows to make '0' to make it more visible
+      [C,IA,IB] = intersect(colors,[1 1 1],'rows');
+      cmap = [colors(1:(IA-1),:); C; C; C; colors((IA+1):end,:)]; 
   end
 end
 
