@@ -3,28 +3,29 @@ mms.db_init('local_file_db','/Volumes/mms');
 
 % Load data
 ic = 3;
-tint = irf.tint('2017-07-11T22:31:00.00Z/2017-07-11T22:37:20.00Z'); %20151112071854
+tint = irf.tint('2017-07-11T22:31:00.00Z/2017-07-11T22:37:20.00Z');
 iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
 iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
 iPDist_counts = iPDist; iPDist_counts.data = (iPDist.data./iPDistErr.data).^2;
  
 c_eval('gseB? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gse_brst_l2'',tint);', ic);
 c_eval('gseE? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
-
+c_eval('gseVExB? = cross(gseE?.resample(gseB?.time),gseB?)/gseB?.abs/gseB?.abs*1e3; gseVExB?.units = '''';',ic) % km/s
 
 c_eval('defatt? = mms.db_get_variable(''mms?_ancillary_defatt'',''zra'',tint);',ic)
 c_eval('defatt?.zdec = mms.db_get_variable(''mms?_ancillary_defatt'',''zdec'',tint).zdec;',ic)
 
 L_gse = [1 0 0];
 M_gse = [0 1 -0.2];
-N_gse = cross(L,M);
+N_gse = cross(L_gse,M_gse);
 
 c_eval('mvaB? = gseB?*[L_gse; M_gse; N_gse]'';',ic)
 c_eval('mvaE? = gseE?*[L_gse; M_gse; N_gse]'';',ic)
+c_eval('mvaVExB? = gseVExB?*[L_gse; M_gse; N_gse]''; mvaVExB?.name = ''E LMN'';',ic)
 
-c_eval('tsLgse? = irf.ts_vec_xyz(iPDist?.time,repmat(L,iPDist?.length,1));',ic)
-c_eval('tsMgse? = irf.ts_vec_xyz(iPDist?.time,repmat(M,iPDist?.length,1));',ic)
-c_eval('tsNgse? = irf.ts_vec_xyz(iPDist?.time,repmat(N,iPDist?.length,1));',ic)
+c_eval('tsLgse? = irf.ts_vec_xyz(iPDist.time,repmat(L_gse,iPDist.length,1));',ic)
+c_eval('tsMgse? = irf.ts_vec_xyz(iPDist.time,repmat(M_gse,iPDist.length,1));',ic)
+c_eval('tsNgse? = irf.ts_vec_xyz(iPDist.time,repmat(N_gse,iPDist.length,1));',ic)
 
 c_eval('tsLdsl? = mms_dsl2gse(tsLgse?,defatt?,-1);',ic)
 c_eval('tsMdsl? = mms_dsl2gse(tsMgse?,defatt?,-1);',ic)
@@ -39,12 +40,13 @@ c_eval('tsNdsl? = mms_dsl2gse(tsNgse?,defatt?,-1);',ic)
 
 % Prepare distribution for plotting
 ic = 3;
-time = irf_time('2017-07-11T22:33:58.000Z','utc>EpochTT');
+time = irf_time('2017-07-11T22:34:01.000Z','utc>EpochTT');
 %time = irf_time('2017-07-11T22:33:50.000Z','utc>EpochTT');
 tint_dist = time + 1*0.5*0.150*[-1 1]; % includes one distribution
 
-% Taking a 11-point moving mean and removing data below the one-count level
-pdist_movmean = iPDist.movmean(11,'RemoveOneCounts',iPDist_counts);
+% Taking a N-point moving mean and removing data below the one-count level
+nMovMean = 5;
+pdist_movmean = iPDist.movmean(nMovMean,'RemoveOneCounts',iPDist_counts);
 
 vint_L = [-Inf Inf];
 vint_M = [-Inf Inf];
@@ -81,7 +83,7 @@ h(6) = subplot('position',[0.3883    0.1101    0.2583    0.2037]);
 %compact_panels(h,0.0,0.0)
 
 % Plot distributions
-nSmooth = 1;
+nSmooth = 0;
 doPlotB = 1;
 doPlotExB = 1;
 vlim = 2500;
