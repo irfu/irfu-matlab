@@ -1,16 +1,18 @@
 %
 % Basic map key-->value, where all values must have the same number of rows
-% (size in first dimension). Values must be immutable.
+% (size in first dimension). Keys must be scalar (and immutable). Values must
+% be immutable.
 %
 % Intended for zVariables. Implementation may be upgraded to require FPAs.
 % Some method names are chosen to be identical with dictionary.
 %
 %
 % NOTE: Enforces that the MATLAB class for keys is consistent, i.e. treating
-% (1) char array<>string, and
+% (1) char<>string, and
 % (2) all numeric MATLAB classes are distinct (different).
 % This is different from dictionary keys.
 % NOTE: Does not enforce the same MATLAB class for values.
+% NOTE: Char array keys are forbidden since they are not scalar.
 %
 %
 % IMPLEMENTATION NOTE
@@ -362,9 +364,7 @@ classdef SameRowsMap < handle
           assert(isscalar(S))
           assert(isscalar(S.subs), 'Illegal index. Must be exactly one argument.')
 
-          if isnumeric(S.subs{1})
-            assert(isscalar(S.subs{1}), 'Illegal index. Value must be scalar.')
-          end
+          assert(isscalar(S.subs{1}), 'Illegal index. Value must be scalar.')
 
           % IMPLEMENTATION NOTE: Only intended for singular values,
           % whether strings or numbers. Should not support indices

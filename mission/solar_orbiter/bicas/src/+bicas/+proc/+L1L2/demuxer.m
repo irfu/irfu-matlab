@@ -321,7 +321,7 @@ classdef demuxer
       % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
       % for deriving the entire size (samples per record), until possibly
       % using a future bicas.utils.SameSizeTypeMap instead.
-      tempNaN = nan(size(AsrSamplesAVoltSrm(keyArray)));
+      tempNaN = nan(size(AsrSamplesAVoltSrm(keyArray(1))));
 
       for Asid = bicas.sconst.C.S_ASID_DICT.values'
         if ~AsSrm.isKey(Asid)
