@@ -651,7 +651,7 @@ classdef Cal < handle
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
 
       iBlts        = CalSettings.iBlts;
-      Ssid         = CalSettings.Ssid;
+      ssid         = CalSettings.ssid;
       isAchg       = CalSettings.isAchg;
       iCalibTimeL  = CalSettings.iCalibTimeL;
       iCalibTimeH  = CalSettings.iCalibTimeH;
@@ -681,7 +681,7 @@ classdef Cal < handle
         % NOTE: AC low/high gain is irrelevant for TDS. Argument value is
         % therefore arbitrary.
         BiasCalibData = obj.get_BIAS_calib_data(...
-          Ssid, isAchg, iCalibTimeL, iCalibTimeH);
+          ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
         if obj.lfrTdsTfDisabled
           tdsFactorIvpt = 1;
@@ -742,7 +742,7 @@ classdef Cal < handle
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
 
       iBlts        = CalSettings.iBlts;
-      Ssid         = CalSettings.Ssid;
+      ssid         = CalSettings.ssid;
       isAchg       = CalSettings.isAchg;
       iCalibTimeL  = CalSettings.iCalibTimeL;
       iCalibTimeH  = CalSettings.iCalibTimeH;
@@ -766,7 +766,7 @@ classdef Cal < handle
       % NOTE: Low/high gain is irrelevant for TDS. Argument value
       % arbitrary.
       BiasCalibData = obj.get_BIAS_calib_data(...
-        Ssid, isAchg, iCalibTimeL, iCalibTimeH);
+        ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
       % Initialize empty output variable.
       bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
@@ -856,14 +856,14 @@ classdef Cal < handle
     %       the special case.
     %
     function BiasCalibData = get_BIAS_calib_data(obj, ...
-        Ssid, isAchg, iCalibTimeL, iCalibTimeH)
+        ssid, isAchg, iCalibTimeL, iCalibTimeH)
 
       % PROPOSAL: Log warning message when simultaneously isAchg=NaN
       % and the value is needed.
 
       % ASSERTION
-      assert(bicas.sconst.is_SSID(Ssid) & isscalar(Ssid))
-      assert(bicas.sconst.SSID_is_ASR(Ssid))
+      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
+      assert(bicas.sconst.SSID_is_ASR(ssid))
       assert(isscalar(isAchg) && isnumeric(isAchg))
       assert(isscalar(iCalibTimeL))
       assert(isscalar(iCalibTimeH))
@@ -874,7 +874,7 @@ classdef Cal < handle
       %###################################################################
       % kIvpav = Multiplication factor "k" that represents/replaces the
       % (forward) transfer function.
-      asid         = bicas.sconst.SSID_ASR_to_ASID(Ssid);
+      asid         = bicas.sconst.SSID_ASR_to_ASID(ssid);
       asidCategory = bicas.sconst.get_ASID_category(asid);
       antennas     = bicas.sconst.get_ASID_antennas(asid);
       switch(asidCategory)
@@ -893,8 +893,7 @@ classdef Cal < handle
           elseif isequal(antennas, [1,3]);   offsetAVolt = BiasRctd.DcDiffOffsets.E13AVolt(iCalibTimeH);
           elseif isequal(antennas, [2,3]);   offsetAVolt = BiasRctd.DcDiffOffsets.E23AVolt(iCalibTimeH);
           else
-            error('BICAS:Assertion:IllegalArgument', ...
-              'Illegal Ssid.');
+            error('BICAS:Assertion:IllegalArgument', 'Illegal argument "ssid".');
           end
 
         case 'AC_DIFF'
@@ -919,7 +918,7 @@ classdef Cal < handle
 
         otherwise
           error('BICAS:Assertion:IllegalArgument', ...
-            ['Illegal argument Ssid.Asid.category=%s.', ...
+            ['Illegal argument "ssid" implies illegal ASID category="%s".', ...
             ' Can not obtain calibration data for this type of signal.'], ...
             asidCategory)
       end
@@ -1008,14 +1007,14 @@ classdef Cal < handle
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
 
       iBlts        = CalSettings.iBlts;
-      Ssid         = CalSettings.Ssid;
+      ssid         = CalSettings.ssid;
       isAchg       = CalSettings.isAchg;
       iCalibTimeL  = CalSettings.iCalibTimeL;
       iCalibTimeH  = CalSettings.iCalibTimeH;
       iLsf         = CalSettings.iLsf;
 
       % ASSERTIONS
-      assert(bicas.sconst.SSID_is_ASR(Ssid))
+      assert(bicas.sconst.SSID_is_ASR(ssid))
       assert(isscalar(iNonBiasRct))
       assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
       % No assertion on zvcti2 unless used (determined later).
@@ -1052,7 +1051,7 @@ classdef Cal < handle
       %====================================================
       % Obtain settings for bicas.tf.apply_TF()
       %====================================================
-      if bicas.sconst.SSID_is_AC(Ssid)
+      if bicas.sconst.SSID_is_AC(ssid)
         % IMPLEMENTATION NOTE: DC is (optionally) detrended via
         % bicas.tf.apply_TF() in the sense of a linear fit
         % being removed, TF applied, and then added back. That same
@@ -1071,7 +1070,7 @@ classdef Cal < handle
       % Obtain BIAS calibration data
       %==============================
       CalData.BiasCalibData = obj.get_BIAS_calib_data(...
-        Ssid, isAchg, iCalibTimeL, iCalibTimeH);
+        ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
       %========================================
       % Obtain (official) LFR calibration data
@@ -1089,7 +1088,7 @@ classdef Cal < handle
       CalData.itfAvpt = bicas.proc.L1L2.cal.utils.create_LFR_BIAS_ITF(...
         CalData.lfrItfIvpt, ...
         CalData.BiasCalibData.itfAvpiv, ...
-        bicas.sconst.SSID_is_AC(Ssid), ...
+        bicas.sconst.SSID_is_AC(ssid), ...
         obj.itfAcConstGainLowFreqRps);
     end
 

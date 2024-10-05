@@ -43,7 +43,7 @@ classdef dc
 %         % TSF? Before/after windowing?
 %         bSaturated            [nRows]
 %         % Unknown is not really meant for this case, but should work. Can vary by CDF record.
-%         kssid / None/unknown  [nRows]
+%         ssid / None/unknown  [nRows]
 %         % NOTE: SDID excluded. Is constant.
 %         function bFpArray = is_FP()
 %         function subsref()
@@ -122,7 +122,7 @@ classdef dc
       %#################################################################
       % Obtain "demultiplexer" "routings": SSID and SDID for every BLTS
       %#################################################################
-      [bltsKSsidArray, bltsKSdidArray] = bicas.proc.L1L2.dc.get_KSSID_KSDID_arrays(...
+      [bltsSsidArray, bltsSdidArray] = bicas.proc.L1L2.dc.get_SSID_SDID_arrays(...
         Dcip.Zv.bdmFpa, Dcip.Zv.dlrFpa);
 
 
@@ -138,8 +138,8 @@ classdef dc
         freqHz                  = Dcip.Zv.freqHz, ...
         iLsf                    = Dcip.Zv.iLsf, ...
         ufv                     = Dcip.Zv.ufv, ...
-        bltsKSsidArray          = bltsKSsidArray, ...
-        bltsKSdidArray          = bltsKSdidArray, ...
+        bltsSsidArray           = bltsSsidArray, ...
+        bltsSdidArray           = bltsSdidArray, ...
         isTdsCwf                = Dcip.isTdsCwf, ...
         isLfr                   = Dcip.isLfr, ...
         hasSwfFormat            = Dcip.hasSwfFormat, ...
@@ -155,8 +155,8 @@ classdef dc
       %#########################################################
       AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.distribute_BLTS_to_ASRs(...
         bltsSamplesAVolt, ...
-        bltsKSsidArray, ...
-        bltsKSdidArray, L);
+        bltsSsidArray, ...
+        bltsSdidArray, L);
 
 
 
@@ -204,7 +204,7 @@ classdef dc
         Dcip.Zv.Epoch, ...
         AsrSamplesAVoltSrm, ...
         Dcip.Zv.nValidSamplesPerRecord, ...
-        bltsKSsidArray, ...
+        bltsSsidArray, ...
         Dcip.Zv.isAchgFpa, ...
         Dcip.hasSwfFormat, L);
 
@@ -239,8 +239,8 @@ classdef dc
 
 
 
-    % Obtain kSSID and kSDID arrays for arrays of BDM and DLR.
-    function [bltsKSsidArray, bltsKSdidArray] = get_KSSID_KSDID_arrays(bdmFpa, dlrFpa)
+    % Obtain SSID and SDID arrays for arrays of BDM and DLR.
+    function [bltsSsidArray, bltsSdidArray] = get_SSID_SDID_arrays(bdmFpa, dlrFpa)
       nRecTot = irf.assert.sizes(...
         bdmFpa, [-1], ...
         dlrFpa, [-1]);
@@ -253,8 +253,8 @@ classdef dc
       % -----------
       % NOTE: No need for bicas.utils.FPArray since SSIDs and DSIDs handle all
       % special cases including unknown source and destination.
-      bltsKSsidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8');
-      bltsKSdidArray = bltsKSsidArray;
+      bltsSsidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8');
+      bltsSdidArray = bltsSsidArray;
 
       for iSs = 1:nSs
         iRecSs1 = iRec1Array(iSs);
@@ -264,11 +264,11 @@ classdef dc
         DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
           bdmFpa(iRecSs1), dlrFpa(iRecSs1));
 
-        kSsidArray  = [DemuxerRoutingArray.Ssid];
-        kSdidArray  = [DemuxerRoutingArray.Sdid];
+        ssidArray  = [DemuxerRoutingArray.ssid];
+        sdidArray  = [DemuxerRoutingArray.sdid];
 
-        bltsKSsidArray(iRecSs, :) = repmat(kSsidArray, nRecSs, 1);
-        bltsKSdidArray(iRecSs, :) = repmat(kSdidArray, nRecSs, 1);
+        bltsSsidArray(iRecSs, :) = repmat(ssidArray, nRecSs, 1);
+        bltsSdidArray(iRecSs, :) = repmat(sdidArray, nRecSs, 1);
       end
     end
 
@@ -378,8 +378,8 @@ classdef dc
         Zv.freqHz
         Zv.iLsf
         Zv.ufv
-        Zv.bltsKSsidArray
-        Zv.bltsKSdidArray
+        Zv.bltsSsidArray
+        Zv.bltsSdidArray
         Zv.nValidSamplesPerRecord
         A.isTdsCwf
         A.isLfr
@@ -391,13 +391,13 @@ classdef dc
       % ASSERTIONS
       assert(isscalar( A.hasSwfFormat))
       assert(isnumeric(Zv.bltsSamplesTm))
-      assert(isa(Zv.bltsKSsidArray, 'uint8'))
-      assert(isa(Zv.bltsKSdidArray, 'uint8'))
+      assert(isa(Zv.bltsSsidArray, 'uint8'))
+      assert(isa(Zv.bltsSdidArray, 'uint8'))
       [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
-        Zv.isAchgFpa,      [-1,     1], ...
-        Zv.bltsKSsidArray, [-1,     bicas.const.N_BLTS], ...
-        Zv.bltsKSsidArray, [-1,     bicas.const.N_BLTS], ...
-        Zv.bltsSamplesTm,  [-1, -2, bicas.const.N_BLTS]);
+        Zv.isAchgFpa,     [-1,     1], ...
+        Zv.bltsSsidArray, [-1,     bicas.const.N_BLTS], ...
+        Zv.bltsSsidArray, [-1,     bicas.const.N_BLTS], ...
+        Zv.bltsSamplesTm, [-1, -2, bicas.const.N_BLTS]);
 
 
 
@@ -434,8 +434,8 @@ classdef dc
         Zv.iLsf, ...
         Zv.CALIBRATION_TABLE_INDEX, ...
         Zv.ufv, ...
-        Zv.bltsKSsidArray, ...
-        Zv.bltsKSdidArray, ...
+        Zv.bltsSsidArray, ...
+        Zv.bltsSdidArray, ...
         iCalibLZv, ...
         iCalibHZv);
 
@@ -455,8 +455,8 @@ classdef dc
           iLsf                     = Zv.iLsf(                   iRec1), ...
           zvcti                    = Zv.CALIBRATION_TABLE_INDEX(iRec1, :), ...
           ufv                      = Zv.ufv(                    iRec1), ...
-          bltsKSsidArray           = Zv.bltsKSsidArray(         iRec1, :), ...
-          bltsKSdidArray           = Zv.bltsKSdidArray(         iRec1, :), ...
+          bltsSsidArray            = Zv.bltsSsidArray(          iRec1, :), ...
+          bltsSdidArray            = Zv.bltsSdidArray(          iRec1, :), ...
           iCalibL                  = iCalibLZv(iRec1), ...
           iCalibH                  = iCalibHZv(iRec1), ...
           ... % ===============================================================
@@ -499,8 +499,8 @@ classdef dc
         Cv.iLsf
         Cv.zvcti
         Cv.ufv
-        Cv.bltsKSsidArray
-        Cv.bltsKSdidArray
+        Cv.bltsSsidArray
+        Cv.bltsSdidArray
         Cv.iCalibL
         Cv.iCalibH
         % NOTE: Below variables do not vary over CDF records at all.
@@ -530,7 +530,7 @@ classdef dc
       ssBltsSamplesAVolt = nan(nRows, Cv.nSamplesPerRecordChannel, bicas.const.N_BLTS);
       for iBlts = 1:bicas.const.N_BLTS
         ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
-          Ssid                     = Cv.bltsKSsidArray(iBlts), ...
+          ssid                     = Cv.bltsSsidArray(iBlts), ...
           samplesTm                = Vv.bltsSamplesTm(:, :, iBlts), ...
           iBlts                    = iBlts, ...
           hasSwfFormat             = Cv.hasSwfFormat, ...
@@ -553,7 +553,7 @@ classdef dc
     % Calibrate one BLTS channel.
     function samplesAVolt = calibrate_BLTS(A)
       arguments
-        A.Ssid
+        A.ssid
         A.samplesTm
         A.iBlts
         A.hasSwfFormat
@@ -592,18 +592,18 @@ classdef dc
       end
       irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel.
 
-      if isequaln(A.Ssid, bicas.sconst.C.SSID_DICT("UNKNOWN"))
+      if isequaln(A.ssid, bicas.sconst.C.SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
         samplesAVolt = nan(size(A.samplesTm));
 
-      elseif isequaln(A.Ssid, bicas.sconst.C.SSID_DICT("GND")) || ...
-          isequaln(A.Ssid, bicas.sconst.C.SSID_DICT("REF25V"))
+      elseif isequaln(A.ssid, bicas.sconst.C.SSID_DICT("GND")) || ...
+          isequaln(A.ssid, bicas.sconst.C.SSID_DICT("REF25V"))
         % ==> No calibration.
         % NOTE: samplesTm stores TM units using float!
         samplesAVolt = A.samplesTm;
 
       else
-        assert(bicas.sconst.SSID_is_ASR(A.Ssid))
+        assert(bicas.sconst.SSID_is_ASR(A.ssid))
         % ==> Calibrate (unless explicitly stated that should not)
 
         if A.hasSwfFormat
@@ -629,7 +629,7 @@ classdef dc
         % This incidentally also potentially speeds up the code.
         % Ex: LFR SWF 2020-02-25, 2020-02-28.
         CalSettings = bicas.proc.L1L2.CalibrationSettings(...
-          A.iBlts, A.Ssid, A.isAchg, A.iCalibL, A.iCalibH, A.iLsf);
+          A.iBlts, A.ssid, A.isAchg, A.iCalibL, A.iCalibH, A.iLsf);
         %#######################################################
         ssBltsSamplesAVoltCa = A.Cal.calibrate_voltage_all(...
           A.dtSec, bltsSamplesTmCa, ...
@@ -654,15 +654,15 @@ classdef dc
 
 
     function AsrSamplesAVoltSrm = distribute_BLTS_to_ASRs(...
-        bltsSamplesAvolt, bltsKSsidArray, bltsKSdidArray, L)
+        bltsSamplesAvolt, bltsSsidArray, bltsSdidArray, L)
       % PROPOSAL: Automated tests.
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.distribute_BLTS_to_ASRs', L);
 
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
-        bltsKSsidArray,   [-1,     bicas.const.N_BLTS], ...
-        bltsKSdidArray,   [-1,     bicas.const.N_BLTS]);
+        bltsSsidArray,    [-1,     bicas.const.N_BLTS], ...
+        bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
 
 
       % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
@@ -675,8 +675,8 @@ classdef dc
         bicas.sconst.C.ASID_DICT.values);
 
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        bltsKSsidArray, ...
-        bltsKSdidArray);
+        bltsSsidArray, ...
+        bltsSdidArray);
 
       for iSs = 1:nSs
         iRec1 = iRec1Ar(iSs);
@@ -686,7 +686,7 @@ classdef dc
         % LABEL SIGNALS BY ASR (INSTEAD OF iBLTS)
         %=========================================
         SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
-          bltsKSdidArray(  iRec1,          :), ...
+          bltsSdidArray(   iRec1,          :), ...
           bltsSamplesAvolt(iRec1:iRec2, :, :));
 
         % Add demuxed sequence signals to the global arrays (all records).

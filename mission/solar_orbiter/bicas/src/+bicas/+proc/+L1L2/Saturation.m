@@ -130,19 +130,19 @@ classdef Saturation
     %       are no thresholds for this kind of data (e.g. for non-ASR
     %       sources). False is returned for NaN input elements.
     %
-    function tsfAr = get_TSF(obj, samplesAVolt, Ssid, isAchgFpa)
+    function tsfAr = get_TSF(obj, samplesAVolt, ssid, isAchgFpa)
       % PROPOSAL: Better name.
       %   ~sample-to-TSF
       %   ~threshold_saturation
 
       assert(isfloat(samplesAVolt))
-      assert(bicas.sconst.is_SSID(Ssid) & isscalar(Ssid))
+      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
       assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
 
       % Default value that used if there are no thresholds.
       tsfAr = false(size(samplesAVolt));
 
-      if ~bicas.sconst.SSID_is_ASR(Ssid)
+      if ~bicas.sconst.SSID_is_ASR(ssid)
         return
       end
 
@@ -151,12 +151,12 @@ classdef Saturation
       % ====================
       % Determine thresholds
       % ====================
-      if bicas.sconst.SSID_is_diff(Ssid)
+      if bicas.sconst.SSID_is_diff(ssid)
         % CASE: DC/AC diff
         % ----------------
 
         isAchg = isAchgFpa.logical2doubleNan();
-        if bicas.sconst.SSID_is_AC(Ssid)
+        if bicas.sconst.SSID_is_AC(ssid)
           % CASE: AC diff
           % -------------
           if isAchg == 0
@@ -203,10 +203,10 @@ classdef Saturation
     % isSaturated
     %       Logical. Scalar.
     %
-    function isSaturated = get_snapshot_saturation(obj, samplesAVolt, Ssid, isAchg)
+    function isSaturated = get_snapshot_saturation(obj, samplesAVolt, ssid, isAchg)
       irf.assert.sizes(samplesAVolt, [1, NaN, 1])     % Row vector.
 
-      tsfAr = obj.get_TSF(samplesAVolt, Ssid, isAchg);
+      tsfAr = obj.get_TSF(samplesAVolt, ssid, isAchg);
 
       isSaturated = (sum(tsfAr, 'all') / numel(samplesAVolt)) > obj.tsfFractionThreshold;
     end
@@ -223,7 +223,7 @@ classdef Saturation
     % zvSamplesAVolt
     %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
     function isSaturatedAr = get_snapshot_saturation_many(obj, ...
-        zvNValidSamplesPerRecord, zvSamplesAVolt, Ssid, isAchgFpa)
+        zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
 
       nRecs = irf.assert.sizes(...
         zvNValidSamplesPerRecord, [-1],  ...
@@ -233,7 +233,7 @@ classdef Saturation
       for iRec = 1:nRecs
         isSaturatedAr(iRec) = obj.get_snapshot_saturation(...
           zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
-          Ssid, isAchgFpa);
+          ssid, isAchgFpa);
       end
     end
 
@@ -254,7 +254,7 @@ classdef Saturation
     %
     function isSaturatedAr = get_voltage_saturation_quality_bit(...
         obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
-        bltsKSsidAr, isAchgFpa, hasSwfFormat, L)
+        bltsSsidAr, isAchgFpa, hasSwfFormat, L)
       % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
       %           look for saturation.
       %   NOTE: Only ACHG influences the calibration thresholds for each channel
@@ -264,11 +264,11 @@ classdef Saturation
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
-      assert(bicas.sconst.is_SSID(bltsKSsidAr))
+      assert(bicas.sconst.is_SSID(bltsSsidAr))
       nRows = irf.assert.sizes(...
         tt2000Ar,                 [-1], ...
         zvNValidSamplesPerRecord, [-1], ...
-        bltsKSsidAr,              [-1, bicas.const.N_BLTS]);
+        bltsSsidAr,               [-1, bicas.const.N_BLTS]);
       assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
       assert(AsrSamplesAVoltSrm.nRows == nRows)
 
@@ -336,9 +336,9 @@ classdef Saturation
 
 
     % Return TSF for CWF data.
-    function tsfAr = get_one_ASR_CWF_channel_TSF_bit_array(obj, Ssid, isAchgFpa, samplesAVolt)
+    function tsfAr = get_one_ASR_CWF_channel_TSF_bit_array(obj, ssid, isAchgFpa, samplesAVolt)
       nRows = irf.assert.sizes( ...
-        Ssid,         [1], ...
+        ssid,         [1], ...
         isAchgFpa,    [-1], ...
         samplesAVolt, [-1]);
 
@@ -353,7 +353,7 @@ classdef Saturation
         iRec2   = iRec2Ar(iSs);
 
         tsfAr(iRec1:iRec2) = obj.get_TSF(...
-          samplesAVolt(iRec1:iRec2), Ssid, isAchgFpa(iRec1));
+          samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
       end
     end
 
@@ -361,9 +361,9 @@ classdef Saturation
 
     % Return final saturation bit for SWF data.
     function saturationBitAr = get_one_ASR_SWF_channel_saturation_bit_array(...
-        obj, Ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
+        obj, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
       [nRows, ~] = irf.assert.sizes( ...
-        Ssid,                     [1], ...
+        ssid,                     [1], ...
         isAchgFpa,                [-1], ...
         samplesAVolt,             [-1, -2], ...
         zvNValidSamplesPerRecord, [-1]);
@@ -380,7 +380,7 @@ classdef Saturation
         saturationBitAr(iRec1:iRec2) = obj.get_snapshot_saturation_many(...
           zvNValidSamplesPerRecord(iRec1:iRec2), ...
           samplesAVolt(            iRec1:iRec2, :), ...
-          Ssid, isAchgFpa(iRec1));
+          ssid, isAchgFpa(iRec1));
       end
 
     end

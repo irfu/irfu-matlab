@@ -44,10 +44,10 @@ classdef Routing
   %#####################
   properties(SetAccess=immutable)
     % Where the BLTS ultimately comes from.
-    Ssid
+    ssid
 
     % How the BLTS should be stored in datasets.
-    Sdid
+    sdid
   end
 
 
@@ -61,11 +61,6 @@ classdef Routing
 
 
 
-    % ARGUMENTS
-    % =========
-    % Syntax 1: Ssid
-    %       Reuse Ssid.Asid for creating a corresponding SDID.
-    % Syntax 2: Ssid, Sdid
     function obj = Routing(ssid, sdid)
       assert(isa(ssid, 'uint8'))
       assert(isa(sdid, 'uint8'))
@@ -75,8 +70,8 @@ classdef Routing
       %assert(bicas.proc.sconst.is_SSID(ssid) & isscalar(ssid))
       %assert(bicas.proc.sconst.is_SDID(sdid) & isscalar(sdid))
 
-      obj.Ssid = ssid;
-      obj.Sdid = sdid;
+      obj.ssid = ssid;
+      obj.sdid = sdid;
     end
 
 

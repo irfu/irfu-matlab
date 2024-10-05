@@ -19,7 +19,7 @@ classdef CalibrationSettings
   %#####################
   properties(SetAccess=private, GetAccess=public)
       iBlts
-      Ssid
+      ssid
       isAchg
       iCalibTimeL
       iCalibTimeH
@@ -38,11 +38,11 @@ classdef CalibrationSettings
 
 
     function obj = CalibrationSettings(...
-        iBlts, Ssid, isAchg, iCalibTimeL, iCalibTimeH, iLsf)
+        iBlts, ssid, isAchg, iCalibTimeL, iCalibTimeH, iLsf)
 
       % PROPOSAL: Assertions.
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(bicas.sconst.is_SSID(Ssid) & isscalar(Ssid))
+      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
       assert(isnan(isAchg) || ismember(isAchg, [0, 1]))
       if ~isnan(iLsf)
         % CASE: LFR data (not TDS)
@@ -50,7 +50,7 @@ classdef CalibrationSettings
       end
 
       obj.iBlts       = iBlts;
-      obj.Ssid        = Ssid;
+      obj.ssid        = ssid;
       obj.isAchg      = isAchg;
       obj.iCalibTimeL = iCalibTimeL;
       obj.iCalibTimeH = iCalibTimeH;

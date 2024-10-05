@@ -185,7 +185,7 @@ classdef demuxer
     %
     % ARGUMENTS
     % =========
-    % SdidArray
+    % sdidArray
     %       Length-5 array of SSIDs. One SDID per BLTS.
     % bltsSamplesAVolt
     %       Cell array of vectors/matrices, length 5.
@@ -205,19 +205,19 @@ classdef demuxer
     % that they are organized by BLTS and ASRs respectively.
     %
     function AsrSamplesAVoltSrm = calibrated_BLTSs_to_all_ASRs(...
-        SdidArray, bltsSamplesAVolt)
+        sdidArray, bltsSamplesAVolt)
       % PROPOSAL: Log message for BDM=NaN.
 
       % ASSERTIONS
-      assert(isa(SdidArray, 'uint8'))
+      assert(isa(sdidArray, 'uint8'))
       assert(isnumeric(bltsSamplesAVolt))
       irf.assert.sizes(...
         bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
-        SdidArray,        [ 1,     bicas.const.N_BLTS])
+        sdidArray,        [ 1,     bicas.const.N_BLTS])
 
       % Assign arrays only for those ASIDs for which there is data.
       AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
-        bltsSamplesAVolt, SdidArray);
+        bltsSamplesAVolt, sdidArray);
 
       % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
       % NOTE: The function modifies the ARGUMENT (handle object).
@@ -506,22 +506,22 @@ classdef demuxer
     % or fewer!) into an SRM with correct ASID keys for the corresponding
     % arrays.
     function AsrSamplesSrm = assign_ASR_samples_from_BLTS(...
-        bltsSamplesAVolt, SdidArray)
+        bltsSamplesAVolt, sdidArray)
 
       % ASSERTIONS
       assert(isnumeric(bltsSamplesAVolt))
       nRows = irf.assert.sizes( ...
         bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
-        SdidArray,        [ 1,     bicas.const.N_BLTS]);
+        sdidArray,        [ 1,     bicas.const.N_BLTS]);
 
       AsrSamplesSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
       for iBlts = 1:bicas.const.N_BLTS
-        if ~bicas.sconst.is_SDID_nowhere(SdidArray(iBlts))
+        if ~bicas.sconst.is_SDID_nowhere(sdidArray(iBlts))
           % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
           % if conceptually sensible.
-          Asid = bicas.sconst.SDID_ASR_to_ASID(SdidArray(iBlts));
+          asid = bicas.sconst.SDID_ASR_to_ASID(sdidArray(iBlts));
 
-          AsrSamplesSrm.add(Asid, bltsSamplesAVolt(:, :, iBlts));
+          AsrSamplesSrm.add(asid, bltsSamplesAVolt(:, :, iBlts));
         end
       end
     end
@@ -531,18 +531,18 @@ classdef demuxer
     % Utility function. Derive missing ASR fields/channels from other
     % fields/channels. If exactly two of the SRM keys exist in AsrSrm, then
     % derive the third one using the relationship
-    % AsSrm(Asid1) == AsSrm(Asid2) + AsSrm(Asid3).
+    % AsSrm(asid1) == AsSrm(asid2) + AsSrm(asid3).
     %
     % ARGUMENTS
     % =========
-    % Asid1, Asid2, Asid3
+    % asid1, asid2, asid3
     %       ASIDs whose ID strings may or may not be keys in AsSrm. If
     %       exactly one of them is missing in "As", then the key+value is
     %       created with values assuming that the field contents are related
     %       through the relationship value1 = value2 + value3. In other
     %       cases, "AsSrm" is returned unmodified.
     %
-    function AsSrm = complete_relation(AsSrm, Asid1, Asid2, Asid3)
+    function AsSrm = complete_relation(AsSrm, asid1, asid2, asid3)
       % PROPOSAL: Handle propagating quality bits derived from BLTSs.
       %   NOTE: BLTS saturation bits should propagate.
       %   This is thus a qualitatively different behaviour from samples which
@@ -566,13 +566,13 @@ classdef demuxer
       %   A3(bSet3) = func_3_from_12(A1(bSet3), A2(bSet3))
       assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))
 
-      e1 = AsSrm.isKey(Asid1);
-      e2 = AsSrm.isKey(Asid2);
-      e3 = AsSrm.isKey(Asid3);
+      e1 = AsSrm.isKey(asid1);
+      e2 = AsSrm.isKey(asid2);
+      e3 = AsSrm.isKey(asid3);
 
-      if     ~e1 &&  e2 &&  e3   AsSrm.add(Asid1, AsSrm(Asid2) + AsSrm(Asid3));
-      elseif  e1 && ~e2 &&  e3   AsSrm.add(Asid2, AsSrm(Asid1) - AsSrm(Asid3));
-      elseif  e1 &&  e2 && ~e3   AsSrm.add(Asid3, AsSrm(Asid1) - AsSrm(Asid2));
+      if     ~e1 &&  e2 &&  e3   AsSrm.add(asid1, AsSrm(asid2) + AsSrm(asid3));
+      elseif  e1 && ~e2 &&  e3   AsSrm.add(asid2, AsSrm(asid1) - AsSrm(asid3));
+      elseif  e1 &&  e2 && ~e3   AsSrm.add(asid3, AsSrm(asid1) - AsSrm(asid2));
       end
     end
 

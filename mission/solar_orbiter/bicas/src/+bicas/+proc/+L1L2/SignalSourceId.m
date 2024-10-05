@@ -24,7 +24,7 @@ classdef SignalSourceId
   %#####################
   %#####################
   properties(SetAccess=immutable, GetAccess=public)
-    Asid
+    asid
   end
   properties(SetAccess=immutable, GetAccess=private)
     % NOTE: Private value. Value can (and should) be indirectly accessed by
@@ -46,10 +46,10 @@ classdef SignalSourceId
     % Constructor
     function obj = SignalSourceId(value)
       if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
-        obj.Asid        = value;
+        obj.asid        = value;
         obj.specialCase = [];
       elseif ischar(value) && ismember(value, {'2.5V_REF', 'GND', 'UNKNOWN'})
-        obj.Asid        = [];
+        obj.asid        = [];
         obj.specialCase = value;
       else
         error('BICAS:Assertion:IllegalArgument', 'Illegal argument.')
@@ -59,7 +59,7 @@ classdef SignalSourceId
 
 
     function isAsr = is_ASR(obj)
-      isAsr = isa(obj.Asid, 'bicas.proc.L1L2.AntennaSignalId');
+      isAsr = isa(obj.asid, 'bicas.proc.L1L2.AntennaSignalId');
     end
 
 

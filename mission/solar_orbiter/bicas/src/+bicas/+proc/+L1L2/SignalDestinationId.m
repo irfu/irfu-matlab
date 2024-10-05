@@ -37,7 +37,7 @@ classdef SignalDestinationId
   %#####################
   properties(SetAccess=immutable, GetAccess=public)
     % ASID object or empty.
-    Asid
+    asid
 
     % Whether destination is "NOWHERE", i.e. the signal does not have a
     % destination and should be ignored.
@@ -60,10 +60,10 @@ classdef SignalDestinationId
       assert(isscalar(value))
 
       if isequal(value, "NOWHERE")
-        obj.Asid      = [];
+        obj.asid      = [];
         obj.isNowhere = true;
       elseif bicas.sconst.is_ASID(value)
-        obj.Asid      = value;
+        obj.asid      = value;
         obj.isNowhere = false;
       else
         error('BICAS:Assertion:IllegalArgument', 'Illegal argument.')
