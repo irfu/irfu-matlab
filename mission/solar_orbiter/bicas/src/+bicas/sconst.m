@@ -41,66 +41,67 @@ classdef sconst
     % multiple constants as fields. Makes it possible to access constants
     % through a variable copy of this constant rather than using the long
     % qualifiers.
-    function C = init_const()
-      % PROPOSAL: Naming convention that is consistent for k<-->s dictionaries.
-      %   PROPOSAL: "O" = object = ASID/SSID/SDID/Routing
-      % PROPOSAL: Replace dictionaries with string keys with structs.
-      %   PRO: Given the existence of k values, should never need to convert to
-      %        strings. Strings should only be useful for hardcoding.
-      %   CON: Useful to convert arrays of strings to arrays of k
-      %        values/objects?
-      %     Ex: Some tests.
+    %
+    % NOTE: Construction is problematic since bicas.proc.L1L2.Routing
+    % constructors can not use other fields in bicas.sconst.C for assertions,
+    % since it has not been initialized at that time. Also, bad syntax in this
+    % code tends to give strange unintuitive error messages and error behaviour
+    % in MATLAB.
+    %
+    % NOTE:
+    function C2 = init_const()
+      C2 = struct();
 
-      C = struct();
-      C.S_ASID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.AntennaSignalId');
-      C.S_SSID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.SignalSourceId');
-      C.K_SSID_DICT    = configureDictionary('uint8',  'bicas.proc.L1L2.SignalSourceId');
-      C.S_SDID_DICT    = configureDictionary('string', 'bicas.proc.L1L2.SignalDestinationId');
-      C.K_SDID_DICT    = configureDictionary('uint8',  'bicas.proc.L1L2.SignalDestinationId');
-      C.S_ROUTING_DICT = configureDictionary('string', 'bicas.proc.L1L2.Routing');
+      C2.ASID_DICT          = configureDictionary('string', 'uint8');
+      C2.ASID_CATEGORY_DICT = configureDictionary('uint8',  'string');
+      C2.ASID_ANTENNAS_DICT = configureDictionary('uint8',  'cell');
 
-      C.SSID_S_K_DICT  = configureDictionary('string',                              'uint8');
-      C.SDID_S_K_DICT  = configureDictionary('string',                              'uint8');
-      C.SSID_K_DICT    = configureDictionary('bicas.proc.L1L2.SignalSourceId',      'uint8');
-      C.SDID_K_DICT    = configureDictionary('bicas.proc.L1L2.SignalDestinationId', 'uint8');
+      C2.SSID_DICT          = configureDictionary('string', 'uint8');
+      C2.SSID_ASR_SET       = uint8([]);
 
-      % Global list of k values for ALL classes. For avoiding collisions.
-      kGlobalArray = [];
+      C2.SDID_DICT          = configureDictionary('string', 'uint8');
+      C2.SDID_ASR_SET       = uint8([]);
 
-      function add_ASR(fn, k, asidCategory, asidAntennas)
-        Asid = bicas.proc.L1L2.AntennaSignalId(asidCategory, asidAntennas);
-        Ssid = bicas.proc.L1L2.SignalSourceId(Asid);
+      C2.ROUTING_DICT       = configureDictionary('string', 'bicas.proc.L1L2.Routing');
 
-        C.S_ASID_DICT(fn) = Asid;
-        add_SSID(fn, k, Ssid)
-        add_SDID(fn, k, bicas.proc.L1L2.SignalDestinationId(Asid))
-        C.S_ROUTING_DICT(fn) = bicas.proc.L1L2.Routing(Ssid);
-      end
+      % Global list of k values used for initializing ASIDs, SSIDs, and SDIS.
+      % For avoiding collisions between all of them (for safety).
+      kSet = [];
 
       function assert_new_k(k)
         assert(isnumeric(k))
-        assert(~ismember(k, kGlobalArray))
-        kGlobalArray(end+1) = k;
+        assert(~ismember(k, kSet))
+        kSet(end+1) = k;
       end
 
-      function add_SSID(fn, k, Ssid)
-        k2 = k+100;
-        assert_new_k(k2)
+      function add_ASR(s, k, asidCategory, asidAntennas)
+        asid = uint8(k);
 
-        C.S_SSID_DICT(fn)   = Ssid;
-        C.SSID_S_K_DICT(fn) = k2;
-        C.K_SSID_DICT(k2)   = Ssid;
-        C.SSID_K_DICT(Ssid) = uint8(k2);
+        C2.ASID_DICT(s)             = asid;
+        C2.ASID_CATEGORY_DICT(asid) = asidCategory;
+        C2.ASID_ANTENNAS_DICT(asid) = {asidAntennas};
+
+        ssid = add_SSID(s, k);
+        C2.SSID_ASR_SET(end+1, 1)   = ssid;
+
+        sdid = add_SDID(s, k);
+        C2.SDID_ASR_SET(end+1, 1)   = sdid;
+
+        C2.ROUTING_DICT(s)          = bicas.proc.L1L2.Routing(ssid, sdid);
       end
 
-      function add_SDID(fn, k, Sdid)
-        k2 = k+200;
-        assert_new_k(k2)
+      function ssid = add_SSID(s, k)
+        ssid = uint8(k+100);
+        assert_new_k(ssid)
 
-        C.S_SDID_DICT(fn)   = Sdid;
-        C.SDID_S_K_DICT(fn) = k2;
-        C.K_SDID_DICT(k2)   = Sdid;
-        C.SDID_K_DICT(Sdid) = uint8(k2);
+        C2.SSID_DICT(s) = ssid;
+      end
+
+      function sdid = add_SDID(s, k)
+        sdid = uint8(k+200);
+        assert_new_k(sdid)
+
+        C2.SDID_DICT(s) = sdid;
       end
 
       function main()
@@ -119,25 +120,162 @@ classdef sconst
         add_ASR("AC_V13", 8, 'AC_DIFF',   [1, 3]);
         add_ASR("AC_V23", 9, 'AC_DIFF',   [2, 3]);
 
-        add_SSID("REF25V",  10, bicas.proc.L1L2.SignalSourceId('2.5V_REF'));
-        add_SSID("GND",     11, bicas.proc.L1L2.SignalSourceId('GND'));
-        add_SSID("UNKNOWN", 12, bicas.proc.L1L2.SignalSourceId('UNKNOWN'));
+        add_SSID("REF25V",  10);
+        add_SSID("GND",     11);
+        add_SSID("UNKNOWN", 12);
 
-        add_SDID("NOWHERE", 13, bicas.proc.L1L2.SignalDestinationId('NOWHERE'));
+        add_SDID("NOWHERE", 13);
 
-        C.S_ROUTING_DICT("REF25V_TO_DC_V1")    = bicas.proc.L1L2.Routing(C.S_SSID_DICT("REF25V"),  C.S_SDID_DICT("DC_V1"));
-        C.S_ROUTING_DICT("REF25V_TO_DC_V2")    = bicas.proc.L1L2.Routing(C.S_SSID_DICT("REF25V"),  C.S_SDID_DICT("DC_V2"));
-        C.S_ROUTING_DICT("REF25V_TO_DC_V3")    = bicas.proc.L1L2.Routing(C.S_SSID_DICT("REF25V"),  C.S_SDID_DICT("DC_V3"));
-        C.S_ROUTING_DICT("GND_TO_DC_V1")       = bicas.proc.L1L2.Routing(C.S_SSID_DICT("GND"),     C.S_SDID_DICT("DC_V1"));
-        C.S_ROUTING_DICT("GND_TO_DC_V2")       = bicas.proc.L1L2.Routing(C.S_SSID_DICT("GND"),     C.S_SDID_DICT("DC_V2"));
-        C.S_ROUTING_DICT("GND_TO_DC_V3")       = bicas.proc.L1L2.Routing(C.S_SSID_DICT("GND"),     C.S_SDID_DICT("DC_V3"));
-        C.S_ROUTING_DICT("UNKNOWN_TO_NOWHERE") = bicas.proc.L1L2.Routing(C.S_SSID_DICT("UNKNOWN"), C.S_SDID_DICT("NOWHERE"));
+        C2.ROUTING_DICT("REF25V_TO_DC_V1")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V1"));
+        C2.ROUTING_DICT("REF25V_TO_DC_V2")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V2"));
+        C2.ROUTING_DICT("REF25V_TO_DC_V3")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V3"));
+        C2.ROUTING_DICT("GND_TO_DC_V1")       = bicas.proc.L1L2.Routing(C2.SSID_DICT("GND"),     C2.SDID_DICT("DC_V1"));
+        C2.ROUTING_DICT("GND_TO_DC_V2")       = bicas.proc.L1L2.Routing(C2.SSID_DICT("GND"),     C2.SDID_DICT("DC_V2"));
+        C2.ROUTING_DICT("GND_TO_DC_V3")       = bicas.proc.L1L2.Routing(C2.SSID_DICT("GND"),     C2.SDID_DICT("DC_V3"));
+        C2.ROUTING_DICT("UNKNOWN_TO_NOWHERE") = bicas.proc.L1L2.Routing(C2.SSID_DICT("UNKNOWN"), C2.SDID_DICT("NOWHERE"));
 
-        assert(~ismember(255, kGlobalArray))
-        assert(~ismember(0,   kGlobalArray))
+        assert(~ismember(255, kSet))
+        assert(~ismember(0,   kSet))
       end
 
       main()
+    end
+
+
+
+    %======
+    % ASID
+    %======
+    function isAsid = is_ASID(asidAr)
+      % TODO: Automated test.
+      assert(isa(asidAr, "uint8"))
+
+      isAsid = all(ismember(asidAr, bicas.sconst.C.ASID_DICT.values), "ALL");
+    end
+
+
+
+    function asidCategory = get_ASID_category(asid)
+      % TODO: Automated test.
+      assert(isa(asid, "uint8") & isscalar(asid))
+
+      asidCategory = bicas.sconst.C.ASID_CATEGORY_DICT(asid);
+    end
+
+
+
+    function antennas = get_ASID_antennas(asid)
+      antennasCa = bicas.sconst.C.ASID_ANTENNAS_DICT(asid);
+      antennas   = antennasCa{1};
+    end
+
+
+
+    function ssid = ASID_to_SSID(asid)
+      assert(bicas.sconst.is_ASID(asid) & isscalar(asid))
+
+      ssid = asid + 100;
+      assert(bicas.sconst.is_SSID(ssid))
+    end
+
+
+
+    %======
+    % SSID
+    %======
+    function isSsid = is_SSID(ssidAr)
+      % TODO: Automated test.
+
+      isSsid = all(ismember(ssidAr, bicas.sconst.C.SSID_DICT.values), "ALL");
+    end
+
+
+
+    function isAsr = SSID_is_ASR(ssid)
+      % TODO: Automated test.
+      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
+
+      isAsr = any(find(bicas.sconst.C.SSID_ASR_SET == ssid));
+    end
+
+
+
+    function asid = SSID_ASR_to_ASID(ssid)
+      % TODO: Automated test.
+      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
+      assert(bicas.sconst.SSID_is_ASR(ssid))
+
+      asid = ssid - 100;
+      assert(bicas.sconst.is_ASID(asid))
+    end
+
+
+
+    function isAc = SSID_is_AC(ssid)
+      % TODO: Automated test.
+      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
+
+      if bicas.sconst.SSID_is_ASR(ssid)
+        asid = bicas.sconst.SSID_ASR_to_ASID(ssid);
+        isAc = (bicas.sconst.get_ASID_category(asid) == "AC_DIFF");
+      else
+        isAc = false;
+      end
+    end
+
+
+
+    function isDiff = SSID_is_diff(ssid)
+      % TODO: Automated test.
+      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
+
+      if bicas.sconst.SSID_is_ASR(ssid)
+        asid = bicas.sconst.SSID_ASR_to_ASID(ssid);
+        isDiff = ismember(bicas.sconst.get_ASID_category(asid), ["DC_DIFF", "AC_DIFF"]);
+      else
+        isDiff = false;
+      end
+    end
+
+
+
+    %======
+    % SDID
+    %======
+    function isSsid = is_SDID(sdidAr)
+      % TODO: Automated test.
+      assert(isa(sdidAr, "uint8"))
+
+      isSsid = all(ismember(sdidAr, bicas.sconst.C.SDID_DICT.values), "ALL");
+    end
+
+
+
+    function isAsr = SDID_is_ASR(sdid)
+      % TODO: Automated test.
+      assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
+
+      isAsr = any(find(bicas.sconst.C.SDID_ASR_SET == sdid));
+    end
+
+
+
+    function asid = SDID_ASR_to_ASID(sdid)
+      % TODO: Automated test.
+      assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
+      assert(bicas.sconst.SDID_is_ASR(sdid))
+
+      asid = sdid - 200;
+      assert(bicas.sconst.is_ASID(asid))
+    end
+
+
+
+    function isNowhere = is_SDID_nowhere(sdid)
+      % TODO: Automated test.
+      assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
+
+      isNowhere = (sdid == bicas.sconst.C.SDID_DICT("NOWHERE"));
     end
 
 

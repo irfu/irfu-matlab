@@ -1,6 +1,9 @@
 %
 % matlab.unittest automatic test code for bicas.utils.SameRowsMap.
 %
+% PROBLEM: Missing tests for key objects (used to have for ASID class objects
+% until abolished it).
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
@@ -80,7 +83,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_object_key_types(testCase)
+    function test_key_types(testCase)
       SrmDouble = bicas.utils.SameRowsMap('double', 1, 'EMPTY');
       SrmDouble.add(3.14, 123);
 
@@ -90,7 +93,7 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_object_key_types_error(testCase)
+    function test_key_type_error(testCase)
       SrmDouble = bicas.utils.SameRowsMap('double', 1, 'EMPTY');
 
       testCase.assertError(...
@@ -100,16 +103,17 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_object_keys(testCase)
-      Asid1 = bicas.sconst.C.S_ASID_DICT("DC_V1");
-      Asid2 = bicas.sconst.C.S_ASID_DICT("DC_V12");
-      Asid3 = bicas.sconst.C.S_ASID_DICT("DC_V3");
-      Srm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 1, 'EMPTY');
+    function test_uint8_keys(testCase)
+      i1 = uint8(3);
+      i2 = uint8(5);
+      i3 = uint8(7);
 
-      Srm.add(Asid1, 1)
-      Srm.add(Asid2, 1)
-      testCase.assertTrue(Srm.isKey(Asid1))
-      testCase.assertFalse(Srm.isKey(Asid3))
+      Srm = bicas.utils.SameRowsMap("uint8", 1, 'EMPTY');
+
+      Srm.add(i1, 1)
+      Srm.add(i2, 1)
+      testCase.assertTrue(Srm.isKey(i1))
+      testCase.assertFalse(Srm.isKey(i3))
     end
 
 
@@ -258,9 +262,9 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       Srm = bicas.utils.SameRowsMap('string', 3, 'CONSTANT', [1,2;3,4;5,6], ["K1"; "K2"]);
       disp(Srm)
 
-      Asid1 = bicas.sconst.C.S_ASID_DICT("DC_V1");
-      Asid2 = bicas.sconst.C.S_ASID_DICT("DC_V12");
-      Srm = bicas.utils.SameRowsMap('string', 1, 'CONSTANT', [Asid1, Asid2], ["K1"; "K2"]);
+      i1 = uint8(13);
+      i2 = uint8(17);
+      Srm = bicas.utils.SameRowsMap('string', 1, 'CONSTANT', [i1, i2], ["K1"; "K2"]);
       disp(Srm)
     end
 

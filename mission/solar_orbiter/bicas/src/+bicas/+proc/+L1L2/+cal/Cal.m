@@ -862,8 +862,8 @@ classdef Cal < handle
       % and the value is needed.
 
       % ASSERTION
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
-      assert(Ssid.is_ASR())
+      assert(bicas.sconst.is_SSID(Ssid) & isscalar(Ssid))
+      assert(bicas.sconst.SSID_is_ASR(Ssid))
       assert(isscalar(isAchg) && isnumeric(isAchg))
       assert(isscalar(iCalibTimeL))
       assert(isscalar(iCalibTimeH))
@@ -874,22 +874,24 @@ classdef Cal < handle
       %###################################################################
       % kIvpav = Multiplication factor "k" that represents/replaces the
       % (forward) transfer function.
-      switch(Ssid.Asid.category)
+      asid         = bicas.sconst.SSID_ASR_to_ASID(Ssid);
+      asidCategory = bicas.sconst.get_ASID_category(asid);
+      antennas     = bicas.sconst.get_ASID_antennas(asid);
+      switch(asidCategory)
         case 'DC_SINGLE'
 
           % NOTE: List of ITFs for different times.
           biasItfAvpiv = BiasRctd.ItfSet.dcSingleAvpiv{iCalibTimeL};
           kFtfIvpav    = obj.BiasScalarGain.alphaIvpav;
-          offsetAVolt  = BiasRctd.dcSingleOffsetsAVolt(...
-            iCalibTimeH, Ssid.Asid.antennas);
+          offsetAVolt  = BiasRctd.dcSingleOffsetsAVolt(iCalibTimeH, antennas);
 
         case 'DC_DIFF'
 
           biasItfAvpiv = BiasRctd.ItfSet.dcDiffAvpiv{iCalibTimeL};
           kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
-          if     isequal(Ssid.Asid.antennas(:)', [1,2]);   offsetAVolt = BiasRctd.DcDiffOffsets.E12AVolt(iCalibTimeH);
-          elseif isequal(Ssid.Asid.antennas(:)', [1,3]);   offsetAVolt = BiasRctd.DcDiffOffsets.E13AVolt(iCalibTimeH);
-          elseif isequal(Ssid.Asid.antennas(:)', [2,3]);   offsetAVolt = BiasRctd.DcDiffOffsets.E23AVolt(iCalibTimeH);
+          if     isequal(antennas, [1,2]);   offsetAVolt = BiasRctd.DcDiffOffsets.E12AVolt(iCalibTimeH);
+          elseif isequal(antennas, [1,3]);   offsetAVolt = BiasRctd.DcDiffOffsets.E13AVolt(iCalibTimeH);
+          elseif isequal(antennas, [2,3]);   offsetAVolt = BiasRctd.DcDiffOffsets.E23AVolt(iCalibTimeH);
           else
             error('BICAS:Assertion:IllegalArgument', ...
               'Illegal Ssid.');
@@ -919,7 +921,7 @@ classdef Cal < handle
           error('BICAS:Assertion:IllegalArgument', ...
             ['Illegal argument Ssid.Asid.category=%s.', ...
             ' Can not obtain calibration data for this type of signal.'], ...
-            Ssid.Asid.category)
+            asidCategory)
       end
 
       if obj.biasOffsetsDisabled && ~isnan(offsetAVolt)
@@ -1013,7 +1015,7 @@ classdef Cal < handle
       iLsf         = CalSettings.iLsf;
 
       % ASSERTIONS
-      assert(Ssid.is_ASR())
+      assert(bicas.sconst.SSID_is_ASR(Ssid))
       assert(isscalar(iNonBiasRct))
       assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
       % No assertion on zvcti2 unless used (determined later).
@@ -1050,7 +1052,7 @@ classdef Cal < handle
       %====================================================
       % Obtain settings for bicas.tf.apply_TF()
       %====================================================
-      if Ssid.Asid.is_AC()
+      if bicas.sconst.SSID_is_AC(Ssid)
         % IMPLEMENTATION NOTE: DC is (optionally) detrended via
         % bicas.tf.apply_TF() in the sense of a linear fit
         % being removed, TF applied, and then added back. That same
@@ -1083,10 +1085,11 @@ classdef Cal < handle
       %======================================
       % Create combined ITF for LFR and BIAS
       %======================================
+
       CalData.itfAvpt = bicas.proc.L1L2.cal.utils.create_LFR_BIAS_ITF(...
         CalData.lfrItfIvpt, ...
         CalData.BiasCalibData.itfAvpiv, ...
-        Ssid.Asid.is_AC(), ...
+        bicas.sconst.SSID_is_AC(Ssid), ...
         obj.itfAcConstGainLowFreqRps);
     end
 

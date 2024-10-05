@@ -136,13 +136,13 @@ classdef Saturation
       %   ~threshold_saturation
 
       assert(isfloat(samplesAVolt))
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
+      assert(bicas.sconst.is_SSID(Ssid) & isscalar(Ssid))
       assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
 
       % Default value that used if there are no thresholds.
       tsfAr = false(size(samplesAVolt));
 
-      if ~Ssid.is_ASR()
+      if ~bicas.sconst.SSID_is_ASR(Ssid)
         return
       end
 
@@ -151,12 +151,12 @@ classdef Saturation
       % ====================
       % Determine thresholds
       % ====================
-      if Ssid.Asid.is_diff()
+      if bicas.sconst.SSID_is_diff(Ssid)
         % CASE: DC/AC diff
         % ----------------
 
         isAchg = isAchgFpa.logical2doubleNan();
-        if Ssid.Asid.is_AC()
+        if bicas.sconst.SSID_is_AC(Ssid)
           % CASE: AC diff
           % -------------
           if isAchg == 0
@@ -264,7 +264,7 @@ classdef Saturation
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
-      assert(isa(bltsKSsidAr, 'uint8'))
+      assert(bicas.sconst.is_SSID(bltsKSsidAr))
       nRows = irf.assert.sizes(...
         tt2000Ar,                 [-1], ...
         zvNValidSamplesPerRecord, [-1], ...
@@ -288,10 +288,10 @@ classdef Saturation
         % CASE: CWF
         %===========
         tsfAr = false(nRows, 1);
-        for Asid = AsrSamplesAVoltSrm.keys'
+        for asid = AsrSamplesAVoltSrm.keys'
           asidTsfAr = obj.get_one_ASR_CWF_channel_TSF_bit_array(...
-            bicas.proc.L1L2.SignalSourceId(Asid), isAchgFpa, ...
-            AsrSamplesAVoltSrm(Asid));
+            bicas.sconst.ASID_to_SSID(asid), isAchgFpa, ...
+            AsrSamplesAVoltSrm(asid));
 
           % Merge (OR) bits over ASIDs.
           tsfAr = any([tsfAr, asidTsfAr], 2);
@@ -305,10 +305,10 @@ classdef Saturation
         % CASE: SWF
         %===========
         isSaturatedAr = false(nRows, 1);
-        for Asid = AsrSamplesAVoltSrm.keys'
+        for asid = AsrSamplesAVoltSrm.keys'
           asidIsSaturatedAr = obj.get_one_ASR_SWF_channel_saturation_bit_array(...
-            bicas.proc.L1L2.SignalSourceId(Asid), isAchgFpa, ...
-            AsrSamplesAVoltSrm(Asid), zvNValidSamplesPerRecord);
+            bicas.sconst.ASID_to_SSID(asid), isAchgFpa, ...
+            AsrSamplesAVoltSrm(asid), zvNValidSamplesPerRecord);
 
           % Merge (OR) bits over ASIDs.
           isSaturatedAr = any([isSaturatedAr, asidIsSaturatedAr], 2);

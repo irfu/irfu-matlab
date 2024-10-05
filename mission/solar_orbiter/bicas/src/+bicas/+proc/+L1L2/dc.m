@@ -264,10 +264,8 @@ classdef dc
         DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
           bdmFpa(iRecSs1), dlrFpa(iRecSs1));
 
-        SsidArray  = [DemuxerRoutingArray.Ssid];
-        kSsidArray = bicas.sconst.C.SSID_K_DICT(SsidArray);
-        SdidArray  = [DemuxerRoutingArray.Sdid];
-        kSdidArray = bicas.sconst.C.SDID_K_DICT(SdidArray);
+        kSsidArray  = [DemuxerRoutingArray.Ssid];
+        kSdidArray  = [DemuxerRoutingArray.Sdid];
 
         bltsKSsidArray(iRecSs, :) = repmat(kSsidArray, nRecSs, 1);
         bltsKSdidArray(iRecSs, :) = repmat(kSdidArray, nRecSs, 1);
@@ -532,7 +530,7 @@ classdef dc
       ssBltsSamplesAVolt = nan(nRows, Cv.nSamplesPerRecordChannel, bicas.const.N_BLTS);
       for iBlts = 1:bicas.const.N_BLTS
         ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
-          Ssid                     = bicas.sconst.C.K_SSID_DICT(Cv.bltsKSsidArray(iBlts)), ...
+          Ssid                     = Cv.bltsKSsidArray(iBlts), ...
           samplesTm                = Vv.bltsSamplesTm(:, :, iBlts), ...
           iBlts                    = iBlts, ...
           hasSwfFormat             = Cv.hasSwfFormat, ...
@@ -594,18 +592,18 @@ classdef dc
       end
       irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel.
 
-      if isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("UNKNOWN"))
+      if isequaln(A.Ssid, bicas.sconst.C.SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
         samplesAVolt = nan(size(A.samplesTm));
 
-      elseif isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("GND")) || ...
-          isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("REF25V"))
+      elseif isequaln(A.Ssid, bicas.sconst.C.SSID_DICT("GND")) || ...
+          isequaln(A.Ssid, bicas.sconst.C.SSID_DICT("REF25V"))
         % ==> No calibration.
         % NOTE: samplesTm stores TM units using float!
         samplesAVolt = A.samplesTm;
 
       else
-        assert(A.Ssid.is_ASR())
+        assert(bicas.sconst.SSID_is_ASR(A.Ssid))
         % ==> Calibrate (unless explicitly stated that should not)
 
         if A.hasSwfFormat
@@ -672,9 +670,9 @@ classdef dc
       % IMPLEMENTATION NOTE: Preallocation is very important for speeding
       % up LFR-SWF which tends to be broken into subsequences of 1 record.
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
-        "bicas.proc.L1L2.AntennaSignalId", nRecTot, 'CONSTANT', ...
+        "uint8", nRecTot, 'CONSTANT', ...
         nan(nRecTot, nSamplesPerRecordChannel), ...
-        bicas.sconst.C.S_ASID_DICT.values);
+        bicas.sconst.C.ASID_DICT.values);
 
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         bltsKSsidArray, ...
@@ -688,8 +686,8 @@ classdef dc
         % LABEL SIGNALS BY ASR (INSTEAD OF iBLTS)
         %=========================================
         SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
-          bicas.sconst.C.K_SDID_DICT(bltsKSdidArray(iRec1,          :)), ...
-          bltsSamplesAvolt(                         iRec1:iRec2, :, :));
+          bltsKSdidArray(  iRec1,          :), ...
+          bltsSamplesAvolt(iRec1:iRec2, :, :));
 
         % Add demuxed sequence signals to the global arrays (all records).
         AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');

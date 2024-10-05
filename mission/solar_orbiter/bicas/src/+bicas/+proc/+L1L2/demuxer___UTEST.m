@@ -24,7 +24,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % (iChannel, 1) = ASID ID string.
       % (iChannel, 2) = Sample value (that is consistent with other
       %                 channels).
-      A = bicas.sconst.C.S_ASID_DICT;
+      A = bicas.sconst.C.ASID_DICT;
       TEST_DATA_CA = { ...
         A("DC_V1"),  10; ...
         A("DC_V2"),  11; ...
@@ -44,7 +44,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         'UniformOutput', false);
 
       AsidTestSamplesSrm = bicas.utils.SameRowsMap( ...
-        "bicas.proc.L1L2.AntennaSignalId", sampleSize(1), 'EMPTY');
+        "uint8", sampleSize(1), 'EMPTY');
       for i = 1:size(TEST_DATA_CA, 1)
         AsidTestSamplesSrm.add( ...
           TEST_DATA_CA{i, 1}, ...
@@ -73,8 +73,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     % two functions were split up.
     function test_get_routings_calibrated_BLTSs_to_all_ASRs(testCase)
 
-      A = bicas.sconst.C.S_ASID_DICT;
-      R = bicas.sconst.C.S_ROUTING_DICT;
+      A = bicas.sconst.C.ASID_DICT;
+      R = bicas.sconst.C.ROUTING_DICT;
 
       % =========
       % Test data
@@ -128,8 +128,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
         for i = 1:numel(RoutingArray)
           Routing = RoutingArray(i);
-          if Routing.Ssid.is_ASR()
-            tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(Routing.Ssid.Asid);
+          if bicas.sconst.SSID_is_ASR(Routing.Ssid)
+            tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(...
+              bicas.sconst.SSID_ASR_to_ASID(Routing.Ssid));
           else
             tempBltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
           end
@@ -155,7 +156,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
           "DC_V12", "DC_V13", "DC_V23", ...
           "AC_V12", "AC_V13", "AC_V23" ...
           ]);
-        AsSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", nRows, 'EMPTY');
+        AsSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
 
         for iAsid = 1:9
           Asid = ARGS_ASID_ARRAY(iAsid);
@@ -263,7 +264,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
     function test_reconstruct_missing_ASR_samples(testCase)
 
-      A = bicas.sconst.C.S_ASID_DICT;
+      A = bicas.sconst.C.ASID_DICT;
 
 
 
@@ -282,11 +283,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % BUG/NOTE: Will fail if function returns NaN when it should not!
       function test(inputFieldsCa)
         nRows = size(inputFieldsCa{2}, 1);
-        AsSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", nRows, 'EMPTY');
+        AsSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
         for i = 1:(numel(inputFieldsCa)/2)
-          Asid   = inputFieldsCa{2*i-1};
+          asid   = inputFieldsCa{2*i-1};
           sample = inputFieldsCa{2*i  };
-          AsSrm.add(Asid, sample)
+          AsSrm.add(asid, sample)
         end
 
         % RUN FUNCTION TO BE TESTED

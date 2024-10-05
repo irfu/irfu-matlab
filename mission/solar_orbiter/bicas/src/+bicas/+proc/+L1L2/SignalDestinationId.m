@@ -57,10 +57,12 @@ classdef SignalDestinationId
 
     % Constructor
     function obj = SignalDestinationId(value)
-      if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
+      assert(isscalar(value))
+
+      if bicas.sconst.is_ASID(value)
         obj.Asid      = value;
         obj.isNowhere = false;
-      elseif isequal(value, 'NOWHERE')
+      elseif isequal(value, "NOWHERE")
         obj.Asid      = [];
         obj.isNowhere = true;
       else

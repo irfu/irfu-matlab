@@ -72,7 +72,7 @@ classdef demuxer
       assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FPArray') && strcmp(bdmFpa.mc, 'uint8'))
       assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FPArray') && strcmp(dlrFpa.mc, 'logical'))
 
-      R = bicas.sconst.C.S_ROUTING_DICT;
+      R = bicas.sconst.C.ROUTING_DICT;
 
       dlrFloat = dlrFpa.logical2doubleNan();
       if isnan(dlrFloat)
@@ -209,7 +209,7 @@ classdef demuxer
       % PROPOSAL: Log message for BDM=NaN.
 
       % ASSERTIONS
-      assert(isa(SdidArray, 'bicas.proc.L1L2.SignalDestinationId'))
+      assert(isa(SdidArray, 'uint8'))
       assert(isnumeric(bltsSamplesAVolt))
       irf.assert.sizes(...
         bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
@@ -274,7 +274,7 @@ classdef demuxer
       assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
 
       % Shorten variable names.
-      A     = bicas.sconst.C.S_ASID_DICT;
+      A     = bicas.sconst.C.ASID_DICT;
       AsSrm = AsrSamplesAVoltSrm;
 
       %================
@@ -316,16 +316,16 @@ classdef demuxer
       %   Ex: bdm=1,2,3
       %===================================================================
 
-      keyArray = AsSrm.keys;
+      useAsidArray = AsSrm.keys;
 
       % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
       % for deriving the entire size (samples per record), until possibly
       % using a future bicas.utils.SameSizeTypeMap instead.
-      tempNaN = nan(size(AsrSamplesAVoltSrm(keyArray(1))));
+      tempNaN = nan(size(AsrSamplesAVoltSrm(useAsidArray(1))));
 
-      for Asid = bicas.sconst.C.S_ASID_DICT.values'
-        if ~AsSrm.isKey(Asid)
-          AsSrm.add(Asid, tempNaN);
+      for asid = bicas.sconst.C.ASID_DICT.values'
+        if ~AsSrm.isKey(asid)
+          AsSrm.add(asid, tempNaN);
         end
       end
 
@@ -514,13 +514,13 @@ classdef demuxer
         bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
         SdidArray,        [ 1,     bicas.const.N_BLTS]);
 
-      AsrSamplesSrm = bicas.utils.SameRowsMap( ...
-        "bicas.proc.L1L2.AntennaSignalId", nRows, 'EMPTY');
+      AsrSamplesSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
       for iBlts = 1:bicas.const.N_BLTS
-        if ~SdidArray(iBlts).isNowhere
+        if ~bicas.sconst.is_SDID_nowhere(SdidArray(iBlts))
           % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
           % if conceptually sensible.
-          Asid = SdidArray(iBlts).Asid;
+          Asid = bicas.sconst.SDID_ASR_to_ASID(SdidArray(iBlts));
+
           AsrSamplesSrm.add(Asid, bltsSamplesAVolt(:, :, iBlts));
         end
       end

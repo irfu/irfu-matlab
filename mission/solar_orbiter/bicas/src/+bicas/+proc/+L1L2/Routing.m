@@ -66,28 +66,17 @@ classdef Routing
     % Syntax 1: Ssid
     %       Reuse Ssid.Asid for creating a corresponding SDID.
     % Syntax 2: Ssid, Sdid
-    function obj = Routing(Ssid, varargin)
-      assert(isa(Ssid, 'bicas.proc.L1L2.SignalSourceId'))
+    function obj = Routing(ssid, sdid)
+      assert(isa(ssid, 'uint8'))
+      assert(isa(sdid, 'uint8'))
 
-      % Set SSID
-      obj.Ssid = Ssid;
+      % IMPLEMENTATION NOTE: Can not use these functions since
+      % bicas.proc.sconst is initialized by calling this very constructor.
+      %assert(bicas.proc.sconst.is_SSID(ssid) & isscalar(ssid))
+      %assert(bicas.proc.sconst.is_SDID(sdid) & isscalar(sdid))
 
-      % Set SDID
-      switch numel(varargin)
-        case 0
-          assert(Ssid.is_ASR(), 'Can not use first argument to derive SDID.')
-          Sdid = bicas.proc.L1L2.SignalDestinationId(Ssid.Asid);
-
-        case 1
-          Sdid = varargin{1};
-
-        otherwise
-          error('BICAS:Assertion:IllegalArgument', ...
-            'Illegal number of extra arguments.')
-      end
-      assert(isa(Sdid, 'bicas.proc.L1L2.SignalDestinationId'))
-      obj.Sdid = Sdid;
-
+      obj.Ssid = ssid;
+      obj.Sdid = sdid;
     end
 
 

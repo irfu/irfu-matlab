@@ -7,7 +7,7 @@
 classdef Saturation___UTEST < matlab.unittest.TestCase
 % PROPOSAL: Split up into multiple files.
 %   CON: init_object() is used by tests for multiple methods.
-%   CON: Might want to share isntance field S = bicas.sconst.C.S_SSID_DICT;
+%   CON: Might want to share instance field S = bicas.sconst.C.SSID_DICT;
 
 
 
@@ -17,7 +17,8 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
   %#####################
   %#####################
   properties(Constant)
-    S = bicas.sconst.C.S_SSID_DICT;
+    A = bicas.sconst.C.ASID_DICT;
+    S = bicas.sconst.C.SSID_DICT;
     BDM0_DLR0_ROW = ["DC_V1", "DC_V12", "DC_V23", "AC_V12", "AC_V23"];
   end
 
@@ -215,10 +216,10 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     %##############
     function test_get_voltage_saturation_quality_bit___zero_records(testCase)
       for hasSwfFormat = 0:1
-        AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 0, 'EMPTY');
-        AsrSamplesAVoltSrm.add(testCase.S("DC_V1").Asid, zeros(0, 1))
-        AsrSamplesAVoltSrm.add(testCase.S("DC_V2").Asid, zeros(0, 1))
-        AsrSamplesAVoltSrm.add(testCase.S("DC_V3").Asid, zeros(0, 1))
+        AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 0, 'EMPTY');
+        AsrSamplesAVoltSrm.add(testCase.A("DC_V1"), zeros(0, 1))
+        AsrSamplesAVoltSrm.add(testCase.A("DC_V2"), zeros(0, 1))
+        AsrSamplesAVoltSrm.add(testCase.A("DC_V3"), zeros(0, 1))
 
         testCase.test_get_voltage_saturation_quality_bit(testCase, ...
           cwfSlidingWindowLengthSec = 10, ...
@@ -247,10 +248,10 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % CWF, BDM=0, LRX=1/DC diff.
     function test_get_voltage_saturation_quality_bit___CWF_DC_diff(testCase)
 
-      AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 3, 'EMPTY');
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V1").Asid,  [2 0 2]')
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V12").Asid, [2 0 2]'+1)
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V23").Asid, [2 0 2]'+1)
+      AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("uint8", 3, 'EMPTY');
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V1"),  [2 0 2]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V12"), [2 0 2]'+1)
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V23"), [2 0 2]'+1)
 
       testCase.test_get_voltage_saturation_quality_bit(testCase, ...
         cwfSlidingWindowLengthSec = 2.1, ...
@@ -276,10 +277,10 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % Separate episodes of saturation on different channels.
     % CWF, BDM=0, LRX=1/AC diff.
     function test_get_voltage_saturation_quality_bit___CWF_AC_diff(testCase)
-      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 10, 'EMPTY');
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V1").Asid,  [2 2 0 0 0 0 0 0 0 0]')
-      AsrSamplesAVoltSrm.add(testCase.S("AC_V12").Asid, [0 0 0 2 2 0 0 0 0 0]'+2)
-      AsrSamplesAVoltSrm.add(testCase.S("AC_V23").Asid, [0 0 0 0 0 0 2 2 0 0]'+2)
+      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 10, 'EMPTY');
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V1"),  [2 2 0 0 0 0 0 0 0 0]')
+      AsrSamplesAVoltSrm.add(testCase.A("AC_V12"), [0 0 0 2 2 0 0 0 0 0]'+2)
+      AsrSamplesAVoltSrm.add(testCase.A("AC_V23"), [0 0 0 0 0 0 2 2 0 0]'+2)
 
       testCase.test_get_voltage_saturation_quality_bit(testCase, ...
         cwfSlidingWindowLengthSec = 2.1, ...
@@ -312,12 +313,12 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     function test_get_voltage_saturation_quality_bit___mult_subsequences(testCase)
       BDM4_DLR0_ROW = ["DC_V1", "DC_V2", "DC_V3", "AC_V12", "AC_V23"];
 
-      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 8, 'EMPTY');
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V1").Asid,  [0 0 2 2 0 0 0 0]')
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V12").Asid, [0 0 0 0 0 0 3 3]')
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V23").Asid, [0 0 0 0 0 0 0 0]')
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V2").Asid,  [3 3 0 0 0 0 0 0]')
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V3").Asid,  [0 0 0 0 2 2 0 0]')
+      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 8, 'EMPTY');
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V1"),  [0 0 2 2 0 0 0 0]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V12"), [0 0 0 0 0 0 3 3]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V23"), [0 0 0 0 0 0 0 0]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V2"),  [3 3 0 0 0 0 0 0]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V3"),  [0 0 0 0 2 2 0 0]')
 
       testCase.test_get_voltage_saturation_quality_bit(testCase, ...
         cwfSlidingWindowLengthSec = 2.1, ...
@@ -349,18 +350,18 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % SWF, BDM=0, LRX=0/AC diff
     % Saturated DC single
     function test_get_voltage_saturation_quality_bit___SWF_1(testCase)
-      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 2, 'EMPTY');
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V1").Asid, ...
+      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 2, 'EMPTY');
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V1"), ...
         [
         [2 2 2 0 0 0 0] + 0; ...   % Saturated
         [0 0 0 2 2 2 2] + 0;
         ]);
-      AsrSamplesAVoltSrm.add(testCase.S("AC_V12").Asid, ...
+      AsrSamplesAVoltSrm.add(testCase.A("AC_V12"), ...
         [
         [0 0 0 0 0 0 0] + 4; ...
         [0 0 0 2 2 2 2] + 6;
         ]+1);
-      AsrSamplesAVoltSrm.add(testCase.S("AC_V23").Asid, ...
+      AsrSamplesAVoltSrm.add(testCase.A("AC_V23"), ...
         [
         [0 0 0 0 0 0 0] + 4; ...
         [0 0 0 2 2 2 2] + 6;
@@ -392,22 +393,22 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % Saturated AC diffs
     function test_get_voltage_saturation_quality_bit___SWF_2(testCase)
 
-      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("bicas.proc.L1L2.AntennaSignalId", 4, 'EMPTY');
-      AsrSamplesAVoltSrm.add(testCase.S("DC_V1").Asid, ...
+      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 4, 'EMPTY');
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V1"), ...
         [
         [0 0 0 0 0 0 0] + 0; ...
         [0 2 2 2 2 2 2] + 0; ...
         [0 0 0 0 0 0 0] + 0; ...
         [0 0 0 2 2 2 2] + 0;
         ])
-      AsrSamplesAVoltSrm.add(testCase.S("AC_V12").Asid, ...
+      AsrSamplesAVoltSrm.add(testCase.A("AC_V12"), ...
         [
         [2 0 0 0 0 0 0] + 4; ...   % Saturated.
         [0 2 2 2 2 2 2] + 4; ...
         [2 2 2 0 0 0 0] + 6; ...   % Saturated.
         [0 0 0 2 2 2 2] + 6;
         ]+1)
-      AsrSamplesAVoltSrm.add(testCase.S("AC_V23").Asid, ...
+      AsrSamplesAVoltSrm.add(testCase.A("AC_V23"), ...
         [
         [0 0 0 0 0 0 0] + 4; ...
         [0 2 2 2 2 2 2] + 4; ...
@@ -522,7 +523,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
       % Modify/normalize arguments.
       V.tt2000Ar     = int64(V.tt2000Ar);
-      V.bltsKSsidAr  = bicas.sconst.C.SSID_S_K_DICT(V.bltsKSsidAr);
+      V.bltsKSsidAr  = testCase.S(V.bltsKSsidAr);
       V.isAchgFpa    = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
       V.hasSwfFormat = logical(V.hasSwfFormat);
 
@@ -580,7 +581,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg);
 
       actTsfAr = Sat.get_one_ASR_CWF_channel_TSF_bit_array(...
-        bicas.sconst.C.S_SSID_DICT(V.sSsid), V.isAchgFpa, V.samplesAVolt);
+        testCase.S(V.sSsid), V.isAchgFpa, V.samplesAVolt);
 
       testCase.assertEqual(actTsfAr, V.expTsfAr)
     end
@@ -620,7 +621,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg);
 
       actTsfAr = Sat.get_one_ASR_SWF_channel_saturation_bit_array(...
-        bicas.sconst.C.S_SSID_DICT(V.sSsid), V.isAchgFpa, ...
+        bicas.sconst.C.SSID_DICT(V.sSsid), V.isAchgFpa, ...
         V.samplesAVolt, V.zvNValidSamplesPerRecord);
 
       testCase.assertEqual(actTsfAr, V.expTsfAr)
