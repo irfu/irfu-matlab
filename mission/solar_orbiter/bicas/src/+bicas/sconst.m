@@ -6,6 +6,33 @@
 %
 classdef sconst
 % PROPOSAL: Merge class back into bicas.const.
+% PROPOSAL: Move to bicas.proc.L1L2.*.
+%
+% TODO: Abolish subtraction of k values in methods.
+%
+% NOTE: Feels like there should be a better way of implementing ASID, SSID,
+%       SDIDs as uint8 + functions, but not sure how.
+%
+% PROPOSAL: Keep ASID, SSID, SDID as uint8 but also keep corresponding objects,
+%           but defer functions on uint8 to object methods via dictionaries
+%           uint8-->object.
+%   Ex: C.SSID_OBJ_DICT(ssid).is_ASR()
+%   PRO: More natural way of hardcoding information about each uint8 value.
+%   CON: Akward to have two versions of ASID,SSID,SDID at the same time.
+%     PRO: Separate names/abbreviations. 3-->2x3
+%     CON: Use same abbreviations for both uint8 and objects.
+%   CON: Still long calls.
+%
+%
+% PROPOSAL: Hardcode information in structs (or objects) in private
+%           dictionaries which bicas.sconst function implementations then use.
+%   PRO: Automatic checks on uint8 (type), integer range (dictionary keys).
+%   PRO: Does not need rely on adding/subtracting to translate between
+%        ASID, SSID, SDID.
+%
+% PROPOSAL: Separate class constants for ASID, SSID, SDID respectively.
+%   Replace .C --> .ASID (asid?) etc.
+%   CON: Bad if wanting to "import" all constants at once.
 
 
 
@@ -35,7 +62,7 @@ classdef sconst
 
 
 
-    % Defines all constants for ASID, SSID, SDID, and Routing.
+    % Define all constants for ASID, SSID, SDID, and Routing.
     %
     % IMPLEMENTATION NOTE: Defining one constant struct, which contains
     % multiple constants as fields. Makes it possible to access constants
@@ -152,8 +179,6 @@ classdef sconst
       isAsid = all(ismember(asidAr, bicas.sconst.C.ASID_DICT.values), "ALL");
     end
 
-
-
     function asidCategory = get_ASID_category(asid)
       % TODO: Automated test.
       assert(isa(asid, "uint8") & isscalar(asid))
@@ -161,14 +186,10 @@ classdef sconst
       asidCategory = bicas.sconst.C.ASID_CATEGORY_DICT(asid);
     end
 
-
-
     function antennas = get_ASID_antennas(asid)
       antennasCa = bicas.sconst.C.ASID_ANTENNAS_DICT(asid);
       antennas   = antennasCa{1};
     end
-
-
 
     function ssid = ASID_to_SSID(asid)
       assert(bicas.sconst.is_ASID(asid) & isscalar(asid))
@@ -186,15 +207,11 @@ classdef sconst
       isSsid = all(ismember(ssidAr, bicas.sconst.C.SSID_DICT.values), "ALL");
     end
 
-
-
     function isAsr = SSID_is_ASR(ssid)
       assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
 
       isAsr = any(find(bicas.sconst.C.SSID_ASR_SET == ssid));
     end
-
-
 
     function asid = SSID_ASR_to_ASID(ssid)
       assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
@@ -203,8 +220,6 @@ classdef sconst
       asid = ssid - 100;
       assert(bicas.sconst.is_ASID(asid))
     end
-
-
 
     function isAc = SSID_is_AC(ssid)
       % TODO: Automated test.
@@ -217,8 +232,6 @@ classdef sconst
         isAc = false;
       end
     end
-
-
 
     function isDiff = SSID_is_diff(ssid)
       % TODO: Automated test.
@@ -243,16 +256,12 @@ classdef sconst
       isSsid = all(ismember(sdidAr, bicas.sconst.C.SDID_DICT.values), "ALL");
     end
 
-
-
     function isAsr = SDID_is_ASR(sdid)
       % TODO: Automated test.
       assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
 
       isAsr = any(find(bicas.sconst.C.SDID_ASR_SET == sdid));
     end
-
-
 
     function asid = SDID_ASR_to_ASID(sdid)
       assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
@@ -261,8 +270,6 @@ classdef sconst
       asid = sdid - 200;
       assert(bicas.sconst.is_ASID(asid))
     end
-
-
 
     function isNowhere = is_SDID_nowhere(sdid)
       % TODO: Automated test.

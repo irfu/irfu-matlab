@@ -150,7 +150,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         % Define which varargin{i} corresponds to which ASID
         % --------------------------------------------------
         % NOTE: This is not (necessarily) the same as
-        % bicas.sconst.C.S_ASID_DICT.values.
+        % bicas.sconst.C.ASID_DICT.values.
         ARGS_ASID_ARRAY = A([
           "DC_V1",  "DC_V2",  "DC_V3",  ...
           "DC_V12", "DC_V13", "DC_V23", ...

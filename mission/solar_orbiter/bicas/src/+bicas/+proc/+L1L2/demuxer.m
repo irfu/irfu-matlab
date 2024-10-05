@@ -437,7 +437,7 @@ classdef demuxer
     %   assert(isa(DsidChannelsDict, 'dictionary'))
     %
     %   % Shorten variable names.
-    %   D   = bicas.sconst.C.S_DSID_DICT;
+    %   D   = bicas.sconst.C.DSID_DICT;
     %   DCD = DsidChannelsDict;
     %
     %   function derive_missing_data(sdidStr1, sdidStr2, sdidStr3)
@@ -547,6 +547,7 @@ classdef demuxer
       %   NOTE: BLTS saturation bits should propagate.
       %   This is thus a qualitatively different behaviour from samples which
       %   are reconstructed.
+      %
       % PROPOSAL: More generic implementation independent of SRMs and ASIDs.
       %   PROBLEM: Needs way to detect missing data (channels) and a way to add
       %            the reconstructed data.

@@ -59,12 +59,12 @@ classdef SignalDestinationId
     function obj = SignalDestinationId(value)
       assert(isscalar(value))
 
-      if bicas.sconst.is_ASID(value)
-        obj.Asid      = value;
-        obj.isNowhere = false;
-      elseif isequal(value, "NOWHERE")
+      if isequal(value, "NOWHERE")
         obj.Asid      = [];
         obj.isNowhere = true;
+      elseif bicas.sconst.is_ASID(value)
+        obj.Asid      = value;
+        obj.isNowhere = false;
       else
         error('BICAS:Assertion:IllegalArgument', 'Illegal argument.')
       end
