@@ -516,7 +516,7 @@ classdef demuxer
 
       AsrSamplesSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
       for iBlts = 1:bicas.const.N_BLTS
-        if ~bicas.sconst.is_SDID_nowhere(sdidArray(iBlts))
+        if ~bicas.sconst.SDID_is_nowhere(sdidArray(iBlts))
           % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
           % if conceptually sensible.
           asid = bicas.sconst.SDID_ASR_to_ASID(sdidArray(iBlts));

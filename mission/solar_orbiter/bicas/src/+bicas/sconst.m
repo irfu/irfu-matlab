@@ -180,7 +180,6 @@ classdef sconst
     end
 
     function asidCategory = get_ASID_category(asid)
-      % TODO: Automated test.
       assert(isa(asid, "uint8") & isscalar(asid))
 
       asidCategory = bicas.sconst.C.ASID_CATEGORY_DICT(asid);
@@ -222,7 +221,6 @@ classdef sconst
     end
 
     function isAc = SSID_is_AC(ssid)
-      % TODO: Automated test.
       assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
 
       if bicas.sconst.SSID_is_ASR(ssid)
@@ -234,7 +232,6 @@ classdef sconst
     end
 
     function isDiff = SSID_is_diff(ssid)
-      % TODO: Automated test.
       assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
 
       if bicas.sconst.SSID_is_ASR(ssid)
@@ -257,7 +254,6 @@ classdef sconst
     end
 
     function isAsr = SDID_is_ASR(sdid)
-      % TODO: Automated test.
       assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
 
       isAsr = any(find(bicas.sconst.C.SDID_ASR_SET == sdid));
@@ -271,8 +267,7 @@ classdef sconst
       assert(bicas.sconst.is_ASID(asid))
     end
 
-    function isNowhere = is_SDID_nowhere(sdid)
-      % TODO: Automated test.
+    function isNowhere = SDID_is_nowhere(sdid)
       assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
 
       isNowhere = (sdid == bicas.sconst.C.SDID_DICT("NOWHERE"));
