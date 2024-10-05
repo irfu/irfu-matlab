@@ -147,7 +147,6 @@ classdef sconst
     % ASID
     %======
     function isAsid = is_ASID(asidAr)
-      % TODO: Automated test.
       assert(isa(asidAr, "uint8"))
 
       isAsid = all(ismember(asidAr, bicas.sconst.C.ASID_DICT.values), "ALL");
@@ -184,15 +183,12 @@ classdef sconst
     % SSID
     %======
     function isSsid = is_SSID(ssidAr)
-      % TODO: Automated test.
-
       isSsid = all(ismember(ssidAr, bicas.sconst.C.SSID_DICT.values), "ALL");
     end
 
 
 
     function isAsr = SSID_is_ASR(ssid)
-      % TODO: Automated test.
       assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
 
       isAsr = any(find(bicas.sconst.C.SSID_ASR_SET == ssid));
@@ -201,7 +197,6 @@ classdef sconst
 
 
     function asid = SSID_ASR_to_ASID(ssid)
-      % TODO: Automated test.
       assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
       assert(bicas.sconst.SSID_is_ASR(ssid))
 
@@ -243,7 +238,6 @@ classdef sconst
     % SDID
     %======
     function isSsid = is_SDID(sdidAr)
-      % TODO: Automated test.
       assert(isa(sdidAr, "uint8"))
 
       isSsid = all(ismember(sdidAr, bicas.sconst.C.SDID_DICT.values), "ALL");
@@ -261,7 +255,6 @@ classdef sconst
 
 
     function asid = SDID_ASR_to_ASID(sdid)
-      % TODO: Automated test.
       assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
       assert(bicas.sconst.SDID_is_ASR(sdid))
 
