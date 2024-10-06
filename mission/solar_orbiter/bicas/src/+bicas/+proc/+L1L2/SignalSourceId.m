@@ -1,8 +1,5 @@
 %
-% Immutable class which instances represent the source of a signal, i.e.
-% either:
-% (1) an ASR (ASID), or
-% (2) various special cases.
+% Immutable class which instances represent an SSID with metadata.
 %
 % NOTE: Can not represent the source of a reconstructed signal, e.g. a diff
 % calculated by subtracting to (calibrated) singles.
@@ -13,7 +10,7 @@
 classdef SignalSourceId
   % PROPOSAL: Use for solo.BSACT_utils.
   %
-  % PROPOSAL: Should include three separate cases for 2.5V_REF and GND
+  % PROPOSAL: Should include three separate cases for REF25V and GND
   %           respectively (i.e. 2 cases --> 2x3 cases).
 
 
@@ -24,6 +21,7 @@ classdef SignalSourceId
   %#####################
   %#####################
   properties(SetAccess=immutable, GetAccess=public)
+    % ASID or empty.
     asid
   end
   properties(SetAccess=immutable, GetAccess=private)
@@ -44,13 +42,14 @@ classdef SignalSourceId
 
 
     % Constructor
-    function obj = SignalSourceId(value)
-      if isa(value, 'bicas.proc.L1L2.AntennaSignalId')
-        obj.asid        = value;
+    function obj = SignalSourceId(asidOrSpecialCase)
+      if isa(asidOrSpecialCase, 'uint8')
+        obj.asid        = asidOrSpecialCase;
         obj.specialCase = [];
-      elseif ischar(value) && ismember(value, {'2.5V_REF', 'GND', 'UNKNOWN'})
+      elseif isstring(asidOrSpecialCase) ...
+          && ismember(asidOrSpecialCase, ["REF25V", "GND", "UNKNOWN"])
         obj.asid        = [];
-        obj.specialCase = value;
+        obj.specialCase = asidOrSpecialCase;
       else
         error('BICAS:Assertion:IllegalArgument', 'Illegal argument.')
       end
@@ -59,7 +58,7 @@ classdef SignalSourceId
 
 
     function isAsr = is_ASR(obj)
-      isAsr = isa(obj.asid, 'bicas.proc.L1L2.AntennaSignalId');
+      isAsr = ~isempty(obj.asid);
     end
 
 

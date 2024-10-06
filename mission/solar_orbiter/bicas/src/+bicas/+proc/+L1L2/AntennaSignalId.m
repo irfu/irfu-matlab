@@ -1,11 +1,5 @@
 %
-% Immutable class which instances represent an ASR channel ID (DC single/DC
-% diff/AC diff). This may or may not refer to
-% (1) a physical source signal, or
-% (2) how a signal (from antennas) should be represented in a dataset, since
-%     output datasets organize output data sorted as if they were physical
-%     signals (though the actual values/samples might actually be e.g. GND,
-%     2.5V Ref, or unknown).
+% Immutable class which instances represent an ASID with metadata.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -17,12 +11,16 @@ classdef AntennaSignalId
   % PROPOSAL: Rename category-->categoryId
 
 
+
   %#####################
   %#####################
   % INSTANCE PROPERTIES
   %#####################
   %#####################
   properties(SetAccess=immutable, GetAccess=public)
+    % Corresponding SSID.
+    ssid
+
     % String constant that represents the type of signal (single/diff, DC/AC).
     category
 
@@ -47,19 +45,18 @@ classdef AntennaSignalId
 
 
     % Constructor
-    function obj = AntennaSignalId(category, antennas)
-      % ASSERTIONS: antennas
+    function obj = AntennaSignalId(ssid, category, antennas)
+      assert(isa(ssid, 'uint8'))
       assert(isnumeric(antennas))
-      % NOTE: Assertion permits empty value, []. Assert vector length
-      % later.
+      % NOTE: Assertion permits empty value, []. Assert vector length later.
       assert(all(ismember(antennas, [1,2,3])))
 
       if isequal(size(antennas), [1,1])
-        % CASE: single (antenna)
+        % CASE: single,  1x1
         % No assertion
 
-      elseif isequal(size(antennas), [1,2])   % Row vector
-        % CASE: diff
+      elseif isequal(size(antennas), [1,2])
+        % CASE: diff, 1x2 row vector
 
         % NOTE: Implicitly checks that antennas are different.
         assert(antennas(1) < antennas(2))
@@ -71,16 +68,16 @@ classdef AntennaSignalId
       end
 
       % ASSERTION: category
-      irf.assert.castring(category)
+      assert(isstring(category))
 
       % ASSERTIONS: category, antennas
       nAntennas = numel(antennas);
       switch(category)
-        case 'DC_SINGLE'
+        case "DC_SINGLE"
           assert(nAntennas == 1)
-        case 'DC_DIFF'
+        case "DC_DIFF"
           assert(nAntennas == 2)
-        case 'AC_DIFF'
+        case "AC_DIFF"
           assert(nAntennas == 2)
         otherwise
           % ASSERTION
@@ -90,6 +87,7 @@ classdef AntennaSignalId
       end
 
       % Assign object.
+      obj.ssid     = ssid;
       obj.antennas = antennas;
       obj.category = category;
     end
@@ -105,15 +103,6 @@ classdef AntennaSignalId
     function isDiff = is_diff(obj)
       isDiff = numel(obj.antennas) == 2;
     end
-
-
-
-    % IMPLEMENTATION NOTE: Implemented for the purpose of performance testing
-    % potential future refactoring.
-    % function isEqual = eq(obj1, obj2)
-    %   assert(isa(obj2, 'bicas.proc.L1L2.AntennaSignalId'))
-    %   isEqual = isequal(obj1.category, obj2.category) && isequal(obj1.antennas, obj2.antennas);
-    % end
 
 
 
