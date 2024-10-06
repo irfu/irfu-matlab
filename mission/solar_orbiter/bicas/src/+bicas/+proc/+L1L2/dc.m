@@ -592,18 +592,18 @@ classdef dc
       end
       irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel.
 
-      if isequaln(A.ssid, bicas.sconst.C.SSID_DICT("UNKNOWN"))
+      if isequaln(A.ssid, bicas.proc.L1L2.const.C.SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
         samplesAVolt = nan(size(A.samplesTm));
 
-      elseif isequaln(A.ssid, bicas.sconst.C.SSID_DICT("GND")) || ...
-          isequaln(A.ssid, bicas.sconst.C.SSID_DICT("REF25V"))
+      elseif isequaln(A.ssid, bicas.proc.L1L2.const.C.SSID_DICT("GND")) || ...
+          isequaln(A.ssid, bicas.proc.L1L2.const.C.SSID_DICT("REF25V"))
         % ==> No calibration.
         % NOTE: samplesTm stores TM units using float!
         samplesAVolt = A.samplesTm;
 
       else
-        assert(bicas.sconst.SSID_is_ASR(A.ssid))
+        assert(bicas.proc.L1L2.const.SSID_is_ASR(A.ssid))
         % ==> Calibrate (unless explicitly stated that should not)
 
         if A.hasSwfFormat
@@ -672,7 +672,7 @@ classdef dc
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
         "uint8", nRecTot, 'CONSTANT', ...
         nan(nRecTot, nSamplesPerRecordChannel), ...
-        bicas.sconst.C.ASID_DICT.values);
+        bicas.proc.L1L2.const.C.ASID_DICT.values);
 
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         bltsSsidArray, ...

@@ -18,8 +18,8 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
     function test0(testCase)
-      S = bicas.sconst.C.SSID_DICT;
-      D = bicas.sconst.C.SDID_DICT;
+      S = bicas.proc.L1L2.const.C.SSID_DICT;
+      D = bicas.proc.L1L2.const.C.SDID_DICT;
 
       SSID_BDM0_DLR0_ROW = S(["DC_V1", "DC_V12", "DC_V23", "AC_V12", "AC_V23"]);
       SDID_BDM0_DLR0_ROW = D(["DC_V1", "DC_V12", "DC_V23", "AC_V12", "AC_V23"]);

@@ -7,7 +7,7 @@
 classdef Saturation___UTEST < matlab.unittest.TestCase
 % PROPOSAL: Split up into multiple files.
 %   CON: init_object() is used by tests for multiple methods.
-%   CON: Might want to share instance field S = bicas.sconst.C.SSID_DICT;
+%   CON: Might want to share instance field S = bicas.proc.L1L2.const.C.SSID_DICT;
 
 
 
@@ -17,8 +17,8 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
   %#####################
   %#####################
   properties(Constant)
-    A = bicas.sconst.C.ASID_DICT;
-    S = bicas.sconst.C.SSID_DICT;
+    A = bicas.proc.L1L2.const.C.ASID_DICT;
+    S = bicas.proc.L1L2.const.C.SSID_DICT;
     BDM0_DLR0_ROW = ["DC_V1", "DC_V12", "DC_V23", "AC_V12", "AC_V23"];
   end
 
@@ -621,7 +621,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg);
 
       actTsfAr = Sat.get_one_ASR_SWF_channel_saturation_bit_array(...
-        bicas.sconst.C.SSID_DICT(V.ssidStr), V.isAchgFpa, ...
+        bicas.proc.L1L2.const.C.SSID_DICT(V.ssidStr), V.isAchgFpa, ...
         V.samplesAVolt, V.zvNValidSamplesPerRecord);
 
       testCase.assertEqual(actTsfAr, V.expTsfAr)

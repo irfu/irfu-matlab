@@ -293,7 +293,7 @@ classdef L1L2
 
 
 
-      A = bicas.sconst.C.ASID_DICT;
+      A = bicas.proc.L1L2.const.C.ASID_DICT;
 
 
 

@@ -24,7 +24,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % (iChannel, 1) = ASID ID string.
       % (iChannel, 2) = Sample value (that is consistent with other
       %                 channels).
-      A = bicas.sconst.C.ASID_DICT;
+      A = bicas.proc.L1L2.const.C.ASID_DICT;
       TEST_DATA_CA = { ...
         A("DC_V1"),  10; ...
         A("DC_V2"),  11; ...
@@ -73,8 +73,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     % two functions were split up.
     function test_get_routings_calibrated_BLTSs_to_all_ASRs(testCase)
 
-      A = bicas.sconst.C.ASID_DICT;
-      R = bicas.sconst.C.ROUTING_DICT;
+      A = bicas.proc.L1L2.const.C.ASID_DICT;
+      R = bicas.proc.L1L2.const.C.ROUTING_DICT;
 
       % =========
       % Test data
@@ -128,9 +128,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
         for i = 1:numel(RoutingArray)
           Routing = RoutingArray(i);
-          if bicas.sconst.SSID_is_ASR(Routing.ssid)
+          if bicas.proc.L1L2.const.SSID_is_ASR(Routing.ssid)
             tempBltsSamplesAVolt(:, :, i) = AsidTestSamplesSrm(...
-              bicas.sconst.SSID_ASR_to_ASID(Routing.ssid));
+              bicas.proc.L1L2.const.SSID_ASR_to_ASID(Routing.ssid));
           else
             tempBltsSamplesAVolt(:, :, i) = TEST_DATA_UNKNOWN;
           end
@@ -150,7 +150,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         % Define which varargin{i} corresponds to which ASID
         % --------------------------------------------------
         % NOTE: This is not (necessarily) the same as
-        % bicas.sconst.C.ASID_DICT.values.
+        % bicas.proc.L1L2.const.C.ASID_DICT.values.
         ARGS_ASID_ARRAY = A([
           "DC_V1",  "DC_V2",  "DC_V3",  ...
           "DC_V12", "DC_V13", "DC_V23", ...
@@ -264,7 +264,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
     function test_reconstruct_missing_ASR_samples(testCase)
 
-      A = bicas.sconst.C.ASID_DICT;
+      A = bicas.proc.L1L2.const.C.ASID_DICT;
 
 
 

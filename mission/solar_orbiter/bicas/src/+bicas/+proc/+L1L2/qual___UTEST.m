@@ -189,7 +189,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
       assert(iscolumn(v))
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
         "uint8", size(v, 1), 'CONSTANT', v, ...
-        bicas.sconst.C.ASID_DICT.values);
+        bicas.proc.L1L2.const.C.ASID_DICT.values);
     end
 
 

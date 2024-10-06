@@ -42,7 +42,7 @@ classdef CalibrationSettings
 
       % PROPOSAL: Assertions.
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
+      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
       assert(isnan(isAchg) || ismember(isAchg, [0, 1]))
       if ~isnan(iLsf)
         % CASE: LFR data (not TDS)

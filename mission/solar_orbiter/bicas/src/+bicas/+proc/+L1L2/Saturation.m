@@ -136,13 +136,13 @@ classdef Saturation
       %   ~threshold_saturation
 
       assert(isfloat(samplesAVolt))
-      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
+      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
       assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
 
       % Default value that used if there are no thresholds.
       tsfAr = false(size(samplesAVolt));
 
-      if ~bicas.sconst.SSID_is_ASR(ssid)
+      if ~bicas.proc.L1L2.const.SSID_is_ASR(ssid)
         return
       end
 
@@ -151,12 +151,12 @@ classdef Saturation
       % ====================
       % Determine thresholds
       % ====================
-      if bicas.sconst.SSID_is_diff(ssid)
+      if bicas.proc.L1L2.const.SSID_is_diff(ssid)
         % CASE: DC/AC diff
         % ----------------
 
         isAchg = isAchgFpa.logical2doubleNan();
-        if bicas.sconst.SSID_is_AC(ssid)
+        if bicas.proc.L1L2.const.SSID_is_AC(ssid)
           % CASE: AC diff
           % -------------
           if isAchg == 0
@@ -264,7 +264,7 @@ classdef Saturation
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
-      assert(bicas.sconst.is_SSID(bltsSsidAr))
+      assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
       nRows = irf.assert.sizes(...
         tt2000Ar,                 [-1], ...
         zvNValidSamplesPerRecord, [-1], ...
@@ -290,7 +290,7 @@ classdef Saturation
         tsfAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
           asidTsfAr = obj.get_one_ASR_CWF_channel_TSF_bit_array(...
-            bicas.sconst.ASID_to_SSID(asid), isAchgFpa, ...
+            bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
             AsrSamplesAVoltSrm(asid));
 
           % Merge (OR) bits over ASIDs.
@@ -307,7 +307,7 @@ classdef Saturation
         isSaturatedAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
           asidIsSaturatedAr = obj.get_one_ASR_SWF_channel_saturation_bit_array(...
-            bicas.sconst.ASID_to_SSID(asid), isAchgFpa, ...
+            bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
             AsrSamplesAVoltSrm(asid), zvNValidSamplesPerRecord);
 
           % Merge (OR) bits over ASIDs.

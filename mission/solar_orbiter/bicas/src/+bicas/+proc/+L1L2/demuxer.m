@@ -72,7 +72,7 @@ classdef demuxer
       assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FPArray') && strcmp(bdmFpa.mc, 'uint8'))
       assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FPArray') && strcmp(dlrFpa.mc, 'logical'))
 
-      R = bicas.sconst.C.ROUTING_DICT;
+      R = bicas.proc.L1L2.const.C.ROUTING_DICT;
 
       dlrFloat = dlrFpa.logical2doubleNan();
       if isnan(dlrFloat)
@@ -274,7 +274,7 @@ classdef demuxer
       assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
 
       % Shorten variable names.
-      A     = bicas.sconst.C.ASID_DICT;
+      A     = bicas.proc.L1L2.const.C.ASID_DICT;
       AsSrm = AsrSamplesAVoltSrm;
 
       %================
@@ -323,7 +323,7 @@ classdef demuxer
       % using a future bicas.utils.SameSizeTypeMap instead.
       tempNaN = nan(size(AsrSamplesAVoltSrm(useAsidArray(1))));
 
-      for asid = bicas.sconst.C.ASID_DICT.values'
+      for asid = bicas.proc.L1L2.const.C.ASID_DICT.values'
         if ~AsSrm.isKey(asid)
           AsSrm.add(asid, tempNaN);
         end
@@ -437,7 +437,7 @@ classdef demuxer
     %   assert(isa(DsidChannelsDict, 'dictionary'))
     %
     %   % Shorten variable names.
-    %   D   = bicas.sconst.C.DSID_DICT;
+    %   D   = bicas.proc.L1L2.const.C.DSID_DICT;
     %   DCD = DsidChannelsDict;
     %
     %   function derive_missing_data(sdidStr1, sdidStr2, sdidStr3)
@@ -516,10 +516,10 @@ classdef demuxer
 
       AsrSamplesSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
       for iBlts = 1:bicas.const.N_BLTS
-        if ~bicas.sconst.SDID_is_nowhere(sdidArray(iBlts))
+        if ~bicas.proc.L1L2.const.SDID_is_nowhere(sdidArray(iBlts))
           % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
           % if conceptually sensible.
-          asid = bicas.sconst.SDID_ASR_to_ASID(sdidArray(iBlts));
+          asid = bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdidArray(iBlts));
 
           AsrSamplesSrm.add(asid, bltsSamplesAVolt(:, :, iBlts));
         end

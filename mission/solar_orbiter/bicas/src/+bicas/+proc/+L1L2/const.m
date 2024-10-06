@@ -16,10 +16,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef sconst
-% PROPOSAL: Move to bicas.proc.L1L2.*.
-%   PROPOSAL: bicas.proc.L1L2.const
-%
+classdef const
 % NOTE: Feels like there should be a better way of implementing ASID, SSID,
 %       SDIDs as uint8 + functions, but not sure how.
 %
@@ -33,9 +30,8 @@ classdef sconst
 %     CON: Use same abbreviations for both uint8 and objects.
 %   CON: Still long calls.
 %
-%
 % PROPOSAL: Hardcode information in structs (or objects) in private
-%           dictionaries which bicas.sconst function implementations then use.
+%           dictionaries which bicas.proc.L1L2.const function implementations then use.
 %   PRO: Automatic checks on uint8 (type), integer range (dictionary keys).
 %   PRO: Does not need rely on adding/subtracting to translate between
 %        ASID, SSID, SDID.
@@ -63,7 +59,7 @@ classdef sconst
 
 
 
-    C = bicas.sconst.init_const();
+    C = bicas.proc.L1L2.const.init_const();
 
 
 
@@ -88,7 +84,7 @@ classdef sconst
     % qualifiers.
     %
     % NOTE: Construction is problematic since bicas.proc.L1L2.Routing
-    % constructors can not use other fields in bicas.sconst.C for assertions,
+    % constructors can not use other fields in bicas.proc.L1L2.const.C for assertions,
     % since it has not been initialized at that time. Also, bad syntax in this
     % code tends to give strange unintuitive error messages and error behaviour
     % in MATLAB.
@@ -194,22 +190,22 @@ classdef sconst
     %======
     function isAsid = is_ASID(asidAr)
       assert(isa(asidAr, "uint8"))
-      isAsid = all(ismember(asidAr, bicas.sconst.C.ASID_DICT.values), "ALL");
+      isAsid = all(ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT.values), "ALL");
     end
 
     function asidCategory = get_ASID_category(asid)
       assert(isscalar(asid))
-      asidCategory = bicas.sconst.C.ASID_OBJ_DICT(asid).category;
+      asidCategory = bicas.proc.L1L2.const.C.ASID_OBJ_DICT(asid).category;
     end
 
     function antennas = get_ASID_antennas(asid)
       assert(isscalar(asid))
-      antennas = bicas.sconst.C.ASID_OBJ_DICT(asid).antennas;
+      antennas = bicas.proc.L1L2.const.C.ASID_OBJ_DICT(asid).antennas;
     end
 
     function ssid = ASID_to_SSID(asid)
       assert(isscalar(asid))
-      ssid = bicas.sconst.C.ASID_OBJ_DICT(asid).ssid;
+      ssid = bicas.proc.L1L2.const.C.ASID_OBJ_DICT(asid).ssid;
     end
 
 
@@ -219,40 +215,40 @@ classdef sconst
     %======
     function isSsid = is_SSID(ssidAr)
       assert(isa(ssidAr, "uint8"))
-      isSsid = all(ismember(ssidAr, bicas.sconst.C.SSID_DICT.values), "ALL");
+      isSsid = all(ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT.values), "ALL");
     end
 
     function isAsr = SSID_is_ASR(ssid)
       assert(isscalar(ssid))
-      isAsr = bicas.sconst.C.SSID_OBJ_DICT(ssid).is_ASR();
+      isAsr = bicas.proc.L1L2.const.C.SSID_OBJ_DICT(ssid).is_ASR();
     end
 
     % NOTE: Error if not ASR.
     function asid = SSID_ASR_to_ASID(ssid)
-      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
-      assert(bicas.sconst.SSID_is_ASR(ssid))
+      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
+      assert(bicas.proc.L1L2.const.SSID_is_ASR(ssid))
 
-      asid = bicas.sconst.C.SSID_OBJ_DICT(ssid).asid;
-      assert(bicas.sconst.is_ASID(asid))
+      asid = bicas.proc.L1L2.const.C.SSID_OBJ_DICT(ssid).asid;
+      assert(bicas.proc.L1L2.const.is_ASID(asid))
     end
 
     function isAc = SSID_is_AC(ssid)
       assert(isscalar(ssid))
 
-      if bicas.sconst.SSID_is_ASR(ssid)
-        asid = bicas.sconst.SSID_ASR_to_ASID(ssid);
-        isAc = (bicas.sconst.get_ASID_category(asid) == "AC_DIFF");
+      if bicas.proc.L1L2.const.SSID_is_ASR(ssid)
+        asid = bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssid);
+        isAc = (bicas.proc.L1L2.const.get_ASID_category(asid) == "AC_DIFF");
       else
         isAc = false;
       end
     end
 
     function isDiff = SSID_is_diff(ssid)
-      assert(bicas.sconst.is_SSID(ssid) & isscalar(ssid))
+      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
 
-      if bicas.sconst.SSID_is_ASR(ssid)
-        asid = bicas.sconst.SSID_ASR_to_ASID(ssid);
-        isDiff = ismember(bicas.sconst.get_ASID_category(asid), ["DC_DIFF", "AC_DIFF"]);
+      if bicas.proc.L1L2.const.SSID_is_ASR(ssid)
+        asid = bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssid);
+        isDiff = ismember(bicas.proc.L1L2.const.get_ASID_category(asid), ["DC_DIFF", "AC_DIFF"]);
       else
         isDiff = false;
       end
@@ -265,25 +261,25 @@ classdef sconst
     %======
     function isSsid = is_SDID(sdidAr)
       assert(isa(sdidAr, "uint8"))
-      isSsid = all(ismember(sdidAr, bicas.sconst.C.SDID_DICT.values), "ALL");
+      isSsid = all(ismember(sdidAr, bicas.proc.L1L2.const.C.SDID_DICT.values), "ALL");
     end
 
     function isAsr = SDID_is_ASR(sdid)
       assert(isscalar(sdid))
-      isAsr = bicas.sconst.C.SDID_OBJ_DICT(sdid).is_ASR();
+      isAsr = bicas.proc.L1L2.const.C.SDID_OBJ_DICT(sdid).is_ASR();
     end
 
     % NOTE: Error if not ASR.
     function asid = SDID_ASR_to_ASID(sdid)
       assert(isscalar(sdid))
-      assert(bicas.sconst.SDID_is_ASR(sdid))
+      assert(bicas.proc.L1L2.const.SDID_is_ASR(sdid))
 
-      asid = bicas.sconst.C.SDID_OBJ_DICT(sdid).asid;
+      asid = bicas.proc.L1L2.const.C.SDID_OBJ_DICT(sdid).asid;
     end
 
     function isNowhere = SDID_is_nowhere(sdid)
-      assert(bicas.sconst.is_SDID(sdid) & isscalar(sdid))
-      isNowhere = (sdid == bicas.sconst.C.SDID_DICT("NOWHERE"));
+      assert(bicas.proc.L1L2.const.is_SDID(sdid) & isscalar(sdid))
+      isNowhere = (sdid == bicas.proc.L1L2.const.C.SDID_DICT("NOWHERE"));
     end
 
 
