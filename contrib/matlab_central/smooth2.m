@@ -32,6 +32,11 @@ function matrixOut = smooth2(matrixIn,Nr,Nc)
 % 	G?teborg University, Sweden
 % 	E-mail: olof.liungman@oce.gu.se
 %
+%   
+%   Greg Reeves (2009). smooth2a (https://www.mathworks.com/matlabcentral/fileexchange/23287-smooth2a), 
+%   MATLAB Central File Exchange. Retrieved January 31, 2019.
+
+%
 % Initial error statements and definitions
 %
 
