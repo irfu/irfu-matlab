@@ -4457,6 +4457,9 @@ classdef PDist < TSeries
       end
 
       new_data = movmean(obj.data,nMean,1); % the 1 specifies the dimension along which the moving mean is taken
+      new_dep1 = movmean(obj.depend{1},nMean,1); % this one alternated in early data
+      new_dep2 = movmean(obj.depend{2},nMean,1); % only this changes (due to spacecraft rotation)
+      new_dep3 = movmean(obj.depend{3},nMean,1);
 
       if doRemoveOneCounts
         data_one_counts = tsOneCounts.data;
@@ -4467,6 +4470,9 @@ classdef PDist < TSeries
 
       PD = obj;
       PD.data = new_data;
+      PD.depend{1} = new_dep1;
+      PD.depend{2} = new_dep2;
+      PD.depend{3} = new_dep3;
       %PD = PDist(obj.time,new_data,'skymap',obj.depend{:})
     end
 
