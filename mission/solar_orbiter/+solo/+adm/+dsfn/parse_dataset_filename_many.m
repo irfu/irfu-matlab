@@ -38,6 +38,8 @@ function [DfCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
 %   CON: Not generalizable to having multiple filenaming conventions in separate
 %        classes.
 %
+% PROPOSAL: Convert return value DfCa into non-cell array.
+%
 % NOTE: Has no separate test code. Is indirectly tested by
 %       solo.adm.paths_to_DSMD_array___UTEST.
 
@@ -50,7 +52,12 @@ for iFile = 1:numel(filePathCa)
 
   filename = irf.fs.get_name(filePathCa{iFile});
 
-  Df = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
+  try
+    Df = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
+  catch Exc
+    % IMPLEMENTATION NOTE: try-catch is useful for reproducing errors.
+    error('Can not parse filename "%s".', filename)
+  end
 
   if ~isempty(Df)
     % CASE: File can be identified as a dataset.

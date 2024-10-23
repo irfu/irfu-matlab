@@ -221,7 +221,7 @@ if generateNonweeklyQuicklooks
   % Daily time-intervals
 
   % This is the .mat file containing RPW speeds at 1h resolution.
-  % The file should be in the current path. This file can be found in
+  % The file should be in the current path. This file can nominally be found at
   % brain:/solo/data/data_yuri/.
   vhtFile1hPath = fullfile(vhtDataDir, solo.qli.const.VHT_1H_DATA_FILENAME);
 

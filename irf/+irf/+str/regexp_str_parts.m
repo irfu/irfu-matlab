@@ -39,8 +39,8 @@
 % nonMatchPolicy
 %       String constant determining what happens in the event of a non-perfect
 %       match (including no match).
-%           'assert match'
-%           'permit non-match'
+%           'ASSERT_MATCH'
+%           'PERMIT_NON_MATCH'
 %       This refers to both kinds of failure (above).
 %
 %
@@ -128,10 +128,10 @@ function [subStrCa, remainingStr, isPerfectMatch] = regexp_str_parts(...
 % Interpret, verify nonMatchPolicy
 %==================================
 switch(nonMatchPolicy)
-  case 'assert match'
+  case 'ASSERT_MATCH'
     assertMatch = true;
 
-  case 'permit non-match'
+  case 'PERMIT_NON_MATCH'
     assertMatch = false;
 
   otherwise

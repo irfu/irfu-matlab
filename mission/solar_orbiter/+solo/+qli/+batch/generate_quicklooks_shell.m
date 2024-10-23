@@ -13,7 +13,7 @@
 % * This script is intended for being used for official official generation of
 %   QLIs, including cron jobs.
 % * This function is designed for being called from bash/the OS (not from
-%   MATLAB). All arguments are therefore strings.
+%   MATLAB). All arguments are therefore strings (char arrays).
 % * See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT for the meaning
 %   of abbreviations.
 %
@@ -39,7 +39,7 @@
 %   # Directories with datasets which will effectively be used by
 %   # solo.db_get_ts() and solo.db_list_files() for locating requested data.
 %   # Must be consistent with "solo_db_init_local_file_db".
-%   # See solo.qli.batch.interface.get_days_from_DMRQ().
+%   # See solo.qli.batch.dasa.get_days_from_DMRQ().
 %   "datasetDirs": [
 %     "/data/solo/remote/data",
 %     "/data/solo/soar"
@@ -55,7 +55,7 @@
 %
 %   # Paths with globbing filename patterns for log files which contain
 %   # the names of new datasets.
-%   # See solo.qli.batch.interface.get_days_from_logs().
+%   # See solo.qli.batch.dasa.get_days_from_logs().
 %   "logFileDirPatterns": {
 %     "LESIA": "/home/erjo/logs/pull.so.data.cron.brain.*.log",
 %     "SOAR":  "/home/erjo/logs/so_soar_irfu_mirror_sync.*.log"
@@ -144,8 +144,8 @@ irf.log('notice')
 
 
 
-generateNonweeklyQuicklooks = solo.qli.batch.interface.interpret_boolean_flag(generateNonweeklyQuicklooks);
-generateWeeklyQuicklooks    = solo.qli.batch.interface.interpret_boolean_flag(generateWeeklyQuicklooks);
+generateNonweeklyQuicklooks = solo.qli.batch.utils.interpret_boolean_flag(generateNonweeklyQuicklooks);
+generateWeeklyQuicklooks    = solo.qli.batch.utils.interpret_boolean_flag(generateWeeklyQuicklooks);
 dasaArgumentsCa             = varargin(:);    % Column array.
 
 Config = solo.qli.batch.utils.read_config_file(configFilePath);
@@ -174,11 +174,15 @@ solo.db_cache('on', 'save')
 % NOTE: This requires there to not be a pre-existing parallel pool (will
 % otherwise crash).
 % --
+
+% Delete any pre-existing parallel pool.
+delete(gcp('nocreate'))
+
 % spmdEnabled=false : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
-% anna.irfu.se. /2024-08-16.
-% NumWorkers=2 : EXPERIMENTAL. May prevent solo.qli.batch from crashing on
-% anna.irfu.se. /2024-08-19.
+% anna.irfu.se. Does not seem to work. /2024-09-23.
 % NOTE: spmdEnabled=false makes it illegal to use the "spmd" commands.
+% NOTE: This command will fail if a parallel pool already exists. This might be
+%       important for making automated tests work(?).
 parpool('SpmdEnabled', false);
 % if isunix()
 %   [~, hostName] = system('hostname');
@@ -190,6 +194,8 @@ parpool('SpmdEnabled', false);
 % ppArgsCa = {'Processes', 'SpmdEnabled', false};
 % if isServerAnna
 %   % Set number of workers to a lower value than the default on anna (4).
+%   % NumWorkers=1 : EXPERIMENTAL. Attempt at prevent solo.qli.batch from crashing
+%   % on anna.irfu.se. Does not seem to work. /2024-09-23.
 %   ppArgsCa = {'Processes', 1, 'SpmdEnabled', false};
 % else
 %   ppArgsCa = {'Processes', 'SpmdEnabled', false};
