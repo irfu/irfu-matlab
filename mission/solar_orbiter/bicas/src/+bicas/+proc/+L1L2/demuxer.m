@@ -396,8 +396,9 @@ classdef demuxer
       bDerive2 = ~bFp1 &  bFp2 & ~bFp3;
       bDerive3 = ~bFp1 & ~bFp2 &  bFp3;
 
-      % If using actual arrays for samples, then need at least one more dimension
-      % for SWF (1 record=1 snapshot): Ax(b, :) = func(Ay(b, :), Az(b, :).
+      % If using actual arrays for samples, then need at least one more
+      % dimension for SWF (1 record=1 snapshot): Ax(b, :) = func(Ay(b, :),
+      % Az(b, :).
       %
       A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
       A2(bDerive2) = fh13to2(A1(bDerive2), A3(bDerive2));
@@ -412,13 +413,21 @@ classdef demuxer
     %
     % Intended as future conceptual replacement for
     % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence().
-    % function reconstruct_ASR_samples_subsequence2(DsidChannelsDict, fh12to3, fh13to2, fh23to1)
+    %
+    % ARGUMENTS
+    % =========
+    % DsidChannelsDict
+    %       Dictionary: (ASR) SDID --> Same-sized SdChannelData
+    %       Note: Function modifies argument.
+    %
+    % function reconstruct_ASR_samples2(DsidChannelsDict, fh12to3, fh13to2, fh23to1)
     %   % PROPOSAL: FH arguments as static functions in class.
     %   %   CON: Makes tests harder: Require class.
     %   %   PROPOSAL: Same class as implementing DsidChannelsDict.
     %   %     CON-PROPOSAL: FH args. can be set using static methods in such a class.
     %   %
-    %   % PROPOSAL: Functions for determining FP in same class as implementing DsidChannelsDict.
+    %   % PROPOSAL: Functions for determining FP in same class as implementing
+    %   %           DsidChannelsDict.
     %   %   CON: Makes tests harder: Require class.
     %   %
     %   % PROPOSAL: Class for DsidChannelsDict with static/instance methods for
@@ -438,21 +447,21 @@ classdef demuxer
     %
     %   % Shorten variable names.
     %   D   = bicas.proc.L1L2.const.C.DSID_DICT;
-    %   DCD = DsidChannelsDict;
+    %   Dcd = DsidChannelsDict;
     %
-    %   function derive_missing_data(sdidStr1, sdidStr2, sdidStr3)
+    %   function derive_missing_data_helper(sdidStr1, sdidStr2, sdidStr3)
     %     [
-    %       DCD(D(sdidStr1)), ...
-    %       DCD(D(sdidStr2)), ...
-    %       DCD(D(sdidStr3))...
+    %       Dcd(D(sdidStr1)), ...
+    %       Dcd(D(sdidStr2)), ...
+    %       Dcd(D(sdidStr3))...
     %     ] = ...
     %       bicas.proc.L1L2.demuxer.derive_missing_data(...
-    %       DCD(D(sdidStr1)), ...
-    %       DCD(D(sdidStr2)), ...
-    %       DCD(D(sdidStr3)), ...
-    %       DCD(D(sdidStr1)).bFp, ...
-    %       DCD(D(sdidStr2)).bFp, ...
-    %       DCD(D(sdidStr3)).bFp, ...
+    %       Dcd(D(sdidStr1)), ...
+    %       Dcd(D(sdidStr2)), ...
+    %       Dcd(D(sdidStr3)), ...
+    %       Dcd(D(sdidStr1)).bFp, ...
+    %       Dcd(D(sdidStr2)).bFp, ...
+    %       Dcd(D(sdidStr3)).bFp, ...
     %       fh12to3, ...
     %       fh13to2, ...
     %       fh23to1);
@@ -461,30 +470,36 @@ classdef demuxer
     %   %================
     %   % Derive AC ASRs
     %   %================
-    %   % AC ASRs are separate from DC ASRs and only satisfy one relationship.
-    %   % Does not have to be in loop.
-    %   derive_missing_data("AC_V13", "AC_V12", "AC_V23")
+    %   % AC ASRs are separate from DC ASRs and only satisfy one relationship
+    %   % since there are only three of them. Therefore does not have to be in
+    %   % loop.
+    %   derive_missing_data_helper("AC_V13", "AC_V12", "AC_V23")
     %
     %   %================
     %   % Derive DC ASRs
     %   %================
-    %   nFp0 = DCD.nFp;
+    %   nFp0 = Dcd.nFp;
     %   while true
-    %     % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for
-    %     % deriving diffs since it is better to derive a diff from
-    %     % (initially available) diffs rather than singles, directly or
+    %     % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for deriving
+    %     % diffs (i.e. it should come first) since it is better to derive a diff
+    %     % from (initially available) diffs rather than singles, directly or
     %     % indirectly, if possible.
-    %     derive_missing_data("DC_V13", "DC_V12", "DC_V23");
+    %     % NOTE: Above note is, kind of, probably, bad thinking... There is
+    %     % never more than three channels available. ==> No redundant
+    %     % information, and thus can not derive the same information in
+    %     % different ways with different accuracy. May in principle have
+    %     % differences due to numerical precisision.
+    %     derive_missing_data_helper("DC_V13", "DC_V12", "DC_V23");
     %
-    %     derive_missing_data("DC_V1",  "DC_V12", "DC_V2");
-    %     derive_missing_data("DC_V1",  "DC_V13", "DC_V3");
-    %     derive_missing_data("DC_V2",  "DC_V23", "DC_V3");
+    %     derive_missing_data_helper("DC_V1",  "DC_V12", "DC_V2");
+    %     derive_missing_data_helper("DC_V1",  "DC_V13", "DC_V3");
+    %     derive_missing_data_helper("DC_V2",  "DC_V23", "DC_V3");
     %
-    %     % NOTE: Impossible to get DCD.nFp == 0...
-    %     if (DCD.nFp == nFp0) || (DCD.nFp == 0)
+    %     % NOTE: Impossible to get Dcd.nFp == 0...
+    %     if (Dcd.nFp == nFp0) || (Dcd.nFp == 0)
     %       break
     %     end
-    %     nFp0 = DCD.nFp;
+    %     nFp0 = Dcd.nFp;
     %   end
     % end
 
