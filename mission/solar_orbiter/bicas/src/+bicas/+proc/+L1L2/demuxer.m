@@ -1,7 +1,7 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
 % See
-%   bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs()
+%   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence()
 %   bicas.proc.L1L2.AntennaSignalId
 %   bicas.proc.L1L2.SignalSourceId
 %   bicas.proc.L1L2.SignalDestinationId
@@ -204,7 +204,7 @@ classdef demuxer
     % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote
     % that they are organized by BLTS and ASRs respectively.
     %
-    function AsrSamplesAVoltSrm = calibrated_BLTSs_to_all_ASRs(...
+    function AsrSamplesAVoltSrm = relabel_reconstruct_samples_BLTS_to_ASR_subsequence(...
         sdidArray, bltsSamplesAVolt)
       % PROPOSAL: Log message for BDM=NaN.
 
@@ -216,12 +216,12 @@ classdef demuxer
         sdidArray,        [ 1,     bicas.const.N_BLTS])
 
       % Assign arrays only for those ASIDs for which there is data.
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
+      AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_samples_BLTS_to_ASR_subsequence(...
         bltsSamplesAVolt, sdidArray);
 
       % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
       % NOTE: The function modifies the ARGUMENT (handle object).
-      bicas.proc.L1L2.demuxer.reconstruct_missing_ASR_samples(AsrSamplesAVoltSrm);
+      bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence(AsrSamplesAVoltSrm);
     end
 
 
@@ -248,7 +248,7 @@ classdef demuxer
     % AsrSamplesAVoltSrm
     %       NOTE: Function modifies the argument (handle class)!
     %
-    function reconstruct_missing_ASR_samples(AsrSamplesAVoltSrm)
+    function reconstruct_ASR_samples_subsequence(AsrSamplesAVoltSrm)
       % PROPOSAL: Better name
       %   NOTE: Can not always reconstruct all signals.
       %   --
@@ -411,8 +411,8 @@ classdef demuxer
     % INCOMPLETE
     %
     % Intended as future conceptual replacement for
-    % bicas.proc.L1L2.demuxer.reconstruct_missing_ASR_samples().
-    % function reconstruct_missing_ASR_samples2(DsidChannelsDict, fh12to3, fh13to2, fh23to1)
+    % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence().
+    % function reconstruct_ASR_samples_subsequence2(DsidChannelsDict, fh12to3, fh13to2, fh23to1)
     %   % PROPOSAL: FH arguments as static functions in class.
     %   %   CON: Makes tests harder: Require class.
     %   %   PROPOSAL: Same class as implementing DsidChannelsDict.
@@ -424,13 +424,13 @@ classdef demuxer
     %   % PROPOSAL: Class for DsidChannelsDict with static/instance methods for
     %   %           relationship functions. Class for individual channels with
     %   %           methods/properties for bFp.
-    %   %           Set reconstruct_missing_ASR_samples2() FH arguments using
+    %   %           Set reconstruct_ASR_samples_subsequence2() FH arguments using
     %   %           those methods.
     %   %
     %   % PROPOSAL: Class for DsidChannelsDict with STATIC methods for
     %   %           relationship functions. Class for individual channels with
     %   %           methods/properties for bFp.
-    %   %           reconstruct_missing_ASR_samples2() uses those methods
+    %   %           reconstruct_ASR_samples_subsequence2() uses those methods
     %   %           directly. Test class can implement INSTANCE methods which
     %   %           behaviour is dependent on initialization (variables).
     %
@@ -505,7 +505,7 @@ classdef demuxer
     % Given FIVE BLTS sample arrays, copy those which correspond to ASRs (five
     % or fewer!) into an SRM with correct ASID keys for the corresponding
     % arrays.
-    function AsrSamplesSrm = assign_ASR_samples_from_BLTS(...
+    function AsrSamplesSrm = relabel_samples_BLTS_to_ASR_subsequence(...
         bltsSamplesAVolt, sdidArray)
 
       % ASSERTIONS

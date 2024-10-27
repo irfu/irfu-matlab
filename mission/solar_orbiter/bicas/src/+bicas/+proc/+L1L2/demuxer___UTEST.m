@@ -67,11 +67,14 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    % Test two functions in combination.
+    % Test two functions in combination:
+    %   bicas.proc.L1L2.demuxer.get_routings()
+    %   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence()
     %
     % IMPLEMENTATION NOTE: The design is for historical reasons before the
     % two functions were split up.
-    function test_get_routings_calibrated_BLTSs_to_all_ASRs(testCase)
+    %
+    function test_get_routings_relabel_reconstruct_samples_BLTS_to_ASR_subse(testCase)
 
       A = bicas.proc.L1L2.const.C.ASID_DICT;
       R = bicas.proc.L1L2.const.C.ROUTING_DICT;
@@ -98,7 +101,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         % CALL FUNCTIONS
         ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
           bdmFpa, dlrFpa);
-        ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
+        ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence(...
           [ActRoutingArray.sdid], bltsSamplesAVolt);
 
         % ASSERTIONS
@@ -262,7 +265,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_reconstruct_missing_ASR_samples(testCase)
+    function test_reconstruct_ASR_samples_subsequence(testCase)
 
       A = bicas.proc.L1L2.const.C.ASID_DICT;
 
@@ -291,7 +294,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         end
 
         % RUN FUNCTION TO BE TESTED
-        bicas.proc.L1L2.demuxer.reconstruct_missing_ASR_samples(AsSrm);
+        bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence(AsSrm);
         ActAsSrm = AsSrm;
 
         % Test all possible relationsships.

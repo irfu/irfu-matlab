@@ -155,7 +155,7 @@ classdef dc
       % ~"DEMUX" VOLTAGES
       % (SIGNALS LABELLED BY BLTS --> SIGNALS LABELLED BY DSID)
       %#########################################################
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.distribute_BLTSs_to_ASRs(...
+      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR(...
         bltsSamplesAVolt, ...
         bltsSsidArray, ...
         bltsSdidArray, L);
@@ -655,11 +655,11 @@ classdef dc
 
 
 
-    function AsrSamplesAVoltSrm = distribute_BLTSs_to_ASRs(...
+    function AsrSamplesAVoltSrm = relabel_reconstruct_samples_BLTS_to_ASR(...
         bltsSamplesAvolt, bltsSsidArray, bltsSdidArray, L)
       % PROPOSAL: Automated tests.
 
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.distribute_BLTSs_to_ASRs', L);
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR', L);
 
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
@@ -683,10 +683,10 @@ classdef dc
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        %=========================================
-        % LABEL SIGNALS BY ASR (INSTEAD OF iBLTS)
-        %=========================================
-        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
+        %=============================================================
+        % RE-LABEL SIGNALS FROM BLTS TO ASR, RECONSTRUCT MISSING ASRs
+        %=============================================================
+        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence(...
           bltsSdidArray(   iRec1,          :), ...
           bltsSamplesAvolt(iRec1:iRec2, :, :));
 
