@@ -49,21 +49,21 @@ AR
     (Non-cell) Array. Experimental notation found in small number of places. See
     "CA".
 ASID
-    Antenna Signal ID.
-    Constant in the form of either
-    (1) uint8 value, or
-    (2) Class bicas.proc.L1L2.AntennaSignalId.
-    Every unique value represents one of the nine antenna signals:
+    Antenna Signal ID. Constant which identifies any one of the nine antenna
+    signals:
         3x DC single
         3x DC diff
         3x AC diff
+    Implemented as constant in the form of either
+    (1) uint8 value, or
+    (2) Class bicas.proc.L1L2.AntennaSignalId.
     Compare ASR.
 ASR, Antenna Signal Representation.
     Either of:
     (1) A reference to a particular type of "physical antenna signal channel"
         which BIAS-LFR/TDS is trying to measure.
         NOTE: ASID always represents a reference to such a channel, but not
-              the samples. SSID and SDID may, but do not always.
+              the samples themselves. SSID and SDID may, but do not always.
     (2) The sample values in a measurement of such, whether indirect or not.
     In reality, the terminology is:
     ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF
@@ -72,6 +72,7 @@ ASR, Antenna Signal Representation.
     NOTE: There are 9 ASRs (DC: 3 singles, 3 diffs; AC: 3 diffs), i.e. they
     can refer also to signals not represented by any single BLTS, given a
     chosen mux mode (BDM) and demultiplexer latching relay (DLR) setting.
+    Compare ASID.
 AV, avolt, Antenna Volt
     Calibrated volt at the antennas, i.e. the final calibrated (measured)
     value, including for reconstructed signals (e.g. diffs calculated from
@@ -101,10 +102,10 @@ BIAS_1, ..., BIAS_5 (BIAS_i, i=1..5)
 BICAS
     BIAS Calibration Software
 BLTS = BIAS-LFR/TDS SIGNAL
-    Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the
-    BIAS demuxer including the BIAS transfer functions. Like BIAS_i, i=1..5,
-    but includes various stages of calibration/non-calibration, including in
-    particular
+    Signal between the LFR/TDS ADCs and the non-antenna side of the BIAS
+    demuxer including the BIAS transfer functions. Like "BIAS_i", i=1..5,
+    but can refer to a signal which has been processed by various stages of
+    calibration/non-calibration, including in particular
       - TM units (inside LFR/TDS),
       - Interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
       - Calibrated values inside BIAS but without demuxer addition and
@@ -112,7 +113,7 @@ BLTS = BIAS-LFR/TDS SIGNAL
         transfer functions; volt).
     NOTE: This definition is partly created to avoid using term "BIAS_i" since
     it is easily confused with other things (the subsystem BIAS, bias currents),
-    partly to include various stages of calibration.
+    partly to have names for various stages of calibration.
 BRVF
     BIAS RCT Validity File. Not ROC term. File "bias_rct_validity.json" as
     specified by ROC.
@@ -363,19 +364,18 @@ SCDA
     exceeds a specified threshold, then the entire window is labeled as being
     part of a sweep.
 SDID
-    Signal Destination ID.
-    Constant in the form of either
-    (1) uint8 value, or
-    (2) Class bicas.proc.L1L2.SignalDestinationId.
-    Every unique value represents the destination of a signal, i.e.
-    where the samples should ultimately be stored in the output datasets, i.e.
-    either:
+    Signal Destination ID. Every unique value represents the destination of a
+    signal, i.e. where the samples should ultimately be stored in the output
+    datasets, i.e. either:
     (a) "nowhere" (due to BDM or DLR being unknown), or
     (b) an ASR (to determine which zVariable to store it in in the output
         dataset).
-        NOTE: Since output datasets ALWAYS store output data sorted as if they
-        were always physical signals, non-ASR signals have to be stored as ASRs
-        too in datasets. E.g. GND, 2.5V Ref., or unknown signals.
+        NOTE: Since output datasets ALWAYS store output data organized as if
+        they were always physical signals, non-ASR signals have to be stored as
+        ASRs too in datasets. E.g. GND, 2.5V Ref., or unknown signals.
+    Implemented as either:
+    (1) uint8 value, or
+    (2) Class bicas.proc.L1L2.SignalDestinationId.
 Sec
     Seconds
 SIP
@@ -396,16 +396,13 @@ SRF
 SRM
     Class bicas.utils.SameRowsMap.
 SSID
-    Signal Source ID.
-    (1) uint8 representing a particula signal source.
-    (2) Class bicas.proc.L1L2.SignalSourceId.
-    Every unique value represents the of source of a samples. This may be either
+    Signal Source ID. Constant representing the signal source of samples in a
+    BLTS. This source may be either
     (a) an ASR, or
     (b) one of the special cases: GND, 2.5V Ref., unknown signal.
-% either:
-% (1) an ASR (ASID), or
-% (2) various special cases.
-
+    Impemented as either:
+    (1) uint8 value, or
+    (2) Class bicas.proc.L1L2.SignalSourceId.
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not

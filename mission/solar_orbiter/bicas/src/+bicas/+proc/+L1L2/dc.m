@@ -119,11 +119,13 @@ classdef dc
 
 
 
-      %#################################################################
-      % Obtain "demultiplexer" "routings": SSID and SDID for every BLTS
-      %#################################################################
+      %#######################################################################
+      % Obtain "demultiplexer" "routings" on the form of SSID and SDID values
+      % for every BLTS
+      %#######################################################################
       [bltsSsidArray, bltsSdidArray] = bicas.proc.L1L2.dc.get_SSID_SDID_arrays(...
-        Dcip.Zv.bdmFpa, Dcip.Zv.dlrFpa);
+        Dcip.Zv.bdmFpa, ...
+        Dcip.Zv.dlrFpa);
 
 
 
@@ -153,7 +155,7 @@ classdef dc
       % ~"DEMUX" VOLTAGES
       % (SIGNALS LABELLED BY BLTS --> SIGNALS LABELLED BY DSID)
       %#########################################################
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.distribute_BLTS_to_ASRs(...
+      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.distribute_BLTSs_to_ASRs(...
         bltsSamplesAVolt, ...
         bltsSsidArray, ...
         bltsSdidArray, L);
@@ -457,8 +459,8 @@ classdef dc
           ufv                      = Zv.ufv(                    iRec1), ...
           bltsSsidArray            = Zv.bltsSsidArray(          iRec1, :), ...
           bltsSdidArray            = Zv.bltsSdidArray(          iRec1, :), ...
-          iCalibL                  = iCalibLZv(iRec1), ...
-          iCalibH                  = iCalibHZv(iRec1), ...
+          iCalibL                  = iCalibLZv(                 iRec1), ...
+          iCalibH                  = iCalibHZv(                 iRec1), ...
           ... % ===============================================================
           ... % NOTE: Variables which do not vary over CDF records.
           hasSwfFormat             = A.hasSwfFormat, ...
@@ -491,7 +493,7 @@ classdef dc
       arguments
         A.Cal
         %
-        % NOTE: Excluding LRX since it is only need for splitting time/CDF
+        % NOTE: Excluding LRX since it is only needed for splitting time/CDF
         %       record intervals, not for calibration since calibration can
         %       handle sequences of only NaN.
         Cv.isAchgFpa
@@ -653,17 +655,16 @@ classdef dc
 
 
 
-    function AsrSamplesAVoltSrm = distribute_BLTS_to_ASRs(...
+    function AsrSamplesAVoltSrm = distribute_BLTSs_to_ASRs(...
         bltsSamplesAvolt, bltsSsidArray, bltsSdidArray, L)
       % PROPOSAL: Automated tests.
 
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.distribute_BLTS_to_ASRs', L);
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.distribute_BLTSs_to_ASRs', L);
 
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
         bltsSsidArray,    [-1,     bicas.const.N_BLTS], ...
         bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
-
 
       % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
       % -----------------------------------------------------------------
@@ -694,6 +695,7 @@ classdef dc
       end
 
       Tmk.stop_log(nRecTot, 'record', nSs, 'subsequence')
+
     end
 
 

@@ -186,9 +186,9 @@ classdef demuxer
     % ARGUMENTS
     % =========
     % sdidArray
-    %       Length-5 array of SSIDs. One SDID per BLTS.
+    %       1x5 array of SSIDs. One SDID per BLTS.
     % bltsSamplesAVolt
-    %       Cell array of vectors/matrices, length 5.
+    %       1x5 cell array.
     %       {iBlts} = Vector/matrix with sample values
     %                 for that BLTS channel, calibrated as for ASR.
     %

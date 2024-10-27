@@ -241,9 +241,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         R(["GND_TO_DC_V1", "GND_TO_DC_V2", "GND_TO_DC_V3", "AC_V12", "AC_V23"]), ...
         get_ASR_samples(1,1,1, 1,1,1, 1,1,1))
 
-      % ==============
-      % BDM = Unknwon, DLR Unknown
-      % ==============
+      % ==========================
+      % BDM = Unknown, DLR Unknown
+      % ==========================
       bltsSamplesAVolt(:, :, 1) = AsidTestSamplesSrm(A("DC_V1"));
       bltsSamplesAVolt(:, :, 2) = AsidTestSamplesSrm(A("DC_V2"));
       bltsSamplesAVolt(:, :, 3) = AsidTestSamplesSrm(A("DC_V3"));

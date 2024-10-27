@@ -175,18 +175,21 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % =========
     % dataAr
     %       Array of actual data. Limited to some data types.
-    % fpDescriptionType == varargin{1}
-    %       String constant. 'NO_FILL_POSITIONS' if not specified.
-    % fpDescription == varargin{2}
-    %       Required or not depending on fpDescriptionType.
-    %       Interpretation  depending on fpDescriptionType.
-    %       'FILL_VALUE'
-    %           Fill value. Same type as dataAr. Scalar.
-    %           dataAr elements with this value will be identified as fill
-    %           positions.
-    %       'FILL_POSITIONS'
-    %           Fill positions array. Logical. Same size as dataAr.
-    %           True == Fill position.
+    % fv
+    %       Fill value. Scalar of the same MATLAB class as dataAr. Values equal
+    %       to this in dataAr are interpreted as fill positions.
+    % fpAr
+    %       Array of fill positions (logical). Must have size identical to size
+    %       of dataAr. True == Fill position.
+    % --
+    % SYNTAX 1: dataAr
+    %       Equivalent to syntax 2.
+    % SYNTAX 2: dataAr "NO_FILL_POSITIONS"
+    % SYNTAX 3: dataAr "FILL_POSITIONS" fpAr
+    % SYNTAX 4: dataAr "FILL_VALUE" fv
+    % SYNTAX 5: dataAr "ONLY_FILL_POSITIONS"
+    %       Note: Values in dataAr are effectively ignored. Only the size and
+    %       MATLAB class of dataAr are used.
     %
     function obj = FPArray(dataAr, varargin)
 
@@ -198,12 +201,12 @@ classdef FPArray < matlab.mixin.CustomDisplay
       assert(isnumeric(dataAr) || ischar(dataAr) || islogical(dataAr), ...
         'dataAr has disallowed MATLAB class="%s".', class(dataAr))
 
-
       if numel(varargin) == 0
         fpDescriptionType = 'NO_FILL_POSITIONS';
+        remainingOptionalArgsCa = varargin;
       elseif numel(varargin) >= 1
         fpDescriptionType = varargin{1};
-        varargin = varargin(2:end);
+        remainingOptionalArgsCa = varargin(2:end);
       end
 
       irf.assert.castring(fpDescriptionType)
@@ -213,29 +216,29 @@ classdef FPArray < matlab.mixin.CustomDisplay
       % ===========
       switch(fpDescriptionType)
         case 'FILL_VALUE'
-          assert(numel(varargin) == 1)
-          fv = varargin{1};
+          assert(numel(remainingOptionalArgsCa) == 1)
+          fv = remainingOptionalArgsCa{1};
           assert(isscalar(fv))
           assert(strcmp(class(fv), class(dataAr)), ...
             'Fill value and data have different MATLAB classes.')
 
-          % NOTE: Array operation. Can not use isequaln(). Needs
+          % NOTE: Array operation. Can therefore not use isequaln(). Needs
           % special case for NaN.
           fpAr = (dataAr == fv) | (isnan(dataAr) & isnan(fv));
           clear fv
 
         case 'FILL_POSITIONS'
-          assert(numel(varargin) == 1)
-          fpAr = varargin{1};
+          assert(numel(remainingOptionalArgsCa) == 1)
+          fpAr = remainingOptionalArgsCa{1};
           % NOTE: Assertions on variable come later.
 
         case 'NO_FILL_POSITIONS'
-          assert(numel(varargin) == 0)
+          assert(numel(remainingOptionalArgsCa) == 0)
           fpAr = false(size(dataAr));
           % NOTE: Assertions on variable come later.
 
         case 'ONLY_FILL_POSITIONS'
-          assert(numel(varargin) == 0)
+          assert(numel(remainingOptionalArgsCa) == 0)
           fpAr = true(size(dataAr));
           % NOTE: Assertions on variable come later.
 
@@ -503,7 +506,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
       switch S(1).type
         case '()'
           dataAr = subsref(obj.dataAr, S);
-          fpAr   = subsref(obj.fpAr, S);
+          fpAr   = subsref(obj.fpAr,   S);
 
           varargout = {bicas.utils.FPArray(...
             dataAr, 'FILL_POSITIONS', fpAr)};
@@ -525,7 +528,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
           [varargout{1:nargout}] = builtin('subsref', obj, S);
 
         otherwise
-          error('BICAS:Assertion', 'Does not support operation.')
+          error('BICAS:Assertion', 'Unsupported operation.')
       end
     end
 
