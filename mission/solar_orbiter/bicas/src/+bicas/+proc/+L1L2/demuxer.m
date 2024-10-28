@@ -364,31 +364,15 @@ classdef demuxer
     % bFp1, bFp2, bFp3
     %       Logical arrays of the same size as A1.
     %       True=fill position in corresponding A* array.
+    % fh23to1, fh13to2, fh12to3
+    %       Function handles z=f(x,y) for how to derive missing elements. Must
+    %       be vectorized.
     %
-    function [A1,A2,A3] = reconstruct_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh12to3, fh13to2, fh23to1)
-      % PROPOSAL: Require 1D arrays.
-      %   PRO: ~More generic.
-      %   CON: "Must" use classes for SWF data.
-      %       CON-PROPOSAL: Use 1D cell arrays of snapshots/1D arrays.
-      %       CON: Might want to do that anyway.
-      %           Ex: Samples (2D per channel) + TSF (1D) + SDID.
-      %           Ex: Tests.
-      % PROPOSAL: Require same array size for all arrays (in practice 1D or 2D).
-      % PROPOSAL: Cell arrays of data arrays, FP arrays, return arrays.
-      %
+    function [A1,A2,A3] = reconstruct_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh23to1, fh13to2, fh12to3)
       % TODO-NI: Will lead to memory problems for large arrays?
       %   TODO: Test.
       %   NOTE: Using cell array for return value may cause more in-memory data
       %         copying.
-      %
-      % TODO-DEC: Natural order of FHs?
-      %   PROPOSAL: Cyclic: 12-3, 23-1, 31-2
-      %     PRO: Clean
-      %     CON: Can not generalize to greater number of values than three. Is
-      %          fundamentally a list of N values taken from M values.
-      %   PROPOSAL: Incrementing argument numbers: 12-3, 13-2, 23-1
-      %     PRO: Equivalent to natural ordering of subsets (selecting 2 from 3).
-      %     PRO: Same as dataset ordering of diffs.
 
       assert(strcmp(class(A1), class(A2)))
       assert(strcmp(class(A1), class(A3)))
@@ -419,99 +403,92 @@ classdef demuxer
 
     % EXPERIMENTAL, UNUSED FUNCTION
     %
-    % INCOMPLETE
-    %
     % Intended as future conceptual replacement for
-    % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence().
+    % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence() (though
+    % "global", not for a subsequence).
     %
-    % ARGUMENTS
-    % =========
-    % DsidChannelsDict
-    %       Dictionary: (ASR) SDID --> Same-sized SdChannelData
-    %       Note: Function modifies argument.
-    %
-    % function reconstruct_ASR_samples2(DsidChannelsDict, fh12to3, fh13to2, fh23to1)
-    %   % PROPOSAL: FH arguments as static functions in class.
-    %   %   CON: Makes tests harder: Require class.
-    %   %   PROPOSAL: Same class as implementing DsidChannelsDict.
-    %   %     CON-PROPOSAL: FH args. can be set using static methods in such a class.
-    %   %
-    %   % PROPOSAL: Functions for determining FP in same class as implementing
-    %   %           DsidChannelsDict.
-    %   %   CON: Makes tests harder: Require class.
-    %   %
-    %   % PROPOSAL: Class for DsidChannelsDict with static/instance methods for
-    %   %           relationship functions. Class for individual channels with
-    %   %           methods/properties for bFp.
-    %   %           Set reconstruct_ASR_samples_subsequence2() FH arguments using
-    %   %           those methods.
-    %   %
-    %   % PROPOSAL: Class for DsidChannelsDict with STATIC methods for
-    %   %           relationship functions. Class for individual channels with
-    %   %           methods/properties for bFp.
-    %   %           reconstruct_ASR_samples_subsequence2() uses those methods
-    %   %           directly. Test class can implement INSTANCE methods which
-    %   %           behaviour is dependent on initialization (variables).
-    %
-    %   assert(isa(DsidChannelsDict, 'dictionary'))
-    %
-    %   % Shorten variable names.
-    %   D   = bicas.proc.L1L2.const.C.DSID_DICT;
-    %   Dcd = DsidChannelsDict;
-    %
-    %   function reconstruct_missing_data_helper(sdidStr1, sdidStr2, sdidStr3)
-    %     [
-    %       Dcd(D(sdidStr1)), ...
-    %       Dcd(D(sdidStr2)), ...
-    %       Dcd(D(sdidStr3))...
-    %     ] = ...
-    %       bicas.proc.L1L2.demuxer.reconstruct_missing_data(...
-    %       Dcd(D(sdidStr1)), ...
-    %       Dcd(D(sdidStr2)), ...
-    %       Dcd(D(sdidStr3)), ...
-    %       Dcd(D(sdidStr1)).bFp, ...
-    %       Dcd(D(sdidStr2)).bFp, ...
-    %       Dcd(D(sdidStr3)).bFp, ...
-    %       fh12to3, ...
-    %       fh13to2, ...
-    %       fh23to1);
-    %   end
-    %
-    %   %================
-    %   % Derive AC ASRs
-    %   %================
-    %   % AC ASRs are separate from DC ASRs and only satisfy one relationship
-    %   % since there are only three of them. Therefore does not have to be in
-    %   % loop.
-    %   reconstruct_missing_data_helper("AC_V13", "AC_V12", "AC_V23")
-    %
-    %   %================
-    %   % Derive DC ASRs
-    %   %================
-    %   nFp0 = Dcd.nFp;
-    %   while true
-    %     % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for deriving
-    %     % diffs (i.e. it should come first) since it is better to derive a diff
-    %     % from (initially available) diffs rather than singles, directly or
-    %     % indirectly, if possible.
-    %     % NOTE: Above note is, kind of, probably, bad thinking... There is
-    %     % never more than three channels available. ==> No redundant
-    %     % information, and thus can not derive the same information in
-    %     % different ways with different accuracy. May in principle have
-    %     % differences due to numerical precisision.
-    %     reconstruct_missing_data_helper("DC_V13", "DC_V12", "DC_V23");
-    %
-    %     reconstruct_missing_data_helper("DC_V1",  "DC_V12", "DC_V2");
-    %     reconstruct_missing_data_helper("DC_V1",  "DC_V13", "DC_V3");
-    %     reconstruct_missing_data_helper("DC_V2",  "DC_V23", "DC_V3");
-    %
-    %     % NOTE: Impossible to get Dcd.nFp == 0...
-    %     if (Dcd.nFp == nFp0) || (Dcd.nFp == 0)
-    %       break
-    %     end
-    %     nFp0 = Dcd.nFp;
-    %   end
-    % end
+    function SdcdDict = reconstruct_ASR_samples2(SdcdDict)
+
+      assert(isa(SdcdDict, 'bicas.proc.L1L2.SdChannelDataDict'))
+
+      % Shorten variable names.
+      D = bicas.proc.L1L2.const.C.SDID_DICT;
+
+
+
+      % Reconstructs values using relationship SDID_1 = SDID_2 + SDID_3.
+      function reconstruct_missing_data_helper(sumSdidStr1, termSdidStr2, termSdidStr3)
+        % NOTE: Printout is very useful for being able to follow how values are
+        % being reconstructed, e.g. when debugging and verifying automated
+        % tests.
+        % fprintf("%-6s = %-6s + %-6s\n", sumSdidStr1, termSdidStr2, termSdidStr3)
+
+        Sdcd1 = SdcdDict.get(D( sumSdidStr1));
+        Sdcd2 = SdcdDict.get(D(termSdidStr2));
+        Sdcd3 = SdcdDict.get(D(termSdidStr3));
+
+        [...
+          Sdcd1, ...
+          Sdcd2, ...
+          Sdcd3 ...
+        ] = ...
+          bicas.proc.L1L2.demuxer.reconstruct_missing_data(...
+          Sdcd1, ...
+          Sdcd2, ...
+          Sdcd3, ...
+          Sdcd1.bFp, ...
+          Sdcd2.bFp, ...
+          Sdcd3.bFp, ...
+          @(x,y) (x+y), ...
+          @(x,y) (x-y), ...
+          @(x,y) (x-y) ...
+          );
+
+        SdcdDict = SdcdDict.set(D( sumSdidStr1), Sdcd1);
+        SdcdDict = SdcdDict.set(D(termSdidStr2), Sdcd2);
+        SdcdDict = SdcdDict.set(D(termSdidStr3), Sdcd3);
+      end
+
+
+
+      %================
+      % Derive AC ASRs
+      %================
+      % AC ASRs are separate from DC ASRs and only satisfy one relationship
+      % since there are only three of them. Therefore does not have to be in
+      % loop.
+      reconstruct_missing_data_helper("AC_V13",   "AC_V12", "AC_V23")
+
+      %================
+      % Derive DC ASRs
+      %================
+      nFp0 = SdcdDict.nFp;
+      while true
+        % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for deriving
+        % diffs (i.e. it should come first) since it is better to derive a diff
+        % from (initially available) diffs rather than singles, directly or
+        % indirectly, if possible.
+        % Ex: The is only information on V1, V12, V23.
+        % ==> Derive V13 first, then use V1 to derive V2, V3.
+        % ==> If V1 is lower-accuracy, then it will not affect V13.
+        %     If V1 is saturated,      then it will not affect V13.
+        % Note that this is due to that sets of three diffs are always
+        % redundant (contain redundant information), as opposed to sets of
+        % three singles which are not.
+
+        reconstruct_missing_data_helper("DC_V13",  "DC_V12", "DC_V23");
+
+        reconstruct_missing_data_helper("DC_V1",   "DC_V12", "DC_V2");
+        reconstruct_missing_data_helper("DC_V1",   "DC_V13", "DC_V3");
+        reconstruct_missing_data_helper("DC_V2",   "DC_V23", "DC_V3");
+
+        % NOTE: Impossible to get Dcd.nFp == 0...
+        if (SdcdDict.nFp == nFp0) || (SdcdDict.nFp == 0)
+          break
+        end
+        nFp0 = SdcdDict.nFp;
+      end
+    end
 
 
 

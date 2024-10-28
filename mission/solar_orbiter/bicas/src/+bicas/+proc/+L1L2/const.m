@@ -105,6 +105,9 @@ classdef const
 
       C2.ROUTING_DICT  = configureDictionary('string', 'bicas.proc.L1L2.Routing');
 
+      % Collection (array) of all ASR SDIDs.
+      C2.SDID_ASR_AR   = uint8([]);
+
       % Global list of uint8 values used so far for defining ASIDs, SSIDs, and
       % SDIDs. This is used for avoiding collisions between all of the uint8
       % constants combined, not just within each category (for safety).
@@ -121,6 +124,7 @@ classdef const
 
         ssid = add_SSID(s, k, asid);
         sdid = add_SDID(s, k, asid);
+        C2.SDID_ASR_AR(end+1, 1) = sdid;
 
         AsidObj                = bicas.proc.L1L2.AntennaSignalId(ssid, asidCategory, asidAntennas);
         C2.ASID_DICT(s)        = asid;

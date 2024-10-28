@@ -363,6 +363,8 @@ SCDA
     measured HK currents. If the max-min current difference within that window
     exceeds a specified threshold, then the entire window is labeled as being
     part of a sweep.
+SDCD
+    Class bicas.proc.L1L2.SdChannelData.
 SDID
     Signal Destination ID. Every unique value represents the destination of a
     signal, i.e. where the samples should ultimately be stored in the output

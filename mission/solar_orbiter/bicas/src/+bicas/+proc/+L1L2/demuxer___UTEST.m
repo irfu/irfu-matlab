@@ -335,9 +335,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         [actA1,actA2,actA3] = bicas.proc.L1L2.demuxer.reconstruct_missing_data( ...
           ACa{1},        ACa{2},        ACa{3}, ...
           isnan(ACa{1}), isnan(ACa{2}), isnan(ACa{3}), ...
-          @(a1, a2) (a1+a2), ...
+          @(a2, a3) (a3-a2), ...
           @(a1, a3) (a3-a1), ...
-          @(a2, a3) (a3-a2));
+          @(a1, a2) (a1+a2));
 
         testCase.assertEqual(actA1, expACa{1})
         testCase.assertEqual(actA2, expACa{2})
@@ -386,7 +386,97 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_reconstruct_ASR_samples2(testCase)
+      N = NaN;
+
+      SAMPLES_AR_DATA = [...
+        1,2,4,   -1,-3,-2,   7,10,3;
+        1,N,N,   -1, N,-2,   7,10,N;
+        1,N,N,   -1, N,-2,   7, N,N;
+        ];
+      TSF_AR_DATA = logical([ ...
+        1,0,0,    0, 0, 0,   1, 0,0;
+        1,0,0,    0, 0, 0,   1, 0,0;
+        0,0,0,    0, 0, 1,   1, 0,0;
+        ]);
+      SdcdDict = testCase.create_SdcdDict(SAMPLES_AR_DATA, TSF_AR_DATA);
+
+
+
+      EXP_SAMPLES_AR_DATA = [...
+        1,2,4,   -1,-3,-2,   7,10,3;
+        1,2,4,   -1,-3,-2,   7,10,3;
+        1,2,4,   -1,-3,-2,   7, N,N;
+        ];
+      EXP_TSF_AR_DATA = logical([ ...
+        1,0,0,    0, 0, 0,   1, 0,0;
+        1,1,1,    0, 0, 0,   1, 0,1;
+        0,0,1,    0, 1, 1,   1, 0,0;
+        ]);
+      ExpSdcdDict = testCase.create_SdcdDict(EXP_SAMPLES_AR_DATA, EXP_TSF_AR_DATA);
+
+
+
+      ActSdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples2(SdcdDict);
+
+      % IMPLEMENTATION NOTE: Not comparing entire
+      % bicas.proc.L1L2.SdChannelDataDict objects since
+      % (1) it will fail also when the objects are identical (since has not
+      %     implemented support for testing equality?), and
+      % (2) it helps to compare object components separately when debugging
+      %     tests.
+      for sdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
+        ActSdcd = ActSdcdDict.get(sdid);
+        ExpSdcd = ExpSdcdDict.get(sdid);
+
+        if ~isequaln(ActSdcd.samplesAr, ExpSdcd.samplesAr)
+          sdid
+          ActSdcd.samplesAr
+          ExpSdcd.samplesAr
+        end
+        if ~isequaln(ActSdcd.tsfAr, ExpSdcd.tsfAr)
+          sdid
+          ActSdcd.tsfAr
+          ExpSdcd.tsfAr
+        end
+
+        % Check everything (partially overlapping with above).
+        testCase.assertEqual(ActSdcd, ExpSdcd)
+      end
+    end
+
+
+
   end    % methods(Test)
+
+
+
+  %########################
+  %########################
+  % PRIVATE STATIC METHODS
+  %########################
+  %########################
+  methods(Static, Access=private)
+
+
+
+    % Fast-and-easy function for creating one bicas.proc.L1L2.SdChannelDataDict
+    % from variables on a format suitable for hardcoding (CWF only).
+    function SdcdDict = create_SdcdDict(samplesArData, tsfArData)
+      SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
+
+      SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
+      for i = 1:numel(SDID_AR)
+        Sdcd = bicas.proc.L1L2.SdChannelData(...
+          samplesArData(:, i), ...
+          tsfArData(    :, i));
+        SdcdDict = SdcdDict.set(SDID_AR(i), Sdcd);
+      end
+    end
+
+
+
+  end
 
 
 
