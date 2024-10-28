@@ -21,10 +21,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
     function AsidTestSamplesSrm = create_channel_test_data(sampleSize)
-      % (iChannel, 1) = ASID ID string.
+      A = bicas.proc.L1L2.const.C.ASID_DICT;
+
+      % (iChannel, 1) = ASID.
       % (iChannel, 2) = Sample value (that is consistent with other
       %                 channels).
-      A = bicas.proc.L1L2.const.C.ASID_DICT;
       TEST_DATA_CA = { ...
         A("DC_V1"),  10; ...
         A("DC_V2"),  11; ...
@@ -72,9 +73,13 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence()
     %
     % IMPLEMENTATION NOTE: The design is for historical reasons before the
-    % two functions were split up.
+    % underlying code (old function) was split up in two functions.
     %
     function test_get_routings_relabel_reconstruct_samples_BLTS_to_ASR_subse(testCase)
+      % PROBLEM: Too large test function.
+      % PROPOSAL: Separate test code for the two functions.
+      %   CON: Combining both ensures that tests only test real combinations
+      %        of routings.
 
       A = bicas.proc.L1L2.const.C.ASID_DICT;
       R = bicas.proc.L1L2.const.C.ROUTING_DICT;
@@ -86,7 +91,6 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       SAMPLES_SIZE      = [3,2];
 
       nRows = SAMPLES_SIZE(1);
-      %[channelIdStringsCa, testSamplesCa] = testCase.create_channel_test_data(SAMPLES_SIZE);
       AsidTestSamplesSrm = testCase.create_channel_test_data(SAMPLES_SIZE);
 
 
@@ -324,11 +328,11 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_derive_missing_data(testCase)
+    function test_reconstruct_missing_data(testCase)
 
-      % Test relationship a1+a2=a3 for non-NaN.
+      % Test data with relationship a1 + a2 == a3 for non-NaN.
       function test_sum(ACa, expACa)
-        [actA1,actA2,actA3] = bicas.proc.L1L2.demuxer.derive_missing_data( ...
+        [actA1,actA2,actA3] = bicas.proc.L1L2.demuxer.reconstruct_missing_data( ...
           ACa{1},        ACa{2},        ACa{3}, ...
           isnan(ACa{1}), isnan(ACa{2}), isnan(ACa{3}), ...
           @(a1, a2) (a1+a2), ...

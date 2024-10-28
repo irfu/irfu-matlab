@@ -17,8 +17,8 @@
 % principle, one could represent unknown signals (unknown mux mode) as antenna
 % signals too.
 % --
-% Demultiplexer is designed to not be aware of that TDS only digitizes BLTS 1-3
-% (not 4-5) and does not need to be.
+% The demultiplexer code is designed to not be aware of that TDS only digitizes
+% BLTS 1-3 (not 4-5) and does not need to be.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -32,12 +32,17 @@ classdef demuxer
 
 
 
-    % Function that "encodes" the demultiplexer part of the BIAS subsystem.
-    % For a specified BDM and DLR setting, for every BLTS, it determines
-    % (1) the (physical) input signal (Antennas, GND, "2.5V Ref",
+    % For a specified BDM and DLR setting, for every BLTS, determine
+    % (1) the (type of physical) input signal (Antennas, GND, "2.5V Ref",
     %     unknown), and
-    % (2) as what ASR (SDID) (if any) should the BLTS be represented in
-    %     the datasets.
+    % (2) as what ASR (SDID) (if any) should the corresponding samples be stored
+    %     as in the datasets.
+    %     NOTE: Output datasets only contain dedicated zVariables for ASRs, not
+    %     e.g. "2.5V REF". Such non-ASR samples must still be routed to one of
+    %     those same zVariabes.
+    %
+    % This function therefore "encodes" the demultiplexer part of the BIAS
+    % subsystem (and more).
     %
     %
     % RATIONALE
@@ -50,7 +55,10 @@ classdef demuxer
     % ==========
     % Function must be able to handle:
     % ** bdm = fill position
-    %    Ex: Unknown BDM, e.g. due to insufficient HK time coverage.
+    %    Ex: Unknown BDM, e.g. due to insufficient HK time coverage (must use HK
+    %    for TDS).
+    % ** dlr = fill position
+    %    Ex: Unknown DLR, e.g. due to insufficient HK time coverage.
     % ** BLTS 1-3 labelled as "GND" or "2.5V Ref" in BDMs 5-7.
     %
     %
@@ -68,6 +76,7 @@ classdef demuxer
     % RoutingArray
     %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
     %       (iBlts).
+    %
     function RoutingArray = get_routings(bdmFpa, dlrFpa)
       assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FPArray') && strcmp(bdmFpa.mc, 'uint8'))
       assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FPArray') && strcmp(dlrFpa.mc, 'logical'))
@@ -76,14 +85,14 @@ classdef demuxer
 
       dlrFloat = dlrFpa.logical2doubleNan();
       if isnan(dlrFloat)
-        DC_V1x = R("UNKNOWN_TO_NOWHERE");
-        AC_V1x = R("UNKNOWN_TO_NOWHERE");
+        DC_V1x_DLR = R("UNKNOWN_TO_NOWHERE");
+        AC_V1x_DLR = R("UNKNOWN_TO_NOWHERE");
       elseif dlrFloat
-        DC_V1x = R("DC_V13");
-        AC_V1x = R("AC_V13");
+        DC_V1x_DLR = R("DC_V13");
+        AC_V1x_DLR = R("AC_V13");
       else
-        DC_V1x = R("DC_V12");
-        AC_V1x = R("AC_V12");
+        DC_V1x_DLR = R("DC_V12");
+        AC_V1x_DLR = R("AC_V12");
       end
 
       % IMPLEMENTATION NOTE: switch-case statement does not work for NaN.
@@ -96,7 +105,7 @@ classdef demuxer
 
           % Summarize the routing.
           RoutingArray(1) = R("DC_V1");
-          RoutingArray(2) =    DC_V1x;
+          RoutingArray(2) =    DC_V1x_DLR;
           RoutingArray(3) = R("DC_V23");
 
         case 1   % Probe 1 fails
@@ -112,13 +121,13 @@ classdef demuxer
 
           RoutingArray(1) = R("DC_V1");
           RoutingArray(2) = R("DC_V3");
-          RoutingArray(3) =   DC_V1x;
+          RoutingArray(3) =    DC_V1x_DLR;
 
         case 3   % Probe 3 fails
 
           RoutingArray(1) = R("DC_V1");
           RoutingArray(2) = R("DC_V2");
-          RoutingArray(3) =    DC_V1x;
+          RoutingArray(3) =    DC_V1x_DLR;
 
         case 4   % Calibration mode 0
 
@@ -159,7 +168,7 @@ classdef demuxer
             'Illegal argument value bdm=%g.', bdm)
       end    % switch
 
-      RoutingArray(4) = AC_V1x;
+      RoutingArray(4) =    AC_V1x_DLR;
       RoutingArray(5) = R("AC_V23");
     end
 
@@ -338,13 +347,15 @@ classdef demuxer
     % Intended as future conceptual replacement for
     % bicas.proc.L1L2.demuxer.complete_relation().
     %
-    % Complement/derive redundant data in three related arrays. If one element
-    % is missing (labelled as a fill position) while the corresponding elements
-    % in the two other arrays are not, then it is derived from them.
+    % Complement/derive redundant data in three same-sized arrays. If one
+    % element is missing (labelled as a fill position) while the corresponding
+    % elements in the two other arrays are not, then the missing element is
+    % derived from the other two.
     %
     % The function does not verify that pre-existing data is consistent with
     % the specified functions which define the relationship between the
     % functions.
+    %
     %
     % ARGUMENTS
     % =========
@@ -354,7 +365,7 @@ classdef demuxer
     %       Logical arrays of the same size as A1.
     %       True=fill position in corresponding A* array.
     %
-    function [A1,A2,A3] = derive_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh12to3, fh13to2, fh23to1)
+    function [A1,A2,A3] = reconstruct_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh12to3, fh13to2, fh23to1)
       % PROPOSAL: Require 1D arrays.
       %   PRO: ~More generic.
       %   CON: "Must" use classes for SWF data.
@@ -396,10 +407,9 @@ classdef demuxer
       bDerive2 = ~bFp1 &  bFp2 & ~bFp3;
       bDerive3 = ~bFp1 & ~bFp2 &  bFp3;
 
-      % If using actual arrays for samples, then need at least one more
+      % NOTE: If using actual arrays for samples, then need at least one more
       % dimension for SWF (1 record=1 snapshot): Ax(b, :) = func(Ay(b, :),
       % Az(b, :).
-      %
       A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
       A2(bDerive2) = fh13to2(A1(bDerive2), A3(bDerive2));
       A1(bDerive1) = fh23to1(A2(bDerive1), A3(bDerive1));
@@ -449,13 +459,13 @@ classdef demuxer
     %   D   = bicas.proc.L1L2.const.C.DSID_DICT;
     %   Dcd = DsidChannelsDict;
     %
-    %   function derive_missing_data_helper(sdidStr1, sdidStr2, sdidStr3)
+    %   function reconstruct_missing_data_helper(sdidStr1, sdidStr2, sdidStr3)
     %     [
     %       Dcd(D(sdidStr1)), ...
     %       Dcd(D(sdidStr2)), ...
     %       Dcd(D(sdidStr3))...
     %     ] = ...
-    %       bicas.proc.L1L2.demuxer.derive_missing_data(...
+    %       bicas.proc.L1L2.demuxer.reconstruct_missing_data(...
     %       Dcd(D(sdidStr1)), ...
     %       Dcd(D(sdidStr2)), ...
     %       Dcd(D(sdidStr3)), ...
@@ -473,7 +483,7 @@ classdef demuxer
     %   % AC ASRs are separate from DC ASRs and only satisfy one relationship
     %   % since there are only three of them. Therefore does not have to be in
     %   % loop.
-    %   derive_missing_data_helper("AC_V13", "AC_V12", "AC_V23")
+    %   reconstruct_missing_data_helper("AC_V13", "AC_V12", "AC_V23")
     %
     %   %================
     %   % Derive DC ASRs
@@ -489,11 +499,11 @@ classdef demuxer
     %     % information, and thus can not derive the same information in
     %     % different ways with different accuracy. May in principle have
     %     % differences due to numerical precisision.
-    %     derive_missing_data_helper("DC_V13", "DC_V12", "DC_V23");
+    %     reconstruct_missing_data_helper("DC_V13", "DC_V12", "DC_V23");
     %
-    %     derive_missing_data_helper("DC_V1",  "DC_V12", "DC_V2");
-    %     derive_missing_data_helper("DC_V1",  "DC_V13", "DC_V3");
-    %     derive_missing_data_helper("DC_V2",  "DC_V23", "DC_V3");
+    %     reconstruct_missing_data_helper("DC_V1",  "DC_V12", "DC_V2");
+    %     reconstruct_missing_data_helper("DC_V1",  "DC_V13", "DC_V3");
+    %     reconstruct_missing_data_helper("DC_V2",  "DC_V23", "DC_V3");
     %
     %     % NOTE: Impossible to get Dcd.nFp == 0...
     %     if (Dcd.nFp == nFp0) || (Dcd.nFp == 0)

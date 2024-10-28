@@ -54,7 +54,7 @@ classdef dc
 %         SDID-->class Channel
 %     PROPOSAL: Class can contain static methods describing ASR relationships,
 %               and which can be used for reconstructing ASR channels (by
-%               generic function derive_missing_data()).
+%               generic function reconstruct_missing_data()).
 %     CON: bSaturated not meaningful until has derived it. Should ideally be
 %          possible to add it after deriving it.
 %         CON-PROPOSAL: Separate dictionary SDID-->bSaturation
@@ -153,7 +153,7 @@ classdef dc
 
       %#########################################################
       % ~"DEMUX" VOLTAGES
-      % (SIGNALS LABELLED BY BLTS --> SIGNALS LABELLED BY DSID)
+      % (SIGNALS LABELLED BY BLTS --> SIGNALS LABELLED BY SDID)
       %#########################################################
       AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR(...
         bltsSamplesAVolt, ...
@@ -253,7 +253,7 @@ classdef dc
 
       % Preallocate
       % -----------
-      % NOTE: No need for bicas.utils.FPArray since SSIDs and DSIDs handle all
+      % NOTE: No need for bicas.utils.FPArray since SSIDs and SDIDs handle all
       % special cases including unknown source and destination.
       bltsSsidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8');
       bltsSdidArray = bltsSsidArray;
