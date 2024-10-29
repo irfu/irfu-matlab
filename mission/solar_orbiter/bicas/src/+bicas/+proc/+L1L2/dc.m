@@ -119,6 +119,14 @@ classdef dc
 
 
 
+      %#########################
+      % Calibrate bias CURRENTS
+      %#########################
+      currentAAmpere = bicas.proc.L1L2.dc.calibrate_bias_currents(...
+        Dcip.Zv.Epoch, InCurPd, Cal, Bso, L);
+
+
+
       %#######################################################################
       % Obtain "demultiplexer" "routings" on the form of SSID and SDID values
       % for every BLTS
@@ -162,44 +170,9 @@ classdef dc
 
 
 
-      %#########################
-      % Calibrate bias CURRENTS
-      %#########################
-      currentSAmpere = bicas.proc.L1L2.dc.convert_CUR_to_CUR_on_SCI_TIME(...
-        Dcip.Zv.Epoch, InCurPd, Bso, L);
-      currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
-
-      currentAAmpere          = nan(size(currentSAmpere));    % Preallocate.
-      iCalibLZv               = Cal.get_BIAS_calibration_time_L(Dcip.Zv.Epoch);
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
-      L.logf('info', ...
-        ['Calibrating currents -', ...
-        ' One sequence of records with identical settings at a time.'])
-      for iSs = 1:nSs
-        iRec1 = iRec1Ar(iSs);
-        iRec2 = iRec2Ar(iSs);
-
-        iRecords = iRec1:iRec2;
-
-        L.logf('info', 'Records %8i-%8i : %s -- %s', ...
-          iRec1, iRec2, ...
-          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.Epoch(iRec1), 9), ...
-          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.Epoch(iRec2), 9))
-
-        for iAnt = 1:3
-          %--------------------
-          % CALIBRATE CURRENTS
-          %--------------------
-          currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
-            currentTm( iRecords, iAnt), iAnt, iCalibLZv(iRecords));
-        end
-      end
-
-
-
-      % ##############################################
+      %################################################
       % Set quality variables, and apply UFV (to data)
-      % ##############################################
+      %################################################
       % AUTODETECT SATURATION.
       Sat = bicas.proc.L1L2.Saturation(Bso);
       isAutodetectedSaturation = Sat.get_voltage_saturation_quality_bit(...
@@ -356,6 +329,40 @@ classdef dc
       end    % for
 
     end
+
+
+
+    function currentAAmpere = calibrate_bias_currents(sciEpoch, InCurPd, Cal, Bso, L)
+      currentSAmpere = bicas.proc.L1L2.dc.convert_CUR_to_CUR_on_SCI_TIME(...
+        sciEpoch, InCurPd, Bso, L);
+      currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
+
+      currentAAmpere          = nan(size(currentSAmpere));    % Preallocate.
+      iCalibLZv               = Cal.get_BIAS_calibration_time_L(sciEpoch);
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
+      L.logf('info', ...
+        ['Calibrating currents -', ...
+        ' One sequence of records with identical settings at a time.'])
+      for iSs = 1:nSs
+        iRec1    = iRec1Ar(iSs);
+        iRec2    = iRec2Ar(iSs);
+        iRecords = iRec1:iRec2;
+
+        L.logf('info', 'Records %8i-%8i : %s -- %s', ...
+          iRec1, iRec2, ...
+          bicas.utils.TT2000_to_UTC_str(sciEpoch(iRec1), 9), ...
+          bicas.utils.TT2000_to_UTC_str(sciEpoch(iRec2), 9))
+
+        for iAnt = 1:3
+          %--------------------
+          % CALIBRATE CURRENTS
+          %--------------------
+          currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
+            currentTm(iRecords, iAnt), iAnt, iCalibLZv(iRecords));
+        end
+      end    % for
+
+    end    % function
 
 
 
