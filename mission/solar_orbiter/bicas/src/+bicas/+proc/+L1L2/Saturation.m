@@ -104,142 +104,6 @@ classdef Saturation
 
 
 
-    % Given an arbitrary-size ARRAY of samples, get VSTB bits for every
-    % sample.
-    %
-    % NOTE: The data may refer to both CWF data and SWF data, but the
-    % function itself makes no distinction between the two. The caller has
-    % to make distinctions between those two if needed. For example, this
-    % function returns VSTBs for each sample in a snapshot, but the caller
-    % might one to condense this to one saturation bit per snapshot
-    % according to some algorithm that has no analogue for CWF data.
-    %
-    %
-    % ARGUMENTS
-    % =========
-    % samplesAVolt
-    %       Arbitrary-size array. May contain NaN.
-    %
-    %
-    % RETURN VALUE
-    % ============
-    % vstbAr
-    %       Float. Same size as samplesAVolt. Whether corresponding elements
-    %       in samplesAVolt are deemed to be outside the relevant
-    %       thresholds. False is returned for all input elements if there
-    %       are no thresholds for this kind of data (e.g. for non-ASR
-    %       sources). False is returned for NaN input elements.
-    %
-    function vstbAr = get_VSTB(obj, samplesAVolt, ssid, isAchgFpa)
-      % PROPOSAL: Better name.
-      %   ~sample-to-VSTB
-      %   ~threshold_saturation
-
-      assert(isfloat(samplesAVolt))
-      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
-      assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
-
-      % Default value that used if there are no thresholds.
-      vstbAr = false(size(samplesAVolt));
-
-      if ~bicas.proc.L1L2.const.SSID_is_ASR(ssid)
-        return
-      end
-
-      % CASE: ASR (i.e. no non-plasma/unknown signal, no special case)
-
-      % ====================
-      % Determine thresholds
-      % ====================
-      if bicas.proc.L1L2.const.SSID_is_diff(ssid)
-        % CASE: DC/AC diff
-        % ----------------
-
-        isAchg = isAchgFpa.logical2doubleNan();
-        if bicas.proc.L1L2.const.SSID_is_AC(ssid)
-          % CASE: AC diff
-          % -------------
-          if isAchg == 0
-            highThresholdAVolt = obj.higherThresholdAVoltAclg;
-          elseif isAchg == 1
-            highThresholdAVolt = obj.higherThresholdAVoltAchg;
-          else
-            return
-          end
-        else
-          % CASE: DC diff
-          % -------------
-          highThresholdAVolt = obj.higherThresholdAVoltDcDiff;
-        end
-      else
-        % CASE: DC single
-        % ---------------
-        % NOTE: Not using terms "min" and "max" since they are
-        % ambiguous (?).
-        highThresholdAVolt = obj.higherThresholdAVoltDcSingle;
-      end
-      lowerThresholdAVolt = -highThresholdAVolt;
-
-      % ==========================================
-      % Use thresholds on array to determine VSTBs
-      % ==========================================
-      % NOTE: Has to be able ignore NaN.
-      vstbAr = (samplesAVolt < lowerThresholdAVolt) | (highThresholdAVolt < samplesAVolt);
-    end
-
-
-
-    % Determine whether ONE snapshot should be labelled as saturated.
-    %
-    % ARGUMENTS
-    % =========
-    % samplesAVolt
-    %   Snapshot samples. (1, iSampleInSnapshot) = row vector.
-    %   NOTE: Should only contain the length of the snapshot. No padding at
-    %         the end of array.
-    %
-    % RETURN VALUE
-    % ============
-    % vsqb
-    %       Logical. Scalar.
-    %
-    function vsqb = get_snapshot_VSQB(obj, samplesAVolt, ssid, isAchg)
-      assert(isrow(samplesAVolt))     % Row vector(!).
-
-      vstbAr = obj.get_VSTB(samplesAVolt, ssid, isAchg);
-
-      vsqb = (sum(vstbAr, 'all') / numel(samplesAVolt)) > obj.vstbFractionThreshold;
-    end
-
-
-
-    % Determine whether multiple snapshots (with same settings) are
-    % saturated. Uses ZV-like variables.
-    %
-    % ARGUMENTS
-    % =========
-    % zvNValidSamplesPerRecord
-    %       ZV-like array. (iCdfRecord). Length of separate snapshots.
-    % zvSamplesAVolt
-    %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
-    %
-    function vsqbAr = get_snapshot_VSQB_many(obj, ...
-        zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
-
-      nRecs = irf.assert.sizes(...
-        zvNValidSamplesPerRecord, [-1],  ...
-        zvSamplesAVolt,           [-1, NaN, 1]);
-
-      vsqbAr = false(nRecs, 1);
-      for iRec = 1:nRecs
-        vsqbAr(iRec) = obj.get_snapshot_VSQB(...
-          zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
-          ssid, isAchgFpa);
-      end
-    end
-
-
-
     % Given ZV-like variables, get saturation bits for quality bitmask.
     %
     % NOTE: Applies to both CWF and SWF data.
@@ -384,6 +248,142 @@ classdef Saturation
           ssid, isAchgFpa(iRec1));
       end
 
+    end
+
+
+
+    % Determine whether multiple snapshots (with same settings) are
+    % saturated. Uses ZV-like variables.
+    %
+    % ARGUMENTS
+    % =========
+    % zvNValidSamplesPerRecord
+    %       ZV-like array. (iCdfRecord). Length of separate snapshots.
+    % zvSamplesAVolt
+    %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
+    %
+    function vsqbAr = get_snapshot_VSQB_many(obj, ...
+        zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
+
+      nRecs = irf.assert.sizes(...
+        zvNValidSamplesPerRecord, [-1],  ...
+        zvSamplesAVolt,           [-1, NaN, 1]);
+
+      vsqbAr = false(nRecs, 1);
+      for iRec = 1:nRecs
+        vsqbAr(iRec) = obj.get_snapshot_VSQB(...
+          zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
+          ssid, isAchgFpa);
+      end
+    end
+
+
+
+    % Determine whether ONE snapshot should be labelled as saturated.
+    %
+    % ARGUMENTS
+    % =========
+    % samplesAVolt
+    %   Snapshot samples. (1, iSampleInSnapshot) = row vector.
+    %   NOTE: Should only contain the length of the snapshot. No padding at
+    %         the end of array.
+    %
+    % RETURN VALUE
+    % ============
+    % vsqb
+    %       Logical. Scalar.
+    %
+    function vsqb = get_snapshot_VSQB(obj, samplesAVolt, ssid, isAchg)
+      assert(isrow(samplesAVolt))     % Row vector(!).
+
+      vstbAr = obj.get_VSTB(samplesAVolt, ssid, isAchg);
+
+      vsqb = (sum(vstbAr, 'all') / numel(samplesAVolt)) > obj.vstbFractionThreshold;
+    end
+
+
+
+    % Given an arbitrary-size ARRAY of samples, get VSTB bits for every
+    % sample.
+    %
+    % NOTE: The data may refer to both CWF data and SWF data, but the
+    % function itself makes no distinction between the two. The caller has
+    % to make distinctions between those two if needed. For example, this
+    % function returns VSTBs for each sample in a snapshot, but the caller
+    % might one to condense this to one saturation bit per snapshot
+    % according to some algorithm that has no analogue for CWF data.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % samplesAVolt
+    %       Arbitrary-size array. May contain NaN.
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % vstbAr
+    %       Float. Same size as samplesAVolt. Whether corresponding elements
+    %       in samplesAVolt are deemed to be outside the relevant
+    %       thresholds. False is returned for all input elements if there
+    %       are no thresholds for this kind of data (e.g. for non-ASR
+    %       sources). False is returned for NaN input elements.
+    %
+    function vstbAr = get_VSTB(obj, samplesAVolt, ssid, isAchgFpa)
+      % PROPOSAL: Better name.
+      %   ~sample-to-VSTB
+      %   ~threshold_saturation
+
+      assert(isfloat(samplesAVolt))
+      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
+      assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
+
+      % Default value that is used if there are no thresholds.
+      vstbAr = false(size(samplesAVolt));
+
+      if ~bicas.proc.L1L2.const.SSID_is_ASR(ssid)
+        return
+      end
+
+      % CASE: ASR (i.e. no non-plasma/unknown signal, no special case)
+
+      % ====================
+      % Determine thresholds
+      % ====================
+      if bicas.proc.L1L2.const.SSID_is_diff(ssid)
+        % CASE: DC/AC diff
+        % ----------------
+
+        isAchg = isAchgFpa.logical2doubleNan();
+        if bicas.proc.L1L2.const.SSID_is_AC(ssid)
+          % CASE: AC diff
+          % -------------
+          if isAchg == 0
+            highThresholdAVolt = obj.higherThresholdAVoltAclg;
+          elseif isAchg == 1
+            highThresholdAVolt = obj.higherThresholdAVoltAchg;
+          else
+            return
+          end
+        else
+          % CASE: DC diff
+          % -------------
+          highThresholdAVolt = obj.higherThresholdAVoltDcDiff;
+        end
+      else
+        % CASE: DC single
+        % ---------------
+        % NOTE: Not using terms "min" and "max" since they are
+        % ambiguous (?).
+        highThresholdAVolt = obj.higherThresholdAVoltDcSingle;
+      end
+      lowerThresholdAVolt = -highThresholdAVolt;
+
+      % ==========================================
+      % Use thresholds on array to determine VSTBs
+      % ==========================================
+      % NOTE: Has to be able ignore NaN.
+      vstbAr = (samplesAVolt < lowerThresholdAVolt) | (highThresholdAVolt < samplesAVolt);
     end
 
 
