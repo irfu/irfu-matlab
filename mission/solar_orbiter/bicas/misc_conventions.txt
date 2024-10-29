@@ -438,17 +438,6 @@ TPIV
     TM/interface volt. TM per interface volt.
 TS
     irfu-matlab's TSeries object/class.
-TSF
-    Threshold Saturation Flag. Internal bit used by the implementation. The bit
-    is set/unset for an individual sample iff the sample value exceeds specified
-    thresholds, i.e. it does not take any context into account, except for
-    determining which thresholds to use. This is in contrast with
-    (1) saturation flags for snapshots, which may summarize the saturation of
-        the entire snapshot, or
-    (2) saturation flags for CWF data which may take saturation before or after
-        into account.
-    TSF should not be confused with actual saturation bit(s) set in quality
-    zVariables.
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
@@ -457,6 +446,24 @@ UFV
     measured voltages.
 VBMC
     Validate BICAS Master CDFs.
+VSQB
+    Voltage Saturation Quality Flag. Bit in dataset (!) which is set iff BICAS
+    wants to label a sample/snapshot as saturated, according to some algorithm.
+    Note that this is the value actually stored in datasets, as opposed to VSTB
+    which is an intermediate value.
+VSTB
+    Voltage Saturation Threshold Flag. Internal bit used by the implementation.
+    The bit is set/unset for an individual sample iff the sample value exceeds
+    specified thresholds (min-max), i.e. it does not take any context into
+    account, except for determining which thresholds to use. This is in contrast
+    with
+    (1) saturation flags for snapshots, which may summarize the saturation of
+        the entire snapshot, or
+    (2) saturation flags for CWF data which may take saturation before or after
+        into account.
+    VSTB should not be confused with actual saturation bit(s) set in quality
+    zVariables (VSQB). The order of the terms in the abbrevation are chosen to
+    make it more analogous and similar to VSQB.
 WOLS
     WithOut Leap Seconds
 ZV

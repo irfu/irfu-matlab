@@ -1,5 +1,5 @@
 %
-% Stores one channel of data (samples) plus TSFs. The class models a *column*
+% Stores one channel of data (samples) plus VSTBs. The class models a *column*
 % array, both for CWF and SWF(!) data to make reconstruction of missing
 % channels more natural. Every row represents data for a CDF record (for a
 % given channel).
@@ -46,7 +46,7 @@ classdef SdChannelData
     samplesAr
 
     % Nx1 array.
-    tsfAr
+    vstbAr
   end
   properties (Dependent)
     % Nx1 array. Logical.
@@ -78,15 +78,15 @@ classdef SdChannelData
 
 
 
-    function obj = SdChannelData(samplesAr, tsfAr)
+    function obj = SdChannelData(samplesAr, vstbAr)
       assert(isfloat(samplesAr))
-      assert(islogical(tsfAr))
+      assert(islogical(vstbAr))
       irf.assert.sizes(...
         samplesAr, [-1, NaN], ...
-        tsfAr,     [-1])
+        vstbAr,    [-1])
 
       obj.samplesAr = samplesAr;
-      obj.tsfAr     = tsfAr;
+      obj.vstbAr     = vstbAr;
     end
 
 
@@ -100,12 +100,12 @@ classdef SdChannelData
 
           ib = S(1).subs{1};
           samplesAr = obj.samplesAr(ib, :);
-          tsfAr     = obj.tsfAr(    ib, :);
-          % IMPLEMENTATION NOTE: Specifying ":" for second index for tsfAr is
+          vstbAr    = obj.vstbAr(   ib, :);
+          % IMPLEMENTATION NOTE: Specifying ":" for second index for vstbAr is
           % necessary for ensuring always returning a column vector, despite
           % that it is a column vector already.
 
-          varargout = {bicas.proc.L1L2.SdChannelData(samplesAr, tsfAr)};
+          varargout = {bicas.proc.L1L2.SdChannelData(samplesAr, vstbAr)};
 
         case '.'
           % Call method (sic!)
@@ -136,7 +136,7 @@ classdef SdChannelData
           ib = S(1).subs{1};
 
           Sdcd1.samplesAr(ib, :) = Sdcd2.samplesAr;
-          Sdcd1.tsfAr(    ib)    = Sdcd2.tsfAr;
+          Sdcd1.vstbAr(   ib)    = Sdcd2.vstbAr;
 
         otherwise
           error('BICAS:Assertion', 'Unsupported operation.')
@@ -147,7 +147,7 @@ classdef SdChannelData
 
     % "Overload" size(obj, ...)
     function s = size(obj, varargin)
-      s = size(obj.tsfAr, varargin{:});
+      s = size(obj.vstbAr, varargin{:});
     end
 
 
@@ -155,8 +155,8 @@ classdef SdChannelData
     % Operator overloading.
     function Sdcd3 = plus(Sdcd1, Sdcd2)
       samplesAr3 = Sdcd1.samplesAr + Sdcd2.samplesAr;
-      tsfAr3     = Sdcd1.tsfAr     | Sdcd2.tsfAr;
-      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, tsfAr3);
+      vstbAr3    = Sdcd1.vstbAr    | Sdcd2.vstbAr;
+      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vstbAr3);
     end
 
 
@@ -164,8 +164,8 @@ classdef SdChannelData
     % Operator overloading.
     function Sdcd3 = minus(Sdcd1, Sdcd2)
       samplesAr3 = Sdcd1.samplesAr - Sdcd2.samplesAr;
-      tsfAr3     = Sdcd1.tsfAr     | Sdcd2.tsfAr;
-      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, tsfAr3);
+      vstbAr3    = Sdcd1.vstbAr    | Sdcd2.vstbAr;
+      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vstbAr3);
     end
 
 

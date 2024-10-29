@@ -222,3 +222,10 @@ Version 8.3.0
   PROCESSING.RCT_REGEXP.BIAS
 * Changed glob.attributes TIME_MIN, TIME_MAX to only have six decimals.
 * Requires updated master CDF versions (better metadata) for all datasets.
+
+
+Version X.Y.Z
+-------------
+* Renamed setting:
+     PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD
+  -->PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD

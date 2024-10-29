@@ -40,7 +40,7 @@ classdef dc
 %     class ZvLabelledChannelSamples
 %         % Ideally FPA.
 %         samplesAVolt          [nRows, spr]
-%         % TSF? Before/after windowing?
+%         % VSTB? Before/after windowing?
 %         bSaturated            [nRows]
 %         % Unknown is not really meant for this case, but should work. Can vary by CDF record.
 %         ssid / None/unknown  [nRows]

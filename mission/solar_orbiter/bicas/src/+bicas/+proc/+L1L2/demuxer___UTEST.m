@@ -394,12 +394,12 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,N,N,   -1, N,-2,   7,10,N;
         1,N,N,   -1, N,-2,   7, N,N;
         ];
-      TSF_AR_DATA = logical([ ...
+      VSTB_AR_DATA = logical([ ...
         1,0,0,    0, 0, 0,   1, 0,0;
         1,0,0,    0, 0, 0,   1, 0,0;
         0,0,0,    0, 0, 1,   1, 0,0;
         ]);
-      SdcdDict = testCase.create_SdcdDict(SAMPLES_AR_DATA, TSF_AR_DATA);
+      SdcdDict = testCase.create_SdcdDict(SAMPLES_AR_DATA, VSTB_AR_DATA);
 
 
 
@@ -408,12 +408,12 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,2,4,   -1,-3,-2,   7,10,3;
         1,2,4,   -1,-3,-2,   7, N,N;
         ];
-      EXP_TSF_AR_DATA = logical([ ...
+      EXP_VSTB_AR_DATA = logical([ ...
         1,0,0,    0, 0, 0,   1, 0,0;
         1,1,1,    0, 0, 0,   1, 0,1;
         0,0,1,    0, 1, 1,   1, 0,0;
         ]);
-      ExpSdcdDict = testCase.create_SdcdDict(EXP_SAMPLES_AR_DATA, EXP_TSF_AR_DATA);
+      ExpSdcdDict = testCase.create_SdcdDict(EXP_SAMPLES_AR_DATA, EXP_VSTB_AR_DATA);
 
 
 
@@ -434,10 +434,10 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
           ActSdcd.samplesAr
           ExpSdcd.samplesAr
         end
-        if ~isequaln(ActSdcd.tsfAr, ExpSdcd.tsfAr)
+        if ~isequaln(ActSdcd.vstbAr, ExpSdcd.vstbAr)
           sdid
-          ActSdcd.tsfAr
-          ExpSdcd.tsfAr
+          ActSdcd.vstbAr
+          ExpSdcd.vstbAr
         end
 
         % Check everything (partially overlapping with above).
@@ -462,14 +462,14 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
     % Fast-and-easy function for creating one bicas.proc.L1L2.SdChannelDataDict
     % from variables on a format suitable for hardcoding (CWF only).
-    function SdcdDict = create_SdcdDict(samplesArData, tsfArData)
+    function SdcdDict = create_SdcdDict(samplesArData, vstbArData)
       SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
       for i = 1:numel(SDID_AR)
         Sdcd = bicas.proc.L1L2.SdChannelData(...
           samplesArData(:, i), ...
-          tsfArData(    :, i));
+          vstbArData(   :, i));
         SdcdDict = SdcdDict.set(SDID_AR(i), Sdcd);
       end
     end

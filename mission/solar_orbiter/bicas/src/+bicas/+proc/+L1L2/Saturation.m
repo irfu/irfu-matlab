@@ -45,14 +45,14 @@ classdef Saturation
     % How long the sliding window should be when using CDF data.
     cwfSlidingWindowLengthSec
 
-    % Threshold for the sample-length weighted fraction of TSF-labelled samples
+    % Threshold for the sample-length weighted fraction of VSTB-labelled samples
     % within either (1) a sliding window (CWF), or (2) snapshot. If fraction of
-    % TSF-labelled samples excedes this fraction, then the entire sliding window
+    % VSTB-labelled samples excedes this fraction, then the entire sliding window
     % or snapshot is labelled as saturated.
-    tsfFractionThreshold
+    vstbFractionThreshold
 
     % Higher thresholds for saturation. Sample values above these values, or
-    % below the negated value, count as threshold-saturated (TSF).
+    % below the negated value, count as threshold-saturated (VSTB).
     higherThresholdAVoltDcSingle
     higherThresholdAVoltDcDiff
     higherThresholdAVoltAclg
@@ -72,7 +72,7 @@ classdef Saturation
 
     function obj = Saturation(Bso)
       obj.cwfSlidingWindowLengthSec    = Bso.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
-      obj.tsfFractionThreshold         = Bso.get_fv('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD');
+      obj.vstbFractionThreshold        = Bso.get_fv('PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD');
 
       obj.higherThresholdAVoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
       obj.higherThresholdAVoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
@@ -91,10 +91,10 @@ classdef Saturation
 
       assert_positive_float(obj.cwfSlidingWindowLengthSec)
       assert(...
-        isfinite(obj.tsfFractionThreshold) && ...
-        isscalar(obj.tsfFractionThreshold) && ...
-        isfloat( obj.tsfFractionThreshold) && ...
-        (0 <= obj.tsfFractionThreshold) && (obj.tsfFractionThreshold <= 1))
+        isfinite(obj.vstbFractionThreshold) && ...
+        isscalar(obj.vstbFractionThreshold) && ...
+        isfloat( obj.vstbFractionThreshold) && ...
+        (0 <= obj.vstbFractionThreshold) && (obj.vstbFractionThreshold <= 1))
 
       assert_positive_float(obj.higherThresholdAVoltDcSingle)
       assert_positive_float(obj.higherThresholdAVoltDcDiff)
@@ -104,13 +104,13 @@ classdef Saturation
 
 
 
-    % Given an arbitrary-size ARRAY of samples, get TSF bits for every
+    % Given an arbitrary-size ARRAY of samples, get VSTB bits for every
     % sample.
     %
     % NOTE: The data may refer to both CWF data and SWF data, but the
     % function itself makes no distinction between the two. The caller has
     % to make distinctions between those two if needed. For example, this
-    % function returns TSFs for each sample in a snapshot, but the caller
+    % function returns VSTBs for each sample in a snapshot, but the caller
     % might one to condense this to one saturation bit per snapshot
     % according to some algorithm that has no analogue for CWF data.
     %
@@ -123,16 +123,16 @@ classdef Saturation
     %
     % RETURN VALUE
     % ============
-    % tsfAr
+    % vstbAr
     %       Float. Same size as samplesAVolt. Whether corresponding elements
     %       in samplesAVolt are deemed to be outside the relevant
     %       thresholds. False is returned for all input elements if there
     %       are no thresholds for this kind of data (e.g. for non-ASR
     %       sources). False is returned for NaN input elements.
     %
-    function tsfAr = get_TSF(obj, samplesAVolt, ssid, isAchgFpa)
+    function vstbAr = get_VSTB(obj, samplesAVolt, ssid, isAchgFpa)
       % PROPOSAL: Better name.
-      %   ~sample-to-TSF
+      %   ~sample-to-VSTB
       %   ~threshold_saturation
 
       assert(isfloat(samplesAVolt))
@@ -140,7 +140,7 @@ classdef Saturation
       assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
 
       % Default value that used if there are no thresholds.
-      tsfAr = false(size(samplesAVolt));
+      vstbAr = false(size(samplesAVolt));
 
       if ~bicas.proc.L1L2.const.SSID_is_ASR(ssid)
         return
@@ -180,11 +180,11 @@ classdef Saturation
       end
       lowerThresholdAVolt = -highThresholdAVolt;
 
-      % =========================================
-      % Use thresholds on array to determine TSFs
-      % =========================================
+      % ==========================================
+      % Use thresholds on array to determine VSTBs
+      % ==========================================
       % NOTE: Has to be able ignore NaN.
-      tsfAr = (samplesAVolt < lowerThresholdAVolt) | (highThresholdAVolt < samplesAVolt);
+      vstbAr = (samplesAVolt < lowerThresholdAVolt) | (highThresholdAVolt < samplesAVolt);
     end
 
 
@@ -206,9 +206,9 @@ classdef Saturation
     function isSaturated = get_snapshot_saturation(obj, samplesAVolt, ssid, isAchg)
       irf.assert.sizes(samplesAVolt, [1, NaN, 1])     % Row vector.
 
-      tsfAr = obj.get_TSF(samplesAVolt, ssid, isAchg);
+      vstbAr = obj.get_VSTB(samplesAVolt, ssid, isAchg);
 
-      isSaturated = (sum(tsfAr, 'all') / numel(samplesAVolt)) > obj.tsfFractionThreshold;
+      isSaturated = (sum(vstbAr, 'all') / numel(samplesAVolt)) > obj.vstbFractionThreshold;
     end
 
 
@@ -287,19 +287,19 @@ classdef Saturation
         %===========
         % CASE: CWF
         %===========
-        tsfAr = false(nRows, 1);
+        vstbAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
-          asidTsfAr = obj.get_one_ASR_CWF_channel_TSF_bit_array(...
+          asidVstbAr = obj.get_one_ASR_CWF_channel_VSTB_bit_array(...
             bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
             AsrSamplesAVoltSrm(asid));
 
           % Merge (OR) bits over ASIDs.
-          tsfAr = any([tsfAr, asidTsfAr], 2);
+          vstbAr = any([vstbAr, asidVstbAr], 2);
         end
 
         isSaturatedAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
-          tt2000Ar, tsfAr, ...
-          obj.tsfFractionThreshold, obj.cwfSlidingWindowLengthSec);
+          tt2000Ar, vstbAr, ...
+          obj.vstbFractionThreshold, obj.cwfSlidingWindowLengthSec);
       else
         %===========
         % CASE: SWF
@@ -325,7 +325,7 @@ classdef Saturation
         % influence/explain if the above processing is slow. Should only
         % be relevant for CWF.
         % NOTE: Only reflects the behaviour of the final saturation bit,
-        % not the TSF.
+        % not the VSTB.
         nSaturationChanges = numel(find(isSaturatedAr(1:end-1) ~= isSaturatedAr(2:end)));
         Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
         L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
@@ -335,8 +335,8 @@ classdef Saturation
 
 
 
-    % Return TSF for CWF data.
-    function tsfAr = get_one_ASR_CWF_channel_TSF_bit_array(obj, ssid, isAchgFpa, samplesAVolt)
+    % Return VSTB for CWF data.
+    function vstbAr = get_one_ASR_CWF_channel_VSTB_bit_array(obj, ssid, isAchgFpa, samplesAVolt)
       nRows = irf.assert.sizes( ...
         ssid,         [1], ...
         isAchgFpa,    [-1], ...
@@ -346,13 +346,13 @@ classdef Saturation
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         isAchgFpa.logical2doubleNan());
 
-      tsfAr = false(nRows, 1);
+      vstbAr = false(nRows, 1);
 
       for iSs = 1:nSs
         iRec1   = iRec1Ar(iSs);
         iRec2   = iRec2Ar(iSs);
 
-        tsfAr(iRec1:iRec2) = obj.get_TSF(...
+        vstbAr(iRec1:iRec2) = obj.get_VSTB(...
           samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
       end
     end

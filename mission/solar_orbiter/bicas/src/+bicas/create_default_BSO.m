@@ -410,7 +410,7 @@ S.define_setting('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH', '')
 %-------------------------------------------------------------------------------
 % TODO-DEC: Too high AC diff thresholds?
 S.define_setting('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC',            60.0);
-S.define_setting('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD',                    0.5);
+S.define_setting('PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD',                   0.5);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',         40.0);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',            2.0);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   0.3);
