@@ -46,7 +46,7 @@ classdef SdChannelData
     samplesAr
 
     % Nx1 array.
-    vstbAr
+    vsqbAr
   end
   properties (Dependent)
     % Nx1 array. Logical.
@@ -78,15 +78,15 @@ classdef SdChannelData
 
 
 
-    function obj = SdChannelData(samplesAr, vstbAr)
+    function obj = SdChannelData(samplesAr, vsqbAr)
       assert(isfloat(samplesAr))
-      assert(islogical(vstbAr))
+      assert(islogical(vsqbAr))
       irf.assert.sizes(...
         samplesAr, [-1, NaN], ...
-        vstbAr,    [-1])
+        vsqbAr,    [-1])
 
       obj.samplesAr = samplesAr;
-      obj.vstbAr     = vstbAr;
+      obj.vsqbAr    = vsqbAr;
     end
 
 
@@ -100,12 +100,12 @@ classdef SdChannelData
 
           ib = S(1).subs{1};
           samplesAr = obj.samplesAr(ib, :);
-          vstbAr    = obj.vstbAr(   ib, :);
-          % IMPLEMENTATION NOTE: Specifying ":" for second index for vstbAr is
+          vsqbAr    = obj.vsqbAr(   ib, :);
+          % IMPLEMENTATION NOTE: Specifying ":" for second index for vsqbAr is
           % necessary for ensuring always returning a column vector, despite
           % that it is a column vector already.
 
-          varargout = {bicas.proc.L1L2.SdChannelData(samplesAr, vstbAr)};
+          varargout = {bicas.proc.L1L2.SdChannelData(samplesAr, vsqbAr)};
 
         case '.'
           % Call method (sic!)
@@ -136,7 +136,7 @@ classdef SdChannelData
           ib = S(1).subs{1};
 
           Sdcd1.samplesAr(ib, :) = Sdcd2.samplesAr;
-          Sdcd1.vstbAr(   ib)    = Sdcd2.vstbAr;
+          Sdcd1.vsqbAr(   ib)    = Sdcd2.vsqbAr;
 
         otherwise
           error('BICAS:Assertion', 'Unsupported operation.')
@@ -147,7 +147,7 @@ classdef SdChannelData
 
     % "Overload" size(obj, ...)
     function s = size(obj, varargin)
-      s = size(obj.vstbAr, varargin{:});
+      s = size(obj.vsqbAr, varargin{:});
     end
 
 
@@ -155,8 +155,8 @@ classdef SdChannelData
     % Operator overloading.
     function Sdcd3 = plus(Sdcd1, Sdcd2)
       samplesAr3 = Sdcd1.samplesAr + Sdcd2.samplesAr;
-      vstbAr3    = Sdcd1.vstbAr    | Sdcd2.vstbAr;
-      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vstbAr3);
+      vsqbAr3    = Sdcd1.vsqbAr    | Sdcd2.vsqbAr;
+      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsqbAr3);
     end
 
 
@@ -164,8 +164,8 @@ classdef SdChannelData
     % Operator overloading.
     function Sdcd3 = minus(Sdcd1, Sdcd2)
       samplesAr3 = Sdcd1.samplesAr - Sdcd2.samplesAr;
-      vstbAr3    = Sdcd1.vstbAr    | Sdcd2.vstbAr;
-      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vstbAr3);
+      vsqbAr3    = Sdcd1.vsqbAr    | Sdcd2.vsqbAr;
+      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsqbAr3);
     end
 
 

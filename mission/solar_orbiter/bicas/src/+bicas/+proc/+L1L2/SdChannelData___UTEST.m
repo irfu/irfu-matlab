@@ -33,11 +33,11 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
 
 
       SAMPLES_AR = [1,2; 3,4; 5,NaN];
-      VSTB_AR    = logical([0;1;0]);
+      VSQB_AR    = logical([0;1;0]);
 
-      Sdcd = bicas.proc.L1L2.SdChannelData(SAMPLES_AR, VSTB_AR);
+      Sdcd = bicas.proc.L1L2.SdChannelData(SAMPLES_AR, VSQB_AR);
       testCase.assertEqual(Sdcd.samplesAr, SAMPLES_AR)
-      testCase.assertEqual(Sdcd.vstbAr,    VSTB_AR)
+      testCase.assertEqual(Sdcd.vsqbAr,    VSQB_AR)
       testCase.assertEqual(size(Sdcd),     [3, 1])
       testCase.assertEqual(Sdcd.bFp,       logical([0; 0; 1]))
     end
@@ -140,9 +140,9 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
     % Get test SDCD with test data by indexing input to SDCD.
     function Sdcd = get_SDCD(testCase, ib)
       SAMPLES_AR = [1,2; 3,4; 5,6; 7,8; 9,10];
-      VSTB_AR    = logical([0;1;0;1;0]);
+      VSQB_AR    = logical([0;1;0;1;0]);
 
-      Sdcd = bicas.proc.L1L2.SdChannelData(SAMPLES_AR(ib, :), VSTB_AR(ib, :));
+      Sdcd = bicas.proc.L1L2.SdChannelData(SAMPLES_AR(ib, :), VSQB_AR(ib, :));
     end
 
 

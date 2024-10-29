@@ -434,10 +434,10 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
           ActSdcd.samplesAr
           ExpSdcd.samplesAr
         end
-        if ~isequaln(ActSdcd.vstbAr, ExpSdcd.vstbAr)
+        if ~isequaln(ActSdcd.vsqbAr, ExpSdcd.vsqbAr)
           sdid
-          ActSdcd.vstbAr
-          ExpSdcd.vstbAr
+          ActSdcd.vsqbAr
+          ExpSdcd.vsqbAr
         end
 
         % Check everything (partially overlapping with above).
@@ -462,14 +462,14 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
     % Fast-and-easy function for creating one bicas.proc.L1L2.SdChannelDataDict
     % from variables on a format suitable for hardcoding (CWF only).
-    function SdcdDict = create_SdcdDict(samplesArData, vstbArData)
+    function SdcdDict = create_SdcdDict(samplesArData, vsqbArData)
       SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
       for i = 1:numel(SDID_AR)
         Sdcd = bicas.proc.L1L2.SdChannelData(...
           samplesArData(:, i), ...
-          vstbArData(   :, i));
+          vsqbArData(   :, i));
         SdcdDict = SdcdDict.set(SDID_AR(i), Sdcd);
       end
     end
