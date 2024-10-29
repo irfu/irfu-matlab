@@ -166,9 +166,7 @@ classdef dc
       % --> SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
       %###############################################################
       AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR(...
-        bltsSamplesAVolt, ...
-        bltsSsidArray, ...
-        bltsSdidArray, L);
+        bltsSamplesAVolt, bltsSdidArray, L);
 
 
 
@@ -638,15 +636,15 @@ classdef dc
 
 
     function AsrSamplesAVoltSrm = relabel_reconstruct_samples_BLTS_to_ASR(...
-        bltsSamplesAvolt, bltsSsidArray, bltsSdidArray, L)
+        bltsSamplesAvolt, bltsSdidArray, L)
       % PROPOSAL: Automated tests.
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR', L);
 
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
-        bltsSsidArray,    [-1,     bicas.const.N_BLTS], ...
         bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
+        % bltsSsidArray,    [-1,     bicas.const.N_BLTS], ...
 
       % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
       % -----------------------------------------------------------------
@@ -658,8 +656,8 @@ classdef dc
         bicas.proc.L1L2.const.C.ASID_DICT.values);
 
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        bltsSsidArray, ...
         bltsSdidArray);
+        % bltsSsidArray, ...
 
       for iSs = 1:nSs
         iRec1 = iRec1Ar(iSs);
