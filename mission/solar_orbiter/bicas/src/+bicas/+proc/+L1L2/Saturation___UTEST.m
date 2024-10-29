@@ -94,16 +94,16 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_snapshot_saturation(testCase)
+    function test_get_snapshot_VSQB(testCase)
 
-      function test(satArgsCa, samplesAVolt, ssidStr, isAchg, expIsSaturated)
+      function test(satArgsCa, samplesAVolt, ssidStr, isAchg, expVsqb)
         ssid      = testCase.S(ssidStr);
         isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
         Sat       = testCase.init_object(satArgsCa{:});
 
-        actIsSaturated = Sat.get_snapshot_saturation(samplesAVolt, ssid, isAchgFpa);
+        actVsqb = Sat.get_snapshot_VSQB(samplesAVolt, ssid, isAchgFpa);
 
-        testCase.assertEqual(actIsSaturated, expIsSaturated)
+        testCase.assertEqual(actVsqb, expVsqb)
       end
 
       function main()
@@ -149,22 +149,22 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_snapshot_saturation_many(testCase)
+    function test_get_snapshot_VSQB_many(testCase)
 
       function test(...
           satArgsCa, ...
           zvNValidSamplesPerRecord, samplesAVolt, ...
-          ssidStr, isAchg, expIsSaturatedAr)
+          ssidStr, isAchg, expVsqbAr)
 
-        ssid             = testCase.S(ssidStr);
-        expIsSaturatedAr = logical(expIsSaturatedAr);
-        isAchgFpa        = bicas.utils.FPArray.floatNan2logical(isAchg);
-        Sat              = testCase.init_object(satArgsCa{:});
+        ssid      = testCase.S(ssidStr);
+        expVsqbAr = logical(expVsqbAr);
+        isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
+        Sat       = testCase.init_object(satArgsCa{:});
 
-        actIsSaturatedAr = Sat.get_snapshot_saturation_many(...
+        actVsqbAr = Sat.get_snapshot_VSQB_many(...
           zvNValidSamplesPerRecord, samplesAVolt, ssid, isAchgFpa);
 
-        testCase.assertEqual(actIsSaturatedAr, expIsSaturatedAr)
+        testCase.assertEqual(actVsqbAr, expVsqbAr)
       end
 
       function main()
@@ -214,14 +214,14 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     %##############
     % Zero records
     %##############
-    function test_get_voltage_saturation_quality_bit___zero_records(testCase)
+    function test_get_VSQB___zero_records(testCase)
       for hasSwfFormat = 0:1
         AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 0, 'EMPTY');
         AsrSamplesAVoltSrm.add(testCase.A("DC_V1"), zeros(0, 1))
         AsrSamplesAVoltSrm.add(testCase.A("DC_V2"), zeros(0, 1))
         AsrSamplesAVoltSrm.add(testCase.A("DC_V3"), zeros(0, 1))
 
-        testCase.test_get_voltage_saturation_quality_bit(testCase, ...
+        testCase.test_get_VSQB(testCase, ...
           cwfSlidingWindowLengthSec = 10, ...
           vstbFractionThreshold     = 0.5, ...
           thresholdAVoltDcSingle    = 1, ...
@@ -236,7 +236,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           isAchg                    = zeros(0, 1), ...
           hasSwfFormat              = logical(hasSwfFormat), ...
           ...
-          expIsSaturatedAr          = false(0,1));
+          expVsqbAr                 = false(0,1));
       end
     end
 
@@ -246,14 +246,14 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     %#####
     % One subsequence
     % CWF, BDM=0, LRX=1/DC diff.
-    function test_get_voltage_saturation_quality_bit___CWF_DC_diff(testCase)
+    function test_get_VSQB___CWF_DC_diff(testCase)
 
       AsrSamplesAVoltSrm        = bicas.utils.SameRowsMap("uint8", 3, 'EMPTY');
       AsrSamplesAVoltSrm.add(testCase.A("DC_V1"),  [2 0 2]')
       AsrSamplesAVoltSrm.add(testCase.A("DC_V12"), [2 0 2]'+1)
       AsrSamplesAVoltSrm.add(testCase.A("DC_V23"), [2 0 2]'+1)
 
-      testCase.test_get_voltage_saturation_quality_bit(testCase, ...
+      testCase.test_get_VSQB(testCase, ...
         cwfSlidingWindowLengthSec = 2.1, ...
         vstbFractionThreshold     = 0.4, ...
         thresholdAVoltDcSingle    = 1, ...
@@ -268,7 +268,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         isAchg                    = [0 0 0]', ...
         hasSwfFormat              = false, ...
         ...
-        expIsSaturatedAr          = [1 1 1]');
+        expVsqbAr                 = [1 1 1]');
     end
 
 
@@ -276,13 +276,13 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % One subsequence
     % Separate episodes of saturation on different channels.
     % CWF, BDM=0, LRX=1/AC diff.
-    function test_get_voltage_saturation_quality_bit___CWF_AC_diff(testCase)
+    function test_get_VSQB___CWF_AC_diff(testCase)
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 10, 'EMPTY');
       AsrSamplesAVoltSrm.add(testCase.A("DC_V1"),  [2 2 0 0 0 0 0 0 0 0]')
       AsrSamplesAVoltSrm.add(testCase.A("AC_V12"), [0 0 0 2 2 0 0 0 0 0]'+2)
       AsrSamplesAVoltSrm.add(testCase.A("AC_V23"), [0 0 0 0 0 0 2 2 0 0]'+2)
 
-      testCase.test_get_voltage_saturation_quality_bit(testCase, ...
+      testCase.test_get_VSQB(testCase, ...
         cwfSlidingWindowLengthSec = 2.1, ...
         vstbFractionThreshold     = 0.6, ...
         thresholdAVoltDcSingle    = 1, ...
@@ -297,7 +297,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         isAchg                    = [0 0 0 0 0 0 0 0 0 0]', ...
         hasSwfFormat              = false, ...
         ...
-        expIsSaturatedAr          = [1 1 0 1 1 0 1 1 0 0]');
+        expVsqbAr                 = [1 1 0 1 1 0 1 1 0 0]');
     end
 
 
@@ -310,7 +310,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % NOTE: Tests correct function behaviour, but unrealistic input data.
     % Function should never simultaneously receive DC and AC diffs (non-NaN
     % values), but the function is also not aware of LRX and should not care.
-    function test_get_voltage_saturation_quality_bit___mult_subsequences(testCase)
+    function test_get_VSQB___mult_subsequences(testCase)
       BDM4_DLR0_ROW = ["DC_V1", "DC_V2", "DC_V3", "AC_V12", "AC_V23"];
 
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 8, 'EMPTY');
@@ -320,7 +320,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       AsrSamplesAVoltSrm.add(testCase.A("DC_V2"),  [3 3 0 0 0 0 0 0]')
       AsrSamplesAVoltSrm.add(testCase.A("DC_V3"),  [0 0 0 0 2 2 0 0]')
 
-      testCase.test_get_voltage_saturation_quality_bit(testCase, ...
+      testCase.test_get_VSQB(testCase, ...
         cwfSlidingWindowLengthSec = 2.1, ...
         vstbFractionThreshold     = 0.6, ...
         thresholdAVoltDcSingle    = 1, ...
@@ -338,7 +338,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         isAchg                    = [0 0 0 0 0 0 0 0]', ...
         hasSwfFormat              = false, ...
         ...
-        expIsSaturatedAr          = [1 1 1 1 1 1 1 1]');
+        expVsqbAr                 = [1 1 1 1 1 1 1 1]');
     end
 
 
@@ -349,7 +349,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % One subsequence
     % SWF, BDM=0, LRX=0/AC diff
     % Saturated DC single
-    function test_get_voltage_saturation_quality_bit___SWF_1(testCase)
+    function test_get_VSQB___SWF_1(testCase)
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 2, 'EMPTY');
       AsrSamplesAVoltSrm.add(testCase.A("DC_V1"), ...
         [
@@ -367,7 +367,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         [0 0 0 2 2 2 2] + 6;
         ]+1);
 
-      testCase.test_get_voltage_saturation_quality_bit(testCase, ...
+      testCase.test_get_VSQB(testCase, ...
         cwfSlidingWindowLengthSec = 2.1, ...   % Should be irrelevant since SWF.
         vstbFractionThreshold     = 0.5, ...
         thresholdAVoltDcSingle    = 1, ...
@@ -382,7 +382,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         isAchg                    = [0 1]', ...
         hasSwfFormat              = true, ...
         ...
-        expIsSaturatedAr          = [1 0]');
+        expVsqbAr                 = [1 0]');
     end
 
 
@@ -391,7 +391,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % SWF, BDM=0, LRX=0/AC diff, LG+HG.
     % Varying snapshot lengths.
     % Saturated AC diffs
-    function test_get_voltage_saturation_quality_bit___SWF_2(testCase)
+    function test_get_VSQB___SWF_2(testCase)
 
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 4, 'EMPTY');
       AsrSamplesAVoltSrm.add(testCase.A("DC_V1"), ...
@@ -416,7 +416,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         [0 0 0 2 2 2 2] + 6;
         ]+1)
 
-      testCase.test_get_voltage_saturation_quality_bit(testCase, ...
+      testCase.test_get_VSQB(testCase, ...
         cwfSlidingWindowLengthSec = 2.1, ...   % Should be irrelevant since SWF.
         vstbFractionThreshold     = 0.5, ...
         thresholdAVoltDcSingle    = 1, ...
@@ -431,13 +431,13 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         isAchg                    = [0 0 1 1]', ...
         hasSwfFormat              = true, ...
         ...
-        expIsSaturatedAr          = [1 0 1 0]');
+        expVsqbAr                 = [1 0 1 0]');
     end
 
 
 
-    function test_get_one_ASR_CWF_channel_VSTB_bit_array___DC(testCase)
-      testCase.test_get_one_ASR_CWF_channel_VSTB_bit_array(testCase, ...
+    function test_get_ASR_CWF_channel_VSTB___DC(testCase)
+      testCase.test_get_ASR_CWF_channel_VSTB(testCase, ...
         thresholdAVoltDcSingle = 1, ...
         thresholdAVoltDcDiff   = 3, ...
         thresholdAVoltAclg     = 5, ...
@@ -451,8 +451,8 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_one_ASR_CWF_channel_VSTB_bit_array___AC(testCase)
-      testCase.test_get_one_ASR_CWF_channel_VSTB_bit_array(testCase, ...
+    function test_get_ASR_CWF_channel_VSTB___AC(testCase)
+      testCase.test_get_ASR_CWF_channel_VSTB(testCase, ...
         thresholdAVoltDcSingle = 1, ...
         thresholdAVoltDcDiff   = 3, ...
         thresholdAVoltAclg     = 5, ...
@@ -466,8 +466,8 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_one_ASR_SWF_channel_saturation_bit_array___AC(testCase)
-      testCase.test_get_one_ASR_SWF_channel_saturation_bit_array(testCase, ...
+    function test_get_ASR_SWF_channel_VSQB___AC(testCase)
+      testCase.test_get_ASR_SWF_channel_VSQB(testCase, ...
         vstbFractionThreshold    = 0.4, ...
         thresholdAVoltDcSingle   = 1, ...
         thresholdAVoltDcDiff     = 3, ...
@@ -501,7 +501,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_voltage_saturation_quality_bit(testCase, V)
+    function test_get_VSQB(testCase, V)
       arguments
         testCase
         V.cwfSlidingWindowLengthSec
@@ -518,7 +518,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.isAchg
         V.hasSwfFormat
         %
-        V.expIsSaturatedAr
+        V.expVsqbAr
       end
 
       % Modify/normalize arguments.
@@ -527,7 +527,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       V.isAchgFpa    = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
       V.hasSwfFormat = logical(V.hasSwfFormat);
 
-      V.expIsSaturatedAr = logical(V.expIsSaturatedAr);
+      V.expVsqbAr = logical(V.expVsqbAr);
 
       L = bicas.Logger('NO_STDOUT', false);
       Sat = testCase.init_object(...
@@ -539,16 +539,16 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg);
 
       % CALL FUNCTION
-      actIsSaturatedAr = Sat.get_voltage_saturation_quality_bit(...
+      actVsqbAr = Sat.get_VSQB(...
         V.tt2000Ar, V.AsrSamplesAVoltSrm, V.zvNValidSamplesPerRecord, ...
         V.bltsSsidAr, V.isAchgFpa, V.hasSwfFormat, L);
 
-      testCase.assertEqual(actIsSaturatedAr, V.expIsSaturatedAr)
+      testCase.assertEqual(actVsqbAr, V.expVsqbAr)
     end
 
 
 
-    function test_get_one_ASR_CWF_channel_VSTB_bit_array(testCase, V)
+    function test_get_ASR_CWF_channel_VSTB(testCase, V)
       arguments
         testCase
         V.cwfSlidingWindowLengthSec
@@ -580,7 +580,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAclg, ...
         V.thresholdAVoltAchg);
 
-      actVstbAr = Sat.get_one_ASR_CWF_channel_VSTB_bit_array(...
+      actVstbAr = Sat.get_ASR_CWF_channel_VSTB(...
         testCase.S(V.ssidStr), V.isAchgFpa, V.samplesAVolt);
 
       testCase.assertEqual(actVstbAr, V.expVstbAr)
@@ -588,7 +588,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_one_ASR_SWF_channel_saturation_bit_array(testCase, V)
+    function test_get_ASR_SWF_channel_VSQB(testCase, V)
       arguments
         testCase
         V.cwfSlidingWindowLengthSec
@@ -620,7 +620,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAclg, ...
         V.thresholdAVoltAchg);
 
-      actVstbAr = Sat.get_one_ASR_SWF_channel_saturation_bit_array(...
+      actVstbAr = Sat.get_ASR_SWF_channel_VSQB(...
         bicas.proc.L1L2.const.C.SSID_DICT(V.ssidStr), V.isAchgFpa, ...
         V.samplesAVolt, V.zvNValidSamplesPerRecord);
 

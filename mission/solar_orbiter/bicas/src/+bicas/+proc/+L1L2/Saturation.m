@@ -24,7 +24,7 @@ classdef Saturation
   %   Ex: BDM=4 ==> Have DC_V1/V2/V3 ==> Derives DC_V12/V13/V23 ==> Saturation
   %       on DC diffs can only be deduced from the samples from which the
   %       samples originate.
-  % PROBLEM: get_voltage_saturation_quality_bit() can not correctly handle
+  % PROBLEM: get_VSQB() can not correctly handle
   %          AsrSamplesAVoltSrm data which derives from non-ASR channels.
   %   Ex: BDM=5-7 ==> 2.5V Ref/GND stored in AsrSamplesAVoltSrm, but are
   %       represented by ASIDs.
@@ -200,15 +200,15 @@ classdef Saturation
     %
     % RETURN VALUE
     % ============
-    % isSaturated
+    % vsqb
     %       Logical. Scalar.
     %
-    function isSaturated = get_snapshot_saturation(obj, samplesAVolt, ssid, isAchg)
-      irf.assert.sizes(samplesAVolt, [1, NaN, 1])     % Row vector.
+    function vsqb = get_snapshot_VSQB(obj, samplesAVolt, ssid, isAchg)
+      assert(isrow(samplesAVolt))     % Row vector(!).
 
       vstbAr = obj.get_VSTB(samplesAVolt, ssid, isAchg);
 
-      isSaturated = (sum(vstbAr, 'all') / numel(samplesAVolt)) > obj.vstbFractionThreshold;
+      vsqb = (sum(vstbAr, 'all') / numel(samplesAVolt)) > obj.vstbFractionThreshold;
     end
 
 
@@ -222,16 +222,17 @@ classdef Saturation
     %       ZV-like array. (iCdfRecord). Length of separate snapshots.
     % zvSamplesAVolt
     %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
-    function isSaturatedAr = get_snapshot_saturation_many(obj, ...
+    %
+    function vsqbAr = get_snapshot_VSQB_many(obj, ...
         zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
 
       nRecs = irf.assert.sizes(...
         zvNValidSamplesPerRecord, [-1],  ...
         zvSamplesAVolt,           [-1, NaN, 1]);
 
-      isSaturatedAr = false(nRecs, 1);
+      vsqbAr = false(nRecs, 1);
       for iRec = 1:nRecs
-        isSaturatedAr(iRec) = obj.get_snapshot_saturation(...
+        vsqbAr(iRec) = obj.get_snapshot_VSQB(...
           zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
           ssid, isAchgFpa);
       end
@@ -249,10 +250,10 @@ classdef Saturation
     %
     % RETURN VALUE
     % ============
-    % isSaturatedAr
-    %       (iCdfRecords). Logical. Quality bit for saturation.
+    % vsqbAr
+    %       (iCdfRecords). Logical.
     %
-    function isSaturatedAr = get_voltage_saturation_quality_bit(...
+    function vsqbAr = get_VSQB(...
         obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
         bltsSsidAr, isAchgFpa, hasSwfFormat, L)
       % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
@@ -277,7 +278,7 @@ classdef Saturation
       L.logf('info', ...
         ['Detecting threshold saturation (voltages) -', ...
         ' One sequence of records with identical settings at a time.'])
-      Tmk = bicas.utils.Timekeeper('get_voltage_saturation_quality_bit', L);
+      Tmk = bicas.utils.Timekeeper('get_VSQB', L);
 
       % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
       % code, but it is difficult to use the same implementation for both
@@ -289,7 +290,7 @@ classdef Saturation
         %===========
         vstbAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
-          asidVstbAr = obj.get_one_ASR_CWF_channel_VSTB_bit_array(...
+          asidVstbAr = obj.get_ASR_CWF_channel_VSTB(...
             bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
             AsrSamplesAVoltSrm(asid));
 
@@ -297,21 +298,21 @@ classdef Saturation
           vstbAr = any([vstbAr, asidVstbAr], 2);
         end
 
-        isSaturatedAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
+        vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
           tt2000Ar, vstbAr, ...
           obj.vstbFractionThreshold, obj.cwfSlidingWindowLengthSec);
       else
         %===========
         % CASE: SWF
         %===========
-        isSaturatedAr = false(nRows, 1);
+        vsqbAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
-          asidIsSaturatedAr = obj.get_one_ASR_SWF_channel_saturation_bit_array(...
+          asidVsqbAr = obj.get_ASR_SWF_channel_VSQB(...
             bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
             AsrSamplesAVoltSrm(asid), zvNValidSamplesPerRecord);
 
           % Merge (OR) bits over ASIDs.
-          isSaturatedAr = any([isSaturatedAr, asidIsSaturatedAr], 2);
+          vsqbAr = any([vsqbAr, asidVsqbAr], 2);
         end
       end
 
@@ -326,7 +327,7 @@ classdef Saturation
         % be relevant for CWF.
         % NOTE: Only reflects the behaviour of the final saturation bit,
         % not the VSTB.
-        nSaturationChanges = numel(find(isSaturatedAr(1:end-1) ~= isSaturatedAr(2:end)));
+        nSaturationChanges = numel(find(vsqbAr(1:end-1) ~= vsqbAr(2:end)));
         Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
         L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
       end
@@ -335,8 +336,8 @@ classdef Saturation
 
 
 
-    % Return VSTB for CWF data.
-    function vstbAr = get_one_ASR_CWF_channel_VSTB_bit_array(obj, ssid, isAchgFpa, samplesAVolt)
+    % Return VSTB (not VSQB) for one channel of CWF data.
+    function vstbAr = get_ASR_CWF_channel_VSTB(obj, ssid, isAchgFpa, samplesAVolt)
       nRows = irf.assert.sizes( ...
         ssid,         [1], ...
         isAchgFpa,    [-1], ...
@@ -359,8 +360,8 @@ classdef Saturation
 
 
 
-    % Return final saturation bit for SWF data.
-    function saturationBitAr = get_one_ASR_SWF_channel_saturation_bit_array(...
+    % Return VSQB (not VSTB) for one (ASR) channel of SWF data.
+    function vsqbAr = get_ASR_SWF_channel_VSQB(...
         obj, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
       [nRows, ~] = irf.assert.sizes( ...
         ssid,                     [1], ...
@@ -371,13 +372,13 @@ classdef Saturation
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         isAchgFpa.logical2doubleNan());
 
-      saturationBitAr = false(nRows, 1);
+      vsqbAr = false(nRows, 1);
 
       for iSs = 1:nSs
         iRec1   = iRec1Ar(iSs);
         iRec2   = iRec2Ar(iSs);
 
-        saturationBitAr(iRec1:iRec2) = obj.get_snapshot_saturation_many(...
+        vsqbAr(iRec1:iRec2) = obj.get_snapshot_VSQB_many(...
           zvNValidSamplesPerRecord(iRec1:iRec2), ...
           samplesAVolt(            iRec1:iRec2, :), ...
           ssid, isAchgFpa(iRec1));
