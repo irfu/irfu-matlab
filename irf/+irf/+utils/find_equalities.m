@@ -1,6 +1,10 @@
 %
 % Given a set of same-sized arrays in one dimension, find all sets of indices
 % for which the array components are all equal.
+
+% Given a set of arrays with the same number of rows, find all combinations of
+% row elements in all arrays combined, which are unique within a specified
+% search distance.
 %
 % NOTE: Counts NaN as equal to itself.
 % NOTE: Is faster the more nearby indices (within searchDistance) are equal.
@@ -111,9 +115,9 @@ for i = 1:nRows
   % the first occurrence. Not the only choice.
   fauxHashArray(i) = i;
 
-  %=======================================================
+  %======================================================
   % Iterate over all preceding data indices within range
-  %=======================================================
+  %======================================================
   jEarliest = max(1, i-searchDistance);
   for j = (i-1):-1:jEarliest
 
