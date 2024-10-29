@@ -39,7 +39,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       %       calls.
       function test(satArgsCa, ssidStr, isAchg, samplesAVolt, expVstbAr)
         ssid      = testCase.S(ssidStr);
-        expVstbAr  = logical(expVstbAr);
+        expVstbAr = logical(expVstbAr);
         isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
         Sat = testCase.init_object(satArgsCa{:});
 

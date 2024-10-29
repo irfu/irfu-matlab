@@ -81,6 +81,7 @@ classdef SdChannelData
     function obj = SdChannelData(samplesAr, vsqbAr)
       assert(isfloat(samplesAr))
       assert(islogical(vsqbAr))
+
       irf.assert.sizes(...
         samplesAr, [-1, NaN], ...
         vsqbAr,    [-1])

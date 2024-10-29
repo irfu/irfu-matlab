@@ -10,8 +10,8 @@
 %
 classdef dc
 % PROPOSAL: Better name.
-%   PRO: Processing includes quality "processing" which is not in "DC".
-%   PROPOSAL: dcq = Demux, Calibrate, Quality
+%   demuxing, calibration, reconstruction, quality
+%   --
 %   process()
 %
 % PROPOSAL: Automatic test code.
@@ -128,10 +128,10 @@ classdef dc
 
 
 
-      %#######################################################################
+      %######################################################################
       % Obtain "demultiplexer" "routings" in the form of SSID-SDID pairs for
       % every BLTS (and CDF record)
-      %#######################################################################
+      %######################################################################
       [bltsSsidArray, bltsSdidArray] = bicas.proc.L1L2.dc.get_SSID_SDID_arrays(...
         Dcip.Zv.bdmFpa, ...
         Dcip.Zv.dlrFpa);
@@ -221,7 +221,9 @@ classdef dc
 
 
     % Obtain SSID and SDID arrays for arrays of BDM and DLR.
+    %
     function [bltsSsidArray, bltsSdidArray] = get_SSID_SDID_arrays(bdmFpa, dlrFpa)
+
       nRecTot = irf.assert.sizes(...
         bdmFpa, [-1], ...
         dlrFpa, [-1]);
@@ -245,8 +247,8 @@ classdef dc
         DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
           bdmFpa(iRecSs1), dlrFpa(iRecSs1));
 
-        ssidArray  = [DemuxerRoutingArray.ssid];
-        sdidArray  = [DemuxerRoutingArray.sdid];
+        ssidArray = [DemuxerRoutingArray.ssid];
+        sdidArray = [DemuxerRoutingArray.sdid];
 
         bltsSsidArray(iRecSs, :) = repmat(ssidArray, nRecSs, 1);
         bltsSdidArray(iRecSs, :) = repmat(sdidArray, nRecSs, 1);
@@ -394,18 +396,31 @@ classdef dc
       % (1) Find continuous subsequences of records with identical settings.
       % (2) Process data separately for each such sequence.
       % --------------------------------------------------------------------
-      % NOTE: Just finding continuous subsequences can take a significant
-      %       amount of time.
-      % NOTE: Empirically, this is not useful for real LFR SWF datasets where
-      %       the LFR sampling frequency changes in every record, meaning that
-      %       the subsequences are all 1 record long.
-      %
       % SS = Subsequence
+      %
+      % NOTE: Empirically, splitting by changing settings is not really useful
+      %       for real LFR SWF datasets where the LSF changes in every record
+      %       anyway, meaning that the subsequences are all 1 record long.
+      %       Suspect that this implies that the indexing of arrays becomes a
+      %       performance problem since removing bltsSsidArray argument (which
+      %       was mistakenly added despite being unused) speed up BICAS
+      %       significantly for SWF data: about half of the time added after
+      %       adding bltsSsidArray+bltsSdidArray.
+      %       /Erik P G Johansson, 2024-10-29
       %========================================================================
       % PROPOSAL: Do not use irf.utils.split_by_change() for SWF data. It is
       %           enough to group by identical values (not use continuous
       %           blocks of CDF records).
       %   PRO: Faster
+      %   CON: Uses knowledge of how the calibration works: that CDF records
+      %        are calibrated separately.
+      %   PROPOSAL: Create similar function which finds groups of unique
+      %             combinations.
+      %           [iMembersCa, iHeadsCa] = group_unique_combinations(...)
+      %     PROPOSAL: Implement using recursion: Find unique values (rows) for
+      %               one argument at a time.
+      %========================================================================
+      %Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.calibrate_voltages:irf.utils.split_by_change', A.L);
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         Zv.isAchgFpa.logical2doubleNan(), ...
         Zv.freqHz, ...
@@ -415,10 +430,9 @@ classdef dc
         Zv.bltsSsidArray, ...
         iCalibLZv, ...
         iCalibHZv);
+      %Tmk.stop_log(nRecords, 'record', nSs, 'subsequence')
 
-      A.L.logf('info', ...
-        ['Calibrating voltages -', ...
-        ' One sequence of records with identical settings at a time.'])
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.calibrate_voltages:Calibrating voltages', A.L);
       for iSs = 1:nSs
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
@@ -449,6 +463,7 @@ classdef dc
         % Add subsequence signals to the global array (all records).
         bltsSamplesAVolt(iRec1:iRec2, :, :) = ssBltsSamplesAVolt;
       end    % for
+      Tmk.stop_log(nRecords, 'record', nSs, 'subsequence')
 
     end    % calibrate_voltages
 
@@ -656,9 +671,6 @@ classdef dc
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        %=============================================================
-        % RE-LABEL SIGNALS FROM BLTS TO ASR, RECONSTRUCT MISSING ASRs
-        %=============================================================
         SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence(...
           bltsSdidArray(   iRec1,          :), ...
           bltsSamplesAvolt(iRec1:iRec2, :, :));

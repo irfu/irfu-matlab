@@ -25,6 +25,9 @@
 % First created 2019-11-18
 %
 classdef demuxer
+% PROPOSAL: Better name.
+%   PRO: Code really implements "relabel BLTS to ASR" and "reconstructing
+%        ASRs".
 
 
 

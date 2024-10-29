@@ -18,6 +18,10 @@
 %
 classdef SdChannelDataDict
   % PROPOSAL: Automatic test code.
+  %
+  % PROPOSAL: Constructor pre-allocates SDCDs.
+  % PROPOSAL: Implement custom print version of class.
+  %   PRO: Useful for debugging.
 
 
 
@@ -76,6 +80,32 @@ classdef SdChannelDataDict
       ca   = obj.Dict(asrSdid);
       Sdcd = ca{1};
     end
+
+
+
+    % function groups = getPropertyGroups(obj)
+    %   % PROPOSAL: Separate properties for MATLAB class and size.
+    %   %   PRO: Avoids repetition.
+    %   %   CON: Less good for debugging class itself.
+    %
+    %   % IMPLEMENTATION NOTE: It appear that one can only represent
+    %   % "properties" using single-row strings.
+    %
+    %   properties = struct(...
+    %     'dataAr', bicas.utils.FPArray.value_to_single_row_string(obj.dataAr, obj.fpAr), ...
+    %     'fpAr',   bicas.utils.FPArray.value_to_single_row_string(obj.fpAr), ...
+    %     'size',   size(obj), ...
+    %     'mc',     obj.mc, ...
+    %     'onlyFp', all( obj.fpAr, 'all'), ...
+    %     'noFp',   all(~obj.fpAr, 'all') ...
+    %     );
+    %   groups = matlab.mixin.util.PropertyGroup(properties);
+    % end
+    % function groups = getPropertyGroups(obj)
+    %   properties = struct(...
+    %     );
+    %   groups = matlab.mixin.util.PropertyGroup(properties);
+    % end
 
 
 
