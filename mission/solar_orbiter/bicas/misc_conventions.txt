@@ -447,7 +447,8 @@ TSF
         the entire snapshot, or
     (2) saturation flags for CWF data which may take saturation before or after
         into account.
-    Not to be confused actual saturation bit(s) set in quality zVariables.
+    TSF should not be confused with actual saturation bit(s) set in quality
+    zVariables.
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV

@@ -100,13 +100,14 @@ classdef dc
 
 
 
-    % Derive DCOP from DCIP, i.e.
-    % (1) demux (demultiplex),
-    % (2) calibrate data, and
-    % (3) set quality variables.
-    %
-    % NOTE: Public function as opposed to the other demuxing/calibration
-    % functions.
+    % Derive DCOP from DCIP:
+    % * Calibrate bias currents.
+    % * Voltages:
+    %   (1) demux (demultiplex): Relabel samples from BLTS to SDID.
+    %   (2) calibrate samples
+    %   (3) reconstruct (derive) samples for missing channels from calibrated
+    %       samples (e.g. DC_V12 := DC_V1-DC_V2)
+    % * Set quality variables.
     %
     function Dcop = process_calibrate_demux(Dcip, InCurPd, Cal, NsoTable, Bso, L)
 
@@ -128,8 +129,8 @@ classdef dc
 
 
       %#######################################################################
-      % Obtain "demultiplexer" "routings" on the form of SSID and SDID values
-      % for every BLTS
+      % Obtain "demultiplexer" "routings" in the form of SSID-SDID pairs for
+      % every BLTS (and CDF record)
       %#######################################################################
       [bltsSsidArray, bltsSdidArray] = bicas.proc.L1L2.dc.get_SSID_SDID_arrays(...
         Dcip.Zv.bdmFpa, ...
@@ -137,9 +138,9 @@ classdef dc
 
 
 
-      %####################
-      % CALIBRATE VOLTAGES
-      %####################
+      %#############################################
+      % CALIBRATE VOLTAGES (WHILE LABELLED BY BLTS)
+      %#############################################
       bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages(...
         Epoch                   = Dcip.Zv.Epoch, ...
         bltsSamplesTm           = Dcip.Zv.bltsSamplesTm, ...
@@ -159,10 +160,11 @@ classdef dc
 
 
 
-      %#########################################################
-      % ~"DEMUX" VOLTAGES
-      % (SIGNALS LABELLED BY BLTS --> SIGNALS LABELLED BY SDID)
-      %#########################################################
+      %###############################################################
+      % ~"DEMUX" VOLTAGES:
+      % SIGNALS LABELLED BY BLTS
+      % --> SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
+      %###############################################################
       AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR(...
         bltsSamplesAVolt, ...
         bltsSsidArray, ...
@@ -187,13 +189,20 @@ classdef dc
         'Epoch',            Dcip.Zv.Epoch, ...
         'bdmFpa',           Dcip.Zv.bdmFpa, ...
         'isFullSaturation', isAutodetectedSaturation);
-      [zvUfv, QUALITY_FLAG, Zv.L2_QUALITY_BITMASK] = ...
+      [zvUfv, QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.L1L2.qual.get_UFV_quality_ZVs(...
         ZvIn, Dcip.isLfr, NsoTable, Bso, L);
       clear ZvIn
 
-      Zv.QUALITY_FLAG = Dcip.Zv.QUALITY_FLAG.min(bicas.utils.FPArray(QUALITY_FLAG));
-      zvUfv           = Dcip.Zv.ufv | zvUfv;
+
+
+      %########################
+      % Set "final" zVariables
+      %########################
+      Zv = struct();
+      zvUfv                 = Dcip.Zv.ufv | zvUfv;
+      Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
+      Zv.QUALITY_FLAG       = Dcip.Zv.QUALITY_FLAG.min(bicas.utils.FPArray(QUALITY_FLAG));
 
       % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
       Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
@@ -203,9 +212,9 @@ classdef dc
 
 
 
-      % ############
+      %##############
       % END FUNCTION
-      % ############
+      %##############
       Dcop = bicas.proc.L1L2.DemultiplexingCalibrationOutput(Zv);
 
       nRecords = size(Dcip.Zv.Epoch, 1);
@@ -229,7 +238,7 @@ classdef dc
       % NOTE: No need for bicas.utils.FPArray since SSIDs and SDIDs handle all
       % special cases including unknown source and destination.
       bltsSsidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8');
-      bltsSdidArray = bltsSsidArray;
+      bltsSdidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8');
 
       for iSs = 1:nSs
         iRecSs1 = iRec1Array(iSs);
