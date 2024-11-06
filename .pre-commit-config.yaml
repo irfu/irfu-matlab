@@ -4,7 +4,7 @@
 ci:
     autofix_prs: true
     autoupdate_branch: 'devel'
-    autoupdate_schedule: weekly
+    autoupdate_schedule: 'weekly'
     skip: []
     submodules: false
 
