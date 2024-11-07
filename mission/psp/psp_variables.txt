@@ -15,7 +15,7 @@ varName: psp_fld_l2_rfs_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
 fileName: psp_fld_l2_rfs_lfr
 directory: fields/l2/rfs_lfr/20YY/MM
 hourtag: 
-varNameShort: rfs_lfr_(v1v2|v3v4)
+varNameShort: l2_rfs_lfr_(v1v2|v3v4)
 related: 
 info#start
 xxx
@@ -28,7 +28,7 @@ varName: frequency_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
 fileName: psp_fld_l2_rfs_lfr
 directory: fields/l2/rfs_lfr/20YY/MM
 hourtag: 
-varNameShort: rfs_lfr_(v1v2|v3v4)_freq
+varNameShort: l2_rfs_lfr_(v1v2|v3v4)_freq
 related: 
 info#start
 xxx
@@ -41,7 +41,7 @@ varName: psp_fld_l2_rfs_lfr_hires_averages_(ch0_V1V2|ch1_V3V4)
 fileName: psp_fld_l2_rfs_lfr
 directory: fields/l2/rfs_lfr/20YY/MM
 hourtag: 
-varNameShort: rfs_lfr_(v1v2|v3v4)_hr
+varNameShort: l2_rfs_lfr_(v1v2|v3v4)_hr
 related: 
 info#start
 xxx
@@ -54,7 +54,33 @@ varName: frequency_lfr_hires_averages_(ch0_V1V2|ch1_V3V4)
 fileName: psp_fld_l2_rfs_lfr
 directory: fields/l2/rfs_lfr/20YY/MM
 hourtag: 
-varNameShort: rfs_lfr_(v1v2|v3v4)_freq_hr
+varNameShort: l2_rfs_lfr_(v1v2|v3v4)_freq_hr
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l3_rfs_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l3_rfs_lfr
+directory: fields/l3/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: l3_rfs_lfr_(v1v2|v3v4)
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: frequency_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l3_rfs_lfr
+directory: fields/l3/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: l3_rfs_lfr_(v1v2|v3v4)_freq
 related: 
 info#start
 xxx
@@ -67,7 +93,46 @@ varName: psp_fld_l2_rfs_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
 fileName: psp_fld_l2_rfs_hfr
 directory: fields/l2/rfs_hfr/20YY/MM
 hourtag: 
-varNameShort: rfs_hfr_(v1v2|v3v4)
+varNameShort: l2_rfs_hfr_(v1v2|v3v4)
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: frequency_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l2_rfs_hfr
+directory: fields/l2/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: l2_rfs_hfr_(v1v2|v3v4)_freq
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l3_rfs_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l3_rfs_hfr
+directory: fields/l3/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: l3_rfs_hfr_(v1v2|v3v4)
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: frequency_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l3_rfs_hfr
+directory: fields/l3/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: l3_rfs_hfr_(v1v2|v3v4)_freq
 related: 
 info#start
 xxx
