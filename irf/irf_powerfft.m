@@ -216,7 +216,11 @@ nFreqs = ceil(nFft/2);
 
 % NOTE: Using "hanning" function (not "hann" or "hamming").
 w     = hanning(nFft);
+<<<<<<< HEAD
 wnorm = sum(w.^2)/nFft;	      % Normalization factor from windowing
+=======
+wnorm = sum(w.^2)/nFft;       % Normalization factor from windowing
+>>>>>>> origin/PSPdevel
 nnorm = 2.0/nFft/samplFreqHz/wnorm;
 
 

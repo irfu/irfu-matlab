@@ -1,0 +1,1668 @@
+%%%%
+varName: xxx(can be regexP, e.g. "dc_coupled_V(12|34)") 
+fileName: xxx (can be regexp with the same selections as varName, e.g. "file_V(12|34)"
+directory: xxxx 
+hourtag: empty or "6h"
+varNameShort: xxx (can be regexp with the same selections as varName, e.g. "dcV(12|34)"
+related: not used (idea to link in display)
+info#start
+As much information as useful from command line to see to describe data
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_rfs_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l2_rfs_lfr
+directory: fields/l2/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: l2_rfs_lfr_(v1v2|v3v4)
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: frequency_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l2_rfs_lfr
+directory: fields/l2/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: l2_rfs_lfr_(v1v2|v3v4)_freq
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_rfs_lfr_hires_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l2_rfs_lfr
+directory: fields/l2/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: l2_rfs_lfr_(v1v2|v3v4)_hr
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: frequency_lfr_hires_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l2_rfs_lfr
+directory: fields/l2/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: l2_rfs_lfr_(v1v2|v3v4)_freq_hr
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l3_rfs_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l3_rfs_lfr
+directory: fields/l3/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: l3_rfs_lfr_(v1v2|v3v4)
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: frequency_lfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l3_rfs_lfr
+directory: fields/l3/rfs_lfr/20YY/MM
+hourtag: 
+varNameShort: l3_rfs_lfr_(v1v2|v3v4)_freq
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_rfs_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l2_rfs_hfr
+directory: fields/l2/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: l2_rfs_hfr_(v1v2|v3v4)
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: frequency_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l2_rfs_hfr
+directory: fields/l2/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: l2_rfs_hfr_(v1v2|v3v4)_freq
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l3_rfs_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l3_rfs_hfr
+directory: fields/l3/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: l3_rfs_hfr_(v1v2|v3v4)
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: frequency_hfr_auto_averages_(ch0_V1V2|ch1_V3V4)
+fileName: psp_fld_l3_rfs_hfr
+directory: fields/l3/rfs_hfr/20YY/MM
+hourtag: 
+varNameShort: l3_rfs_hfr_(v1v2|v3v4)_freq
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_bpf_dV(12|34)hg_avg
+fileName: psp_fld_l2_dfb_ac_bpf_dV(12|34)hg
+directory: fields/l2/dfb_ac_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_ac_bpf_dv(12|34)_avg
+related: 
+info#start
+PSP FIELDS Digital Fields Board (DFB) AC-coupled Differential Voltage, V3-V4 Antennae,
+Dipole Mode, Bandpass filtered, High Gain, Sensor coordinates.
+This data is only available in V3-V4 sensor coordinates.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_bpf_dV(12|34)hg_peak
+fileName: psp_fld_l2_dfb_ac_bpf_dV(12|34)hg
+directory: fields/l2/dfb_ac_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_ac_bpf_dv(12|34)_peak
+related: 
+info#start
+PSP FIELDS Digital Fields Board (DFB) AC-coupled Differential Voltage, V3-V4 Antennae,
+Dipole Mode, Bandpass filtered, High Gain, Sensor coordinates.
+This data is only available in V3-V4 sensor coordinates.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_bpf_SCMu(l|m)fhg_avg
+fileName: psp_fld_l2_dfb_ac_bpf_SCMu(l|m)fhg
+directory: fields/l2/dfb_ac_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_ac_bpf_SCMu(l|m)fhg_avg
+related: 
+info#start
+PSP FIELDS Digital Fields Board (DFB)  AC-coupled Searchcoil Magnetometer, SCM,
+Bandpass filtered, Low|Medium Frequency, High Gain, u-component, Sensor coordinates.
+This data is only available in u SCM sensor coordinates.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_bpf_SCMu(l|m)fhg_peak
+fileName: psp_fld_l2_dfb_ac_bpf_SCMu(l|m)fhg
+directory: fields/l2/dfb_ac_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_ac_bpf_SCMu(l|m)fhg_peak
+related: 
+info#start
+PSP FIELDS Digital Fields Board (DFB)  AC-coupled Searchcoil Magnetometer, SCM,
+Bandpass filtered, Low|Medium Frequency, High Gain, u-component, Sensor coordinates.
+This data is only available in u SCM sensor coordinates.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_bpf_dV(12|34)hg_avg
+fileName: psp_fld_l2_dfb_dc_bpf_dV(12|34)hg
+directory: fields/l2/dfb_dc_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_dc_bpf_dv(12|34)_avg
+related: 
+info#start
+PSP FIELDS Digital Fields Board (DFB) DC-coupled Differential Voltage, V3-V4 Antennae,
+Dipole Mode, Bandpass filtered, High Gain, Sensor coordinates.
+This data is only available in V3-V4 sensor coordinates.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_bpf_dV(12|34)hg_peak
+fileName: psp_fld_l2_dfb_dc_bpf_dV(12|34)hg
+directory: fields/l2/dfb_dc_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_dc_bpf_dv(12|34)_peak
+related: 
+info#start
+PSP FIELDS Digital Fields Board (DFB) DC-coupled Differential Voltage, V3-V4 Antennae,
+Dipole Mode, Bandpass filtered, High Gain, Sensor coordinates.
+This data is only available in V3-V4 sensor coordinates.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_bpf_SCM(u|v)lfhg_avg
+fileName: psp_fld_l2_dfb_dc_bpf_SCM(u|v)lfhg
+directory: fields/l2/dfb_dc_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_dc_bpf_SCM(u|v)lfhg_avg
+related: 
+info#start
+PSP FIELDS Digital Fields Board (DFB)  DC-coupled Searchcoil Magnetometer, SCM,
+Bandpass filtered, Low Frequency, High Gain, (u|v)-component, Sensor coordinates.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_bpf_SCM(u|v)lfhg_peak
+fileName: psp_fld_l2_dfb_dc_bpf_SCM(u|v)lfhg
+directory: fields/l2/dfb_dc_bpf/20YY/MM
+hourtag: 
+varNameShort: dfb_dc_bpf_SCM(u|v)lfhg_peak
+related: 
+info#start
+PSP FIELDS Digital Fields Board (DFB)  DC-coupled Searchcoil Magnetometer, SCM,
+Bandpass filtered, Low Frequency, High Gain, (u|v)-component, Sensor coordinates.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
+fileName: psp_fld_l2_dfb_ac_spec_dV(12|34)hg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort: ac_spec_dv(12|34)hg
+related: 
+info#start
+High-rate ac power spectra are limited in coverage to the first 
+one eighth of each cycle. 
+The power spectral data undergo a lossy amplitude compression.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_V5hg
+fileName: psp_fld_l2_dfb_ac_spec_V5hg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort: ac_spec_v5hg
+related: 
+info#start
+AC-coupled V5 Antenna Voltage, Monopole Mode, Auto Spectra, High Gain.
+High-rate ac power spectra are limited in coverage to the first 
+one eighth of each cycle.  
+The power spectral data undergo a lossy amplitude compression.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg_frequency_bins
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_dv12_dv34_freq_bins
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+Frequency bins for the dV12hg-dV34hg cross spectra data.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_power_ch(1|2)_dV(12|34)hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_pw_dv(12|34)
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Power for channels DV12HG and DV34HG.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_coh_dV12hg_dV34hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_coh_dv12_dv34
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Coherence between channel DV12HG and channel DV34HG.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_phase_dV12hg_dV34hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_ph_dv12_dv34
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Phase of channel DV34HG relative to channel dV12hg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_crossterm_Real_dV12hg_dV34hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_xterm_Re_dv12_dv34
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Real Part of Crossterm (FT_1 x FT_2^*) for channel DV12HG and dV34hg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_xspec_crossterm_Imag_dV12hg_dV34hg
+fileName: psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg
+directory: fields/l2/dfb_ac_xspec/20YY/MM
+hourtag: 
+varNameShort: ac_xspec_xterm_Im_dv12_dv34
+related: 
+info#start
+DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra.
+L2 XSpectra Imag Part of Crossterm (FT_1 x FT_2^*) for channel DV12HG and dV34hg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg_frequency_bins
+fileName: psp_fld_l2_dfb_dc_xspecc_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_scm(v|d|e)_scm(w|e|f)freq_bins
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+Frequency bins for the SCM(V|S|E)lfhg-SCM(W|E|F)lfhg cross spectra data.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_power_ch(1|2)_SCM(v|w|d|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_pw_scm(v|w|d|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Power for channels SCM(V|D|E)LFHG and SCM(W|E|F)LFHG.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_coh_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_coh_scm(v|d|e)_scm(w|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Coherence between channel SCM(V|D|E)LFHG and channel SCM(W|E|F)LFHG.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_phase_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_ph_scm(v|d|e)_scm(w|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Phase of channel SCM(V|D|E)LFHG and SCM(W|E|F)lfhg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_crossterm_Real_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec__SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_xterm_Re_scm(v|d|e)_scm(w|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Real Part of Crossterm (FT_1 x FT_2^*) for channel SCM(V|D|E)LFHG and SCM(W|E|F)lfhg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_xspec_crossterm_Imag_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_xspec_SCM(v|d|e)lfhg_SCM(w|e|f)lfhg
+directory: fields/l2/dfb_dc_xspec/20YY/MM
+hourtag: 
+varNameShort: dc_xspec_xterm_Im_scm(v|d|e)_scm(w|e|f)
+related: 
+info#start
+DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates.
+L2 XSpectra Imag Part of Crossterm (FT_1 x FT_2^*) for channel SCM(V|D|E)LFHG and SCM(W|E|F)lfhg.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
+fileName: psp_fld_l2_dfb_dc_spec_dV(12|34)hg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_v(12|34)hg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w|d|e|f)lfhg
+fileName: psp_fld_l2_dfb_dc_spec_SCM(u|v|w|d|e|f)lfhg
+directory: fields/l2/dfb_dc_spec/20YY/MM
+hourtag: 
+varNameShort: dc_spec_scm(u|v|w|d|e|f)lfhg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w|d|e|f)lfhg
+fileName: psp_fld_l2_dfb_ac_spec_SCM(u|v|w|d|e|f)lfhg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort: ac_spec_scm(u|v|w|d|e|f)lfhg
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_wf_scm_(lg|hg)_(sensor|sc)
+fileName: psp_fld_l2_dfb_wf_scm
+hourtag: 6h
+directory: fields/l2/dfb_wf_scm/20YY/MM
+varNameShort: wf_scm_(lg|hg)_(sensor|sc)
+related: 
+info#start
+xxx
+xxx
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_quality_flags
+fileName: psp_fld_l2_dfb_ac_spec_dV34hg
+directory: fields/l2/dfb_ac_spec/20YY/MM
+hourtag: 
+varNameShort:
+related: 
+info#start
+Quality flags are on a 1 minute cadence, 
+identifying intervals where instrument or spacecraft activities 
+can affect the measurements.  0 signifies the absence of any flags. 
+
+FIELDS quality flags. This is a bitwise variable, 
+meaning that multiple flags can be set for a single time, 
+by adding flag values. 
+
+Current flagged values are: 
+1: FIELDS antenna bias sweep, 
+2: PSP thruster firing, 
+4: SCM Calibration, 
+8: PSP rotations for MAG calibration (MAG rolls), 
+16: FIELDS MAG calibration sequence, 
+32: SWEAP SPC in electron mode, 
+64: PSP Solar limb sensor (SLS) test. 
+128: PSP spacecraft is off umbra pointing. 
+
+A value of zero corresponds to no set flags. 
+Not all flags are relevant to all FIELDS data products, 
+refer to notes in the CDF metadata and on the FIELDS SOC 
+website for information on how the various flags impact 
+FIELDS data. Additional flagged items may be added in the future.
+info#end
+----
+
+%%%%
+varName: EFLUX
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_eflux
+related: 
+info#start
+Differential Energy Flux vs Energy/angle bin measured by the SPAN-Ae sensor, mounted on the ram side of the spacecraft.
+The units are differential energy flux and eV.
+info#end
+----
+
+%%%%
+varName: ENERGY
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_energy
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: THETA
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_theta
+related: 
+info#start
+Elevation angle in spacecraft coordinates. Unit: degrees.
+info#end
+----
+
+%%%%
+varName: PHI
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_phi
+related: 
+info#start
+Azimuthal angle in spacecraft coordinates. Unit: degrees
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spa_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spa_sf0/20YY/MM
+hourtag: 
+varNameShort: spa_sf0_qf
+related: 
+info#start
+Quality flag is specified for the whole file not for separate time points.
+info#end
+----
+
+%%%%
+varName: EFLUX
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_eflux
+related: 
+info#start
+Differential Energy Flux vs Energy/angle bin measured by the SPAN-B sensor, localized on the anti-ram side of the spacecraft.
+The units are differential energy flux and eV.
+info#end
+----
+
+%%%%
+varName: ENERGY
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_energy
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: THETA
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_theta
+related: 
+info#start
+Elevation angle in spacecraft coordinates. Unit: degrees.
+info#end
+----
+
+%%%%
+varName: PHI
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_phi
+related: 
+info#start
+Azimuthal angle in spacecraft coordinates. Unit: degrees
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spb_sf0_L2_16Ax8Dx32E
+directory: sweap/spe/L2/spb_sf0/20YY/MM
+hourtag: 
+varNameShort: spb_sf0_qf
+related: 
+info#start
+Quality flag is specified for the whole file not for separate time points.
+info#end
+----
+
+%%%%
+varName: EFLUX
+fileName: psp_swp_spa_sf1_L2_32E
+directory: sweap/spe/L2/spa_sf1/20YY/MM
+hourtag: 
+varNameShort: spa_sf1_eflux
+related: 
+info#start
+Differential Energy Flux vs Energy/angle bin measured by the SPAN-Ae sensor, mounted on the ram side of the spacecraft.
+The units are differential energy flux and eV.
+The “sf1” product is an energy spectrum produced on the spacecraft by summing over the theta and phi directions. 
+CAVEAT:The larger theta angles (deflection angles) are artificially enhanced in the “sf1” energy spectra data products 
+due to the method of spectra production on the SPAN-E instrument (straight summing). 
+Thus, SF1 energy spectra are not recommended for rigid statistical analysis.
+info#end
+----
+
+%%%%
+varName: ENERGY
+fileName: psp_swp_spa_sf1_L2_32E
+directory: sweap/spe/L2/spa_sf1/20YY/MM
+hourtag: 
+varNameShort: spa_sf1_energy
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spa_sf1_L2_32E
+directory: sweap/spe/L2/spa_sf1/20YY/MM
+hourtag: 
+varNameShort: spa_sf1_qf
+related: 
+info#start
+Quality flag is specified for the whole file not for separate time points.
+info#end
+----
+
+%%%%
+varName: EFLUX
+fileName: psp_swp_spb_sf1_L2_32E
+directory: sweap/spe/L2/spb_sf1/20YY/MM
+hourtag: 
+varNameShort: spb_sf1_eflux
+related: 
+info#start
+Differential Energy Flux vs Energy/angle bin measured by the SPAN-B sensor, localized on the anti-ram side of the spacecraft.
+The units are differential energy flux and eV.
+The “sf1” product is an energy spectrum produced on the spacecraft by summing over the theta and phi directions. 
+CAVEAT:The larger theta angles (deflection angles) are artificially enhanced in the “sf1” energy spectra data products 
+due to the method of spectra production on the SPAN-E instrument (straight summing). 
+Thus, SF1 energy spectra are not recommended for rigid statistical analysis.
+info#end
+----
+
+%%%%
+varName: ENERGY
+fileName: psp_swp_spb_sf1_L2_32E
+directory: sweap/spe/L2/spb_sf1/20YY/MM
+hourtag: 
+varNameShort: spb_sf1_energy
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spb_sf1_L2_32E
+directory: sweap/spe/L2/spb_sf1/20YY/MM
+hourtag: 
+varNameShort: spb_sf1_qf
+related: 
+info#start
+Quality flag is specified for the whole file not for separate time points.
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_PA_E
+fileName: psp_swp_spe_sf0_L3_pad
+directory: sweap/spe/L3/spe_sf0_pad/20YY/MM
+hourtag: 
+varNameShort: spe_sf0_pad_eflux_vs_pa
+related: 
+info#start
+Electron differential Energy Flux vs Pitch-angle and Energy
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_ENERGY
+fileName: psp_swp_spe_sf0_L3_pad
+directory: sweap/spe/L3/spe_sf0_pad/20YY/MM
+hourtag: 
+varNameShort: spe_sf0_pad_eflux_vs_energy
+related: 
+info#start
+Electron differential Energy Flux vs Pitch-angle and Energy
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_qf
+related: 
+info#start
+Quality flag. The quality flag is a two-byte unsigned integer (CDF_UINT2) with its least significant bit (Bit 0) indicating: Counter Overflow, Bit 1: Survey Snapshot ON (not applicable to archive products), Bit 2: Alternate Energy Table, Bit 3: Spoiler Test, Bit 4: Attenuator Engaged, Bit 5: Highest Archive Rate, Bit 6: No Targeted Sweep, Bit 7: SPAN-Ion New Mass Table (not applicable to electrons), Bit 8: Over-deflection, Bit 9: Archive Snapshot ON, Bit 10: Bad Energy Table, Bit 11: MCP Test, Bit 12: Survey Available, Bit 13: ُArchive Available, Bits 14-15: Reserved.
+info#end
+----
+
+%%%%
+varName: DENS
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_dens
+related: 
+info#start
+Partial moments as derived from the SF00 proton data product. It includes the
+solar wind parameters of density, perpendicular and parallel temperatures, and
+the velocity vector in the instrument frame of reference.
+CAVEAT: The solar wind is not fully in the field of view of the instrument, thus
+the calculated densities are partial and therefore smaller.
+info#end
+----
+
+%%%%
+varName: VEL_INST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_vel_inst
+related: 
+info#start
+Proton velocity in instrument coordinates
+info#end
+----
+
+%%%%
+varName: VEL_SC
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_vel_rsc
+related: 
+info#start
+Proton velocity in spacecraft coordinates. In spacecraft frame, spacecraft velocity NOT removed.
+info#end
+----
+
+%%%%
+varName: VEL_RTN_SUN
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_vel_rtn
+related: 
+info#start
+Proton velocity in RTN coordinates. In Sun frame, spacecraft velocity removed.
+info#end
+----
+
+%%%%
+varName: T_TENSOR_INST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_t_tensor
+related: 
+info#start
+Partial Moment Temperature Tensor in instrument frame.
+info#end
+----
+
+%%%%
+varName: TEMP
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_temp
+related: 
+info#start
+Proton temperature. Average of Trace of Partial Moment Temperature Tensor.
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_ENERGY
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_eflux_vs_en
+related: 
+info#start
+Proton differential Energy Flux vs Energy
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_THETA
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_eflux_theta
+related: 
+info#start
+Proton differential Energy Flux vs Theta
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_PHI
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_eflux_phi
+related: 
+info#start
+Proton differential Energy Flux vs Phi
+info#end
+----
+
+%%%%
+varName: ENERGY_VALS
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_energy
+related: 
+info#start
+Energy values
+info#end
+----
+
+%%%%
+varName: THETA_VALS
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_theta
+related: 
+info#start
+Theta angle values
+info#end
+----
+
+%%%%
+varName: PHI_VALS
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_phi
+related: 
+info#start
+Phi angle values
+info#end
+----
+
+%%%%
+varName: SUN_DIST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_sun_dist
+related: 
+info#start
+Spacecraft distance to the Sun
+info#end
+----
+
+%%%%
+varName: VENUS_DIST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_venus_dist
+related: 
+info#start
+Spacecraft distance to Venus
+info#end
+----
+
+%%%%
+varName: SC_VEL_RTN_SUN
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_PSP_vel_rtn
+related: 
+info#start
+Spacecraft velocity in RTN coordinates and Sun reference frame
+info#end
+----
+
+%%%%
+varName: QUAT_SC_TO_RTN
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_quat_SC_to_RTN
+related: 
+info#start
+Quaternion for Rotating from Spacecraft to RTN Coordinates
+info#end
+----
+
+%%%%
+varName: MAGF_SC
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_mag_sc
+related: 
+info#start
+Magnetic field in spacecraft coordinates
+info#end
+----
+
+%%%%
+varName: MAGF_INST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_mag_inst
+related: 
+info#start
+Magnetic field in intrument coordinates
+info#end
+----
+
+%%%%
+varName: ROTMAT_SC_INST
+fileName: psp_swp_spi_sf00_L3_mom
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_rotmat_SC_to_INST
+related: 
+info#start
+Rotating matrix from Spacecraft to instrument Coordinates
+info#end
+----
+
+%%%%
+varName: QUALITY_FLAG
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_qf
+related: 
+info#start
+Quality flag. The quality flag is a two-byte unsigned integer (CDF_UINT2) with its least significant bit (Bit 0) indicating: Counter Overflow, Bit 1: Survey Snapshot ON (not applicable to archive products), Bit 2: Alternate Energy Table, Bit 3: Spoiler Test, Bit 4: Attenuator Engaged, Bit 5: Highest Archive Rate, Bit 6: No Targeted Sweep, Bit 7: SPAN-Ion New Mass Table (not applicable to electrons), Bit 8: Over-deflection, Bit 9: Archive Snapshot ON, Bit 10: Bad Energy Table, Bit 11: MCP Test, Bit 12: Survey Available, Bit 13: ُArchive Available, Bits 14-15: Reserved.
+info#end
+----
+
+%%%%
+varName: DENS
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_dens
+related: 
+info#start
+Partial moments as derived from the SF00 proton data product. It includes the
+solar wind parameters of density, perpendicular and parallel temperatures, and
+the velocity vector in the instrument frame of reference.
+CAVEAT: The solar wind is not fully in the field of view of the instrument, thus
+the calculated densities are partial and therefore smaller.
+info#end
+----
+
+%%%%
+varName: VEL
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_vel
+related: 
+info#start
+Proton velocity
+info#end
+----
+
+%%%%
+varName: T_TENSOR
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_t_tensor
+related: 
+info#start
+Proton temperature
+info#end
+----
+
+%%%%
+varName: TEMP
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_temp
+related: 
+info#start
+Proton temperature
+info#end
+----
+
+%%%%
+varName: MAGF_INST
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_mag_inst
+related: 
+info#start
+Magneric field in intrument coordinates
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_ENERGY
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_eflux_vs_en
+related: 
+info#start
+Proton differential Energy Flux vs Energy
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_THETA
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_eflux_theta
+related: 
+info#start
+Proton differential Energy Flux vs Theta
+info#end
+----
+
+%%%%
+varName: EFLUX_VS_PHI
+fileName: psp_swp_spi_sf00_L3_mom_INST
+directory: sweap/spi/L3/spi_sf00/20YY/MM
+hourtag: 
+varNameShort: spi_sf00_INST_eflux_phi
+related: 
+info#start
+Proton differential Energy Flux vs Phi
+info#end
+----
+
+%%%%
+varName: sc_pos_HCI
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_sc_pos_hci
+related: 
+info#start
+PSP position in the Heliocentric Inertial system (also called Ecliptic J2000)
+units: km
+info#end
+----
+
+%%%%
+varName: sc_vel_HCI
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_sc_vel_hci
+related: 
+info#start
+PSP velocity in the Heliocentric Inertial system (also called Ecliptic J2000)
+units: km
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_mag_RTN_1min
+fileName: psp_fld_l2_mag_RTN_1min
+directory: fields/l2/mag_RTN_1min/20YY/MM
+hourtag: 
+varNameShort: mag_rtn_1min
+related: 
+info#start
+Magnetic field from which sensor??
+Sampling changes along the orbit
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_mag_RTN
+fileName: psp_fld_l2_mag_RTN
+hourtag: 6h
+directory: fields/l2/mag_RTN/20YY/MM
+varNameShort: mag_rtn
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_mag_SC
+fileName: psp_fld_l2_mag_SC
+directory: fields/l2/mag_SC/20YY/MM
+hourtag: 6h
+varNameShort: mag_sc
+related: 
+info#start
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_wf_V(1|2|3|4|5)dc
+fileName: psp_fld_l2_dfb_wf_vdc
+directory: fields/l2/dfb_wf_vdc/20YY/MM
+hourtag: 6h
+varNameShort: wf_v(1|2|3|4|5)dc
+related: 
+info#start
+L2 Electric Potential from V[1-5]
+The data contained in these Level 2 files is differential voltage data 
+(in Volts), not electric field data (in Volts/m). The sign for these 
+data types is generally opposite: i.e. a positive dVx corresponds to 
+a negative Ex. In previous versions (up to v02) the sign chosen was 
+appropriate for electric field data, not differential voltage data. 
+This is corrected in v03.
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_wf_dVdc_(sensor|sc)
+fileName: psp_fld_l2_dfb_wf_dvdc
+directory: fields/l2/dfb_wf_dvdc/20YY/MM
+hourtag: 6h
+varNameShort: wf_dvdc_(sensor|sc)
+related: 
+info#start
+DFB DC differential voltage waveform
+The data contained in these Level 2 files is differential voltage data 
+(in Volts), not electric field data (in Volts/m). The sign for these 
+data types is generally opposite: i.e. a positive dVx corresponds to 
+a negative Ex. In previous versions (up to v02) the sign chosen was 
+appropriate for electric field data, not differential voltage data. 
+This is corrected in v03.
+info#end
+----
+
+
+%%%%
+varName: psp_fld_l2_dfb_dbm_dvac(12|34)
+fileName: psp_fld_l2_dfb_dbm_dvac
+hourtag: 6h
+directory: fields/l2/dfb_dbm_dvac/20YY/MM
+varNameShort: dbm_dvac(12|34)
+related: 
+info#start
+snapshots
+AC coupling: single-pole high-pass filters (−3 dB @100 Hz)
+and four-pole low-pass Bessel filters with a −3 dB @60 kHz
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dbm_vac(1|2|3|4|5)
+fileName: psp_fld_l2_dfb_dbm_vac
+directory: fields/l2/dfb_dbm_vac/20YY/MM
+hourtag: 6h
+varNameShort: dbm_vac(1|2|3|4|5)
+related: 
+info#start
+snapshots
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dbm_dvdc(12|34)
+fileName: psp_fld_l2_dfb_dbm_dvdc
+hourtag: 6h
+directory: fields/l2/dfb_dbm_dvdc/20YY/MM
+varNameShort: dbm_dvdc(12|34)
+related: 
+info#start
+snapshots
+DC coupling: DC Burst Differential Voltage
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dbm_vdc(1|2|3|4|5)
+fileName: psp_fld_l2_dfb_dbm_vdc
+directory: fields/l2/dfb_dbm_vdc/20YY/MM
+hourtag: 6h
+varNameShort: dbm_vdc(1|2|3|4|5)
+related: 
+info#start
+snapshots
+info#end
+----
+
+%%%%
+varName: psp_fld_l2_dfb_dbm_scm(h|l)g(u|v|w)
+fileName: psp_fld_l2_dfb_dbm_scm
+directory: fields/l2/dfb_dbm_scm/20YY/MM
+hourtag: 6h
+varNameShort: dbm_scm(h|l)g(u|v|w)
+related: 
+info#start
+SCM snapshot waveforms.
+During Encounters 3 and 4, most SCM burst waveforms were recorded in 
+low gain mode, due to large intermittent signals related to the SCM 
+anomaly described under https://fields.ssl.berkeley.edu/data/#scm-anomaly. 
+Starting from Encounter 5, the DFB was configured to always record 
+SCM burst waveforms in high gain.
+info#end
+----
+
+%%%%
+varName: PSP_FLD_L2_TDS_WF_Burst_Time_Series_V(2|5)_Engineering_mV
+fileName: psp_fld_l2_tds_wf
+directory: fields/l2/tds_wf/20YY/MM
+hourtag: 
+varNameShort: tds_wf_v(2|5)
+related: 
+info#start
+Time Domain Sampler (TDS) waveform burst time series for the high-gain V2/V5 sensor (Ch2/Ch5) NOT corrected for frequency response (engineering mV).
+info#end
+----
+
+%%%%
+varName: PSP_FLD_L2_TDS_WF_Burst_Time_Series_V(1|3)V(2|4)_Engineering_mV
+fileName: psp_fld_l2_tds_wf
+directory: fields/l2/tds_wf/20YY/MM
+hourtag: 
+varNameShort: tds_wf_v(1|3)v(2|4)
+related: 
+info#start
+TDS wave-form burst time series for the high-gain difference of V1-V2 (Ch3)/ V3-V4 (Ch1) NOT corrected for frequency response (engineering mV).
+info#end
+----
+
+%%%%
+varName: PSP_FLD_L2_TDS_WF_Burst_Time_Series_SCM4_Engineering_nT
+fileName: psp_fld_l2_tds_wf
+directory: fields/l2/tds_wf/20YY/MM
+hourtag: 
+varNameShort: tds_wf_scm4
+related: 
+info#start
+TDS wave-form burst time series for the high-gain SCM MF sensor (Ch4) NOT corrected for frequency response (engineering nT).
+info#end
+----
+
+%%%%
+varName: PSP_FLD_L2_TDS_WF_SC_Solar_Distance
+fileName: psp_fld_l2_tds_wf
+directory: fields/l2/tds_wf/20YY/MM
+hourtag: 
+varNameShort: tds_wf_sol_dist
+related: 
+info#start
+Value is the S/C provided distance to the sun at the time of this burst.
+info#end
+----
+
+%%%%
+varName: SC_frame
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_sc_frame
+related: 
+info#start
+The Parker Solar Probe spacecraft coordinate system.
+info#end
+----
+
+%%%%
+varName: RTN_frame
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_rtn_frame
+related: 
+info#start
+The inertial Radial-Tangential-Normal frame.
+info#end
+----
+
+%%%%
+varName: HCI_LABL
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_hci_coord
+related: 
+info#start
+HCI coordinate system.
+info#end
+----
+
+%%%%
+varName: np_fit
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_np_fit
+related: 
+info#start
+the bulk proton population in the solar wind is fit 
+to a group of convected Maxwellian models.
+.
+For errors check npFit.userData.DELTA_(PLUS,MINUS)_VAR 
+This uncertainty may be invalid when the Maxwellian is a poor model for 
+the data. Refer to the data quality flags.This variable reflects *precision* 
+uncertainty from fitting, summed in quadrature with the *accuracy* uncertainy 
+associated with the absolute responses of the SPC sensors.
+info#end
+----
+
+%%%%
+varName: np1_fit
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_np1_fit
+related: 
+info#start
+Primary proton population density, from 1-dimensional Maxwellian fitting.
+The strongest signal peak, which generally corresponds to the bulk proton 
+population in the solar wind, is fit to a convected Maxwellian model.
+.
+For errors check np1Fit.userData.DELTA_(PLUS,MINUS)_VAR 
+This uncertainty may be invalid when the Maxwellian is a poor model for 
+the data. Refer to the data quality flags.This variable reflects *precision* 
+uncertainty from fitting, summed in quadrature with the *accuracy* uncertainy 
+associated with the absolute responses of the SPC sensors.
+info#end
+----
+
+%%%%
+varName: np_moment
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_np_moment
+related: 
+info#start
+Proton density estimate from the 0th moment of the reduced distribution function.
+This moment is a model-independant estimate of the proton density, 
+but it is subject to confusion with alpha particles when present. 
+.
+For errors check npmomFit.userData.DELTA_(PLUS,MINUS)_VAR 
+Error bars represent estimated upper and lower limits.'
+info#end
+----
+
+%%%%
+varName: wp1_fit
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_wp1_fit
+related: 
+info#start
+Primary proton population radial [most probable] thermal speed, 
+from 1-dimensional Maxwellian fitting.
+The strongest signal peak, which generally corresponds to the bulk proton 
+population in the solar wind, is fit to a convected Maxwellian model.
+This measurement most accurately represents the thermal width of 
+the reduced phase-space-distribution function along the SPC-normal 
+direction. This roughly corresponds to the radial component of 
+the temperature tensor.This is a most probable thermal speed, 
+i.e. the model distribution goes like exp(-v^2/w^2).
+.
+For errors check wp1Fit.userData.DELTA_(PLUS,MINUS)_VAR 
+1-sigma error associated with primary proton thermal speed in Maxwellian fitting.
+This uncertainty may be invalid when the Maxwellian is a poor model for 
+the data. Refer to the data quality flags.This variable reflects 
+*precision* uncertainty from fitting, summed in quadrature with 
+the *accuracy* uncertainy associated with the absolute responses 
+of the SPC sensors.
+info#end
+----
+
+%%%%
+varName: vp_fit_RTN
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_vp_fit_rtn
+related: 
+info#start
+Proton bulk velocity, from 1-dimensional Maxwellian fitting.
+.
+For errors check rtnVpFit.userData.DELTA_(PLUS,MINUS)_VAR 
+This uncertainty may be invalid when the Maxwellian is a poor model 
+for the data. Refer to the data quality flags.The flow angles relative 
+to the SPC are obtained by comparing fluxes upon the four sensor quadrants. 
+This uncertainty incorporates uncertainties in the absolute responses 
+of the respective sensors.
+info#end
+----
+
+%%%%
+varName: vp_fit_SC
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_vp_fit_sc
+related: 
+info#start
+Proton bulk velocity, from 1-dimensional Maxwellian fitting.
+.
+For errors check scVpFit.userData.DELTA_(PLUS,MINUS)_VAR 
+This uncertainty may be invalid when the Maxwellian is a poor model 
+for the data. Refer to the data quality flags.The flow angles relative 
+to the SPC are obtained by comparing fluxes upon the four sensor quadrants. 
+This uncertainty incorporates uncertainties in the absolute responses 
+of the respective sensors.
+.
+SC system is aligned with the Solar Probe Cup. 
+In encounter orientations, the X-axis points in the spacecraft RAM direction, 
+the Z-axis points [roughly] towards the sun, and the Y-axis points 
+south relative to the solar ecliptic plane.
+.     
+This system is roughly, but not strictly aligned with the heliographic 
+RTN system (R = -Z_SC, T = X_SC, N = -Y_SC) in encounters.
+.
+Note that this system is co-moving with the spacecraft. 
+Flows from the sun appear aberrated and shifted in the spacecraft frame 
+according to the instantaneous velocity of the spacecraft.
+info#end
+----
+
+%%%%
+varName: vp_moment_RTN
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_vp_moment_rtn
+related: 
+info#start
+proton bulk velocity from the 1st moment of the reduced distribution 
+function in [inertial] RTN coordinate system.
+.
+For errors check rtnVpmom.userData.DELTA_(PLUS,MINUS)_VAR 
+This moment is a model-independant estimate of the proton most-probable 
+thermal speed, but it is subject to confusion with alpha particles when present. 
+Error bars represent estimated upper and lower limits.
+info#end
+----
+
+%%%%
+varName: vp_moment_SC
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_vp_moment_sc
+related: 
+info#start
+proton bulk velocity from the 1st moment of the reduced distribution 
+function in SC coordinate system.
+.
+SC system is aligned with the Solar Probe Cup. 
+In encounter orientations, the X-axis points in the spacecraft RAM direction, 
+the Z-axis points [roughly] towards the sun, and the Y-axis points 
+south relative to the solar ecliptic plane.
+.     
+This system is roughly, but not strictly aligned with the heliographic 
+RTN system (R = -Z_SC, T = X_SC, N = -Y_SC) in encounters.
+.
+Note that this system is co-moving with the spacecraft. 
+Flows from the sun appear aberrated and shifted in the spacecraft frame 
+according to the instantaneous velocity of the spacecraft.
+info#end
+----
+
+%%%%
+varName: DQF
+fileName: psp_swp_spc_l3i
+directory: sweap/spc/L3/20YY/MM
+hourtag: 
+varNameShort: spc_dqf
+related: 
+info#start
+Array of SPC data quality indicators.
+.
+All flags are encoded as follows:
+--------------------------
+   = 0,   good/nominal/condition not present/etc 
+   > 1,  bad/problematic/condition present/etc 
+   = -1,  status not determined ("don't know")
+   < -1,  status does not matter ("don't care")
+.
+-1 ("don't know") is the default value for all flags.
+.
+The 0th flag array element is the [standardized] global quality flag, 
+signifying whether the data are suitable for use without caveate. 
+It is repeated in the "general_flag" variable.
+
+DQF has 32 columns where first 24 correspond to: 
+% (0) general flag
+% (1) primary peak low signal
+% (2) no primary peak detected
+% (3) cold primary peak or current spike detected
+% (4) sensor saturated
+% (5) primary peak not bound
+% (6) poor Maxwellian fit to primary peak
+% (7) flow direction poorly constrained or undetermined
+% (8) alpha peak low signal/not identified
+% (9) poor Maxwellian fit to alpha peak
+% (10) alpha peak not bound
+% (11) wind speed off scale high
+% (12) wind speed off scale low
+% (13) wind speed off scale unknown
+% (14) likely proton-alpha confusion
+% (15) unusually high noise levels detected
+% (16) proton full-scan mode (not peak-tracking)
+% (17) reduced data quality: anomalous periodic noise type A, (>1 Hz)
+% (18) reduced data quality: anomalous periodic noise type B (< 1Hz)
+% (19) temperature/survival heater cycling: potential fluctuations
+% (20) reduced data quality: broadband or other anomalous noise (type C)
+% (21) fragmented or incomplete spectrum measured
+% (22) energy ranging/peak tracking error
+% (23) spacecraft maneuver
+.
+Possible check - flags 1,2,4,5,6,7,11,12,13
+info#end
+----
+
+%%%%
+varName: carr_latitude
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: carrlat
+related: 
+info#start
+Carrington Latitude
+info#end
+----
+
+%%%%
+varName: carr_longitude
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: carrlong
+related: 
+info#start
+Carrington Longitude
+info#end
+----
+
+
+%%%%
+varName: general_flag
+fileName: psp_swp_spc_l3i
+hourtag: 
+varNameShort: spc_general_flag
+related: 
+info#start
+Global quality flag, signifying whether the data for this epoch are 
+suitable for use without caveats.
+.
+All flags are encoded as follows:
+--------------------------
+   = 0,   good/nominal/condition not present/etc 
+   > 1,  bad/problematic/condition present/etc 
+   = -1,  status not determined ("don't know")
+   < -1,  status does not matter ("don't care")
+
+-1 ("don't know") is the default value for all flags.
+
+The user is advised to consider the quoted measurement uncertainties, 
+particularly when the general quality flag is zero.
+info#end
+----
+
+%%%%
+varName: electron_density
+fileName: psp_fld_l3_sqtn_rfs_V1V2
+directory: fields/l3/sqtn_rfs_V1V2/20YY/MM
+hourtag: 
+varNameShort: qtn_ne
+related: 
+info#start
+Electron density from quasi-thermal noise.
+For more information see: Moncuquet et al. https://iopscience.iop.org/article/10.3847/1538-4365/ab5a84
+info#end
+----
+
+%%%%
+varName: electron_core_temperature
+fileName: psp_fld_l3_sqtn_rfs_V1V2
+directory: fields/l3/sqtn_rfs_V1V2/20YY/MM
+hourtag: 
+varNameShort: qtn_core_Te
+related: 
+info#start
+Electron core temperature from quasi-thermal noise.
+For more information see: Moncuquet et al. https://iopscience.iop.org/article/10.3847/1538-4365/ab5a84
+info#end
+----
+
+%%%%
+varName: electron_density_delta
+fileName: psp_fld_l3_sqtn_rfs_V1V2
+directory: fields/l3/sqtn_rfs_V1V2/20YY/MM
+hourtag: 
+varNameShort: qtn_ne_delta
+related: 
+info#start
+Electron density delta is the uncertainty of electron density obtained from quasi-thermal noise.
+For more information see: Moncuquet et al. https://iopscience.iop.org/article/10.3847/1538-4365/ab5a84
+info#end
+----

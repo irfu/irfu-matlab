@@ -1,4 +1,4 @@
-function irf_minvar_gui(x,column)
+function h=irf_minvar_gui(x,column)
 %IRF_MINVAR_GUI interactively do the minimum variance analysis
 %
 % IRF_MINVAR_GUI(X,COLUMN)
@@ -224,6 +224,7 @@ switch action
     irf_minvar_gui('update_mva_axis');
 end
 ud=get(gcf,'userdata'); % assign ud that can be accessed because it is global
+if nargout == 0, h=[]; end
 end
 
 

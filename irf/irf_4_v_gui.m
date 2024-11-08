@@ -239,7 +239,7 @@ ud.t_start_epoch = figud.t_start_epoch;
 %uimenu(ud.column
 
 if isa(ud.var1,'TSeries'), nCol = size(ud.var1.data,2);
-else, nCol = size(ud.var1,2);
+else, nCol = size(ud.var1,2)-1;
 end
 
 for j_col=1:nCol
@@ -473,7 +473,9 @@ else
   end
   if isfield(dd,'col_labels')
     colLabels=dd.col_labels{1};
-    labVar = [labVar colLabels{iVecComponent}];
+    if iVecComponent <= numel(colLabels)
+      labVar = [labVar colLabels{iVecComponent}];
+    end
   end
   label=[labVar '[' labUnit ']'];
 end

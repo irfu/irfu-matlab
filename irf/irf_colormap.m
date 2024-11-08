@@ -635,4 +635,3 @@ if nargout == 0 % apply the colormap and freeze
 elseif nargout == 1 % only return colormap
   cmap1=cmap;
 end
-

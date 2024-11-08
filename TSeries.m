@@ -936,6 +936,10 @@ classdef TSeries
         Ts = TSeries([]);
         return;
       end
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/PSPdevel
       % Check dimensions of input
       if isa(obj1,'TSeries')
         sizeData1 = obj1.datasize('dataonly');
@@ -1678,6 +1682,10 @@ classdef TSeries
       end
     end
   end
+<<<<<<< HEAD
 
 end
+=======
+>>>>>>> origin/PSPdevel
 
+end
