@@ -32,7 +32,7 @@
 %           'ac_xspec'               - DFB AC-coupled Diff Voltage, V1-V2, V3-V4 Antennae, Dipole Mode, X-Spectra
 %           'ac_spec_SCMv'           - DFB AC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
 %           'ac_spec_SCMu'           - DFB AC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
-%           'ac_spec_SCMd'           - DFB AC-coupled SCM, Low Frequency, High Gain, d-component, Sensor coordinates only Enc 1 (2018/11) 
+%           'ac_spec_SCMd'           - DFB AC-coupled SCM, Low Frequency, High Gain, d-component, Sensor coordinates only Enc 1 (2018/11)
 %           'ac_spec_SCMe'           - DFB AC-coupled SCM, Low Frequency, High Gain, e-component, Sensor coordinates only Enc 1 (2018/11)
 %           'ac_spec_SCMf'           - DFB AC-coupled SCM, Low Frequency, High Gain, f-component, Sensor coordinates only Enc 1 (2018/11)
 %           'dc_xspec_SCMvw'         - DFB DC-coupled Searchcoil Magnetometer, SCM, Cross Spectra, v-component, w-component, High Gain, Sensor coordinates
@@ -46,7 +46,7 @@
 %           'dc_spec_SCMv'           - DFB DC-coupled SCM, Low Frequency, High Gain, v-component, Sensor coordinates
 %           'dc_spec_SCMu'           - DFB DC-coupled SCM, Low Frequency, High Gain, u-component, Sensor coordinates
 %           'dc_spec_SCMw'           - DFB DC-coupled SCM, Low Frequency, High Gain, w-component, Sensor coordinates
-%           'dc_spec_SCMd'           - DFB DC-coupled SCM, Low Frequency, High Gain, d-component, Sensor coordinates only Enc 1 (2018/11) 
+%           'dc_spec_SCMd'           - DFB DC-coupled SCM, Low Frequency, High Gain, d-component, Sensor coordinates only Enc 1 (2018/11)
 %           'dc_spec_SCMe'           - DFB DC-coupled SCM, Low Frequency, High Gain, e-component, Sensor coordinates only Enc 1 (2018/11)
 %           'dc_spec_SCMf'           - DFB DC-coupled SCM, Low Frequency, High Gain, f-component, Sensor coordinates only Enc 1 (2018/11)
 %           'l2_rfs_lfr'             - Radio Frequency Spectrometer, RFS, Low Frequency Reciever - level 2 LFR
@@ -134,28 +134,28 @@ if ~exist('dataDir','var') || isempty(dataDir)
 end
 
 switch datatype
-    
+
   case {'wf_vdc'}
     filename= 'psp_fld_l2_dfb_wf_scm';
     varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor'};
     varnamesout = {'wf_scm_sensor'};
-    
-    hourtag={'00';'06';'12';'18'};  
+
+    hourtag={'00';'06';'12';'18'};
 
   case {'wf_scm_sensor'}
     filename= 'psp_fld_l2_dfb_wf_scm';
     varnames = {'psp_fld_l2_dfb_wf_scm_hg_sensor'};
     varnamesout = {'wf_scm_sensor'};
-    
+
     hourtag={'00';'06';'12';'18'};
 
   case {'wf_scm_sc'}
     filename= 'psp_fld_l2_dfb_wf_scm';
     varnames = {'psp_fld_l2_dfb_wf_scm_hg_sc'};
     varnamesout = {'wf_scm_sc'};
-    
-    hourtag={'00';'06';'12';'18'};  
-    
+
+    hourtag={'00';'06';'12';'18'};
+
   case {'ac_bpf_dv34'}
     filename = 'psp_fld_l2_dfb_ac_bpf_dV34hg';
     varnames = {...
@@ -164,9 +164,9 @@ switch datatype
       'psp_fld_l2_dfb_ac_bpf_dV34hg_peak'};
     varnamesout = {'dfb_ac_bpf_dv34_freq_bins';...
       'dfb_ac_bpf_dv34_avg';'dfb_ac_bpf_dv34_peak'};
-    
+
     hourtag={''};
-    
+
   case {'ac_bpf_SCMulfhg'}
     filename = 'psp_fld_l2_dfb_ac_bpf_SCMulfhg';
     varnames = {...
@@ -175,9 +175,9 @@ switch datatype
       'psp_fld_l2_dfb_ac_bpf_SCMulfhg_peak'};
     varnamesout = {'dfb_ac_bpf_SCMulfhg_freq_bins';...
       'dfb_ac_bpf_SCMulfhg_avg';'dfb_ac_bpf_SCMulfhg_peak'};
-        
+
     hourtag={''};
-      
+
   case {'ac_bpf_SCMumfhg'}
     filename = 'psp_fld_l2_dfb_ac_bpf_SCMumfhg';
     varnames = {...
@@ -186,52 +186,52 @@ switch datatype
       'psp_fld_l2_dfb_ac_bpf_SCMumfhg_peak'};
     varnamesout = {'dfb_ac_bpf_SCMumfhg_freq_bins';...
       'dfb_ac_bpf_SCMumfhg_avg';'dfb_ac_bpf_SCMumfhg_peak'};
-        
-    hourtag={''};  
-    
+
+    hourtag={''};
+
   case {'ac_spec_dv12'}
     filename = 'psp_fld_l2_dfb_ac_spec_dV12hg';
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_dV12hg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_dV12hg'};
     varnamesout = {'ac_spec_dv12_freq_bins';'ac_spec_dv12_pw'};
-    
+
     hourtag={''};
-    
+
   case {'ac_spec_dv34'}
     filename = 'psp_fld_l2_dfb_ac_spec_dV34hg';
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_dV34hg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_dV34hg'};
     varnamesout = {'ac_spec_dv34_freq_bins';'ac_spec_dv34_pw'};
-    
+
     hourtag={''};
-    
+
   case {'ac_spec_v5'}
     filename = 'psp_fld_l2_dfb_ac_spec_V5hg';
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_V5hg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_V5hg'};
     varnamesout = {'ac_spec_v5_freq_bins';'ac_spec_v5_pw'};
-    
+
     hourtag={''};
-    
+
   case {'ac_spec_scmv'}
     filename = 'psp_fld_l2_dfb_ac_spec_SCMvlfhg';
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_SCMvlfhg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_SCMvlfhg'};
     varnamesout = {'ac_spec_scmv_freq_bins';'ac_spec_scmv_pw'};
-    
+
     hourtag={''};
-    
+
   case {'ac_spec_scmu'}
     filename = 'psp_fld_l2_dfb_ac_spec_SCMulfhg';
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_SCMulfhg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_SCMulfhg'};
     varnamesout = {'ac_spec_scmu_freq_bins';'ac_spec_scmu_pw'};
-    
+
     hourtag={''};
 
   case {'ac_spec_scmd'}
@@ -240,16 +240,16 @@ switch datatype
       'psp_fld_l2_dfb_ac_spec_SCMdlfhg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_SCMdlfhg'};
     varnamesout = {'ac_spec_scmd_freq_bins';'ac_spec_scmd_pw'};
-    
+
     hourtag={''};
-      
+
   case {'ac_spec_scme'}
     filename = 'psp_fld_l2_dfb_ac_spec_SCMelfhg';
     varnames = {...
       'psp_fld_l2_dfb_ac_spec_SCMelfhg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_SCMelfhg'};
     varnamesout = {'ac_spec_scme_freq_bins';'ac_spec_scme_pw'};
-    
+
     hourtag={''};
 
   case {'ac_spec_scmf'}
@@ -258,9 +258,9 @@ switch datatype
       'psp_fld_l2_dfb_ac_spec_SCMflfhg_frequency_bins';...
       'psp_fld_l2_dfb_ac_spec_SCMflfhg'};
     varnamesout = {'ac_spec_scmf_freq_bins';'ac_spec_scmf_pw'};
-    
+
     hourtag={''};
-  
+
 
   case {'ac_xspec'}
     filename = 'psp_fld_l2_dfb_ac_xspec_dV12hg_dV34hg';
@@ -277,9 +277,9 @@ switch datatype
       'ac_xspec_coh_dv12_dv34';'ac_xspec_ph_dv12_dv34';...
       'ac_xspec_xterm_Re_dv12_dv34';...
       'ac_xspec_xterm_Im_dv12_dv34'};
-    
+
     hourtag={''};
-  
+
   case {'dc_bpf_dv34'}
     filename = 'psp_fld_l2_dfb_dc_bpf_dV34hg';
     varnames = {...
@@ -288,9 +288,9 @@ switch datatype
       'psp_fld_l2_dfb_dc_bpf_dV34hg_peak'};
     varnamesout = {'dfb_dc_bpf_dv34_freq_bins';...
       'dfb_dc_bpf_dv34_avg';'dfb_dc_bpf_dv34_peak'};
-    
+
     hourtag={''};
-    
+
   case {'dc_bpf_SCMulfhg'}
     filename = 'psp_fld_l2_dfb_dc_bpf_SCMulfhg';
     varnames = {...
@@ -299,9 +299,9 @@ switch datatype
       'psp_fld_l2_dfb_dc_bpf_SCMulfhg_peak'};
     varnamesout = {'dfb_dc_bpf_SCMulfhg_freq_bins';...
       'dfb_dc_bpf_SCMulfhg_avg';'dfb_dc_bpf_SCMulfhg_peak'};
-        
+
     hourtag={''};
-      
+
   case {'dc_bpf_SCMvlfhg'}
     filename = 'psp_fld_l2_dfb_dc_bpf_SCMvlfhg';
     varnames = {...
@@ -310,7 +310,7 @@ switch datatype
       'psp_fld_l2_dfb_dc_bpf_SCMvlfhg_peak'};
     varnamesout = {'dfb_dc_bpf_SCMvlfhg_freq_bins';...
       'dfb_dc_bpf_SCMvlfhg_avg';'dfb_dc_bpf_SCMvlfhg_peak'};
-        
+
     hourtag={''};
 
   case {'dc_spec_dv12'}
@@ -319,61 +319,61 @@ switch datatype
       'psp_fld_l2_dfb_dc_spec_dV12hg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_dV12hg'};
     varnamesout = {'dc_spec_dv12_freq_bins';'dc_spec_dv12_pw'};
-    
+
     hourtag={''};
-    
+
   case {'dc_spec_scmu'}
     filename = 'psp_fld_l2_dfb_dc_spec_SCMulfhg';
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMulfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMulfhg'};
     varnamesout = {'dc_spec_scmu_freq_bins';'dc_spec_scmu_pw'};
-    
+
     hourtag={''};
-    
+
   case {'dc_spec_scmv'}
     filename = 'psp_fld_l2_dfb_dc_spec_SCMvlfhg';
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMvlfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMvlfhg'};
     varnamesout = {'dc_spec_scmv_freq_bins';'dc_spec_scmv_pw'};
-    
+
     hourtag={''};
-    
+
   case {'dc_spec_scmw'}
     filename = 'psp_fld_l2_dfb_dc_spec_SCMwlfhg';
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMwlfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMwlfhg'};
     varnamesout = {'dc_spec_scmw_freq_bins';'dc_spec_scmw_pw'};
-    
+
     hourtag={''};
-    
+
   case {'dc_spec_scmd'}
     filename = 'psp_fld_l2_dfb_dc_spec_SCMdlfhg';
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMdlfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMdlfhg'};
     varnamesout = {'dc_spec_scmd_freq_bins';'dc_spec_scmd_pw'};
-    
+
     hourtag={''};
-    
+
   case {'dc_spec_scme'}
     filename = 'psp_fld_l2_dfb_dc_spec_SCMelfhg';
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMelfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMelfhg'};
     varnamesout = {'dc_spec_scme_freq_bins';'dc_spec_scme_pw'};
-    
+
     hourtag={''};
-    
+
   case {'dc_spec_scmf'}
     filename = 'psp_fld_l2_dfb_dc_spec_SCMflfhg';
     varnames = {...
       'psp_fld_l2_dfb_dc_spec_SCMflfhg_frequency_bins';...
       'psp_fld_l2_dfb_dc_spec_SCMflfhg'};
     varnamesout = {'dc_spec_scmf_freq_bins';'dc_spec_scmf_pw'};
-    
+
     hourtag={''};
 
   case {'dc_xspec_SCMvw'}
@@ -466,9 +466,9 @@ switch datatype
       'psp_fld_l2_rfs_lfr_coher_V1V2_V3V4';...
       'psp_fld_l2_rfs_lfr_phase_V1V2_V3V4'};
     varnamesout = {'l2_rfs_lfr_v1v2';...
-	  'l2_rfs_lfr_v1v2_freq';...
+      'l2_rfs_lfr_v1v2_freq';...
       'l2_rfs_lfr_v3v4';...
-	  'l2_rfs_lfr_v3v4_freq';...
+      'l2_rfs_lfr_v3v4_freq';...
       'l2_rfs_lfr_auto_pks_V1V2';...
       'l2_rfs_lfr_auto_pks_V3V4';...
       'l2_rfs_lfr_hires_avs_V1V2';...
@@ -479,50 +479,50 @@ switch datatype
       'l2_rfs_lfr_cross_re_V1V2_V3V4';...
       'l2_rfs_lfr_coher_V1V2_V3V4';...
       'l2_rfs_lfr_phase_V1V2_V3V4'};
-    
+
     hourtag={''};
 
  case {'l3_rfs_lfr'}
-	filename = 'psp_fld_l3_rfs_lfr';
+    filename = 'psp_fld_l3_rfs_lfr';
     varnames = {...
       'psp_fld_l3_rfs_lfr_auto_averages_ch0_V1V2';...
-	  'psp_fld_l3_rfs_lfr_auto_averages_ch0_V1V2_flux';...
+      'psp_fld_l3_rfs_lfr_auto_averages_ch0_V1V2_flux';...
       'frequency_lfr_auto_averages_ch0_V1V2';...
       'psp_fld_l3_rfs_lfr_auto_averages_ch1_V3V4';...
-	  'psp_fld_l3_rfs_lfr_auto_averages_ch1_V3V4_flux';...
+      'psp_fld_l3_rfs_lfr_auto_averages_ch1_V3V4_flux';...
       'frequency_lfr_auto_averages_ch1_V3V4';...
       'psp_fld_l3_rfs_lfr_hires_averages_ch0_V1V2';...
-	  'psp_fld_l3_rfs_lfr_hires_averages_ch0_V1V2_flux'
+      'psp_fld_l3_rfs_lfr_hires_averages_ch0_V1V2_flux'
       'psp_fld_l3_rfs_lfr_hires_averages_ch1_V3V4';...
-	  'psp_fld_l3_rfs_lfr_hires_averages_ch1_V3V4_flux'
+      'psp_fld_l3_rfs_lfr_hires_averages_ch1_V3V4_flux'
       'psp_fld_l3_rfs_lfr_cross_im_V1V2_V3V4';...
       'psp_fld_l3_rfs_lfr_cross_re_V1V2_V3V4';...
       'psp_fld_l3_rfs_lfr_coher_V1V2_V3V4';...
       'psp_fld_l3_rfs_lfr_phase_V1V2_V3V4';...
-	  'psp_fld_l3_rfs_lfr_PSD_FLUX';...
-	  'psp_fld_l3_rfs_lfr_PSD_SFU';...
-	  'psp_fld_l3_rfs_lfr_STOKES_V'};
+      'psp_fld_l3_rfs_lfr_PSD_FLUX';...
+      'psp_fld_l3_rfs_lfr_PSD_SFU';...
+      'psp_fld_l3_rfs_lfr_STOKES_V'};
     varnamesout = {...
-	  'l3_rfs_lfr_v1v2';...
-	  'l3_rfs_lfr_v1v2_flux';...
-	  'l3_rfs_lfr_v1v2_freq';...
+      'l3_rfs_lfr_v1v2';...
+      'l3_rfs_lfr_v1v2_flux';...
+      'l3_rfs_lfr_v1v2_freq';...
       'l3_rfs_lfr_v3v4';...
-	  'l3_rfs_lfr_v3v4_flux';...
-	  'l3_rfs_lfr_v3v4_freq';...
+      'l3_rfs_lfr_v3v4_flux';...
+      'l3_rfs_lfr_v3v4_freq';...
       'l3_rfs_lfr_hires_avs_V1V2';...
-	  'l3_rfs_lfr_hires_avs_V1V2_flux';...
+      'l3_rfs_lfr_hires_avs_V1V2_flux';...
       'l3_rfs_lfr_hires_avs_V3V4';...
-	  'l3_rfs_lfr_hires_avs_V3V4_flux';...
+      'l3_rfs_lfr_hires_avs_V3V4_flux';...
       'l3_rfs_lfr_cross_im_V1V2_V3V4';...
       'l3_rfs_lfr_cross_re_V1V2_V3V4';...
       'l3_rfs_lfr_coher_V1V2_V3V4';...
       'l3_rfs_lfr_phase_V1V2_V3V4';...
-	  'l3_rfs_lfr_psd_flux';...
-	  'l3_rfs_lfr_psd_sfu';...
-	  'l3_rfs_lfr_stokes_v'};
-    
+      'l3_rfs_lfr_psd_flux';...
+      'l3_rfs_lfr_psd_sfu';...
+      'l3_rfs_lfr_stokes_v'};
+
     hourtag={''};
-    
+
   case {'l2_rfs_hfr'}
     filename = 'psp_fld_l2_rfs_hfr';
     varnames = {...
@@ -531,49 +531,49 @@ switch datatype
       'psp_fld_l2_rfs_hfr_auto_averages_ch1_V3V4';...
       'frequency_hfr_auto_averages_ch1_V3V4'};
     varnamesout = {...
-	 'l2_rfs_hfr_v1v2';...
-	  'l2_rfs_hfr_v1v2_freq';...
+     'l2_rfs_hfr_v1v2';...
+      'l2_rfs_hfr_v1v2_freq';...
       'l2_rfs_hfr_v3v4';...
-	  'l2_rfs_hfr_v3v4_freq'};
-    
+      'l2_rfs_hfr_v3v4_freq'};
+
     hourtag={''};
 
   case {'l3_rfs_hfr'}
     filename = 'psp_fld_l3_rfs_hfr';
     varnames = {...
       'psp_fld_l3_rfs_hfr_auto_averages_ch0_V1V2';...
-	  'psp_fld_l3_rfs_hfr_auto_averages_ch0_V1V2_flux';...
+      'psp_fld_l3_rfs_hfr_auto_averages_ch0_V1V2_flux';...
       'frequency_hfr_auto_averages_ch0_V1V2';...
       'psp_fld_l3_rfs_hfr_auto_averages_ch1_V3V4';...
-	  'psp_fld_l3_rfs_hfr_auto_averages_ch1_V3V4_flux';...
+      'psp_fld_l3_rfs_hfr_auto_averages_ch1_V3V4_flux';...
       'frequency_hfr_auto_averages_ch1_V3V4';...
-	  'psp_fld_l3_rfs_hfr_cross_im_V1V2_V3V4';...
-	  'psp_fld_l3_rfs_hfr_cross_re_V1V2_V3V4';...
-	  'psp_fld_l3_rfs_hfr_coher_V1V2_V3V4';...
-	  'psp_fld_l3_rfs_hfr_phase_V1V2_V3V4';...
-	  'psp_fld_l3_rfs_hfr_PSD_FLUX';...
-	  'psp_fld_l3_rfs_hfr_PSD_SFU';...
-	  'psp_fld_l3_rfs_hfr_STOKES_V'};
+      'psp_fld_l3_rfs_hfr_cross_im_V1V2_V3V4';...
+      'psp_fld_l3_rfs_hfr_cross_re_V1V2_V3V4';...
+      'psp_fld_l3_rfs_hfr_coher_V1V2_V3V4';...
+      'psp_fld_l3_rfs_hfr_phase_V1V2_V3V4';...
+      'psp_fld_l3_rfs_hfr_PSD_FLUX';...
+      'psp_fld_l3_rfs_hfr_PSD_SFU';...
+      'psp_fld_l3_rfs_hfr_STOKES_V'};
     varnamesout = {...
-	  'l3_rfs_hfr_v1v2';...
-	  'l3_rfs_hfr_v1v2_flux';...
-	  'l3_rfs_hfr_v1v2_freq';...
+      'l3_rfs_hfr_v1v2';...
+      'l3_rfs_hfr_v1v2_flux';...
+      'l3_rfs_hfr_v1v2_freq';...
       'l3_rfs_hfr_v3v4';...
-	  'l3_rfs_hfr_v3v4_flux';...
-	  'l3_rfs_hfr_v3v4_freq';...
-	  'l3_rfs_hfr_viv2_v3v4_cross_im';...
-	  'l3_rfs_hfr_viv2_v3v4_cross_re';...
-	  'l3_rfs_hfr_coher_v1v2_v3v4';...
-	  'l3_rfs_hfr_phase_v1v2_v3v4';...
-	  'l3_rfs_hfr_psd_flux';...
-	  'l3_rfs_hfr_psd_sfu';...
-	  'l3_rfs_hfr_stokes_v';};
-    
-    hourtag={''};	
-    
+      'l3_rfs_hfr_v3v4_flux';...
+      'l3_rfs_hfr_v3v4_freq';...
+      'l3_rfs_hfr_viv2_v3v4_cross_im';...
+      'l3_rfs_hfr_viv2_v3v4_cross_re';...
+      'l3_rfs_hfr_coher_v1v2_v3v4';...
+      'l3_rfs_hfr_phase_v1v2_v3v4';...
+      'l3_rfs_hfr_psd_flux';...
+      'l3_rfs_hfr_psd_sfu';...
+      'l3_rfs_hfr_stokes_v';};
+
+    hourtag={''};
+
   case {'spc'}
     filename = 'psp_swp_spc_l3i';
-    
+
     varnames = {...
       'DQF';...          % data quality flag
       'general_flag';...
@@ -586,9 +586,9 @@ switch datatype
       'spc_np1_fit';'spc_wp1_fit';'spc_vp1_fit_sc';'spc_vp1_fit_rtn';...
       'spc_np_moment';'spc_wp_moment';'spc_vp_moment_sc';...
       'spc_vp_moment_rtn';'spc_sc_pos_hci';'spc_sc_vel_hci'};
-    
+
     hourtag={''};
-  
+
   case {'spa_sf0'}
     filename = 'psp_swp_spa_sf0_L2_16Ax8Dx32E';
     varnames = {...
@@ -598,7 +598,7 @@ switch datatype
     varnamesout = {'spa_sf0_eflux';...
         'spa_sf0_energy';'spa_sf0_theta';...
         'spa_sf0_phi';'spa_sf0_qf'};
-      
+
     hourtag={''};
 
   case {'spb_sf0'}
@@ -610,9 +610,9 @@ switch datatype
     varnamesout = {'spb_sf0_eflux';...
         'spb_sf0_energy';'spb_sf0_theta';...
         'spb_sf0_phi';'spb_sf0_qf'};
-      
+
     hourtag={''};
-      
+
   case {'spa_sf1'}
     filename = 'psp_swp_spa_sf1_L2_32E';
     varnames = {...
@@ -620,7 +620,7 @@ switch datatype
         'QUALITY_FLAG'};
     varnamesout = {'spa_sf1_eflux';...
         'spa_sf1_energy';'spa_sf1_qf'};
-      
+
     hourtag={''};
 
   case {'spb_sf1'}
@@ -630,9 +630,9 @@ switch datatype
         'QUALITY_FLAG'};
     varnamesout = {'spb_sf1_eflux';...
         'spb_sf1_energy';'spb_sf1_qf'};
-      
+
     hourtag={''};
-    
+
   case {'spe'}
     filename = 'psp_swp_spe_sf0_L3_pad';
     varnames = {...
@@ -642,9 +642,9 @@ switch datatype
     varnamesout = {'spe_sf0_pad_qf';'spe_sf0_pad_pa';...
       'spe_sf0_pad_eflux_vs_en';'spe_sf0_pad_en';...
       'spe_sf0_pad_eflux_vs_pa_en'};
-    
+
     hourtag={''};
-    
+
   case {'spi'}
     filename = 'psp_swp_spi_sf00_L3_mom';
     varnames = {...
@@ -664,9 +664,9 @@ switch datatype
       'spi_sf00_theta';'spi_sf00_phi';'spi_sf00_sun_dist';...
       'spi_sf00_venus_dist';'spi_sf00_PSP_vel_rtn';...
       'spi_sf00_mag_sc';'spi_sf00_mag_inst'};
-    
+
     hourtag={''};
-    
+
   case {'spi_inst'}
     filename = 'psp_swp_spi_sf00_L3_mom_INST';
     varnames = {...
@@ -680,24 +680,24 @@ switch datatype
       'spi_sf00_INST_mag_inst';'spi_sf00_INST_eflux_vs_en';...
       'spi_sf00_INST_eflux_theta';'spi_sf00_INST_eflux_phi';...
       'spi_sf00_INST_energy';'spi_sf00_INST_theta';'spi_sf00_INST_phi'};
-    
+
     hourtag={''};
 
   case 'ephem'
-    
+
     filename = 'spp_fld_l1_ephem_spp_rtn_';
     varnames = {'position';'velocity'};
     varnamesout = {'R_ephem';'V_ephem'};
-    
+
     hourtag={''};
-    
+
   case {'pl_spi'}
     filename = 'psp_swp_spi_sf00_L3_mom_INST';
     varnames = {'DENS'};
     varnamesout = {'spi_sf00_dens'};
-    
+
     hourtag={''};
-    
+
   case {'pl_rfs_lfr'}
     filename = 'psp_fld_l2_rfs_lfr';
     varnames = {...
@@ -707,7 +707,7 @@ switch datatype
       'frequency_lfr_hires_averages_ch1_V3V4'};
     varnamesout = {'rfs_lfr_v3v4';'rfs_lfr_v3v4_freq';...
       'rfs_lfr_v3v4_hr';'rfs_lfr_v3v4_freq_hr'};
-    
+
     hourtag={''};
 
   case {'qtn'}
@@ -718,16 +718,16 @@ switch datatype
       'electron_density_delta'};
     varnamesout = {'qtn_ne';...
       'qtn_core_Te';'qtn_ne_delta'};
-    
-    hourtag={''};  
+
+    hourtag={''};
 
 %   case {'tds_wf_sol_dist'}
 %     filename = 'psp_fld_l2_tds_wf';
 %     varnames = {'PSP_FLD_L2_TDS_WF_SC_Solar_Distance'};
 %     varnamesout = {'tds_wf_sol_dist'};
-%     
-%     hourtag={''};  
-% 
+%
+%     hourtag={''};
+%
 %   case 'tds_wf'
 %     listCDFFiles = get_file_list('psp_fld_l2_tds_wf');
 %     output       = get_data_tds_wf(listCDFFiles);
@@ -736,18 +736,18 @@ switch datatype
   case 'tds_wf_scm4'
     listCDFFiles = get_file_list('psp_fld_l2_tds_wf');
     output       = get_data_tds_wf(listCDFFiles);
-    return;  
+    return;
 
   case 'dbm_dvac'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_dvac');
     output       = get_data_dbm_dvac(listCDFFiles);
     return;
-    
+
   case 'dbm_vac'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_vac');
     output       = get_data_dbm_vac(listCDFFiles);
     return;
-    
+
   case 'dbm_dvdc'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_dvdc');
     output       = get_data_dbm_dvdc(listCDFFiles);
@@ -755,12 +755,12 @@ switch datatype
   case 'dbm_vdc'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_vdc');
     output       = get_data_dbm_vdc(listCDFFiles);
-    return;  
+    return;
   case 'dbm_scm'
     listCDFFiles = get_file_list('psp_fld_l2_dfb_dbm_scm');
     output       = get_data_dbm_scm(listCDFFiles);
     return;
-    
+
   otherwise
     if nargin == 1 || nargin == 4
       % read in variables defined in psp_var
@@ -768,7 +768,7 @@ switch datatype
       if isempty(out)
         error('Data type not recognized!');
       end
-      fileBaseName = out.fileName;      
+      fileBaseName = out.fileName;
       varnames  = {out.varName};
       hourtag  = out.hourtag;
       varnamesout = {out.varNameShort};
@@ -794,20 +794,20 @@ switch datatype
 end
 
 if ~exist('filesToLoadTable','var') && isempty(listCdfFiles)
-  
+
   nDays  = endDatenum-startDatenum+1; % include first day
-  
+
   datenumTable   = (startDatenum:endDatenum)';
   timestampTable = datestr(datenumTable,'yyyymmdd');
-  
+
   % sanity check
   if size(timestampTable,1)~=nDays
     error('Number of days is odd.');
   end
-  
+
   nHourtag = length(hourtag);
   nFiles = nDays*nHourtag;
-  
+
   filesToLoadTable = char(zeros(nFiles,...
     size(timestampTable,2)+length(hourtag{1})));
   iFile = 1;
@@ -831,7 +831,7 @@ varMeta   = cell(nVar,1);
 epochData = cell(nVar,1);
 
 for iFile = 1:nFiles
-  
+
   if numel(listCdfFiles)>0
     fileToLoad = listCdfFiles{iFile};
   else
@@ -855,40 +855,40 @@ for iFile = 1:nFiles
       fileToLoad = [];
     end
   end
-  
+
   if any(fileToLoad)
-    
+
     pspobj=dataobj(fileToLoad);
-    
+
     for iVar = 1:nVar
-      
+
       varname    = varnames{iVar};
       varnameout = varnamesout{iVar};
-      
+
       var_data=get_ts(pspobj,varname);
       disp(['Loaded: ' varnameout ' corresponding to: ' varname ' in file: ' fileToLoad  ])
-      
+
       if isempty(var_data.data)
         irf.log('critical','Empty data!');
-        
+
         % first data, allocate cellarray and get metadata
       elseif isempty(varData{iVar})
         varData{iVar}=cell(nFiles,1);
         epochData{iVar}=cell(nFiles,1);
         varMeta{iVar}=var_data;
       end
-      
+
       varData{iVar}{iFile} = var_data.data;
       epochData{iVar}{iFile} =var_data.time.epoch;
-      
+
     end
-    
+
   end
-  
+
   clear fileToLoad
   clear timestamp
   clear var_data
-  
+
 end
 
 irf.log('notice','Done loading. Merging data, preparing output ...');
@@ -899,7 +899,7 @@ end
 
 % Fix the output
 for iOutputVar = 1:nVar
-  
+
   if isempty(varnamesout{iOutputVar})
     varname_out = varnames{iOutputVar};
   else
@@ -915,7 +915,7 @@ for iOutputVar = 1:nVar
   epoch_data = cell2mat(epochData{iOutputVar}(~indEmptyFiles));
   varOut =  TSeries(EpochTT(epoch_data),var_data,...
     'metadata_from',varMeta{iOutputVar});
-  
+
   if outputToBase
     assignin('base',varname_out,varOut);
   else
@@ -924,7 +924,7 @@ for iOutputVar = 1:nVar
       output = output{1};
     end
   end
-  
+
 end
 
   function iFilesToGet = ind_dates_in_datenum_interval(fileDates)
@@ -969,7 +969,7 @@ end
     if (numel(out) > 1), out = out{1}; end
     dirBase = out.directory;
     out = {};
-    
+
     for date = floor(startDatenum):floor(endDatenum)
       dirs = get_data_dir(fileBaseName,date);
       dirFull = [dirs{1} filesep fileBaseName '_' datestr(date,'YYYYmmDD')];
@@ -1128,8 +1128,8 @@ function out = get_data_dbm_dvdc(listCDFFiles)
     dbm_dvdc_sc = psp_coordinate_transform(dbm_dvdc,'e>sc');
     out = struct('ts',dbm_dvdc,'ts_sc',dbm_dvdc_sc,...
       'startStopTT',tStartStopTT);
-end 
-  
+end
+
   function out = get_data_dbm_vdc(listCDFFiles)
     % output is structure witf fields
     % .ts: time series with five columns vdc1, vdc2, vdc3, vdc4 and vdc5
@@ -1171,7 +1171,7 @@ end
     dbm_vdc_sc = psp_coordinate_transform(dbm_vdc,'e>sc');
     out = struct('ts',dbm_vdc,'ts_sc',dbm_vdc_sc,...
       'startStopTT',tStartStopTT);
-  end 
+  end
 
   function out = get_data_dbm_scm(listCDFFiles)
     % output is structure witf fields
@@ -1234,12 +1234,12 @@ end
       || ( ~strcmp(doGetFiles,'N') && ~strcmp(doGetFiles,'Y') )
       doGetFiles = irf_ask('Shall I download Y-yes to all, y-yes? [Y/y/n/N] [%]>','doGetFiles','Y');
     end
-    
+
     if ~strcmpi(doGetFiles,'y'),return;end
-    
+
     dataSubDir = get_data_dir( fileBaseName,dateNum);
     dataPath   = get_data_path(fileBaseName,dateNum);
-    
+
     % define data servers and weboptions
     if strcmp(dataSubDir{1}(1:5),'sweap')
       webserver = 'http://sweap.cfa.harvard.edu/pub/data/sci/';
@@ -1248,7 +1248,7 @@ end
       webserver = 'https://research.ssl.berkeley.edu/data/psp/data/sci/';
       webOptions = webOptionsSSL;
     end
-    
+
     for iDir = 1:numel(dataSubDir)
       dirPath = dataPath{iDir};
       if ~exist(dirPath,'dir')
@@ -1261,21 +1261,21 @@ end
       else
         tt = webread(wwwDir,webOptions);
       end
-      
+
       % find latest version files (sort descending by version and keep
       % unique file basenames
       ff = regexp(tt,'([\w]*)_v([\d]*).cdf','tokens');
       ffFull = arrayfun(@(x) x{1}, regexp(tt,'([\w]*_v[\d]*.cdf)','tokens'));
-      
+
       filesBase = arrayfun(@(x) (x{1}{1}),ff,'UniformOutput',false);
       filesVersion = arrayfun(@(x) str2num(x{1}{2}),ff);
       [filesVersionSorted,indSort] = sort(filesVersion,'descend');
       filesBaseSorted = filesBase(indSort);
-      ffFullSorted = ffFull(indSort); 
+      ffFullSorted = ffFull(indSort);
       [filesBaseUnique,indUnique] = unique(filesBaseSorted);
       filesUnique = ffFullSorted(indUnique);
       fileDates = regexp(filesUnique,'.*_(20\d\d\d\d\d\d)\d*_v.*.cdf','tokens');
-      
+
       % find files with dates in the interval requested
       iFilesToGet = find(ind_dates_in_datenum_interval(fileDates));
       if any(iFilesToGet)
@@ -1295,7 +1295,7 @@ end
         irf.log('warning','No files to download from the server matching the date');
       end
     end
-    
+
   end
 
 end
