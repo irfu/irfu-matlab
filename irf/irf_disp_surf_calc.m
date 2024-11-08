@@ -9,7 +9,7 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
 %
 %  This function is essential for IRF_DISP_SURF to work.
 %
-%  K_PERP_MAX   can be one of two: 
+%  K_PERP_MAX   can be one of two:
 %               1) max value of k_perpendicular*c/w_c in which case kperp
 %               includes 35 values, linspace(0.000001,k_perp_max,35)
 %               2) vector with k_perp values
