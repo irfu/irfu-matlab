@@ -33,6 +33,7 @@ function [x_reduced, y_reduced] = reduce_to_width(x, y, width, lims)
 %
 % Tucker McClure
 % Copyright 2013, The MathWorks, Inc.
+% SPDX-License-Identifier: MIT
 
     % We'll need the first point to the left of the limits, the first point
     % to the right to the right of the limits, and the min and max at every

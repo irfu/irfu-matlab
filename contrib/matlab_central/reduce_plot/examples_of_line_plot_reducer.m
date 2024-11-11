@@ -22,6 +22,7 @@
 % ---
 %
 % Copyright 2015, The MathWorks, Inc. and Tucker McClure
+% SPDX-License-Identifier: MIT
 
 %% Make sure user is running one cell at a time.
 a = questdlg(['This script will perform numerous actions with quite ' ...

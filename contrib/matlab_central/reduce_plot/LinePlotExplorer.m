@@ -43,6 +43,7 @@ classdef LinePlotExplorer < handle
 %
 % Tucker McClure
 % Copyright 2013, The MathWorks, Inc.
+% SPDX-License-Identifier: MIT
 
     properties
         

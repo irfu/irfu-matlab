@@ -14,6 +14,7 @@ function pixels = get_axes_width(h)
 % ---
 %
 % Copyright 2014, The MathWorks, Inc. and Tucker McClure
+% SPDX-License-Identifier: MIT
 
     % Record the current axes units setting.
     axes_units = get(h, 'Units');

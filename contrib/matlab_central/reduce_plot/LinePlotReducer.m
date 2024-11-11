@@ -121,6 +121,7 @@ classdef LinePlotReducer < handle
 % ---
 %
 % Copyright 2015, The MathWorks, Inc. and Tucker McClure
+% SPDX-License-Identifier: MIT
 
     properties
         
