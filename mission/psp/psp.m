@@ -4,7 +4,7 @@ function out = psp(varargin)
 % PSP - return basic information on Solar Orbiter
 %
 % PSP(flag) - return specific information defined by flag or keyword
-% including "flag" in its text. Keywords and different useful info 
+% including "flag" in its text. Keywords and different useful info
 % are at the end of the file.
 %
 %  Example:
@@ -69,7 +69,7 @@ end
 %%%%
 %% ##basic info
 % Parker Solar Probe NASA Living With a Star mission
-% 
+%
 
 %% ##Encounters ##Venus
 % List of encounters with ENLIL plots <a href="https://sppgway.jhuapl.edu/encounters#enc1">www</a>
@@ -84,7 +84,7 @@ end
 % Enc6 2020-09-27/09:16  20.3 Rs  0.094 AU
 % Enc7 2021-01-17/17:40  20.3 Rs  0.094 AU
 %
-% 
+%
 
 %% ##Payload
 % FIELDS paper: <a href="https://doi.org/10.1002/2016JA022344">Malaspina 2016</a>

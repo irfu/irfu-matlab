@@ -19,4 +19,3 @@ psp_freqtracker(start,stop,'initialdensitydata',false,'initialfreq',30,'binrange
 % characterization.
 %[PlasmaLine,~,Pspdata,~] = psp_freqtracker(fullday,'generateplot',false);
 
-    

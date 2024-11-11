@@ -55,7 +55,7 @@ y=y(:);
 %% Check the sampling rate
 
 % when analysing snapshots sometimes the first step is zero, therefore take 2nd step
-sampl = 1/(t(3)-t(2)); 
+sampl = 1/(t(3)-t(2));
 
 %% Create the Hamming window function
 

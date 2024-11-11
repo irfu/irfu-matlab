@@ -32,7 +32,7 @@ switch lower(model)
   case 'stverak2015_electrons_slow_wind'
     % Reference: doi:10.1002/2015JA021368 Table 1
     % Based on Helios 1 and 2
-    
+
     n_m3    = 9.32e6 * distanceToSunInAU.^(-2.03);
     Tpar_K  = 1.68e5 * distanceToSunInAU.^(-0.67);
     Tperp_K = 1.37e5 * distanceToSunInAU.^(-0.53);
@@ -44,7 +44,7 @@ switch lower(model)
     varargout={n_m3,Tpar_K,Tperp_K,T_K,Qpar_Wm2,Qperp_Wm2,Q_Wm2};
   case 'stverak2015_electrons_fast_wind'
     % Reference: doi:10.1002/2015JA021368 Table 1
-    
+
     n_m3    = 5.61e6 * distanceToSunInAU.^(-1.83);
     Tpar_K  = 1.74e5 * distanceToSunInAU.^(-0.35);
     Tperp_K = 9.92e4 * distanceToSunInAU.^(-0.27);

@@ -202,7 +202,7 @@ if flag_subplot==0  % One subplot
     else
       irf_spectrogram(ax,x);
     end
-    
+
     if showColorbar, hcbar = colorbar(ax); end
     if ~isempty(var_desc{1})
       lab = cell(1,length(var_desc{1}.size));

@@ -2,20 +2,20 @@
 % -------------------------------------------------------------------------
 %                                 DESCRIPTION
 % -------------------------------------------------------------------------
-% A simple funcion following a specific frequency based on the increased 
-% amplitude(in this example the plasma line) at the nearby bins 
-% spectrogram (e.g. from PSP lfr)  
+% A simple funcion following a specific frequency based on the increased
+% amplitude(in this example the plasma line) at the nearby bins
+% spectrogram (e.g. from PSP lfr)
 %
 % Below you can find a detailed description of input/output and possible
 % future updates/implementations.
-% 
+%
 % REQUIREMENTS: irfu-matlab (pspdevel), set up datastore
 % path for psp_load
-% 
+%
 % %All outputs are optional.
 % %All inpuits are optional but you need to provide either a day or a start
 % %and stop period.
-% e.g. 
+% e.g.
 % 1) start = [2020 06 09 03 00 00] ; stop =  [2020 06 09 04 00 00];
 % 2) fullday = [2020 06 09] ;
 % -------------------------------------------------------------------------
@@ -35,64 +35,64 @@
 %                           (default = true
 % 'densitycomparisonplot' - generate density comparison plots (default =
 %                            alse)
-% 
+%
 % -------------------------------------------------------------------------
 %                                 OUTPUT
 % -------------------------------------------------------------------------
 % [A,B,C,D]
-% 
+%
 % A = Structure with plasma line TS and weighted plasma line TS
 % B = Strcture with density TS and weighted density TS
 % C = Structure with low resolution frequency & amplitude from lfr
 % D = Timeseries of density from spi data
-% 
+%
 % -------------------------------------------------------------------------
 %                                 TODO
 % -------------------------------------------------------------------------
-% 
+%
 % TOP PRIORITY
-% 
+%
 % - Write code that works with hires data from rfs (ONGOING)
-% 
+%
 % HIGH PRIORITY
-% 
+%
 % - Establishing background tolerance level changing over time in case
 % of different fluxes or density in close proximity.
-% 
+%
 % - Re-visit algorithm to optimize computational time
 % and add a few callbacks in case of errors.
-% 
+%
 % LOW PRIORITY
-% 
+%
 % - Quality index based on differences for other instruments. (in other
 % words, when plasma line is hard to read, trust the other instruments)
-% 
+%
 % - Allow dynamic hyperparameter optimization within the for loop (changing
 % the default parameters when things are changing drastically)
-% 
+%
 % - Extra outputs/inputs (saving plots, etc.)
-% 
+%
 % - Update with current updated irfu_matlab routines
-% 
+%
 % -------------------------------------------------------------------------
-%                                 EXAMPLES 
+%                                 EXAMPLES
 %                           see irfu/plots/psp/
 % -------------------------------------------------------------------------
-% 
+%
 % start = [2020 06 09 03 00 00] ;
 % stop =  [2020 06 09 04 00 00];
 % fullday = [2020 06 09] ;
-% 
+%
 % plasmaline = FreqTracking(start,stop);
 % [plasmaline,DensityTS,pspdata,InitialDensityTS] = psp_freqtracker(start,stop,'initialdensitydata',true,'generateplot',true,'densitycomparisonplot',true);
 % [plasmaline,~,pspdata,~] = psp_freqtracker(fullday,'generateplot',false);
-% 
+%
 % TIP: providing initial density data usually works fine, however, in some
 % cases due to the underestimation/overestimation of the density it is
 % better to visually see the spectrogram and provide an initial bin using
 % initialfreq
 % ---------------------------------------------------------------------------
-% 
+%
 % -Savvas Raptis & Sabrina Tigik Ferrao
 % KTH, Royal Institute of Technology
 % savvra@kth.se
@@ -119,7 +119,7 @@ if nargin == 0
 end
 
 if  nargin > 0
-    if length(varargin{1}) < 4 
+    if length(varargin{1}) < 4
         defaultstarttime = varargin{1};
         defaultstarttime = [defaultstarttime,00];
         defaultstoptime = varargin{1};
@@ -162,7 +162,7 @@ end
 parse(p,varargin{:});
 imported_arguments = p.Results;
 
-disp('The arguments choosen are:') 
+disp('The arguments choosen are:')
 disp(p.Results)
 
 
@@ -170,7 +170,7 @@ disp(p.Results)
 if size(imported_arguments.start,2) <4  %% Small hotfix to allow different initial inputs
     imported_arguments.start = [imported_arguments.start 00] ;
     imported_arguments.stop = [imported_arguments.stop 24] ;
-end 
+end
 
 imported_arguments.start = [imported_arguments.start(1) imported_arguments.start(2) imported_arguments.start(3) imported_arguments.start(4) 00 00] ; %Small hotfix on times to avoid a bug with minutes being different than zero
 imported_arguments.stop =  [imported_arguments.stop(1) imported_arguments.stop(2) imported_arguments.stop(3) imported_arguments.stop(4) 00 00]; %Small hotfix on times to avoid a bug with minutes being different than zero
@@ -188,7 +188,7 @@ rfs_lfr_v3v4_spec.p_label={['log10 (' testrfs_lfr_v3v4.units ')']};
 rfs_lfr_v3v4_spec.f_label={testrfs_lfr_v3v4_freq.units};
 
 if imported_arguments.initialdensitydata == true
-    AssistingData = psp_load([],'spi', [imported_arguments.start(1) imported_arguments.start(2) imported_arguments.start(3)], [imported_arguments.start(1) imported_arguments.start(2) imported_arguments.start(3)]); % Download 1 day of data to local datastore path (edit datastore to change or add first argument with a path)    
+    AssistingData = psp_load([],'spi', [imported_arguments.start(1) imported_arguments.start(2) imported_arguments.start(3)], [imported_arguments.start(1) imported_arguments.start(2) imported_arguments.start(3)]); % Download 1 day of data to local datastore path (edit datastore to change or add first argument with a path)
     SubAssistingData =  tlim(AssistingData{2},tint);
     defaultimported_arguments.initialfreqvalue =  sqrt((SubAssistingData.data(1)*1e6)*e^2/Me/epso)/2/pi; % 9e3*sqrt(imported_arguments.initialdensitydata.data(1));
     PlasmaLineFromFrequency =  sqrt((SubAssistingData*1e6)*e^2/Me/epso)/2/pi;
@@ -210,23 +210,23 @@ spikecounter=0;
 %% Tracker of frequency
 
 for i=1:length(testrfs_lfr_v3v4.time)
-    
+
     MaximumAmplitude = testrfs_lfr_v3v4.data(i,imported_arguments.initialfreq-imported_arguments.binrange:imported_arguments.initialfreq+imported_arguments.binrange);
-    
+
     [~, maxindex] = find(max(MaximumAmplitude)==MaximumAmplitude);
-    
+
     if maxindex ~= imported_arguments.binrange+1 && (max(MaximumAmplitude) - testrfs_lfr_v3v4.data(i,imported_arguments.initialfreq))> imported_arguments.tolerancelevel
         %disp(['changing initial frequency from ', num2str(imported_arguments.initialfreq), ' to ', num2str(imported_arguments.initialfreq-imported_arguments.binrange-1+maxindex)])
         imported_arguments.initialfreq = imported_arguments.initialfreq-imported_arguments.binrange-1+maxindex;
         frequencytracker = [frequencytracker, imported_arguments.initialfreq ] ;
         TrackerNumber = TrackerNumber +1;
     end
-    
+
     DataFrequency = [DataFrequency,testrfs_lfr_v3v4_freq.data(i,imported_arguments.initialfreq)];
     NormalizedWeightedAmplitudeArray = normalize(testrfs_lfr_v3v4.data(i,imported_arguments.initialfreq-1:imported_arguments.initialfreq+1),'norm',1);
     WeightedResult = sum(testrfs_lfr_v3v4_freq.data(i,imported_arguments.initialfreq-1:imported_arguments.initialfreq+1).*NormalizedWeightedAmplitudeArray);
     DataFrequencyWeightedAverage = [DataFrequencyWeightedAverage,WeightedResult];
-    
+
     if imported_arguments.initialfreq < imported_arguments.minfreq || imported_arguments.initialfreq > imported_arguments.maxfreq
         spikecounter = spikecounter + 1;
         warning('Possible spike encounter: Re-evaluate the tracking')
@@ -318,6 +318,6 @@ elseif nargout == 4 && imported_arguments.initialdensitydata == true
     varargout {2} = {DensityTS,WeightedDensityTSSmoothed};
     varargout {3} = {testrfs_lfr_v3v4_freq,testrfs_lfr_v3v4};
     varargout {4} = SubAssistingData;
-    
+
 end
 end
