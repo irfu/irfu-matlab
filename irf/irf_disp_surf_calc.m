@@ -30,7 +30,7 @@ elseif isnumeric(kc_z_max)
   kc_z = kc_z_max;
 end
 if numel(kc_x_max) == 1
-kc_x=linspace(0.000001,kc_x_max,35);
+  kc_x=linspace(0.000001,kc_x_max,35);
 elseif isnumeric(kc_x_max)
   kc_x = kc_x_max;
 end

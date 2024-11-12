@@ -21,50 +21,50 @@ flag=varargin{1};
 Units=irf_units;
 
 switch flag
-    case '?'         % Show all possible flag options
-      content = fileread( which('psp') ) ;
-      keyWords = regexp(content,'(?<key>##\w+)','names');
-      keywords = unique(squeeze(struct2cell(keyWords)));
-      for i=1:numel(keywords)
-        disp(['<a href="matlab: psp ' keywords{i} '">' keywords{i} '</a> ' ]);
+  case '?'         % Show all possible flag options
+    content = fileread( which('psp') ) ;
+    keyWords = regexp(content,'(?<key>##\w+)','names');
+    keywords = unique(squeeze(struct2cell(keyWords)));
+    for i=1:numel(keywords)
+      disp(['<a href="matlab: psp ' keywords{i} '">' keywords{i} '</a> ' ]);
+    end
+    fid=fopen(which('psp'));
+    while 1
+      tline = fgetl(fid);
+      if ~ischar(tline), break, end
+      b=regexp(tline,'case ''(?<flag>\w*)''\s*[%](?<comment>.*)','names');
+      if numel(b)==1
+        disp(['<a href="matlab: psp ' b.flag '">' b.flag '</a> : ' b.comment]);
       end
-        fid=fopen(which('psp'));
-        while 1
-            tline = fgetl(fid);
-            if ~ischar(tline), break, end
-            b=regexp(tline,'case ''(?<flag>\w*)''\s*[%](?<comment>.*)','names');
-            if numel(b)==1
-                disp(['<a href="matlab: psp ' b.flag '">' b.flag '</a> : ' b.comment]);
-            end
-        end
-        fclose(fid);
-	otherwise
-        psp_txt(lower(flag));
+    end
+    fclose(fid);
+  otherwise
+    psp_txt(lower(flag));
 end
 end
 
 function psp_txt(txt)
-  fid=fopen(which('psp'));
-  while 1
-    tline = fgetl(fid);
-    if ~ischar(tline), break, end
-    b=regexp(tline,'^%%%%.*','match'); % find where start txt paragraphs
-    if numel(b)==1, break; end
-  end
+fid=fopen(which('psp'));
+while 1
+  tline = fgetl(fid);
+  if ~ischar(tline), break, end
+  b=regexp(tline,'^%%%%.*','match'); % find where start txt paragraphs
+  if numel(b)==1, break; end
+end
 
-  while 1 % look for keywords
-    tline = fgetl(fid);
-    if ~ischar(tline), break, end
-    b=regexpi(tline,['^%%\s.*' txt '.*'],'match'); % find where start txt paragraphs
-    if numel(b)==1
-      disp(b{1}(2:end));
-      while 1
-        tline = fgetl(fid);
-        if ~ischar(tline) || isempty(tline), break, end
-        disp(tline(2:end));
-      end
+while 1 % look for keywords
+  tline = fgetl(fid);
+  if ~ischar(tline), break, end
+  b=regexpi(tline,['^%%\s.*' txt '.*'],'match'); % find where start txt paragraphs
+  if numel(b)==1
+    disp(b{1}(2:end));
+    while 1
+      tline = fgetl(fid);
+      if ~ischar(tline) || isempty(tline), break, end
+      disp(tline(2:end));
     end
   end
+end
 end
 %%%%
 %% ##basic info

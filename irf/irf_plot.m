@@ -225,7 +225,7 @@ if flag_subplot==0  % One subplot
         axes(hca);
         h = reduce_plot(time-ts-dt, data, marker, args{:});
       else
-      h = plot(hca, time-ts-dt, data, marker, args{:});
+        h = plot(hca, time-ts-dt, data, marker, args{:});
       end
     else
       if(verLessThan('matlab','9.0'))
@@ -420,18 +420,18 @@ elseif flag_subplot==3  % components of vectors in separate panels
           end
           if doReducedPlot
             axes(hca); %#ok<LAXES>
-          reduce_plot(hca,(time-ts-dt(jj)), data(:,ipl),...
-            'Color', line_colors(jj,:), 'LineStyle',marker_cur)
+            reduce_plot(hca,(time-ts-dt(jj)), data(:,ipl),...
+              'Color', line_colors(jj,:), 'LineStyle',marker_cur)
           else
-          plot(hca,(time-ts-dt(jj)), data(:,ipl),...
-            'Color', line_colors(jj,:), 'LineStyle',marker_cur)
+            plot(hca,(time-ts-dt(jj)), data(:,ipl),...
+              'Color', line_colors(jj,:), 'LineStyle',marker_cur)
           end
         else
           if doReducedPlot
             axes(gca); %#ok<LAXES>
             reduce_plot((time-ts-dt(jj)), data(:,ipl),marker_cur)
           else
-          plot(hca,(time-ts-dt(jj)), data(:,ipl),marker_cur)
+            plot(hca,(time-ts-dt(jj)), data(:,ipl),marker_cur)
           end
         end
         hold(hca,'on');

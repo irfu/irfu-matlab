@@ -482,7 +482,7 @@ switch datatype
 
     hourtag={''};
 
- case {'l3_rfs_lfr'}
+  case {'l3_rfs_lfr'}
     filename = 'psp_fld_l3_rfs_lfr';
     varnames = {...
       'psp_fld_l3_rfs_lfr_auto_averages_ch0_V1V2';...
@@ -531,7 +531,7 @@ switch datatype
       'psp_fld_l2_rfs_hfr_auto_averages_ch1_V3V4';...
       'frequency_hfr_auto_averages_ch1_V3V4'};
     varnamesout = {...
-     'l2_rfs_hfr_v1v2';...
+      'l2_rfs_hfr_v1v2';...
       'l2_rfs_hfr_v1v2_freq';...
       'l2_rfs_hfr_v3v4';...
       'l2_rfs_hfr_v3v4_freq'};
@@ -592,44 +592,44 @@ switch datatype
   case {'spa_sf0'}
     filename = 'psp_swp_spa_sf0_L2_16Ax8Dx32E';
     varnames = {...
-        'EFLUX';'ENERGY';...
-        'THETA';'PHI';...
-        'QUALITY_FLAG'};
+      'EFLUX';'ENERGY';...
+      'THETA';'PHI';...
+      'QUALITY_FLAG'};
     varnamesout = {'spa_sf0_eflux';...
-        'spa_sf0_energy';'spa_sf0_theta';...
-        'spa_sf0_phi';'spa_sf0_qf'};
+      'spa_sf0_energy';'spa_sf0_theta';...
+      'spa_sf0_phi';'spa_sf0_qf'};
 
     hourtag={''};
 
   case {'spb_sf0'}
     filename = 'psp_swp_spb_sf0_L2_16Ax8Dx32E';
     varnames = {...
-        'EFLUX';'ENERGY';...
-        'THETA';'PHI';...
-        'QUALITY_FLAG'};
+      'EFLUX';'ENERGY';...
+      'THETA';'PHI';...
+      'QUALITY_FLAG'};
     varnamesout = {'spb_sf0_eflux';...
-        'spb_sf0_energy';'spb_sf0_theta';...
-        'spb_sf0_phi';'spb_sf0_qf'};
+      'spb_sf0_energy';'spb_sf0_theta';...
+      'spb_sf0_phi';'spb_sf0_qf'};
 
     hourtag={''};
 
   case {'spa_sf1'}
     filename = 'psp_swp_spa_sf1_L2_32E';
     varnames = {...
-        'EFLUX';'ENERGY';...
-        'QUALITY_FLAG'};
+      'EFLUX';'ENERGY';...
+      'QUALITY_FLAG'};
     varnamesout = {'spa_sf1_eflux';...
-        'spa_sf1_energy';'spa_sf1_qf'};
+      'spa_sf1_energy';'spa_sf1_qf'};
 
     hourtag={''};
 
   case {'spb_sf1'}
     filename = 'psp_swp_spb_sf1_L2_32E';
     varnames = {...
-        'EFLUX';'ENERGY';...
-        'QUALITY_FLAG'};
+      'EFLUX';'ENERGY';...
+      'QUALITY_FLAG'};
     varnamesout = {'spb_sf1_eflux';...
-        'spb_sf1_energy';'spb_sf1_qf'};
+      'spb_sf1_energy';'spb_sf1_qf'};
 
     hourtag={''};
 
@@ -721,17 +721,17 @@ switch datatype
 
     hourtag={''};
 
-%   case {'tds_wf_sol_dist'}
-%     filename = 'psp_fld_l2_tds_wf';
-%     varnames = {'PSP_FLD_L2_TDS_WF_SC_Solar_Distance'};
-%     varnamesout = {'tds_wf_sol_dist'};
-%
-%     hourtag={''};
-%
-%   case 'tds_wf'
-%     listCDFFiles = get_file_list('psp_fld_l2_tds_wf');
-%     output       = get_data_tds_wf(listCDFFiles);
-%     return;
+    %   case {'tds_wf_sol_dist'}
+    %     filename = 'psp_fld_l2_tds_wf';
+    %     varnames = {'PSP_FLD_L2_TDS_WF_SC_Solar_Distance'};
+    %     varnamesout = {'tds_wf_sol_dist'};
+    %
+    %     hourtag={''};
+    %
+    %   case 'tds_wf'
+    %     listCDFFiles = get_file_list('psp_fld_l2_tds_wf');
+    %     output       = get_data_tds_wf(listCDFFiles);
+    %     return;
 
   case 'tds_wf_scm4'
     listCDFFiles = get_file_list('psp_fld_l2_tds_wf');
@@ -949,7 +949,7 @@ end
       YY = datestr(datenumTable(i),'yy');
       dirFull = strrep(dirBase,'MM',MM);
       dirFull = strrep(dirFull,'YY',YY);
-%      dirFull = strrep(dirFull,'/',filesep);
+      %      dirFull = strrep(dirFull,'/',filesep);
       out{i} = dirFull;
     end
     out = unique(out);
@@ -1097,7 +1097,7 @@ end
       'startStopTT',tStartStopTT);
   end
 
-function out = get_data_dbm_dvdc(listCDFFiles)
+  function out = get_data_dbm_dvdc(listCDFFiles)
     % output is structure witf fields
     % .ts: time series with two columns dvdc12 and dvdc34
     % .ts_sc: time series in sc coordinate system
@@ -1128,7 +1128,7 @@ function out = get_data_dbm_dvdc(listCDFFiles)
     dbm_dvdc_sc = psp_coordinate_transform(dbm_dvdc,'e>sc');
     out = struct('ts',dbm_dvdc,'ts_sc',dbm_dvdc_sc,...
       'startStopTT',tStartStopTT);
-end
+  end
 
   function out = get_data_dbm_vdc(listCDFFiles)
     % output is structure witf fields
@@ -1231,7 +1231,7 @@ end
 
   function download_data(fileBaseName,dateNum)
     if isempty(doGetFiles) ...
-      || ( ~strcmp(doGetFiles,'N') && ~strcmp(doGetFiles,'Y') )
+        || ( ~strcmp(doGetFiles,'N') && ~strcmp(doGetFiles,'Y') )
       doGetFiles = irf_ask('Shall I download Y-yes to all, y-yes? [Y/y/n/N] [%]>','doGetFiles','Y');
     end
 

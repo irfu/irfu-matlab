@@ -61,10 +61,10 @@ end
 
 %% Output
 if nargout == 0  % print all matching variables
-    display_variable_description(doMatchNameExact);
-    if ~any(doMatchNameExact)
-      display_variable_description(doMatchName);
-    end
+  display_variable_description(doMatchNameExact);
+  if ~any(doMatchNameExact)
+    display_variable_description(doMatchName);
+  end
 elseif nargout == 4 && any(doMatchNameExact)
   %[fileName,varName,hourTag,shortVar]
   if any(doMatchNameExact)
@@ -122,7 +122,7 @@ end
       iVarList = find(iVarList);
     end
     for iVar = iVarList
-        fprintf('%s\n',['<a href="matlab: psp_var ' arr(iVar).varName '">' arr(iVar).varName '</a>']);
+      fprintf('%s\n',['<a href="matlab: psp_var ' arr(iVar).varName '">' arr(iVar).varName '</a>']);
     end
   end
 
@@ -137,7 +137,7 @@ end
       return;
     end
     for iVar = iVarList
-        fprintf('%s\n',C{startIdx(iVar)-1:endIdx(iVar)+1});
+      fprintf('%s\n',C{startIdx(iVar)-1:endIdx(iVar)+1});
     end
   end
 
