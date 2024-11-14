@@ -6,8 +6,8 @@ function res = RBSP_get_data(varName,dataDir,tint,varargin)
 %   Variable names has to be in the following structure:
 %   RBSPX_instr_var_lvl
 %   X is either A or B for which probe
-%   instr is the name of the instrument. Implementation started: REPT, MAGEIS, HOPE. To be
-%   implemented: ICE, EFW, EMFISIS, RPS
+%   instr is the name of the instrument. Implementation started: REPT, MAGEIS, HOPE, EMFISIS. To be
+%   implemented: ICE, EFW, RPS
 %   var is the name of the data product to be loaded (below is a list of
 %   implemented data products)
 %   lvl is the level of the data product. At the moment only l3 is
@@ -32,7 +32,10 @@ function res = RBSP_get_data(varName,dataDir,tint,varargin)
 %   he_nonzero, he_o_ratio, he_p_ratio, o_Dens_flag, o_T_flag,
 %   o_Tperp_flag, o_nonzero, o_p_ratio, p_Dens_flag, p_T_flag,
 %   p_Tperp_flag, p_nonzero
-%
+%   EMFISIS:
+%   Mag_coord_res: Bfield vector, coord is the coordinate
+%   system (GEI,GEO,GSE,GSM,SM), and res is the resolution of the
+%   measurement (1sec,4sec,hires)
 
 % Written by Ahmad Lalti
 
@@ -116,7 +119,14 @@ switch lower(instr)
       error(['Unkown variab: ' VAR])
     end
 
-
+  case 'emfisis'
+    vat = split(VAR,'_');
+    VAR = lower(vat{1});
+    resolution = lower(vat{3});
+    coord = lower(vat{2});
+    instrumentID = ['emfisis/magnetometer/' resolution '/' coord];
+    cdfname = [RBSPID(1:end-1) '-' RBSPID(end) '_magnetometer_' resolution '-' coord '_emfisis-' levelID '_'];
+    return_type = 'emfisis_bfield';
   otherwise
     error(['The instrument ' instr ' is not implemented'])
 end
@@ -508,6 +518,55 @@ end
           ancillary.MLT = load_cdf{ixtt}(ix_tlim_anc);
           ixtt = strcmpi(var_names,'Position');
           ancillary.Position = load_cdf{ixtt}(ix_tlim_anc,:);
+          res.userData.ancillary = ancillary;
+        end
+      case 'emfisis_bfield'
+
+
+        %time
+
+        ixt = strcmpi(var_names,'Epoch_centered');
+        if isempty(load_cdf{ixt})
+          ixt = strcmpi(var_names,'Epoch');
+        end
+        time = load_cdf{ixt};
+        time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
+        ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        %data
+        if strcmpi(VAR,'mag')
+          VAR = 'Mag';
+        else
+          error(['Variable ' VAR ' does not exist.'])
+        end
+        load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
+        dat = load_var.Data;
+        B_units = load_var.Attributes.UNITS;
+        formatted_units = fix_units(B_units,'!n','!u');
+
+        %build the TSeries
+        res = irf.ts_vec_xyz(time(ix_tlim),dat(ix_tlim,:));
+        %additional info
+        res.name = varName;
+        res.units = formatted_units;
+        res.userData.GlobalAttributes = cdf_info.GlobalAttributes;
+        res.userData.VariableAttribute = load_var.Attributes;
+        %add anciellary
+        if add_anc
+
+          ixtt = strcmpi(var_names,'range_flag');
+          ancillary.range_flag = load_cdf{ixtt}(ix_tlim);
+          ixtt = strcmpi(var_names,'calState');
+          ancillary.calState = load_cdf{ixtt}(ix_tlim);
+          ixtt = strcmpi(var_names,'magInvalid');
+          ancillary.magInvalid = load_cdf{ixtt}(ix_tlim);
+          ixtt = strcmpi(var_names,'magFill');
+          ancillary.magFill = load_cdf{ixtt}(ix_tlim);
+          if ~strcmpi(resolution,'hires')
+          ixtt = strcmpi(var_names,'rms');
+          ancillary.rms = load_cdf{ixtt}(ix_tlim);
+          end
+          ixtt = strcmpi(var_names,'coordinates');
+          ancillary.coordinates = load_cdf{ixtt}(ix_tlim,:);
           res.userData.ancillary = ancillary;
         end
     end
