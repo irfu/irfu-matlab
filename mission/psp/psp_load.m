@@ -78,10 +78,17 @@
 % dateStart & dateStop: date vectors or strings for start and stop day
 %            e.g. [yyyy mm dd] or 'yyyy/mm/dd' or  'yyyy mm dd' (read with datenum)
 %
-% Example:
-%   psp_load('./','mag',[2020 01 26],[2020 02 01]); % assumes cdf files to be in the current directory
-%   psp_load('psp_fld_l2_mag_RTN_20...cdf','mag');
-%   rtnB = psp_load('psp_fld_l2_mag_RTN_20...cdf','mag');
+% Tip: if you prfer using irf.tint, you can use the template below to turn it into date strings  
+%   Tint = irf.tint('2020-06-07T00:00:00.000Z/2020-06-07T23:59:59.999Z'); 
+%   time_str = toUtc(Tint,1);
+%   dateStart = [time_str(1,1:4) ' ' time_str(1,6:7) ' ' time_str(1,9:10)];
+%   dateEnd = [time_str(2,1:4) ' ' time_str(2,6:7) ' ' time_str(2,9:10)];
+%
+% Example for loading data:
+%   psp_load([],'l3_rfs_hfr',dateStart,dateEnd) % it will use datastore
+%   psp_load('./','mag',[2020 06 07],[2020 06 07]); % it assumes cdf files to be in the current directory
+%   psp_load('psp_fld_l2_mag_RTN_20...cdf','mag'); % requires defining global dateStart dateEnd variables
+%   rtnB = psp_load('psp_fld_l2_mag_RTN_20...cdf','mag'); % same as above, but renames the loaded data
 
 function [output,pspobj] = psp_load(arg1,datatype,date_start,date_stop)
 global dateStart dateEnd
