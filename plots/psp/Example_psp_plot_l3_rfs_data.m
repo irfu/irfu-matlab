@@ -144,7 +144,7 @@ lfr = 2;
 % [hcc, hcd] = irf_spectrogram(h(lfr),rfs_lfr_v3v4_spec); % ch1 V3V4
 % [hcc, hcd] = irf_spectrogram(h(lfr),rfs_lfr_v2v2_flux); % Power flux (W/m^{-2}Hz^{-1})
 % [hcc, hcd] = irf_spectrogram(h(lfr),rfs_lfr_v3v4_flux);
-irf_zoom(h(lfr),'y',[4.9e4 1.274e6]) 
+irf_zoom(h(lfr),'y',[4.9e4 1.274e6])
 h(lfr).YAxis.ExponentMode = 'manual';
 h(lfr).YAxis.Exponent = 0;
 hcc.YScale = 'log';
@@ -178,8 +178,8 @@ colormap(clmap);
 % colormap('magma')
 % colormap('plasma')
 
-set(hcb,'position',get(hcb,'position')+[-0.015 0.0 0.0 0.0]); 
-set(hcd,'position',get(hcd,'position')+[-0.015 0.0 0.0 0.0]); 
+set(hcb,'position',get(hcb,'position')+[-0.015 0.0 0.0 0.0]);
+set(hcd,'position',get(hcd,'position')+[-0.015 0.0 0.0 0.0]);
 
 title(h(1),'PSP FIELDS Radio Frequency Spectrometer (RFS), HFR and LFR V1V2 data.','FontSize',fss,'fontweight','normal')
 % title(h(1),'PSP FIELDS Radio Frequency Spectrometer (RFS), HFR and LFR V3V4 data.','FontSize',fss,'fontweight','normal')
