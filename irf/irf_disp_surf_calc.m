@@ -9,11 +9,13 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
 %
 %  This function is essential for IRF_DISP_SURF to work.
 %
-%  K_PERP_MAX = max value of k_perpendicular*c/w_c
-%  K_PAR_MAX = max value of k_parallel*c/w_c
-%  M_I = ion mass in terms of electron masses
-%  WP_E = electron plasma frequency in terms of electron gyro frequency
-%
+%  K_PERP_MAX   can be one of two:
+%               1) max value of k_perpendicular*c/w_c in which case kperp
+%               includes 35 values, linspace(0.000001,k_perp_max,35)
+%               2) vector with k_perp values
+%  K_PAR_MAX    similar to K_PERP_MAX but for k_parallel*c/w_c values
+%  M_I          ion mass in terms of electron masses
+%  WP_E         electron plasma frequency in terms of electron gyro frequency
 
 %  By Anders Tjulin, last update 25/3-2003.
 
@@ -22,9 +24,16 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
 warning off
 
 % Make vectors of the wave numbers
-
-kc_z=linspace(0.000001,kc_z_max,35);
-kc_x=linspace(0.000001,kc_x_max,35);
+if numel(kc_z_max) == 1
+  kc_z=linspace(0.000001,kc_z_max,35);
+elseif isnumeric(kc_z_max)
+  kc_z = kc_z_max;
+end
+if numel(kc_x_max) == 1
+  kc_x=linspace(0.000001,kc_x_max,35);
+elseif isnumeric(kc_x_max)
+  kc_x = kc_x_max;
+end
 
 % Turn those vectors into matrices
 
@@ -134,10 +143,11 @@ Sz = Ex.*conj(By) - Ey.*conj(Bx);
 Spar = abs(Sz);
 Stot = sqrt(Sx.*conj(Sx) + Sy.*conj(Sy) + Sz.*conj(Sz));
 
-temp=length(kc_x);
+tempx=length(kc_x);
+tempz=length(kc_z);
 dk_x=kc_x(2);dk_z=kc_z(2);
 dw_x=diff(wfinal,1,3); dw_z=diff(wfinal,1,2);
-dw_x(1,temp,temp)=0; dw_z(1,temp,temp)=0;
+dw_x(1,tempz,tempx)=0; dw_z(1,tempz,tempx)=0;
 v_x=dw_x/dk_x; v_z=dw_z/dk_z;
 
 % Compute ion and electron velocities

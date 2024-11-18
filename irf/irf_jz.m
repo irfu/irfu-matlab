@@ -56,11 +56,13 @@ end
 if flag_average == 1
   dBf=irf_filt(dB,0,1/n_av,2,3);
   tt=dBf(:,1);
-  [xx ,dtB]=gradient(dBf(:,2:end),tt,tt); dtB=[tt dtB];
+  [~ ,dtB] = gradient(dBf(:,2:end),1,tt);
+  dtB      = [tt dtB];
 else
   tt=dB(:,1);
   % create dtB
-  [xx ,dtB]=gradient(dB(:,2:end),tt,tt); dtB=[tt dtB];
+  [~ ,dtB] = gradient(dB(:,2:end),1,tt);
+  dtB      = [tt dtB];
 end
 
 muo=4*pi/1e7;
@@ -85,7 +87,7 @@ switch method
     jp=[dtB(:,1) abs(dtBnb(:,2))./vnj(:,2)/muo*1e-12];jp(indnan_z,2)=NaN;jp(indnan_p,2)=NaN;
   case 'B'
     dt=dB(2,1)-dB(1,1);
-    irf_log('proc',['fs=' num2str(1/dt,3) ' irf_jz()']);
+    irf.log('warning',['fs=' num2str(1/dt,3) ' irf_jz()']);
     vb=irf_resamp(v,dtB);
     jxx=irf_vec_x_scal(irf_cross(dtB,vb),[vb(:,1) irf_abs(vb,1)],-2);
     j=irf_tappl(jxx,'*(-1)/(4*pi/1e7)*1e-12');

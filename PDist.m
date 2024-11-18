@@ -1763,7 +1763,7 @@ classdef PDist < TSeries
 
       Var = varargin;
 
-       flag_newgrid = 0;%%by default take the same old grid but change first and last energy bins to capture full distribution in new frame.
+      flag_newgrid = 0;%%by default take the same old grid but change first and last energy bins to capture full distribution in new frame.
       while ~isempty(Var)
         flag = Var{1};
         switch flag

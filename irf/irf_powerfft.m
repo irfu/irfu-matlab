@@ -216,7 +216,7 @@ nFreqs = ceil(nFft/2);
 
 % NOTE: Using "hanning" function (not "hann" or "hamming").
 w     = hanning(nFft);
-wnorm = sum(w.^2)/nFft;	      % Normalization factor from windowing
+wnorm = sum(w.^2)/nFft;       % Normalization factor from windowing
 nnorm = 2.0/nFft/samplFreqHz/wnorm;
 
 
