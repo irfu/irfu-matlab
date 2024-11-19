@@ -77,12 +77,12 @@ clear k
 switch lower(instr)
   case 'rept'
     rel = 'rel03';
-    instrumentID = ['ect/' instr '/sectors/' rel];
+    instrumentID = ['ect', filesep, instr, filesep, 'sectors', filesep, rel];
     cdfname = [RBSPID '_' rel '_ect-rept-sci-' levelID '_'];
     return_type = 'rept-PA';
   case 'mageis'
     rel = 'rel04';
-    instrumentID = ['ect/' instr '/sectors/' rel];
+    instrumentID = ['ect', filesep, instr ,filesep, 'sectors', filesep, rel];
     cdfname = [RBSPID '_' rel '_ect-mageis-' levelID '_'];
     return_type = 'mageis-PA';
   case 'hope'
@@ -108,11 +108,11 @@ switch lower(instr)
       conmoms = conmoms(conmoms);
     end
     if condist
-      instrumentID = ['ect/' instr '/pitchangle/' rel];
+      instrumentID = ['ect', filesep, instr, filesep, 'pitchangle', filesep, rel];
       cdfname = [RBSPID '_' rel '_ect-hope-pa-' levelID '_'];
       return_type = 'hope-PA';
     elseif conmoms
-      instrumentID = ['ect/' instr '/moments/' rel];
+      instrumentID = ['ect', filesep, instr, filesep, 'moments', filesep, rel];
       cdfname = [RBSPID '_' rel '_ect-hope-mom-' levelID '_'];
       return_type = 'hope-TS';
     else
@@ -124,7 +124,7 @@ switch lower(instr)
     VAR = lower(vat{1});
     resolution = lower(vat{3});
     coord = lower(vat{2});
-    instrumentID = ['emfisis/magnetometer/' resolution '/' coord];
+    instrumentID = ['emfisis', filesep, 'magnetometer', filesep, resolution, filesep, coord];
     cdfname = [RBSPID(1:end-1) '-' RBSPID(end) '_magnetometer_' resolution '-' coord '_emfisis-' levelID '_'];
     return_type = 'emfisis_bfield';
   otherwise
@@ -166,9 +166,9 @@ end
 
   function res = find_file_to_read
     res = '';
-    fullPath = [dataDir '/' RBSPID '/' levelID '/' instrumentID '/' ...
+    fullPath = [dataDir, filesep, RBSPID, filesep, levelID, filesep, instrumentID, filesep...
       num2str(timeVecStart(1))];
-    files = dir([fullPath '/' cdfname epoch2yyyymmdd(epochFileStart) '*']);
+    files = dir([fullPath, filesep, cdfname epoch2yyyymmdd(epochFileStart) '*']);
 
     if isempty(files) && fetch_online
       files = download_from_web();
@@ -182,7 +182,7 @@ end
           fileIDx = iFile;
         end
       end
-      res = [fullPath '/' files(fileIDx).name];
+      res = [fullPath, filesep, files(fileIDx).name];
     end
     function res = download_from_web()
       res = [];
@@ -201,13 +201,13 @@ end
         return
       else
         full_url = [full_url char(fileList(ix))];
-        dest = [dataDir '/' RBSPID '/' levelID '/' instrumentID '/' ...
-          num2str(timeVecStart(1)) '/'];
+        dest = [dataDir, filesep, RBSPID, filesep, levelID, filesep, instrumentID, filesep, ...
+          num2str(timeVecStart(1))];
         if ~exist(dest,'dir')
           mkdir(dest)
         end
-        websave([dest char(fileList(ix))],full_url);
-        res = dir([dest char(fileList(ix))]);
+        websave([dest, filesep, char(fileList(ix))],full_url);
+        res = dir([dest, filesep, char(fileList(ix))]);
       end
 
     end
@@ -562,8 +562,8 @@ end
           ixtt = strcmpi(var_names,'magFill');
           ancillary.magFill = load_cdf{ixtt}(ix_tlim);
           if ~strcmpi(resolution,'hires')
-          ixtt = strcmpi(var_names,'rms');
-          ancillary.rms = load_cdf{ixtt}(ix_tlim);
+            ixtt = strcmpi(var_names,'rms');
+            ancillary.rms = load_cdf{ixtt}(ix_tlim);
           end
           ixtt = strcmpi(var_names,'coordinates');
           ancillary.coordinates = load_cdf{ixtt}(ix_tlim,:);
