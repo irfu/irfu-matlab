@@ -167,6 +167,10 @@ classdef dc
       AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR(...
         bltsSamplesAVolt, bltsSdidArray, L);
 
+      % EXPERIMENTAL
+      % SdcdDict = bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR2(bltsSamplesAVolt, ...
+      %   bltsSdidArray, L);
+
 
 
       %################################################
@@ -680,7 +684,57 @@ classdef dc
       end
 
       Tmk.stop_log(nRecTot, 'record', nSs, 'subsequence')
+    end
 
+
+
+    % EXPERIMENTAL, UNUSED FUNCTION. INCOMPLETE?!!
+    %
+    % Intended as future conceptual replacement for
+    % bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR().
+    %
+    function SdcdDict = relabel_reconstruct_samples_BLTS_to_ASR2( ...
+        bltsSamplesAVolt, bltsSdidArray, L)
+
+      % TODO: VSQB argument
+      % PROPOSAL: Include VSQB in this function?
+      %   PRO: Most of the complexity should be in the Saturation class anyway.
+
+      SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR2', L);
+
+      [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
+        bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
+        bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
+
+      %====================
+      % Construct SdcdDict
+      %====================
+      SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
+      for i = 1:numel(SDID_AR)
+        sdid = SDID_AR(i);
+
+        % Preallocate
+        samplesAr = nan(nRecTot, nSamplesPerRecordChannel);
+        vsqbAr    = false(nRecTot, 1);
+
+        for iBlts = 1:bicas.const.N_BLTS
+
+          b = (bltsSdidArray(:, iBlts) == sdid);
+          samplesAr(b, :) = bltsSamplesAVolt(b, :, iBlts);
+          %vsqbAr(b)       = bltsVsqbAr(b, iBlts);     % Why disabled?
+        end
+
+        Sdcd = bicas.proc.L1L2.SdChannelData(samplesAr, vsqbAr);
+        SdcdDict = SdcdDict.set(sdid, Sdcd);
+      end
+
+
+
+      % Reconstruct missing channels/samples.
+      SdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples2(SdcdDict);
+
+      Tmk.stop_log(nRecTot, 'record')
     end
 
 
