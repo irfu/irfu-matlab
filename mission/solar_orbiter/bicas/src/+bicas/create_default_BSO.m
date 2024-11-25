@@ -353,25 +353,9 @@ S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_
 
 
 
-%============================================================================
-% Settings for when to remove data by setting it to fill value
-% ------------------------------------------------------------
-% "L2" refers to output datasets. Both voltage and current data. In
-% practice, this functionality is there as a temporary solution for removing
-% sweeps.
-%============================================================================
-S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
-
-% Unit: S = Seconds
-% Lower number since using LFR BDM (mux mode; unless configured not to),
-% which has same cadence as science data.
-% See PROCESSING.LFR.MUX_MODE_SOURCE.
-S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)
-
-% Higher number since using BIAS HK for TDS, which means that the BDM is
-% known with a lower time resolution.
-S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
-
+%===============
+% Miscellaneous
+%===============
 % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
 % EFIELD, and SCPOT data. Affects both OSR and DSR.
 S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
@@ -415,6 +399,27 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',      
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',            2.0);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   0.3);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);
+
+%============================================================================
+% Settings for when to remove data by setting it to fill value
+% ------------------------------------------------------------
+% "L2" refers to output datasets. Both voltage and current data. In practice,
+% this functionality was intended as a temporary solution for removing sweeps.
+% It has not been used since the introduction of automatic sweep detection.
+%============================================================================
+S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
+
+% Unit: S = Seconds
+% Lower number since using LFR BDM (mux mode; unless configured not to),
+% which has same cadence as science data.
+% See PROCESSING.LFR.MUX_MODE_SOURCE.
+S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)
+
+% Higher number since using BIAS HK for TDS, which means that the BDM is
+% known with a lower time resolution.
+S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
+
+
 
 %--------------------------------------------------------------------------
 % Settings for autodetecting sweeps (so that they can be excluded from L2)
