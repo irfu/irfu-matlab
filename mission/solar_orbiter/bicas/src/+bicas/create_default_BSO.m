@@ -331,6 +331,8 @@ S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'ERR
 % PROPOSAL: Rename.
 S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
 
+
+
 %============================================================================
 % Where to obtain the BDM (mux mode)
 % ----------------------------------
@@ -380,13 +382,15 @@ S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', fullfile('data', 'so
 % Can be set to absolute path. Intended for testing.
 S.define_setting('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH', '')
 
+
+
 %-------------------------------------------------------------------------------
 % Configuration parameters for the automatic detection of saturation performed
 % for L1R-->L2 processing.
 % ------------------------------------------------------------------------------
 % NOTE: The measured VDC3 potential is stuck at 0.8 V due to apparent h/w
 % failure on 2023-11-13T23:35. This is relevant since the returned value is very
-% constant and falsely look like a regular saturated value, but at a much lower
+% constant and falsely looks like a regular saturated value, but at a much lower
 % value. Saturation detection is not supposed to detect this value, but the
 % existence of this constant VDC3, and its consequences for other reconstructed
 % values in datasets such as correlated diffs, may mistakenly be interpreted as
@@ -437,7 +441,7 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
 %         -hour-minute-second
 %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
 %
-% NOTE: BDM changed from 0 to 4 for bulk science data on/at:
+% NOTE: BDM changed from 0 to 4 for *bulk* science data on/at:
 % (1) Xavier Bonnin e-mail 2023-12-22: "BIAS is set to MUX_4 on-board after
 %     Dec. 25."
 % (2) According to BIAS HK: 2023-12-25T23:29:10 (+/-30 s).
@@ -483,7 +487,7 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %               datasets.
 % ** BIAS & TDS have previously not followed the correct filenaming
 %    convention but does now (2020-11-20).
-% ** LFR do not seem to follow the filenaming convenction (2020-11-20)
+% ** LFR do not seem to follow the filenaming covention (2020-11-20)
 %    NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
 %    seconds=2_digits).
 % ** Only the last filename in a sorted list of matching filenames will

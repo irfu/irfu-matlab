@@ -197,6 +197,8 @@ DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
 DT
     MATLAB datetime object.
+EJ
+    Erik P G Johansson, the author and maintainer of BICAS.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).
