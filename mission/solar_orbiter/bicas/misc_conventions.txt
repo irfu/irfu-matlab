@@ -56,7 +56,7 @@ ASID
         3x AC diff
     Implemented as constant in the form of either
     (1) uint8 value, or
-    (2) Class bicas.proc.L1L2.AntennaSignalId.
+    (2) class bicas.proc.L1L2.AntennaSignalId.
     Compare ASR.
 ASR, Antenna Signal Representation.
     Either of:
@@ -377,7 +377,7 @@ SDID
         ASRs too in datasets. E.g. GND, 2.5V Ref., or unknown signals.
     Implemented as either:
     (1) uint8 value, or
-    (2) Class bicas.proc.L1L2.SignalDestinationId.
+    (2) class bicas.proc.L1L2.SignalDestinationId.
 Sec
     Seconds
 SIP
@@ -402,9 +402,9 @@ SSID
     BLTS. This source may be either
     (a) an ASR, or
     (b) one of the special cases: GND, 2.5V Ref., unknown signal.
-    Impemented as either:
+    Implemented as either:
     (1) uint8 value, or
-    (2) Class bicas.proc.L1L2.SignalSourceId.
+    (2) class bicas.proc.L1L2.SignalSourceId.
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not
@@ -447,13 +447,13 @@ UFV
 VBMC
     Validate BICAS Master CDFs.
 VSQB
-    Voltage Saturation Quality Flag. Bit in dataset (!) which is set iff BICAS
+    Voltage Saturation Quality Bit. Bit in dataset (!) which is set iff BICAS
     wants to label a sample/snapshot as saturated, according to some algorithm.
     Note that this is the value actually stored in datasets, as opposed to VSTB
     which is an intermediate value.
 VSTB
-    Voltage Saturation Threshold Flag. Internal bit used by the implementation.
-    The bit is set/unset for an individual sample iff the sample value exceeds
+    Voltage Saturation Threshold Bit. Internal bit used by the implementation.
+    The bit is set for an individual sample iff the sample value exceeds
     specified thresholds (min-max), i.e. it does not take any context into
     account, except for determining which thresholds to use. This is in contrast
     with

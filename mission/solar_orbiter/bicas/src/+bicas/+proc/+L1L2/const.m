@@ -40,7 +40,9 @@ classdef const
 %   Replace .C --> .ASID (asid?), .SSID (ssid?) etc.
 %   CON: Bad if wanting to "import" all constants at once.
 %
-% PROPOSAL: Rename ASID, SSID, SDID objects.
+% PROPOSAL: Rename ASID, SSID, SDID classes.
+%   PRO: Clearer distinction between ASID/SSID/SDID classes and uint8 values.
+%   CON: Different abbreviations?
 %   ~definition
 %   ~info, ~data, metadata
 %   ~BLTS
@@ -85,10 +87,10 @@ classdef const
     % qualifiers.
     %
     % NOTE: Construction is problematic since bicas.proc.L1L2.Routing
-    % constructors can not use other fields in bicas.proc.L1L2.const.C for assertions,
-    % since it has not been initialized at that time. Also, bad syntax in this
-    % code tends to give strange unintuitive error messages and error behaviour
-    % in MATLAB.
+    % constructors can not use other fields in bicas.proc.L1L2.const.C for
+    % assertions, since it has not been initialized at that time. Also, bad
+    % syntax in this code tends to give strange unintuitive error messages and
+    % error behaviour in MATLAB.
     %
     % NOTE:
     function C2 = init_const()
@@ -105,46 +107,53 @@ classdef const
 
       C2.ROUTING_DICT  = configureDictionary('string', 'bicas.proc.L1L2.Routing');
 
-      % Collection (array) of all ASR SDIDs.
+      % Array of all ASR SDIDs.
       C2.SDID_ASR_AR   = uint8([]);
 
       % Global list of uint8 values used so far for defining ASIDs, SSIDs, and
       % SDIDs. This is used for avoiding collisions between all of the uint8
       % constants combined, not just within each category (for safety).
-      kSet = [];
+      allocatedUint8Ar = [];
 
-      function assert_new_uint8(k)
+      function allocate_new_uint8(k)
         assert(isnumeric(k))
-        assert(~ismember(k, kSet))
-        kSet(end+1) = k;
+        assert(~ismember(k, allocatedUint8Ar))
+        allocatedUint8Ar(end+1) = k;
       end
 
-      function add_ASR(s, k, asidCategory, asidAntennas)
+      % Add new SSID, SDID and ASID for the same ASR.
+      % Add Routing from ASR SSID to corresponding ASR SDID.
+      function add_ASR_SSID_SDID_ASID_Routing(s, k, asidCategory, asidAntennas)
         asid = uint8(k);
+        allocate_new_uint8(k)
 
         ssid = add_SSID(s, k, asid);
         sdid = add_SDID(s, k, asid);
         C2.SDID_ASR_AR(end+1, 1) = sdid;
 
+        % Add ASID.
         AsidObj                = bicas.proc.L1L2.AntennaSignalId(ssid, asidCategory, asidAntennas);
         C2.ASID_DICT(s)        = asid;
         C2.ASID_OBJ_DICT(asid) = AsidObj;
 
+        % Add Routing.
         C2.ROUTING_DICT(s)     = bicas.proc.L1L2.Routing(ssid, sdid);
       end
 
+      % Add new SSID, only.
       function ssid = add_SSID(s, k, asidOrSpecialCase)
         ssid = uint8(k+100);
-        assert_new_uint8(ssid)
+        allocate_new_uint8(ssid)
 
         SsidObj = bicas.proc.L1L2.SignalSourceId(asidOrSpecialCase);
         C2.SSID_DICT(s)        = ssid;
         C2.SSID_OBJ_DICT(ssid) = SsidObj;
       end
 
+      % Add new SDID, only.
       function sdid = add_SDID(s, k, asidOrNowhere)
         sdid = uint8(k+200);
-        assert_new_uint8(sdid)
+        allocate_new_uint8(sdid)
 
         SdidObj = bicas.proc.L1L2.SignalDestinationId(asidOrNowhere);
         C2.SDID_DICT(s)        = sdid;
@@ -152,27 +161,41 @@ classdef const
       end
 
       function main()
-        % =====================================
-        % Add every possible unique ASID object
-        % =====================================
-        add_ASR("DC_V1",  1, "DC_SINGLE", [1   ]);
-        add_ASR("DC_V2",  2, "DC_SINGLE", [2   ]);
-        add_ASR("DC_V3",  3, "DC_SINGLE", [3   ]);
+        % Ensure that certain "magic" numbers are not used for ASID, SSID, or
+        % SDID.
+        allocate_new_uint8(0)
+        allocate_new_uint8(255)
 
-        add_ASR("DC_V12", 4, "DC_DIFF",   [1, 2]);
-        add_ASR("DC_V13", 5, "DC_DIFF",   [1, 3]);
-        add_ASR("DC_V23", 6, "DC_DIFF",   [2, 3]);
+        % ===========================================
+        % Add ASID, SSID, SDID for every possible ASR
+        % ===========================================
+        add_ASR_SSID_SDID_ASID_Routing("DC_V1",  1, "DC_SINGLE", [1   ]);
+        add_ASR_SSID_SDID_ASID_Routing("DC_V2",  2, "DC_SINGLE", [2   ]);
+        add_ASR_SSID_SDID_ASID_Routing("DC_V3",  3, "DC_SINGLE", [3   ]);
 
-        add_ASR("AC_V12", 7, "AC_DIFF",   [1, 2]);
-        add_ASR("AC_V13", 8, "AC_DIFF",   [1, 3]);
-        add_ASR("AC_V23", 9, "AC_DIFF",   [2, 3]);
+        add_ASR_SSID_SDID_ASID_Routing("DC_V12", 4, "DC_DIFF",   [1, 2]);
+        add_ASR_SSID_SDID_ASID_Routing("DC_V13", 5, "DC_DIFF",   [1, 3]);
+        add_ASR_SSID_SDID_ASID_Routing("DC_V23", 6, "DC_DIFF",   [2, 3]);
 
+        add_ASR_SSID_SDID_ASID_Routing("AC_V12", 7, "AC_DIFF",   [1, 2]);
+        add_ASR_SSID_SDID_ASID_Routing("AC_V13", 8, "AC_DIFF",   [1, 3]);
+        add_ASR_SSID_SDID_ASID_Routing("AC_V23", 9, "AC_DIFF",   [2, 3]);
+
+        % =======================
+        % Add all remaining SSIDs
+        % =======================
         add_SSID("REF25V",  10, "REF25V");
         add_SSID("GND",     11, "GND");
         add_SSID("UNKNOWN", 12, "UNKNOWN");
 
+        % =======================
+        % Add all remaining SDIDs
+        % =======================
         add_SDID("NOWHERE", 13, "NOWHERE");
 
+        % ===================================================
+        % Add all routings which are not ASR SSID to ASR SDID
+        % ===================================================
         C2.ROUTING_DICT("REF25V_TO_DC_V1")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V1"));
         C2.ROUTING_DICT("REF25V_TO_DC_V2")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V2"));
         C2.ROUTING_DICT("REF25V_TO_DC_V3")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V3"));
@@ -180,9 +203,6 @@ classdef const
         C2.ROUTING_DICT("GND_TO_DC_V2")       = bicas.proc.L1L2.Routing(C2.SSID_DICT("GND"),     C2.SDID_DICT("DC_V2"));
         C2.ROUTING_DICT("GND_TO_DC_V3")       = bicas.proc.L1L2.Routing(C2.SSID_DICT("GND"),     C2.SDID_DICT("DC_V3"));
         C2.ROUTING_DICT("UNKNOWN_TO_NOWHERE") = bicas.proc.L1L2.Routing(C2.SSID_DICT("UNKNOWN"), C2.SDID_DICT("NOWHERE"));
-
-        assert(~ismember(0,   kSet))
-        assert(~ismember(255, kSet))
       end
 
       main()

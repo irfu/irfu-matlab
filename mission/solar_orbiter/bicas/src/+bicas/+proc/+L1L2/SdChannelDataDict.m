@@ -34,7 +34,8 @@ classdef SdChannelDataDict
     KEYS_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR
   end
   properties(Dependent)
-    % Total number of fill positions in the underlying
+    % Total number of fill positions in all the SDCD objects stored within this
+    % object combined.
     nFp
   end
 
@@ -66,10 +67,12 @@ classdef SdChannelDataDict
 
 
 
+    % Set key value.
     function obj = set(obj, asrSdid, Sdcd)
       assert(isscalar(asrSdid))
-      assert(isa(Sdcd, 'bicas.proc.L1L2.SdChannelData'))
       assert(ismember(asrSdid, obj.KEYS_AR))
+      assert(isa(Sdcd, 'bicas.proc.L1L2.SdChannelData'))
+
       obj.Dict(asrSdid) = {Sdcd};
     end
 

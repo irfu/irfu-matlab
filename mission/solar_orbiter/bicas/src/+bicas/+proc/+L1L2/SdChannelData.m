@@ -1,8 +1,8 @@
 %
-% Stores one channel of data (samples) plus VSTBs. The class models a *column*
-% array, both for CWF and SWF(!) data to make reconstruction of missing
-% channels more natural. Every row represents data for a CDF record (for a
-% given channel).
+% Stores one channel of data (samples; nRecords x nSpr) plus VSTBs
+% (nRecords x 1). The class itself emulates a *column* array, both for CWF and
+% SWF(!) data to make reconstruction of missing channels more natural. Every row
+% represents data for a CDF record (for a given channel).
 %
 % SD = Source/Destination?
 %      Signal Destination? (as in SDID)
@@ -96,10 +96,11 @@ classdef SdChannelData
     function varargout = subsref(obj, S)
       switch S(1).type
         case '()'
+          % Index object as if it were a column vector.
           assert(isscalar(S))
           assert(isscalar(S(1).subs))
 
-          ib = S(1).subs{1};
+          ib        = S(1).subs{1};
           samplesAr = obj.samplesAr(ib, :);
           vsqbAr    = obj.vsqbAr(   ib, :);
           % IMPLEMENTATION NOTE: Specifying ":" for second index for vsqbAr is
