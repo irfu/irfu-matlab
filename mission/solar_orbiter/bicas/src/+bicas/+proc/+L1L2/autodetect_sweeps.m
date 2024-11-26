@@ -1,10 +1,10 @@
 % Try to autodetect sweeps.
 %
-% NOTE: This function should be temporary functionality while waiting
+% NOTE: This function is intended to be temporary functionality while waiting
 % for the long-term solution which is to use the relevant bit in L1/L1R
-% QUALITY_BITMASK for detecting sweeps. Since it is a (hopefully)
-% short-term solution, the functionality is also not as sophisticated
-% (and presumably accurate) or configurable as it could be.
+% QUALITY_BITMASK for detecting sweeps. Since it is a (hopefully) short-term
+% solution, the functionality is also not as sophisticated (and presumably
+% accurate) or configurable as it could be.
 %
 % NOTE: There is some unimportant "imprecision" in the window algorithm
 % which can be seen as an unimportant bug. Records which are BDM<>4 (i.e.
@@ -56,9 +56,14 @@ function isSweepingFpa = autodetect_sweeps(hkTt2000, hkBdmFpa, hkBiasCurrentFpa,
 %
 % PROPOSAL: Separate function(s) for detecting sweeps, adding margin,
 %           converting to science time(?).
+%   * Detect sweeps using HK BDM for timestamps before specified limit.
 %   * Detect sweeps using HK bias. Return value in HK time.
 %   * Detect sweeps using L1R QUALITY_BITMASK. Return value in science time.
 %   * Add time margins to time interval (t_before, t_after).
+%   PROPOSAL: Replace file with class with static functions.
+%     sweepdet
+%
+% PROPOSAL: Rename autodetect_sweeps() --> autodetect_sweeps_from_BIAS_HK
 
 
 
@@ -68,12 +73,16 @@ function isSweepingFpa = autodetect_sweeps(hkTt2000, hkBdmFpa, hkBiasCurrentFpa,
 % BDM==BDM_SWEEP_POSSIBLE <== Sweep
 BDM_SWEEP_POSSIBLE = 4;
 
+
+
 % Time before which a sweep is equivalent to BDM=4. Inclusive threshold.
 sbdaEndTt2000          = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
 windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
 % Minimum min-max difference for counting as sweep.
 currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');
 windowMarginSec        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
+
+
 
 nCdfRecs = irf.assert.sizes(...
   hkTt2000,         [-1, 1], ...
@@ -86,10 +95,14 @@ assert(round(windowLengthPts) == windowLengthPts)
 assert(windowLengthPts        >= 2)
 assert(currentMmDiffMinimumTm >= 0)
 
+
+
 hkBiasCurrent = hkBiasCurrentFpa.int2doubleNan();
 bdm           = hkBdmFpa.int2doubleNan();
 % Whether SBDA applies to (should be used for) records.
 bSbdaApplies  = hkTt2000 <= sbdaEndTt2000;
+
+
 
 %==========================
 % Detect sweeps using SBDA
