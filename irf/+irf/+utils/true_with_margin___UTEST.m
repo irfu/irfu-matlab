@@ -22,18 +22,18 @@ classdef true_with_margin___UTEST < matlab.unittest.TestCase
       % PROPOSAL: Test more unsorted x.
 
       function test(x, b1, xMargin, expB2)
-        b1    = logical(b1);
-        expB2 = logical(expB2);
+        x     = x';
+        b1    = logical(b1');
+        expB2 = logical(expB2');
 
         actB2 = irf.utils.true_with_margin(x, b1, xMargin);
         testCase.assertEqual(actB2, expB2)
       end
 
-      ENV = zeros(0,1);   % Empty Logical Vector
-      ELV = false(0,1);   % Empty Numeric Vector
+      ENV = zeros(1,0);   % Empty Logical Vector
+      ELV = false(1,0);   % Empty Numeric Vector
 
-      test(ENV,  ELV,  0, ELV)
-      test(ENV', ELV', 0, ELV')
+      test(ENV, ELV, 0, ELV)
       test([5], [1], 0, [1]);
       test([5], [1], 2, [1]);
       test([5], [0], 0, [0]);

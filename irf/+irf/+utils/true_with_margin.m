@@ -7,9 +7,9 @@
 % ARGUMENTS
 % =========
 % x
-%       Numeric 1D array. Does not need to be sorted. Finite.
+%       Numeric column array. Does not need to be sorted. Finite.
 % b1
-%       Logical 1D array.
+%       Logical column array.
 % xMargin
 %       Scalar number. Positive, finite or +inf.
 %
@@ -17,8 +17,8 @@
 % RETURN VALUES
 % =============
 % b2
-%       Logical. Same size as b1. Every true value is within an x distance
-%       xMargin of a true v1 value. Every false value is not.
+%       Logical column array. Same size as b1. Every true value is within an x
+%       distance xMargin of a true b1 value. Every false value is not.
 %       --
 %       (b2(i) == true)
 %       <==>
@@ -46,9 +46,9 @@ function b2 = true_with_margin(x, b1, xMargin)
 % some kind of loop over elements. One can probably not have a loop with fewer
 % iterations than this.
 
-irf.assert.vector(x)
-irf.assert.vector(b1)
-assert(numel(x) == numel(b1), 'Arguments x and b1 do not have the same number of columns.')
+assert(iscolumn(x))
+assert(iscolumn(b1))
+assert(numel(x) == numel(b1), 'Arguments x and b1 do not have the same number of elements.')
 
 assert(all(isfinite(x)))
 assert(islogical(b1))
