@@ -18,15 +18,22 @@
 %   checked for this.
 %
 %
-% NAMING CONVENTIONS
-% ==================
+% KEY NAMING CONVENTIONS
+% ======================
+% Keys should by default be uppercase were different parts are
+% separated by period (large parts) and underscore (smaller parts, e.g. words,
+% abbreviations).
+% --
 % CUR : CURRENT (type of data, dataset)
-% ENABLE(D)/DISABLE(D) always at the end of a setting key.
-%
-%
-% NOTES ON BSO KEY NAMING CONVENTION
-% ==================================
-% Some constants
+% --
+% Settings which enable/disable something and are truly conceptually boolean
+% (though implemented as numeric values) should always have suffix
+% _ENABLE(D)/_DISABLE(D).
+% --
+% The unit/format of setting values should be specified in the key as a suffix separated
+% by underscore (not period).
+% --
+% NOTE: Some constants
 %   (1) correspond exactly to fields in the (JSON) S/W descriptor, and
 %   (2) are unlikely to be used for anything else.
 % These are labeled with a prefix "SWD." and the remainder is in lowercase
@@ -79,14 +86,16 @@ function Bso = create_default_BSO()
 %
 %
 %
-% =========================
-% BOGIQ: SETTING KEY NAMING
-% =========================
+% ====================================
+% BOGIQ: SETTING KEY NAMING CONVENTION
+% ====================================
+% NOTE: See section at top of file on established policies.
+% --
 % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
 % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
 %   PROPOSAL: OUTPUT_CDF.ALL
 %
-% PROPOSAL: Use naming convention for settings keys for testing ONLY:
+% PROPOSAL: Use naming convention for settings keys used for testing ONLY:
 %
 % PROPOSAL: Relevant setting keys should always be on the form ENABLE, never DISABLE.
 %   PRO: More consistent.

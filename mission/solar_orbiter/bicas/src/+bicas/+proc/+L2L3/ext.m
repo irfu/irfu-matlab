@@ -61,6 +61,9 @@ classdef ext
       assert(strcmp(R1.ScpotTs.units, 'V'))
       assert(strcmp(NeScpTs.units,    'cm^-3'))
 
+      %==============================
+      % Package function return data
+      %==============================
       R = [];
       R.PspVoltFpa         = bicas.utils.FPArray(R1.PspTs.data,    'FILL_VALUE', NaN);
       R.ScpotVoltFpa       = bicas.utils.FPArray(R1.ScpotTs.data,  'FILL_VALUE', NaN);
@@ -151,8 +154,8 @@ classdef ext
       % NOTE: Not specifying calibration file.
       % ==> Use current official calibration file, hardcoded in
       %     solo.vdccal(), that should be used for official datasets.
-      [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
-        = Ec.vdccal(VdcTs, EdcTs, []);
+      [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] = ...
+        Ec.vdccal(VdcTs, EdcTs, []);
       clear VdcTs EdcTs
       %#################################################################
 

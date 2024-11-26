@@ -1,20 +1,40 @@
 %
-% Collection of functions related to detecting and labelling bias sweeps.
+% Collection of functions related to detecting bias sweeps.
+%
+% NOTE: SBDA and SCDA are intended to be temporary functionality while waiting
+% for the long-term solution which is to use the relevant quality bit in L1/L1R
+% ZV QUALITY_BITMASK for detecting sweeps. Since it is a (hopefully) short-term
+% solution, the functionality is also not as sophisticated (and presumably
+% accurate) or configurable as it could be.
+%
+% NOTE: 2024-11-27: L1 QUALITY_BITMASK in new sample datasets (not yet in
+% production) contains bits for sweeps but without adding time margins before
+% and after. LESIA has not yet used in "production" but are planned
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef swpdet
   % PROPOSAL: More automatic test code.
+  %   PROPOSAL: For separate algorithm functions instead(?) of for consolidated
+  %             functions which use multiple algorithms.
   %
   % PROPOSAL: Rename PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC to reference both
   %           SBDA and SCDA.
-  %   PROPOSAL: SBDA_SCDA_BOUNDARY
+  %   PROPOSAL: PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC
+  % PROPOSAL: Rename PROCESSING.L2.DETECT_SWEEPS.*
+  %           -->    PROCESSING.L2.SWEEP_DETECTION.*
+  %           -->    PROCESSING.L2.SWPDET.*
+  %             NOTE: Cf. package name "swpdet".
+  % PROPOSAL: Rename "PTS" (unit) in
+  %           PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS.
+  %   PRO: Unclear
+  %   PROPOSAL: "HK_CDF_RECORDS", HkCdfRecords
+  %     CON: Long
   %
-  % PROPOSAL: Separate function(s) for detecting sweeps, adding margin,
-  %           converting to science time(?).
-  %   * Detect sweeps using L1R QUALITY_BITMASK. Return value in science time.
-  %   * Add time margins to time interval (t_before, t_after).
+  % PROPOSAL: Separate function(s) for detecting sweeps using L1R
+  %           QUALITY_BITMASK. Return value in science time.
+  % PROPOSAL: Separate time margins t_before, t_after.
 
 
 
@@ -25,11 +45,11 @@ classdef swpdet
   %###########
   properties(Constant)
 
-      % The only BDM which sweeps use, but non-sweep data might use this BDM
-      % too, i.e.
-      % BDM<>BDM_SWEEP_POSSIBLE ==> Not a sweep.
-      % BDM==BDM_SWEEP_POSSIBLE <== Sweep
-      BDM_SWEEP_POSSIBLE = 4;
+    % The only BDM which sweeps use, but non-sweep data might use this BDM
+    % too, i.e.
+    % BDM<>BDM_SWEEP_POSSIBLE ==> Not a sweep.
+    % BDM==BDM_SWEEP_POSSIBLE <== Sweep
+    BDM_SWEEP_POSSIBLE = 4;
 
   end
 
@@ -44,10 +64,14 @@ classdef swpdet
 
 
 
-    % Detect
+    % Detect sweeps using SBDA and without adding time margins.
+    %
+    % ALGORITHM
+    % =========
+    % For records before timestamp PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC:
+    % BDN=4 <=> sweep
+    %
     function isSweepingSbda = SBDA_wo_margins(tt2000, bdmFpa, Bso)
-      % PROPOSAL: Use term SBDA in function name.
-
       sbdaEndTt2000  = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
 
       irf.assert.sizes(...
@@ -62,9 +86,23 @@ classdef swpdet
 
 
 
+    % Detect sweeps using SCDA and without adding time margins.
+    %
+    % ALGORITHM
+    % =========
+    % For records after timestamp PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC:
+    % Among records with BDN=4, check sliding windows for the min-max
+    % difference for BIAS HK's measured bias current (within the entire
+    % window). For windows for which the min-max difference exceeds a
+    % threshold, label the entire window (where BDM=4) as sweeping.
+    %
+    % NOTE: There is some unimportant "imprecision" in the window algorithm
+    % which can be seen as an unimportant bug. Records which are BDM<>4 (i.e.
+    % definitely not sweep) within a window with currents exceeding the
+    % thresholds (for BDM=4) are labelled as sweeps.
+    %
     function isSweepingScda = SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
-      % Time before which a sweep is equivalent to BDM=4. Inclusive threshold.
-      sbdaEndTt2000          = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
+      scdaBeginTt2000        = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
       windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
       % Minimum min-max difference for counting as sweep.
       currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');
@@ -87,10 +125,13 @@ classdef swpdet
       hkBiasCurrent = hkBiasCurrentFpa.int2doubleNan();
       bdm           = hkBdmFpa.int2doubleNan();
       % Whether SCDA applies to (should be used for) records.
-      bScdaApplies  = hkTt2000 > sbdaEndTt2000;
+      bScdaApplies  = hkTt2000 > scdaBeginTt2000;
 
 
 
+      %========================================================================
+      % Use a moving window, label those windows for which a condition is true
+      %========================================================================
       isSweepingScda = false(size(hkTt2000));    % Preallocate
       % NOTE: Will iterate zero times if window is longer than number of
       %       records.
@@ -114,39 +155,14 @@ classdef swpdet
         end
       end
 
+      % Remove sweep labelling for selected parts.
       isSweepingScda = isSweepingScda & (bdm == bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE) & bScdaApplies;
     end
 
 
 
-    % Try to autodetect sweeps using BDM and BIAS HK.
-    %
-    % NOTE: This function is intended to be temporary functionality while waiting
-    % for the long-term solution which is to use the relevant bit in L1/L1R
-    % QUALITY_BITMASK for detecting sweeps. Since it is a (hopefully) short-term
-    % solution, the functionality is also not as sophisticated (and presumably
-    % accurate) or configurable as it could be.
-    %
-    % NOTE: There is some unimportant "imprecision" in the window algorithm
-    % which can be seen as an unimportant bug. Records which are BDM<>4 (i.e.
-    % definately not sweep) within a window with currents exceeding the
-    % thresholds (for BDM=4) are labelled as sweeps.
-    %
-    % NOTE: 2024-11-26: It *appear* as if L1 QUALITY_BITMASK in sample datasets
-    % (not production) contains bits for sweeps but without time margins before and
-    % after. Sweep bits in QUALITY_BITMASK has not been confirmed yet.
-    %
-    %
-    % ALGORITHM
-    % =========
-    % PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC specifies a timestamp.
-    % Records before timestamp:
-    %   BDN=4 <=> sweep
-    % Records after timestamp:
-    %   Among records with BDN=4, check sliding windows for the min-max
-    %   difference for BIAS HK's measured bias current (within the entire
-    %   window). For windows for which the min-max difference exceeds a
-    %   threshold, label entire window (where BDM=4) as sweeping.
+    % Try to autodetect sweeps using SBDA (BDM) and SCDA (BIAS HK bias
+    % currents).
     %
     %
     % ARGUMENTS
@@ -157,60 +173,41 @@ classdef swpdet
     %       record will be labelled as sweeping.
     %
     function isSweepingFpa = SBDA_SCDA_with_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
-    % PROPOSAL: Use SBDA, SCDA in function name.
-    %
-    % TODO-DEC: Does having argument and return value FPAs make sense?
-    %           Should caller convert?
-    % PROPOSAL: Rename (and negate) bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE --> BDM_SWEEP_IMPOSSIBLE
-    %   CON: Unintuitive for time period when sweep can be deduced frmo BDM.
-    % PROPOSAL: Rename "PTS" (unit) for PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS.
-    %   PRO: Unclear
-    %   PROPOSAL: "HK_CDF_RECORDS", HkCdfRecords
-    %     CON: Long
-    %
-    % PROPOSAL: Separate window margins for before and after window.
-    %   PRO: Margin after needs to be longer.
-    %   NOTE: Looking at sweep for 2024-06-21, margins should be maybe:
-    %       before sweep proper:  ~1-2 min
-    %       after sweep proper:   ~6-7 min
-    % PROPOSAL: Sweep detection algorithm which uses (and labels) the data gaps
-    %           before & after the sweep.
-    % PROPOSAL: Length of margins shouls be set in time, not HK CDF records.
+      % PROPOSAL: Use SBDA, SCDA in function name.
+      %
+      % TODO-DEC: Does having argument and return value FPAs make sense?
+      %           Should caller convert?
+      % PROPOSAL: Rename (and negate) bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE --> BDM_SWEEP_IMPOSSIBLE
+      %   CON: Unintuitive for time period when sweep can be deduced frmo BDM.
+      %
+      % PROPOSAL: Separate window margins for before and after window.
+      %   PRO: Margin after needs to be longer.
+      %   NOTE: Looking at sweep for 2024-06-21, margins should be maybe:
+      %       before sweep proper:  ~1-2 min
+      %       after sweep proper:   ~6-7 min
+      % PROPOSAL: Sweep detection algorithm which uses (and labels) the data gaps
+      %           before & after the sweep.
+      % PROPOSAL: Length of margins shouls be set in time, not HK CDF records.
 
+      windowMarginSec = Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
 
+      % Detect sweeps using SBDA.
+      isSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(hkTt2000, hkBdmFpa, Bso);
 
-    windowMarginSec = Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
+      % Detect sweeps using SCDA.
+      isSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso);
 
+      % Merge results and add margins.
+      isSweeping           = isSweepingSbda | isSweepingScda;
+      isSweepingWithMargin = irf.utils.true_with_margin( ...
+        hkTt2000, isSweeping, windowMarginSec * 1e9, windowMarginSec * 1e9);
 
-
-    % Detect sweeps using SBDA.
-    isSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(hkTt2000, hkBdmFpa, Bso);
-
-    % Detect sweeps using SCDA.
-    isSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso);
-
-
-
-    isSweeping           = isSweepingSbda | isSweepingScda;
-    isSweepingWithMargin = irf.utils.true_with_margin( ...
-      hkTt2000, isSweeping, windowMarginSec * 1e9, windowMarginSec * 1e9);
-
-    isSweepingFpa        = bicas.utils.FPArray(isSweepingWithMargin);
+      isSweepingFpa        = bicas.utils.FPArray(isSweepingWithMargin);
     end
 
 
 
   end    % methods(Static)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-  end    % methods(Static, Access=private)
 
 
 
