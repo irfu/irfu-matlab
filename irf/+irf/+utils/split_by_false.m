@@ -1,25 +1,25 @@
 %
-% Given a boolean array, find uninterrupted sequences of true.
+% Given a logical 1D array, find uninterrupted sequences of true.
 %
 %
 % ARGUMENTS
 % =========
-% boolArray
-%       1D array. Boolean or numeric.
+% bArray
+%       1D array. Logical or numeric.
 %
 %
 % RETURN VALUES
 % =============
 % i1Array, i2Array
 %       Nx1 arrays, numeric, same size. Indices such that
-%       boolArray(i1Array(i) : i2Array(i)) == true,
-%       and covers all true values in boolArray exactly once.
+%       bArray(i1Array(i) : i2Array(i)) == true,
+%       and covers all true values in bArray exactly once.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-26.
 %
-function [i1Array, i2Array] = split_by_false(boolArray)
+function [i1Array, i2Array] = split_by_false(bArray)
 % PROPOSAL: Function name?
 %   PROPOSAL: split_by_*
 %   PROPOSAL: group_by_*
@@ -28,18 +28,18 @@ function [i1Array, i2Array] = split_by_false(boolArray)
 %   PROPOSAL:
 %   NOTE: Compare strsplit, irf.utils.split_by_jumps
 
-irf.assert.vector(boolArray)
+irf.assert.vector(bArray)
 
 % Add false components to
 % (1) make it easy to handle empty (zero length) array,
 % (2) make it easy to handle array's beginning and end.
-b = [false; boolArray(:); false];
+b = [false; bArray(:); false];
 
 % NOTE: Indices same as in "b".
 bBegin = [~b(1:end-1) &  b(2:end)];
 bEnd   = [ b(1:end-1) & ~b(2:end)];
 
-% NOTE: i1/2Array indices same as in "boolArray" therefore -1.
+% NOTE: i1/2Array indices same as in "bArray" therefore -1.
 i1Array = find(bBegin) + 1 - 1;
 i2Array = find(bEnd)   + 0 - 1;
 

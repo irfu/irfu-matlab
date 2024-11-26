@@ -11,7 +11,7 @@
 % b1
 %       Logical 1D array.
 % xMargin
-%       Scalar, positive, finite or  +inf.
+%       Scalar number. Positive, finite or +inf.
 %
 %
 % RETURN VALUES
@@ -39,6 +39,8 @@ function b2 = true_with_margin(x, b1, xMargin)
 % PROPOSAL: Find "boundary" elements, b1=true, but false next to it (on at
 %           least one side). Iterate over and set b2=true for all elements
 %           within range.
+%
+% PROPOSAL: Require column vectors.
 
 % IMPLEMENTATION NOTE: It has proven hard to implement the functionality without
 % some kind of loop over elements. One can probably not have a loop with fewer
@@ -52,7 +54,9 @@ assert(all(isfinite(x)))
 assert(islogical(b1))
 assert(isscalar(xMargin) && (xMargin >= 0) && ~isnan(xMargin))
 
-% Sort data in x order since using irf.utils.split_by_false requires
+
+
+% Sort data in x order since using irf.utils.split_by_false() requires
 % it. Might also imply that it finds fewer longer same-value intervals =>
 % faster execution.
 [x, iSortArray] = sort(x);
@@ -62,6 +66,8 @@ b1 = b1(iSortArray);
 
 b2 = b1;
 for i = 1:numel(i1Array)
+  % For the given x interval (indexed "i") of continuous true value, set all
+  % values for that x interval plus margins.
   xMin = (x(i1Array(i)) - xMargin);
   xMax = (x(i2Array(i)) + xMargin);
   b2 = b2 | ((xMin <= x) & (x <= xMax));
