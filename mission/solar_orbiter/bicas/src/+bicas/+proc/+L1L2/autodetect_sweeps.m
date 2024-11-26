@@ -59,8 +59,6 @@ function isSweepingFpa = autodetect_sweeps(hkTt2000, hkBdmFpa, hkBiasCurrentFpa,
 %   * Detect sweeps using HK bias. Return value in HK time.
 %   * Detect sweeps using L1R QUALITY_BITMASK. Return value in science time.
 %   * Add time margins to time interval (t_before, t_after).
-%     PROBLEM: irf.utils.true_with_margin() does not support separate margins
-%              before & after.
 
 
 
@@ -124,7 +122,8 @@ for i1 = 1:(nCdfRecs-(windowLengthPts-1))
 end
 
 isSweeping           = isSweepingSbda | isSweepingScda;
-isSweepingWithMargin = irf.utils.true_with_margin(hkTt2000, isSweeping, windowMarginSec * 1e9);
+isSweepingWithMargin = irf.utils.true_with_margin( ...
+  hkTt2000, isSweeping, windowMarginSec * 1e9, windowMarginSec * 1e9);
 
 isSweepingFpa        = bicas.utils.FPArray(isSweepingWithMargin);
 end
