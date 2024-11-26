@@ -4,8 +4,17 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef swpdet   % < handle
-  % PROPOSAL: Automatic test code.
+classdef swpdet
+  % PROPOSAL: More automatic test code.
+  %
+  % PROPOSAL: Rename PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC to reference both
+  %           SBDA and SCDA.
+  %   PROPOSAL: SBDA_SCDA_BOUNDARY
+  %
+  % PROPOSAL: Separate function(s) for detecting sweeps, adding margin,
+  %           converting to science time(?).
+  %   * Detect sweeps using L1R QUALITY_BITMASK. Return value in science time.
+  %   * Add time margins to time interval (t_before, t_after).
 
 
 
@@ -15,6 +24,13 @@ classdef swpdet   % < handle
   %###########
   %###########
   properties(Constant)
+
+      % The only BDM which sweeps use, but non-sweep data might use this BDM
+      % too, i.e.
+      % BDM<>BDM_SWEEP_POSSIBLE ==> Not a sweep.
+      % BDM==BDM_SWEEP_POSSIBLE <== Sweep
+      BDM_SWEEP_POSSIBLE = 4;
+
   end
 
 
@@ -25,6 +41,81 @@ classdef swpdet   % < handle
   %#######################
   %#######################
   methods(Static)
+
+
+
+    % Detect
+    function isSweepingSbda = SBDA_wo_margins(tt2000, bdmFpa, Bso)
+      % PROPOSAL: Use term SBDA in function name.
+
+      sbdaEndTt2000  = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
+
+      irf.assert.sizes(...
+        tt2000, [-1, 1], ...
+        bdmFpa, [-1, 1]);
+
+      bdm            = bdmFpa.int2doubleNan();
+      bSbdaApplies   = tt2000 <= sbdaEndTt2000;
+
+      isSweepingSbda = bSbdaApplies & (bdm == bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE);
+    end
+
+
+
+    function isSweepingScda = SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
+      % Time before which a sweep is equivalent to BDM=4. Inclusive threshold.
+      sbdaEndTt2000          = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
+      windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
+      % Minimum min-max difference for counting as sweep.
+      currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');
+
+      assert(round(windowLengthPts) == windowLengthPts)
+      % NOTE: Must be at least two since SCDA requires comparison between
+      %       timestamps.
+      assert(windowLengthPts        >= 2)
+      assert(currentMmDiffMinimumTm >= 0)
+
+
+
+      nCdfRecs = irf.assert.sizes(...
+        hkTt2000,         [-1, 1], ...
+        hkBdmFpa,         [-1, 1], ...
+        hkBiasCurrentFpa, [-1, 3]);
+
+
+
+      hkBiasCurrent = hkBiasCurrentFpa.int2doubleNan();
+      bdm           = hkBdmFpa.int2doubleNan();
+      % Whether SCDA applies to (should be used for) records.
+      bScdaApplies  = hkTt2000 > sbdaEndTt2000;
+
+
+
+      isSweepingScda = false(size(hkTt2000));    % Preallocate
+      % NOTE: Will iterate zero times if window is longer than number of
+      %       records.
+      for i1 = 1:(nCdfRecs-(windowLengthPts-1))
+        i2        = i1 + (windowLengthPts-1);
+        iWindowAr = i1:i2;
+
+        % NOTE: Treating all data in window combined, both in time AND over
+        % channels/antennas.
+        hkBiasCurrentWindow = hkBiasCurrent(i1:i2, :);
+
+        hkBiasCurrentWindow(bdm(iWindowAr) ~= bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE, :) = NaN;
+        minWindow = min(hkBiasCurrentWindow, [], 1);
+        maxWindow = max(hkBiasCurrentWindow, [], 1);
+        mmDiff    = maxWindow - minWindow;
+
+        % NOTE: Can not reduce only labelling.
+        if any(mmDiff >= currentMmDiffMinimumTm)
+          % isSweepingScda(iWindowAr) = isSweepingScda(iWindowAr) | ((bdm(iWindowAr) == bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE) & bScdaApplies(iWindowAr));
+          isSweepingScda(iWindowAr) = true;
+        end
+      end
+
+      isSweepingScda = isSweepingScda & (bdm == bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE) & bScdaApplies;
+    end
 
 
 
@@ -65,10 +156,12 @@ classdef swpdet   % < handle
     %       greater than the number of CDF records/rows of data, then no
     %       record will be labelled as sweeping.
     %
-    function isSweepingFpa = autodetect_sweeps(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
+    function isSweepingFpa = SBDA_SCDA_with_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
+    % PROPOSAL: Use SBDA, SCDA in function name.
+    %
     % TODO-DEC: Does having argument and return value FPAs make sense?
     %           Should caller convert?
-    % PROPOSAL: Rename (and negate) BDM_SWEEP_POSSIBLE --> BDM_SWEEP_IMPOSSIBLE
+    % PROPOSAL: Rename (and negate) bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE --> BDM_SWEEP_IMPOSSIBLE
     %   CON: Unintuitive for time period when sweep can be deduced frmo BDM.
     % PROPOSAL: Rename "PTS" (unit) for PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS.
     %   PRO: Unclear
@@ -83,86 +176,20 @@ classdef swpdet   % < handle
     % PROPOSAL: Sweep detection algorithm which uses (and labels) the data gaps
     %           before & after the sweep.
     % PROPOSAL: Length of margins shouls be set in time, not HK CDF records.
-    %
-    % PROPOSAL: Separate function(s) for detecting sweeps, adding margin,
-    %           converting to science time(?).
-    %   * Detect sweeps using HK BDM for timestamps before specified limit.
-    %   * Detect sweeps using HK bias. Return value in HK time.
-    %   * Detect sweeps using L1R QUALITY_BITMASK. Return value in science time.
-    %   * Add time margins to time interval (t_before, t_after).
-    %   PROPOSAL: Replace file with class with static functions.
-    %     sweepdet
-    %
-    % PROPOSAL: Rename autodetect_sweeps() --> autodetect_sweeps_from_BIAS_HK
 
 
 
-    % The only BDM which sweeps use, but there may be other data too.
-    % I.e.
-    % BDM<>BDM_SWEEP_POSSIBLE ==> Not a sweep.
-    % BDM==BDM_SWEEP_POSSIBLE <== Sweep
-    BDM_SWEEP_POSSIBLE = 4;
+    windowMarginSec = Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
 
 
 
-    % Time before which a sweep is equivalent to BDM=4. Inclusive threshold.
-    sbdaEndTt2000          = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
-    windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
-    % Minimum min-max difference for counting as sweep.
-    currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');
-    windowMarginSec        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
+    % Detect sweeps using SBDA.
+    isSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(hkTt2000, hkBdmFpa, Bso);
+
+    % Detect sweeps using SCDA.
+    isSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso);
 
 
-
-    nCdfRecs = irf.assert.sizes(...
-      hkTt2000,         [-1, 1], ...
-      hkBdmFpa,         [-1, 1], ...
-      hkBiasCurrentFpa, [-1, 3]);
-    % NOTE: Can not use integer MATLAB class (?) in settings.
-    assert(round(windowLengthPts) == windowLengthPts)
-    % NOTE: Must be at least two since SCDA requires comparison between
-    %       timestamps.
-    assert(windowLengthPts        >= 2)
-    assert(currentMmDiffMinimumTm >= 0)
-
-
-
-    hkBiasCurrent = hkBiasCurrentFpa.int2doubleNan();
-    bdm           = hkBdmFpa.int2doubleNan();
-    % Whether SBDA applies to (should be used for) records.
-    bSbdaApplies  = hkTt2000 <= sbdaEndTt2000;
-
-
-
-    %==========================
-    % Detect sweeps using SBDA
-    %==========================
-    isSweepingSbda = bSbdaApplies & (bdm == BDM_SWEEP_POSSIBLE);
-
-    %====================================
-    % Detect sweeps using sliding window
-    %====================================
-    isSweepingScda = false(size(isSweepingSbda));    % Preallocate
-    % NOTE: Will iterate zero times if window is longer than number of
-    %       records.
-    for i1 = 1:(nCdfRecs-(windowLengthPts-1))
-      i2        = i1 + (windowLengthPts-1);
-      iWindowAr = i1:i2;
-
-      % NOTE: Treating all data in window combined, both in time AND over
-      % channels/antennas.
-      hkBiasCurrentWindow = hkBiasCurrent(i1:i2, :);
-
-      hkBiasCurrentWindow(bdm(iWindowAr) ~= BDM_SWEEP_POSSIBLE, :) = NaN;
-      minWindow = min(hkBiasCurrentWindow, [], 1);
-      maxWindow = max(hkBiasCurrentWindow, [], 1);
-      mmDiff    = maxWindow - minWindow;
-
-      % NOTE: Can not reduce Only labelling
-      if any(mmDiff >= currentMmDiffMinimumTm)
-        isSweepingScda(iWindowAr) = isSweepingScda(iWindowAr) | ((bdm(iWindowAr) == BDM_SWEEP_POSSIBLE) & ~bSbdaApplies(iWindowAr));
-      end
-    end
 
     isSweeping           = isSweepingSbda | isSweepingScda;
     isSweepingWithMargin = irf.utils.true_with_margin( ...

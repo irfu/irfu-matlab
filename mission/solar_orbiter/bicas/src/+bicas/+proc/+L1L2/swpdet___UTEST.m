@@ -255,7 +255,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
       Bso.make_read_only()
 
       % CALL TESTED FUNCTION
-      actIsSweepingFpa = bicas.proc.L1L2.swpdet.autodetect_sweeps(S.tt2000, bdmFpa, hkBiasCurrentFpa, Bso);
+      actIsSweepingFpa = bicas.proc.L1L2.swpdet.SBDA_SCDA_with_margins(S.tt2000, bdmFpa, hkBiasCurrentFpa, Bso);
 
       actIsSweeping = actIsSweepingFpa.logical2doubleNan();
       %[actIsSweeping, expIsSweeping]
