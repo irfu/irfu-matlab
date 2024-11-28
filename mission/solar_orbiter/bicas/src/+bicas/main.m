@@ -360,7 +360,7 @@ for i = 1:length(cliArgumentsCa)
   % IMPLEMENTATION NOTE: This check useful when calling BICAS from MATLAB
   % (not bash).
   if ~ischar(cliArgumentsCa{i})
-    error('BICAS:CLISyntax', 'Argument %i is not a string.', i)
+    error('BICAS:CLISyntax', 'Argument %i is not a char (string is not allowed).', i)
   end
 
   L.logf('info', '%2i: "%s"', i, cliArgumentsCa{i})

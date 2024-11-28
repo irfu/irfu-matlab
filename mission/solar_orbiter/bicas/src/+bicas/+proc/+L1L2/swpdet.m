@@ -160,12 +160,8 @@ classdef swpdet
     %       record will be labelled as sweeping.
     %
     function isSweepingFpa = SBDA_SCDA_with_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
-      % PROPOSAL: Use SBDA, SCDA in function name.
-      %
       % TODO-DEC: Does having argument and return value FPAs make sense?
       %           Should caller convert?
-      % PROPOSAL: Rename (and negate) bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE --> BDM_SWEEP_IMPOSSIBLE
-      %   CON: Unintuitive for time period when sweep can be deduced frmo BDM.
       %
       % PROPOSAL: Separate window margins for before and after window.
       %   PRO: Margin after needs to be longer.
@@ -174,7 +170,7 @@ classdef swpdet
       %       after sweep proper:   ~6-7 min
       % PROPOSAL: Sweep detection algorithm which uses (and labels) the data gaps
       %           before & after the sweep.
-      % PROPOSAL: Length of margins shouls be set in time, not HK CDF records.
+      % PROPOSAL: Length of margins should be set in time, not HK CDF records.
 
       windowMarginSec = Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC');
 

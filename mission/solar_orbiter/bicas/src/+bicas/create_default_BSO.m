@@ -20,20 +20,22 @@
 %
 % KEY NAMING CONVENTIONS
 % ======================
-% Keys should by default be uppercase were different parts are
-% separated by period (large parts) and underscore (smaller parts, e.g. words,
-% abbreviations).
+% Keys should by default be uppercase were different parts are separated by
+% period (large parts) and underscore (smaller parts, e.g. words,
+% abbreviations). The period-separated substrings run from large categories
+% (beginning) to small subcategories (end). Dash is allowed.
 % --
 % CUR : CURRENT (type of data, dataset)
 % --
 % Settings which enable/disable something and are truly conceptually boolean
 % (though implemented as numeric values) should always have suffix
-% _ENABLE(D)/_DISABLE(D).
+% _ENABLE(D) or _DISABLE(D).
 % --
 % The unit/format of setting values should be specified in the key as a suffix separated
 % by underscore (not period).
 %     Seconds:    _SEC
-%     UTC string: _UTC
+%     UTC vector: _UTC
+%     TM units:   _TM
 % --
 % NOTE: Some constants
 %   (1) correspond exactly to fields in the (JSON) S/W descriptor, and
@@ -82,6 +84,8 @@ function Bso = create_default_BSO()
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
 %   PROCESSING.L2.REMOVE_DATA.MUX_MODES
+%   PROCESSING.HK.USE_ZV_ACQUISITION_TIME
+%   OUTPUT_CDF.write_dataobj.*
 %   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
@@ -130,7 +134,7 @@ function Bso = create_default_BSO()
 %       NOTE: Does not have to refer to the L1R datasets as such.
 %           Ex: L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
 %           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
-%   Ex: For now, L2 refers to algorithms to use when processing L2 as output.
+%   Ex: For now, "L2" refers to algorithms to use when processing L2 as output.
 %       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
 %   --
 %   NEED: Specify whether refers to input or output data (not necessarily datasets).
@@ -147,6 +151,7 @@ function Bso = create_default_BSO()
 %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
 %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
 %       PROBLEM: How distinguish from processing?
+
 
 
 S = bicas.Settings();
@@ -218,14 +223,14 @@ S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 
 % NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
 S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', true)
 % NOTE: See INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
-S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
-S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
 % Require input CDF Global Attribute "DSI" to match the expected
 % value.
-S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',        'WARNING')    % ERROR, WARNING
-S.define_setting('INPUT_CDF.GA_PARENTS_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
+S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',       'WARNING')    % ERROR, WARNING
+S.define_setting('INPUT_CDF.GA_PARENTS_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
 % NOTE: This modification applies BEFORE
 % PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
@@ -266,13 +271,13 @@ S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'ERROR');   % ERROR, W
 
 
 % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
-% 0/false.
+% false.
 S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                true)
 
 % Whether the size per record of an empty (0 records) output DF zVar has to
 % be in agreement with the master CDF's size per record.
 % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
-% 0/false.
+% false.
 S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', true)
 
 % Whether the size per record of an output CDF zVar has to be in agreement
@@ -286,8 +291,9 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', t
 % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
 S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      true)
 
-% Permitted CDF versions as a reg.expr.. Entire CDF version string must match
-% the reg.expr..
+% Permitted CDF versions output CDFs as a reg.expr.. Entire CDF version string
+% must match the reg.expr.. This is a way of asserting that BICAS uses the
+% correct versions of the CDF library.
 % CDF format version 3.9 is required by ROC (Solo?). /2024-07-24
 %
 % NOTE: If irfu-matlab and BICAS (as delivered to ROC) use different CDF format
@@ -421,7 +427,6 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 %============================================================================
 S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
 
-% Unit: S = Seconds
 % Lower number since using LFR BDM (mux mode; unless configured not to),
 % which has same cadence as science data.
 % See PROCESSING.LFR.MUX_MODE_SOURCE.
@@ -456,8 +461,8 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC', 30)
 % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
 %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
 % However, a test with multiple BDMs (mux modes) ran on 2023-12-16 so it is
-% still worth NOT setting PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC to after
-% that.
+% still worth NOT setting PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC
+% to after that.
 %
 % NOTE: Might be that SCDA window length=3 pts is a bit too short (or possibly
 % diff minimum=500 TM is too large), but that it is saved by window margin 120
@@ -467,7 +472,6 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC', 30)
 % NOTE: Empirically, sweeps are surrounded by small data gaps, 1-4 min long(?).
 %-------------------------------------------------------------------------------
 S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
-% SCDA window length. Unit: Data points/HK CDF records.
 S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_HK_CDF_RECORDS', 3)
 % SCDA threshold for HK bias current difference between min and max within a
 % window. If the value exceeds this value, then the interval is labelled as

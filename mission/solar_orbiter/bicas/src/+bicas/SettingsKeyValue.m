@@ -41,11 +41,14 @@ classdef SettingsKeyValue
   %       Ex: How specify type of integer as string?
   %
   % PROPOSAL: Add extra information for every setting (key-value pair).
+  %   PROPOSAL: Value field for unit (string description).
+  %     CON-PROPOSAL: Could be part of human-readable description field.
   %   PROPOSAL: Human-readable description!
+  %     PRO: Could include unit.
   %   PROPOSAL: Flag for values which have not been set but must later be set.
   %       PROPOSAL: MATLAB_COMMAND
   %           CON: Is not really needed by BICAS.
-  %   PROPOSAL: Legal values.
+  %   PROPOSAL: Set of legal values.
   %       Ex: Legal string constants.
   %       --
   %       PRO: Rapid feedback when using bad value. Does not require triggering
