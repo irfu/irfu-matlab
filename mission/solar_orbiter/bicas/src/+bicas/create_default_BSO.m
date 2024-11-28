@@ -442,7 +442,7 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
 % can still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
 % data.
 %--------------------------------------------------------------------------
-% PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC:
+% PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC:
 % Before this time: SBDA is used for detecting sweeps (BDM=4).
 % After this time:  SCDA is used for detecting sweeps
 %                   (moving window + varying HK currents).
@@ -457,7 +457,7 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
 % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
 %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
 % However, a test with multiple BDMs (mux modes) ran on 2023-12-16 so it is
-% still worth NOT setting PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC to after
+% still worth NOT setting PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC to after
 % that.
 %
 % NOTE: Might be that SCDA window length=3 pts is a bit too short (or possibly
@@ -467,19 +467,19 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
 %
 % NOTE: Empirically, sweeps are surrounded by small data gaps, 1-4 min long(?).
 %-------------------------------------------------------------------------------
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
 % SCDA window length. Unit: Data points/HK CDF records.
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS', 3)
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS', 3)
 % SCDA threshold for HK bias current difference between min and max within a
 % window. If the value exceeds this value, then the interval is labelled as
 % sweeping. Unit: TM units
 % NOTE: Empirically, fluctuations around constant bias current (on a single
 % channel) is on the order of 30-40 TM units (2024-01-01).
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM', 500)
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM', 500)
 % Amount of margin to add around regions labelled as sweeps by the SCDA. The
 % sweeps autodetection works on BIAS HK which has a lower time resolution, and
 % may therefore be incorrect at the beginning and end of a labelled region.
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC', 120)
 
 
 

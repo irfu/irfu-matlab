@@ -222,3 +222,12 @@ Version 8.3.0
   PROCESSING.RCT_REGEXP.BIAS
 * Changed glob.attributes TIME_MIN, TIME_MAX to only have six decimals.
 * Requires updated master CDF versions (better metadata) for all datasets.
+
+
+Version x.y.z
+-------------
+* Rename settings:
+       PROCESSING.L2.DETECT_SWEEPS.*
+    -->PROCESSING.L2.SWEEP_DETECTION.*
+       PROCESSING.L2.SWEEP_DETECTION.SBDA.END_UTC
+    -->PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC

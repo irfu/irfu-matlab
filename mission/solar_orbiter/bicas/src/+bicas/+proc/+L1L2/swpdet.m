@@ -19,12 +19,8 @@ classdef swpdet
   %   PROPOSAL: For separate algorithm functions instead(?) of for consolidated
   %             functions which use multiple algorithms.
   %
-  % PROPOSAL: Rename PROCESSING.L2.DETECT_SWEEPS.*
-  %           -->    PROCESSING.L2.SWEEP_DETECTION.*
-  %           -->    PROCESSING.L2.SWPDET.*
-  %             NOTE: Cf. package name "swpdet".
   % PROPOSAL: Rename "PTS" (unit) in
-  %           PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS.
+  %           PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS.
   %   PRO: Unclear
   %   PROPOSAL: "HK_CDF_RECORDS", HkCdfRecords
   %     CON: Long
@@ -65,11 +61,11 @@ classdef swpdet
     %
     % ALGORITHM
     % =========
-    % For records before timestamp PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC:
+    % For records before timestamp PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC:
     % BDN=4 <=> sweep
     %
     function isSweepingSbda = SBDA_wo_margins(tt2000, bdmFpa, Bso)
-      sbdaEndTt2000  = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC'));
+      sbdaEndTt2000  = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC'));
 
       irf.assert.sizes(...
         tt2000, [-1, 1], ...
@@ -87,7 +83,7 @@ classdef swpdet
     %
     % ALGORITHM
     % =========
-    % For records after timestamp PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC:
+    % For records after timestamp PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC:
     % Among records with BDN=4, check sliding windows for the min-max
     % difference for BIAS HK's measured bias current (within the entire
     % window). For windows for which the min-max difference exceeds a
@@ -99,10 +95,10 @@ classdef swpdet
     % thresholds (for BDM=4) are labelled as sweeps.
     %
     function isSweepingScda = SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
-      scdaBeginTt2000        = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC'));
-      windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
+      scdaBeginTt2000        = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC'));
+      windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS');
       % Minimum min-max difference for counting as sweep.
-      currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');
+      currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');
 
       assert(round(windowLengthPts) == windowLengthPts)
       % NOTE: Must be at least two since SCDA requires comparison between
@@ -165,7 +161,7 @@ classdef swpdet
     % ARGUMENTS
     % =========
     % Bso
-    %       NOTE: PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS: If
+    %       NOTE: PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS: If
     %       greater than the number of CDF records/rows of data, then no
     %       record will be labelled as sweeping.
     %
@@ -186,7 +182,7 @@ classdef swpdet
       %           before & after the sweep.
       % PROPOSAL: Length of margins shouls be set in time, not HK CDF records.
 
-      windowMarginSec = Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC');
+      windowMarginSec = Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC');
 
       % Detect sweeps using SBDA.
       isSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(hkTt2000, hkBdmFpa, Bso);
