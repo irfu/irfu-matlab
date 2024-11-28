@@ -115,9 +115,16 @@ classdef swpdet
       hkBiasCurrent = hkBiasCurrentFpa.int2doubleNan();
       bdm           = hkBdmFpa.int2doubleNan();
       % Whether SCDA applies to (should be used for) records.
-      bScdaApplies  = hkTt2000 > scdaBeginTt2000;
+      bScdaApplies     = hkTt2000 > scdaBeginTt2000;
+      bBdmAllowsSweeps = bdm == bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE;
 
-
+      % Exclude (remove) bias currents when sweep should not be detected
+      % ----------------------------------------------------------------
+      % NOTE: This does *not* have the same effect as removing labels based
+      % on BDM as done later. This affects windows which cover
+      % (1) cover both sides of the SBDA/SCDA boundary, and/or
+      % (2) both BDM=4 and BDM<>4.
+      hkBiasCurrent(~bScdaApplies | ~bBdmAllowsSweeps, :) = NaN;
 
       %========================================================================
       % Use a moving window, label those windows for which a condition is true
@@ -133,12 +140,6 @@ classdef swpdet
         % channels/antennas.
         hkBiasCurrentWindow = hkBiasCurrent(i1:i2, :);
 
-        % Exclude bias currents when sweep is impossible.
-        % -----------------------------------------------
-        % NOTE: This does *not* have the same effect as removing labels based
-        % on BDM as done later. This affects windows which cover both BDM=4 and
-        % BDM<>4.
-        hkBiasCurrentWindow(bdm(iWindowAr) ~= bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE, :) = NaN;
 
         % NOTE: Calculating min/max and diffs on each bias/antenna channel
         % separately, i.e. detecting whether channels separately vary a lot.
@@ -153,7 +154,7 @@ classdef swpdet
       end
 
       % Remove sweep labelling for selected parts.
-      isSweepingScda = isSweepingScda & (bdm == bicas.proc.L1L2.swpdet.BDM_SWEEP_POSSIBLE) & bScdaApplies;
+      isSweepingScda = isSweepingScda & bBdmAllowsSweeps & bScdaApplies;
     end
 
 
