@@ -92,8 +92,8 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
         Bso = bicas.create_default_BSO();
         Bso.override_value('PROCESSING.L2.REMOVE_DATA.MUX_MODES',             bdmRemoveArray,  'test')
-        Bso.override_value('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S', lfrBdmMarginSec, 'test')
-        Bso.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', tdsBdmMarginSec, 'test')
+        Bso.override_value('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC', lfrBdmMarginSec, 'test')
+        Bso.override_value('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC', tdsBdmMarginSec, 'test')
         Bso.make_read_only()
 
         L = bicas.Logger('NO_STDOUT', false);

@@ -32,6 +32,8 @@
 % --
 % The unit/format of setting values should be specified in the key as a suffix separated
 % by underscore (not period).
+%     Seconds:    _SEC
+%     UTC string: _UTC
 % --
 % NOTE: Some constants
 %   (1) correspond exactly to fields in the (JSON) S/W descriptor, and
@@ -145,9 +147,6 @@ function Bso = create_default_BSO()
 %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
 %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
 %       PROBLEM: How distinguish from processing?
-%
-% TODO-DEC: How specify units for seconds? "_S" or "_SEC"?
-%   NOTE: Is currently inconsistent.
 
 
 S = bicas.Settings();
@@ -426,11 +425,11 @@ S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
 % Lower number since using LFR BDM (mux mode; unless configured not to),
 % which has same cadence as science data.
 % See PROCESSING.LFR.MUX_MODE_SOURCE.
-S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)
+S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC',  0)
 
 % Higher number since using BIAS HK for TDS, which means that the BDM is
 % known with a lower time resolution.
-S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
+S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC', 30)
 
 
 
