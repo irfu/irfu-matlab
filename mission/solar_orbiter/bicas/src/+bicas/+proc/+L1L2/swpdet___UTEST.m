@@ -134,20 +134,29 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
     function test_SCDA_wo_margins___detection(testCase)
-      % BDM=4 ==> Can have sweeps.
-      testCase.test_SCDA_wo_margins(struct( ...
+      % Test detection on different channels.
+
+      S1 = struct( ...
         'Data', [...
-          16, 4,   1, 2, 3,   0; ...
-          17, 4,   1, 2, 3,   1; ...
-          18, 4,   1, 2, 3,   1; ...
-          19, 4,   3, 2, 3,   1; ...
-          20, 4,   3, 2, 3,   1; ...
-          21, 4,   3, 2, 3,   0; ...
+          16, 4,   10, 20, 30,   0; ...
+          17, 4,   10, 20, 30,   1; ...
+          18, 4,   10, 20, 30,   1; ...
+          19, 4,   12, 21, 31,   1; ...
+          20, 4,   12, 21, 31,   1; ...
+          21, 4,   12, 21, 31,   0; ...
         ], ...
         'sbdaEndTt2000',             0, ...
         'windowLengthHkCdfRecords',  3, ...
         'currentMmDiffMinTm',        2 ...
-      ))
+      );
+      S2 = S1;
+      S2.Data = S1.Data(:, [1,2,   4,5,3,   6]);
+      S3 = S1;
+      S3.Data = S1.Data(:, [1,2,   5,3,4,   6]);
+
+      testCase.test_SCDA_wo_margins(S1)
+      testCase.test_SCDA_wo_margins(S2)
+      testCase.test_SCDA_wo_margins(S3)
     end
 
 
@@ -191,7 +200,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SCDA_wo_margins___on_SBDM_SCDA_boundary_detection(testCase)
+    function test_SCDA_wo_margins___on_SBDA_SCDA_boundary_detection(testCase)
       % Sweep candidate on SBDM/SCDA boundary ==> Some (window) data removed.
       testCase.test_SCDA_wo_margins(struct( ...
         'Data', [...
@@ -234,129 +243,11 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
     %==========================
     % SBDA_SCDA_with_margins()
     %==========================
-    % NOTE: Tests exist mostly for historical reasons. Some can probably be
-    % removed (due to overlapping tests).
-
-
-
-    function test_SBDA_SCDA_with_margins___window_shorter_equal_than_data(testCase)
-
-      % Test using hard-coded data except for specified arguments.
-      % Hardcoded arguments: tt2000, hkBiasCurrent, windowLengthHkCdfRecords
-      %
-      % NOTE: Only test window lengths equal or shorter than length of data.
-      %
-      % ARGUMENTS
-      % =========
-      % bdm, expIsSweeping
-      %       Scalar constant values. FPAs as float/NaN.
-      %
-      function test(bdm, sbdaEndTt2000, currentMmDiffMinTm, expIsSweeping)
-        assert(isfloat(bdm          ) && isscalar(bdm          ))
-        assert(isfloat(expIsSweeping) && isscalar(expIsSweeping))
-
-        % NOTE: Test window length up until exact number of records.
-        for windowLengthHkCdfRecords = [2, 5, 6]
-          % NOTE: Always MM diff == 2, for all windows.
-          DATA = [...
-            0,      1, 2, 3; ...
-            1000,   1, 2, 5; ...
-            2000,   1, 4, 5; ...
-            3000,   3, 4, 5; ...
-            4000,   3, 4, 3; ...
-            5000,   3, 2, 3; ...
-            ];
-
-          S.tt2000                   = DATA(:, 1);
-          S.bdm                      = [1,1,1,1,1,1]' * bdm;
-          S.hkBiasCurrent            = DATA(:, 2:4);
-          S.sbdaEndTt2000            = sbdaEndTt2000;
-          S.windowLengthHkCdfRecords = windowLengthHkCdfRecords;
-          S.currentMmDiffMinTm       = currentMmDiffMinTm;
-          S.windowMarginSec          = 0;
-          S.expIsSweeping            = [1 1 1 1 1 1]' * expIsSweeping;
-
-          % Assertion on test data.
-          mmDiff = max(S.hkBiasCurrent, [], 1) - min(S.hkBiasCurrent, [], 1);
-          assert(all(mmDiff <= 2))
-
-          testCase.test_SBDA_SCDA_with_margins(S)
-        end    % for
-      end    % function
-
-      %===================================================================
-
-      % Window short or equal to number of records.
-      % function test2(bdm, sbdaEndTt2000, currentMmDiffMinTm, expIsSweeping)
-
-      % SBDA
-      test(4,  10000, 3, 1)
-      test(4,  10000, 1, 1)
-
-      test(0,  10000, 3, 0)
-      test(0,  10000, 1, 0)
-
-      % SCDA
-      test(4, -10000, 3, 0)
-      test(4, -10000, 1, 1)
-
-      test(0, -10000, 3, 0)
-      test(0, -10000, 1, 0)
-    end
-
-
-
-    function test_window_longer_than_data(testCase)
-      % Window longer than data. ==> No SCDA sweep.
-      DATA = [ ...
-        0,    4,   100, 200, 300,   0;
-        1000, 4,   300, 100, 200,   0;
-        2000, 4,   200, 300, 100,   0;
-        ];
-      S.tt2000                   = int64(DATA(:, 1));
-      S.bdm                      =       DATA(:, 2);
-      S.hkBiasCurrent            =       DATA(:, 3:5);
-      S.sbdaEndTt2000            = -10000;
-      S.windowLengthHkCdfRecords = 4;
-      S.currentMmDiffMinTm       = 100;
-      S.windowMarginSec          = 0;
-      S.expIsSweeping            =       DATA(:, 6);
-      testCase.test_SBDA_SCDA_with_margins(S)
-    end
-
-
-
-    % All SCDA, BDM=4. Windows triggered for separate bias currents.
-    % MM diffs between channels (should not be relevant) > MM diff minimum
-    function test_SCDA_BDM4_trigger_from_any_channel(testCase)
-      DATA = [ ...
-        6,  4,   1, 4, 7,     0; ...
-        7,  4,   1, 4, 7,     1; ...
-        8,  4,   4, 4, 7,     1; ...
-        9,  4,   4, 4, 7,     0; ...
-        10, 4,   4, 4, 7,     1; ...
-        11, 4,   4, 1, 7,     1; ...
-        12, 4,   4, 1, 7,     0; ...
-        13, 4,   4, 1, 7,     1; ...
-        14, 4,   4, 1, 4,     1; ...
-        15, 4,   4, 1, 4,     0; ...
-        ];
-
-      S.tt2000                   = int64(DATA(:, 1));
-      S.bdm                      =       DATA(:, 2);
-      S.hkBiasCurrent            =       DATA(:, 3:5);
-      S.sbdaEndTt2000            = 0;   % Time threshold. Ensure SCDA.
-      S.windowLengthHkCdfRecords = 2;
-      S.currentMmDiffMinTm       = 3;
-      S.windowMarginSec          = 0;
-      S.expIsSweeping            =       DATA(:, 6);
-      testCase.test_SBDA_SCDA_with_margins(S)
-    end
 
 
 
     % SCDA. BDM=0 (non-sweep). Exceed threshold. ==> Still no sweep
-    function test_SCDA_BDM0_exceed_MM_diff(testCase)
+    function test_SBDA_SCDA_with_margins___SCDA_BDM0_exceed_MM_diff(testCase)
       DATA = [ ...
         10, 4,   2, 3, 1,   0; ...
         11, 0,   2, 3, 5,   0; ...
@@ -377,15 +268,15 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
     % SCDA, BDM=4.
     % Test window margin.
-    function test_SCDA_BDM4_window_margin(testCase)
+    function test_SBDA_SCDA_with_margins___SCDA_BDM4_window_margin(testCase)
       DATA = [ ...
         1, 4,   1, 4, 7,   0; ...
-        2, 4,   1, 4, 7,   1; ...   % Set due to window margin
+        2, 4,   1, 4, 7,   1; ...   % Set due to margin
         3, 4,   1, 4, 7,   1; ...   % Set due to window length
         4, 4,   1, 4, 7,   1; ...   % Exceed MM diff cf next
         5, 4,   1, 6, 7,   1; ...   % Exceed MM diff cf previous
         6, 4,   1, 6, 7,   1; ...   % Set due to window length
-        7, 4,   1, 6, 7,   1; ...   % Set due to window margin
+        7, 4,   1, 6, 7,   1; ...   % Set due to margin
         8, 4,   1, 6, 7,   0; ...
         9, 4,   1, 6, 7,   0; ...
         ];
@@ -402,21 +293,20 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_complex(testCase)
-      % Complex test
+    function test_SBDA_SCDA_with_margins___complex(testCase)
       DATA = [ ...
-        1,  0,   1, 2, 3,     0; ...
-        2,  4,   3, 0, 5,     1; ...   % BDM=4
-        3,  0,   1, 2, 3,     0; ...
-        4,  0,   1, 2, 6,     0; ...   % Exceed threshold (BDM=0)
-        5,  0,   1, 2, 5,     0; ...
-        6,  0,   1, 2, 4,     0; ...
-        7,  4,   1, 2, 3,     1; ...
-        8,  4,   1, 2, 6,     1; ...   % BDM=4. Exceed threshold
-        9,  4,   1, 2, 5,     0; ...
-        10, 4,   1, 2, 4,     0; ...
-        11, 0,   1, 2, 1,     0; ...   % BDM=0. Exceed threshold
-        12, 4,   1, 2, 4,     0; ...
+        1,  0,   1, 2, 3,   0; ...
+        2,  4,   3, 0, 5,   1; ...   % BDM=4
+        3,  0,   1, 2, 3,   0; ...
+        4,  0,   1, 2, 6,   0; ...   % Exceed threshold (BDM=0)
+        5,  0,   1, 2, 5,   0; ...
+        6,  0,   1, 2, 4,   0; ...
+        7,  4,   1, 2, 3,   1; ...
+        8,  4,   1, 2, 6,   1; ...   % BDM=4. Exceed threshold
+        9,  4,   1, 2, 5,   0; ...
+        10, 4,   1, 2, 4,   0; ...
+        11, 0,   1, 2, 1,   0; ...   % BDM=0. Exceed threshold
+        12, 4,   1, 2, 4,   0; ...
         ];
       S.tt2000                   = int64(DATA(:, 1));
       S.bdm                      =       DATA(:, 2);
@@ -491,17 +381,6 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
     % IMPLEMENTATION NOTE: All arguments are passed in a single struct to
     % force the caller to explicitly name the separate arguments. ==> Saves
     % confusion and comments.
-    %
-    %
-    % ARGUMENTS
-    % =========
-    % S
-    %       Struct.
-    %       .expIsSweeping
-    %           logical FPA as double/NaN
-    %       .bdm, S.hkBiasCurrent
-    %           FPAs as float/NaN
-    %       etc.
     %
     function test_SBDA_SCDA_with_margins(testCase, S)
       assert(issorted(S.tt2000), 'ascend')
