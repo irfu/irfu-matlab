@@ -222,11 +222,11 @@ ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA = {...
 DEFAULT_SETTINGS = struct();...
   % Whether zVariable value size per record must fit the submitted metadata
 % specified in dataobj_Variables{i, 2}.
-DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = 1;
+DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = true;
 % Default 1/true since dataobj is not strict about SIZE  of empty zVars.
-DEFAULT_SETTINGS.strictEmptyNumericZvSizePerRecord = 1;
-% Default 1/true since dataobj is not strict about CLASS of empty zVars.
-DEFAULT_SETTINGS.strictEmptyZvClass                = 1;
+DEFAULT_SETTINGS.strictEmptyNumericZvSizePerRecord = true;
+% Default true since dataobj is not strict about CLASS of empty zVars.
+DEFAULT_SETTINGS.strictEmptyZvClass                = true;
 % Whether zVar attr should have same class as zVar.
 % Exception: When zVar is TT2000 and zVar attr is char.
 % Deactivation is useful for less stringent CDFs.
@@ -235,6 +235,8 @@ DEFAULT_SETTINGS.calculateMd5Checksum              = 1;
 %
 Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
 irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+assert(islogical(Settings.strictEmptyZvClass))
+assert(islogical(Settings.strictEmptyNumericZvSizePerRecord))
 
 
 

@@ -272,8 +272,8 @@ DEFAULT_SETTINGS.currentDatasetExtensionDays = 0;
 % NOTE: Capitalized since that is the BICAS naming convention for
 % BICAS-internal settings.
 %------------------------------------------------------------------------
-%DEFAULT_SETTINGS.bicasSetting_SWM_L1_L2_ENABLED   = 1;
-%DEFAULT_SETTINGS.bicasSetting_SWM_L2_L3_ENABLED   = 1;
+%DEFAULT_SETTINGS.bicasSetting_SWM_L1_L2_ENABLED   = true;
+%DEFAULT_SETTINGS.bicasSetting_SWM_L2_L3_ENABLED   = true;
 %
 Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
 irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
@@ -297,8 +297,8 @@ assert(iscell(inputPathsCa) & iscolumn(inputPathsCa))
 SwmArray = get_SWMs(bicasConfigFile);
 
 bicasSettingsArgsCa = {};
-%     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L1-L2_ENABLED',         sprintf('%i', Settings.bicasSetting_SWM_L1_L2_ENABLED)};
-%     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L2-L3_ENABLED',         sprintf('%i', Settings.bicasSetting_SWM_L2_L3_ENABLED)};
+%     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L1-L2_ENABLED', String(Settings.bicasSetting_SWM_L1_L2_ENABLED)};
+%     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L2-L3_ENABLED', Sprint(Settings.bicasSetting_SWM_L2_L3_ENABLED)};
 
 
 

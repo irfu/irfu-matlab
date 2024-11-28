@@ -53,6 +53,8 @@ classdef findread
       %     CON: Testing this function is impossible anyway.
       %   CON: Conceptually bad. Makes function "less generic".
 
+      assert(islogical(useGactRct))
+
       DtDataBegin = datetime(irf.cdf.TT2000_to_datevec(tt2000Begin), 'TimeZone', 'UTCLeapSeconds');
       DtDataEnd   = datetime(irf.cdf.TT2000_to_datevec(tt2000End),   'TimeZone', 'UTCLeapSeconds');
 

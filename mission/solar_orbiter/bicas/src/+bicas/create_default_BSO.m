@@ -178,11 +178,11 @@ S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
 % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
 % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
 % opposed to L1 current datasets.
-S.define_setting('SWM.L1-L2_ENABLED',          0);
+S.define_setting('SWM.L1-L2_ENABLED',         false);
 % Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
-S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED',  0);
+S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED', false);
 % Enable s/w mode for processing L2-->L3 datasets.
-S.define_setting('SWM.L2-L3_ENABLED',          0);
+S.define_setting('SWM.L2-L3_ENABLED',         false);
 
 
 
@@ -216,7 +216,7 @@ S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');
 S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 000,000,000]);
 
 % NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
-S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', 1)
+S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', true)
 % NOTE: See INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
 S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
 
@@ -267,13 +267,13 @@ S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'ERROR');   % ERROR, W
 
 % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
 % 0/false.
-S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                1)
+S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                true)
 
 % Whether the size per record of an empty (0 records) output DF zVar has to
 % be in agreement with the master CDF's size per record.
 % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
 % 0/false.
-S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1)
+S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', true)
 
 % Whether the size per record of an output CDF zVar has to be in agreement
 % with the master CDF's size per record. Disabling is useful if the master
@@ -284,7 +284,7 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1
 %   Master CDFs: Multiple samples/snapshot.
 %   BICAS code:  1 sample/snapshot.
 % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
-S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
+S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      true)
 
 % Permitted CDF versions as a reg.expr.. Entire CDF version string must match
 % the reg.expr..
@@ -311,7 +311,7 @@ S.define_setting('OUTPUT_CDF.FORMAT_VERSION_REGEXP', '3\.9\.[0-9]+')
 % be made when reading the dataset, but then code which treats datasets as
 % generic, has to dentify which dataset is SCI. Should not be worth the
 % effort.
-S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME',    0)
+S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME', false)
 
 % How to react to HK not overlapping with SCI.
 % NOTE: Switch is shared for LFR & TDS, but WARNING only(?) makes sense for
@@ -545,10 +545,10 @@ S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RS
 % CALIBRATION_TABLE_INDEX2 = ZVCTI2
 % NOTE: ZVCTI2 is not set (used) for TDS. Therefore no such settings for TDS.
 % "L1R" refers to when using L1R datasets as input, as opposed to L1.
-S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      1)
-S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    1)
-S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',  1)
-S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', 1)
+S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      true)
+S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    true)
+S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',  true)
+S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', true)
 
 
 
@@ -592,9 +592,9 @@ S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT', -0.008198754    
 % Disable all voltage calibration. Output dataset data contain TM units.
 % BIAS demultiplexer addition/subtraction of BLTS necessary to derive
 % antenna signals is still done though.
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',               0);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',               false);
 % Whether to disable BIAS offsets.
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', 0);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', false);
 % Whether to use transfer functions or scalar multiplication for calibration
 % of signals between antennas and BIAS-LFR/TDS interface. It does not affect
 % the LFR/TDS transfer functions.
@@ -604,7 +604,7 @@ S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT,
 %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'KERNEL')   % FFT, KERNEL
 %S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'ZEROS')   % ZEROS, CYCLIC, MIRROR
 S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'MIRROR')   % ZEROS, CYCLIC, MIRROR
-S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)   % false, true
+S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)
 
 
 
@@ -667,7 +667,7 @@ S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)
 % corresponds to interface volt.
 % NOTE: This useful for separately using bicas.proc.L1L2.cal.Cal for analyzing
 % BIAS standalone calibration tables (BSACT).
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED',  0);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED', false);
 
 
 

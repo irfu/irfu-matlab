@@ -338,7 +338,8 @@ classdef Cal < handle
     function obj = Cal(Rctdc, useGactRct, useZvcti2, Bso)
 
       % ASSERTIONS: Arguments
-      assert(isscalar(useZvcti2))
+      assert(islogical(useGactRct) & isscalar(useGactRct))
+      assert(islogical(useZvcti2)  & isscalar(useZvcti2))
       % Rctdc
       assert(isa(Rctdc, 'bicas.proc.L1L2.cal.RctdCollection'))
 
