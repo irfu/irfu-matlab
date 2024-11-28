@@ -249,7 +249,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
       Bso = bicas.create_default_BSO();
       Bso.override_value('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC', spdfbreakdowntt2000(S.sbdaEndTt2000),     'test');
-      Bso.override_value('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS',                     S.windowLengthPts,    'test');
+      Bso.override_value('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_HK_CDF_RECORDS',          S.windowLengthPts,    'test');
       Bso.override_value('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM',         S.currentMmDiffMinTm, 'test');
       Bso.override_value('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC',                     S.windowMarginSec,    'test');
       Bso.make_read_only()

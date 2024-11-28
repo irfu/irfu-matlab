@@ -19,12 +19,6 @@ classdef swpdet
   %   PROPOSAL: For separate algorithm functions instead(?) of for consolidated
   %             functions which use multiple algorithms.
   %
-  % PROPOSAL: Rename "PTS" (unit) in
-  %           PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS.
-  %   PRO: Unclear
-  %   PROPOSAL: "HK_CDF_RECORDS", HkCdfRecords
-  %     CON: Long
-  %
   % PROPOSAL: Separate function(s) for detecting sweeps using L1R
   %           QUALITY_BITMASK. Return value in science time.
   % PROPOSAL: Separate time margins t_before, t_after.
@@ -96,7 +90,7 @@ classdef swpdet
     %
     function isSweepingScda = SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
       scdaBeginTt2000        = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC'));
-      windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS');
+      windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_HK_CDF_RECORDS');
       % Minimum min-max difference for counting as sweep.
       currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');
 
@@ -161,8 +155,8 @@ classdef swpdet
     % ARGUMENTS
     % =========
     % Bso
-    %       NOTE: PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS: If
-    %       greater than the number of CDF records/rows of data, then no
+    %       NOTE: PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_HK_CDF_RECORDS:
+    %       If greater than the number of CDF records/rows of data, then no
     %       record will be labelled as sweeping.
     %
     function isSweepingFpa = SBDA_SCDA_with_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)

@@ -468,7 +468,7 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC', 30)
 %-------------------------------------------------------------------------------
 S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
 % SCDA window length. Unit: Data points/HK CDF records.
-S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS', 3)
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_HK_CDF_RECORDS', 3)
 % SCDA threshold for HK bias current difference between min and max within a
 % window. If the value exceeds this value, then the interval is labelled as
 % sweeping. Unit: TM units
