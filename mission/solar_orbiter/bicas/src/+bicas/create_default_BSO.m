@@ -29,7 +29,7 @@
 % --
 % Settings which enable/disable something and are truly conceptually boolean
 % (though implemented as numeric values) should always have suffix
-% _ENABLE(D) or _DISABLE(D).
+% _ENABLED or _DISABLED.
 % --
 % The unit/format of setting values should be specified in the key as a suffix separated
 % by underscore (not period).
@@ -103,13 +103,11 @@ function Bso = create_default_BSO()
 %
 % PROPOSAL: Use naming convention for settings keys used for testing ONLY:
 %
-% PROPOSAL: Relevant setting keys should always be on the form ENABLE, never DISABLE.
+% PROPOSAL: Relevant setting keys should always be on the form ENABLED, never DISABLED.
 %   PRO: More consistent.
 %   CON: Less clear what is a deviation from the default.
-% PROPOSAL: Relevant setting keys should always be on format "USE" (not "ENABLE", "DISABLE").
+% PROPOSAL: Relevant setting keys should always be on format "USE" (not "ENABLED", "DISABLED").
 %   CON: Sounds bad to put "USE" at the end of settings key.
-% PROPOSAL: Always use either DISABLED/ENABLED or DISABLE/ENABLE.
-%   TODO-DEC: Which?
 %
 % PROPOSAL: Need (settings name) terminology for temporary
 %           "bugfixes"/corrections due to bugs outside of BICAS,
@@ -596,7 +594,7 @@ S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT', -0.008198754    
 % Disable all voltage calibration. Output dataset data contain TM units.
 % BIAS demultiplexer addition/subtraction of BLTS necessary to derive
 % antenna signals is still done though.
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',               false);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLED',              false);
 % Whether to disable BIAS offsets.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', false);
 % Whether to use transfer functions or scalar multiplication for calibration
