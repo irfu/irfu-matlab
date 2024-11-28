@@ -442,7 +442,7 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
 % can still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
 % data.
 %--------------------------------------------------------------------------
-% PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC:
+% PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC:
 % Before this time: SBDA is used for detecting sweeps (BDM=4).
 % After this time:  SCDA is used for detecting sweeps
 %                   (moving window + varying HK currents).
@@ -457,7 +457,7 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
 % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
 %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
 % However, a test with multiple BDMs (mux modes) ran on 2023-12-16 so it is
-% still worth NOT setting PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC to after
+% still worth NOT setting PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC to after
 % that.
 %
 % NOTE: Might be that SCDA window length=3 pts is a bit too short (or possibly
@@ -467,7 +467,7 @@ S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
 %
 % NOTE: Empirically, sweeps are surrounded by small data gaps, 1-4 min long(?).
 %-------------------------------------------------------------------------------
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
+S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
 % SCDA window length. Unit: Data points/HK CDF records.
 S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS', 3)
 % SCDA threshold for HK bias current difference between min and max within a

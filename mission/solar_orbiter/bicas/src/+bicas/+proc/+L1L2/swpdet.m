@@ -19,9 +19,6 @@ classdef swpdet
   %   PROPOSAL: For separate algorithm functions instead(?) of for consolidated
   %             functions which use multiple algorithms.
   %
-  % PROPOSAL: Rename PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC to reference both
-  %           SBDA and SCDA.
-  %   PROPOSAL: PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC
   % PROPOSAL: Rename PROCESSING.L2.DETECT_SWEEPS.*
   %           -->    PROCESSING.L2.SWEEP_DETECTION.*
   %           -->    PROCESSING.L2.SWPDET.*
@@ -68,11 +65,11 @@ classdef swpdet
     %
     % ALGORITHM
     % =========
-    % For records before timestamp PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC:
+    % For records before timestamp PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC:
     % BDN=4 <=> sweep
     %
     function isSweepingSbda = SBDA_wo_margins(tt2000, bdmFpa, Bso)
-      sbdaEndTt2000  = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
+      sbdaEndTt2000  = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC'));
 
       irf.assert.sizes(...
         tt2000, [-1, 1], ...
@@ -90,7 +87,7 @@ classdef swpdet
     %
     % ALGORITHM
     % =========
-    % For records after timestamp PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC:
+    % For records after timestamp PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC:
     % Among records with BDN=4, check sliding windows for the min-max
     % difference for BIAS HK's measured bias current (within the entire
     % window). For windows for which the min-max difference exceeds a
@@ -102,7 +99,7 @@ classdef swpdet
     % thresholds (for BDM=4) are labelled as sweeps.
     %
     function isSweepingScda = SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
-      scdaBeginTt2000        = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC'));
+      scdaBeginTt2000        = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SBDA_SCDA_BOUNDARY_UTC'));
       windowLengthPts        =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS');
       % Minimum min-max difference for counting as sweep.
       currentMmDiffMinimumTm =                   Bso.get_fv('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM');
