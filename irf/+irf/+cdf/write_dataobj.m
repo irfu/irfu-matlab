@@ -1,9 +1,3 @@
-function write_dataobj(filePath, ...
-  dataobj_GlobalAttributes, ...
-  dataobj_data, ...
-  dataobj_VariableAttributes, ...
-  dataobj_Variables, ...
-  varargin)
 %
 % Function which writes a CDF file.
 %
@@ -162,6 +156,13 @@ function write_dataobj(filePath, ...
 % ZV  = CDF zVariable
 % ZVA = CDF zVariable Attribute
 % DO  = dataobj
+%
+function write_dataobj(filePath, ...
+  dataobj_GlobalAttributes, ...
+  dataobj_data, ...
+  dataobj_VariableAttributes, ...
+  dataobj_Variables, ...
+  varargin)
 
 
 
@@ -219,8 +220,8 @@ ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA = {...
   'SCALEMIN', 'SCALEMAX', ...
   'FILLVAL'};
 
-DEFAULT_SETTINGS = struct();...
-  % Whether zVariable value size per record must fit the submitted metadata
+DEFAULT_SETTINGS = struct();
+% Whether zVariable value size per record must fit the submitted metadata
 % specified in dataobj_Variables{i, 2}.
 DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = true;
 % Default 1/true since dataobj is not strict about SIZE  of empty zVars.
@@ -231,12 +232,14 @@ DEFAULT_SETTINGS.strictEmptyZvClass                = true;
 % Exception: When zVar is TT2000 and zVar attr is char.
 % Deactivation is useful for less stringent CDFs.
 DEFAULT_SETTINGS.strictZvAttrClass                 = 'ERROR';   % Legal values: "ERROR", "WARNING", "IGNORE"
-DEFAULT_SETTINGS.calculateMd5Checksum              = 1;
+DEFAULT_SETTINGS.calculateMd5Checksum              = true;
 %
 Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
 irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
-assert(islogical(Settings.strictEmptyZvClass))
+assert(islogical(Settings.strictNumericZvSizePerRecord))
 assert(islogical(Settings.strictEmptyNumericZvSizePerRecord))
+assert(islogical(Settings.strictEmptyZvClass))
+assert(islogical(Settings.calculateMd5Checksum))
 
 
 
