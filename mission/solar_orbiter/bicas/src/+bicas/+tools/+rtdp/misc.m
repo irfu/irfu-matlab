@@ -295,7 +295,7 @@ classdef misc
 
 
     function create_release_notes_file(parentDir, letterVersion)
-      dateStr = string(datetime('now','TimeZone','local','Format','yyyy-mm-d'));
+      dateStr = string(datetime('now','TimeZone','local','Format','yyyy-MM-dd'));
       s = sprintf('Version %s; %s; %s:\n', letterVersion, dateStr, bicas.tools.rtdp.misc.CONTACT_PERSON);
 
       readmePath = fullfile(parentDir, "release_notes.txt");
