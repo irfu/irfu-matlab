@@ -14,6 +14,28 @@
 % error_safe_constant created 2016-06-02.
 %
 classdef const
+  % PROPOSAL: Split up in multiple files.
+  %   NOTE: There is already bicas.sconst.
+  %   --
+  %   PRO: Too large file.
+  %     PRO: init_GA_MODS_DB() is  ~300 rows and will grow over time.
+  %     PRO: init_SWD_metadata() is ~170 rows and will grow over time (if
+  %          keeping commented-out info from every old BICAS version).
+  %     PRO: init_EMIDP_2_INFO() is ~80 rows.
+  %       PRO: Is expected to be quite constant.
+  %   --
+  %   PROBLEM: Functions used for setting constants may need to use constants
+  %            themselves. ==> Need to avoid cyclic dependence.
+  %            ==> Affects splitting.
+  %     Ex: init_GA_MODS_DB() uses bicas.const.*.
+  %     Ex: init_SWD_metadata() does not use bicas.const.* values but could
+  %         conceivably do in the future.
+  %   --
+  %   PROPOSAL: Separate file for BICAS version/metadata constants:
+  %     Ex: init_GA_MODS_DB(), init_SWD_metadata()
+  %     PROPOSAL: New file is dependent on bicas.const (but not the reverse).
+  %   PROPOSAL: Separate file for quality configuration.
+  %
   % PROPOSAL: Error category for bad input datasets (both science and HK).
   %   PRO: Has similar for RCTs.
   %
@@ -89,6 +111,8 @@ classdef const
 
     BRVF_FILENAME                = 'bias_rct_validity.json';
 
+    DEFAULT_NSO_TABLE_RPATH      = fullfile('data', 'solo_ns_ops.xml');
+
     % Information to "interpret" and "translate" captured exceptions
     % --------------------------------------------------------------
     % containers.Map with
@@ -106,7 +130,6 @@ classdef const
     %       .description
     %           English human-readable text describing the error. Implicitly
     %           defines what kinds of errors this error code should cover.
-    %
     %
     EMIDP_2_INFO = bicas.const.init_EMIDP_2_INFO();
 
@@ -152,7 +175,7 @@ classdef const
     % IMPLEMENTATION NOTE: One does not want to use the RCS QRCID string
     % constants directly inside the code, in case of typos.
     %
-    % NOTE: This includes QRCIDs for both L2 and L3 density.
+    % NOTE: This includes QRCIDs for both (a) L2 and (b) L3 density.
     %
     QRCID = struct(...
       'PARTIAL_SATURATION', 'PARTIAL_SATURATION', ...
@@ -324,8 +347,7 @@ classdef const
 
 
 
-    % Various S/W descriptor (SWD) release data for the entire software (not
-    % specific outputs)
+    % Various SWD release data for the entire software (not specific outputs).
     function MAP = init_SWD_metadata()
       MAP = containers.Map();
 
@@ -529,7 +551,7 @@ classdef const
       QrcSettingsL2Map(bicas.const.QRCID.THRUSTER_FIRING) = ...
         bicas.proc.QrcSetting(...
         uint8(1), ...
-        uint16(0));
+        uint16(0));    % NOTE: No quality bit set!
     end
 
 

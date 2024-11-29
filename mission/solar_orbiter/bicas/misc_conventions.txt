@@ -45,6 +45,8 @@ ACHG
     (BIAS diff) AC High Gain.
 ACLG
     (BIAS diff) AC Low Gain.
+APATH
+    Absolute Path
 AR
     (Non-cell) Array. Experimental notation found in small number of places. See
     "CA".
@@ -267,12 +269,14 @@ NS
 NSO (Event)
     Non-Standard Operation. A time interval that has been manually labelled
     as special. BICAS can e.g. use this to set quality bits and remove data.
+    See readme.txt.
 NSO table
     Separate XML file that contains a list of time intervals which have been
     manually labeled as NSOs. BICAS uses this list for potentially modifying
     processed data. Every NSO in the table is categorized using exactly one
     QRCID.
     Located at irfu-matlab/mission/solar_orbiter/bicas/data/solo_ns_ops.xml .
+    See readme.txt.
 Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
@@ -286,20 +290,22 @@ PFOID
     Production Function Output ID. Analogous with PFIID, but for output (return
     values).
 Production Function
-    Abstract method bicas.proc.SwmProcessing.production_function() which
-    implementations in subclasses do the core of data processing.
+    Abstract method bicas.proc.SwmProcessing.production_function() and its
+    implementations in subclasses which do the core of data processing.
 QF
     zVariable QUALITY_FLAG.
 QRC
-    Quality-Related Condition. Condition that may influence quality ZVs.
-    Ex: Thruster firing, saturation.
+    Quality-Related Condition. Condition that, when it applies, can be used to
+    set/modify quality ZVs and/or blanking of data.
+    Ex: Thruster firing, saturation, bad density.
     QRCs are uniquely identified using QRCIDs.
-    Note that QRCs are distinct from quality bits themselves. A QRC
-    corresponds to setting zero, one, or multiple quality bits and/or cap
-    QUALITY_FLAG.
+    NOTE: QRCs are distinct from quality bits themselves. Any particular QRC may
+    correspond to setting zero, one, or multiple quality bits.
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.
+    Not all QRCIDs are meant to be used in the NSO table.
+        Ex: BAD_DENSITY
 RCS
     RPW Calibration Software. BICAS is an example of an RCS.
 RCS ICD
@@ -328,6 +334,8 @@ ROC DFMD
 ROC Engineering Guidelines
     Document ROC-GEN-SYS-NTT-00019-LES, "ROC
     Engineering Guidelines for External Users"
+RPATH
+    Relative Path
 RPS
     Radians Per Second
 RPW
@@ -365,6 +373,8 @@ SIP
     Specific Input Parameter. BICAS CLI argument which specifies the path to
     an input or output dataset.
     The phrase (but not the abbreviation) is defined by the RCS ICD.
+SKT
+    CDF skeleton file. Abbreviation comes from the standard file suffix ".skt".
 SKV
     Class bicas.SettingsKeyValue.
 SNF
@@ -414,7 +424,6 @@ TPIV
 TS
     irfu-matlab's TSeries object/class.
 TSF
-
     Threshold Saturation Flag. Internal bit used by the implementation. The bit
     is set/unset for an individual sample iff the sample value exceeds specified
     thresholds, i.e. it does not take any context into account, except for
@@ -446,3 +455,11 @@ ZVCTI2
 ZVS
     zVariable Struct. Struct where each field emulates the data content of a
     zVariable (either as an array or an FPA).
+
+
+
+#################
+Other conventions
+#################
+1D arrays shall be column arrays. This has not been the case but new code should
+do this and old code should converge to this when appropriate.

@@ -94,8 +94,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
     % ~Process L2-->L3 (not VHT).
     %
-    % NOTE: Function assumes that (some) fill values for integer-valued
-    % zVariables are identical in input and output datasets.
+    % NOTE: Function assumes that (some) fill values (the dedicated constant
+    % values) for integer-valued zVariables are identical in input and output
+    % datasets.
     %
     % NOTE: Function does not discard data with QUALITY_FLAG==fill value, as
     % opposed to QUALITY_FLAG < threshold.
@@ -103,6 +104,11 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % NOTE: Sets QUALITY_FLAG==fill value when ALL data in record is NaN.
     % Both OSR and DSR. The same is not(?) enforced in L2 processing, but
     % should maybe be. /EJ 2021-05-12
+    %
+    % IMPLEMENTATION NOTE: This function is separate from
+    % bicas.proc.L2L3.L3OsrDsrSwmProcessing.production_function() to facilitate
+    % automated tests, in particular by adding an explicit dependence on
+    % bicas.proc.L2L3.ExternalCodeImplementation.
     %
     function [OutEfieldOsr,  OutEfieldDsr, ...
         OutScpotOsr,   OutScpotDsr, ...
@@ -147,8 +153,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %===========
       % Constants
       %===========
-      % The only acceptable input DSI.
-      %INPUT_DSI                 = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
       % Define length of bins, and relative position of corresponding
       % bin timestamps.
       BIN_LENGTH_WOLS_NS        = int64(10e9);
@@ -248,7 +252,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % Starting template for OSR datasets. Return value is modified
+    % Starting template for OSR datasets. Return value is modified.
     function TemplateOsr = get_OSR_template(InLfrCwf)
       Ga = struct();
       Ga.OBS_ID             = InLfrCwf.Ga.OBS_ID;
@@ -308,12 +312,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %   Density bit FP ==> L3_QUALITY_BITMASK density bit=false
       %                      (since there is no FP for individual quality bits).
       [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(NeScpQualityBitFpa.array(false));
-      Out.Zv.QUALITY_FLAG              = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
-      Out.Zv.L3_QUALITY_BITMASK        = bicas.utils.FPArray(L3_QUALITY_FLAG);
+      Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
+      Out.Zv.L3_QUALITY_BITMASK       = bicas.utils.FPArray(L3_QUALITY_FLAG);
 
       bFp = Out.Zv.DENSITY.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
-      Out.Zv.L3_QUALITY_BITMASK(bFp)   = bicas.utils.FPArray.FP_UINT16;
+      Out.Zv.QUALITY_FLAG(bFp)        = bicas.utils.FPArray.FP_UINT8;
+      Out.Zv.L3_QUALITY_BITMASK(bFp)  = bicas.utils.FPArray.FP_UINT16;
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end

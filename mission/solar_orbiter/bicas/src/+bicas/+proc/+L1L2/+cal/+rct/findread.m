@@ -192,8 +192,8 @@ classdef findread
       % IMPLEMENTATION NOTE: jsondecode() stores the filename in a struct field
       % name, but struct field names do not permit all characters (such as dash
       % and period) and replaces them with underscore instead. Must therefore
-      % correct the filename string using knowledge of legal RCT filenames
-      % (sigh...).
+      % correct the filename string using knowledge of legal RCT filenames,
+      % i.e. use HACKS. (Sigh...)
       %
       % Ex: solo_CAL_rpw-bias_20200210-20991231_V01.cdf
       %                 ^             ^            ^

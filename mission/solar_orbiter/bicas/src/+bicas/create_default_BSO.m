@@ -385,10 +385,12 @@ S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
 % YK, Slack 2024-01-19: Use cap "3=Good for publication, subject to PI approval"
 %
 % NOTE: Used for both L2 and L3 datasets.
+% NOTE: The QUALITY_FLAG max value according to the zVariable's definition is 4
+%       (not 3)!
 S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 3)
 
 % Path to NSO table file. Relative to BICAS root.
-S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', fullfile('data', 'solo_ns_ops.xml'))
+S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', bicas.const.DEFAULT_NSO_TABLE_RPATH)
 % Path to NSO table file for debugging purposes.
 % If non-empty, then it overrides PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH.
 % Can be set to absolute path. Intended for testing.

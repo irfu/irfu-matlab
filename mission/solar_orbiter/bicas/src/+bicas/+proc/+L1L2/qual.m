@@ -72,6 +72,12 @@ classdef qual
     % are then supposed to be used for creating global versions of the
     % actual ZVs.
     %
+    % ARGUMENTS
+    % =========
+    % isFullSaturation
+    %       Autodetected full saturation array (as opposed to derived from NSO
+    %       table).
+    %
     %
     % RETURN VALUES
     % =============
@@ -84,6 +90,7 @@ classdef qual
     %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         get_quality_ZVs(QrcSettingsL2Map, NsoTable, Epoch, isFullSaturation, L)
+
       assert(islogical(isFullSaturation))
 
       QrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
@@ -157,10 +164,17 @@ classdef qual
     %
     % Ex: Sweeps
     %
-    % NOTE: It is not obvious that data should be set to FV instead of
-    % having quality bitmask/flag modified. Nonetheless, I think setting
-    % data to fill value was requested by YK many years ago. /Erik P G
-    % Johansson 2023-11-28
+    % NOTE: It is not obvious that data should be set to FV instead of having
+    % quality bitmask/flag modified. Nonetheless, I think setting data to fill
+    % value was requested by YK many years ago.
+    % /Erik P G Johansson 2023-11-28
+    %
+    % NOTE: This function is a historical remnant from old functionality for
+    % removing sweeps using BDM=4 when BDM=0 was the nominal BDM. This
+    % functionality has not been used for a long time and could potentially be
+    % removed. Setting PROCESSING.L2.REMOVE_DATA.MUX_MODES would be removed with
+    % it.
+    % /Erik P G Johansson 2025-01-16
     %
     %
     % ARGUMENTS

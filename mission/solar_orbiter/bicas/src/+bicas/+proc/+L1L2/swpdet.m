@@ -191,7 +191,13 @@ classdef swpdet
       % Detect sweeps using SCDA.
       isSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso);
 
-      % Merge results and add margins.
+      % Merge results and add time margins to detected sweeps
+      % -----------------------------------------------------
+      % IMPLEMENTATION NOTE: One could argue that SBDA-detected sweeps should
+      % not have time margins added to them given that an entire BDM=4 period
+      % is removed which empirically always includes a margin after the actual
+      % sweep (which is probably the only margin really needed). This is
+      % however not guaranteed, only on empirical fact.
       isSweeping           = isSweepingSbda | isSweepingScda;
       isSweepingWithMargin = irf.utils.true_with_margin( ...
         hkTt2000, isSweeping, windowMarginSec * 1e9, windowMarginSec * 1e9);
