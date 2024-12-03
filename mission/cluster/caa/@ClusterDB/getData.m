@@ -743,7 +743,11 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         param={'180Hz'};
       end
     case 3
-      if start_time>toepoch([2014 11 03 20 58 16.7])
+      if start_time>toepoch([2024 4 29 0 0 0])
+        % p4 failure
+        probe_list = [];
+        irf_log('dsrc',sprintf('p1, p2, p3 and p4 are BAD on sc%d',cl_id));
+      elseif start_time>toepoch([2014 11 03 20 58 16.7])
         % p2 failure
         probe_list = 4;
         irf_log('dsrc',sprintf('p1, p2 & p3 are BAD on sc%d',cl_id));
