@@ -151,7 +151,7 @@ switch year
     end
   case 2023
      exceptions={{1 'DER'} {1 'SFIT'} {1 'E' 1} {1 'E' 2} {1 'E' 3} {2 'DER'} {2 'SFIT'} {2 'E' 1} {2 'E' 2} {2 'E' 3} {3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P3'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
-  case 2024
+  case 2024 % if month <= 4  % probe 4 failure on C3 2024-04-28. export empty files anyway only a few months left of mission 
      exceptions={{1 'DER'} {1 'SFIT'} {1 'E' 1} {1 'E' 2} {1 'E' 3} {2 'DER'} {2 'SFIT'} {2 'E' 1} {2 'E' 2} {2 'E' 3} {3 'DER'} {3 'SFIT'} {3 'E' 1} {3 'E' 2} {3 'E' 3} {1 'P1'} {1 'P3'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {3 'P2'} {3 'P3'} {3 'P4'} {4 'P4'} {1 'P12'} {2 'P12'} {3 'P12'} {3 'P32'} {3 'P34'} {4 'P32'} {4 'P34'}};
   otherwise
     error('Year out of range.')
