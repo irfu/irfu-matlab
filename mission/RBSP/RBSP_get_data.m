@@ -158,8 +158,8 @@ while true
       return
     end
   end
-  epochFileStart = epochFileStart + 3600*24;
   if epochFileStart>=epochFileEnd, break, end
+  epochFileStart = epochFileStart + 3600*24;
   timeVecStart = fromepoch(epochFileStart);
 end
 
@@ -629,7 +629,7 @@ end
 
   end
   function res = combine_ts(inp1,inp2)
-    if strcmpi(return_type,'rept-PA') || strcmpi(return_type,'mageis-PA')
+    if isa(inp1,'PDist')
 
       %%combine inp1 and inp2 to 1 PDist object also combine data in
       %%ancillary
@@ -668,7 +668,8 @@ end
       res.units = inp1.units;
       res.userData = inp1.userData;
 
-
+    else
+        res = combine(inp1,inp2);
     end
 
   end
