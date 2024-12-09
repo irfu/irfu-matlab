@@ -1672,7 +1672,7 @@ classdef PDist < TSeries
                   if doScpot, tmp_energy = tmp_energy - scpot.data(it); end
                   tmp_azim   = azim_edges(iAzim)     + dazim*rand(N,1);   % deg
                   tmp_polar  = polar_edges(iPolar)   + dpolar*rand(N,1);  % deg
-                  tmp_v = sqrt(tmp_energy*units.eV*2/units.me)/1000; % km/s
+                  tmp_v = sqrt(tmp_energy*units.eV*2/mass)/1000; % km/s
 
                   if doScpot % check if energy is negative, then skip
                     if iEnergy>6;
@@ -3982,6 +3982,7 @@ classdef PDist < TSeries
 
       % Data from PDist in spherical coordinate system
       sizedata = obj.datasize;
+      mass = obj.mass;
 
       switch method
         case 'center' % add particles to the center of the bin
