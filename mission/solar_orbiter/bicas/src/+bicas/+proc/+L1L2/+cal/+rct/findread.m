@@ -197,14 +197,33 @@ classdef findread
       %
       % Ex: solo_CAL_rpw-bias_20200210-20991231_V01.cdf
       %                 ^             ^            ^
+      %
+      % NOTE: 2024-12-10: Has found old RCS filename
+      % SOLO_CAL_RPW-BIAS_V202011191204.cdf
+      % in LESIA's BRVF
+      % (/data/solo/remote/data/CAL/bias_rct_validity.json).
+      errorMsg = sprintf([...
+        'MATLAB''s jsondecode() only returns approximate name strings for JSON ', ...
+        'objects, in this case an RCT filename in "%s". Can not derive ', ...
+        '(guess) the original filename from available string "%s" in ', ...
+        'beforementioned JSON file.'], ...
+        brvfPath, rctFilename);
+
+      % Replace underscore-->period before file suffix.
       rctFilename(end-3) = '.';
       %
       iDsiDash = strfind(bicas.const.RCT_DSI, '-');
-      assert(isscalar(iDsiDash))
+      assert(isscalar(iDsiDash), errorMsg)
       rctFilename(iDsiDash) = '-';
-      %
-      assert(strcmp(rctFilename(27), '_'))
-      rctFilename(27) = '-';
+
+      if (length(rctFilename) >= 27) && strcmp(rctFilename(27), '_')
+        % Replace underscore-->dash between dates.
+        % Only done if seems to be needed. This gives the code a chance to
+        % work also for non-compliant RCT filenames. Not rigorous.
+        rctFilename(27) = '-';
+      end
+      %assert(strcmp(rctFilename(27), '_'), errorMsg)
+      %rctFilename(27) = '-';
 
       % Construct return values.
       DtValidityBegin = datetime(validityBegin, 'TimeZone', 'UTCLeapSeconds');
