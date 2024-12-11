@@ -36,8 +36,8 @@ irf.assert.vector(boolArray)
 b = [false; boolArray(:); false];
 
 % NOTE: Indices same as in "b".
-bBegin = [~b(1:end-1) &  b(2:end)];
-bEnd   = [ b(1:end-1) & ~b(2:end)];
+bBegin = ~b(1:end-1) &  b(2:end);
+bEnd   =  b(1:end-1) & ~b(2:end);
 
 % NOTE: i1/2Array indices same as in "boolArray" therefore -1.
 i1Array = find(bBegin) + 1 - 1;

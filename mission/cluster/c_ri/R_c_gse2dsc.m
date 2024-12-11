@@ -48,7 +48,7 @@ if size(spin_axis,2) == 2
   t  = spin_axis(1);
   ic = spin_axis(2);
   if exist('./maux.mat','file')
-    if debug_flag, disp('Using maux.mat file');end
+    if debug_flag, disp('Using maux.mat file');end %#ok<UNRCH>
     load maux Epoch__CL_SP_AUX;
     tlat   = (Epoch__CL_SP_AUX-62167219200000)/1000;   % isdat time
     clear Epoch__CL_SP_AUX;
@@ -70,11 +70,11 @@ if size(spin_axis,2) == 2
     flag_read_isdat=1;
   end
   if flag_read_isdat==1  % load from isdat satellite ephemeris
-    if debug_flag, disp('loading spin axis orientation from isdat database');end
+    if debug_flag, disp('loading spin axis orientation from isdat database');end %#ok<UNRCH>
     start_time=fromepoch(x(1,1)); % time of the first point
     Dt=600; % 10 min, in file they are saved with 1 min resolution
     if flag_db==0 % open ISDAT database disco:10
-      if debug_flag, disp('Starting connection to disco:10');end
+      if debug_flag, disp('Starting connection to disco:10');end %#ok<UNRCH>
       db = Mat_DbOpen('disco:20');
     end
     [tlat, lat] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_lat__CL_SP_AUX'], ' ', ' ',' ');
@@ -84,7 +84,7 @@ if size(spin_axis,2) == 2
     else
       latlong=xxx(1,:);
     end
-    if debug_flag, disp(['lat=' num2str(latlong(2)) '  long=' num2str(latlong(3))]); end
+    if debug_flag, disp(['lat=' num2str(latlong(2)) '  long=' num2str(latlong(3))]); end %#ok<UNRCH>
     if flag_db==0
       Mat_DbClose(db);
     end
@@ -94,7 +94,7 @@ if size(spin_axis,2) == 2
 end
 
 spin_axis=spin_axis/norm(spin_axis);
-if debug_flag, disp('Spin axis orientation');spin_axis, end
+if debug_flag, disp('Spin axis orientation');spin_axis, end %#ok<UNRCH>
 
 lx=size(x,2);
 if lx > 3

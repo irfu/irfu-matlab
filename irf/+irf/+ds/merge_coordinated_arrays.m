@@ -44,7 +44,7 @@ function [xCa, y] = merge_coordinated_arrays(fillVal, x1Ca, y1, x2Ca, y2)
 
 % ASSERTIONS
 assert(isscalar(fillVal))
-nDims = irf.assert.sizes(x1Ca(:), [-1], x2Ca(:), [-1]);
+nDims = irf.assert.sizes(x1Ca(:), -1, x2Ca(:), -1);
 
 
 

@@ -446,7 +446,7 @@ nComp    = size(samples,      2);
 % EXPERIMENTAL. ==> Makes samples=samples(bKeep) unnecessary.
 % ASSUMPTION: Argument tSec is sorted (incrementing).
 i1   = find(bKeep, 1, 'first'); % Separate for profiling purposes.
-iIn  = i1 + [0:nTimeSel-1];
+iIn  = i1 + (0:nTimeSel-1);
 
 iOut = round((tSec-intervalSec1)*samplFreqHz + 0.5);
 

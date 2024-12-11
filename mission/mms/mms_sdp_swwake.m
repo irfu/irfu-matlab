@@ -460,7 +460,7 @@ for in = iok
       wake_e = irf_resamp([ttime(:,in+cx) wake], time(ind));
       data(ind) = data(ind) - wake_e(:,2);
       if plotflag_now
-        if ttime(1,in+cx)<ts, ts = ttime(1,in+cx); end
+        if ttime(1,in+cx)<ts, ts = ttime(1,in+cx); end %#ok<UNRCH>
         if ttime(end,in+cx)>te, te = ttime(end,in+cx); end
         hold(h(4),'on')
         PlotED(h(4))
