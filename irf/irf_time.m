@@ -110,7 +110,7 @@ switch lower(flag)
     % the last columns can be omitted, default values MM=1,DD=1,other=0
     nCol = size(tInput,2);
     if nCol > 9
-      error('irf_time:vector>tt:badInputs',...
+      error('irf_time:badInputs',...
         'input should be column vector [YYYY MM DD hh mm ss ms micros ns], last columns can be omitted.')
     elseif nCol == 6
       tOutput = irf_time(tInput,'vector6>ttns');
@@ -123,7 +123,7 @@ switch lower(flag)
     % Convert a [YYYY MM DD hh mm ss.xxxx] to TT2000 in int64 ns
     nCol = size(tInput,2);
     if nCol ~= 6
-      error('irf_time:vector6>ttns:badInputs',...
+      error('irf_time:badInputs',...
         'input should be column vector with 6 columns [YYYY MM DD hh mm ss.xxx].')
     end
     tSecRound = floor(tInput(:,6));

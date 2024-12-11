@@ -868,7 +868,7 @@ classdef PDist < TSeries
         E_mat_SI = E_mat*units.e;
         if 0
           %PD.data = PD.data*2.*E_mat_SI/PD.mass/PD.mass;
-          PD.data = PD.data*2.*E_mat*units.e/PD.mass/PD.mass;
+          PD.data = PD.data*2.*E_mat*units.e/PD.mass/PD.mass; %#ok<UNRCH>
         else
           v_mat = sqrt(2*units.e*E_mat/obj.mass); % m/s
           v_mat = v_mat*1e2; % cm/s
@@ -1283,7 +1283,7 @@ classdef PDist < TSeries
                 scpot_mat(it(i),1),...
                 emat(it(i),ie_below_scpot)-dist.ancillary.delta_energy_minus(it(i),ie_below_scpot),...
                 emat(it(i),ie_below_scpot),...
-                emat(it(i),ie_below_scpot)+dist.ancillary.delta_energy_plus(it(i),ie_below_scpot)))
+                emat(it(i),ie_below_scpot)+dist.ancillary.delta_energy_plus(it(i),ie_below_scpot))) %#ok<UNRCH>
             end
           else
             ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:)) == min(abs(emat(it(i),:)-scpot_mat(it(i),:)))); % closest energy channel
@@ -1715,7 +1715,7 @@ classdef PDist < TSeries
 
             if 0 % plot results.
               %%
-              hca = subplot(3,1,1);
+              hca = subplot(3,1,1); %#ok<UNRCH>
               surf(hca,new_vx_edges,new_vy_edges,zeros(nvx_new,nvy_new),log10(squeeze(sum(f_new,3))));
               view([0,0,1])
               hca = subplot(3,1,2);
@@ -2198,7 +2198,7 @@ classdef PDist < TSeries
       F = squeeze(F);
 
       if 0 % interpolate to edges of bins, NOT WORKING
-        phi = TSeries(pdist.time,pdist.depend{1,2});
+        phi = TSeries(pdist.time,pdist.depend{1,2}); %#ok<UNRCH>
         azimuthal = phi.data*pi/180;
 
         theta = pdist.depend{1,3};
@@ -2252,7 +2252,7 @@ classdef PDist < TSeries
         VZ = cat(2,VZ,VZ(:,icat_az,:));
 
         if 0
-          icat_pol = 1;
+          icat_pol = 1; %#ok<UNRCH>
           F = cat(3,F,F(:,:,end)*0+mean(F(:,:,end),3));
           VX = cat(3,VX,VX(:,:,end)*0+mean(VX(:,:,end),3));
           VY = cat(3,VY,VY(:,:,end)*0+mean(VY(:,:,end),3));
@@ -2711,7 +2711,7 @@ classdef PDist < TSeries
             plot_data_tmp(1,1) = plot_data(end,end);
             plot_data = plot_data_tmp;
           else
-            plot_data(:,end+1) = plot_data(:,1);
+            plot_data(:,end+1) = plot_data(:,1); %#ok<UNRCH>
             plot_data(end+1,:) = plot_data(1,:);
           end
           plot_x = plot_x_edges;
@@ -2962,7 +2962,6 @@ classdef PDist < TSeries
             new_itheta = new_itheta + 2;
           end
         end
-        1;
 
       elseif isfield(dist.ancillary,'pitchangle_edges') && not(isempty(dist.ancillary.pitchangle_edges))
         theta_edges = dist.ancillary.pitchangle_edges;
@@ -3003,17 +3002,19 @@ classdef PDist < TSeries
         rho_edges = sqrt(2*units.e*rho_edges/units.me)*1e-3*v_scale;
         stringLabel = sprintf('v (%s)',v_label_units);
       else
-        stringLabel = sprintf('E (%s)','eV');
+        stringLabel = sprintf('E (%s)','eV'); %#ok<UNRCH>
       end
       rho_edges = irf.nanmean(rho_edges,1); % average over times, do after removing scpot
       data(isnan(rho_edges),:) = NaN; % rho_edges<scpot was put to NaN above
-      if doLogAxes, rho_edges = log10(rho_edges); stringLabel = sprintf('log_{10}(%s)%s',stringLabel(1),stringLabel(2:end)); end
+      if doLogAxes
+        rho_edges = log10(rho_edges); stringLabel = sprintf('log_{10}(%s)%s',stringLabel(1),stringLabel(2:end)); %#ok<UNRCH>
+      end
       theta_edges = theta_edges + 90; % rotate data
       [RHO,THETA] = meshgrid(rho_edges,theta_edges);
       X = RHO.*cosd(THETA);
       Y = RHO.*sind(THETA);
       if doMirrorData % mirror data
-        plot_X = [X; -flipdim(X(1:end-1,:),1)];
+        plot_X = [X; -flipdim(X(1:end-1,:),1)]; %#ok<UNRCH>
         plot_Y = [Y; flipdim(Y(1:end-1,:),1)];
         plot_data = [data flipdim(data,2)];
       else
@@ -3054,7 +3055,7 @@ classdef PDist < TSeries
         all_handles.Colorbar = hcb;
       end
       if doCircles
-        hold(ax,'on')
+        hold(ax,'on') %#ok<UNRCH>
         nAngles = 100;
         angles = linspace(0,2*pi,nAngles);
         vx_drift = v_levels(:,1);
@@ -3851,7 +3852,7 @@ classdef PDist < TSeries
 
       if 0
         %%
-        scatter3(old_vx(:),old_vy(:),old_vz(:),old_vx(:)*0+1,old_vx(:))
+        scatter3(old_vx(:),old_vy(:),old_vz(:),old_vx(:)*0+1,old_vx(:)) %#ok<UNRCH>
         figure; scatter3(old_vx_in_new_vxyz(:),old_vy_in_new_vxyz(:),old_vz_in_new_vxyz(:),old_vx(:)*0+1,old_vx(:))
 
       end
@@ -4493,10 +4494,10 @@ classdef PDist < TSeries
       dimDependData = size(obj.data,iDep+1); % +1 because dim 1 is time
       if size(current_depend) == [obj.length,dimDependData] % depend{iEnergy} is timeseries
         return
-      elseif size(current_depend) == [1,dimDependData] % depend{iEnergy} is 1 x nt
-        PD.depend{iDep} = repmat(current_depend,[obj.length,1]);
-      elseif size(current_depend) == [1,dimDependData] % depend{iEnergy} is nt x 1
-        PD.depend{iDep} = repmat(current_depend',[obj.length,1]);
+      elseif size(current_depend) == [1, dimDependData] % depend{iEnergy} is 1 x nt
+        PD.depend{iDep} = repmat(current_depend, [obj.length, 1]);
+      elseif size(current_depend) == [dimDependData, 1] % depend{iEnergy} is nt x 1
+        PD.depend{iDep} = repmat(current_depend',[obj.length, 1]);
       end
     end
 
