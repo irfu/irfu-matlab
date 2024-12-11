@@ -842,7 +842,7 @@ for iFile = 1:nFiles
       download_data(filename,datenumTable)
       d=dir([fileToLoad(1:end-6) '*']);
     end
-    if numel(d) == 1
+    if isscalar(d)
       fileToLoad = [d.folder filesep d.name];
       irf.log('warning',['Reading: ' d.name]);
     elseif numel(d) > 1

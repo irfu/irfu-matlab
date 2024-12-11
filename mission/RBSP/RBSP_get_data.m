@@ -592,7 +592,7 @@ end
     num = '';
     if isempty(exp(exp>=1))
       num = '1';
-    elseif length(exp(exp>=1)) == 1
+    elseif isscalar(exp(exp>=1))
       num = [bse{exp >= 1} '^' num2str(exp(exp>=1))];
     else
       expt = (find(exp>=1));
@@ -611,7 +611,7 @@ end
       den = '';
       formatted_units = num;
       return
-    elseif length(exp(exp<1)) == 1
+    elseif isscalar(exp(exp<1))
       den = bse{exp<1};
       formatted_units = [num '/' den '^' num2str(exp(exp<1))];
       return

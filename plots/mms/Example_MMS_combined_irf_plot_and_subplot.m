@@ -781,7 +781,7 @@ for it = 1:times.length
       x = hatB0; %#ok<UNRCH>
       y = hatExB0;
       z = cross(x,y);
-    elseif 0
+    elseif 0 %#ok<IFCDUP>
       x = [1 0 0]; %#ok<UNRCH>
       y = [0 1 0];
       z = [0 0 1];

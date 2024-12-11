@@ -33,7 +33,7 @@ switch flag
       tline = fgetl(fid);
       if ~ischar(tline), break, end
       b=regexp(tline,'case ''(?<flag>\w*)''\s*[%](?<comment>.*)','names');
-      if numel(b)==1
+      if isscalar(b)
         disp(['<a href="matlab: psp ' b.flag '">' b.flag '</a> : ' b.comment]);
       end
     end
@@ -49,14 +49,14 @@ while 1
   tline = fgetl(fid);
   if ~ischar(tline), break, end
   b=regexp(tline,'^%%%%.*','match'); % find where start txt paragraphs
-  if numel(b)==1, break; end
+  if isscalar(b), break; end
 end
 
 while 1 % look for keywords
   tline = fgetl(fid);
   if ~ischar(tline), break, end
   b=regexpi(tline,['^%%\s.*' txt '.*'],'match'); % find where start txt paragraphs
-  if numel(b)==1
+  if isscalar(b)
     disp(b{1}(2:end));
     while 1
       tline = fgetl(fid);

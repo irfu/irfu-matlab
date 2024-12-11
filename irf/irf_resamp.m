@@ -133,7 +133,7 @@ end
 
 if size(x,1) == 1            % if X has only one point, this is a trivial
   % case and we return directly
-  if numel(x) == 1           % there is only one number
+  if isscalar(x)           % there is only one number
     out = [t (t*0+1)*x];
   else                        % assume x(1) to be time
     out = [t (t*0+1)*x(:,2:end)];

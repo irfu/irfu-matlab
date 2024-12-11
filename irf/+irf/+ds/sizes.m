@@ -139,8 +139,8 @@ while true
   % NOTE: padarray pads in first dimension by default.
   %       'post' : Pads after the last array element along each dimension.
   nDiff = numel(sizeArg) - numel(sizeConstraintArg);
-  if nDiff >= 1   sizeConstraintArg = padarray(sizeConstraintArg,  nDiff, 1, 'post');
-  else            sizeArg           = padarray(sizeArg,           -nDiff, 1, 'post');
+  if nDiff >= 1,   sizeConstraintArg = padarray(sizeConstraintArg,  nDiff, 1, 'post');
+  else,            sizeArg           = padarray(sizeArg,           -nDiff, 1, 'post');
   end
 
   sizeArray       = [sizeArray;       sizeArg];

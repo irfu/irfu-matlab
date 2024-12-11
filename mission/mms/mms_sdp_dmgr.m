@@ -1176,7 +1176,7 @@ classdef mms_sdp_dmgr < handle
         % values after cleanup but before any major processing has occured.
         % p1..4 is also rescaled to correct boom length depending on time.
         Blen = mms_sdp_boom_length(DATAC.scId,DATAC.dce.time);
-        if length(Blen)==1
+        if isscalar(Blen)
           senDist = sensor_dist(Blen.len);
           irf.log('notice',['Adjusting sensor dist to [ '...
             num2str(senDist,'%.2f ') '] meters'])

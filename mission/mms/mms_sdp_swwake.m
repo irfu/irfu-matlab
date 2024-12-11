@@ -211,10 +211,10 @@ for in = iok
 
   % Do we need to plot the current interval?
   if plotflag
-    plot_i = plot_i + 1;
+    plot_i = plot_i + 1; %#ok<UNRCH>
   end
   if plotflag && plot_i == plot_step
-    plotflag_now = 1;
+    plotflag_now = 1; %#ok<UNRCH>
     plot_i = 0;
   else
     plotflag_now = 0;
@@ -309,7 +309,7 @@ for in = iok
     d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
     d12 = [d12(1)-d12(end); diff(d12)];
     if plotflag_now
-      d12_tmp = d12; % save for plotting
+      d12_tmp = d12;  %#ok<UNRCH> % save for plotting
     end
     % Average with only 5 points to get a more fine fit
     d12 = w_ave(d12, 5, NPOINTS);
@@ -401,7 +401,7 @@ for in = iok
   else, continue
   end
 
-  if plotflag_now, h = irf_plot(4,'reset'); PlotPanels13, end
+  if plotflag_now, h = irf_plot(4,'reset'); PlotPanels13, end  %#ok<UNRCH>
 
   % Correct the spin in the middle
   ind = find(time>=ttime(1,in) & time<ttime(end,in));
@@ -411,7 +411,7 @@ for in = iok
     n_corrected = n_corrected + 1;
 
     if plotflag_now
-      PlotED(h(4))
+      PlotED(h(4)) %#ok<UNRCH>
     end
   end
 
@@ -469,7 +469,7 @@ for in = iok
     end
   end
   if plotflag_now && in~=iok(end)
-    title(['Plot created: ', char(datetime("now","Format","uuuu/MM/dd")), '. Wakes on pair: ', pair, ' spin: ', num2str(in)]);
+    title(['Plot created: ', char(datetime("now","Format","uuuu/MM/dd")), '. Wakes on pair: ', pair, ' spin: ', num2str(in)]); %#ok<UNRCH>
     plot_step = irf_ask('Step? (0-continue, -1 return) [%]>','plot_step',1);
     if plot_step==0
       plotflag = 0;
@@ -567,7 +567,7 @@ end
 maxmax = max(s); % global maxima
 d1 = diff(s);
 imax = find( (d1(1:end-1).*d1(2:end))<0 ) + 1;
-if length(imax)==1
+if isscalar(imax)
   if s(imax)==maxmax
     if negMax, maxmax=-maxmax; smax=-smax; end
     return

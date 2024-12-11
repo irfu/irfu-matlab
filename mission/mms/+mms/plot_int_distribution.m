@@ -203,7 +203,7 @@ u = irf_units;
 if isDes == 1; M = u.me; else; M = u.mp; end
 
 % get all time indicies
-if length(tint) == 1 % single time
+if isscalar(tint) % single time
   it = interp1(dist.time.epochUnix,1:length(dist.time),tint.epochUnix,'nearest');
 else % time interval
   it1 = interp1(dist.time.epochUnix,1:length(dist.time),tint(1).epochUnix,'nearest');
