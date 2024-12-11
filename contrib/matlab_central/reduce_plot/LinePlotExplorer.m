@@ -72,9 +72,9 @@ classdef LinePlotExplorer < handle
         function o = LinePlotExplorer(varargin)
             
             % Record the figure number and min and max value on the x axis.
-            if nargin < 1, o.h_fig =  gcf; else o.h_fig = varargin{1}; end;
-            if nargin < 2, o.x_min = -inf; else o.x_min = varargin{2}; end;
-            if nargin < 3, o.x_max =  inf; else o.x_max = varargin{3}; end;
+            if nargin < 1, o.h_fig =  gcf; else, o.h_fig = varargin{1}; end
+            if nargin < 2, o.x_min = -inf; else, o.x_min = varargin{2}; end
+            if nargin < 3, o.x_max =  inf; else, o.x_max = varargin{3}; end
             
             % Set the callbacks.
             set(o.h_fig, 'WindowScrollWheelFcn',  @o.Scroll, ...

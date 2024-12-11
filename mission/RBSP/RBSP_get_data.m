@@ -158,8 +158,8 @@ while true
       return
     end
   end
-  epochFileStart = epochFileStart + 3600*24;
   if epochFileStart>=epochFileEnd, break, end
+  epochFileStart = epochFileStart + 3600*24;
   timeVecStart = fromepoch(epochFileStart);
 end
 
@@ -592,7 +592,7 @@ end
     num = '';
     if isempty(exp(exp>=1))
       num = '1';
-    elseif length(exp(exp>=1)) == 1
+    elseif isscalar(exp(exp>=1))
       num = [bse{exp >= 1} '^' num2str(exp(exp>=1))];
     else
       expt = (find(exp>=1));
@@ -611,7 +611,7 @@ end
       den = '';
       formatted_units = num;
       return
-    elseif length(exp(exp<1)) == 1
+    elseif isscalar(exp(exp<1))
       den = bse{exp<1};
       formatted_units = [num '/' den '^' num2str(exp(exp<1))];
       return
@@ -629,7 +629,7 @@ end
 
   end
   function res = combine_ts(inp1,inp2)
-    if strcmpi(return_type,'rept-PA') || strcmpi(return_type,'mageis-PA')
+    if isa(inp1,'PDist')
 
       %%combine inp1 and inp2 to 1 PDist object also combine data in
       %%ancillary
@@ -668,7 +668,8 @@ end
       res.units = inp1.units;
       res.userData = inp1.userData;
 
-
+    else
+        res = combine(inp1,inp2);
     end
 
   end

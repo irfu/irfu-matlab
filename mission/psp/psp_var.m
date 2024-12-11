@@ -105,7 +105,7 @@ else
   else
     out = cell(1,sum(doMatchName == true));
     iMatch = find(doMatchName);
-    if numel(iMatch) == 1
+    if isscalar(iMatch)
       out = arr(iMatch);
     else
       for i = 1:numel(iMatch)

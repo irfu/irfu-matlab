@@ -34,7 +34,7 @@ if isa(varargin{tmpnargin-1},'char'), have_char = 1; end
 while have_char
   if isa(varargin{tmpnargin-1},'char')
     if strcmp(varargin{tmpnargin-1},'angles')
-      if (length(varargin{tmpnargin}) == 1)
+      if (isscalar(varargin{tmpnargin}))
         nangles = varargin{tmpnargin};
         nangles = floor(nangles); % Make sure input is integer
         dangle = 180/nangles;

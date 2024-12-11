@@ -65,7 +65,7 @@ while options
   switch(lower(args{1}))
     case 'lhfilt'
       if numel(args)>1 && isnumeric(args{2})
-        if length(args{2}) == 1
+        if isscalar(args{2})
           minfreq = args{2};
         elseif length(args{2}) == 2
           minfreq = args{2}(1);

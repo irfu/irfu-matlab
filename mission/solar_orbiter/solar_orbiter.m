@@ -14,7 +14,7 @@ function out = solar_orbiter(varargin)
 % To see all flags:
 %   solar_orbiter('?')
 
-if nargin==0, % return basic information on Solar Orbiter
+if nargin==0 % return basic information on Solar Orbiter
   fid=fopen(which('solar_orbiter'));
   while 1
     tline = fgetl(fid);
@@ -60,7 +60,7 @@ switch flag
     probe.total_vs_sunlit_area=probe.total_area/probe.cross_section_area;
     %        probe.capacitance=2*pi*Units.eps0*probe.length/log(probe.length/probe.radius); % assuming length >> radius
     probe.capacitance=30e-12; % 30pF from Chris simulations
-    if nargout==0, % display information
+    if nargout==0 % display information
       disp('Solar Orbiter has 3 cylindrical antennas.')
       disp(['Antenna surface  = ' probe.surface]);
       disp(['Average radius   = ' num2str(probe.radius/Units.cm,3) ' cm']);
@@ -80,7 +80,7 @@ switch flag
     sc.probe_refpot_as_fraction_of_scpot=.2;
     sc.number_of_probes=3;
     sc.antenna_guard_area=0;
-    if nargout==0, % display information
+    if nargout==0 % display information
       disp('Solar Orbiter spacecraft properties.')
       disp(['Sunlit area  = ' num2str(sc.sunlit_area,3) ' m^2']);
       disp(['Total area   = ' num2str(sc.total_area,3) ' m^2']);

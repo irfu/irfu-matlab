@@ -233,7 +233,8 @@ for i=1:length(testrfs_lfr_v3v4.time)
     tempimported_arguments.initialfreq = imported_arguments.initialfreq;
     if imported_arguments.initialfreq > imported_arguments.maxfreq
       imported_arguments.initialfreq = min(frequencytracker(TrackerNumber-imported_arguments.recoverer:end));
-    else imported_arguments.initialfreq = max(frequencytracker(TrackerNumber-imported_arguments.recoverer:end));
+    else
+      imported_arguments.initialfreq = max(frequencytracker(TrackerNumber-imported_arguments.recoverer:end));
     end
     disp(['changing initial frequency from ', num2str(tempimported_arguments.initialfreq) ' to ',num2str(imported_arguments.initialfreq)])
   end

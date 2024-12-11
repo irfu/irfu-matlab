@@ -172,7 +172,7 @@ switch lower(varName)
     if strfind(varName,'CIS'),specialCaseCis=1;end %#ok<STRIFCND>
     varToRead={varName};
     ok=read_data;
-    if ok && iscell(data) && numel(data) == 1
+    if ok && iscell(data) && isscalar(data)
       out = data{1};
     elseif ok && strcmpi(returnDataFormat,'mat')
       if numel(data)==2 && numel(size(data{2}))==2

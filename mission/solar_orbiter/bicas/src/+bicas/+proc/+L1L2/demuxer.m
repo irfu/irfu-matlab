@@ -365,9 +365,9 @@ classdef demuxer
       e2 = AsSrm.isKey(Asid2);
       e3 = AsSrm.isKey(Asid3);
 
-      if     ~e1 &&  e2 &&  e3   AsSrm.add(Asid1, AsSrm(Asid2) + AsSrm(Asid3));
-      elseif  e1 && ~e2 &&  e3   AsSrm.add(Asid2, AsSrm(Asid1) - AsSrm(Asid3));
-      elseif  e1 &&  e2 && ~e3   AsSrm.add(Asid3, AsSrm(Asid1) - AsSrm(Asid2));
+      if     ~e1 &&  e2 &&  e3,   AsSrm.add(Asid1, AsSrm(Asid2) + AsSrm(Asid3));
+      elseif  e1 && ~e2 &&  e3,   AsSrm.add(Asid2, AsSrm(Asid1) - AsSrm(Asid3));
+      elseif  e1 &&  e2 && ~e3,   AsSrm.add(Asid3, AsSrm(Asid1) - AsSrm(Asid2));
       end
     end
 

@@ -7,7 +7,7 @@ if nargin<1, cdf_wildcard='*.cdf';end
 if nargin<2, flag_mat_file_name=0; end
 
 cdf_files=dir(cdf_wildcard);
-switch prod(size(cdf_files))
+switch numel(cdf_files)
   case 0
     c_log('load','no cdf files found');return
   case 1
@@ -52,7 +52,7 @@ for i_file=1:n_cdf_files
   t=(t-62167219200000)/1000;
 
   variable_list='';
-  for k=2:prod(size(variables_time_vectors))
+  for k=2:numel(variables_time_vectors)
     clear var;
     for j=1:size(DATA,1)
       temp=DATA{j,k};temp=temp(:)';var(j,:)=temp;

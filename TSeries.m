@@ -300,7 +300,7 @@ classdef TSeries
           msg = sprintf('Representation requires a cell(%d) input',sDim);
           return
         end
-        if ~all(cellfun(@(x) ischar(x) && length(x)==1,x))
+        if ~all(cellfun(@(x) ischar(x) && isscalar(x),x))
           msg = sprintf(...
             'Representation requires char(%d) cells elements',...
             obj.tensorOrder_);

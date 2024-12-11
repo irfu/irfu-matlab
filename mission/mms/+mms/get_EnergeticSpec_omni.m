@@ -55,7 +55,7 @@ while options
 end
 
 % 2. load data
-if strcmp(upper(instrument), 'FEEPS')
+if strcmpi(instrument, 'FEEPS')
   % 2.1. FEEPS electron
   if eflag
     c_eval('efile? = mms.get_filepath([''mms?_feeps_'' srvy_brst ''_l2_electron''], tint);', ic);

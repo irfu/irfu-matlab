@@ -50,7 +50,7 @@ function matrixOut = smooth2(matrixIn,Nr,Nc)
 
 if nargin < 2, error('Not enough input arguments!'), end
 N(1) = Nr; 
-if nargin < 3, N(2) = N(1); else N(2) = Nc; end
+if nargin < 3, N(2) = N(1); else, N(2) = Nc; end
 if length(N(1)) ~= 1, error('Nr must be a scalar!'), end
 if length(N(2)) ~= 1, error('Nc must be a scalar!'), end
 %
