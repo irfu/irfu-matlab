@@ -5,6 +5,13 @@
 %
 % NOTE: This function is primarily intended to be called from
 %       solo.qli.batch.generate_quicklooks_shell().
+%       This function facilitates automated testing by:
+%       (1) not initializing any global state (SolO DB, processing pool).
+%       (2) not reading a config file (facilitates testing)
+%
+% Actions
+% (1) Interprets arguments (multiple syntaxes) to produce a list of dates.
+% (2) Either "LIST" the dates or "GENERATE" QLIs for the list of dates.
 %
 %
 % ARGUMENTS

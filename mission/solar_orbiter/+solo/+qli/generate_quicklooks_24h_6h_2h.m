@@ -664,6 +664,7 @@ close(fig);
 
 [~] = solo.qli.utils.log_time('End of generate_quicklooks_24h_6h_2h.m', tBeginSec);
 
+% copyfile([OutputPaths.dir2h, '/../*'], '/home/erjo/temp/temp/new')
 end
 
 
