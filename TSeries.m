@@ -143,6 +143,14 @@ classdef TSeries
       while ~isempty(args)
         x = args{1}; args(1) = [];
         switch lower(x)
+          case {'metadata_from'}
+            if ~isempty(args), dobjRef = args{1}; args(1) = [];
+            else
+              error('irf:TSeries:TSeries:badInputs',...
+                'metadata_from requires a second argument')
+            end
+            obj = dobjRef;
+            obj.data_ = data; obj.t_ = t;
           case {'tensor_xyz'}
             if ndims(obj.data_)>3 %#ok<ISMAT>
               error('irf:TSeries:TSeries:badInputs',...
@@ -277,6 +285,7 @@ classdef TSeries
 
       function [ok,msg] = validate_representation(x)
         ok = []; msg = '';
+        if isempty(x), ok = true; return; end % if not specified return
         sDim = size(obj.data,iDim+1); tb = obj.BASIS{obj.tensorBasis_};
         if sDim>length(tb)
           msg = sprintf(...
@@ -291,7 +300,7 @@ classdef TSeries
           msg = sprintf('Representation requires a cell(%d) input',sDim);
           return
         end
-        if ~all(cellfun(@(x) ischar(x) && length(x)==1,x))
+        if ~all(cellfun(@(x) ischar(x) && isscalar(x),x))
           msg = sprintf(...
             'Representation requires char(%d) cells elements',...
             obj.tensorOrder_);
@@ -806,7 +815,8 @@ classdef TSeries
       %
       %   TS.UMINUS(TS)
       %   -TS
-      Ts = -1*obj;
+      Ts = obj;
+      Ts.data = - obj.data;
     end
 
     function Ts = dot(obj,obj1)
@@ -932,10 +942,18 @@ classdef TSeries
     function Ts = mtimes(obj1,obj2)
       %MTIMES  Matrix and scalar multiplication '*'.
 
-      if any([isempty(obj1),isempty(obj2)])
-        Ts = TSeries([]);
+      % take first the simple cases of multiplication with scalar number
+      if isa(obj1,'TSeries') && isnumeric(obj2) && isscalar(obj2)
+        Ts = obj1;
+        Ts.data = obj1.data * obj2;
         return;
       end
+      if isa(obj2,'TSeries') && isnumeric(obj1) && isscalar(obj1)
+        Ts = obj2;
+        Ts.data = obj2.data * obj1;
+        return;
+      end
+
       % Check dimensions of input
       if isa(obj1,'TSeries')
         sizeData1 = obj1.datasize('dataonly');
@@ -1680,4 +1698,3 @@ classdef TSeries
   end
 
 end
-

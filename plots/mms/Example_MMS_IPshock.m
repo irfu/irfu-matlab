@@ -110,7 +110,7 @@ switch eventNum
     dataMode = 'fast';
 
 
-    case 9 % IP shock observed by Solar Orbiter too
+  case 9 % IP shock observed by Solar Orbiter too
     tint = irf.tint('2023-12-17T07:36:30/2023-12-17T07:37:30');
     tintu = irf.tint('2023-12-17T07:36:45/2023-12-17T07:36:50');
     tintd = irf.tint('2023-12-17T07:37:12/2023-12-17T07:37:17');

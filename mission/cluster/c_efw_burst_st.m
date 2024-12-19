@@ -7,7 +7,7 @@ function OUT=c_efw_burst_st(filename)
 % By Anders Tjulin 13/8-2002
 
 if nargin<1
-  error "You need at least a filename"
+  error('You need at least a filename')
 end
 
 % Get the data

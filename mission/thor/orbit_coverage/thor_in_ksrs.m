@@ -63,7 +63,7 @@ isPSW = intersect(outsideBS,outsideFS);
 
 %plot(rTHOR(isMSP).x.data,rTHOR(isMSP).y.data,'.r')
 %plot(rTHOR(isMSH).x.data,rTHOR(isMSH).y.data,'.r')
-iKSR.data(isMSP) = repmat(1,numel(isMSP),1);
+iKSR.data(isMSP) = ones(numel(isMSP),1);
 iKSR.data(isMSH) = repmat(2,numel(isMSH),1);
 iKSR.data(isFS) = repmat(3,numel(isFS),1);
 iKSR.data(isPSW) = repmat(4,numel(isPSW),1);

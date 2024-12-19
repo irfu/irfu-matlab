@@ -106,7 +106,7 @@ hold(h,'on')
 
 % Bowshock
 bs = surf(h,X,Y,Z);
-bs.FaceColor = [1 1 1];[1, .84, 0];
+bs.FaceColor = [1 1 1];
 bs.DisplayName = 'Magentosheat Inner Boundary';
 bs.FaceAlpha = 0.5;
 

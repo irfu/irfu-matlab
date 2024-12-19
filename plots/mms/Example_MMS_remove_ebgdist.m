@@ -32,7 +32,7 @@ c_eval('scPot? = mms.db_get_ts(''mms?_edp_brst_l2_scpot'',''mms?_edp_scpot_brst_
 
 %%  4. Partial moments
 if 0
-  tic;
+  tic; %#ok<UNRCH>
   c_eval('epdist = eDist?;', ic);
   edistin = TSeries(epdist.time, epdist.data);
   ephi = TSeries(epdist.time, epdist.depend{1,2}(:,:));

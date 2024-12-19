@@ -52,7 +52,7 @@ theta_edges = linspace(0,pi,size(dist.data,4)+1); % polar angle bin edges, defau
 doPitchangles = 0;
 doDouble = 0;
 
-if nargs > 1, have_options = 1; else have_options = 0; end
+if nargs > 1, have_options = 1; else, have_options = 0; end
 
 while have_options
   l = 1;
@@ -293,7 +293,7 @@ if doPitchangles
   end
   dotPA = X*btmp(1) + Y*btmp(2) + Z*btmp(3);
   PA = acosd(dotPA);
-  if numel(pitchangle_levels) == 1
+  if isscalar(pitchangle_levels)
     pitchangle_levels = pitchangle_levels*[1 1];
   end
 

@@ -584,7 +584,7 @@ classdef PDist < TSeries
           if doScpot
             if isa(scpot,'TSeries')
               scpot = scpot.resample(obj).data;
-            elseif isa(scpot,'numeric') && numel(scpot) == 1
+            elseif isa(scpot,'numeric') && isscalar(scpot)
               scpot = repmat(scpot,obj.length,1);
             elseif isa(scpot,'numeric') && numel(scpot) == obj.length
               scpot = scpot;
@@ -868,7 +868,7 @@ classdef PDist < TSeries
         E_mat_SI = E_mat*units.e;
         if 0
           %PD.data = PD.data*2.*E_mat_SI/PD.mass/PD.mass;
-          PD.data = PD.data*2.*E_mat*units.e/PD.mass/PD.mass;
+          PD.data = PD.data*2.*E_mat*units.e/PD.mass/PD.mass; %#ok<UNRCH>
         else
           v_mat = sqrt(2*units.e*E_mat/obj.mass); % m/s
           v_mat = v_mat*1e2; % cm/s
@@ -1188,7 +1188,7 @@ classdef PDist < TSeries
             ancillary_data{end+1} = 'lowerelim';
             ancillary_data{end+1} = lowerelim;
             doLowerElim = 1;
-            if isnumeric(lowerelim) && numel(lowerelim) == 1
+            if isnumeric(lowerelim) && isscalar(lowerelim)
               lowerelim = repmat(lowerelim,dist.length,1);
             elseif isnumeric(lowerelim) && numel(lowerelim) == dist.length
               lowerlim = lowerelim;
@@ -1228,7 +1228,7 @@ classdef PDist < TSeries
       end
       if isDes == 1; M = units.me; else; M = units.mp; end
       if doTint % get time indicies
-        if length(tint) == 1 % single time
+        if isscalar(tint) % single time
           it = interp1(dist.time.epochUnix,1:length(dist.time),tint.epochUnix,'nearest');
         else % time interval
           it1 = interp1(dist.time.epochUnix,1:length(dist.time),tint(1).epochUnix,'nearest');
@@ -1283,7 +1283,7 @@ classdef PDist < TSeries
                 scpot_mat(it(i),1),...
                 emat(it(i),ie_below_scpot)-dist.ancillary.delta_energy_minus(it(i),ie_below_scpot),...
                 emat(it(i),ie_below_scpot),...
-                emat(it(i),ie_below_scpot)+dist.ancillary.delta_energy_plus(it(i),ie_below_scpot)))
+                emat(it(i),ie_below_scpot)+dist.ancillary.delta_energy_plus(it(i),ie_below_scpot))) %#ok<UNRCH>
             end
           else
             ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:)) == min(abs(emat(it(i),:)-scpot_mat(it(i),:)))); % closest energy channel
@@ -1672,16 +1672,16 @@ classdef PDist < TSeries
                   if doScpot, tmp_energy = tmp_energy - scpot.data(it); end
                   tmp_azim   = azim_edges(iAzim)     + dazim*rand(N,1);   % deg
                   tmp_polar  = polar_edges(iPolar)   + dpolar*rand(N,1);  % deg
-                  tmp_v = sqrt(tmp_energy*units.eV*2/units.me)/1000; % km/s
+                  tmp_v = sqrt(tmp_energy*units.eV*2/mass)/1000; % km/s
 
                   if doScpot % check if energy is negative, then skip
-                    if iEnergy>6;
+                    if iEnergy>6
                       1;
                     end
                     tmp_azim(tmp_energy<0) = [];
                     tmp_polar(tmp_energy<0) = [];
                     tmp_v(tmp_energy<0) = [];
-                    if isempty(tmp_v) continue; end
+                    if isempty(tmp_v), continue; end
                   end
 
                   old_vx = -tmp_v.*sind(tmp_polar).*cosd(tmp_azim); % '-' because the data shows which direction the particles were coming from
@@ -1715,7 +1715,7 @@ classdef PDist < TSeries
 
             if 0 % plot results.
               %%
-              hca = subplot(3,1,1);
+              hca = subplot(3,1,1); %#ok<UNRCH>
               surf(hca,new_vx_edges,new_vy_edges,zeros(nvx_new,nvy_new),log10(squeeze(sum(f_new,3))));
               view([0,0,1])
               hca = subplot(3,1,2);
@@ -1763,7 +1763,7 @@ classdef PDist < TSeries
 
       Var = varargin;
 
-       flag_newgrid = 0;%%by default take the same old grid but change first and last energy bins to capture full distribution in new frame.
+      flag_newgrid = 0;%%by default take the same old grid but change first and last energy bins to capture full distribution in new frame.
       while ~isempty(Var)
         flag = Var{1};
         switch flag
@@ -2118,7 +2118,7 @@ classdef PDist < TSeries
       % functionality is similar to Matlabs plot function, all the details
       % can then be fixed outside the function using ax.XLim, ax.YLim,
       % ax.CLim, etc... and colorbar perhaps?
-      if nargs > 0; have_options = 1; else have_options = 0; end
+      if nargs > 0; have_options = 1; else, have_options = 0; end
       while have_options
         l = 1;
         switch(lower(args{1}))
@@ -2198,7 +2198,7 @@ classdef PDist < TSeries
       F = squeeze(F);
 
       if 0 % interpolate to edges of bins, NOT WORKING
-        phi = TSeries(pdist.time,pdist.depend{1,2});
+        phi = TSeries(pdist.time,pdist.depend{1,2}); %#ok<UNRCH>
         azimuthal = phi.data*pi/180;
 
         theta = pdist.depend{1,3};
@@ -2252,7 +2252,7 @@ classdef PDist < TSeries
         VZ = cat(2,VZ,VZ(:,icat_az,:));
 
         if 0
-          icat_pol = 1;
+          icat_pol = 1; %#ok<UNRCH>
           F = cat(3,F,F(:,:,end)*0+mean(F(:,:,end),3));
           VX = cat(3,VX,VX(:,:,end)*0+mean(VX(:,:,end),3));
           VY = cat(3,VY,VY(:,:,end)*0+mean(VY(:,:,end),3));
@@ -2292,7 +2292,7 @@ classdef PDist < TSeries
 
       nSurf = numel(iso_values);
 
-      if numel(faceAlpha) == 1
+      if isscalar(faceAlpha)
         faceAlpha = repmat(faceAlpha,size(iso_values));
       end
       %holdon = 0;
@@ -2480,7 +2480,7 @@ classdef PDist < TSeries
       % functionality is similar to Matlabs plot function, all the details
       % can then be fixed outside the function using ax.XLim, ax.YLim,
       % ax.CLim, etc... and colorbar perhaps?
-      if nargs > 0; have_options = 1; else have_options = 0; end
+      if nargs > 0; have_options = 1; else, have_options = 0; end
       while have_options
         l = 1;
         switch(lower(args{1}))
@@ -2711,7 +2711,7 @@ classdef PDist < TSeries
             plot_data_tmp(1,1) = plot_data(end,end);
             plot_data = plot_data_tmp;
           else
-            plot_data(:,end+1) = plot_data(:,1);
+            plot_data(:,end+1) = plot_data(:,1); %#ok<UNRCH>
             plot_data(end+1,:) = plot_data(1,:);
           end
           plot_x = plot_x_edges;
@@ -2750,7 +2750,7 @@ classdef PDist < TSeries
         vx_drift = v_levels(:,1);
         vy_drift = v_levels(:,2);
         v_circle = v_levels(:,3);
-        if numel(v_circle) == 1
+        if isscalar(v_circle)
           vx_levels = v_circle*cos(angles);
           vy_levels = v_circle*sin(angles);
           vx_drifts = vx_drift;
@@ -2771,7 +2771,7 @@ classdef PDist < TSeries
       end
       if doPrintInfo
         s1 = sprintf('v int (out-of-plane) = [%g %g] %s',dist.ancillary.vint(1),dist.ancillary.vint(1),dist.ancillary.vint_units);
-        if numel(tId) == 1
+        if isscalar(tId)
           s2 = sprintf('time = %s',dist.time.utc);
         else
           s2 = sprintf('tint = %s - %s',dist.time(1).utc,dist.time(end).utc);
@@ -2860,7 +2860,7 @@ classdef PDist < TSeries
       % functionality is similar to Matlabs plot function, all the details
       % can then be fixed outside the function using ax.XLim, ax.YLim,
       % ax.CLim, etc...
-      if nargs > 0; have_options = 1; else have_options = 0; end
+      if nargs > 0; have_options = 1; else, have_options = 0; end
       while have_options
         l = 1;
         switch(lower(args{1}))
@@ -2879,7 +2879,7 @@ classdef PDist < TSeries
             if isa(scpot,'TSeries')
               scpot = scpot.resample(dist).data;
               irf.log('notice','scpot was TSeries.')
-            elseif isnumeric(scpot) && numel(scpot) == 1
+            elseif isnumeric(scpot) && isscalar(scpot)
               irf.log('notice','scpot was scalar.')
             end
           case 'nolog10'
@@ -2962,7 +2962,6 @@ classdef PDist < TSeries
             new_itheta = new_itheta + 2;
           end
         end
-        1;
 
       elseif isfield(dist.ancillary,'pitchangle_edges') && not(isempty(dist.ancillary.pitchangle_edges))
         theta_edges = dist.ancillary.pitchangle_edges;
@@ -3003,17 +3002,19 @@ classdef PDist < TSeries
         rho_edges = sqrt(2*units.e*rho_edges/units.me)*1e-3*v_scale;
         stringLabel = sprintf('v (%s)',v_label_units);
       else
-        stringLabel = sprintf('E (%s)','eV');
+        stringLabel = sprintf('E (%s)','eV'); %#ok<UNRCH>
       end
       rho_edges = irf.nanmean(rho_edges,1); % average over times, do after removing scpot
       data(isnan(rho_edges),:) = NaN; % rho_edges<scpot was put to NaN above
-      if doLogAxes, rho_edges = log10(rho_edges); stringLabel = sprintf('log_{10}(%s)%s',stringLabel(1),stringLabel(2:end)); end
+      if doLogAxes
+        rho_edges = log10(rho_edges); stringLabel = sprintf('log_{10}(%s)%s',stringLabel(1),stringLabel(2:end)); %#ok<UNRCH>
+      end
       theta_edges = theta_edges + 90; % rotate data
       [RHO,THETA] = meshgrid(rho_edges,theta_edges);
       X = RHO.*cosd(THETA);
       Y = RHO.*sind(THETA);
       if doMirrorData % mirror data
-        plot_X = [X; -flipdim(X(1:end-1,:),1)];
+        plot_X = [X; -flipdim(X(1:end-1,:),1)]; %#ok<UNRCH>
         plot_Y = [Y; flipdim(Y(1:end-1,:),1)];
         plot_data = [data flipdim(data,2)];
       else
@@ -3034,7 +3035,7 @@ classdef PDist < TSeries
 
       if doContour
         hold(ax,'on')
-        if numel(contour_levels) == 1
+        if isscalar(contour_levels)
           contour_levels = [contour_levels contour_levels];
         end
         plot_x = squeeze(irf.nanmean(dist.depend{1},1))*v_scale; % v_scale, default 1e-3 for electrons to put axes in 10^3 km/s
@@ -3054,13 +3055,13 @@ classdef PDist < TSeries
         all_handles.Colorbar = hcb;
       end
       if doCircles
-        hold(ax,'on')
+        hold(ax,'on') %#ok<UNRCH>
         nAngles = 100;
         angles = linspace(0,2*pi,nAngles);
         vx_drift = v_levels(:,1);
         vy_drift = v_levels(:,2);
         v_circle = v_levels(:,3);
-        if numel(v_circle) == 1
+        if isscalar(v_circle)
           vx_levels = v_circle*cos(angles);
           vy_levels = v_circle*sin(angles);
           vx_drifts = vx_drift;
@@ -3081,7 +3082,7 @@ classdef PDist < TSeries
       end
       if doPrintInfo
         s1 = '';%sprintf('v int (out-of-plane) = [%g %g] %s',dist.ancillary.vint(1),dist.ancillary.vint(1),dist.ancillary.vint_units);
-        if numel(tId) == 1
+        if isscalar(tId)
           s2 = sprintf('time = %s',dist.time.utc);
         else
           s2 = sprintf('tint = %s - %s',dist.time(1).utc,dist.time(end).utc);
@@ -3139,7 +3140,7 @@ classdef PDist < TSeries
       pitchangles = obj.depend{2};
       doAverage = 0;
 
-      if numel(palim) == 1
+      if isscalar(palim)
         indPA = find(abs(pitchangles-palim) == min(abs(pitchangles-palim)));
         if nargin>2 && ischar(varargin{1}) && strcmpi(varargin{1},'noav')
           doAverage = 0;
@@ -3223,9 +3224,9 @@ classdef PDist < TSeries
         end
       else % check what fields ancillary have, and update them
         if isfield(PD.ancillary, 'energy0'), PD.ancillary.energy0 = PD.ancillary.energy0(elevels);
-        else PD.ancillary.energy0 = energy(1,elevels); end
+        else, PD.ancillary.energy0 = energy(1,elevels); end
         if isfield(PD.ancillary, 'energy1'), PD.ancillary.energy1 = PD.ancillary.energy1(elevels);
-        else PD.ancillary.energy1 = energy(2,elevels); end
+        else, PD.ancillary.energy1 = energy(2,elevels); end
         %         if ~isfield(PD.ancillary, 'esteptable')
         %           [esteptable,~] = ismember(energy,PD.ancillary.energy1,'rows');
         %           PD.ancillary.esteptable = esteptable;
@@ -3345,7 +3346,7 @@ classdef PDist < TSeries
             spectype = '1D_velocity';
             irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
           case 'pitchangle'
-            if numel(obj.depend{2}) == 1
+            if isscalar(obj.depend{2})
               spectype = 'energy';
             else
               spectype = 'pitchangle';
@@ -3851,7 +3852,7 @@ classdef PDist < TSeries
 
       if 0
         %%
-        scatter3(old_vx(:),old_vy(:),old_vz(:),old_vx(:)*0+1,old_vx(:))
+        scatter3(old_vx(:),old_vy(:),old_vz(:),old_vx(:)*0+1,old_vx(:)) %#ok<UNRCH>
         figure; scatter3(old_vx_in_new_vxyz(:),old_vy_in_new_vxyz(:),old_vz_in_new_vxyz(:),old_vx(:)*0+1,old_vx(:))
 
       end
@@ -3982,6 +3983,7 @@ classdef PDist < TSeries
 
       % Data from PDist in spherical coordinate system
       sizedata = obj.datasize;
+      mass = obj.mass;
 
       switch method
         case 'center' % add particles to the center of the bin
@@ -4137,13 +4139,13 @@ classdef PDist < TSeries
                   tmp_v = sqrt(tmp_energy*units.eV*2/units.me)/1000; % km/s
 
                   if doScpot % check if energy is negative, then skip
-                    if iEnergy>8;  % debug
+                    if iEnergy>8  % debug
                       1;
                     end
                     tmp_azim(tmp_energy<0) = [];
                     tmp_polar(tmp_energy<0) = [];
                     tmp_v(tmp_energy<0) = [];
-                    if isempty(tmp_v) continue; end
+                    if isempty(tmp_v), continue; end
                     N_bin = numel(tmp_v);
                   end
 
@@ -4443,7 +4445,7 @@ classdef PDist < TSeries
         [ax,args,nargs] = axescheck_pdist(varargin{:});
       end
 
-      if nargs > 0; have_options = 1; else have_options = 0; end
+      if nargs > 0; have_options = 1; else, have_options = 0; end
       while have_options
         l = 1;
         switch(lower(args{1}))
@@ -4457,6 +4459,9 @@ classdef PDist < TSeries
       end
 
       new_data = movmean(obj.data,nMean,1); % the 1 specifies the dimension along which the moving mean is taken
+      new_dep1 = movmean(obj.depend{1},nMean,1); % this one alternated in early data
+      new_dep2 = movmean(obj.depend{2},nMean,1); % only this changes (due to spacecraft rotation)
+      new_dep3 = movmean(obj.depend{3},nMean,1);
 
       if doRemoveOneCounts
         data_one_counts = tsOneCounts.data;
@@ -4467,6 +4472,9 @@ classdef PDist < TSeries
 
       PD = obj;
       PD.data = new_data;
+      PD.depend{1} = new_dep1;
+      PD.depend{2} = new_dep2;
+      PD.depend{3} = new_dep3;
       %PD = PDist(obj.time,new_data,'skymap',obj.depend{:})
     end
 
@@ -4486,10 +4494,10 @@ classdef PDist < TSeries
       dimDependData = size(obj.data,iDep+1); % +1 because dim 1 is time
       if size(current_depend) == [obj.length,dimDependData] % depend{iEnergy} is timeseries
         return
-      elseif size(current_depend) == [1,dimDependData] % depend{iEnergy} is 1 x nt
-        PD.depend{iDep} = repmat(current_depend,[obj.length,1]);
-      elseif size(current_depend) == [1,dimDependData] % depend{iEnergy} is nt x 1
-        PD.depend{iDep} = repmat(current_depend',[obj.length,1]);
+      elseif size(current_depend) == [1, dimDependData] % depend{iEnergy} is 1 x nt
+        PD.depend{iDep} = repmat(current_depend, [obj.length, 1]);
+      elseif size(current_depend) == [dimDependData, 1] % depend{iEnergy} is nt x 1
+        PD.depend{iDep} = repmat(current_depend',[obj.length, 1]);
       end
     end
 
@@ -4765,10 +4773,11 @@ classdef PDist < TSeries
         % ---------------- calculating mean psd ----------------
         for jj = 1:nEf
           % get the instrument bin indices of all MC points
-          idMC = sub2ind(size(F3d),idVp(jj,:),idPhip(jj,:),idThp(jj,:));
+          idx = ~isnan(idThp(jj,:).*idPhip(jj,:).*idVp(jj,:));
+          idMC = sub2ind(size(F3d),idVp(jj,idx),idPhip(jj,idx),idThp(jj,idx));
           % sometimes there is no instrument bin corresponding to the MC
           % point, those indices become NaNs but should count as zero psd
-          idMC = idMC(~isnan(idMC));
+          %idMC = idMC(~isnan(idMC));
           fmeanData(it,jj) = sum(F3d(idMC))/nMC;
         end
       end

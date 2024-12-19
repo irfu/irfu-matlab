@@ -496,7 +496,7 @@ end
 
 % no struct if only one output
 fn = fieldnames(outp);
-if numel(fn) == 1; outp = outp.(fn{1}); end
+if isscalar(fn); outp = outp.(fn{1}); end
 
 
 %% If input is dimensional, output should be too

@@ -186,8 +186,8 @@ classdef qual
       [bdmRemoveArray, settingBdmRemoveKey] = Bso.get_fv(...
         'PROCESSING.L2.REMOVE_DATA.MUX_MODES');
       bdmRemoveArray = bdmRemoveArray(:);
-      if     isLfr   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC';    % LFR
-      else           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC';    % TDS
+      if     isLfr,   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC';    % LFR
+      else,           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC';    % TDS
       end
       [removeMarginSec, settingMarginKey] = Bso.get_fv(settingMarginKey);
 

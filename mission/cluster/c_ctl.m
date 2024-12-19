@@ -241,7 +241,7 @@ if ischar(args{1})
     if isempty(c_ct), disp('CTL is not initialized.'), return, end
     for cl_id=sc_list
       c = fieldnames(c_ct{cl_id});
-      if length(c)>0
+      if ~isempty(c)
         for j=1:length(c)
           if cl_id < 5, disp(['C' num2str(cl_id) '->' c{j} ':'])
           else, disp(['GLOBAL->' c{j} ':'])

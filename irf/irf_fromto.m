@@ -60,12 +60,10 @@ switch fromto
       ud.from = 1;
     end
   case 'from'
+    % We have changed "From", use the "Step" value and update "To" value
+    % with newly provided "From" value
     [tlim, step]= get_fromto(ud);
-    if tlim(1) > tlim(2)
-      tlim(2)=tlim(1)+step;
-    else
-      tlim(2)=tlim(1)+step;
-    end
+    tlim(2) = tlim(1) + step;
     update_fromto(ud,tlim);
   case 'to'
     [tlim, step]= get_fromto(ud);
@@ -77,6 +75,8 @@ switch fromto
     end
     update_fromto(ud,tlim);
   case 'step'
+    % We have changed "Step", use the "From" value and update "To" value
+    % with newly provided "Step" value
     [tlim, step]=get_fromto(ud);
     tlim(2) = tlim(1)+step;
     update_fromto(ud,tlim);

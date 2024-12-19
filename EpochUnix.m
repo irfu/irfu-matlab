@@ -87,7 +87,7 @@ classdef EpochUnix < GenericTimeArray
       s_tmp = spdfencodett2000(ttns(1));
       epoch0 = iso2epoch(s_tmp{:});
       epoch = double(ttns - ttns(1))*1e-9 + epoch0;
-      if numel(epoch) == 1 % WHY THIS CEHCK??
+      if isscalar(epoch) % WHY THIS CEHCK??
         return;
       end
       % Check for leap seconds during the time interval of interest

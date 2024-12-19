@@ -81,58 +81,58 @@ classdef regexp_str_parts___UTEST < matlab.unittest.TestCase
   methods(Access=private)
 
 
-      % Function naming convention:
-      %   P = Permit non-match
-      %   A = Assert match
+    % Function naming convention:
+    %   P = Permit non-match
+    %   A = Assert match
 
 
 
-      % Test one call.
-      function test_OK(testCase, ...
-          str, regexpCa, nonMatchPolicy, ...
-          expSubStrCa, expRemainingStr, expIsPerfectMatch)
+    % Test one call.
+    function test_OK(testCase, ...
+        str, regexpCa, nonMatchPolicy, ...
+        expSubStrCa, expRemainingStr, expIsPerfectMatch)
 
-        [actSubStrCa, actRemainingStr, actIsPerfectMatch] = ...
-          irf.str.regexp_str_parts(str, regexpCa, nonMatchPolicy);
+      [actSubStrCa, actRemainingStr, actIsPerfectMatch] = ...
+        irf.str.regexp_str_parts(str, regexpCa, nonMatchPolicy);
 
-        testCase.assertEqual(actSubStrCa,       expSubStrCa)
-        testCase.assertEqual(actRemainingStr,   expRemainingStr)
-        testCase.assertEqual(actIsPerfectMatch, expIsPerfectMatch)
-      end
-
-
-
-      function test_A_exc(testCase, str, regexpCa)
-        testCase.assertError(...
-            @() irf.str.regexp_str_parts(str, regexpCa, 'ASSERT_MATCH'), ...
-            ?MException)
-      end
+      testCase.assertEqual(actSubStrCa,       expSubStrCa)
+      testCase.assertEqual(actRemainingStr,   expRemainingStr)
+      testCase.assertEqual(actIsPerfectMatch, expIsPerfectMatch)
+    end
 
 
 
-      % Test one call for each policy, both of which should succeed.
-      function test_P_OK_A_OK(testCase, ...
-          str, regexpCa, ...
-          expSubStrCa, expRemainingStr, expIsPerfectMatch)
-
-        testCase.test_OK(str, regexpCa, 'PERMIT_NON_MATCH', ...
-          expSubStrCa, expRemainingStr, expIsPerfectMatch)
-        testCase.test_OK(str, regexpCa, 'ASSERT_MATCH', ...
-          expSubStrCa, expRemainingStr, expIsPerfectMatch)
-      end
+    function test_A_exc(testCase, str, regexpCa)
+      testCase.assertError(...
+        @() irf.str.regexp_str_parts(str, regexpCa, 'ASSERT_MATCH'), ...
+        ?MException)
+    end
 
 
 
-      % Test one call for each policy, where PERMIT_NON_MATCH succeeds but
-      % ASSERT_MATCH fails.
-      function test_P_OK_A_exc(testCase, ...
-          str, regexpCa, ...
-          expSubStrCa, expRemainingStr, expIsPerfectMatch)
+    % Test one call for each policy, both of which should succeed.
+    function test_P_OK_A_OK(testCase, ...
+        str, regexpCa, ...
+        expSubStrCa, expRemainingStr, expIsPerfectMatch)
 
-        testCase.test_OK(   str, regexpCa, 'PERMIT_NON_MATCH', ...
-          expSubStrCa, expRemainingStr, expIsPerfectMatch)
-        testCase.test_A_exc(str, regexpCa)
-      end
+      testCase.test_OK(str, regexpCa, 'PERMIT_NON_MATCH', ...
+        expSubStrCa, expRemainingStr, expIsPerfectMatch)
+      testCase.test_OK(str, regexpCa, 'ASSERT_MATCH', ...
+        expSubStrCa, expRemainingStr, expIsPerfectMatch)
+    end
+
+
+
+    % Test one call for each policy, where PERMIT_NON_MATCH succeeds but
+    % ASSERT_MATCH fails.
+    function test_P_OK_A_exc(testCase, ...
+        str, regexpCa, ...
+        expSubStrCa, expRemainingStr, expIsPerfectMatch)
+
+      testCase.test_OK(   str, regexpCa, 'PERMIT_NON_MATCH', ...
+        expSubStrCa, expRemainingStr, expIsPerfectMatch)
+      testCase.test_A_exc(str, regexpCa)
+    end
 
 
 

@@ -176,18 +176,18 @@ end
 
 
 CovcArray = CovcMap('ICD_LOG_FILE_OPTION_ID');
-if isempty(CovcArray)   CliData.icdLogFile = [];
-else                    CliData.icdLogFile = CovcArray(end).optionValuesCa{1};
+if isempty(CovcArray),   CliData.icdLogFile = [];
+else,                    CliData.icdLogFile = CovcArray(end).optionValuesCa{1};
 end
 
 CovcArray = CovcMap('MATLAB_LOG_FILE_OPTION_ID');
-if isempty(CovcArray)   CliData.matlabLogFile = [];
-else                    CliData.matlabLogFile = CovcArray(end).optionValuesCa{1};
+if isempty(CovcArray),   CliData.matlabLogFile = [];
+else,                    CliData.matlabLogFile = CovcArray(end).optionValuesCa{1};
 end
 
 CovcArray = CovcMap('CONFIG_FILE_OPTION_ID');
-if isempty(CovcArray)   CliData.configFile = [];
-else                    CliData.configFile = CovcArray(end).optionValuesCa{1};
+if isempty(CovcArray),   CliData.configFile = [];
+else,                    CliData.configFile = CovcArray(end).optionValuesCa{1};
 end
 
 
