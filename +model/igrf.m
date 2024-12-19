@@ -5,7 +5,7 @@ function [out1,out2]=igrf(t,flag)
 persistent hIGRF gIGRF yearsIGRF
 
 if isempty(hIGRF)
-  fileIGRF = [fileparts(which('irf.m')), filesep, '+model', filesep, 'igrf13coeffs.txt'];
+  fileIGRF = [fileparts(which('irf.m')), filesep, '+model', filesep, 'igrf14coeffs.txt'];
   irf.log('warning',['Reading IGRF coefficients from file:' fileIGRF]);
   %file reading
   fid = fopen(fileIGRF);

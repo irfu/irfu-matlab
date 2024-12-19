@@ -4,7 +4,7 @@ function out = psp(varargin)
 % PSP - return basic information on Solar Orbiter
 %
 % PSP(flag) - return specific information defined by flag or keyword
-% including "flag" in its text. Keywords and different useful info 
+% including "flag" in its text. Keywords and different useful info
 % are at the end of the file.
 %
 %  Example:
@@ -21,55 +21,55 @@ flag=varargin{1};
 Units=irf_units;
 
 switch flag
-    case '?'         % Show all possible flag options
-      content = fileread( which('psp') ) ;
-      keyWords = regexp(content,'(?<key>##\w+)','names');
-      keywords = unique(squeeze(struct2cell(keyWords)));
-      for i=1:numel(keywords)
-        disp(['<a href="matlab: psp ' keywords{i} '">' keywords{i} '</a> ' ]);
+  case '?'         % Show all possible flag options
+    content = fileread( which('psp') ) ;
+    keyWords = regexp(content,'(?<key>##\w+)','names');
+    keywords = unique(squeeze(struct2cell(keyWords)));
+    for i=1:numel(keywords)
+      disp(['<a href="matlab: psp ' keywords{i} '">' keywords{i} '</a> ' ]);
+    end
+    fid=fopen(which('psp'));
+    while 1
+      tline = fgetl(fid);
+      if ~ischar(tline), break, end
+      b=regexp(tline,'case ''(?<flag>\w*)''\s*[%](?<comment>.*)','names');
+      if isscalar(b)
+        disp(['<a href="matlab: psp ' b.flag '">' b.flag '</a> : ' b.comment]);
       end
-        fid=fopen(which('psp'));
-        while 1
-            tline = fgetl(fid);
-            if ~ischar(tline), break, end
-            b=regexp(tline,'case ''(?<flag>\w*)''\s*[%](?<comment>.*)','names');
-            if numel(b)==1
-                disp(['<a href="matlab: psp ' b.flag '">' b.flag '</a> : ' b.comment]);
-            end
-        end
-        fclose(fid);
-	otherwise
-        psp_txt(lower(flag));
+    end
+    fclose(fid);
+  otherwise
+    psp_txt(lower(flag));
 end
 end
 
 function psp_txt(txt)
-  fid=fopen(which('psp'));
-  while 1
-    tline = fgetl(fid);
-    if ~ischar(tline), break, end
-    b=regexp(tline,'^%%%%.*','match'); % find where start txt paragraphs
-    if numel(b)==1, break; end
-  end
+fid=fopen(which('psp'));
+while 1
+  tline = fgetl(fid);
+  if ~ischar(tline), break, end
+  b=regexp(tline,'^%%%%.*','match'); % find where start txt paragraphs
+  if isscalar(b), break; end
+end
 
-  while 1 % look for keywords
-    tline = fgetl(fid);
-    if ~ischar(tline), break, end
-    b=regexpi(tline,['^%%\s.*' txt '.*'],'match'); % find where start txt paragraphs
-    if numel(b)==1
-      disp(b{1}(2:end));
-      while 1
-        tline = fgetl(fid);
-        if ~ischar(tline) || isempty(tline), break, end
-        disp(tline(2:end));
-      end
+while 1 % look for keywords
+  tline = fgetl(fid);
+  if ~ischar(tline), break, end
+  b=regexpi(tline,['^%%\s.*' txt '.*'],'match'); % find where start txt paragraphs
+  if isscalar(b)
+    disp(b{1}(2:end));
+    while 1
+      tline = fgetl(fid);
+      if ~ischar(tline) || isempty(tline), break, end
+      disp(tline(2:end));
     end
   end
+end
 end
 %%%%
 %% ##basic info
 % Parker Solar Probe NASA Living With a Star mission
-% 
+%
 
 %% ##Encounters ##Venus
 % List of encounters with ENLIL plots <a href="https://sppgway.jhuapl.edu/encounters#enc1">www</a>
@@ -84,7 +84,7 @@ end
 % Enc6 2020-09-27/09:16  20.3 Rs  0.094 AU
 % Enc7 2021-01-17/17:40  20.3 Rs  0.094 AU
 %
-% 
+%
 
 %% ##Payload
 % FIELDS paper: <a href="https://doi.org/10.1002/2016JA022344">Malaspina 2016</a>

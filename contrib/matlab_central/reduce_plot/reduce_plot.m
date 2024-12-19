@@ -8,6 +8,7 @@ function h = reduce_plot(varargin)
 %
 % Tucker McClure
 % Copyright 2013, The MathWorks, Inc.
+% SPDX-License-Identifier: MIT
 
     lpr = LinePlotReducer(varargin{:});
     h = lpr.h_plot;

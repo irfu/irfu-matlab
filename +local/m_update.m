@@ -182,7 +182,7 @@ for iSc = 1:numel(inArg.scId)
             errStr = ['TT2000 variable did not contain any valid time interval for file: ', listFiles{ii}];
             irf.log('critical', errStr); %warning(errStr);
             continue;
-          elseif(length(epoch)==1)
+          elseif(isscalar(epoch))
             errStr = ['TT2000 variable only contained one valid timestamp for file: ',listFiles{ii}];
             irf.log('warning',errStr);
             tmp_epoch = epoch.epoch;

@@ -56,12 +56,12 @@ end
 if flag_average == 1
   dBf=irf_filt(dB,0,1/n_av,2,3);
   tt=dBf(:,1);
-  [~ ,dtB] = gradient(dBf(:,2:end),1,tt); 
+  [~ ,dtB] = gradient(dBf(:,2:end),1,tt);
   dtB      = [tt dtB];
 else
   tt=dB(:,1);
   % create dtB
-  [~ ,dtB] = gradient(dB(:,2:end),1,tt); 
+  [~ ,dtB] = gradient(dB(:,2:end),1,tt);
   dtB      = [tt dtB];
 end
 

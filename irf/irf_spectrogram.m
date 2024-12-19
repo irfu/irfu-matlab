@@ -279,7 +279,7 @@ for comp=1:min(length(h),ncomp)
   end
   if useTStartEpoch
     xData = double(tt-t_start_epoch)';
-  else 
+  else
     xData = double(tt)';
   end
   if flagReducePlot

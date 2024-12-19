@@ -5,7 +5,7 @@ function [soloPosition, bepiPosition, mercuryPosition, venusPosition, marsPositi
 % Example
 % tint = irf.tint('2020-02-11T00:00:00Z/2020-12-01T15:00:00Z'); % time interval in TT2000 UTC
 % Ttime=[2020 07 12]; %Specific time of interest
-% [Solo,Be, Me,V,Ma,E]=plot_orbit(tint,Ttime,['Bepi'],['Mercury'],['Venus'],['Earth'],['Mars']);
+% [Solo,Be, Me,V,Ma,E]=solo.plot_orbit(tint,Ttime,['Bepi'],['Mercury'],['Venus'],['Earth'],['Mars']);
 
 frame='ECLIPJ2000';
 t_step = 60*60; %3600 sec
@@ -67,7 +67,7 @@ timetxt=datestr(irf_time(ttime,'vector>date'),'YYYY-mm-dd');
 text(soloPosition.data(mini,1)*1.1,soloPosition.data(mini,2)*1.1,['SolO',' ',timetxt], 'fontsize', 8, 'Color','k')
 
 %Plot the postion(s) of various planets
-if any(ismember(varargin,'Bepi'))==1
+if any(ismember(varargin,'Bepi'))
   pos_bepi = cspice_spkpos('BEPICOLOMBO MMO', et, frame, 'none', 'Sun');
   bepiPosition= irf.ts_vec_xyz(EpochTT(utc_tmp), pos_bepi'/1.496e8);
   bepiPosition.units = 'AU'; % Add some metadata information (read when plotting in irf_plot)
@@ -78,7 +78,7 @@ if any(ismember(varargin,'Bepi'))==1
   text(bepiPosition.data(mini,1)*1.1,bepiPosition.data(mini,2)*1.1,'BepiColombo', 'fontsize', 8, 'Color',[0.4 0.4 0])
 end
 
-if any(ismember(varargin,'Mercury'))==1
+if any(ismember(varargin,'Mercury'))
   pos_mercury = cspice_spkpos('mercury', et, frame, 'none', 'Sun');
   mercuryPosition= irf.ts_vec_xyz(EpochTT(utc_tmp), pos_mercury'/1.496e8);
   mercuryPosition.units = 'AU'; % Add some metadata information (read when plotting in irf_plot)
@@ -89,7 +89,7 @@ if any(ismember(varargin,'Mercury'))==1
   text(mercuryPosition.data(mini,1)*1.1,mercuryPosition.data(mini,2)*1.1,'Mercury', 'fontsize', 8, 'Color',[0.4 0.4 0])
 end
 
-if any(ismember(varargin,'Venus'))==1
+if any(ismember(varargin,'Venus'))
   pos_venus = cspice_spkpos('venus', et, frame, 'none', 'Sun');
   venusPosition= irf.ts_vec_xyz(EpochTT(utc_tmp), pos_venus'/1.496e8);
   venusPosition.units = 'AU'; % Add some metadata information (read when plotting in irf_plot)
@@ -100,7 +100,7 @@ if any(ismember(varargin,'Venus'))==1
   text(venusPosition.data(mini,1)*1.1,venusPosition.data(mini,2)*1.1,'Venus', 'fontsize', 8, 'Color',[0.8 0.6 0])
 end
 
-if any(ismember(varargin,'Mars'))==1
+if any(ismember(varargin,'Mars'))
   pos_mars = cspice_spkpos('mars', et, frame, 'none', 'Sun');
   marsPosition= irf.ts_vec_xyz(EpochTT(utc_tmp), pos_mars'/1.496e8);
   marsPosition.units = 'AU'; % Add some metadata information (read when plotting in irf_plot)
@@ -111,7 +111,7 @@ if any(ismember(varargin,'Mars'))==1
   text(marsPosition.data(mini,1)*1.1,marsPosition.data(mini,2)*1.1,'Mars', 'fontsize', 8, 'Color','r')
 end
 
-if any(ismember(varargin,'Earth'))==1
+if any(ismember(varargin,'Earth'))
   pos_earth = cspice_spkpos('earth', et, frame, 'none', 'Sun');
   earthPosition= irf.ts_vec_xyz(EpochTT(utc_tmp), pos_earth'/1.496e8);
   earthPosition.units = 'AU'; % Add some metadata information (read when plotting in irf_plot)

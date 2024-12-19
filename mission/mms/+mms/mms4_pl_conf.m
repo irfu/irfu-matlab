@@ -46,7 +46,7 @@ switch lower(action)
   case 'initialize' % read in all data and open figure
     if isa(time,'GenericTimeArray')
       t = time.start.epochUnix;
-    elseif isnumeric(time) && length(time)==1 % time given in epoch
+    elseif isnumeric(time) && isscalar(time) % time given in epoch
       t=time;
     elseif isnumeric(time) && length(time)==6 % time given as vector
       t=irf_time(time);

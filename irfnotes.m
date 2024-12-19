@@ -946,7 +946,7 @@ if 1   % PANEL: PEACE 3DXPH_DEFlux high res energy spectrogram
     specrec.p=res.omni(ind,:);
     specrec.f_label=['Log10 ' res.enlabel];
     irf_spectrogram(hca,specrec);
-  elseif 1 % pitch angle spectrogram for given energy
+  elseif 1 %#ok<IFCDUP> % pitch angle spectrogram for given energy
     specrec.f=res.theta;specrec.f_label='Pitch angle';
     specrec.p=res.pitch_angle(ind,:);
     enindex=13;
@@ -1022,7 +1022,7 @@ if 0   % PANEL: CIS CODIF high res energy C4
     specrec.f=res.theta;specrec.f_label='Pitch angle';
     specrec.p=res.pitch_angle(ind,:);
     enindex=(26:30);
-    if numel(enindex)==1
+    if isscalar(enindex)
       specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex),'%6.f') 'eV]'];
     else
       specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex(1)),'%6.f') ' - ' num2str(res.en(enindex(end)),'%6.f') 'eV]'];
@@ -1048,11 +1048,11 @@ if 1   % PANEL: CIS HIA/CODIF high res energy C3
     specrec.p=res.omni(ind,:);
     specrec.f_label='Log_{10} E [eV]';
     yticks=[1 2 3 4 5];
-  elseif 1 % pitch angle spectrogram for given energy
+  elseif 1 %#ok<IFCDUP> % pitch angle spectrogram for given energy
     specrec.f=res.theta;specrec.f_label='Pitch angle';
     specrec.p=res.pitch_angle(ind,:);
     enindex=(26:30);
-    if numel(enindex)==1
+    if isscalar(enindex)
       specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex),'%6.f') 'eV]'];
     else
       specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex(1)),'%6.f') ' - ' num2str(res.en(enindex(end)),'%6.f') 'eV]'];
@@ -1081,7 +1081,7 @@ if 1   % PANEL: CIS HIA/CODIF high res energy C4
     specrec.f=res.theta;specrec.f_label='Pitch angle';
     specrec.p=res.pitch_angle(ind,:);
     enindex=(26:30);
-    if numel(enindex)==1
+    if isscalar(enindex)
       specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex),'%6.f') 'eV]'];
     else
       specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex(1)),'%6.f') ' - ' num2str(res.en(enindex(end)),'%6.f') 'eV]'];

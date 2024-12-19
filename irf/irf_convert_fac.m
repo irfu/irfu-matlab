@@ -5,10 +5,10 @@ function [out]=irf_convert_fac(inp,B0,r)
 %
 %  Transforms to a field-aligned coordinate (FAC) system defined as:
 %  z = aligned with the background magnetic field
-%  y = z cross product with the position vector r of the spacecraft 
+%  y = z cross product with the position vector r of the spacecraft
 %      (nominally eastward at the equator), if r not given used r=[1 0 0]
 %  x = y x z
-%  If inp is single column vector then assume that it is amplitude of vector 
+%  If inp is single column vector then assume that it is amplitude of vector
 %  along r direction. Output out has 2 columns corresponding to inp[perp, para] projections
 %
 %  rotMatrix = irf_convert_fac([],B0,[r])

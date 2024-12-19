@@ -24,13 +24,13 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
 warning off
 
 % Make vectors of the wave numbers
-if numel(kc_z_max) == 1
+if isscalar(kc_z_max)
   kc_z=linspace(0.000001,kc_z_max,35);
 elseif isnumeric(kc_z_max)
   kc_z = kc_z_max;
 end
-if numel(kc_x_max) == 1
-kc_x=linspace(0.000001,kc_x_max,35);
+if isscalar(kc_x_max)
+  kc_x=linspace(0.000001,kc_x_max,35);
 elseif isnumeric(kc_x_max)
   kc_x = kc_x_max;
 end
