@@ -19,10 +19,12 @@
 % First created 2020-10-13
 %
 classdef summary_plot < handle
-  % PROPOSAL: Automatically set panel tags (encapsulate; no arguments).
-  % PROPOSAL: Assert unique panel tags.
+  % PROPOSAL: Rename to "SummaryPlot".
   %
   % PROPOSAL: Consistent naming of ~Epoch/zvTt2000.
+  %
+  % PROPOSAL: Automatically set panel tags (encapsulate; no arguments).
+  % PROPOSAL: Assert unique panel tags.
   %
   % PROPOSAL: Merge add_panel_spectrogram_SWF_LSF &
   %                 add_panel_spectrogram_CWF.

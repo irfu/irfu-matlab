@@ -57,6 +57,8 @@ function bia_ql3(yyyyMmDdStr, hkBiaDir, lfrWfDirPath, outputDir)
 % PROPOSAL: Eliminate use of glob.attr. Do not read file an extra time.
 %   PRO: DATASET_ID is known when calling plot_save_SP_pattern().
 %   CON: Dataset data version has to be extracted from filename.
+%
+% PROPOSAL: Use classes instead of function pointers.
 
 % IMPLEMENTATION NOTE: Needed to get paths correct when code is being called
 % from bash script.
