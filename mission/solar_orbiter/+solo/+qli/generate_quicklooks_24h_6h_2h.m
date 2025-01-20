@@ -54,16 +54,6 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %      2023-02-05: Normal. Has one colorbar for "f (kHz)"
 %      2023-02-06: Wider panels. Has no colorbar for "f (kHz)"
 %
-% BUG: 24h, panel 2, |B| (right axis) is scaled badly on y axis. Too much extra
-% space. Old quicklooks were better.
-% a44b3127 Erik P G Johansson (2024-03-21 12:56:51 +0100) SolO QLI: Change terms: official {processing-->generation}
-% Ex: 2023-01-05
-% irf_zoom(h(2), 'y', [minAbsB-1, maxAbsB+1]); at plotting gives good zoom, but
-% set_YLim_YTick(h([]), h([2]), h([])) later re-zooms in worse way.
-% /Erik P G Johansson 2024-03-21
-% Should be solved.
-% /Erik P G Johansson 2024-03-25
-%
 % BUG: https://github.com/irfu/irfu-matlab/issues/138
 % /Erik P G Johansson 2024-03-28
 %
@@ -565,7 +555,6 @@ h(2).YLimMode = 'auto';
 % Remove overlapping ticks.
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
 % depending on panel.
-%set_YLim_YTick(h([1, 6:9]), h([2]), h([3:5, 10]))
 solo.qli.utils.set_YLim_YTick_automatically( h([1, 6:9 ]))
 %solo.qli.utils.set_YLim_YTick_automatically( h([2])      )
 solo.qli.utils.ensure_axes_data_tick_margins(h([3:5, 10]))
@@ -683,23 +672,14 @@ assert(isa(Tint,      'EpochTT') && (length(Tint) == 2))
 
 irf_zoom(hAxesArray, 'x', Tint);
 
-%irf_zoom(hAxesArray(1), 'y');
-%adjust_panel_ylimits_N_B(  hAxesArray(2), data,      Tint)
-%adjust_panel_ylimits_Ti(   hAxesArray(5), data.Tpas, Tint)
-%adjust_panel_ylimits_VT_VN(hAxesArray(6), data.Vpas, Tint)
-%adjust_panel_ylimits_ESRF( hAxesArray(8), data.E,    Tint)
-%irf_zoom(hAxesArray(7), 'y');
-
 % NOTE: Different from for 24h plots.
 yyaxis(hAxesArray(2), 'left');
-% set_YLim_YTick(hAxesArray([1:2, 5:9]), hAxesArray([]), hAxesArray([3:4, 10]))
 solo.qli.utils.set_YLim_YTick_automatically( hAxesArray([1:2, 5:9]))
 solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray([3:4, 10 ]))
 
 
 
 yyaxis(hAxesArray(2), 'right');
-% set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
 solo.qli.utils.set_YLim_YTick_automatically(hAxesArray([2]))
 
 % Update text
@@ -707,104 +687,3 @@ solo.qli.utils.set_YLim_YTick_automatically(hAxesArray([2]))
 
 solo.qli.utils.save_figure_to_file(parentDirPath, Tint)
 end
-
-
-
-% Function to remove duplicated code.
-% function adjust_panel_ylimits_N_B(hAxes, data, Tint)
-%     assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
-%     assert(isstruct(data))
-%     assert(isa(Tint,  'EpochTT'))
-%
-%     %=============
-%     % Left Y axis
-%     %=============
-%     Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(  Tint)) && ~all(isnan(data.Ne.tlim(Tint).data));
-%     Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint));
-%     if Neflag && Npasflag
-%         yyaxis(hAxes, 'left');
-%         hAxes.YLim=[...
-%             min(floor([min(data.Npas.tlim(Tint).data),min(data.Ne.tlim(Tint).data)])),...
-%             max(ceil( [max(data.Npas.tlim(Tint).data),max(data.Ne.tlim(Tint).data)]))...
-%         ];
-%     elseif Neflag
-%         yyaxis(hAxes,'left');
-%         hAxes.YLim=[floor(min(data.Ne.tlim(Tint).data)),ceil(max(data.Ne.tlim(Tint).data))];
-%     elseif Npasflag
-%         yyaxis(hAxes,'left');
-%         hAxes.YLim=[floor(min(data.Npas.tlim(Tint).data)),ceil(max(data.Npas.tlim(Tint).data))];
-%     end
-%
-%     %==============
-%     % Right Y axis
-%     %==============
-%     if ~isempty(data.B) && ~isempty(data.B.tlim(Tint)) && ~all(isnan(data.B.abs.tlim(Tint).data))
-%         yyaxis(hAxes,'right');
-%         hAxes.YLim=[floor(min(data.B.abs.tlim(Tint).data)),ceil(max(data.B.abs.tlim(Tint).data))];
-%     end
-% end
-
-
-
-% Function to remove duplicated code.
-% function adjust_panel_ylimits_Ti(hAxes, TpasTSeries, Tint)
-%     Y_MARGIN = 2;
-%
-%     assert(isa(hAxes,       'matlab.graphics.axis.Axes') && isscalar(hAxes))
-%     assert(isa(TpasTSeries, 'TSeries') || isempty(TpasTSeries))
-%     assert(isa(Tint,        'EpochTT'))
-%
-%     if ~isempty(TpasTSeries)
-%         minTi = min(rmmissing(TpasTSeries.tlim(Tint).abs.data));
-%         maxTi = max(rmmissing(TpasTSeries.tlim(Tint).abs.data));
-%
-%         if ~isempty(minTi) && ~isempty(maxTi)
-%             % Only zoom if min & max are not NaN (==> Avoid crash).
-%             irf_zoom(hAxes,'y',[minTi-Y_MARGIN, maxTi+Y_MARGIN]);
-%         end
-%     end
-% end
-
-
-
-% Function to remove duplicated code.
-% function adjust_panel_ylimits_VT_VN(hAxes, VpasTSeries, Tint)
-%     Y_MARGIN = 10;
-%
-%     assert(isa(hAxes,       'matlab.graphics.axis.Axes') && isscalar(hAxes))
-%     assert(isa(VpasTSeries, 'TSeries') || isempty(VpasTSeries))
-%     assert(isa(Tint,        'EpochTT'))
-%
-%     if ~isempty(VpasTSeries)
-%         minVy = min(rmmissing(VpasTSeries.y.tlim(Tint).data));
-%         minVz = min(rmmissing(VpasTSeries.z.tlim(Tint).data));
-%         maxVy = max(rmmissing(VpasTSeries.y.tlim(Tint).data));
-%         maxVz = max(rmmissing(VpasTSeries.z.tlim(Tint).data));
-%         maxV = max(maxVy,maxVz);
-%         minV = min(minVy,minVz);
-%         if ~isempty(minV) && ~isempty(maxV)
-%             % Only zoom if min & max are not NaN (==> Avoid crash).
-%             irf_zoom(hAxes,'y',[minV-Y_MARGIN, maxV+Y_MARGIN]);
-%         end
-%     end
-% end
-
-
-
-% Function to remove duplicated code.
-% function adjust_panel_ylimits_ESRF(hAxes, ETSeries, Tint)
-%     Y_MARGIN = 5;
-%
-%     assert(isa(hAxes,    'matlab.graphics.axis.Axes') && isscalar(hAxes))
-%     assert(isa(ETSeries, 'TSeries') || isempty(ETSeries))
-%     assert(isa(Tint,     'EpochTT'))
-%
-%     if ~isempty(ETSeries)
-%         minEy = min(rmmissing(ETSeries.y.tlim(Tint).data));
-%         maxEy = max(rmmissing(ETSeries.y.tlim(Tint).data));
-%
-%         if ~isempty(minEy) && ~isempty(maxEy)
-%             irf_zoom(hAxes,'y',[minEy-Y_MARGIN, maxEy+Y_MARGIN]);
-%         end
-%     end
-% end
