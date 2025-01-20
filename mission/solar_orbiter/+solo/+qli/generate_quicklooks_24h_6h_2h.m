@@ -281,7 +281,7 @@ if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
     Specrec.p       = ellipticity;
     Specrec.f_label = '';
     Specrec.p_label = {'Ellipticity', 'DOP>0.7'};
-    irf_spectrogram(h(4), Specrec, 'log', 'donotfitcolorbarlabel');
+    irf_spectrogram(h(4), Specrec, 'lin', 'donotfitcolorbarlabel');
     set(     h(4), 'yscale', 'log');
     % set(h(1), 'ytick', [1e1 1e2 1e3]);
     caxis(   h(4), [-1 1])
