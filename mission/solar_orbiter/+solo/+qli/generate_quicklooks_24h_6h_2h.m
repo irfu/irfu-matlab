@@ -89,8 +89,10 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % PROPOSAL: Eliminate calls to tlim(). They should be unnecessary since the
 %           caller sets them correctly anyway.
 %   PROPOSAL: Assert correct limits?
-%     NOTE: Data.swaEnergyMetadata does not have any time dependence.
-%   NOTE: Tint24h is a function argument which only used for
+%     NOTE: The Data.swaEnergyMetadata variable does not contain any explicit
+%           time dependence. It is implicit that it covers the time interval
+%           specified in Tint24h.
+%   NOTE: Tint24h is a function argument which is only used for:
 %     * Trimming TSeries in time (unnecessary). Most use cases.
 %     * Zooming in x.
 %     * solo.qli.utils.get_context_info_strings()
@@ -208,8 +210,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 %==========================================
 % Fill panel 3 & 4: Spectra derived from B
 %==========================================
-IRF_EBSP_FREQ_MIN_HZ            = 0.05;
-B_SAMPLING_PERIOD_THRESHOLD_SEC = 0.1250*0.95;  % 0.1250*0.95 = 0.1187
+IRF_EBSP_FREQ_MIN_HZ             = 0.05;
+B_SAMPLING_PERIOD_THRESHOLD_SEC  = 0.1250*0.95;  % 0.1250*0.95 = 0.1187
+DEGREE_OF_POLARIZATION_THRESHOLD = 0.7;
+
 if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
   if  ~isempty(rmmissing(Data.B.data))
     B = Data.B;
@@ -241,8 +245,6 @@ if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
     dop         = Ebsp.dop;    % DOP = Degree Of Polarization
 
     % Remove points with very low degree of polarization
-    DEGREE_OF_POLARIZATION_THRESHOLD = 0.7;
-    % iRemove = find(dop < DEGREE_OF_POLARIZATION_THRESHOLD);
     bRemove = dop < DEGREE_OF_POLARIZATION_THRESHOLD;
     ellipticity(bRemove) = NaN;
 
@@ -280,7 +282,7 @@ if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
     Specrec.f       = frequency;
     Specrec.p       = ellipticity;
     Specrec.f_label = '';
-    Specrec.p_label = {'Ellipticity', 'DOP>0.7'};
+    Specrec.p_label = {'Ellipticity', sprintf('DOP>%g', DEGREE_OF_POLARIZATION_THRESHOLD)};
     irf_spectrogram(h(4), Specrec, 'lin', 'donotfitcolorbarlabel');
     set(     h(4), 'yscale', 'log');
     % set(h(1), 'ytick', [1e1 1e2 1e3]);
@@ -409,13 +411,13 @@ if ~isempty(Data.ieflux)
   hold(h(9), 'on');
   h9_clims = h(9).CLim;
   % Fix color axis
-  h9_medp       = mean(iDEF.p);              % MxN --> 1xN
-  h9_medp       = min(h9_medp(h9_medp>0));
-  h9_caxisRange = [log10(h9_medp)+2, max(max(log10(iDEF.p)))];
+  h9_medp           = mean(iDEF.p);              % MxN --> 1xN
+  h9_medp           = min(h9_medp(h9_medp>0));
+  h9_colorAxisRange = [log10(h9_medp)+2, max(max(log10(iDEF.p)))];
   %if (h9_medp > 0) && (h9_medp > h9_clims(1)) && (log10(h9_medp)+2 < max(max(log10(iDEF.p))))
-  if (h9_medp > 0) && (h9_medp > h9_clims(1)) && (h9_caxisRange(1) < h9_caxisRange(2))
+  if (h9_medp > 0) && (h9_medp > h9_clims(1)) && (h9_colorAxisRange(1) < h9_colorAxisRange(2))
     %caxis(h(9), [log10(h9_medp)+2 max(max(log10(iDEF.p)))])
-    caxis(h(9), h9_caxisRange)
+    clim(h(9), h9_colorAxisRange)
   end
 end
 set(     h(9), 'YScale', 'log');
