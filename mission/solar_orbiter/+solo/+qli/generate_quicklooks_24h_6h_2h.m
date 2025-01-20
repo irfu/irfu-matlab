@@ -163,10 +163,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 %=======================
 % Fill panel 2: N & |B|
 %=======================
-hold(h(2), 'on');
 if ~isempty(Data.Ne)
   irf_plot(h(2), Data.Ne.tlim(Tint24h), '-', 'color', COLORS(1,:), 'linewidth', LINE_WIDTH);
 end
+hold(h(2), 'on');
 if ~isempty(Data.Npas)
   irf_plot(h(2), Data.Npas.tlim(Tint24h), '-', 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
@@ -556,8 +556,9 @@ text(h(1), 0, 1.2, str, 'Units', 'normalized')
 % than where their respective panels are created. Related to
 % irf_plot_axis_align()?
 yyaxis(h(2), 'left');
-h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
-h(2).YTick  = [1, 10, 100];
+h(2).YScale   = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
+h(2).YTick    = [1, 10, 100];
+h(2).YLimMode = 'auto';
 
 % Remove overlapping ticks.
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
