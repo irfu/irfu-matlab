@@ -336,10 +336,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 %=====================================
 % Fill panel 7: Vrpw, Vpas velocities
 %=====================================
-hold(h(7), 'on');
 if ~isempty(Data.Vrpw)
   irf_plot(h(7),-Data.Vrpw, 'o-', 'color', COLORS(1,:));
 end
+hold(h(7), 'on');
 if ~isempty(Data.Vpas)
   irf_plot(h(7), Data.Vpas.x.tlim(Tint24h), 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
