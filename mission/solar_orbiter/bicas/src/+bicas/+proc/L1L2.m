@@ -407,8 +407,9 @@ classdef L1L2
         % NOTE: Must exclude ZV "SAMPLE_IDX".
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
 
-        % Set CDF metadata ZV that is too large to set in the skeletons.
-        OutSci.Zv.SAMPLE_IDX = [0:(SAMPLES_PER_RECORD_CHANNEL-1)];
+        % Autogenerate data for CDF metadata ZV that is too large to be set in
+        % the skeletons.
+        OutSci.Zv.SAMPLE_IDX   = [0:(SAMPLES_PER_RECORD_CHANNEL-1)];
 
       else
         error('BICAS:Assertion:IllegalArgument', ...

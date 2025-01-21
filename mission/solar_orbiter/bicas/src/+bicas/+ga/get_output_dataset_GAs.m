@@ -20,6 +20,9 @@
 %--
 % GAs "Provider", "Parent_version" have been abolished according to RCS ICD
 % 01/07, and SOL-SGS-TN-0009, 02/06.
+% --
+% GAs OBS_ID, SOOP_TYPE should be copied from the parent datasets, not the
+% skeletons. /ROC-PRO-PIP-ICD-00037-LES, 01/07
 %
 %
 % ARGUMENTS
@@ -55,18 +58,6 @@ function OutGaSubset = get_output_dataset_GAs(...
 
 % PROPOSAL: Create class for storing GAs.
 %   PRO: Can detect accidental overwriting/reuse of keys.
-%
-% PROPOSAL: Move from setting constants in skeletons to setting them here.
-%   TODO-NI: Allowed by ROC?!
-%   NOTE: Only applies to GAs. Skeletons also set ZVAs and available ZVs.
-%   Ex: Acknowledgements, Instrument, Instrument_type, APPLICABLE.
-%   PRO: Easier to set overlapping constants in code.
-%   CON: Can not inspect differences/similarities by diffing skeletons.
-%   CON: Rare to change them.
-%   CON/PROBLEM: Risk of setting values in skeletons without realizing they are
-%                overridden by BICAS. ==> Confusion ==> Wasted time.
-%     PROPOSAL: Set to special human-readable value in skeleton.
-%       Ex: "Value overwritten by RCS."
 
 % ASSERTIONS
 assert(isa(OutputDataset, 'bicas.OutputDataset'))
@@ -263,7 +254,7 @@ end    % for
 
 % Normalize to the data format used in datasets.
 if isempty(ga_SPICE_KERNELS)
-  ga_SPICE_KERNELS = {' '};
+  ga_SPICE_KERNELS = {'none'};
 end
 end
 
@@ -273,8 +264,8 @@ end
 
 
 
-% (1) Given a set of RCTDs, obtain (column) cell array with elements equal to the
-% field value of every RCTD.
+% (1) Given a set of RCTDs, obtain (column) cell array with elements equal to
+%     the field value of every RCTD.
 % (2) Normalize empty, absent values.
 %
 % NOTE: Zero RCTDs ==> Zero GA enties (*NOT* one GA entry with one whitespace).
@@ -285,6 +276,7 @@ gaCa = cell(0, 1);
 
 for i = 1:numel(RctdCa)
   Rctd = RctdCa{i};
+  assert(isa(Rctd, 'bicas.proc.L1L2.cal.rct.RctDataAbstract'))
 
   rctdValue = Rctd.(rctdFieldName);
   assert(~iscell(rctdValue))
