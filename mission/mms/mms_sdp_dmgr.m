@@ -237,19 +237,40 @@ classdef mms_sdp_dmgr < handle
           if(isempty(DATAC.(param)))
             % first DFG file
             DATAC.(param).dataObj = dataObj;
-            x = getdep(dataObj,vPfx);
-            time = x.DEPEND_O.data;
+            DfgTs = get_ts(dataObj, vPfx); % Get a temporary TSeries
+            if(any(diff(DfgTs.time.ttns)<=0))
+              % If any duplicate timestamps are found, use the last data
+              % point and disregard the first duplicate(-s), same approach as for DefAtt.
+              % This was added here following a problem with DFG,
+              % (mms3_dfg_srvy_l2pre_20230518_v5.399.0.cdf).
+              errStr = 'FOUND NEGATIVE or Zero diff timestamps in DFG, try cleaning it up (use last data point in case of duplicate times)';
+              irf.log('warning', errStr);
+              idxBad = [diff(DfgTs.time.ttns)==0; false]; % Identify first duplicate
+              DfgTs = DfgTs(~idxBad);
+            end
+            % Now check for monotonically increasing time
+            time = DfgTs.time.ttns;
             check_monoton_timeincrease(time, param);
-            DATAC.(param).B_dmpa = get_ts(dataObj, vPfx); % TSeries
+            DATAC.(param).B_dmpa = DfgTs; % TSeries
           else
             % Second DFG file
             DATAC.(param).dataObj2 = dataObj; % Store dataObj.
-            x = getdep(dataObj,vPfx);
-            time = x.DEPEND_O.data;
+            DfgTs = get_ts(dataObj, vPfx); % Get a temporary TSeries
+            if(any(diff(DfgTs.time.ttns)<=0))
+              % If any duplicate timestamps are found, use the last data
+              % point and disregard the first duplicate(-s), same approach as for DefAtt.
+              % This was added here following a problem with DFG,
+              % (mms3_dfg_srvy_l2pre_20230518_v5.399.0.cdf).
+              errStr = 'FOUND NEGATIVE or Zero diff timestamps in DFG, try cleaning it up (use last data point in case of duplicate times)';
+              irf.log('warning', errStr);
+              idxBad = [diff(DfgTs.time.ttns)==0; false]; % Identify first duplicate
+              DfgTs = DfgTs(~idxBad);
+            end
+            % Now check for monotonically increasing time
+            time = DfgTs.time.ttns;
             check_monoton_timeincrease(time, param);
-            B_dmpa = get_ts(dataObj, vPfx); % TSeries
             % Combine the two into one, based on unique timestamps.
-            DATAC.(param).B_dmpa = combine(DATAC.(param).B_dmpa, B_dmpa);
+            DATAC.(param).B_dmpa = combine(DATAC.(param).B_dmpa, DfgTs);
           end
 
         case('hk_101')
@@ -1567,9 +1588,21 @@ classdef mms_sdp_dmgr < handle
       function check_monoton_timeincrease(time, dataType)
         % Short function for verifying Time is increasing.
         if(any(diff(time)<=0))
-          err_str = ['Time is NOT increasing for the datatype ', dataType];
-          irf.log('critical', err_str);
-          error('MATLAB:MMS_SDP_DMGR:TIME:NONMONOTON', err_str);
+          % IF DFG don't consider this critical, only serious (and clean up
+          % data points)
+          if(isequal(dataType, 'dfg'))
+            % problematic file example MMS3 20230518
+            % (specifically mms3_dfg_srvy_l2pre_20230518_v5.399.0.cdf)
+            err_str = ['Time is NOT increasing for the datatype ', dataType,...
+              '. Trying to clean it up (keeping last value only for eact timestamp)'];
+            irf.log('warning', err_str);
+            keepIdx = [1; diff(time)>0];
+            keyboard
+          else
+            err_str = ['Time is NOT increasing for the datatype ', dataType];
+            irf.log('critical', err_str);
+            error('MATLAB:MMS_SDP_DMGR:TIME:NONMONOTON', err_str);
+          end
         end
       end
     end
