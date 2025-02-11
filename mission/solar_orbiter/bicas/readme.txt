@@ -44,7 +44,6 @@ of all other (groups of) arguments is arbitrary.
 --help             Print "help-ish" text
 
 
-
 =========================
  Common input parameters
 =========================
@@ -59,7 +58,6 @@ Available S/W modes can be found in the S/W descriptor. They are listed under
 used on as CLI argument.
 
 
-
 ===========================
  Specific input parameters
 ===========================
@@ -70,7 +68,6 @@ descriptor under "modes" --> (specific mode) --> "inputs"
 --> Name of subsection, e.g. "input_hk", "input_sci".
 Example: an input subsection "input_hk" means that there is a required parameter
 "--input_hk <path_to_file>".
-
 
 
 ===============

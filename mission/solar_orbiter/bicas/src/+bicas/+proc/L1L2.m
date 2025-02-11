@@ -326,9 +326,9 @@ classdef L1L2
       % NOTE: The two cases are different in the indexes they use for
       % OutSciZv.
       if C.isCwf
-        %=========
-        %   CWF
-        %=========
+        %===========
+        % CASE: CWF
+        %===========
 
         % ASSERTIONS
         assert(nSamplesPerRecordChannel == 1, ...
@@ -361,9 +361,9 @@ classdef L1L2
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
 
       elseif C.isSwf
-        %=========
-        %   SWF
-        %=========
+        %===========
+        % CASE: SWF
+        %===========
 
         if     C.isLfr
           SAMPLES_PER_RECORD_CHANNEL = ...

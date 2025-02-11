@@ -43,18 +43,18 @@
 %       The corresponding field of an instantiated dataobj. Nx12 cell array where
 %       {iZv,  1} = ZV name
 %       {iZv,  2} = Size of record. Row vector, at least length 2.
-%       {iZv,  3} = NOT USED. dataobj: Uknown meaning. Scalar number.
+%       {iZv,  3} = NOT USED. dataobj: Unknown meaning. Scalar number.
 %       {iZv,  4} = String representing data type (tt2000, single, char etc)
 %       {iZv,  5} = NOT USED. dataobj: "Record variance", string representing
 %                     on which dimensions the ZV changes. T=True,
 %                     F=False.
-%       {iZv,  6} = NOT USED. dataobj: Uknown meaning. String = 'Full' (always?)
+%       {iZv,  6} = NOT USED. dataobj: Unknown meaning. String = 'Full' (always?)
 %       {iZv,  7} = Compression algorithm, if any.
-%       {iZv,  8} = NOT USED. dataobj: Uknown meaning. Scalar number
+%       {iZv,  8} = NOT USED. dataobj: Unknown meaning. Scalar number
 %       {iZv,  9} = Pad value
-%       {iZv, 10} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
-%       {iZv, 11} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
-%       {iZv, 12} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
+%       {iZv, 10} = NOT USED. dataobj: Unknown meaning. Scalar number or empty.
+%       {iZv, 11} = NOT USED. dataobj: Unknown meaning. Scalar number or empty.
+%       {iZv, 12} = NOT USED. dataobj: Unknown meaning. Scalar number or empty.
 %       "NOT USED" = Not used by this function.
 % varargin
 %       Settings passed to irf.utils.interpret_settings_args(). See

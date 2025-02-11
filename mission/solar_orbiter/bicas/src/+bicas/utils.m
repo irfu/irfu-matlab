@@ -87,7 +87,7 @@ classdef utils
 
     % Log human readable summary of a set of zVar-like variables.
     %
-    % NOTE: Ignores string ZVs.
+    % NOTE: Ignores string ZVs (char arrays).
     % NOTE: Can not handle FPAs.
     %
     %
@@ -102,7 +102,7 @@ classdef utils
       % PROBLEM: Can not manually specify which variables are Epoch-like.
       % PROBLEM: Can not manually specify variable name strings.
       %   Ex: process_HK_CDF_to_HK_on_SCI_TIME: Print different versions
-      %       of time for comparison. Want whitespace
+      %       of time for comparison. Want whitespace.
       %
       % PROPOSAL: For min-max values, also print difference.
       %   Ex: Time difference for Epoch.
@@ -138,7 +138,7 @@ classdef utils
         elseif ischar(zvValue)
 
           % Example of string valued (but irrelevant) CDF zVariables:
-          % ACQUISITION_TIME_LABEL
+          % ACQUISITION_TIME_LABEL, ACQUISITION_TIME_UNITS, SAMPLE_LABEL
           % Ignore. Do nothing.
 
         else
