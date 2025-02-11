@@ -404,12 +404,20 @@ classdef L1L2
         OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A("AC_V23"));
 
         % ASSERTION
-        % NOTE: Must exclude ZV "SAMPLE_IDX".
+        % NOTE: Must exclude ZVs "SAMPLE_IDX", "SAMPLE_LABEL".
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
 
         % Autogenerate data for CDF metadata ZV that is too large to be set in
         % the skeletons.
         OutSci.Zv.SAMPLE_IDX   = [0:(SAMPLES_PER_RECORD_CHANNEL-1)];
+        OutSci.Zv.SAMPLE_LABEL = num2str(OutSci.Zv.SAMPLE_IDX(:));
+        % IMPLEMENTATION NOTE: It seems that BICAS only supports string-valued
+        % zVariables on the form of char arrays (arrays of NxM characters, where
+        % each row counts as a string, i.e. it is equivalent to a column vector
+        % of strings!). It still seems that such de facto column vectors of
+        % strings can be written as row vectors of strings to zVariables though!
+        % Ex: SAMPLE_LABEL
+        % /Erik P G Johansson 2025-02-11
 
       else
         error('BICAS:Assertion:IllegalArgument', ...
@@ -425,7 +433,7 @@ classdef L1L2
         'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
         'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
         'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, ...
-        {'SAMPLE_IDX'})
+        {'SAMPLE_IDX', 'SAMPLE_LABEL'})
 
     end    % process_DCOP_to_CDF
 
