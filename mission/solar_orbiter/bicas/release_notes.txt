@@ -241,3 +241,5 @@ Version x.y.z
     -->PROCESSING.CALIBRATION.VOLTAGE.DISABLED
 * Convert numeric-valued settings which are de facto boolean, to logical-valued
   for more consistency.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2025-02-10.
