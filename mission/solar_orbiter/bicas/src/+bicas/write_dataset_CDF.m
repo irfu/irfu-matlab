@@ -291,7 +291,7 @@ assert(isa(QfFpa, 'bicas.utils.FPArray'))
 % Obtain global QUALITY_FLAG cap from settings
 % ============================================
 [qfMax, key] = Bso.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
-% ASSERT: Valid setting.
+% ASSERT: Valid setting (requirement before converting to uint8)
 assert(isfinite(qfMax))
 qfMax = uint8(qfMax);
 assert(bicas.utils.validate_ZV_QUALITY_FLAG(qfMax), ...

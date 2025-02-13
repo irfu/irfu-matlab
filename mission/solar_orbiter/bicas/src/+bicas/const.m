@@ -17,7 +17,7 @@ classdef const
   % PROPOSAL: Split up in multiple files.
   %   NOTE: There is already bicas.sconst.
   %   --
-  %   PRO: Too large file.
+  %   PRO: Too large file. ~886 rows
   %     PRO: init_GA_MODS_DB() is  ~300 rows and will grow over time.
   %     PRO: init_SWD_metadata() is ~170 rows and will grow over time (if
   %          keeping commented-out info from every old BICAS version).
@@ -35,6 +35,8 @@ classdef const
   %     Ex: init_GA_MODS_DB(), init_SWD_metadata()
   %     PROPOSAL: New file is dependent on bicas.const (but not the reverse).
   %   PROPOSAL: Separate file for quality configuration.
+  %
+  %
   %
   % PROPOSAL: Error category for bad input datasets (both science and HK).
   %   PRO: Has similar for RCTs.
