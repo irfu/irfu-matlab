@@ -381,8 +381,8 @@ classdef dsr
     % OsrFpa
     %       (iCdfRecord, iChannel). FPA double.
     % nMinNfpSamplesPerBin
-    %       Minimum number of NFP samples (per channel/column) per bin for
-    %       not returning FP.
+    %       Minimum number of NFP samples (per channel/column) required per bin
+    %       for the function to not return FP for bin.
     % iRecordsInBinCa
     %       Column cell array. {iBin, 1}
     %

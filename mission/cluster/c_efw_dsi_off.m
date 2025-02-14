@@ -124,7 +124,7 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2023 01 01 00 0 0]), Ddsi = [ 00 00 00 0.64 ];
+if t>=toepoch([2023 01 01 00 0 0]), Ddsi = [ 00 00 00 0.54 ];
 elseif t>=toepoch([2022 01 01 00 0 0]), Ddsi = [ 00 3.67 00 0.45 ];
 elseif t>=toepoch([2021 01 01 00 0 0]), Ddsi = [ 00 2.99 00 0.35 ];
 elseif t>=toepoch([2020 01 01 00 0 0]), Ddsi = [ 00 2.59 00 0.29 ];
