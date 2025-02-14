@@ -221,10 +221,11 @@ Version 8.3.0
 * Removed setting
   PROCESSING.RCT_REGEXP.BIAS
 * Changed glob.attributes TIME_MIN, TIME_MAX to only have six decimals.
-* Requires updated master CDF versions (better metadata) for all datasets.
+* Requires updated master CDF versions (better metadata) for all output
+  datasets.
 
 
-Version x.y.z
+Version 8.4.0
 -------------
 * Rename settings, mostly for consistency:
        PROCESSING.L2.DETECT_SWEEPS.*
@@ -243,3 +244,5 @@ Version x.y.z
   for more consistency.
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2025-02-10.
+* Requires new L2 master CDFs V17, updated for compliance with archiving
+  conventions after SOAR and ROC feedback etc.
