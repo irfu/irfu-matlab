@@ -31,8 +31,8 @@
 % (though implemented as numeric values) should always have suffix
 % _ENABLED or _DISABLED.
 % --
-% The unit/format of setting values should be specified in the key as a suffix separated
-% by underscore (not period).
+% The unit/format of setting values should be specified in the key as a suffix
+% separated by underscore (not period).
 %     Seconds:    _SEC
 %     UTC vector: _UTC
 %     TM units:   _TM

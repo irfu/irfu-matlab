@@ -7,7 +7,7 @@
 classdef Saturation___UTEST < matlab.unittest.TestCase
 % PROPOSAL: Split up into multiple files.
 %   CON: init_object() is used by tests for multiple methods.
-%   CON: Might want to share isntance field S = bicas.sconst.C.S_SSID_DICT;
+%   CON: Might want to share instance field S = bicas.sconst.C.S_SSID_DICT;
 
 
 

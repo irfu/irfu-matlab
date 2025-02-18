@@ -2472,7 +2472,7 @@
             <startTimeUtc>2024-10-16T12:40:31</startTimeUtc>
             <stopTimeUtc> 2024-10-16T12:50:16</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Second trhuster firing the same day (unusual). Easy to miss, but periodicity matches.</description>
+            <description>Second thruster firing the same day (unusual). Easy to miss, but periodicity matches.</description>
         </event>
         <event>
             <startTimeUtc>2024-10-27T01:04:28</startTimeUtc>
