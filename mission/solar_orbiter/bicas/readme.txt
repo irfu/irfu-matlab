@@ -289,3 +289,11 @@ when downsampling quality bitmasks      | in the output data.
 (zvariables QUALITY_BITMASK,            |
 L2_QUALITY_BITMASK, L3_QUALITY_BITMASK) |
 and zVariable QUALITY_FLAG.             |
+
+
+=========================================================
+ ROC modifying BICAS output CDFs due for quality reasons
+=========================================================
+ROC sometimes modifies CDFs, *after* they have been produced by BICAS. This may
+happen e.g. for time intervals when e.g. ANT3 has failed and QUALITY_FLAG is
+capped to 1 by ROC. See global attribute CAVEATS.
