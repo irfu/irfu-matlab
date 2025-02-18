@@ -246,3 +246,11 @@ Version 8.4.0
   2025-02-10.
 * Requires new L2 master CDFs V17, updated for compliance with archiving
   conventions after SOAR and ROC feedback etc.
+* Bug: L2_QUALITY_BITMASK saturation bits set also when reconstructed channels
+  exceed automatic saturation detection thresholds.
+
+
+Version x.y.z
+-------------
+* Bugfix: Automatic saturation detection only sets L2_QUALITY_BITMASK saturation
+  bits when samples exceed thresholds on non-reconstructed channels.

@@ -64,6 +64,8 @@ classdef sconst
       C.SSID_K_DICT    = configureDictionary('bicas.proc.L1L2.SignalSourceId',      'uint8');
       C.SDID_K_DICT    = configureDictionary('bicas.proc.L1L2.SignalDestinationId', 'uint8');
 
+      C.ASID_SSID_K_DICT = configureDictionary('bicas.proc.L1L2.AntennaSignalId', 'uint8');
+
       % Global list of k values for ALL classes. For avoiding collisions.
       kGlobalArray = [];
 
@@ -72,9 +74,11 @@ classdef sconst
         Ssid = bicas.proc.L1L2.SignalSourceId(Asid);
 
         C.S_ASID_DICT(fn) = Asid;
-        add_SSID(fn, k, Ssid)
+        kSsid = add_SSID(fn, k, Ssid);
         add_SDID(fn, k, bicas.proc.L1L2.SignalDestinationId(Asid))
         C.S_ROUTING_DICT(fn) = bicas.proc.L1L2.Routing(Ssid);
+
+        C.ASID_SSID_K_DICT(Asid) = kSsid;
       end
 
       function assert_new_k(k)
@@ -83,7 +87,7 @@ classdef sconst
         kGlobalArray(end+1) = k;
       end
 
-      function add_SSID(fn, k, Ssid)
+      function kSsid = add_SSID(fn, k, Ssid)
         k2 = k+100;
         assert_new_k(k2)
 
@@ -91,6 +95,8 @@ classdef sconst
         C.SSID_S_K_DICT(fn) = k2;
         C.K_SSID_DICT(k2)   = Ssid;
         C.SSID_K_DICT(Ssid) = uint8(k2);
+
+        kSsid = k2;
       end
 
       function add_SDID(fn, k, Sdid)

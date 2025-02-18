@@ -279,6 +279,18 @@ classdef Saturation
         ' One sequence of records with identical settings at a time.'])
       Tmk = bicas.utils.Timekeeper('get_voltage_saturation_quality_bit', L);
 
+      % For a given ASID, determine which rows contain samples which originate
+      % from L1R (i.e. which were not reconstructed). Set all other samples to
+      % NaN.
+      function asidSamplesAr = set_reconstructed_samples_to_NaN(asidSamplesAr, Asid)
+        kSsid = bicas.sconst.C.ASID_SSID_K_DICT(Asid);
+        bUse = any(repmat(kSsid, [nRows, 1]) == bltsKSsidAr, 2);
+        asidSamplesAr(~bUse, :) = NaN;
+
+        L.logf('debug', 'kSsid = %i', kSsid)
+        L.logf('debug', 'unique(bUse)              = [%s]', strjoin(string(unique(bUse)),      ','))
+      end
+
       % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
       % code, but it is difficult to use the same implementation for both
       % without (1) making the implementation harder to understand and (2)
@@ -289,13 +301,18 @@ classdef Saturation
         %===========
         tsfAr = false(nRows, 1);
         for Asid = AsrSamplesAVoltSrm.keys'
+          asidSamplesAr = set_reconstructed_samples_to_NaN(AsrSamplesAVoltSrm(Asid), Asid);
+
           asidTsfAr = obj.get_one_ASR_CWF_channel_TSF_bit_array(...
             bicas.proc.L1L2.SignalSourceId(Asid), isAchgFpa, ...
-            AsrSamplesAVoltSrm(Asid));
+            asidSamplesAr);
+
+          % L.logf('debug', 'unique(asidTsfAr)         = [%s]', strjoin(string(unique(asidTsfAr)), ','))
 
           % Merge (OR) bits over ASIDs.
           tsfAr = any([tsfAr, asidTsfAr], 2);
         end
+        % L.logf('debug', 'unique(tsfAr) = [%s]', strjoin(string(unique(tsfAr)), ','))
 
         isSaturatedAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
           tt2000Ar, tsfAr, ...
@@ -306,13 +323,19 @@ classdef Saturation
         %===========
         isSaturatedAr = false(nRows, 1);
         for Asid = AsrSamplesAVoltSrm.keys'
+          asidSamplesAr = set_reconstructed_samples_to_NaN(AsrSamplesAVoltSrm(Asid), Asid);
+
           asidIsSaturatedAr = obj.get_one_ASR_SWF_channel_saturation_bit_array(...
             bicas.proc.L1L2.SignalSourceId(Asid), isAchgFpa, ...
-            AsrSamplesAVoltSrm(Asid), zvNValidSamplesPerRecord);
+            asidSamplesAr, zvNValidSamplesPerRecord);
+
+          % L.logf('debug', 'unique(asidIsSaturatedAr) = [%s]', strjoin(string(unique(asidIsSaturatedAr)), ','))
 
           % Merge (OR) bits over ASIDs.
           isSaturatedAr = any([isSaturatedAr, asidIsSaturatedAr], 2);
         end
+
+        % L.logf('debug', 'unique(isSaturatedAr) = [%s]', strjoin(string(unique(isSaturatedAr)), ','))
       end
 
 
