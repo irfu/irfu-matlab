@@ -192,8 +192,8 @@ classdef L1L2
 
 
       %==================================================================
-      % Derive DIFF_GAIN / isAchgFpa
-      % ----------------------------
+      % Derive isAchgFpa
+      % ----------------
       % NOTE: Not perfect handling of time when 1 snapshot/record, since
       % one should ideally use time stamps for every LFR _sample_.
       %==================================================================

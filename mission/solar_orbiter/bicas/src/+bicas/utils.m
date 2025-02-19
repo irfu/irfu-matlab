@@ -292,7 +292,7 @@ classdef utils
       %   ** Number of and percentage NaN,
       %   ** unique values, min-max.
       % Primarily intended for zVariables and derivatives thereof. Can be
-      % useful for knowing which settings are used (e.g. DIFF_GAIN),
+      % useful for knowing which settings are used (e.g. HK_BIA_DIFF_GAIN),
       % constant/varying bias current, suspect input datasets.
       %
       % Effectively a utility function for bicas.utils.log_zVar().

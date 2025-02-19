@@ -142,7 +142,7 @@ NOTE: bicas.const contains hard-coded constants describing some of this
  Global capping (max) for QUALITY_FLAG
 =======================================
 The value of zVariable QUALITY_FLAG in any CDF produced by BICAS can not exceed
-the value of setting PROCESSING.ZV_QUALITY_FLAG_MAX.
+the value of setting PROCESSING.ZV_QUALITY_FLAG_MAX (=3 as of 2025-02-19).
 
 Condition                      | Action taken when condition applies
 --------------------------------------------------------------------
@@ -215,12 +215,12 @@ Condition             | Action taken when condition applies
 -------------------------------------------------------------------------
 "partially saturated" | L2 CWF, SWF/RSWF:
                       |     Set L2_QUALITY_BITMASK: "partially saturated"
-                      |     Cap QUALITY_FLAG<=1
+                      |     Cap QUALITY_FLAG<=1.
 -------------------------------------------------------------------------
 "fully saturated"     | L2 CWF, SWF/RSWF:
                       |     Set L2_QUALITY_BITMASK: "full saturation"
                       |                             AND "partial saturation"
-                      |     Cap QUALITY_FLAG<=0
+                      |     Set QUALITY_FLAG=0.
 
 
 =================
@@ -251,7 +251,7 @@ Condition     | Action taken when condition applies
 ---------------------------------------------------------
 "bad density" | L3 DENSITY:
               |     Set L3_QUALITY_BITMASK: "bad density"
-              |     Cap QUALITY_FLAG<=1
+              |     Cap QUALITY_FLAG<=1.
 
 
 =============================================
@@ -259,7 +259,7 @@ Condition     | Action taken when condition applies
 =============================================
 L3 EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E only, but only when
 its quality is deemed good enough using setting
-PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
+PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-02-19).
 
 Condition                                  | Action taken when condition applies
 --------------------------------------------------------------------------------
@@ -282,7 +282,7 @@ Condition                               | Action taken when condition applies
 Fewer than                              | Bin is represented by a fill value
 bicas.const.N_MIN_OSR_SAMPLES_PER_BIN   | in the output data (both downsampled
 non-fill value samples in a bin         | value and modified standard
-when downsampling *SCIENCE* data.       |  deviation).
+when downsampling *SCIENCE* data.       | deviation).
 ------------------------------------------------------------------------------
 Zero non-fill value samples in a bin    | Bin is represented by a fill value
 when downsampling quality bitmasks      | in the output data.
