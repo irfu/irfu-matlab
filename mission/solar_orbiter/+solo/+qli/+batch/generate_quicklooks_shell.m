@@ -13,14 +13,14 @@
 %
 % NOTES
 % =====
-% * This script is NOT intended to be called from MATLAB by the average
-%   user as is. See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT.
+% * THIS SCRIPT IS NOT INTENDED TO BE CALLED FROM MATLAB BY THE AVERAGE
+%   USER AS IS. See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT.
 %   It may however be seen as an example of how to call
 %   solo.qli.batch.generate_quicklooks_syntax().
+% * This function is designed for being called from the OS, e.g. shell scripts
+%   (i.e. not from MATLAB). All arguments are therefore strings (char arrays).
 % * This script is intended for being used for official official generation of
 %   QLIs, including cron jobs.
-% * This function is designed for being called from bash/the OS (not from
-%   MATLAB). All arguments are therefore strings (char arrays).
 % * See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT for the meaning
 %   of abbreviations.
 %
