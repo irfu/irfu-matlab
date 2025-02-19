@@ -17,7 +17,7 @@
 % 	- One file per team
 % 	- Static name. I propose something simple —> lfr/bia/scm/tds/thr_rct_validity.json
 % 	- File must be delivered by teams with any new RCT file in the cal/
-%     subfolder in the LESIA sftp server
+%     subfolder in the LIRA sftp server
 %
 %     And to make it simple as possible:
 %

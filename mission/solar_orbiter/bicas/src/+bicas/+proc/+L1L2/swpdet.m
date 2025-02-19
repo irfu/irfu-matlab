@@ -9,7 +9,7 @@
 %
 % NOTE: 2024-11-27: L1 QUALITY_BITMASK in new sample datasets (not yet in
 % production) contains bits for sweeps but without adding time margins before
-% and after. LESIA has not yet used in "production" but are planned
+% and after.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

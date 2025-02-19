@@ -200,7 +200,7 @@ classdef findread
       %
       % NOTE: 2024-12-10: Has found old RCS filename
       % SOLO_CAL_RPW-BIAS_V202011191204.cdf
-      % in LESIA's BRVF
+      % in LIRA's BRVF
       % (/data/solo/remote/data/CAL/bias_rct_validity.json).
       errorMsg = sprintf([...
         'MATLAB''s jsondecode() only returns approximate name strings for JSON ', ...

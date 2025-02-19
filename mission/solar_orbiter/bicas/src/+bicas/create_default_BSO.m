@@ -10,7 +10,7 @@
 %
 % DEFAULT VALUE POLICY
 % ====================
-% * Default values must be the ones usable when BICAS is run at ROC/LESIA for
+% * Default values must be the ones usable when BICAS is run at ROC/LIRA for
 %   official processing L1R-->L2.
 % * Default values should make errors crash BICAS, except for temporary
 %   solutions to known problems while they are being worked on.
