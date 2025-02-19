@@ -3,17 +3,24 @@
 % being run on brain/spis for the purpose of OFFICIAL GENERATION of quicklooks,
 % e.g. in cron jobs.
 %
+% Actions:
+% (1) Read configuration file  (an alternative interface).
+% (2) Initialize "SolO DB"     (a global state).
+% (3) Configure parallel pool  (a global state).
+% (4) Call solo.qli.batch.generate_quicklooks_syntax() to do most of
+%     the work.
+%
 %
 % NOTES
 % =====
-% * This script is NOT intended to be called from MATLAB by the average
-%   user as is. See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT.
+% * THIS SCRIPT IS NOT INTENDED TO BE CALLED FROM MATLAB BY THE AVERAGE
+%   USER AS IS. See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT.
 %   It may however be seen as an example of how to call
 %   solo.qli.batch.generate_quicklooks_syntax().
+% * This function is designed for being called from the OS, e.g. shell scripts
+%   (i.e. not from MATLAB). All arguments are therefore strings (char arrays).
 % * This script is intended for being used for official official generation of
 %   QLIs, including cron jobs.
-% * This function is designed for being called from bash/the OS (not from
-%   MATLAB). All arguments are therefore strings (char arrays).
 % * See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT for the meaning
 %   of abbreviations.
 %
@@ -108,7 +115,7 @@
 %     Continuous time interval.
 % "LOGS"              logType1 ... logTypeN
 %     Search log file(s) for dataset filenames.
-%     LOG_TYPE_i = String constant specifying type of log. "LESIA" or "SOAR".
+%     LOG_TYPE_i = String constant specifying type of log: "LESIA" or "SOAR".
 %     Corresponds to keys into solo.qli.batch.const.SOURCE_DSI_DICT.
 % "DMRQ"              maxNbrOfDays  firstDate  lastDate
 %     Use dates for which the file modification dates of the newest dataset is
