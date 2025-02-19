@@ -256,3 +256,4 @@ Version x.y.z
 -------------
 * Bugfix: Automatic saturation detection only sets L2_QUALITY_BITMASK saturation
   bits when samples exceed thresholds on non-reconstructed channels.
+* Require new L3 master CDFs V06/V07.
