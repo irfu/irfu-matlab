@@ -252,7 +252,7 @@ Version 8.4.0 (2025-02-14)
   exceed automatic saturation detection thresholds.
 
 
-Version x.y.z
+Version 8.4.1
 -------------
 * Bugfix: Automatic saturation detection only sets L2_QUALITY_BITMASK saturation
   bits when samples exceed thresholds on non-reconstructed channels.
