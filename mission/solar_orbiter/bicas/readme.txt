@@ -202,8 +202,8 @@ it is assumed that no sweep is underway.
 ============
 BICAS can determine that L2 data is either "partially saturated" or
 "fully saturated" in the following ways:
-(1) time interval being labelled as "partially saturated" in the NSO table,
-(2) time interval being labelled as "fully saturated" in the NSO table,
+(1) time interval is labelled as "partially saturated" in the NSO table,
+(2) time interval is labelled as "fully saturated" in the NSO table,
 (3) algorithm examines L2 data and determines that it is "fully saturated".
 NOTE: There is no algorithm for determining whether L2 data is "partially
       saturated".
