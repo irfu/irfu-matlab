@@ -136,7 +136,7 @@ elseif (rotflag(1) == 'r')
     return;
   end
   vectors = varargin(rotflagpos+1:end);
-  if (numel(vectors) == 1)
+  if isscalar(vectors)
     Rx = vectors{1};
     if(length(Rx) ~= 3)
       irf.log('critical','Vector format not recognized.');

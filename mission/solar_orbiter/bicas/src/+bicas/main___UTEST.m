@@ -163,10 +163,10 @@ classdef main___UTEST < matlab.unittest.TestCase
       test('--swdescriptor')
 
       test('--swdescriptor', ...
-        '--set', 'SWM.L1-L2_ENABLED',         '1', ...
-        '--set', 'SWM.L2-L2_CWF-DSR_ENABLED', '1', ...
-        '--set', 'SWM.L2-L3_ENABLED',         '1')
-      test('--help', '--set', 'SWM.L1-L2_ENABLED', '1')
+        '--set', 'SWM.L1-L2_ENABLED',         'true', ...
+        '--set', 'SWM.L2-L2_CWF-DSR_ENABLED', 'true', ...
+        '--set', 'SWM.L2-L3_ENABLED',         'true')
+      test('--help', '--set', 'SWM.L1-L2_ENABLED', 'true')
 
       test('--version', '--log', '/ignored_path_to_log_file')
 
@@ -194,7 +194,7 @@ classdef main___UTEST < matlab.unittest.TestCase
 
       configFileAPath = bicas.main___UTEST.write_specified_config_file(testCase, 'test.conf');
 
-      test('--help', '--config', configFileAPath, '--set', 'SWM.L1-L2_ENABLED', '1')
+      test('--help', '--config', configFileAPath, '--set', 'SWM.L1-L2_ENABLED', 'true')
     end
 
 

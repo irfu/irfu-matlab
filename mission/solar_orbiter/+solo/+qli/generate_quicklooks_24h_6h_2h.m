@@ -54,16 +54,6 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 %      2023-02-05: Normal. Has one colorbar for "f (kHz)"
 %      2023-02-06: Wider panels. Has no colorbar for "f (kHz)"
 %
-% BUG: 24h, panel 2, |B| (right axis) is scaled badly on y axis. Too much extra
-% space. Old quicklooks were better.
-% a44b3127 Erik P G Johansson (2024-03-21 12:56:51 +0100) SolO QLI: Change terms: official {processing-->generation}
-% Ex: 2023-01-05
-% irf_zoom(h(2), 'y', [minAbsB-1, maxAbsB+1]); at plotting gives good zoom, but
-% set_YLim_YTick(h([]), h([2]), h([])) later re-zooms in worse way.
-% /Erik P G Johansson 2024-03-21
-% Should be solved.
-% /Erik P G Johansson 2024-03-25
-%
 % BUG: https://github.com/irfu/irfu-matlab/issues/138
 % /Erik P G Johansson 2024-03-28
 %
@@ -89,8 +79,10 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % PROPOSAL: Eliminate calls to tlim(). They should be unnecessary since the
 %           caller sets them correctly anyway.
 %   PROPOSAL: Assert correct limits?
-%     NOTE: Data.swaEnergyMetadata does not have any time dependence.
-%   NOTE: Tint24h is a function argument which only used for
+%     NOTE: The Data.swaEnergyMetadata variable does not contain any explicit
+%           time dependence. It is implicit that it covers the time interval
+%           specified in Tint24h.
+%   NOTE: Tint24h is a function argument which is only used for:
 %     * Trimming TSeries in time (unnecessary). Most use cases.
 %     * Zooming in x.
 %     * solo.qli.utils.get_context_info_strings()
@@ -163,10 +155,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 1', tBeginSec);
 %=======================
 % Fill panel 2: N & |B|
 %=======================
-hold(h(2), 'on');
 if ~isempty(Data.Ne)
   irf_plot(h(2), Data.Ne.tlim(Tint24h), '-', 'color', COLORS(1,:), 'linewidth', LINE_WIDTH);
 end
+hold(h(2), 'on');
 if ~isempty(Data.Npas)
   irf_plot(h(2), Data.Npas.tlim(Tint24h), '-', 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
@@ -208,8 +200,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 2', tBeginSec);
 %==========================================
 % Fill panel 3 & 4: Spectra derived from B
 %==========================================
-IRF_EBSP_FREQ_MIN_HZ            = 0.05;
-B_SAMPLING_PERIOD_THRESHOLD_SEC = 0.1250*0.95;  % 0.1250*0.95 = 0.1187
+IRF_EBSP_FREQ_MIN_HZ             = 0.05;
+B_SAMPLING_PERIOD_THRESHOLD_SEC  = 0.1250*0.95;  % 0.1250*0.95 = 0.1187
+DEGREE_OF_POLARIZATION_THRESHOLD = 0.7;
+
 if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
   if  ~isempty(rmmissing(Data.B.data))
     B = Data.B;
@@ -241,8 +235,6 @@ if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
     dop         = Ebsp.dop;    % DOP = Degree Of Polarization
 
     % Remove points with very low degree of polarization
-    DEGREE_OF_POLARIZATION_THRESHOLD = 0.7;
-    % iRemove = find(dop < DEGREE_OF_POLARIZATION_THRESHOLD);
     bRemove = dop < DEGREE_OF_POLARIZATION_THRESHOLD;
     ellipticity(bRemove) = NaN;
 
@@ -280,8 +272,8 @@ if ~isempty(Data.B) && solo.qli.const.B_SPECTRA_ENABLED
     Specrec.f       = frequency;
     Specrec.p       = ellipticity;
     Specrec.f_label = '';
-    Specrec.p_label = {'Ellipticity', 'DOP>0.7'};
-    irf_spectrogram(h(4), Specrec, 'log', 'donotfitcolorbarlabel');
+    Specrec.p_label = {'Ellipticity', sprintf('DOP>%g', DEGREE_OF_POLARIZATION_THRESHOLD)};
+    irf_spectrogram(h(4), Specrec, 'lin', 'donotfitcolorbarlabel');
     set(     h(4), 'yscale', 'log');
     % set(h(1), 'ytick', [1e1 1e2 1e3]);
     caxis(   h(4), [-1 1])
@@ -336,10 +328,10 @@ tBeginSec = solo.qli.utils.log_time('End panel 6', tBeginSec);
 %=====================================
 % Fill panel 7: Vrpw, Vpas velocities
 %=====================================
-hold(h(7), 'on');
 if ~isempty(Data.Vrpw)
   irf_plot(h(7),-Data.Vrpw, 'o-', 'color', COLORS(1,:));
 end
+hold(h(7), 'on');
 if ~isempty(Data.Vpas)
   irf_plot(h(7), Data.Vpas.x.tlim(Tint24h), 'color', COLORS(2,:), 'linewidth', LINE_WIDTH);
 end
@@ -409,13 +401,13 @@ if ~isempty(Data.ieflux)
   hold(h(9), 'on');
   h9_clims = h(9).CLim;
   % Fix color axis
-  h9_medp       = mean(iDEF.p);              % MxN --> 1xN
-  h9_medp       = min(h9_medp(h9_medp>0));
-  h9_caxisRange = [log10(h9_medp)+2, max(max(log10(iDEF.p)))];
+  h9_medp           = mean(iDEF.p);              % MxN --> 1xN
+  h9_medp           = min(h9_medp(h9_medp>0));
+  h9_colorAxisRange = [log10(h9_medp)+2, max(max(log10(iDEF.p)))];
   %if (h9_medp > 0) && (h9_medp > h9_clims(1)) && (log10(h9_medp)+2 < max(max(log10(iDEF.p))))
-  if (h9_medp > 0) && (h9_medp > h9_clims(1)) && (h9_caxisRange(1) < h9_caxisRange(2))
+  if (h9_medp > 0) && (h9_medp > h9_clims(1)) && (h9_colorAxisRange(1) < h9_colorAxisRange(2))
     %caxis(h(9), [log10(h9_medp)+2 max(max(log10(iDEF.p)))])
-    caxis(h(9), h9_caxisRange)
+    clim(h(9), h9_colorAxisRange)
   end
 end
 set(     h(9), 'YScale', 'log');
@@ -556,13 +548,13 @@ text(h(1), 0, 1.2, str, 'Units', 'normalized')
 % than where their respective panels are created. Related to
 % irf_plot_axis_align()?
 yyaxis(h(2), 'left');
-h(2).YScale = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
-h(2).YTick  = [1, 10, 100];
+h(2).YScale   = 'log';       % NOTE: Later changed to LIN for non-24h quicklooks.
+h(2).YTick    = [1, 10, 100];
+h(2).YLimMode = 'auto';
 
 % Remove overlapping ticks.
 % Automatically set YLim+YTick, or automatically set YLim, or adjust YLim,
 % depending on panel.
-%set_YLim_YTick(h([1, 6:9]), h([2]), h([3:5, 10]))
 solo.qli.utils.set_YLim_YTick_automatically( h([1, 6:9 ]))
 %solo.qli.utils.set_YLim_YTick_automatically( h([2])      )
 solo.qli.utils.ensure_axes_data_tick_margins(h([3:5, 10]))
@@ -663,6 +655,7 @@ close(fig);
 
 [~] = solo.qli.utils.log_time('End of generate_quicklooks_24h_6h_2h.m', tBeginSec);
 
+% copyfile([OutputPaths.dir2h, '/../*'], '/home/erjo/temp/temp/new')
 end
 
 
@@ -679,23 +672,14 @@ assert(isa(Tint,      'EpochTT') && (length(Tint) == 2))
 
 irf_zoom(hAxesArray, 'x', Tint);
 
-%irf_zoom(hAxesArray(1), 'y');
-%adjust_panel_ylimits_N_B(  hAxesArray(2), data,      Tint)
-%adjust_panel_ylimits_Ti(   hAxesArray(5), data.Tpas, Tint)
-%adjust_panel_ylimits_VT_VN(hAxesArray(6), data.Vpas, Tint)
-%adjust_panel_ylimits_ESRF( hAxesArray(8), data.E,    Tint)
-%irf_zoom(hAxesArray(7), 'y');
-
 % NOTE: Different from for 24h plots.
 yyaxis(hAxesArray(2), 'left');
-% set_YLim_YTick(hAxesArray([1:2, 5:9]), hAxesArray([]), hAxesArray([3:4, 10]))
 solo.qli.utils.set_YLim_YTick_automatically( hAxesArray([1:2, 5:9]))
 solo.qli.utils.ensure_axes_data_tick_margins(hAxesArray([3:4, 10 ]))
 
 
 
 yyaxis(hAxesArray(2), 'right');
-% set_YLim_YTick(hAxesArray([2]), hAxesArray([]), hAxesArray([]))
 solo.qli.utils.set_YLim_YTick_automatically(hAxesArray([2]))
 
 % Update text
@@ -703,104 +687,3 @@ solo.qli.utils.set_YLim_YTick_automatically(hAxesArray([2]))
 
 solo.qli.utils.save_figure_to_file(parentDirPath, Tint)
 end
-
-
-
-% Function to remove duplicated code.
-% function adjust_panel_ylimits_N_B(hAxes, data, Tint)
-%     assert(isa(hAxes, 'matlab.graphics.axis.Axes') && isscalar(hAxes))
-%     assert(isstruct(data))
-%     assert(isa(Tint,  'EpochTT'))
-%
-%     %=============
-%     % Left Y axis
-%     %=============
-%     Neflag   = ~isempty(data.Ne)   && ~isempty(data.Ne.tlim(  Tint)) && ~all(isnan(data.Ne.tlim(Tint).data));
-%     Npasflag = ~isempty(data.Npas) && ~isempty(data.Npas.tlim(Tint));
-%     if Neflag && Npasflag
-%         yyaxis(hAxes, 'left');
-%         hAxes.YLim=[...
-%             min(floor([min(data.Npas.tlim(Tint).data),min(data.Ne.tlim(Tint).data)])),...
-%             max(ceil( [max(data.Npas.tlim(Tint).data),max(data.Ne.tlim(Tint).data)]))...
-%         ];
-%     elseif Neflag
-%         yyaxis(hAxes,'left');
-%         hAxes.YLim=[floor(min(data.Ne.tlim(Tint).data)),ceil(max(data.Ne.tlim(Tint).data))];
-%     elseif Npasflag
-%         yyaxis(hAxes,'left');
-%         hAxes.YLim=[floor(min(data.Npas.tlim(Tint).data)),ceil(max(data.Npas.tlim(Tint).data))];
-%     end
-%
-%     %==============
-%     % Right Y axis
-%     %==============
-%     if ~isempty(data.B) && ~isempty(data.B.tlim(Tint)) && ~all(isnan(data.B.abs.tlim(Tint).data))
-%         yyaxis(hAxes,'right');
-%         hAxes.YLim=[floor(min(data.B.abs.tlim(Tint).data)),ceil(max(data.B.abs.tlim(Tint).data))];
-%     end
-% end
-
-
-
-% Function to remove duplicated code.
-% function adjust_panel_ylimits_Ti(hAxes, TpasTSeries, Tint)
-%     Y_MARGIN = 2;
-%
-%     assert(isa(hAxes,       'matlab.graphics.axis.Axes') && isscalar(hAxes))
-%     assert(isa(TpasTSeries, 'TSeries') || isempty(TpasTSeries))
-%     assert(isa(Tint,        'EpochTT'))
-%
-%     if ~isempty(TpasTSeries)
-%         minTi = min(rmmissing(TpasTSeries.tlim(Tint).abs.data));
-%         maxTi = max(rmmissing(TpasTSeries.tlim(Tint).abs.data));
-%
-%         if ~isempty(minTi) && ~isempty(maxTi)
-%             % Only zoom if min & max are not NaN (==> Avoid crash).
-%             irf_zoom(hAxes,'y',[minTi-Y_MARGIN, maxTi+Y_MARGIN]);
-%         end
-%     end
-% end
-
-
-
-% Function to remove duplicated code.
-% function adjust_panel_ylimits_VT_VN(hAxes, VpasTSeries, Tint)
-%     Y_MARGIN = 10;
-%
-%     assert(isa(hAxes,       'matlab.graphics.axis.Axes') && isscalar(hAxes))
-%     assert(isa(VpasTSeries, 'TSeries') || isempty(VpasTSeries))
-%     assert(isa(Tint,        'EpochTT'))
-%
-%     if ~isempty(VpasTSeries)
-%         minVy = min(rmmissing(VpasTSeries.y.tlim(Tint).data));
-%         minVz = min(rmmissing(VpasTSeries.z.tlim(Tint).data));
-%         maxVy = max(rmmissing(VpasTSeries.y.tlim(Tint).data));
-%         maxVz = max(rmmissing(VpasTSeries.z.tlim(Tint).data));
-%         maxV = max(maxVy,maxVz);
-%         minV = min(minVy,minVz);
-%         if ~isempty(minV) && ~isempty(maxV)
-%             % Only zoom if min & max are not NaN (==> Avoid crash).
-%             irf_zoom(hAxes,'y',[minV-Y_MARGIN, maxV+Y_MARGIN]);
-%         end
-%     end
-% end
-
-
-
-% Function to remove duplicated code.
-% function adjust_panel_ylimits_ESRF(hAxes, ETSeries, Tint)
-%     Y_MARGIN = 5;
-%
-%     assert(isa(hAxes,    'matlab.graphics.axis.Axes') && isscalar(hAxes))
-%     assert(isa(ETSeries, 'TSeries') || isempty(ETSeries))
-%     assert(isa(Tint,     'EpochTT'))
-%
-%     if ~isempty(ETSeries)
-%         minEy = min(rmmissing(ETSeries.y.tlim(Tint).data));
-%         maxEy = max(rmmissing(ETSeries.y.tlim(Tint).data));
-%
-%         if ~isempty(minEy) && ~isempty(maxEy)
-%             irf_zoom(hAxes,'y',[minEy-Y_MARGIN, maxEy+Y_MARGIN]);
-%         end
-%     end
-% end

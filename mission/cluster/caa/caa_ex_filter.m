@@ -49,7 +49,7 @@ for ic = cl_id
 
     if 0 % this does double job, skip this
       % Remove saturation due to too high bias current
-      [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',ic,sfit_probe));
+      [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',ic,sfit_probe)); %#ok<UNRCH>
       if ok
         % Special trick for C2 after April 2011
         if ~isempty(hbias) && ic==2

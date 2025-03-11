@@ -96,7 +96,7 @@ amplitude = amplitude/sqrt(norm(amplitude))*sqrt(1/timeInterval)*sqrt(2);
 
 %% Initialize fftSignal
 if numel(amplitude) ~= components
-  if numel(amplitude) == 1 % use the same amplitude for all components
+  if isscalar(amplitude) % use the same amplitude for all components
     fftSignal = amplitude(ones(nPoints,components));
     randomPhaseForEachComponent = true;
   else

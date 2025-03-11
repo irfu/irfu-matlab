@@ -93,8 +93,8 @@ classdef RctDataLfr < bicas.proc.L1L2.cal.rct.RctDataImpl
       % CASE: This index corresponds to an actually loaded RCT (some are
       % intentionally empty).
       for iLsf = 1:4
-        if iLsf ~= 4   nBltsMax = 5;
-        else           nBltsMax = 3;
+        if iLsf ~= 4,   nBltsMax = 5;
+        else,           nBltsMax = 3;
         end
 
         for iBlts = 1:nBltsMax
@@ -172,8 +172,8 @@ classdef RctDataLfr < bicas.proc.L1L2.cal.rct.RctDataImpl
 
         for iLsf = 1:4
           % NOTE: F3 is an exception and has no AC (iBlts={4,5}) TF.
-          if iLsf ~= 4   nBlts = 5;
-          else           nBlts = 3;
+          if iLsf ~= 4,   nBlts = 5;
+          else,           nBlts = 3;
           end
 
           % NOTE: Values for the specific LSF, hence the prefix.

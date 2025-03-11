@@ -99,7 +99,7 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_read_BRVF(testCase)
+    function test_read_BRVF___compliant_RCT_filename(testCase)
       % Create BRVF.
       ExpDtBegin = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
       ExpDtEnd   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
@@ -112,6 +112,25 @@ classdef findread___UTEST < matlab.unittest.TestCase
       testCase.assertEqual(actRctFilename,     expBiasRctFilename)
       testCase.assertEqual(ActDtValidityBegin, ExpDtBegin)
       testCase.assertEqual(ActDtValidityEnd,   ExpDtEnd)
+      testCase.assertEqual(actBrvfPath,        fullfile(testCase.dir, bicas.const.BRVF_FILENAME))
+    end
+
+
+
+    function test_read_BRVF___noncompliant_RCT_filename(testCase)
+      % Create BRVF.
+      ExpDtBegin = datetime('2023-04-05T06:07:08Z', 'TimeZone', 'UTCLeapSeconds');
+      ExpDtEnd   = datetime('2100-02-03T04:05:06Z', 'TimeZone', 'UTCLeapSeconds');
+      expBiasRctFilename = 'SOLO_CAL_RPW-BIAS_V202011191204.cdf';   % Non-compliant RCT filename.
+      bicas.tools.rct.create_BRVF(testCase.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
+
+      [actRctFilename, ActDtValidityBegin, ActDtValidityEnd, actBrvfPath] = ...
+        bicas.proc.L1L2.cal.rct.findread.read_BRVF(testCase.dir);
+
+      testCase.assertEqual(actRctFilename,     expBiasRctFilename)
+      testCase.assertEqual(ActDtValidityBegin, ExpDtBegin)
+      testCase.assertEqual(ActDtValidityEnd,   ExpDtEnd)
+      testCase.assertEqual(actBrvfPath,        fullfile(testCase.dir, bicas.const.BRVF_FILENAME))
     end
 
 

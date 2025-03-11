@@ -20,10 +20,10 @@ jobs:
   matlab:
     # Runs Matlab
     #runs-on: ubuntu-latest
-    ## Specify ubuntu-20.04 (as per 2023-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
+    ## Specify ubuntu-24.04 (as per 2024-12-19T11:30CET) since "ubuntu-latest" is a moving target
     # which may or may not have correct gfortran versions used for some compiled code in its repo.
     # ("libgfortran5" used for tests of +whamp/ and contrib/libirbem/).
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       # Check-out repository
       - uses: actions/checkout@v4
@@ -56,10 +56,10 @@ jobs:
   # Job which runs tests for BICAS specifically (SOdevel, R2024a only).
   matlab_BICAS:
     # Runs Matlab
-    #runs-on: ubuntu-latest
-    ## Specify ubuntu-20.04 (as per 2022-12-02T15:30CET) since "ubuntu-latest" was changed to "ubuntu-22.04"
-    # which does not appear to have "libgfortran4" (used for tests of +whamp/) in its repo.
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    ## Specify ubuntu-latest (as per 2024-12-19T11:30CET) since "ubuntu-latest" is a moving target
+    # but the SOdevel specific test is not dependent upon gfortran versions used for some compiled code in its repo.
+    # ("libgfortran5" used for tests of +whamp/ and contrib/libirbem/).
 
     # Only run job on SOdevel to reduce amount of run time at GitHub (limited resource).
     if: github.ref == 'refs/heads/SOdevel'

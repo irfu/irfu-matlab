@@ -11,7 +11,7 @@ if orbitKernels
     rTHOR = tmpR;
   end
 else
-  get_orbit
+  get_orbit  %#ok<UNRCH>
   rTHOR = irf.ts_vec_xyz(irf_time(t,'epoch>epochtt'),[x y x*0])
 end
 
@@ -182,7 +182,7 @@ R_outerSW = ones(1,nTh)*70;
 
 if 0 % plot the boundaries
   %%
-  hp = polar(orb.theta*pi/180,orb.r);
+  hp = polar(orb.theta*pi/180,orb.r); %#ok<UNRCH>
   hp.Color = [0.2 0.2 0.2];
   hold on
   polar(Th*pi/180, R_innerMS);
@@ -302,13 +302,13 @@ for iRegion=1:nRegion
   boxTh = [regions{iRegion}.Th regions{iRegion}.Th(end:-1:1) regions{iRegion}.Th(1)];
   boxR =  [regions{iRegion}.R1 regions{iRegion}.R2(end:-1:1) regions{iRegion}.R1(1)];
   if 0
-    [plotx,ploty] = pol2cart(boxTh*pi/180,boxR);
+    [plotx,ploty] = pol2cart(boxTh*pi/180,boxR); %#ok<UNRCH>
     hp = patch(plotx,ploty,'k');
     hp.FaceColor = regions{iRegion}.Color;
     hp.EdgeColor = regions{iRegion}.Color;
     hp.FaceAlpha = 0.2;
-  elseif 0
-    hp = polar(boxTh*pi/180,boxR);
+  elseif 0 %#ok<IFCDUP>
+    hp = polar(boxTh*pi/180,boxR); %#ok<UNRCH>
     hp.Color = regions{iRegion}.Color;
     hp.LineWidth = 2;
   else
@@ -339,5 +339,5 @@ if 0
   legend([h_sw h_fs h_msh],{['KSR: Solar wind: ' num2str(tSW/60/60/24,'%.0f') ' days'],...
     ['KSR: Foreschock: ' num2str(tFS/60/60/24,'%.0f') ' days'],...
     ['KSR: Magnetosheath: ' num2str(tMSH/60/60/24,'%.0f') ' days']},...
-    'location','northeastoutside')
+    'location','northeastoutside') %#ok<UNRCH>
 end

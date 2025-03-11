@@ -17,6 +17,8 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
 
 
 
+    % Only test that SWML can be generated (without crashing) for multiple
+    % combinations of settings.
     function test0(testCase)
 
       function test(l1l2Enabled, l2l2Enabled, l2l3Enabled)
@@ -31,9 +33,9 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
 
       %===================================================================
 
-      for l1l2Enabled = [0, 1]
-        for l2l2Enabled = [0, 1]
-          for l2l3Enabled = [0, 1]
+      for l1l2Enabled = [false, true]
+        for l2l2Enabled = [false, true]
+          for l2l3Enabled = [false, true]
             test(l1l2Enabled, l2l2Enabled, l2l3Enabled)
           end
         end

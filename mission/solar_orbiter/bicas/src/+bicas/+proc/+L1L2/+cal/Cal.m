@@ -338,7 +338,8 @@ classdef Cal < handle
     function obj = Cal(Rctdc, useGactRct, useZvcti2, Bso)
 
       % ASSERTIONS: Arguments
-      assert(isscalar(useZvcti2))
+      assert(islogical(useGactRct) & isscalar(useGactRct))
+      assert(islogical(useZvcti2)  & isscalar(useZvcti2))
       % Rctdc
       assert(isa(Rctdc, 'bicas.proc.L1L2.cal.RctdCollection'))
 
@@ -383,7 +384,7 @@ classdef Cal < handle
       obj.snfEnabled                     = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
       obj.snfSubseqMinSamples            = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
 
-      obj.allVoltageCalibDisabled        = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLE');
+      obj.allVoltageCalibDisabled        = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLED');
       obj.biasOffsetsDisabled            = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
       obj.lfrTdsTfDisabled               = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
 

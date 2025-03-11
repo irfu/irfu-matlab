@@ -134,7 +134,7 @@ if nargin == 1
 end
 
 % checks only Bu and Bd (one can be a scalar)
-if size(spec.Bu,1)>1 || size(spec.Bu,1)>1
+if size(spec.Bu,1)>1 || size(spec.Bd,1)>1
   Nu = size(spec.Bu,1); % number of points, must be same for all parameters
   Nd = size(spec.Bd,1);
 

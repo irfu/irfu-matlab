@@ -104,205 +104,6 @@ classdef Saturation
 
 
 
-    % Given ZV-like variables, get saturation bits for quality bitmask.
-    %
-    % NOTE: Applies to both CWF and SWF data.
-    %
-    % PROBLEM: Function is conceptually bad (buggy) for edge cases (non-antenna
-    % signals, reconstructed signals). See unofficial class comments.
-    %
-    %
-    % RETURN VALUE
-    % ============
-    % vsqbAr
-    %       (iCdfRecords). Logical.
-    %
-    function vsqbAr = get_VSQB(...
-        obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
-        bltsSsidAr, isAchgFpa, hasSwfFormat, L)
-      % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
-      %           look for saturation.
-      %   NOTE: Only ACHG influences the calibration thresholds for each channel
-      %         (SDID/ASR). Could otherwise have scalar values per channel.
-      %   PRO: Easier to keep track of what thresholds are a function of.
-
-      % ASSERTIONS
-      bicas.utils.assert_ZV_Epoch(tt2000Ar)
-      assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
-      assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
-      nRows = irf.assert.sizes(...
-        tt2000Ar,                 [-1], ...
-        zvNValidSamplesPerRecord, [-1], ...
-        bltsSsidAr,               [-1, bicas.const.N_BLTS]);
-      assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
-      assert(AsrSamplesAVoltSrm.nRows == nRows)
-
-
-
-      L.logf('info', ...
-        ['Detecting threshold saturation (voltages) -', ...
-        ' One sequence of records with identical settings at a time.'])
-      Tmk = bicas.utils.Timekeeper('get_VSQB', L);
-
-      % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
-      % code, but it is difficult to use the same implementation for both
-      % without (1) making the implementation harder to understand and (2)
-      % having one particular variable with different meanings in the two cases.
-      if ~hasSwfFormat
-        %===========
-        % CASE: CWF
-        %===========
-        vstbAr = false(nRows, 1);
-        for asid = AsrSamplesAVoltSrm.keys'
-          asidVstbAr = obj.get_ASR_CWF_channel_VSTB(...
-            bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
-            AsrSamplesAVoltSrm(asid));
-
-          % Merge (OR) bits over ASIDs.
-          vstbAr = any([vstbAr, asidVstbAr], 2);
-        end
-
-        vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
-          tt2000Ar, vstbAr, ...
-          obj.vstbFractionThreshold, obj.cwfSlidingWindowLengthSec);
-      else
-        %===========
-        % CASE: SWF
-        %===========
-        vsqbAr = false(nRows, 1);
-        for asid = AsrSamplesAVoltSrm.keys'
-          asidVsqbAr = obj.get_ASR_SWF_channel_VSQB(...
-            bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
-            AsrSamplesAVoltSrm(asid), zvNValidSamplesPerRecord);
-
-          % Merge (OR) bits over ASIDs.
-          vsqbAr = any([vsqbAr, asidVsqbAr], 2);
-        end
-      end
-
-
-
-      if hasSwfFormat
-        Tmk.stop_log(nRows, 'CDF record')
-      else
-        % Log some saturation statistics which may help tell whether how
-        % much the saturation varies over time, which may
-        % influence/explain if the above processing is slow. Should only
-        % be relevant for CWF.
-        % NOTE: Only reflects the behaviour of the final saturation bit,
-        % not the VSTB.
-        nSaturationChanges = numel(find(vsqbAr(1:end-1) ~= vsqbAr(2:end)));
-        Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
-        L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
-      end
-
-    end    % function
-
-
-
-    % Return VSTB (not VSQB) for one channel of CWF data.
-    function vstbAr = get_ASR_CWF_channel_VSTB(obj, ssid, isAchgFpa, samplesAVolt)
-      nRows = irf.assert.sizes( ...
-        ssid,         [ 1], ...
-        isAchgFpa,    [-1], ...
-        samplesAVolt, [-1]);
-
-      % NOTE: Splits into subsequences also when ACHG does not matter (DC).
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        isAchgFpa.logical2doubleNan());
-
-      vstbAr = false(nRows, 1);
-
-      for iSs = 1:nSs
-        iRec1 = iRec1Ar(iSs);
-        iRec2 = iRec2Ar(iSs);
-
-        vstbAr(iRec1:iRec2) = obj.get_VSTB(...
-          samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
-      end
-    end
-
-
-
-    % Return VSQB (not VSTB) for one (ASR) channel of SWF data.
-    function vsqbAr = get_ASR_SWF_channel_VSQB(...
-        obj, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
-      [nRows, ~] = irf.assert.sizes( ...
-        ssid,                     [ 1], ...
-        isAchgFpa,                [-1], ...
-        samplesAVolt,             [-1, -2], ...
-        zvNValidSamplesPerRecord, [-1]);
-
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        isAchgFpa.logical2doubleNan());
-
-      vsqbAr = false(nRows, 1);
-
-      for iSs = 1:nSs
-        iRec1 = iRec1Ar(iSs);
-        iRec2 = iRec2Ar(iSs);
-
-        vsqbAr(iRec1:iRec2) = obj.get_snapshot_VSQB_many(...
-          zvNValidSamplesPerRecord(iRec1:iRec2), ...
-          samplesAVolt(            iRec1:iRec2, :), ...
-          ssid, isAchgFpa(iRec1));
-      end
-
-    end
-
-
-
-    % Determine whether multiple snapshots (with same settings) are
-    % saturated. Uses ZV-like variables.
-    %
-    % ARGUMENTS
-    % =========
-    % zvNValidSamplesPerRecord
-    %       ZV-like array. (iCdfRecord). Length of separate snapshots.
-    % zvSamplesAVolt
-    %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
-    %
-    function vsqbAr = get_snapshot_VSQB_many(obj, ...
-        zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
-
-      nRecs = irf.assert.sizes(...
-        zvNValidSamplesPerRecord, [-1],  ...
-        zvSamplesAVolt,           [-1, NaN, 1]);
-
-      vsqbAr = false(nRecs, 1);
-      for iRec = 1:nRecs
-        vsqbAr(iRec) = obj.get_snapshot_VSQB(...
-          zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
-          ssid, isAchgFpa);
-      end
-    end
-
-
-
-    % Determine whether ONE snapshot should be labelled as saturated.
-    %
-    % ARGUMENTS
-    % =========
-    % samplesAVolt
-    %   Snapshot samples. (1, iSampleInSnapshot) = row vector.
-    %   NOTE: Should only contain the length of the snapshot. No padding at
-    %         the end of array.
-    %
-    % RETURN VALUE
-    % ============
-    % vsqb
-    %       Logical. Scalar.
-    %
-    function vsqb = get_snapshot_VSQB(obj, samplesAVolt, ssid, isAchg)
-      assert(isrow(samplesAVolt))     % Row vector(!).
-
-      vstbAr = obj.get_VSTB(samplesAVolt, ssid, isAchg);
-
-      vsqb = (sum(vstbAr, 'all') / numel(samplesAVolt)) > obj.vstbFractionThreshold;
-    end
-
-
-
     % Given an arbitrary-size ARRAY of samples, get VSTB bits for every
     % sample.
     %
@@ -384,6 +185,230 @@ classdef Saturation
       % ==========================================
       % NOTE: Has to be able ignore NaN.
       vstbAr = (samplesAVolt < lowerThresholdAVolt) | (highThresholdAVolt < samplesAVolt);
+    end
+
+
+
+    % Determine whether ONE snapshot should be labelled as saturated.
+    %
+    % ARGUMENTS
+    % =========
+    % samplesAVolt
+    %   Snapshot samples. (1, iSampleInSnapshot) = row vector.
+    %   NOTE: Should only contain the actual snapshot data, i.e. no padding at
+    %         the end of array.
+    %
+    % RETURN VALUE
+    % ============
+    % vsqb
+    %       Logical. Scalar.
+    %
+    function vsqb = get_snapshot_VSQB(obj, samplesAVolt, ssid, isAchg)
+      assert(isrow(samplesAVolt))     % Row vector(!).
+
+      vstbAr = obj.get_VSTB(samplesAVolt, ssid, isAchg);
+
+      vsqb = (sum(vstbAr, 'all') / numel(samplesAVolt)) > obj.vstbFractionThreshold;
+    end
+
+
+
+    % Determine whether multiple snapshots (with same settings) are
+    % saturated. Uses ZV-like variables.
+    %
+    % ARGUMENTS
+    % =========
+    % zvNValidSamplesPerRecord
+    %       ZV-like array. (iCdfRecord). Length of separate snapshots.
+    % zvSamplesAVolt
+    %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
+    %
+    function vsqbAr = get_snapshot_VSQB_many(obj, ...
+        zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
+
+      nRecs = irf.assert.sizes(...
+        zvNValidSamplesPerRecord, [-1],  ...
+        zvSamplesAVolt,           [-1, NaN, 1]);
+
+      vsqbAr = false(nRecs, 1);
+      for iRec = 1:nRecs
+        vsqbAr(iRec) = obj.get_snapshot_VSQB(...
+          zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
+          ssid, isAchgFpa);
+      end
+    end
+
+
+
+    % Given ZV-like variables, get saturation bits for quality bitmask.
+    %
+    % NOTE: Applies to both CWF and SWF data.
+    %
+    % PROBLEM: Function is conceptually bad (buggy) for edge cases (non-antenna
+    % signals, reconstructed signals). See unofficial class comments.
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % vsqbAr
+    %       (iCdfRecords). Logical.
+    %
+    function vsqbAr = get_VSQB(...
+        obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
+        bltsSsidAr, isAchgFpa, hasSwfFormat, L)
+      % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
+      %           look for saturation.
+      %   NOTE: Only ACHG influences the calibration thresholds for each channel
+      %         (SDID/ASR). Could otherwise have scalar values per channel.
+      %   PRO: Easier to keep track of what thresholds are a function of.
+
+      % ASSERTIONS
+      bicas.utils.assert_ZV_Epoch(tt2000Ar)
+      assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
+      % assert(isa(bltsKSsidAr, 'uint8'))
+      assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
+      nRows = irf.assert.sizes(...
+        tt2000Ar,                 [-1], ...
+        zvNValidSamplesPerRecord, [-1], ...
+        bltsSsidAr,               [-1, bicas.const.N_BLTS]);
+      assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
+      assert(AsrSamplesAVoltSrm.nRows == nRows)
+
+
+
+      L.logf('info', ...
+        ['Detecting threshold saturation (voltages) -', ...
+        ' One sequence of records with identical settings at a time.'])
+      Tmk = bicas.utils.Timekeeper('get_voltage_saturation_quality_bit', L);
+
+      % For a given ASID, determine which rows contain samples which originate
+      % from L1R (i.e. which were not reconstructed). Set all other samples to
+      % NaN.
+      function asidSamplesAr = set_reconstructed_samples_to_NaN(asidSamplesAr, asid)
+        ssid = bicas.proc.L1L2.const.ASID_to_SSID(asid);
+        bUse = any(repmat(ssid, [nRows, 1]) == bltsSsidAr, 2);
+        asidSamplesAr(~bUse, :) = NaN;
+
+        % L.logf('debug', 'kSsid = %i', kSsid)
+        % L.logf('debug', 'unique(bUse)              = [%s]', strjoin(string(unique(bUse)),      ','))
+      end
+
+      % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
+      % code, but it is difficult to use the same implementation for both
+      % without (1) making the implementation harder to understand and (2)
+      % having one particular variable with different meanings in the two cases.
+      if ~hasSwfFormat
+        %===========
+        % CASE: CWF
+        %===========
+        vstbAr = false(nRows, 1);
+        for asid = AsrSamplesAVoltSrm.keys'
+          asidSamplesAr = set_reconstructed_samples_to_NaN(AsrSamplesAVoltSrm(asid), asid);
+
+          asidVstbAr = obj.get_ASR_CWF_channel_VSTB(...
+            bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
+            asidSamplesAr);
+
+          % L.logf('debug', 'unique(asidVstbAr)         = [%s]', strjoin(string(unique(asidVstbAr)), ','))
+
+          % Merge (OR) bits over ASIDs.
+          vstbAr = any([vstbAr, asidVstbAr], 2);
+        end
+        % L.logf('debug', 'unique(vstbAr) = [%s]', strjoin(string(unique(vstbAr)), ','))
+
+        vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
+          tt2000Ar, vstbAr, ...
+          obj.vstbFractionThreshold, obj.cwfSlidingWindowLengthSec);
+      else
+        %===========
+        % CASE: SWF
+        %===========
+        vsqbAr = false(nRows, 1);
+        for asid = AsrSamplesAVoltSrm.keys'
+          asidSamplesAr = set_reconstructed_samples_to_NaN(AsrSamplesAVoltSrm(asid), asid);
+
+          asidIsSaturatedAr = obj.get_ASR_SWF_channel_VSQB(...
+            bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
+            asidSamplesAr, zvNValidSamplesPerRecord);
+
+          % L.logf('debug', 'unique(asidIsSaturatedAr) = [%s]', strjoin(string(unique(asidIsSaturatedAr)), ','))
+
+          % Merge (OR) bits over ASIDs.
+          vsqbAr = any([vsqbAr, asidIsSaturatedAr], 2);
+        end
+
+        % L.logf('debug', 'unique(isSaturatedAr) = [%s]', strjoin(string(unique(isSaturatedAr)), ','))
+      end
+
+
+
+      if hasSwfFormat
+        Tmk.stop_log(nRows, 'CDF record')
+      else
+        % Log some saturation statistics which may help tell whether how
+        % much the saturation varies over time, which may
+        % influence/explain if the above processing is slow. Should only
+        % be relevant for CWF.
+        % NOTE: Only reflects the behaviour of the final VSQB, not the VSTB.
+        nSaturationChanges = numel(find(vsqbAr(1:end-1) ~= vsqbAr(2:end)));
+        Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
+        L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
+      end
+
+    end    % function
+
+
+
+    % Return VSTB (not VSQB) for one channel of CWF data over which isAchgFpa
+    % may vary.
+    function vstbAr = get_ASR_CWF_channel_VSTB(obj, ssid, isAchgFpa, samplesAVolt)
+      nRows = irf.assert.sizes( ...
+        ssid,         [ 1], ...
+        isAchgFpa,    [-1], ...
+        samplesAVolt, [-1]);
+
+      % NOTE: Splits into subsequences also when ACHG does not matter (DC).
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+        isAchgFpa.logical2doubleNan());
+
+      vstbAr = false(nRows, 1);
+
+      for iSs = 1:nSs
+        iRec1 = iRec1Ar(iSs);
+        iRec2 = iRec2Ar(iSs);
+
+        vstbAr(iRec1:iRec2) = obj.get_VSTB(...
+          samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
+      end
+    end
+
+
+
+    % Return VSQB (not VSTB) for one (ASR) channel of SWF data over which
+    % isAchgFpa may vary.
+    function vsqbAr = get_ASR_SWF_channel_VSQB(...
+        obj, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
+      [nRows, ~] = irf.assert.sizes( ...
+        ssid,                     [ 1], ...
+        isAchgFpa,                [-1], ...
+        samplesAVolt,             [-1, -2], ...
+        zvNValidSamplesPerRecord, [-1]);
+
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+        isAchgFpa.logical2doubleNan());
+
+      vsqbAr = false(nRows, 1);
+
+      for iSs = 1:nSs
+        iRec1 = iRec1Ar(iSs);
+        iRec2 = iRec2Ar(iSs);
+
+        vsqbAr(iRec1:iRec2) = obj.get_snapshot_VSQB_many(...
+          zvNValidSamplesPerRecord(iRec1:iRec2), ...
+          samplesAVolt(            iRec1:iRec2, :), ...
+          ssid, isAchgFpa(iRec1));
+      end
+
     end
 
 

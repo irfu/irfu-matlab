@@ -299,8 +299,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       [nRecords, WAVEFORM_DATA_nChannels, nCdfSamplesPerRecord] = irf.assert.sizes(...
         InSci.Zv.Epoch,         [-1], ...
         InSci.Zv.WAVEFORM_DATA, [-1, -2, -3]);
-      if     obj.inputSci.isL1r   WAVEFORM_DATA_nChannels_expected = 3;
-      elseif obj.inputSci.isL1    WAVEFORM_DATA_nChannels_expected = 8;
+      if     obj.inputSci.isL1r,   WAVEFORM_DATA_nChannels_expected = 3;
+      elseif obj.inputSci.isL1,    WAVEFORM_DATA_nChannels_expected = 8;
       end
       assert(...
         WAVEFORM_DATA_nChannels == WAVEFORM_DATA_nChannels_expected, ...
@@ -410,7 +410,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.lrx       = ones(nRecords, 1);
       Zv.BW        = true(nRecords, 1);
 
-      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
+      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(...
+        Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
     end    % process_CDF_to_DCIP
 
 

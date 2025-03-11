@@ -11,27 +11,31 @@ See irfu-matlab/mission/solar_orbiter/+solo/+qli/README.TXT for naming
 conventions.
 
 
-===================================================
-How to do batch generation of quicklooks in general
-===================================================
+=========================================================
+ How to do batch generation of quicklooks **in general**
+=========================================================
 See solo.qli.batch.generate_quicklooks_demo().
 
 
-=================================================
-How to do OFFICIAL batch generation of quicklooks
-=================================================
+===================================================
+ How to do OFFICIAL batch generation of quicklooks
+===================================================
 See solo.qli.batch.generate_quicklooks_shell().
 
 
-
+===============================================================================
+ Differences between layers of wrappers of functions for generating quicklooks
+===============================================================================
 solo.qli.batch.generate_quicklooks_shell()
     Intended to be called from the OS, e.g. bash scripts.
-    Reads configuration file.
-    Initializes "SolO DB".
-    Calls solo.qli.batch.generate_quicklooks_syntax() to do most work.
+    (1) Read configuration file.
+    (2) Initialize "SolO DB".
+    (3) Configure parallel pool.
+    (4) Call solo.qli.batch.generate_quicklooks_syntax() to do most of
+        the work.
 
 solo.qli.batch.generate_quicklooks_syntax()
-    (1) Obtains list of days to generate QLIs by calling
+    (1) Obtains list of days for which to generate QLIs by calling
         solo.qli.batch.dasa.get_days_from_DASA().
     (2) (Nominally) generates QLIs by calling
         solo.qli.batch.generate_quicklooks()
@@ -43,4 +47,3 @@ solo.qli.batch.generate_quicklooks()
     (2) (Nominally) constructs list of weeks and iterates over it to make weekly
         QLIs. Calls
         solo.qli.batch.GenerateQuicklooksImplementation.generate_quicklook_7days_using_DB_SPICE().
-

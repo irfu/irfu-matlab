@@ -49,7 +49,7 @@ if nargin == 0
   if nargout
     r = loggingLevel;
   else
-    irf.log('warning',['Current logging level is ' num2str(loggingLevel)]);
+    irf.log('warning',log_level_to_msg(loggingLevel,'long'));
   end
   return;
 elseif nargin == 1
@@ -80,8 +80,8 @@ elseif nargin == 1
         error('Unrecognized input.');
     end
     irf.log('warning',['Active log level set to ''' ...
-      log_level_to_msg(loggingLevel,'short') '''. ' ...
-      log_level_to_msg(loggingLevel,'long')]);
+      log_level_to_msg(loggingLevel,'short') '''. '])
+    irf.log('warning',log_level_to_msg(loggingLevel,'long'));
   elseif isnumeric(logLevel)
     loggingLevel = logLevel;
     irf.log('warning',log_level_to_msg(loggingLevel,'long'));

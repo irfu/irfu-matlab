@@ -53,7 +53,7 @@ switch lower(action)
     data.ic=ic;
     data.getScPhase=1;
     data.getB=1;
-    if length(time)==1 % define time of interest when initializing
+    if isscalar(time) % define time of interest when initializing
       data.t=time;
     elseif length(time)==6
       data.t=irf_time(time);
@@ -154,7 +154,7 @@ switch lower(action)
         if data.t>=data.b(1,1) && data.t<=data.b(end,1) % time within interval of B
           data.getB = false;
         elseif strcmp(get(data.bflag,'value'),1) % get B data
-          data.getB = true;
+          data.getB = true; %#ok<UNRCH>
         else
           data.b=[1 0 0 NaN]; % first col is time
         end
@@ -235,11 +235,11 @@ switch lower(action)
 
     if data.flag_v1==1
       data.v1=eval(['[' get(data.vec1Hndl,'string') ']']);
-      if length(data.v1)==1, data.flag_v1=0;end
+      if isscalar(data.v1), data.flag_v1=0;end
     end
     if data.flag_v2==1
       data.v2=eval(['[' get(data.vec2Hndl,'string') ']']);
-      if length(data.v2)==1, data.flag_v2=0;end
+      if isscalar(data.v2), data.flag_v2=0;end
     end
     % USE MMS_CONST.Phaseshift.p1 etc..
     phase_p1=data.phase/180*pi - MMS_CONST.Phaseshift.p1;

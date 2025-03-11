@@ -113,8 +113,8 @@ classdef L1L2
         % strange).
         error(...
           ['HK timestamps do not increase monotonically', ...
-          ' (USE_ZV_ACQUISITION_TIME_HK=%g).'], ...
-          USE_ZV_ACQUISITION_TIME_HK)
+          ' (USE_ZV_ACQUISITION_TIME_HK=%s).'], ...
+          string(USE_ZV_ACQUISITION_TIME_HK))
 
       end
       if ~irf.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
@@ -192,8 +192,8 @@ classdef L1L2
 
 
       %==================================================================
-      % Derive DIFF_GAIN / isAchgFpa
-      % ----------------------------
+      % Derive isAchgFpa
+      % ----------------
       % NOTE: Not perfect handling of time when 1 snapshot/record, since
       % one should ideally use time stamps for every LFR _sample_.
       %==================================================================
@@ -222,7 +222,7 @@ classdef L1L2
       %======================
       % Derive isSweepingFpa
       %======================
-      isSweepingFpa = bicas.proc.L1L2.autodetect_sweeps(...
+      isSweepingFpa = bicas.proc.L1L2.swpdet.SBDA_SCDA_with_margins(...
         hkEpoch, ...
         InHk.ZvFpa.HK_BIA_MODE_MUX_SET, ...
         [...
@@ -315,6 +315,7 @@ classdef L1L2
       OutSci.Zv.IBIAS2 = SciDcop.Zv.currentAAmpere(:, 2) * 1e9;
       OutSci.Zv.IBIAS3 = SciDcop.Zv.currentAAmpere(:, 3) * 1e9;
 
+      % Shall be copied according to RCS ICD, 1.7.
       OutSci.Ga.OBS_ID    = SciDcip.Ga.OBS_ID;
       OutSci.Ga.SOOP_TYPE = SciDcip.Ga.SOOP_TYPE;
 
@@ -325,9 +326,9 @@ classdef L1L2
       % NOTE: The two cases are different in the indexes they use for
       % OutSciZv.
       if C.isCwf
-        %=========
-        %   CWF
-        %=========
+        %===========
+        % CASE: CWF
+        %===========
 
         % ASSERTIONS
         assert(nSamplesPerRecordChannel == 1, ...
@@ -360,9 +361,9 @@ classdef L1L2
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
 
       elseif C.isSwf
-        %=========
-        %   SWF
-        %=========
+        %===========
+        % CASE: SWF
+        %===========
 
         if     C.isLfr
           SAMPLES_PER_RECORD_CHANNEL = ...
@@ -403,11 +404,20 @@ classdef L1L2
         OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A("AC_V23"));
 
         % ASSERTION
-        % NOTE: Must exclude ZV "SAMPLE_IDX".
+        % NOTE: Must exclude ZVs "SAMPLE_IDX", "SAMPLE_LABEL".
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
 
-        % Set CDF metadata ZV that is too large to set in the skeletons.
-        OutSci.Zv.SAMPLE_IDX = [0:(SAMPLES_PER_RECORD_CHANNEL-1)];
+        % Autogenerate data for CDF metadata ZV that is too large to be set in
+        % the skeletons.
+        OutSci.Zv.SAMPLE_IDX   = [0:(SAMPLES_PER_RECORD_CHANNEL-1)];
+        OutSci.Zv.SAMPLE_LABEL = num2str(OutSci.Zv.SAMPLE_IDX(:));
+        % IMPLEMENTATION NOTE: It seems that BICAS only supports string-valued
+        % zVariables on the form of char arrays (arrays of NxM characters, where
+        % each row counts as a string, i.e. it is equivalent to a column vector
+        % of strings!). It still seems that such de facto column vectors of
+        % strings can be written as row vectors of strings to zVariables though!
+        % Ex: SAMPLE_LABEL
+        % /Erik P G Johansson 2025-02-11
 
       else
         error('BICAS:Assertion:IllegalArgument', ...
@@ -423,7 +433,7 @@ classdef L1L2
         'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
         'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
         'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, ...
-        {'SAMPLE_IDX'})
+        {'SAMPLE_IDX', 'SAMPLE_LABEL'})
 
     end    % process_DCOP_to_CDF
 

@@ -91,7 +91,7 @@ switch lower(action)
     remoteFile=['hq.irfu.se:/usr/home/www/space/TT/' tt_id];
     tempFile=tempname;
     export_ascii(tt,tempFile);
-    eval(['!scp ' tempFile ' ' remoteFile]);
+    system(['scp ' tempFile ' ' remoteFile]);
     delete(tempFile);
   case 'list_irf'
     s = urlread('https://www.space.irfu.se/TT/'); %#ok<URLRD> webread introduced in R2014b

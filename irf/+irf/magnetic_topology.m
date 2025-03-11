@@ -96,7 +96,7 @@ if isempty(varargin)
   % Give default values
   SpecificTime=false; %No tint given
 end
-if length(varargin)==1
+if isscalar(varargin)
   tint=varargin{1};
   if isa(tint, 'EpochTT')
     tint=tint.epochUnix;

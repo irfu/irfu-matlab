@@ -65,7 +65,7 @@ elseif nargin > 1
   end
 end
 %% Check inputs
-if numel(eta) == 1 % scalar
+if isscalar(eta) % scalar
   eta = repmat(eta,size(q,1),1);
 end
 %% Calculate Q from eta and q

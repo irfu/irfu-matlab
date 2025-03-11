@@ -65,10 +65,10 @@ classdef Routing
       assert(isa(ssid, 'uint8'))
       assert(isa(sdid, 'uint8'))
 
-      % IMPLEMENTATION NOTE: Can not use these functions since
-      % bicas.proc.sconst is initialized by calling this very constructor.
-      %assert(bicas.proc.sconst.is_SSID(ssid) & isscalar(ssid))
-      %assert(bicas.proc.sconst.is_SDID(sdid) & isscalar(sdid))
+      % IMPLEMENTATION NOTE: Can not use below functions since
+      % bicas.proc.L1L2.const is initialized by calling this very constructor.
+      %assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
+      %assert(bicas.proc.L1L2.const.is_SDID(sdid) & isscalar(sdid))
 
       obj.ssid = ssid;
       obj.sdid = sdid;

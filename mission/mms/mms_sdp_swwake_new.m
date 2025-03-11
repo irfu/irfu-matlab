@@ -532,7 +532,7 @@ end
 maxmax = max(s); % global maxima
 d1 = diff(s);
 imax = find( (d1(1:end-1).*d1(2:end))<0 ) + 1;
-if length(imax)==1
+if isscalar(imax)
   if s(imax)==maxmax
     return
   else

@@ -158,7 +158,7 @@ while true
   if numel(argsCa) == 0
     break
 
-  elseif numel(argsCa) == 1
+  elseif isscalar(argsCa)
     error('Uneven number of string-value arguments.')
 
   elseif numel(argsCa) >= 2

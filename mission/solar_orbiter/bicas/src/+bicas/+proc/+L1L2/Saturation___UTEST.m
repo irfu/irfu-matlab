@@ -24,6 +24,20 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
+  %#################
+  %#################
+  % TEST PARAMETERS
+  %#################
+  %#################
+  properties(TestParameter)
+    % Technically, additional properties of testCase objects with cell array
+    % default values. Test methods with arguments with the same name will be
+    % called once for every element in the cell arrays.
+    HAS_SWF_FORMAT = {false, true}
+  end
+
+
+
   %##############
   %##############
   % TEST METHODS
@@ -302,43 +316,50 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    % Multiple subsequences
-    % Separate episodes of saturation on different channels, with different
-    % thresholds, which together combine saturation always set.
-    % CWF, BDM=0, LRX=1/AC diff.
+    %#########
+    % CWF/SWF
+    %#########
+
+    % Multiple subsequences. Separate episodes of saturation on all BLTSs, but
+    % only those samples which originate from L1R (are not reconstructed)
+    % trigger saturation detection.
     %
     % NOTE: Tests correct function behaviour, but unrealistic input data.
     % Function should never simultaneously receive DC and AC diffs (non-NaN
     % values), but the function is also not aware of LRX and should not care.
-    function test_get_VSQB___mult_subsequences(testCase)
+    %
+    % SWF/CWF, BDM=0, LRX=1/DC diff.
+    % NOTE: Tests SWF with 1 sample/snapshot.
+    %
+    function test_get_voltage_saturation_quality_bit___mult_subsequences(testCase, HAS_SWF_FORMAT)
       BDM4_DLR0_ROW = ["DC_V1", "DC_V2", "DC_V3", "AC_V12", "AC_V23"];
 
-      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 8, 'EMPTY');
-      AsrSamplesAVoltSrm.add(testCase.A("DC_V1"),  [0 0 2 2 0 0 0 0]')
-      AsrSamplesAVoltSrm.add(testCase.A("DC_V12"), [0 0 0 0 0 0 3 3]')
-      AsrSamplesAVoltSrm.add(testCase.A("DC_V23"), [0 0 0 0 0 0 0 0]')
-      AsrSamplesAVoltSrm.add(testCase.A("DC_V2"),  [3 3 0 0 0 0 0 0]')
-      AsrSamplesAVoltSrm.add(testCase.A("DC_V3"),  [0 0 0 0 2 2 0 0]')
+      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 10, 'EMPTY');
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V1"),  [2 0 0 0 0   2 0 0 0 0]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V12"), [0 3 0 0 0   0 3 0 0 0]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V23"), [0 0 3 0 0   0 0 3 0 0]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V2"),  [0 0 0 2 0   0 0 0 2 0]')
+      AsrSamplesAVoltSrm.add(testCase.A("DC_V3"),  [0 0 0 0 2   0 0 0 0 2]')
 
       testCase.test_get_VSQB(testCase, ...
-        cwfSlidingWindowLengthSec = 2.1, ...
+        cwfSlidingWindowLengthSec = 1.1, ...
         vstbFractionThreshold     = 0.6, ...
         thresholdAVoltDcSingle    = 1, ...
         thresholdAVoltDcDiff      = 2, ...
         thresholdAVoltAclg        = 3, ...
         thresholdAVoltAchg        = 4, ...
         ...
-        tt2000Ar                  = [10:17]' * 1e9, ...
+        tt2000Ar                  = [10:19]' * 1e9, ...
         AsrSamplesAVoltSrm        = AsrSamplesAVoltSrm, ...
-        zvNValidSamplesPerRecord  = [1 1 1 1 1 1 1 1]', ...
+        zvNValidSamplesPerRecord  = [1 1 1 1 1   1 1 1 1 1]', ...
         bltsSsidAr                = [
-          repmat(testCase.BDM0_DLR0_ROW, 4, 1); ...
-          repmat(         BDM4_DLR0_ROW, 4, 1) ...
+          repmat(testCase.BDM0_DLR0_ROW, 5, 1); ...
+          repmat(         BDM4_DLR0_ROW, 5, 1) ...
         ], ...
-        isAchg                    = [0 0 0 0 0 0 0 0]', ...
-        hasSwfFormat              = false, ...
+        isAchg                    = [0 0 0 0 0   0 0 0 0 0]', ...
+        hasSwfFormat              = HAS_SWF_FORMAT, ...
         ...
-        expVsqbAr                 = [1 1 1 1 1 1 1 1]');
+        expVsqbAr                 = [1 1 1 0 0   1 0 0 1 1]');
     end
 
 

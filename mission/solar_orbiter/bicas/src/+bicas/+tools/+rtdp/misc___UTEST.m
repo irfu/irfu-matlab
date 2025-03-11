@@ -64,7 +64,7 @@ classdef misc___UTEST < matlab.unittest.TestCase
       TEMP_CONFIG_FILE = testCase.configFile;
 
       [actRtpdDir, actZippedRtdp] = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
-        testCase.dir, 'A', TEMP_CONFIG_FILE, true);
+        testCase.dir, 'A', TEMP_CONFIG_FILE, true, true);
 
       irf.assert.dir_exists(actRtpdDir)
       irf.assert.file_exists(actZippedRtdp)
@@ -94,7 +94,7 @@ classdef misc___UTEST < matlab.unittest.TestCase
       %       (avoid naming collisions).
       ROWS_CA = {
       '{'
-      '  "bicasRootDir": "<BICAS_ROOT_DIR>",'
+      '  "expectedBicasRootDir": "<BICAS_ROOT_DIR>",'
       '  "inputDatasets": {'
       '    "LFR-SBM1-CWF-E": {'
       '      "in_hk":  "<PARENT_DIR>/solo_HK_rpw-bia_20210715_V05.cdf",'

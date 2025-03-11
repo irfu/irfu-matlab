@@ -10,7 +10,7 @@
 %
 % DEFAULT VALUE POLICY
 % ====================
-% * Default values must be the ones usable when BICAS is run at ROC/LESIA for
+% * Default values must be the ones usable when BICAS is run at ROC/LIRA for
 %   official processing L1R-->L2.
 % * Default values should make errors crash BICAS, except for temporary
 %   solutions to known problems while they are being worked on.
@@ -18,15 +18,26 @@
 %   checked for this.
 %
 %
-% NAMING CONVENTIONS
-% ==================
+% KEY NAMING CONVENTIONS
+% ======================
+% Keys should by default be uppercase were different parts are separated by
+% period (large parts) and underscore (smaller parts, e.g. words,
+% abbreviations). The period-separated substrings run from large categories
+% (beginning) to small subcategories (end). Dash is allowed.
+% --
 % CUR : CURRENT (type of data, dataset)
-% ENABLE(D)/DISABLE(D) always at the end of a setting key.
-%
-%
-% NOTES ON BSO KEY NAMING CONVENTION
-% ==================================
-% Some constants
+% --
+% Settings which enable/disable something and are truly conceptually boolean
+% (though implemented as numeric values) should always have suffix
+% _ENABLED or _DISABLED.
+% --
+% The unit/format of setting values should be specified in the key as a suffix
+% separated by underscore (not period).
+%     Seconds:    _SEC
+%     UTC vector: _UTC
+%     TM units:   _TM
+% --
+% NOTE: Some constants
 %   (1) correspond exactly to fields in the (JSON) S/W descriptor, and
 %   (2) are unlikely to be used for anything else.
 % These are labeled with a prefix "SWD." and the remainder is in lowercase
@@ -73,28 +84,30 @@ function Bso = create_default_BSO()
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
 %   PROCESSING.L2.REMOVE_DATA.MUX_MODES
+%   PROCESSING.HK.USE_ZV_ACQUISITION_TIME
+%   OUTPUT_CDF.write_dataobj.*
 %   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
 %
 %
 %
-% =========================
-% BOGIQ: SETTING KEY NAMING
-% =========================
+% ====================================
+% BOGIQ: SETTING KEY NAMING CONVENTION
+% ====================================
+% NOTE: See section at top of file on established policies.
+% --
 % PROPOSAL: INPUT_CDF.* : Settings that apply to ALL input datasets.
 % PROPOSAL: Only INPUT_CDF.ALL.* apply to all input datasets.
 %   PROPOSAL: OUTPUT_CDF.ALL
 %
-% PROPOSAL: Use naming convention for settings keys for testing ONLY:
+% PROPOSAL: Use naming convention for settings keys used for testing ONLY:
 %
-% PROPOSAL: Relevant setting keys should always be on the form ENABLE, never DISABLE.
+% PROPOSAL: Relevant setting keys should always be on the form ENABLED, never DISABLED.
 %   PRO: More consistent.
 %   CON: Less clear what is a deviation from the default.
-% PROPOSAL: Relevant setting keys should always be on format "USE" (not "ENABLE", "DISABLE").
+% PROPOSAL: Relevant setting keys should always be on format "USE" (not "ENABLED", "DISABLED").
 %   CON: Sounds bad to put "USE" at the end of settings key.
-% PROPOSAL: Always use either DISABLED/ENABLED or DISABLE/ENABLE.
-%   TODO-DEC: Which?
 %
 % PROPOSAL: Need (settings name) terminology for temporary
 %           "bugfixes"/corrections due to bugs outside of BICAS,
@@ -119,7 +132,7 @@ function Bso = create_default_BSO()
 %       NOTE: Does not have to refer to the L1R datasets as such.
 %           Ex: L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
 %           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
-%   Ex: For now, L2 refers to algorithms to use when processing L2 as output.
+%   Ex: For now, "L2" refers to algorithms to use when processing L2 as output.
 %       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
 %   --
 %   NEED: Specify whether refers to input or output data (not necessarily datasets).
@@ -136,9 +149,7 @@ function Bso = create_default_BSO()
 %       (1) INPUT_CDF.<level>  : How to interpret, read datasets
 %       (2) OUTPUT_CDF.<level> : How to output, write datasets.
 %       PROBLEM: How distinguish from processing?
-%
-% TODO-DEC: How specify units for seconds? "_S" or "_SEC"?
-%   NOTE: Is currently inconsistent.
+
 
 
 S = bicas.Settings();
@@ -170,11 +181,11 @@ S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
 % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
 % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
 % opposed to L1 current datasets.
-S.define_setting('SWM.L1-L2_ENABLED',          0);
+S.define_setting('SWM.L1-L2_ENABLED',         false);
 % Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
-S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED',  0);
+S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED', false);
 % Enable s/w mode for processing L2-->L3 datasets.
-S.define_setting('SWM.L2-L3_ENABLED',          0);
+S.define_setting('SWM.L2-L3_ENABLED',         false);
 
 
 
@@ -208,16 +219,16 @@ S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');
 S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 000,000,000]);
 
 % NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
-S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', 1)
+S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', true)
 % NOTE: See INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
-S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
-S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY',  'WARNING')    % WARNING, ERROR
+S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
 % Require input CDF Global Attribute "DSI" to match the expected
 % value.
-S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',        'WARNING')    % ERROR, WARNING
-S.define_setting('INPUT_CDF.GA_PARENTS_MISMATCH_POLICY',    'WARNING')    % ERROR, WARNING
+S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',       'WARNING')    % ERROR, WARNING
+S.define_setting('INPUT_CDF.GA_PARENTS_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
 % NOTE: This modification applies BEFORE
 % PROCESSING.HK.USE_ZV_ACQUISITION_TIME and therefore always applies to zVar
@@ -258,14 +269,14 @@ S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'ERROR');   % ERROR, W
 
 
 % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
-% 0/false.
-S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                1)
+% false.
+S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                true)
 
 % Whether the size per record of an empty (0 records) output DF zVar has to
 % be in agreement with the master CDF's size per record.
 % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
-% 0/false.
-S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1)
+% false.
+S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', true)
 
 % Whether the size per record of an output CDF zVar has to be in agreement
 % with the master CDF's size per record. Disabling is useful if the master
@@ -276,10 +287,11 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyNumericZvSizePerRecord', 1
 %   Master CDFs: Multiple samples/snapshot.
 %   BICAS code:  1 sample/snapshot.
 % 2021-02-02: Skeletons fixed in L2 skeletons V12. Can now enable.
-S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      1)   % 0/false, 1/true.
+S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      true)
 
-% Permitted CDF versions as a reg.expr.. Entire CDF version string must match
-% the reg.expr..
+% Permitted CDF versions output CDFs as a reg.expr.. Entire CDF version string
+% must match the reg.expr.. This is a way of asserting that BICAS uses the
+% correct versions of the CDF library.
 % CDF format version 3.9 is required by ROC (Solo?). /2024-07-24
 %
 % NOTE: If irfu-matlab and BICAS (as delivered to ROC) use different CDF format
@@ -303,7 +315,7 @@ S.define_setting('OUTPUT_CDF.FORMAT_VERSION_REGEXP', '3\.9\.[0-9]+')
 % be made when reading the dataset, but then code which treats datasets as
 % generic, has to dentify which dataset is SCI. Should not be worth the
 % effort.
-S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME',    0)
+S.define_setting('PROCESSING.HK.USE_ZV_ACQUISITION_TIME', false)
 
 % How to react to HK not overlapping with SCI.
 % NOTE: Switch is shared for LFR & TDS, but WARNING only(?) makes sense for
@@ -331,6 +343,8 @@ S.define_setting('PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY', 'ERR
 % PROPOSAL: Rename.
 S.define_setting('PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY', 'ERROR')   % ERROR, WARNING, ROUND
 
+
+
 %============================================================================
 % Where to obtain the BDM (mux mode)
 % ----------------------------------
@@ -353,25 +367,9 @@ S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_
 
 
 
-%============================================================================
-% Settings for when to remove data by setting it to fill value
-% ------------------------------------------------------------
-% "L2" refers to output datasets. Both voltage and current data. In
-% practice, this functionality is there as a temporary solution for removing
-% sweeps.
-%============================================================================
-S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
-
-% Unit: S = Seconds
-% Lower number since using LFR BDM (mux mode; unless configured not to),
-% which has same cadence as science data.
-% See PROCESSING.LFR.MUX_MODE_SOURCE.
-S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S',  0)
-
-% Higher number since using BIAS HK for TDS, which means that the BDM is
-% known with a lower time resolution.
-S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S', 30)
-
+%===============
+% Miscellaneous
+%===============
 % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
 % EFIELD, and SCPOT data. Affects both OSR and DSR.
 S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
@@ -387,14 +385,18 @@ S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
 % YK, Slack 2024-01-19: Use cap "3=Good for publication, subject to PI approval"
 %
 % NOTE: Used for both L2 and L3 datasets.
+% NOTE: The QUALITY_FLAG max value according to the zVariable's definition is 4
+%       (not 3)!
 S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 3)
 
 % Path to NSO table file. Relative to BICAS root.
-S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', fullfile('data', 'solo_ns_ops.xml'))
+S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', bicas.const.DEFAULT_NSO_TABLE_RPATH)
 % Path to NSO table file for debugging purposes.
 % If non-empty, then it overrides PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH.
 % Can be set to absolute path. Intended for testing.
 S.define_setting('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH', '')
+
+
 
 %-------------------------------------------------------------------------------
 % Configuration parameters for the automatic detection of saturation performed
@@ -402,7 +404,7 @@ S.define_setting('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH', '')
 % ------------------------------------------------------------------------------
 % NOTE: The measured VDC3 potential is stuck at 0.8 V due to apparent h/w
 % failure on 2023-11-13T23:35. This is relevant since the returned value is very
-% constant and falsely look like a regular saturated value, but at a much lower
+% constant and falsely looks like a regular saturated value, but at a much lower
 % value. Saturation detection is not supposed to detect this value, but the
 % existence of this constant VDC3, and its consequences for other reconstructed
 % values in datasets such as correlated diffs, may mistakenly be interpreted as
@@ -416,6 +418,26 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',        
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   0.3);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);
 
+%============================================================================
+% Settings for when to remove data by setting it to fill value
+% ------------------------------------------------------------
+% "L2" refers to output datasets. Both voltage and current data. In practice,
+% this functionality was intended as a temporary solution for removing sweeps.
+% It has not been used since the introduction of automatic sweep detection.
+%============================================================================
+S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
+
+% Lower number since using LFR BDM (mux mode; unless configured not to),
+% which has same cadence as science data.
+% See PROCESSING.LFR.MUX_MODE_SOURCE.
+S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC',  0)
+
+% Higher number since using BIAS HK for TDS, which means that the BDM is
+% known with a lower time resolution.
+S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC', 30)
+
+
+
 %--------------------------------------------------------------------------
 % Settings for autodetecting sweeps (so that they can be excluded from L2)
 %--------------------------------------------------------------------------
@@ -424,7 +446,7 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 % can still be removed while BIAS is commanded to use BDM=4 ("mux=4") for bulk
 % data.
 %--------------------------------------------------------------------------
-% PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC:
+% PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC:
 % Before this time: SBDA is used for detecting sweeps (BDM=4).
 % After this time:  SCDA is used for detecting sweeps
 %                   (moving window + varying HK currents).
@@ -432,15 +454,15 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 %         -hour-minute-second
 %         -millisecond-microsecond(0-999)-nanoseconds(0-999)
 %
-% NOTE: BDM changed from 0 to 4 for bulk science data on/at:
+% NOTE: BDM changed from 0 to 4 for *bulk* science data on/at:
 % (1) Xavier Bonnin e-mail 2023-12-22: "BIAS is set to MUX_4 on-board after
 %     Dec. 25."
 % (2) According to BIAS HK: 2023-12-25T23:29:10 (+/-30 s).
 % (3) According to SOLO_L1R_RPW-LFR-SURV-CWF-E: between about
 %     2023-12-25T23:28:21 and 2023-12-25T23:28:44.
 % However, a test with multiple BDMs (mux modes) ran on 2023-12-16 so it is
-% still worth NOT setting PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC to after
-% that.
+% still worth NOT setting PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC
+% to after that.
 %
 % NOTE: Might be that SCDA window length=3 pts is a bit too short (or possibly
 % diff minimum=500 TM is too large), but that it is saved by window margin 120
@@ -449,19 +471,18 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 %
 % NOTE: Empirically, sweeps are surrounded by small data gaps, 1-4 min long(?).
 %-------------------------------------------------------------------------------
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SBDA.END_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
-% SCDA window length. Unit: Data points/HK CDF records.
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_LENGTH_PTS', 3)
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC', [2023, 12, 16, 0, 0, 0, 0, 0, 0])
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_HK_CDF_RECORDS', 3)
 % SCDA threshold for HK bias current difference between min and max within a
 % window. If the value exceeds this value, then the interval is labelled as
 % sweeping. Unit: TM units
 % NOTE: Empirically, fluctuations around constant bias current (on a single
 % channel) is on the order of 30-40 TM units (2024-01-01).
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM', 500)
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_TM', 500)
 % Amount of margin to add around regions labelled as sweeps by the SCDA. The
 % sweeps autodetection works on BIAS HK which has a lower time resolution, and
 % may therefore be incorrect at the beginning and end of a labelled region.
-S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC', 120)
 
 
 
@@ -478,7 +499,7 @@ S.define_setting('PROCESSING.L2.DETECT_SWEEPS.SCDA.WINDOW_MARGIN_SEC', 120)
 %               datasets.
 % ** BIAS & TDS have previously not followed the correct filenaming
 %    convention but does now (2020-11-20).
-% ** LFR do not seem to follow the filenaming convenction (2020-11-20)
+% ** LFR do not seem to follow the filenaming covention (2020-11-20)
 %    NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
 %    seconds=2_digits).
 % ** Only the last filename in a sorted list of matching filenames will
@@ -528,10 +549,10 @@ S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RS
 % CALIBRATION_TABLE_INDEX2 = ZVCTI2
 % NOTE: ZVCTI2 is not set (used) for TDS. Therefore no such settings for TDS.
 % "L1R" refers to when using L1R datasets as input, as opposed to L1.
-S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      1)
-S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    1)
-S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',  1)
-S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', 1)
+S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      true)
+S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    true)
+S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',  true)
+S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', true)
 
 
 
@@ -575,9 +596,9 @@ S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT', -0.008198754    
 % Disable all voltage calibration. Output dataset data contain TM units.
 % BIAS demultiplexer addition/subtraction of BLTS necessary to derive
 % antenna signals is still done though.
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLE',               0);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLED',              false);
 % Whether to disable BIAS offsets.
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', 0);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', false);
 % Whether to use transfer functions or scalar multiplication for calibration
 % of signals between antennas and BIAS-LFR/TDS interface. It does not affect
 % the LFR/TDS transfer functions.
@@ -587,7 +608,7 @@ S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT,
 %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'KERNEL')   % FFT, KERNEL
 %S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'ZEROS')   % ZEROS, CYCLIC, MIRROR
 S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'MIRROR')   % ZEROS, CYCLIC, MIRROR
-S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)   % false, true
+S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)
 
 
 
@@ -650,7 +671,7 @@ S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)
 % corresponds to interface volt.
 % NOTE: This useful for separately using bicas.proc.L1L2.cal.Cal for analyzing
 % BIAS standalone calibration tables (BSACT).
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED',  0);
+S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED', false);
 
 
 

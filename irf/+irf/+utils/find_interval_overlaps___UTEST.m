@@ -56,37 +56,37 @@ classdef find_interval_overlaps___UTEST < matlab.unittest.TestCase
       % Negative interval length.
       test_exc([2 1]);
 
-      test([1 2],      {[1]}, [1, 2]);
+      test([1 2],      {1}, [1, 2]);
 
       % Intervals with no intervals between them.
-      test([1 2; 3 4], {[1], [], [2]}, [1 2; 2 3; 3 4]);
+      test([1 2; 3 4], {1, [], 2}, [1 2; 2 3; 3 4]);
 
       % Identical intervals.
       test([1 2; 1 2], {[1 2]}, [1 2]);
       test([3 3; 3 3], {[1 2]}, [3 3]);
 
       % Overlapping intervals.
-      test([1 4; 2 7], {[1], [1 2], [2]}, [1 2; 2 4; 4 7]);
+      test([1 4; 2 7], {1, [1 2], 2}, [1 2; 2 4; 4 7]);
 
       % Single ZLI
-      test([2 2], {[1]}, [2 2])
+      test([2 2], {1}, [2 2])
 
       % Touching NZLIs
-      test([2 3; 3 5], {[1], [1 2], [2]}, [2 3; 3 3; 3 5]);
+      test([2 3; 3 5], {1, [1 2], 2}, [2 3; 3 3; 3 5]);
 
       % ZLI in the middle of other interval.
-      test([2 5; 3 3],      {[1], [1, 2], [1]},  [2 3; 3 3; 3 5]);
+      test([2 5; 3 3],      {1, [1, 2], 1},  [2 3; 3 3; 3 5]);
 
       % ZLI simultaneously in the middle of and adjacent to other
       % interval.
-      test([2 3; 3 5; 3 3], {[1], [1,2,3], [2]}, [2 3; 3 3; 3 5]);
+      test([2 3; 3 5; 3 3], {1, [1,2,3], 2}, [2 3; 3 3; 3 5]);
 
       % Touching NZLIs+ZLI (triple point)
-      test([2 3; 3 5; 3 3], {[1], [1 2 3], [2]}, [2 3; 3 3; 3 5]);
+      test([2 3; 3 5; 3 3], {1, [1 2 3], 2}, [2 3; 3 3; 3 5]);
 
 
       % Reversely ordered intervals.
-      test([4 7; 1 2], {[2], [], [1]}, [1 2; 2 4; 4 7]);
+      test([4 7; 1 2], {2, [], 1}, [1 2; 2 4; 4 7]);
     end
 
 

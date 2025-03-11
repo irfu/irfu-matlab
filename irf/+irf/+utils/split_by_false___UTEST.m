@@ -45,21 +45,21 @@ classdef split_by_false___UTEST < matlab.unittest.TestCase
 
       test(ECA, ECA, ECA)
 
-      test([0], ECA, ECA)
-      test([1], [1], [1])
-      test([0], ECA, ECA)
+      test(0, ECA, ECA)
+      test(1, 1, 1)
+      test(0, ECA, ECA)
 
       test([0,0,0], ECA, ECA)
-      test([1,1,1], [1], [3])
+      test([1,1,1], 1, 3)
 
-      test([1,0,0], [1], [1]);
-      test([0,1,0], [2], [2]);
-      test([0,0,1], [3], [3]);
+      test([1,0,0], 1, 1);
+      test([0,1,0], 2, 2);
+      test([0,0,1], 3, 3);
 
       test([1,1,0,0,1,1], [1,5]', [2,6]');
-      test([0,0,1,1,0,0], [3],    [4]);
-      test([1,1,0,0],     [1],    [2]);
-      test([0,0,1,1],     [3],    [4]);
+      test([0,0,1,1,0,0], 3,    4);
+      test([1,1,0,0],     1,    2);
+      test([0,0,1,1],     3,    4);
 
       test([0,0,1,1,1,0,0,1], [3,8]',    [5,8]');
 

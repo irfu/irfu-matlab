@@ -111,13 +111,13 @@ while 1
   if strcmp(path_ok,'c'), break; end
   eval(path_ok);
 end
-if exist('.c_ri_parameters.mat','file'),
+if exist('.c_ri_parameters.mat','file')
   try save -append .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
-  catch disp('Parameter values could not be saved and therefore valid only for this run!');
+  catch, disp('Parameter values could not be saved and therefore valid only for this run!');
   end
 else
   try save .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
-  catch disp('Parameter values could not be saved and therefore valid only for this run!');
+  catch, disp('Parameter values could not be saved and therefore valid only for this run!');
   end
 end
 
@@ -170,7 +170,7 @@ for i = i_start:i_end
     for j=j_start:size(passing_MP,1)
       MP_interval_start=j;
       try save -append '.c_ri_parameters.mat' MP_interval_start;
-      catch disp('Could not save MP_interval_start');
+      catch, disp('Could not save MP_interval_start');
       end
       disp('????????????????????????????????????????????????????????????');
       disp([num2str(j) '. ' datestr(epoch2date(passing_MP(j,1))) ' - ' datestr(epoch2date(passing_MP(j,2)))]);

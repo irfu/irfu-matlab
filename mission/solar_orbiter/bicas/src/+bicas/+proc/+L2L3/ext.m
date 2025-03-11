@@ -39,6 +39,11 @@ classdef ext
     function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, Bso)
       assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
+      % Minimum L2 data QUALITY_FLAG value to use for deriving L3 data
+      % --------------------------------------------------------------
+      % NOTE: bicas.proc.L2L3.ext.calc_EFIELD_SCPOT() uses this value
+      % explicitly, but bicas.proc.L2L3.ext.calc_DENSITY() uses it implicitly
+      % since it uses the return value from the former.
       QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
         'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
 
@@ -61,6 +66,9 @@ classdef ext
       assert(strcmp(R1.ScpotTs.units, 'V'))
       assert(strcmp(NeScpTs.units,    'cm^-3'))
 
+      %==============================
+      % Package function return data
+      %==============================
       R = [];
       R.PspVoltFpa         = bicas.utils.FPArray(R1.PspTs.data,    'FILL_VALUE', NaN);
       R.ScpotVoltFpa       = bicas.utils.FPArray(R1.ScpotTs.data,  'FILL_VALUE', NaN);
@@ -124,15 +132,17 @@ classdef ext
       % ----------------------------------------
       % Set records to NaN for QUALITY_FLAG below threshold.
       %======================================================
-      % NOTE: Unclear how treat QUALITY_FLAG=FV.
-      bNotUsedFpa         = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;
-      bNotUsed            = bNotUsedFpa.array(false);   % FV = false wise?
+      % NOTE: Unclear how to treat QUALITY_FLAG=FV.
+      % NOTE: Treatment of this special case is documented in readme.txt.
+      bNotUsedFpa             = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;
+      bNotUsed                = bNotUsedFpa.array(false);   % Is [FV==>false] wise?
+      % --
       Zv.VDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
       Zv.EDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
       %
       % NOTE: Should TSeries objects really use TensorOrder=1 and
       % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
-      % fo three scalars. Probably does not matter. solo.vdccal() does
+      % of three scalars. Probably does not matter. solo.vdccal() does
       % indeed use VDC.x, EDC.x etc.
       VdcTs = TSeries(...
         EpochTT(Zv.Epoch), Zv.VDC_Fpa.array(single(NaN)), ...
@@ -151,8 +161,8 @@ classdef ext
       % NOTE: Not specifying calibration file.
       % ==> Use current official calibration file, hardcoded in
       %     solo.vdccal(), that should be used for official datasets.
-      [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] ...
-        = Ec.vdccal(VdcTs, EdcTs, []);
+      [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] = ...
+        Ec.vdccal(VdcTs, EdcTs, []);
       clear VdcTs EdcTs
       %#################################################################
 

@@ -104,8 +104,8 @@ classdef mixed_radix
     function mrd = integer_to_MRD(n, bases)
       % ASSERTIONS
       [nNbrs, nBases] = irf.assert.sizes(...
-        n,     [-1], ...
-        bases, [-2]);
+        n,     -1, ...
+        bases, -2);
       assert(all(bases >= 1))
 
       n     = int64(n);
@@ -138,7 +138,7 @@ classdef mixed_radix
       % ASSERTIONS
       [nNbrs, nBases] = irf.assert.sizes(...
         mrd,   [-1, -2], ...
-        bases, [-2]);
+        bases, -2);
       assert(all(bases >= 1))
       %             % NOTE: Does not check for negative MRDs.
       %             for i = 1:nBases

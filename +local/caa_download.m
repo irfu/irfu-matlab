@@ -513,7 +513,7 @@ if isa(TT,'irf.TimeTable') && islogical(iIndex)
   for j=find(iIndex)'
     fileToDelete=[dataDir filesep TT.UserData(j).filename];
     irf.log('warning',['Deleting #' num2str(j) ': ' fileToDelete]);
-    eval(['!mv ' fileToDelete ' ' fileToDelete '.delme']);
+    system(['mv ' fileToDelete ' ' fileToDelete '.delme']);
   end
 end
 end
