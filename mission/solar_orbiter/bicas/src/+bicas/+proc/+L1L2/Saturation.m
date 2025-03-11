@@ -279,7 +279,7 @@ classdef Saturation
       L.logf('info', ...
         ['Detecting threshold saturation (voltages) -', ...
         ' One sequence of records with identical settings at a time.'])
-      Tmk = bicas.utils.Timekeeper('get_voltage_saturation_quality_bit', L);
+      Tmk = bicas.utils.Timekeeper('get_VSQB', L);
 
       % For a given ASID, determine which rows contain samples which originate
       % from L1R (i.e. which were not reconstructed). Set all other samples to

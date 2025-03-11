@@ -331,7 +331,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     % SWF/CWF, BDM=0, LRX=1/DC diff.
     % NOTE: Tests SWF with 1 sample/snapshot.
     %
-    function test_get_voltage_saturation_quality_bit___mult_subsequences(testCase, HAS_SWF_FORMAT)
+    function test_get_VSQB___mult_subsequences(testCase, HAS_SWF_FORMAT)
       BDM4_DLR0_ROW = ["DC_V1", "DC_V2", "DC_V3", "AC_V12", "AC_V23"];
 
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap("uint8", 10, 'EMPTY');

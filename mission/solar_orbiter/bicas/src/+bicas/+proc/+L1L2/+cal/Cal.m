@@ -821,19 +821,19 @@ classdef Cal < handle
 
 
 
-    function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
+    function iCalibL = get_BIAS_calibration_time_L(obj, Epoch)
       BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
-      iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
+      iCalibL = bicas.proc.L1L2.cal.utils.get_calibration_time(...
         Epoch, BiasRctdCa{1}.epochL);
     end
 
 
 
-    function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
+    function iCalibH = get_BIAS_calibration_time_H(obj, Epoch)
       BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
-      iCalib = bicas.proc.L1L2.cal.utils.get_calibration_time(...
+      iCalibH = bicas.proc.L1L2.cal.utils.get_calibration_time(...
         Epoch, BiasRctdCa{1}.epochH);
     end
 

@@ -85,6 +85,8 @@ function Bso = create_default_BSO()
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
 %   PROCESSING.L2.REMOVE_DATA.MUX_MODES
 %   PROCESSING.HK.USE_ZV_ACQUISITION_TIME
+%       Related to INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC.
+%   INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC
 %   OUTPUT_CDF.write_dataobj.*
 %   --
 %   PRO: Functionality appears to be obsolete.

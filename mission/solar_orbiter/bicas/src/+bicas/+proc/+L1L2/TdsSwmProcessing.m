@@ -6,6 +6,11 @@
 %
 classdef TdsSwmProcessing < bicas.proc.SwmProcessing
   % PROPOSAL: Automatic test code.
+  %
+  % PROPOSAL: Normalize TDS data to be double (not single) to make it the same
+  %           as for LFR.
+  %   PRO: Eliminates at least one special case LFR/TDS w.r.t. double/single
+  %        (assertion).
 
 
 

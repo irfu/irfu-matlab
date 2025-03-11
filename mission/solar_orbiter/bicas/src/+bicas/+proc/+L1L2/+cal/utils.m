@@ -32,29 +32,30 @@ classdef utils
     % ===========================
     % Epoch
     %       Column vector with Epoch values.
-    % CalibEpochList
+    % calibEpochAr
     %       Column vector of monotonically increasing timestamps ("Epoch
     %       format"). In practice intended to be Bias.epochL or Bias.epochH.
     % iCalib
     %       Array. iCalibList(i) = calibration time index for Epoch(i).
     %
-    function [iCalib] = get_calibration_time(Epoch, CalibEpochList)
+    function [iCalib] = get_calibration_time(Epoch, calibEpochAr)
 
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(Epoch)
-      bicas.utils.assert_ZV_Epoch(CalibEpochList)
-      % IMPLEMENTATION NOTE: Does not work if CalibEpochList is empty,
+      bicas.utils.assert_ZV_Epoch(calibEpochAr)
+
+      % IMPLEMENTATION NOTE: Function does not work if calibEpochAr is empty,
       % since discretize behaves differently for scalar second argument.
-      assert(~isempty(CalibEpochList))
+      assert(~isempty(calibEpochAr))
 
       % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for Epoch
-      % values outside the outermost edges. Therefore (1) must add upper
-      % edge "Inf", (2) asserts non-Nan afterwards.
-      % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar
-      % second argument. Adding edges at infinity hides this problem. If
-      % one does not add infinities and uses a scalar edge list, then one
-      % has to treat those cases manually.
-      iCalib = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
+      % values outside the outermost edges. Therefore (1) must add upper edge
+      % "Inf", (2) asserts non-Nan afterwards.
+      % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar second
+      % argument. Adding edges at infinity hides this problem. If one does not
+      % add infinities and uses a scalar edge list, then one has to treat those
+      % cases manually.
+      iCalib = discretize(Epoch, [calibEpochAr; Inf], 'IncludedEdge', 'left');
       assert(all(~isnan(iCalib(:))), ...
         'BICAS:SWMProcessing', ...
         ['Can not derive which calibration data to', ...

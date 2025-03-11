@@ -106,7 +106,7 @@ classdef dc
     %   (1) demux (demultiplex): Relabel samples from BLTS to SDID.
     %   (2) calibrate samples
     %   (3) reconstruct (derive) samples for missing channels from calibrated
-    %       samples (e.g. DC_V12 := DC_V1-DC_V2)
+    %       samples (e.g. DC_V12 := DC_V1 - DC_V2)
     % * Set quality variables.
     %
     function Dcop = process_calibrate_demux(Dcip, InCurPd, Cal, NsoTable, Bso, L)
@@ -138,9 +138,9 @@ classdef dc
 
 
 
-      %#############################################
-      % CALIBRATE VOLTAGES (WHILE LABELLED BY BLTS)
-      %#############################################
+      %##############################################################
+      % CALIBRATE VOLTAGES (WHILE BEING 5 CHANNELS LABELLED BY BLTS)
+      %##############################################################
       bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages(...
         Epoch                   = Dcip.Zv.Epoch, ...
         bltsSamplesTm           = Dcip.Zv.bltsSamplesTm, ...
@@ -240,8 +240,8 @@ classdef dc
       % -----------
       % NOTE: No need for bicas.utils.FPArray since SSIDs and SDIDs handle all
       % special cases including unknown source and destination.
-      bltsSsidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8');
-      bltsSdidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8');
+      bltsSsidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8') + 255;
+      bltsSdidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8') + 255;
 
       for iSs = 1:nSs
         iRecSs1 = iRec1Array(iSs);
@@ -249,7 +249,8 @@ classdef dc
         nRecSs  = numel(iRecSs);
 
         DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
-          bdmFpa(iRecSs1), dlrFpa(iRecSs1));
+          bdmFpa(iRecSs1), ...
+          dlrFpa(iRecSs1));
 
         ssidArray = [DemuxerRoutingArray.ssid];
         sdidArray = [DemuxerRoutingArray.sdid];
@@ -344,7 +345,8 @@ classdef dc
 
 
 
-    % Demultiplex and calibrate VOLTAGES (not e.g. currents).
+    % Demultiplex and calibrate VOLTAGES (not e.g. currents). Processes all 5x
+    % BLTS channels in the same call.
     %
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %
@@ -357,6 +359,28 @@ classdef dc
       %       Demultiplexer only needs to split into subsequences based on BDM
       %       and DLR, nothing else.
       %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
+      %
+      % PROPOSAL: Reorg. from
+      %   (1) Iterate over subsequences for all channels.
+      %       (bicas.proc.L1L2.dc.calibrate_voltages(); this function)
+      %   (2) Iterate over BLTSs (for the same subsequence).
+      %       (bicas.proc.L1L2.dc.calibrate_voltages_subsequence(); sub-function)
+      %   (3) Calibrate one BLTS for one subsequence.
+      % to
+      %   (1) Iterate over BLTSs (for all subsequences).
+      %   (2) Iterate over subsequences for one BLTS.
+      %   (3) Calibrate one BLTS for one subsequence (same as before).
+      %   PRO: Less code which sees subsequences, more code which only sees
+      %        arrays covering entire datasets.
+      %   PRO: Can potentially have different sets subsequences for different
+      %        BLTSs.
+      %     Ex: ACHG, SSID
+      %   PRO: Probably simpler tests(?)
+      %   PRO: Easier to implement/support separate calibration functions for
+      %        different channels?!
+      %   CON: Splits into subsequences multiple times.
+      %     PRO: Potentially slower (SWF).
+
       arguments
         Zv.Epoch
         Zv.bltsSamplesTm
@@ -379,7 +403,7 @@ classdef dc
       assert(isnumeric(Zv.bltsSamplesTm))
       assert(isa(Zv.bltsSsidArray, 'uint8'))
       [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
-        Zv.isAchgFpa,     [-1,     1], ...
+        Zv.isAchgFpa,     [-1], ...
         Zv.bltsSsidArray, [-1,     bicas.const.N_BLTS], ...
         Zv.bltsSamplesTm, [-1, -2, bicas.const.N_BLTS]);
 
@@ -473,7 +497,7 @@ classdef dc
 
 
 
-    % Calibrate and demux all BLTS channels for one subsequence with various
+    % Calibrate and demux all 5x BLTS channels for one subsequence with various
     % constant settings/values.
     %
     % ARGUMENTS
@@ -502,11 +526,15 @@ classdef dc
         Cv.hasSwfFormat
         Cv.isLfr
         Cv.isTdsCwf
-
+        %
         Vv.Epoch
         Vv.bltsSamplesTm
         Vv.zvNValidSamplesPerRecord
       end
+      irf.assert.sizes( ...
+        Vv.Epoch,                    [-1], ...
+        Vv.bltsSamplesTm,            [-1, Cv.nSamplesPerRecordChannel, bicas.const.N_BLTS], ...
+        Vv.zvNValidSamplesPerRecord, [-1])
 
       nRows = numel(Vv.Epoch);
 
@@ -564,9 +592,9 @@ classdef dc
         A.Cal
       end
       % IMPLEMENTATION NOTE: It is ugly to have this many parameters (15!),
-      % but the original code made calibrate_voltages() to large and
+      % but the original code made calibrate_voltages_5xBLTS() to large and
       % unwieldy. Having many arguments also highlights the exact dependencies.
-      %
+
       % PROPOSAL: CalSettings as parameter.
       %   PRO: Reduces number of parameters.
       %   PROPOSAL: Add values to CalSettings: isLfr, isTdsCwf, zvcti
@@ -584,7 +612,7 @@ classdef dc
       else
         assert(isa(A.samplesTm, 'double'))
       end
-      irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel.
+      irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel. CWF/SWF.
 
       if isequaln(A.ssid, bicas.proc.L1L2.const.C.SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
@@ -656,8 +684,8 @@ classdef dc
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
         bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
-        % bltsSsidArray,    [-1,     bicas.const.N_BLTS], ...
 
+      % -----------------------------------------------------------------
       % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
       % -----------------------------------------------------------------
       % IMPLEMENTATION NOTE: Preallocation is very important for speeding
@@ -667,10 +695,9 @@ classdef dc
         nan(nRecTot, nSamplesPerRecordChannel), ...
         bicas.proc.L1L2.const.C.ASID_DICT.values);
 
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        bltsSdidArray);
-        % bltsSsidArray, ...
 
+
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(bltsSdidArray);
       for iSs = 1:nSs
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
@@ -679,7 +706,8 @@ classdef dc
           bltsSdidArray(   iRec1,          :), ...
           bltsSamplesAvolt(iRec1:iRec2, :, :));
 
-        % Add demuxed sequence signals to the global arrays (all records).
+        % Set demuxed subsequence signals (some records) to the global arrays
+        % (all records).
         AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
       end
 

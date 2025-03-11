@@ -73,7 +73,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence()
     %
     % IMPLEMENTATION NOTE: The design is for historical reasons before the
-    % underlying code (old function) was split up in two functions.
+    % underlying code (old function) was split up into two functions.
     %
     function test_get_routings_relabel_reconstruct_samples_BLTS_to_ASR_subse(testCase)
       % PROBLEM: Too large test function.

@@ -44,6 +44,8 @@ classdef CalibrationSettings
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
       assert(isnan(isAchg) || ismember(isAchg, [0, 1]))
+      assert(isscalar(iCalibTimeL))
+      assert(isscalar(iCalibTimeH))
       if ~isnan(iLsf)
         % CASE: LFR data (not TDS)
         bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
