@@ -83,8 +83,8 @@ classdef Cal < handle
   % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
   % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
   % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
-  % function iCalib = get_BIAS_calibration_time_L(obj, Epoch)
-  % function iCalib = get_BIAS_calibration_time_H(obj, Epoch)
+  % function iCalib = get_BIAS_calibration_time_index_L(obj, Epoch)
+  % function iCalib = get_BIAS_calibration_time_index_H(obj, Epoch)
   % function BiasCalibData = get_BIAS_calib_data(obj, ...
   % function lfrItfIvpt = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
   % function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
@@ -821,19 +821,19 @@ classdef Cal < handle
 
 
 
-    function iCalibL = get_BIAS_calibration_time_L(obj, Epoch)
+    function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
       BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
-      iCalibL = bicas.proc.L1L2.cal.utils.get_calibration_time(...
+      iCalibL = bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
         Epoch, BiasRctdCa{1}.epochL);
     end
 
 
 
-    function iCalibH = get_BIAS_calibration_time_H(obj, Epoch)
+    function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
       BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
-      iCalibH = bicas.proc.L1L2.cal.utils.get_calibration_time(...
+      iCalibH = bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
         Epoch, BiasRctdCa{1}.epochH);
     end
 

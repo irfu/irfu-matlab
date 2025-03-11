@@ -285,8 +285,8 @@ classdef dc
       %     be, and
       % (4) can potentially turn table into proper table with column headers.
 
-      iCalibLZv = Cal.get_BIAS_calibration_time_L(Dcip.Zv.Epoch);
-      iCalibHZv = Cal.get_BIAS_calibration_time_H(Dcip.Zv.Epoch);
+      iCalibLZv = Cal.get_BIAS_calibration_time_index_L(Dcip.Zv.Epoch);
+      iCalibHZv = Cal.get_BIAS_calibration_time_index_H(Dcip.Zv.Epoch);
 
       % IMPLEMENTATION NOTE: Do not log for LFR SWF since it produces
       % unnecessarily many log messages since sampling frequencies change
@@ -415,8 +415,8 @@ classdef dc
       % up LFR-SWF which tends to be broken into subsequences of 1 record.
       bltsSamplesAVolt = nan(nRecords, nSamplesPerRecordChannel, bicas.const.N_BLTS);
 
-      iCalibLZv = A.Cal.get_BIAS_calibration_time_L(Zv.Epoch);
-      iCalibHZv = A.Cal.get_BIAS_calibration_time_H(Zv.Epoch);
+      iCalibLZv = A.Cal.get_BIAS_calibration_time_index_L(Zv.Epoch);
+      iCalibHZv = A.Cal.get_BIAS_calibration_time_index_H(Zv.Epoch);
 
 
 

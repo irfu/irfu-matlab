@@ -38,7 +38,7 @@ classdef utils
     % iCalib
     %       Array. iCalibList(i) = calibration time index for Epoch(i).
     %
-    function [iCalib] = get_calibration_time(Epoch, calibEpochAr)
+    function [iCalib] = get_calibration_time_index(Epoch, calibEpochAr)
 
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(Epoch)

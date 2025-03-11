@@ -18,11 +18,11 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_calibration_time(testCase)
+    function test_get_calibration_time_index(testCase)
 
       function test(Epoch, CalibEpochList, expOutput)
         % NOTE: Converting arguments to int64, transposing.
-        actOutput = bicas.proc.L1L2.cal.utils.get_calibration_time(...
+        actOutput = bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
           int64(Epoch)', ...
           int64(CalibEpochList)');
 
@@ -32,7 +32,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
       end
 
       function test_exc(Epoch, CalibEpochList)
-        f = @() bicas.proc.L1L2.cal.utils.get_calibration_time(...
+        f = @() bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
           int64(Epoch)', int64(CalibEpochList)');
 
         testCase.verifyError(...

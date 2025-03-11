@@ -24,7 +24,7 @@ classdef cur
       currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
       currentAAmpere          = nan(size(currentSAmpere));    % Preallocate.
-      iCalibLZv               = Cal.get_BIAS_calibration_time_L(sciEpoch);
+      iCalibLZv               = Cal.get_BIAS_calibration_time_index_L(sciEpoch);
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
       L.logf('info', ...
         ['Calibrating currents -', ...
