@@ -17,7 +17,7 @@ classdef dc
 % PROPOSAL: Automatic test code.
 %
 % PROPOSAL:   process_calibrate_demux()
-%           & calibrate_voltages()
+%           & calibrate_voltages_5xBLTS()
 %           should only accept the needed ZVs and variables.
 %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
 %         from struct.
@@ -141,7 +141,7 @@ classdef dc
       %##############################################################
       % CALIBRATE VOLTAGES (WHILE BEING 5 CHANNELS LABELLED BY BLTS)
       %##############################################################
-      bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages(...
+      bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(...
         Epoch                   = Dcip.Zv.Epoch, ...
         bltsSamplesTm           = Dcip.Zv.bltsSamplesTm, ...
         isAchgFpa               = Dcip.Zv.isAchgFpa, ...
@@ -164,11 +164,11 @@ classdef dc
       % SIGNALS LABELLED BY BLTS
       % --> SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
       %###############################################################
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR(...
+      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR(...
         bltsSamplesAVolt, bltsSdidArray, L);
 
       % EXPERIMENTAL
-      % SdcdDict = bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR2(bltsSamplesAVolt, ...
+      % SdcdDict = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(bltsSamplesAVolt, ...
       %   bltsSdidArray, L);
 
 
@@ -350,7 +350,7 @@ classdef dc
     %
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %
-    function bltsSamplesAVolt = calibrate_voltages(Zv, A)
+    function bltsSamplesAVolt = calibrate_voltages_5xBLTS(Zv, A)
       % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
       %           for CWF.
       %
@@ -362,9 +362,9 @@ classdef dc
       %
       % PROPOSAL: Reorg. from
       %   (1) Iterate over subsequences for all channels.
-      %       (bicas.proc.L1L2.dc.calibrate_voltages(); this function)
+      %       (bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(); this function)
       %   (2) Iterate over BLTSs (for the same subsequence).
-      %       (bicas.proc.L1L2.dc.calibrate_voltages_subsequence(); sub-function)
+      %       (bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS_subsequence(); sub-function)
       %   (3) Calibrate one BLTS for one subsequence.
       % to
       %   (1) Iterate over BLTSs (for all subsequences).
@@ -448,7 +448,7 @@ classdef dc
       %     PROPOSAL: Implement using recursion: Find unique values (rows) for
       %               one argument at a time.
       %========================================================================
-      %Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.calibrate_voltages:irf.utils.split_by_change', A.L);
+      %Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:irf.utils.split_by_change', A.L);
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         Zv.isAchgFpa.logical2doubleNan(), ...
         Zv.freqHz, ...
@@ -460,12 +460,12 @@ classdef dc
         iCalibHZv);
       %Tmk.stop_log(nRecords, 'record', nSs, 'subsequence')
 
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.calibrate_voltages:Calibrating voltages', A.L);
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:Calibrating voltages', A.L);
       for iSs = 1:nSs
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        ssBltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_subsequence( ...
+        ssBltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS_subsequence( ...
           Cal                      = A.Cal, ...
           ... % ===============================================================
           ... % NOTE: Variables which do VARY over CDF records.
@@ -493,7 +493,7 @@ classdef dc
       end    % for
       Tmk.stop_log(nRecords, 'record', nSs, 'subsequence')
 
-    end    % calibrate_voltages
+    end    % calibrate_voltages_5xBLTS
 
 
 
@@ -506,7 +506,7 @@ classdef dc
     %       Constant values. Scalar values which do NOT VARY by CDF record.
     % Vv
     %       Varying values. Struct with values which DO VARY by CDF record.
-    function ssBltsSamplesAVolt = calibrate_voltages_subsequence(A, Cv, Vv)
+    function ssBltsSamplesAVolt = calibrate_voltages_5xBLTS_subsequence(A, Cv, Vv)
       arguments
         A.Cal
         %
@@ -551,7 +551,7 @@ classdef dc
       %====================
       ssBltsSamplesAVolt = nan(nRows, Cv.nSamplesPerRecordChannel, bicas.const.N_BLTS);
       for iBlts = 1:bicas.const.N_BLTS
-        ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
+        ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_1xBLTS_subsequence(...
           ssid                     = Cv.bltsSsidArray(iBlts), ...
           samplesTm                = Vv.bltsSamplesTm(:, :, iBlts), ...
           iBlts                    = iBlts, ...
@@ -568,12 +568,12 @@ classdef dc
           ufv                      = Cv.ufv, ...
           Cal                      = A.Cal);
       end
-    end    % calibrate_voltages_subsequence
+    end    % calibrate_voltages_5xBLTS_subsequence
 
 
 
     % Calibrate one BLTS channel.
-    function samplesAVolt = calibrate_BLTS(A)
+    function samplesAVolt = calibrate_1xBLTS_subsequence(A)
       arguments
         A.ssid
         A.samplesTm
@@ -671,15 +671,15 @@ classdef dc
           samplesAVolt = ssBltsSamplesAVoltCa{1};
         end
       end
-    end    % calibrate_BLTS
+    end    % calibrate_1xBLTS_subsequence
 
 
 
-    function AsrSamplesAVoltSrm = relabel_reconstruct_samples_BLTS_to_ASR(...
+    function AsrSamplesAVoltSrm = relabel_reconstruct_samples_5xBLTS_to_9xASR(...
         bltsSamplesAvolt, bltsSdidArray, L)
       % PROPOSAL: Automated tests.
 
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR', L);
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR', L);
 
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
@@ -702,7 +702,7 @@ classdef dc
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence(...
+        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
           bltsSdidArray(   iRec1,          :), ...
           bltsSamplesAvolt(iRec1:iRec2, :, :));
 
@@ -719,9 +719,9 @@ classdef dc
     % EXPERIMENTAL, UNUSED FUNCTION. INCOMPLETE?!!
     %
     % Intended as future conceptual replacement for
-    % bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR().
+    % bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR().
     %
-    function SdcdDict = relabel_reconstruct_samples_BLTS_to_ASR2( ...
+    function SdcdDict = relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW( ...
         bltsSamplesAVolt, bltsSdidArray, L)
 
       % TODO: VSQB argument
@@ -729,7 +729,7 @@ classdef dc
       %   PRO: Most of the complexity should be in the Saturation class anyway.
 
       SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_BLTS_to_ASR2', L);
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
 
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...

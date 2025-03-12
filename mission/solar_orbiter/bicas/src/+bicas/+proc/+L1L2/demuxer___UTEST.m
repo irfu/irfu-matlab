@@ -68,14 +68,14 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    % Test two functions in combination:
+    % NOTE: Tests two functions in combination:
+    %   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence()
     %   bicas.proc.L1L2.demuxer.get_routings()
-    %   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence()
     %
     % IMPLEMENTATION NOTE: The design is for historical reasons before the
     % underlying code (old function) was split up into two functions.
     %
-    function test_get_routings_relabel_reconstruct_samples_BLTS_to_ASR_subse(testCase)
+    function test_relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence_ge(testCase)
       % PROBLEM: Too large test function.
       % PROPOSAL: Separate test code for the two functions.
       %   CON: Combining both ensures that tests only test real combinations
@@ -105,7 +105,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         % CALL FUNCTIONS
         ActRoutingArray       = bicas.proc.L1L2.demuxer.get_routings(...
           bdmFpa, dlrFpa);
-        ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence(...
+        ActAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
           [ActRoutingArray.sdid], bltsSamplesAVolt);
 
         % ASSERTIONS

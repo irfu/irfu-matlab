@@ -1,7 +1,7 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
 % See
-%   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_BLTS_to_ASR_subsequence()
+%   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence()
 %   bicas.proc.L1L2.AntennaSignalId
 %   bicas.proc.L1L2.SignalSourceId
 %   bicas.proc.L1L2.SignalDestinationId
@@ -216,7 +216,7 @@ classdef demuxer
     % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote
     % that they are organized by BLTS and ASRs respectively.
     %
-    function AsrSamplesAVoltSrm = relabel_reconstruct_samples_BLTS_to_ASR_subsequence(...
+    function AsrSamplesAVoltSrm = relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
         sdidArray, bltsSamplesAVolt)
       % PROPOSAL: Log message for BDM=NaN.
 
