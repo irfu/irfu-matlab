@@ -1,4 +1,6 @@
 %
+% Handle class
+%
 % Class which effectively wraps a dictionary
 % SDID-->bicas.proc.L1L2.SdChannelData.
 % This useful since
@@ -16,8 +18,8 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef SdChannelDataDict
-  % PROPOSAL: Automatic test code.
+classdef SdChannelDataDict < handle
+  % PROPOSAL: Better tests.
   %
   % PROPOSAL: Constructor pre-allocates SDCDs.
   % PROPOSAL: Implement custom print version of class.
