@@ -159,11 +159,11 @@ classdef dc
 
 
 
-      %###############################################################
+      %##################################################################
       % ~"DEMUX" VOLTAGES:
-      % SIGNALS LABELLED BY BLTS
-      % --> SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
-      %###############################################################
+      % SIGNALS LABELLED BY 5x BLTS
+      % --> 9x SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
+      %##################################################################
       AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR(...
         bltsSamplesAVolt, bltsSdidArray, L);
 
@@ -728,12 +728,16 @@ classdef dc
       % PROPOSAL: Include VSQB in this function?
       %   PRO: Most of the complexity should be in the Saturation class anyway.
 
+      % TEMPORARY. SUBSTITUTE FOR FUTURE ARGUMENT?
+      bltsVsqbAr = false(size(bltsSdidArray));
+
       SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
 
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
-        bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
+        bltsSdidArray,    [-1,     bicas.const.N_BLTS], ...
+        bltsVsqbAr,       [-1,     bicas.const.N_BLTS]);
 
       %====================
       % Construct SdcdDict
@@ -746,11 +750,12 @@ classdef dc
         samplesAr = nan(nRecTot, nSamplesPerRecordChannel);
         vsqbAr    = false(nRecTot, 1);
 
+        % Copy samples and VSQB from elements associated with the specified
+        % SDID.
         for iBlts = 1:bicas.const.N_BLTS
-
           b = (bltsSdidArray(:, iBlts) == sdid);
           samplesAr(b, :) = bltsSamplesAVolt(b, :, iBlts);
-          %vsqbAr(b)       = bltsVsqbAr(b, iBlts);     % Why disabled?
+          vsqbAr(b)       = bltsVsqbAr(      b,    iBlts);
         end
 
         Sdcd = bicas.proc.L1L2.SdChannelData(samplesAr, vsqbAr);

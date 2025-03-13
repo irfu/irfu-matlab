@@ -370,7 +370,7 @@ classdef SameRowsMap < handle
           % whether strings or numbers. Should not support indices
           % like "1,2", colons, or "end".
           key = S.subs{1};
-          assert(isa(key, obj.mcKeys), 'Inconsistent key MATLAB class.')
+          assert(isa(key, obj.mcKeys), 'Key has illegal MATLAB class "%s". Key class must be "%s".', class(key), obj.mcKeys)
           varargout = {obj.Dict(key).v};
 
         otherwise

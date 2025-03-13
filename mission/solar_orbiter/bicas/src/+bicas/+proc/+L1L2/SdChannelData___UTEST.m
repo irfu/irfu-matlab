@@ -47,6 +47,7 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
     function test_subsref(testCase)
       SDCD_123 = testCase.get_SDCD([1,2,3]);
       SDCD_13  = testCase.get_SDCD([1,3]);
+      SDCD_31  = testCase.get_SDCD([3,1]);
       SDCD_2   = testCase.get_SDCD([2]);
       SDCD_    = testCase.get_SDCD([]);
 
@@ -58,6 +59,8 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
 
       testCase.assertEqual(SDCD_13, SDCD_123(logical([1,0,1])))
       testCase.assertEqual(SDCD_13, SDCD_123([1,3]))
+
+      testCase.assertEqual(SDCD_31, SDCD_123([3,1]))
 
       testCase.assertEqual(SDCD_2,  SDCD_123(logical([0,1,0])))
       testCase.assertEqual(SDCD_2,  SDCD_123([2]))
@@ -84,6 +87,8 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
 
     function test_subasgn(testCase)
       function test()
+        % R = Receiver?!
+        % S = Sender?!
         SDCD_R          = testCase.get_SDCD(ib_r);
         SDCD_S          = testCase.get_SDCD(ib_s);
         SDCD_EXP        = testCase.get_SDCD(ib_exp);
@@ -109,7 +114,7 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
       ib_asgn = [true];
       ib_exp  = [3];
       test()
-      % Overwrite 1 of 3, add 1.
+      % Overwrite 1 of 3 preexisting, add 1.
       ib_r    = [1,2,3];
       ib_s    = [4,5];
       ib_asgn = [2,4];
@@ -137,7 +142,8 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
 
 
 
-    % Get test SDCD with test data by indexing input to SDCD.
+    % Get test SDCD with test data which is indexed before being used to create
+    % SDCD.
     function Sdcd = get_SDCD(testCase, ib)
       SAMPLES_AR = [1,2; 3,4; 5,6; 7,8; 9,10];
       VSQB_AR    = logical([0;1;0;1;0]);

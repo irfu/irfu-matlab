@@ -56,7 +56,7 @@ ASID
         3x DC single
         3x DC diff
         3x AC diff
-    Implemented as constant in the form of either
+    Implemented as a constant in the form of either
     (1) uint8 value, or
     (2) class bicas.proc.L1L2.AntennaSignalId.
     Compare ASR.
@@ -414,7 +414,7 @@ SSID
     Signal Source ID. Constant representing the signal source of samples in a
     BLTS. This source may be either
     (a) an ASR, or
-    (b) one of the special cases: GND, 2.5V Ref., unknown signal.
+    (b) one of the special cases: GND, 2.5V Ref., or unknown signal.
     Implemented as either:
     (1) uint8 value, or
     (2) class bicas.proc.L1L2.SignalSourceId.

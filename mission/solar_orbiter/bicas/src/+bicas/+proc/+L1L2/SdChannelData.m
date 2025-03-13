@@ -1,11 +1,13 @@
 %
-% Stores one channel of data (samples; nRecords x nSpr) plus VSTBs
+% Stores one channel of data (array of samples; nRecords x nSpr) plus VSTBs
 % (nRecords x 1). The class itself emulates a *column* array, both for CWF and
 % SWF(!) data to make reconstruction of missing channels more natural. Every row
 % represents data for a CDF record (for a given channel).
 %
 % SD = Source/Destination?
 %      Signal Destination? (as in SDID)
+%
+% NOTE: Effectively uses NaN as fill values (provides function for it).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -19,6 +21,8 @@ classdef SdChannelData
   %   samples (not only samples)
   %   data
   %   PROPOSAL: Analogous to dictionary class.
+  %
+  % PROPOSAL: Rename vsqbAr/vstbAr if none is correct.
   %
   % PROPOSAL: Automatic test code: plus(), minus()
   %
@@ -42,10 +46,15 @@ classdef SdChannelData
   %#####################
   %#####################
   properties(SetAccess=private)
-    % NxM array. double. NaN represents missing data.
+    % NxM array. double. NaN represents missing data. Supports both CWF (Nx1)
+    % and SWF (NxM).
     samplesAr
 
     % Nx1 array.
+    % IMPLEMENTATION NOTE: Not completely in accordance with definition to call
+    % this VSQB (quality bit in datasets), but it is probably better than VSTB
+    % (threshold bit), or at least if windowing is done before this stage. In
+    % short, there is no satisfying pre-defined abbreviation for this bit.
     vsqbAr
   end
   properties (Dependent)
@@ -63,6 +72,9 @@ classdef SdChannelData
   %#########################
   %#########################
   methods
+    % TODO-NI: Why is this within in a separate method statement? Seems to be
+    %          public anyway. Because it defines the behaviour of a dependant
+    %          field variable?
 
 
 

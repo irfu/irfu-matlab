@@ -350,10 +350,14 @@ classdef demuxer
     % Intended as future conceptual replacement for
     % bicas.proc.L1L2.demuxer.complete_relation().
     %
-    % Complement/derive redundant data in three same-sized arrays. If one
-    % element is missing (labelled as a fill position) while the corresponding
-    % elements in the two other arrays are not, then the missing element is
-    % derived from the other two.
+    % Generic function for complementing/deriving redundant data in three
+    % same-sized arrays., where missing array elements can be set using three
+    % functions.
+    %
+    % If one element is missing (labelled as a fill position) while the
+    % corresponding elements in the two other arrays are not, then the missing
+    % element is derived from the other two using the appropriate X=f_YZ(Y,Z)
+    % function (one of three).
     %
     % The function does not verify that pre-existing data is consistent with
     % the specified functions which define the relationship between the
@@ -371,11 +375,26 @@ classdef demuxer
     %       Function handles z=f(x,y) for how to derive missing elements. Must
     %       be vectorized.
     %
-    function [A1,A2,A3] = reconstruct_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh23to1, fh13to2, fh12to3)
+    function [A1,A2,A3] = reconstruct_missing_data(...
+        A1,A2,A3, bFp1,bFp2,bFp3, fh23to1, fh13to2, fh12to3)
       % TODO-NI: Will lead to memory problems for large arrays?
       %   TODO: Test.
       %   NOTE: Using cell array for return value may cause more in-memory data
       %         copying.
+      % PROPOSAL: Move to ~utils.
+      %   PRO: Too generic for this class.
+      % PROPOSAL: Abolish use of function handles. Always use
+      %           addition/subtraction.
+      %   PRO: ~Difficult to test properly.
+      %   PRO: Probably not needed.
+      %   PRO: Easy to reverse if needed.
+      %   PRO: Generally ugly to use function handles.
+      %   CON: Less generic.
+      %   CON: Function handles should not have performance impact.
+      %   CON/NOTE: Requires underlying arrays to define addition and
+      %             subtraction.
+      %     CON: That is what the intended nominal implementation will use
+      %          anyway.
 
       assert(strcmp(class(A1), class(A2)))
       assert(strcmp(class(A1), class(A3)))
@@ -414,21 +433,22 @@ classdef demuxer
 
       assert(isa(SdcdDict, 'bicas.proc.L1L2.SdChannelDataDict'))
 
-      % Shorten variable names.
-      D = bicas.proc.L1L2.const.C.SDID_DICT;
+      % Shorten variable name.
+      SDUD_DICT = bicas.proc.L1L2.const.C.SDID_DICT;
 
 
 
-      % Reconstructs values using relationship SDID_1 = SDID_2 + SDID_3.
+      % Reconstructs values using relationship
+      % samples(SDID_1) = samples(SDID_2) + samples(SDID_3).
       function reconstruct_missing_data_helper(sumSdidStr1, termSdidStr2, termSdidStr3)
-        % NOTE: Printout is very useful for being able to follow how values are
-        % being reconstructed, e.g. when debugging and verifying automated
-        % tests.
+        % NOTE: Below printout is very useful for being able to follow how
+        % values are being reconstructed, e.g. when debugging and verifying
+        % automated tests.
         % fprintf("%-6s = %-6s + %-6s\n", sumSdidStr1, termSdidStr2, termSdidStr3)
 
-        Sdcd1 = SdcdDict.get(D( sumSdidStr1));
-        Sdcd2 = SdcdDict.get(D(termSdidStr2));
-        Sdcd3 = SdcdDict.get(D(termSdidStr3));
+        Sdcd1 = SdcdDict.get(SDUD_DICT( sumSdidStr1));
+        Sdcd2 = SdcdDict.get(SDUD_DICT(termSdidStr2));
+        Sdcd3 = SdcdDict.get(SDUD_DICT(termSdidStr3));
 
         [...
           Sdcd1, ...
@@ -447,9 +467,9 @@ classdef demuxer
           @(x,y) (x-y) ...
           );
 
-        SdcdDict = SdcdDict.set(D( sumSdidStr1), Sdcd1);
-        SdcdDict = SdcdDict.set(D(termSdidStr2), Sdcd2);
-        SdcdDict = SdcdDict.set(D(termSdidStr3), Sdcd3);
+        SdcdDict = SdcdDict.set(SDUD_DICT( sumSdidStr1), Sdcd1);
+        SdcdDict = SdcdDict.set(SDUD_DICT(termSdidStr2), Sdcd2);
+        SdcdDict = SdcdDict.set(SDUD_DICT(termSdidStr3), Sdcd3);
       end
 
 

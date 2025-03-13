@@ -2,15 +2,16 @@
 % Handle class
 %
 % Class which effectively wraps a dictionary
-% SDID-->bicas.proc.L1L2.SdChannelData.
+% (ASR) SDID-->bicas.proc.L1L2.SdChannelData.
+%
 % This useful since
 % (1) (MATLAB) dictionary values can not be non-scalar
 %     (bicas.proc.L1L2.SdChannelData is a column vector). Therefore,
 %     the implementation must work around this (it uses 1x1 cell arrays).
 % (2) it can sum up the number of SDCD fill positions.
 %
-% NOTE: The constructor does not initialize the object completely (because
-% the constructor call would be too awkward).
+% NOTE: The constructor does not initialize the object completely because
+% the constructor call would be too large and awkward then.
 %
 % NOTE: Is NOT a handle class. Should maybe become, if performance becomes a
 % problem?
@@ -24,6 +25,14 @@ classdef SdChannelDataDict < handle
   % PROPOSAL: Constructor pre-allocates SDCDs.
   % PROPOSAL: Implement custom print version of class.
   %   PRO: Useful for debugging.
+  %
+  % PROPOSAL: Constructor must set values for all keys.
+  %   PRO: Class is always initialized.
+  %   PROPOSAL: Cell array, 9x2, (iSsid, 1)=SSID, (iSsid, 2)=SDCD
+  %     CON: Memory problems?
+  %   PRO: More natural to assert similarities between constituent SDCDs.
+  %
+  % PROPOSAL: Assert that all SDCDs have the same size and data types.
 
 
 
@@ -33,10 +42,10 @@ classdef SdChannelDataDict < handle
   %###########
   %###########
   properties(Constant, Access=private)
-    KEYS_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR
+    PERMITTED_KEYS_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR
   end
   properties(Dependent)
-    % Total number of fill positions in all the SDCD objects stored within this
+    % Total number of NaN values in all the SDCD objects stored within this
     % object combined.
     nFp
   end
@@ -72,7 +81,7 @@ classdef SdChannelDataDict < handle
     % Set key value.
     function obj = set(obj, asrSdid, Sdcd)
       assert(isscalar(asrSdid))
-      assert(ismember(asrSdid, obj.KEYS_AR))
+      assert(ismember(asrSdid, obj.PERMITTED_KEYS_AR))
       assert(isa(Sdcd, 'bicas.proc.L1L2.SdChannelData'))
 
       obj.Dict(asrSdid) = {Sdcd};
@@ -119,9 +128,11 @@ classdef SdChannelDataDict < handle
 
 
 
+    % NOTE: Does not work before adding first SDCD.
     function nFp = get.nFp(obj)
       nFp    = 0;
       SdcdCa = obj.Dict.values;
+
       for i = 1:numel(SdcdCa)
         Sdcd = SdcdCa{i};
         nFp  = nFp + sum(Sdcd.bFp);
