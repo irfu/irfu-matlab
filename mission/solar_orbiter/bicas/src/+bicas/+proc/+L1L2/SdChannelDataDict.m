@@ -47,7 +47,7 @@ classdef SdChannelDataDict < handle
   properties(Dependent)
     % Total number of NaN values in all the SDCD objects stored within this
     % object combined.
-    nFp
+    nIsNan
   end
 
 
@@ -129,13 +129,13 @@ classdef SdChannelDataDict < handle
 
 
     % NOTE: Does not work before adding first SDCD.
-    function nFp = get.nFp(obj)
-      nFp    = 0;
+    function nIsNan = get.nIsNan(obj)
+      nIsNan = 0;
       SdcdCa = obj.Dict.values;
 
       for i = 1:numel(SdcdCa)
-        Sdcd = SdcdCa{i};
-        nFp  = nFp + sum(Sdcd.bFp);
+        Sdcd   = SdcdCa{i};
+        nIsNan = nIsNan + sum(Sdcd.bIsNan);
       end
     end
 

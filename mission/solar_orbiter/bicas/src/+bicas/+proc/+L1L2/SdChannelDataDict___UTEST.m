@@ -30,7 +30,7 @@ classdef SdChannelDataDict___UTEST < matlab.unittest.TestCase
         Sdcd = bicas.proc.L1L2.SdChannelData([NaN,2; 3,NaN]+i, logical([0; 1]));
         SdcdDict.set(sdid, Sdcd);
 
-        %testCase.assertEqual(SdcdDict.nFp, 2*i)
+        testCase.assertEqual(SdcdDict.nIsNan, 2*i)
       end
 
       ExpSdcd = bicas.proc.L1L2.SdChannelData([NaN,2; 3,NaN]+3, logical([0; 1]));
@@ -38,7 +38,7 @@ classdef SdChannelDataDict___UTEST < matlab.unittest.TestCase
 
 
       testCase.assertEqual(ActSdcd, ExpSdcd)
-      testCase.assertEqual(SdcdDict.nFp, 9*2)
+      testCase.assertEqual(SdcdDict.nIsNan, 9*2)
     end
 
 

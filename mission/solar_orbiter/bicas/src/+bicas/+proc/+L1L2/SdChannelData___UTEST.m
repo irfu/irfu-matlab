@@ -17,18 +17,18 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_constructor_size_bFp(testCase)
+    function test_constructor_size_bIsNan(testCase)
       Sdcd = bicas.proc.L1L2.SdChannelData(zeros(0, 0), false(0, 1));
-      testCase.assertEqual(size(Sdcd), [0, 1])
-      testCase.assertEqual(Sdcd.bFp,   false(0, 1))
+      testCase.assertEqual(size(Sdcd),  [0, 1])
+      testCase.assertEqual(Sdcd.bIsNan, false(0, 1))
 
       Sdcd = bicas.proc.L1L2.SdChannelData(zeros(0, 3), false(0, 1));
-      testCase.assertEqual(size(Sdcd), [0, 1])
-      testCase.assertEqual(Sdcd.bFp,   false(0, 1))
+      testCase.assertEqual(size(Sdcd),  [0, 1])
+      testCase.assertEqual(Sdcd.bIsNan, false(0, 1))
 
       Sdcd = bicas.proc.L1L2.SdChannelData(zeros(1, 3), false);
-      testCase.assertEqual(size(Sdcd), [1, 1])
-      testCase.assertEqual(Sdcd.bFp,   false(1, 1))
+      testCase.assertEqual(size(Sdcd),  [1, 1])
+      testCase.assertEqual(Sdcd.bIsNan, false(1, 1))
 
 
 
@@ -39,7 +39,7 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
       testCase.assertEqual(Sdcd.samplesAr, SAMPLES_AR)
       testCase.assertEqual(Sdcd.vsqbAr,    VSQB_AR)
       testCase.assertEqual(size(Sdcd),     [3, 1])
-      testCase.assertEqual(Sdcd.bFp,       logical([0; 0; 1]))
+      testCase.assertEqual(Sdcd.bIsNan,    logical([0; 0; 1]))
     end
 
 

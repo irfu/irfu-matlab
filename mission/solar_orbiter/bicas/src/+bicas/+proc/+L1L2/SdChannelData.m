@@ -61,7 +61,7 @@ classdef SdChannelData
     % Nx1 array. Logical.
     % NOTE: Must have same size as object (column array), despite being a
     % function of samplesAr.
-    bFp
+    bIsNan
   end
 
 
@@ -78,9 +78,9 @@ classdef SdChannelData
 
 
 
-    function bFp = get.bFp(obj)
-      bFp = any(isnan(obj.samplesAr), 2);
-      assert(iscolumn(bFp))
+    function bIsNan = get.bIsNan(obj)
+      bIsNan = any(isnan(obj.samplesAr), 2);
+      assert(iscolumn(bIsNan))
     end
 
 
