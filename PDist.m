@@ -4136,7 +4136,7 @@ classdef PDist < TSeries
                   tmp_energy = energy_minus(it,iEnergy) + denergy(it,iEnergy)*rand(N_bin,1); % eV
                   tmp_azim   = azim_minus(iAzim)        + dazim*rand(N_bin,1);   % deg
                   tmp_polar  = polar_minus(iPolar)      + dpolar*rand(N_bin,1);  % deg
-                  tmp_v = sqrt(tmp_energy*units.eV*2/units.me)/1000; % km/s
+                  tmp_v = sqrt(tmp_energy*units.eV*2/mass)/1000; % km/s
 
                   if doScpot % check if energy is negative, then skip
                     if iEnergy>8  % debug
