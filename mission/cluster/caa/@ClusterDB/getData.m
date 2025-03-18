@@ -492,7 +492,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
       case 1
         if start_time>toepoch([2024 02 09 13 56 54])
           param='180Hz';
-        elseif start_time>toepoch([2023 12 12 24 02 10 47]) % wrong commanding
+        elseif start_time>toepoch([2023 12 24 02 10 47]) % wrong commanding
           param='10Hz';
         elseif start_time>toepoch([2015 02 26 09 35 00])
           param='180Hz';
@@ -707,7 +707,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
       end
       if start_time>toepoch([2024 02 09 13 56 54])
         param={'180Hz'};
-      elseif start_time>toepoch([2023 12 12 24 02 10 47]) % wrong commanding
+      elseif start_time>toepoch([2023 12 24 02 10 47]) % wrong commanding
         param={'10Hz'};
       elseif start_time>toepoch([2015 02 26 09 35 00])
         param={'180Hz'};
