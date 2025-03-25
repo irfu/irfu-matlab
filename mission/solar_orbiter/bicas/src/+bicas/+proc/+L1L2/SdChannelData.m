@@ -24,8 +24,6 @@ classdef SdChannelData
   %
   % PROPOSAL: Rename vsqbAr/vstbAr if none is correct.
   %
-  % PROPOSAL: Automatic test code: plus(), minus()
-  %
   % TODO-NI: Performance for large arrays? Need internal handle objects?
   %   Cf. bicas.utils.FPArray.
   %

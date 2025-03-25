@@ -129,6 +129,38 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_plus(testCase)
+      SDCD_1     = bicas.proc.L1L2.SdChannelData(zeros(0, 2), false(0, 1));
+      SDCD_2     = bicas.proc.L1L2.SdChannelData(zeros(0, 2), false(0, 1));
+      testCase.assertEqual(...
+        SDCD_1 + SDCD_2, ...
+        bicas.proc.L1L2.SdChannelData(zeros(0, 2), false(0, 1)))
+
+      SDCD_1     = bicas.proc.L1L2.SdChannelData([1,2; 3,4; 5,6  ], logical([1; 0; 0]));
+      SDCD_2     = bicas.proc.L1L2.SdChannelData([1,3; 5,7; 9,NaN], logical([0; 1; 0]));
+      testCase.assertEqual(...
+        SDCD_1 + SDCD_2, ...
+        bicas.proc.L1L2.SdChannelData([2,5; 8,11; 14,NaN], logical([1; 1; 0])))
+    end
+
+
+
+    function test_minus(testCase)
+      SDCD_1     = bicas.proc.L1L2.SdChannelData(zeros(0, 2), false(0, 1));
+      SDCD_2     = bicas.proc.L1L2.SdChannelData(zeros(0, 2), false(0, 1));
+      testCase.assertEqual(...
+        SDCD_1 - SDCD_2, ...
+        bicas.proc.L1L2.SdChannelData(zeros(0, 2), false(0, 1)))
+
+      SDCD_1     = bicas.proc.L1L2.SdChannelData([1,3; 5,7; 9,NaN], logical([0; 1; 0]));
+      SDCD_2     = bicas.proc.L1L2.SdChannelData([1,2; 3,4; 5,6  ], logical([1; 0; 0]));
+      testCase.assertEqual(...
+        SDCD_1 - SDCD_2, ...
+        bicas.proc.L1L2.SdChannelData([0,1; 2,3; 4,NaN], logical([1; 1; 0])))
+    end
+
+
+
   end    % methods(Test)
 
 
