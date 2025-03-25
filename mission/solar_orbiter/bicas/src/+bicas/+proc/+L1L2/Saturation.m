@@ -281,18 +281,6 @@ classdef Saturation
         ' One sequence of records with identical settings at a time.'])
       Tmk = bicas.utils.Timekeeper('get_VSQB', L);
 
-      % For a given ASID, determine which rows contain samples which originate
-      % from L1R (i.e. which were not reconstructed). Set all other samples to
-      % NaN.
-      function asidSamplesAr = set_reconstructed_samples_to_NaN(asidSamplesAr, asid)
-        ssid = bicas.proc.L1L2.const.ASID_to_SSID(asid);
-        bUse = any(repmat(ssid, [nRows, 1]) == bltsSsidAr, 2);
-        asidSamplesAr(~bUse, :) = NaN;
-
-        % L.logf('debug', 'kSsid = %i', kSsid)
-        % L.logf('debug', 'unique(bUse)              = [%s]', strjoin(string(unique(bUse)),      ','))
-      end
-
       % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
       % code, but it is difficult to use the same implementation for both
       % without (1) making the implementation harder to understand and (2)
@@ -303,7 +291,8 @@ classdef Saturation
         %===========
         vstbAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
-          asidSamplesAr = set_reconstructed_samples_to_NaN(AsrSamplesAVoltSrm(asid), asid);
+          asidSamplesAr = bicas.proc.L1L2.Saturation.set_reconstructed_samples_to_NaN(...
+            AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
 
           asidVstbAr = obj.get_ASR_CWF_channel_VSTB(...
             bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
@@ -325,7 +314,8 @@ classdef Saturation
         %===========
         vsqbAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
-          asidSamplesAr = set_reconstructed_samples_to_NaN(AsrSamplesAVoltSrm(asid), asid);
+          asidSamplesAr = bicas.proc.L1L2.Saturation.set_reconstructed_samples_to_NaN(...
+            AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
 
           asidIsSaturatedAr = obj.get_ASR_SWF_channel_VSQB(...
             bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
@@ -414,6 +404,31 @@ classdef Saturation
 
 
   end    % methods(Access=public)
+
+
+
+  methods(Access=private, Static)
+
+
+
+    % For a given ASID, determine which rows contain samples which originate
+    % from L1R (i.e. which were not reconstructed). Set all other samples to
+    % NaN.
+    function asidSamplesAr = set_reconstructed_samples_to_NaN(...
+        asidSamplesAr, asid, bltsSsidAr)
+
+      ssid = bicas.proc.L1L2.const.ASID_to_SSID(asid);
+      %bUse = any(repmat(ssid, [nRows, 1]) == bltsSsidAr, 2);
+      bUse = any(ssid == bltsSsidAr, 2);
+      asidSamplesAr(~bUse, :) = NaN;
+
+      % L.logf('debug', 'kSsid = %i', kSsid)
+      % L.logf('debug', 'unique(bUse)              = [%s]', strjoin(string(unique(bUse)),      ','))
+    end
+
+
+
+  end    % methods(Access=private, Static)
 
 
 
