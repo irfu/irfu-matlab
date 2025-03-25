@@ -46,6 +46,9 @@ classdef AntennaSignalId
 
     % Constructor
     function obj = AntennaSignalId(ssid, category, antennas)
+      %############
+      % ASSERTIONS
+      %############
       assert(isa(ssid, 'uint8'))
       assert(isnumeric(antennas))
       % NOTE: Assertion permits empty value, []. Assert vector length later.
@@ -53,14 +56,11 @@ classdef AntennaSignalId
 
       if isequal(size(antennas), [1,1])
         % CASE: single,  1x1
-        % No assertion
-
+        % No additional assertion.
       elseif isequal(size(antennas), [1,2])
         % CASE: diff, 1x2 row vector
-
         % NOTE: Implicitly checks that antennas are different.
         assert(antennas(1) < antennas(2))
-
       else
         error(...
           'BICAS:Assertion:IllegalArgument', ...
@@ -86,7 +86,9 @@ classdef AntennaSignalId
             'Illegal argument category="%s".', category)
       end
 
-      % Assign object.
+      %######################
+      % Assign object fields
+      %######################
       obj.ssid     = ssid;
       obj.antennas = antennas;
       obj.category = category;

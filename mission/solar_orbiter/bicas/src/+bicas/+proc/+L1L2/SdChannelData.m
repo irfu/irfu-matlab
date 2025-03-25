@@ -1,8 +1,16 @@
 %
-% Stores one channel of data (array of samples; nRecords x nSpr) plus VSTBs
-% (nRecords x 1). The class itself emulates a *column* array, both for CWF and
-% SWF(!) data to make reconstruction of missing channels more natural. Every row
-% represents data for a CDF record (for a given channel).
+% Class which stores
+% * one channel of data (array of samples; nRecords x nSpr), and
+% * VSQBs (nRecords x 1).
+%
+% The class interface itself (~syntactic sugar) emulates a column array with
+% support for addition and subtraction despite that the underlying storage of
+% samples is a 2D array. Every row represents data for a CDF record (for a given
+% channel). This makes reconstruction of missing channels more natural while the
+% class itself automatically derives new VSQBs (one per row) for reconstructed
+% channels under the hood. Since the class is meant to be used for
+% demultiplexing, it is meant to represent data both before and demultiplexing.
+%
 %
 % SD = Source/Destination?
 %      Signal Destination? (as in SDID)
@@ -18,11 +26,15 @@ classdef SdChannelData
   %   ~SDID
   %   Signal Destination
   %   channel
-  %   samples (not only samples)
+  %   samples (not only samples; contains vsqb too)
   %   data
+  %   metadata
   %   PROPOSAL: Analogous to dictionary class.
   %
   % PROPOSAL: Rename vsqbAr/vstbAr if none is correct.
+  %   PROPOSAL: VSB = Voltage Saturation Bit
+  %             VSIB = Voltage Saturation Implementation/Intermediate Bit
+  %   PROPOSAL: Globally replace VSTB-->VSIB=Voltage Saturation Intermediate Bit
   %
   % TODO-NI: Performance for large arrays? Need internal handle objects?
   %   Cf. bicas.utils.FPArray.
@@ -35,6 +47,54 @@ classdef SdChannelData
   %   CON(?): The size of the object is not the same as the size of samplesAr.
   %           Can therefore not *directly* reuse FPA fill positions as fill
   %           positions for this class.
+  %
+  % PROBLEM: Current implementation leads to bug in reconstruction algorithm:
+  %          Emulating column array while bIsNan represents there being at least
+  %          one NaN per row.
+  %   --
+  %   PROPOSAL: Refactor to emulate same size as samplesAr (2D) but still only
+  %             contain column array of saturation bits.
+  %     PRO: Can abolish bIsNan.
+  %     PRO: Needed for reconstruction algorithm: If row contains both non-NaN and
+  %          NaN, then reconstruction algorithm thinks entire row is NaN, i.e.
+  %          contains no data.
+  %       Ex: TDS-RSWF snapshots do not fill entire row. The unused part is NaN.
+  %     CON: Reconstruction algorithm requires linear indexing. ==> Intermediate
+  %          SDCDs are linear!!!!
+  %       Ex: A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
+  %   --
+  %   PROPOSAL: Refactor to emulate same size as samplesAr (2D) and keep 2D
+  %             array of VSQBs (instead of column array).
+  %     CON: Requires more memory.
+  %     CON: Abandons idea that SDCD could contain other information on the form
+  %          of one scalar per row (unless duplicates them to one per element).
+  %   --
+  %   PROPOSAL: Refactor to emulate column array but (1) include counters for
+  %             valid number of samples per row, and (2) assumes/asserts that
+  %             all (valid) samples on a row are either non-NaN or NaN.
+  %     PRO: Records are "fundamental" and reconstruction should work on
+  %          records.
+  %       PRO: One saturation bit per record, makes records "fundamental".
+  %       PRO: Arbitrary indexing operations, e.g. logical indexing, linear
+  %            indexing make no sense unless index=record.
+  %     CON: Must assert all valid samples on a row are either non-NaN or NaN.
+  %     CON: When adding, subtracting: Must assert equal number of valid samples
+  %          per row.
+  %     CON: Makes class more conceptually complex.
+  %       CON: Incorporates number of valid samples per row in class,
+  %            and replaces the corresponding external variable?
+  %         CON: One such variable per channel, not one globally.
+  %     CON: Using variable for number of valid samples makes implementation
+  %          resemble bicas.utils.FPArray.
+  %     CON: Can not handle there being both fill values and non-fill values
+  %          inside snapshot.
+  %       CON: Should never happen.
+  %       CON: Calibration should turn one fill value into fill values for
+  %            entire snapshot.
+  %       CON: If it happens, it could only be taken advantage of when there is
+  %            redundant channel data anyway (rare).
+  %   --
+  %   PROPOSAL: bIsNan <=> All elements are NaN (not: at least one).
 
 
 
@@ -49,14 +109,16 @@ classdef SdChannelData
     samplesAr
 
     % Nx1 array.
-    % IMPLEMENTATION NOTE: Not completely in accordance with definition to call
+    % IMPLEMENTATION NOTE: Not completely in accordance with definition to name
     % this VSQB (quality bit in datasets), but it is probably better than VSTB
     % (threshold bit), or at least if windowing is done before this stage. In
     % short, there is no satisfying pre-defined abbreviation for this bit.
     vsqbAr
   end
-  properties (Dependent)
+  properties(Dependent)
+    % Number of rows with at least one NaN in the underlying data.
     % Nx1 array. Logical.
+    %
     % NOTE: Must have same size as object (column array), despite being a
     % function of samplesAr.
     bIsNan
@@ -168,6 +230,7 @@ classdef SdChannelData
     function Sdcd3 = plus(Sdcd1, Sdcd2)
       samplesAr3 = Sdcd1.samplesAr + Sdcd2.samplesAr;
       vsqbAr3    = Sdcd1.vsqbAr    | Sdcd2.vsqbAr;
+
       Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsqbAr3);
     end
 
@@ -177,6 +240,7 @@ classdef SdChannelData
     function Sdcd3 = minus(Sdcd1, Sdcd2)
       samplesAr3 = Sdcd1.samplesAr - Sdcd2.samplesAr;
       vsqbAr3    = Sdcd1.vsqbAr    | Sdcd2.vsqbAr;
+
       Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsqbAr3);
     end
 

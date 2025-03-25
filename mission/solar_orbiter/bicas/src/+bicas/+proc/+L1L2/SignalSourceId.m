@@ -1,8 +1,9 @@
 %
 % Immutable class which instances represent an SSID with metadata.
 %
-% NOTE: Can not represent the source of a reconstructed signal, e.g. a diff
-% calculated by subtracting to (calibrated) singles.
+% NOTE: Must, due to its definition, not represent the source of a
+% *RECONSTRUCTED* signal, e.g. a diff calculated by subtracting two (calibrated)
+% singles.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -10,8 +11,8 @@
 classdef SignalSourceId
   % PROPOSAL: Use for solo.BSACT_utils.
   %
-  % PROPOSAL: Should include three separate cases for REF25V and GND
-  %           respectively (i.e. 2 cases --> 2x3 cases).
+  % PROPOSAL: Have three separate cases for REF25V and GND respectively (i.e.
+  %           2 cases --> 2x3 cases).
 
 
 

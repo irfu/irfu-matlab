@@ -13,9 +13,6 @@
 % NOTE: The constructor does not initialize the object completely because
 % the constructor call would be too large and awkward then.
 %
-% NOTE: Is NOT a handle class. Should maybe become, if performance becomes a
-% problem?
-%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %

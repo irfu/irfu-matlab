@@ -14,11 +14,42 @@
 % mentioned method-replacing functions easier.
 %
 %
+% SUMMARY OF VALUES
+% =================
+% Copy-pasted. The code is the authoritative source. Not below text.
+% --------------
+% ASID:
+% "DC_V1"  ⟼ 1
+% "DC_V2"  ⟼ 2
+% "DC_V3"  ⟼ 3
+% "DC_V12" ⟼ 4
+% "DC_V13" ⟼ 5
+% "DC_V23" ⟼ 6
+% "AC_V12" ⟼ 7
+% "AC_V13" ⟼ 8
+% "AC_V23" ⟼ 9
+% --------------
+% SDID:
+% "DC_V1"   ⟼ 201
+% "DC_V2"   ⟼ 202
+% "DC_V3"   ⟼ 203
+% "DC_V12"  ⟼ 204
+% "DC_V13"  ⟼ 205
+% "DC_V23"  ⟼ 206
+% "AC_V12"  ⟼ 207
+% "AC_V13"  ⟼ 208
+% "AC_V23"  ⟼ 209
+% "NOWHERE" ⟼ 213
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef const
 % NOTE: Feels like there should be a better way of implementing ASID, SSID,
 %       SDIDs as uint8 + functions, but not sure how.
+%
+% PROPOSAL: Code for printing human-readable tables with values which can be
+%           copy-pasted to comments in this file.
 %
 % PROPOSAL: Keep ASID, SSID, SDID as uint8 but also keep corresponding objects,
 %           but defer functions on uint8 to object methods via dictionaries

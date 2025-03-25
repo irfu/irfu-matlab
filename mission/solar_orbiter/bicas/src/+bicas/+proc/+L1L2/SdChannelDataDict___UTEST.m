@@ -19,7 +19,7 @@ classdef SdChannelDataDict___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test_set_get_nIsNan(testCase)
       SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
@@ -35,7 +35,6 @@ classdef SdChannelDataDict___UTEST < matlab.unittest.TestCase
 
       ExpSdcd = bicas.proc.L1L2.SdChannelData([NaN,2; 3,NaN]+3, logical([0; 1]));
       ActSdcd = SdcdDict.get(SDID_ASR_AR(3));
-
 
       testCase.assertEqual(ActSdcd, ExpSdcd)
       testCase.assertEqual(SdcdDict.nIsNan, 9*2)

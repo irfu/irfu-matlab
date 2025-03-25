@@ -54,8 +54,8 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
       testCase.assertEqual(SDCD_123, SDCD_123(1:3))
       testCase.assertEqual(SDCD_123, SDCD_123(logical([1,1,1])))
 
-      testCase.assertEqual(SDCD_,  SDCD_([]))
-      testCase.assertEqual(SDCD_,  SDCD_(logical([])))
+      testCase.assertEqual(SDCD_,   SDCD_([]))
+      testCase.assertEqual(SDCD_,   SDCD_(logical([])))
 
       testCase.assertEqual(SDCD_13, SDCD_123(logical([1,0,1])))
       testCase.assertEqual(SDCD_13, SDCD_123([1,3]))
@@ -65,22 +65,8 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
       testCase.assertEqual(SDCD_2,  SDCD_123(logical([0,1,0])))
       testCase.assertEqual(SDCD_2,  SDCD_123([2]))
 
-      testCase.assertEqual(SDCD_,  SDCD_123(logical([0,0,0])))
-      testCase.assertEqual(SDCD_,  SDCD_123([]))
-
-      % % BELOW SHOULD BE EQUIVALENT TO PARTS OF CODE ABOVE. TOO CONVOLUTED?
-      % function test(ibExp, ibSdcdInit, ibSubsref)
-      %   ExpSdcd = testCase.get_SDCD(ibExp);
-      %   Sdcd    = testCase.get_SDCD(ibSdcdInit);
-      %   ActSdcd = Sdcd(ibSubsref);
-      %   testCase.assertEqual(ActSdcd, ExpSdcd)
-      % end
-      %
-      % test(1:3, 1:3, 1:3)
-      % test(1:3, 1:3, logical([1,1,1]))
-      %
-      % test([], [], [])
-      % test([], [], logical([]))
+      testCase.assertEqual(SDCD_,   SDCD_123(logical([0,0,0])))
+      testCase.assertEqual(SDCD_,   SDCD_123([]))
     end
 
 
@@ -92,38 +78,39 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
         SDCD_R          = testCase.get_SDCD(ib_r);
         SDCD_S          = testCase.get_SDCD(ib_s);
         SDCD_EXP        = testCase.get_SDCD(ib_exp);
-        SDCD_R(ib_asgn) = SDCD_S;
+        SDCD_R(ib_r_asgn) = SDCD_S;
         testCase.assertEqual(SDCD_R, SDCD_EXP)
       end
 
       % Size 0-->1
-      ib_r    = [];
-      ib_s    = [3];
-      ib_asgn = [true];
-      ib_exp  = [3];
+      ib_r      = [];
+      ib_s      = [3];
+      ib_r_asgn = [true];
+      ib_exp    = [3];
       test()
-      ib_r    = [];
-      ib_s    = [3];
-      ib_asgn = [1];
-      ib_exp  = [3];
+      ib_r      = [];
+      ib_s      = [3];
+      ib_r_asgn = [1];
+      ib_exp    = [3];
       test()
 
       % Overwrite 1 of 3.
-      ib_r    = [];
-      ib_s    = [3];
-      ib_asgn = [true];
-      ib_exp  = [3];
+      ib_r      = [];
+      ib_s      = [3];
+      ib_r_asgn = [true];
+      ib_exp    = [3];
       test()
+
       % Overwrite 1 of 3 preexisting, add 1.
-      ib_r    = [1,2,3];
-      ib_s    = [4,5];
-      ib_asgn = [2,4];
-      ib_exp  = [1,4,3,5];
+      ib_r      = [1,2,3];
+      ib_s      = [4,5];
+      ib_r_asgn = [2,4];
+      ib_exp    = [1,4,3,5];
       test()
-      ib_r    = [1,2,3];
-      ib_s    = [4,5];
-      ib_asgn = logical([0,1,0,1]);
-      ib_exp  = [1,4,3,5];
+      ib_r      = [1,2,3];
+      ib_s      = [4,5];
+      ib_r_asgn = logical([0,1,0,1]);
+      ib_exp    = [1,4,3,5];
       test()
     end
 

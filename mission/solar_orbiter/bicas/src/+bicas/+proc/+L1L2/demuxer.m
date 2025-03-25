@@ -370,7 +370,7 @@ classdef demuxer
     %       Data arrays of the same MATLAB class and size.
     % bFp1, bFp2, bFp3
     %       Logical arrays of the same size as A1.
-    %       True=fill position in corresponding A* array.
+    %       True <=> Fill position in corresponding A* array.
     % fh23to1, fh13to2, fh12to3
     %       Function handles z=f(x,y) for how to derive missing elements. Must
     %       be vectorized.
@@ -429,6 +429,11 @@ classdef demuxer
     % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence() (though
     % "global", not for a subsequence).
     %
+    % BUG: SDCD emulating column vector but [bIsNan <=> There is at least one
+    % NaN in the row of underlying samples data] causes the reconstruction
+    % algorithm to fail when the row of underlying samples partly contains NaN.
+    % /2025-03-26
+    %
     function SdcdDict = reconstruct_ASR_samples2(SdcdDict)
 
       assert(isa(SdcdDict, 'bicas.proc.L1L2.SdChannelDataDict'))
@@ -438,7 +443,7 @@ classdef demuxer
 
 
 
-      % Reconstructs values using relationship
+      % Reconstruct values using relationship
       % samples(SDID_1) = samples(SDID_2) + samples(SDID_3).
       function reconstruct_missing_data_helper(sumSdidStr1, termSdidStr2, termSdidStr3)
         % NOTE: Below printout is very useful for being able to follow how
