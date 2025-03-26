@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for bicas.proc.L1L2.Saturation.
+% matlab.unittest automatic test code for bicas.proc.L1L2.sat.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef Saturation___UTEST < matlab.unittest.TestCase
+classdef sat___UTEST < matlab.unittest.TestCase
 % PROPOSAL: Split up into multiple files.
 %   CON: init_object() is used by tests for multiple methods.
 %   CON: Might want to share instance field S = bicas.proc.L1L2.const.C.SSID_DICT;
@@ -55,9 +55,10 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         ssid      = testCase.S(ssidStr);
         expVstbAr = logical(expVstbAr);
         isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
-        Sat = testCase.init_object(satArgsCa{:});
+        SatSettings = testCase.init_SatSettings(satArgsCa{:});
 
-        actVstbAr = Sat.get_VSTB(samplesAVolt, ssid, isAchgFpa);
+        actVstbAr = bicas.proc.L1L2.sat.get_VSTB(...
+          SatSettings, samplesAVolt, ssid, isAchgFpa);
 
         testCase.assertEqual(actVstbAr, expVstbAr)
       end
@@ -111,11 +112,12 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
     function test_get_snapshot_VSQB(testCase)
 
       function test(satArgsCa, samplesAVolt, ssidStr, isAchg, expVsqb)
-        ssid      = testCase.S(ssidStr);
-        isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
-        Sat       = testCase.init_object(satArgsCa{:});
+        ssid        = testCase.S(ssidStr);
+        isAchgFpa   = bicas.utils.FPArray.floatNan2logical(isAchg);
+        SatSettings = testCase.init_SatSettings(satArgsCa{:});
 
-        actVsqb = Sat.get_snapshot_VSQB(samplesAVolt, ssid, isAchgFpa);
+        actVsqb = bicas.proc.L1L2.sat.get_snapshot_VSQB(...
+          SatSettings, samplesAVolt, ssid, isAchgFpa);
 
         testCase.assertEqual(actVsqb, expVsqb)
       end
@@ -170,13 +172,13 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
           zvNValidSamplesPerRecord, samplesAVolt, ...
           ssidStr, isAchg, expVsqbAr)
 
-        ssid      = testCase.S(ssidStr);
-        expVsqbAr = logical(expVsqbAr);
-        isAchgFpa = bicas.utils.FPArray.floatNan2logical(isAchg);
-        Sat       = testCase.init_object(satArgsCa{:});
+        ssid        = testCase.S(ssidStr);
+        expVsqbAr   = logical(expVsqbAr);
+        isAchgFpa   = bicas.utils.FPArray.floatNan2logical(isAchg);
+        SatSettings = testCase.init_SatSettings(satArgsCa{:});
 
-        actVsqbAr = Sat.get_snapshot_VSQB_many(...
-          zvNValidSamplesPerRecord, samplesAVolt, ssid, isAchgFpa);
+        actVsqbAr = bicas.proc.L1L2.sat.get_snapshot_VSQB_many(...
+          SatSettings, zvNValidSamplesPerRecord, samplesAVolt, ssid, isAchgFpa);
 
         testCase.assertEqual(actVsqbAr, expVsqbAr)
       end
@@ -551,7 +553,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       V.expVsqbAr = logical(V.expVsqbAr);
 
       L = bicas.Logger('NO_STDOUT', false);
-      Sat = testCase.init_object(...
+      Bso = testCase.init_BSO(...
         V.cwfSlidingWindowLengthSec, ...
         V.vstbFractionThreshold, ...
         V.thresholdAVoltDcSingle, ...
@@ -560,8 +562,8 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAchg);
 
       % CALL FUNCTION
-      actVsqbAr = Sat.get_VSQB(...
-        V.tt2000Ar, V.AsrSamplesAVoltSrm, V.zvNValidSamplesPerRecord, ...
+      actVsqbAr = bicas.proc.L1L2.sat.get_VSQB(...
+        Bso, V.tt2000Ar, V.AsrSamplesAVoltSrm, V.zvNValidSamplesPerRecord, ...
         V.bltsSsidAr, V.isAchgFpa, V.hasSwfFormat, L);
 
       testCase.assertEqual(actVsqbAr, V.expVsqbAr)
@@ -593,7 +595,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       V.isAchgFpa = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
       V.expVstbAr  = logical(V.expVstbAr);
 
-      Sat = testCase.init_object(...
+      SatSettings = testCase.init_SatSettings(...
         cwfSlidingWindowLengthSec, ...
         vstbFractionThreshold, ...
         V.thresholdAVoltDcSingle, ...
@@ -601,8 +603,8 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAclg, ...
         V.thresholdAVoltAchg);
 
-      actVstbAr = Sat.get_ASR_CWF_channel_VSTB(...
-        testCase.S(V.ssidStr), V.isAchgFpa, V.samplesAVolt);
+      actVstbAr = bicas.proc.L1L2.sat.get_ASR_CWF_channel_VSTB(...
+        SatSettings, testCase.S(V.ssidStr), V.isAchgFpa, V.samplesAVolt);
 
       testCase.assertEqual(actVstbAr, V.expVstbAr)
     end
@@ -633,7 +635,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       V.isAchgFpa = bicas.utils.FPArray(logical(V.isAchg), 'FILL_POSITIONS', isnan(V.isAchg));
       V.expVstbAr = logical(V.expVstbAr);
 
-      Sat = testCase.init_object(...
+      SatSettings = testCase.init_SatSettings(...
         cwfSlidingWindowLengthSec, ...
         V.vstbFractionThreshold, ...
         V.thresholdAVoltDcSingle, ...
@@ -641,8 +643,8 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
         V.thresholdAVoltAclg, ...
         V.thresholdAVoltAchg);
 
-      actVstbAr = Sat.get_ASR_SWF_channel_VSQB(...
-        bicas.proc.L1L2.const.C.SSID_DICT(V.ssidStr), V.isAchgFpa, ...
+      actVstbAr = bicas.proc.L1L2.sat.get_ASR_SWF_channel_VSQB(...
+        SatSettings, bicas.proc.L1L2.const.C.SSID_DICT(V.ssidStr), V.isAchgFpa, ...
         V.samplesAVolt, V.zvNValidSamplesPerRecord);
 
       testCase.assertEqual(actVstbAr, V.expVstbAr)
@@ -650,7 +652,7 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
 
 
 
-    function S = init_object(...
+    function Bso = init_BSO(...
         cwfSlidingWindowLengthSec, ...
         vstbFractionThreshold, ...
         thresholdAVoltDcSingle, ...
@@ -666,8 +668,13 @@ classdef Saturation___UTEST < matlab.unittest.TestCase
       Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',  thresholdAVoltAclg,        'test');
       Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN', thresholdAVoltAchg,        'test');
       Bso.make_read_only();
+    end
 
-      S = bicas.proc.L1L2.Saturation(Bso);
+
+
+    function SatSettings = init_SatSettings(varargin)
+        Bso         = bicas.proc.L1L2.sat___UTEST.init_BSO(varargin{:});
+        SatSettings = bicas.proc.L1L2.sat.convert_BSO_to_struct(Bso);
     end
 
 

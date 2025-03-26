@@ -5,19 +5,10 @@
 % QUALITY_FLAG via NSO table.
 %
 %
-% IMPLEMENTATION NOTE
-% ===================
-% Class is designed as an instantiable class in order to:
-% (1) reduce the number of arguments (eliminates arguments that configure
-%     the saturation criteria),
-% (2) only extract saturation criteria from BSO once, to possibly increase
-%     performance.
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef Saturation
-  % PROPOSAL: Reorg. to non-instantiatble class.
+classdef sat
+  % PROPOSAL: Reorg. to non-instantiatble class. -- IMPLEMENTED
   %   PRO: Makes no sense for the caller to instantiate.
   %     PRO: Only instantiated once in code, followed by one method call.
   %     PRO: Constructor only takes one argument.
@@ -25,8 +16,6 @@ classdef Saturation
   %        instance variables.
   %     PROPOSAL: Derive struct/class which is passed around internally between
   %               methods.
-  %
-  % PROPOSAL: Merge higherThresholdAVolt* to a struct somehow.
   %
   % PROBLEM: Can not deduce saturation limits for channels reconstructed from
   %          other channels.
@@ -45,50 +34,35 @@ classdef Saturation
 
 
 
-  %#####################
-  %#####################
-  % INSTANCE PROPERTIES
-  %#####################
-  %#####################
-  properties(GetAccess=private, SetAccess=immutable)
-    % How long the sliding window should be when using CDF data.
-    cwfSlidingWindowLengthSec
-
-    % Threshold for the sample-length weighted fraction of VSTB-labelled samples
-    % within either (1) a sliding window (CWF), or (2) snapshot. If fraction of
-    % VSTB-labelled samples excedes this fraction, then the entire sliding window
-    % or snapshot is labelled as saturated.
-    vstbFractionThreshold
-
-    % Higher thresholds for saturation. Sample values above these values, or
-    % below the negated value, count as threshold-saturated (VSTB).
-    higherThresholdAVoltDcSingle
-    higherThresholdAVoltDcDiff
-    higherThresholdAVoltAclg
-    higherThresholdAVoltAchg
-  end
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
+  methods(Static)
 
 
 
-  %#########################
-  %#########################
-  % PUBLIC INSTANCE METHODS
-  %#########################
-  %#########################
-  methods(Access=public)
+    % Extract relevant settings to struct which can be used internally.
+    %
+    % IMPLEMENTATION NOTE: Useful for tests.
+    function SatSettings = convert_BSO_to_struct(Bso)
+      S = struct();
 
+      % How long the sliding window should be when using CDF data.
+      S.cwfSlidingWindowLengthSec    = Bso.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
+      % Threshold for the sample-length weighted fraction of VSTB-labelled
+      % samples within either (1) a sliding window (CWF), or (2) snapshot. If
+      % fraction of VSTB-labelled samples excedes this fraction, then the entire
+      % sliding window or snapshot is labelled as saturated.
+      S.vstbFractionThreshold        = Bso.get_fv('PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD');
 
-
-    function obj = Saturation(Bso)
-      obj.cwfSlidingWindowLengthSec    = Bso.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
-      obj.vstbFractionThreshold        = Bso.get_fv('PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD');
-
-      obj.higherThresholdAVoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
-      obj.higherThresholdAVoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
-      obj.higherThresholdAVoltAclg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
-      obj.higherThresholdAVoltAchg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
-
-
+      % Higher thresholds for saturation. Sample values above these values, or
+      % below the negated value, count as threshold-saturated (VSTB).
+      S.higherThresholdAVoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
+      S.higherThresholdAVoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
+      S.higherThresholdAVoltAclg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
+      S.higherThresholdAVoltAchg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
 
       % ==========
       % ASSERTIONS
@@ -98,17 +72,20 @@ classdef Saturation
         assert(isfinite(x) && isscalar(x) && isfloat(x) && (x > 0))
       end
 
-      assert_positive_float(obj.cwfSlidingWindowLengthSec)
+      assert_positive_float(S.cwfSlidingWindowLengthSec)
       assert(...
-        isfinite(obj.vstbFractionThreshold) && ...
-        isscalar(obj.vstbFractionThreshold) && ...
-        isfloat( obj.vstbFractionThreshold) && ...
-        (0 <= obj.vstbFractionThreshold) && (obj.vstbFractionThreshold <= 1))
+        isfinite(S.vstbFractionThreshold) && ...
+        isscalar(S.vstbFractionThreshold) && ...
+        isfloat( S.vstbFractionThreshold) && ...
+        (0 <= S.vstbFractionThreshold) && (S.vstbFractionThreshold <= 1))
 
-      assert_positive_float(obj.higherThresholdAVoltDcSingle)
-      assert_positive_float(obj.higherThresholdAVoltDcDiff)
-      assert_positive_float(obj.higherThresholdAVoltAclg)
-      assert_positive_float(obj.higherThresholdAVoltAchg)
+      assert_positive_float(S.higherThresholdAVoltDcSingle)
+      assert_positive_float(S.higherThresholdAVoltDcDiff)
+      assert_positive_float(S.higherThresholdAVoltAclg)
+      assert_positive_float(S.higherThresholdAVoltAchg)
+
+      % Rename return value.
+      SatSettings = S;
     end
 
 
@@ -139,7 +116,7 @@ classdef Saturation
     %       are no thresholds for this kind of data (e.g. for non-ASR
     %       sources). False is returned for NaN input elements.
     %
-    function vstbAr = get_VSTB(obj, samplesAVolt, ssid, isAchgFpa)
+    function vstbAr = get_VSTB(SatSettings, samplesAVolt, ssid, isAchgFpa)
       % PROPOSAL: Better name.
       %   ~sample-to-VSTB
       %   ~threshold_saturation
@@ -171,9 +148,9 @@ classdef Saturation
           % CASE: AC diff
           % -------------
           if isAchg == 0
-            highThresholdAVolt = obj.higherThresholdAVoltAclg;
+            highThresholdAVolt = SatSettings.higherThresholdAVoltAclg;
           elseif isAchg == 1
-            highThresholdAVolt = obj.higherThresholdAVoltAchg;
+            highThresholdAVolt = SatSettings.higherThresholdAVoltAchg;
           else
             return
           end
@@ -181,7 +158,7 @@ classdef Saturation
           % -------------
           % CASE: DC diff
           % -------------
-          highThresholdAVolt = obj.higherThresholdAVoltDcDiff;
+          highThresholdAVolt = SatSettings.higherThresholdAVoltDcDiff;
         end
       else
         % ---------------
@@ -189,7 +166,7 @@ classdef Saturation
         % ---------------
         % NOTE: Not using terms "min" and "max" since they are
         % ambiguous (?).
-        highThresholdAVolt = obj.higherThresholdAVoltDcSingle;
+        highThresholdAVolt = SatSettings.higherThresholdAVoltDcSingle;
       end
       lowThresholdAVolt = -highThresholdAVolt;
 
@@ -216,12 +193,15 @@ classdef Saturation
     % vsqb
     %       Logical. Scalar.
     %
-    function vsqb = get_snapshot_VSQB(obj, samplesAVolt, ssid, isAchg)
+    function vsqb = get_snapshot_VSQB(...
+        SatSettings, samplesAVolt, ssid, isAchg)
+
       assert(isrow(samplesAVolt))     % Row vector(!).
 
-      vstbAr = obj.get_VSTB(samplesAVolt, ssid, isAchg);
+      vstbAr = bicas.proc.L1L2.sat.get_VSTB(...
+        SatSettings, samplesAVolt, ssid, isAchg);
 
-      vsqb = (sum(vstbAr, 'all') / numel(samplesAVolt)) > obj.vstbFractionThreshold;
+      vsqb = (sum(vstbAr, 'all') / numel(samplesAVolt)) > SatSettings.vstbFractionThreshold;
     end
 
 
@@ -236,8 +216,8 @@ classdef Saturation
     % zvSamplesAVolt
     %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
     %
-    function vsqbAr = get_snapshot_VSQB_many(obj, ...
-        zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
+    function vsqbAr = get_snapshot_VSQB_many(...
+        SatSettings, zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
 
       nRecs = irf.assert.sizes(...
         zvNValidSamplesPerRecord, [-1],  ...
@@ -245,7 +225,8 @@ classdef Saturation
 
       vsqbAr = false(nRecs, 1);
       for iRec = 1:nRecs
-        vsqbAr(iRec) = obj.get_snapshot_VSQB(...
+        vsqbAr(iRec) = bicas.proc.L1L2.sat.get_snapshot_VSQB(...
+          SatSettings, ...
           zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
           ssid, isAchgFpa);
       end
@@ -267,7 +248,7 @@ classdef Saturation
     %       (iCdfRecords). Logical.
     %
     function vsqbAr = get_VSQB(...
-        obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
+        Bso, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
         bltsSsidAr, isAchgFpa, hasSwfFormat, L)
       % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
       %           look for saturation.
@@ -287,6 +268,8 @@ classdef Saturation
       assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
       assert(AsrSamplesAVoltSrm.nRows == nRows)
 
+      SatSettings = bicas.proc.L1L2.sat.convert_BSO_to_struct(Bso);
+
 
 
       L.logf('info', ...
@@ -304,12 +287,12 @@ classdef Saturation
         %===========
         vstbAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
-          asidSamplesAr = bicas.proc.L1L2.Saturation.set_reconstructed_samples_to_NaN(...
+          asidSamplesAr = bicas.proc.L1L2.sat.set_reconstructed_samples_to_NaN(...
             AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
 
-          asidVstbAr = obj.get_ASR_CWF_channel_VSTB(...
-            bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
-            asidSamplesAr);
+          asidVstbAr = bicas.proc.L1L2.sat.get_ASR_CWF_channel_VSTB(...
+            SatSettings, bicas.proc.L1L2.const.ASID_to_SSID(asid), ...
+            isAchgFpa, asidSamplesAr);
 
           % L.logf('debug', 'unique(asidVstbAr)         = [%s]', strjoin(string(unique(asidVstbAr)), ','))
 
@@ -320,17 +303,19 @@ classdef Saturation
 
         vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
           tt2000Ar, vstbAr, ...
-          obj.vstbFractionThreshold, obj.cwfSlidingWindowLengthSec);
+          SatSettings.vstbFractionThreshold, ...
+          SatSettings.cwfSlidingWindowLengthSec);
       else
         %===========
         % CASE: SWF
         %===========
         vsqbAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
-          asidSamplesAr = bicas.proc.L1L2.Saturation.set_reconstructed_samples_to_NaN(...
+          asidSamplesAr = bicas.proc.L1L2.sat.set_reconstructed_samples_to_NaN(...
             AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
 
-          asidIsSaturatedAr = obj.get_ASR_SWF_channel_VSQB(...
+          asidIsSaturatedAr = bicas.proc.L1L2.sat.get_ASR_SWF_channel_VSQB(...
+            SatSettings, ...
             bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
             asidSamplesAr, zvNValidSamplesPerRecord);
 
@@ -364,7 +349,9 @@ classdef Saturation
 
     % Return VSTB (not VSQB) for one channel of CWF data over which isAchgFpa
     % may vary.
-    function vstbAr = get_ASR_CWF_channel_VSTB(obj, ssid, isAchgFpa, samplesAVolt)
+    function vstbAr = get_ASR_CWF_channel_VSTB(...
+        SatSettings, ssid, isAchgFpa, samplesAVolt)
+
       nRows = irf.assert.sizes( ...
         ssid,         [ 1], ...
         isAchgFpa,    [-1], ...
@@ -380,8 +367,8 @@ classdef Saturation
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        vstbAr(iRec1:iRec2) = obj.get_VSTB(...
-          samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
+        vstbAr(iRec1:iRec2) = bicas.proc.L1L2.sat.get_VSTB(...
+          SatSettings, samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
       end
     end
 
@@ -390,7 +377,8 @@ classdef Saturation
     % Return VSQB (not VSTB) for one (ASR) channel of SWF data over which
     % isAchgFpa may vary.
     function vsqbAr = get_ASR_SWF_channel_VSQB(...
-        obj, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
+        SatSettings, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
+
       [nRows, ~] = irf.assert.sizes( ...
         ssid,                     [ 1], ...
         isAchgFpa,                [-1], ...
@@ -406,21 +394,14 @@ classdef Saturation
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        vsqbAr(iRec1:iRec2) = obj.get_snapshot_VSQB_many(...
+        vsqbAr(iRec1:iRec2) = bicas.proc.L1L2.sat.get_snapshot_VSQB_many(...
+          SatSettings, ...
           zvNValidSamplesPerRecord(iRec1:iRec2), ...
           samplesAVolt(            iRec1:iRec2, :), ...
           ssid, isAchgFpa(iRec1));
       end
 
     end
-
-
-
-  end    % methods(Access=public)
-
-
-
-  methods(Access=private, Static)
 
 
 
@@ -440,7 +421,7 @@ classdef Saturation
 
 
 
-  end    % methods(Access=private, Static)
+  end    % methods(Static)
 
 
 
