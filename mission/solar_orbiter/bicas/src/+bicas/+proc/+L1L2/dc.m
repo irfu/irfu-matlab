@@ -175,9 +175,9 @@ classdef dc
           bltsSamplesAVolt, bltsSdidArray, L);
 
         % DEBUG: Check that samples derived using old and new code are
-        % identical.
+        %        identical.
         % NOTE: Check may fail if new code splits samples into subsequences in
-        % new way, e.g. BLTS per BLTS.
+        %       new way, e.g. BLTS per BLTS.
         % PROPOSAL: Permit approximative equality.
         % PROPOSAL: Store max difference.
         % TDS-RSWF: Samples are not identical: New code replaces some samples with NaN.

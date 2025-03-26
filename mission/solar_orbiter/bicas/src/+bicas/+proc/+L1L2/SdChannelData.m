@@ -95,6 +95,7 @@ classdef SdChannelData
   %            redundant channel data anyway (rare).
   %   --
   %   PROPOSAL: bIsNan <=> All elements are NaN (not: at least one).
+  %             -- IMPLEMENTED
 
 
 
@@ -121,7 +122,7 @@ classdef SdChannelData
     %
     % NOTE: Must have same size as object (column array), despite being a
     % function of samplesAr.
-    bIsNan
+    bWholeRowIsNan
   end
 
 
@@ -138,9 +139,21 @@ classdef SdChannelData
 
 
 
-    function bIsNan = get.bIsNan(obj)
-      bIsNan = any(isnan(obj.samplesAr), 2);
-      assert(iscolumn(bIsNan))
+    function bWholeRowIsNan = get.bWholeRowIsNan(obj)
+      % IMPLEMENTATION NOTE: Must require ALL elements to be NaN in order to
+      % make reconstruction algorithm work correctly.
+      % TDS-RSWF snapshots are variable-length meaning that the unused elements
+      % are NaN, but those unused elements can not be used for determining
+      % whether a channel record should be reconstructed (assigned a value) or
+      % can be used for reconstructing other channels (read the value).
+
+      % PROPOSAL: Abolish function/property. Derive when invoking reconstruction
+      %           algorithm instead.
+      %   CON: Not obvious what property represents given that there are
+      %        multiple samples per property value.
+
+      bWholeRowIsNan = all(isnan(obj.samplesAr), 2);
+      assert(iscolumn(bWholeRowIsNan))
     end
 
 

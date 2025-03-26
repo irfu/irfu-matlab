@@ -42,9 +42,9 @@ classdef SdChannelDataDict < handle
     PERMITTED_KEYS_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR
   end
   properties(Dependent)
-    % Total number of NaN values in all the SDCD objects stored within this
-    % object combined.
-    nIsNan
+    % Total number of bWholeRowIsNan values in all the SDCD objects stored
+    % within this object combined.
+    nWholeRowIsNan
   end
 
 
@@ -126,13 +126,13 @@ classdef SdChannelDataDict < handle
 
 
     % NOTE: Does not work before adding first SDCD.
-    function nIsNan = get.nIsNan(obj)
-      nIsNan = 0;
-      SdcdCa = obj.Dict.values;
+    function nWholeRowIsNan = get.nWholeRowIsNan(obj)
+      nWholeRowIsNan = 0;
+      SdcdCa         = obj.Dict.values;
 
       for i = 1:numel(SdcdCa)
-        Sdcd   = SdcdCa{i};
-        nIsNan = nIsNan + sum(Sdcd.bIsNan);
+        Sdcd           = SdcdCa{i};
+        nWholeRowIsNan = nWholeRowIsNan + sum(Sdcd.bWholeRowIsNan);
       end
     end
 

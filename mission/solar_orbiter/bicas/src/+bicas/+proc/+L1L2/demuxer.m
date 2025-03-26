@@ -429,10 +429,12 @@ classdef demuxer
     % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence() (though
     % "global", not for a subsequence).
     %
-    % BUG: SDCD emulating column vector but [bIsNan <=> There is at least one
-    % NaN in the row of underlying samples data] causes the reconstruction
-    % algorithm to fail when the row of underlying samples partly contains NaN.
-    % /2025-03-26
+    % IMPORTANT: SDCD emulating column vector makes it important and non-trivial
+    % what should be considered a row fill position. Can *NOT* use [fill
+    % position <=> at least one NaN on row] since there can be both NaN and
+    % non-NaN values (TDS-RWF varying-length snapshots with NaN for non-snapshot
+    % elements) which causes data to be not used for reconstructing other
+    % channels.
     %
     function SdcdDict = reconstruct_ASR_samples2(SdcdDict)
 
@@ -464,9 +466,9 @@ classdef demuxer
           Sdcd1, ...
           Sdcd2, ...
           Sdcd3, ...
-          Sdcd1.bIsNan, ...
-          Sdcd2.bIsNan, ...
-          Sdcd3.bIsNan, ...
+          Sdcd1.bWholeRowIsNan, ...
+          Sdcd2.bWholeRowIsNan, ...
+          Sdcd3.bWholeRowIsNan, ...
           @(x,y) (x+y), ...
           @(x,y) (x-y), ...
           @(x,y) (x-y) ...
@@ -490,7 +492,7 @@ classdef demuxer
       %================
       % Derive DC ASRs
       %================
-      nIsNan0 = SdcdDict.nIsNan;
+      nWholeRowIsNan0 = SdcdDict.nWholeRowIsNan;
       while true
         % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for deriving
         % diffs (i.e. it should come first) since it is better to derive a diff
@@ -510,11 +512,11 @@ classdef demuxer
         reconstruct_missing_data_helper("DC_V1",   "DC_V13", "DC_V3");
         reconstruct_missing_data_helper("DC_V2",   "DC_V23", "DC_V3");
 
-        % NOTE: Impossible to get Dcd.nIsNan == 0...
-        if (SdcdDict.nIsNan == nIsNan0) || (SdcdDict.nIsNan == 0)
+        % NOTE: Impossible to get Dcd.nWholeRowIsNan == 0...
+        if (SdcdDict.nWholeRowIsNan == nWholeRowIsNan0) || (SdcdDict.nWholeRowIsNan == 0)
           break
         end
-        nIsNan0 = SdcdDict.nIsNan;
+        nWholeRowIsNan0 = SdcdDict.nWholeRowIsNan;
       end
     end
 

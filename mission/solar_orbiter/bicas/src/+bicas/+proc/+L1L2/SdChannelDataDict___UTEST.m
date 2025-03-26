@@ -19,25 +19,27 @@ classdef SdChannelDataDict___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_set_get_nIsNan(testCase)
+    function test_set_get_nWholeRowIsNan(testCase)
       SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
 
-      for i = 1:9
+      for i = 1:numel(SDID_ASR_AR)
         sdid = SDID_ASR_AR(i);
 
-        Sdcd = bicas.proc.L1L2.SdChannelData([NaN,2; 3,NaN]+i, logical([0; 1]));
+        Sdcd = bicas.proc.L1L2.SdChannelData(...
+          [NaN,2; 3,NaN; NaN,NaN]+i, ...
+          logical([0; 1; 0]));
         SdcdDict.set(sdid, Sdcd);
 
-        testCase.assertEqual(SdcdDict.nIsNan, 2*i)
+        testCase.assertEqual(SdcdDict.nWholeRowIsNan, 1*i)
       end
 
-      ExpSdcd = bicas.proc.L1L2.SdChannelData([NaN,2; 3,NaN]+3, logical([0; 1]));
+      ExpSdcd = bicas.proc.L1L2.SdChannelData([NaN,2; 3,NaN; NaN,NaN]+3, logical([0; 1; 0]));
       ActSdcd = SdcdDict.get(SDID_ASR_AR(3));
 
       testCase.assertEqual(ActSdcd, ExpSdcd)
-      testCase.assertEqual(SdcdDict.nIsNan, 9*2)
+      testCase.assertEqual(SdcdDict.nWholeRowIsNan, numel(SDID_ASR_AR)*1)
     end
 
 
