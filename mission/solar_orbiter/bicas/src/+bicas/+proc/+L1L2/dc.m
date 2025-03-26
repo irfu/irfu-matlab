@@ -762,7 +762,7 @@ classdef dc
         bltsSamplesAVoltAr, bltsSdidAr, L)
 
       % PROPOSAL: VSQB argument
-      % PROPOSAL: Include VSQB in this function?
+      % PROPOSAL: Include deriving VSQB in this function?
       %   PRO: Most of the complexity should be in the Saturation class anyway.
 
       % TEMPORARY. SUBSTITUTE FOR FUTURE ARGUMENT?

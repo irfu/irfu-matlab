@@ -17,6 +17,15 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef Saturation
+  % PROPOSAL: Reorg. to non-instantiatble class.
+  %   PRO: Makes no sense for the caller to instantiate.
+  %     PRO: Only instantiated once in code, followed by one method call.
+  %     PRO: Constructor only takes one argument.
+  %   CON: Constructor argument BSO is split into six relevant values stored in
+  %        instance variables.
+  %     PROPOSAL: Derive struct/class which is passed around internally between
+  %               methods.
+  %
   % PROPOSAL: Merge higherThresholdAVolt* to a struct somehow.
   %
   % PROBLEM: Can not deduce saturation limits for channels reconstructed from
@@ -152,11 +161,13 @@ classdef Saturation
       % Determine thresholds
       % ====================
       if bicas.proc.L1L2.const.SSID_is_diff(ssid)
+        % ----------------
         % CASE: DC/AC diff
         % ----------------
 
         isAchg = isAchgFpa.logical2doubleNan();
         if bicas.proc.L1L2.const.SSID_is_AC(ssid)
+          % -------------
           % CASE: AC diff
           % -------------
           if isAchg == 0
@@ -167,24 +178,26 @@ classdef Saturation
             return
           end
         else
+          % -------------
           % CASE: DC diff
           % -------------
           highThresholdAVolt = obj.higherThresholdAVoltDcDiff;
         end
       else
+        % ---------------
         % CASE: DC single
         % ---------------
         % NOTE: Not using terms "min" and "max" since they are
         % ambiguous (?).
         highThresholdAVolt = obj.higherThresholdAVoltDcSingle;
       end
-      lowerThresholdAVolt = -highThresholdAVolt;
+      lowThresholdAVolt = -highThresholdAVolt;
 
       % ==========================================
       % Use thresholds on array to determine VSTBs
       % ==========================================
       % NOTE: Has to be able ignore NaN.
-      vstbAr = (samplesAVolt < lowerThresholdAVolt) | (highThresholdAVolt < samplesAVolt);
+      vstbAr = (samplesAVolt < lowThresholdAVolt) | (highThresholdAVolt < samplesAVolt);
     end
 
 
@@ -300,7 +313,7 @@ classdef Saturation
 
           % L.logf('debug', 'unique(asidVstbAr)         = [%s]', strjoin(string(unique(asidVstbAr)), ','))
 
-          % Merge (OR) bits over ASIDs.
+          % Merge (OR) bits, record-by-record, over ASIDs.
           vstbAr = any([vstbAr, asidVstbAr], 2);
         end
         % L.logf('debug', 'unique(vstbAr) = [%s]', strjoin(string(unique(vstbAr)), ','))
@@ -323,7 +336,7 @@ classdef Saturation
 
           % L.logf('debug', 'unique(asidIsSaturatedAr) = [%s]', strjoin(string(unique(asidIsSaturatedAr)), ','))
 
-          % Merge (OR) bits over ASIDs.
+          % Merge (OR) bits, record-by-record, over ASIDs.
           vsqbAr = any([vsqbAr, asidIsSaturatedAr], 2);
         end
 
@@ -411,6 +424,8 @@ classdef Saturation
 
 
 
+    % Function to simplify other function get_VSQB().
+    %
     % For a given ASID, determine which rows contain samples which originate
     % from L1R (i.e. which were not reconstructed). Set all other samples to
     % NaN.
@@ -421,9 +436,6 @@ classdef Saturation
       %bUse = any(repmat(ssid, [nRows, 1]) == bltsSsidAr, 2);
       bUse = any(ssid == bltsSsidAr, 2);
       asidSamplesAr(~bUse, :) = NaN;
-
-      % L.logf('debug', 'kSsid = %i', kSsid)
-      % L.logf('debug', 'unique(bUse)              = [%s]', strjoin(string(unique(bUse)),      ','))
     end
 
 
