@@ -18,12 +18,17 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
 
+    %======
+    % ASID
+    %======
+
     function test_is_ASID(testCase)
       C = bicas.proc.L1L2.const.C;
 
       testCase.assertTrue(bicas.proc.L1L2.const.is_ASID(C.ASID_DICT("DC_V1")))
       testCase.assertTrue(bicas.proc.L1L2.const.is_ASID(C.ASID_DICT("AC_V23")))
 
+      % Test non-scalar
       testCase.assertTrue(bicas.proc.L1L2.const.is_ASID(C.ASID_DICT(...
         ["AC_V23", "DC_V12"; "DC_V1", "DC_V13"])))
 
@@ -71,16 +76,20 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
 
+    %======
+    % SSID
+    %======
+
     function test_is_SSID(testCase)
       C = bicas.proc.L1L2.const.C;
 
       testCase.assertTrue(bicas.proc.L1L2.const.is_SSID(C.SSID_DICT("DC_V1")))
       testCase.assertTrue(bicas.proc.L1L2.const.is_SSID(C.SSID_DICT("AC_V23")))
       testCase.assertTrue(bicas.proc.L1L2.const.is_SSID(C.SSID_DICT("REF25V")))
-
       testCase.assertTrue(bicas.proc.L1L2.const.is_SSID(C.SSID_DICT(...
-        ["AC_V23", "DC_V12"; "DC_V1", "DC_V13"])))
+        ["AC_V23", "DC_V12"; "DC_V1", "DC_V13"; "UNKNOWN", "GND"])))
 
+      % Not SSIDs.
       testCase.assertFalse(bicas.proc.L1L2.const.is_SSID(C.ASID_DICT("DC_V1")))
       testCase.assertFalse(bicas.proc.L1L2.const.is_SSID(C.SDID_DICT("AC_V23")))
     end
@@ -115,6 +124,10 @@ classdef const___UTEST < matlab.unittest.TestCase
     end
 
 
+
+    %======
+    % SDID
+    %======
 
     function test_is_SDID(testCase)
       C = bicas.proc.L1L2.const.C;

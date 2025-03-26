@@ -30,7 +30,7 @@ classdef dc
 %     for specific zVariables not varying as a function of CDF record), in
 %     particular not require many constant "settings".
 %   * Use more vector operations.
-%   * More natural to implement
+%   * More natural to implement.
 %
 %
 % #############################################################################
@@ -87,7 +87,7 @@ classdef dc
 %       PRO: Does not have to split records/arrays in sections with identical
 %            operation.
 %   PRO: Presumably faster when applied to all data.
-% % #############################################################################
+% #############################################################################
 
 
 

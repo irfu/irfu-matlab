@@ -418,7 +418,7 @@ S.define_setting('PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD',               
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',         40.0);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',            2.0);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   0.3);
-S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);
+S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);   % 0.3/20=0.015
 
 %============================================================================
 % Settings for when to remove data by setting it to fill value

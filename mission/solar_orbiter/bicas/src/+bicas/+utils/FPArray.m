@@ -25,7 +25,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef FPArray < matlab.mixin.CustomDisplay
+classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
   %
   % PROPOSAL: Change name fpAr --> fp
   %                       dataAr --> data
@@ -106,6 +106,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
   % PROPOSAL: Replace constants for scalar FPs (FP_UINT8, FP_SINGLE etc.) with
   %           static method: scalar_FP(mc)
   %   NOTE: Public such function really already exists: get_scalar_FP(mc)
+  %
+  % PROPOSAL: Convert to using strings (instead of char arrays).
+  %   Ex: Constructor.
 
 
 
@@ -184,12 +187,12 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % --
     % SYNTAX 1: dataAr
     %       Equivalent to syntax 2.
-    % SYNTAX 2: dataAr "NO_FILL_POSITIONS"
-    % SYNTAX 3: dataAr "FILL_POSITIONS" fpAr
-    % SYNTAX 4: dataAr "FILL_VALUE" fv
-    % SYNTAX 5: dataAr "ONLY_FILL_POSITIONS"
+    % SYNTAX 2: dataAr, "NO_FILL_POSITIONS"
+    % SYNTAX 3: dataAr, "ONLY_FILL_POSITIONS"
     %       Note: Values in dataAr are effectively ignored. Only the size and
     %       MATLAB class of dataAr are used.
+    % SYNTAX 4: dataAr, "FILL_POSITIONS",     fpAr
+    % SYNTAX 5: dataAr, "FILL_VALUE",         fv
     %
     function obj = FPArray(dataAr, varargin)
 
@@ -270,7 +273,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
     %
     function dataAr = array(obj, fv)
       % IMPLEMENTATION NOTE: There are times when you want the FV to be
-      % identical non-FP elements. Must therefore not forbid it.
+      % identical to non-FP elements. Must therefore not forbid it.
       %
       % PROPOSAL: Optionally return second value: fpAr
 

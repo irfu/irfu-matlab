@@ -29,6 +29,20 @@
 % "AC_V13" ⟼ 8
 % "AC_V23" ⟼ 9
 % --------------
+% SSID:
+% "DC_V1"   ⟼ 101
+% "DC_V2"   ⟼ 102
+% "DC_V3"   ⟼ 103
+% "DC_V12"  ⟼ 104
+% "DC_V13"  ⟼ 105
+% "DC_V23"  ⟼ 106
+% "AC_V12"  ⟼ 107
+% "AC_V13"  ⟼ 108
+% "AC_V23"  ⟼ 109
+% "REF25V"  ⟼ 110
+% "GND"     ⟼ 111
+% "UNKNOWN" ⟼ 112
+% -----------------
 % SDID:
 % "DC_V1"   ⟼ 201
 % "DC_V2"   ⟼ 202
@@ -50,6 +64,25 @@ classdef const
 %
 % PROPOSAL: Code for printing human-readable tables with values which can be
 %           copy-pasted to comments in this file.
+
+% PROPOSAL: Rename class to something implying the theme of ASID, SSID, SDID
+%           rather than constants.
+%   PRO: Contains function relating to ASID, SSID, SDID.
+%   ~signal, ~channel
+%   ~address, ~label, ~source/destination
+%   ~id
+%   sid = Signal ID(s)
+%     PRO: Same components as in ASID, SSID, SDID.
+%     CON: Abbreviation occurs in many words.
+%   cid = Channel ID(s)
+%
+% PROPOSAL: Vectorize ASID/SSID/SDID functions.
+%   PRO: Useful for vectorizing bicas.proc.L1L2.sat.
+%   PRO: Can possibly abolish ASID, SSID, SDID classes if does so.
+%
+% PROPOSAL: Abolish ASID, SSID, SDID classes.
+%   NOTE: ASID, SSID, SDID classes are only instantiated in this file, and are
+%         most likely only used in this file too.
 %
 % PROPOSAL: Keep ASID, SSID, SDID as uint8 but also keep corresponding objects,
 %           but defer functions on uint8 to object methods via dictionaries
@@ -152,8 +185,8 @@ classdef const
         allocatedUint8Ar(end+1) = k;
       end
 
-      % Add new SSID, SDID and ASID for the same ASR.
-      % Add Routing from ASR SSID to corresponding ASR SDID.
+      % (1) Add new SSID, SDID and ASID for the same ASR.
+      % (2) Add Routing from ASR SSID to corresponding ASR SDID.
       function add_ASR_SSID_SDID_ASID_Routing(s, k, asidCategory, asidAntennas)
         asid = uint8(k);
         allocate_new_uint8(k)
@@ -244,9 +277,11 @@ classdef const
     %======
     % ASID
     %======
-    function isAsid = is_ASID(asidAr)
+
+    % Can handle array argument, but return value is scalar.
+    function bIsAsidAr = is_ASID(asidAr)
       assert(isa(asidAr, "uint8"))
-      isAsid = all(ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT.values), "ALL");
+      bIsAsidAr = all(ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT.values), "ALL");
     end
 
     function asidCategory = get_ASID_category(asid)
@@ -259,6 +294,7 @@ classdef const
       antennas = bicas.proc.L1L2.const.C.ASID_OBJ_DICT(asid).antennas;
     end
 
+    % Not vectorized.
     function ssid = ASID_to_SSID(asid)
       assert(isscalar(asid))
       ssid = bicas.proc.L1L2.const.C.ASID_OBJ_DICT(asid).ssid;
@@ -269,8 +305,11 @@ classdef const
     %======
     % SSID
     %======
+
+    % Can handle array argument, but return value is scalar.
     function isSsid = is_SSID(ssidAr)
       assert(isa(ssidAr, "uint8"))
+
       isSsid = all(ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT.values), "ALL");
     end
 
@@ -279,6 +318,7 @@ classdef const
       isAsr = bicas.proc.L1L2.const.C.SSID_OBJ_DICT(ssid).is_ASR();
     end
 
+    % Not vectorized.
     % NOTE: Error if not ASR.
     function asid = SSID_ASR_to_ASID(ssid)
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
@@ -288,6 +328,7 @@ classdef const
       assert(bicas.proc.L1L2.const.is_ASID(asid))
     end
 
+    % Can not handle arrays.
     function isAc = SSID_is_AC(ssid)
       assert(isscalar(ssid))
 
@@ -299,6 +340,7 @@ classdef const
       end
     end
 
+    % Can not handle arrays.
     function isDiff = SSID_is_diff(ssid)
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
 
@@ -315,6 +357,7 @@ classdef const
     %======
     % SDID
     %======
+
     function isSsid = is_SDID(sdidAr)
       assert(isa(sdidAr, "uint8"))
       isSsid = all(ismember(sdidAr, bicas.proc.L1L2.const.C.SDID_DICT.values), "ALL");

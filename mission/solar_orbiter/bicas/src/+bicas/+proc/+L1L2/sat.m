@@ -17,6 +17,9 @@ classdef sat
   %     PROPOSAL: Derive struct/class which is passed around internally between
   %               methods.
   %
+  % PROPOSAL: Reorder methods to make easier to follow calls recursively within
+  %           class.
+  %
   % PROBLEM: Can not deduce saturation limits for channels reconstructed from
   %          other channels.
   %   Ex: BDM=4 ==> Have DC_V1/V2/V3 ==> Derives DC_V12/V13/V23 ==> Saturation
@@ -45,7 +48,7 @@ classdef sat
 
     % Extract relevant settings to struct which can be used internally.
     %
-    % IMPLEMENTATION NOTE: Useful for tests.
+    % NOTE: Useful for tests.
     function SatSettings = convert_BSO_to_struct(Bso)
       S = struct();
 
@@ -90,8 +93,8 @@ classdef sat
 
 
 
-    % Given an arbitrary-size ARRAY of samples, get VSTB bits for every
-    % sample.
+    % Given an arbitrary-size ARRAY of samples, with constant SSID and isAchg,
+    % get VSTBs for every sample.
     %
     % NOTE: The data may refer to both CWF data and SWF data, but the
     % function itself makes no distinction between the two. The caller has
@@ -234,7 +237,8 @@ classdef sat
 
 
 
-    % Given ZV-like variables, get saturation bits for quality bitmask.
+    % Given ZV-like variables (incl. all ASR ASID channels, CWF/SWF), get
+    % saturation bits (Nx1) for quality bitmask.
     %
     % NOTE: Applies to both CWF and SWF data.
     %
@@ -250,6 +254,7 @@ classdef sat
     function vsqbAr = get_VSQB(...
         Bso, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
         bltsSsidAr, isAchgFpa, hasSwfFormat, L)
+
       % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
       %           look for saturation.
       %   NOTE: Only ACHG influences the calibration thresholds for each channel
@@ -259,7 +264,6 @@ classdef sat
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
-      % assert(isa(bltsKSsidAr, 'uint8'))
       assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
       nRows = irf.assert.sizes(...
         tt2000Ar,                 [-1], ...
