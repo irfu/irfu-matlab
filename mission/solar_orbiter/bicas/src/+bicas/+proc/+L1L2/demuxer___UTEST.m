@@ -394,12 +394,12 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,N,N,   -1, N,-2,   7,10,N;
         1,N,N,   -1, N,-2,   7, N,N;
         ];
-      VSTB_AR_DATA = logical([ ...
+      VSIB_AR_DATA = logical([ ...
         1,0,0,    0, 0, 0,   1, 0,0;
         1,0,0,    0, 0, 0,   1, 0,0;
         0,0,0,    0, 0, 1,   1, 0,0;
         ]);
-      SdcdDict = testCase.create_SdcdDict(SAMPLES_AR_DATA, VSTB_AR_DATA);
+      SdcdDict = testCase.create_SdcdDict(SAMPLES_AR_DATA, VSIB_AR_DATA);
 
 
 
@@ -408,12 +408,12 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,2,4,   -1,-3,-2,   7,10,3;
         1,2,4,   -1,-3,-2,   7, N,N;
         ];
-      EXP_VSTB_AR_DATA = logical([ ...
+      EXP_VSIB_AR_DATA = logical([ ...
         1,0,0,    0, 0, 0,   1, 0,0;
         1,1,1,    0, 0, 0,   1, 0,1;
         0,0,1,    0, 1, 1,   1, 0,0;
         ]);
-      ExpSdcdDict = testCase.create_SdcdDict(EXP_SAMPLES_AR_DATA, EXP_VSTB_AR_DATA);
+      ExpSdcdDict = testCase.create_SdcdDict(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
 
 
 
@@ -434,10 +434,10 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
           ActSdcd.samplesAr
           ExpSdcd.samplesAr
         end
-        if ~isequaln(ActSdcd.vsqbAr, ExpSdcd.vsqbAr)
+        if ~isequaln(ActSdcd.vsibAr, ExpSdcd.vsibAr)
           sdid
-          ActSdcd.vsqbAr
-          ExpSdcd.vsqbAr
+          ActSdcd.vsibAr
+          ExpSdcd.vsibAr
         end
 
         % Check everything (partially overlapping with above).
@@ -462,15 +462,23 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
     % Fast-and-easy function for creating one bicas.proc.L1L2.SdChannelDataDict
     % from variables on a format suitable for hardcoding (CWF only).
-    function SdcdDict = create_SdcdDict(samplesArData, vsqbArData)
+    %
+    % ARGUMENTS
+    % =========
+    % samplesArData
+    %       (iRec, iSdid). Only column arrays will be assigned to each separate
+    %       SDCD.
+    % vsibArData
+    %       (iRec, iSdid)
+    function SdcdDict = create_SdcdDict(samplesArData, vsibArData)
       SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
-      for i = 1:numel(SDID_AR)
+      for iSdid = 1:numel(SDID_AR)
         Sdcd = bicas.proc.L1L2.SdChannelData(...
-          samplesArData(:, i), ...
-          vsqbArData(   :, i));
-        SdcdDict = SdcdDict.set(SDID_AR(i), Sdcd);
+          samplesArData(:, iSdid), ...
+          vsibArData(   :, iSdid));
+        SdcdDict = SdcdDict.set(SDID_AR(iSdid), Sdcd);
       end
     end
 

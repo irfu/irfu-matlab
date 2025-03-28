@@ -54,14 +54,14 @@ classdef sat
 
       % How long the sliding window should be when using CDF data.
       S.cwfSlidingWindowLengthSec   = Bso.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
-      % Threshold for the sample-length weighted fraction of VSTB-labelled
+      % Threshold for the sample-length weighted fraction of VSIB-labelled
       % samples within either (1) a sliding window (CWF), or (2) snapshot. If
-      % fraction of VSTB-labelled samples excedes this fraction, then the entire
+      % fraction of VSIB-labelled samples excedes this fraction, then the entire
       % sliding window or snapshot is labelled as saturated.
-      S.vstbFractionThreshold       = Bso.get_fv('PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD');
+      S.vsibFractionThreshold       = Bso.get_fv('PROCESSING.SATURATION.SAMPLE_FRACTION_THRESHOLD');
 
       % Higher thresholds for saturation. Sample values above these values, or
-      % below the negated value, count as threshold-saturated (VSTB).
+      % below the negated value, count as threshold-saturated (VSIB).
       S.upperThresholdAVoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
       S.upperThresholdAVoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
       S.upperThresholdAVoltAclg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
@@ -77,10 +77,10 @@ classdef sat
 
       assert_positive_float(S.cwfSlidingWindowLengthSec)
       assert(...
-        isfinite(S.vstbFractionThreshold) && ...
-        isscalar(S.vstbFractionThreshold) && ...
-        isfloat( S.vstbFractionThreshold) && ...
-        (0 <= S.vstbFractionThreshold) && (S.vstbFractionThreshold <= 1))
+        isfinite(S.vsibFractionThreshold) && ...
+        isscalar(S.vsibFractionThreshold) && ...
+        isfloat( S.vsibFractionThreshold) && ...
+        (0 <= S.vsibFractionThreshold) && (S.vsibFractionThreshold <= 1))
 
       assert_positive_float(S.upperThresholdAVoltDcSingle)
       assert_positive_float(S.upperThresholdAVoltDcDiff)
@@ -94,12 +94,12 @@ classdef sat
 
 
     % Given an arbitrary-size ARRAY of samples, with constant SSID and isAchg,
-    % get VSTBs for every sample.
+    % get VSIBs for every sample.
     %
     % NOTE: The data may refer to both CWF data and SWF data, but the
     % function itself makes no distinction between the two. The caller has
     % to make distinctions between those two if needed. For example, this
-    % function returns VSTBs for each sample in a snapshot, but the caller
+    % function returns VSIBs for each sample in a snapshot, but the caller
     % might one to condense this to one saturation bit per snapshot
     % according to some algorithm that has no analogue for CWF data.
     %
@@ -112,19 +112,19 @@ classdef sat
     %
     % RETURN VALUE
     % ============
-    % vstbAr
+    % vsibAr
     %       Float. Same size as samplesAVolt. Whether corresponding elements
     %       in samplesAVolt are deemed to be outside the relevant
     %       thresholds. False is returned for all input elements if there
     %       are no thresholds for this kind of data (e.g. for non-ASR
     %       sources). False is returned for NaN input elements.
     %
-    function vstbAr = get_VSTB(SatSettings, samplesAVoltAr, ssid, isAchgFpa)
+    function vsibAr = get_VSIB(SatSettings, samplesAVoltAr, ssid, isAchgFpa)
       % PROPOSAL: Better name.
-      %   ~sample-to-VSTB
+      %   ~sample-to-VSIB
       %   ~threshold_saturation
       %
-      % PROPOSAL/TODO: Replace with get_VSTB_NEW().
+      % PROPOSAL/TODO: Replace with get_VSIB_NEW().
 
       assert(isfloat(samplesAVoltAr))
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
@@ -132,18 +132,18 @@ classdef sat
 
       ssidAr    = repmat(ssid,      size(samplesAVoltAr));
       isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
-      vstbAr    = bicas.proc.L1L2.sat.get_VSTB_NEW(...
+      vsibAr    = bicas.proc.L1L2.sat.get_VSIB_NEW(...
         SatSettings, samplesAVoltAr, ssidAr, isAchgFpa);
     end
 
 
 
     % Vectorized.
-    function vstbAr = get_VSTB_NEW(SatSettings, samplesAVoltAr, ssidAr, isAchgFpa)
+    function vsibAr = get_VSIB_NEW(SatSettings, samplesAVoltAr, ssidAr, isAchgFpa)
       upperThresholdAVolt = bicas.proc.L1L2.sat.get_upper_thresholds(...
         SatSettings, ssidAr, isAchgFpa);
 
-      vstbAr = abs(samplesAVoltAr) > upperThresholdAVolt;
+      vsibAr = abs(samplesAVoltAr) > upperThresholdAVolt;
     end
 
 
@@ -212,10 +212,10 @@ classdef sat
 
       assert(isrow(samplesAVolt))     % Row vector(!).
 
-      vstbAr = bicas.proc.L1L2.sat.get_VSTB(...
+      vsibAr = bicas.proc.L1L2.sat.get_VSIB(...
         SatSettings, samplesAVolt, ssid, isAchg);
 
-      vsqb = (sum(vstbAr, 'all') / numel(samplesAVolt)) > SatSettings.vstbFractionThreshold;
+      vsqb = (sum(vsibAr, 'all') / numel(samplesAVolt)) > SatSettings.vsibFractionThreshold;
     end
 
 
@@ -300,25 +300,25 @@ classdef sat
         %===========
         % CASE: CWF
         %===========
-        vstbAr = false(nRows, 1);
+        vsibAr = false(nRows, 1);
         for asid = AsrSamplesAVoltSrm.keys'
           asidSamplesAr = bicas.proc.L1L2.sat.set_reconstructed_samples_to_NaN(...
             AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
 
-          asidVstbAr = bicas.proc.L1L2.sat.get_ASR_CWF_channel_VSTB(...
+          asidVsibAr = bicas.proc.L1L2.sat.get_ASR_CWF_channel_VSIB(...
             SatSettings, bicas.proc.L1L2.const.ASID_to_SSID(asid), ...
             isAchgFpa, asidSamplesAr);
 
-          % L.logf('debug', 'unique(asidVstbAr)         = [%s]', strjoin(string(unique(asidVstbAr)), ','))
+          % L.logf('debug', 'unique(asidVsibAr)         = [%s]', strjoin(string(unique(asidVsibAr)), ','))
 
           % Merge (OR) bits, record-by-record, over ASIDs.
-          vstbAr = any([vstbAr, asidVstbAr], 2);
+          vsibAr = any([vsibAr, asidVsibAr], 2);
         end
-        % L.logf('debug', 'unique(vstbAr) = [%s]', strjoin(string(unique(vstbAr)), ','))
+        % L.logf('debug', 'unique(vsibAr) = [%s]', strjoin(string(unique(vsibAr)), ','))
 
         vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
-          tt2000Ar, vstbAr, ...
-          SatSettings.vstbFractionThreshold, ...
+          tt2000Ar, vsibAr, ...
+          SatSettings.vsibFractionThreshold, ...
           SatSettings.cwfSlidingWindowLengthSec);
       else
         %===========
@@ -352,7 +352,7 @@ classdef sat
         % much the saturation varies over time, which may
         % influence/explain if the above processing is slow. Should only
         % be relevant for CWF.
-        % NOTE: Only reflects the behaviour of the final VSQB, not the VSTB.
+        % NOTE: Only reflects the behaviour of the final VSQB, not the VSIB.
         nSaturationChanges = numel(find(vsqbAr(1:end-1) ~= vsqbAr(2:end)));
         Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
         L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
@@ -362,9 +362,9 @@ classdef sat
 
 
 
-    % Return VSTB (not VSQB) for one channel of CWF data over which isAchgFpa
+    % Return VSIB (not VSQB) for one channel of CWF data over which isAchgFpa
     % may vary.
-    function vstbAr = get_ASR_CWF_channel_VSTB(...
+    function vsibAr = get_ASR_CWF_channel_VSIB(...
         SatSettings, ssid, isAchgFpa, samplesAVolt)
 
       nRows = irf.assert.sizes( ...
@@ -376,20 +376,20 @@ classdef sat
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         isAchgFpa.logical2doubleNan());
 
-      vstbAr = false(nRows, 1);
+      vsibAr = false(nRows, 1);
 
       for iSs = 1:nSs
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        vstbAr(iRec1:iRec2) = bicas.proc.L1L2.sat.get_VSTB(...
+        vsibAr(iRec1:iRec2) = bicas.proc.L1L2.sat.get_VSIB(...
           SatSettings, samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
       end
     end
 
 
 
-    % Return VSQB (not VSTB) for one (ASR) channel of SWF data over which
+    % Return VSQB (not VSIB) for one (ASR) channel of SWF data over which
     % isAchgFpa may vary.
     function vsqbAr = get_ASR_SWF_channel_VSQB(...
         SatSettings, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)

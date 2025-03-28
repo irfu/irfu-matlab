@@ -31,11 +31,6 @@ classdef SdChannelData
   %   metadata
   %   PROPOSAL: Analogous to dictionary class.
   %
-  % PROPOSAL: Rename vsqbAr/vstbAr if none is correct.
-  %   PROPOSAL: VSB = Voltage Saturation Bit
-  %             VSIB = Voltage Saturation Implementation/Intermediate Bit
-  %   PROPOSAL: Globally replace VSTB-->VSIB=Voltage Saturation Intermediate Bit
-  %
   % TODO-NI: Performance for large arrays? Need internal handle objects?
   %   Cf. bicas.utils.FPArray.
   %
@@ -110,11 +105,7 @@ classdef SdChannelData
     samplesAr
 
     % Nx1 array.
-    % IMPLEMENTATION NOTE: Not completely in accordance with definition to name
-    % this VSQB (quality bit in datasets), but it is probably better than VSTB
-    % (threshold bit), or at least if windowing is done before this stage. In
-    % short, there is no satisfying pre-defined abbreviation for this bit.
-    vsqbAr
+    vsibAr
   end
   properties(Dependent)
     % Number of rows with at least one NaN in the underlying data.
@@ -163,16 +154,16 @@ classdef SdChannelData
 
 
 
-    function obj = SdChannelData(samplesAr, vsqbAr)
+    function obj = SdChannelData(samplesAr, vsibAr)
       assert(isfloat(samplesAr))
-      assert(islogical(vsqbAr))
+      assert(islogical(vsibAr))
 
       irf.assert.sizes(...
         samplesAr, [-1, NaN], ...
-        vsqbAr,    [-1])
+        vsibAr,    [-1])
 
       obj.samplesAr = samplesAr;
-      obj.vsqbAr    = vsqbAr;
+      obj.vsibAr    = vsibAr;
     end
 
 
@@ -187,12 +178,12 @@ classdef SdChannelData
 
           ib        = S(1).subs{1};
           samplesAr = obj.samplesAr(ib, :);
-          vsqbAr    = obj.vsqbAr(   ib, :);
-          % IMPLEMENTATION NOTE: Specifying ":" for second index for vsqbAr is
+          vsibAr    = obj.vsibAr(   ib, :);
+          % IMPLEMENTATION NOTE: Specifying ":" for second index for vsibAr is
           % necessary for ensuring always returning a column vector, despite
           % that it is a column vector already.
 
-          varargout = {bicas.proc.L1L2.SdChannelData(samplesAr, vsqbAr)};
+          varargout = {bicas.proc.L1L2.SdChannelData(samplesAr, vsibAr)};
 
         case '.'
           % Call method (sic!)
@@ -223,7 +214,7 @@ classdef SdChannelData
           ib = S(1).subs{1};
 
           Sdcd1.samplesAr(ib, :) = Sdcd2.samplesAr;
-          Sdcd1.vsqbAr(   ib)    = Sdcd2.vsqbAr;
+          Sdcd1.vsibAr(   ib)    = Sdcd2.vsibAr;
 
         otherwise
           error('BICAS:Assertion', 'Unsupported operation.')
@@ -234,7 +225,7 @@ classdef SdChannelData
 
     % "Overload" size(obj, ...)
     function s = size(obj, varargin)
-      s = size(obj.vsqbAr, varargin{:});
+      s = size(obj.vsibAr, varargin{:});
     end
 
 
@@ -242,9 +233,9 @@ classdef SdChannelData
     % Operator overloading.
     function Sdcd3 = plus(Sdcd1, Sdcd2)
       samplesAr3 = Sdcd1.samplesAr + Sdcd2.samplesAr;
-      vsqbAr3    = Sdcd1.vsqbAr    | Sdcd2.vsqbAr;
+      vsibAr3    = Sdcd1.vsibAr    | Sdcd2.vsibAr;
 
-      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsqbAr3);
+      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsibAr3);
     end
 
 
@@ -252,9 +243,9 @@ classdef SdChannelData
     % Operator overloading.
     function Sdcd3 = minus(Sdcd1, Sdcd2)
       samplesAr3 = Sdcd1.samplesAr - Sdcd2.samplesAr;
-      vsqbAr3    = Sdcd1.vsqbAr    | Sdcd2.vsqbAr;
+      vsibAr3    = Sdcd1.vsibAr    | Sdcd2.vsibAr;
 
-      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsqbAr3);
+      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsibAr3);
     end
 
 

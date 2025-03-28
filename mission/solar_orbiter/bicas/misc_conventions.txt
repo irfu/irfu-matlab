@@ -460,23 +460,14 @@ UFV
     measured voltages.
 VBMC
     Validate BICAS Master CDFs.
+VSIB
+    Voltage Saturation Intermediate Bit. Internal bit used by the implementation
+    when deriving VSQB. The exact meaning varies in the code. Cf. VSQB.
 VSQB
     Voltage Saturation Quality Bit. Bit in dataset (!) which is set iff BICAS
     wants to label a sample/snapshot as saturated, according to some algorithm.
-    VSQB is the value actually stored in datasets, as opposed to VSTB which is
+    VSQB is the value actually stored in datasets, as opposed to VSIB which is
     an intermediate value.
-VSTB
-    Voltage Saturation Threshold Bit. Internal bit used by the implementation.
-    The bit is set for an individual sample iff the sample value exceeds
-    specified thresholds (min-max), i.e. it does not take any context into
-    account, except for determining which thresholds to use. This is in contrast
-    with
-    (1) saturation flags for snapshots, which may summarize the saturation of
-        the entire snapshot, or
-    (2) saturation flags for CWF data which may take saturation before or after
-        into account.
-    VSTB should not be confused with actual saturation bit(s) set in quality
-    zVariables (VSQB).
 WOLS
     WithOut Leap Seconds
 ZV

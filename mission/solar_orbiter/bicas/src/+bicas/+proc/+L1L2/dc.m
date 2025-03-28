@@ -40,7 +40,7 @@ classdef dc
 %     class ZvLabelledChannelSamples
 %         % Ideally FPA.
 %         samplesAVolt          [nRows, spr]
-%         % VSTB? Before/after windowing?
+%         % VSIB? Before/after windowing?
 %         bSaturated            [nRows]
 %         % Unknown is not really meant for this case, but should work. Can vary by CDF record.
 %         ssid / None/unknown  [nRows]
@@ -173,17 +173,17 @@ classdef dc
         % ============
         % NOTE: Incomplete detection of VSQB.
         % NOTE: No SdChannelData as input (though as output).
-        bltsVstbAr = bicas.proc.L1L2.dc.get_VSTB_5xBLTS_NEW(...
+        bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
           Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa);
 
         SdcdDict = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(...
-          bltsSamplesAVolt, bltsVstbAr, bltsSdidArray, L);
+          bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
 
-        % TODO: Extract SdcdDict VSTBs and set L2_QUALITY_BITMASK.
+        % TODO: Extract SdcdDict VSIBs and set L2_QUALITY_BITMASK.
         % TODO: Convert SdcdDict samples to AsrSamplesAVoltSrm (or at least use
         %       it).
 
-        % PROPOSAL: Compare SDID-separated VSTBs combined into one with old
+        % PROPOSAL: Compare SDID-separated VSIBs combined into one with old
         %           VSQBs.
 
         % ----------------------------------------------------------------------
@@ -767,14 +767,14 @@ classdef dc
 
     % EXPERIMENTAL
     %
-    % Derive VSTB from samples. Vectorized.
+    % Derive VSIB from samples. Vectorized.
     %
     % RETURN VALUE
     % ============
-    % bltsVstbAr
+    % bltsVsibAr
     %       N x 5. SWF: Set if at least one bit is set for any sample within
     %       snapshot.
-    function bltsVstbAr = get_VSTB_5xBLTS_NEW(...
+    function bltsVsibAr = get_VSIB_5xBLTS_NEW(...
         Bso, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa)
 
       % PROPOSAL: Test code.
@@ -788,20 +788,20 @@ classdef dc
       % Expand variables to be of the same size as bltsSamplesAVoltAr
       % -------------------------------------------------------------
       % NOTE: This could possibly lead to memory problems, which could be
-      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSTB_NEW once per
+      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSIB_NEW once per
       % BLTS.
       isAchgFpa   = repmat(        isAchgFpa,              [1, nSpr, bicas.const.N_BLTS]);
       bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, nSpr, 1                 ]);
 
       SatSettings = bicas.proc.L1L2.sat.convert_BSO_to_struct(Bso);
 
-      bltsVstbAr  = bicas.proc.L1L2.sat.get_VSTB_NEW(...
+      bltsVsibAr  = bicas.proc.L1L2.sat.get_VSIB_NEW(...
         SatSettings, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa);
 
       % N x M x 5 --> N x 1 x 5 --> N x 5
-      % Logical OR over all VSTBs within snapshot.
-      bltsVstbAr = any(    bltsVstbAr, 2);
-      bltsVstbAr = permute(bltsVstbAr, [1, 3, 2]);
+      % Logical OR over all VSIBs within snapshot.
+      bltsVsibAr = any(    bltsVsibAr, 2);
+      bltsVsibAr = permute(bltsVsibAr, [1, 3, 2]);
     end
 
 
@@ -812,9 +812,9 @@ classdef dc
     % bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR().
     %
     function SdcdDict = relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW( ...
-        bltsSamplesAVoltAr, bltsVstbAr, bltsSdidAr, L)
+        bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)
 
-      % PROPOSAL: Include deriving VSTB in this function?
+      % PROPOSAL: Include deriving VSIB in this function?
       %   PRO: Most of the complexity should be in the Saturation class anyway.
 
       SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
@@ -823,7 +823,7 @@ classdef dc
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
         bltsSdidAr,         [-1,     bicas.const.N_BLTS], ...
-        bltsVstbAr,         [-1,     bicas.const.N_BLTS]);
+        bltsVsibAr,         [-1,     bicas.const.N_BLTS]);
 
       %===========================================================
       % Construct SdcdDict: Copy values from BLTSs into SdcdDict
@@ -835,10 +835,10 @@ classdef dc
 
         % Preallocate
         sdidSamplesAVoltAr = nan(  nRecTot, nSamplesPerRecordChannel);
-        sdidVstbAr         = false(nRecTot, 1);
+        sdidVsibAr         = false(nRecTot, 1);
 
         % -----------------------------------------------------------------
-        % Copy samples and VSTB from elements associated with the specified
+        % Copy samples and VSIB from elements associated with the specified
         % ASR SDID.
         % -----------------------------------------------------------------
         % NOTE: Does not copy data which is not an SDID ASR (only SDID=UNKNOWN
@@ -846,10 +846,10 @@ classdef dc
         for iBlts = 1:bicas.const.N_BLTS
           bRecCopy                        = ( bltsSdidAr(:, iBlts) == asrSdid );
           sdidSamplesAVoltAr(bRecCopy, :) = bltsSamplesAVoltAr(bRecCopy, :, iBlts);
-          sdidVstbAr(bRecCopy)            = bltsVstbAr(        bRecCopy,    iBlts);
+          sdidVsibAr(bRecCopy)            = bltsVsibAr(        bRecCopy,    iBlts);
         end
 
-        Sdcd     = bicas.proc.L1L2.SdChannelData(sdidSamplesAVoltAr, sdidVstbAr);
+        Sdcd     = bicas.proc.L1L2.SdChannelData(sdidSamplesAVoltAr, sdidVsibAr);
         SdcdDict = SdcdDict.set(asrSdid, Sdcd);
       end
 
