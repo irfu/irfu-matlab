@@ -53,19 +53,19 @@ classdef sat
       S = struct();
 
       % How long the sliding window should be when using CDF data.
-      S.cwfSlidingWindowLengthSec    = Bso.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
+      S.cwfSlidingWindowLengthSec   = Bso.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
       % Threshold for the sample-length weighted fraction of VSTB-labelled
       % samples within either (1) a sliding window (CWF), or (2) snapshot. If
       % fraction of VSTB-labelled samples excedes this fraction, then the entire
       % sliding window or snapshot is labelled as saturated.
-      S.vstbFractionThreshold        = Bso.get_fv('PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD');
+      S.vstbFractionThreshold       = Bso.get_fv('PROCESSING.SATURATION.VSTB_FRACTION_THRESHOLD');
 
       % Higher thresholds for saturation. Sample values above these values, or
       % below the negated value, count as threshold-saturated (VSTB).
-      S.higherThresholdAVoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
-      S.higherThresholdAVoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
-      S.higherThresholdAVoltAclg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
-      S.higherThresholdAVoltAchg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
+      S.upperThresholdAVoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
+      S.upperThresholdAVoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
+      S.upperThresholdAVoltAclg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
+      S.upperThresholdAVoltAchg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
 
       % ==========
       % ASSERTIONS
@@ -82,10 +82,10 @@ classdef sat
         isfloat( S.vstbFractionThreshold) && ...
         (0 <= S.vstbFractionThreshold) && (S.vstbFractionThreshold <= 1))
 
-      assert_positive_float(S.higherThresholdAVoltDcSingle)
-      assert_positive_float(S.higherThresholdAVoltDcDiff)
-      assert_positive_float(S.higherThresholdAVoltAclg)
-      assert_positive_float(S.higherThresholdAVoltAchg)
+      assert_positive_float(S.upperThresholdAVoltDcSingle)
+      assert_positive_float(S.upperThresholdAVoltDcDiff)
+      assert_positive_float(S.upperThresholdAVoltAclg)
+      assert_positive_float(S.upperThresholdAVoltAchg)
 
       % Rename return value.
       SatSettings = S;
@@ -119,65 +119,76 @@ classdef sat
     %       are no thresholds for this kind of data (e.g. for non-ASR
     %       sources). False is returned for NaN input elements.
     %
-    function vstbAr = get_VSTB(SatSettings, samplesAVolt, ssid, isAchgFpa)
+    function vstbAr = get_VSTB(SatSettings, samplesAVoltAr, ssid, isAchgFpa)
       % PROPOSAL: Better name.
       %   ~sample-to-VSTB
       %   ~threshold_saturation
+      %
+      % PROPOSAL/TODO: Replace with get_VSTB_NEW().
 
-      assert(isfloat(samplesAVolt))
+      assert(isfloat(samplesAVoltAr))
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
       assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
 
-      % Default value that is used if there are no thresholds.
-      vstbAr = false(size(samplesAVolt));
+      ssidAr    = repmat(ssid,      size(samplesAVoltAr));
+      isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
+      vstbAr    = bicas.proc.L1L2.sat.get_VSTB_NEW(...
+        SatSettings, samplesAVoltAr, ssidAr, isAchgFpa);
+    end
 
-      if ~bicas.proc.L1L2.const.SSID_is_ASR(ssid)
-        return
-      end
 
-      % CASE: ASR (i.e. no non-plasma/unknown signal, no special case)
 
-      % ====================
-      % Determine thresholds
-      % ====================
-      if bicas.proc.L1L2.const.SSID_is_diff(ssid)
-        % ----------------
-        % CASE: DC/AC diff
-        % ----------------
+    % Vectorized.
+    function vstbAr = get_VSTB_NEW(SatSettings, samplesAVoltAr, ssidAr, isAchgFpa)
+      upperThresholdAVolt = bicas.proc.L1L2.sat.get_upper_thresholds(...
+        SatSettings, ssidAr, isAchgFpa);
 
-        isAchg = isAchgFpa.logical2doubleNan();
-        if bicas.proc.L1L2.const.SSID_is_AC(ssid)
-          % -------------
-          % CASE: AC diff
-          % -------------
-          if isAchg == 0
-            highThresholdAVolt = SatSettings.higherThresholdAVoltAclg;
-          elseif isAchg == 1
-            highThresholdAVolt = SatSettings.higherThresholdAVoltAchg;
-          else
-            return
-          end
-        else
-          % -------------
-          % CASE: DC diff
-          % -------------
-          highThresholdAVolt = SatSettings.higherThresholdAVoltDcDiff;
-        end
-      else
-        % ---------------
-        % CASE: DC single
-        % ---------------
-        % NOTE: Not using terms "min" and "max" since they are
-        % ambiguous (?).
-        highThresholdAVolt = SatSettings.higherThresholdAVoltDcSingle;
-      end
-      lowThresholdAVolt = -highThresholdAVolt;
+      vstbAr = abs(samplesAVoltAr) > upperThresholdAVolt;
+    end
 
-      % ==========================================
-      % Use thresholds on array to determine VSTBs
-      % ==========================================
-      % NOTE: Has to be able ignore NaN.
-      vstbAr = (samplesAVolt < lowThresholdAVolt) | (highThresholdAVolt < samplesAVolt);
+
+
+    % Get saturation thresholds. Vectorized.
+    %
+    % ARGUMENTS
+    % =========
+    % ssidAr
+    % isAchgFpa
+    %       Must be the same size as ssidAr.
+    %
+    % RETURN VALUE
+    % ============
+    % upperThresholdAVoltAr
+    %       Same size as ssidAr. Non-negative threshold values.
+    %
+    function upperThresholdAVoltAr = get_upper_thresholds(...
+        SatSettings, ssidAr, isAchgFpa)
+
+      assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
+      assert(isa(isAchgFpa, 'bicas.utils.FPArray') & strcmp(isAchgFpa.mc, "logical"))
+      assert(isequal(size(ssidAr), size(isAchgFpa)))
+
+      bIsAsr    = bicas.proc.L1L2.const.SSID_is_ASR( ssidAr);
+      bIsDiff   = bicas.proc.L1L2.const.SSID_is_diff(ssidAr);
+      bIsAc     = bicas.proc.L1L2.const.SSID_is_AC(  ssidAr);
+
+      bDcSingle = bIsAsr & ~bIsDiff;
+      bDcDiff   = bIsAsr &  bIsDiff & ~bIsAc;
+      bAcDiff   = bIsAsr &  bIsDiff &  bIsAc;
+
+      % NOTE: Excluding fill positions in the FPA (i.e. bAclg and bAchg do not
+      %       cover all elements).
+      bAclg = bAcDiff & ~isAchgFpa.array(true);
+      bAchg = bAcDiff &  isAchgFpa.array(false);
+
+      % NOTE: Threshold set to NaN for element without known threshold (e.g.
+      %       SSID=GND).
+      %   NOTE: Inequality with NaN always gives false(!)
+      upperThresholdAVoltAr = NaN(size(ssidAr));
+      upperThresholdAVoltAr(bDcSingle) = SatSettings.upperThresholdAVoltDcSingle;
+      upperThresholdAVoltAr(bDcDiff)   = SatSettings.upperThresholdAVoltDcDiff;
+      upperThresholdAVoltAr(bAclg)     = SatSettings.upperThresholdAVoltAclg;
+      upperThresholdAVoltAr(bAchg)     = SatSettings.upperThresholdAVoltAchg;
     end
 
 
