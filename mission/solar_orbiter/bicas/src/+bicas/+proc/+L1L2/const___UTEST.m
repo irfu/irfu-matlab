@@ -99,8 +99,17 @@ classdef const___UTEST < matlab.unittest.TestCase
     function test_SSID_is_ASR(testCase)
       C = bicas.proc.L1L2.const.C;
 
-      testCase.assertTrue( bicas.proc.L1L2.const.SSID_is_ASR(C.SSID_DICT("DC_V13")));
-      testCase.assertFalse(bicas.proc.L1L2.const.SSID_is_ASR(C.SSID_DICT("GND")));
+      function test(ssidStrAr, expB)
+        ssidAr = C.SSID_DICT(ssidStrAr);
+        testCase.assertEqual(...
+          bicas.proc.L1L2.const.SSID_is_ASR(ssidAr), ...
+          logical(expB));
+      end
+
+      test("DC_V13", true);
+      test(...
+        ["GND", "DC_V13"; "REF25V", "DC_V2"; "UNKNOWN", "AC_V23"], ...
+        [0 1; 0 1; 0 1]);
     end
 
 
@@ -108,9 +117,19 @@ classdef const___UTEST < matlab.unittest.TestCase
     function test_SSID_is_AC(testCase)
       C = bicas.proc.L1L2.const.C;
 
-      testCase.assertFalse(bicas.proc.L1L2.const.SSID_is_AC(C.SSID_DICT("DC_V3")));
-      testCase.assertFalse(bicas.proc.L1L2.const.SSID_is_AC(C.SSID_DICT("DC_V13")));
-      testCase.assertTrue( bicas.proc.L1L2.const.SSID_is_AC(C.SSID_DICT("AC_V13")));
+      function test(ssidStrAr, expB)
+        ssidAr = C.SSID_DICT(ssidStrAr);
+        testCase.assertEqual(...
+          bicas.proc.L1L2.const.SSID_is_AC(ssidAr), ....
+          logical(expB));
+      end
+
+      test("DC_V3", 0);
+      test("DC_V13", 0);
+      test("AC_V13", 1);
+      test(...
+        ["AC_V13", "DC_V13"; "DC_V1", "AC_V12"; "REF25V", "UNKNOWN"], ...
+        [1 0; 0 1; 0 0]);
     end
 
 
@@ -118,9 +137,18 @@ classdef const___UTEST < matlab.unittest.TestCase
     function test_SSID_is_diff(testCase)
       C = bicas.proc.L1L2.const.C;
 
-      testCase.assertFalse(bicas.proc.L1L2.const.SSID_is_diff(C.SSID_DICT("DC_V3")));
-      testCase.assertTrue( bicas.proc.L1L2.const.SSID_is_diff(C.SSID_DICT("DC_V13")));
-      testCase.assertTrue( bicas.proc.L1L2.const.SSID_is_diff(C.SSID_DICT("AC_V13")));
+      function test(ssidStrAr, expB)
+        ssidAr = C.SSID_DICT(ssidStrAr);
+        testCase.assertEqual(...
+          bicas.proc.L1L2.const.SSID_is_diff(ssidAr), ...
+          logical(expB));
+      end
+
+      test(["DC_V3"], false)
+      test(["DC_V13"], true)
+      test(["AC_V13"], true)
+
+      test(["AC_V13", "DC_V12"; "DC_V1", "DC_V3"], [1 1; 0 0])
     end
 
 

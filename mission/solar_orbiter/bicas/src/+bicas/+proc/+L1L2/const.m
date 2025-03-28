@@ -313,9 +313,14 @@ classdef const
       isSsid = all(ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT.values), "ALL");
     end
 
-    function isAsr = SSID_is_ASR(ssid)
-      assert(isscalar(ssid))
-      isAsr = bicas.proc.L1L2.const.C.SSID_OBJ_DICT(ssid).is_ASR();
+    % Vectorized.
+    function bIsAsrAr = SSID_is_ASR(ssidAr)
+      assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
+
+      bIsAsrAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT(...
+        ["DC_V1", "DC_V2", "DC_V3", ...
+        "DC_V12", "DC_V13", "DC_V23", ...
+        "AC_V12", "AC_V13", "AC_V23"]));
     end
 
     % Not vectorized.
@@ -328,28 +333,27 @@ classdef const
       assert(bicas.proc.L1L2.const.is_ASID(asid))
     end
 
-    % Can not handle arrays.
-    function isAc = SSID_is_AC(ssid)
-      assert(isscalar(ssid))
+    % Vectorized.
+    function bIsAcAr = SSID_is_AC(ssidAr)
+      assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
 
-      if bicas.proc.L1L2.const.SSID_is_ASR(ssid)
-        asid = bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssid);
-        isAc = (bicas.proc.L1L2.const.get_ASID_category(asid) == "AC_DIFF");
-      else
-        isAc = false;
-      end
+      bIsAcAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT(...
+        ["AC_V12", "AC_V13", "AC_V23"]));
     end
 
-    % Can not handle arrays.
-    function isDiff = SSID_is_diff(ssid)
-      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
+    % Vectorized
+    function bIsDiffAr = SSID_is_diff(ssidAr)
+      assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
 
-      if bicas.proc.L1L2.const.SSID_is_ASR(ssid)
-        asid = bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssid);
-        isDiff = ismember(bicas.proc.L1L2.const.get_ASID_category(asid), ["DC_DIFF", "AC_DIFF"]);
-      else
-        isDiff = false;
-      end
+      bIsDiffAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT(...
+        ["DC_V12", "DC_V13", "DC_V23", ...
+        "AC_V12", "AC_V13", "AC_V23"]));
+
+      % CONCEPTUAL IMPLEMENTATION THAT DEFERS TO (NONEXISTENT) ASID FUNCTION.
+      % bIsAsrAr            = SSID_is_ASR(ssidAr);
+      % bIsDiffAr           = false(size(ssidAr));
+      %
+      % bIsDiffAr(bIsAsrAr) = ASID_is_diff(SSID_to_ASID(ssidAr(bIsAsrAr)));
     end
 
 
