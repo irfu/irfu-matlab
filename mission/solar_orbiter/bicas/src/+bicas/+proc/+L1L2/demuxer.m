@@ -35,23 +35,26 @@ classdef demuxer
 
 
 
-    % For a specified BDM and DLR setting, for every BLTS, determine
-    % (1) the (type of physical) input signal (Antennas, GND, "2.5V Ref",
-    %     unknown), and
-    % (2) as what ASR (SDID) (if any) should the corresponding samples be stored
-    %     as in the datasets.
+    % Function which returns information on how to route signals. Not
+    % vectorized.
+    %
+    %
+    % For a specified combination of BDM and DLR setting (including possibly
+    % unknown values), for every BLTS, determine the corrsponding
+    % (1) SSID, i.e. where the data comes from (incl. whether it is unknown),
+    %     and
+    % (2) SDID, i.e. where the data should be stored in datasets (incl. whether
+    %     the data should be stored at all).
     %     NOTE: Output datasets only contain dedicated zVariables for ASRs, not
     %     e.g. "2.5V REF". Such non-ASR samples must still be routed to one of
-    %     those same zVariabes.
-    %
-    % This function therefore "encodes" the demultiplexer part of the BIAS
-    % subsystem (and more).
+    %     those same zVariables and how that is done is determined here.
     %
     %
     % RATIONALE
     % =========
-    % Meant to collect all hard-coded information about the demultiplexer
-    % ROUTING of signals in the BIAS specification, Table 4.
+    % Collects all hard-coded information about the demultiplexer ROUTING of
+    % signals. Implementation of Table 4 in RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW
+    % Instrument -- BIAS Specification".
     %
     %
     % EDGE CASES
@@ -63,6 +66,7 @@ classdef demuxer
     % ** dlr = fill position
     %    Ex: Unknown DLR, e.g. due to insufficient HK time coverage.
     % ** BLTS 1-3 labelled as "GND" or "2.5V Ref" in BDMs 5-7.
+    % ** Data not being stored in datasets at all.
     %
     %
     % ARGUMENTS
@@ -178,7 +182,7 @@ classdef demuxer
 
 
     % (1) Given demultiplexer routings, convert the (already calibrated)
-    %     BLTSs to (subset of) ASRs.
+    %     BLTSs to the implied (subset of) ASRs.
     % (2) Derive the remaining ASRs (samples) from those ASRs which have
     %     already been set.
     %       NOTE: This derivation from fully calibrated ASR samples only
@@ -218,7 +222,7 @@ classdef demuxer
     %
     function AsrSamplesAVoltSrm = relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
         sdidArray, bltsSamplesAVolt)
-      % PROPOSAL: Log message for BDM=NaN.
+      % PROPOSAL: Log message for SDID=NOWHERE.
 
       % ASSERTIONS
       assert(isa(sdidArray, 'uint8'))
@@ -228,12 +232,12 @@ classdef demuxer
         sdidArray,        [ 1,     bicas.const.N_BLTS])
 
       % Assign arrays only for those ASIDs for which there is data.
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_samples_BLTS_to_ASR_subsequence(...
+      AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_samples_5xBLTS_to_9xASR_subsequence(...
         bltsSamplesAVolt, sdidArray);
 
       % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
       % NOTE: The function modifies the ARGUMENT (handle object).
-      bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence(AsrSamplesAVoltSrm);
+      bicas.proc.L1L2.demuxer.reconstruct_9xASR_samples_subsequence(AsrSamplesAVoltSrm);
     end
 
 
@@ -260,7 +264,7 @@ classdef demuxer
     % AsrSamplesAVoltSrm
     %       NOTE: Function modifies the argument (handle class)!
     %
-    function reconstruct_ASR_samples_subsequence(AsrSamplesAVoltSrm)
+    function reconstruct_9xASR_samples_subsequence(AsrSamplesAVoltSrm)
       % PROPOSAL: Better name
       %   NOTE: Can not always reconstruct all signals.
       %   --
@@ -426,7 +430,7 @@ classdef demuxer
     % EXPERIMENTAL, UNUSED FUNCTION
     %
     % Intended as future conceptual replacement for
-    % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence() (though
+    % bicas.proc.L1L2.demuxer.reconstruct_9xASR_samples_subsequence() (though
     % "global", not for a subsequence).
     %
     % IMPORTANT: SDCD emulating column vector makes it important and non-trivial
@@ -537,7 +541,7 @@ classdef demuxer
     % Given FIVE BLTS sample arrays, copy those which correspond to ASRs (five
     % or fewer!) into an SRM with correct ASID keys for the corresponding
     % arrays.
-    function AsrSamplesSrm = relabel_samples_BLTS_to_ASR_subsequence(...
+    function AsrSamplesSrm = relabel_samples_5xBLTS_to_9xASR_subsequence(...
         bltsSamplesAVolt, sdidArray)
 
       % ASSERTIONS
@@ -549,8 +553,11 @@ classdef demuxer
       AsrSamplesSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
       for iBlts = 1:bicas.const.N_BLTS
         if ~bicas.proc.L1L2.const.SDID_is_nowhere(sdidArray(iBlts))
+
           % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
           % if conceptually sensible.
+          %   PROPOSAL: AsrSamplesSrm should be converted to representing
+          %             ASR SDID-->samples.
           asid = bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdidArray(iBlts));
 
           AsrSamplesSrm.add(asid, bltsSamplesAVolt(:, :, iBlts));

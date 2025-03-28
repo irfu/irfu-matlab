@@ -11,10 +11,10 @@ The code should however converge on the following:
       as the corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of
       the time.
 - Classes (not instances of classes):
-  - Classes which are actually instantiated (which are not merely a collection
-    of static methods): Should be CamelCase. Initial in uppercase.
-  - Classes which are not instantiated: Should have short names and use
-    lowercase without underscore.
+    - Classes which are actually instantiated (which are not merely a collection
+      of static methods): Should be CamelCase. Initial in uppercase.
+    - Classes which are not instantiated: Should have short names and use
+      lowercase without underscore.
 - Functions should be named using snake_case but with abbreviations in
   uppercase.
 - Special types of variables:
@@ -87,6 +87,8 @@ BDM, "mux mode"
     "mux mode", "demux mode", "demultiplexer mode", "bias mux mode", etc.)
     and to distinguish it from "muxing" as a verb. Mostly used internally,
     not in the interface.
+    Demultiplexing is expressed as one pair of SSID and SDID per BLTS as
+    a function of BDM and DLR (including cases where BDM and/or DLR is unknown).
 BFM
     BICAS Functionality Mode. One of the basic modes of BICAS operations:
     Print version, print identifiction, print help, or process
@@ -380,7 +382,7 @@ SDCD
 SDID
     Signal Destination ID. Every unique value represents the destination of a
     signal, i.e. where the samples should ultimately be stored in the output
-    datasets, i.e. either:
+    datasets (if at all), i.e. either:
     (a) "nowhere" (due to BDM or DLR being unknown), or
     (b) an ASR (to determine which zVariable to store it in in the output
         dataset).
@@ -459,7 +461,7 @@ UFV
     overwritten with fill values. This refers to both bias currents and
     measured voltages.
 VBMC
-    Validate BICAS Master CDFs.
+    Validate BICAS Master CDFs. Standalone tool.
 VSIB
     Voltage Saturation Intermediate Bit. Internal bit used by the implementation
     when deriving VSQB. The exact meaning varies in the code. Cf. VSQB.

@@ -31,66 +31,18 @@ classdef SdChannelData
   %   metadata
   %   PROPOSAL: Analogous to dictionary class.
   %
+  % PROPOSAL: Rename samplesAr to include unit.
+  %   PRO: Class intended for being used for reconstruction.
+  %   CON: Might be used when deriving saturation before calibration in the
+  %        future.
+  %
   % TODO-NI: Performance for large arrays? Need internal handle objects?
   %   Cf. bicas.utils.FPArray.
-  %
-  % TODO: Methods for deriving/reconstructing other channels.
-  %   Needs (scalar?) SSID?
-  %   PROPOSAL: Implement using operator overloading: +, - (only two needed).
   %
   % PROPOSAL: Use FPAs for samples.
   %   CON(?): The size of the object is not the same as the size of samplesAr.
   %           Can therefore not *directly* reuse FPA fill positions as fill
   %           positions for this class.
-  %
-  % PROBLEM: Current implementation leads to bug in reconstruction algorithm:
-  %          Emulating column array while bIsNan represents there being at least
-  %          one NaN per row.
-  %   --
-  %   PROPOSAL: Refactor to emulate same size as samplesAr (2D) but still only
-  %             contain column array of saturation bits.
-  %     PRO: Can abolish bIsNan.
-  %     PRO: Needed for reconstruction algorithm: If row contains both non-NaN and
-  %          NaN, then reconstruction algorithm thinks entire row is NaN, i.e.
-  %          contains no data.
-  %       Ex: TDS-RSWF snapshots do not fill entire row. The unused part is NaN.
-  %     CON: Reconstruction algorithm requires linear indexing. ==> Intermediate
-  %          SDCDs are linear!!!!
-  %       Ex: A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
-  %   --
-  %   PROPOSAL: Refactor to emulate same size as samplesAr (2D) and keep 2D
-  %             array of VSQBs (instead of column array).
-  %     CON: Requires more memory.
-  %     CON: Abandons idea that SDCD could contain other information on the form
-  %          of one scalar per row (unless duplicates them to one per element).
-  %   --
-  %   PROPOSAL: Refactor to emulate column array but (1) include counters for
-  %             valid number of samples per row, and (2) assumes/asserts that
-  %             all (valid) samples on a row are either non-NaN or NaN.
-  %     PRO: Records are "fundamental" and reconstruction should work on
-  %          records.
-  %       PRO: One saturation bit per record, makes records "fundamental".
-  %       PRO: Arbitrary indexing operations, e.g. logical indexing, linear
-  %            indexing make no sense unless index=record.
-  %     CON: Must assert all valid samples on a row are either non-NaN or NaN.
-  %     CON: When adding, subtracting: Must assert equal number of valid samples
-  %          per row.
-  %     CON: Makes class more conceptually complex.
-  %       CON: Incorporates number of valid samples per row in class,
-  %            and replaces the corresponding external variable?
-  %         CON: One such variable per channel, not one globally.
-  %     CON: Using variable for number of valid samples makes implementation
-  %          resemble bicas.utils.FPArray.
-  %     CON: Can not handle there being both fill values and non-fill values
-  %          inside snapshot.
-  %       CON: Should never happen.
-  %       CON: Calibration should turn one fill value into fill values for
-  %            entire snapshot.
-  %       CON: If it happens, it could only be taken advantage of when there is
-  %            redundant channel data anyway (rare).
-  %   --
-  %   PROPOSAL: bIsNan <=> All elements are NaN (not: at least one).
-  %             -- IMPLEMENTED
 
 
 
@@ -101,7 +53,8 @@ classdef SdChannelData
   %#####################
   properties(SetAccess=private)
     % NxM array. double. NaN represents missing data. Supports both CWF (Nx1)
-    % and SWF (NxM).
+    % and SWF (NxM). Could in principle be used for samples in either TM units
+    % or calibrated units.
     samplesAr
 
     % Nx1 array.

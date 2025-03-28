@@ -269,7 +269,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_reconstruct_ASR_samples_subsequence(testCase)
+    function test_reconstruct_9xASR_samples_subsequence(testCase)
 
       A = bicas.proc.L1L2.const.C.ASID_DICT;
 
@@ -298,7 +298,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         end
 
         % RUN FUNCTION TO BE TESTED
-        bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_subsequence(AsSrm);
+        bicas.proc.L1L2.demuxer.reconstruct_9xASR_samples_subsequence(AsSrm);
         ActAsSrm = AsSrm;
 
         % Test all possible relationsships.

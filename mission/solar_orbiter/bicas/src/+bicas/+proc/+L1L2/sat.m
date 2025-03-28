@@ -8,15 +8,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef sat
-  % PROPOSAL: Reorg. to non-instantiatble class. -- IMPLEMENTED
-  %   PRO: Makes no sense for the caller to instantiate.
-  %     PRO: Only instantiated once in code, followed by one method call.
-  %     PRO: Constructor only takes one argument.
-  %   CON: Constructor argument BSO is split into six relevant values stored in
-  %        instance variables.
-  %     PROPOSAL: Derive struct/class which is passed around internally between
-  %               methods.
-  %
   % PROPOSAL: Reorder methods to make easier to follow calls recursively within
   %           class.
   %
@@ -34,6 +25,13 @@ classdef sat
   %   Have saturation bits propagate to all signals in (not-yet-implemented)
   %   _Sdid_SamplesAVoltSrm in the same way as signals do.
   %   PROPOSAL: Separate SDID SRM for quality bits.
+  %
+  % PROPOSAL: Better terminology than "upperTreshold".
+  %   NOTE: Applies to variables and settings keys.
+  %   ~abs, absolute, magnitude
+  %   ~positive
+  %   ~threshold
+  %   PROPOSAL: Drop any other prefix/suffix.
 
 
 
@@ -113,7 +111,7 @@ classdef sat
     % RETURN VALUE
     % ============
     % vsibAr
-    %       Float. Same size as samplesAVolt. Whether corresponding elements
+    %       Logical. Same size as samplesAVolt. Whether corresponding elements
     %       in samplesAVolt are deemed to be outside the relevant
     %       thresholds. False is returned for all input elements if there
     %       are no thresholds for this kind of data (e.g. for non-ASR
@@ -132,6 +130,7 @@ classdef sat
 
       ssidAr    = repmat(ssid,      size(samplesAVoltAr));
       isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
+
       vsibAr    = bicas.proc.L1L2.sat.get_VSIB_NEW(...
         SatSettings, samplesAVoltAr, ssidAr, isAchgFpa);
     end
@@ -154,7 +153,7 @@ classdef sat
     % =========
     % ssidAr
     % isAchgFpa
-    %       Must be the same size as ssidAr.
+    %       Must have the same size as ssidAr.
     %
     % RETURN VALUE
     % ============
@@ -423,13 +422,18 @@ classdef sat
     % Function to simplify other function get_VSQB().
     %
     % For a given ASID, determine which rows contain samples which originate
-    % from L1R (i.e. which were not reconstructed). Set all other samples to
-    % NaN.
+    % from L1R directly (i.e. which were not reconstructed). Set all other
+    % samples to NaN.
     function asidSamplesAr = set_reconstructed_samples_to_NaN(...
         asidSamplesAr, asid, bltsSsidAr)
 
+      % ASSERTIONS (in reality for documentation)
+      assert(isscalar(asid))
+      irf.assert.sizes( ...
+        asidSamplesAr, [-1, -2], ...
+        bltsSsidAr,    [-1, bicas.const.N_BLTS]);
+
       ssid = bicas.proc.L1L2.const.ASID_to_SSID(asid);
-      %bUse = any(repmat(ssid, [nRows, 1]) == bltsSsidAr, 2);
       bUse = any(ssid == bltsSsidAr, 2);
       asidSamplesAr(~bUse, :) = NaN;
     end

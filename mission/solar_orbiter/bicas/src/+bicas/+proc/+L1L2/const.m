@@ -14,9 +14,9 @@
 % mentioned method-replacing functions easier.
 %
 %
-% SUMMARY OF VALUES
-% =================
-% Copy-pasted. The code is the authoritative source. Not below text.
+% SUMMARY OF CONSTANTS
+% ====================
+% Copy-pasted. The implementation is the authoritative source, not below table.
 % --------------
 % ASID:
 % "DC_V1"  ⟼ 1
@@ -73,26 +73,26 @@ classdef const
 %   ~id
 %   sid = Signal ID(s)
 %     PRO: Same components as in ASID, SSID, SDID.
-%     CON: Abbreviation occurs in many words.
+%     CON: Abbreviation occurs in many words
+%       Ex: "side", "outside", "inside", "consider", SSID/ASID
 %   cid = Channel ID(s)
+%     CON: "CID" is part of "QRCID", "decide", "incidence".
+%       CON: Is not a real abbrevation.
 %
 % PROPOSAL: Vectorize ASID/SSID/SDID functions.
 %   PRO: Useful for vectorizing bicas.proc.L1L2.sat.
 %   PRO: Can possibly abolish ASID, SSID, SDID classes if does so.
 %
+% PROPOSAL: Abolish ASID uint8. Abolish SSID, SDID classes (keep ASID class?).
+%
 % PROPOSAL: Abolish ASID, SSID, SDID classes.
 %   NOTE: ASID, SSID, SDID classes are only instantiated in this file, and are
 %         most likely only used in this file too.
 %
-% PROPOSAL: Keep ASID, SSID, SDID as uint8 but also keep corresponding objects,
-%           but defer functions on uint8 to object methods via dictionaries
-%           uint8-->object. -- IMPLEMENTED
-%   Ex: C.SSID_OBJ_DICT(ssid).is_ASR()
-%   PRO: More natural way of hardcoding information about each uint8 value.
-%   CON: Awkward to have two versions of ASID,SSID,SDID at the same time.
-%     PRO: Separate names/abbreviations. 3-->2x3
-%     CON: Use same abbreviations for both uint8 and objects.
-%   CON: Still long calls.
+% PROPOSAL: Use constant dictionaries for translating ASR SSID/SDID-->ASID and
+%   implement all ASR functionality with functions with ASID arguments.
+%   PRO: Can remove SSID+SDID classes.
+%   PRO: Can maybe remove ASID class.
 %
 % PROPOSAL: Hardcode information in structs (or objects) in private
 %           dictionaries which bicas.proc.L1L2.const function implementations then use.
@@ -100,7 +100,7 @@ classdef const
 %   PRO: Does not need rely on adding/subtracting to translate between
 %        ASID, SSID, SDID.
 %
-% PROPOSAL: Separate class constants for ASID, SSID, SDID respectively.
+% PROPOSAL: Three separate class constants for ASID, SSID, SDID respectively.
 %   Replace .C --> .ASID (asid?), .SSID (ssid?) etc.
 %   CON: Bad if wanting to "import" all constants at once.
 %

@@ -75,9 +75,9 @@ classdef SdChannelData___UTEST < matlab.unittest.TestCase
       function test()
         % R = Receiver?!
         % S = Sender?!
-        SDCD_R          = testCase.get_SDCD(ib_r);
-        SDCD_S          = testCase.get_SDCD(ib_s);
-        SDCD_EXP        = testCase.get_SDCD(ib_exp);
+        SDCD_R            = testCase.get_SDCD(ib_r);
+        SDCD_S            = testCase.get_SDCD(ib_s);
+        SDCD_EXP          = testCase.get_SDCD(ib_exp);
         SDCD_R(ib_r_asgn) = SDCD_S;
         testCase.assertEqual(SDCD_R, SDCD_EXP)
       end

@@ -31,63 +31,6 @@ classdef dc
 %     particular not require many constant "settings".
 %   * Use more vector operations.
 %   * More natural to implement.
-%
-%
-% #############################################################################
-% PROPOSAL: Class for one ASR/ZV/SDIS-labelled channel (with samples). Not
-%           SDID="unknown". Can be used BEFORE and AFTER after deriving data
-%           using ASR relationships.
-%     class ZvLabelledChannelSamples
-%         % Ideally FPA.
-%         samplesAVolt          [nRows, spr]
-%         % VSIB? Before/after windowing?
-%         bSaturated            [nRows]
-%         % Unknown is not really meant for this case, but should work. Can vary by CDF record.
-%         ssid / None/unknown  [nRows]
-%         % NOTE: SDID excluded. Is constant.
-%         function bFpArray = is_FP()
-%         function subsref()
-%         function subsasgn()
-%         function size(), ndims(), ...
-%     --
-%     Replace SRM with dictionary (or custom class; Can not use SRM).
-%         SDID-->class Channel
-%     PROPOSAL: Class can contain static methods describing ASR relationships,
-%               and which can be used for reconstructing ASR channels (by
-%               generic function reconstruct_missing_data()).
-%     CON: bSaturated not meaningful until has derived it. Should ideally be
-%          possible to add it after deriving it.
-%         CON-PROPOSAL: Separate dictionary SDID-->bSaturation
-%             PRO: Proliferation of saturation bits is independent of other channel data.
-%                  Assuming has fill positions. 0=FP does not work for proliferation.
-%             CON: Can not ensure identical proliferation derivations (or not clear; risky).
-%                  Should ideally have "proliferation functions"
-%                  X=func_X_from_Y_and_Z(Y,Z) which set all variables and use
-%                  one single source of ~FP flags.
-%
-% #############################################################################
-% PROPOSAL: Generic function for deriving data using ASR relationships.
-%
-% IMPLEMENTATION NOTE: Deliberately separates
-% (1a) the notion of data arrays from
-% (1b) the notion of fill positions (missing data),
-% and
-% (2) the operations used for obtaining data.
-%   PRO: More generic.
-%   PRO: More easily testable.
-%
-% IMPLEMENTATION NOTE: Deliberately does NOT create new arrays (data structures)
-% for missing data. Instead fills in pre-existing data structures.
-% ==> Same type of arrays/classes as input and as output (conceptually, and
-%     MATLAB classes).
-%
-% IMPLEMENTATION NOTE: Deliberately uses vectorized operations.
-%   PRO: Does not have to assume the same operation (fh12to3, fh13to2, fh23to1)
-%        acting on entire arrays.
-%       PRO: Does not have to split records/arrays in sections with identical
-%            operation.
-%   PRO: Presumably faster when applied to all data.
-% #############################################################################
 
 
 
@@ -139,7 +82,7 @@ classdef dc
 
 
       %##############################################################
-      % CALIBRATE VOLTAGES (WHILE BEING 5 CHANNELS LABELLED BY BLTS)
+      % CALIBRATE VOLTAGES (FIVE CHANNELS LABELLED BY BLTS AND SSID)
       %##############################################################
       bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(...
         Epoch                   = Dcip.Zv.Epoch, ...
@@ -818,7 +761,8 @@ classdef dc
       %   PRO: Most of the complexity should be in the Saturation class anyway.
 
       SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
+      % Tmk = bicas.utils.Timekeeper(...
+      %   'bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
 
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
@@ -858,11 +802,13 @@ classdef dc
       %======================================
       SdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(SdcdDict);
 
-      Tmk.stop_log(nRecTot, 'record')
+      % Tmk.stop_log(nRecTot, 'record')
     end
 
 
 
   end    % methods(Static, Access=private)
+
+
 
 end
