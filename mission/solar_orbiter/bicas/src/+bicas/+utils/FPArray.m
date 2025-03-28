@@ -698,6 +698,16 @@ classdef FPArray < matlab.mixin.CustomDisplay
 
 
 
+    % "Overload" repmat().
+    function Fpa = repmat(Fpa, varargin)
+      dataAr = repmat(Fpa.dataAr, varargin{:});
+      fpAr   = repmat(Fpa.fpAr,   varargin{:});
+
+      Fpa = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
+    end
+
+
+
     function Fpa3 = min(Fpa1, Fpa2)
       % IMPLEMENTATION NOTE: Does not appear that MATLAB allows one to
       % override the behaviour of min(). Might not be easy either w.r.t.

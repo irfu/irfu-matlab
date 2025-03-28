@@ -738,6 +738,34 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_repmat(testCase)
+      import bicas.utils.FPArray___UTEST.Fpa
+
+      EMPTY_FPA = Fpa([], NaN);
+
+      ActFpa      = repmat(EMPTY_FPA, [2,3]);
+      testCase.assertEqual(ActFpa, EMPTY_FPA)
+      ActFpa      = repmat(EMPTY_FPA, 2, 3);
+      testCase.assertEqual(ActFpa, EMPTY_FPA)
+
+      DATA_AR = [1 2 3; 4 5 NaN];
+
+      FPA_0    = Fpa(DATA_AR, NaN);
+      ActFpa = repmat(FPA_0, 1);
+      testCase.assertEqual(ActFpa, FPA_0)
+
+      for ca = {{1}, {2}, {[2,3]}, {2,3}, {[2,3,4]}}
+        repmatArgsCa = ca{1};
+
+        testCase.assertEqual(...
+          repmat(FPA_0, repmatArgsCa{:}), ...
+          Fpa(repmat(DATA_AR, repmatArgsCa{:}), NaN) ...
+          )
+      end
+    end
+
+
+
     function test_min(testCase)
       import bicas.utils.FPArray___UTEST.Fpa
 
