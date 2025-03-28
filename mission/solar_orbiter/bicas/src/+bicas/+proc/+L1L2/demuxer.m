@@ -436,7 +436,7 @@ classdef demuxer
     % elements) which causes data to be not used for reconstructing other
     % channels.
     %
-    function SdcdDict = reconstruct_ASR_samples2(SdcdDict)
+    function SdcdDict = reconstruct_ASR_samples_NEW(SdcdDict)
 
       assert(isa(SdcdDict, 'bicas.proc.L1L2.SdChannelDataDict'))
 

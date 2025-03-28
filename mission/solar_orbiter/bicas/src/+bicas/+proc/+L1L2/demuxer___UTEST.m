@@ -386,7 +386,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_reconstruct_ASR_samples2(testCase)
+    function test_reconstruct_ASR_samples_NEW(testCase)
       N = NaN;
 
       SAMPLES_AR_DATA = [...
@@ -417,7 +417,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-      ActSdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples2(SdcdDict);
+      ActSdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(SdcdDict);
 
       % IMPLEMENTATION NOTE: Not comparing entire
       % bicas.proc.L1L2.SdChannelDataDict objects since

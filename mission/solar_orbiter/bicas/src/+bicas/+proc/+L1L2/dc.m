@@ -168,19 +168,31 @@ classdef dc
         bltsSamplesAVolt, bltsSdidArray, L);
 
       if 0
+        % ============
         % EXPERIMENTAL
-        % NOTE: No detection of VSQB.
+        % ============
+        % NOTE: Incomplete detection of VSQB.
         % NOTE: No SdChannelData as input (though as output).
-        SdcdDict = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(...
-          bltsSamplesAVolt, bltsSdidArray, L);
+        bltsVstbAr = bicas.proc.L1L2.dc.get_VSTB_5xBLTS_NEW(...
+          Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa);
 
-        % DEBUG: Check that samples derived using old and new code are
-        %        identical.
+        SdcdDict = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(...
+          bltsSamplesAVolt, bltsVstbAr, bltsSdidArray, L);
+
+        % TODO: Extract SdcdDict VSTBs and set L2_QUALITY_BITMASK.
+        % TODO: Convert SdcdDict samples to AsrSamplesAVoltSrm (or at least use
+        %       it).
+
+        % PROPOSAL: Compare SDID-separated VSTBs combined into one with old
+        %           VSQBs.
+
+        % ----------------------------------------------------------------------
+        % DEBUG: Check that samples derived using old and new code are identical
+        % ----------------------------------------------------------------------
         % NOTE: Check may fail if new code splits samples into subsequences in
         %       new way, e.g. BLTS per BLTS.
         % PROPOSAL: Permit approximative equality.
         % PROPOSAL: Store max difference.
-        % TDS-RSWF: Samples are not identical: New code replaces some samples with NaN.
 
         % maxDiff = 0;
         for i = 1:9
@@ -753,20 +765,57 @@ classdef dc
 
 
 
-    % EXPERIMENTAL, UNUSED FUNCTION. INCOMPLETE?!!
+    % EXPERIMENTAL
+    %
+    % Derive VSTB from samples. Vectorized.
+    %
+    % RETURN VALUE
+    % ============
+    % bltsVstbAr
+    %       N x 5. SWF: Set if at least one bit is set for any sample within
+    %       snapshot.
+    function bltsVstbAr = get_VSTB_5xBLTS_NEW(...
+        Bso, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa)
+
+      % PROPOSAL: Test code.
+
+      [nSpr] = irf.assert.sizes(...
+        bltsSamplesAVoltAr, [-2, -1, bicas.const.N_BLTS], ...
+        bltsSsidAr,         [-2,     bicas.const.N_BLTS], ...
+        isAchgFpa,          [-2]);
+      assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
+
+      % Expand variables to be of the same size as bltsSamplesAVoltAr
+      % -------------------------------------------------------------
+      % NOTE: This could possibly lead to memory problems, which could be
+      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSTB_NEW once per
+      % BLTS.
+      isAchgFpa   = repmat(        isAchgFpa,              [1, nSpr, bicas.const.N_BLTS]);
+      bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, nSpr, 1                 ]);
+
+      SatSettings = bicas.proc.L1L2.sat.convert_BSO_to_struct(Bso);
+
+      bltsVstbAr  = bicas.proc.L1L2.sat.get_VSTB_NEW(...
+        SatSettings, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa);
+
+      % N x M x 5 --> N x 1 x 5 --> N x 5
+      % Logical OR over all VSTBs within snapshot.
+      bltsVstbAr = any(    bltsVstbAr, 2);
+      bltsVstbAr = permute(bltsVstbAr, [1, 3, 2]);
+    end
+
+
+
+    % EXPERIMENTAL. INCOMPLETE?!!
     %
     % Intended as future conceptual replacement for
     % bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR().
     %
     function SdcdDict = relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW( ...
-        bltsSamplesAVoltAr, bltsSdidAr, L)
+        bltsSamplesAVoltAr, bltsVstbAr, bltsSdidAr, L)
 
-      % PROPOSAL: VSQB argument
-      % PROPOSAL: Include deriving VSQB in this function?
+      % PROPOSAL: Include deriving VSTB in this function?
       %   PRO: Most of the complexity should be in the Saturation class anyway.
-
-      % TEMPORARY. SUBSTITUTE FOR FUTURE ARGUMENT?
-      bltsVsqbAr = false(size(bltsSdidAr));
 
       SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
@@ -774,7 +823,7 @@ classdef dc
       [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
         bltsSdidAr,         [-1,     bicas.const.N_BLTS], ...
-        bltsVsqbAr,         [-1,     bicas.const.N_BLTS]);
+        bltsVstbAr,         [-1,     bicas.const.N_BLTS]);
 
       %===========================================================
       % Construct SdcdDict: Copy values from BLTSs into SdcdDict
@@ -785,25 +834,29 @@ classdef dc
         asrSdid = SDID_ASR_AR(i);
 
         % Preallocate
-        samplesAVoltAr = nan(  nRecTot, nSamplesPerRecordChannel);
-        vsqbAr         = false(nRecTot, 1);
+        sdidSamplesAVoltAr = nan(  nRecTot, nSamplesPerRecordChannel);
+        sdidVstbAr         = false(nRecTot, 1);
 
-        % Copy samples and VSQB from elements associated with the specified
+        % -----------------------------------------------------------------
+        % Copy samples and VSTB from elements associated with the specified
         % ASR SDID.
+        % -----------------------------------------------------------------
+        % NOTE: Does not copy data which is not an SDID ASR (only SDID=UNKNOWN
+        %       is omitted).
         for iBlts = 1:bicas.const.N_BLTS
-          b = (bltsSdidAr(:, iBlts) == asrSdid);
-          samplesAVoltAr(b, :) = bltsSamplesAVoltAr(b, :, iBlts);
-          vsqbAr(b)            = bltsVsqbAr(        b,    iBlts);
+          bRecCopy                        = ( bltsSdidAr(:, iBlts) == asrSdid );
+          sdidSamplesAVoltAr(bRecCopy, :) = bltsSamplesAVoltAr(bRecCopy, :, iBlts);
+          sdidVstbAr(bRecCopy)            = bltsVstbAr(        bRecCopy,    iBlts);
         end
 
-        Sdcd = bicas.proc.L1L2.SdChannelData(samplesAVoltAr, vsqbAr);
+        Sdcd     = bicas.proc.L1L2.SdChannelData(sdidSamplesAVoltAr, sdidVstbAr);
         SdcdDict = SdcdDict.set(asrSdid, Sdcd);
       end
 
       %======================================
       % Reconstruct missing channels/samples
       %======================================
-      SdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples2(SdcdDict);
+      SdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(SdcdDict);
 
       Tmk.stop_log(nRecTot, 'record')
     end
