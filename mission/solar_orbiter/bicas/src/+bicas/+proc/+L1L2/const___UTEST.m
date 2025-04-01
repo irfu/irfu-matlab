@@ -95,6 +95,23 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_ASID_is_diff(testCase)
+      function test(asidStrAr, expB)
+        testCase.test_array_to_logical( ...
+          @(asidAr) bicas.proc.L1L2.const.ASID_is_diff(asidAr), ...
+          bicas.proc.L1L2.const.C.ASID_DICT, asidStrAr, expB)
+      end
+
+      test("DC_V3", 0);
+      test("DC_V13", 1);
+      test("AC_V13", 1);
+      test(...
+        ["AC_V13", "DC_V13"; "DC_V1", "AC_V12"], ...
+        [1 1; 0 1]);
+    end
+
+
+
     %======
     % SSID
     %======
@@ -158,7 +175,9 @@ classdef const___UTEST < matlab.unittest.TestCase
       test(["DC_V13"], true)
       test(["AC_V13"], true)
 
-      test(["AC_V13", "DC_V12"; "DC_V1", "DC_V3"], [1 1; 0 0])
+      test(...
+        ["AC_V13", "DC_V12"; "DC_V1", "DC_V3"; "REF25V", "UNKNOWN"], ...
+        [1 1; 0 0; 0 0])
     end
 
 

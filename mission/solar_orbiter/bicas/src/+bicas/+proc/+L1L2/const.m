@@ -294,6 +294,15 @@ classdef const
         ["AC_V12", "AC_V13", "AC_V23"]));
     end
 
+    % Vectorized.
+    function bDiffAr = ASID_is_diff(asidAr)
+      assert(bicas.proc.L1L2.const.is_ASID(asidAr))
+
+      bDiffAr = ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT(...
+        ["DC_V12", "DC_V13", "DC_V23", ...
+        "AC_V12", "AC_V13", "AC_V23"]));
+    end
+
     % Not vectorized.
     function ssid = ASID_to_SSID(asid)
       assert(isscalar(asid))
@@ -346,18 +355,11 @@ classdef const
     function bDiffAr = SSID_is_diff(ssidAr)
       assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
 
-      bDiffAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT(...
-        ["DC_V12", "DC_V13", "DC_V23", ...
-        "AC_V12", "AC_V13", "AC_V23"]));
+      bDiffAr         = false(size(ssidAr));
+      bAsrAr          = bicas.proc.L1L2.const.SSID_is_ASR(ssidAr);
 
-      % bDiffAr = lookup(bicas.proc.L1L2.const.C.SSID_ASID_DICT, ssidAr, FallbackValue=9999);
-
-      % CONCEPTUAL IMPLEMENTATION THAT DEFERS TO (NONEXISTENT VECTORIZED) ASID
-      % FUNCTION.
-      % bIsAsrAr          = SSID_is_ASR(ssidAr);
-      % bDiffAr           = false(size(ssidAr));
-      %
-      % bDiffAr(bIsAsrAr) = ASID_is_diff(SSID_to_ASID(ssidAr(bIsAsrAr)));
+      bDiffAr(bAsrAr) = bicas.proc.L1L2.const.ASID_is_diff(...
+        bicas.proc.L1L2.const.C.SSID_ASID_DICT(ssidAr(bAsrAr)));
     end
 
 
