@@ -3,8 +3,6 @@
 % See
 %   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence()
 %   bicas.proc.L1L2.AntennaSignalId
-%   bicas.proc.L1L2.SignalSourceId
-%   bicas.proc.L1L2.SignalDestinationId
 %
 %
 % NOTE

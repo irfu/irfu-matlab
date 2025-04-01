@@ -389,9 +389,7 @@ SDID
         NOTE: Since output datasets ALWAYS store output data organized as if
         they were always physical signals, non-ASR signals have to be stored as
         ASRs too in datasets. E.g. GND, 2.5V Ref., or unknown signals.
-    Implemented as either:
-    (1) uint8 value, or
-    (2) class bicas.proc.L1L2.SignalDestinationId.
+    Implemented as unique uint8 values.
 Sec
     Seconds
 SIP

@@ -4,12 +4,11 @@
 %
 %
 % IMPLEMENTATION NOTE: ASIDs, SSIDs, SDIDs are implemented as uint8 values for
-% performance reasons. The implementation uses values per channel and CDF
-% record which is too many instances for implementing them as objects, though
-% that would have made the code simpler and more natural. This class supplies
-% functions which correspond to the methods of such classes. The classes ASID,
-% SSID, SDID (bicas.proc.L1L2.AntennaSignalId, bicas.proc.L1L2.SignalSourceId,
-% bicas.proc.L1L2.SignalDestinationId) are only for defining metadata
+% performance reasons. The implementation uses values per channel and CDF record
+% which is too many instances for implementing them as objects, though that
+% would have made the code simpler and more natural. This class supplies
+% functions which replace the methods of such (non-existent) classes. The class
+% ASID, (bicas.proc.L1L2.AntennaSignalId) is only for defining metadata
 % associated with each uint8 value and to make the implementation of above
 % mentioned method-replacing functions easier.
 %
@@ -100,20 +99,21 @@ classdef const
 %   PRO: Does not need rely on adding/subtracting to translate between
 %        ASID, SSID, SDID.
 %
-% PROPOSAL: Three separate class constants for ASID, SSID, SDID respectively.
-%   Replace .C --> .ASID (asid?), .SSID (ssid?) etc.
+% PROPOSAL: Three separate class struct constants for ASID, SSID, SDID
+%           respectively.
+%           Replace .C --> .ASID (asid?), .SSID (ssid?) etc.
 %   CON: Bad if wanting to "import" all constants at once.
 %
-% PROPOSAL: Rename ASID, SSID, SDID classes.
-%   PRO: Clearer distinction between ASID/SSID/SDID classes and uint8 values.
+% PROPOSAL: Rename ASID class AntennaSignalId.
+%   PRO: Clearer distinction between ASID class and uint8 values.
 %   CON: Different abbreviations?
 %   ~definition
 %   ~info, ~data, metadata
 %   ~BLTS
 %   --
-%   SignalSourceDefinition
-%   SignalSourceIdDefinition
-%   SignalSourceIdInfo
+%   AntennaSignalDefinition
+%   AntennaSignalIdDefinition
+%   AntennaSignalIdInfo
 
 
 
@@ -165,16 +165,14 @@ classdef const
 
       C2.SSID_DICT      = configureDictionary('string', 'uint8');
       C2.SSID_ASID_DICT = configureDictionary('uint8',  'uint8');
-      % C2.SSID_OBJ_DICT = configureDictionary('uint8',  'bicas.proc.L1L2.SignalSourceId');
 
       C2.SDID_DICT      = configureDictionary('string', 'uint8');
-      % C2.SDID_ASID_DICT = configureDictionary('uint8',  'uint8');
-      C2.SDID_OBJ_DICT = configureDictionary('uint8',  'bicas.proc.L1L2.SignalDestinationId');
+      C2.SDID_ASID_DICT = configureDictionary('uint8',  'uint8');
 
       C2.ROUTING_DICT   = configureDictionary('string', 'bicas.proc.L1L2.Routing');
 
       % Array of all ASR SDIDs.
-      C2.SDID_ASR_AR    = uint8([]);
+      % C2.SDID_ASR_AR    = uint8([]);
 
       % Global list of uint8 values used so far for defining ASIDs, SSIDs, and
       % SDIDs. This is used for avoiding collisions between all of the uint8
@@ -196,8 +194,8 @@ classdef const
         ssid = add_SSID(s, k);
         C2.SSID_ASID_DICT(ssid) = asid;
 
-        sdid = add_SDID(s, k, asid);
-        C2.SDID_ASR_AR(end+1, 1) = sdid;
+        sdid = add_SDID(s, k);
+        C2.SDID_ASID_DICT(sdid) = asid;
 
         % Add ASID.
         AsidObj                = bicas.proc.L1L2.AntennaSignalId(ssid, asidCategory, asidAntennas);
@@ -213,17 +211,15 @@ classdef const
         ssid = uint8(k+100);
         allocate_new_uint8(ssid)
 
-        C2.SSID_DICT(s)        = ssid;
+        C2.SSID_DICT(s) = ssid;
       end
 
       % Add new SDID, only.
-      function sdid = add_SDID(s, k, asidOrNowhere)
+      function sdid = add_SDID(s, k)
         sdid = uint8(k+200);
         allocate_new_uint8(sdid)
 
-        SdidObj = bicas.proc.L1L2.SignalDestinationId(asidOrNowhere);
-        C2.SDID_DICT(s)        = sdid;
-        C2.SDID_OBJ_DICT(sdid) = SdidObj;
+        C2.SDID_DICT(s) = sdid;
       end
 
       function main()
@@ -257,7 +253,7 @@ classdef const
         % =======================
         % Add all remaining SDIDs
         % =======================
-        add_SDID("NOWHERE", 13, "NOWHERE");
+        add_SDID("NOWHERE", 13);
 
         % ===================================================
         % Add all routings which are not ASR SSID to ASR SDID
@@ -372,7 +368,9 @@ classdef const
 
     function isAsr = SDID_is_ASR(sdid)
       assert(isscalar(sdid))
-      isAsr = bicas.proc.L1L2.const.C.SDID_OBJ_DICT(sdid).is_ASR();
+      assert(bicas.proc.L1L2.const.is_SDID(sdid))
+
+      isAsr = ismember(sdid, bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys);
     end
 
     % NOTE: Error if not ASR.
@@ -380,7 +378,7 @@ classdef const
       assert(isscalar(sdid))
       assert(bicas.proc.L1L2.const.SDID_is_ASR(sdid))
 
-      asid = bicas.proc.L1L2.const.C.SDID_OBJ_DICT(sdid).asid;
+      asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(sdid);
     end
 
     function isNowhere = SDID_is_nowhere(sdid)
