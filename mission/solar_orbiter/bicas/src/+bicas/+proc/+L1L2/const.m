@@ -84,14 +84,9 @@ classdef const
 %
 % PROPOSAL: Abolish ASID uint8. Abolish SSID, SDID classes (keep ASID class?).
 %
-% PROPOSAL: Abolish ASID, SSID, SDID classes.
-%   NOTE: ASID, SSID, SDID classes are only instantiated in this file, and are
+% PROPOSAL: Abolish ASID class.
+%   NOTE: ASID class is only instantiated in this file, and is
 %         most likely only used in this file too.
-%
-% PROPOSAL: Use constant dictionaries for translating ASR SSID/SDID-->ASID and
-%   implement all ASR functionality with functions with ASID arguments.
-%   PRO: Can remove SSID+SDID classes.
-%   PRO: Can maybe remove ASID class.
 %
 % PROPOSAL: Hardcode information in structs (or objects) in private
 %           dictionaries which bicas.proc.L1L2.const function implementations then use.
@@ -164,15 +159,12 @@ classdef const
       C2.ASID_OBJ_DICT  = configureDictionary('uint8',  'bicas.proc.L1L2.AntennaSignalId');
 
       C2.SSID_DICT      = configureDictionary('string', 'uint8');
-      C2.SSID_ASID_DICT = configureDictionary('uint8',  'uint8');
+      C2.SSID_ASID_DICT = configureDictionary('uint8',  'uint8');    % Only ASR.
 
       C2.SDID_DICT      = configureDictionary('string', 'uint8');
-      C2.SDID_ASID_DICT = configureDictionary('uint8',  'uint8');
+      C2.SDID_ASID_DICT = configureDictionary('uint8',  'uint8');    % Only ASR.
 
       C2.ROUTING_DICT   = configureDictionary('string', 'bicas.proc.L1L2.Routing');
-
-      % Array of all ASR SDIDs.
-      % C2.SDID_ASR_AR    = uint8([]);
 
       % Global list of uint8 values used so far for defining ASIDs, SSIDs, and
       % SDIDs. This is used for avoiding collisions between all of the uint8
@@ -255,9 +247,9 @@ classdef const
         % =======================
         add_SDID("NOWHERE", 13);
 
-        % ===================================================
-        % Add all routings which are not ASR SSID to ASR SDID
-        % ===================================================
+        % ==================================================
+        % Add all routings which are not ASR SSID-->ASR SDID
+        % ==================================================
         C2.ROUTING_DICT("REF25V_TO_DC_V1")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V1"));
         C2.ROUTING_DICT("REF25V_TO_DC_V2")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V2"));
         C2.ROUTING_DICT("REF25V_TO_DC_V3")    = bicas.proc.L1L2.Routing(C2.SSID_DICT("REF25V"),  C2.SDID_DICT("DC_V3"));
@@ -277,27 +269,28 @@ classdef const
     %======
 
     % Can handle array argument, but return value is scalar.
-    function bIsAsidAr = is_ASID(asidAr)
+    function isAsid = is_ASID(asidAr)
       assert(isa(asidAr, "uint8"))
-      bIsAsidAr = all(ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT.values), "ALL");
+      isAsid = all(ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT.values), "ALL");
     end
 
+    % Not vectorized.
     function asidCategory = get_ASID_category(asid)
       assert(isscalar(asid))
       asidCategory = bicas.proc.L1L2.const.C.ASID_OBJ_DICT(asid).category;
     end
 
+    % Not vectorized.
     function antennas = get_ASID_antennas(asid)
       assert(isscalar(asid))
       antennas = bicas.proc.L1L2.const.C.ASID_OBJ_DICT(asid).antennas;
     end
 
     % Vectorized.
-    function bIsAcAr = ASID_is_AC(asidAr)
-    % TODO: Test code
+    function bAcAr = ASID_is_AC(asidAr)
       assert(bicas.proc.L1L2.const.is_ASID(asidAr))
 
-      bIsAcAr = ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT(...
+      bAcAr = ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT(...
         ["AC_V12", "AC_V13", "AC_V23"]));
     end
 
@@ -321,13 +314,10 @@ classdef const
     end
 
     % Vectorized.
-    function bIsAsrAr = SSID_is_ASR(ssidAr)
+    function bAsrAr = SSID_is_ASR(ssidAr)
       assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
 
-      bIsAsrAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT(...
-        ["DC_V1", "DC_V2", "DC_V3", ...
-        "DC_V12", "DC_V13", "DC_V23", ...
-        "AC_V12", "AC_V13", "AC_V23"]));
+      bAsrAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_ASID_DICT.keys);
     end
 
     % Not vectorized.
@@ -353,18 +343,21 @@ classdef const
     end
 
     % Vectorized
-    function bIsDiffAr = SSID_is_diff(ssidAr)
+    function bDiffAr = SSID_is_diff(ssidAr)
       assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
 
-      bIsDiffAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT(...
+      bDiffAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT(...
         ["DC_V12", "DC_V13", "DC_V23", ...
         "AC_V12", "AC_V13", "AC_V23"]));
 
-      % CONCEPTUAL IMPLEMENTATION THAT DEFERS TO (NONEXISTENT) ASID FUNCTION.
-      % bIsAsrAr            = SSID_is_ASR(ssidAr);
-      % bIsDiffAr           = false(size(ssidAr));
+      % bDiffAr = lookup(bicas.proc.L1L2.const.C.SSID_ASID_DICT, ssidAr, FallbackValue=9999);
+
+      % CONCEPTUAL IMPLEMENTATION THAT DEFERS TO (NONEXISTENT VECTORIZED) ASID
+      % FUNCTION.
+      % bIsAsrAr          = SSID_is_ASR(ssidAr);
+      % bDiffAr           = false(size(ssidAr));
       %
-      % bIsDiffAr(bIsAsrAr) = ASID_is_diff(SSID_to_ASID(ssidAr(bIsAsrAr)));
+      % bDiffAr(bIsAsrAr) = ASID_is_diff(SSID_to_ASID(ssidAr(bIsAsrAr)));
     end
 
 
@@ -373,18 +366,21 @@ classdef const
     % SDID
     %======
 
+    % Can handle array argument, but return value is scalar.
     function isSsid = is_SDID(sdidAr)
       assert(isa(sdidAr, "uint8"))
       isSsid = all(ismember(sdidAr, bicas.proc.L1L2.const.C.SDID_DICT.values), "ALL");
     end
 
-    function isAsr = SDID_is_ASR(sdid)
+    % Not vectorized.
+    function bAsrAr = SDID_is_ASR(sdid)
       assert(isscalar(sdid))
       assert(bicas.proc.L1L2.const.is_SDID(sdid))
 
-      isAsr = ismember(sdid, bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys);
+      bAsrAr = ismember(sdid, bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys);
     end
 
+    % Not vectorized.
     % NOTE: Error if not ASR.
     function asid = SDID_ASR_to_ASID(sdid)
       assert(isscalar(sdid))
@@ -393,9 +389,10 @@ classdef const
       asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(sdid);
     end
 
-    function isNowhere = SDID_is_nowhere(sdid)
+    % Not vectorized.
+    function bNowhere = SDID_is_nowhere(sdid)
       assert(bicas.proc.L1L2.const.is_SDID(sdid) & isscalar(sdid))
-      isNowhere = (sdid == bicas.proc.L1L2.const.C.SDID_DICT("NOWHERE"));
+      bNowhere = (sdid == bicas.proc.L1L2.const.C.SDID_DICT("NOWHERE"));
     end
 
 

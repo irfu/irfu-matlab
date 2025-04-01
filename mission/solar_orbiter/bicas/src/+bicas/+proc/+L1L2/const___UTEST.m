@@ -18,6 +18,34 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
 
+    % Test multiple functions for converting between ASID, SSID, SDID.
+    function test_ASID_to_SSID___SSID_ASR_to_ASID___SDID_ASR_to_ASID(testCase)
+      C = bicas.proc.L1L2.const.C;
+
+      for s = ["DC_V13", "AC_V23", "DC_V2"]
+        % testCase.assertEqual() does check for MATLAB class.
+
+        asid = C.ASID_DICT(s);
+        ssid = C.SSID_DICT(s);
+        sdid = C.SDID_DICT(s);
+
+        testCase.assertEqual(bicas.proc.L1L2.const.ASID_to_SSID(    asid), ssid)
+        testCase.assertEqual(bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssid), asid)
+        testCase.assertEqual(bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdid), asid)
+      end
+
+      ssidUnknown = C.SSID_DICT("UNKNOWN");
+      sdidNowhere = C.SDID_DICT("NOWHERE");
+      testCase.assertError(...
+          @() bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssidUnknown), ...
+          ?MException)
+      testCase.assertError(...
+          @() bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdidNowhere), ...
+          ?MException)
+    end
+
+
+
     %======
     % ASID
     %======
@@ -32,6 +60,7 @@ classdef const___UTEST < matlab.unittest.TestCase
       testCase.assertTrue(bicas.proc.L1L2.const.is_ASID(C.ASID_DICT(...
         ["AC_V23", "DC_V12"; "DC_V1", "DC_V13"])))
 
+       % Test non-ASID
       testCase.assertFalse(bicas.proc.L1L2.const.is_ASID(C.SSID_DICT("DC_V1")))
       testCase.assertFalse(bicas.proc.L1L2.const.is_ASID(C.SDID_DICT("AC_V23")))
     end
@@ -65,34 +94,6 @@ classdef const___UTEST < matlab.unittest.TestCase
       test(...
         ["AC_V13", "DC_V13"; "DC_V1", "AC_V12"], ...
         [1 0; 0 1]);
-    end
-
-
-
-    % Test functions for converting between ASID, SSID, SDID.
-    function test_ASID_to_SSID___SSID_ASR_to_ASID___SDID_ASR_to_ASID(testCase)
-      C = bicas.proc.L1L2.const.C;
-
-      for s = ["DC_V13", "AC_V23", "DC_V2"]
-        % testCase.assertEqual() does check for MATLAB class.
-
-        asid = C.ASID_DICT(s);
-        ssid = C.SSID_DICT(s);
-        sdid = C.SDID_DICT(s);
-
-        testCase.assertEqual(bicas.proc.L1L2.const.ASID_to_SSID(    asid), ssid)
-        testCase.assertEqual(bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssid), asid)
-        testCase.assertEqual(bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdid), asid)
-      end
-
-      ssidUnknown = C.SSID_DICT("UNKNOWN");
-      sdidUnknown = C.SDID_DICT("NOWHERE");
-      testCase.assertError(...
-          @() bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssidUnknown), ...
-          ?MException)
-      testCase.assertError(...
-          @() bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdidUnknown), ...
-          ?MException)
     end
 
 
