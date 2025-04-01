@@ -64,7 +64,7 @@ classdef NsoTable
 
     evtStartTt2000Array
     evtStopTt2000Array
-    evtQrcidCa
+    evtQrcidAr
   end
 
 
@@ -84,10 +84,11 @@ classdef NsoTable
     %       NOTE: Must increment.
     % evtStopTt2000Array
     %       Column array of timestamps that represent the end of events.
-    % evtQrcidCa
-    %       Column cell array of QRCIDs.
+    % evtQrcidAr
+    %       Column array of QRCIDs.
     %       NOTE: Same RCS QRCID may occur multiple times. Not unique.
-    function obj = NsoTable(evtStartTt2000Array, evtStopTt2000Array, evtQrcidCa)
+    %
+    function obj = NsoTable(evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr)
 
       %============
       % ASSERTIONS
@@ -99,11 +100,11 @@ classdef NsoTable
       irf.assert.sizes(...
         evtStartTt2000Array, [-1], ...
         evtStopTt2000Array,  [-1], ...
-        evtQrcidCa,          [-1]);
+        evtQrcidAr,          [-1]);
 
       assert(isa(evtStartTt2000Array, 'int64'))
       assert(isa(evtStopTt2000Array,  'int64'))
-      assert(isa(evtQrcidCa,          'cell' ))
+      assert(isa(evtQrcidAr,          'string'))
 
       % ASSERTION: All events have non-negative length.
       assert(all(evtStartTt2000Array <= evtStopTt2000Array), ...
@@ -140,10 +141,10 @@ classdef NsoTable
       % ASSERTION: Events with the same QRCID do not overlap (and are
       % time sorted).
       %----------------------------------------------------------------
-      uniqueEvtQrcidCa = unique(evtQrcidCa);
-      for i = 1:numel(uniqueEvtQrcidCa)
-        qrcid = uniqueEvtQrcidCa{i};
-        b = strcmp(qrcid, evtQrcidCa);
+      uniqueEvtQrcidAr = unique(evtQrcidAr);
+      for i = 1:numel(uniqueEvtQrcidAr)
+        qrcid = uniqueEvtQrcidAr{i};
+        b = strcmp(qrcid, evtQrcidAr);
 
         % NOTE: ASSUMPTION: Start timestamps are already time-sorted.
         % NOTE: Transposing before 2D-->1D vector.
@@ -164,7 +165,7 @@ classdef NsoTable
       %=====================
       obj.evtStartTt2000Array = evtStartTt2000Array;
       obj.evtStopTt2000Array  = evtStopTt2000Array;
-      obj.evtQrcidCa          = evtQrcidCa;
+      obj.evtQrcidAr          = evtQrcidAr;
     end
 
 
@@ -184,8 +185,8 @@ classdef NsoTable
     % bEvtArraysCa
     %       Column cell array of arrays of logical indices into tt2000Array.
     %       {iMatchingEvent}(iTimestamp) = logical
-    % evtQrcidCa
-    %       Column cell array of QRCIDs. {iMatchingEvent} = qrcid
+    % evtQrcidAr
+    %       Column array of QRCIDs. {iMatchingEvent} = qrcid
     % iGlobalEventsArray
     %       Column array of indices into NSO event list. Can be used for logging
     %       the tabulated (global) NSO events that affect e.g. a particular
@@ -194,7 +195,7 @@ classdef NsoTable
     %       NOTE: Useful for identifying event in NSO table, and hence the
     %             begin & end timestamps for logging.
     %
-    function [bEvtArraysCa, evtQrcidCa, iGlobalEventsArray] = get_NSO_timestamps(obj, tt2000Array)
+    function [bEvtArraysCa, evtQrcidAr, iGlobalEventsArray] = get_NSO_timestamps(obj, tt2000Array)
       % PROPOSAL: Sort return data by QRCID, i.e. all return values have a
       %           top-level index iQrcid.
       %   PRO: Quality algorithms should only operate on a per-sample and
@@ -207,7 +208,7 @@ classdef NsoTable
       %               .iNso
       %   PROPOSAL:
       %       bEvtArraysCa{iQrcid}(iTimestamp)
-      %       evtQrcidCa{iQrcid}
+      %       evtQrcidAr(iQrcid)
       %       iGlobalEventsCa{iQrcid}(iEvt)
       %
       % PROPOSAL: Return class to simplify return values.
@@ -227,14 +228,14 @@ classdef NsoTable
       end
 
       % =====================================
-      % Assign evtQrcidCa, iGlobalEventsArray
+      % Assign evtQrcidAr, iGlobalEventsArray
       % =====================================
       % IMPLEMENTATION NOTE: Obtain SUBSET of NSO table EVENTS which
       % overlap with timestamps in tt2000Array. Indirectly also removes
       % irrelevant RCS QRCIDs (not just events) for the code after.
       evtStartTt2000Array = obj.evtStartTt2000Array(bEvents);
       evtStopTt2000Array  = obj.evtStopTt2000Array(bEvents);
-      evtQrcidCa          = obj.evtQrcidCa(bEvents);
+      evtQrcidAr          = obj.evtQrcidAr(bEvents);
       iGlobalEventsArray  = find(bEvents);
 
       % Normalize 0x0 to 0x1
@@ -248,7 +249,7 @@ classdef NsoTable
       %     a = zeros(0, 1); size(a(false(0, 1))) == [0, 1]
       evtStartTt2000Array = evtStartTt2000Array(:);
       evtStopTt2000Array  = evtStopTt2000Array(:);
-      evtQrcidCa          = evtQrcidCa(:);
+      evtQrcidAr          = evtQrcidAr(:);
       % Ex:
       %     size(find(false(0, 1))) == [0, 1]
       %     size(find(false(1, 1))) == [0, 0]    # NOTE!
@@ -260,10 +261,10 @@ classdef NsoTable
       % ===================
       % Assign bEvtArraysCa
       % ===================
-      % IMPLEMENTATION NOTE: obj.evtQrcidCa is NOT a list of unique NSO
-      % IDs, but the return value "evtQrcidCa" must be a list of unique
+      % IMPLEMENTATION NOTE: obj.evtQrcidAr is NOT a list of unique NSO
+      % IDs, but the return value "evtQrcidAr" must be a list of unique
       % QRCIDs. One must distinguish between these two.
-      nEvents      = numel(evtQrcidCa);
+      nEvents      = numel(evtQrcidAr);
       bEvtArraysCa = cell(nEvents, 1);
       for iEvent = 1:nEvents    % Matching events (not global).
 
@@ -282,7 +283,7 @@ classdef NsoTable
       % ASSERTIONS
       irf.assert.sizes(...
         bEvtArraysCa,       [-1], ...
-        evtQrcidCa,         [-1], ...
+        evtQrcidAr,         [-1], ...
         iGlobalEventsArray, [-1])
     end    % get_NSO_timestamps
 
@@ -303,21 +304,18 @@ classdef NsoTable
     % Read SolO non-standard operations (NSO) XML file for *BICAS* and
     % return the content as an instance of bicas.NsoTable.
     function NsoTable = read_file_BICAS(filePath)
-      [evtStartTt2000Array, evtStopTt2000Array, evtQrcidCa] = ...
+      [evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr] = ...
         bicas.NsoTable.read_file_raw(filePath);
 
       % ASSERTION: No non-BICAS QRCIDs
       % ------------------------------
-      % List of all legal QRCIDs.
-      LEGAL_QRCID_CA = struct2cell(bicas.const.QRCID);
-      irf.assert.castring_set(LEGAL_QRCID_CA)
-      illegalEvtQrcidSet = setdiff(evtQrcidCa, LEGAL_QRCID_CA);
+      illegalEvtQrcidSet = setdiff(evtQrcidAr, bicas.const.ALL_QRCID);
       assert(isempty(illegalEvtQrcidSet), ...
         'NSO table file contains illegal QRCID(s): %s.',  ...
         ['"', strjoin(illegalEvtQrcidSet, '", "'), '"'])
 
       NsoTable = bicas.NsoTable(...
-        evtStartTt2000Array, evtStopTt2000Array, evtQrcidCa);
+        evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr);
     end
 
 
@@ -338,13 +336,13 @@ classdef NsoTable
     % Same fields as in class bicas.NsoTable.
     % evtStartTt2000Array
     % evtStopTt2000Array
-    % evtQrcidCa
+    % evtQrcidAr
     %
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     % First created 2020-09-21.
     %
-    function [evtStartTt2000Array, evtStopTt2000Array, evtQrcidCa] = ...
+    function [evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr] = ...
         read_file_raw(filePath)
 
       RootXmlElem      = xmlread(filePath);
@@ -356,7 +354,7 @@ classdef NsoTable
 
       evtStartTt2000Array = int64(zeros(nEvents, 1));
       evtStopTt2000Array  = int64(zeros(nEvents, 1));
-      evtQrcidCa          = cell(nEvents, 1);
+      evtQrcidAr          = strings(nEvents, 1);
 
       for i = 1:nEvents
         % NOTE: Subtract by one.
@@ -375,7 +373,7 @@ classdef NsoTable
 
         evtStartTt2000Array(i, 1) = startTt2000;
         evtStopTt2000Array(i, 1)  = stopTt2000;
-        evtQrcidCa{i, 1}          = qrcid;
+        evtQrcidAr{i, 1}          = qrcid;
       end
     end
 

@@ -25,7 +25,7 @@ classdef qual   % < handle
       % bicas.proc.L1L2.get_quality_ZVs().
 
       QrcFlagsMap = containers.Map();
-      QrcFlagsMap(bicas.const.QRCID.BAD_DENSITY) = isBadDensityFpa;
+      QrcFlagsMap("BAD_DENSITY") = isBadDensityFpa;
 
       [QUALITY_FLAG_max, L3_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...

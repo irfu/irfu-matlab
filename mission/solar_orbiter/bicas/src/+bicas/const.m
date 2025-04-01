@@ -164,29 +164,16 @@ classdef const
 
 
 
-    % Field values = Legal RCS QRCIDs. This defines the set of legal QRCIDs,
-    % including ones that can be used in the NSO table file.
-    % Field names can be used as constants for those strings inside BICAS.
+    % All legal RCS QRCIDs. This defines the set of legal QRCIDs, including ones
+    % that can be used in the NSO table file. Strings can be used as constants
+    % for those strings inside BICAS.
     %
-    % IMPLEMENTATION NOTE: Specified as struct so that the struct can
-    % simultaneously be used to
-    % (1) compile a complete list of legal QRCIDs, and
-    % (2) reference specific constants (fields) throughout BICAS without
-    %     hardcoding the actual QRCIDs in multiple places.
-    %
-    % IMPLEMENTATION NOTE: One does not want to use the RCS QRCID string
-    % constants directly inside the code, in case of typos.
-    %
-    % NOTE: This includes QRCIDs for both (a) L2 and (b) L3 density.
-    % --
-    % PROPOSAL: Replace with dictionary.
-    %   CON: Harder to hardcode.
-    % PROPOSAL: Replace with list.
-    QRCID = struct(...
-      'PARTIAL_SATURATION', 'PARTIAL_SATURATION', ...
-      'FULL_SATURATION',    'FULL_SATURATION', ...
-      'THRUSTER_FIRING',    'THRUSTER_FIRING', ...
-      'BAD_DENSITY',        'BAD_DENSITY');
+    % NOTE: This includes QRCIDs for both (a) L2, and (b) L3 density.
+    ALL_QRCID = [
+      "PARTIAL_SATURATION", ...
+      "FULL_SATURATION", ...
+      "THRUSTER_FIRING", ...
+      "BAD_DENSITY"]
 
     % Define the bits (bitmasks) in L2_QUALITY_BITMASK and
     % L3_QUALITY_BITMASK. Intended for bit operations.
@@ -550,7 +537,7 @@ classdef const
       %====================
       % PARTIAL_SATURATION
       %====================
-      QrcSettingsL2Map(bicas.const.QRCID.PARTIAL_SATURATION) = ...
+      QrcSettingsL2Map("PARTIAL_SATURATION") = ...
         bicas.proc.QrcSetting(...
         uint8(1), ...
         bicas.const.L2QBM_PARTIAL_SATURATION);
@@ -560,7 +547,7 @@ classdef const
       %=================
       % NOTE: Also set PARTIAL saturation bit when FULL
       % saturation. /YK 2020-10-02.
-      QrcSettingsL2Map(bicas.const.QRCID.FULL_SATURATION) = ...
+      QrcSettingsL2Map("FULL_SATURATION") = ...
         bicas.proc.QrcSetting(...
         uint8(0), ...
         bicas.const.L2QBM_FULL_SATURATION + ...
@@ -574,10 +561,12 @@ classdef const
       % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
       % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
       % (YK 2020-11-03 did not ask for any to be set.)
-      QrcSettingsL2Map(bicas.const.QRCID.THRUSTER_FIRING) = ...
+      QrcSettingsL2Map("THRUSTER_FIRING") = ...
         bicas.proc.QrcSetting(...
         uint8(1), ...
         uint16(0));    % NOTE: No quality bit set!
+
+      % assert(isequal(QrcSettingsL2Map.keys(), bicas.const.ALL_QRCID))
     end
 
 
@@ -586,7 +575,7 @@ classdef const
     function QrcSettingsL3Map = init_QRC_SETTINGS_L3_DENSITY()
       QrcSettingsL3Map = containers.Map();
 
-      QrcSettingsL3Map(bicas.const.QRCID.BAD_DENSITY) = ...
+      QrcSettingsL3Map("BAD_DENSITY") = ...
         bicas.proc.QrcSetting(...
         uint8(1), ...
         bicas.const.L3QBM_BAD_DENSITY);

@@ -82,7 +82,7 @@ classdef qual
     %       those present in NsoTable.
     %
     function QrcFlagsMap = NSO_table_to_QRC_flag_arrays(...
-        allQrcidCa, NsoTable, Epoch, L)
+        allQrcidAr, NsoTable, Epoch, L)
 
       % Local variable naming conventions:
       % ----------------------------------
@@ -90,10 +90,14 @@ classdef qual
       % CE = CDF Event    = NSO event that overlaps with CDF records.
       % Ar                = (Non-cell) Array
 
+      assert(isstring(allQrcidAr))
+
+
+
       % NOTE: iCeAr = CDF events as indices to global events.
       [bCeRecordsCa, ceQrcidCa, iCeAr] = NsoTable.get_NSO_timestamps(Epoch);
       nCe = numel(ceQrcidCa);
-      nGe = numel(NsoTable.evtQrcidCa);
+      nGe = numel(NsoTable.evtQrcidAr);
       L.logf('info', ...
         ['Searched non-standard operations (NSO) table.', ...
         ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
@@ -103,8 +107,8 @@ classdef qual
       % ------------------------------------------------------
       % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!).
       QrcFlagsMap = containers.Map('keyType', 'char', 'valueType', 'any');
-      for i = 1:numel(allQrcidCa)
-        QrcFlagsMap(allQrcidCa{i}) = false(size(Epoch));
+      for i = 1:numel(allQrcidAr)
+        QrcFlagsMap(allQrcidAr(i)) = false(size(Epoch));
         % QrcFlagsMap(allQrcidCa{i}) = bicas.utils.FPArray(false(size(Epoch)));
       end
 
@@ -131,7 +135,7 @@ classdef qual
         % checks those relevant for the data (time interval) currently
         % processed. (Therefore also checks all QRCIDs when reads NSO
         % table.)
-        assert(ismember(eventQrcid, allQrcidCa), 'Can not interpret QRCID "%s".', eventQrcid)
+        assert(ismember(eventQrcid, allQrcidAr), 'Can not interpret QRCID "%s".', eventQrcid)
 
         %======================================
         % Set corresponding QRC array elements
