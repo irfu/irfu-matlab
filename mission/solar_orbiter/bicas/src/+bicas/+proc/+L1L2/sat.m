@@ -128,11 +128,16 @@ classdef sat
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
       assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
 
-      ssidAr    = repmat(ssid,      size(samplesAVoltAr));
-      isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
+      % IMPLEMENTATION NOTE: One can expand scalars to size of samplesAVoltAr
+      % but it slows down the execution (bicas.proc.L1L2.const.SSID_is_AC() and
+      % bicas.proc.L1L2.const.SSID_is_diff()).
+      % bicas.proc.L1L2.sat.get_VSIB_NEW() is fully vectorized and works with
+      % both.
+      % ssidAr    = repmat(ssid,      size(samplesAVoltAr));
+      % isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
 
       vsibAr    = bicas.proc.L1L2.sat.get_VSIB_NEW(...
-        SatSettings, samplesAVoltAr, ssidAr, isAchgFpa);
+        SatSettings, samplesAVoltAr, ssid, isAchgFpa);
     end
 
 
