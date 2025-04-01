@@ -58,12 +58,7 @@ classdef const
   % PROPOSAL: Derive lists of datasets using
   %           bicas.classify_BICAS_L1_L1R_to_L2_DSI() or reverse.
   %
-  % PROPOSAL: Store ASID, SSID, SDID constants in dictionaries.
-  %   CON: Longer code to invoke object constants.
-  %     Ex: C.DC_V1 --> C("DC_V1") ==> -1+2+2=3 extra characters.
-  %   PRO: Can abolish code for generating arrays of constant.
-  %   PRO: More consistent with potential future dictionaries for
-  %        integer<-->ASID/SSID/SDID.
+  % PROPOSAL: Use init_QRC_SETTINGS_L2/L3() to define all legal QRCIDs.
 
 
 
