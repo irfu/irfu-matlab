@@ -57,8 +57,6 @@ classdef const
   %
   % PROPOSAL: Derive lists of datasets using
   %           bicas.classify_BICAS_L1_L1R_to_L2_DSI() or reverse.
-  %
-  % PROPOSAL: Use init_QRC_SETTINGS_L2/L3() to define all legal QRCIDs.
 
 
 
@@ -159,17 +157,6 @@ classdef const
 
 
 
-    % All legal RCS QRCIDs. This defines the set of legal QRCIDs, including ones
-    % that can be used in the NSO table file. Strings can be used as constants
-    % for those strings inside BICAS.
-    %
-    % NOTE: This includes QRCIDs for both (a) L2, and (b) L3 density.
-    ALL_QRCID = [
-      "PARTIAL_SATURATION", ...
-      "FULL_SATURATION", ...
-      "THRUSTER_FIRING", ...
-      "BAD_DENSITY"]
-
     % Define the bits (bitmasks) in L2_QUALITY_BITMASK and
     % L3_QUALITY_BITMASK. Intended for bit operations.
     %
@@ -189,6 +176,16 @@ classdef const
     QRC_SETTINGS_L2         = bicas.const.init_QRC_SETTINGS_L2();
     QRC_SETTINGS_L3_DENSITY = bicas.const.init_QRC_SETTINGS_L3_DENSITY();
 
+
+
+    % All legal RCS QRCIDs. This defines the set of legal QRCIDs, including ones
+    % that can be used in the NSO table file. Strings can be used as constants
+    % for those strings inside BICAS.
+    %
+    % NOTE: This includes QRCIDs for both (a) L2, and (b) L3 density.
+    ALL_QRCID = [...
+      string(bicas.const.QRC_SETTINGS_L2.keys), ...
+      string(bicas.const.QRC_SETTINGS_L3_DENSITY.keys)];
 
 
     % Minimum number of non-FV OSR records per bin/DSR record.
@@ -560,8 +557,6 @@ classdef const
         bicas.proc.QrcSetting(...
         uint8(1), ...
         uint16(0));    % NOTE: No quality bit set!
-
-      % assert(isequal(QrcSettingsL2Map.keys(), bicas.const.ALL_QRCID))
     end
 
 
