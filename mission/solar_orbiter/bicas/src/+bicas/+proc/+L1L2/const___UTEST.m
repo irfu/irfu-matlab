@@ -79,13 +79,10 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
     function test_ASID_is_AC(testCase)
-      C = bicas.proc.L1L2.const.C;
-
       function test(asidStrAr, expB)
-        asidAr = C.ASID_DICT(asidStrAr);
-        testCase.assertEqual(...
-          bicas.proc.L1L2.const.ASID_is_AC(asidAr), ....
-          logical(expB));
+        testCase.test_array_to_logical( ...
+          @(asidAr) bicas.proc.L1L2.const.ASID_is_AC(asidAr), ...
+          bicas.proc.L1L2.const.C.ASID_DICT, asidStrAr, expB)
       end
 
       test("DC_V3", 0);
@@ -119,13 +116,10 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
     function test_SSID_is_ASR(testCase)
-      C = bicas.proc.L1L2.const.C;
-
       function test(ssidStrAr, expB)
-        ssidAr = C.SSID_DICT(ssidStrAr);
-        testCase.assertEqual(...
-          bicas.proc.L1L2.const.SSID_is_ASR(ssidAr), ...
-          logical(expB));
+        testCase.test_array_to_logical( ...
+          @(ssidAr) bicas.proc.L1L2.const.SSID_is_ASR(ssidAr), ...
+          bicas.proc.L1L2.const.C.SSID_DICT, ssidStrAr, expB)
       end
 
       test("DC_V13", true);
@@ -137,13 +131,10 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
     function test_SSID_is_AC(testCase)
-      C = bicas.proc.L1L2.const.C;
-
       function test(ssidStrAr, expB)
-        ssidAr = C.SSID_DICT(ssidStrAr);
-        testCase.assertEqual(...
-          bicas.proc.L1L2.const.SSID_is_AC(ssidAr), ....
-          logical(expB));
+        testCase.test_array_to_logical( ...
+          @(ssidAr) bicas.proc.L1L2.const.SSID_is_AC(ssidAr), ...
+          bicas.proc.L1L2.const.C.SSID_DICT, ssidStrAr, expB)
       end
 
       test("DC_V3", 0);
@@ -157,13 +148,10 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
     function test_SSID_is_diff(testCase)
-      C = bicas.proc.L1L2.const.C;
-
       function test(ssidStrAr, expB)
-        ssidAr = C.SSID_DICT(ssidStrAr);
-        testCase.assertEqual(...
-          bicas.proc.L1L2.const.SSID_is_diff(ssidAr), ...
-          logical(expB));
+        testCase.test_array_to_logical( ...
+          @(ssidAr) bicas.proc.L1L2.const.SSID_is_diff(ssidAr), ...
+          bicas.proc.L1L2.const.C.SSID_DICT, ssidStrAr, expB)
       end
 
       test(["DC_V3"], false)
@@ -214,6 +202,31 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
+
+
+
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+
+
+
+  methods(Access=private)
+
+
+
+    % Utility function for simplifying some tests.
+    % Only somewhat useful.
+    function test_array_to_logical(testCase, fh, ArgDict, arg, expRv)
+      arg = ArgDict(arg);
+      testCase.assertEqual(fh(arg), logical(expRv));
+    end
+
+
+
+  end    % methods(Access=private)
 
 
 
