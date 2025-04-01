@@ -292,6 +292,15 @@ classdef const
       antennas = bicas.proc.L1L2.const.C.ASID_OBJ_DICT(asid).antennas;
     end
 
+    % Vectorized.
+    function bIsAcAr = ASID_is_AC(asidAr)
+    % TODO: Test code
+      assert(bicas.proc.L1L2.const.is_ASID(asidAr))
+
+      bIsAcAr = ismember(asidAr, bicas.proc.L1L2.const.C.ASID_DICT(...
+        ["AC_V12", "AC_V13", "AC_V23"]));
+    end
+
     % Not vectorized.
     function ssid = ASID_to_SSID(asid)
       assert(isscalar(asid))
@@ -333,11 +342,14 @@ classdef const
     end
 
     % Vectorized.
-    function bIsAcAr = SSID_is_AC(ssidAr)
+    function bAcAr = SSID_is_AC(ssidAr)
       assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
 
-      bIsAcAr = ismember(ssidAr, bicas.proc.L1L2.const.C.SSID_DICT(...
-        ["AC_V12", "AC_V13", "AC_V23"]));
+      bAcAr         = false(size(ssidAr));
+      bAsrAr        = bicas.proc.L1L2.const.SSID_is_ASR(ssidAr);
+
+      bAcAr(bAsrAr) = bicas.proc.L1L2.const.ASID_is_AC(...
+        bicas.proc.L1L2.const.C.SSID_ASID_DICT(ssidAr(bAsrAr)));
     end
 
     % Vectorized

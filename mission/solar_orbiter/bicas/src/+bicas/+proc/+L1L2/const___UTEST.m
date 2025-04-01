@@ -49,6 +49,27 @@ classdef const___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_ASID_is_AC(testCase)
+      C = bicas.proc.L1L2.const.C;
+
+      function test(asidStrAr, expB)
+        asidAr = C.ASID_DICT(asidStrAr);
+        testCase.assertEqual(...
+          bicas.proc.L1L2.const.ASID_is_AC(asidAr), ....
+          logical(expB));
+      end
+
+      test("DC_V3", 0);
+      test("DC_V13", 0);
+      test("AC_V13", 1);
+      test(...
+        ["AC_V13", "DC_V13"; "DC_V1", "AC_V12"], ...
+        [1 0; 0 1]);
+    end
+
+
+
+    % Test functions for converting between ASID, SSID, SDID.
     function test_ASID_to_SSID___SSID_ASR_to_ASID___SDID_ASR_to_ASID(testCase)
       C = bicas.proc.L1L2.const.C;
 
