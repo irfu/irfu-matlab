@@ -760,7 +760,7 @@ classdef dc
       % PROPOSAL: Include deriving VSIB in this function?
       %   PRO: Most of the complexity should be in the Saturation class anyway.
 
-      SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
+      SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys;
       % Tmk = bicas.utils.Timekeeper(...
       %   'bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
 
