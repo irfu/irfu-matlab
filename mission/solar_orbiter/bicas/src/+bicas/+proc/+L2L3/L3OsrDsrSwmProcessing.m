@@ -311,11 +311,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %                      QUALITY_FLAG       FP
       %   Density bit FP ==> L3_QUALITY_BITMASK density bit=false
       %                      (since there is no FP for individual quality bits).
-      [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(NeScpQualityBitFpa.array(false));
-      Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
+      [QUALITY_FLAG_max, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(...
+        NeScpQualityBitFpa.array(false));
+      Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG_max);
       Out.Zv.L3_QUALITY_BITMASK       = bicas.utils.FPArray(L3_QUALITY_FLAG);
 
-      bFp = Out.Zv.DENSITY.fpAr;
+      bFp                             = Out.Zv.DENSITY.fpAr;
       Out.Zv.QUALITY_FLAG(bFp)        = bicas.utils.FPArray.FP_UINT8;
       Out.Zv.L3_QUALITY_BITMASK(bFp)  = bicas.utils.FPArray.FP_UINT16;
 

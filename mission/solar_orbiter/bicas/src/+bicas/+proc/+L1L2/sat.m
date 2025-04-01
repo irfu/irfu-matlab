@@ -11,16 +11,6 @@ classdef sat
   % PROPOSAL: Reorder methods to make easier to follow calls recursively within
   %           class.
   %
-  % PROBLEM: Can not deduce saturation limits for channels reconstructed from
-  %          other channels.
-  %   Ex: BDM=4 ==> Have DC_V1/V2/V3 ==> Derives DC_V12/V13/V23 ==> Saturation
-  %       on DC diffs can only be deduced from the samples from which the
-  %       samples originate.
-  % PROBLEM: get_VSQB() can not correctly handle
-  %          AsrSamplesAVoltSrm data which derives from non-ASR channels.
-  %   Ex: BDM=5-7 ==> 2.5V Ref/GND stored in AsrSamplesAVoltSrm, but are
-  %       represented by ASIDs.
-  %
   % PROPOSAL: Only detect saturation in BLTSs (which are true antenna signals).
   %   Have saturation bits propagate to all signals in (not-yet-implemented)
   %   _Sdid_SamplesAVoltSrm in the same way as signals do.
@@ -125,8 +115,8 @@ classdef sat
       % PROPOSAL/TODO: Replace with get_VSIB_NEW().
 
       assert(isfloat(samplesAVoltAr))
-      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
-      assert(isa(isAchgFpa, 'bicas.utils.FPArray') && isscalar(isAchgFpa))
+      assert(bicas.proc.L1L2.const.is_SSID(ssid)   & isscalar(ssid))
+      assert(isa(isAchgFpa, 'bicas.utils.FPArray') & isscalar(isAchgFpa))
 
       % IMPLEMENTATION NOTE: One can expand scalars to size of samplesAVoltAr
       % but it slows down the execution (bicas.proc.L1L2.const.SSID_is_AC() and

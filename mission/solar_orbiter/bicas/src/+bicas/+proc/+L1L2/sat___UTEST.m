@@ -152,6 +152,7 @@ classdef sat___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(actUpperThresholdAVoltAr, expUpperThresholdAVoltAr)
       end
 
+      % Empty arrays
       test([], bicas.utils.FPArray(logical([])), [])
 
       % 2D arrays, all kinds of thresholds incl. undefined.

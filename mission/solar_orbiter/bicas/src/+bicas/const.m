@@ -178,7 +178,10 @@ classdef const
     % constants directly inside the code, in case of typos.
     %
     % NOTE: This includes QRCIDs for both (a) L2 and (b) L3 density.
-    %
+    % --
+    % PROPOSAL: Replace with dictionary.
+    %   CON: Harder to hardcode.
+    % PROPOSAL: Replace with list.
     QRCID = struct(...
       'PARTIAL_SATURATION', 'PARTIAL_SATURATION', ...
       'FULL_SATURATION',    'FULL_SATURATION', ...
@@ -536,7 +539,6 @@ classdef const
       % result should be under release-->version-->pattern (not to be
       % confused with release_dataset-->version--pattern).
       irf.assert.castring_regexp(MAP('SWD.release.version'), '(\d+\.)?(\d+\.)?(\d+)')
-
     end
 
 
@@ -545,11 +547,17 @@ classdef const
     function QrcSettingsL2Map = init_QRC_SETTINGS_L2()
       QrcSettingsL2Map = containers.Map();
 
+      %====================
+      % PARTIAL_SATURATION
+      %====================
       QrcSettingsL2Map(bicas.const.QRCID.PARTIAL_SATURATION) = ...
         bicas.proc.QrcSetting(...
         uint8(1), ...
         bicas.const.L2QBM_PARTIAL_SATURATION);
 
+      %=================
+      % FULL_SATURATION
+      %=================
       % NOTE: Also set PARTIAL saturation bit when FULL
       % saturation. /YK 2020-10-02.
       QrcSettingsL2Map(bicas.const.QRCID.FULL_SATURATION) = ...
@@ -558,6 +566,9 @@ classdef const
         bicas.const.L2QBM_FULL_SATURATION + ...
         bicas.const.L2QBM_PARTIAL_SATURATION);
 
+      %=================
+      % THRUSTER_FIRING
+      %=================
       % NOTE: There will be an L1 QUALITY_BITMASK bit for
       % thruster firings in the future according to
       % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification

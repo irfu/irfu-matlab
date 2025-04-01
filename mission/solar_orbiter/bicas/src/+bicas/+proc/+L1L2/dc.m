@@ -122,6 +122,8 @@ classdef dc
         SdcdDict = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(...
           bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
 
+
+
         % TODO: Extract SdcdDict VSIBs and set L2_QUALITY_BITMASK.
         % TODO: Convert SdcdDict samples to AsrSamplesAVoltSrm (or at least use
         %       it).
@@ -138,11 +140,10 @@ classdef dc
         % PROPOSAL: Store max difference.
 
         % maxDiff = 0;
-        for i = 1:9
-          asid = uint8(i);
-          sdid = uint8(200+i);
+        for asrSdid = bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys'
+          asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(asrSdid);
           A = AsrSamplesAVoltSrm(asid);
-          B = SdcdDict.get(sdid).samplesAr;
+          B = SdcdDict.get(asrSdid).samplesAr;
 
           if ~isequaln(A, B)
             L.logf('debug', 'Samples are different for asid = %g', asid)
@@ -163,9 +164,9 @@ classdef dc
 
 
 
-      %################################################
-      % Set quality variables, and apply UFV (to data)
-      %################################################
+      %######################################################
+      % ~Derive quality variables, and UFV from quality QRCs
+      %######################################################
       % AUTODETECT SATURATION.
       isAutodetectedVsqb = bicas.proc.L1L2.sat.get_VSQB(...
         Bso, ...
@@ -180,20 +181,21 @@ classdef dc
         'Epoch',            Dcip.Zv.Epoch, ...
         'bdmFpa',           Dcip.Zv.bdmFpa, ...
         'isFullSaturation', isAutodetectedVsqb);
-      [zvUfv, QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
+      [zvUfv, QUALITY_FLAG_max, L2_QUALITY_BITMASK] = ...
         bicas.proc.L1L2.qual.get_UFV_quality_ZVs(...
         ZvIn, Dcip.isLfr, NsoTable, Bso, L);
       clear ZvIn
 
 
 
-      %########################
-      % Set "final" zVariables
-      %########################
+      %#############################
+      % Set UFV, "final" zVariables
+      %#############################
       Zv = struct();
       zvUfv                 = Dcip.Zv.ufv | zvUfv;
+      Zv.QUALITY_FLAG       = Dcip.Zv.QUALITY_FLAG.min(...
+        bicas.utils.FPArray(QUALITY_FLAG_max));
       Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
-      Zv.QUALITY_FLAG       = Dcip.Zv.QUALITY_FLAG.min(bicas.utils.FPArray(QUALITY_FLAG));
 
       % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
       Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...

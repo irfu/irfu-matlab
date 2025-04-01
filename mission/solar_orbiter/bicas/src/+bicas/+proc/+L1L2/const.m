@@ -58,18 +58,16 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef const
-% NOTE: Feels like there should be a better way of implementing ASID, SSID,
-%       SDIDs as uint8 + functions, but not sure how.
-%
 % PROPOSAL: Code for printing human-readable tables with values which can be
 %           copy-pasted to comments in this file.
-
+%
 % PROPOSAL: Rename class to something implying the theme of ASID, SSID, SDID
 %           rather than constants.
 %   PRO: Contains function relating to ASID, SSID, SDID.
 %   ~signal, ~channel
 %   ~address, ~label, ~source/destination
 %   ~id
+%   aid = Address ID(s)
 %   sid = Signal ID(s)
 %     PRO: Same components as in ASID, SSID, SDID.
 %     CON: Abbreviation occurs in many words
@@ -77,10 +75,18 @@ classdef const
 %   cid = Channel ID(s)
 %     CON: "CID" is part of "QRCID", "decide", "incidence".
 %       CON: Is not a real abbrevation.
+%     CON: Does not deal with channels, more like addresses.
 %
-% PROPOSAL: Vectorize ASID/SSID/SDID functions.
-%   PRO: Useful for vectorizing bicas.proc.L1L2.sat.
-%   PRO: Can possibly abolish ASID, SSID, SDID classes if does so.
+% PROPOSAL: Rename ASID class AntennaSignalId.
+%   PRO: Clearer distinction between ASID class and uint8 values.
+%   CON: Different abbreviations?
+%   ~definition
+%   ~info, ~data, metadata
+%   ~BLTS
+%   --
+%   AntennaSignalDefinition
+%   AntennaSignalIdDefinition
+%   AntennaSignalIdInfo
 %
 % PROPOSAL: Abolish ASID uint8. Abolish SSID, SDID classes (keep ASID class?).
 %
@@ -94,21 +100,8 @@ classdef const
 %   PRO: Does not need rely on adding/subtracting to translate between
 %        ASID, SSID, SDID.
 %
-% PROPOSAL: Three separate class struct constants for ASID, SSID, SDID
-%           respectively.
-%           Replace .C --> .ASID (asid?), .SSID (ssid?) etc.
-%   CON: Bad if wanting to "import" all constants at once.
-%
-% PROPOSAL: Rename ASID class AntennaSignalId.
-%   PRO: Clearer distinction between ASID class and uint8 values.
-%   CON: Different abbreviations?
-%   ~definition
-%   ~info, ~data, metadata
-%   ~BLTS
-%   --
-%   AntennaSignalDefinition
-%   AntennaSignalIdDefinition
-%   AntennaSignalIdInfo
+%  PROBLEM: SSID_ASID_DICT.keys and SDID_ASID_DICT.keys are de facto
+%           the authoritative sets of SSID/SDID ASR values.
 
 
 
@@ -336,8 +329,6 @@ classdef const
       assert(bicas.proc.L1L2.const.SSID_is_ASR(ssid))
 
       asid = bicas.proc.L1L2.const.C.SSID_ASID_DICT(ssid);
-
-      assert(bicas.proc.L1L2.const.is_ASID(asid))
     end
 
     % Vectorized.
