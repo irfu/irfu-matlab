@@ -160,19 +160,21 @@ classdef const
     function C2 = init_const()
       C2 = struct();
 
-      C2.ASID_DICT     = configureDictionary('string', 'uint8');
-      C2.ASID_OBJ_DICT = configureDictionary('uint8',  'bicas.proc.L1L2.AntennaSignalId');
+      C2.ASID_DICT      = configureDictionary('string', 'uint8');
+      C2.ASID_OBJ_DICT  = configureDictionary('uint8',  'bicas.proc.L1L2.AntennaSignalId');
 
-      C2.SSID_DICT     = configureDictionary('string', 'uint8');
-      C2.SSID_OBJ_DICT = configureDictionary('uint8',  'bicas.proc.L1L2.SignalSourceId');
+      C2.SSID_DICT      = configureDictionary('string', 'uint8');
+      C2.SSID_ASID_DICT = configureDictionary('uint8',  'uint8');
+      % C2.SSID_OBJ_DICT = configureDictionary('uint8',  'bicas.proc.L1L2.SignalSourceId');
 
-      C2.SDID_DICT     = configureDictionary('string', 'uint8');
+      C2.SDID_DICT      = configureDictionary('string', 'uint8');
+      % C2.SDID_ASID_DICT = configureDictionary('uint8',  'uint8');
       C2.SDID_OBJ_DICT = configureDictionary('uint8',  'bicas.proc.L1L2.SignalDestinationId');
 
-      C2.ROUTING_DICT  = configureDictionary('string', 'bicas.proc.L1L2.Routing');
+      C2.ROUTING_DICT   = configureDictionary('string', 'bicas.proc.L1L2.Routing');
 
       % Array of all ASR SDIDs.
-      C2.SDID_ASR_AR   = uint8([]);
+      C2.SDID_ASR_AR    = uint8([]);
 
       % Global list of uint8 values used so far for defining ASIDs, SSIDs, and
       % SDIDs. This is used for avoiding collisions between all of the uint8
@@ -191,7 +193,9 @@ classdef const
         asid = uint8(k);
         allocate_new_uint8(k)
 
-        ssid = add_SSID(s, k, asid);
+        ssid = add_SSID(s, k);
+        C2.SSID_ASID_DICT(ssid) = asid;
+
         sdid = add_SDID(s, k, asid);
         C2.SDID_ASR_AR(end+1, 1) = sdid;
 
@@ -205,13 +209,11 @@ classdef const
       end
 
       % Add new SSID, only.
-      function ssid = add_SSID(s, k, asidOrSpecialCase)
+      function ssid = add_SSID(s, k)
         ssid = uint8(k+100);
         allocate_new_uint8(ssid)
 
-        SsidObj = bicas.proc.L1L2.SignalSourceId(asidOrSpecialCase);
         C2.SSID_DICT(s)        = ssid;
-        C2.SSID_OBJ_DICT(ssid) = SsidObj;
       end
 
       % Add new SDID, only.
@@ -248,9 +250,9 @@ classdef const
         % =======================
         % Add all remaining SSIDs
         % =======================
-        add_SSID("REF25V",  10, "REF25V");
-        add_SSID("GND",     11, "GND");
-        add_SSID("UNKNOWN", 12, "UNKNOWN");
+        add_SSID("REF25V",  10);
+        add_SSID("GND",     11);
+        add_SSID("UNKNOWN", 12);
 
         % =======================
         % Add all remaining SDIDs
@@ -329,7 +331,8 @@ classdef const
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
       assert(bicas.proc.L1L2.const.SSID_is_ASR(ssid))
 
-      asid = bicas.proc.L1L2.const.C.SSID_OBJ_DICT(ssid).asid;
+      asid = bicas.proc.L1L2.const.C.SSID_ASID_DICT(ssid);
+
       assert(bicas.proc.L1L2.const.is_ASID(asid))
     end
 

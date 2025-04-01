@@ -418,9 +418,7 @@ SSID
     BLTS. This source may be either
     (a) an ASR, or
     (b) one of the special cases: GND, 2.5V Ref., or unknown signal.
-    Implemented as either:
-    (1) uint8 value, or
-    (2) class bicas.proc.L1L2.SignalSourceId.
+    Implemented as unique uint8 values.
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not
