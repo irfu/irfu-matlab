@@ -160,15 +160,15 @@ print('-r600','-dpng',fname(1:end-4))
           irf.log('critical',['Ivalid ' varName ' : negative values of R' ])
         end
         idx = find(c=='t');
-        if any(any( ebsp.(fieldName).data(:,:,idx)) > 90 | ...
-            any(ebsp.(fieldName).data(:,:,idx) < 0 ))
+        if any( any( ebsp.(fieldName).data(:,:,idx) > 90 ) | ...
+            any(ebsp.(fieldName).data(:,:,idx) < 0 ) )
           res = 1;
           irf.log('critical',...
             ['Ivalid ' varName ' : THETA outside range, expected 0<theta<90'])
         end
         idx = find(c=='p');
-        if any(any( ebsp.(fieldName).data(:,:,idx)) > 180 | ...
-            any(ebsp.(fieldName).data(:,:,idx) < -180 ))
+        if any( any( ebsp.(fieldName).data(:,:,idx) > 180 ) | ...
+            any(ebsp.(fieldName).data(:,:,idx) < -180 ) )
           res = 1;
           irf.log('critical',...
             ['Ivalid ' varName ' : PHI outside range -180<phi<180'])

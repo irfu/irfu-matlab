@@ -72,11 +72,11 @@ classdef fmd
   %
   % ~BUG: Bad thinking: Implementation checks for *all* DSIs in *all* specified
   %       dataset directories.
-  %   If using both IRFU and LESIA dataset directories, then some datasets are
-  %   found in both. Ideally, the algorithm should only check for the right
-  %   datasets in the right directory.
+  %   If one would use both IRFU-generated and LESIA-mirrored dataset
+  %   directories, then some datasets are found in both. Ideally, the algorithm
+  %   should only check for the right datasets in the right directory.
   %   --
-  %   PROPOSAL: For every directory, store a set of DSIs.
+  %   PROPOSAL: For every directory (not mirror/sync log), store a set of DSIs.
   %     NOTE: If using subdirectories (for speeding up), e.g.
   %           /data/solo/remote/data/L3/lfr_efield/ for EFIELD,
   %           then these directories are separate from the space of the

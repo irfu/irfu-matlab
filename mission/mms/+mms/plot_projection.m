@@ -355,7 +355,7 @@ for ii = 1:length(dist.time)
   end
 end
 
-if length(dist.time)==1
+if isscalar(dist.time)
   FF = squeeze(FF);
   tint = dist.time;
 else
@@ -368,7 +368,7 @@ if isempty(ax), fig = figure; ax = axes; axis(ax,'square'); end
 
 % Calculate spacecraft potential for distribution
 if includescpot
-  if length(tint)==1
+  if isscalar(tint)
     [~,tId] = min(abs(scpot.time-tint));
     scpot = scpot.data(tId);
   else

@@ -38,6 +38,8 @@ classdef utils
 
 
     function Config = read_config_file(configFilePath)
+      % PROPOSAL: Assert valid paths to existing FS objects.
+
       % ====================================
       % RATIONALE FOR THE CONFIG FILE FORMAT
       % ====================================
@@ -85,6 +87,11 @@ classdef utils
         fn = fnCa{i};
         Config.LogFileDirPatternDict(fn) = JsonConfig.logFileDirPatterns.(fn);
       end
+
+      % ASSERTIONS on config file field values.
+      % if ~isempty(Config.irfLogoPath)
+      %   irf.assert.file_exists(Config.irfLogoPath)
+      % end
     end
 
 

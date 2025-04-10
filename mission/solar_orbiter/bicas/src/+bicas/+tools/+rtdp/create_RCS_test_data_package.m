@@ -53,19 +53,13 @@ function [rtdpDir, rtdpZipFile] = create_RCS_test_data_package(...
 %     create_RCS_test_package
 %     create_RCS_test_data_package
 %     create_RTDP
-% PROPOSAL: Better name for package/tool?
-%     BICAS
-%     ROC
-%     "RCS test data package" (~formal term)
-%     create
-%     --
-%     rtdp
-%     testpkg
-%     rcstdpkg  (TD = Test Data)
-%     rtdp      (= RCS Test Data Package)
+
+REQUIRE_BICAS_CODE_VERSION = true;
+% REQUIRE_BICAS_CODE_VERSION = false;
+AUTOMATED_TEST_RUN         = false;
 
 tic
 [rtdpDir, rtdpZipFile] = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
-  outputParentDir, letterVersion, configFile, false);
+  outputParentDir, letterVersion, configFile, REQUIRE_BICAS_CODE_VERSION, AUTOMATED_TEST_RUN);
 toc
 end

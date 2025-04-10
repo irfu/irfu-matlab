@@ -70,7 +70,7 @@ while haveoptions
       if numel(args)>1 && isnumeric(args{2})
         if numel(args{2})== 2
           SWn = sort(args{2});
-        elseif numel(args{2})== 1
+        elseif isscalar(args{2})
           SWn = args{2};
         else
           irf.log('warning','SWn format not recognized. Using default');

@@ -55,7 +55,7 @@ alpha=(0.58-0.007*av_Bz).*(1+0.024*log(av_Dp));
 
 if 0 % plot data
   %%
-  h = irf_plot({[av_t,av_Bz],[av_t,av_n],[av_t,av_v],[av_t,av_Dp],[av_t,rzero],[av_t,alpha]});
+  h = irf_plot({[av_t,av_Bz],[av_t,av_n],[av_t,av_v],[av_t,av_Dp],[av_t,rzero],[av_t,alpha]}); %#ok<UNRCH>
   h(1).Title.String = 'Solar wind parameters, daily averages';
   h(1).YLabel.String = 'B_z [nT]';
   h(2).YLabel.String = 'n [cc]';
@@ -227,7 +227,7 @@ if 1
   hca.YLabel.String = 'y [Re]';
   hca.FontSize = 15;
 else
-  hp = polar(orb.theta*pi/180,orb.r);
+  hp = polar(orb.theta*pi/180,orb.r); %#ok<UNRCH>
   hca = gca;
 end
 hold(hca,'on');
@@ -245,7 +245,7 @@ for iRegion=1:nRegion
 end
 
 axis equal
-hca.XLim = [0 80];[0 hca.XLim(2)];
+hca.XLim = [0 80];
 hca.YLim = 30*[-1 1];
 legend({'Orbit',legs{:}},'location','northeast')
 hold(hca,'off');

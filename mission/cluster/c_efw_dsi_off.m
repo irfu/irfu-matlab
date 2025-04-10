@@ -41,7 +41,6 @@ elseif t>=toepoch([2017 01 01 00 00 0]), Ddsi = [ -0.14 1.73  00 -0.13 ];
 elseif t>=toepoch([2016 01 01 00 00 0]), Ddsi = [ -0.36 1.95  00 -1.15 ];
 elseif t>=toepoch([2015 01 01 00 00 0]), Ddsi = [ 0.34  2.89  00  0.31 ];
 elseif t>=toepoch([2014 10 16 00 00 0]), Ddsi = [ -0.11  1.67  1.22  0.37 ];
-elseif t>=toepoch([2014 10 16 00 00 0]), Ddsi = [ -0.11  3.67  1.22  0.37 ];
 elseif t>=toepoch([2014 10 11 00 00 0]), Ddsi = [ -0.11  2.67  1.22  0.37 ];
 elseif t>=toepoch([2014 08 01 00 00 0]), Ddsi = [ -0.11  3.67  1.22  0.37 ];
 elseif t>=toepoch([2014 01 01 00 00 0]), Ddsi = [ -0.11  2.67  1.22  0.37 ];
@@ -125,7 +124,7 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2023 01 01 00 0 0]), Ddsi = [ 00 00 00 0.64 ];
+if t>=toepoch([2023 01 01 00 0 0]), Ddsi = [ 00 00 00 0.54 ];
 elseif t>=toepoch([2022 01 01 00 0 0]), Ddsi = [ 00 3.67 00 0.45 ];
 elseif t>=toepoch([2021 01 01 00 0 0]), Ddsi = [ 00 2.99 00 0.35 ];
 elseif t>=toepoch([2020 01 01 00 0 0]), Ddsi = [ 00 2.59 00 0.29 ];

@@ -1,22 +1,40 @@
 %
 % Immutable class which instances represent the destination of a signal, i.e.
-% where the data should ultimately go, i.e. either:
-% (1) an ASR (to determine how to store the signal in the dataset), or
+% where the data should ultimately be stored in the output datasets, i.e.
+% either:
+% (1) an ASR (to determine which zVariable to store it in in the output
+%     dataset), or
 % (2) "nowhere" (when BDM is unknown).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef SignalDestinationId
+  % PROPOSAL: Better name.
+  %   NOTE: Abbreviation SDID = Intended future abbreviation for "dataset
+  %         ID"/DSI.
+  %   --
+  %   (output) dataset, zVariables
+  %   destination
+  %   ZDID = zVariable Destination ID
+  %     CON: Does not contain "signal".
+  %   DDID = Dataset Destination ID
+  %     CON: Does not contain "signal".
+  %   SZID = Signal zVariable ID
+  %   PROPOSAL: Redefine to represent where in dataset to store signal.
+  %
+  % PROPOSAL: Re-define to include SSID.
+  %   CON-PROPOSAL: Separate class for representing both SDID and SSID.
+  %     NOTE: Resembles bicas.proc.L1L2.Routing.
+  %   NOTE: Still needs SSID to represent where to store data.
 
 
 
-  properties(GetAccess=public, Constant)
-    C = bicas.proc.L1L2.SignalDestinationId.init_const();
-  end
-
-
-
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(SetAccess=immutable, GetAccess=public)
     % ASID object or empty.
     Asid
@@ -28,6 +46,11 @@ classdef SignalDestinationId
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
 
 
@@ -48,23 +71,6 @@ classdef SignalDestinationId
 
 
   end    % methods(Access=public)
-
-
-
-  methods(Access=private, Static)
-
-
-
-    function C = init_const()
-      C = bicas.proc.L1L2.AntennaSignalId.get_derived_ASR_constants( ...
-        @(Asid) (bicas.proc.L1L2.SignalDestinationId(Asid)));
-
-      C.NOWHERE = bicas.proc.L1L2.SignalDestinationId('NOWHERE');
-    end
-
-
-
-  end
 
 
 

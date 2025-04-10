@@ -115,7 +115,7 @@ irf_print_fig(['mms' num2str(mmsId) '_VExB_EDP_' edpMode '_vs_FPI_' fpiMode '_vs
 
 %%
 if 0
-  f = irf_figure(2387458,3);
+  f = irf_figure(2387458,3); %#ok<UNRCH>
   set(gcf,'defaultAxesColorOrder',[1 0 0;0 0 0;0 0 1;0 0.7 0;0 1 1 ;1 0 1; 1 1 0])
   set(gcf,'defaultAxesFontSize',12)
   h = irf_plot({EVexB,E2d_dsl_edp_l2pre,E_dsl_edp_l2,EVixB,EVphlusxB},'comp');

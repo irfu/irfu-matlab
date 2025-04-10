@@ -737,7 +737,7 @@ classdef ui < handle
         return
       else
         obj.SpacecraftList(1) = obj.SpacecraftList(obj.spacecraftUsed);
-        obj.SpacecratList(1).(idString) = vector;
+        obj.SpacecraftList(1).(idString) = vector;
         obj.update_sc_area_total_vs_sunlit;
         obj.set_sc_model('user defined');
       end

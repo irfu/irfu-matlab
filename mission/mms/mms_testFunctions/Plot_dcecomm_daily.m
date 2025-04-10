@@ -71,7 +71,7 @@ for ii=1:4
     % Fast and slow data available (combine them)
     c_eval('dce_ts_?=combine(Dce_fast_ts_?,Dce_slow_ts_?);', ii);
     c_eval('dcv_ts_?=combine(Dcv_fast_ts_?,Dcv_slow_ts_?);', ii);
-  elseif ~emptyFast && emptySlow
+  elseif ~emptyFast && emptySlow %#ok<UNRCH>
     % Fast data only
     c_eval('dce_ts_?=Dce_fast_ts_?;', ii);
     c_eval('dcv_ts_?=Dcv_fast_ts_?;', ii);

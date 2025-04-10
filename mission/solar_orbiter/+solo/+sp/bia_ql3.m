@@ -1,6 +1,6 @@
 %
 % Main function for software "BIA_QL3" for creating BIAS summary plots. The
-% software is intended to be delivered to, and used by, LESIA/ROC.
+% software is intended to be delivered to, and used by, LIRA/ROC.
 %
 % See irfu-matlab/mission/solar_orbiter/bia_ql3/README.TXT for more
 % documentation of "BIA_QL3".
@@ -13,7 +13,7 @@
 %
 % INTERFACE REQUIREMENTS FOR THIS FUNCTION
 % ========================================
-% LESIA/ROC requries a certain OS SHELL interface. See
+% LIRA/ROC requries a certain OS SHELL interface. See
 %   https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/42
 %   > shellExecutable YYYYMMDD input_bia_path input_lfr_wf_e_path output_dir log_dir
 % This function's interface mirrors the bash/OS script interface to simplify the
@@ -57,6 +57,8 @@ function bia_ql3(yyyyMmDdStr, hkBiaDir, lfrWfDirPath, outputDir)
 % PROPOSAL: Eliminate use of glob.attr. Do not read file an extra time.
 %   PRO: DATASET_ID is known when calling plot_save_SP_pattern().
 %   CON: Dataset data version has to be extracted from filename.
+%
+% PROPOSAL: Use classes instead of function pointers.
 
 % IMPLEMENTATION NOTE: Needed to get paths correct when code is being called
 % from bash script.

@@ -1,5 +1,5 @@
 %
-% Collection of code relating to setting quality ZVs.
+% Collection of reusable, generic code relating to setting quality ZVs.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -144,9 +144,12 @@ classdef qual
 
 
 
-    % NOTE: Does not work with FPAs, since internal algorithm can not
-    % produce unknown values. The caller is supposed to decide how to
-    % interpret unknown values before calling function.
+    % Given array(s) of QRC bits (one bit per CDF record and QRC), translate
+    % that into ZVs QUALITY_FLAG and *QUALITY_BITMASK.
+    %
+    % NOTE: Does not work with FPAs, since internal algorithm can not produce
+    % unknown values. The caller is supposed to decide how to interpret unknown
+    % values (QRC flags) before calling function.
     %
     %
     % ARGUMENTS
@@ -157,9 +160,10 @@ classdef qual
     %       QRCIDs.
     % QrcFlagsMap
     %       containers.Map: QRCID-->Logical column array
+    %       Array element is set when the corresponding QRC applies.
     % QrcSettingsMap
     %       containers.Map: QRCID-->bicas.proc.QrcSetting
-    %       NOTE: QRCIDs must match those of QrcFlagsMap.
+    %       NOTE: The set of QRCIDs be identical to that of QrcFlagsMap.
     %
     %
     % RETURN VALUES
@@ -185,7 +189,9 @@ classdef qual
         QrcFlagsMap.keys, ...
         QrcSettingsMap.keys)
 
-      % Create "empty" arrays
+      % Create "empty" quality variable arrays, with max possible quality
+      % (QUALITY_FLAG max, quality bits=0), which can then later be "lowered"
+      % if necessary.
       QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
       Lx_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
 

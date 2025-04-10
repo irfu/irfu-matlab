@@ -125,6 +125,7 @@ end
     xlim=get(eventObjectHandle.Axes,'xlim');
     figure_zoom_in(figureHandle,xlim,eventObjectHandle.Axes);
   end
+
   function saveZoomStack(figureHandle,eventObjectHandle)
     % save zoom levels for zooming out
     ud=get(figureHandle,'userdata');
@@ -136,6 +137,7 @@ end
     end
     set(figureHandle,'userdata',ud);
   end
+
   function figure_zoom_in(figureHandle,xlim,varargin)
     % figure_zoom_in(figureHandle,xlim,[currentAxisHandle])
     if nargin == 3

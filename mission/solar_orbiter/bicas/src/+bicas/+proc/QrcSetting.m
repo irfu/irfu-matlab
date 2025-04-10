@@ -20,15 +20,40 @@ classdef QrcSetting
   %   policy
   %   entry
   %   action
-  %   QRC/QRCID
-  %       CON: Class refers to translation of QRCID to quality variables modifications
+  %   QRC
   %   quality ZVs
   %   quality ZVs modification
-  %   QrcSetting
+  %   --
+  %   QRCC = QRC Configuration
+  %   QRCS = QRC Setting
+  %   --
+  %   PROPOSAL: Abbreviation
   %
-  % PROPOSAL: Include UFV.
+  % PROPOSAL: Include UFV as an action.
   %   PRO: Can redefine excluding data using BDM using this class.
-  %       CON: Name Quality-Related Condition becomes a misnomer
+  %     CON: Name Quality-Related Condition becomes a misnomer.
+  %     CON: Should probably phase out that functionality anyway.
+  %   PRO: Useful for blanking antenna fails.
+  %     https://github.com/irfu/irfu-matlab/issues/142
+  %   CON/PROBLEM: Also needs to specify channel. All channels?!!
+  %     CON-PROPOSAL: Include "channel addresses"?
+  %
+  % PROPOSAL: Modify definition of QRC beyond quality-related conditions to
+  %           include any special treatment of data.
+  %   Ex: BIAS current sweeps.
+  %   Ex: BIAS off (BW).
+  %   See readme.txt on special cases.
+  %   TODO-DEC: Term to replace "QRC".
+  %     ~Special case
+  %     ~Special treatment/processing/handling
+  %     ~Data treatment/processing/handling
+  %     ~Exception
+  %       CON: May imply programming term exception=error handling.
+  %     ~Condition
+  %     Special Case Condition
+  %     Special Condition
+
+
 
   properties(SetAccess=immutable)
     % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.

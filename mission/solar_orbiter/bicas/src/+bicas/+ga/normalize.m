@@ -1,5 +1,5 @@
 %
-% Normalize an arbitrary value by replacing specified
+% Normalize specified special values by replacing them with one specified value.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -8,7 +8,7 @@ function x = normalize(x, beforeValuesCa, afterValue)
 % PROPOSAL: Convert to generic function.
 % NOTE: Compare irf.utils.translate().
 %
-% PROBLEM: Function is used partly  for normalizing CDF input. Can not easily
+% PROBLEM: Function is used partly for normalizing CDF input. Can not easily
 % distinguish between non-compliant CDFs (and give warning/error) and
 % normalization.
 

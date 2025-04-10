@@ -490,7 +490,11 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
     %%%%%%%%%%%%%%%%%%%%%%%%% FILTER MAGIC %%%%%%%%%%%%%%%%%%%%%%
     switch cl_id
       case 1
-        if start_time>toepoch([2015 02 26 09 35 00])
+        if start_time>toepoch([2024 02 09 13 56 54])
+          param='180Hz';
+        elseif start_time>toepoch([2023 12 24 02 10 47]) % wrong commanding
+          param='10Hz';
+        elseif start_time>toepoch([2015 02 26 09 35 00])
           param='180Hz';
         end
       case 2
@@ -701,7 +705,11 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         probe_list = [1 2];
         irf_log('dsrc',sprintf('Too high bias current on p3&p4 sc%d',cl_id));
       end
-      if start_time>toepoch([2015 02 26 09 35 00])
+      if start_time>toepoch([2024 02 09 13 56 54])
+        param={'180Hz'};
+      elseif start_time>toepoch([2023 12 24 02 10 47]) % wrong commanding
+        param={'10Hz'};
+      elseif start_time>toepoch([2015 02 26 09 35 00])
         param={'180Hz'};
       end
     case 2
@@ -743,7 +751,11 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         param={'180Hz'};
       end
     case 3
-      if start_time>toepoch([2014 11 03 20 58 16.7])
+      if start_time>toepoch([2024 4 29 0 0 0])
+        % p4 failure
+        probe_list = [];
+        irf_log('dsrc',sprintf('p1, p2, p3 and p4 are BAD on sc%d',cl_id));
+      elseif start_time>toepoch([2014 11 03 20 58 16.7])
         % p2 failure
         probe_list = 4;
         irf_log('dsrc',sprintf('p1, p2 & p3 are BAD on sc%d',cl_id));

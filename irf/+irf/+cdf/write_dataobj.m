@@ -1,9 +1,3 @@
-function write_dataobj(filePath, ...
-  dataobj_GlobalAttributes, ...
-  dataobj_data, ...
-  dataobj_VariableAttributes, ...
-  dataobj_Variables, ...
-  varargin)
 %
 % Function which writes a CDF file.
 %
@@ -49,18 +43,18 @@ function write_dataobj(filePath, ...
 %       The corresponding field of an instantiated dataobj. Nx12 cell array where
 %       {iZv,  1} = ZV name
 %       {iZv,  2} = Size of record. Row vector, at least length 2.
-%       {iZv,  3} = NOT USED. dataobj: Uknown meaning. Scalar number.
+%       {iZv,  3} = NOT USED. dataobj: Unknown meaning. Scalar number.
 %       {iZv,  4} = String representing data type (tt2000, single, char etc)
 %       {iZv,  5} = NOT USED. dataobj: "Record variance", string representing
 %                     on which dimensions the ZV changes. T=True,
 %                     F=False.
-%       {iZv,  6} = NOT USED. dataobj: Uknown meaning. String = 'Full' (always?)
+%       {iZv,  6} = NOT USED. dataobj: Unknown meaning. String = 'Full' (always?)
 %       {iZv,  7} = Compression algorithm, if any.
-%       {iZv,  8} = NOT USED. dataobj: Uknown meaning. Scalar number
+%       {iZv,  8} = NOT USED. dataobj: Unknown meaning. Scalar number
 %       {iZv,  9} = Pad value
-%       {iZv, 10} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
-%       {iZv, 11} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
-%       {iZv, 12} = NOT USED. dataobj: Uknown meaning. Scalar number or empty.
+%       {iZv, 10} = NOT USED. dataobj: Unknown meaning. Scalar number or empty.
+%       {iZv, 11} = NOT USED. dataobj: Unknown meaning. Scalar number or empty.
+%       {iZv, 12} = NOT USED. dataobj: Unknown meaning. Scalar number or empty.
 %       "NOT USED" = Not used by this function.
 % varargin
 %       Settings passed to irf.utils.interpret_settings_args(). See
@@ -162,6 +156,13 @@ function write_dataobj(filePath, ...
 % ZV  = CDF zVariable
 % ZVA = CDF zVariable Attribute
 % DO  = dataobj
+%
+function write_dataobj(filePath, ...
+  dataobj_GlobalAttributes, ...
+  dataobj_data, ...
+  dataobj_VariableAttributes, ...
+  dataobj_Variables, ...
+  varargin)
 
 
 
@@ -219,22 +220,26 @@ ZVA_ZV_SAME_DATA_TYPE_ZVA_NAMES_CA = {...
   'SCALEMIN', 'SCALEMAX', ...
   'FILLVAL'};
 
-DEFAULT_SETTINGS = struct();...
-  % Whether zVariable value size per record must fit the submitted metadata
+DEFAULT_SETTINGS = struct();
+% Whether zVariable value size per record must fit the submitted metadata
 % specified in dataobj_Variables{i, 2}.
-DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = 1;
+DEFAULT_SETTINGS.strictNumericZvSizePerRecord      = true;
 % Default 1/true since dataobj is not strict about SIZE  of empty zVars.
-DEFAULT_SETTINGS.strictEmptyNumericZvSizePerRecord = 1;
-% Default 1/true since dataobj is not strict about CLASS of empty zVars.
-DEFAULT_SETTINGS.strictEmptyZvClass                = 1;
+DEFAULT_SETTINGS.strictEmptyNumericZvSizePerRecord = true;
+% Default true since dataobj is not strict about CLASS of empty zVars.
+DEFAULT_SETTINGS.strictEmptyZvClass                = true;
 % Whether zVar attr should have same class as zVar.
 % Exception: When zVar is TT2000 and zVar attr is char.
 % Deactivation is useful for less stringent CDFs.
 DEFAULT_SETTINGS.strictZvAttrClass                 = 'ERROR';   % Legal values: "ERROR", "WARNING", "IGNORE"
-DEFAULT_SETTINGS.calculateMd5Checksum              = 1;
+DEFAULT_SETTINGS.calculateMd5Checksum              = true;
 %
 Settings = irf.utils.interpret_settings_args(DEFAULT_SETTINGS, varargin);
 irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
+assert(islogical(Settings.strictNumericZvSizePerRecord))
+assert(islogical(Settings.strictEmptyNumericZvSizePerRecord))
+assert(islogical(Settings.strictEmptyZvClass))
+assert(islogical(Settings.calculateMd5Checksum))
 
 
 

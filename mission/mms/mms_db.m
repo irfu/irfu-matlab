@@ -258,7 +258,7 @@ classdef mms_db < handle
       res = [];
       v = get_variable(obj,filePrefix,varName,tint);
       if isempty(v), return, end
-      if numel(v)==1
+      if isscalar(v)
         res = mms.variable2ts(v);
         res = res.tlim(tint);
       else

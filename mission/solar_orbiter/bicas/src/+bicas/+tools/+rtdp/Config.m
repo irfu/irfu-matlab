@@ -72,8 +72,8 @@ classdef Config
 
 
 
-    function bicasRootDir = get_BICAS_root_dir(obj)
-      bicasRootDir = obj.JsonStruct.bicasRootDir;
+    function bicasRootDir = get_expected_BICAS_root_dir(obj)
+      bicasRootDir = obj.JsonStruct.expectedBicasRootDir;
     end
 
 

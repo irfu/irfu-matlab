@@ -53,7 +53,7 @@ if nargin == 4
   end
 end
 
-if prod(size(phase))==1 % load phase from isdat database
+if numel(phase)==1 % load phase from isdat database
   ic=phase;phase=[]; %disp(['load phase for sc' num2str(ic)]);
   start_time=ceil(fromepoch(es(1,1))); % time of the first point
   Dt=floor(es(end,1)-es(1,1)+1);

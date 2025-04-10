@@ -7,7 +7,7 @@ tint = irf.tint('2017-07-11T22:31:00.00Z/2017-07-11T22:37:20.00Z');
 iPDist = mms.get_data('PDi_fpi_brst_l2',tint,ic);
 iPDistErr = mms.get_data('PDERRi_fpi_brst_l2',tint,ic);
 iPDist_counts = iPDist; iPDist_counts.data = (iPDist.data./iPDistErr.data).^2;
- 
+
 c_eval('gseB? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gse_brst_l2'',tint);', ic);
 c_eval('gseE? = mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
 c_eval('gseVExB? = cross(gseE?.resample(gseB?.time),gseB?)/gseB?.abs/gseB?.abs*1e3; gseVExB?.units = '''';',ic) % km/s
@@ -63,9 +63,9 @@ Mdsl = Tdsl(2,:);
 Ndsl = Tdsl(3,:);
 
 
-c_eval('B = mvaB?.tlim(pdist.time([1 end]) + 0.5*0.15*[-1 1]);',ic)  
-c_eval('E = mvaE?.tlim(pdist.time([1 end]) + 0.5*0.15*[-1 1]);',ic) 
-c_eval('vExB = mvaVExB?.tlim(pdist.time([1 end]) + 0.5*0.15*[-1 1]);',ic)   
+c_eval('B = mvaB?.tlim(pdist.time([1 end]) + 0.5*0.15*[-1 1]);',ic)
+c_eval('E = mvaE?.tlim(pdist.time([1 end]) + 0.5*0.15*[-1 1]);',ic)
+c_eval('vExB = mvaVExB?.tlim(pdist.time([1 end]) + 0.5*0.15*[-1 1]);',ic)
 
 
 % Set up figure
@@ -101,7 +101,7 @@ if 1 % f(L,M)
   axis(hca,'square')
   hca.XLabel.String = 'v_L (km/s)';
   hca.YLabel.String = 'v_M (km/s)';
-  
+
   if doPlotB % plot B direction
     xlim = hca.XLim; % not needed, because done later
     ylim = hca.YLim;
@@ -111,11 +111,11 @@ if 1 % f(L,M)
     hca.XLim = xlim;
     hca.YLim = ylim;
     irf_legend(hca,sprintf('B = %.1f nT',sum(sqrt(B_.^2))),[0.98 0.98],'fontsize',7,'color','k')
-  end     
+  end
   if 1 % plot ExB
     hold(hca,'on')
     hbulk = plot(hca,mean(vExB.x.data,1)*1e0,mean(vExB.y.data,1)*1e0,'ok','MarkerFaceColor','w','markersize',5);
-    hold(hca,'off')    
+    hold(hca,'off')
   end
 end
 
@@ -136,11 +136,11 @@ if 1 % f(L,N)
     hold(hca,'off')
     hca.XLim = xlim;
     hca.YLim = ylim;
-  end     
+  end
   if 1 % plot ExB
     hold(hca,'on')
     hbulk = plot(hca,mean(vExB.x.data,1)*1e0,mean(vExB.z.data,1)*1e0,'ok','MarkerFaceColor','w','markersize',5);
-    hold(hca,'off')    
+    hold(hca,'off')
   end
 end
 
@@ -161,11 +161,11 @@ if 1 % f(M,N)
     hold(hca,'off')
     hca.XLim = xlim;
     hca.YLim = ylim;
-  end     
+  end
   if 1 % plot ExB
     hold(hca,'on')
     hbulk = plot(hca,mean(vExB.y.data,1)*1e0,mean(vExB.z.data,1)*1e0,'ok','MarkerFaceColor','w','markersize',5);
-    hold(hca,'off')    
+    hold(hca,'off')
   end
 end
 
@@ -186,11 +186,11 @@ if 1 % f(M,N)
     hold(hca,'off')
     hca.XLim = xlim;
     hca.YLim = ylim;
-  end     
+  end
   if 1 % plot ExB
     hold(hca,'on')
     hbulk = plot(hca,mean(vExB.y.data,1)*1e0,mean(vExB.z.data,1)*1e0,'ok','MarkerFaceColor','w','markersize',5);
-    hold(hca,'off')    
+    hold(hca,'off')
   end
   hca.XDir = 'reverse';
 end
@@ -213,14 +213,14 @@ if 1 % f(L,M)
     hold(hca,'off')
     hca.XLim = xlim;
     hca.YLim = ylim;
-  end     
+  end
   if 1 % plot ExB
     hold(hca,'on')
     hbulk = plot(hca,mean(vExB.x.data,1)*1e0,mean(vExB.y.data,1)*1e0,'ok','MarkerFaceColor','w','markersize',5);
-    hold(hca,'off')    
+    hold(hca,'off')
   end
   hca.YDir = 'reverse';
-end  
+end
 
 
 isub = 6;
@@ -240,11 +240,11 @@ if 1 % f(L,N)
     hold(hca,'off')
     hca.XLim = xlim;
     hca.YLim = ylim;
-  end     
+  end
   if 1 % plot ExB
     hold(hca,'on')
     hbulk = plot(hca,mean(vExB.x.data,1)*1e0,mean(vExB.z.data,1)*1e0,'ok','MarkerFaceColor','w','markersize',5);
-    hold(hca,'off')    
+    hold(hca,'off')
   end
   hca.YDir = 'reverse';
 end
@@ -276,51 +276,51 @@ hcb.YLabel.String = 'f_i (s/m^4)';
 if 1 % Make lines for scissors
   %%
   pos = h(1).Position;
-  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1]; 
-  y = [pos(2)+pos(4) pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.0]; 
+  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1];
+  y = [pos(2)+pos(4) pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.0];
   annotation('line',x(1:2),y(1:2),'linestyle',':')
   annotation('line',x(2:3),y(2:3),'linestyle',':')
   annotation('line',x(3:4),y(3:4),'linestyle',':')
 
   pos = h(2).Position;
-  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1]; 
-  y = [pos(2)+pos(4) pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.0]; 
+  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1];
+  y = [pos(2)+pos(4) pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.0];
   annotation('line',x(1:2),y(1:2),'linestyle',':')
   annotation('line',x(2:3),y(2:3),'linestyle',':')
   annotation('line',x(3:4),y(3:4),'linestyle',':')
 
   pos = h(4).Position;
-  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1]; 
-  y = [pos(2)+pos(4) pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.0]; 
+  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1];
+  y = [pos(2)+pos(4) pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.15 pos(2)+pos(4)*1.0];
   annotation('line',x(1:2),y(1:2),'linestyle',':')
   annotation('line',x(2:3),y(2:3),'linestyle',':')
   annotation('line',x(3:4),y(3:4),'linestyle',':')
 
   pos = h(2).Position;
-  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1]; 
-  y = [pos(2) pos(2)-pos(4)*0.15 pos(2)-pos(4)*0.15 pos(2)]; 
+  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1];
+  y = [pos(2) pos(2)-pos(4)*0.15 pos(2)-pos(4)*0.15 pos(2)];
   annotation('line',x(1:2),y(1:2),'linestyle',':')
   annotation('line',x(2:3),y(2:3),'linestyle',':')
   annotation('line',x(3:4),y(3:4),'linestyle',':')
 
   pos = h(4).Position;
-  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1]; 
-  y = [pos(2) pos(2)-pos(4)*0.15 pos(2)-pos(4)*0.15 pos(2)]; 
+  x = [pos(1) pos(1)+pos(3)*0.15 pos(1)+pos(3)*0.85 pos(1)+pos(3)*1];
+  y = [pos(2) pos(2)-pos(4)*0.15 pos(2)-pos(4)*0.15 pos(2)];
   annotation('line',x(1:2),y(1:2),'linestyle',':')
   annotation('line',x(2:3),y(2:3),'linestyle',':')
   annotation('line',x(3:4),y(3:4),'linestyle',':')
 
   pos = h(2).Position;
-  x = [pos(1) pos(1)-pos(3)*0.15 pos(1)-pos(3)*0.15 pos(1)]; 
-  y = [pos(2) pos(2)+pos(4)*0.15 pos(2)+pos(4)*0.85 pos(2)+pos(4)]; 
+  x = [pos(1) pos(1)-pos(3)*0.15 pos(1)-pos(3)*0.15 pos(1)];
+  y = [pos(2) pos(2)+pos(4)*0.15 pos(2)+pos(4)*0.85 pos(2)+pos(4)];
   annotation('line',x(1:2),y(1:2),'linestyle',':')
   annotation('line',x(2:3),y(2:3),'linestyle',':')
   annotation('line',x(3:4),y(3:4),'linestyle',':')
 
   pos = h(4).Position;
-  x = [pos(1)+pos(3) pos(1)+pos(3)*1.15 pos(1)+pos(3)*1.15 pos(1)+pos(3)]; 
-  y = [pos(2) pos(2)+pos(4)*0.15 pos(2)+pos(4)*0.85 pos(2)+pos(4)]; 
+  x = [pos(1)+pos(3) pos(1)+pos(3)*1.15 pos(1)+pos(3)*1.15 pos(1)+pos(3)];
+  y = [pos(2) pos(2)+pos(4)*0.15 pos(2)+pos(4)*0.85 pos(2)+pos(4)];
   annotation('line',x(1:2),y(1:2),'linestyle',':')
   annotation('line',x(2:3),y(2:3),'linestyle',':')
-  annotation('line',x(3:4),y(3:4),'linestyle',':') 
+  annotation('line',x(3:4),y(3:4),'linestyle',':')
 end

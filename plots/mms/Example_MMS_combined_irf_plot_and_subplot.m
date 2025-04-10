@@ -567,7 +567,7 @@ tintZoom = irf.tint('2015-10-16T10:33:26.00Z/2015-10-16T10:34:00.00Z');
 times = desDist1.tlim(tintZoom).time;
 
 
-for it = 119;1:times.length  % 644 - ring distributions
+for it = 119 %1:times.length  % 644 - ring distributions
   time = times(it);
   tint = time;
   tt = time;
@@ -781,7 +781,7 @@ for it = 1:times.length
       x = hatB0; %#ok<UNRCH>
       y = hatExB0;
       z = cross(x,y);
-    elseif 0
+    elseif 0 %#ok<IFCDUP>
       x = [1 0 0]; %#ok<UNRCH>
       y = [0 1 0];
       z = [0 0 1];
@@ -878,7 +878,7 @@ tintDist = irf.tint('2015-10-16T10:33:23.20Z/2015-10-16T10:33:34.50Z'); %#ok<NAS
 c_eval('times = desDist?.tlim(tintDist).time;',ic)
 
 
-for ii = 100;1:times.length;
+for ii = 100 %1:times.length;
   tint = times(ii)+[-1 1]*0.5*0.03*0.5;
   if exist('hmark','var'); delete(hmark); end
   hmark = irf_pl_mark(h1,tint.epochUnix','green');

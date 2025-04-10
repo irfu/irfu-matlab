@@ -34,37 +34,38 @@ while have_options
   if isempty(args), break, end
 end
 
-
-switch lower(obj)
-  case 'mercury'
-    obj_radius = Units.Mercury.radius/1e3;
-    obj_label = '[R_M]';
-  case 'venus'
-    obj_radius = Units.Venus.radius/1e3;
-    obj_label = '[R_V]';
-  case 'earth'
-    obj_radius = Units.RE/1e3;
-    obj_label = '[R_E]';
-  case 'mars'
-    obj_radius = Units.Mars.radius/1e3;
-    obj_label = '[R_M]';
-  case 'jupiter'
-    obj_radius = Units.Jupiter.radius/1e3;
-    obj_label = '[R_J]';
-  case 'saturn'
-    obj_radius = Units.Saturn.radius/1e3;
-    obj_label = '[R_S]';
-  case 'ganymede'
-    obj_radius = Units.Ganymede.radius/1e3;
-    obj_label = '[R_G]';
-  case 'europa'
-    obj_radius = Units.Europa.radius/1e3;
-    obj_label = '[R_e]';
-  case 'callisto'
-    obj_radius = Units.Callisto.radius/1e3;
-    obj_label = '[R_c]';
-  otherwise
-    return;
+if have_options
+  switch lower(obj)
+    case 'mercury'
+      obj_radius = Units.Mercury.radius/1e3;
+      obj_label = '[R_M]';
+    case 'venus'
+      obj_radius = Units.Venus.radius/1e3;
+      obj_label = '[R_V]';
+    case 'earth'
+      obj_radius = Units.RE/1e3;
+      obj_label = '[R_E]';
+    case 'mars'
+      obj_radius = Units.Mars.radius/1e3;
+      obj_label = '[R_M]';
+    case 'jupiter'
+      obj_radius = Units.Jupiter.radius/1e3;
+      obj_label = '[R_J]';
+    case 'saturn'
+      obj_radius = Units.Saturn.radius/1e3;
+      obj_label = '[R_S]';
+    case 'ganymede'
+      obj_radius = Units.Ganymede.radius/1e3;
+      obj_label = '[R_G]';
+    case 'europa'
+      obj_radius = Units.Europa.radius/1e3;
+      obj_label = '[R_e]';
+    case 'callisto'
+      obj_radius = Units.Callisto.radius/1e3;
+      obj_label = '[R_c]';
+    otherwise
+      return;
+  end
 end
 
 if isa(r,'TSeries'), r = irf.ts2mat(r); end
@@ -74,7 +75,11 @@ elseif size(r,2)~=5
   error('R has bad size')
 end
 
-TF = issorted(r(:, 1), 'strictascend');             % check time is in ascending order;
+if(verLessThan('matlab','9.0')) % Fix for old ML 2014a plots
+  TF = issorted(r(:, 1));
+else
+  TF = issorted(r(:, 1), 'strictascend');             % check time is in ascending order;
+end
 if ~TF
   r = unique(r, 'rows');          % remove duplicated data;
   irf.log('warning', 'Time is not in strict ascending order, UNIQUE is used. ');

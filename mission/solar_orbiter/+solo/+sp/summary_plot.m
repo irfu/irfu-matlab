@@ -19,10 +19,12 @@
 % First created 2020-10-13
 %
 classdef summary_plot < handle
-  % PROPOSAL: Automatically set panel tags (encapsulate; no arguments).
-  % PROPOSAL: Assert unique panel tags.
+  % PROPOSAL: Rename to "SummaryPlot".
   %
   % PROPOSAL: Consistent naming of ~Epoch/zvTt2000.
+  %
+  % PROPOSAL: Automatically set panel tags (encapsulate; no arguments).
+  % PROPOSAL: Assert unique panel tags.
   %
   % PROPOSAL: Merge add_panel_spectrogram_SWF_LSF &
   %                 add_panel_spectrogram_CWF.
@@ -333,8 +335,8 @@ classdef summary_plot < handle
           solo.sp.summary_plot.fade_color(hLines)
         end
 
-        if ~isempty(Settings.linesPropCa)   set(hLines, Settings.linesPropCa{:});   end
-        if ~isempty(Settings.axesPropCa)    set(hAxes,  Settings.axesPropCa {:});   end
+        if ~isempty(Settings.linesPropCa),   set(hLines, Settings.linesPropCa{:});   end
+        if ~isempty(Settings.axesPropCa),    set(hAxes,  Settings.axesPropCa {:});   end
 
         ylabel(hAxes, Settings.yLabel)
 
@@ -675,8 +677,8 @@ classdef summary_plot < handle
       % work. In practice, this is only necessary when disabling all
       % axes/plots except one while debugging.
       positionTemp        = get(hAxesArray, 'Position');
-      if iscell(positionTemp)   positionCa = positionTemp;
-      else                      positionCa = {positionTemp};
+      if iscell(positionTemp),   positionCa = positionTemp;
+      else,                      positionCa = {positionTemp};
       end
       yPanelArray1      = cellfun(@(x) ([x(2)]), positionCa);
       % Panel height before distributing height segments. Assumes that

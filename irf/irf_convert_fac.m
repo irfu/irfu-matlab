@@ -4,11 +4,12 @@ function [out]=irf_convert_fac(inp,B0,r)
 %  out = irf_convert_fac(inp,B0,[r])
 %
 %  Transforms to a field-aligned coordinate (FAC) system defined as:
-%  R_parallel_z aligned with the background magnetic field
-%  R_perp_y defined by R_parallel cross the position vector of the
-%  spacecraft (nominally eastward at the equator)
-%  R_perp_x defined by R_perp_y cross R_par
-%  If inp is one vector along r direction, out is inp[perp, para] projection
+%  z = aligned with the background magnetic field
+%  y = z cross product with the position vector r of the spacecraft
+%      (nominally eastward at the equator), if r not given used r=[1 0 0]
+%  x = y x z
+%  If inp is single column vector then assume that it is amplitude of vector
+%  along r direction. Output out has 2 columns corresponding to inp[perp, para] projections
 %
 %  rotMatrix = irf_convert_fac([],B0,[r])
 %
@@ -21,14 +22,14 @@ function [out]=irf_convert_fac(inp,B0,r)
 %
 %
 %  Input:
-%    r  = position vector of spacecraft, columns (t x y z)
-%    B0 = background magnetic field, columns (t x y z)
-%    inp= vector that is to be transformed to FAC, columns (t x y z)
-%			or inp can be cell array of such vectors
-%    out= output in the same form as inp
+%    r   = position vector of spacecraft, columns (t x y z)
+%    B0  = background magnetic field, columns (t x y z)
+%    inp = vector that is to be transformed to FAC, columns (t x y z)
+%			     or inp can be cell array of such vectors
+%    out = output in the same form as inp
 %
 % Example:
-%   Efac = irf_convert_fac(Egse, Bgse, [1, 0, 0]);
+%   Efac  = irf_convert_fac(Egse, Bgse, [1, 0, 0]);
 %   Emfac = irf_convert_fac(Em, Bgse, Mdir);
 %
 % Note: all input parameters must be in the same coordinate system
@@ -47,14 +48,14 @@ if isa(B0,'TSeries')
   datatemp = double(B0.data);
   B0 = [ttemp, datatemp];
 end
+% End of temporary fix
+
+if nargin<3, r=[1 0 0];
+end
 if isa(r,'TSeries')
   ttemp = r.time.epochUnix;
   datatemp = double(r.data);
   r = [ttemp, datatemp];
-end
-% End of temporary fix
-
-if nargin<3, r=[1 0 0];
 end
 Rpar = []; Rperpy = []; Rperpx = [];
 if size(r, 2) == 3, r = [B0(1, 1), r];end

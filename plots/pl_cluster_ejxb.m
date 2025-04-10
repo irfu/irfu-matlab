@@ -349,7 +349,7 @@ if 1 % 1 if plot, 0 if skip the figure
   %
   % irf_pl_mark([toepoch([2004 01 04 12 47 10]) + [-.12 .4]],h);
   % irf_pl_mark([toepoch([2004 01 04 12 47 8.4]) + [-.05 .05]],h);
-  ht=irf_pl_number_subplots(h)
+  ht=irf_pl_number_subplots(h);
   %irf_zoom(toepoch([2004 01 04 12 47 10]) + [-2.5 1.2],'x',h);
 end
 %

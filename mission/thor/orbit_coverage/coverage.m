@@ -35,7 +35,7 @@ Ttot = sum(sum(TT));
 ndays = sum(sum(TT))/60/60/24;
 
 if 0 % Illustrate gridding
-  hca=subplot(1,3,1);
+  hca=subplot(1,3,1); %#ok<UNRCH>
   hold(hca,'on');
   mesh(hca,X,Y,X*0-1);
   plot(hca,x,y,'b')
@@ -102,7 +102,7 @@ if 1 % figure with bowshock + magnetopause
     cmap=flipdim(cmap,1);
     cmap(2:3,:)=[]; % make difference between white and first gray step more distinct
   else
-    cmap(2:10,:)=[];
+    cmap(2:10,:)=[]; %#ok<UNRCH>
   end
   colormap(cmap);
 

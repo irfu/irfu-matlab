@@ -3,7 +3,7 @@
 % BICAS functionality for constructing datasets.
 %
 %
-% Code for generating one L3 VHT dataset from .mat file, ONLY. The .mat file
+% Code for generating *one* L3 VHT dataset from .mat file, ONLY. The .mat file
 % with data is produced by Konrad Steinvall & Yuri Khotyaintsev (2021-03-31).
 %
 %
@@ -13,20 +13,21 @@
 % production of datasets and can therefore not be performed by BICAS proper as
 % of 2021-03-31.
 % Reasons:
-% (1) The RCS interface (2021-03-31) can not handle this case in principle:
+% (1) The RCS interface (as of 2025-01-21) can not handle this case even in
+%     principle:
 %     Multiple input datasets (one for every day of the month) for one output
-%     dataset (one per month). Can not construct such s/w mode.
-%     Footnote: Erik P G Johansson's BICAS batch processing utilities (not part of
-%     BICAS) also do not cover this case. Can not find combinations of datasets
-%     that determine what to process.
+%     dataset (one per month). One can not construct such s/w mode.
+%     Footnote: BICAS batch processing utilities (bicas.tools.batch) also does
+%     not cover this case. Can not find combinations of datasets that determine
+%     what to process.
 % (2) Output datasets can not be generated from arbitrary (versions of) input
-%     datasets. Exact input dataset versions are linked to the content of
-%     .mat file.
+%     datasets. Exact input dataset versions are (should be) the ones used to
+%     create the content of .mat file.
 %
 % NOTE: Future versions may try to read the original (input) datasets that were
 % used to produce the .mat file, to complement the output datasets with metadata
 % and quality variables.
-% VHT files therefore has no ZVs QUALITY_FLAG, QUALITY_BITMASK,
+% VHT files therefore have no ZVs QUALITY_FLAG, QUALITY_BITMASK, or
 % L2_QUALITY_BITMASK.
 %
 %
@@ -50,6 +51,12 @@ function generate_VHT_dataset(...
   masterCdfPath, yearMonth, matFilePath, InputDatasetsMap, outputFile, ...
   emptyDatasetPolicy)
 %
+% PROPOSAL: Move to bicas.tools?
+%   PRO: Is standalone code, separate from BICAS proper.
+%   PRO: Easier to find code.
+%   CON: Code is not a "tool", but rather the proper way of generating
+%        official datasets.
+%
 % PROPOSAL: Write code so that it can be transplanted/moved to BICAS proper.
 %   CON: Can not be done since it requires multiple input datasets of same
 %        DSI.
@@ -67,13 +74,57 @@ function generate_VHT_dataset(...
 %   PROPOSAL: Set using relevant L2 input file behind data?
 %       NOTE: Input L2 files use different time resolution.
 %
+% PROPOSAL: Convert emptyDatasetPolicy string constants to SCREAMING_SNAKE_CASE.
+%
+% PROBLEM: Can not find .mat file to use!!! /2025-01-21
+%   NOTE: VHT datasets (June-Dec 2020, V01) have Epoch values for
+%     the time interval:
+%       2020-06-01T02:10:00.000000000 to
+%       2020-12-31T11:40:00.000000000
+%     The files do contain data (not fill values) for the beginning and end
+%     timestamps (zVariable "VX_SRF").
+%   NOTE: Code assertions on the .mat file:
+%     The most common timestamp interval is 10 min.
+%     File contains variable "V_RPW".
+%   --
+%   brain:/data/solo/data_yuri/V_RPW.mat
+%     Contains V_RPW but most common time interval is 6 h.
+%       mode(diff(b.V_RPW.time.ttns)) / (1e9*60*60*6) == 1
+%     Covers the wrong time interval:
+%       2020-06-01T02:10:00.000000000Z
+%       2020-06-01T08:10:00.000000000Z
+%       ... skipped 306 records ...
+%       2020-12-05T12:00:00.000000000Z
+%       2020-12-05T18:00:00.000000000Z
+%   brain:/data/solo/data_yuri/V_RPW_1h.mat
+%     Does not contain variable "V_RPW" but does contain "V_RPW_1h".
+%     V_RPW_1h has the most common time interval 1h.
+%       mode(diff(a.V_RPW_1h.time.ttns)) / (1e9*60*60) == 1
+%     Covers the wrong time interval:
+%       2020-06-01T02:10:00.000000000Z
+%       2020-06-01T03:10:00.000000000Z
+%       ... skipped 942 records ...
+%       2020-12-05T21:00:00.000000000Z
+%       2020-12-05T22:00:00.000000000Z
+%   brain:/data/solo/data_yuri/Vp_SWA_PAS.mat
+%     Does not contain variable "V_RPW" but does contain "V_pas".
+%     V_pas has the most common time interval 4 s.
+%       mode(diff(a.V_pas.time.ttns)) / (1e9*4) == 1
+%     Covers the wrong time interval:
+%       2020-04-14T12:35:09.665000000Z
+%       2020-04-14T12:35:13.665000000Z
+%       ... skipped 1172549 records ...
+%       2020-08-30T23:53:01.575000000Z
+%       2020-08-30T23:53:05.575000000Z
+%
 % TEST CALL:
-% bicas.vht.generate_VHT_dataset('/home/erjo/temp/L3/V_RPW.mat', '/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master', [2020,07], '/home/erjo/temp/L3', 2, 'ignore empty')
+% bicas.vht.generate_VHT_dataset('/home/erjo/temp/L3/V_RPW.mat', '/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master', [2020,07], '/home/erjo/temp/L3', 2, 'ignore empty') -- OBSOLETE /2025-01-21
+% bicas.vht.generate_VHT_dataset('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_L3_RPW-BIA-VHT_V03.cdf', [2020,07], "/data/solo/data_yuri/V_RPW.mat", containers.Map, '/home/erjo/temp/vht/solo_L3_rpw-bia-vht-cdag_20200701-20200731_V01.cdf', 'ignore empty') - NEW AND INCOMPLETE /2025-01-21
 
 %     DSI                  = 'SOLO_L3_RPW-BIA-VHT';
 %     MASTER_CDF_VERSION_STR      = '01';
-EXPECTED_SAMPLE_INTERVAL_NS = int64(10*60*1e9);    % For assertion.
-DELTA_PLUS_MINUS_NS         = int64(1800*1e9);
+EXPECTED_SAMPLE_INTERVAL_NS = int64(10*60*1e9);    % 10 minutes in ns. For assertion on correct .mat file.
+DELTA_PLUS_MINUS_NS         = int64(1800*1e9);     % 30 minutes in ns. Contradicts EXPECTED_SAMPLE_INTERVAL_NS?!!
 
 % Used for assertion on data.
 % NOTE: Velocity is negative due to coordinate system.
@@ -83,7 +134,7 @@ VX_SRF_MAX_KMPS =  0;
 
 
 % ASSERTIONS
-assert(ischar(matFilePath))
+assert(isstring(matFilePath), 'matFilePath is not a string.')
 assert((length(yearMonth) == 2) && isnumeric(yearMonth))
 assert(isa(InputDatasetsMap, 'containers.Map'))
 
@@ -114,6 +165,7 @@ assert(all(~isnan(V_RPW.data)), 'Found NaN in V_RPW.data.')
 assert(all((VX_SRF_MIN_KMPS <= V_RPW.data) & (V_RPW.data <= VX_SRF_MAX_KMPS)))
 
 
+
 %==============================================
 % Only keep data for the specified time period
 %==============================================
@@ -122,10 +174,10 @@ dv1 = datevec(datetime([yearMonth(1), yearMonth(2),   1]));
 dv2 = datevec(datetime([yearMonth(1), yearMonth(2)+1, 1]));
 % IMPLEMENTATION NOTE: Slight hack using intermediate UTC string, but there
 % is no (?) smooth way of converting date/time vector-->EpochTT.
-timeIntStr = sprintf(...
+timeIntervalStr = sprintf(...
   '%04i-%02i-01T00:00:00/%04i-%02i-01T00:00:00', ...
   dv1(1:2), dv2(1:2));
-V_RPW = V_RPW.tlim(irf.tint(timeIntStr));
+V_RPW = V_RPW.tlim(irf.tint(timeIntervalStr));
 
 
 
@@ -173,8 +225,6 @@ OutputDataset.Ga = Ga;
 %=====================
 % Create dataset file
 %=====================
-
-%InputDatasetsMap = containers.Map();    % NO PARENT DATASETS! -- TEMP
 
 %---------------------------------------------------------------------------
 % IMPORTANT NOTE: BICAS uses

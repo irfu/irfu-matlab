@@ -319,8 +319,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       nCdfSamplesPerRecord = irf.assert.sizes(...
         InSci.Zv.V, [nRecords, -1], ...
         E,          [nRecords, -1, 2]);
-      if obj.inputSci.isLfrSurvSwf   assert(nCdfSamplesPerRecord == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
-      else                           assert(nCdfSamplesPerRecord == 1)
+      if obj.inputSci.isLfrSurvSwf,   assert(nCdfSamplesPerRecord == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
+      else,                           assert(nCdfSamplesPerRecord == 1)
       end
 
 
