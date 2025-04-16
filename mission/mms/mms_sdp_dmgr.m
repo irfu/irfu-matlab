@@ -2293,6 +2293,12 @@ classdef mms_sdp_dmgr < handle
 
       % Apply filter to lowfield and highfield
       nfact = max(1,3*(N-1));
+      % Very short burst intervals may fail, add a warning to log file to help understand failure.
+      % This was the case for mms4_edp_brst_l1b_dce_20250130125833_v1.4.0.cdf (1600 datapoints @ 8kHz rate).
+      if nfact > length(lowfield)
+        errStr = 'Processing a potentially too short interval given the need to merge fields, may be problematic.';
+        irf.log('warning', errStr);
+      end
       a = 1.0;
       a = a(:);
       LoP = LoP(:);
