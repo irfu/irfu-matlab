@@ -94,23 +94,7 @@ function [subStrCa, remainingStr, isPerfectMatch] = regexp_str_parts(...
 %           edges depending on searchPriorities. searchPriorities = one integer per regexp. Can not be arbitrary;
 %           must increase toward the middle.
 %
-% PROPOSAL: Do not throw error on not matching, but return special value.
-%   PROPOSAL: Return empty.
-%   PROPOSAL: Have policy argument determine whether exception or special return value.
-%       PROPOSAL: 'assert match', 'permit no match'/'no assert match'
-%           NOTE: Easy for caller to assert: assert(~isempty(subStrCa)).
-%   PROPOSAL: Permit returning partial results and letting the caller know where it failed.
-%
-% PROPOSAL: Somehow specify whether to ignore case or not, for every regexp separately(!).
-%
-% PROPOSAL: Additional easy-to-use return value for verifying perfect match.
-%   PROBLEM: How make it fit with assertionPolicy? Should not be in the way with 'assert match'.
-%       PROPOSAL: [subStrCa, remainingStr, isPerfectMatch]
-%           PRO: Backward-compatible.
-%       PROPOSAL: [subStrCa, isPerfectMatch, remainingStr]
-%           PRO: Does not need to store remainingStr, even if only wants isPerfectMatch.
-%
-% PROPOSAL: Implement using irf.str.read_token.
+% PROPOSAL: Implement using irf.str.read_token().
 %
 % NOTE: Could almost(?) use function to implement equivalent functionality of regular expressions with
 % (positive) lookbehind+lookahead (other function).

@@ -72,6 +72,12 @@ classdef qual
     % are then supposed to be used for creating global versions of the
     % actual ZVs.
     %
+    % ARGUMENTS
+    % =========
+    % isFullSaturation
+    %       Autodetected full saturation array (as opposed to derived from NSO
+    %       table).
+    %
     %
     % RETURN VALUES
     % =============
@@ -84,6 +90,7 @@ classdef qual
     %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         get_quality_ZVs(QrcSettingsL2Map, NsoTable, Epoch, isFullSaturation, L)
+
       assert(islogical(isFullSaturation))
 
       QrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
@@ -127,11 +134,13 @@ classdef qual
         ' to fill values (i.e. removed), regardless of reason.\n']);
       bicas.proc.L1L2.qual.log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
 
-      % Set current values to fill value/NaN.
+      % ====================================
+      % Set CURRENT values to fill value/NaN
+      % ====================================
       zvCurrentAAmpere(zvUfv, :) = NaN;
 
       % ====================================
-      % Set voltage values to fill value/NaN
+      % Set VOLTAGE values to fill value/NaN
       % ====================================
       % NOTE: Should really use future bicas.utils.SameSizeTypeMap here
       %       which contains size on other dimensions.
@@ -155,10 +164,17 @@ classdef qual
     %
     % Ex: Sweeps
     %
-    % NOTE: It is not obvious that data should be set to FV instead of
-    % having quality bitmask/flag modified. Nonetheless, I think setting
-    % data to fill value was requested by YK many years ago. /Erik P G
-    % Johansson 2023-11-28
+    % NOTE: It is not obvious that data should be set to FV instead of having
+    % quality bitmask/flag modified. Nonetheless, I think setting data to fill
+    % value was requested by YK many years ago.
+    % /Erik P G Johansson 2023-11-28
+    %
+    % NOTE: This function is a historical remnant from old functionality for
+    % removing sweeps using BDM=4 when BDM=0 was the nominal BDM. This
+    % functionality has not been used for a long time and could potentially be
+    % removed. Setting PROCESSING.L2.REMOVE_DATA.MUX_MODES would be removed with
+    % it.
+    % /Erik P G Johansson 2025-01-16
     %
     %
     % ARGUMENTS
@@ -184,8 +200,8 @@ classdef qual
       [bdmRemoveArray, settingBdmRemoveKey] = Bso.get_fv(...
         'PROCESSING.L2.REMOVE_DATA.MUX_MODES');
       bdmRemoveArray = bdmRemoveArray(:);
-      if     isLfr,   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S';    % LFR
-      else,           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S';    % TDS
+      if     isLfr,   settingMarginKey = 'PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC';    % LFR
+      else,           settingMarginKey = 'PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC';    % TDS
       end
       [removeMarginSec, settingMarginKey] = Bso.get_fv(settingMarginKey);
 
@@ -196,7 +212,7 @@ classdef qual
       zvUfv = irf.utils.true_with_margin(...
         zv_Epoch, ...
         ismember(zvBdmFpa.int2doubleNan(), bdmRemoveArray), ...
-        removeMarginSec * 1e9);
+        removeMarginSec * 1e9, removeMarginSec * 1e9);
 
       %=====
       % Log
@@ -288,17 +304,8 @@ classdef qual
       %   bit, flag
       %
       % PROPOSAL: Move to bicas.utils.
-      %   PRO: More generic that quality variables.
+      %   PRO: More generic than quality variables.
       %   PRO: Independent of L1/L1R-L2 proessing in principle.
-      %
-      % TODO-NI: Distinguishing name for set bits before & after?
-      %   PROPOSAL: Suffix 1 & 2
-      %   PROPOSAL: Suffix before & after
-      %   PROPOSAL: rawFlag vs slidingWindowFlag
-      %   PROPOSAL: TSF=Threshold Saturation Flag,
-      %             SWSF=Sliding Window Saturation Flag.
-      %       CON: Function is generic. Should not make reference to
-      %            saturation.
       %
       % TODO-DEC: Exact algorithm to use? How implement?
       %   NOTE: Most data is not saturated.

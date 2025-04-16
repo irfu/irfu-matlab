@@ -1,17 +1,19 @@
 Release notes
 =============
 Note: This list includes updates to unofficial functionality, e.g. for
-processing L2 to L3.
+processing L2 to L3. Version dates refer to the version-tagged irfu-matlab
+git commits (i.e. git@github.com:irfu/irfu-matlab.git; not ROC git repo,
+git@gitlab.obspm.fr:ROC/RCS/BICAS.git).
 
 
-Version 1.0.0
--------------
+Version 1.0.0 (2020-01-20)
+--------------------------
 * Almost-complete support for LFR & TDS datasets (voltages) with transfer
   functions (partially tested). No parasitic capacitance.
 
 
-Version 2.0.0
--------------
+Version 2.0.0 (2020-05-07)
+--------------------------
 * Added support for L1 input bias current datasets; supports updated L1R input
   datasets, and updated L2 master CDFs (V08).
 
@@ -21,8 +23,8 @@ Version 2.0.1
 * Bugfix: Reads bias current zVars as nA (not uA)
 
 
-Version 3.0.0
--------------
+Version 3.0.0 (2020-07-07)
+--------------------------
 * Functionality for ITF high freq. cutoff.
 * Uses master CDFs V09 (instead of V08).
 * Copies zVar BW from LFR datasets.
@@ -31,8 +33,8 @@ Version 3.0.0
 * Uses LFR mux mode.
 
 
-Version 3.1.0
--------------
+Version 3.1.0 (2020-09-01)
+--------------------------
 * Bugfix to handle LFR L1 zVar BW=0.
 * Preliminary sweep removal.
 * Performance improvement (speed-up).
@@ -40,15 +42,15 @@ Version 3.1.0
 * Unofficial preliminary support for producing L2-->L3.
 
 
-Version 3.1.1
--------------
+Version 3.1.1 (2020-09-15)
+--------------------------
 * Modified default settings:
   (1) inverted transfer function cutoff at 0.8*omega_Nyquist (instead of 0.7)
   (2) duplicate bias current gives error (instead of using mitigation)
 
 
-Version 4.0.0
--------------
+Version 4.0.0 (2020-10-07)
+--------------------------
 * Non-Standard Operations (NSO) table for setting QUALITY_FLAG,
   L2_QUALITY_BITMASK (new)
 * Set glob.attr. Datetime, OBS_ID, SOOP_TYPE, TIME_MIN, TIME_MAX
@@ -56,8 +58,8 @@ Version 4.0.0
   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY=ERROR
 
 
-Version 4.1.0
--------------
+Version 4.1.0 (2020-12-07)
+--------------------------
 * Added setting quality variables based on thruster firings in
   Non-Standard Operations (NSO) table. List complete until 2020-12-05.
 * Zero order AC de-trending (remove mean, not linear fit), no AC re-trending
@@ -70,16 +72,16 @@ Version 4.1.0
 * Note: Requires updated BIAS RCT to not crash.
 
 
-Version 5.0.0
--------------
+Version 5.0.0 (2021-02-02)
+--------------------------
 * Non-Standard Operations (NSO) table for thruster firings & saturation up until
   2021-01-26.
 * Better output CDF standards compliance.
 * Using new L2 master CDFs.
 
 
-Version 6.0.0
--------------
+Version 6.0.0 (2021-09-21)
+--------------------------
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2021-09-11.
 * Using new L2 master CDFs.
@@ -91,8 +93,8 @@ Version 6.0.0
   (otherwise error).
 
 
-Version 6.0.1
--------------
+Version 6.0.1 (2022-09-20)
+--------------------------
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2022-09-03.
 * Bugfix: Use LFR's R0/R1/R2 for splitting into time intervals. This bugfix
@@ -101,8 +103,8 @@ Version 6.0.1
   any .matlab_datastore_* file.
 
 
-Version 6.0.2
--------------
+Version 6.0.2 (2022-12-20)
+--------------------------
 * Bugfix: Corrected algorithm/formula for calculating Ez_SRF (vdccal.m).
 * Recalculated and added E-field calibration data. Now covers 2020-02-28 to
   2022-12-03.
@@ -110,16 +112,16 @@ Version 6.0.2
   2022-12-17.
 
 
-Version 7.0.0
--------------
+Version 7.0.0 (2023-02-17)
+--------------------------
 * Using new L2 master CDFs with corrections for DELTA_PLUS/MINUS_VAR,
   APPLICABLE, Data_type.
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2023-02-05.
 
 
-Version 8.0.0
--------------
+Version 8.0.0 (2024-01-18)
+--------------------------
 * Renamed settings:
       PROCESSING.L2-CWF-DWNS.ZV_QUALITY_FLAG_MIN
   --> PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN
@@ -155,8 +157,8 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
       stated that a later CDF format was used.
 
 
-Version 8.0.1
--------------
+Version 8.0.1 (2024-02-01)
+--------------------------
 * Corrected documentation w.r.t. the CDF format version used in BICAS v8.0.0.
   This version still uses CDF 3.7.1.
 * Changed source code style: Two whitespace indentation, no trailing whitespace.
@@ -168,15 +170,15 @@ Version 8.0.1
 * Changed setting names relating to autodetection of sweeps.
 
 
-Version 8.1.0
--------------
+Version 8.1.0 (2024-06-11)
+--------------------------
 * Require and use MATLAB R2024a (instead of MATLAB R2019b).
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2024-05-05.
 
 
-Version 8.2.0
--------------
+Version 8.2.0 (2024-07-25)
+--------------------------
 * Uses zVariable compression used in master CDFs.
 * Requires new L2 master CDFs V15, updated for compliance with archiving
   conventions in
@@ -203,13 +205,13 @@ Version 8.2.0
 * Abolishes the unofficial --swdescriptor argument.
 
 
-Version 8.2.1
--------------
+Version 8.2.1 (2024-07-25)
+--------------------------
 * Bugfix: Including previously missing source code updates.
 
 
-Version 8.3.0
--------------
+Version 8.3.0 (2024-09-16)
+--------------------------
 * Reinstate the unofficial --swdescriptor argument.
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2024-08-04.
@@ -221,4 +223,37 @@ Version 8.3.0
 * Removed setting
   PROCESSING.RCT_REGEXP.BIAS
 * Changed glob.attributes TIME_MIN, TIME_MAX to only have six decimals.
-* Requires updated master CDF versions (better metadata) for all datasets.
+* Requires updated master CDF versions (better metadata) for all output
+  datasets.
+
+
+Version 8.4.0 (2025-02-14)
+--------------------------
+* Rename settings, mostly for consistency:
+       PROCESSING.L2.DETECT_SWEEPS.*
+    -->PROCESSING.L2.SWEEP_DETECTION.*
+       PROCESSING.L2.SWEEP_DETECTION.SBDA.END_UTC
+    -->PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC
+       PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_PTS
+    -->PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_LENGTH_HK_CDF_RECORDS
+       PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_S
+    -->PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC
+       PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_S
+    -->PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC
+       PROCESSING.CALIBRATION.VOLTAGE.DISABLE
+    -->PROCESSING.CALIBRATION.VOLTAGE.DISABLED
+* Convert numeric-valued settings which are de facto boolean, to logical-valued
+  for more consistency.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2025-02-10.
+* Requires new L2 master CDFs V17, updated for compliance with archiving
+  conventions after SOAR and ROC feedback etc.
+* Bug: L2_QUALITY_BITMASK saturation bits set also when reconstructed channels
+  exceed automatic saturation detection thresholds.
+
+
+Version 8.4.1
+-------------
+* Bugfix: Automatic saturation detection only sets L2_QUALITY_BITMASK saturation
+  bits when samples exceed thresholds on non-reconstructed channels.
+* Require new L3 master CDFs V06/V07.

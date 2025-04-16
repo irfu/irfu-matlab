@@ -9,17 +9,107 @@
 % First created 2021-05-25
 %
 classdef dc
-  % PROPOSAL: Better name.
-  %   PRO: Processing includes quality "processing" which is not in "DC".
-  %   PROPOSAL: dcq = Demux, Calibrate, Quality
-  %
-  % PROPOSAL: Automatic test code.
-  %
-  % PROPOSAL:   process_calibrate_demux()
-  %           & calibrate_demux_voltages()
-  %           should only accept the needed ZVs and variables.
-  %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
-  %         from struct.
+% PROPOSAL: Better name.
+%   PRO: Processing includes quality "processing" which is not in "DC".
+%   PROPOSAL: dcq = Demux, Calibrate, Quality
+%   process()
+%
+% PROPOSAL: Automatic test code.
+%
+% PROPOSAL:   process_calibrate_demux()
+%           & calibrate_voltages()
+%           should only accept the needed ZVs and variables.
+%   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
+%         from struct.
+%
+% PROPOSAL: Reorg. code to
+%   * Consist of more isolated/modular/generic separate steps.
+%   * Be more easily testable.
+%   * Be easier to understand.
+%   * Not require splitting up in subsequences with constant "settings" (values
+%     for specific zVariables not varying as a function of CDF record), in
+%     particular not require many constant "settings".
+%   * Use more vector operations.
+%   * More natural to implement
+%
+%
+% #############################################################################
+% PROPOSAL: Class for one ASR/ZV/SDIS-labelled channel (with samples). Not
+%           SDID="unknown". Can be used BEFORE and AFTER after deriving data
+%           using ASR relationships.
+%     class ZvLabelledChannelSamples
+%         % Ideally FPA.
+%         samplesAVolt          [nRows, spr]
+%         % TSF? Before/after windowing?
+%         bSaturated            [nRows]
+%         % Unknown is not really meant for this case, but should work. Can vary by CDF record.
+%         kssid / None/unknown  [nRows]
+%         % NOTE: SDID excluded. Is constant.
+%         function bFpArray = is_FP()
+%         function subsref()
+%         function subsasgn()
+%         function size(), ndims(), ...
+%     --
+%     Replace SRM with dictionary (or custom class; Can not use SRM).
+%         SDID-->class Channel
+%     PROPOSAL: Class can contain static methods describing ASR relationships,
+%               and which can be used for reconstructing ASR channels (by
+%               generic function derive_missing_data()).
+%     CON: bSaturated not meaningful until has derived it. Should ideally be
+%          possible to add it after deriving it.
+%         CON-PROPOSAL: Separate dictionary SDID-->bSaturation
+%             PRO: Proliferation of saturation bits is independent of other channel data.
+%                  Assuming has fill positions. 0=FP does not work for proliferation.
+%             CON: Can not ensure identical proliferation derivations (or not clear; risky).
+%                  Should ideally have "proliferation functions"
+%                  X=func_X_from_Y_and_Z(Y,Z) which set all variables and use
+%                  one single source of ~FP flags.
+%
+% #############################################################################
+% PROPOSAL: Generic function for deriving data using ASR relationships (below).
+%
+% IMPLEMENTATION NOTE: Deliberately separates
+% (1a) the notion of data arrays from
+% (1b) the notion of fill positions (missing data),
+% and
+% (2) the operations used for obtaining data.
+%   PRO: More generic.
+%   PRO: More easily testable.
+%
+% IMPLEMENTATION NOTE: Deliberately does NOT create new arrays (data structures)
+% for missing data. Instead fills in pre-existing data structures.
+% ==> Same type of arrays/classes as input and as output (conceptually, and
+%     MATLAB classes).
+%
+% IMPLEMENTATION NOTE: Deliberately uses vectorized operations.
+%   PRO: Does not have to assume the same operation (fh12to3, fh13to2, fh23to1)
+%        acting on entire arrays.
+%       PRO: Does not have to split records/arrays in sections with identical
+%            operation.
+%   PRO: Presumably faster when applied to all data.
+%
+% function derive_missing_data(A1,A2,A3, bFp1,bFp2,bFp3, fh12to3, fh13to2, fh23to1)
+% % PROPOSAL: Require 1D arrays.
+% %   PRO: ~More generic.
+% %   CON: "Must" use classes for SWF data.
+% %       CON-PROPOSAL: Use 1D cell arrays of snapshots/1D arrays.
+% %       CON: Might want to do that anyway.
+% %           Ex: Samples (2D per channel) + TSF (1D) + SDID.
+% %           Ex: Tests.
+% % PROPOSAL: Require same array size for all arrays (in practice 1D or 2D).
+%
+%     bDerive1 =  bFp1 & ~bFp2 & ~bFp3;
+%     bDerive2 = ~bFp1 &  bFp2 & ~bFp3;
+%     bDerive3 = ~bFp1 & ~bFp2 &  bFp3;
+%
+%     % If using actual arrays for samples, then need at least one more dimension
+%     % for SWF (1 record=1 snapshot): Ax(b, :) = func(Ay(b, :), Az(b, :).
+%     %
+%     A1(bDerive1) = fh23to1(A2(bDerive1), A3(bDerive1));
+%     A2(bDerive2) = fh13to2(A1(bDerive2), A3(bDerive2));
+%     A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
+% end
+% % #############################################################################
 
 
 
@@ -47,13 +137,48 @@ classdef dc
       % ASSERTION
       assert(isa(Dcip, 'bicas.proc.L1L2.DemultiplexingCalibrationInput'));
 
+      bicas.proc.L1L2.dc.log_input_calibration_settings(Dcip, Cal, L)
 
 
-      %############################
-      % DEMUX & CALIBRATE VOLTAGES
-      %############################
-      AsrSamplesAVoltSrm = ...
-        bicas.proc.L1L2.dc.calibrate_demux_voltages(Dcip, Cal, L);
+
+      %#################################################################
+      % Obtain "demultiplexer" "routings": SSID and SDID for every BLTS
+      %#################################################################
+      [bltsKSsidArray, bltsKSdidArray] = bicas.proc.L1L2.dc.get_KSSID_KSDID_arrays(...
+        Dcip.Zv.bdmFpa, Dcip.Zv.dlrFpa);
+
+
+
+      %####################
+      % CALIBRATE VOLTAGES
+      %####################
+      bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages(...
+        Epoch                   = Dcip.Zv.Epoch, ...
+        bltsSamplesTm           = Dcip.Zv.bltsSamplesTm, ...
+        isAchgFpa               = Dcip.Zv.isAchgFpa, ...
+        CALIBRATION_TABLE_INDEX = Dcip.Zv.CALIBRATION_TABLE_INDEX, ...
+        freqHz                  = Dcip.Zv.freqHz, ...
+        iLsf                    = Dcip.Zv.iLsf, ...
+        ufv                     = Dcip.Zv.ufv, ...
+        bltsKSsidArray          = bltsKSsidArray, ...
+        bltsKSdidArray          = bltsKSdidArray, ...
+        isTdsCwf                = Dcip.isTdsCwf, ...
+        isLfr                   = Dcip.isLfr, ...
+        hasSwfFormat            = Dcip.hasSwfFormat, ...
+        nValidSamplesPerRecord  = Dcip.Zv.nValidSamplesPerRecord, ...
+        Cal                     = Cal, ...
+        L                       = L);
+
+
+
+      %#########################################################
+      % ~"DEMUX" VOLTAGES
+      % (SIGNALS LABELLED BY BLTS --> SIGNALS LABELLED BY DSID)
+      %#########################################################
+      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.distribute_BLTS_to_ASRs(...
+        bltsSamplesAVolt, ...
+        bltsKSsidArray, ...
+        bltsKSdidArray, L);
 
 
 
@@ -101,8 +226,8 @@ classdef dc
         Dcip.Zv.Epoch, ...
         AsrSamplesAVoltSrm, ...
         Dcip.Zv.nValidSamplesPerRecord, ...
-        Dcip.Zv.bdmFpa, Dcip.Zv.dlrFpa, ...
-        Dcip.Zv.lrx,    Dcip.Zv.isAchgFpa, ...
+        bltsKSsidArray, ...
+        Dcip.Zv.isAchgFpa, ...
         Dcip.hasSwfFormat, L);
 
       ZvIn = struct(...
@@ -136,6 +261,43 @@ classdef dc
 
 
 
+    % Obtain kSSID and kSDID arrays for arrays of BDM and DLR.
+    function [bltsKSsidArray, bltsKSdidArray] = get_KSSID_KSDID_arrays(bdmFpa, dlrFpa)
+      nRecTot = irf.assert.sizes(...
+        bdmFpa, [-1], ...
+        dlrFpa, [-1]);
+
+      [iRec1Array, iRec2Array, nSs] = irf.utils.split_by_change( ...
+        bdmFpa.int2doubleNan(), ...
+        dlrFpa.logical2doubleNan());
+
+      % Preallocate
+      % -----------
+      % NOTE: No need for bicas.utils.FPArray since SSIDs and DSIDs handle all
+      % special cases including unknown source and destination.
+      bltsKSsidArray = zeros(nRecTot, bicas.const.N_BLTS, 'uint8');
+      bltsKSdidArray = bltsKSsidArray;
+
+      for iSs = 1:nSs
+        iRecSs1 = iRec1Array(iSs);
+        iRecSs  = iRec1Array(iSs):iRec2Array(iSs);
+        nRecSs  = numel(iRecSs);
+
+        DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
+          bdmFpa(iRecSs1), dlrFpa(iRecSs1));
+
+        SsidArray  = [DemuxerRoutingArray.Ssid];
+        kSsidArray = bicas.sconst.C.SSID_K_DICT(SsidArray);
+        SdidArray  = [DemuxerRoutingArray.Sdid];
+        kSdidArray = bicas.sconst.C.SDID_K_DICT(SdidArray);
+
+        bltsKSsidArray(iRecSs, :) = repmat(kSsidArray, nRecSs, 1);
+        bltsKSdidArray(iRecSs, :) = repmat(kSdidArray, nRecSs, 1);
+      end
+    end
+
+
+
   end    % methods(Static)
 
 
@@ -149,59 +311,26 @@ classdef dc
 
 
 
-    % Demultiplex and calibrate VOLTAGES (not e.g. currents).
-    %
-    % NOTE: Can handle arrays of any size if the sizes are consistent.
-    %
-    function AsrSamplesAVoltSrm = calibrate_demux_voltages(Dcip, Cal, L)
-      % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
-      %           for CWF.
-      %
-      % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
-      % NOTE: Calibration is really separate from the demultiplexer.
-      %       Demultiplexer only needs to split into subsequences based on BDM
-      %       and DLR, nothing else.
-      %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
-      %
-      % PROPOSAL: Move the different conversion of CWF/SWF (one/many cell
-      %           arrays) into the calibration function?!!
-
-      % ASSERTIONS
-      assert(isscalar( Dcip.hasSwfFormat))
-      assert(isnumeric(Dcip.Zv.bltsSamplesTm))
-      [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
-        Dcip.Zv.bdmFpa,        [-1,  1], ...
-        Dcip.Zv.isAchgFpa,     [-1,  1], ...
-        Dcip.Zv.bltsSamplesTm, [-1, -2, bicas.const.N_BLTS]);
-
-
-
-      % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
-      % -----------------------------------------------------------------
-      % IMPLEMENTATION NOTE: Preallocation is very important for speeding
-      % up LFR-SWF which tends to be broken into subsequences of 1 record.
-      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
-        "bicas.proc.L1L2.AntennaSignalId", nRecords, 'CONSTANT', ...
-        nan(nRecords, nSamplesPerRecordChannel), ...
-        bicas.proc.L1L2.AntennaSignalId.ALL_ARRAY);
+    function log_input_calibration_settings(Dcip, Cal, L)
+      % IMPLEMENTATION NOTE: Implemented separately from processing functions
+      % since:
+      % (1) removes dependence on logger object,
+      % (2) can split data into subsequences based on arbitrary choice of
+      %     variables,
+      % (3) reduces size of processing function where logging would otherwise
+      %     be, and
+      % (4) can potentially turn table into proper table with column headers.
 
       iCalibLZv = Cal.get_BIAS_calibration_time_L(Dcip.Zv.Epoch);
       iCalibHZv = Cal.get_BIAS_calibration_time_H(Dcip.Zv.Epoch);
 
+      % IMPLEMENTATION NOTE: Do not log for LFR SWF since it produces
+      % unnecessarily many log messages since sampling frequencies change
+      % for every CDF record.
+      if Dcip.hasSwfFormat && Dcip.isLfr
+        return
+      end
 
-
-      %======================================================================
-      % (1) Find continuous subsequences of records with identical settings.
-      % (2) Process data separately for each such sequence.
-      % ----------------------------------------------------------
-      % NOTE: Just finding continuous subsequences can take a significant
-      %       amount of time.
-      % NOTE: Empirically, this is not useful for real LFR SWF datasets where
-      %       the LFR sampling frequency changes in every record, meaning that
-      %       the subsequences are all 1 record long.
-      %
-      % SS = Subsequence
-      %======================================================================
       [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
         Dcip.Zv.bdmFpa.int2doubleNan(), ...
         Dcip.Zv.isAchgFpa.logical2doubleNan(), ...
@@ -214,110 +343,202 @@ classdef dc
         iCalibLZv, ...
         iCalibHZv);
 
-      L.logf('info', ...
+      for iSs = 1:nSs
+        iRec1 = iRec1Ar(iSs);
+        iRec2 = iRec2Ar(iSs);
+
+        Cv.bdmFpa    = Dcip.Zv.bdmFpa(   iRec1);
+        Cv.isAchgFpa = Dcip.Zv.isAchgFpa(iRec1);
+        Cv.dlrFpa    = Dcip.Zv.dlrFpa(   iRec1);
+
+        % PROPOSAL: Make into "proper" table with top rows with column names.
+        %   NOTE: Can not use irf.str.assist_print_table() since
+        %         it requires the entire table to pre-exist before execution.
+        %   PROPOSAL: Print after all iterations.
+        %
+        % NOTE: HK_BIA_DIFF_GAIN needs three characters to print the string "NaN".
+        L.logf('info', ['Records %8i-%8i : %s -- %s', ...
+          ' bdm/HK_BIA_MODE_MUX_SET=%i;', ...
+          ' isAchg/HK_BIA_DIFF_GAIN=%-3i;', ...
+          ' dlr/HK_BIA_MODE_DIFF_PROBE=%i;', ...
+          ' freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
+          ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
+          iRec1, iRec2, ...
+          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.Epoch(iRec1), 9), ...
+          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.Epoch(iRec2), 9), ...
+          Cv.bdmFpa.int2doubleNan(), ...
+          Cv.isAchgFpa.logical2doubleNan(), ...
+          Cv.dlrFpa.logical2doubleNan(), ...
+          Dcip.Zv.freqHz(                  iRec1), ...
+          iCalibLZv(                       iRec1), ...
+          iCalibHZv(                       iRec1), ...
+          Dcip.Zv.ufv(                     iRec1), ...
+          Dcip.Zv.CALIBRATION_TABLE_INDEX( iRec1, 1), ...
+          Dcip.Zv.CALIBRATION_TABLE_INDEX( iRec1, 2))
+      end    % for
+
+    end
+
+
+
+    % Demultiplex and calibrate VOLTAGES (not e.g. currents).
+    %
+    % NOTE: Can handle arrays of any size if the sizes are consistent.
+    %
+    function bltsSamplesAVolt = calibrate_voltages(Zv, A)
+      % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
+      %           for CWF.
+      %
+      % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
+      % NOTE: Calibration is really separate from the demultiplexer.
+      %       Demultiplexer only needs to split into subsequences based on BDM
+      %       and DLR, nothing else.
+      %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
+      arguments
+        Zv.Epoch
+        Zv.bltsSamplesTm
+        Zv.isAchgFpa
+        Zv.CALIBRATION_TABLE_INDEX
+        Zv.freqHz
+        Zv.iLsf
+        Zv.ufv
+        Zv.bltsKSsidArray
+        Zv.bltsKSdidArray
+        Zv.nValidSamplesPerRecord
+        A.isTdsCwf
+        A.isLfr
+        A.hasSwfFormat
+        A.Cal
+        A.L
+      end
+
+      % ASSERTIONS
+      assert(isscalar( A.hasSwfFormat))
+      assert(isnumeric(Zv.bltsSamplesTm))
+      assert(isa(Zv.bltsKSsidArray, 'uint8'))
+      assert(isa(Zv.bltsKSdidArray, 'uint8'))
+      [nRecords, nSamplesPerRecordChannel] = irf.assert.sizes(...
+        Zv.isAchgFpa,      [-1,     1], ...
+        Zv.bltsKSsidArray, [-1,     bicas.const.N_BLTS], ...
+        Zv.bltsKSsidArray, [-1,     bicas.const.N_BLTS], ...
+        Zv.bltsSamplesTm,  [-1, -2, bicas.const.N_BLTS]);
+
+
+
+      % Pre-allocate calibrated array. All (BLTS) channels, all records
+      % ---------------------------------------------------------------
+      % IMPLEMENTATION NOTE: Preallocation is very important for speeding
+      % up LFR-SWF which tends to be broken into subsequences of 1 record.
+      bltsSamplesAVolt = nan(nRecords, nSamplesPerRecordChannel, bicas.const.N_BLTS);
+
+      iCalibLZv = A.Cal.get_BIAS_calibration_time_L(Zv.Epoch);
+      iCalibHZv = A.Cal.get_BIAS_calibration_time_H(Zv.Epoch);
+
+
+
+      %========================================================================
+      % (1) Find continuous subsequences of records with identical settings.
+      % (2) Process data separately for each such sequence.
+      % --------------------------------------------------------------------
+      % NOTE: Just finding continuous subsequences can take a significant
+      %       amount of time.
+      % NOTE: Empirically, this is not useful for real LFR SWF datasets where
+      %       the LFR sampling frequency changes in every record, meaning that
+      %       the subsequences are all 1 record long.
+      %
+      % SS = Subsequence
+      %========================================================================
+      % PROPOSAL: Do not use irf.utils.split_by_change() for SWF data. It is
+      %           enough to group by identical values (not use continuous
+      %           blocks of CDF records).
+      %   PRO: Faster
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+        Zv.isAchgFpa.logical2doubleNan(), ...
+        Zv.freqHz, ...
+        Zv.iLsf, ...
+        Zv.CALIBRATION_TABLE_INDEX, ...
+        Zv.ufv, ...
+        Zv.bltsKSsidArray, ...
+        Zv.bltsKSdidArray, ...
+        iCalibLZv, ...
+        iCalibHZv);
+
+      A.L.logf('info', ...
         ['Calibrating voltages -', ...
         ' One sequence of records with identical settings at a time.'])
       for iSs = 1:nSs
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        % ==============================================================
-        % IMPLEMENTATION NOTE: Below extraction of data from Dcip etc.
-        % may seem awkward but actually clarifies the code associated
-        % with bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence()
-        % as compared to earlier version before refactoring.
-        %
-        % PRO: Clearly divides the variables/arguments into (a) constant
-        %      and (2) varying variables.
-        % PRO: Clarifies the information which the function needs.
-        %      = Minimizes the amount of information that goes into the
-        %      function.
-        % PRO: Prevents the function from having to do the same.
-        % PRO: Prevents the function from simultaneously having
-        %      variables version for (a) entire interval of time and (b)
-        %      the selected interval of time.
-        % ==============================================================
+        ssBltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_subsequence( ...
+          Cal                      = A.Cal, ...
+          ... % ===============================================================
+          ... % NOTE: Variables which do VARY over CDF records.
+          isAchgFpa                = Zv.isAchgFpa(              iRec1), ...
+          freqHz                   = Zv.freqHz(                 iRec1), ...
+          iLsf                     = Zv.iLsf(                   iRec1), ...
+          zvcti                    = Zv.CALIBRATION_TABLE_INDEX(iRec1, :), ...
+          ufv                      = Zv.ufv(                    iRec1), ...
+          bltsKSsidArray           = Zv.bltsKSsidArray(         iRec1, :), ...
+          bltsKSdidArray           = Zv.bltsKSdidArray(         iRec1, :), ...
+          iCalibL                  = iCalibLZv(iRec1), ...
+          iCalibH                  = iCalibHZv(iRec1), ...
+          ... % ===============================================================
+          ... % NOTE: Variables which do not vary over CDF records.
+          hasSwfFormat             = A.hasSwfFormat, ...
+          isLfr                    = A.isLfr, ...
+          isTdsCwf                 = A.isTdsCwf, ...
+          nSamplesPerRecordChannel = nSamplesPerRecordChannel, ...
+          ...   % Variables which vary by CDF records.
+          Epoch                    = Zv.Epoch(                 iRec1:iRec2), ...
+          bltsSamplesTm            = Zv.bltsSamplesTm(         iRec1:iRec2, :, :), ...
+          zvNValidSamplesPerRecord = Zv.nValidSamplesPerRecord(iRec1:iRec2));
 
-        % CV = Constant Values = Values which are constant for the
-        %      entire subsequence of records.
-        Cv = [];
-        Cv.bdmFpa    = Dcip.Zv.bdmFpa(                 iRec1);
-        Cv.isAchgFpa = Dcip.Zv.isAchgFpa(              iRec1);
-        Cv.freqHz    = Dcip.Zv.freqHz(                 iRec1);
-        Cv.iLsf      = Dcip.Zv.iLsf(                   iRec1);
-        Cv.zvcti     = Dcip.Zv.CALIBRATION_TABLE_INDEX(iRec1, :);
-        Cv.ufv       = Dcip.Zv.ufv(                    iRec1);
-        Cv.dlrFpa    = Dcip.Zv.dlrFpa(                 iRec1);
-        % NOTE: Excluding Dcip.Zv.lrx since it is only need for
-        %       splitting time/CDF record intervals, not for calibration
-        %       since calibration can handle sequences of only NaN.
-        Cv.iCalibL                 = iCalibLZv(                       iRec1);
-        Cv.iCalibH                 = iCalibHZv(                       iRec1);
-        % NOTE: Below variables do not vary over CDF records anyhow.
-        Cv.hasSwfFormat            = Dcip.hasSwfFormat;
-        Cv.isLfr                   = Dcip.isLfr;
-        Cv.isTdsCwf                = Dcip.isTdsCwf;
-
-        % VV = (Record-)Varying Values
-        Vv = [];
-        Vv.Epoch                    = Dcip.Zv.Epoch(                  iRec1:iRec2);
-        Vv.bltsSamplesTm            = Dcip.Zv.bltsSamplesTm(          iRec1:iRec2, :, :);
-        Vv.zvNValidSamplesPerRecord = Dcip.Zv.nValidSamplesPerRecord( iRec1:iRec2);
-
-        if ~(Cv.hasSwfFormat && Cv.isLfr)
-          % IMPLEMENTATION NOTE: Do not log for LFR SWF since it produces
-          % unnecessarily many log messages since sampling frequencies change
-          % for every CDF record.
-          %
-          % PROPOSAL: Make into "proper" table with top rows with column names.
-          %   NOTE: Can not use irf.str.assist_print_table() since
-          %         it requires the entire table to pre-exist before execution.
-          %   PROPOSAL: Print after all iterations.
-          %
-          % NOTE: DIFF_GAIN needs three characters to print the string "NaN".
-          L.logf('info', ['Records %8i-%8i : %s -- %s', ...
-            ' bdm/HK_BIA_MODE_MUX_SET=%i;', ...
-            ' isAchg/DIFF_GAIN=%-3i;', ...
-            ' dlr/HK_BIA_MODE_DIFF_PROBE=%i;', ...
-            ' freqHz=%5g; iCalibL=%i; iCalibH=%i; ufv=%i', ...
-            ' CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
-            iRec1, iRec2, ...
-            bicas.utils.TT2000_to_UTC_str(Vv.Epoch(1),   9), ...
-            bicas.utils.TT2000_to_UTC_str(Vv.Epoch(end), 9), ...
-            Cv.bdmFpa.int2doubleNan(), ...
-            Cv.isAchgFpa.logical2doubleNan(), ...
-            Cv.dlrFpa.logical2doubleNan(), ...
-            Cv.freqHz, ...
-            Cv.iCalibL, Cv.iCalibH, Cv.ufv, ...
-            Cv.zvcti(1), ...
-            Cv.zvcti(2))
-        end
-
-        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(...
-          Cv, Vv, Cal);
-
-        % Add demuxed sequence to the to-be complete set of records.
-        AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
+        % Add subsequence signals to the global array (all records).
+        bltsSamplesAVolt(iRec1:iRec2, :, :) = ssBltsSamplesAVolt;
       end    % for
 
-    end    % calibrate_demux_voltages
+    end    % calibrate_voltages
 
 
 
     % Calibrate and demux all BLTS channels for one subsequence with various
     % constant settings/values.
-    function AsrSamplesAVoltSrm = calibrate_demux_voltages_subsequence(Cv, Vv, Cal)
-      % PROPOSAL: Rename "subsequence".
-      %   ~time interval
-      %   ~constant settings time interval
+    %
+    % ARGUMENTS
+    % =========
+    % Cv
+    %       Constant values. Scalar values which do NOT VARY by CDF record.
+    % Vv
+    %       Varying values. Struct with values which DO VARY by CDF record.
+    function ssBltsSamplesAVolt = calibrate_voltages_subsequence(A, Cv, Vv)
+      arguments
+        A.Cal
+        %
+        % NOTE: Excluding LRX since it is only need for splitting time/CDF
+        %       record intervals, not for calibration since calibration can
+        %       handle sequences of only NaN.
+        Cv.isAchgFpa
+        Cv.freqHz
+        Cv.iLsf
+        Cv.zvcti
+        Cv.ufv
+        Cv.bltsKSsidArray
+        Cv.bltsKSdidArray
+        Cv.iCalibL
+        Cv.iCalibH
+        % NOTE: Below variables do not vary over CDF records at all.
+        Cv.nSamplesPerRecordChannel
+        Cv.hasSwfFormat
+        Cv.isLfr
+        Cv.isTdsCwf
+
+        Vv.Epoch
+        Vv.bltsSamplesTm
+        Vv.zvNValidSamplesPerRecord
+      end
 
       nRows = numel(Vv.Epoch);
-
-      %=======================================
-      % DEMULTIPLEXER: FIND ASR-BLTS ROUTINGS
-      %=======================================
-      DemuxerRoutingArray = bicas.proc.L1L2.demuxer.get_routings(...
-        Cv.bdmFpa, Cv.dlrFpa);
 
       if Cv.hasSwfFormat
         % NOTE: Vector of constant numbers (one per snapshot).
@@ -330,45 +551,51 @@ classdef dc
       %====================
       % CALIBRATE VOLTAGES
       %====================
-      ssBltsSamplesAVolt = [];
+      ssBltsSamplesAVolt = nan(nRows, Cv.nSamplesPerRecordChannel, bicas.const.N_BLTS);
       for iBlts = 1:bicas.const.N_BLTS
         ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_BLTS(...
-          DemuxerRoutingArray(iBlts).Ssid, ...
-          Vv.bltsSamplesTm(:, :, iBlts), ...
-          iBlts, ...
-          Cv.hasSwfFormat, ...
-          Vv.zvNValidSamplesPerRecord, ...
-          Cv.isAchgFpa.logical2doubleNan(), ...
-          Cv.iCalibL, ...
-          Cv.iCalibH, ...
-          Cv.iLsf, ...
-          dtSec, ...
-          Cv.isLfr, Cv.isTdsCwf, ...
-          Cv.zvcti, Cv.ufv, ...
-          Cal);
+          Ssid                     = bicas.sconst.C.K_SSID_DICT(Cv.bltsKSsidArray(iBlts)), ...
+          samplesTm                = Vv.bltsSamplesTm(:, :, iBlts), ...
+          iBlts                    = iBlts, ...
+          hasSwfFormat             = Cv.hasSwfFormat, ...
+          zvNValidSamplesPerRecord = Vv.zvNValidSamplesPerRecord, ...
+          isAchg                   = Cv.isAchgFpa.logical2doubleNan(), ...
+          iCalibL                  = Cv.iCalibL, ...
+          iCalibH                  = Cv.iCalibH, ...
+          iLsf                     = Cv.iLsf, ...
+          dtSec                    = dtSec, ...
+          isLfr                    = Cv.isLfr, ...
+          isTdsCwf                 = Cv.isTdsCwf, ...
+          zvcti                    = Cv.zvcti, ...
+          ufv                      = Cv.ufv, ...
+          Cal                      = A.Cal);
       end
-
-      %========================================================
-      % DEMULTIPLEXER: DERIVE AND COMPLEMENT WITH MISSING ASRs
-      %========================================================
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
-        [DemuxerRoutingArray.Sdid], ssBltsSamplesAVolt);
-    end    % calibrate_demux_voltages_subsequence
+    end    % calibrate_voltages_subsequence
 
 
 
     % Calibrate one BLTS channel.
-    function samplesAVolt = calibrate_BLTS(...
-        Ssid, samplesTm, iBlts, ...
-        hasSwfFormat, ...
-        zvNValidSamplesPerRecord, isAchg, ...
-        iCalibL, iCalibH, iLsf, dtSec, ...
-        isLfr, isTdsCwf, ...
-        zvcti, ufv, ...
-        Cal)
+    function samplesAVolt = calibrate_BLTS(A)
+      arguments
+        A.Ssid
+        A.samplesTm
+        A.iBlts
+        A.hasSwfFormat
+        A.zvNValidSamplesPerRecord
+        A.isAchg
+        A.iCalibL
+        A.iCalibH
+        A.iLsf
+        A.dtSec
+        A.isLfr
+        A.isTdsCwf
+        A.zvcti
+        A.ufv
+        A.Cal
+      end
       % IMPLEMENTATION NOTE: It is ugly to have this many parameters (15!),
-      % but the original code made calibrate_demux_voltages() to large and
-      % unwieldy. It also highlights the dependencies.
+      % but the original code made calibrate_voltages() to large and
+      % unwieldy. Having many arguments also highlights the exact dependencies.
       %
       % PROPOSAL: CalSettings as parameter.
       %   PRO: Reduces number of parameters.
@@ -380,36 +607,36 @@ classdef dc
       % IMPLEMENTATION NOTE: It seems that data processing submits
       % different types of floats for LFR and TDS. This difference in
       % processing is unintended and should probably ideally be
-      % eliminated.
+      % eliminated. Can use integers or bicas.utils.FPArray?
       % NOTE: Storing TM units with floats!
-      if isLfr
-        assert(isa(samplesTm, 'single'))
+      if A.isLfr
+        assert(isa(A.samplesTm, 'single'))
       else
-        assert(isa(samplesTm, 'double'))
+        assert(isa(A.samplesTm, 'double'))
       end
-      irf.assert.sizes(samplesTm, [-1, -2])   % One BLTS channel.
+      irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel.
 
-      if isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.UNKNOWN)
+      if isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
-        samplesAVolt = nan(size(samplesTm));
+        samplesAVolt = nan(size(A.samplesTm));
 
-      elseif isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.GND) || ...
-          isequaln(Ssid, bicas.proc.L1L2.SignalSourceId.C.REF25V)
+      elseif isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("GND")) || ...
+          isequaln(A.Ssid, bicas.sconst.C.S_SSID_DICT("REF25V"))
         % ==> No calibration.
         % NOTE: samplesTm stores TM units using float!
-        samplesAVolt = samplesTm;
+        samplesAVolt = A.samplesTm;
 
       else
-        assert(Ssid.is_ASR())
+        assert(A.Ssid.is_ASR())
         % ==> Calibrate (unless explicitly stated that should not)
 
-        if hasSwfFormat
+        if A.hasSwfFormat
           bltsSamplesTmCa = ...
             bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
-            double(samplesTm), zvNValidSamplesPerRecord);
+            double(A.samplesTm), A.zvNValidSamplesPerRecord);
         else
-          assert(all(zvNValidSamplesPerRecord == 1))
-          bltsSamplesTmCa = {double(samplesTm)};
+          assert(all(A.zvNValidSamplesPerRecord == 1))
+          bltsSamplesTmCa = {double(A.samplesTm)};
         end
 
         %######################
@@ -426,19 +653,19 @@ classdef dc
         % This incidentally also potentially speeds up the code.
         % Ex: LFR SWF 2020-02-25, 2020-02-28.
         CalSettings = bicas.proc.L1L2.CalibrationSettings(...
-          iBlts, Ssid, isAchg, iCalibL, iCalibH, iLsf);
+          A.iBlts, A.Ssid, A.isAchg, A.iCalibL, A.iCalibH, A.iLsf);
         %#######################################################
-        ssBltsSamplesAVoltCa = Cal.calibrate_voltage_all(...
-          dtSec, bltsSamplesTmCa, ...
-          isLfr, isTdsCwf, CalSettings, ...
-          zvcti, ufv);
+        ssBltsSamplesAVoltCa = A.Cal.calibrate_voltage_all(...
+          A.dtSec, bltsSamplesTmCa, ...
+          A.isLfr, A.isTdsCwf, CalSettings, ...
+          A.zvcti, A.ufv);
         %#######################################################
 
-        if hasSwfFormat
+        if A.hasSwfFormat
           [samplesAVolt, ~] = ...
             bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
             ssBltsSamplesAVoltCa, ...
-            size(samplesTm, 2));
+            size(A.samplesTm, 2));
         else
           % Scalar cell array since not snapshot.
           assert(isscalar(ssBltsSamplesAVoltCa))
@@ -447,6 +674,51 @@ classdef dc
         end
       end
     end    % calibrate_BLTS
+
+
+
+    function AsrSamplesAVoltSrm = distribute_BLTS_to_ASRs(...
+        bltsSamplesAvolt, bltsKSsidArray, bltsKSdidArray, L)
+      % PROPOSAL: Automated tests.
+
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.distribute_BLTS_to_ASRs', L);
+
+      [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
+        bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
+        bltsKSsidArray,   [-1,     bicas.const.N_BLTS], ...
+        bltsKSdidArray,   [-1,     bicas.const.N_BLTS]);
+
+
+      % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
+      % -----------------------------------------------------------------
+      % IMPLEMENTATION NOTE: Preallocation is very important for speeding
+      % up LFR-SWF which tends to be broken into subsequences of 1 record.
+      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
+        "bicas.proc.L1L2.AntennaSignalId", nRecTot, 'CONSTANT', ...
+        nan(nRecTot, nSamplesPerRecordChannel), ...
+        bicas.sconst.C.S_ASID_DICT.values);
+
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+        bltsKSsidArray, ...
+        bltsKSdidArray);
+
+      for iSs = 1:nSs
+        iRec1 = iRec1Ar(iSs);
+        iRec2 = iRec2Ar(iSs);
+
+        %=========================================
+        % LABEL SIGNALS BY ASR (INSTEAD OF iBLTS)
+        %=========================================
+        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs(...
+          bicas.sconst.C.K_SDID_DICT(bltsKSdidArray(iRec1,          :)), ...
+          bltsSamplesAvolt(                         iRec1:iRec2, :, :));
+
+        % Add demuxed sequence signals to the global arrays (all records).
+        AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
+      end
+
+      Tmk.stop_log(nRecTot, 'record', nSs, 'subsequence')
+    end
 
 
 

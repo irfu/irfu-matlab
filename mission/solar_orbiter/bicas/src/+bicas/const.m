@@ -14,6 +14,30 @@
 % error_safe_constant created 2016-06-02.
 %
 classdef const
+  % PROPOSAL: Split up in multiple files.
+  %   NOTE: There is already bicas.sconst.
+  %   --
+  %   PRO: Too large file. ~886 rows
+  %     PRO: init_GA_MODS_DB() is  ~300 rows and will grow over time.
+  %     PRO: init_SWD_metadata() is ~170 rows and will grow over time (if
+  %          keeping commented-out info from every old BICAS version).
+  %     PRO: init_EMIDP_2_INFO() is ~80 rows.
+  %       PRO: Is expected to be quite constant.
+  %   --
+  %   PROBLEM: Functions used for setting constants may need to use constants
+  %            themselves. ==> Need to avoid cyclic dependence.
+  %            ==> Affects splitting.
+  %     Ex: init_GA_MODS_DB() uses bicas.const.*.
+  %     Ex: init_SWD_metadata() does not use bicas.const.* values but could
+  %         conceivably do in the future.
+  %   --
+  %   PROPOSAL: Separate file for BICAS version/metadata constants:
+  %     Ex: init_GA_MODS_DB(), init_SWD_metadata()
+  %     PROPOSAL: New file is dependent on bicas.const (but not the reverse).
+  %   PROPOSAL: Separate file for quality configuration.
+  %
+  %
+  %
   % PROPOSAL: Error category for bad input datasets (both science and HK).
   %   PRO: Has similar for RCTs.
   %
@@ -33,9 +57,21 @@ classdef const
   %
   % PROPOSAL: Derive lists of datasets using
   %           bicas.classify_BICAS_L1_L1R_to_L2_DSI() or reverse.
+  %
+  % PROPOSAL: Store ASID, SSID, SDID constants in dictionaries.
+  %   CON: Longer code to invoke object constants.
+  %     Ex: C.DC_V1 --> C("DC_V1") ==> -1+2+2=3 extra characters.
+  %   PRO: Can abolish code for generating arrays of constant.
+  %   PRO: More consistent with potential future dictionaries for
+  %        integer<-->ASID/SSID/SDID.
 
 
 
+  %###########
+  %###########
+  % CONSTANTS
+  %###########
+  %###########
   properties(Constant)
 
     % MATLAB version which shall be used when officially running BICAS (value
@@ -77,6 +113,8 @@ classdef const
 
     BRVF_FILENAME                = 'bias_rct_validity.json';
 
+    DEFAULT_NSO_TABLE_RPATH      = fullfile('data', 'solo_ns_ops.xml');
+
     % Information to "interpret" and "translate" captured exceptions
     % --------------------------------------------------------------
     % containers.Map with
@@ -94,7 +132,6 @@ classdef const
     %       .description
     %           English human-readable text describing the error. Implicitly
     %           defines what kinds of errors this error code should cover.
-    %
     %
     EMIDP_2_INFO = bicas.const.init_EMIDP_2_INFO();
 
@@ -140,7 +177,7 @@ classdef const
     % IMPLEMENTATION NOTE: One does not want to use the RCS QRCID string
     % constants directly inside the code, in case of typos.
     %
-    % NOTE: This includes QRCIDs for both L2 and L3 density.
+    % NOTE: This includes QRCIDs for both (a) L2 and (b) L3 density.
     %
     QRCID = struct(...
       'PARTIAL_SATURATION', 'PARTIAL_SATURATION', ...
@@ -312,8 +349,7 @@ classdef const
 
 
 
-    % Various S/W descriptor (SWD) release data for the entire software (not
-    % specific outputs)
+    % Various SWD release data for the entire software (not specific outputs).
     function MAP = init_SWD_metadata()
       MAP = containers.Map();
 
@@ -323,13 +359,15 @@ classdef const
       MAP('SWD.identification.name')        = 'BIAS Calibration Software (BICAS)';
       MAP('SWD.identification.identifier')  = 'BICAS';
       MAP('SWD.identification.description') = ...
-        ['Calibration software meant to be run at LESIA/ROC to' ...
+        ['Calibration software meant to be run at LIRA/ROC to' ...
         ' (1) calibrate electric field L2 data from' ...
         ' electric L1R LFR and TDS-LFM data, and' ...
-        ' (2) calibrate bias currents from L1R data.' ...
-        ' Also has additional support for processing' ...
-        ' L1 (instead of L1R; partial support) to L2, and BIAS L2 to L3 data', ...
-        ' (both disabled by default).'];
+        ' (2) calibrate bias currents from L1 data.' ...
+        ' Also has additional unofficial support for' ...
+        ' (1) processing L1 (instead of L1R; partial support) to L2,' ...
+        ' (2) L2 LFR CWF to L2 LFR CWF downsampled (unofficial dataset), and' ...
+        ' (3) BIAS L2 to L3 data', ...
+        ' (all disabled by default).'];
 
       % 2024-09-13: Latest released RCS ICD version is 01/07.
       MAP('SWD.identification.icd_version') = '1.7';
@@ -362,8 +400,8 @@ classdef const
       % for the 0.Y.Z beta version for instance). In all cases, any change in
       % the S/W must lead to update the version number.
       % """"""""
-      MAP('SWD.release.version')   = '8.3.0';
-      MAP('SWD.release.date')      = '2024-09-16T16:00:00Z';
+      MAP('SWD.release.version')   = '8.4.1';
+      MAP('SWD.release.date')      = '2025-02-19T16:38:00Z';
       MAP('SWD.release.author')    = 'Erik P G Johansson, BIAS team, IRF';
       MAP('SWD.release.contact')   = 'erik.johansson@irf.se';
       MAP('SWD.release.institute') = IRF_LONG_NAME;   % Full name or abbreviation?
@@ -458,11 +496,22 @@ classdef const
       % MAP('SWD.release.modification')  = [...
       %   'Bugfix: Including previously missing source code updates.', ...
       %   ]; % v8.2.1
+      % MAP('SWD.release.modification')  = [...
+      %   'Non-Standard Operations (NSO) table for thruster firings updated', ...
+      %   ' for until 2024-08-04', ...
+      %   '; Use bias_rct_validity.json to locate BIAS RCT', ...
+      %   ]; % v8.3.0
+      % MAP('SWD.release.modification')  = [...
+      %   'Non-Standard Operations (NSO) table for thruster firings updated', ...
+      %   ' for until 2025-02-10', ...
+      %   '; Use new L2 master CDFs V17.', ...
+      %   ]; % v8.4.0
       MAP('SWD.release.modification')  = [...
         'Non-Standard Operations (NSO) table for thruster firings updated', ...
-        ' for until 2024-08-04', ...
-        '; Use bias_rct_validity.json to locate BIAS RCT', ...
-        ]; % v8.3.0
+        ' for until 2025-02-16', ...
+        '; Bugfix: L2_QUALITY_BITMASK saturation bits', ...
+        '; Use new L3 master CDFs V06/V07.', ...
+        ]; % v8.4.1
 
       MAP('SWD.release.source')        = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
       % Appropriate branch? "master" instead?
@@ -517,7 +566,7 @@ classdef const
       QrcSettingsL2Map(bicas.const.QRCID.THRUSTER_FIRING) = ...
         bicas.proc.QrcSetting(...
         uint8(1), ...
-        uint16(0));
+        uint16(0));    % NOTE: No quality bit set!
     end
 
 
@@ -823,6 +872,7 @@ classdef const
         {'Bugfix for automatic sweep detection (SCDA).'}))
 
 
+
       % BICAS v8.2.1
       Gmdb.add_GMVE(bicas.const.L2_CWF_DSI_CA, ...
         bicas.ga.mods.VersionEntry('2024-07-24', '8.2.1', ...
@@ -835,6 +885,7 @@ classdef const
         {'Added compression for zVariables.'}))
 
 
+
       % BICAS v8.3.0
       Gmdb.add_GMVE(ALL_DSI_CA, ...
         bicas.ga.mods.VersionEntry('2024-09-16', '8.3.0', ...
@@ -842,6 +893,17 @@ classdef const
 
 
 
+      % BICAS v8.4.0
+      Gmdb.add_GMVE(L2_LFR_TDS_DSI_CA, ...
+        bicas.ga.mods.VersionEntry('2025-02-14', '8.4.0', ...
+        {'Improved CDF metadata.'}))
+
+
+
+      % BICAS v8.4.1
+      Gmdb.add_GMVE(L2_LFR_TDS_DSI_CA, ...
+        bicas.ga.mods.VersionEntry('2025-02-14', '8.4.1', ...
+        {'Bugfix for L2_QUALITY_BITMASK saturation quality bits.'}))
     end    % init_GA_MODS_DB
 
 

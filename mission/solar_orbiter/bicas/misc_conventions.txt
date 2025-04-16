@@ -40,18 +40,25 @@ for understanding BICAS.
 AA, aampere
     Antenna Ampere. Calibrated ampere at the antenna.
 AAPT
-    Antenna Ampere/TM
+    Antenna Ampere/TM (unit).
 ACHG
     (BIAS diff) AC High Gain.
 ACLG
     (BIAS diff) AC Low Gain.
+APATH
+    Absolute Path
+AR
+    (Non-cell) Array. Experimental notation found in small number of places. See
+    "CA".
 ASID
     Class bicas.proc.L1L2.AntennaSignalId. See ASR.
 ASR, Antenna Signal Representation.
-    (1) A reference to a particular type of "physical antenna signal"
-        (a "data channel") which BIAS-LFR/TDS is trying to measure, or
-        NOTE: Class ASID represents such a reference.
-    (2) a measurement of such.
+    Either of:
+    (1) A reference to a particular type of "physical antenna signal channel"
+        which BIAS-LFR/TDS is trying to measure.
+        NOTE: Class ASID represents a reference to such a channel, but not
+              the samples.
+    (2) the sample values in a measurement of such, whether indirect or not.
     In reality, the terminology is:
     ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF
                   (DC diff, antenna 1-2)
@@ -59,12 +66,13 @@ ASR, Antenna Signal Representation.
     NOTE: There are 9 ASRs (DC: 3 singles, 3 diffs; AC: 3 diffs), i.e. they
     can refer also to signals not represented by any single BLTS, given a
     chosen mux mode (BDM) and demultiplexer latching relay (DLR) setting.
+    Cf. ASID.
 AV, avolt, Antenna Volt
     Calibrated volt at the antennas, i.e. the final calibrated (measured)
     value, including for reconstructed signals (e.g. diffs calculated from
     singles). May also refer to offsets and values without offsets.
 AVPIV
-    Antenna Volt / (Per) Interface Volt
+    AV/IV = Antenna Volt Per Interface Volt (unit).
 BDM, "mux mode"
     BIAS Demultiplexer Mode. Corresponds to BIAS HK ZV "HK_BIA_MODE_MUX_SET".
     Abbreviation partly just to have one consistent name (replacing "mux",
@@ -107,7 +115,7 @@ BSO
     Singleton instance of class bicas.Settings which stores the settings for
     BICAS as a whole.
 CA
-    Cell Array.
+    Cell Array. See "AR".
 CLI
     Command-Line Interface. In particular, "CLI arguments" refers to an array of
     string arguments submitted to BICAS via the OS.
@@ -191,6 +199,8 @@ DSR
     Downsampled/Decreased Sampling Rate. Cf. OSR.
 DT
     MATLAB datetime object.
+EJ
+    Erik P G Johansson, the author and maintainer of BICAS.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).
@@ -225,9 +235,9 @@ ITF
 IV, ivolt, Interface Volt
     Calibrated volt at the interface between BIAS and LFR/TDS.
 IVPAV
-    Interface volt/antenna volt
+    IV/AV = Interface volt Per Antenna volt (unit).
 IVPT
-    Interface volt Per TM unit. IV/TM.
+    IV/TM = Interface volt Per TM unit.
 L2QBM
     zVariable L2_QUALITY_BITMASK.
 L3QBM
@@ -237,8 +247,9 @@ LL
 LRX
     LFR Rx. Internal ZV-like variable (one boolean per CDF record) that
     determines whether there is data on BLTS 2-3 (LRX=1) or BLTS 4-5 (LRX=0).
-    "Rx" is named after the similar LFR ZVs R0, R1 and R2 (one per LFR
-    frequency, except F3). The value is constant for TDS.
+    "Rx" is named after the similar L1R LFR ZVs R0, R1 and R2 (one per LFR
+    frequency, except F3). The value is constant LRX=1 for TDS, since L1R TDS
+    does not have any analogous ZVs.
 LSF
     LFR Sampling Frequency (F0...F3).
     NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
@@ -259,12 +270,14 @@ NS
 NSO (Event)
     Non-Standard Operation. A time interval that has been manually labelled
     as special. BICAS can e.g. use this to set quality bits and remove data.
+    See readme.txt.
 NSO table
     Separate XML file that contains a list of time intervals which have been
     manually labeled as NSOs. BICAS uses this list for potentially modifying
     processed data. Every NSO in the table is categorized using exactly one
     QRCID.
     Located at irfu-matlab/mission/solar_orbiter/bicas/data/solo_ns_ops.xml .
+    See readme.txt.
 Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
@@ -278,20 +291,22 @@ PFOID
     Production Function Output ID. Analogous with PFIID, but for output (return
     values).
 Production Function
-    Abstract method bicas.proc.SwmProcessing.production_function() which
-    implementations in subclasses do the core of data processing.
+    Abstract method bicas.proc.SwmProcessing.production_function() and its
+    implementations in subclasses which do the core of data processing.
 QF
     zVariable QUALITY_FLAG.
 QRC
-    Quality-Related Condition. Condition that may influence quality ZVs.
-    Ex: Thruster firing, saturation.
+    Quality-Related Condition. Condition that, when it applies, can be used to
+    set/modify quality ZVs and/or blanking of data.
+    Ex: Thruster firing, saturation, bad density.
     QRCs are uniquely identified using QRCIDs.
-    Note that QRCs are distinct from quality bits themselves. A QRC
-    corresponds to setting zero, one, or multiple quality bits and/or cap
-    QUALITY_FLAG.
+    NOTE: QRCs are distinct from quality bits themselves. Any particular QRC may
+    correspond to setting zero, one, or multiple quality bits.
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.
+    Not all QRCIDs are meant to be used in the NSO table.
+        Ex: BAD_DENSITY
 RCS
     RPW Calibration Software. BICAS is an example of an RCS.
 RCS ICD
@@ -320,6 +335,8 @@ ROC DFMD
 ROC Engineering Guidelines
     Document ROC-GEN-SYS-NTT-00019-LES, "ROC
     Engineering Guidelines for External Users"
+RPATH
+    Relative Path
 RPS
     Radians Per Second
 RPW
@@ -357,6 +374,8 @@ SIP
     Specific Input Parameter. BICAS CLI argument which specifies the path to
     an input or output dataset.
     The phrase (but not the abbreviation) is defined by the RCS ICD.
+SKT
+    CDF skeleton file. Abbreviation comes from the standard file suffix ".skt".
 SKV
     Class bicas.SettingsKeyValue.
 SNF
@@ -406,12 +425,15 @@ TPIV
 TS
     irfu-matlab's TSeries object/class.
 TSF
-    Threshold Saturation Flag. Bit for a sample that is set iff the sample
-    value exceeds specified thresholds, i.e. it does not take any context
-    into account, except for determining which thresholds to use. This is in
-    contrast with (1) saturation flags for snapshots, which may summarize
-    the saturation of the entire snapshot, or (2) saturation flags for CWF
-    data which may take saturation before or after into account.
+    Threshold Saturation Flag. Internal bit used by the implementation. The bit
+    is set/unset for an individual sample iff the sample value exceeds specified
+    thresholds, i.e. it does not take any context into account, except for
+    determining which thresholds to use. This is in contrast with
+    (1) saturation flags for snapshots, which may summarize the saturation of
+        the entire snapshot, or
+    (2) saturation flags for CWF data which may take saturation before or after
+        into account.
+    Not to be confused actual saturation bit(s) set in quality zVariables.
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
@@ -434,3 +456,11 @@ ZVCTI2
 ZVS
     zVariable Struct. Struct where each field emulates the data content of a
     zVariable (either as an array or an FPA).
+
+
+
+#################
+Other conventions
+#################
+1D arrays shall be column arrays. This has not been the case but new code should
+do this and old code should converge to this when appropriate.

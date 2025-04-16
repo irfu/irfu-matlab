@@ -26,7 +26,7 @@ function c=irf_plot(varargin)
 %
 % To improve zooming of high time resolution data IRF_PLOT will sometimes
 % set t_start_epoch within the 'userdata' field of the figure and
-% internally use it as origo but in most cases you should not care about this.
+% internally use it as origin but in most cases you should not care about this.
 %
 % IRF_PLOT(CAA_variable,..) can have all arguments as DATAOBJ/PLOT
 %
@@ -35,6 +35,8 @@ function c=irf_plot(varargin)
 % IRF_PLOT(number,'reset') reset current figure
 %						but update default properties except figure size
 % IRF_PLOT(number,'newfigure') initialize new figure with 'number' of subplots
+%
+% Note: There can be max 30 subplots.
 %
 % Examples:
 %   irf_plot(B1) - plot variable B1 (all components), assuming that the first column is time

@@ -18,6 +18,21 @@
 %
 classdef Saturation
   % PROPOSAL: Merge higherThresholdAVolt* to a struct somehow.
+  %
+  % PROBLEM: Can not deduce saturation limits for channels reconstructed from
+  %          other channels.
+  %   Ex: BDM=4 ==> Have DC_V1/V2/V3 ==> Derives DC_V12/V13/V23 ==> Saturation
+  %       on DC diffs can only be deduced from the samples from which the
+  %       samples originate.
+  % PROBLEM: get_voltage_saturation_quality_bit() can not correctly handle
+  %          AsrSamplesAVoltSrm data which derives from non-ASR channels.
+  %   Ex: BDM=5-7 ==> 2.5V Ref/GND stored in AsrSamplesAVoltSrm, but are
+  %       represented by ASIDs.
+  %
+  % PROPOSAL: Only detect saturation in BLTSs (which are true antenna signals).
+  %   Have saturation bits propagate to all signals in (not-yet-implemented)
+  %   _Sdid_SamplesAVoltSrm in the same way as signals do.
+  %   PROPOSAL: Separate SDID SRM for quality bits.
 
 
 
@@ -30,9 +45,10 @@ classdef Saturation
     % How long the sliding window should be when using CDF data.
     cwfSlidingWindowLengthSec
 
-    % Threshold for the sample-length weighted fraction of TSF-labelled
-    % samples within a sliding window (CWF) or snapshot for that entire
-    % sliding window or snapshot to be labelled as saturated.
+    % Threshold for the sample-length weighted fraction of TSF-labelled samples
+    % within either (1) a sliding window (CWF), or (2) snapshot. If fraction of
+    % TSF-labelled samples excedes this fraction, then the entire sliding window
+    % or snapshot is labelled as saturated.
     tsfFractionThreshold
 
     % Higher thresholds for saturation. Sample values above these values, or
@@ -102,7 +118,7 @@ classdef Saturation
     % ARGUMENTS
     % =========
     % samplesAVolt
-    %       Arbitrarily size array. May contain NaN.
+    %       Arbitrary-size array. May contain NaN.
     %
     %
     % RETURN VALUE
@@ -117,7 +133,6 @@ classdef Saturation
     function tsfAr = get_TSF(obj, samplesAVolt, Ssid, isAchgFpa)
       % PROPOSAL: Better name.
       %   ~sample-to-TSF
-      %       PRO: Can use same maing scheme for TSF-to-SWSF function (for CWF).
       %   ~threshold_saturation
 
       assert(isfloat(samplesAVolt))
@@ -208,7 +223,7 @@ classdef Saturation
     % zvSamplesAVolt
     %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
     function isSaturatedAr = get_snapshot_saturation_many(obj, ...
-        zvNValidSamplesPerRecord, zvSamplesAVolt, Ssid, isAchg)
+        zvNValidSamplesPerRecord, zvSamplesAVolt, Ssid, isAchgFpa)
 
       nRecs = irf.assert.sizes(...
         zvNValidSamplesPerRecord, [-1],  ...
@@ -218,7 +233,7 @@ classdef Saturation
       for iRec = 1:nRecs
         isSaturatedAr(iRec) = obj.get_snapshot_saturation(...
           zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
-          Ssid, isAchg);
+          Ssid, isAchgFpa);
       end
     end
 
@@ -228,6 +243,9 @@ classdef Saturation
     %
     % NOTE: Applies to both CWF and SWF data.
     %
+    % PROBLEM: Function is conceptually bad (buggy) for edge cases (non-antenna
+    % signals, reconstructed signals). See unofficial class comments.
+    %
     %
     % RETURN VALUE
     % ============
@@ -236,109 +254,88 @@ classdef Saturation
     %
     function isSaturatedAr = get_voltage_saturation_quality_bit(...
         obj, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
-        bdmFpa, dlrFpa, lrx, isAchgFpa, hasSwfFormat, L)
+        bltsKSsidAr, isAchgFpa, hasSwfFormat, L)
+      % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
+      %           look for saturation.
+      %   NOTE: Only ACHG influences the calibration thresholds for each channel
+      %         (SDID/ASR). Could otherwise have scalar values per channel.
+      %   PRO: Easier to keep track of what thresholds are a function of.
 
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
-      assert(strcmp(bdmFpa.mc, 'uint8'))
-      assert(strcmp(dlrFpa.mc, 'logical'))
-      assert(isa(lrx, 'double'))
+      assert(isa(bltsKSsidAr, 'uint8'))
       nRows = irf.assert.sizes(...
         tt2000Ar,                 [-1], ...
         zvNValidSamplesPerRecord, [-1], ...
-        bdmFpa,                   [-1], ...
-        dlrFpa,                   [-1], ...
-        lrx,                      [-1]);
+        bltsKSsidAr,              [-1, bicas.const.N_BLTS]);
       assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
       assert(AsrSamplesAVoltSrm.nRows == nRows)
 
 
-
-      %============================================================
-      % (1) Find continuous subsequences of records with identical
-      %     saturation thresholds.
-      % (2) Detect TSFs separately for each such sequence.
-      %============================================================
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        bdmFpa.int2doubleNan(), ...
-        dlrFpa.logical2doubleNan(), ...
-        isAchgFpa.logical2doubleNan(), ...
-        lrx);
 
       L.logf('info', ...
         ['Detecting threshold saturation (voltages) -', ...
         ' One sequence of records with identical settings at a time.'])
       Tmk = bicas.utils.Timekeeper('get_voltage_saturation_quality_bit', L);
 
+      % For a given ASID, determine which rows contain samples which originate
+      % from L1R (i.e. which were not reconstructed). Set all other samples to
+      % NaN.
+      function asidSamplesAr = set_reconstructed_samples_to_NaN(asidSamplesAr, Asid)
+        kSsid = bicas.sconst.C.ASID_SSID_K_DICT(Asid);
+        bUse = any(repmat(kSsid, [nRows, 1]) == bltsKSsidAr, 2);
+        asidSamplesAr(~bUse, :) = NaN;
 
+        % L.logf('debug', 'kSsid = %i', kSsid)
+        % L.logf('debug', 'unique(bUse)              = [%s]', strjoin(string(unique(bUse)),      ','))
+      end
 
-      % Bit array, one element per CDF record
-      % -------------------------------------
-      % NOTE: The meaning and usage of the bits is different for different
-      % values of hasSwfFormat, hence the neutral name.
-      bitAr = false(nRows, 1);
+      % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
+      % code, but it is difficult to use the same implementation for both
+      % without (1) making the implementation harder to understand and (2)
+      % having one particular variable with different meanings in the two cases.
+      if ~hasSwfFormat
+        %===========
+        % CASE: CWF
+        %===========
+        tsfAr = false(nRows, 1);
+        for Asid = AsrSamplesAVoltSrm.keys'
+          asidSamplesAr = set_reconstructed_samples_to_NaN(AsrSamplesAVoltSrm(Asid), Asid);
 
-      for iSs = 1:nSs
-        iRec1   = iRec1Ar(iSs);
-        iRec2   = iRec2Ar(iSs);
-        ssNRows = iRec2-iRec1 + 1;
+          asidTsfAr = obj.get_one_ASR_CWF_channel_TSF_bit_array(...
+            bicas.proc.L1L2.SignalSourceId(Asid), isAchgFpa, ...
+            asidSamplesAr);
 
-        % CV = Constant values = Values which are constant for the
-        %      entire subsequence of records.
-        Cv = [];
-        Cv.bdmFpa       = bdmFpa(   iRec1);
-        Cv.dlrFpa       = dlrFpa(   iRec1);
-        Cv.isAchgFpa    = isAchgFpa(iRec1);
-        Cv.lrx          = lrx(      iRec1);
-        % NOTE: Below variables do not vary over CDF records anyhow.
-        Cv.hasSwfFormat = hasSwfFormat;
+          % L.logf('debug', 'unique(asidTsfAr)         = [%s]', strjoin(string(unique(asidTsfAr)), ','))
 
-        RoutingAr = bicas.proc.L1L2.demuxer.get_routings(...
-          Cv.bdmFpa, Cv.dlrFpa);
+          % Merge (OR) bits over ASIDs.
+          tsfAr = any([tsfAr, asidTsfAr], 2);
+        end
+        % L.logf('debug', 'unique(tsfAr) = [%s]', strjoin(string(unique(tsfAr)), ','))
 
-        % Array of BLTS's for which there is data.
-        iBltsAr = bicas.proc.utils.interpret_LRX(Cv.lrx);
-
-        % Preallocate. Bits for the current sub-sequence.
-        ssBitAr = false(ssNRows, 1);
-
-        for iBlts = iBltsAr(:)'
-          Ssid = RoutingAr(iBlts).Ssid;
-
-          if Ssid.is_ASR()
-            bltsSamplesAVolt   = AsrSamplesAVoltSrm(Ssid.Asid);
-            ssBltsSamplesAVolt = bltsSamplesAVolt(iRec1:iRec2, :);
-
-            % Set ssBltsBitAr=bits for the current subsequence and
-            % BLTS.
-            if hasSwfFormat
-              ssBltsBitAr = obj.get_snapshot_saturation_many(...
-                zvNValidSamplesPerRecord(iRec1:iRec2), ...
-                ssBltsSamplesAVolt, ...
-                Ssid, Cv.isAchgFpa);
-            else
-              ssBltsBitAr = obj.get_TSF(...
-                ssBltsSamplesAVolt, ...
-                Ssid, Cv.isAchgFpa);
-            end
-
-            % Merge (OR) bits over BLTS's (for current subsequence).
-            ssBitAr = any([ssBitAr, ssBltsBitAr], 2);
-          end
-        end    % for iBlts = ...
-
-        bitAr(iRec1:iRec2) = ssBitAr;
-      end    % for iSs = ...
-
-      if hasSwfFormat
-        isSaturatedAr = bitAr;
-      else
-        %Tmk2 = bicas.utils.Timekeeper('sliding_window_over_fraction', L);
         isSaturatedAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
-          tt2000Ar, bitAr, ...
+          tt2000Ar, tsfAr, ...
           obj.tsfFractionThreshold, obj.cwfSlidingWindowLengthSec);
-        %Tmk2.stop_log()
+      else
+        %===========
+        % CASE: SWF
+        %===========
+        isSaturatedAr = false(nRows, 1);
+        for Asid = AsrSamplesAVoltSrm.keys'
+          asidSamplesAr = set_reconstructed_samples_to_NaN(AsrSamplesAVoltSrm(Asid), Asid);
+
+          asidIsSaturatedAr = obj.get_one_ASR_SWF_channel_saturation_bit_array(...
+            bicas.proc.L1L2.SignalSourceId(Asid), isAchgFpa, ...
+            asidSamplesAr, zvNValidSamplesPerRecord);
+
+          % L.logf('debug', 'unique(asidIsSaturatedAr) = [%s]', strjoin(string(unique(asidIsSaturatedAr)), ','))
+
+          % Merge (OR) bits over ASIDs.
+          isSaturatedAr = any([isSaturatedAr, asidIsSaturatedAr], 2);
+        end
+
+        % L.logf('debug', 'unique(isSaturatedAr) = [%s]', strjoin(string(unique(isSaturatedAr)), ','))
       end
 
 
@@ -358,6 +355,58 @@ classdef Saturation
       end
 
     end    % function
+
+
+
+    % Return TSF for CWF data.
+    function tsfAr = get_one_ASR_CWF_channel_TSF_bit_array(obj, Ssid, isAchgFpa, samplesAVolt)
+      nRows = irf.assert.sizes( ...
+        Ssid,         [1], ...
+        isAchgFpa,    [-1], ...
+        samplesAVolt, [-1]);
+
+      % NOTE: Splits into subsequences also when ACHG does not matter (DC).
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+        isAchgFpa.logical2doubleNan());
+
+      tsfAr = false(nRows, 1);
+
+      for iSs = 1:nSs
+        iRec1   = iRec1Ar(iSs);
+        iRec2   = iRec2Ar(iSs);
+
+        tsfAr(iRec1:iRec2) = obj.get_TSF(...
+          samplesAVolt(iRec1:iRec2), Ssid, isAchgFpa(iRec1));
+      end
+    end
+
+
+
+    % Return final saturation bit for SWF data.
+    function saturationBitAr = get_one_ASR_SWF_channel_saturation_bit_array(...
+        obj, Ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
+      [nRows, ~] = irf.assert.sizes( ...
+        Ssid,                     [1], ...
+        isAchgFpa,                [-1], ...
+        samplesAVolt,             [-1, -2], ...
+        zvNValidSamplesPerRecord, [-1]);
+
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+        isAchgFpa.logical2doubleNan());
+
+      saturationBitAr = false(nRows, 1);
+
+      for iSs = 1:nSs
+        iRec1   = iRec1Ar(iSs);
+        iRec2   = iRec2Ar(iSs);
+
+        saturationBitAr(iRec1:iRec2) = obj.get_snapshot_saturation_many(...
+          zvNValidSamplesPerRecord(iRec1:iRec2), ...
+          samplesAVolt(            iRec1:iRec2, :), ...
+          Ssid, isAchgFpa(iRec1));
+      end
+
+    end
 
 
 

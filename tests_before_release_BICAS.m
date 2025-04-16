@@ -2,14 +2,14 @@ function tests_before_release_BICAS
 % Function which runs multiple tests (matlab.unittest) for BICAS specifically.
 %
 %
-% RATIONALE FOR HAVING SEPARATE TESTS
-% -----------------------------------
+% RATIONALE FOR HAVING SEPARATE TESTS FOR BICAS
+% ---------------------------------------------
 % (1) BICAS (SolO/RPW/BIAS Calibration Software) is required to support a
-% specific MATLAB version per agreement with LESIA/ROC which runs it. As of
-% 2024-05-28, this MATLAB version is planned to be MATLAB R2024a, and therefore
-% tests should run on that version.
+%     specific MATLAB version per agreement with LIRA/ROC which runs it. As of
+%     2025-02-19, this MATLAB version is MATLAB R2024a, and therefore tests
+%     should run on that version specifically.
 % (2) This code can also be run more seldomly (e.g. only for branch SOdevel) to
-% save on limited server resources for CI.
+%     save on limited server resources for CI.
 
 % Setup paths etc.
 irf;

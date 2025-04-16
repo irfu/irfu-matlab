@@ -86,7 +86,7 @@ classdef(Abstract) RctDataImpl < bicas.proc.L1L2.cal.rct.RctDataAbstract
           scalarGaValue = [];
 
         end
-      end
+      end    % function
 
       Do = dataobj(filePath);
 

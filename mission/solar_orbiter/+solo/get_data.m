@@ -20,11 +20,13 @@ function res = get_data(varStr,Tint)
 %   'L3_rpw-bia-density-10-seconds' (alias: nescpot_10sec)
 %   'L2_rpw-lfr-surv-cwf-b-cdag_srf' (Search coil) (alias: b_scm_srf)
 %   'L2_rpw-lfr-surv-cwf-b-cdag_rtn' (alias: b_scm_rtn)
-%   'L2_rpw-lfr-surv-cwf-e-1-second' (alias: vdc_1sec)
+%   'L2_rpw-lfr-surv-cwf-e-1-second' (alias: vdc_1sec) %alias must be used!
+%   'L2_rpw-lfr-surv-cwf-e-1-second' (alias: edc_1sec) %alias must be used!
 %   'L2_rpw-lfr-surv-cwf-e' (alias: vdc)
 %   'L2_rpw-lfr-surv-cwf-e-1-second_qual' (alias: vdc_1sec_qual)
 %   'L2_rpw-lfr-surv-cwf-e_qual' (alias: vdc_qual)
 %   'L2_rpw-lfr-sbm1-cwf-b-cdag' (alias: b_scm_sbm1) - RPW shock triggered data
+%   'L2_rpw-tds-surv-stat' (alias: tds_stat_freq') - TDS STAT median frequency
 %    Snapshots and other products need to be added!
 %
 % SWA-PAS:
@@ -92,6 +94,7 @@ if ~ismember(varStr, vars)
     case 'pi_rtn',          varStrNew = 'L2_swa-pas-grnd-mom_P_RTN';
     case 'scpot',           varStrNew = 'L3_rpw-bia-scpot';
     case 'vdc_1sec',        varStrNew = 'L2_rpw-lfr-surv-cwf-e-1-second';
+    case 'edc_1sec',        varStrNew = 'L2_rpw-lfr-surv-cwf-e-1-second';
     case 'vdc',             varStrNew = 'L2_rpw-lfr-surv-cwf-e';
     case 'vdc_1sec_qual',   varStrNew = 'L2_rpw-lfr-surv-cwf-e-1-second_qual';
     case 'vdc_qual',        varStrNew = 'L2_rpw-lfr-surv-cwf-e_qual';
@@ -103,7 +106,7 @@ if ~ismember(varStr, vars)
     case 'nescpot_10sec',   varStrNew = 'L3_rpw-bia-density-10-seconds';
     case 'b_scm_srf',       varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_srf';
     case 'b_scm_rtn',       varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn';
-    case 'tds_stat',        varStrNew = 'L2_rpw-tds-surv-stat';
+    case 'tds_stat_freq',   varStrNew = 'L2_rpw-tds-surv-stat';
     case 'b_scm_sbm1',      varStrNew = 'L2_rpw-lfr-sbm1-cwf-b-cdag';
     otherwise
       % fallback, it was not a full variable name nor short alias
@@ -113,6 +116,8 @@ if ~ismember(varStr, vars)
   end
   % Print what alias has been changed to
   irf.log('debug', ['Alias used: ', varStr, ' changed to ', varStrNew]);
+  %For data variables found in the same cdf file (e.g vdc and edc)
+  varStrOld = varStr; 
   % replace alias with the full variable name
   varStr = varStrNew;
 end
@@ -171,7 +176,11 @@ if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
                     res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'QUALITY_FLAG', Tint);
                   end
                 else
-                  res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
+                    if strcmpi(varStrOld,'vdc_1sec')
+                        res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
+                    elseif strcmpi(varStrOld,'edc_1sec')
+                        res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'EDC', Tint);
+                    end
                 end
             end
           end

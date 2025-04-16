@@ -27,7 +27,16 @@ classdef const
     %     and
     % (2) which directory tree from which corresponding datasets
     %     will be loaded, i.e. solo.db_init('local_file_db', ...) and
-    %     the implicit behaviour of solo.db_get_ts()/solo.db_list_files().
+    %     the implicit behaviour of solo.db_get_ts() and solo.db_list_files().
+
+    %     NOTE: There are no DSIs specified for IRFU-generated data, since those
+    %     are not used for generating QLIs. If qli.batch was configured to use
+    %     IRFU-generated data (which updates are not found in SOAR mirror or
+    %     LESIA mirror logs), then
+    %     (a) reading updates from LESIA logs would not work (and SOAR logs, if mirrored RPW datasets, which makes
+    %     little sense).
+    %     (b) DMRQ
+    %     then the current (2024-12-16) QLI code can not handle the situation).
     %
     % NOTE: Dictionary values specify DSIs (i.e. excluding CDAG).
     SOURCE_DSI_DICT = solo.qli.batch.const.get_DSIs()

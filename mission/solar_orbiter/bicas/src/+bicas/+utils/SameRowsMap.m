@@ -78,7 +78,7 @@ classdef SameRowsMap < handle
   %   AsrMap (while building) (until bicas.utils.SameSizeTypeMap)
   %   AsrMap (final)          (until bicas.utils.SameSizeTypeMap)
   %   DemultiplexingCalibrationInput/DemultiplexingCalibrationOutput.Zv
-  %   bicas.proc.L1L2.dc.calibrate_demux_voltages_subsequence(): Arguments which represent
+  %   bicas.proc.L1L2.dc.calibrate_voltages_subsequence(): Arguments which represent
   %       a subsequence (a shorter interval of CDF records).
   %
   % PROPOSAL: Fixed set of keys.
@@ -283,7 +283,7 @@ classdef SameRowsMap < handle
 
     % Add NEW key-value pair. Disallow overwriting.
     function add(obj, key, value)
-      assert(isa(key, obj.mcKeys), 'Inconsistent key MATLAB class.')
+      assert(isa(key, obj.mcKeys), 'class(key)="%s" is inconsistent with expected MATLAB class "%s".', class(key), obj.mcKeys)
       assert(~obj.Dict.isKey(key))
       assert(obj.nRows2 == size(value, 1), ...
         'The argument''s number of rows (%i) is not equal to the object''s number of rows (%i).', ...
@@ -432,7 +432,8 @@ classdef SameRowsMap < handle
 
     % Overload disp(Srm). Useful for debugging e.g. tests.
     %
-    % Unclear if works for non-numeric, non-char key values. Probably not.
+    % Unclear if works for non-numeric, non-char key values. Probably not. Does
+    % not work for ASID keys.
     %
     function s = disp(obj)
       keyArray = obj.keys;

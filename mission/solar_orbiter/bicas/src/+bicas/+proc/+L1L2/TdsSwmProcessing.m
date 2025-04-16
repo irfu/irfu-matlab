@@ -410,7 +410,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.lrx       = ones(nRecords, 1);
       Zv.BW        = true(nRecords, 1);
 
-      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
+      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(...
+        Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);
     end    % process_CDF_to_DCIP
 
 
