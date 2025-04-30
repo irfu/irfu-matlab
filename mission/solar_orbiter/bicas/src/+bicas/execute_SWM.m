@@ -110,7 +110,8 @@ end
 %=======================================
 % PROCESS DATA: CALL PRODUCTION FUNCTION
 %=======================================
-OutputDatasetsMap = SwmInfo.Swmp.production_function(InputDatasetsMap, rctDir, NsoTable, Bso, L);
+OutputDatasetsMap = SwmInfo.Swmp.production_function(...
+  InputDatasetsMap, rctDir, NsoTable, Bso, L);
 
 
 

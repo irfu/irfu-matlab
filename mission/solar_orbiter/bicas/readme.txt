@@ -254,6 +254,22 @@ Condition     | Action taken when condition applies
               |     Cap QUALITY_FLAG<=1.
 
 
+=================================================================
+ L2 data used for generating L2 LFR CWF downsampled (unofficial)
+=================================================================
+L2 LFR CWF downsampled (SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND; unofficial dataset)
+is derived from SOLO_L2_RPW-LFR-SURV-CWF-E only, but only when its quality
+deemed good enough using setting PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN (=2
+as of 2025-05-23).
+
+Condition                                    | Action taken when condition applies
+--------------------------------------------------------------------------------
+L2 LFR CWF QUALITY_FLAG is either            | L2 LFR CWF downsampled:
+>= PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN |     VDC, EDC, VDCSTD, EDCSTD
+or fill value (!)                            |     values are set to fill
+                                             |     values before downsampling.
+
+
 =============================================
  L2 data used for generating L3 EFIELD,SCPOT
 =============================================
@@ -294,6 +310,7 @@ and zVariable QUALITY_FLAG.             |
 =========================================================
  ROC modifying BICAS output CDFs due for quality reasons
 =========================================================
-ROC sometimes modifies CDFs, *after* they have been produced by BICAS. This may
-happen e.g. for time intervals when e.g. ANT3 has failed and QUALITY_FLAG is
-capped to 1 by ROC. See global attribute CAVEATS.
+ROC sometimes modifies CDFs, *after* they have been produced by BICAS and before
+they are officially delivered to SOAR. This may happen e.g. for time intervals
+when e.g. ANT3 has failed and QUALITY_FLAG is capped to 1 by ROC. See global
+attribute CAVEATS.

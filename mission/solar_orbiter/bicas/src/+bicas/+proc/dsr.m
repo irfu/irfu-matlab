@@ -88,8 +88,8 @@ classdef dsr
       % Find bin boundary reference timestamp. This is used for
       % setting the bin boundaries together with the bin length.
       v = spdfbreakdowntt2000(InLfrCwfOsr.Zv.Epoch(1));
-      % UTC subsecond (milliseconds, microseconds, nanoseconds)
-      v(6)   = 5;   % UTC second
+      % UTC seconds. Not sure of the reason for value=5. Avoid leap seconds?
+      v(6)   = 5;
       v(7:9) = 0;   % Milliseconds, microseconds, nanoseconds
       boundaryRefTt2000 = spdfcomputett2000(v);
       % Find

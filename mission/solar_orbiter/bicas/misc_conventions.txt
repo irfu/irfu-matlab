@@ -196,7 +196,8 @@ DSI, "dataset ID"
     variants thereof) are not abbreviated "DSI", but to the GA name in
     analogy with other variables named after GAs.
 DSR
-    Downsampled/Decreased Sampling Rate. Cf. OSR.
+    Downsampled/Decreased Sampling Rate. Used in the context of downsampling.
+    Cf. OSR.
 DT
     MATLAB datetime object.
 EJ

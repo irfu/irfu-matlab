@@ -378,6 +378,8 @@ S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
 % SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND data.
 % NOTE: This does not affect the corresponding OSR dataset and is therefore
 % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
+% 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data for L2 SURV CWF
+%                 downsampled.
 S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
 
 % Maximum value for zVar QUALITY_FLAG in output datasets.
