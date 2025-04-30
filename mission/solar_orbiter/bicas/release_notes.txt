@@ -257,3 +257,8 @@ Version 8.4.1 (2025-02-19)
 * Bugfix: Automatic saturation detection only sets L2_QUALITY_BITMASK saturation
   bits when samples exceed thresholds on non-reconstructed channels.
 * Require new L3 master CDFs V06/V07.
+
+
+Version ?
+---------
+* Bugfix: Can now handle multi-valued GA "OBS_ID".
