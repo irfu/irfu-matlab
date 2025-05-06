@@ -1,6 +1,7 @@
-function indSW = mms_sdp_swwake_enabled_time(tInp, scId)
+function [indSW, calFile] = mms_sdp_swwake_enabled_time(tInp, scId)
 % Returns index "indSW" of when mms S/W wake removal code should run, and
 % when it should not.
+% And potentially also return the calFile (the "regions" file) used.
 
 narginchk(2,2)
 if isa(tInp,'GenericTimeArray'), tInp = EpochTT(tInp).ttns; end
@@ -43,7 +44,10 @@ if(~isempty(list))
   [sw.time, indUniq] = unique(timeSort); % Ensure no duplicated values
   dataSort = data3(indSort, :); % Sorted data (based on time)
   sw.wake = dataSort(indUniq, :); % Ensure no duplicated values (based on time)
-
+  % If second output argument (calFile) was requested add it
+  if nargout>=2
+    calFile = off.calFile;
+  end
   % Check to see if we are reprocessing any old times, before our "regions"
   % calibration file starts. In that case fall back to the old enabled
   % times for wake removal.
@@ -63,6 +67,10 @@ if(~isempty(list))
     sw.time(end+1) = EpochTT('2017-08-31T19:59:59.000000000Z').ttns; sw.wake(end+1) = 1;   % (enabled to a second before change)
     sw.time(end+1) = EpochTT('2017-08-31T20:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disabled until further notice.
     sw.time(end+1) = EpochTT('2057-08-31T00:00:00.000000000Z').ttns; sw.wake(end+1) = sw.wake(end); % (repeat last entry until end of time...)
+    % If second output argument (calFile) was requested add it
+    if nargout>=2
+      calFile = 'Hardcoded regions information';
+    end
   end
 
 else
@@ -84,6 +92,9 @@ else
       sw.time(end+1) = EpochTT('2017-08-31T20:00:00.000000000Z').ttns; sw.wake(end+1) = 0; % Disabled until further notice.
 
       sw.time(end+1) = EpochTT('2057-08-31T00:00:00.000000000Z').ttns; sw.wake(end+1) = sw.wake(end); % (repeat last entry until end of time...)
+      if nargout>=2
+        calFile = 'Hardcoded regions information';
+      end
     otherwise
       error('Invalid scId')
   end

@@ -1109,7 +1109,10 @@ classdef mms_sdp_dmgr < handle
             irf.log('critical',errStr); error(errStr);
           end
           % Check to see if time is right for S/W wakes or not (based on orbits)
-          indSW = mms_sdp_swwake_enabled_time(DATAC.dce.time, DATAC.scId);
+          [indSW, SWcalFile] = mms_sdp_swwake_enabled_time(DATAC.dce.time, DATAC.scId);
+          if DATAC.procId == MMS_CONST.SDCProc.l2a
+            DATAC.calFile = SWcalFile; % Store calibration file used.
+          end
           diffWake = zeros(length(Phase.data), length(sensors));
           saveWakeDesc = false; % Should wakeDescTs be saved to log path? DO NOT enable on SDC!
           if any(indSW)
