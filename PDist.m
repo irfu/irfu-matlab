@@ -1982,7 +1982,7 @@ classdef PDist < TSeries
             if max(phedges)<360
               ph_MC(ph_MC>max(phedges)) = ph_MC(ph_MC>max(phedges)) - 360;
             elseif max(phedges)>360
-              ph_MC(ph_MC<min(phedges)) = 360 - ph_MC(ph_MC<min(phedges));  
+              ph_MC(ph_MC<min(phedges)) = 360 - ph_MC(ph_MC<min(phedges));
             end
 
 

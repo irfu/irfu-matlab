@@ -6,9 +6,8 @@
 %   set appropriate "Tab size = 2" & "Indent size = 2" in the Matlab editor
 % 	found under "Matlab" -> "Preferences" -> "Editor/Debugger" -> "Tab".
 %
-% Note: SolarOrbiter specific code ("mission/solo/") and externally
-%       contributed code ("contrib/") is excluded from this 2 space
-%       recommendation.
+% Note: Externally contributed code ("contrib/") is excluded from this 2
+%       space recommendation.
 %
 % 	See also smartIndentContents, <a href="matlab:web('https://github.com/irfu/irfu-matlab/blob/master/.github/CONTRIBUTING.md')">.github/CONTRIBUTING.md</a>
 
