@@ -18,12 +18,12 @@ classdef CalibrationSettings
   %#####################
   %#####################
   properties(SetAccess=private, GetAccess=public)
-      iBlts
-      Ssid
-      isAchg
-      iCalibTimeL
-      iCalibTimeH
-      iLsf
+    iBlts
+    Ssid
+    isAchg
+    iCalibTimeL
+    iCalibTimeH
+    iLsf
   end
 
 

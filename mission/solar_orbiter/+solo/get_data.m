@@ -41,6 +41,9 @@ function res = get_data(varStr,Tint)
 %   'L2_swa-pas-grnd-mom_Pi_RTN' (alias: pi_rtn)
 %   'L2_swa-pas-vdf' (alias: pas_vdf) 'L2_swa-pas-quality_factor' (alias: pas_qf)
 %
+% SWA-EAS
+%   'L3_swa-eas-nmpad-psd' (alias: epad_10sec)
+%
 % LOW LATENCY (NOT FOR SCIENCE!)
 %   'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N'
 %
@@ -68,7 +71,7 @@ vars = {'L2_mag-srf-normal','L2_mag-srf-normal-1-minute','L2_mag-rtn-normal','L2
   'L2_rpw-lfr-surv-cwf-e-1-second', 'L2_swa-pas-eflux', 'L2_swa-pas-grnd-mom_V_RTN', 'L2_swa-pas-grnd-mom_V_SRF', 'L2_swa-pas-grnd-mom_N', ...
   'L2_swa-pas-grnd-mom_T', 'L2_swa-pas-grnd-mom_TxTyTz_SRF', 'L2_swa-pas-grnd-mom_TxTyTz_RTN', 'L2_rpw-lfr-surv-cwf-e','L2_rpw-lfr-surv-cwf-e-1-second_qual',...
   'L2_swa-pas-grnd-mom_Tani','L2_swa-pas-grnd-mom_P_SRF', 'L2_swa-pas-grnd-mom_P_RTN', 'L2_swa-pas-vdf', 'L2_rpw-lfr-surv-cwf-e_qual',...
-  'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N','L2_rpw-tds-surv-stat','L2_rpw-lfr-sbm1-cwf-b-cdag'};
+  'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N','L2_rpw-tds-surv-stat','L2_rpw-lfr-sbm1-cwf-b-cdag','L3_swa-eas-nmpad-psd'};
 
 %% check if alias is used and change to full variable name
 if ~ismember(varStr, vars)
@@ -108,6 +111,7 @@ if ~ismember(varStr, vars)
     case 'b_scm_rtn',       varStrNew = 'L2_rpw-lfr-surv-cwf-b-cdag_rtn';
     case 'tds_stat_freq',   varStrNew = 'L2_rpw-tds-surv-stat';
     case 'b_scm_sbm1',      varStrNew = 'L2_rpw-lfr-sbm1-cwf-b-cdag';
+    case 'epad_10sec',      varStrNew = 'L3_swa-eas-nmpad-psd';
     otherwise
       % fallback, it was not a full variable name nor short alias
       errStr = ['"varStr":', varStr, ' incorrect alias used.'];
@@ -117,7 +121,7 @@ if ~ismember(varStr, vars)
   % Print what alias has been changed to
   irf.log('debug', ['Alias used: ', varStr, ' changed to ', varStrNew]);
   %For data variables found in the same cdf file (e.g vdc and edc)
-  varStrOld = varStr; 
+  varStrOld = varStr;
   % replace alias with the full variable name
   varStr = varStrNew;
 end
@@ -176,11 +180,14 @@ if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
                     res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'QUALITY_FLAG', Tint);
                   end
                 else
-                    if strcmpi(varStrOld,'vdc_1sec')
-                        res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
-                    elseif strcmpi(varStrOld,'edc_1sec')
-                        res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'EDC', Tint);
-                    end
+                  if strcmpi(varStrOld,'vdc_1sec')
+                    res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
+                  elseif strcmpi(varStrOld,'edc_1sec')
+                    res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'EDC', Tint);
+                  end
+                  if strcmpi(varStrOld,'vdc')
+                    res = solo.db_get_ts(['solo_', C{1}, '_', C{2}], 'VDC', Tint);
+                  end
                 end
             end
           end
@@ -292,8 +299,33 @@ if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
               error(errStr);
           end
         case 'eas'
-          % Electron data - can be added at a later date
-          warning('Electron data to be added in the future')
+          % if more eas data is added then new cases will need to be
+          % added here
+          pad_files = solo.db_list_files(['solo_',varStr],Tint);
+
+          energy = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_ENERGY')); % energy bins
+          pa = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_PA')); % angle bins
+          for k=1:length(pad_files)
+            pad{k} = double(spdfcdfread([pad_files(k).path '/' pad_files(k).name],'variables','SWA_EAS_NMPAD_PSD_DATA'));
+            pad{k}(pad{k}<-1e28)=nan;
+            tt{k} = spdfcdfread([pad_files(k).path '/' pad_files(k).name], 'Variable',{'EPOCH'});
+            for e_val = 1:length(energy)
+              if k==1
+                epad{e_val} = irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))');
+              else
+                epad{e_val} = epad{e_val}.combine(irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))'));
+              end
+            end
+          end
+
+          for e_val = 1:length(energy)
+            res.(['ebin_' num2str(e_val)]).p = epad{e_val}.tlim(Tint).data;
+            res.(['ebin_' num2str(e_val)]).t = epad{e_val}.tlim(Tint).time.epochUnix;
+            res.(['ebin_' num2str(e_val)]).p_label='dEF';
+            res.(['ebin_' num2str(e_val)]).f = repmat(pa,1,numel(res.(['ebin_' num2str(e_val)]).t))';
+          end
+          res.energies = energy;
+
         otherwise
           errStr = 'Not yet defined';
           irf.log('critical', errStr);

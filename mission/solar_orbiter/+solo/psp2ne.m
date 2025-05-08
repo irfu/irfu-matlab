@@ -161,7 +161,7 @@ AddEntry('2023-10-08T00:00:00Z/2023-10-13T00:00:00Z',... %SOOP
   [0.5714 + 3.9126i  0.1464 + 4.7137i],1.7973);
 AddEntry('2024-10-20T00:00:00Z/2024-10-29T00:00:00Z',...%68 Manual calibration
   [0.5780 + 2.5900i 0.1883 + 3.7339i]);
-  
+
 %% calibrate
 CalR = Cal.resample(PSP);
 NeScp = PSP;

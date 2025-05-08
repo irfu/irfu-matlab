@@ -1975,8 +1975,14 @@ classdef PDist < TSeries
             ph_MC = ph_MC*180/pi;
             ph_MC = wrapTo360(ph_MC);
 
-            if phedges(1)<0 && max(phedges)~=360
+            %Deal with the situation when the first bin in ph does not
+            %start at 0 and last bin does not end at 360. phedges is
+            %assumed to wrap around itself i.e. if x = phedges(1), then
+            %phedges(end) = x+360
+            if max(phedges)<360
               ph_MC(ph_MC>max(phedges)) = ph_MC(ph_MC>max(phedges)) - 360;
+            elseif max(phedges)>360
+              ph_MC(ph_MC<min(phedges)) = 360 - ph_MC(ph_MC<min(phedges));
             end
 
 
@@ -1988,7 +1994,12 @@ classdef PDist < TSeries
             ith_n = discretize(th_MC,thedges);
             iph_n = discretize(ph_MC,phedges);
 
-            loc = sub2ind([l1 l2 l3],iv,iph_n,ith_n);
+            %%As of 2024 sub2ind doesn't work with nan, so the following is
+            %%a fix for that. The solution emplyed is to discard points
+            %%that are outside of the new grid.
+            ix = isnan(iv) | isnan(ith_n) | isnan(iph_n);
+
+            loc = sub2ind([l1 l2 l3],iv(~ix),iph_n(~ix),ith_n(~ix));
             loc(isnan(loc)) = []; % values that fall outside of box becomes nan, remove these
             hasdata = all(loc>0, 2);
 
