@@ -1,5 +1,5 @@
-function instfrequency = irf_instanteousfrequency(varargin)
-% IRF_INSTANTEOUSFREQUENCY Compute the instantaneous frequency of a signal using
+function instfrequency = irf_instantaneousfrequency(varargin)
+% IRF_INSTANTANEOUSFREQUENCY Compute the instantaneous frequency of a signal using
 % change in phase from the Hilbert transformed signal
 %
 % Written by D. B. Graham
@@ -20,7 +20,7 @@ function instfrequency = irf_instanteousfrequency(varargin)
 %       same resolution as the input signal
 % 
 % Example: 
-%   instfrequency = irf_instanteousfrequency(Ehmfe,'numptsav',1000,'avmethod','movmedian','frange',[15 20]*1e3);
+%   instfrequency = irf_instantaneousfrequency(Ehmfe,'numptsav',1000,'avmethod','movmedian','frange',[15 20]*1e3);
 
 averageintime = false;
 filterdata = false;
