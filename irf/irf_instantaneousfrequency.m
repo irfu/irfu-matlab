@@ -9,7 +9,6 @@ function instfrequency = irf_instantaneousfrequency(varargin)
 %
 % Options: 
 %       numptsav -  Number of points averaged.
-%                   Optional parameter. Default is cav = 8;
 %       avmethod -  Method used in moving average: "movmean" (default) | "movmedian" | "gaussian" | "lowess" |
 %                   "loess" | "rlowess" | "rloess" | "sgolay"
 %       frange -    select frequency range to bandpass filter before
