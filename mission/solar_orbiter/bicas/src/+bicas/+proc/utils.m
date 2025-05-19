@@ -122,7 +122,7 @@ classdef utils
 
 
     % Function intended for filtering out data from a zVariable by setting
-    % parts of it to NaN. Also useful for constructing aonymous functions.
+    % parts of it to NaN. Also useful for constructing anonymous functions.
     %
     %
     % ARGUMENTS

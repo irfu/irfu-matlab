@@ -15,7 +15,8 @@
 %
 % SUMMARY OF CONSTANTS
 % ====================
-% Copy-pasted. The implementation is the authoritative source, not below table.
+% Copy-pasted stdout from code.
+% NOTE: The implementation is the authoritative source, not below table.
 % --------------
 % ASID:
 % "DC_V1"  ⟼ 1

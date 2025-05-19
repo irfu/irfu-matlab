@@ -84,12 +84,12 @@ classdef sat
     % Given an arbitrary-size ARRAY of samples, with constant SSID and isAchg,
     % get VSIBs for every sample.
     %
-    % NOTE: The data may refer to both CWF data and SWF data, but the
-    % function itself makes no distinction between the two. The caller has
-    % to make distinctions between those two if needed. For example, this
-    % function returns VSIBs for each sample in a snapshot, but the caller
-    % might one to condense this to one saturation bit per snapshot
-    % according to some algorithm that has no analogue for CWF data.
+    % NOTE: The data may refer to both CWF data and SWF data, but the function
+    % itself makes no distinction between the two. The caller has to make
+    % distinctions between those two if needed. For example, this function
+    % returns VSIBs for each sample in a snapshot, but the caller might one to
+    % condense this to one saturation bit per snapshot according to some
+    % algorithm that has no analogue for CWF data.
     %
     %
     % ARGUMENTS
@@ -242,8 +242,8 @@ classdef sat
 
 
 
-    % Given ZV-like variables (incl. all ASR ASID channels, CWF/SWF), get
-    % saturation bits (Nx1) for quality bitmask.
+    % Given ZV-like variables (incl. *ALL* ASR ASID channels, CWF/SWF), derive
+    % saturation bits (VSQB; Nx1) for the quality bitmask ZV.
     %
     % NOTE: Applies to both CWF and SWF data.
     %

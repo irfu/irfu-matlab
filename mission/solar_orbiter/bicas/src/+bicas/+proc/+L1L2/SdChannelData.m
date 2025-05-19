@@ -2,6 +2,7 @@
 % Class which stores
 % * one channel of data (array of samples; nRecords x nSpr), and
 % * VSQBs (nRecords x 1).
+% for one SDID/SSID value.
 %
 % The class interface itself (~syntactic sugar) emulates a column array with
 % support for addition and subtraction despite that the underlying storage of
@@ -9,7 +10,8 @@
 % channel). This makes reconstruction of missing channels more natural while the
 % class itself automatically derives new VSQBs (one per row) for reconstructed
 % channels under the hood. Since the class is meant to be used for
-% demultiplexing, it is meant to represent data both before and demultiplexing.
+% reconstructing missing channels, it is meant to represent data both before and
+% after reconstruction, and possibly demultiplexing.
 %
 %
 % SD = Source/Destination?
@@ -26,10 +28,23 @@ classdef SdChannelData
   %   ~SDID
   %   Signal Destination
   %   channel
-  %   samples (not only samples; contains vsqb too)
+  %   *one* channel, single channel
+  %   samples (NOTE: Contains not only samples; contains VSQB too.)
   %   data
   %   metadata
-  %   PROPOSAL: Analogous to dictionary class.
+  %   demultiplexing input & output
+  %     CON: Might also use class for deriving saturation.
+  %   DIOC = DemultiplexingIOChannel
+  %   DCIO = DemultiplexingChannelIO
+  %   CHND = ChannelData
+  %   OCD = OneChannelData
+  %   SCD, SCHD = SingleChannelData
+  %     SCD is substring of SCDA, isCdag.
+  %   SCH = SingleChannel
+  %     SCH is substring of ischar.
+  %   --
+  %   NOTE: If changing name of this class, then should also change name of
+  %         SdcdDict=bicas.proc.L1L2.SdChannelDataDict.
   %
   % PROPOSAL: Rename samplesAr to include unit.
   %   PRO: Class intended for being used for reconstruction.
@@ -43,6 +58,16 @@ classdef SdChannelData
   %   CON(?): The size of the object is not the same as the size of samplesAr.
   %           Can therefore not *directly* reuse FPA fill positions as fill
   %           positions for this class.
+  %
+  % PROPOSAL: Include length of each snapshot.
+  %   PRO: No longer requires variable-length snapshots to be padded with NaN.
+  %   NOTE: Requires checking that lengths of snapshots are consistent when
+  %         combining multiple objects (plus/minus).
+  % PROPOSAL: Add SDID/SSID.
+  %   PRO: SSID (source) used when deriving VSIBs (when calling
+  %         bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW()).
+  %   PRO: SDID (destination) used when reconstructing.
+  %   PRO: SDID/SSID och SDCD är ofta argument tillsammans till funktioner.
 
 
 
@@ -85,11 +110,12 @@ classdef SdChannelData
 
     function bWholeRowIsNan = get.bWholeRowIsNan(obj)
       % IMPLEMENTATION NOTE: Must require ALL elements to be NaN in order to
-      % make reconstruction algorithm work correctly.
-      % TDS-RSWF snapshots are variable-length meaning that the unused elements
-      % are NaN, but those unused elements can not be used for determining
-      % whether a channel record should be reconstructed (assigned a value) or
-      % can be used for reconstructing other channels (read the value).
+      % make reconstruction algorithm work correctly due to using NaN for
+      % padding snapshots. TDS-RSWF snapshots are variable-length meaning that
+      % the unused elements are NaN, but those unused elements can not be used
+      % for determining whether (1) a channel record should be reconstructed
+      % (assigned a value), or (2) be used for reconstructing other channels
+      % (read the value).
 
       % PROPOSAL: Abolish function/property. Derive when invoking reconstruction
       %           algorithm instead.

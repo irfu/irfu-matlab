@@ -27,7 +27,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   %
   % PROPOSAL: Better name.
   %   OSR, DSR
-  %   L3
+  %   L2, L3
   %   Density, Efield, ScPot = DES
   %
   % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT.

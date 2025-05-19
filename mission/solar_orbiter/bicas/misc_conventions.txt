@@ -64,9 +64,11 @@ ASR, Antenna Signal Representation.
     Either of:
     (1) A reference to a particular type of "physical antenna signal channel"
         which BIAS-LFR/TDS is trying to measure.
-        NOTE: ASID always represents a reference to such a channel, but not
-              the samples themselves. SSID and SDID may, but do not always.
-    (2) The sample values in a measurement of such, whether indirect or not.
+        NOTE: ASID always represents a reference to such a channel (but not
+              the samples themselves). SSID and SDID may reference such a channel
+              (but not the samples), but do not always (e.g. ground).
+    (2) The sample values in a measurement of such a channel as referenced in
+        (1), whether indirect or not.
     In reality, the terminology is:
     ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF
                   (DC diff, antenna 1-2)
@@ -106,9 +108,10 @@ BIAS_1, ..., BIAS_5 (BIAS_i, i=1..5)
 BICAS
     BIAS Calibration Software
 BLTS = BIAS-LFR/TDS SIGNAL
-    Signal between the LFR/TDS ADCs and the non-antenna side of the BIAS
-    demuxer including the BIAS transfer functions. Like "BIAS_i", i=1..5,
-    but can refer to a signal which has been processed by various stages of
+    One of the five possible signals between the LFR/TDS ADCs and
+    the non-antenna side of the BIAS demuxer including the h/w BIAS transfer
+    functions. Like "BIAS_i", i=1..5, in the official BIAS documentation except
+    that it can refer to a signal which has been processed by various stages of
     calibration/non-calibration, including in particular
       - TM units (inside LFR/TDS),
       - Interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
@@ -117,13 +120,13 @@ BLTS = BIAS-LFR/TDS SIGNAL
         transfer functions; volt).
     NOTE: This definition is partly created to avoid using term "BIAS_i" since
     it is easily confused with other things (the subsystem BIAS, bias currents),
-    partly to have names for various stages of calibration.
+    partly to have names for various signals at various stages of processing.
 BRVF
-    BIAS RCT Validity File. Not ROC term. File "bias_rct_validity.json" as
-    specified by ROC.
+    BIAS RCT Validity File. File "bias_rct_validity.json" as specified by ROC.
+    Is not a ROC term.
 BSO
-    Singleton instance of class bicas.Settings which stores the settings for
-    BICAS as a whole.
+    BICAS Settings Object. Singleton instance of class bicas.Settings which
+    stores the settings for BICAS as a whole.
 CA
     Cell Array. See "AR".
 CLI
@@ -243,7 +246,7 @@ ITF
     Inverse Transfer Function = TF that describes the conversion of physical
     OUTPUT to INPUT (not the reverse). Cf. FTF.
 IV, ivolt, Interface Volt
-    Calibrated volt at the interface between BIAS and LFR/TDS.
+    Calibrated signal in volts at the interface between BIAS and LFR/TDS.
 IVPAV
     IV/AV = Interface volt Per Antenna volt (unit).
 IVPT
@@ -263,7 +266,7 @@ LRX
     BLTS 1-3.
 LSF
     LFR Sampling Frequency (F0...F3).
-    NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
+    NOTE: When specified as an index value, 1=F0, ..., 4=F3.
 LV
     Latest (Dataset) Version.
 MC
@@ -458,16 +461,18 @@ UFV
     measured voltages.
 VBMC
     Validate BICAS Master CDFs. Standalone tool.
+WOLS
+    WithOut Leap Seconds
 VSIB
     Voltage Saturation Intermediate Bit. Internal bit used by the implementation
-    when deriving VSQB. The exact meaning varies in the code. Cf. VSQB.
+    when deriving VSQB. The exact meaning varies by context. The abbreviation
+    exists to distinguish intermediate "saturation quality bits" from
+    "the final product" (VSQB). Cf. VSQB.
 VSQB
     Voltage Saturation Quality Bit. Bit in dataset (!) which is set iff BICAS
     wants to label a sample/snapshot as saturated, according to some algorithm.
     VSQB is the value actually stored in datasets, as opposed to VSIB which is
     an intermediate value.
-WOLS
-    WithOut Leap Seconds
 ZV
     CDF zVariable, or MATLAB variable that is analogous to one. First dimension
     corresponds to CDF record.

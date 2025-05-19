@@ -81,9 +81,9 @@ classdef dc
 
 
 
-      %##############################################################
-      % CALIBRATE VOLTAGES (FIVE CHANNELS LABELLED BY BLTS AND SSID)
-      %##############################################################
+      %##################################################################
+      % CALIBRATE VOLTAGES: 5x CHANNELS LABELLED BY SSID/BLTS (not SDID)
+      %##################################################################
       bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(...
         Epoch                   = Dcip.Zv.Epoch, ...
         bltsSamplesTm           = Dcip.Zv.bltsSamplesTm, ...
@@ -102,20 +102,22 @@ classdef dc
 
 
 
-      %##################################################################
+      %######################################################################
       % ~"DEMUX" VOLTAGES:
-      % SIGNALS LABELLED BY 5x BLTS
-      % --> 9x SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
-      %##################################################################
+      % INPUT:  5x SIGNALS LABELLED BY SDID/BLTS (not SSID)
+      % OUTPUT: 9x SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
+      %######################################################################
       AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR(...
         bltsSamplesAVolt, bltsSdidArray, L);
 
       if 0
-        % ============
+        % ############
         % EXPERIMENTAL
-        % ============
+        % ############
+
+        % 5x SIGNALS LABELLED BY SSID/BLTS.
         % NOTE: Incomplete detection of VSQB.
-        % NOTE: No SdChannelData as input (though as output).
+        % NOTE: No SDCD as input (though as output).
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
           Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa);
 
@@ -131,9 +133,9 @@ classdef dc
         % PROPOSAL: Compare SDID-separated VSIBs combined into one with old
         %           VSQBs.
 
-        % ----------------------------------------------------------------------
+        % ======================================================================
         % DEBUG: Check that samples derived using old and new code are identical
-        % ----------------------------------------------------------------------
+        % ======================================================================
         % NOTE: Check may fail if new code splits samples into subsequences in
         %       new way, e.g. BLTS per BLTS.
         % PROPOSAL: Permit approximative equality.
@@ -142,12 +144,12 @@ classdef dc
         % maxDiff = 0;
         for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
           asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(asrSdid);
-          A = AsrSamplesAVoltSrm(asid);
-          B = SdcdDict.get(asrSdid).samplesAr;
+          oldImplSamplesAVolt = AsrSamplesAVoltSrm(asid);           % Samples from old impl.
+          newImplSamplesAvolt = SdcdDict.get(asrSdid).samplesAr;    % Samples from new impl.
 
-          if ~isequaln(A, B)
+          if ~isequaln(oldImplSamplesAVolt, newImplSamplesAvolt)
             L.logf('debug', 'Samples are different for asid = %g', asid)
-            if ~isequal(isnan(A), isnan(B))
+            if ~isequal(isnan(oldImplSamplesAVolt), isnan(newImplSamplesAvolt))
               L.logf('debug', 'isnan() is different.')
             end
             error('Samples differ.')
@@ -168,6 +170,8 @@ classdef dc
       % ~Derive quality variables, and UFV from quality QRCs
       %######################################################
       % AUTODETECT SATURATION.
+      % NOTE: Derives *ONE* saturation bit for *ALL* signals combined (per CDF
+      %       record).
       isAutodetectedVsqb = bicas.proc.L1L2.sat.get_VSQB(...
         Bso, ...
         Dcip.Zv.Epoch, ...
@@ -219,7 +223,6 @@ classdef dc
     % Obtain SSID and SDID arrays for arrays of BDM and DLR.
     %
     function [bltsSsidArray, bltsSdidArray] = get_SSID_SDID_arrays(bdmFpa, dlrFpa)
-
       nRecTot = irf.assert.sizes(...
         bdmFpa, [-1], ...
         dlrFpa, [-1]);
@@ -751,42 +754,46 @@ classdef dc
 
 
 
-    % EXPERIMENTAL. INCOMPLETE?!!
+    % EXPERIMENTAL.
     %
     % Intended as future conceptual replacement for
     % bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR().
     %
     function SdcdDict = relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW( ...
         bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)
-
       % PROPOSAL: Include deriving VSIB in this function?
       %   PRO: Most of the complexity should be in the Saturation class anyway.
+      % PROPOSAL: Separate function only for converting 5x BLTS to 9x ASR
+      %           (bicas.proc.L1L2.SdChannelDataDict), WITHOUT reconstructing
+      %           missing data.
+      % PROPOSAL: 5x BLTS input in the form of 5x bicas.proc.L1L2.SdChannelData
 
       % Tmk = bicas.utils.Timekeeper(...
       %   'bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
 
-      [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
+      [nRec, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
         bltsSdidAr,         [-1,     bicas.const.N_BLTS], ...
         bltsVsibAr,         [-1,     bicas.const.N_BLTS]);
 
-      %===========================================================
-      % Construct SdcdDict: Copy values from BLTSs into SdcdDict
-      %                     (no reconstruction of missing values)
-      %===========================================================
+      %======================================================
+      % Construct SdcdDict:
+      % Copy values from 5x BLTSs into 9x SDCD (1x SdcdDict)
+      % (no reconstruction of missing values)
+      %======================================================
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
       for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
 
         % Preallocate
-        sdidSamplesAVoltAr = nan(  nRecTot, nSamplesPerRecordChannel);
-        sdidVsibAr         = false(nRecTot, 1);
+        sdidSamplesAVoltAr = nan(  nRec, nSamplesPerRecordChannel);
+        sdidVsibAr         = false(nRec, 1);
 
         % -----------------------------------------------------------------
         % Copy samples and VSIB from elements associated with the specified
         % ASR SDID.
         % -----------------------------------------------------------------
-        % NOTE: Does not copy data which is not an SDID ASR (only SDID=UNKNOWN
-        %       is omitted).
+        % NOTE: Does not copy data which is not an SDID ASR (i.e. only
+        %       SDID=UNKNOWN is omitted).
         for iBlts = 1:bicas.const.N_BLTS
           bRecCopy                        = ( bltsSdidAr(:, iBlts) == asrSdid );
           sdidSamplesAVoltAr(bRecCopy, :) = bltsSamplesAVoltAr(bRecCopy, :, iBlts);

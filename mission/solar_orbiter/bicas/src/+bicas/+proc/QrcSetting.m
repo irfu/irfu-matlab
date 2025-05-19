@@ -20,7 +20,7 @@ classdef QrcSetting
   %   policy
   %   entry
   %   action
-  %   QRC
+  %   QRC, QRCID
   %   quality ZVs
   %   quality ZVs modification
   %   --
@@ -35,7 +35,7 @@ classdef QrcSetting
   %     CON: Should probably phase out that functionality anyway.
   %   PRO: Useful for blanking antenna fails.
   %     https://github.com/irfu/irfu-matlab/issues/142
-  %   CON/PROBLEM: Also needs to specify channel. All channels?!!
+  %   CON/PROBLEM: Needs way of specifying channel. All channels?!!
   %     CON-PROPOSAL: Include "channel addresses"?
   %
   % PROPOSAL: Modify definition of QRC beyond quality-related conditions to
@@ -65,6 +65,8 @@ classdef QrcSetting
     % Bits that should be set in either ZV "L2_QUALITY_BITMASK" or
     % "L3_QUALITY_BITMASK". The context in which this class is used
     % determines which.
+    % NOTE: The value is supposed to be OR:ed with a preceeding value, i.e. only
+    % set bits override the previous value.
     Lx_QUALITY_BITMASK
   end
 

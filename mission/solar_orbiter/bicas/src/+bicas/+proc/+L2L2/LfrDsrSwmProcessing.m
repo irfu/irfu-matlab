@@ -1,6 +1,6 @@
 %
-% SWMP for downsampling SOLO_L2_RPW-LFR-SURV-CWF-E L2-->L2 (unofficial
-% output datasets).
+% SWMP for downsampling SOLO_L2_RPW-LFR-SURV-CWF-E -->
+% SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND (unofficial output datasets).
 %
 % NOTE: Exclude EAC, IBIAS1/2/3. /YK 2021-05-11
 %

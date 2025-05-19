@@ -580,6 +580,11 @@ classdef const
 
 
     % Function for initializing constant.
+    %
+    % NOTE: L3_QUALITY_BITMASK currently only exists for L3 DENSITY datasets
+    % (i.e. not for other L3 datasets). If L3_QUALITY_BITMASK is used for other
+    % L3 datasets in the future, then the bits may have different meanings for
+    % those datasets.
     function QrcSettingsL3Map = init_QRC_SETTINGS_L3_DENSITY()
       QrcSettingsL3Map = containers.Map();
 

@@ -17,6 +17,18 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef SdChannelDataDict < handle
+  % PROPOSAL: Better name
+  %   ~ASR (as opposed to non-ASR)
+  %   ~9x ASR (as opposed to 5x BLTS)
+  %   ~9x ASR (as opposed to just one channel)
+  %   ~SdChannelData
+  %     Which may be used for BLTS(?)
+  %   ~Dictionary
+  %   ~Collection
+  %   --
+  %   ASDCD = AsrSdChannelData
+  %     CON: Does not imply collection of ALL ASR channels.
+  %
   % PROPOSAL: Better tests.
   %
   % PROPOSAL: Constructor pre-allocates SDCDs.

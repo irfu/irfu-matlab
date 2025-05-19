@@ -475,6 +475,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
       for iSdid = 1:numel(SDID_AR)
+
         Sdcd = bicas.proc.L1L2.SdChannelData(...
           samplesArData(:, iSdid), ...
           vsibArData(   :, iSdid));
