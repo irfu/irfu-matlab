@@ -20,7 +20,7 @@ classdef SdChannelDataDict___UTEST < matlab.unittest.TestCase
 
 
     function test_set_get_nWholeRowIsNan(testCase)
-      SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys;
+      SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
 

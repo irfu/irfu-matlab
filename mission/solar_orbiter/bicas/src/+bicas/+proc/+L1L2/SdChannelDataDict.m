@@ -40,7 +40,7 @@ classdef SdChannelDataDict < handle
   %###########
   properties(Constant, Access=private)
     % ASR SDIDs.
-    PERMITTED_KEYS_AR = bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys
+    PERMITTED_KEYS_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR
   end
   properties(Dependent)
     % Total number of bWholeRowIsNan values in all the SDCD objects stored

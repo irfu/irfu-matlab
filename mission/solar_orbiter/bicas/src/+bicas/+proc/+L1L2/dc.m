@@ -140,7 +140,7 @@ classdef dc
         % PROPOSAL: Store max difference.
 
         % maxDiff = 0;
-        for asrSdid = bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys'
+        for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
           asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(asrSdid);
           A = AsrSamplesAVoltSrm(asid);
           B = SdcdDict.get(asrSdid).samplesAr;
@@ -762,7 +762,6 @@ classdef dc
       % PROPOSAL: Include deriving VSIB in this function?
       %   PRO: Most of the complexity should be in the Saturation class anyway.
 
-      SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys;
       % Tmk = bicas.utils.Timekeeper(...
       %   'bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
 
@@ -776,8 +775,7 @@ classdef dc
       %                     (no reconstruction of missing values)
       %===========================================================
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
-      for i = 1:numel(SDID_ASR_AR)
-        asrSdid = SDID_ASR_AR(i);
+      for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
 
         % Preallocate
         sdidSamplesAVoltAr = nan(  nRecTot, nSamplesPerRecordChannel);

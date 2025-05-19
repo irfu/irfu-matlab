@@ -250,6 +250,11 @@ classdef const
         C2.ROUTING_DICT("GND_TO_DC_V2")       = bicas.proc.L1L2.Routing(C2.SSID_DICT("GND"),     C2.SDID_DICT("DC_V2"));
         C2.ROUTING_DICT("GND_TO_DC_V3")       = bicas.proc.L1L2.Routing(C2.SSID_DICT("GND"),     C2.SDID_DICT("DC_V3"));
         C2.ROUTING_DICT("UNKNOWN_TO_NOWHERE") = bicas.proc.L1L2.Routing(C2.SSID_DICT("UNKNOWN"), C2.SDID_DICT("NOWHERE"));
+
+        % =========================
+        % Derive array of ASR SDIDs
+        % =========================
+        C2.SDID_ASR_AR = C2.SDID_ASID_DICT.keys;
       end
 
       main()
@@ -370,7 +375,7 @@ classdef const
       assert(isscalar(sdid))
       assert(bicas.proc.L1L2.const.is_SDID(sdid))
 
-      bAsrAr = ismember(sdid, bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys);
+      bAsrAr = ismember(sdid, bicas.proc.L1L2.const.C.SDID_ASR_AR);
     end
 
     % Not vectorized.

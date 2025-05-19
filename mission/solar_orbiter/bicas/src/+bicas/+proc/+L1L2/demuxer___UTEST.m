@@ -425,7 +425,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       %     implemented support for testing equality?), and
       % (2) it helps to compare object components separately when debugging
       %     tests.
-      for sdid = bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys'
+      for sdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
         ActSdcd = ActSdcdDict.get(sdid);
         ExpSdcd = ExpSdcdDict.get(sdid);
 
@@ -471,7 +471,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     % vsibArData
     %       (iRec, iSdid)
     function SdcdDict = create_SdcdDict(samplesArData, vsibArData)
-      SDID_AR = bicas.proc.L1L2.const.C.SDID_ASID_DICT.keys;
+      SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
       for iSdid = 1:numel(SDID_AR)
