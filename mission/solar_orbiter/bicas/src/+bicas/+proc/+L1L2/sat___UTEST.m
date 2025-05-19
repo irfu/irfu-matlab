@@ -748,7 +748,7 @@ classdef sat___UTEST < matlab.unittest.TestCase
 
     function SatSettings = init_SatSettings(varargin)
         Bso         = bicas.proc.L1L2.sat___UTEST.init_BSO(varargin{:});
-        SatSettings = bicas.proc.L1L2.sat.convert_BSO_to_struct(Bso);
+        SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
     end
 
 

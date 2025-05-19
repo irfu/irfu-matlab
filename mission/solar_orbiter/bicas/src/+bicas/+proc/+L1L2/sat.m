@@ -37,7 +37,7 @@ classdef sat
     % Extract relevant settings to struct which can be used internally.
     %
     % NOTE: Useful for tests.
-    function SatSettings = convert_BSO_to_struct(Bso)
+    function SatSettings = from_BSO_extract_saturation_settings(Bso)
       S = struct();
 
       % How long the sliding window should be when using CDF data.
@@ -277,7 +277,7 @@ classdef sat
       assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
       assert(AsrSamplesAVoltSrm.nRows == nRows)
 
-      SatSettings = bicas.proc.L1L2.sat.convert_BSO_to_struct(Bso);
+      SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
 
 
 
