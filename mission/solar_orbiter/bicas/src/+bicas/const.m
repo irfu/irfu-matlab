@@ -512,6 +512,10 @@ classdef const
 
 
     % Function for initializing constant.
+    %
+    % RETURN VALUE
+    % ============
+    % Map QRCID-->bicas.proc.QrcSetting
     function QrcSettingsL2Map = init_QRC_SETTINGS_L2()
       QrcSettingsL2Map = containers.Map();
 
@@ -542,8 +546,8 @@ classdef const
       %=================
       % THRUSTER_FIRING
       %=================
-      % NOTE: There will be an L1 QUALITY_BITMASK bit for
-      % thruster firings in the future according to
+      % NOTE: There will be an L1 QUALITY_BITMASK bit for thruster firings in
+      % the future according to
       % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
       % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
       % (YK 2020-11-03 did not ask for any to be set.)
@@ -557,6 +561,7 @@ classdef const
       % SATURATION_*
       %==============
       FullSaturationQrcSetting = QrcSettingsL2Map("FULL_SATURATION");
+      % NOTE: DC/AC diffs use the same settings.
       QRCID_SATURATION_NEW_AR = [...
         "SATURATION_V1", ...
         "SATURATION_V2", ...
@@ -585,6 +590,10 @@ classdef const
     % (i.e. not for other L3 datasets). If L3_QUALITY_BITMASK is used for other
     % L3 datasets in the future, then the bits may have different meanings for
     % those datasets.
+    %
+    % RETURN VALUE
+    % ============
+    % Map QRCID-->bicas.proc.QrcSetting
     function QrcSettingsL3Map = init_QRC_SETTINGS_L3_DENSITY()
       QrcSettingsL3Map = containers.Map();
 

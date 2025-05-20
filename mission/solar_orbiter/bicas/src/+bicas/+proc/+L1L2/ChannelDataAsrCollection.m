@@ -21,6 +21,7 @@ classdef ChannelDataAsrCollection < handle
   %   ~ASR (as opposed to non-ASR)
   %   ~9x ASR (as opposed to 5x BLTS)
   %   ~9x ASR (as opposed to just one channel)
+  %   ~SDID (ASR SDID)
   %   ~SingleChannelData
   %     Which may be used for BLTS(?)
   %   ~Dictionary
@@ -51,6 +52,11 @@ classdef ChannelDataAsrCollection < handle
   %   PRO: More natural to assert similarities between constituent SCHDs.
   %
   % PROPOSAL: Assert that all SCHDs have the same size and data types.
+  %
+  % PROPOSAL: Constructor sets number of records.
+  %   PRO: More well-defined if empty.
+  %   PRO: Symmetric assertion on number of SCHD records.
+  %   PRO: More symmetric function for obtaining number of SCHD records.
 
 
 
@@ -89,13 +95,19 @@ classdef ChannelDataAsrCollection < handle
 
     % Initialize empty object, without any channels.
     function obj = ChannelDataAsrCollection()
-      obj.Dict = dictionary;
+      obj.Dict = configureDictionary('uint8', 'cell');
     end
 
 
 
     % Set channel data.
     function obj = set_channel(obj, asrSdid, Schd)
+      % PROPOSAL: Assert consistent SCHD sizes.
+
+      % IMPLEMENTATION NOTE: Can not assert that not overwriting CHSD for ASR
+      % SDID since overwriting is required by
+      % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW()
+      % /reconstruct_missing_data_helper() (inner function).
       assert(isscalar(asrSdid))
       assert(ismember(asrSdid, bicas.proc.L1L2.const.C.SDID_ASR_AR))
       assert(isa(Schd, 'bicas.proc.L1L2.SingleChannelData'))

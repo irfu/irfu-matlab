@@ -1,14 +1,14 @@
 %
 % Class which stores
 % * one channel of data (array of samples; nRecords x nSpr), and
-% * VSQBs (nRecords x 1).
+% * VSIBs (nRecords x 1).
 % for one SDID/SSID value.
 %
 % The class interface itself (~syntactic sugar) emulates a column array with
 % support for addition and subtraction despite that the underlying storage of
 % samples is a 2D array. Every row represents data for a CDF record (for a given
 % channel). This makes reconstruction of missing channels more natural while the
-% class itself automatically derives new VSQBs (one per row) for reconstructed
+% class itself automatically derives new VSIBs (one per row) for reconstructed
 % channels under the hood. Since the class is meant to be used for
 % reconstructing missing channels, it is meant to represent data both before and
 % after reconstruction, and possibly demultiplexing.
@@ -26,7 +26,7 @@ classdef SingleChannelData
   %   Signal Destination
   %   channel
   %   single channel
-  %   samples (NOTE: Contains not only samples; contains VSQB too.)
+  %   samples (NOTE: Contains not only samples; contains VSIB too.)
   %   data
   %   metadata
   %   demultiplexing input & output

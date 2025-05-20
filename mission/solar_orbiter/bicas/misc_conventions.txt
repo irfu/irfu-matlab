@@ -172,12 +172,12 @@ Dataset (data set)
     A CDF file on any one of a number standardized formats specified by the
     various RPW teams. All CDF files in the context of BICAS are datasets,
     except for RCTs, where it is ambiguous.
-Deg
-    Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
 DCIP
     Class bicas.proc.L1L2.DemultiplexingCalibrationInput.
 DCOP
     Class bicas.proc.L1L2.DemultiplexingCalibrationOutput.
+Deg
+    Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
 Dict
     MATLAB dictionary.
 DLR
@@ -318,6 +318,8 @@ QRC
     QRCs are uniquely identified using QRCIDs.
     NOTE: QRCs are distinct from quality bits themselves. Any particular QRC may
     correspond to setting zero, one, or multiple quality bits.
+    Ex: QRCID="FULL_SATURATION" ==> Set quality bits "full saturation" AND
+    "partial saturation".
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.
@@ -343,6 +345,12 @@ RCTDC
 RCTTID
     RCT Type ID. String constant that represents a *type* of RCT, not a
     particular RTC file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
+Reconstruction
+    Deriving samples for channels which are not present in TM for that time.
+    Ex: If V1_DC, V12_DC, and V23_DC are present in TM, then V2_DC, V3_DC, and
+    V13_DC can be "reconstructed" (derived) from calibrated versions of
+    the former. V12_AC, V13_AC, and V23_AC can however not be reconstructed in
+    this case.
 ROC
     RPW Operations Center.
 ROC DFMD

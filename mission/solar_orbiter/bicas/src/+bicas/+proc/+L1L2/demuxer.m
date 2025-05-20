@@ -24,8 +24,13 @@
 %
 classdef demuxer
 % PROPOSAL: Better name.
+%   ~demultiplexing, demuxing
+%   ~reconstruction
+%   ~relabel
 %   PRO: Code really implements "relabel BLTS to ASR" and "reconstructing
 %        ASRs".
+%
+% PROPOSAL: Separate file for reconstruction of channel samples.
 
 
 
@@ -64,7 +69,7 @@ classdef demuxer
     % ** dlr = fill position
     %    Ex: Unknown DLR, e.g. due to insufficient HK time coverage.
     % ** BLTS 1-3 labelled as "GND" or "2.5V Ref" in BDMs 5-7.
-    % ** Data not being stored in datasets at all.
+    % ** Data which will not be stored in datasets at all.
     %
     %
     % ARGUMENTS

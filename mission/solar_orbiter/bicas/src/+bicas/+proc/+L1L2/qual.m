@@ -115,7 +115,8 @@ classdef qual
 
 
 
-    % Overwrite selected records of voltage & current with FVs.
+    % Overwrite records of voltage & current with FVs as specified in arbitrary
+    % array.
     %
     % ARGUMENTS
     % =========
@@ -123,13 +124,14 @@ classdef qual
     %       NOTE: Only needed for logging.
     % zvAsrSamplesAVoltSrm
     %       ASR samples.
-    %       NOTE: Handle object which is MODIFIED.
+    %       NOTE: Handle object which is MODIFIED in-place.
     function zvCurrentAAmpere = set_voltage_current_FV(...
         zv_Epoch, zvAsrSamplesAVoltSrm, zvCurrentAAmpere, zvUfv, L)
       % PROPOSAL: Separate functions for ASR samples and bias currents.
 
       assert(islogical(zvUfv))
       assert(isa(zvAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
+      assert(isa(zvAsrSamplesAVoltSrm, 'handle'))
 
       % Log
       logHeaderStr = sprintf(...
@@ -146,7 +148,7 @@ classdef qual
       % Set VOLTAGE values to fill value/NaN
       % ====================================
       % NOTE: Should really use future bicas.utils.SameSizeTypeMap here
-      %       which contains size on other dimensions.
+      %       (if implemented) which contains size on other dimensions.
       keyArray = zvAsrSamplesAVoltSrm.keys;
       nSpr     = size(zvAsrSamplesAVoltSrm(keyArray(1)), 2);
 

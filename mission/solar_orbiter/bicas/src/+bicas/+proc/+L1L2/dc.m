@@ -10,7 +10,11 @@
 %
 classdef dc
 % PROPOSAL: Better name.
-%   demuxing, calibration, reconstruction, quality
+%   calibration, demuxing, reconstruction, quality
+%   cdr = calibration+demuxing+reconstruction (same order as execution)
+%   cdrq = calibration+demuxing+reconstruction+quality
+%     CON: Setting quality variables is not necessarily last in the execution.
+%       CON: Minor. Quality variables are still set somewhere in this file.
 %   --
 %   process()
 %
@@ -46,8 +50,8 @@ classdef dc
     % Derive DCOP from DCIP:
     % * Calibrate bias currents.
     % * Voltages:
-    %   (1) demux (demultiplex): Relabel samples from BLTS to SDID.
-    %   (2) calibrate samples
+    %   (1) calibrate samples
+    %   (2) demux (demultiplex): Relabel samples from BLTS to SDID.
     %   (3) reconstruct (derive) samples for missing channels from calibrated
     %       samples (e.g. DC_V12 := DC_V1 - DC_V2)
     % * Set quality variables.
@@ -132,6 +136,8 @@ classdef dc
         % TmkNewImpl.stop_log()
 
         % TODO: Extract Cdac VSIBs and set L2_QUALITY_BITMASK.
+        %   Separate function for extracting these bits specifically.
+        %   TODO-DEC: Which file should function be in?! qual, sat?
         % TODO: Convert Cdac samples to AsrSamplesAVoltSrm (or at least use
         %       it).
 
@@ -139,7 +145,7 @@ classdef dc
         %           VSQBs.
 
         % ======================================================================
-        % DEBUG: Check that samples derived using old and new code are identical
+        % DEBUG: Check that samples derived using OLD and NEW code are identical
         % ======================================================================
         % NOTE: Check may fail if new code splits samples into subsequences in
         %       new way, e.g. BLTS per BLTS.
@@ -152,6 +158,7 @@ classdef dc
           oldImplSamplesAVolt = AsrSamplesAVoltSrm(asid);               % Samples from OLD impl.
           newImplSamplesAvolt = Cdac.get_channel(asrSdid).samplesAr;    % Samples from NEW impl.
 
+          % NOTE: Treat NaN as equal itself.
           if ~isequaln(oldImplSamplesAVolt, newImplSamplesAvolt)
             L.logf('debug', 'Samples are different for asid = %g', asid)
             if ~isequal(isnan(oldImplSamplesAVolt), isnan(newImplSamplesAvolt))
@@ -167,7 +174,7 @@ classdef dc
         % if logical(maxDiff)
         %   L.logf('debug', 'maxDiff = %g', maxDiff)
         % end
-      end
+      end    % if EXPERIMENTAL
 
 
 
