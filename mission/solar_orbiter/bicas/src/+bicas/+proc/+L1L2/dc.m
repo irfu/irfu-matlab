@@ -783,49 +783,39 @@ classdef dc
         bltsVsibAr,         [-1,     bicas.const.N_BLTS]);
 
       % EXPERIMENTAL
-      SchdCa = cell(5, 1);
+      %====================================
+      % Convert BLTS arrays --> bltsSchdCa
+      %====================================
+      bltsSchdCa = cell(5, 1);
       for iBlts = 1:bicas.const.N_BLTS
-        SchdCa{iBlts, 1} = bicas.proc.L1L2.SingleChannelData( ...
-          bltsSamplesAVoltAr(:, :, iBlts), bltsVsibAr(:, iBlts));
+        bltsSchdCa{iBlts, 1} = bicas.proc.L1L2.SingleChannelData( ...
+          bltsSamplesAVoltAr(:, :, iBlts), ...
+          bltsVsibAr(        :,    iBlts));
       end
-      % Preallocate Achd.
+
+      %==================================================
+      % Convert bltsSchdCa --> Achd
+      % ---------------------------
+      % Copy values from 5x BLTSs into 9x SCHD (1x Achd)
+      % (but no reconstruction of missing values)
+      %==================================================
       Achd = bicas.proc.L1L2.AsrChannelData();
       for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        % Preallocate
-        Schd = bicas.proc.L1L2.SingleChannelData(...
+
+        % ~Preallocate empty SCHD for the current ASR/SDID.
+        AsrSchd = bicas.proc.L1L2.SingleChannelData(...
           nan(  nRec, nSamplesPerRecordChannel), ...
           false(nRec, 1));
-        Achd = Achd.set_channel(asrSdid, Schd);
-      end
 
-
-
-      %======================================================
-      % Construct Achd:
-      % Copy values from 5x BLTSs into 9x SCHD (1x Achd)
-      % (no reconstruction of missing values)
-      %======================================================
-      Achd = bicas.proc.L1L2.AsrChannelData();
-      for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-
-        % Preallocate
-        sdidSamplesAVoltAr = nan(  nRec, nSamplesPerRecordChannel);
-        sdidVsibAr         = false(nRec, 1);
-
-        % -----------------------------------------------------------------
-        % Copy samples and VSIB from elements associated with the specified
-        % ASR SDID.
-        % -----------------------------------------------------------------
-        % NOTE: Does not copy data which is not an SDID ASR (i.e. only
-        %       SDID=UNKNOWN is omitted).
         for iBlts = 1:bicas.const.N_BLTS
-          bRecCopy                        = ( bltsSdidAr(:, iBlts) == asrSdid );
-          sdidSamplesAVoltAr(bRecCopy, :) = bltsSamplesAVoltAr(bRecCopy, :, iBlts);
-          sdidVsibAr(bRecCopy)            = bltsVsibAr(        bRecCopy,    iBlts);
-        end
+          bRecCopy          = ( bltsSdidAr(:, iBlts) == asrSdid );
 
-        AsrSchd = bicas.proc.L1L2.SingleChannelData(sdidSamplesAVoltAr, sdidVsibAr);
-        Achd    = Achd.set_channel(asrSdid, AsrSchd);
+          % Copy BLTS samples into selected records/rows in previously created
+          % SCHD for ASR.
+          BltsSchd          = bltsSchdCa{iBlts};
+          AsrSchd(bRecCopy) = BltsSchd(bRecCopy);
+        end
+        Achd = Achd.set_channel(asrSdid, AsrSchd);
       end
 
       %======================================
@@ -833,7 +823,7 @@ classdef dc
       %======================================
       Achd = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Achd);
 
-      % Tmk.stop_log(nRecTot, 'record')
+      % Tmk.stop_log(nRec, 'record')
     end
 
 
