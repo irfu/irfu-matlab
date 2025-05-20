@@ -117,7 +117,7 @@ classdef dc
 
         % 5x SIGNALS LABELLED BY SSID/BLTS.
         % NOTE: Incomplete detection of VSQB.
-        % NOTE: No SDCD as input (though as output).
+        % NOTE: No SCHD as input (though as output).
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
           Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa);
 
@@ -766,7 +766,7 @@ classdef dc
       % PROPOSAL: Separate function only for converting 5x BLTS to 9x ASR
       %           (bicas.proc.L1L2.SdChannelDataDict), WITHOUT reconstructing
       %           missing data.
-      % PROPOSAL: 5x BLTS input in the form of 5x bicas.proc.L1L2.SdChannelData
+      % PROPOSAL: 5x BLTS input in the form of 5x bicas.proc.L1L2.SingleChannelData
 
       % Tmk = bicas.utils.Timekeeper(...
       %   'bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
@@ -778,7 +778,7 @@ classdef dc
 
       %======================================================
       % Construct SdcdDict:
-      % Copy values from 5x BLTSs into 9x SDCD (1x SdcdDict)
+      % Copy values from 5x BLTSs into 9x SCHD (1x SdcdDict)
       % (no reconstruction of missing values)
       %======================================================
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
@@ -800,8 +800,8 @@ classdef dc
           sdidVsibAr(bRecCopy)            = bltsVsibAr(        bRecCopy,    iBlts);
         end
 
-        Sdcd     = bicas.proc.L1L2.SdChannelData(sdidSamplesAVoltAr, sdidVsibAr);
-        SdcdDict = SdcdDict.set(asrSdid, Sdcd);
+        Schd     = bicas.proc.L1L2.SingleChannelData(sdidSamplesAVoltAr, sdidVsibAr);
+        SdcdDict = SdcdDict.set(asrSdid, Schd);
       end
 
       %======================================

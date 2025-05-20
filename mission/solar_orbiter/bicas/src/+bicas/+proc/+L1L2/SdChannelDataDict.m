@@ -2,13 +2,13 @@
 % Handle class
 %
 % Class which effectively wraps a dictionary
-% (ASR) SDID-->bicas.proc.L1L2.SdChannelData.
+% (ASR) SDID-->bicas.proc.L1L2.SingleChannelData.
 %
 % This useful since
 % (1) (MATLAB) dictionary values can not be non-scalar
-%     (bicas.proc.L1L2.SdChannelData is a column vector). Therefore,
+%     (bicas.proc.L1L2.SingleChannelData is a column vector). Therefore,
 %     the implementation must work around this (it uses 1x1 cell arrays).
-% (2) it can sum up the number of SDCD fill positions.
+% (2) it can sum up the number of SCHD fill positions.
 %
 % NOTE: The constructor does not initialize the object completely because
 % the constructor call would be too large and awkward then.
@@ -21,27 +21,30 @@ classdef SdChannelDataDict < handle
   %   ~ASR (as opposed to non-ASR)
   %   ~9x ASR (as opposed to 5x BLTS)
   %   ~9x ASR (as opposed to just one channel)
-  %   ~SdChannelData
+  %   ~SingleChannelData
   %     Which may be used for BLTS(?)
   %   ~Dictionary
+  %     CON: Implies arbitrary collection (keys).
   %   ~Collection
   %   --
-  %   ASDCD = AsrSdChannelData
+  %   ASCHD = AsrSingleChannelData
   %     CON: Does not imply collection of ALL ASR channels.
+  %       PRO: "Single" in the name.
+  %   ACHD = AsrChannelData
   %
   % PROPOSAL: Better tests.
   %
-  % PROPOSAL: Constructor pre-allocates SDCDs.
+  % PROPOSAL: Constructor pre-allocates SCHDs.
   % PROPOSAL: Implement custom print version of class.
   %   PRO: Useful for debugging.
   %
   % PROPOSAL: Constructor must set values for all keys.
   %   PRO: Class is always initialized.
-  %   PROPOSAL: Cell array, 9x2, (iSsid, 1)=SSID, (iSsid, 2)=SDCD
+  %   PROPOSAL: Cell array, 9x2, (iSsid, 1)=SSID, (iSsid, 2)=SCHD
   %     CON: Memory problems?
-  %   PRO: More natural to assert similarities between constituent SDCDs.
+  %   PRO: More natural to assert similarities between constituent SCHDs.
   %
-  % PROPOSAL: Assert that all SDCDs have the same size and data types.
+  % PROPOSAL: Assert that all SCHDs have the same size and data types.
 
 
 
@@ -55,7 +58,7 @@ classdef SdChannelDataDict < handle
     PERMITTED_KEYS_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR
   end
   properties(Dependent)
-    % Total number of bWholeRowIsNan values in all the SDCD objects stored
+    % Total number of bWholeRowIsNan values in all the SCHD objects stored
     % within this object combined.
     nWholeRowIsNan
   end
@@ -89,20 +92,20 @@ classdef SdChannelDataDict < handle
 
 
     % Set key value.
-    function obj = set(obj, asrSdid, Sdcd)
+    function obj = set(obj, asrSdid, Schd)
       assert(isscalar(asrSdid))
       assert(ismember(asrSdid, obj.PERMITTED_KEYS_AR))
-      assert(isa(Sdcd, 'bicas.proc.L1L2.SdChannelData'))
+      assert(isa(Schd, 'bicas.proc.L1L2.SingleChannelData'))
 
-      obj.Dict(asrSdid) = {Sdcd};
+      obj.Dict(asrSdid) = {Schd};
     end
 
 
 
-    function Sdcd = get(obj, asrSdid)
+    function Schd = get(obj, asrSdid)
       assert(isscalar(asrSdid))
       ca   = obj.Dict(asrSdid);
-      Sdcd = ca{1};
+      Schd = ca{1};
     end
 
 
@@ -138,14 +141,14 @@ classdef SdChannelDataDict < handle
 
 
 
-    % NOTE: Does not work before adding first SDCD.
+    % NOTE: Does not work before adding first SCHD.
     function nWholeRowIsNan = get.nWholeRowIsNan(obj)
       nWholeRowIsNan = 0;
-      SdcdCa         = obj.Dict.values;
+      SchdCa         = obj.Dict.values;
 
-      for i = 1:numel(SdcdCa)
-        Sdcd           = SdcdCa{i};
-        nWholeRowIsNan = nWholeRowIsNan + sum(Sdcd.bWholeRowIsNan);
+      for i = 1:numel(SchdCa)
+        Schd           = SchdCa{i};
+        nWholeRowIsNan = nWholeRowIsNan + sum(Schd.bWholeRowIsNan);
       end
     end
 

@@ -426,22 +426,22 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % (2) it helps to compare object components separately when debugging
       %     tests.
       for sdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        ActSdcd = ActSdcdDict.get(sdid);
-        ExpSdcd = ExpSdcdDict.get(sdid);
+        ActSchd = ActSdcdDict.get(sdid);
+        ExpSchd = ExpSdcdDict.get(sdid);
 
-        if ~isequaln(ActSdcd.samplesAr, ExpSdcd.samplesAr)
+        if ~isequaln(ActSchd.samplesAr, ExpSchd.samplesAr)
           sdid
-          ActSdcd.samplesAr
-          ExpSdcd.samplesAr
+          ActSchd.samplesAr
+          ExpSchd.samplesAr
         end
-        if ~isequaln(ActSdcd.vsibAr, ExpSdcd.vsibAr)
+        if ~isequaln(ActSchd.vsibAr, ExpSchd.vsibAr)
           sdid
-          ActSdcd.vsibAr
-          ExpSdcd.vsibAr
+          ActSchd.vsibAr
+          ExpSchd.vsibAr
         end
 
         % Check everything (partially overlapping with above).
-        testCase.assertEqual(ActSdcd, ExpSdcd)
+        testCase.assertEqual(ActSchd, ExpSchd)
       end
     end
 
@@ -467,7 +467,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     % =========
     % samplesArData
     %       (iRec, iSdid). Only column arrays will be assigned to each separate
-    %       SDCD.
+    %       SCHD.
     % vsibArData
     %       (iRec, iSdid)
     function SdcdDict = create_SdcdDict(samplesArData, vsibArData)
@@ -476,10 +476,10 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
       for iSdid = 1:numel(SDID_AR)
 
-        Sdcd = bicas.proc.L1L2.SdChannelData(...
+        Schd = bicas.proc.L1L2.SingleChannelData(...
           samplesArData(:, iSdid), ...
           vsibArData(   :, iSdid));
-        SdcdDict = SdcdDict.set(SDID_AR(iSdid), Sdcd);
+        SdcdDict = SdcdDict.set(SDID_AR(iSdid), Schd);
       end
     end
 

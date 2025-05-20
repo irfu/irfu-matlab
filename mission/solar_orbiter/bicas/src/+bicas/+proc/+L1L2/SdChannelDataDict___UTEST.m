@@ -27,18 +27,18 @@ classdef SdChannelDataDict___UTEST < matlab.unittest.TestCase
       for i = 1:numel(SDID_ASR_AR)
         sdid = SDID_ASR_AR(i);
 
-        Sdcd = bicas.proc.L1L2.SdChannelData(...
+        Schd = bicas.proc.L1L2.SingleChannelData(...
           [NaN,2; 3,NaN; NaN,NaN]+i, ...
           logical([0; 1; 0]));
-        SdcdDict.set(sdid, Sdcd);
+        SdcdDict.set(sdid, Schd);
 
         testCase.assertEqual(SdcdDict.nWholeRowIsNan, 1*i)
       end
 
-      ExpSdcd = bicas.proc.L1L2.SdChannelData([NaN,2; 3,NaN; NaN,NaN]+3, logical([0; 1; 0]));
-      ActSdcd = SdcdDict.get(SDID_ASR_AR(3));
+      ExpSchd = bicas.proc.L1L2.SingleChannelData([NaN,2; 3,NaN; NaN,NaN]+3, logical([0; 1; 0]));
+      ActSchd = SdcdDict.get(SDID_ASR_AR(3));
 
-      testCase.assertEqual(ActSdcd, ExpSdcd)
+      testCase.assertEqual(ActSchd, ExpSchd)
       testCase.assertEqual(SdcdDict.nWholeRowIsNan, numel(SDID_ASR_AR)*1)
     end
 

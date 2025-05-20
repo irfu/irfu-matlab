@@ -14,15 +14,12 @@
 % after reconstruction, and possibly demultiplexing.
 %
 %
-% SD = Source/Destination?
-%      Signal Destination? (as in SDID)
-%
 % NOTE: Effectively uses NaN as fill values (provides function for it).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef SdChannelData
+classdef SingleChannelData
   % PROPOSAL: Better name.
   %   ~ASR
   %   ~SDID
@@ -38,7 +35,7 @@ classdef SdChannelData
   %   DCIO = DemultiplexingChannelIO
   %   CHND = ChannelData
   %   OCD = OneChannelData
-  %   SCD, SCHD = SingleChannelData
+  %   SCD, SCHD = SingleChannelData -- IMPLEMENTED
   %     SCD is substring of SCDA, isCdag.
   %   SCH = SingleChannel
   %     SCH is substring of ischar.
@@ -61,13 +58,15 @@ classdef SdChannelData
   %
   % PROPOSAL: Include length of each snapshot.
   %   PRO: No longer requires variable-length snapshots to be padded with NaN.
+  %   CON: Uses more memory (duplicates information since snapshot lengths are
+  %        the same for all channels).
   %   NOTE: Requires checking that lengths of snapshots are consistent when
   %         combining multiple objects (plus/minus).
   % PROPOSAL: Add SDID/SSID.
   %   PRO: SSID (source) used when deriving VSIBs (when calling
   %         bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW()).
   %   PRO: SDID (destination) used when reconstructing.
-  %   PRO: SDID/SSID och SDCD är ofta argument tillsammans till funktioner.
+  %   PRO: SDID/SSID and SCHD are often together as function arguments.
 
 
 
@@ -133,7 +132,7 @@ classdef SdChannelData
 
 
 
-    function obj = SdChannelData(samplesAr, vsibAr)
+    function obj = SingleChannelData(samplesAr, vsibAr)
       assert(isfloat(samplesAr))
       assert(islogical(vsibAr))
 
@@ -162,7 +161,7 @@ classdef SdChannelData
           % necessary for ensuring always returning a column vector, despite
           % that it is a column vector already.
 
-          varargout = {bicas.proc.L1L2.SdChannelData(samplesAr, vsibAr)};
+          varargout = {bicas.proc.L1L2.SingleChannelData(samplesAr, vsibAr)};
 
         case '.'
           % Call method (sic!)
@@ -175,15 +174,15 @@ classdef SdChannelData
 
 
 
-    % Indexing overloading: Array indexing for writing: Sdcd(i) = ...
+    % Indexing overloading: Array indexing for writing: Schd(i) = ...
     %
     %
     % PERFORMANCE
     % ===========
     % TODO: Investigate. Cf. bicas.utils.FPArray.
     %
-    function Sdcd1 = subsasgn(Sdcd1, S, Sdcd2)
-      assert(isa(Sdcd2, 'bicas.proc.L1L2.SdChannelData'))
+    function Schd1 = subsasgn(Schd1, S, Schd2)
+      assert(isa(Schd2, 'bicas.proc.L1L2.SingleChannelData'))
 
       switch S(1).type
         case '()'
@@ -192,8 +191,8 @@ classdef SdChannelData
 
           ib = S(1).subs{1};
 
-          Sdcd1.samplesAr(ib, :) = Sdcd2.samplesAr;
-          Sdcd1.vsibAr(   ib)    = Sdcd2.vsibAr;
+          Schd1.samplesAr(ib, :) = Schd2.samplesAr;
+          Schd1.vsibAr(   ib)    = Schd2.vsibAr;
 
         otherwise
           error('BICAS:Assertion', 'Unsupported operation.')
@@ -210,21 +209,21 @@ classdef SdChannelData
 
 
     % Operator overloading.
-    function Sdcd3 = plus(Sdcd1, Sdcd2)
-      samplesAr3 = Sdcd1.samplesAr + Sdcd2.samplesAr;
-      vsibAr3    = Sdcd1.vsibAr    | Sdcd2.vsibAr;
+    function Schd3 = plus(Schd1, Schd2)
+      samplesAr3 = Schd1.samplesAr + Schd2.samplesAr;
+      vsibAr3    = Schd1.vsibAr    | Schd2.vsibAr;
 
-      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsibAr3);
+      Schd3 = bicas.proc.L1L2.SingleChannelData(samplesAr3, vsibAr3);
     end
 
 
 
     % Operator overloading.
-    function Sdcd3 = minus(Sdcd1, Sdcd2)
-      samplesAr3 = Sdcd1.samplesAr - Sdcd2.samplesAr;
-      vsibAr3    = Sdcd1.vsibAr    | Sdcd2.vsibAr;
+    function Schd3 = minus(Schd1, Schd2)
+      samplesAr3 = Schd1.samplesAr - Schd2.samplesAr;
+      vsibAr3    = Schd1.vsibAr    | Schd2.vsibAr;
 
-      Sdcd3 = bicas.proc.L1L2.SdChannelData(samplesAr3, vsibAr3);
+      Schd3 = bicas.proc.L1L2.SingleChannelData(samplesAr3, vsibAr3);
     end
 
 
