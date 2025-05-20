@@ -25,15 +25,16 @@ classdef SingleChannelData
   %   ~SDID
   %   Signal Destination
   %   channel
-  %   *one* channel, single channel
+  %   single channel
   %   samples (NOTE: Contains not only samples; contains VSQB too.)
   %   data
   %   metadata
   %   demultiplexing input & output
   %     CON: Might also use class for deriving saturation.
+  %   --
   %   DIOC = DemultiplexingIOChannel
   %   DCIO = DemultiplexingChannelIO
-  %   CHND = ChannelData
+  %   CHD, CHND = ChannelData
   %   OCD = OneChannelData
   %   SCD, SCHD = SingleChannelData -- IMPLEMENTED
   %     SCD is substring of SCDA, isCdag.

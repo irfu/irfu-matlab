@@ -1,5 +1,5 @@
 %
-% NOTE: Handle class
+% NOTE: Handle class.
 %
 % Class which effectively wraps a dictionary
 % (ASR) SDID-->bicas.proc.L1L2.SingleChannelData.
@@ -10,7 +10,7 @@
 %     the implementation can work around this.
 % (2) it can sum up the number of SCHD fill positions.
 %
-% NOTE: The constructor does not initialize the object completely because
+% NOTE: The constructor does not initialize the entire object completely because
 % the constructor call would be too large and awkward then.
 %
 %
@@ -28,10 +28,9 @@ classdef AsrChannelData < handle
   %   ~Collection
   %   ~handle
   %   --
-  %   ASCHD = AsrSingleChannelData
-  %     CON: Does not imply collection of ALL ASR channels.
-  %       PRO: "Single" in the name.
+  %   NOTE: SCHD = SingleChannelData
   %   ACHD = AsrChannelData -- IMPLEMENTED
+  %   CDAC = ChannelDataAsrCollection
   %   ACHDC, ACDC = AsrChannelDataCollection
   %     PRO: There is need to specify that a channel is an ASR, rather than a
   %          BLTS.

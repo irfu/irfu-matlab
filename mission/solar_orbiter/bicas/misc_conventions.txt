@@ -469,12 +469,15 @@ VSIB
     Voltage Saturation Intermediate Bit. Internal bit used by the implementation
     when deriving VSQB. The exact meaning varies by context. The abbreviation
     exists to distinguish intermediate "saturation quality bits" from
-    "the final product" (VSQB). Cf. VSQB.
+    "the (more) final product" (VSQB). Cf. VSQB.
 VSQB
-    Voltage Saturation Quality Bit. Bit in dataset (!) which is set iff BICAS
-    wants to label a sample/snapshot as saturated, according to some algorithm.
-    VSQB is the value actually stored in datasets, as opposed to VSIB which is
-    an intermediate value.
+    Voltage Saturation Quality Bit.
+    (1) Bit which is set in datasets, or
+    (2) bit which is set if some algorithm/logic wants to set the quality bit in
+        datasets (i.e. can be OR:ed with some other VSQB).
+    Only one bit per CWF sample or snapshot.
+    VSQB is "close to" the value actually stored in datasets, as opposed to VSIB
+    which is an intermediate value (which may be a VSQB, but also not). Cf VSIB.
 ZV
     CDF zVariable, or MATLAB variable that is analogous to one. First dimension
     corresponds to CDF record.

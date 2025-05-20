@@ -39,16 +39,16 @@ classdef qual
       % PROPOSAL: Replace InZv-->Separate arguments.
 
       % ASSERTIONS
-      irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'isFullSaturation'}, {})
+      irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'autodetectedVsqb'}, {})
       irf.assert.sizes( ...
         InZv.Epoch,            [-1], ...
         InZv.bdmFpa,           [-1], ...
-        InZv.isFullSaturation, [-1]);
+        InZv.autodetectedVsqb, [-1]);
       assert(isscalar(isLfr) && islogical(isLfr))
 
       Epoch            = InZv.Epoch;
       BdmFpa           = InZv.bdmFpa;
-      isFullSaturation = InZv.isFullSaturation;
+      autodetectedVsqb = InZv.autodetectedVsqb;
       clear InZv
 
       %============================================
@@ -63,7 +63,7 @@ classdef qual
       % (2) processing-generated QRCs (saturation)
       %============================================
       [QUALITY_FLAG_max, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
-        bicas.const.QRC_SETTINGS_L2, NsoTable, Epoch, isFullSaturation, L);
+        bicas.const.QRC_SETTINGS_L2, NsoTable, Epoch, autodetectedVsqb, L);
     end
 
 
@@ -308,23 +308,7 @@ classdef qual
       %
       % PROPOSAL: Move to bicas.utils.
       %   PRO: More generic than quality variables.
-      %   PRO: Independent of L1/L1R-L2 proessing in principle.
-      %
-      % TODO-DEC: Exact algorithm to use? How implement?
-      %   NOTE: Most data is not saturated.
-      %       PROPOSAL: Faster to iterate over saturated samples than
-      %                 non-satured.
-      %   PROPOSAL: More than x percent saturation within moving/rolling time
-      %             period of length t. ==> Label entire period.
-      %       TODO-DEC: How handle data that is shorter than window time
-      %                 interval?
-      %           PROPOSAL: Ignore time interval. Apply fraction to all
-      %                     data.
-      %       PROPOSAL: Iterate over intervals which are entirely
-      %                 threshold saturated or not.
-      %       PROPOSAL: Iterate over every length-t interval.
-      %           CON: Slow?
-      %           NOTE: Must still iterate in both directions.
+      %   PRO: Independent of L1/L1R-L2 processing in principle.
 
       %============
       % ASSERTIONS
