@@ -399,7 +399,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,0,0,    0, 0, 0,   1, 0,0;
         0,0,0,    0, 0, 1,   1, 0,0;
         ]);
-      SdcdDict = testCase.create_SdcdDict(SAMPLES_AR_DATA, VSIB_AR_DATA);
+      Achd = testCase.create_Achd(SAMPLES_AR_DATA, VSIB_AR_DATA);
 
 
 
@@ -413,21 +413,21 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,1,1,    0, 0, 0,   1, 0,1;
         0,0,1,    0, 1, 1,   1, 0,0;
         ]);
-      ExpSdcdDict = testCase.create_SdcdDict(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
+      ExpAchd = testCase.create_Achd(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
 
 
 
-      ActSdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(SdcdDict);
+      ActAchd = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Achd);
 
       % IMPLEMENTATION NOTE: Not comparing entire
-      % bicas.proc.L1L2.SdChannelDataDict objects since
+      % bicas.proc.L1L2.AsrChannelData objects since
       % (1) it will fail also when the objects are identical (since has not
       %     implemented support for testing equality?), and
       % (2) it helps to compare object components separately when debugging
       %     tests.
       for sdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        ActSchd = ActSdcdDict.get(sdid);
-        ExpSchd = ExpSdcdDict.get(sdid);
+        ActSchd = ActAchd.get(sdid);
+        ExpSchd = ExpAchd.get(sdid);
 
         if ~isequaln(ActSchd.samplesAr, ExpSchd.samplesAr)
           sdid
@@ -460,7 +460,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    % Fast-and-easy function for creating one bicas.proc.L1L2.SdChannelDataDict
+    % Fast-and-easy function for creating one bicas.proc.L1L2.AsrChannelData
     % from variables on a format suitable for hardcoding (CWF only).
     %
     % ARGUMENTS
@@ -470,16 +470,16 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %       SCHD.
     % vsibArData
     %       (iRec, iSdid)
-    function SdcdDict = create_SdcdDict(samplesArData, vsibArData)
+    function Achd = create_Achd(samplesArData, vsibArData)
       SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
-      SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
+      Achd = bicas.proc.L1L2.AsrChannelData();
       for iSdid = 1:numel(SDID_AR)
 
         Schd = bicas.proc.L1L2.SingleChannelData(...
           samplesArData(:, iSdid), ...
           vsibArData(   :, iSdid));
-        SdcdDict = SdcdDict.set(SDID_AR(iSdid), Schd);
+        Achd = Achd.set(SDID_AR(iSdid), Schd);
       end
     end
 

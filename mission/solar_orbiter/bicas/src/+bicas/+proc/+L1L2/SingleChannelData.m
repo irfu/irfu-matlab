@@ -41,7 +41,7 @@ classdef SingleChannelData
   %     SCH is substring of ischar.
   %   --
   %   NOTE: If changing name of this class, then should also change name of
-  %         SdcdDict=bicas.proc.L1L2.SdChannelDataDict.
+  %         Achd=bicas.proc.L1L2.AsrChannelData.
   %
   % PROPOSAL: Rename samplesAr to include unit.
   %   PRO: Class intended for being used for reconstruction.

@@ -16,7 +16,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef SdChannelDataDict < handle
+classdef AsrChannelData < handle
   % PROPOSAL: Better name
   %   ~ASR (as opposed to non-ASR)
   %   ~9x ASR (as opposed to 5x BLTS)
@@ -30,7 +30,7 @@ classdef SdChannelDataDict < handle
   %   ASCHD = AsrSingleChannelData
   %     CON: Does not imply collection of ALL ASR channels.
   %       PRO: "Single" in the name.
-  %   ACHD = AsrChannelData
+  %   ACHD = AsrChannelData -- IMPLEMENTED
   %
   % PROPOSAL: Better tests.
   %
@@ -85,7 +85,7 @@ classdef SdChannelDataDict < handle
 
 
 
-    function obj = SdChannelDataDict()
+    function obj = AsrChannelData()
       obj.Dict = dictionary;
     end
 

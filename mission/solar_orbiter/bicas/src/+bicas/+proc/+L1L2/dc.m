@@ -121,13 +121,13 @@ classdef dc
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
           Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa);
 
-        SdcdDict = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(...
+        Achd = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(...
           bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
 
 
 
-        % TODO: Extract SdcdDict VSIBs and set L2_QUALITY_BITMASK.
-        % TODO: Convert SdcdDict samples to AsrSamplesAVoltSrm (or at least use
+        % TODO: Extract Achd VSIBs and set L2_QUALITY_BITMASK.
+        % TODO: Convert Achd samples to AsrSamplesAVoltSrm (or at least use
         %       it).
 
         % PROPOSAL: Compare SDID-separated VSIBs combined into one with old
@@ -144,8 +144,8 @@ classdef dc
         % maxDiff = 0;
         for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
           asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(asrSdid);
-          oldImplSamplesAVolt = AsrSamplesAVoltSrm(asid);           % Samples from old impl.
-          newImplSamplesAvolt = SdcdDict.get(asrSdid).samplesAr;    % Samples from new impl.
+          oldImplSamplesAVolt = AsrSamplesAVoltSrm(asid);       % Samples from old impl.
+          newImplSamplesAvolt = Achd.get(asrSdid).samplesAr;    % Samples from new impl.
 
           if ~isequaln(oldImplSamplesAVolt, newImplSamplesAvolt)
             L.logf('debug', 'Samples are different for asid = %g', asid)
@@ -759,12 +759,12 @@ classdef dc
     % Intended as future conceptual replacement for
     % bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR().
     %
-    function SdcdDict = relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW( ...
+    function Achd = relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW( ...
         bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)
       % PROPOSAL: Include deriving VSIB in this function?
       %   PRO: Most of the complexity should be in the Saturation class anyway.
       % PROPOSAL: Separate function only for converting 5x BLTS to 9x ASR
-      %           (bicas.proc.L1L2.SdChannelDataDict), WITHOUT reconstructing
+      %           (bicas.proc.L1L2.AsrChannelData), WITHOUT reconstructing
       %           missing data.
       % PROPOSAL: 5x BLTS input in the form of 5x bicas.proc.L1L2.SingleChannelData
 
@@ -777,11 +777,11 @@ classdef dc
         bltsVsibAr,         [-1,     bicas.const.N_BLTS]);
 
       %======================================================
-      % Construct SdcdDict:
-      % Copy values from 5x BLTSs into 9x SCHD (1x SdcdDict)
+      % Construct Achd:
+      % Copy values from 5x BLTSs into 9x SCHD (1x Achd)
       % (no reconstruction of missing values)
       %======================================================
-      SdcdDict = bicas.proc.L1L2.SdChannelDataDict();
+      Achd = bicas.proc.L1L2.AsrChannelData();
       for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
 
         % Preallocate
@@ -800,14 +800,14 @@ classdef dc
           sdidVsibAr(bRecCopy)            = bltsVsibAr(        bRecCopy,    iBlts);
         end
 
-        Schd     = bicas.proc.L1L2.SingleChannelData(sdidSamplesAVoltAr, sdidVsibAr);
-        SdcdDict = SdcdDict.set(asrSdid, Schd);
+        Schd = bicas.proc.L1L2.SingleChannelData(sdidSamplesAVoltAr, sdidVsibAr);
+        Achd = Achd.set(asrSdid, Schd);
       end
 
       %======================================
       % Reconstruct missing channels/samples
       %======================================
-      SdcdDict = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(SdcdDict);
+      Achd = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Achd);
 
       % Tmk.stop_log(nRecTot, 'record')
     end

@@ -41,6 +41,8 @@ AA, aampere
     Antenna Ampere. Calibrated ampere at the antenna.
 AAPT
     Antenna Ampere/TM (unit).
+ACHD
+    Class bicas.proc.L1L2.AsrChannelData.
 ACHG
     (BIAS diff) AC High Gain. Corresponds to HK_BIA_DIFF_GAIN=1.
 ACLG
