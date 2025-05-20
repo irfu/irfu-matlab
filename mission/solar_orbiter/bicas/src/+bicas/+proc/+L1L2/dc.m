@@ -114,17 +114,20 @@ classdef dc
         % ############
         % EXPERIMENTAL
         % ############
+        % TmkNewImpl = bicas.utils.Timekeeper(...
+        %   'bicas.proc.L1L2.dc.process_calibrate_demux: NEW IMPLEMENTATION', L);
 
         % 5x SIGNALS LABELLED BY SSID/BLTS.
         % NOTE: Incomplete detection of VSQB.
         % NOTE: No SCHD as input (though as output).
+        % NOTE: Is QUITE SLOW, at least for LFR SWF.
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
-          Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa);
+          Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa, L);
 
         Achd = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(...
           bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
 
-
+        % TmkNewImpl.stop_log()
 
         % TODO: Extract Achd VSIBs and set L2_QUALITY_BITMASK.
         % TODO: Convert Achd samples to AsrSamplesAVoltSrm (or at least use
@@ -723,11 +726,12 @@ classdef dc
     %       N x 5. SWF: Set if at least one bit is set for any sample within
     %       snapshot.
     function bltsVsibAr = get_VSIB_5xBLTS_NEW(...
-        Bso, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa)
-
+        Bso, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa, L)
       % PROPOSAL: Test code.
 
-      [nSpr] = irf.assert.sizes(...
+      Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
+
+      [nSpr, nRec] = irf.assert.sizes(...
         bltsSamplesAVoltAr, [-2, -1, bicas.const.N_BLTS], ...
         bltsSsidAr,         [-2,     bicas.const.N_BLTS], ...
         isAchgFpa,          [-2]);
@@ -750,6 +754,8 @@ classdef dc
       % Logical OR over all VSIBs within snapshot.
       bltsVsibAr = any(    bltsVsibAr, 2);
       bltsVsibAr = permute(bltsVsibAr, [1, 3, 2]);
+
+      Tmk.stop_log(nRec, 'record')
     end
 
 
