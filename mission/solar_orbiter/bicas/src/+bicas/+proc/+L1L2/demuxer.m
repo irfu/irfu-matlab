@@ -443,7 +443,7 @@ classdef demuxer
       assert(isa(Achd, 'bicas.proc.L1L2.AsrChannelData'))
 
       % Shorten variable name.
-      SDUD_DICT = bicas.proc.L1L2.const.C.SDID_DICT;
+      SDID_DICT = bicas.proc.L1L2.const.C.SDID_DICT;
 
 
 
@@ -455,9 +455,9 @@ classdef demuxer
         % automated tests.
         % fprintf("%-6s = %-6s + %-6s\n", sumSdidStr1, termSdidStr2, termSdidStr3)
 
-        Schd1 = Achd.get_channel(SDUD_DICT( sumSdidStr1));
-        Schd2 = Achd.get_channel(SDUD_DICT(termSdidStr2));
-        Schd3 = Achd.get_channel(SDUD_DICT(termSdidStr3));
+        Schd1 = Achd.get_channel(SDID_DICT( sumSdidStr1));
+        Schd2 = Achd.get_channel(SDID_DICT(termSdidStr2));
+        Schd3 = Achd.get_channel(SDID_DICT(termSdidStr3));
 
         [...
           Schd1, ...
@@ -476,9 +476,9 @@ classdef demuxer
           @(x,y) (x-y) ...
           );
 
-        Achd = Achd.set_channel(SDUD_DICT( sumSdidStr1), Schd1);
-        Achd = Achd.set_channel(SDUD_DICT(termSdidStr2), Schd2);
-        Achd = Achd.set_channel(SDUD_DICT(termSdidStr3), Schd3);
+        Achd = Achd.set_channel(SDID_DICT( sumSdidStr1), Schd1);
+        Achd = Achd.set_channel(SDID_DICT(termSdidStr2), Schd2);
+        Achd = Achd.set_channel(SDID_DICT(termSdidStr3), Schd3);
       end
 
 

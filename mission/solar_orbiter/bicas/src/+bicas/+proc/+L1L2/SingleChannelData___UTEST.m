@@ -71,14 +71,19 @@ classdef SingleChannelData___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_subasgn(testCase)
+    function test_subsasgn(testCase)
       function test()
         % R = Receiver?!
         % S = Sender?!
         SCHD_R            = testCase.get_SCHD(ib_r);
         SCHD_S            = testCase.get_SCHD(ib_s);
         SCHD_EXP          = testCase.get_SCHD(ib_exp);
+
+        % Test subsasgn().
+        % NOTE: SCHD is a value class, but subsasgn() still modifies the object
+        %       in-place.
         SCHD_R(ib_r_asgn) = SCHD_S;
+
         testCase.assertEqual(SCHD_R, SCHD_EXP)
       end
 

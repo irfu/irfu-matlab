@@ -776,6 +776,24 @@ classdef dc
         bltsSdidAr,         [-1,     bicas.const.N_BLTS], ...
         bltsVsibAr,         [-1,     bicas.const.N_BLTS]);
 
+      % EXPERIMENTAL
+      SchdCa = cell(5, 1);
+      for iBlts = 1:bicas.const.N_BLTS
+        SchdCa{iBlts, 1} = bicas.proc.L1L2.SingleChannelData( ...
+          bltsSamplesAVoltAr(:, :, iBlts), bltsVsibAr(:, iBlts));
+      end
+      % Preallocate Achd.
+      Achd = bicas.proc.L1L2.AsrChannelData();
+      for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
+        % Preallocate
+        Schd = bicas.proc.L1L2.SingleChannelData(...
+          nan(  nRec, nSamplesPerRecordChannel), ...
+          false(nRec, 1));
+        Achd = Achd.set_channel(asrSdid, Schd);
+      end
+
+
+
       %======================================================
       % Construct Achd:
       % Copy values from 5x BLTSs into 9x SCHD (1x Achd)
@@ -800,8 +818,8 @@ classdef dc
           sdidVsibAr(bRecCopy)            = bltsVsibAr(        bRecCopy,    iBlts);
         end
 
-        Schd = bicas.proc.L1L2.SingleChannelData(sdidSamplesAVoltAr, sdidVsibAr);
-        Achd = Achd.set_channel(asrSdid, Schd);
+        AsrSchd = bicas.proc.L1L2.SingleChannelData(sdidSamplesAVoltAr, sdidVsibAr);
+        Achd    = Achd.set_channel(asrSdid, AsrSchd);
       end
 
       %======================================

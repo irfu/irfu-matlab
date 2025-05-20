@@ -1,5 +1,5 @@
 %
-% Handle class
+% NOTE: Handle class
 %
 % Class which effectively wraps a dictionary
 % (ASR) SDID-->bicas.proc.L1L2.SingleChannelData.
@@ -7,7 +7,7 @@
 % This useful since
 % (1) (MATLAB) dictionary values can not be non-scalar
 %     (bicas.proc.L1L2.SingleChannelData is a column vector). Therefore,
-%     the implementation must work around this (it uses 1x1 cell arrays).
+%     the implementation can work around this.
 % (2) it can sum up the number of SCHD fill positions.
 %
 % NOTE: The constructor does not initialize the object completely because
@@ -26,11 +26,18 @@ classdef AsrChannelData < handle
   %   ~Dictionary
   %     CON: Implies arbitrary collection (keys).
   %   ~Collection
+  %   ~handle
   %   --
   %   ASCHD = AsrSingleChannelData
   %     CON: Does not imply collection of ALL ASR channels.
   %       PRO: "Single" in the name.
   %   ACHD = AsrChannelData -- IMPLEMENTED
+  %   ACHDC, ACDC = AsrChannelDataCollection
+  %     PRO: There is need to specify that a channel is an ASR, rather than a
+  %          BLTS.
+  %     CON: ACHDC is a long abbreviation.
+  %     CON: "ACDC" is almost an abbreviation that someone might use though it
+  %          has been found in the source code.
   %
   % PROPOSAL: Better tests.
   %
@@ -53,10 +60,6 @@ classdef AsrChannelData < handle
   % CONSTANTS
   %###########
   %###########
-  properties(Constant, Access=private)
-    % ASR SDIDs.
-    PERMITTED_KEYS_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR
-  end
   properties(Dependent)
     % Total number of bWholeRowIsNan values in all the SCHD objects stored
     % within this object combined.
@@ -85,6 +88,7 @@ classdef AsrChannelData < handle
 
 
 
+    % Initialize empty object, without any channels.
     function obj = AsrChannelData()
       obj.Dict = dictionary;
     end
@@ -94,7 +98,7 @@ classdef AsrChannelData < handle
     % Set channel data.
     function obj = set_channel(obj, asrSdid, Schd)
       assert(isscalar(asrSdid))
-      assert(ismember(asrSdid, obj.PERMITTED_KEYS_AR))
+      assert(ismember(asrSdid, bicas.proc.L1L2.const.C.SDID_ASR_AR))
       assert(isa(Schd, 'bicas.proc.L1L2.SingleChannelData'))
 
       obj.Dict(asrSdid) = {Schd};
