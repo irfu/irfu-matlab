@@ -426,8 +426,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
       % (2) it helps to compare object components separately when debugging
       %     tests.
       for sdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        ActSchd = ActAchd.get(sdid);
-        ExpSchd = ExpAchd.get(sdid);
+        ActSchd = ActAchd.get_channel(sdid);
+        ExpSchd = ExpAchd.get_channel(sdid);
 
         if ~isequaln(ActSchd.samplesAr, ExpSchd.samplesAr)
           sdid
@@ -479,7 +479,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         Schd = bicas.proc.L1L2.SingleChannelData(...
           samplesArData(:, iSdid), ...
           vsibArData(   :, iSdid));
-        Achd = Achd.set(SDID_AR(iSdid), Schd);
+        Achd = Achd.set_channel(SDID_AR(iSdid), Schd);
       end
     end
 

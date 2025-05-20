@@ -30,13 +30,13 @@ classdef AsrChannelData___UTEST < matlab.unittest.TestCase
         Schd = bicas.proc.L1L2.SingleChannelData(...
           [NaN,2; 3,NaN; NaN,NaN]+i, ...
           logical([0; 1; 0]));
-        Achd.set(sdid, Schd);
+        Achd.set_channel(sdid, Schd);
 
         testCase.assertEqual(Achd.nWholeRowIsNan, 1*i)
       end
 
       ExpSchd = bicas.proc.L1L2.SingleChannelData([NaN,2; 3,NaN; NaN,NaN]+3, logical([0; 1; 0]));
-      ActSchd = Achd.get(SDID_ASR_AR(3));
+      ActSchd = Achd.get_channel(SDID_ASR_AR(3));
 
       testCase.assertEqual(ActSchd, ExpSchd)
       testCase.assertEqual(Achd.nWholeRowIsNan, numel(SDID_ASR_AR)*1)

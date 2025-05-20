@@ -91,8 +91,8 @@ classdef AsrChannelData < handle
 
 
 
-    % Set key value.
-    function obj = set(obj, asrSdid, Schd)
+    % Set channel data.
+    function obj = set_channel(obj, asrSdid, Schd)
       assert(isscalar(asrSdid))
       assert(ismember(asrSdid, obj.PERMITTED_KEYS_AR))
       assert(isa(Schd, 'bicas.proc.L1L2.SingleChannelData'))
@@ -102,7 +102,7 @@ classdef AsrChannelData < handle
 
 
 
-    function Schd = get(obj, asrSdid)
+    function Schd = get_channel(obj, asrSdid)
       assert(isscalar(asrSdid))
       ca   = obj.Dict(asrSdid);
       Schd = ca{1};

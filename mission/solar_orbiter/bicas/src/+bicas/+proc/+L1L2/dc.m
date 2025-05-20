@@ -144,8 +144,8 @@ classdef dc
         % maxDiff = 0;
         for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
           asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(asrSdid);
-          oldImplSamplesAVolt = AsrSamplesAVoltSrm(asid);       % Samples from old impl.
-          newImplSamplesAvolt = Achd.get(asrSdid).samplesAr;    % Samples from new impl.
+          oldImplSamplesAVolt = AsrSamplesAVoltSrm(asid);               % Samples from OLD impl.
+          newImplSamplesAvolt = Achd.get_channel(asrSdid).samplesAr;    % Samples from NEW impl.
 
           if ~isequaln(oldImplSamplesAVolt, newImplSamplesAvolt)
             L.logf('debug', 'Samples are different for asid = %g', asid)
@@ -801,7 +801,7 @@ classdef dc
         end
 
         Schd = bicas.proc.L1L2.SingleChannelData(sdidSamplesAVoltAr, sdidVsibAr);
-        Achd = Achd.set(asrSdid, Schd);
+        Achd = Achd.set_channel(asrSdid, Schd);
       end
 
       %======================================

@@ -455,9 +455,9 @@ classdef demuxer
         % automated tests.
         % fprintf("%-6s = %-6s + %-6s\n", sumSdidStr1, termSdidStr2, termSdidStr3)
 
-        Schd1 = Achd.get(SDUD_DICT( sumSdidStr1));
-        Schd2 = Achd.get(SDUD_DICT(termSdidStr2));
-        Schd3 = Achd.get(SDUD_DICT(termSdidStr3));
+        Schd1 = Achd.get_channel(SDUD_DICT( sumSdidStr1));
+        Schd2 = Achd.get_channel(SDUD_DICT(termSdidStr2));
+        Schd3 = Achd.get_channel(SDUD_DICT(termSdidStr3));
 
         [...
           Schd1, ...
@@ -476,9 +476,9 @@ classdef demuxer
           @(x,y) (x-y) ...
           );
 
-        Achd = Achd.set(SDUD_DICT( sumSdidStr1), Schd1);
-        Achd = Achd.set(SDUD_DICT(termSdidStr2), Schd2);
-        Achd = Achd.set(SDUD_DICT(termSdidStr3), Schd3);
+        Achd = Achd.set_channel(SDUD_DICT( sumSdidStr1), Schd1);
+        Achd = Achd.set_channel(SDUD_DICT(termSdidStr2), Schd2);
+        Achd = Achd.set_channel(SDUD_DICT(termSdidStr3), Schd3);
       end
 
 
