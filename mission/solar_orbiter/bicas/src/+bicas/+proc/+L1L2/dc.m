@@ -124,8 +124,10 @@ classdef dc
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
           Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa, L);
 
-        Achd = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW(...
+        Achd = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
           bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
+
+        Achd = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Achd);
 
         % TmkNewImpl.stop_log()
 
@@ -762,20 +764,17 @@ classdef dc
 
     % EXPERIMENTAL.
     %
-    % Intended as future conceptual replacement for
+    % Convert samples stored as 5x BLTSs to 9x ASRs (without reconstructing
+    % missing data).
+    %
+    % Intended as future partial conceptual replacement for
     % bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR().
     %
-    function Achd = relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW( ...
+    function Achd = convert_samples_5xBLTS_to_9xASR_NEW( ...
         bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)
-      % PROPOSAL: Include deriving VSIB in this function?
-      %   PRO: Most of the complexity should be in the Saturation class anyway.
-      % PROPOSAL: Separate function only for converting 5x BLTS to 9x ASR
-      %           (bicas.proc.L1L2.AsrChannelData), WITHOUT reconstructing
-      %           missing data.
-      % PROPOSAL: 5x BLTS input in the form of 5x bicas.proc.L1L2.SingleChannelData
 
       % Tmk = bicas.utils.Timekeeper(...
-      %   'bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_NEW', L);
+      %   'bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW', L);
 
       [nRec, nSamplesPerRecordChannel] = irf.assert.sizes(...
         bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
@@ -817,11 +816,6 @@ classdef dc
         end
         Achd = Achd.set_channel(asrSdid, AsrSchd);
       end
-
-      %======================================
-      % Reconstruct missing channels/samples
-      %======================================
-      Achd = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Achd);
 
       % Tmk.stop_log(nRec, 'record')
     end
