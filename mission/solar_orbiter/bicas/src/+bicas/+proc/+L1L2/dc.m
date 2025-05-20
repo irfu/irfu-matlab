@@ -124,15 +124,15 @@ classdef dc
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
           Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa, L);
 
-        Achd = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
+        Cdac = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
           bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
 
-        Achd = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Achd);
+        Cdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
 
         % TmkNewImpl.stop_log()
 
-        % TODO: Extract Achd VSIBs and set L2_QUALITY_BITMASK.
-        % TODO: Convert Achd samples to AsrSamplesAVoltSrm (or at least use
+        % TODO: Extract Cdac VSIBs and set L2_QUALITY_BITMASK.
+        % TODO: Convert Cdac samples to AsrSamplesAVoltSrm (or at least use
         %       it).
 
         % PROPOSAL: Compare SDID-separated VSIBs combined into one with old
@@ -150,7 +150,7 @@ classdef dc
         for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
           asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(asrSdid);
           oldImplSamplesAVolt = AsrSamplesAVoltSrm(asid);               % Samples from OLD impl.
-          newImplSamplesAvolt = Achd.get_channel(asrSdid).samplesAr;    % Samples from NEW impl.
+          newImplSamplesAvolt = Cdac.get_channel(asrSdid).samplesAr;    % Samples from NEW impl.
 
           if ~isequaln(oldImplSamplesAVolt, newImplSamplesAvolt)
             L.logf('debug', 'Samples are different for asid = %g', asid)
@@ -770,7 +770,7 @@ classdef dc
     % Intended as future partial conceptual replacement for
     % bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR().
     %
-    function Achd = convert_samples_5xBLTS_to_9xASR_NEW( ...
+    function Cdac = convert_samples_5xBLTS_to_9xASR_NEW( ...
         bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)
 
       % Tmk = bicas.utils.Timekeeper(...
@@ -793,12 +793,12 @@ classdef dc
       end
 
       %==================================================
-      % Convert bltsSchdCa --> Achd
+      % Convert bltsSchdCa --> Cdac
       % ---------------------------
-      % Copy values from 5x BLTSs into 9x SCHD (1x Achd)
+      % Copy values from 5x BLTSs into 9x SCHD (1x Cdac)
       % (but no reconstruction of missing values)
       %==================================================
-      Achd = bicas.proc.L1L2.AsrChannelData();
+      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection();
       for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
 
         % ~Preallocate empty SCHD for the current ASR/SDID.
@@ -814,7 +814,7 @@ classdef dc
           BltsSchd          = bltsSchdCa{iBlts};
           AsrSchd(bRecCopy) = BltsSchd(bRecCopy);
         end
-        Achd = Achd.set_channel(asrSdid, AsrSchd);
+        Cdac = Cdac.set_channel(asrSdid, AsrSchd);
       end
 
       % Tmk.stop_log(nRec, 'record')

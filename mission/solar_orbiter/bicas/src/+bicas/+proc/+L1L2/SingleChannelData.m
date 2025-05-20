@@ -43,7 +43,7 @@ classdef SingleChannelData
   %     SCH is substring of ischar.
   %   --
   %   NOTE: If changing name of this class, then should also change name of
-  %         Achd=bicas.proc.L1L2.AsrChannelData.
+  %         Cdac=bicas.proc.L1L2.ChannelDataAsrCollection.
   %
   % TODO-NI: Performance for large arrays? Need internal handle objects?
   %   Cf. bicas.utils.FPArray.
@@ -66,8 +66,8 @@ classdef SingleChannelData
   %         bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW()).
   %   PRO: SDID (destination) used when reconstructing missing channel data.
   %   PRO: SDID/SSID and SCHD are often together as function arguments.
-  %   CON: In ACHD: SDID is constant (within every SCHD separately) and
-  %        specified externally in the corresponding ACHD key.
+  %   CON: In CDAC: SDID is constant (within every SCHD separately) and
+  %        specified externally in the corresponding CDAC key.
   %   PROPOSAL: Add both SSID and SDID.
   %     NOTE: SSID is unknown for reconstructed data.
 

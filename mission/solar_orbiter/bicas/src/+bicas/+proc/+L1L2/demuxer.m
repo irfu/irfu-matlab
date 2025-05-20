@@ -438,9 +438,9 @@ classdef demuxer
     % elements) which causes data to be not used for reconstructing other
     % channels.
     %
-    function Achd = reconstruct_ASR_samples_NEW(Achd)
+    function Cdac = reconstruct_ASR_samples_NEW(Cdac)
 
-      assert(isa(Achd, 'bicas.proc.L1L2.AsrChannelData'))
+      assert(isa(Cdac, 'bicas.proc.L1L2.ChannelDataAsrCollection'))
 
       % Shorten variable name.
       SDID_DICT = bicas.proc.L1L2.const.C.SDID_DICT;
@@ -455,9 +455,9 @@ classdef demuxer
         % automated tests.
         % fprintf("%-6s = %-6s + %-6s\n", sumSdidStr1, termSdidStr2, termSdidStr3)
 
-        Schd1 = Achd.get_channel(SDID_DICT( sumSdidStr1));
-        Schd2 = Achd.get_channel(SDID_DICT(termSdidStr2));
-        Schd3 = Achd.get_channel(SDID_DICT(termSdidStr3));
+        Schd1 = Cdac.get_channel(SDID_DICT( sumSdidStr1));
+        Schd2 = Cdac.get_channel(SDID_DICT(termSdidStr2));
+        Schd3 = Cdac.get_channel(SDID_DICT(termSdidStr3));
 
         [...
           Schd1, ...
@@ -476,9 +476,9 @@ classdef demuxer
           @(x,y) (x-y) ...
           );
 
-        Achd = Achd.set_channel(SDID_DICT( sumSdidStr1), Schd1);
-        Achd = Achd.set_channel(SDID_DICT(termSdidStr2), Schd2);
-        Achd = Achd.set_channel(SDID_DICT(termSdidStr3), Schd3);
+        Cdac = Cdac.set_channel(SDID_DICT( sumSdidStr1), Schd1);
+        Cdac = Cdac.set_channel(SDID_DICT(termSdidStr2), Schd2);
+        Cdac = Cdac.set_channel(SDID_DICT(termSdidStr3), Schd3);
       end
 
 
@@ -494,7 +494,7 @@ classdef demuxer
       %================
       % Derive DC ASRs
       %================
-      nWholeRowIsNan0 = Achd.nWholeRowIsNan;
+      nWholeRowIsNan0 = Cdac.nWholeRowIsNan;
       while true
         % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for deriving
         % diffs (i.e. it should come first) since it is better to derive a diff
@@ -515,10 +515,10 @@ classdef demuxer
         reconstruct_missing_data_helper("DC_V2",   "DC_V23", "DC_V3");
 
         % NOTE: Impossible to get Dcd.nWholeRowIsNan == 0...
-        if (Achd.nWholeRowIsNan == nWholeRowIsNan0) || (Achd.nWholeRowIsNan == 0)
+        if (Cdac.nWholeRowIsNan == nWholeRowIsNan0) || (Cdac.nWholeRowIsNan == 0)
           break
         end
-        nWholeRowIsNan0 = Achd.nWholeRowIsNan;
+        nWholeRowIsNan0 = Cdac.nWholeRowIsNan;
       end
     end
 

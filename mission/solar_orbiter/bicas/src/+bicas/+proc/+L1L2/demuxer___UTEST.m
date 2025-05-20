@@ -399,7 +399,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,0,0,    0, 0, 0,   1, 0,0;
         0,0,0,    0, 0, 1,   1, 0,0;
         ]);
-      Achd = testCase.create_Achd(SAMPLES_AR_DATA, VSIB_AR_DATA);
+      Cdac = testCase.create_Cdac(SAMPLES_AR_DATA, VSIB_AR_DATA);
 
 
 
@@ -413,21 +413,21 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,1,1,    0, 0, 0,   1, 0,1;
         0,0,1,    0, 1, 1,   1, 0,0;
         ]);
-      ExpAchd = testCase.create_Achd(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
+      ExpCdac = testCase.create_Cdac(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
 
 
 
-      ActAchd = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Achd);
+      ActCdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
 
       % IMPLEMENTATION NOTE: Not comparing entire
-      % bicas.proc.L1L2.AsrChannelData objects since
+      % bicas.proc.L1L2.ChannelDataAsrCollection objects since
       % (1) it will fail also when the objects are identical (since has not
       %     implemented support for testing equality?), and
       % (2) it helps to compare object components separately when debugging
       %     tests.
       for sdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        ActSchd = ActAchd.get_channel(sdid);
-        ExpSchd = ExpAchd.get_channel(sdid);
+        ActSchd = ActCdac.get_channel(sdid);
+        ExpSchd = ExpCdac.get_channel(sdid);
 
         if ~isequaln(ActSchd.samplesAr, ExpSchd.samplesAr)
           sdid
@@ -460,7 +460,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    % Fast-and-easy function for creating one bicas.proc.L1L2.AsrChannelData
+    % Fast-and-easy function for creating one bicas.proc.L1L2.ChannelDataAsrCollection
     % from variables on a format suitable for hardcoding (CWF only).
     %
     % ARGUMENTS
@@ -470,16 +470,16 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %       SCHD.
     % vsibArData
     %       (iRec, iSdid)
-    function Achd = create_Achd(samplesArData, vsibArData)
+    function Cdac = create_Cdac(samplesArData, vsibArData)
       SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
-      Achd = bicas.proc.L1L2.AsrChannelData();
+      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection();
       for iSdid = 1:numel(SDID_AR)
 
         Schd = bicas.proc.L1L2.SingleChannelData(...
           samplesArData(:, iSdid), ...
           vsibArData(   :, iSdid));
-        Achd = Achd.set_channel(SDID_AR(iSdid), Schd);
+        Cdac = Cdac.set_channel(SDID_AR(iSdid), Schd);
       end
     end
 

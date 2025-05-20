@@ -41,8 +41,6 @@ AA, aampere
     Antenna Ampere. Calibrated ampere at the antenna.
 AAPT
     Antenna Ampere/TM (unit).
-ACHD
-    Class bicas.proc.L1L2.AsrChannelData.
 ACHG
     (BIAS diff) AC High Gain. Corresponds to HK_BIA_DIFF_GAIN=1.
 ACLG
@@ -131,6 +129,8 @@ BSO
     stores the settings for BICAS as a whole.
 CA
     Cell Array. See "AR".
+CDAC
+    Class bicas.proc.L1L2.ChannelDataAsrCollection.
 CLI
     Command-Line Interface. In particular, "CLI arguments" refers to an array of
     string arguments submitted to BICAS via the OS.

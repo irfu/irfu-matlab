@@ -16,7 +16,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef AsrChannelData < handle
+classdef ChannelDataAsrCollection < handle
   % PROPOSAL: Better name
   %   ~ASR (as opposed to non-ASR)
   %   ~9x ASR (as opposed to 5x BLTS)
@@ -29,8 +29,8 @@ classdef AsrChannelData < handle
   %   ~handle
   %   --
   %   NOTE: SCHD = SingleChannelData
-  %   ACHD = AsrChannelData -- IMPLEMENTED
-  %   CDAC = ChannelDataAsrCollection
+  %   ACHD = AsrChannelData
+  %   CDAC = ChannelDataAsrCollection -- IMPLEMENTED
   %   ACHDC, ACDC = AsrChannelDataCollection
   %     PRO: There is need to specify that a channel is an ASR, rather than a
   %          BLTS.
@@ -88,7 +88,7 @@ classdef AsrChannelData < handle
 
 
     % Initialize empty object, without any channels.
-    function obj = AsrChannelData()
+    function obj = ChannelDataAsrCollection()
       obj.Dict = dictionary;
     end
 
