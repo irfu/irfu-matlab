@@ -79,6 +79,7 @@ function Bso = create_default_BSO()
 %       config file values, CLI argument values.
 %
 % PROPOSAL: Abolish settings/functionality:
+%   INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
 %   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
@@ -90,6 +91,9 @@ function Bso = create_default_BSO()
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
 %
+% PROPOSAL: Set
+%   INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
+%   = false.
 %
 %
 % ====================================
@@ -384,6 +388,8 @@ S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
 % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
 % 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data for L2 SURV CWF
 %                 downsampled.
+% 2025-05-23: Changing value to PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN=0
+%             since Jordi Boldu needs the data.
 S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  0)
 
 % Maximum value for zVar QUALITY_FLAG in output datasets.

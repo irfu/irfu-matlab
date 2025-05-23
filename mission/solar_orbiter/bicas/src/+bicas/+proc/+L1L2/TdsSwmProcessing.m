@@ -130,8 +130,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
     % Only "normalizes" data to account for technically
     % illegal input TDS datasets. It should try to:
     % ** modify L1 to look like L1R
-    % ** mitigate historical bugs in the input datasets
-    % ** mitigate for not yet implemented features in input datasets
+    % ** mitigate historical bugs in the input datasets (if any)
+    % ** mitigate for not yet implemented features in input datasets (if any)
     %
     function InSciNorm = process_normalize_CDF(obj, InSci, Bso, L)
 
@@ -152,7 +152,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
       %===========================================================
-      % Normalize zVar name SYNCHRO_FLAG
+      % Normalize ZV SYNCHRO_FLAG *NAME*
       % --------------------------------
       % Both ZVs TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input
       % datasets. Unknown why. "DEFINITION BUG" in definition of

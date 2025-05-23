@@ -17,8 +17,8 @@
 % DEFINITIONS
 % ===========
 % Anomaly : Something that should in theory never happen (and for which there
-%           could in principle be an assertion error), but which can in practice
-%           be handled in multiple depending on a setting.
+%           could in principle be an assertion error), but which can in
+%           practice be handled in multiple ways depending on a setting.
 %           Ex: Anomalies: Bad input dataset metadata which processing does not
 %               need.
 %           Ex: Handling: Error, warning, workaround/mitigation
