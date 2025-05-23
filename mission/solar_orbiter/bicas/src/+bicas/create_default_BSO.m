@@ -380,7 +380,7 @@ S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
 % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
 % 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data for L2 SURV CWF
 %                 downsampled.
-S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
+S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  0)
 
 % Maximum value for zVar QUALITY_FLAG in output datasets.
 % YK        2020-08-31: Use cap "2=Survey data, possibly not publication-quality"

@@ -259,7 +259,7 @@ Condition     | Action taken when condition applies
 =================================================================
 L2 LFR CWF downsampled (SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND; unofficial dataset)
 is derived from SOLO_L2_RPW-LFR-SURV-CWF-E only, but only when its quality
-deemed good enough using setting PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN (=2
+deemed good enough using setting PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN (=0
 as of 2025-05-23).
 
 Condition                                    | Action taken when condition applies

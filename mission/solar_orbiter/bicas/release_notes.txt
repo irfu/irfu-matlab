@@ -262,3 +262,4 @@ Version 8.4.1 (2025-02-19)
 Version ?
 ---------
 * Bugfix: Can now handle multi-valued GA "OBS_ID".
+* New default: PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN=0
