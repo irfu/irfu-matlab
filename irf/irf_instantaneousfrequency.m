@@ -7,18 +7,18 @@ function instfrequency = irf_instantaneousfrequency(varargin)
 % Input:
 %       inputsignal - TSeries of signal (e.g., E or B fields)
 %
-% Options: 
+% Options:
 %       numptsav -  Number of points averaged.
 %       avmethod -  Method used in moving average: "movmean" (default) | "movmedian" | "gaussian" | "lowess" |
 %                   "loess" | "rlowess" | "rloess" | "sgolay"
 %       frange -    select frequency range to bandpass filter before
 %                   calculating frequency
 %
-% Output: 
+% Output:
 %       instfrequency - Instantaneous ordinary frequency in TSeries format with the
 %       same resolution as the input signal
-% 
-% Example: 
+%
+% Example:
 %   instfrequency = irf_instantaneousfrequency(Ehmfe,'numptsav',1000,'avmethod','movmedian','frange',[15 20]*1e3);
 
 averageintime = false;
