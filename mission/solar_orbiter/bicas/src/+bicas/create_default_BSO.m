@@ -79,7 +79,6 @@ function Bso = create_default_BSO()
 %       config file values, CLI argument values.
 %
 % PROPOSAL: Abolish settings/functionality:
-%   INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
 %   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
 %   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
@@ -90,10 +89,6 @@ function Bso = create_default_BSO()
 %   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
-%
-% PROPOSAL: Set
-%   INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
-%   = false.
 %
 %
 % ====================================
@@ -221,11 +216,6 @@ S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');
 % PROPOSAL: Store the value returned by
 %           spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
 S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 000,000,000]);
-
-% NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
-S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', true)
-% NOTE: See INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
-S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
 S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 

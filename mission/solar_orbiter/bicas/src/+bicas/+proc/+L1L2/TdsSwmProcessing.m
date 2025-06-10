@@ -151,26 +151,6 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %===========================================================
-      % Normalize ZV SYNCHRO_FLAG *NAME*
-      % --------------------------------
-      % Both ZVs TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input
-      % datasets. Unknown why. "DEFINITION BUG" in definition of
-      % datasets/skeleton? /2020-01-05
-      % Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems
-      % to be the correct one. /2020-01-21
-      %===========================================================
-      [InSciNorm.Zv, fnChangeList] = irf.ds.normalize_struct_fieldnames(...
-        InSciNorm.Zv, ...
-        {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
-        'Assert one matching candidate');
-
-      bicas.proc.utils.handle_ZV_name_change(...
-        fnChangeList, obj.inputSciDsi, Bso, L, ...
-        'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
-
-
-
       %========================================================
       % Normalize ZV SYNCHRO_FLAG *CONTENT*
       % -----------------------------------
