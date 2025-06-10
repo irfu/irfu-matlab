@@ -326,6 +326,10 @@ S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'WARNING')   
 S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'WARNING')    % WARNING, ERROR
 S.define_setting('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY', 'WARNING')    % WARNING, ERROR
 
+% Created 2025-06-10 to handle bad L1R TDS-LFM-CWF input datasets temporarily.
+% https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
+S.define_setting("PROCESSING.L1R.TDS.SYNCHRO_FLAG_EMPTY_POLICY", 'USE_ZERO')    % USE_ZERO, ERROR
+
 % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF
 % datasets. Abolish?
 S.define_setting('PROCESSING.L1R.TDS.RSWF_ZV_SAMPLING_RATE_255_POLICY', 'ERROR')   % WARNING, ERROR, CORRECT

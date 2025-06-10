@@ -262,4 +262,7 @@ Version 8.4.1 (2025-02-19)
 Version ?
 ---------
 * Bugfix: Can now handle multi-valued GA "OBS_ID".
+* Mitigation for empty Variable SYNCHRO_FLAG in L1R TDS-LFM-CWF-E input
+  datasets. Controlled by new setting
+  PROCESSING.L1R.TDS.SYNCHRO_FLAG_EMPTY_POLICY (default enabled/"USE_ZERO").
 * New default: PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN=0

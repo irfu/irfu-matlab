@@ -171,6 +171,34 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
+      %========================================================
+      % Normalize ZV SYNCHRO_FLAG *CONTENT*
+      % -----------------------------------
+      % All TDS-LFM-CWF-E datasets have empty SYNCHRO_FLAG ZVs.
+      % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
+      %========================================================
+      if isempty(InSciNorm.Zv.SYNCHRO_FLAG)
+        [settingValue, settingKey] = Bso.get_fv('PROCESSING.L1R.TDS.SYNCHRO_FLAG_EMPTY_POLICY');
+        anomalyDescriptionMsg = 'zVariable SYNCHRO_FLAG is empty.';
+
+        switch(settingValue)
+          case "USE_ZERO"
+            % Mitigate
+            nRecords = size(InSci.Zv.Epoch, 1);
+            InSciNorm.Zv.SYNCHRO_FLAG = zeros(nRecords, 1, "uint8");
+            bicas.default_anomaly_handling(L, ...
+              settingValue, settingKey, ...
+              'OTHER', anomalyDescriptionMsg, 'BICAS:Assertion')
+
+          otherwise
+            bicas.default_anomaly_handling(L, ...
+              settingValue, settingKey, ...
+              'ERROR_ILLEGAL_SETTING', anomalyDescriptionMsg, 'BICAS:Assertion')
+        end
+      end
+
+
+
       %=========================
       % Normalize SAMPLING_RATE
       %=========================
