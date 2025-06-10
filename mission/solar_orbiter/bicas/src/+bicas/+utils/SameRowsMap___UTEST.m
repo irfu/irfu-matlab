@@ -94,8 +94,8 @@ classdef SameRowsMap___UTEST < matlab.unittest.TestCase
       SrmDouble = bicas.utils.SameRowsMap('double', 1, 'EMPTY');
 
       testCase.assertError(...
-          @() SrmDouble.add(uint8(3), 123), ...
-          ?MException)
+        @() SrmDouble.add(uint8(3), 123), ...
+        ?MException)
     end
 
 

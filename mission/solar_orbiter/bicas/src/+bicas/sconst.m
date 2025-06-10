@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef sconst
-% PROPOSAL: Merge class back into bicas.const.
+  % PROPOSAL: Merge class back into bicas.const.
 
 
 

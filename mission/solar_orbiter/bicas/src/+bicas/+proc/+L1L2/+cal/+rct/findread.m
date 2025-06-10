@@ -147,7 +147,7 @@ classdef findread
 
 
 
-     % Add parent directory to RCT filename.
+      % Add parent directory to RCT filename.
       biasRctPath = fullfile(rctDir, rctFilename);
     end
 
