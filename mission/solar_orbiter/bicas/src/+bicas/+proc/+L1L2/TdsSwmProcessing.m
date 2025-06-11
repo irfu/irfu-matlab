@@ -151,21 +151,26 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %========================================================
-      % Normalize ZV SYNCHRO_FLAG *CONTENT*
-      % -----------------------------------
-      % All TDS-LFM-CWF-E datasets have empty SYNCHRO_FLAG ZVs.
+      %========================================================================
+      % Normalize ZV SYNCHRO_FLAG EXISTENCE and CONTENT
+      % -----------------------------------------------
+      % All L1R TDS-LFM-CWF-E datasets have empty SYNCHRO_FLAG ZVs.
+      % /2025-06-10
       % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
-      %========================================================
-      if isempty(InSciNorm.Zv.SYNCHRO_FLAG)
-        [settingValue, settingKey] = Bso.get_fv('PROCESSING.L1R.TDS.SYNCHRO_FLAG_EMPTY_POLICY');
-        anomalyDescriptionMsg = 'zVariable SYNCHRO_FLAG is empty.';
+      % --
+      % All L1R TDS-LFM-RSWF-E datasets lack SYNCHRO_FLAG ZVs. /2025-06-11
+      % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/100
+      %========================================================================
+      if ~isfield(InSciNorm.Zv, "SYNCHRO_FLAG") || isempty(InSciNorm.Zv.SYNCHRO_FLAG)
+        [settingValue, settingKey] = Bso.get_fv('PROCESSING.L1R.TDS.SYNCHRO_FLAG_MISSING_EMPTY_POLICY');
+        anomalyDescriptionMsg = 'Input dataset zVariable SYNCHRO_FLAG is either missing or empty.';
 
         switch(settingValue)
-          case "USE_ZERO"
-            % Mitigate
-            nRecords = size(InSci.Zv.Epoch, 1);
-            InSciNorm.Zv.SYNCHRO_FLAG = zeros(nRecords, 1, "uint8");
+          case "USE_FILL_VALUE"
+            % Mitigate by creating correctly sized zVariable.
+            nRecords                  = size(InSci.Zv.Epoch, 1);
+            FILL_VALUE                = uint8(255);
+            InSciNorm.Zv.SYNCHRO_FLAG = zeros(nRecords, 1, "uint8") + FILL_VALUE;
             bicas.default_anomaly_handling(L, ...
               settingValue, settingKey, ...
               'OTHER', anomalyDescriptionMsg, 'BICAS:Assertion')

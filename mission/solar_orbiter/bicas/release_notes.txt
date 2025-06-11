@@ -262,9 +262,12 @@ Version 8.4.1 (2025-02-19)
 Version ?
 ---------
 * Bugfix: Can now handle multi-valued GA "OBS_ID".
-* Mitigation for empty Variable SYNCHRO_FLAG in L1R TDS-LFM-CWF-E input
-  datasets. Controlled by new setting
-  PROCESSING.L1R.TDS.SYNCHRO_FLAG_EMPTY_POLICY (default enabled/"USE_ZERO").
+* Mitigation for empty or missing zVariable SYNCHRO_FLAG in L1R TDS-LFM-CWF/RSWF
+  input datasets. Controlled by new setting
+  PROCESSING.L1R.TDS.SYNCHRO_FLAG_MISSING_EMPTY_POLICY (mitigation enabled by
+  default/"USE_FILL_VALUES").
+  https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
+  https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/100
 * New default: PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN=0
 * Remove functionality for mitigating misnamed and/or duplicated L1/L1R
   zVariable SYNCHRO_FLAG (TIME_SYNCHRO_FLAG). Therefore also removed the related
