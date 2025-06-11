@@ -273,3 +273,8 @@ Version ?
   zVariable SYNCHRO_FLAG (TIME_SYNCHRO_FLAG). Therefore also removed the related
   settings INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY and
   INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED.
+* Removed obsoleted functionality for mitigating (implicitly anomalous) empty
+  zVariables when writing CDFs, i.e. after the bulk processing.
+  Therefore also removed settings
+  OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY and
+  OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY.

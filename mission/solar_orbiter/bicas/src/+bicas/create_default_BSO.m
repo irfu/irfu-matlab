@@ -79,8 +79,6 @@ function Bso = create_default_BSO()
 %       config file values, CLI argument values.
 %
 % PROPOSAL: Abolish settings/functionality:
-%   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
-%   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
 %   PROCESSING.L2.REMOVE_DATA.MUX_MODES
@@ -248,17 +246,6 @@ S.define_setting('INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY', 'ERROR'
 % NOTE: Not known if the RCS ICD says anything about what should be the
 % default, or what ROC thinks it should be.
 S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY', 'WARNING');    % ERROR, WARNING.
-
-
-
-% What to do with zVariables which are still empty after copying data into
-% the master CDF. This indicates that something is wrong, either in the
-% master CDF or in the processing.
-S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'ERROR');   % ERROR, WARNING, USE_FILLVAL
-% Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?)
-%     SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
-% Ex: VDC_LABEL etc can be empty due to ROC bug updating skeletons.
-S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'ERROR');   % ERROR, WARNING
 
 
 
