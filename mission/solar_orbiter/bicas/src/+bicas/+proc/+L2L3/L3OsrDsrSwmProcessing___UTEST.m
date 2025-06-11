@@ -75,7 +75,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       % 5:    L2_QUALITY_BITMASK
       % 6- 8: VDC
       % 9-11: EDC
-      DATA_OSR = [...
+      ACT_EXP_DATA_OSR = [...
         % Too few records
         10,   2,   2, 0,  0,   1,2,3, -1,-2,-3; ...
         % Zero records
@@ -119,9 +119,9 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         102,   2,   2, 0,  0,   1,2,3, -1,-2,-3; ...
         ];
 
-      %===========
-      % DSR DATA
-      %===========
+      %====================
+      % DSR DATA: expected
+      %====================
       % Columns:
       % 1: Epoch [s]
       % 2: QUALITY_FLAG
@@ -144,7 +144,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         90,  255,     0,     0, 1; ...
         100, 255,     0,     0, 1; ...
         ];
-      bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, DATA_OSR, DATA_DSR)
+      bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, ACT_EXP_DATA_OSR, DATA_DSR)
 
       % Normal bin
       % Test merging QUALITY_BITMASK bits.
@@ -188,7 +188,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
     % 4: L2_QUALITY_BITMASK
     % 5: nanData
     %
-    function test(testCase, DATA_OSR, DATA_DSR)
+    function test(testCase, ACT_EXP_DATA_OSR, EXP_DATA_DSR)
       L   = bicas.Logger('NO_STDOUT', false);
       Bso = bicas.create_default_BSO();
       Bso.override_value('PROCESSING.ZV_QUALITY_FLAG_MAX', 2, mfilename)
@@ -208,21 +208,21 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
 
       BASE_TT2000 = spdfparsett2000('2020-03-14T00:00:00');
 
-      InLfrCwf.Zv.Epoch                 = int64( DATA_OSR(:, 1)*1e9) + BASE_TT2000;
-      InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_OSR(:, 2)), 'FILL_VALUE', FV_QUALITY_FLAG);
-      InLfrCwf.ZvFpa.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(DATA_OSR(:, 4)), 'FILL_VALUE', FV_QUALITY_BITMASK);
-      InLfrCwf.ZvFpa.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(DATA_OSR(:, 5)), 'FILL_VALUE', FV_L2_QUALITY_BITMASK);
+      InLfrCwf.Zv.Epoch                 = int64( ACT_EXP_DATA_OSR(:, 1)*1e9) + BASE_TT2000;
+      InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(uint8( ACT_EXP_DATA_OSR(:, 2)), 'FILL_VALUE', FV_QUALITY_FLAG);
+      InLfrCwf.ZvFpa.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(ACT_EXP_DATA_OSR(:, 4)), 'FILL_VALUE', FV_QUALITY_BITMASK);
+      InLfrCwf.ZvFpa.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(ACT_EXP_DATA_OSR(:, 5)), 'FILL_VALUE', FV_L2_QUALITY_BITMASK);
       InLfrCwf.ZvFpa.DELTA_PLUS_MINUS   = bicas.utils.FPArray(int64(ones(size(InLfrCwf.Zv.Epoch))) * mode(diff(InLfrCwf.Zv.Epoch)));
-      InLfrCwf.ZvFpa.VDC                = bicas.utils.FPArray(DATA_OSR(:, 6: 8), 'FILL_VALUE', NaN).cast('single');
-      InLfrCwf.ZvFpa.EDC                = bicas.utils.FPArray(DATA_OSR(:, 9:11), 'FILL_VALUE', NaN).cast('single');
+      InLfrCwf.ZvFpa.VDC                = bicas.utils.FPArray(ACT_EXP_DATA_OSR(:, 6: 8), 'FILL_VALUE', NaN).cast('single');
+      InLfrCwf.ZvFpa.EDC                = bicas.utils.FPArray(ACT_EXP_DATA_OSR(:, 9:11), 'FILL_VALUE', NaN).cast('single');
 
-      ExpOsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_OSR(:, 3)), 'FILL_VALUE', uint8 (FV_QUALITY_FLAG));
+      ExpOsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8( ACT_EXP_DATA_OSR(:, 3)), 'FILL_VALUE', uint8 (FV_QUALITY_FLAG));
       %
-      ExpDsr.Zv.Epoch              = int64( DATA_DSR(:, 1)*1e9) + BASE_TT2000;
-      ExpDsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8( DATA_DSR(:, 2)), 'FILL_VALUE', FV_QUALITY_FLAG);
-      ExpDsr.Zv.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(DATA_DSR(:, 3)), 'FILL_VALUE', FV_QUALITY_BITMASK);
-      ExpDsr.Zv.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(DATA_DSR(:, 4)), 'FILL_VALUE', FV_L2_QUALITY_BITMASK);
-      ExpDsr.nanData               = logical(DATA_DSR(:, 5));
+      ExpDsr.Zv.Epoch              = int64( EXP_DATA_DSR(:, 1)*1e9) + BASE_TT2000;
+      ExpDsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8( EXP_DATA_DSR(:, 2)), 'FILL_VALUE', FV_QUALITY_FLAG);
+      ExpDsr.Zv.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(EXP_DATA_DSR(:, 3)), 'FILL_VALUE', FV_QUALITY_BITMASK);
+      ExpDsr.Zv.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(EXP_DATA_DSR(:, 4)), 'FILL_VALUE', FV_L2_QUALITY_BITMASK);
+      ExpDsr.nanData               = logical(EXP_DATA_DSR(:, 5));
 
       % ==========================
       % Set RVs for external code
@@ -261,38 +261,38 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       %##################################################################
       % CALL CODE TO BE TESTED
       %##################################################################
-      [OutEfieldOsr,  OutEfieldDsr, ...
-        OutScpotOsr,   OutScpotDsr, ...
-        OutDensityOsr, OutDensityDsr] ...
+      [ActEfieldOsr,  ActEfieldDsr, ...
+        ActScpotOsr,   ActScpotDsr, ...
+        ActDensityOsr, ActDensityDsr] ...
         = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(InLfrCwf, Ec, Bso, L);
       %##################################################################
 
       % OSR
-      for OutOsrCa = {OutEfieldOsr, OutScpotOsr, OutDensityOsr}'
-        OutOsr = OutOsrCa{1}.Zv;
-        testCase.assertEqual(OutOsr.Epoch,              InLfrCwf.Zv.Epoch)
-        testCase.assertEqual(OutOsr.QUALITY_FLAG,       ExpOsr.Zv.QUALITY_FLAG)
-        testCase.assertEqual(OutOsr.QUALITY_BITMASK,    InLfrCwf.ZvFpa.QUALITY_BITMASK)
-        testCase.assertEqual(OutOsr.L2_QUALITY_BITMASK, InLfrCwf.ZvFpa.L2_QUALITY_BITMASK)
+      for ActOsrCa = {ActEfieldOsr, ActScpotOsr, ActDensityOsr}'
+        ActOsr = ActOsrCa{1}.Zv;
+        testCase.assertEqual(ActOsr.Epoch,              InLfrCwf.Zv.Epoch)
+        testCase.assertEqual(ActOsr.QUALITY_FLAG,       ExpOsr.Zv.QUALITY_FLAG)
+        testCase.assertEqual(ActOsr.QUALITY_BITMASK,    InLfrCwf.ZvFpa.QUALITY_BITMASK)
+        testCase.assertEqual(ActOsr.L2_QUALITY_BITMASK, InLfrCwf.ZvFpa.L2_QUALITY_BITMASK)
       end
 
       % DSR
-      for OutDsrCa = {OutEfieldDsr, OutScpotDsr, OutDensityDsr}'
-        OutDsr = OutDsrCa{1}.Zv;
-        testCase.assertEqual(OutDsr.Epoch,              ExpDsr.Zv.Epoch)
-        testCase.assertEqual(OutDsr.QUALITY_FLAG,       ExpDsr.Zv.QUALITY_FLAG)
-        testCase.assertEqual(OutDsr.QUALITY_BITMASK,    ExpDsr.Zv.QUALITY_BITMASK)
-        testCase.assertEqual(OutDsr.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
+      for ActDsrCa = {ActEfieldDsr, ActScpotDsr, ActDensityDsr}'
+        ActDsr = ActDsrCa{1}.Zv;
+        testCase.assertEqual(ActDsr.Epoch,              ExpDsr.Zv.Epoch)
+        testCase.assertEqual(ActDsr.QUALITY_FLAG,       ExpDsr.Zv.QUALITY_FLAG)
+        testCase.assertEqual(ActDsr.QUALITY_BITMASK,    ExpDsr.Zv.QUALITY_BITMASK)
+        testCase.assertEqual(ActDsr.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
       end
 
-      testCase.assertEqual(all(OutEfieldDsr.Zv.EDC_SRF.fpAr,    2),   ExpDsr.nanData);
-      testCase.assertEqual(all(OutEfieldDsr.Zv.EDCSTD_SRF.fpAr, 2),   ExpDsr.nanData);
-      testCase.assertEqual(    OutDensityDsr.Zv.DENSITY.fpAr        , ExpDsr.nanData);
-      testCase.assertEqual(    OutDensityDsr.Zv.DENSITYSTD.fpAr     , ExpDsr.nanData);
-      testCase.assertEqual(    OutScpotDsr.Zv.SCPOT.fpAr            , ExpDsr.nanData);
-      testCase.assertEqual(    OutScpotDsr.Zv.SCPOTSTD.fpAr         , ExpDsr.nanData);
-      testCase.assertEqual(    OutScpotDsr.Zv.PSP.fpAr              , ExpDsr.nanData);
-      testCase.assertEqual(    OutScpotDsr.Zv.PSPSTD.fpAr           , ExpDsr.nanData);
+      testCase.assertEqual(all(ActEfieldDsr.Zv.EDC_SRF.fpAr,    2),   ExpDsr.nanData);
+      testCase.assertEqual(all(ActEfieldDsr.Zv.EDCSTD_SRF.fpAr, 2),   ExpDsr.nanData);
+      testCase.assertEqual(    ActDensityDsr.Zv.DENSITY.fpAr        , ExpDsr.nanData);
+      testCase.assertEqual(    ActDensityDsr.Zv.DENSITYSTD.fpAr     , ExpDsr.nanData);
+      testCase.assertEqual(    ActScpotDsr.Zv.SCPOT.fpAr            , ExpDsr.nanData);
+      testCase.assertEqual(    ActScpotDsr.Zv.SCPOTSTD.fpAr         , ExpDsr.nanData);
+      testCase.assertEqual(    ActScpotDsr.Zv.PSP.fpAr              , ExpDsr.nanData);
+      testCase.assertEqual(    ActScpotDsr.Zv.PSPSTD.fpAr           , ExpDsr.nanData);
     end
 
 

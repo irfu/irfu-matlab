@@ -168,10 +168,10 @@ classdef dsr
       % .
 
       zv_QUALITY_FLAG_FpaDsr    = bicas.proc.dsr.downsample_ZV_minimum(...
-        InLfrCwfOsr.ZvFpa.QUALITY_FLAG,    iRecordsInBinCa);
+        InLfrCwfOsr.ZvFpa.QUALITY_FLAG,       iRecordsInBinCa);
 
       zv_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
-        InLfrCwfOsr.ZvFpa.QUALITY_BITMASK, iRecordsInBinCa);
+        InLfrCwfOsr.ZvFpa.QUALITY_BITMASK,    iRecordsInBinCa);
 
       zv_L2_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
         InLfrCwfOsr.ZvFpa.L2_QUALITY_BITMASK, iRecordsInBinCa);
@@ -568,8 +568,8 @@ classdef dsr
 
 
 
-    % Downsample a zVariable (FPA) using pre-defined bins to the "logical OR
-    % value" each OSR bin.
+    % Downsample an integer zVariable (FPA) using pre-defined bins to
+    % the "logical OR value" of each OSR bin.
     %
     function DsrFpa = downsample_ZV_bitmask(OsrFpa, iRecordsInBinCa)
       assert(isa(OsrFpa, 'bicas.utils.FPArray'))
@@ -584,8 +584,7 @@ classdef dsr
           binSamplesDsrAr = fv;
           binFpDsrAr      = true;
         else
-          % CASE: Bin contains non-zero number of values, which
-          %       might be FPs.
+          % CASE: Bin contains non-zero number of values, which might be FPs.
 
           if isempty(binSamplesOsrAr)
             binSamplesDsrAr = fv;
@@ -598,7 +597,7 @@ classdef dsr
       end
 
       assert(iscolumn(OsrFpa))
-      fv = zeros(1,1, OsrFpa.mc);   % Used by inner function.
+      fv = zeros(1,1, OsrFpa.mc);   % NOTE: Used by inner function.
 
       DsrFpa = bicas.proc.dsr.downsample(OsrFpa, iRecordsInBinCa, @bin_to_record);
     end

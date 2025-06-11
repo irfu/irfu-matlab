@@ -63,10 +63,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %==============
       % Process data
       %==============
-      [EfieldOsrCdf,  EfieldDsrCdf, ...
+      [...
+        EfieldOsrCdf,  EfieldDsrCdf, ...
         ScpotOsrCdf,   ScpotDsrCdf, ...
-        DensityOsrCdf, DensityDsrCdf] = ...
-        bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(InputLfrCwfCdf, Ec, Bso, L);
+        DensityOsrCdf, DensityDsrCdf ...
+      ] = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(...
+        InputLfrCwfCdf, Ec, Bso, L);
 
       OutputDatasetsMap = containers.Map();
       OutputDatasetsMap('EFIELD_OSR_cdf')  = EfieldOsrCdf;
@@ -110,9 +112,11 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % automated tests, in particular by adding an explicit dependence on
     % bicas.proc.L2L3.ExternalCodeImplementation.
     %
-    function [OutEfieldOsr,  OutEfieldDsr, ...
+    function [...
+        OutEfieldOsr,  OutEfieldDsr, ...
         OutScpotOsr,   OutScpotDsr, ...
-        OutDensityOsr, OutDensityDsr] ...
+        OutDensityOsr, OutDensityDsr ...
+        ] ...
         = process_L2_to_L3(InLfrCwf, Ec, Bso, L)
 
       % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
@@ -311,7 +315,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %                      QUALITY_FLAG       FP
       %   Density bit FP ==> L3_QUALITY_BITMASK density bit=false
       %                      (since there is no FP for individual quality bits).
-      [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(NeScpQualityBitFpa.array(false));
+      [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(...
+        NeScpQualityBitFpa.array(false));
       Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
       Out.Zv.L3_QUALITY_BITMASK       = bicas.utils.FPArray(L3_QUALITY_FLAG);
 
@@ -373,7 +378,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    function Out = DSR_density(TemplateDsr, OutDensityOsrGa, NeScpCm3OsrFpa, osr_L3_QUALITY_BITMASK, iRecordsInBinCa, L)
+    function Out = DSR_density(...
+        TemplateDsr, OutDensityOsrGa, NeScpCm3OsrFpa, ...
+        osr_L3_QUALITY_BITMASK, iRecordsInBinCa, L)
       Out    = TemplateDsr;
       Out.Ga = OutDensityOsrGa;
 
@@ -384,11 +391,14 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.DENSITY    = DensityDsrFpa.   cast('single');
       Out.Zv.DENSITYSTD = DensitystdDsrFpa.cast('single');
 
+      % NOTE: Behaviour w.r.t. FPs:
+      %   Density FP     ==> L3_QUALITY_BITMASK FP
+      %                      QUALITY_FLAG       FP
       bFp = Out.Zv.DENSITY.fpAr;
       Out.Zv.QUALITY_FLAG(bFp)       = bicas.utils.FPArray.FP_UINT8;
       Out.Zv.L3_QUALITY_BITMASK      = bicas.proc.dsr.downsample_ZV_bitmask(...
         osr_L3_QUALITY_BITMASK, iRecordsInBinCa);
-      Out.Zv.L3_QUALITY_BITMASK(bFp) = bicas.utils.FPArray.FP_UINT16;   % ?!
+      Out.Zv.L3_QUALITY_BITMASK(bFp) = bicas.utils.FPArray.FP_UINT16;
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end

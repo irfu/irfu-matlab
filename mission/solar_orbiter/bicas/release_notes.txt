@@ -269,9 +269,9 @@ Version ?
   https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
   https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/100
 * New default: PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN=0
-* Remove functionality for mitigating misnamed and/or duplicated L1/L1R
-  zVariable SYNCHRO_FLAG (TIME_SYNCHRO_FLAG). Therefore also removed the related
-  settings INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY and
+* Removed obsoleted functionality for mitigating misnamed and/or duplicated
+  L1/L1R zVariable SYNCHRO_FLAG (TIME_SYNCHRO_FLAG). Therefore also removed
+  the related settings INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY and
   INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED.
 * Removed obsoleted functionality for mitigating (implicitly anomalous) empty
   zVariables when writing CDFs, i.e. after the bulk processing.

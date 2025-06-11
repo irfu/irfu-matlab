@@ -126,7 +126,8 @@ end
 
 
 
-% Create a modified dataobj, based on a master CDF, that can be written to file.
+% Create a modified dataobj, based on a master CDF but filled with zVariable
+% data from processing, and that can be written to file.
 %
 % NOTE: Only uses global attribute values from
 %   (1) GaSubset, and
