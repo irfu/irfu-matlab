@@ -12,6 +12,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 % =============
 % NeScp
 %       Electron density (derived from "SCP", hence the name).
+%       Should be NaN for timestamps for which there is no calibration data.
 % NeScpQualityBit
 %       Binary value that specifies whether the density value
 %       seems bad or not. 1=Bad, 0=Can not find any problem.
@@ -49,6 +50,8 @@ Cal = [];
 %   variable name changes.
 %===============================================================================
 codeVerStr = '2024-09-06T18:04:00';
+
+AddEntry('2020-02-01T00:00:00Z/2020-03-07T23:59:59Z',[NaN,    NaN]);    % No calibration. ==> Output density=NaN
 
 AddEntry('2020-03-08T00:00:00Z/2020-05-18T04:05:54Z',[0.8889  3.4389]); % Based on data from 2020-04-07
 AddEntry('2020-05-18T04:05:55Z/2020-05-29T23:59:59Z',[0.8154  4.5562]);
@@ -152,9 +155,19 @@ AddEntry('2022-12-09T18:16:00Z/2022-12-19T01:04:59Z',... %60
 AddEntry('2022-12-19T01:05:00Z/2022-12-20T15:04:39Z',[0.4545 1.9587]); %61
 AddEntry('2022-12-20T15:04:40Z/2022-12-31T23:59:59Z',[0.7194 1.5239]); %63
 
+AddEntry('2023-01-01T00:00:00Z/2023-09-05T23:59:59Z',[NaN,    NaN]);    % No calibration. ==> Output density=NaN
+
 AddEntry('2023-09-06T00:00:00Z/2023-09-07T23:59:59Z',... %64 Manual calibration
   [0.3003 + 2.6582i  0.1068 + 4.1297i],7.4938);
+
+AddEntry('2023-09-08T00:00:00Z/2100-01-01T00:00:00Z',[NaN,    NaN]);    % No calibration. ==> Output density=NaN
+
 %% calibrate
+%
+% NOTE: Empirically, TSeries.resample() extrapolates data outside the beginning
+% and end of the time series. ==> Will extrapolate calibration data to time when
+% there should not be any calibration data. Therefore adds calibration data with
+% NaN for time intervals where there is no proper (non-NaN) calibration data.
 CalR = Cal.resample(PSP);
 NeScp = PSP;
 
