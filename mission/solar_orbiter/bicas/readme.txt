@@ -254,16 +254,6 @@ Condition     | Action taken when condition applies
               |     Cap QUALITY_FLAG<=1.
 
 
-=======================
- Density is fill value
-=======================
-This applies to SOLO_L3_RPW-BIA-DENSITY and SOLO_L3_RPW-BIA-DENSITY-10-SECONDS.
-
-Condition      | Action taken when condition applies
-------------------------------------------------------------------------------
-Density is set | L3_QUALITY_BITMASK and QUALITY_FLAG are set to fill value.
-to fill value. |
-
 
 =================================================================
  L2 data used for generating L2 LFR CWF downsampled (unofficial)

@@ -278,3 +278,6 @@ Version ?
   Therefore also removed settings
   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY and
   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY.
+* No longer set L3 QUALITY_FLAG and L3_QUALITY_BITMASK to FV when there is no
+  science data.
+

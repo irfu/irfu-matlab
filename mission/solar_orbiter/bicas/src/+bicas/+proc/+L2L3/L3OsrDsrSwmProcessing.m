@@ -103,9 +103,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % NOTE: Function does not discard data with QUALITY_FLAG==fill value, as
     % opposed to QUALITY_FLAG < threshold.
     %
-    % NOTE: Sets QUALITY_FLAG==fill value when ALL data in record is NaN.
-    % Both OSR and DSR. The same is not(?) enforced in L2 processing, but
-    % should maybe be. /EJ 2021-05-12
+    % NOTE: Keeps quality zVariables also when all data in record is FV.
+    % Both OSR and DSR. /EJ 2025-06-12
     %
     % IMPLEMENTATION NOTE: This function is separate from
     % bicas.proc.L2L3.L3OsrDsrSwmProcessing.production_function() to facilitate
@@ -175,17 +174,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       LfrCwfZv.EDC_Fpa          = InLfrCwf.ZvFpa.EDC;
       LfrCwfZv.QUALITY_FLAG_Fpa = InLfrCwf.ZvFpa.QUALITY_FLAG;
       R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, Bso);
-
-
-
-      %===================================================================
-      % ~HACK: MODIFY INPUT ARGUMENT InLfrCwf
-      % -------------------------------------
-      % IMPLEMENTATION NOTE: This is to modify QUALITY_FLAG for both OSR
-      % and DSR datasets. In principle, this is for keeping the interface
-      % to bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template() simple.
-      %===================================================================
-      InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FPArray.FP_UINT8;
 
 
 
@@ -280,9 +268,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       Out.Zv.EDC_SRF                   = EdcSrfMvpmFpa.cast('single');
 
-      bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
-      Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
-
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
@@ -294,10 +279,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       Out.Zv.SCPOT                     = ScpotVoltFpa.cast('single');
       Out.Zv.PSP                       = PspVoltFpa.  cast('single');
-
-      bFp = Out.Zv.SCPOT.fpAr & ...
-        Out.Zv.PSP.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
@@ -311,18 +292,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.DENSITY                   = NeScpCm3Fpa.cast('single');
 
       % NOTE: Behaviour w.r.t. FPs:
-      %   Density FP     ==> L3_QUALITY_BITMASK FP
-      %                      QUALITY_FLAG       FP
       %   Density bit FP ==> L3_QUALITY_BITMASK density bit=false
       %                      (since there is no FP for individual quality bits).
       [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(...
         NeScpQualityBitFpa.array(false));
       Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
       Out.Zv.L3_QUALITY_BITMASK       = bicas.utils.FPArray(L3_QUALITY_FLAG);
-
-      bFp = Out.Zv.DENSITY.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp)        = bicas.utils.FPArray.FP_UINT8;
-      Out.Zv.L3_QUALITY_BITMASK(bFp)  = bicas.utils.FPArray.FP_UINT16;
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
@@ -339,9 +314,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         iRecordsInBinCa, L);
       Out.Zv.EDC_SRF    = EdcSrfDsrFpa.   cast('single');
       Out.Zv.EDCSTD_SRF = EdcstdSrfDsrFpa.cast('single');
-
-      bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
-      Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
@@ -369,10 +341,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.PSP    = PspDsrFpa.   cast('single');
       Out.Zv.PSPSTD = PspstdDsrFpa.cast('single');
 
-      bFp = Out.Zv.SCPOT.fpAr & ...
-        Out.Zv.PSP.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
-
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
@@ -394,11 +362,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % NOTE: Behaviour w.r.t. FPs:
       %   Density FP     ==> L3_QUALITY_BITMASK FP
       %                      QUALITY_FLAG       FP
-      bFp = Out.Zv.DENSITY.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp)       = bicas.utils.FPArray.FP_UINT8;
       Out.Zv.L3_QUALITY_BITMASK      = bicas.proc.dsr.downsample_ZV_bitmask(...
         osr_L3_QUALITY_BITMASK, iRecordsInBinCa);
-      Out.Zv.L3_QUALITY_BITMASK(bFp) = bicas.utils.FPArray.FP_UINT16;
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
