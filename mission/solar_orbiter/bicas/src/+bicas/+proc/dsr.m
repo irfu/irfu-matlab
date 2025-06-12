@@ -55,6 +55,11 @@ classdef dsr
     % CWF.
     %
     %
+    % PERFORMANCE
+    % ===========
+    % This function is known to take a disproportionate amount of time.
+    %
+    %
     % RETURN VALUES
     % =============
     % TemplateDsrZv

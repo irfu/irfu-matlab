@@ -11,11 +11,12 @@
 % PERFORMANCE
 % ===========
 % Simple tests shows that the duplicated downsampling of duplicated quality
-% variables slows down L2->L3 processing (takes ~20% more time). This was
-% implemented for a bugfix. One can eliminate this (except for QUALITY_FLAG for
-% density which is different), but it makes the implementation sensitive to any
-% EFIELD/DENSITY/SCPOT-specific future modifications of their particular OSR
-% quality variables (i.e. one has to change the implementation "a lot").
+% variables (bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template()) slows down L2->L3
+% processing (takes ~20% more time). This was implemented for a bugfix. One can
+% eliminate this (except for QUALITY_FLAG for density which is different), but
+% it makes the implementation sensitive to any EFIELD/DENSITY/SCPOT-specific
+% future modifications of their particular OSR quality variables (i.e. one has
+% to change the implementation "a lot").
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -135,6 +136,19 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         ] ...
         = process_L2_to_L3(InLfrCwf, Ec, Bso, L)
 
+      if 0
+        % TEST
+        % PRETEND that input QUALITY_FLAG, L2_QUALITY_BITMASK have other values
+        % (overwrite).
+        InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(...
+          uint8(ones(size(InLfrCwf.ZvFpa.QUALITY_FLAG))) * 2, ...
+          'NO_FILL_POSITIONS');  % TEST
+        InLfrCwf.ZvFpa.L2_QUALITY_BITMASK       = bicas.utils.FPArray(...
+          uint16(ones(size(InLfrCwf.ZvFpa.L2_QUALITY_BITMASK))) * 0, ...
+          'NO_FILL_POSITIONS');  % TEST
+      end
+
+
       % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
       %           (still combine non-downsampled and downsampled).
       %   CON: Slows down overall processing.
@@ -216,6 +230,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       OutDensityOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_density(TemplateOsr, R.NeScpCm3Fpa,   R.NeScpQualityBitFpa, gaDensity_Misc_calibration_versions);
 
       OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( OutEfieldOsr,  R.EdcSrfMvpmFpa,              L);
+      %OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( TemplateOsr,  R.EdcSrfMvpmFpa,              L);    % TEST
       OutScpotDsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_scpot(  OutScpotOsr,   R.ScpotVoltFpa, R.PspVoltFpa, L);
       OutDensityDsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_density(OutDensityOsr, R.NeScpCm3Fpa,                L);
 
@@ -250,8 +265,14 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Zv = struct();
       Zv.Epoch              = InLfrCwf.Zv.Epoch;
       Zv.QUALITY_FLAG       = InLfrCwf.ZvFpa.QUALITY_FLAG;
+      % Zv.QUALITY_FLAG       = bicas.utils.FPArray(...
+      %   uint8(ones(size(InLfrCwf.ZvFpa.QUALITY_FLAG))) * 2, ...
+      %   'NO_FILL_POSITIONS');  % TEST
       Zv.QUALITY_BITMASK    = InLfrCwf.ZvFpa.QUALITY_BITMASK;
       Zv.L2_QUALITY_BITMASK = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
+      % Zv.L2_QUALITY_BITMASK       = bicas.utils.FPArray(...
+      %   uint16(ones(size(InLfrCwf.ZvFpa.L2_QUALITY_BITMASK))) * 0, ...
+      %   'NO_FILL_POSITIONS');  % TEST
       Zv.DELTA_PLUS_MINUS   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
 
       TemplateOsr = struct('Ga', Ga, 'Zv', Zv);
@@ -259,7 +280,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    function Out = OSR_efield(TemplateOsr, EdcSrfMvpmFpa, gaMisc_calibration_versions, L)
+    function Out = OSR_efield(TemplateOsr, EdcSrfMvpmFpa, gaMisc_calibration_versions)
       Out = TemplateOsr;
       Out.Ga.Misc_calibration_versions = gaMisc_calibration_versions;
 
