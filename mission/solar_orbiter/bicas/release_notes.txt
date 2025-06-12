@@ -262,6 +262,10 @@ Version 8.4.1 (2025-02-19)
 Version ?
 ---------
 * Bugfix: Can now handle multi-valued GA "OBS_ID".
+* Bugfix: SOLO_L3_RPW-BIA-DENSITY-10-SECONDS ZV QUALITY_FLAG is now a
+  downsampled version of SOLO_L3_RPW-BIA-DENSITY ZV QUALITY_FLAG. (Was
+  previously a downsampled version of SOLO_L2_RPW-LFR-SURV-CWF-E ZV
+  QUALITY_FLAG.)
 * Mitigation for empty or missing zVariable SYNCHRO_FLAG in L1R TDS-LFM-CWF/RSWF
   input datasets. Controlled by new setting
   PROCESSING.L1R.TDS.SYNCHRO_FLAG_MISSING_EMPTY_POLICY (mitigation enabled by
@@ -280,4 +284,3 @@ Version ?
   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY.
 * No longer set L3 QUALITY_FLAG and L3_QUALITY_BITMASK to FV when there is no
   science data.
-
