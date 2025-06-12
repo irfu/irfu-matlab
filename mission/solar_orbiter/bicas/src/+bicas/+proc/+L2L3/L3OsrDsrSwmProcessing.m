@@ -8,17 +8,6 @@
 %   data, use the first MATLAB array index to represent CDF records.
 %
 %
-% BUG?
-% ====
-% bNotUsed is used when calling
-% bicas.proc.L2L3.ext.calc_EFIELD_SCPOT() but not when calling
-% bicas.proc.L2L3.ext.calc_DENSITY() (should maybe be used for both).
-% At the same time, bNotUsed is used for creating the OSR template which is used
-% for all datasets (DENSITY, EFIELD, SCPOT).
-%   InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FPArray.FP_UINT8;
-%   TemplateOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_OSR_template(InLfrCwf);
-%
-%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
@@ -30,8 +19,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   %   L3
   %   Density, Efield, ScPot = DES
   %
-  % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT.
-  %   PRO: Faster
+  % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT
+  %           into separate SWMs.
+  %   PRO: Faster processing when only processing subset of L3 DSIs.
   %       CON: Not very heavy operation.
   %   PRO: Leads to better organization of code.
   %       PRO: process_L2_to_L3() is too large and should be split up anyway.
@@ -200,16 +190,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % specific datasets
       %================================================================
       TemplateOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_OSR_template(InLfrCwf);
-      [TemplateDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
-        InLfrCwf, ...
-        BIN_LENGTH_WOLS_NS, ...
-        BIN_TIMESTAMP_POS_WOLS_NS, ...
-        L);
-      % NOTE: Not setting DSR ".Ga"/global attributes here, since DSR
-      % datasets later copy ".Ga" from the respective OSR datasets.
-      TemplateDsr = struct('Zv', TemplateDsrZv);
-
-
 
       %=======================================
       % Generate data structures for datasets
@@ -217,7 +197,26 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       OutEfieldOsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_efield( TemplateOsr, R.EdcSrfMvpmFpa,                       gaEfieldScpot_Misc_calibration_versions);
       OutScpotOsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_scpot(  TemplateOsr, R.ScpotVoltFpa,  R.PspVoltFpa,         gaEfieldScpot_Misc_calibration_versions);
       OutDensityOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_density(TemplateOsr, R.NeScpCm3Fpa,   R.NeScpQualityBitFpa, gaDensity_Misc_calibration_versions);
-      %
+
+
+
+      %================================================================
+      % Misc. variables shared between datasets and later modified for
+      % specific datasets
+      %================================================================
+      [TemplateDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
+        InLfrCwf.Zv.Epoch, ...
+        InLfrCwf.ZvFpa.QUALITY_FLAG, ...
+        InLfrCwf.ZvFpa.QUALITY_BITMASK, ...
+        InLfrCwf.ZvFpa.L2_QUALITY_BITMASK, ...
+        BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS, L);
+      % NOTE: Not setting DSR ".Ga"/global attributes here, since DSR
+      % datasets later copy ".Ga" from the respective OSR datasets.
+      TemplateDsr = struct('Zv', TemplateDsrZv);
+
+      %=======================================
+      % Generate data structures for datasets
+      %=======================================
       OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( TemplateDsr, OutEfieldOsr.Ga,  R.EdcSrfMvpmFpa,                                    iRecordsInBinCa, L);
       OutScpotDsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_scpot(  TemplateDsr, OutScpotOsr.Ga,   R.ScpotVoltFpa, R.PspVoltFpa,                       iRecordsInBinCa, L);
       OutDensityDsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_density(TemplateDsr, OutDensityOsr.Ga, R.NeScpCm3Fpa, OutDensityOsr.Zv.L3_QUALITY_BITMASK, iRecordsInBinCa, L);

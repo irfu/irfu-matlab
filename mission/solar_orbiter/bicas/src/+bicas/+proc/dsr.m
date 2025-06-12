@@ -68,7 +68,8 @@ classdef dsr
     %       Distribution of non-downsampled records in bins.
     %
     function [TemplateDsrZv, iRecordsInBinCa] = get_LFR_CWF_DSR_ZVs_template(...
-        InLfrCwfOsr, binLengthWolsNs, binTimestampPosWolsNs, L)
+        Epoch, QUALITY_FLAG_Fpa, QUALITY_BITMASK_Fpa, L2_QUALITY_BITMASK_Fpa, ...
+        binLengthWolsNs, binTimestampPosWolsNs, L)
 
       % NOTE: Function argument InLfrCwfOsr contains too much information!
       % PROPOSAL: Only take argument for the needed variables.
@@ -87,7 +88,7 @@ classdef dsr
       %================
       % Find bin boundary reference timestamp. This is used for
       % setting the bin boundaries together with the bin length.
-      v = spdfbreakdowntt2000(InLfrCwfOsr.Zv.Epoch(1));
+      v = spdfbreakdowntt2000(Epoch(1));
       % UTC seconds. Not sure of the reason for value=5. Avoid leap seconds?
       v(6)   = 5;
       v(7:9) = 0;   % Milliseconds, microseconds, nanoseconds
@@ -99,12 +100,12 @@ classdef dsr
       %     (=downsampled records).
       [zvEpochDsr, iRecordsInBinCa, binSizeArrayNs] = ...
         bicas.proc.dsr.get_downsampling_bins(...
-        InLfrCwfOsr.Zv.Epoch, ...
+        Epoch, ...
         boundaryRefTt2000, ...
         binLengthWolsNs, ...
         binTimestampPosWolsNs, ...
         L);
-      nRecordsOsr = numel(InLfrCwfOsr.Zv.Epoch);
+      nRecordsOsr = numel(Epoch);
       nRecordsDsr = numel(iRecordsInBinCa);
 
 
@@ -167,14 +168,14 @@ classdef dsr
       %   (SKELETON_MODS: V12=Feb 2021)
       % .
 
-      zv_QUALITY_FLAG_FpaDsr    = bicas.proc.dsr.downsample_ZV_minimum(...
-        InLfrCwfOsr.ZvFpa.QUALITY_FLAG,       iRecordsInBinCa);
+      zv_QUALITY_FLAG_FpaDsr       = bicas.proc.dsr.downsample_ZV_minimum(...
+        QUALITY_FLAG_Fpa,       iRecordsInBinCa);
 
-      zv_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
-        InLfrCwfOsr.ZvFpa.QUALITY_BITMASK,    iRecordsInBinCa);
+      zv_QUALITY_BITMASK_FpaDsr    = bicas.proc.dsr.downsample_ZV_bitmask(...
+        QUALITY_BITMASK_Fpa,    iRecordsInBinCa);
 
       zv_L2_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
-        InLfrCwfOsr.ZvFpa.L2_QUALITY_BITMASK, iRecordsInBinCa);
+        L2_QUALITY_BITMASK_Fpa, iRecordsInBinCa);
 
       %============================================================
       % Shared zVariables between all DOWNSAMPLED datasets
