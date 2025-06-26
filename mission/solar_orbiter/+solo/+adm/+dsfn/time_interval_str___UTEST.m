@@ -164,7 +164,7 @@ classdef time_interval_str___UTEST < matlab.unittest.TestCase
 
     function test_parse_fail(testCase, timeIntervalStr)
       [actDt1, actDt2, actTimeIntervalFormat, actBSuccess] = ...
-          solo.adm.dsfn.time_interval_str.parse(timeIntervalStr);
+        solo.adm.dsfn.time_interval_str.parse(timeIntervalStr);
 
       testCase.assertEqual(actDt1, irf.dt.UTC('NaT'))
       testCase.assertEqual(actDt2, irf.dt.UTC('NaT'))

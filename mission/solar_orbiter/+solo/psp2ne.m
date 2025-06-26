@@ -160,7 +160,19 @@ AddEntry('2023-01-01T00:00:00Z/2023-09-05T23:59:59Z',[NaN,    NaN]);    % No cal
 AddEntry('2023-09-06T00:00:00Z/2023-09-07T23:59:59Z',... %64 Manual calibration
   [0.3003 + 2.6582i  0.1068 + 4.1297i],7.4938);
 
-AddEntry('2023-09-08T00:00:00Z/2100-01-01T00:00:00Z',[NaN,    NaN]);    % No calibration. ==> Output density=NaN
+% AddEntry('2023-09-08T00:00:00Z/2100-01-01T00:00:00Z',[NaN,    NaN]);    % No calibration. ==> Output density=NaN
+
+% NOTE: Below (new) entries are not in time order!
+% Not yet known whether intentional, not sorted, or bad data.
+% /Erik P G Johansson, 2025-06-26
+% TODO: Ask Jordi Boldu to fix.
+AddEntry('2023-12-17T00:00:00Z/2023-12-17T23:59:59Z',... %65 Manual calibration
+  [0.9259 + 0.5128i  0.3663 + 2.1793i],2.9951);
+AddEntry('2023-10-24T00:00:00Z/2023-10-30T00:00:00Z',[ 0.4464 2.9653]); %SOOP
+AddEntry('2023-10-08T00:00:00Z/2023-10-13T00:00:00Z',... %SOOP
+  [0.5714 + 3.9126i  0.1464 + 4.7137i],1.7973);
+AddEntry('2024-10-20T00:00:00Z/2024-10-29T00:00:00Z',...%68 Manual calibration
+  [0.5780 + 2.5900i 0.1883 + 3.7339i]);
 
 %% calibrate
 %

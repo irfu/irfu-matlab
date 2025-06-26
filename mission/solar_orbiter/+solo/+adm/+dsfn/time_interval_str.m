@@ -9,19 +9,19 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef time_interval_str
-% PROPOSAL: Return special value(s) for parsing illegal string.
-%   PRO: Useful for rigorously distinguishing datasets/non-datasets.
-%   PROPOSAL: timeIntervalFormat == special value, e.g. [].
-%   PROPOSAL: Special return value flag.
-%
-% PROPOSAL: New abbrev. TIFID = Time Interval Format ID
-%
-% PROPOSAL: Class name?
-%     tis=time interval string
-%       PRO: Internal function/constant calls are short.
-%       CON: create()/parse() function names are not clear.
-%     time_interval_string -- IMPLEMENTED
-%       PRO: create/parse function names can be short.
+  % PROPOSAL: Return special value(s) for parsing illegal string.
+  %   PRO: Useful for rigorously distinguishing datasets/non-datasets.
+  %   PROPOSAL: timeIntervalFormat == special value, e.g. [].
+  %   PROPOSAL: Special return value flag.
+  %
+  % PROPOSAL: New abbrev. TIFID = Time Interval Format ID
+  %
+  % PROPOSAL: Class name?
+  %     tis=time interval string
+  %       PRO: Internal function/constant calls are short.
+  %       CON: create()/parse() function names are not clear.
+  %     time_interval_string -- IMPLEMENTED
+  %       PRO: create/parse function names can be short.
 
 
 

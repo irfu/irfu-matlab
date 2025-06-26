@@ -36,13 +36,18 @@ classdef lprobe
   methods
 
     function type = get.type(Lp)
+      % Determine type based on properties
       if ~isempty(Lp.radiusSphere) && ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire)
+        % All combined wire and sphere properties provided
         type = 'sphere+wire';
       elseif ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire)
+        % All wire properties provided
         type = 'wire';
-      elseif ~isempty(Lp.radiusWire)
+      elseif ~isempty(Lp.radiusSphere)
+        % All sphere properties provided
         type = 'sphere';
       else
+        % Missing some properties, can not determine what type it is.
         type =[];
       end
     end

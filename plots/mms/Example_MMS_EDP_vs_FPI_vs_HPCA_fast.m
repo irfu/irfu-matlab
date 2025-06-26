@@ -1,6 +1,8 @@
 mmsId = 1;
 Tint = irf.tint('2016-08-10T09:50:00Z/2016-08-10T10:15:00Z');
 fpiMode = 'fast'; % alternative fpiMode = 'brst'
+flagResampleEtoI = true; % resample electron moments to ion cadence
+hpcaMode = 'srvy';  % alternative edpMode = 'brst'
 edpMode = 'fast'; % alternative edpMode = 'brst'
 
 %% FGM & EDP
@@ -21,9 +23,9 @@ Vi_dbcs_fpi = mms.get_data(['Vi_dbcs' fpiSuf],Tint,mmsId);
 Ve_dbcs_fpi = mms.get_data(['Ve_dbcs' fpiSuf],Tint,mmsId);
 Ne_fpi = mms.get_data(['Ne' fpiSuf],Tint,mmsId);
 idx_lowDensity = Ne_fpi.data < 0.06; Ve_dbcs_fpi.data(idx_lowDensity,:) = NaN;
-Vhplus_dbcs_hpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l2',Tint,mmsId);
+Vhplus_dbcs_hpca = mms.get_data(['Vhplus_dbcs_hpca_' hpcaMode '_l2'],Tint,mmsId);
 if isempty(Vhplus_dbcs_hpca)
-  Vhplus_dbcs_hpca = mms.get_data('Vhplus_dbcs_hpca_srvy_l1b',Tint,mmsId);
+  Vhplus_dbcs_hpca = mms.get_data(['Vhplus_dbcs_hpca_' hpcaMode '_l1b'],Tint,mmsId);
 end
 
 % correct Ez in E2d
@@ -32,11 +34,20 @@ E2d_dsl_edp_l2pre = irf_edb(E2d_dsl_edp_l2pre,B_dmpa_fgm_srvy_l2,10,'Eperp+NaN')
 
 % Comp VxB
 [~, Vi_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Vi_dbcs_fpi);
-[~, Ve_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Ve_dbcs_fpi);
+if flagResampleEtoI
+  [~, Ve_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Ve_dbcs_fpi.resample(Vi_dbcs_fpi));
+else
+  [~, Ve_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Ve_dbcs_fpi);
+end
 VExB = irf_e_vxb(E_dsl_edp_l2,B_dmpa_fgm_srvy_l2,-1);
 VExB_l2pre = irf_e_vxb(E2d_dsl_edp_l2pre,B_dmpa_fgm_srvy_l2,-1);
 EVixB = irf_e_vxb(Vi_dbcs_fpi,B_dmpa_fgm_srvy_l2.resample(Vi_dbcs_fpi));
-EVexB = irf_e_vxb(Ve_dbcs_fpi,B_dmpa_fgm_srvy_l2.resample(Ve_dbcs_fpi));
+if flagResampleEtoI
+  EVexB = irf_e_vxb(Ve_dbcs_fpi.resample(Vi_dbcs_fpi),...
+      B_dmpa_fgm_srvy_l2.resample(Vi_dbcs_fpi));
+else
+  EVexB = irf_e_vxb(Ve_dbcs_fpi,B_dmpa_fgm_srvy_l2.resample(Ve_dbcs_fpi));
+end
 if isempty(Vhplus_dbcs_hpca), Vhplus_perp = []; EVphlusxB = [];
 else
   [~, Vhplus_perp] = irf_dec_parperp(B_dmpa_fgm_srvy_l2,Vhplus_dbcs_hpca);
@@ -68,7 +79,7 @@ ylabel(hca,'E_y DSL [mV/m]')
 
 hca = irf_panel('Ez');
 irf_plot(hca,...
-  {E2d_dsl_edp_l2pre.z,E_dsl_edp_l2.z,EVexB.z,EVixB.z,EVphlusxB.z,E_adp_edp},'comp');
+  {E2d_dsl_edp_l2pre.z,E_dsl_edp_l2.z,EVexB.z,EVixB.z,EVphlusxB.z,E_adp_edp-7},'comp');
 irf_legend(hca,{'E L2pre','E l2','V_{e}xB','V_{i}xB','V_{H+}xB','E ADP'},...
   [0.98 0.05],'fontsize',14)
 ylabel(hca,'E_z DSL [mV/m]')
