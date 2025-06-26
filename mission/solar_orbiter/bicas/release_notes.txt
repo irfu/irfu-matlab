@@ -259,8 +259,8 @@ Version 8.4.1 (2025-02-19)
 * Require new L3 master CDFs V06/V07.
 
 
-Version ?
----------
+Version 8.5.0 (2026-06-26)
+--------------------------
 * Bugfix: Can now handle multi-valued GA "OBS_ID".
 * Bugfix: SOLO_L3_RPW-BIA-DENSITY-10-SECONDS ZV QUALITY_FLAG is now a
   downsampled version of SOLO_L3_RPW-BIA-DENSITY ZV QUALITY_FLAG. (Was
