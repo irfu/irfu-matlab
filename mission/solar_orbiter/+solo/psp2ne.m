@@ -49,7 +49,7 @@ Cal = [];
 % * It should *NOT* be updated for unrelated code changes, e.g. comments or
 %   variable name changes.
 %===============================================================================
-codeVerStr = '2024-09-06T18:04:00';
+codeVerStr = '2025-06-26T17:48:00';
 
 AddEntry('2020-02-01T00:00:00Z/2020-03-07T23:59:59Z',[NaN,    NaN]);    % No calibration. ==> Output density=NaN
 

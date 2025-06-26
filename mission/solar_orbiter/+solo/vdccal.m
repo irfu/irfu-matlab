@@ -89,7 +89,7 @@ a = load(calFilename);
 % Version of the function (not .mat file).
 % NOTE: This value is meant to be be UPDATED BY HAND, not by an automatic
 % timestamp, so that a constant value represents the same function/algorithm.
-codeVerStr = '2022-12-06T13:23:14';
+codeVerStr = '2025-06-26T17:48:00';
 % Version of the .mat file. Using filename, or at least for now.
 % This string is used by BICAS to set a CDF global attribute in official
 % datasets for traceability.
