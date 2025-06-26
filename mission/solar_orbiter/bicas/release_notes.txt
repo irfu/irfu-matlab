@@ -286,3 +286,5 @@ Version 8.5.0 (2026-06-26)
   Therefore also removed settings
   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY and
   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY.
+* Temporarily blank E-field data for 2022-11-30T23:00:00Z to
+  2022-12-01T00:10:00Z.
