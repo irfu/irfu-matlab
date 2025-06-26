@@ -228,4 +228,14 @@ DCE_SRF_out.coordinateSystem = 'SRF';
 PSP_out.units                = 'V';
 ScPot_out.units              = 'V';
 
+% TEMPORARY: Blank (set to NaN) DCE_SRF for a hardcoded time interval
+% -------------------------------------------------------------------
+% This is a temporary measure done in agreement with Andrew Dimmock until
+% updating the corresponding calibration. /Erik P G Johansson, 2025-06-26
+TINT_BLANK = irf.tint('2022-11-30T23:00:00Z/2022-12-01T00:10:00Z');
+bNaN = (DCE_SRF_out.time >= TINT_BLANK(1)) & (DCE_SRF_out.time <= TINT_BLANK(2));
+DCE_SRF_out.data(bNaN, :) = NaN;
+
+
+
 end %function
