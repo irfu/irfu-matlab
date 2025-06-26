@@ -11,7 +11,10 @@
 % DEFAULT VALUE POLICY
 % ====================
 % * Default values must be the ones usable when BICAS is run at ROC/LIRA for
-%   official processing L1R-->L2.
+%   official processing L1R-->L2. ROC/LIRA does not want to maintain
+%   configuration file(s).
+% * Default values must be the ones usable for official processing L2-->L3,
+%   for safety.
 % * Default values should make errors crash BICAS, except for temporary
 %   solutions to known problems while they are being worked on.
 %   This may not be lived up to in practice. Settings should probably be
@@ -48,7 +51,8 @@
 % ============
 % Bso
 %       bicas.Settings object with all BICAS settings pre-defined with default
-%       values. Can not define more settings, but can modify settings.
+%       values. One can not define more settings, but one can modify existing
+%       settings.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -273,7 +277,7 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      t
 % Permitted CDF versions output CDFs as a reg.expr.. Entire CDF version string
 % must match the reg.expr.. This is a way of asserting that BICAS uses the
 % correct versions of the CDF library.
-% CDF format version 3.9 is required by ROC (Solo?). /2024-07-24
+% CDF format version 3.9 is required by ROC (SolO?). /2024-07-24
 %
 % NOTE: If irfu-matlab and BICAS (as delivered to ROC) use different CDF format
 % versions, then BICAS should be called in irfu-matlab in such a way that this
