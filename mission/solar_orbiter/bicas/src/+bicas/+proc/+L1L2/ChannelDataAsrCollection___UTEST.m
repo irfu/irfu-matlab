@@ -19,23 +19,37 @@ classdef ChannelDataAsrCollection___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_empty_nRecords(testCase)
+      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection(0);
+      testCase.assertEqual(Cdac.nRecords, 0)
+
+      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection(3);
+      testCase.assertEqual(Cdac.nRecords, 3)
+    end
+
+
+
     function test_set_get_nWholeRowIsNan(testCase)
       SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
-      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection();
+      % 3x2
+      SAMPLES_AR_0 = [NaN,2; 3,NaN; NaN,NaN];
+      VSIB_AR      = logical([0; 1; 0]);
+
+      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection(3);
 
       for i = 1:numel(SDID_ASR_AR)
         sdid = SDID_ASR_AR(i);
 
-        Schd = bicas.proc.L1L2.SingleChannelData(...
-          [NaN,2; 3,NaN; NaN,NaN]+i, ...
-          logical([0; 1; 0]));
+        Schd = bicas.proc.L1L2.SingleChannelData(SAMPLES_AR_0+i, VSIB_AR);
         Cdac.set_channel(sdid, Schd);
 
         testCase.assertEqual(Cdac.nWholeRowIsNan, 1*i)
       end
 
-      ExpSchd = bicas.proc.L1L2.SingleChannelData([NaN,2; 3,NaN; NaN,NaN]+3, logical([0; 1; 0]));
+      testCase.assertEqual(Cdac.nRecords, 3)
+
+      ExpSchd = bicas.proc.L1L2.SingleChannelData(SAMPLES_AR_0+3, VSIB_AR);
       ActSchd = Cdac.get_channel(SDID_ASR_AR(3));
 
       testCase.assertEqual(ActSchd, ExpSchd)

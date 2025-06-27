@@ -472,8 +472,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %       (iRec, iSdid)
     function Cdac = create_Cdac(samplesArData, vsibArData)
       SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
+      nRecords = size(vsibArData, 1);
 
-      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection();
+      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection(nRecords);
       for iSdid = 1:numel(SDID_AR)
 
         Schd = bicas.proc.L1L2.SingleChannelData(...

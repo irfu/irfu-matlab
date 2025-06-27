@@ -53,10 +53,7 @@ classdef ChannelDataAsrCollection < handle
   %
   % PROPOSAL: Assert that all SCHDs have the same size and data types.
   %
-  % PROPOSAL: Constructor sets number of records.
-  %   PRO: More well-defined if empty.
-  %   PRO: Symmetric assertion on number of SCHD records.
-  %   PRO: More symmetric function for obtaining number of SCHD records.
+  % PROPOSAL: Assert that all SCHDs have the same size (columns) and data types.
 
 
 
@@ -81,6 +78,9 @@ classdef ChannelDataAsrCollection < handle
   properties(Access=private)
     Dict
   end
+  properties(GetAccess=public, SetAccess=private)
+    nRecords
+  end
 
 
 
@@ -94,16 +94,17 @@ classdef ChannelDataAsrCollection < handle
 
 
     % Initialize empty object, without any channels.
-    function obj = ChannelDataAsrCollection()
-      obj.Dict = configureDictionary('uint8', 'cell');
+    function obj = ChannelDataAsrCollection(nRecords)
+      assert(isscalar(nRecords) & isnumeric(nRecords) & nRecords >= 0)
+
+      obj.Dict     = configureDictionary('uint8', 'cell');
+      obj.nRecords = nRecords;
     end
 
 
 
     % Set channel data.
     function obj = set_channel(obj, asrSdid, Schd)
-      % PROPOSAL: Assert consistent SCHD sizes.
-
       % IMPLEMENTATION NOTE: Can not assert that not overwriting CHSD for ASR
       % SDID since overwriting is required by
       % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW()
@@ -111,6 +112,7 @@ classdef ChannelDataAsrCollection < handle
       assert(isscalar(asrSdid))
       assert(ismember(asrSdid, bicas.proc.L1L2.const.C.SDID_ASR_AR))
       assert(isa(Schd, 'bicas.proc.L1L2.SingleChannelData'))
+      assert(size(Schd, 1) == obj.nRecords)
 
       obj.Dict(asrSdid) = {Schd};
     end

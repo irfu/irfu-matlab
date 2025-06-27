@@ -805,7 +805,7 @@ classdef dc
       % Copy values from 5x BLTSs into 9x SCHD (1x Cdac)
       % (but no reconstruction of missing values)
       %==================================================
-      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection();
+      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection(nRec);
       for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
 
         % ~Preallocate empty SCHD for the current ASR/SDID.
