@@ -118,8 +118,8 @@ classdef dc
         % ############
         % EXPERIMENTAL
         % ############
-        % TmkNewImpl = bicas.utils.Timekeeper(...
-        %   'bicas.proc.L1L2.dc.process_calibrate_demux: NEW IMPLEMENTATION', L);
+        TmkNewImpl = bicas.utils.Timekeeper(...
+          'bicas.proc.L1L2.dc.process_calibrate_demux: NEW IMPLEMENTATION', L);
 
         % 5x SIGNALS LABELLED BY SSID/BLTS.
         % NOTE: Incomplete detection of VSQB.
@@ -133,7 +133,7 @@ classdef dc
 
         Cdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
 
-        % TmkNewImpl.stop_log()
+        TmkNewImpl.stop_log()
 
         % TODO: Extract Cdac VSIBs and set L2_QUALITY_BITMASK.
         %   Separate function for extracting these bits specifically.
@@ -353,7 +353,7 @@ classdef dc
 
 
     % Demultiplex and calibrate VOLTAGES (not e.g. currents). Processes all 5x
-    % BLTS channels in the same call.
+    % BLTS --> 5x BLTS in the same call.
     %
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %

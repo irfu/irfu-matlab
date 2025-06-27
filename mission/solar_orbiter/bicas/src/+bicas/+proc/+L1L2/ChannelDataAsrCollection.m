@@ -41,8 +41,7 @@ classdef ChannelDataAsrCollection < handle
   %
   % PROPOSAL: Better tests.
   %
-  % PROPOSAL: Constructor pre-allocates SCHDs.
-  % PROPOSAL: Implement custom print version of class.
+  % PROPOSAL: Implement custom print version of class.  (=??!!!)
   %   PRO: Useful for debugging.
   %
   % PROPOSAL: Constructor must set values for all keys.
@@ -51,7 +50,25 @@ classdef ChannelDataAsrCollection < handle
   %     CON: Memory problems?
   %   PRO: More natural to assert similarities between constituent SCHDs.
   %
-  % PROPOSAL: Assert that all SCHDs have the same size and data types.
+  % PROPOSAL: Make more generic.
+  %   CON: Current implementation derives nWholeRowIsNan, which is not generic.
+  %     CON-PROPOSAL: Convert to separate function (not method).
+  %   PROPOSAL: Store values which are always emulate the size/shape of
+  %             1-D column arrays. Values have the same MATLAB class.
+  %     Ex: SCHD, FPA, normal arrays.
+  %     PRO: Can be used for submitting only VSIB arrays to
+  %          bicas.proc.L1L2.qual.get_quality_ZVs_saturation() (without samples).
+  %   PROPOSAL: Store objects which always have the same
+  %             number of rows (arbitrary size in other dimensions).
+  %     PRO: Can store all zVariables, both regular arrays and FPAs.
+  %       NOTE: Can then not constrain keys to only be ASR SDIDs.
+  %             Need string keys to identify zVariables (hardcoded).
+  %     PRO?: Replace bicas.utils.SameRowsMap.
+  %     PROPOSAL: The object/class itself emulates a 1-D array, if anything.
+  %       PRO: Class can be used recursively.
+  %       PRO: Can extract object for sets of row indices (also recursively).
+  %       PRO: Can set object for sets of row indices.
+  %         NOTE: Cf. bicas.utils.SameRowsMap.set_rows()
   %
   % PROPOSAL: Assert that all SCHDs have the same size (columns) and data types.
 

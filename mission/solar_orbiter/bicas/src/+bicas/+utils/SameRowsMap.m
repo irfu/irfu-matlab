@@ -18,7 +18,8 @@
 % IMPLEMENTATION NOTE
 % ===================
 % bicas.utils.SameRowsMap.set_rows() can be slow *IF* the implementation stores
-% data directly as (non-handle) values in containers.Map (old implementation)
+% data directly as (non-handle) values in containers.Map (old implementation;
+% the current implementation uses dictionary)
 % and presumably in dictionary, presumably since preallocation does not work.
 % To avoid this, the implementation instead stores all values indirectly via
 % handle class objects (bicas.utils.HandleWrapper), which (apparently) makes it
@@ -313,7 +314,6 @@ classdef SameRowsMap < handle
     %       Specifies the rows that shall be overwritten.
     %       NOTE: Can not use logical indexing.
     %
-    %
     function set_rows(obj, Srm2, iRowsArray)
       % PROPOSAL: Support logical indexing.
       % PROPOSAL: Support using an 1-row SRM for overwriting N rows.
@@ -356,7 +356,8 @@ classdef SameRowsMap < handle
 
 
     % Syntactic sugar.
-    % Support indexing with (): array = Srm(key)
+    % Support "indexing" for one *key* with (): array = Srm(key)
+    % NOTE: The "index" is not row(s) but key to any of the child arrays.
     function varargout = subsref(obj, S)
 
       switch(S(1).type)
@@ -383,6 +384,8 @@ classdef SameRowsMap < handle
 
 
 
+    % Number of rows in child arrays.
+    % NOTE: Does not implement size() for this purpose.
     function nRows = nRows(obj)
       nRows = obj.nRows2;
     end
