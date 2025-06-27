@@ -519,10 +519,16 @@ classdef const
     function QrcSettingsL2Map = init_QRC_SETTINGS_L2()
       QrcSettingsL2Map = containers.Map();
 
-      % NOTE: L2QBM_PARTIAL_SATURATION is used for two different QRCIDs.
-      L2QBM_PARTIAL_SATURATION    = uint16(1);
-      L2QBM_FULL_SATURATION       = uint16(2);
-      L2QBM_SATURATION_LOWEST_NEW = uint16(4);
+      % Constant so that the same value can be used for both FULL_SATURATION and
+      % channel saturations.
+      FULL_SATURATION_QUALITY_FLAG = uint8(0);
+
+      % Quality bits (bitmasks). NOT QRCIDs.
+      % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
+      L2QBM_BIT_PARTIAL_SATURATION     = uint16(1);
+      L2QBM_BIT_FULL_SATURATION        = uint16(2);
+      % Lowest bit among the channel saturation quality bits.
+      L2QBM_BIT_CHANNEL_SATURATION_LSB = uint16(4);
 
       %====================
       % PARTIAL_SATURATION
@@ -530,7 +536,7 @@ classdef const
       QrcSettingsL2Map("PARTIAL_SATURATION") = ...
         bicas.proc.QrcSetting(...
         uint8(1), ...
-        L2QBM_PARTIAL_SATURATION);
+        L2QBM_BIT_PARTIAL_SATURATION);
 
       %=================
       % FULL_SATURATION
@@ -539,9 +545,9 @@ classdef const
       % saturation. /YK 2020-10-02.
       QrcSettingsL2Map("FULL_SATURATION") = ...
         bicas.proc.QrcSetting(...
-        uint8(0), ...
-        L2QBM_FULL_SATURATION + ...
-        L2QBM_PARTIAL_SATURATION);
+        FULL_SATURATION_QUALITY_FLAG, ...
+        L2QBM_BIT_FULL_SATURATION + ...
+        L2QBM_BIT_PARTIAL_SATURATION);
 
       %=================
       % THRUSTER_FIRING
@@ -557,27 +563,26 @@ classdef const
         uint16(0));    % NOTE: No quality bit set!
 
       % UNUSED
-      %==============
-      % SATURATION_*
-      %==============
-      FullSaturationQrcSetting = QrcSettingsL2Map("FULL_SATURATION");
+      %====================
+      % CHANNEL SATURATION
+      %====================
       % NOTE: DC/AC diffs use the same settings.
-      QRCID_SATURATION_NEW_AR = [...
+      QRCID_CHANNEL_SATURATION_AR = [...
         "SATURATION_V1", ...
         "SATURATION_V2", ...
         "SATURATION_V3", ...
         "SATURATION_V12", ...
         "SATURATION_V13", ...
         "SATURATION_V23"];
-      for i = 1:numel(QRCID_SATURATION_NEW_AR)
-        qrcid         = QRCID_SATURATION_NEW_AR(i);
-        % = 4*(1..32) = 4..128
-        L2QBM_BITMASK = uint16(2^(i-1)) * L2QBM_SATURATION_LOWEST_NEW;
+      for i = 1:numel(QRCID_CHANNEL_SATURATION_AR)
+        qrcid    = QRCID_CHANNEL_SATURATION_AR(i);
+        % bit(mask)_i = 2^(i-1) = 1..32
+        l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
 
         QrcSettingsL2Map(qrcid) = ...
           bicas.proc.QrcSetting(...
-          FullSaturationQrcSetting.QUALITY_FLAG, ...
-          L2QBM_BITMASK);
+          FULL_SATURATION_QUALITY_FLAG, ...
+          l2qbmBit);
       end
 
     end
