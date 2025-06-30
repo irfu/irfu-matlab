@@ -115,6 +115,52 @@ classdef qual
 
 
 
+    % NOT-YET-COMPLETED FUNCTION. WAS INTERRUPTED WHILE WRITING IT.
+    % Given ASR VSIBs (channel-specific VSIBs), derive quality variables.
+    % function [QUALITY_FLAG_max, L2_QUALITY_BITMASK] = get_quality_ZVs_saturation(Cdac)
+    %   % PROPOSAL: Separate function for one ASR/channel at a time.
+    %   % PROPOSAL: Assert full CDAC (all channels).
+    %   % PROPOSAL: Somehow only submit VSIBs, not channel samples.
+    %
+    %   assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
+    %
+    %   nRec = Cdac.nRecords;
+    %
+    %   QUALITY_FLAG_max_channel = bicas.const.QUALITY_FLAG_MAX ...
+    %     * zeros(nRec, 1, class(bicas.const.QUALITY_FLAG_MAX));
+    %   L2_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
+    %
+    %   % asrSdid = bicas.proc.L1L2.const.SDID_ASR_AR'
+    %
+    %   function handle_channel(sdidStr, qrcid)
+    %     Schd        = Cdac.get_channel(bicas.proc.L1L2.const.C.SDID_DICT(sdidStr));
+    %     QrcSettings = bicas.const.QRC_SETTINGS_L2(qrcid);
+    %
+    %     vsibAr = Schd.vsibAr;
+    %
+    %     QUALITY_FLAG_max_channel = ...
+    %         uint8( vsibAr) * QrcSettings.QUALITY_FLAG ...
+    %       + uint8(~vsibAr) * bicas.const.QUALITY_FLAG_MAX;
+    %
+    %     L2_QUALITY_BITMASK_channel = uint16(vsibAr) * QrcSettings.Lx_QUALITY_BITMASK;
+    %
+    %     QUALITY_FLAG_max   = min(QUALITY_FLAG_max, QUALITY_FLAG_max_channel);
+    %     L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_channel);
+    %   end
+    %
+    %   handle_channel('DC_V1',  'SATURATION_V1')
+    %   handle_channel('DC_V2',  'SATURATION_V2')
+    %   handle_channel('DC_V3',  'SATURATION_V3')
+    %   handle_channel('DC_V12', 'SATURATION_V12')
+    %   handle_channel('DC_V13', 'SATURATION_V13')
+    %   handle_channel('DC_V23', 'SATURATION_V23')
+    %   handle_channel('AC_V12', 'SATURATION_V12')
+    %   handle_channel('AC_V13', 'SATURATION_V13')
+    %   handle_channel('AC_V23', 'SATURATION_V23')
+    % end
+
+
+
     % Overwrite records of voltage & current with FVs as specified in arbitrary
     % array.
     %
