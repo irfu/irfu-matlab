@@ -124,60 +124,85 @@ classdef qual
     %       the already set VSIBs contained within the SCHDs.
     % Ex: V1 and V2 are saturated by being high ==> V12 = 0 (approx.)
     %     ==> V12 does not appear saturated.
-    % function [QUALITY_FLAG_max, L2_QUALITY_BITMASK] = get_quality_ZVs_channel_saturation(Cdac)
-    %   % PROPOSAL: Separate function for one ASR/channel at a time.
-    %   % PROPOSAL: Assert full CDAC (all channels).
-    %   % PROPOSAL: Somehow only submit VSIBs, not channel samples.
-    %   %
-    %   % PROBLEM: Is using samples labelled by SDID, not SSID.
-    %   %   CON: Is not a real problem, since VSIB is only set for BLTSs when the
-    %   %        SSID is an ASR. Therefore, the SDIDs here are always ASRs when
-    %   %        VSIB is set (but not the reverse).
-    %   %   PRO: Is conceptual problem. Only SSID can be used for determining
-    %   %        thresholds and hence threshold saturation. Reconstructed
-    %   %        channels (both ASRs or non-ASRs, e.g. "diff" GND-GND) do not
-    %   %        have an SSID even in principle.
-    %   %   PROPOSAL: Rename/redefine channel saturation QRCIDs to represent
-    %   %             ZVs, not science data channels (ASRs) as such.
-    %   %             -- IMPLEMENTED
-    %
-    %   assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
-    %
-    %   nRec = Cdac.nRecords;
-    %
-    %   QUALITY_FLAG_max_channel = bicas.const.QUALITY_FLAG_MAX ...
-    %     * zeros(nRec, 1, class(bicas.const.QUALITY_FLAG_MAX));
-    %   L2_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
-    %
-    %   % asrSdid = bicas.proc.L1L2.const.SDID_ASR_AR'
-    %
-    %   function handle_channel(sdidStr, qrcid)
-    %     sdid        = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
-    %     Schd        = Cdac.get_channel(sdid);
-    %     QrcSettings = bicas.const.QRC_SETTINGS_L2(qrcid);
-    %
-    %     vsibAr      = Schd.vsibAr;
-    %
-    %     QUALITY_FLAG_max_channel = ...
-    %         uint8( vsibAr) * QrcSettings.QUALITY_FLAG ...
-    %       + uint8(~vsibAr) * bicas.const.QUALITY_FLAG_MAX;
-    %
-    %     L2_QUALITY_BITMASK_channel = uint16(vsibAr) * QrcSettings.Lx_QUALITY_BITMASK;
-    %
-    %     QUALITY_FLAG_max   = min(QUALITY_FLAG_max, QUALITY_FLAG_max_channel);
-    %     L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_channel);
-    %   end
-    %
-    %   handle_channel('DC_V1',  'SATURATION_ZV_V1')
-    %   handle_channel('DC_V2',  'SATURATION_ZV_V2')
-    %   handle_channel('DC_V3',  'SATURATION_ZV_V3')
-    %   handle_channel('DC_V12', 'SATURATION_ZV_V12')
-    %   handle_channel('DC_V13', 'SATURATION_ZV_V13')
-    %   handle_channel('DC_V23', 'SATURATION_ZV_V23')
-    %   handle_channel('AC_V12', 'SATURATION_ZV_V12')
-    %   handle_channel('AC_V13', 'SATURATION_ZV_V13')
-    %   handle_channel('AC_V23', 'SATURATION_ZV_V23')
-    % end
+    function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs_channel_saturation(...
+        Cdac, tt2000Ar, isSwf, vsibFractionThreshold, cwfSlidingWindowLengthSec)
+      % PROPOSAL: Separate function for one ASR/channel at a time.
+      % PROPOSAL: Assert full CDAC (all channels).
+      % PROPOSAL: Somehow only submit VSIBs, not SCHDs with channel samples.
+      %   PRO: Easier to have separate functions for applying moving window
+      %        algo. to VSIBs (for all channels) in a separate function (not
+      %        called from here).
+      %
+      % PROBLEM: Is using samples labelled by SDID, not SSID.
+      %   CON: Is not a real problem, since VSIB is only set for BLTSs when the
+      %        SSID is an ASR. Therefore, the SDIDs here are always ASRs when
+      %        VSIB is set (but not the reverse).
+      %   PRO: Is conceptual problem. Only SSID can be used for determining
+      %        thresholds and hence threshold saturation. Reconstructed
+      %        channels (both ASRs or non-ASRs, e.g. "diff" GND-GND) do not
+      %        have an SSID even in principle.
+      %   PROPOSAL: Rename/redefine channel saturation QRCIDs to represent
+      %             ZVs, not science data channels (ASRs) as such.
+      %             -- IMPLEMENTED
+      %
+      % PROPOSAL: Call moving window when detecting threshold saturation for
+      %           BLTSs.
+      %   CON: Bad behaviour for reconstructed channel when threshold
+      %        saturation ends on one underlying source channel and begins on
+      %        another, at roughly the same time:
+      %        Ex 1: If there is a non-saturated hole between the two, then
+      %        the reconstructed channel may have a non-saturated hole that
+      %        would never exist if moving window was applied on the
+      %        reconstructed channel's threshold saturation bits.
+      %        Ex 2: If the two source channels for a reconstructed channels
+      %        separately contain too few threshold saturated samples for
+      %        the moving window algo. (e.g. 30% for a window fraction 50%),
+      %        but enough when combined (e.g. 30%+30%>50%), then the
+      %        reconstructed channel's saturation bits would be zero,
+      %        despite being very much affected by saturation.
+      assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
+      assert(isscalar(isSwf) & islogical(isSwf))
+
+      nRec = Cdac.nRecords;
+
+      % Default, "empty", quality ZVs which will be modified for different
+      % combinations of SDID and QRCID.
+      QUALITY_FLAG       = repmat(bicas.const.QUALITY_FLAG_MAX, nRec, 1);
+      L2_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
+
+      function handle_channel(sdidStr, qrcid)
+        sdid        = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
+        Schd        = Cdac.get_channel(sdid);
+        QrcSettings = bicas.const.QRC_SETTINGS_L2(qrcid);
+
+        if isSwf
+          vsqbAr = Schd.vsibAr;
+        else
+          vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
+            tt2000Ar, Schd.vsibAr, ...
+            vsibFractionThreshold, cwfSlidingWindowLengthSec);
+        end
+
+        QUALITY_FLAG_sdid = ...
+            uint8( vsqbAr) * QrcSettings.QUALITY_FLAG ...
+          + uint8(~vsqbAr) * bicas.const.QUALITY_FLAG_MAX;
+
+        L2_QUALITY_BITMASK_sdid = uint16(vsqbAr) * QrcSettings.Lx_QUALITY_BITMASK;
+
+        QUALITY_FLAG       = min(QUALITY_FLAG, QUALITY_FLAG_sdid);
+        L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_sdid);
+      end
+
+      handle_channel('DC_V1',  'SATURATION_ZV_V1')
+      handle_channel('DC_V2',  'SATURATION_ZV_V2')
+      handle_channel('DC_V3',  'SATURATION_ZV_V3')
+      handle_channel('DC_V12', 'SATURATION_ZV_V12')
+      handle_channel('DC_V13', 'SATURATION_ZV_V13')
+      handle_channel('DC_V23', 'SATURATION_ZV_V23')
+      handle_channel('AC_V12', 'SATURATION_ZV_V12')
+      handle_channel('AC_V13', 'SATURATION_ZV_V13')
+      handle_channel('AC_V23', 'SATURATION_ZV_V23')
+    end
 
 
 

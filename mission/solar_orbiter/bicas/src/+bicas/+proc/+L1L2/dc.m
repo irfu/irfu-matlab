@@ -131,7 +131,12 @@ classdef dc
         Cdac = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
           bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
 
-        Cdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
+        Cdac        = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
+
+        SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
+        [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation(...
+          Cdac, Dcip.Zv.Epoch, Dcip.hasSwfFormat, ...
+          SatSettings.vsibFractionThreshold, SatSettings.cwfSlidingWindowLengthSec);
 
         TmkNewImpl.stop_log()
 
