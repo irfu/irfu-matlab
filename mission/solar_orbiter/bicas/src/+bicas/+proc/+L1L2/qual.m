@@ -353,7 +353,8 @@ classdef qual
     %       Minimum fraction of (weighted) flagged samples within a window,
     %       for all samples within the window to be flagged.
     % windowLengthSec
-    %       Length of sliding window.
+    %       Length of sliding window. Individual samples count as having a
+    %       length equal to the inverse sampling frequency (simplification).
     %
     %
     % RETURN VALUE
@@ -497,7 +498,7 @@ classdef qual
       % samples
       % ==================================================================
       iFlagSet1Ar        = find(bFlag1Ar);
-      i1                 = iFlagSet1Ar(1);
+      i1                 = iFlagSet1Ar(1) - 1;
       prevSetWindowFlags = false;
       % Iterate over starting indices: i0
       for i0 = iFlagSet1Ar'

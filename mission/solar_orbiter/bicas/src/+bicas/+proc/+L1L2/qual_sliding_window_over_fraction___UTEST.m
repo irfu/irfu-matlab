@@ -234,6 +234,33 @@ classdef qual_sliding_window_over_fraction___UTEST < matlab.unittest.TestCase
 
 
 
+    % NOTE: Test added to check bugfix.
+    %
+    % The original bug set the flag for the first & last indices (incorrect
+    % behaviour) but not for the interior (other) indices (correct behaviour),
+    % if using a window length shorter than the sample time length
+    function test_threshold_minimal(testCase)
+      % Window length shorter than inverse sampling rate.
+      testCase.test(testCase, ...
+        [10:15], ...
+        [1 1 1 1 1 1], ...
+        [0 0 0 0 0 0], ...
+        1.00, 0.1)
+
+      % Window length equal to the inverse sampling rate.
+
+      % NOTE: Using lower window fraction than 1.0, since the algorithm uses the
+      % argument window length, but the sum of flagged indices is effectively
+      % rounded.
+      testCase.test(testCase, ...
+        [10:15], ...
+        [1 1 1 1 1 1], ...
+        [1 1 1 1 1 1], ...
+        0.9, 1.01)
+    end
+
+
+
   end    % methods(Test)
 
 
