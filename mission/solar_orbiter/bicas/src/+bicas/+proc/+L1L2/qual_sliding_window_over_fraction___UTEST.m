@@ -9,6 +9,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qual_sliding_window_over_fraction___UTEST < matlab.unittest.TestCase
+  % PROPOSAL: Shorten calls to
+  % bicas.proc.L1L2.qual_sliding_window_over_fraction___UTEST.test() using
+  % testCase.test() and eliminating one argument by converting method to
+  % instance method.
 
 
 

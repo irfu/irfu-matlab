@@ -131,6 +131,11 @@ CA
     Cell Array. See "AR".
 CDAC
     Class bicas.proc.L1L2.ChannelDataAsrCollection.
+Channel saturation
+    Separate saturation quality bits which are specific to different channels.
+    Term created to separate new code from the earlier system of saturation
+    quality bits (one partial and full saturation quality bit respectively for
+    all channels combined).
 CLI
     Command-Line Interface. In particular, "CLI arguments" refers to an array of
     string arguments submitted to BICAS via the OS.
@@ -456,6 +461,9 @@ TF
     Transfer Function. Transfer function Z=Z(omega) in the frequency domain.
     Conventionally here on the form of a complex number (Z) as a function of
     radians/s (omega).
+Threshold saturation
+    Notion of saturation for a sample, equivalent to the sample value exceeding
+    some relevant threshold.
 TM
     Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this term
     instead of the term "count".
@@ -506,5 +514,9 @@ ZVS
 #################
 Other conventions
 #################
-1D arrays shall be column arrays. This has not been the case but new code should
-do this and old code should converge to this when appropriate.
+1D arrays shall be column arrays. This has not always been the case but new code
+should conform to this and old code should converge to this when appropriate.
+
+Diffs are sorted in the order V12, V13, V23.
+ASRs are sorted in the order
+DC_V1, DC_V2, DC_V3, DC_V12, DC_V13, DC_V23, AC_V12, AC_V13, AC_V23.

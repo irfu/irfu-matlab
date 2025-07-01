@@ -64,7 +64,9 @@ classdef ChannelDataAsrCollection < handle
   %       NOTE: Can then not constrain keys to only be ASR SDIDs.
   %             Need string keys to identify zVariables (hardcoded).
   %     PRO?: Replace bicas.utils.SameRowsMap.
-  %     PROPOSAL: The object/class itself emulates a 1-D array, if anything.
+  %     PRO: Can use as argument for
+  %          bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation().
+  %     PROPOSAL: The object/class itself emulates a 1-D array.
   %       PRO: Class can be used recursively.
   %       PRO: Can extract object for sets of row indices (also recursively).
   %       PRO: Can set object for sets of row indices.
@@ -122,8 +124,8 @@ classdef ChannelDataAsrCollection < handle
 
     % Set channel data.
     function obj = set_channel(obj, asrSdid, Schd)
-      % IMPLEMENTATION NOTE: Can not assert that not overwriting CHSD for ASR
-      % SDID since overwriting is required by
+      % IMPLEMENTATION NOTE: Can not assert that the caller does not overwrite
+      % the CHSD for a specified ASR SDID since overwriting is required by
       % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW()
       % /reconstruct_missing_data_helper() (inner function).
       assert(isscalar(asrSdid))

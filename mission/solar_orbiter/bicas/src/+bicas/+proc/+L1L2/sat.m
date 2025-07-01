@@ -118,8 +118,9 @@ classdef sat
       assert(bicas.proc.L1L2.const.is_SSID(ssid)   & isscalar(ssid))
       assert(isa(isAchgFpa, 'bicas.utils.FPArray') & isscalar(isAchgFpa))
 
-      % IMPLEMENTATION NOTE: One can expand scalars to size of samplesAVoltAr
-      % but it slows down the execution (bicas.proc.L1L2.const.SSID_is_AC() and
+      % IMPLEMENTATION NOTE: One can expand scalars to the size of
+      % samplesAVoltAr but it slows down the execution
+      % (bicas.proc.L1L2.const.SSID_is_AC() and
       % bicas.proc.L1L2.const.SSID_is_diff()).
       % bicas.proc.L1L2.sat.get_threshold_VSIB_NEW() is fully vectorized and
       % works with both.
@@ -132,6 +133,7 @@ classdef sat
 
 
 
+    % Derive VSIBs based on threshold saturation only (no moving window).
     % Vectorized.
     function vsibAr = get_threshold_VSIB_NEW(...
         SatSettings, samplesAVoltAr, ssidAr, isAchgFpa)
@@ -156,6 +158,7 @@ classdef sat
     % ============
     % upperThresholdAVoltAr
     %       Same size as ssidAr. Non-negative threshold values.
+    %       Non-ASR SSIDs have threshold NaN.
     %
     function upperThresholdAVoltAr = get_upper_thresholds(...
         SatSettings, ssidAr, isAchgFpa)
@@ -168,6 +171,7 @@ classdef sat
       bIsDiff   = bicas.proc.L1L2.const.SSID_is_diff(ssidAr);
       bIsAc     = bicas.proc.L1L2.const.SSID_is_AC(  ssidAr);
 
+      % NOTE: Must use bIsAsr to ensure that one excludes non-ASRs.
       bDcSingle = bIsAsr & ~bIsDiff;
       bDcDiff   = bIsAsr &  bIsDiff & ~bIsAc;
       bAcDiff   = bIsAsr &  bIsDiff &  bIsAc;
@@ -177,10 +181,10 @@ classdef sat
       bAclg = bAcDiff & ~isAchgFpa.array(true);
       bAchg = bAcDiff &  isAchgFpa.array(false);
 
-      % NOTE: Threshold set to NaN for element without known threshold (e.g.
+      % NOTE: Threshold set to NaN for elements without a set threshold (e.g.
       %       SSID=GND).
       %   NOTE: Inequality with NaN always gives false(!)
-      upperThresholdAVoltAr = NaN(size(ssidAr));
+      upperThresholdAVoltAr            = NaN(size(ssidAr));
       upperThresholdAVoltAr(bDcSingle) = SatSettings.upperThresholdAVoltDcSingle;
       upperThresholdAVoltAr(bDcDiff)   = SatSettings.upperThresholdAVoltDcDiff;
       upperThresholdAVoltAr(bAclg)     = SatSettings.upperThresholdAVoltAclg;

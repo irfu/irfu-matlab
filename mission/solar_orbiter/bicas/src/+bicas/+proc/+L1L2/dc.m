@@ -124,7 +124,7 @@ classdef dc
         % 5x SIGNALS LABELLED BY SSID/BLTS.
         % NOTE: Incomplete detection of VSQB.
         % NOTE: No SCHD as input (though as output).
-        % NOTE: Is QUITE SLOW, at least for LFR SWF.
+        % NOTE: Is QUITE SLOW, at least for LFR SWF (?).
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
           Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa, L);
 
@@ -727,16 +727,18 @@ classdef dc
 
     % EXPERIMENTAL
     %
-    % Derive VSIB from samples. Vectorized.
+    % Derive VSIB from BLTS samples. Vectorized.
     %
     % RETURN VALUE
     % ============
     % bltsVsibAr
     %       N x 5. SWF: Set if at least one bit is set for any sample within
-    %       snapshot.
+    %       a snapshot.
     function bltsVsibAr = get_VSIB_5xBLTS_NEW(...
         Bso, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa, L)
       % PROPOSAL: Test code.
+      % PROPOSAL: SatSettings as argument.
+      %   PRO: Simpler test code.
 
       Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
 
@@ -759,6 +761,7 @@ classdef dc
       bltsVsibAr  = bicas.proc.L1L2.sat.get_threshold_VSIB_NEW(...
         SatSettings, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa);
 
+      % Normalize CWF/SWF data to one array format.
       % N x M x 5 --> N x 1 x 5 --> N x 5
       % Logical OR over all VSIBs within snapshot.
       bltsVsibAr = any(    bltsVsibAr, 2);
@@ -788,7 +791,6 @@ classdef dc
         bltsSdidAr,         [-1,     bicas.const.N_BLTS], ...
         bltsVsibAr,         [-1,     bicas.const.N_BLTS]);
 
-      % EXPERIMENTAL
       %====================================
       % Convert BLTS arrays --> bltsSchdCa
       %====================================
