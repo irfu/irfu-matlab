@@ -114,7 +114,7 @@ classdef dc
       AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR(...
         bltsSamplesAVolt, bltsSdidArray, L);
 
-      if 0
+      if 1
         % ############
         % EXPERIMENTAL
         % ############
