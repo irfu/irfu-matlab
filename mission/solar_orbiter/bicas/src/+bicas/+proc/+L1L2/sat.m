@@ -112,7 +112,7 @@ classdef sat
       %   ~sample-to-VSIB
       %   ~threshold_saturation
       %
-      % PROPOSAL/TODO: Replace with get_VSIB_NEW().
+      % PROPOSAL/TODO: Replace with get_threshold_VSIB_NEW().
 
       assert(isfloat(samplesAVoltAr))
       assert(bicas.proc.L1L2.const.is_SSID(ssid)   & isscalar(ssid))
@@ -121,19 +121,21 @@ classdef sat
       % IMPLEMENTATION NOTE: One can expand scalars to size of samplesAVoltAr
       % but it slows down the execution (bicas.proc.L1L2.const.SSID_is_AC() and
       % bicas.proc.L1L2.const.SSID_is_diff()).
-      % bicas.proc.L1L2.sat.get_VSIB_NEW() is fully vectorized and works with
-      % both.
+      % bicas.proc.L1L2.sat.get_threshold_VSIB_NEW() is fully vectorized and
+      % works with both.
       % ssidAr    = repmat(ssid,      size(samplesAVoltAr));
       % isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
 
-      vsibAr    = bicas.proc.L1L2.sat.get_VSIB_NEW(...
+      vsibAr = bicas.proc.L1L2.sat.get_threshold_VSIB_NEW(...
         SatSettings, samplesAVoltAr, ssid, isAchgFpa);
     end
 
 
 
     % Vectorized.
-    function vsibAr = get_VSIB_NEW(SatSettings, samplesAVoltAr, ssidAr, isAchgFpa)
+    function vsibAr = get_threshold_VSIB_NEW(...
+        SatSettings, samplesAVoltAr, ssidAr, isAchgFpa)
+
       upperThresholdAVolt = bicas.proc.L1L2.sat.get_upper_thresholds(...
         SatSettings, ssidAr, isAchgFpa);
 

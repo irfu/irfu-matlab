@@ -749,14 +749,14 @@ classdef dc
       % Expand variables to be of the same size as bltsSamplesAVoltAr
       % -------------------------------------------------------------
       % NOTE: This could possibly lead to memory problems, which could be
-      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSIB_NEW once per
-      % BLTS.
+      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_threshold_VSIB_NEW
+      % once per BLTS.
       isAchgFpa   = repmat(        isAchgFpa,              [1, nSpr, bicas.const.N_BLTS]);
       bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, nSpr, 1                 ]);
 
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
 
-      bltsVsibAr  = bicas.proc.L1L2.sat.get_VSIB_NEW(...
+      bltsVsibAr  = bicas.proc.L1L2.sat.get_threshold_VSIB_NEW(...
         SatSettings, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa);
 
       % N x M x 5 --> N x 1 x 5 --> N x 5
