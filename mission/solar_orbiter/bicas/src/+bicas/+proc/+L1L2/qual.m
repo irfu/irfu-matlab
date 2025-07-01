@@ -139,6 +139,7 @@ classdef qual
     %   %        have an SSID even in principle.
     %   %   PROPOSAL: Rename/redefine channel saturation QRCIDs to represent
     %   %             ZVs, not science data channels (ASRs) as such.
+    %   %             -- IMPLEMENTED
     %
     %   assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
     %
@@ -167,15 +168,15 @@ classdef qual
     %     L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_channel);
     %   end
     %
-    %   handle_channel('DC_V1',  'SATURATION_V1')
-    %   handle_channel('DC_V2',  'SATURATION_V2')
-    %   handle_channel('DC_V3',  'SATURATION_V3')
-    %   handle_channel('DC_V12', 'SATURATION_V12')
-    %   handle_channel('DC_V13', 'SATURATION_V13')
-    %   handle_channel('DC_V23', 'SATURATION_V23')
-    %   handle_channel('AC_V12', 'SATURATION_V12')
-    %   handle_channel('AC_V13', 'SATURATION_V13')
-    %   handle_channel('AC_V23', 'SATURATION_V23')
+    %   handle_channel('DC_V1',  'SATURATION_ZV_V1')
+    %   handle_channel('DC_V2',  'SATURATION_ZV_V2')
+    %   handle_channel('DC_V3',  'SATURATION_ZV_V3')
+    %   handle_channel('DC_V12', 'SATURATION_ZV_V12')
+    %   handle_channel('DC_V13', 'SATURATION_ZV_V13')
+    %   handle_channel('DC_V23', 'SATURATION_ZV_V23')
+    %   handle_channel('AC_V12', 'SATURATION_ZV_V12')
+    %   handle_channel('AC_V13', 'SATURATION_ZV_V13')
+    %   handle_channel('AC_V23', 'SATURATION_ZV_V23')
     % end
 
 

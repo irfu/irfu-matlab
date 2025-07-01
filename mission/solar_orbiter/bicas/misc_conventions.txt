@@ -136,6 +136,10 @@ Channel saturation
     Term created to separate new code from the earlier system of saturation
     quality bits (one partial and full saturation quality bit respectively for
     all channels combined).
+    NOTE: The corresponding QRCIDs technically represent saturation on
+    the corresponding ZVs, regardless of whether they represent ASRs or not,
+    though in practice saturation is only detected when they represent
+    the corresponding ASR SSIDs.
 CLI
     Command-Line Interface. In particular, "CLI arguments" refers to an array of
     string arguments submitted to BICAS via the OS.
