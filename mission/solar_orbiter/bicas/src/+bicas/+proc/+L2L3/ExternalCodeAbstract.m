@@ -39,6 +39,7 @@ classdef ExternalCodeAbstract
   %     CON: LSP to common substring.
   %   ELSP, EL3SP = ExternalL3ScienceProcessing
   %     CON: ELSP in "doModelSpacecraft" (7 instances)
+  %     CON: Bad use number in abbreviation?
   % PROPOSAL: How implement interface?
   %   PROPOSAL: nargout = func(varargin)
   %       PRO: Avoids repeating function definitions.

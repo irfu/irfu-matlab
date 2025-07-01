@@ -201,7 +201,8 @@ DSR
 DT
     MATLAB datetime object.
 EJ
-    Erik P G Johansson, the author and maintainer of BICAS.
+    Erik P G Johansson (IRF Uppsala, Sweden), the author and maintainer of
+    BICAS.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).

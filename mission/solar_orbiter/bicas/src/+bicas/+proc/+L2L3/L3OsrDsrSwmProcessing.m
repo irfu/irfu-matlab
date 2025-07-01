@@ -149,6 +149,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       end
 
 
+
       % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
       %           (still combine non-downsampled and downsampled).
       %   CON: Slows down overall processing.

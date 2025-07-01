@@ -163,7 +163,7 @@ classdef qual
     %       Array element is set when the corresponding QRC applies.
     % QrcsMap
     %       containers.Map: QRCID-->bicas.proc.QrcSetting
-    %       NOTE: The set of QRCIDs be identical to that of QrcFlagsMap.
+    %       NOTE: The set of QRCIDs must be identical to that of QrcFlagsMap.
     %
     %
     % RETURN VALUES

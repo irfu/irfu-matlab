@@ -272,8 +272,8 @@ Version 8.5.0 (2026-06-26)
   default/"USE_FILL_VALUES").
   https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
   https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/100
-* No longer set L3 QUALITY_FLAG and L3_QUALITY_BITMASK to FV when there is no
-  science data.
+* No longer set L3 QUALITY_FLAG and L3_QUALITY_BITMASK to fill value when the
+  science data is not used for deriving L3.
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2025-05-27 (inclusive).
 * New default: PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN=0
