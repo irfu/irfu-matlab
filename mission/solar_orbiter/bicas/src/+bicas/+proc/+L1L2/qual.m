@@ -116,11 +116,29 @@ classdef qual
 
 
     % NOT-YET-COMPLETED FUNCTION. WAS INTERRUPTED WHILE WRITING IT.
-    % Given ASR VSIBs (channel-specific VSIBs), derive quality variables.
-    % function [QUALITY_FLAG_max, L2_QUALITY_BITMASK] = get_quality_ZVs_saturation(Cdac)
+    %
+    % Given 9x ASR VSIBs (channel-specific VSIBs), derive quality variables
+    % wrt. channel saturation.
+    %
+    % NOTE: Can only be applied to 9x ASRs *AFTER* reconstruction, using
+    %       the already set VSIBs contained within the SCHDs.
+    % Ex: V1 and V2 are saturated by being high ==> V12 = 0 (approx.)
+    %     ==> V12 does not appear saturated.
+    % function [QUALITY_FLAG_max, L2_QUALITY_BITMASK] = get_quality_ZVs_channel_saturation(Cdac)
     %   % PROPOSAL: Separate function for one ASR/channel at a time.
     %   % PROPOSAL: Assert full CDAC (all channels).
     %   % PROPOSAL: Somehow only submit VSIBs, not channel samples.
+    %   %
+    %   % PROBLEM: Is using samples labelled by SDID, not SSID.
+    %   %   CON: Is not a real problem, since VSIB is only set for BLTSs when the
+    %   %        SSID is an ASR. Therefore, the SDIDs here are always ASRs when
+    %   %        VSIB is set (but not the reverse).
+    %   %   PRO: Is conceptual problem. Only SSID can be used for determining
+    %   %        thresholds and hence threshold saturation. Reconstructed
+    %   %        channels (both ASRs or non-ASRs, e.g. "diff" GND-GND) do not
+    %   %        have an SSID even in principle.
+    %   %   PROPOSAL: Rename/redefine channel saturation QRCIDs to represent
+    %   %             ZVs, not science data channels (ASRs) as such.
     %
     %   assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
     %
@@ -133,10 +151,11 @@ classdef qual
     %   % asrSdid = bicas.proc.L1L2.const.SDID_ASR_AR'
     %
     %   function handle_channel(sdidStr, qrcid)
-    %     Schd        = Cdac.get_channel(bicas.proc.L1L2.const.C.SDID_DICT(sdidStr));
+    %     sdid        = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
+    %     Schd        = Cdac.get_channel(sdid);
     %     QrcSettings = bicas.const.QRC_SETTINGS_L2(qrcid);
     %
-    %     vsibAr = Schd.vsibAr;
+    %     vsibAr      = Schd.vsibAr;
     %
     %     QUALITY_FLAG_max_channel = ...
     %         uint8( vsibAr) * QrcSettings.QUALITY_FLAG ...
