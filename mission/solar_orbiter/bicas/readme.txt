@@ -274,17 +274,18 @@ or fill value (!)                            |     values are set to fill
 =============================================
  L2 data used for generating L3 EFIELD,SCPOT
 =============================================
-L3 EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E only, but only when
-its quality is deemed good enough using setting
+L3 DENSITY+EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E alone, but
+only when its quality is deemed good enough using setting
 PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-02-19).
 
 Condition                                  | Action taken when condition applies
 --------------------------------------------------------------------------------
-L2 LFR CWF QUALITY_FLAG is either          | L3 EFIELD+SCPOT:
->= PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN |     EFIELD+SCPOT values are set to
-or fill value (!)                          |     fill values.
+L2 LFR CWF QUALITY_FLAG is either          | L3 DENSITY+EFIELD+SCPOT:
+>= PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN |     DENSITY+EFIELD+SCPOT values are
+or fill value (!)                          |     set to fill values.
 
-NOTE: This rule does not apply to DENSITY.
+NOTE: Historically, this rule did not apply to DENSITY, but it does since
+BICAS 8.5.0.
 
 
 =============================================================
