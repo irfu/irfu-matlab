@@ -64,7 +64,7 @@ classdef qual
       % (2) processing-generated QRCs (saturation)
       %============================================
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
-        bicas.const.QRC_SETTINGS_L2, NsoTable, Epoch, autodetectedVsqb, L);
+        bicas.const.QRCS_L2_MAP, NsoTable, Epoch, autodetectedVsqb, L);
     end
 
 
@@ -92,7 +92,7 @@ classdef qual
     %       merged (OR:ed) with pre-existing global L2_QUALITY_BITMASK.
     %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
-        QrcSettingsL2Map, NsoTable, Epoch, isFullSaturation, L)
+        QrcsL2Map, NsoTable, Epoch, isFullSaturation, L)
 
       assert(islogical(isFullSaturation))
 
@@ -111,7 +111,7 @@ classdef qual
       % Call generic function for setting QUALITY_FLAG and *_QUALITY_BITMASK.
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-        size(Epoch, 1), QrcFlagsMap, QrcSettingsL2Map);
+        size(Epoch, 1), QrcFlagsMap, QrcsL2Map);
     end
 
 
@@ -174,7 +174,7 @@ classdef qual
       function handle_channel(sdidStr, qrcid)
         sdid        = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
         Schd        = Cdac.get_channel(sdid);
-        QrcSettings = bicas.const.QRC_SETTINGS_L2(qrcid);
+        QrcSettings = bicas.const.QRCS_L2_MAP(qrcid);
 
         if isSwf
           vsqbAr = Schd.vsibAr;

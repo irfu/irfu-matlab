@@ -11,7 +11,10 @@
 % DEFAULT VALUE POLICY
 % ====================
 % * Default values must be the ones usable when BICAS is run at ROC/LIRA for
-%   official processing L1R-->L2.
+%   official processing L1R-->L2. ROC/LIRA does not want to maintain
+%   configuration file(s).
+% * Default values must be the ones usable for official processing L2-->L3,
+%   for safety.
 % * Default values should make errors crash BICAS, except for temporary
 %   solutions to known problems while they are being worked on.
 %   This may not be lived up to in practice. Settings should probably be
@@ -48,7 +51,8 @@
 % ============
 % Bso
 %       bicas.Settings object with all BICAS settings pre-defined with default
-%       values. Can not define more settings, but can modify settings.
+%       values. One can not define more settings, but one can modify existing
+%       settings.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -79,8 +83,6 @@ function Bso = create_default_BSO()
 %       config file values, CLI argument values.
 %
 % PROPOSAL: Abolish settings/functionality:
-%   OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY
-%   OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
 %   PROCESSING.L2.REMOVE_DATA.MUX_MODES
@@ -91,7 +93,6 @@ function Bso = create_default_BSO()
 %   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
-%
 %
 %
 % ====================================
@@ -220,11 +221,6 @@ S.define_setting('ENV_VAR_OVERRIDE.ROC_RCS_MASTER_PATH', '');
 %           spdfcomputett2000(ACQUISITION_TIME_EPOCH_UTC) instead?
 S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 000,000,000]);
 
-% NOTE: Requires INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY = non-error.
-S.define_setting('INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED', true)
-% NOTE: See INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED
-S.define_setting('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
-
 S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
 % Require input CDF Global Attribute "DSI" to match the expected
@@ -259,17 +255,6 @@ S.define_setting('OUTPUT_CDF.PREEXISTING_OUTPUT_FILE_POLICY', 'WARNING');    % E
 
 
 
-% What to do with zVariables which are still empty after copying data into
-% the master CDF. This indicates that something is wrong, either in the
-% master CDF or in the processing.
-S.define_setting('OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY',    'ERROR');   % ERROR, WARNING, USE_FILLVAL
-% Ex: Non-numeric ACQUISITION_TIME_UNITS in (master?)
-%     SOLO_L2_RPW-LFR-SBM1-CWF-E_V05.cdf is empty
-% Ex: VDC_LABEL etc can be empty due to ROC bug updating skeletons.
-S.define_setting('OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY', 'ERROR');   % ERROR, WARNING
-
-
-
 % NOTE: ACQUSITION_TIME_UNITS being empty in the master CDF requires value
 % false.
 S.define_setting('OUTPUT_CDF.write_dataobj.strictEmptyZvClass',                true)
@@ -294,7 +279,7 @@ S.define_setting('OUTPUT_CDF.write_dataobj.strictNumericZvSizePerRecord',      t
 % Permitted CDF versions output CDFs as a reg.expr.. Entire CDF version string
 % must match the reg.expr.. This is a way of asserting that BICAS uses the
 % correct versions of the CDF library.
-% CDF format version 3.9 is required by ROC (Solo?). /2024-07-24
+% CDF format version 3.9 is required by ROC (SolO?). /2024-07-24
 %
 % NOTE: If irfu-matlab and BICAS (as delivered to ROC) use different CDF format
 % versions, then BICAS should be called in irfu-matlab in such a way that this
@@ -327,6 +312,12 @@ S.define_setting('PROCESSING.HK.SCI_TIME_NONOVERLAP_POLICY',       'WARNING')   
 % NOTE: "WARNING": Will lead to using nearest interpolation.
 S.define_setting('PROCESSING.HK.TIME_NOT_SUPERSET_OF_SCI_POLICY',  'WARNING')    % WARNING, ERROR
 S.define_setting('PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY', 'WARNING')    % WARNING, ERROR
+
+% Mitigation for handling missing/empty zVariable SYNCHRO_FLAG in L1R
+% TDS-LFM-CWF/RSWF input datasets temporarily. Created 2025-06-11.
+% https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
+% https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/100
+S.define_setting("PROCESSING.L1R.TDS.SYNCHRO_FLAG_MISSING_EMPTY_POLICY", 'USE_FILL_VALUE')   % USE_FILL_VALUE, ERROR
 
 % Quick ~BUGFIX for bad values in zv SAMPLING_RATE in L1R TDS-LFM-RSWF
 % datasets. Abolish?
@@ -380,7 +371,11 @@ S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
 % SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND data.
 % NOTE: This does not affect the corresponding OSR dataset and is therefore
 % not entirely analogous to PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
-S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  2)
+% 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data for L2 SURV CWF
+%                 downsampled.
+% 2025-05-23: Changing value to PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN=0
+%             since Jordi Boldu needs the data.
+S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  0)
 
 % Maximum value for zVar QUALITY_FLAG in output datasets.
 % YK        2020-08-31: Use cap "2=Survey data, possibly not publication-quality"

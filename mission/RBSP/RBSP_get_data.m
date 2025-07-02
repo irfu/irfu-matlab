@@ -669,7 +669,7 @@ end
       res.userData = inp1.userData;
 
     else
-        res = combine(inp1,inp2);
+      res = combine(inp1,inp2);
     end
 
   end

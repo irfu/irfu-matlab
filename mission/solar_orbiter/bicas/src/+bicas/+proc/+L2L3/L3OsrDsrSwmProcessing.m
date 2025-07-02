@@ -8,15 +8,15 @@
 %   data, use the first MATLAB array index to represent CDF records.
 %
 %
-% BUG?
-% ====
-% bNotUsed is used when calling
-% bicas.proc.L2L3.ext.calc_EFIELD_SCPOT() but not when calling
-% bicas.proc.L2L3.ext.calc_DENSITY() (should maybe be used for both).
-% At the same time, bNotUsed is used for creating the OSR template which is used
-% for all datasets (DENSITY, EFIELD, SCPOT).
-%   InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FPArray.FP_UINT8;
-%   TemplateOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_OSR_template(InLfrCwf);
+% PERFORMANCE
+% ===========
+% Simple tests shows that the duplicated downsampling of duplicated quality
+% variables (bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template()) slows down L2->L3
+% processing (takes ~20% more time). This was implemented for a bugfix. One can
+% eliminate this (except for QUALITY_FLAG for density which is different), but
+% it makes the implementation sensitive to any EFIELD/DENSITY/SCPOT-specific
+% future modifications of their particular OSR quality variables (i.e. one has
+% to change the implementation "a lot").
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -30,16 +30,34 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   %   L2, L3
   %   Density, Efield, ScPot = DES
   %
-  % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT.
-  %   PRO: Faster
+  % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT
+  %           into separate SWMs.
+  %   PRO: Faster processing when only processing subset of L3 DSIs.
   %       CON: Not very heavy operation.
   %   PRO: Leads to better organization of code.
   %       PRO: process_L2_to_L3() is too large and should be split up anyway.
-  %   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed after
-  %        the latter.
-  %
-  % PROPOSAL: Instead of sharing initial "template variables", have function for
-  %           generating those variables.
+  %   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed
+  %        after the latter.
+
+
+
+  %###################
+  %###################
+  % PRIVATE CONSTANTS
+  %###################
+  %###################
+  properties(Constant, Access=private)
+
+
+
+    % Define length of bins, and relative position of corresponding
+    % bin timestamps.
+    BIN_LENGTH_WOLS_NS        = int64(10e9);
+    BIN_TIMESTAMP_POS_WOLS_NS = int64(bicas.proc.L2L3.L3OsrDsrSwmProcessing.BIN_LENGTH_WOLS_NS / 2);
+
+
+
+  end
 
 
 
@@ -58,15 +76,17 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
-      Ec = bicas.proc.L2L3.ExternalCodeImplementation();
+      Excd = bicas.proc.L2L3.ExternalCodeImplementation();
 
       %==============
       % Process data
       %==============
-      [EfieldOsrCdf,  EfieldDsrCdf, ...
+      [...
+        EfieldOsrCdf,  EfieldDsrCdf, ...
         ScpotOsrCdf,   ScpotDsrCdf, ...
-        DensityOsrCdf, DensityDsrCdf] = ...
-        bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(InputLfrCwfCdf, Ec, Bso, L);
+        DensityOsrCdf, DensityDsrCdf ...
+      ] = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(...
+        InputLfrCwfCdf, Excd, Bso, L);
 
       OutputDatasetsMap = containers.Map();
       OutputDatasetsMap('EFIELD_OSR_cdf')  = EfieldOsrCdf;
@@ -101,19 +121,34 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % NOTE: Function does not discard data with QUALITY_FLAG==fill value, as
     % opposed to QUALITY_FLAG < threshold.
     %
-    % NOTE: Sets QUALITY_FLAG==fill value when ALL data in record is NaN.
-    % Both OSR and DSR. The same is not(?) enforced in L2 processing, but
-    % should maybe be. /EJ 2021-05-12
+    % NOTE: Keeps quality zVariables also when all data in record is FV.
+    % Both OSR and DSR. /EJ 2025-06-12
     %
     % IMPLEMENTATION NOTE: This function is separate from
     % bicas.proc.L2L3.L3OsrDsrSwmProcessing.production_function() to facilitate
     % automated tests, in particular by adding an explicit dependence on
     % bicas.proc.L2L3.ExternalCodeImplementation.
     %
-    function [OutEfieldOsr,  OutEfieldDsr, ...
+    function [...
+        OutEfieldOsr,  OutEfieldDsr, ...
         OutScpotOsr,   OutScpotDsr, ...
-        OutDensityOsr, OutDensityDsr] ...
-        = process_L2_to_L3(InLfrCwf, Ec, Bso, L)
+        OutDensityOsr, OutDensityDsr ...
+        ] ...
+        = process_L2_to_L3(InLfrCwf, Excd, Bso, L)
+
+      if 0
+        % TEST
+        % PRETEND that input QUALITY_FLAG, L2_QUALITY_BITMASK have other values
+        % (overwrite).
+        InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(...
+          uint8(ones(size(InLfrCwf.ZvFpa.QUALITY_FLAG))) * 2, ...
+          'NO_FILL_POSITIONS');  % TEST
+        InLfrCwf.ZvFpa.L2_QUALITY_BITMASK       = bicas.utils.FPArray(...
+          uint16(ones(size(InLfrCwf.ZvFpa.L2_QUALITY_BITMASK))) * 0, ...
+          'NO_FILL_POSITIONS');  % TEST
+      end
+
+
 
       % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
       %           (still combine non-downsampled and downsampled).
@@ -146,17 +181,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %   QUALITY_BITMASK=CDF_UINT2, fill value 65535 (correct).
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', L);
-      assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
-
-
-
-      %===========
-      % Constants
-      %===========
-      % Define length of bins, and relative position of corresponding
-      % bin timestamps.
-      BIN_LENGTH_WOLS_NS        = int64(10e9);
-      BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
+      assert(isa(Excd, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
 
 
@@ -170,18 +195,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       LfrCwfZv.VDC_Fpa          = InLfrCwf.ZvFpa.VDC;
       LfrCwfZv.EDC_Fpa          = InLfrCwf.ZvFpa.EDC;
       LfrCwfZv.QUALITY_FLAG_Fpa = InLfrCwf.ZvFpa.QUALITY_FLAG;
-      R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, Bso);
-
-
-
-      %===================================================================
-      % ~HACK: MODIFY INPUT ARGUMENT InLfrCwf
-      % -------------------------------------
-      % IMPLEMENTATION NOTE: This is to modify QUALITY_FLAG for both OSR
-      % and DSR datasets. In principle, this is for keeping the interface
-      % to bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template() simple.
-      %===================================================================
-      InLfrCwf.ZvFpa.QUALITY_FLAG(R.bNotUsed) = bicas.utils.FPArray.FP_UINT8;
+      R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Excd, Bso);
 
 
 
@@ -208,16 +222,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % specific datasets
       %================================================================
       TemplateOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_OSR_template(InLfrCwf);
-      [TemplateDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
-        InLfrCwf, ...
-        BIN_LENGTH_WOLS_NS, ...
-        BIN_TIMESTAMP_POS_WOLS_NS, ...
-        L);
-      % NOTE: Not setting DSR ".Ga"/global attributes here, since DSR
-      % datasets later copy ".Ga" from the respective OSR datasets.
-      TemplateDsr = struct('Zv', TemplateDsrZv);
-
-
 
       %=======================================
       % Generate data structures for datasets
@@ -225,15 +229,16 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       OutEfieldOsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_efield( TemplateOsr, R.EdcSrfMvpmFpa,                       gaEfieldScpot_Misc_calibration_versions);
       OutScpotOsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_scpot(  TemplateOsr, R.ScpotVoltFpa,  R.PspVoltFpa,         gaEfieldScpot_Misc_calibration_versions);
       OutDensityOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_density(TemplateOsr, R.NeScpCm3Fpa,   R.NeScpQualityBitFpa, gaDensity_Misc_calibration_versions);
-      %
-      OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( TemplateDsr, OutEfieldOsr.Ga,  R.EdcSrfMvpmFpa,                                    iRecordsInBinCa, L);
-      OutScpotDsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_scpot(  TemplateDsr, OutScpotOsr.Ga,   R.ScpotVoltFpa, R.PspVoltFpa,                       iRecordsInBinCa, L);
-      OutDensityDsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_density(TemplateDsr, OutDensityOsr.Ga, R.NeScpCm3Fpa, OutDensityOsr.Zv.L3_QUALITY_BITMASK, iRecordsInBinCa, L);
+
+      OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( OutEfieldOsr,  R.EdcSrfMvpmFpa,              L);
+      %OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( TemplateOsr,  R.EdcSrfMvpmFpa,              L);    % TEST
+      OutScpotDsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_scpot(  OutScpotOsr,   R.ScpotVoltFpa, R.PspVoltFpa, L);
+      OutDensityDsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_density(OutDensityOsr, R.NeScpCm3Fpa,                L);
 
 
 
-      nRecordsOsr = size(InLfrCwf.Zv.Epoch,    1);
-      nRecordsDsr = size(TemplateDsr.Zv.Epoch, 1);
+      nRecordsOsr = size(OutDensityOsr.Zv.Epoch, 1);
+      nRecordsDsr = size(OutDensityDsr.Zv.Epoch, 1);
       Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
     end    % process_L2_to_L3
 
@@ -261,8 +266,14 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Zv = struct();
       Zv.Epoch              = InLfrCwf.Zv.Epoch;
       Zv.QUALITY_FLAG       = InLfrCwf.ZvFpa.QUALITY_FLAG;
+      % Zv.QUALITY_FLAG       = bicas.utils.FPArray(...
+      %   uint8(ones(size(InLfrCwf.ZvFpa.QUALITY_FLAG))) * 2, ...
+      %   'NO_FILL_POSITIONS');  % TEST
       Zv.QUALITY_BITMASK    = InLfrCwf.ZvFpa.QUALITY_BITMASK;
       Zv.L2_QUALITY_BITMASK = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
+      % Zv.L2_QUALITY_BITMASK       = bicas.utils.FPArray(...
+      %   uint16(ones(size(InLfrCwf.ZvFpa.L2_QUALITY_BITMASK))) * 0, ...
+      %   'NO_FILL_POSITIONS');  % TEST
       Zv.DELTA_PLUS_MINUS   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
 
       TemplateOsr = struct('Ga', Ga, 'Zv', Zv);
@@ -276,9 +287,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       Out.Zv.EDC_SRF                   = EdcSrfMvpmFpa.cast('single');
 
-      bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
-      Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
-
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
@@ -290,10 +298,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       Out.Zv.SCPOT                     = ScpotVoltFpa.cast('single');
       Out.Zv.PSP                       = PspVoltFpa.  cast('single');
-
-      bFp = Out.Zv.SCPOT.fpAr & ...
-        Out.Zv.PSP.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp)         = bicas.utils.FPArray.FP_UINT8;
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
@@ -307,8 +311,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.DENSITY                   = NeScpCm3Fpa.cast('single');
 
       % NOTE: Behaviour w.r.t. FPs:
-      %   Density FP     ==> L3_QUALITY_BITMASK FP
-      %                      QUALITY_FLAG       FP
       %   Density bit FP ==> L3_QUALITY_BITMASK density bit=false
       %                      (since there is no FP for individual quality bits).
       [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.L2L3.qual.get_quality_ZVs_density(...
@@ -316,18 +318,20 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
       Out.Zv.L3_QUALITY_BITMASK       = bicas.utils.FPArray(L3_QUALITY_FLAG);
 
-      bFp                             = Out.Zv.DENSITY.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp)        = bicas.utils.FPArray.FP_UINT8;
-      Out.Zv.L3_QUALITY_BITMASK(bFp)  = bicas.utils.FPArray.FP_UINT16;
-
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
 
-    function Out = DSR_efield(TemplateDsr, OutEfieldOsrGa, EdcSrfMvpmOsrFpa, iRecordsInBinCa, L)
-      Out    = TemplateDsr;
-      Out.Ga = OutEfieldOsrGa;
+    function Out = DSR_efield(OutEfieldOsr, EdcSrfMvpmOsrFpa, L)
+      [TemplateDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
+        OutEfieldOsr.Zv.Epoch, ...
+        OutEfieldOsr.Zv.QUALITY_FLAG, ...
+        OutEfieldOsr.Zv.QUALITY_BITMASK, ...
+        OutEfieldOsr.Zv.L2_QUALITY_BITMASK, ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.BIN_LENGTH_WOLS_NS, ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.BIN_TIMESTAMP_POS_WOLS_NS, L);
+      Out = struct('Zv', TemplateDsrZv, 'Ga', OutEfieldOsr.Ga);
 
       [EdcSrfDsrFpa, EdcstdSrfDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
         EdcSrfMvpmOsrFpa, ...
@@ -336,17 +340,20 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.EDC_SRF    = EdcSrfDsrFpa.   cast('single');
       Out.Zv.EDCSTD_SRF = EdcstdSrfDsrFpa.cast('single');
 
-      bFp = all(Out.Zv.EDC_SRF.fpAr, 2);    % Rows which are only FPs.
-      Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
-
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
 
-    function Out = DSR_scpot(TemplateDsr, OutScpotOsrGa, ScpotVoltOsrFpa, PspVoltOsrFpa, iRecordsInBinCa, L)
-      Out    = TemplateDsr;
-      Out.Ga = OutScpotOsrGa;
+    function Out = DSR_scpot(OutScpotOsr, ScpotVoltOsrFpa, PspVoltOsrFpa, L)
+      [TemplateDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
+        OutScpotOsr.Zv.Epoch, ...
+        OutScpotOsr.Zv.QUALITY_FLAG, ...
+        OutScpotOsr.Zv.QUALITY_BITMASK, ...
+        OutScpotOsr.Zv.L2_QUALITY_BITMASK, ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.BIN_LENGTH_WOLS_NS, ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.BIN_TIMESTAMP_POS_WOLS_NS, L);
+      Out = struct('Zv', TemplateDsrZv, 'Ga', OutScpotOsr.Ga);
 
       % Downsample SCPOT
       [ScpotDsrFpa, ScpotstdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
@@ -365,18 +372,20 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.PSP    = PspDsrFpa.   cast('single');
       Out.Zv.PSPSTD = PspstdDsrFpa.cast('single');
 
-      bFp = Out.Zv.SCPOT.fpAr & ...
-        Out.Zv.PSP.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp) = bicas.utils.FPArray.FP_UINT8;
-
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end
 
 
 
-    function Out = DSR_density(TemplateDsr, OutDensityOsrGa, NeScpCm3OsrFpa, osr_L3_QUALITY_BITMASK, iRecordsInBinCa, L)
-      Out    = TemplateDsr;
-      Out.Ga = OutDensityOsrGa;
+    function Out = DSR_density(OutDensityOsr, NeScpCm3OsrFpa, L)
+      [TemplateDsrZv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
+        OutDensityOsr.Zv.Epoch, ...
+        OutDensityOsr.Zv.QUALITY_FLAG, ...
+        OutDensityOsr.Zv.QUALITY_BITMASK, ...
+        OutDensityOsr.Zv.L2_QUALITY_BITMASK, ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.BIN_LENGTH_WOLS_NS, ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.BIN_TIMESTAMP_POS_WOLS_NS, L);
+      Out = struct('Zv', TemplateDsrZv, 'Ga', OutDensityOsr.Ga);
 
       [DensityDsrFpa, DensitystdDsrFpa] = bicas.proc.dsr.downsample_sci_ZV(...
         NeScpCm3OsrFpa, ...
@@ -385,11 +394,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.DENSITY    = DensityDsrFpa.   cast('single');
       Out.Zv.DENSITYSTD = DensitystdDsrFpa.cast('single');
 
-      bFp = Out.Zv.DENSITY.fpAr;
-      Out.Zv.QUALITY_FLAG(bFp)       = bicas.utils.FPArray.FP_UINT8;
-      Out.Zv.L3_QUALITY_BITMASK      = bicas.proc.dsr.downsample_ZV_bitmask(...
-        osr_L3_QUALITY_BITMASK, iRecordsInBinCa);
-      Out.Zv.L3_QUALITY_BITMASK(bFp) = bicas.utils.FPArray.FP_UINT16;   % ?!
+      Out.Zv.L3_QUALITY_BITMASK = bicas.proc.dsr.downsample_ZV_bitmask(...
+        OutDensityOsr.Zv.L3_QUALITY_BITMASK, iRecordsInBinCa);
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end

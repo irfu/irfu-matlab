@@ -126,7 +126,8 @@ end
 
 
 
-% Create a modified dataobj, based on a master CDF, that can be written to file.
+% Create a modified dataobj, based on a master CDF but filled with zVariable
+% data from processing, and that can be written to file.
 %
 % NOTE: Only uses global attribute values from
 %   (1) GaSubset, and
@@ -252,22 +253,6 @@ for iFn = 1:numel(fnList)
 
   DataObj.GlobalAttributes.(fn) = GaSubset.(fn);
 end
-
-
-
-%================================================================
-% Handle still-empty zVariables (zero records; always anomalies)
-%================================================================
-for fn = fieldnames(DataObj.data)'
-  zvName = fn{1};
-
-  if isempty(DataObj.data.(zvName).data)
-
-    DataObj = handle_empty_ZV_anomaly(DataObj, zvName, ...
-      masterCdfPath, Bso, L);
-
-  end    % if isempty(DataObj.data.(zvName).data)
-end    % for
 
 end    % init_modify_dataobj
 
@@ -460,91 +445,6 @@ end
 
 % Set zVariable.
 DataObj.data.(zvName).data = zvValueCdf;
-end
-
-
-
-
-
-
-
-% Function used by init_modify_dataobj() when finding empty zVar.
-%
-% ARGUMENTS
-% =========
-% masterCdfPath
-%       NOTE: Only needed for anomaly description message.
-%
-function DataObj = handle_empty_ZV_anomaly(...
-  DataObj, zvName, masterCdfPath, Bso, L)
-
-%==============================================================
-% CASE: zVariable has zero records.
-% This indicates that it should have been set using PDV field.
-%==============================================================
-
-% NOTE: Useful to specify master CDF path in the case of having
-% multiple output datasets. Will otherwise not know which output
-% dataset is referred to. Note: Can still read master CDF from
-% preceding log messages.
-anomalyDescrMsg = sprintf(...
-  ['Master CDF "%s" contains zVariable "%s" which has not been', ...
-  ' set (i.e. it has zero records) after adding ', ...
-  'processing data. This should only happen for incomplete processing.'], ...
-  masterCdfPath, zvName);
-
-mc = irf.cdf.convert_CDF_type_to_MATLAB_class(...
-  DataObj.data.(zvName).type, 'Permit MATLAB classes');
-isNumericZVar = isnumeric(cast(0.0, mc));
-
-if isNumericZVar
-  %====================
-  % CASE: Numeric zVar
-  %====================
-  [settingValue, settingKey] = Bso.get_fv(...
-    'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
-  switch(settingValue)
-
-    case 'USE_FILLVAL'
-      %=========================================================
-      % Create correctly-sized zVariable using only fill values
-      %=========================================================
-      % NOTE: Assumes that
-      % (1) there is a PD fields/zVariable Epoch, and
-      % (2) this zVariable should have as many records as Epoch.
-      L.logf('warning', ...
-        ['Setting numeric master/output CDF zVariable', ...
-        ' "%s" to presumed correct size using fill', ...
-        ' values due to setting "%s" = "%s".'], ...
-        zvName, settingKey, settingValue)
-
-      nEpochRecords  = size(ZvsSubset.Epoch, 1);
-      [fv, ~, ~] = bicas.get_dataobj_FV_pad_value_MC(DataObj, zvName);
-      zvSize      = [nEpochRecords, DataObj.data.(fn{1}).dim];
-      zvValueTemp = cast(zeros(zvSize), mc);
-      zvValueCdf  = irf.utils.replace_value(zvValueTemp, 0, fv);
-
-      DataObj.data.(zvName).data = zvValueCdf;
-
-    otherwise
-      bicas.default_anomaly_handling(L, ...
-        settingValue, settingKey, ...
-        'ERROR_WARNING_ILLEGAL_SETTING', anomalyDescrMsg, ...
-        'BICAS:SWMProcessing:DatasetFormat')
-  end
-
-else
-  %========================
-  % CASE: Non-numeric zVar
-  %========================
-  [settingValue, settingKey] = Bso.get_fv(...
-    'OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY');
-  bicas.default_anomaly_handling(L, ...
-    settingValue, settingKey, ...
-    'ERROR_WARNING_ILLEGAL_SETTING', anomalyDescrMsg, ...
-    'BICAS:SWMProcessing:DatasetFormat')
-end    % if isNumericZVar
-
 end
 
 

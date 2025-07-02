@@ -151,63 +151,6 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %========================
-      % Normalize SYNCHRO_FLAG
-      %========================
-      has_SYNCHRO_FLAG      = isfield(InSci.Zv, 'SYNCHRO_FLAG');
-      has_TIME_SYNCHRO_FLAG = isfield(InSci.Zv, 'TIME_SYNCHRO_FLAG');
-      if      has_SYNCHRO_FLAG && ~has_TIME_SYNCHRO_FLAG
-
-        % CASE: Everything nominal.
-        InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.SYNCHRO_FLAG;
-
-      elseif ~has_SYNCHRO_FLAG && has_TIME_SYNCHRO_FLAG
-
-        % CASE: Input CDF uses wrong zVar name.
-        [settingValue, settingKey] = ...
-          Bso.get_fv('INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY');
-        bicas.default_anomaly_handling(L, ...
-          settingValue, settingKey, 'ERROR_WARNING_ILLEGAL_SETTING', ...
-          'Found zVar TIME_SYNCHRO_FLAG instead of SYNCHRO_FLAG.')
-        L.log('warning', ...
-          'Using illegally named zVar TIME_SYNCHRO_FLAG as SYNCHRO_FLAG.')
-        InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
-
-      elseif has_SYNCHRO_FLAG && has_TIME_SYNCHRO_FLAG
-
-        % CASE: Input CDF has two ZVs: one with correct name, one with
-        % incorrect name
-
-        %------------------------
-        % "Normal" normalization
-        %------------------------
-        % 2020-01-21: Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG
-        % seems to be the correct zVar.
-        if Bso.get_fv(...
-            'INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED') ...
-            && isempty(InSci.Zv.SYNCHRO_FLAG)
-          %----------------------------------------------------------
-          % Workaround: Normalize LFR data to handle variations that
-          % should not exist
-          %----------------------------------------------------------
-          % Handle that SYNCHRO_FLAG (empty) and TIME_SYNCHRO_FLAG
-          % (non-empty) may BOTH be present. "DEFINITION BUG" in
-          % definition of datasets/skeleton?
-          % Ex: LFR___TESTDATA_RGTS_LFR_CALBUT_V0.7.0/ROC-SGSE_L1R_RPW-LFR-SBM1-CWF-E_4129f0b_CNE_V02.cdf /2020-03-17
-
-          InSciNorm.Zv.SYNCHRO_FLAG = InSci.Zv.TIME_SYNCHRO_FLAG;
-        else
-          error('BICAS:DatasetFormat', ...
-            ['Input dataset has both zVar SYNCHRO_FLAG and', ...
-            ' TIME_SYNCHRO_FLAG.'])
-        end
-      else
-        error('BICAS:DatasetFormat', ...
-          'Input dataset does not have zVar SYNCHRO_FLAG as expected.')
-      end
-
-
-
       %=======================================================================================================
       % Set QUALITY_BITMASK, QUALITY_FLAG:
       % Replace illegally empty data with fill values/NaN

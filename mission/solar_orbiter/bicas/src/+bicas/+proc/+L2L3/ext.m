@@ -36,8 +36,8 @@ classdef ext
     % Indirectly call BICAS-external code to calculate
     % (1) EFIELD, SCPOT (solo.vdccal), and from that
     % (2) DENSITY       (solo.psp2ne).
-    function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, Bso)
-      assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
+    function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Excd, Bso)
+      assert(isa(Excd, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
       % Minimum L2 data QUALITY_FLAG value to use for deriving L3 data
       % --------------------------------------------------------------
@@ -50,7 +50,7 @@ classdef ext
       % =================================
       % Call wrapper around solo.vdccal()
       % =================================
-      R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(LfrCwfZv, QUALITY_FLAG_minForUse, Ec);
+      R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(LfrCwfZv, QUALITY_FLAG_minForUse, Excd);
 
       % =================================
       % Call wrapper around solo.psp2ne()
@@ -60,7 +60,7 @@ classdef ext
       % to the data the density is based on, but the quality bit only
       % refers to density (and not to SCPOT).
       [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
-        bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Ec);
+        bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Excd);
 
       assert(strcmp(R1.PspTs.units,   'V'))
       assert(strcmp(R1.ScpotTs.units, 'V'))
@@ -118,10 +118,10 @@ classdef ext
     %       return values and avoid confusing similar return results with
     %       each other.
     %
-    function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse, Ec)
+    function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse, Excd)
       % PROPOSAL: Take bNotUsed as an argument.
       %   PRO: Can be used also for bicas.proc.L2L3.ext.calc_DENSITY()
-      %        (which it is currently not).
+      %        (which it currently does not).
 
       irf.assert.struct(Zv, {'Epoch', 'VDC_Fpa', 'EDC_Fpa', 'QUALITY_FLAG_Fpa'}, {})
 
@@ -135,7 +135,7 @@ classdef ext
       % NOTE: Unclear how to treat QUALITY_FLAG=FV.
       % NOTE: Treatment of this special case is documented in readme.txt.
       bNotUsedFpa             = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;
-      bNotUsed                = bNotUsedFpa.array(false);   % Is [FV==>false] wise?
+      bNotUsed                = bNotUsedFpa.array(false);   % Is [FP==>false] wise?
       % --
       Zv.VDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
       Zv.EDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
@@ -162,7 +162,7 @@ classdef ext
       % ==> Use current official calibration file, hardcoded in
       %     solo.vdccal(), that should be used for official datasets.
       [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] = ...
-        Ec.vdccal(VdcTs, EdcTs, []);
+        Excd.vdccal(VdcTs, EdcTs, []);
       clear VdcTs EdcTs
       %#################################################################
 
@@ -196,10 +196,17 @@ classdef ext
       % Set E_x = NaN, but ONLY if assertion deems that the corresponding
       % information is missing.
       %
-      % IMPLEMENTATION NOTE: solo.vdccal() sets antenna 1 values to be
-      % zero, if its input data is non-fill value/NaN, but NaN if fill
-      % value. Must therefore check for both zero and NaN.
-      % Ex: Dataset 2020-08-01
+      % IMPLEMENTATION NOTE: solo.vdccal() sets EdcSrfTs X component to ZERO,
+      % if its input data is non-fill value/non-NaN, and NaN if fill value/NaN.
+      % Must therefore check for both zero and NaN.
+      %     Ex: Dataset 2020-08-01
+      % --
+      % NOTE: The X component can never be a measurement value since RPW can
+      % not measure E field in the X direction.
+      % --
+      % TODO-DEC: Is solo.vdccal() returning zero for the X component a
+      % solo.vdccal() bug? The value is unknown, rather than assumed to be
+      % zero(?).
       %===================================================================
       % IMPLEMENTATION NOTE: ismember() does not work for NaN.
       assert(all(EdcSrfTs.data(:, 1) == 0 | isnan(EdcSrfTs.data(:, 1))), ...
@@ -240,12 +247,13 @@ classdef ext
     % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
     % relies on PSP values for which this has already been done.
     %
-    function [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = calc_DENSITY(PspTs, Ec)
+    function [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
+        calc_DENSITY(PspTs, Excd)
 
       %##################################################################
       % CALL BICAS-EXTERNAL CODE
       %##################################################################
-      [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = Ec.psp2ne(PspTs);
+      [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = Excd.psp2ne(PspTs);
       %##################################################################
 
       %===============================================

@@ -220,16 +220,20 @@ DSI, "dataset ID"
     variants thereof) are not abbreviated "DSI", but to the GA name in
     analogy with other variables named after GAs.
 DSR
-    Downsampled/Decreased Sampling Rate. Cf. OSR.
+    Downsampled/Decreased Sampling Rate. Used in the context of downsampling.
+    Cf. OSR.
 DT
     MATLAB datetime object.
 EJ
-    Erik P G Johansson, the author and maintainer of BICAS.
+    Erik P G Johansson (IRF Uppsala, Sweden), the author and maintainer of
+    BICAS.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).
     NOTE: "Component" has a special meaning in the context of error
     message IDs. Therefore uses the term "part" instead.
+EXCD
+    Class bicas.proc.L2L3.ExternalCodeAbstract and subclasses thereof.
 FH
     Function Handle (Pointer).
 FP
@@ -324,8 +328,9 @@ OSR
     Original Sampling Rate. Used in the context of downsampling. Cf DSR.
 PFIID
     Production Function Input ID. String constant which is used to distinguish
-    between different input values (datasets) to production functions. Different
-    DSIs can be used for the same PFIID.
+    between different input values (datasets) to production functions.
+    In practice one PFIID represents one of multiple different DSIs (different
+    DSI for different SWMs).
 PFOID
     Production Function Output ID. Analogous with PFIID, but for output (return
     values).

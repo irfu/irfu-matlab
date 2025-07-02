@@ -458,35 +458,36 @@ classdef utils
 
 
 
+    % Assert that struct consisting of
+    %   logical arrays
+    %   numeric arrays
+    %   bicas.utils.SameRowsMap
+    % has the same number rows in all its arrays.
+    %
+    % Useful for structs where all fields represent CDF zVariables and/or
+    % derivatives thereof, the size in the first index (number of CDF
+    % record) should be equal.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % S : Struct
+    %       Fields may (ony) be of the following types. Number of rows must
+    %       be identical for the specified data structure components
+    %       (right-hand side).
+    %       (1) numeric/logical fields  : The field itself.
+    %       (2) cell fields             : Cell array components (not
+    %                                     the cell array itself!).
+    %       (3) struct field (in struct): The inner struct's fields (not
+    %                                     recursive).
+    %
+    %
+    % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
+    % ===========================================================
+    % Dcop.Zv.AsrSamplesAVolt
+    %       bicas.utils.SameRowsMap.
+    %
     function nRows = assert_struct_num_fields_have_same_N_rows(S)
-      % Assert that struct consisting of
-      %   logical arrays
-      %   numeric arrays
-      %   bicas.utils.SameRowsMap
-      % has the same number rows in all its arrays.
-      %
-      % Useful for structs where all fields represent CDF zVariables and/or
-      % derivatives thereof, the size in the first index (number of CDF
-      % record) should be equal.
-      %
-      %
-      % ARGUMENTS
-      % =========
-      % S : Struct
-      %       Fields may (ony) be of the following types. Number of rows must
-      %       be identical for the specified data structure components
-      %       (right-hand side).
-      %       (1) numeric/logical fields  : The field itself.
-      %       (2) cell fields             : Cell array components (not
-      %                                     the cell array itself!).
-      %       (3) struct field (in struct): The inner struct's fields (not
-      %                                     recursive).
-      %
-      %
-      % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
-      % ===========================================================
-      % Dcop.Zv.AsrSamplesAVolt : bicas.utils.SameRowsMap.
-
       % NOTE: Function name somewhat bad.
       % PROPOSAL: Make recursive?!
       % PROPOSAL: Implement using new features in irf.assert.sizes().

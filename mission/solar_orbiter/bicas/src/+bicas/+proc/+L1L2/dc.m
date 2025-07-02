@@ -9,32 +9,30 @@
 % First created 2021-05-25
 %
 classdef dc
-% PROPOSAL: Better name.
-%   calibration, demuxing, reconstruction, quality
-%   cdr = calibration+demuxing+reconstruction (same order as execution)
-%   cdrq = calibration+demuxing+reconstruction+quality
-%     CON: Setting quality variables is not necessarily last in the execution.
-%       CON: Minor. Quality variables are still set somewhere in this file.
-%   --
-%   process()
-%
-% PROPOSAL: Automatic test code.
-%
-% PROPOSAL:   process_calibrate_demux()
-%           & calibrate_voltages_5xBLTS()
-%           should only accept the needed ZVs and variables.
-%   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
-%         from struct.
-%
-% PROPOSAL: Reorg. code to
-%   * Consist of more isolated/modular/generic separate steps.
-%   * Be more easily testable.
-%   * Be easier to understand.
-%   * Not require splitting up in subsequences with constant "settings" (values
-%     for specific zVariables not varying as a function of CDF record), in
-%     particular not require many constant "settings".
-%   * Use more vector operations.
-%   * More natural to implement.
+  % PROPOSAL: Better name.
+  %   calibration, demuxing, reconstruction, quality
+  %   cdr = calibration+demuxing+reconstruction (same order as execution)
+  %   cdrq = calibration+demuxing+reconstruction+quality
+  %     CON: Setting quality variables is not necessarily last in the execution.
+  %       CON: Minor. Quality variables are still set somewhere in this file.
+  %
+  % PROPOSAL: Automatic test code.
+  %
+  % PROPOSAL:   process_calibrate_demux()
+  %           & calibrate_voltages_5xBLTS()
+  %           should only accept the needed ZVs and variables.
+  %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
+  %         from struct.
+  %
+  % PROPOSAL: Reorg. code to
+  %   * Consist of more isolated/modular/generic separate steps.
+  %   * Be more easily testable.
+  %   * Be easier to understand.
+  %   * Not require splitting up in subsequences with constant "settings" (values
+  %     for specific zVariables not varying as a function of CDF record), in
+  %     particular not require many constant "settings".
+  %   * Use more vector operations.
+  %   * More natural to implement.
 
 
 

@@ -61,8 +61,8 @@ classdef OutputDataset
 
 
     function obj = OutputDataset(Zv, Ga, RctdCa)
-      assert(isstruct(Zv))
-      assert(isstruct(Ga))
+      assert(isstruct(Zv)   & isscalar(Zv))
+      assert(isstruct(Ga)   & isscalar(Ga))
       assert(iscell(RctdCa) & iscolumn(RctdCa))
 
       obj.Zv = Zv;

@@ -13,18 +13,33 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef ExternalCodeAbstract
-  % PROPOSAL: Name?
-  %   ~external
+  % PROPOSAL: Better name with better abbreviation for class with subclasses?
+  %   ~external code
   %   ~science
   %   ~science calculations
   %   ~science calibration
   %   ~science processing
   %   ~science data
   %   ~call
-  %   ExternalCodeCall*
+  %   ~L2 (as input)
+  %   ~L3
+  %   ~density, E field, scpot
+  %   ~CWF
+  %   --
+  %   EXC
+  %     CON: Found in "except", "exclusive", "exceed", "exception" etc.
+  %   EXCD -- IMPLEMENTED, for now
+  %   EXTC
+  %     CON: Found in "TextContent" (~10 cases).
+  %     CON: Might clash with future "external things".
+  %   ECC = ExternalCodeCall*
+  %     CON: ECC found in "eccentricity", "VecComponent", "SpecrecCa" etc.
   %   ExternalCall*
-  %   NOTE: Should fit with naming of subclasses.
-  %
+  %   LSP, L3SP = L3ScienceProcessing
+  %     CON: LSP to common substring.
+  %   ELSP, EL3SP = ExternalL3ScienceProcessing
+  %     CON: ELSP in "doModelSpacecraft" (7 instances)
+  %     CON: Bad use number in abbreviation?
   % PROPOSAL: How implement interface?
   %   PROPOSAL: nargout = func(varargin)
   %       PRO: Avoids repeating function definitions.

@@ -214,7 +214,7 @@ classdef DatasetFilename___UTEST < matlab.unittest.TestCase
 
 
 
-      % BIA sweep
+    % BIA sweep
     function test_BIAS_sweep(testCase)
       testCase.test_both(...
         'solo_L1_rpw-bia-sweep-cdag_20190102T030405-20201112T131415_V01.cdf', ...
@@ -267,41 +267,41 @@ classdef DatasetFilename___UTEST < matlab.unittest.TestCase
 
 
 
-      function test_parse_filename(testCase, filename, ExpDfStruct)
-        ActDf = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
+    function test_parse_filename(testCase, filename, ExpDfStruct)
+      ActDf = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
 
-        if isstruct(ExpDfStruct)
-          % Remove private property.
-          ActDfStruct = struct(ActDf);
-          ActDfStruct = rmfield(ActDfStruct, 'dsicdagUppercase');
+      if isstruct(ExpDfStruct)
+        % Remove private property.
+        ActDfStruct = struct(ActDf);
+        ActDfStruct = rmfield(ActDfStruct, 'dsicdagUppercase');
 
-          ExpDfStruct.filename = filename;
+        ExpDfStruct.filename = filename;
 
-          % NOTE: struct(object) also returns fields for private properties!
-          testCase.assertEqual(ActDfStruct, ExpDfStruct)
+        % NOTE: struct(object) also returns fields for private properties!
+        testCase.assertEqual(ActDfStruct, ExpDfStruct)
 
-        elseif isempty(ExpDfStruct)
-          testCase.assertEqual(ActDf, ExpDfStruct)
+      elseif isempty(ExpDfStruct)
+        testCase.assertEqual(ActDf, ExpDfStruct)
 
-        end
       end
+    end
 
 
 
-      function test_filename(testCase, S, expFilename)
-        Df          = solo.adm.dsfn.DatasetFilename(S);
-        actFilename = Df.filename;
+    function test_filename(testCase, S, expFilename)
+      Df          = solo.adm.dsfn.DatasetFilename(S);
+      actFilename = Df.filename;
 
-        testCase.assertEqual(actFilename, expFilename)
-      end
+      testCase.assertEqual(actFilename, expFilename)
+    end
 
 
 
-      function test_both(testCase, filename, DfStruct)
-        % NOTE: Tests pair of conversions: one in each direction.
-        test_parse_filename(testCase, filename, DfStruct)
-        test_filename(      testCase, DfStruct, filename)
-      end
+    function test_both(testCase, filename, DfStruct)
+      % NOTE: Tests pair of conversions: one in each direction.
+      test_parse_filename(testCase, filename, DfStruct)
+      test_filename(      testCase, DfStruct, filename)
+    end
 
 
 

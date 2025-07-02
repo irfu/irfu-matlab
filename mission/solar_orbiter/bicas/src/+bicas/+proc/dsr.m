@@ -55,6 +55,11 @@ classdef dsr
     % CWF.
     %
     %
+    % PERFORMANCE
+    % ===========
+    % This function is known to take a disproportionate amount of time.
+    %
+    %
     % RETURN VALUES
     % =============
     % TemplateDsrZv
@@ -68,7 +73,8 @@ classdef dsr
     %       Distribution of non-downsampled records in bins.
     %
     function [TemplateDsrZv, iRecordsInBinCa] = get_LFR_CWF_DSR_ZVs_template(...
-        InLfrCwfOsr, binLengthWolsNs, binTimestampPosWolsNs, L)
+        Epoch, QUALITY_FLAG_Fpa, QUALITY_BITMASK_Fpa, L2_QUALITY_BITMASK_Fpa, ...
+        binLengthWolsNs, binTimestampPosWolsNs, L)
 
       % NOTE: Function argument InLfrCwfOsr contains too much information!
       % PROPOSAL: Only take argument for the needed variables.
@@ -87,9 +93,9 @@ classdef dsr
       %================
       % Find bin boundary reference timestamp. This is used for
       % setting the bin boundaries together with the bin length.
-      v = spdfbreakdowntt2000(InLfrCwfOsr.Zv.Epoch(1));
-      % UTC subsecond (milliseconds, microseconds, nanoseconds)
-      v(6)   = 5;   % UTC second
+      v = spdfbreakdowntt2000(Epoch(1));
+      % UTC seconds. Not sure of the reason for value=5. Avoid leap seconds?
+      v(6)   = 5;
       v(7:9) = 0;   % Milliseconds, microseconds, nanoseconds
       boundaryRefTt2000 = spdfcomputett2000(v);
       % Find
@@ -99,12 +105,12 @@ classdef dsr
       %     (=downsampled records).
       [zvEpochDsr, iRecordsInBinCa, binSizeArrayNs] = ...
         bicas.proc.dsr.get_downsampling_bins(...
-        InLfrCwfOsr.Zv.Epoch, ...
+        Epoch, ...
         boundaryRefTt2000, ...
         binLengthWolsNs, ...
         binTimestampPosWolsNs, ...
         L);
-      nRecordsOsr = numel(InLfrCwfOsr.Zv.Epoch);
+      nRecordsOsr = numel(Epoch);
       nRecordsDsr = numel(iRecordsInBinCa);
 
 
@@ -167,14 +173,14 @@ classdef dsr
       %   (SKELETON_MODS: V12=Feb 2021)
       % .
 
-      zv_QUALITY_FLAG_FpaDsr    = bicas.proc.dsr.downsample_ZV_minimum(...
-        InLfrCwfOsr.ZvFpa.QUALITY_FLAG,    iRecordsInBinCa);
+      zv_QUALITY_FLAG_FpaDsr       = bicas.proc.dsr.downsample_ZV_minimum(...
+        QUALITY_FLAG_Fpa,       iRecordsInBinCa);
 
-      zv_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
-        InLfrCwfOsr.ZvFpa.QUALITY_BITMASK, iRecordsInBinCa);
+      zv_QUALITY_BITMASK_FpaDsr    = bicas.proc.dsr.downsample_ZV_bitmask(...
+        QUALITY_BITMASK_Fpa,    iRecordsInBinCa);
 
       zv_L2_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
-        InLfrCwfOsr.ZvFpa.L2_QUALITY_BITMASK, iRecordsInBinCa);
+        L2_QUALITY_BITMASK_Fpa, iRecordsInBinCa);
 
       %============================================================
       % Shared zVariables between all DOWNSAMPLED datasets
@@ -568,8 +574,8 @@ classdef dsr
 
 
 
-    % Downsample a zVariable (FPA) using pre-defined bins to the "logical OR
-    % value" each OSR bin.
+    % Downsample an integer zVariable (FPA) using pre-defined bins to
+    % the "logical OR value" of each OSR bin.
     %
     function DsrFpa = downsample_ZV_bitmask(OsrFpa, iRecordsInBinCa)
       assert(isa(OsrFpa, 'bicas.utils.FPArray'))
@@ -584,8 +590,7 @@ classdef dsr
           binSamplesDsrAr = fv;
           binFpDsrAr      = true;
         else
-          % CASE: Bin contains non-zero number of values, which
-          %       might be FPs.
+          % CASE: Bin contains non-zero number of values, which might be FPs.
 
           if isempty(binSamplesOsrAr)
             binSamplesDsrAr = fv;
@@ -598,7 +603,7 @@ classdef dsr
       end
 
       assert(iscolumn(OsrFpa))
-      fv = zeros(1,1, OsrFpa.mc);   % Used by inner function.
+      fv = zeros(1,1, OsrFpa.mc);   % NOTE: Used by inner function.
 
       DsrFpa = bicas.proc.dsr.downsample(OsrFpa, iRecordsInBinCa, @bin_to_record);
     end

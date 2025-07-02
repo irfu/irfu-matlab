@@ -25,7 +25,7 @@ classdef QrcSetting
   %   quality ZVs modification
   %   --
   %   QRCC = QRC Configuration
-  %   QRCS = QRC Setting
+  %   QRCS = QRC Setting -- IMPLEMENTED
   %   --
   %   PROPOSAL: Abbreviation
   %
