@@ -126,15 +126,15 @@ classdef sat___UTEST < matlab.unittest.TestCase
       % 0x0
       test([], [], bicas.utils.FPArray(logical([])), [])
 
-      % Sample values inside and outside of all thresholds.
-      SAMPLES_AVOLT_AR = [2, 3; 12, 13; 99, 99];
-      FPA              = bicas.utils.FPArray(logical([0 1; 0 1; 0 1]));
-      SSID_STR_AR      = ["DC_V1" "DC_V12"; "AC_V12", "AC_V23"; "GND", "REF25V"];
+      % Sample values inside and outside of all thresholds + NaN.
+      SAMPLES_AVOLT_AR = [2, 3; 12, 13; 99, 99; NaN, NaN];
+      FPA              = bicas.utils.FPArray(logical([0 1; 0 1; 0 1; 0 1]));
+      SSID_STR_AR      = ["DC_V1" "DC_V12"; "AC_V12", "AC_V23"; "GND", "REF25V"; "DC_V1" "AC_V12"];
 
-      test(-1.01 * SAMPLES_AVOLT_AR, SSID_STR_AR, FPA, [1, 1; 1, 1; 0, 0])
-      test(-0.99 * SAMPLES_AVOLT_AR, SSID_STR_AR, FPA, [0, 0; 0, 0; 0, 0])
-      test( 0.99 * SAMPLES_AVOLT_AR, SSID_STR_AR, FPA, [0, 0; 0, 0; 0, 0])
-      test( 1.01 * SAMPLES_AVOLT_AR, SSID_STR_AR, FPA, [1, 1; 1, 1; 0, 0])
+      test(-1.01 * SAMPLES_AVOLT_AR, SSID_STR_AR, FPA, [1, 1; 1, 1; 0, 0; 0, 0])
+      test(-0.99 * SAMPLES_AVOLT_AR, SSID_STR_AR, FPA, [0, 0; 0, 0; 0, 0; 0, 0])
+      test( 0.99 * SAMPLES_AVOLT_AR, SSID_STR_AR, FPA, [0, 0; 0, 0; 0, 0; 0, 0])
+      test( 1.01 * SAMPLES_AVOLT_AR, SSID_STR_AR, FPA, [1, 1; 1, 1; 0, 0; 0, 0])
     end
 
 
