@@ -262,6 +262,18 @@ IVPAV
     IV/AV = Interface volt Per Antenna volt (unit).
 IVPT
     IV/TM = Interface volt Per TM unit.
+L2_QUALITY_BITMASK,
+L3_QUALITY_BITMASK
+    Quality ZV defined by ROC which is set in L2 and L3 CDFs respectively.
+    Different bits are set when different QRCs apply.
+    NOTE: One quality bit does not automatically correspond to one QRC.
+    NOTE: Among BICAS data products, L3_QUALITY_BITMASK is currently only set
+    for L3 DENSITY (2025-07-02).
+    In the implementation L2/L3/Lx_QUALITY_BITMASK may refer to
+    (1) a L*_QUALITY_BITMASK value wrt. to some subset of QRCs
+    (2) the final L*_QUALITY_BITMASK value, which is obtained by
+        OR:ing multiple L*_QUALITY_BITMASK values for subsets of QRCs.
+    See QUALITY_FLAG.
 L2QBM
     zVariable L2_QUALITY_BITMASK.
 L3QBM
@@ -336,6 +348,13 @@ QRCID
     The NSO table uses QRCIDs to label NSO events.
     Not all QRCIDs are meant to be used in the NSO table.
         Ex: BAD_DENSITY
+QUALITY_FLAG
+    Quality ZV defined by ROC. Higher value is better.
+    In the implementation, QUALITY_FLAG may refer to
+    (1) a QUALITY_FLAG value wrt. some QRC (a QUALITY_FLAG cap), or
+    (2) the final value, which is obtained by taking the minimum of multiple
+        QUALITY_FLAG values derived for different QRCs.
+    See Lx_QUALITY_BITMASK.
 RCS
     RPW Calibration Software. BICAS is an example of an RCS.
 RCS ICD

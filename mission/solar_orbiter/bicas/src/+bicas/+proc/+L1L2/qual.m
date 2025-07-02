@@ -29,12 +29,13 @@ classdef qual
     % =============
     % zvUfv
     %       Logical array. UFV records.
-    % QUALITY_FLAG_max
+    % QUALITY_FLAG
     %       Cap for output dataset ZV QUALITY_FLAG (cap for input dataset
     %       QUALITY_FLAG).
     % L2_QUALITY_BITMASK
     %       Quality ZV to use.
-    function [zvUfv, QUALITY_FLAG_max, L2_QUALITY_BITMASK] = ...
+    %
+    function [zvUfv, QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         get_UFV_quality_ZVs(InZv, isLfr, NsoTable, Bso, L)
       % PROPOSAL: Replace InZv-->Separate arguments.
 
@@ -62,7 +63,7 @@ classdef qual
       % (1) NSO events table, and
       % (2) processing-generated QRCs (saturation)
       %============================================
-      [QUALITY_FLAG_max, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
+      [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
         bicas.const.QRC_SETTINGS_L2, NsoTable, Epoch, autodetectedVsqb, L);
     end
 
@@ -83,14 +84,14 @@ classdef qual
     %
     % RETURN VALUES
     % =============
-    % QUALITY_FLAG_max
+    % QUALITY_FLAG
     %       Highest allowed value for ZV QUALITY_FLAG.
     %       NOTE: Will never have FPs.
     % L2_QUALITY_BITMASK
     %       Array. L2_QUALITY_BITMASK bits set based on NSOs only. Should be
     %       merged (OR:ed) with pre-existing global L2_QUALITY_BITMASK.
     %
-    function [QUALITY_FLAG_max, L2_QUALITY_BITMASK] = get_quality_ZVs(...
+    function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
         QrcSettingsL2Map, NsoTable, Epoch, isFullSaturation, L)
 
       assert(islogical(isFullSaturation))
@@ -108,7 +109,7 @@ classdef qual
       QrcFlagsMap("FULL_SATURATION") = b;
 
       % Call generic function for setting QUALITY_FLAG and *_QUALITY_BITMASK.
-      [QUALITY_FLAG_max, L2_QUALITY_BITMASK] = ...
+      [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
         size(Epoch, 1), QrcFlagsMap, QrcSettingsL2Map);
     end

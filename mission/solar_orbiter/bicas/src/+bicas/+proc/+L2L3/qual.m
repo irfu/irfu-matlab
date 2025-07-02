@@ -18,7 +18,7 @@ classdef qual   % < handle
 
 
 
-    function [QUALITY_FLAG_max, L3_QUALITY_BITMASK] = get_quality_ZVs_density(isBadDensityFpa)
+    function [QUALITY_FLAG, L3_QUALITY_BITMASK] = get_quality_ZVs_density(isBadDensityFpa)
       % IMPLEMENTATION NOTE: Function is (as of 2023-12-18) in principle
       % more complicated than necessary w.r.t. L3_QUALITY_BITMASK but the
       % architecture is chosen to (1) be analogue with
@@ -27,7 +27,7 @@ classdef qual   % < handle
       QrcFlagsMap = containers.Map();
       QrcFlagsMap("BAD_DENSITY") = isBadDensityFpa;
 
-      [QUALITY_FLAG_max, L3_QUALITY_BITMASK] = ...
+      [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
         size(isBadDensityFpa, 1), QrcFlagsMap, bicas.const.QRC_SETTINGS_L3_DENSITY);
     end

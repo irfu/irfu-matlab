@@ -68,11 +68,11 @@ classdef qual___UTEST < matlab.unittest.TestCase
       vsibFractionThreshold     = 0.9;
       cwfSlidingWindowLengthSec = 1.01;
 
-      [act_QUALITY_FLAG_max, act_L2_QUALITY_BITMASK] = ...
+      [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
         bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation( ...
         Cdac, TT2000_AR, isSwf, vsibFractionThreshold, cwfSlidingWindowLengthSec);
 
-      testCase.assertEqual(act_QUALITY_FLAG_max,   EXP_QUALITY_FLAG)
+      testCase.assertEqual(act_QUALITY_FLAG,       EXP_QUALITY_FLAG)
       testCase.assertEqual(act_L2_QUALITY_BITMASK, EXP_L2_QUALITY_BITMASK)
     end
 

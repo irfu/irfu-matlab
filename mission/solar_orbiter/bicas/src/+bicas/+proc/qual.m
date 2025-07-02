@@ -150,7 +150,7 @@ classdef qual
 
     % Given an array(s) of QRC bits (one bit per CDF record and QRC), translate
     % that into
-    % (1) max value for ZV QUALITY_FLAG, and
+    % (1) ZV QUALITY_FLAG, and
     % (2) ZV *_QUALITY_BITMASK.
     %
     % NOTE: Does not work with FPAs, since the internal algorithm can not produce
@@ -174,14 +174,14 @@ classdef qual
     %
     % RETURN VALUES
     % =============
-    % QUALITY_FLAG_max
-    %       QUALITY_FLAG max value.
+    % QUALITY_FLAG
+    %       QUALITY_FLAG max value wrt. to QRCs handled in this function.
     % Lx_QUALITY_BITMASK
-    %       L*_QUALITY_FLAG value to use for output dataset.
+    %       L*_QUALITY_BITMASK value wrt. to QRCs handled in this function.
     %       Refers to L2_QUALITY_BITMASK or L3_QUALITY_BITMASK
     %       depending on context.
     %
-    function [QUALITY_FLAG_max, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
+    function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
         nRec, QrcFlagsMap, QrcSettingsMap)
 
       irf.assert.castring_sets_equal(...
@@ -191,7 +191,7 @@ classdef qual
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, quality bits=0), which can then later be "lowered"
       % if necessary.
-      QUALITY_FLAG_max   = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
+      QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
       Lx_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
 
       %=================================
@@ -206,13 +206,13 @@ classdef qual
         assert(isa(bQrc, 'logical'))
         assert(isequal( size(bQrc), [nRec, 1] ))
 
-        %----------------------
-        % Set QUALITY_FLAG_max
-        %----------------------
+        %------------------
+        % Set QUALITY_FLAG
+        %------------------
         % IMPLEMENTATION NOTE: Only adjusts relevant indices since the
         % operation is more natural (simpler) that way.
-        QUALITY_FLAG_max(bQrc) = min(...
-          QUALITY_FLAG_max(bQrc), ...
+        QUALITY_FLAG(bQrc) = min(...
+          QUALITY_FLAG(bQrc), ...
           QrcSetting.QUALITY_FLAG);
 
         %------------------------
