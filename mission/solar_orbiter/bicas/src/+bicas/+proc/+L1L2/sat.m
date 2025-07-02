@@ -107,29 +107,29 @@ classdef sat
     %       are no thresholds for this kind of data (e.g. for non-ASR
     %       sources). False is returned for NaN input elements.
     %
-    function vsibAr = get_VSIB(SatSettings, samplesAVoltAr, ssid, isAchgFpa)
-      % PROPOSAL: Better name.
-      %   ~sample-to-VSIB
-      %   ~threshold_saturation
-      %
-      % PROPOSAL/TODO: Replace with get_threshold_VSIB_NEW().
-
-      assert(isfloat(samplesAVoltAr))
-      assert(bicas.proc.L1L2.const.is_SSID(ssid)   & isscalar(ssid))
-      assert(isa(isAchgFpa, 'bicas.utils.FPArray') & isscalar(isAchgFpa))
-
-      % IMPLEMENTATION NOTE: One can expand scalars to the size of
-      % samplesAVoltAr but it slows down the execution
-      % (bicas.proc.L1L2.const.SSID_is_AC() and
-      % bicas.proc.L1L2.const.SSID_is_diff()).
-      % bicas.proc.L1L2.sat.get_threshold_VSIB_NEW() is fully vectorized and
-      % works with both.
-      % ssidAr    = repmat(ssid,      size(samplesAVoltAr));
-      % isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
-
-      vsibAr = bicas.proc.L1L2.sat.get_threshold_VSIB_NEW(...
-        SatSettings, samplesAVoltAr, ssid, isAchgFpa);
-    end
+    % function vsibAr = get_VSIB_OLD(SatSettings, samplesAVoltAr, ssid, isAchgFpa)
+    %   % PROPOSAL: Better name.
+    %   %   ~sample-to-VSIB
+    %   %   ~threshold_saturation
+    %   %
+    %   % PROPOSAL/TODO: Replace with get_threshold_VSIB_NEW().
+    %
+    %   assert(isfloat(samplesAVoltAr))
+    %   assert(bicas.proc.L1L2.const.is_SSID(ssid)   & isscalar(ssid))
+    %   assert(isa(isAchgFpa, 'bicas.utils.FPArray') & isscalar(isAchgFpa))
+    %
+    %   % IMPLEMENTATION NOTE: One can expand scalars to the size of
+    %   % samplesAVoltAr but it slows down the execution
+    %   % (bicas.proc.L1L2.const.SSID_is_AC() and
+    %   % bicas.proc.L1L2.const.SSID_is_diff()).
+    %   % bicas.proc.L1L2.sat.get_threshold_VSIB_NEW() is fully vectorized and
+    %   % works with both.
+    %   % ssidAr    = repmat(ssid,      size(samplesAVoltAr));
+    %   % isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
+    %
+    %   vsibAr = bicas.proc.L1L2.sat.get_threshold_VSIB_NEW(...
+    %     SatSettings, samplesAVoltAr, ssid, isAchgFpa);
+    % end
 
 
 
@@ -207,16 +207,16 @@ classdef sat
     % vsqb
     %       Logical. Scalar.
     %
-    function vsqb = get_snapshot_VSQB(...
-        SatSettings, samplesAVolt, ssid, isAchg)
-
-      assert(isrow(samplesAVolt))     % Row vector(!).
-
-      vsibAr = bicas.proc.L1L2.sat.get_VSIB(...
-        SatSettings, samplesAVolt, ssid, isAchg);
-
-      vsqb = (sum(vsibAr, 'all') / numel(samplesAVolt)) > SatSettings.vsibFractionThreshold;
-    end
+    % function vsqb = get_snapshot_VSQB_OLD(...
+    %     SatSettings, samplesAVolt, ssid, isAchg)
+    %
+    %   assert(isrow(samplesAVolt))     % Row vector(!).
+    %
+    %   vsibAr = bicas.proc.L1L2.sat.get_VSIB_OLD(...
+    %     SatSettings, samplesAVolt, ssid, isAchg);
+    %
+    %   vsqb = (sum(vsibAr, 'all') / numel(samplesAVolt)) > SatSettings.vsibFractionThreshold;
+    % end
 
 
 
@@ -230,21 +230,21 @@ classdef sat
     % zvSamplesAVolt
     %       ZV-like array. (iCdfRecord, iSampleInSnapshot)
     %
-    function vsqbAr = get_snapshot_VSQB_many(...
-        SatSettings, zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
-
-      nRecs = irf.assert.sizes(...
-        zvNValidSamplesPerRecord, [-1],  ...
-        zvSamplesAVolt,           [-1, NaN, 1]);
-
-      vsqbAr = false(nRecs, 1);
-      for iRec = 1:nRecs
-        vsqbAr(iRec) = bicas.proc.L1L2.sat.get_snapshot_VSQB(...
-          SatSettings, ...
-          zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
-          ssid, isAchgFpa);
-      end
-    end
+    % function vsqbAr = get_snapshot_VSQB_many_OLD(...
+    %     SatSettings, zvNValidSamplesPerRecord, zvSamplesAVolt, ssid, isAchgFpa)
+    %
+    %   nRecs = irf.assert.sizes(...
+    %     zvNValidSamplesPerRecord, [-1],  ...
+    %     zvSamplesAVolt,           [-1, NaN, 1]);
+    %
+    %   vsqbAr = false(nRecs, 1);
+    %   for iRec = 1:nRecs
+    %     vsqbAr(iRec) = bicas.proc.L1L2.sat.get_snapshot_VSQB_OLD(...
+    %       SatSettings, ...
+    %       zvSamplesAVolt(iRec, 1:zvNValidSamplesPerRecord(iRec)), ...
+    %       ssid, isAchgFpa);
+    %   end
+    % end
 
 
 
@@ -262,182 +262,182 @@ classdef sat
     % vsqbAr
     %       (iCdfRecords). Logical.
     %
-    function vsqbAr = get_VSQB(...
-        Bso, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
-        bltsSsidAr, isAchgFpa, hasSwfFormat, L)
-
-      % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
-      %           look for saturation.
-      %   NOTE: Only ACHG influences the calibration thresholds for each channel
-      %         (SDID/ASR). Could otherwise have scalar values per channel.
-      %   PRO: Easier to keep track of what thresholds are a function of.
-
-      % ASSERTIONS
-      bicas.utils.assert_ZV_Epoch(tt2000Ar)
-      assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
-      assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
-      nRows = irf.assert.sizes(...
-        tt2000Ar,                 [-1], ...
-        zvNValidSamplesPerRecord, [-1], ...
-        bltsSsidAr,               [-1, bicas.const.N_BLTS]);
-      assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
-      assert(AsrSamplesAVoltSrm.nRows == nRows)
-
-      SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
-
-
-
-      L.logf('info', ...
-        ['Detecting threshold saturation (voltages) -', ...
-        ' One sequence of records with identical settings at a time.'])
-      Tmk = bicas.utils.Timekeeper('get_VSQB', L);
-
-      % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
-      % code, but it is difficult to use the same implementation for both
-      % without (1) making the implementation harder to understand and (2)
-      % having one particular variable with different meanings in the two cases.
-      if ~hasSwfFormat
-        %===========
-        % CASE: CWF
-        %===========
-        vsibAr = false(nRows, 1);
-        for asid = AsrSamplesAVoltSrm.keys'
-          asidSamplesAr = bicas.proc.L1L2.sat.set_reconstructed_samples_to_NaN(...
-            AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
-
-          asidVsibAr = bicas.proc.L1L2.sat.get_ASR_CWF_channel_VSIB(...
-            SatSettings, bicas.proc.L1L2.const.ASID_to_SSID(asid), ...
-            isAchgFpa, asidSamplesAr);
-
-          % L.logf('debug', 'unique(asidVsibAr)         = [%s]', strjoin(string(unique(asidVsibAr)), ','))
-
-          % Merge (OR) bits, record-by-record, over ASIDs.
-          vsibAr = any([vsibAr, asidVsibAr], 2);
-        end
-        % L.logf('debug', 'unique(vsibAr) = [%s]', strjoin(string(unique(vsibAr)), ','))
-
-        vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
-          tt2000Ar, vsibAr, ...
-          SatSettings.vsibFractionThreshold, ...
-          SatSettings.cwfSlidingWindowLengthSec);
-      else
-        %===========
-        % CASE: SWF
-        %===========
-        vsqbAr = false(nRows, 1);
-        for asid = AsrSamplesAVoltSrm.keys'
-          asidSamplesAr = bicas.proc.L1L2.sat.set_reconstructed_samples_to_NaN(...
-            AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
-
-          asidIsSaturatedAr = bicas.proc.L1L2.sat.get_ASR_SWF_channel_VSQB(...
-            SatSettings, ...
-            bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
-            asidSamplesAr, zvNValidSamplesPerRecord);
-
-          % L.logf('debug', 'unique(asidIsSaturatedAr) = [%s]', strjoin(string(unique(asidIsSaturatedAr)), ','))
-
-          % Merge (OR) bits, record-by-record, over ASIDs.
-          vsqbAr = any([vsqbAr, asidIsSaturatedAr], 2);
-        end
-
-        % L.logf('debug', 'unique(isSaturatedAr) = [%s]', strjoin(string(unique(isSaturatedAr)), ','))
-      end
-
-
-
-      if hasSwfFormat
-        Tmk.stop_log(nRows, 'CDF record')
-      else
-        % Log some saturation statistics which may help tell whether how
-        % much the saturation varies over time, which may
-        % influence/explain if the above processing is slow. Should only
-        % be relevant for CWF.
-        % NOTE: Only reflects the behaviour of the final VSQB, not the VSIB.
-        nSaturationChanges = numel(find(vsqbAr(1:end-1) ~= vsqbAr(2:end)));
-        Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
-        L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
-      end
-
-    end    % function
+    % function vsqbAr = get_VSQB_OLD(...
+    %     Bso, tt2000Ar, AsrSamplesAVoltSrm, zvNValidSamplesPerRecord, ...
+    %     bltsSsidAr, isAchgFpa, hasSwfFormat, L)
+    %
+    %   % PROPOSAL: Vectorize. Obtain vectors of thresholds for each channel. Then
+    %   %           look for saturation.
+    %   %   NOTE: Only ACHG influences the calibration thresholds for each channel
+    %   %         (SDID/ASR). Could otherwise have scalar values per channel.
+    %   %   PRO: Easier to keep track of what thresholds are a function of.
+    %
+    %   % ASSERTIONS
+    %   bicas.utils.assert_ZV_Epoch(tt2000Ar)
+    %   assert(islogical(hasSwfFormat) && isscalar(hasSwfFormat))
+    %   assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
+    %   nRows = irf.assert.sizes(...
+    %     tt2000Ar,                 [-1], ...
+    %     zvNValidSamplesPerRecord, [-1], ...
+    %     bltsSsidAr,               [-1, bicas.const.N_BLTS]);
+    %   assert(isa(AsrSamplesAVoltSrm, "bicas.utils.SameRowsMap"))
+    %   assert(AsrSamplesAVoltSrm.nRows == nRows)
+    %
+    %   SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
+    %
+    %
+    %
+    %   L.logf('info', ...
+    %     ['Detecting threshold saturation (voltages) -', ...
+    %     ' One sequence of records with identical settings at a time.'])
+    %   Tmk = bicas.utils.Timekeeper('get_VSQB_OLD', L);
+    %
+    %   % IMPLEMENTATION NOTE: Below code for cases CWF and SWF do ~duplicate
+    %   % code, but it is difficult to use the same implementation for both
+    %   % without (1) making the implementation harder to understand and (2)
+    %   % having one particular variable with different meanings in the two cases.
+    %   if ~hasSwfFormat
+    %     %===========
+    %     % CASE: CWF
+    %     %===========
+    %     vsibAr = false(nRows, 1);
+    %     for asid = AsrSamplesAVoltSrm.keys'
+    %       asidSamplesAr = bicas.proc.L1L2.sat.set_reconstructed_samples_to_NaN_OLD(...
+    %         AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
+    %
+    %       asidVsibAr = bicas.proc.L1L2.sat.get_ASR_CWF_channel_VSIB_OLD(...
+    %         SatSettings, bicas.proc.L1L2.const.ASID_to_SSID(asid), ...
+    %         isAchgFpa, asidSamplesAr);
+    %
+    %       % L.logf('debug', 'unique(asidVsibAr)         = [%s]', strjoin(string(unique(asidVsibAr)), ','))
+    %
+    %       % Merge (OR) bits, record-by-record, over ASIDs.
+    %       vsibAr = any([vsibAr, asidVsibAr], 2);
+    %     end
+    %     % L.logf('debug', 'unique(vsibAr) = [%s]', strjoin(string(unique(vsibAr)), ','))
+    %
+    %     vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
+    %       tt2000Ar, vsibAr, ...
+    %       SatSettings.vsibFractionThreshold, ...
+    %       SatSettings.cwfSlidingWindowLengthSec);
+    %   else
+    %     %===========
+    %     % CASE: SWF
+    %     %===========
+    %     vsqbAr = false(nRows, 1);
+    %     for asid = AsrSamplesAVoltSrm.keys'
+    %       asidSamplesAr = bicas.proc.L1L2.sat.set_reconstructed_samples_to_NaN_OLD(...
+    %         AsrSamplesAVoltSrm(asid), asid, bltsSsidAr);
+    %
+    %       asidIsSaturatedAr = bicas.proc.L1L2.sat.get_ASR_SWF_channel_VSQB_OLD(...
+    %         SatSettings, ...
+    %         bicas.proc.L1L2.const.ASID_to_SSID(asid), isAchgFpa, ...
+    %         asidSamplesAr, zvNValidSamplesPerRecord);
+    %
+    %       % L.logf('debug', 'unique(asidIsSaturatedAr) = [%s]', strjoin(string(unique(asidIsSaturatedAr)), ','))
+    %
+    %       % Merge (OR) bits, record-by-record, over ASIDs.
+    %       vsqbAr = any([vsqbAr, asidIsSaturatedAr], 2);
+    %     end
+    %
+    %     % L.logf('debug', 'unique(isSaturatedAr) = [%s]', strjoin(string(unique(isSaturatedAr)), ','))
+    %   end
+    %
+    %
+    %
+    %   if hasSwfFormat
+    %     Tmk.stop_log(nRows, 'CDF record')
+    %   else
+    %     % Log some saturation statistics which may help tell whether how
+    %     % much the saturation varies over time, which may
+    %     % influence/explain if the above processing is slow. Should only
+    %     % be relevant for CWF.
+    %     % NOTE: Only reflects the behaviour of the final VSQB, not the VSIB.
+    %     nSaturationChanges = numel(find(vsqbAr(1:end-1) ~= vsqbAr(2:end)));
+    %     Tmk.stop_log(nRows, 'CDF record', nSaturationChanges, 'sat. flag change')
+    %     L.logf('debug', 'SPEED -- %g [CDF rows/sat. flag change]', nRows/nSaturationChanges)
+    %   end
+    %
+    % end    % function
 
 
 
     % Return VSIB (not VSQB) for one channel of CWF data over which isAchgFpa
     % may vary.
-    function vsibAr = get_ASR_CWF_channel_VSIB(...
-        SatSettings, ssid, isAchgFpa, samplesAVolt)
-
-      nRows = irf.assert.sizes( ...
-        ssid,         [ 1], ...
-        isAchgFpa,    [-1], ...
-        samplesAVolt, [-1]);
-
-      % NOTE: Splits into subsequences also when ACHG does not matter (DC).
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        isAchgFpa.logical2doubleNan());
-
-      vsibAr = false(nRows, 1);
-
-      for iSs = 1:nSs
-        iRec1 = iRec1Ar(iSs);
-        iRec2 = iRec2Ar(iSs);
-
-        vsibAr(iRec1:iRec2) = bicas.proc.L1L2.sat.get_VSIB(...
-          SatSettings, samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
-      end
-    end
+    % function vsibAr = get_ASR_CWF_channel_VSIB_OLD(...
+    %     SatSettings, ssid, isAchgFpa, samplesAVolt)
+    %
+    %   nRows = irf.assert.sizes( ...
+    %     ssid,         [ 1], ...
+    %     isAchgFpa,    [-1], ...
+    %     samplesAVolt, [-1]);
+    %
+    %   % NOTE: Splits into subsequences also when ACHG does not matter (DC).
+    %   [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+    %     isAchgFpa.logical2doubleNan());
+    %
+    %   vsibAr = false(nRows, 1);
+    %
+    %   for iSs = 1:nSs
+    %     iRec1 = iRec1Ar(iSs);
+    %     iRec2 = iRec2Ar(iSs);
+    %
+    %     vsibAr(iRec1:iRec2) = bicas.proc.L1L2.sat.get_VSIB_OLD(...
+    %       SatSettings, samplesAVolt(iRec1:iRec2), ssid, isAchgFpa(iRec1));
+    %   end
+    % end
 
 
 
     % Return VSQB (not VSIB) for one (ASR) channel of SWF data over which
     % isAchgFpa may vary.
-    function vsqbAr = get_ASR_SWF_channel_VSQB(...
-        SatSettings, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
+    % function vsqbAr = get_ASR_SWF_channel_VSQB_OLD(...
+    %     SatSettings, ssid, isAchgFpa, samplesAVolt, zvNValidSamplesPerRecord)
+    %
+    %   [nRows, ~] = irf.assert.sizes( ...
+    %     ssid,                     [ 1], ...
+    %     isAchgFpa,                [-1], ...
+    %     samplesAVolt,             [-1, -2], ...
+    %     zvNValidSamplesPerRecord, [-1]);
+    %
+    %   [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+    %     isAchgFpa.logical2doubleNan());
+    %
+    %   vsqbAr = false(nRows, 1);
+    %
+    %   for iSs = 1:nSs
+    %     iRec1 = iRec1Ar(iSs);
+    %     iRec2 = iRec2Ar(iSs);
+    %
+    %     vsqbAr(iRec1:iRec2) = bicas.proc.L1L2.sat.get_snapshot_VSQB_many_OLD(...
+    %       SatSettings, ...
+    %       zvNValidSamplesPerRecord(iRec1:iRec2), ...
+    %       samplesAVolt(            iRec1:iRec2, :), ...
+    %       ssid, isAchgFpa(iRec1));
+    %   end
+    %
+    % end
 
-      [nRows, ~] = irf.assert.sizes( ...
-        ssid,                     [ 1], ...
-        isAchgFpa,                [-1], ...
-        samplesAVolt,             [-1, -2], ...
-        zvNValidSamplesPerRecord, [-1]);
-
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
-        isAchgFpa.logical2doubleNan());
-
-      vsqbAr = false(nRows, 1);
-
-      for iSs = 1:nSs
-        iRec1 = iRec1Ar(iSs);
-        iRec2 = iRec2Ar(iSs);
-
-        vsqbAr(iRec1:iRec2) = bicas.proc.L1L2.sat.get_snapshot_VSQB_many(...
-          SatSettings, ...
-          zvNValidSamplesPerRecord(iRec1:iRec2), ...
-          samplesAVolt(            iRec1:iRec2, :), ...
-          ssid, isAchgFpa(iRec1));
-      end
-
-    end
 
 
-
-    % Function to simplify other function get_VSQB().
+    % Function to simplify other function get_VSQB_OLD().
     %
     % For a given ASID, determine which rows contain samples which originate
     % from L1R directly (i.e. which were not reconstructed). Set all other
     % samples to NaN.
-    function asidSamplesAr = set_reconstructed_samples_to_NaN(...
-        asidSamplesAr, asid, bltsSsidAr)
-
-      % ASSERTIONS (in reality for documentation)
-      assert(isscalar(asid))
-      irf.assert.sizes( ...
-        asidSamplesAr, [-1, -2], ...
-        bltsSsidAr,    [-1, bicas.const.N_BLTS]);
-
-      ssid = bicas.proc.L1L2.const.ASID_to_SSID(asid);
-      bUse = any(ssid == bltsSsidAr, 2);
-      asidSamplesAr(~bUse, :) = NaN;
-    end
+    % function asidSamplesAr = set_reconstructed_samples_to_NaN_OLD(...
+    %     asidSamplesAr, asid, bltsSsidAr)
+    %
+    %   % ASSERTIONS (in reality for documentation)
+    %   assert(isscalar(asid))
+    %   irf.assert.sizes( ...
+    %     asidSamplesAr, [-1, -2], ...
+    %     bltsSsidAr,    [-1, bicas.const.N_BLTS]);
+    %
+    %   ssid = bicas.proc.L1L2.const.ASID_to_SSID(asid);
+    %   bUse = any(ssid == bltsSsidAr, 2);
+    %   asidSamplesAr(~bUse, :) = NaN;
+    % end
 
 
 
