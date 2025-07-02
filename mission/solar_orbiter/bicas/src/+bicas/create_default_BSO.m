@@ -415,6 +415,12 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',        
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   0.3);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);   % 0.3/20=0.015
 
+% How saturation affects QUALITY_FLAG, L2_QUALITY_BITMASK.
+%     Old scheme (to eventually be phased out): 'GLOBAL_SATURATION'
+%     New scheme (to eventually be phased in):  'CHANNEL_SATURATION'
+S.define_setting('PROCESSING.SATURATION.QUALITY_SCHEME', 'CHANNEL_SATURATION')
+
+
 %============================================================================
 % Settings for when to remove data by setting it to fill value
 % ------------------------------------------------------------

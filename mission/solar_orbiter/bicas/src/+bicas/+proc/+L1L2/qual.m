@@ -116,8 +116,6 @@ classdef qual
 
 
 
-    % NOT-YET-COMPLETED FUNCTION. WAS INTERRUPTED WHILE WRITING IT.
-    %
     % Given 9x ASR VSIBs (channel-specific VSIBs), derive quality variables
     % wrt. channel saturation.
     %
@@ -125,6 +123,18 @@ classdef qual
     %       the already set VSIBs contained within the SCHDs.
     % Ex: V1 and V2 are saturated by being high ==> V12 = 0 (approx.)
     %     ==> V12 does not appear saturated.
+    %
+    % NOTE: Can produce quality variable values using either old scheme
+    % ("GLOBAL_SATURATION") and new scheme ("CHANNEL_SATURATION") for
+    % backward-compatibility during development and testing. "GLOBAL_SATURATION"
+    % should be phased out eventually. /Erik P G Johansson, 2025-07-2
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % saturationQualitySchemeId
+    %       String constant. Which scheme to use for setting quality zVariables
+    %       (which QRCIDs are actually used).
     %
     %
     % IMPLEMENTATION NOTE: Channels to use for QRCS
@@ -157,7 +167,8 @@ classdef qual
     % zero, despite being very much affected by saturation.
     %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs_channel_saturation(...
-        Cdac, tt2000Ar, isSwf, vsibFractionThreshold, cwfSlidingWindowLengthSec)
+        Cdac, tt2000Ar, isSwf, ...
+        vsibFractionThreshold, cwfSlidingWindowLengthSec, saturationQualitySchemeId)
       % PROPOSAL: Separate function for one ASR/channel at a time.
       % PROPOSAL: Somehow only submit VSIBs, not SCHDs with channel samples.
       %   PRO: Easier to have separate functions for applying moving window
@@ -165,6 +176,7 @@ classdef qual
       %        called from here).
       assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
       assert(isscalar(isSwf) & islogical(isSwf))
+      assert(isscalar(saturationQualitySchemeId) & isstring(saturationQualitySchemeId))
 
       nRec = Cdac.nRecords;
 
@@ -173,24 +185,34 @@ classdef qual
       QUALITY_FLAG       = repmat(bicas.const.QUALITY_FLAG_MAX, nRec, 1);
       L2_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
 
-      function handle_channel(sdidStr, qrcid)
-        sdid        = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
-        Schd        = Cdac.get_channel(sdid);
-        QrcSettings = bicas.const.QRCS_L2_MAP(qrcid);
+      function handle_channel(sdidStr, channelSaturationQrcid)
+        switch(saturationQualitySchemeId)
+          case "GLOBAL_SATURATION"
+            qrcid = 'FULL_SATURATION';
+          case "CHANNEL_SATURATION"
+            qrcid = channelSaturationQrcid;
+          otherwise
+            error("BICAS:ConfigurationBug", ...
+              "Illegal argument saturationQualitySchemeId=""%s"".", ...
+              saturationQualitySchemeId)
+        end
+
+        Qrcs = bicas.const.QRCS_L2_MAP(qrcid);
+        sdid = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
+        Schd = Cdac.get_channel(sdid);
 
         if isSwf
-          vsqbAr = Schd.vsibAr;
+          vsqbSdidAr = Schd.vsibAr;
         else
-          vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
+          vsqbSdidAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
             tt2000Ar, Schd.vsibAr, ...
             vsibFractionThreshold, cwfSlidingWindowLengthSec);
         end
 
         QUALITY_FLAG_sdid = ...
-            uint8( vsqbAr) * QrcSettings.QUALITY_FLAG ...
-          + uint8(~vsqbAr) * bicas.const.QUALITY_FLAG_MAX;
-
-        L2_QUALITY_BITMASK_sdid = uint16(vsqbAr) * QrcSettings.Lx_QUALITY_BITMASK;
+            uint8( vsqbSdidAr) * Qrcs.QUALITY_FLAG ...
+          + uint8(~vsqbSdidAr) * bicas.const.QUALITY_FLAG_MAX;
+        L2_QUALITY_BITMASK_sdid = uint16(vsqbSdidAr) * Qrcs.Lx_QUALITY_BITMASK;
 
         QUALITY_FLAG       = min(QUALITY_FLAG, QUALITY_FLAG_sdid);
         L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_sdid);

@@ -134,13 +134,12 @@ classdef dc
         SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
         [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation(...
           Cdac, Dcip.Zv.Epoch, Dcip.hasSwfFormat, ...
-          SatSettings.vsibFractionThreshold, SatSettings.cwfSlidingWindowLengthSec);
+          SatSettings.vsibFractionThreshold, ...
+          SatSettings.cwfSlidingWindowLengthSec, ...
+          string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')));
 
         TmkNewImpl.stop_log()
 
-        % TODO: Extract Cdac VSIBs and set L2_QUALITY_BITMASK.
-        %   Separate function for extracting these bits specifically.
-        %   TODO-DEC: Which file should function be in?! qual, sat?
         % TODO: Convert Cdac samples to AsrSamplesAVoltSrm (or at least use
         %       it).
 
