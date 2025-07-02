@@ -161,7 +161,7 @@ classdef qual
     % QrcFlagsMap
     %       containers.Map: QRCID-->Logical column array
     %       Array element is set when the corresponding QRC applies.
-    % QrcSettingsMap
+    % QrcsMap
     %       containers.Map: QRCID-->bicas.proc.QrcSetting
     %       NOTE: The set of QRCIDs be identical to that of QrcFlagsMap.
     %
@@ -175,19 +175,17 @@ classdef qual
     %       depending on context.
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
-        nRec, QrcFlagsMap, QrcSettingsMap)
+        nRec, QrcFlagsMap, QrcsMap)
 
       %             % ASSERTION: Same QRCID is not specified twice.
-      %             assert(isempty(intersect(QrcSettingsMap.keys, ignoredQrcidCa)))
+      %             assert(isempty(intersect(QrcsMap.keys, ignoredQrcidCa)))
       %             % ASSERTION: The QRCIDs in QrcFlagsMap have been specified (no more,
       %             %            no less).
       %             castring_sets_equal(...
       %                 QrcFlagsMap.keys, ...
-      %                 [QrcSettingsMap.keys, ignoredQrcidCa])
+      %                 [QrcsMap.keys, ignoredQrcidCa])
 
-      irf.assert.castring_sets_equal(...
-        QrcFlagsMap.keys, ...
-        QrcSettingsMap.keys)
+      irf.assert.castring_sets_equal(QrcFlagsMap.keys, QrcsMap.keys)
 
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, quality bits=0), which can then later be "lowered"
@@ -197,9 +195,9 @@ classdef qual
 
       qrcidCa = QrcFlagsMap.keys();
       for i = 1:numel(qrcidCa)
-        qrcid      = qrcidCa{i};
-        QrcSetting = QrcSettingsMap(qrcid);
-        bQrc       = QrcFlagsMap(qrcid);
+        qrcid = qrcidCa{i};
+        Qrcs  = QrcsMap(qrcid);
+        bQrc  = QrcFlagsMap(qrcid);
 
         assert(isa(bQrc, 'logical'))
         assert(isequal( size(bQrc), [nRec, 1] ))
@@ -210,12 +208,12 @@ classdef qual
         % operation is more natural (simpler) that way.
         QUALITY_FLAG(bQrc) = min(...
           QUALITY_FLAG(bQrc), ...
-          QrcSetting.QUALITY_FLAG);
+          Qrcs.QUALITY_FLAG);
 
         % Set Lx_QUALITY_BITMASK
         Lx_QUALITY_BITMASK = bitor(...
           Lx_QUALITY_BITMASK, ...
-          QrcSetting.Lx_QUALITY_BITMASK * uint16(bQrc));
+          Qrcs.Lx_QUALITY_BITMASK * uint16(bQrc));
       end
     end
 

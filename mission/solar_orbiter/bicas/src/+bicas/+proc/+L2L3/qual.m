@@ -30,7 +30,7 @@ classdef qual   % < handle
 
       [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-        size(isBadDensityAr, 1), QrcFlagsMap, bicas.const.QRC_SETTINGS_L3_DENSITY);
+        size(isBadDensityAr, 1), QrcFlagsMap, bicas.const.QRCS_L3_MAP_DENSITY);
     end
 
 

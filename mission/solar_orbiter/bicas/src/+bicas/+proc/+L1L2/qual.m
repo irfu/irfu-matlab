@@ -63,7 +63,7 @@ classdef qual
       % (2) processing-generated QRCs (saturation)
       %============================================
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
-        bicas.const.QRC_SETTINGS_L2, NsoTable, Epoch, isFullSaturation, L);
+        bicas.const.QRCS_L2_MAP, NsoTable, Epoch, isFullSaturation, L);
     end
 
 
@@ -89,7 +89,7 @@ classdef qual
     %       merged (OR:ed) with pre-existing global L2_QUALITY_BITMASK.
     %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-        get_quality_ZVs(QrcSettingsL2Map, NsoTable, Epoch, isFullSaturation, L)
+        get_quality_ZVs(QrcsL2Map, NsoTable, Epoch, isFullSaturation, L)
 
       assert(islogical(isFullSaturation))
 
@@ -107,7 +107,7 @@ classdef qual
 
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-        size(Epoch, 1), QrcFlagsMap, QrcSettingsL2Map);
+        size(Epoch, 1), QrcFlagsMap, QrcsL2Map);
     end
 
 
