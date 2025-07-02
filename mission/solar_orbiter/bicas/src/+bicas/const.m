@@ -530,7 +530,7 @@ classdef const
 
       % Constant so that the same value can be used for both FULL_SATURATION and
       % channel saturations.
-      FULL_SATURATION_QUALITY_FLAG = uint8(0);
+      QUALITY_FLAG_FULL_SATURATION = uint8(0);
 
       % Quality bits (bitmasks). NOT QRCIDs.
       % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
@@ -554,7 +554,7 @@ classdef const
       % saturation. /YK 2020-10-02.
       QrcsL2Map("FULL_SATURATION") = ...
         bicas.proc.QrcSetting(...
-        FULL_SATURATION_QUALITY_FLAG, ...
+        QUALITY_FLAG_FULL_SATURATION, ...
         L2QBM_BIT_FULL_SATURATION + ...
         L2QBM_BIT_PARTIAL_SATURATION);
 
@@ -571,7 +571,6 @@ classdef const
         uint8(1), ...
         uint16(0));    % NOTE: No quality bit set!
 
-      % UNUSED
       %====================
       % CHANNEL SATURATION
       %====================
@@ -592,10 +591,8 @@ classdef const
         % bit(mask)_i = 2^(i-1) = 1..32
         l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
 
-        QrcsL2Map(qrcid) = ...
-          bicas.proc.QrcSetting(...
-          FULL_SATURATION_QUALITY_FLAG, ...
-          l2qbmBit);
+        QrcsL2Map(qrcid) = bicas.proc.QrcSetting(...
+          QUALITY_FLAG_FULL_SATURATION, l2qbmBit);
       end
 
     end

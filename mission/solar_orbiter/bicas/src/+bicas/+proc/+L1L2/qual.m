@@ -125,42 +125,44 @@ classdef qual
     %       the already set VSIBs contained within the SCHDs.
     % Ex: V1 and V2 are saturated by being high ==> V12 = 0 (approx.)
     %     ==> V12 does not appear saturated.
+    %
+    %
+    % IMPLEMENTATION NOTE: Channels to use for QRCS
+    % =============================================
+    % Uses ASR channel (SDID) VSIBs to determine QRCSs for channels in this
+    % function, despite that there are no SSIDs and that the ASR channels really
+    % correspond to ZVs, which may be non-ASR samples in rare cases, e.g. GND
+    % (BSM=6/7). This is necessary since reconstructed samples never have SSIDs.
+    % Therefore, this operation can not be performed on the BLTSs.
+    %
+    %
+    % IMPLEMENTATION NOTE: Using moving window algo. on ASRs instead of BLTSs
+    % =======================================================================
+    % This function applies the moving window algorithm
+    % (bicas.proc.L1L2.qual.sliding_window_over_fraction()) on the ASR (CWF)
+    % channels rather than on the BLTSs, since one can then avoid possible bad
+    % VSQB behaviour.
+    % --
+    % Ex 1: Consider a reconstructed channel when a VSQB (after moving window)
+    % ends on one underlying source channel and begins on another, at roughly
+    % the same time: If there is a non-saturated hole between the end and
+    % beginning, then the reconstructed channel may have a non-saturated hole
+    % that would never exist if moving window was applied on the reconstructed
+    % channel's threshold saturation bits instead of the two source channels.
+    % --
+    % Ex 2: If the two source channels for a reconstructed channel separately
+    % contain too few threshold saturated samples for the moving window algo.
+    % (e.g. 30% for a window fraction 50%), but enough when combined (e.g.
+    % 30%+30%>50%), then the reconstructed channel's saturation bits would be
+    % zero, despite being very much affected by saturation.
+    %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs_channel_saturation(...
         Cdac, tt2000Ar, isSwf, vsibFractionThreshold, cwfSlidingWindowLengthSec)
       % PROPOSAL: Separate function for one ASR/channel at a time.
-      % PROPOSAL: Assert full CDAC (all channels).
       % PROPOSAL: Somehow only submit VSIBs, not SCHDs with channel samples.
       %   PRO: Easier to have separate functions for applying moving window
       %        algo. to VSIBs (for all channels) in a separate function (not
       %        called from here).
-      %
-      % PROBLEM: Is using samples labelled by SDID, not SSID.
-      %   CON: Is not a real problem, since VSIB is only set for BLTSs when the
-      %        SSID is an ASR. Therefore, the SDIDs here are always ASRs when
-      %        VSIB is set (but not the reverse).
-      %   PRO: Is conceptual problem. Only SSID can be used for determining
-      %        thresholds and hence threshold saturation. Reconstructed
-      %        channels (both ASRs or non-ASRs, e.g. "diff" GND-GND) do not
-      %        have an SSID even in principle.
-      %   PROPOSAL: Rename/redefine channel saturation QRCIDs to represent
-      %             ZVs, not science data channels (ASRs) as such.
-      %             -- IMPLEMENTED
-      %
-      % PROPOSAL: Call moving window when detecting threshold saturation for
-      %           BLTSs.
-      %   CON: Bad behaviour for reconstructed channel when threshold
-      %        saturation ends on one underlying source channel and begins on
-      %        another, at roughly the same time:
-      %        Ex 1: If there is a non-saturated hole between the two, then
-      %        the reconstructed channel may have a non-saturated hole that
-      %        would never exist if moving window was applied on the
-      %        reconstructed channel's threshold saturation bits.
-      %        Ex 2: If the two source channels for a reconstructed channels
-      %        separately contain too few threshold saturated samples for
-      %        the moving window algo. (e.g. 30% for a window fraction 50%),
-      %        but enough when combined (e.g. 30%+30%>50%), then the
-      %        reconstructed channel's saturation bits would be zero,
-      %        despite being very much affected by saturation.
       assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
       assert(isscalar(isSwf) & islogical(isSwf))
 
