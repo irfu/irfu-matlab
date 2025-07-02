@@ -207,6 +207,8 @@ EMIDP
     parts of the MException .identifier string field (error message ID).
     NOTE: "Component" has a special meaning in the context of error
     message IDs. Therefore uses the term "part" instead.
+EXCD
+    Class bicas.proc.L2L3.ExternalCodeAbstract and subclasses thereof.
 FH
     Function Handle (Pointer).
 FP

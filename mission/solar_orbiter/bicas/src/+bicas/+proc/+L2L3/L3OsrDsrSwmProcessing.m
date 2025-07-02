@@ -76,7 +76,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
 
-      Ec = bicas.proc.L2L3.ExternalCodeImplementation();
+      Excd = bicas.proc.L2L3.ExternalCodeImplementation();
 
       %==============
       % Process data
@@ -86,7 +86,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         ScpotOsrCdf,   ScpotDsrCdf, ...
         DensityOsrCdf, DensityDsrCdf ...
       ] = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(...
-        InputLfrCwfCdf, Ec, Bso, L);
+        InputLfrCwfCdf, Excd, Bso, L);
 
       OutputDatasetsMap = containers.Map();
       OutputDatasetsMap('EFIELD_OSR_cdf')  = EfieldOsrCdf;
@@ -134,7 +134,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         OutScpotOsr,   OutScpotDsr, ...
         OutDensityOsr, OutDensityDsr ...
         ] ...
-        = process_L2_to_L3(InLfrCwf, Ec, Bso, L)
+        = process_L2_to_L3(InLfrCwf, Excd, Bso, L)
 
       if 0
         % TEST
@@ -180,7 +180,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %   QUALITY_BITMASK=CDF_UINT2, fill value 65535 (correct).
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', L);
-      assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
+      assert(isa(Excd, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
 
 
@@ -194,7 +194,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       LfrCwfZv.VDC_Fpa          = InLfrCwf.ZvFpa.VDC;
       LfrCwfZv.EDC_Fpa          = InLfrCwf.ZvFpa.EDC;
       LfrCwfZv.QUALITY_FLAG_Fpa = InLfrCwf.ZvFpa.QUALITY_FLAG;
-      R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, Bso);
+      R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Excd, Bso);
 
 
 

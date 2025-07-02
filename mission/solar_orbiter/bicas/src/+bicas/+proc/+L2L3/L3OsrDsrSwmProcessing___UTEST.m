@@ -256,7 +256,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         'TensorOrder', 0);
       Psp2neRv.codeVerStr      = '2023-08-11T10:11:00';
 
-      Ec = bicas.proc.L2L3.ExternalCodeImplementation();
+      Excd = bicas.proc.L2L3.ExternalCodeImplementation();
 
       %##################################################################
       % CALL CODE TO BE TESTED
@@ -264,7 +264,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       [ActEfieldOsr,  ActEfieldDsr, ...
         ActScpotOsr,   ActScpotDsr, ...
         ActDensityOsr, ActDensityDsr] ...
-        = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(InLfrCwf, Ec, Bso, L);
+        = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(InLfrCwf, Excd, Bso, L);
       %##################################################################
 
       % OSR

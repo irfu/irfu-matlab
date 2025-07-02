@@ -14,7 +14,6 @@
 %
 classdef ExternalCodeAbstract
   % PROPOSAL: Better name with better abbreviation for class with subclasses?
-  %   PRO: Currently using "Ec" as abbreviation.
   %   ~external code
   %   ~science
   %   ~science calculations
@@ -27,7 +26,14 @@ classdef ExternalCodeAbstract
   %   ~density, E field, scpot
   %   ~CWF
   %   --
-  %   ExternalCodeCall*
+  %   EXC
+  %     CON: Found in "except", "exclusive", "exceed", "exception" etc.
+  %   EXCD -- IMPLEMENTED, for now
+  %   EXTC
+  %     CON: Found in "TextContent" (~10 cases).
+  %     CON: Might clash with future "external things".
+  %   ECC = ExternalCodeCall*
+  %     CON: ECC found in "eccentricity", "VecComponent", "SpecrecCa" etc.
   %   ExternalCall*
   %   LSP, L3SP = L3ScienceProcessing
   %     CON: LSP to common substring.
