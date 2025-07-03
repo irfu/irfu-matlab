@@ -536,8 +536,9 @@ classdef const
       % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
       L2QBM_BIT_PARTIAL_SATURATION     = uint16(1);
       L2QBM_BIT_FULL_SATURATION        = uint16(2);
-      % Lowest bit among the channel saturation quality bits.
-      L2QBM_BIT_CHANNEL_SATURATION_LSB = uint16(4);
+      % Lowest bit among the channel saturation quality bits, described as the
+      % bit value/bitmask.
+      L2QBM_BIT_CHANNEL_SATURATION_LSB = uint16(1);
 
       %====================
       % PARTIAL_SATURATION
