@@ -134,7 +134,7 @@ classdef dc
         SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
         [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation(...
           Cdac, Dcip.Zv.Epoch, Dcip.hasSwfFormat, ...
-          SatSettings.vsibFractionThreshold, ...
+          SatSettings.vstbFractionThreshold, ...
           SatSettings.cwfSlidingWindowLengthSec, ...
           string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')));
 
@@ -755,20 +755,22 @@ classdef dc
       % Expand variables to be of the same size as bltsSamplesAVoltAr
       % -------------------------------------------------------------
       % NOTE: This could possibly lead to memory problems, which could be
-      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_threshold_VSIB_NEW()
+      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSTB_NEW()
       % once per BLTS.
       isAchgFpa   = repmat(        isAchgFpa,              [1, nSpr, bicas.const.N_BLTS]);
       bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, nSpr, 1                 ]);
 
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
 
-      bltsVsibAr  = bicas.proc.L1L2.sat.get_threshold_VSIB_NEW(...
+
+
+      bltsVstbAr  = bicas.proc.L1L2.sat.get_VSTB_NEW(...
         SatSettings, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa);
 
       % Normalize CWF/SWF data to one array format.
       % N x M x 5 --> N x 1 x 5 --> N x 5
-      % Logical OR over all VSIBs within snapshot.
-      bltsVsibAr = any(    bltsVsibAr, 2);
+      % Logical OR over all VSTBs within snapshot.
+      bltsVsibAr = any(bltsVstbAr, 2);
       bltsVsibAr = permute(bltsVsibAr, [1, 3, 2]);
 
       Tmk.stop_log(nRec, 'record')

@@ -42,11 +42,11 @@ classdef sat
 
       % How long the sliding window should be when using CDF data.
       S.cwfSlidingWindowLengthSec   = Bso.get_fv('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC');
-      % Threshold for the sample-length weighted fraction of VSIB-labelled
+      % Threshold for the sample-length weighted fraction of VSTB-labelled
       % samples within either (1) a sliding window (CWF), or (2) snapshot. If
-      % fraction of VSIB-labelled samples excedes this fraction, then the entire
+      % fraction of VSTB-labelled samples excedes this fraction, then the entire
       % sliding window or snapshot is labelled as saturated.
-      S.vsibFractionThreshold       = Bso.get_fv('PROCESSING.SATURATION.SAMPLE_FRACTION_THRESHOLD');
+      S.vstbFractionThreshold       = Bso.get_fv('PROCESSING.SATURATION.SAMPLE_FRACTION_THRESHOLD');
 
       % Higher thresholds for saturation. Sample values above these values, or
       % below the negated value, count as threshold-saturated (VSIB).
@@ -65,10 +65,10 @@ classdef sat
 
       assert_positive_float(S.cwfSlidingWindowLengthSec)
       assert(...
-        isfinite(S.vsibFractionThreshold) && ...
-        isscalar(S.vsibFractionThreshold) && ...
-        isfloat( S.vsibFractionThreshold) && ...
-        (0 <= S.vsibFractionThreshold) && (S.vsibFractionThreshold <= 1))
+        isfinite(S.vstbFractionThreshold) && ...
+        isscalar(S.vstbFractionThreshold) && ...
+        isfloat( S.vstbFractionThreshold) && ...
+        (0 <= S.vstbFractionThreshold) && (S.vstbFractionThreshold <= 1))
 
       assert_positive_float(S.upperThresholdAVoltDcSingle)
       assert_positive_float(S.upperThresholdAVoltDcDiff)
@@ -112,7 +112,7 @@ classdef sat
     %   %   ~sample-to-VSIB
     %   %   ~threshold_saturation
     %   %
-    %   % PROPOSAL/TODO: Replace with get_threshold_VSIB_NEW().
+    %   % PROPOSAL/TODO: Replace with get_VSTB_NEW().
     %
     %   assert(isfloat(samplesAVoltAr))
     %   assert(bicas.proc.L1L2.const.is_SSID(ssid)   & isscalar(ssid))
@@ -122,26 +122,25 @@ classdef sat
     %   % samplesAVoltAr but it slows down the execution
     %   % (bicas.proc.L1L2.const.SSID_is_AC() and
     %   % bicas.proc.L1L2.const.SSID_is_diff()).
-    %   % bicas.proc.L1L2.sat.get_threshold_VSIB_NEW() is fully vectorized and
+    %   % bicas.proc.L1L2.sat.get_VSTB_NEW() is fully vectorized and
     %   % works with both.
     %   % ssidAr    = repmat(ssid,      size(samplesAVoltAr));
     %   % isAchgFpa = repmat(isAchgFpa, size(samplesAVoltAr));
     %
-    %   vsibAr = bicas.proc.L1L2.sat.get_threshold_VSIB_NEW(...
+    %   vsibAr = bicas.proc.L1L2.sat.get_VSTB_NEW(...
     %     SatSettings, samplesAVoltAr, ssid, isAchgFpa);
     % end
 
 
 
-    % Derive VSIBs based on threshold saturation only (no moving window).
-    % Vectorized.
-    function vsibAr = get_threshold_VSIB_NEW(...
+    % Derive VSTBs. Vectorized.
+    function vstbAr = get_VSTB_NEW(...
         SatSettings, samplesAVoltAr, ssidAr, isAchgFpa)
 
       upperThresholdAVolt = bicas.proc.L1L2.sat.get_upper_thresholds(...
         SatSettings, ssidAr, isAchgFpa);
 
-      vsibAr = abs(samplesAVoltAr) > upperThresholdAVolt;
+      vstbAr = abs(samplesAVoltAr) > upperThresholdAVolt;
     end
 
 
@@ -218,7 +217,7 @@ classdef sat
     %   vsibAr = bicas.proc.L1L2.sat.get_VSIB_OLD(...
     %     SatSettings, samplesAVolt, ssid, isAchg);
     %
-    %   vsqb = (sum(vsibAr, 'all') / numel(samplesAVolt)) > SatSettings.vsibFractionThreshold;
+    %   vsqb = (sum(vsibAr, 'all') / numel(samplesAVolt)) > SatSettings.vstbFractionThreshold;
     % end
 
 
@@ -321,7 +320,7 @@ classdef sat
     %
     %     vsqbAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
     %       tt2000Ar, vsibAr, ...
-    %       SatSettings.vsibFractionThreshold, ...
+    %       SatSettings.vstbFractionThreshold, ...
     %       SatSettings.cwfSlidingWindowLengthSec);
     %   else
     %     %===========

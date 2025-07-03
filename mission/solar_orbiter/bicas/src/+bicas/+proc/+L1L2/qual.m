@@ -168,7 +168,7 @@ classdef qual
     %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs_channel_saturation(...
         Cdac, tt2000Ar, isSwf, ...
-        vsibFractionThreshold, cwfSlidingWindowLengthSec, saturationQualitySchemeId)
+        vstbFractionThreshold, cwfSlidingWindowLengthSec, saturationQualitySchemeId)
       % PROPOSAL: Separate function for one ASR/channel at a time.
       % PROPOSAL: Somehow only submit VSIBs, not SCHDs with channel samples.
       %   PRO: Easier to have separate functions for applying moving window
@@ -206,7 +206,7 @@ classdef qual
         else
           vsqbSdidAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
             tt2000Ar, Schd.vsibAr, ...
-            vsibFractionThreshold, cwfSlidingWindowLengthSec);
+            vstbFractionThreshold, cwfSlidingWindowLengthSec);
         end
 
         QUALITY_FLAG_sdid = ...
