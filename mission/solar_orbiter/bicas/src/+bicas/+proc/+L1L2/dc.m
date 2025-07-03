@@ -124,7 +124,8 @@ classdef dc
         % NOTE: No SCHD as input (though as output).
         % NOTE: Is QUITE SLOW, at least for LFR SWF (?).
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
-          bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa, Bso, L);
+          bltsSamplesAVolt, Dcip.Zv.nValidSamplesPerRecord, ...
+          bltsSsidArray, Dcip.Zv.isAchgFpa, Bso, L);
 
         Cdac = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
           bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
@@ -272,19 +273,6 @@ classdef dc
         bltsSdidArray(iRecSs, :) = repmat(sdidArray, nRecSs, 1);
       end
     end
-
-
-
-  end    % methods(Static)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
 
 
 
@@ -739,26 +727,31 @@ classdef dc
     %       N x 5. SWF: Set if at least one bit is set for any sample within
     %       a snapshot.
     function bltsVsibAr = get_VSIB_5xBLTS_NEW(...
-        bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa, Bso, L)
-      % PROPOSAL: Test code.
+        bltsSamplesAVoltAr, nValidSamplesPerRecord, bltsSsidAr, isAchgFpa, Bso, L)
       % PROPOSAL: SatSettings as argument.
       %   PRO: Simpler test code.
 
       Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
 
+      % size(bltsSamplesAVoltAr), size(bltsSsidAr), size(isAchgFpa)
       [nRec, nSpr] = irf.assert.sizes(...
-        bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
-        bltsSsidAr,         [-1,     bicas.const.N_BLTS], ...
-        isAchgFpa,          [-1]);
+        bltsSamplesAVoltAr,     [-1, -2, bicas.const.N_BLTS], ...
+        nValidSamplesPerRecord, [-1], ...
+        bltsSsidAr,             [-1,     bicas.const.N_BLTS], ...
+        isAchgFpa,              [-1]);
       assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
 
       % Expand variables to be of the same size as bltsSamplesAVoltAr
       % -------------------------------------------------------------
+      % Needed for submitting arguments to bicas.proc.L1L2.sat.get_VSTB_NEW()
       % NOTE: This could possibly lead to memory problems, which could be
       % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSTB_NEW()
       % once per BLTS.
-      isAchgFpa   = repmat(        isAchgFpa,              [1, nSpr, bicas.const.N_BLTS]);
-      bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, nSpr, 1                 ]);
+      isAchgFpa              = repmat(        isAchgFpa,              [1, nSpr, bicas.const.N_BLTS]);
+      bltsSsidAr             = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, nSpr, 1                 ]);
+
+      % Expand variable to size nRec x 1 x N_BLTS, needed for later comparison
+      nValidSamplesPerRecord = repmat(nValidSamplesPerRecord, [1, 1, 5]);
 
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
 
@@ -767,11 +760,24 @@ classdef dc
       bltsVstbAr  = bicas.proc.L1L2.sat.get_VSTB_NEW(...
         SatSettings, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa);
 
-      % Normalize CWF/SWF data to one array format.
+      % Normalize CWF/SWF data to one array format (one VSIB per record & BLTS).
       % N x M x 5 --> N x 1 x 5 --> N x 5
-      % Logical OR over all VSTBs within snapshot.
-      bltsVsibAr = any(bltsVstbAr, 2);
+      % VSTB --> VSIB
+      if nSpr >= 2
+        % CASE: SWF
+
+        % POTENTIAL BUG: Relies on that VSTB=false for padded samples/elements
+        % at the end of TDS-RSWF snapshots (the arrays are padded not account
+        % for varying-length snapshots).
+        bltsVsibAr = (sum(bltsVstbAr, 2) ./ nValidSamplesPerRecord) >= SatSettings.vstbFractionThreshold;
+        %bltsVsibAr = (sum(bltsVstbAr, 2) / nSpr) >= SatSettings.vstbFractionThreshold;
+      else
+        % CASE: CWF
+        bltsVsibAr = bltsVstbAr;
+      end
       bltsVsibAr = permute(bltsVsibAr, [1, 3, 2]);
+
+      irf.assert.sizes(bltsVsibAr, [nRec, bicas.const.N_BLTS])
 
       Tmk.stop_log(nRec, 'record')
     end
@@ -835,7 +841,7 @@ classdef dc
 
 
 
-  end    % methods(Static, Access=private)
+  end    % methods(Static)
 
 
 

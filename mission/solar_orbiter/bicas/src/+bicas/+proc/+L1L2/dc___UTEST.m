@@ -87,6 +87,83 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_get_VSIB_5xBLTS_NEW___CWF(testCase)
+      L = bicas.Logger('NO_STDOUT', false);
+
+      Bso = bicas.create_default_BSO();
+      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',          2, 'test');
+      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',            5, 'test');
+      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   8, 'test');
+      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  1, 'test');
+      Bso.make_read_only();
+
+      % (5 BLTS) x (3 records)
+      bltsSamplesAVoltAr = single([...
+        1 3 5;
+        1 3 6;
+        6 3 1;
+        7 9 7;
+        9 7 9]);
+      bltsSamplesAVoltAr     = permute(bltsSamplesAVoltAr, [2 3 1]);
+
+      bltsSsidAr             = permute(bicas.proc.L1L2.const.C.SSID_DICT(...
+        ["DC_V1" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]), [3 2 1]);
+      bltsSsidAr             = repmat(bltsSsidAr, [3 1 1]);
+
+      isAchgFpa              = repmat(bicas.utils.FPArray(false, 'NO_FILL_POSITIONS'), [3, 1]);
+      nValidSamplesPerRecord = repmat(1, [3, 1]);
+
+      expBltsVsibAr         = permute(logical([ ...
+        0 1 1;
+        0 0 1;
+        1 0 0;
+        0 1 0;
+        1 0 1;
+        ]), [2 1]);
+
+      % CALL TESTED CODE
+      actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
+        bltsSamplesAVoltAr, nValidSamplesPerRecord, ...
+        bltsSsidAr, isAchgFpa, Bso, L);
+
+      testCase.assertEqual(actBltsVsibAr, expBltsVsibAr)
+    end
+
+
+
+    function test_get_VSIB_5xBLTS_NEW___SWF(testCase)
+      % PROPOSAL: nValidSamplesPerRecord that varies over records.
+      %   CON: Must have multiple records. ==> More test data.
+      L = bicas.Logger('NO_STDOUT', false);
+
+      Bso = bicas.create_default_BSO();
+      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF', 2,    'test');
+      Bso.override_value('PROCESSING.SATURATION.SAMPLE_FRACTION_THRESHOLD',      0.49, 'test');
+      Bso.make_read_only();
+
+      % (5 BLTS) x (1 record) x (4 spr)
+      bltsSamplesAVoltAr = single([...
+        1 1 1 1 0 0;
+        1 1 3 1 0 0;
+        1 3 3 1 0 0;
+        1 3 3 3 0 0;
+        3 3 3 3 0 0]);
+      bltsSamplesAVoltAr     = permute(bltsSamplesAVoltAr, [3 2 1]);
+      bltsSsidAr             = repmat(bicas.proc.L1L2.const.C.SSID_DICT("DC_V12"),     [1, 5]);
+      isAchgFpa              = repmat(bicas.utils.FPArray(false, 'NO_FILL_POSITIONS'), [1, 1]);   % Value should be irrelevant
+      expBltsVsibAr          = permute(logical([0 0 1 1 1]), [3, 2, 1]);
+      nValidSamplesPerRecord = repmat(4, [1, 1]);
+
+      % CALL TESTED CODE
+      actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
+        bltsSamplesAVoltAr, nValidSamplesPerRecord, ...
+        bltsSsidAr, isAchgFpa, Bso, L);
+
+      testCase.assertEqual(actBltsVsibAr, expBltsVsibAr)
+    end
+
+
+
   end    % methods(Test)
 
 
