@@ -344,8 +344,12 @@ classdef const
       bAcAr         = false(size(ssidAr));
       bAsrAr        = bicas.proc.L1L2.const.SSID_is_ASR(ssidAr);
 
-      bAcAr(bAsrAr) = bicas.proc.L1L2.const.ASID_is_AC(...
-        bicas.proc.L1L2.const.C.SSID_ASID_DICT(ssidAr(bAsrAr)));
+      % IMPLEMENTATION NOTE: One could merge below commands but does not in
+      % order to make it easier to examine which part is slow.
+      ssidAsrAr     = ssidAr(bAsrAr);   % Fast
+      % asidAr        = bicas.proc.L1L2.const.C.SSID_ASID_DICT(ssidAsrAr);   % Slow
+      asidAr        = bicas.utils.dict_lookup(bicas.proc.L1L2.const.C.SSID_ASID_DICT, ssidAsrAr);   % Fast
+      bAcAr(bAsrAr) = bicas.proc.L1L2.const.ASID_is_AC(asidAr);   % Fast
     end
 
     % Vectorized
@@ -355,8 +359,12 @@ classdef const
       bDiffAr         = false(size(ssidAr));
       bAsrAr          = bicas.proc.L1L2.const.SSID_is_ASR(ssidAr);
 
-      bDiffAr(bAsrAr) = bicas.proc.L1L2.const.ASID_is_diff(...
-        bicas.proc.L1L2.const.C.SSID_ASID_DICT(ssidAr(bAsrAr)));
+      % IMPLEMENTATION NOTE: One could merge below commands but does not in
+      % order to make it easier to examine which part is slow.
+      ssidAsrAr       = ssidAr(bAsrAr);   % Fast
+      % asidAr          = bicas.proc.L1L2.const.C.SSID_ASID_DICT(ssidAsrAr);   % Slow
+      asidAr          = bicas.utils.dict_lookup(bicas.proc.L1L2.const.C.SSID_ASID_DICT, ssidAsrAr);   % Fast
+      bDiffAr(bAsrAr) = bicas.proc.L1L2.const.ASID_is_diff(asidAr);   % Fast
     end
 
 

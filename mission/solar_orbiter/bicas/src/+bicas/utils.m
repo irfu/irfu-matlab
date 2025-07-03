@@ -175,6 +175,86 @@ classdef utils
 
 
 
+    % Do vectorized lookup in MATLAB dictionary.
+    %
+    % The function is more general than what is really needed for BICAS (accepts
+    % more MATLAB classes).
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % dict
+    %       Non-empty dictionary.
+    % keyAr
+    %       Array. Every element must be equal to a key in "dict". Elements must
+    %       not be NaN.
+    %
+    %
+    % RATIONALE
+    % =========
+    % MATLAB dictionaries do support the functionality implemented by this
+    % function (sic!). However, MATLAB's implementation (MATLAB R2024a) has been
+    % found to be slow for the particular way BICAS uses vectorized dictionary
+    % lookup: large integer arrays (with few dictionary entries). This function
+    % is faster than MATLAB's dictionary implementation for at least that use
+    % case and speeds up BICAS considerably.
+    % --
+    % BICAS uses this function for doing lookups into SSID/SDID/ASID
+    % dictionaries using large arrays.
+    %
+    function valueAr = dict_lookup(dict, keyAr)
+      % NOTE: Algorithm (equality) does not support NaN. Function could be made
+      % to support it, but that has not been needed yet.
+      if isfloat(keyAr)
+        assert(~any(isnan(keyAr), "all"))
+      end
+
+      if numel(keyAr) <= 1
+        % IMPLEMENTATION NOTE: Special case for small "keyAr". BICAS sometimes
+        % calls this function many times with small arrays. This special case
+        % speeds up that special case. (The speedup has been observed in
+        % practice.)
+        %
+        % IMPLEMENTATION NOTE: This case implements support for (1) empty
+        % "keyAr", combined with (2) zero-entry dictionary with only key/value
+        % MATLAB classes defined. It is not clear how to produce an empty output
+        % array of an arbitrary MATLAB class (both numbers and strings) without
+        % special cases.
+        %
+        % IMPLEMENTATION NOTE: This special case presents a problem for
+        % automated tests which do not know whether this special case is tested
+        % or not, and which should not know what the threshold is.
+        valueAr = dict(keyAr);
+      else
+        [mcKeys, ~] = dict.types;
+
+        assert(mcKeys == class(keyAr), '"keyAr" does not have the same MATLAB class as the "dict" values.')
+        assert(dict.numEntries >= 1,   '"dict" does not have at least one entry for non-empty "keyAr".')
+
+        uniqueKeysAr   = dict.keys;
+        uniqueValuesAr = dict.values;
+        valueAr        = repmat(uniqueValuesAr(1), size(keyAr));
+
+        % Flags for which the output elements have been set (or the initial value
+        % has been overwritten).
+        bSet = false(size(keyAr));
+
+        for i = 1:dict.numEntries
+          bKey          = keyAr == uniqueKeysAr(i);
+
+          valueAr(bKey) = uniqueValuesAr(i);
+
+          bSet          = bSet | bKey;
+        end
+
+        assert(all(bSet, "all"), ...
+          """keyAr"" contained at least one value which is not equal to a dictionary key.")
+        assert(isequaln(size(keyAr), size(valueAr)))
+      end
+    end
+
+
+
     %############
     % ASSERTIONS
     %############
