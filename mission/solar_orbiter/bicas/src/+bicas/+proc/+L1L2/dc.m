@@ -124,12 +124,12 @@ classdef dc
         % NOTE: No SCHD as input (though as output).
         % NOTE: Is QUITE SLOW, at least for LFR SWF (?).
         bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
-          Bso, bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa, L);
+          bltsSamplesAVolt, bltsSsidArray, Dcip.Zv.isAchgFpa, Bso, L);
 
         Cdac = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
           bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
 
-        Cdac        = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
+        Cdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
 
         SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
         [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation(...
@@ -731,8 +731,6 @@ classdef dc
 
 
 
-    % EXPERIMENTAL
-    %
     % Derive VSIB from BLTS samples. Vectorized.
     %
     % RETURN VALUE
@@ -741,23 +739,23 @@ classdef dc
     %       N x 5. SWF: Set if at least one bit is set for any sample within
     %       a snapshot.
     function bltsVsibAr = get_VSIB_5xBLTS_NEW(...
-        Bso, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa, L)
+        bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa, Bso, L)
       % PROPOSAL: Test code.
       % PROPOSAL: SatSettings as argument.
       %   PRO: Simpler test code.
 
       Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
 
-      [nSpr, nRec] = irf.assert.sizes(...
-        bltsSamplesAVoltAr, [-2, -1, bicas.const.N_BLTS], ...
-        bltsSsidAr,         [-2,     bicas.const.N_BLTS], ...
-        isAchgFpa,          [-2]);
+      [nRec, nSpr] = irf.assert.sizes(...
+        bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
+        bltsSsidAr,         [-1,     bicas.const.N_BLTS], ...
+        isAchgFpa,          [-1]);
       assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
 
       % Expand variables to be of the same size as bltsSamplesAVoltAr
       % -------------------------------------------------------------
       % NOTE: This could possibly lead to memory problems, which could be
-      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_threshold_VSIB_NEW
+      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_threshold_VSIB_NEW()
       % once per BLTS.
       isAchgFpa   = repmat(        isAchgFpa,              [1, nSpr, bicas.const.N_BLTS]);
       bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, nSpr, 1                 ]);
@@ -778,8 +776,6 @@ classdef dc
 
 
 
-    % EXPERIMENTAL.
-    %
     % Convert samples stored as 5x BLTSs to 9x ASRs (without reconstructing
     % missing data).
     %

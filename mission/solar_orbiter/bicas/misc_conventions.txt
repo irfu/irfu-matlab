@@ -469,6 +469,9 @@ SNF
 SPR
     Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.
+    Can both include and exclude padded samples/elements at the end of a record
+    (for a given channel) to achieve non-jagged arrays.
+    Ex: Varying-length snapshots for TDS-LFM-RSWF data.
 SRF
     Name of a particular s/c coordinate system. "Spacecraft Reference Frame"?
 SRM
@@ -505,7 +508,7 @@ TF
     radians/s (omega).
 Threshold saturation
     Notion of saturation for a sample, equivalent to the sample value exceeding
-    some relevant threshold.
+    the relevant threshold.
 TM
     Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this term
     instead of the term "count".

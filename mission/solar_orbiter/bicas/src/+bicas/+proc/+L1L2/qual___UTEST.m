@@ -45,7 +45,8 @@ classdef qual___UTEST < matlab.unittest.TestCase
         ];
       N_ROWS      = size(DATA, 1);
       SAMPLES_AR  = zeros(N_ROWS, 1);   % NOTE: Only the size is important.
-      TT2000_AR   = int64([1:N_ROWS] * 1e9)';   % NOTE: (Almost) only the size is important.
+      % NOTE: (Almost) only the size is important.
+      TT2000_AR   = int64([1:N_ROWS] * 1e9)';
       VSIB_AR_ALL                               = logical(DATA(:, 1:9));
       EXP_QUALITY_FLAG                          = uint8(  DATA(:, 10 ));
       EXP_L2_QUALITY_BITMASK_GLOBAL_SATURATION  = uint16( DATA(:, 11 ));

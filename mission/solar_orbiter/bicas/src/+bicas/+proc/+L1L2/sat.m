@@ -162,6 +162,7 @@ classdef sat
     %
     function upperThresholdAVoltAr = get_upper_thresholds(...
         SatSettings, ssidAr, isAchgFpa)
+      % Tmk = bicas.utils.Timekeeper('get_upper_thresholds', L);
 
       assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
       assert(isa(isAchgFpa, 'bicas.utils.FPArray') & strcmp(isAchgFpa.mc, "logical"))
@@ -189,6 +190,8 @@ classdef sat
       upperThresholdAVoltAr(bDcDiff)   = SatSettings.upperThresholdAVoltDcDiff;
       upperThresholdAVoltAr(bAclg)     = SatSettings.upperThresholdAVoltAclg;
       upperThresholdAVoltAr(bAchg)     = SatSettings.upperThresholdAVoltAchg;
+
+      % Tmk.stop_log(numel(ssidAr), 'element')
     end
 
 

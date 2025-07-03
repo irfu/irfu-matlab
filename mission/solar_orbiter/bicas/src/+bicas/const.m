@@ -528,17 +528,22 @@ classdef const
     function QrcsL2Map = init_QRCS_L2_MAP()
       QrcsL2Map = containers.Map();
 
-      % Constant so that the same value can be used for both FULL_SATURATION and
-      % channel saturations.
-      QUALITY_FLAG_FULL_SATURATION = uint8(0);
-
+      % -----------------------------------------
+      % Global saturation quality variable scheme
+      % -----------------------------------------
       % Quality bits (bitmasks). NOT QRCIDs.
       % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
       L2QBM_BIT_PARTIAL_SATURATION     = uint16(1);
       L2QBM_BIT_FULL_SATURATION        = uint16(2);
+      QUALITY_FLAG_FULL_SATURATION     = uint8(0);
+
+      % ------------------------------------------
+      % Channel saturation quality variable scheme
+      % ------------------------------------------
       % Lowest bit among the channel saturation quality bits, described as the
       % bit value/bitmask.
       L2QBM_BIT_CHANNEL_SATURATION_LSB = uint16(1);
+      QUALITY_FLAG_CHANNEL_SATURATION  = QUALITY_FLAG_FULL_SATURATION;
 
       %====================
       % PARTIAL_SATURATION
@@ -593,7 +598,7 @@ classdef const
         l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
 
         QrcsL2Map(qrcid) = bicas.proc.QrcSetting(...
-          QUALITY_FLAG_FULL_SATURATION, l2qbmBit);
+          QUALITY_FLAG_CHANNEL_SATURATION, l2qbmBit);
       end
 
     end
