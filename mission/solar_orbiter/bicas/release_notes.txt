@@ -290,8 +290,15 @@ Version 8.5.0 (2026-06-26)
   2022-12-01T00:10:00Z.
 
 
-Version X.Y.Z
--------------
+Version X.Y.Z (????-??-??)
+--------------------------
 * Renamed setting:
      PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD
   -->PROCESSING.SATURATION.SAMPLE_FRACTION_THRESHOLD
+* Support both setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK)
+  using old (almost) and new scheme for saturation:
+  Old scheme: "global saturation" (FULL_SATURATION & PARTIAL_SATURATION)
+              (Not entirely supported, but almost.)
+  New scheme: "channel saturation" (six bits; one per single/diff, AC=DC)
+  Controlled by new setting PROCESSING.SATURATION.QUALITY_SCHEME.
+

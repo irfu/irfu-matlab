@@ -131,15 +131,18 @@ CA
     Cell Array. See "AR".
 CDAC
     Class bicas.proc.L1L2.ChannelDataAsrCollection.
-Channel saturation
-    Separate saturation quality bits which are specific to different channels.
-    Term created to separate new code from the earlier system of saturation
-    quality bits (one partial and full saturation quality bit respectively for
-    all channels combined).
+Channel saturation (quality variable scheme)
+    Scheme for setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK).
+    Set 6x quality bits, one per single/diff channel (DC and AC diffs share
+    bits).
+    NOTE: This term was created to separate new code from the previous scheme
+    for setting saturation quality bits ("global saturation").
     NOTE: The corresponding QRCIDs technically represent saturation on
     the corresponding ZVs, regardless of whether they represent ASRs or not,
     though in practice saturation is only detected when they represent
     the corresponding ASR SSIDs.
+    --
+    See "global saturation".
 CLI
     Command-Line Interface. In particular, "CLI arguments" refers to an array of
     string arguments submitted to BICAS via the OS.
@@ -249,6 +252,17 @@ GA
     (CDF) Global Attribute(s).
 GACT
     L1R GA CALIBRATION_TABLE or synthetic versions thereof, e.g. for L1.
+Global saturation (quality variable scheme)
+    Scheme for setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK).
+    Sets two quality bits:
+    Bit A: Set iff there is "partial saturation" or "full saturation" on any
+    channel,
+    Bit B: Set iff there is "full saturation".
+    NOTE: This is the old scheme (2025-07-03) and is meant to be phased out and
+    replaced by "channel saturation". It is only meant to be (partially)
+    supported for a transitional period.
+    --
+    See "channel saturation".
 GMDB
     "GA MODS DataBase", i.e. class bicas.ga.mods.Database.
 GMDE
