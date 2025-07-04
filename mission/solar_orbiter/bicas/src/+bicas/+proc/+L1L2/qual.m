@@ -35,37 +35,37 @@ classdef qual
     % L2_QUALITY_BITMASK
     %       Quality ZV to use.
     %
-    function [zvUfv, QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-        get_UFV_quality_ZVs(InZv, isLfr, NsoTable, Bso, L)
-      % PROPOSAL: Replace InZv-->Separate arguments.
-
-      % ASSERTIONS
-      irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'autodetectedVsqb'}, {})
-      irf.assert.sizes( ...
-        InZv.Epoch,            [-1], ...
-        InZv.bdmFpa,           [-1], ...
-        InZv.autodetectedVsqb, [-1]);
-      assert(isscalar(isLfr) && islogical(isLfr))
-
-      Epoch            = InZv.Epoch;
-      BdmFpa           = InZv.bdmFpa;
-      autodetectedVsqb = InZv.autodetectedVsqb;
-      clear InZv
-
-      %============================================
-      % Find CDF records to remove due to settings
-      %============================================
-      zvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
-        Epoch, BdmFpa, isLfr, Bso, L);
-
-      %============================================
-      % Create quality ZVs based on
-      % (1) NSO events table, and
-      % (2) processing-generated QRCs (saturation)
-      %============================================
-      [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
-        bicas.const.QRCS_L2_MAP, NsoTable, Epoch, autodetectedVsqb, L);
-    end
+    % function [zvUfv, QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
+    %     get_UFV_quality_ZVs(InZv, isLfr, NsoTable, Bso, L)
+    %   % PROPOSAL: Replace InZv-->Separate arguments.
+    %
+    %   % ASSERTIONS
+    %   irf.assert.struct(InZv, {'Epoch', 'bdmFpa', 'autodetectedVsqb'}, {})
+    %   irf.assert.sizes( ...
+    %     InZv.Epoch,            [-1], ...
+    %     InZv.bdmFpa,           [-1], ...
+    %     InZv.autodetectedVsqb, [-1]);
+    %   assert(isscalar(isLfr) && islogical(isLfr))
+    %
+    %   Epoch            = InZv.Epoch;
+    %   BdmFpa           = InZv.bdmFpa;
+    %   autodetectedVsqb = InZv.autodetectedVsqb;
+    %   clear InZv
+    %
+    %   %============================================
+    %   % Find CDF records to remove due to settings
+    %   %============================================
+    %   zvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
+    %     Epoch, BdmFpa, isLfr, Bso, L);
+    %
+    %   %============================================
+    %   % Create quality ZVs based on
+    %   % (1) NSO events table, and
+    %   % (2) processing-generated QRCs (saturation)
+    %   %============================================
+    %   [QUALITY_FLAG, L2_QUALITY_BITMASK] = bicas.proc.L1L2.qual.get_quality_ZVs(...
+    %     bicas.const.QRCS_L2_MAP, NsoTable, Epoch, autodetectedVsqb, L);
+    % end
 
 
 
@@ -91,28 +91,28 @@ classdef qual
     %       Array. L2_QUALITY_BITMASK bits set based on NSOs only. Should be
     %       merged (OR:ed) with pre-existing global L2_QUALITY_BITMASK.
     %
-    function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
-        QrcsL2Map, NsoTable, Epoch, isFullSaturation, L)
-
-      assert(islogical(isFullSaturation))
-
-      QrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
-        bicas.const.ALL_QRCID, NsoTable, Epoch, L);
-
-      % Remove QRCIDs which this function can not handle (and should not
-      % need to) since they are not intended for L2_QUALITY_BITMASK.
-      QrcFlagsMap.remove("BAD_DENSITY");
-
-      % Add autodetected saturation.
-      b = QrcFlagsMap("FULL_SATURATION");
-      b = b | isFullSaturation;
-      QrcFlagsMap("FULL_SATURATION") = b;
-
-      % Call generic function for setting QUALITY_FLAG and *_QUALITY_BITMASK.
-      [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-        bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-        size(Epoch, 1), QrcFlagsMap, QrcsL2Map);
-    end
+    % function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
+    %     QrcsL2Map, NsoTable, Epoch, isFullSaturation, L)
+    %
+    %   assert(islogical(isFullSaturation))
+    %
+    %   QrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
+    %     bicas.const.ALL_QRCID_AR, NsoTable, Epoch, L);
+    %
+    %   % Remove QRCIDs which this function can not handle (and should not
+    %   % need to) since they are not intended for L2_QUALITY_BITMASK.
+    %   QrcFlagsMap.remove("BAD_DENSITY");
+    %
+    %   % Add autodetected saturation.
+    %   b = QrcFlagsMap("FULL_SATURATION");
+    %   b = b | isFullSaturation;
+    %   QrcFlagsMap("FULL_SATURATION") = b;
+    %
+    %   % Call generic function for setting QUALITY_FLAG and *_QUALITY_BITMASK.
+    %   [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
+    %     bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
+    %     size(Epoch, 1), QrcFlagsMap, QrcsL2Map);
+    % end
 
 
 
