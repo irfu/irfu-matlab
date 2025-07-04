@@ -18,7 +18,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_quality_ZVs_channel_saturation(testCase)
+    function test_get_quality_ZVs_autodetected_saturation(testCase)
       % NOTE: Does not (truly) test the call to
       % bicas.proc.L1L2.qual.sliding_window_over_fraction().
 
@@ -75,7 +75,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED FUNCTION
       [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
-        bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation( ...
+        bicas.proc.L1L2.qual.get_quality_ZVs_autodetected_saturation( ...
         Cdac, TT2000_AR, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, ...
         "GLOBAL_SATURATION");
 
@@ -84,7 +84,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED FUNCTION
       [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
-        bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation( ...
+        bicas.proc.L1L2.qual.get_quality_ZVs_autodetected_saturation( ...
         Cdac, TT2000_AR, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, ...
         "CHANNEL_SATURATION");
 

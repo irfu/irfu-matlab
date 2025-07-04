@@ -157,13 +157,19 @@ classdef const
 
 
 
-    % How to interpret different QRCIDs in terms of quality ZVs: QUALITY_FLAG,
-    % L2/L3_QUALITY_BITMASK.
+    % QUALITY_FLAG value for both
+    % (1) global saturation's "full saturation" QRC, and
+    % (2) channel saturation.
+    QUALITY_FLAG_SATURATION = uint8(0);
+
+    % Maps QRCID-->QRCS for different sets of QRCIDs.
     %
     % NOTE: The definitions here must be consistent with the definitions in
     % the corresponding CDF skeletons.
-    QRCS_L2_MAP         = bicas.const.init_QRCS_L2_MAP();
-    QRCS_L3_MAP_DENSITY = bicas.const.init_QRCS_L3_MAP_DENSITY();
+
+    QRCS_L2_CHANNEL_SATURATION_MAP = bicas.const.init_QRCS_L2_CHANNEL_SATURATION_MAP()
+    QRCS_L2_MAP                    = bicas.const.init_QRCS_L2_MAP();
+    QRCS_L3_MAP_DENSITY            = bicas.const.init_QRCS_L3_MAP_DENSITY();
 
 
 
@@ -525,57 +531,13 @@ classdef const
     % RETURN VALUE
     % ============
     % Map QRCID-->bicas.proc.QrcSetting
-    function QrcsL2Map = init_QRCS_L2_MAP()
-      QrcsL2Map = containers.Map();
+    %
+    function QrcsMap = init_QRCS_L2_CHANNEL_SATURATION_MAP()
+      QrcsMap = containers.Map();
 
-      % -----------------------------------------
-      % Global saturation quality variable scheme
-      % -----------------------------------------
-      % Quality bits (bitmasks). NOT QRCIDs.
-      % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
-      L2QBM_BIT_PARTIAL_SATURATION     = uint16(1);
-      L2QBM_BIT_FULL_SATURATION        = uint16(2);
-      QUALITY_FLAG_FULL_SATURATION     = uint8(0);
-
-      % ------------------------------------------
-      % Channel saturation quality variable scheme
-      % ------------------------------------------
       % Lowest bit among the channel saturation quality bits, described as the
       % bit value/bitmask.
       L2QBM_BIT_CHANNEL_SATURATION_LSB = uint16(1);
-      QUALITY_FLAG_CHANNEL_SATURATION  = QUALITY_FLAG_FULL_SATURATION;
-
-      %====================
-      % PARTIAL_SATURATION
-      %====================
-      QrcsL2Map("PARTIAL_SATURATION") = ...
-        bicas.proc.QrcSetting(...
-        uint8(1), ...
-        L2QBM_BIT_PARTIAL_SATURATION);
-
-      %=================
-      % FULL_SATURATION
-      %=================
-      % NOTE: Also set PARTIAL saturation bit when FULL
-      % saturation. /YK 2020-10-02.
-      QrcsL2Map("FULL_SATURATION") = ...
-        bicas.proc.QrcSetting(...
-        QUALITY_FLAG_FULL_SATURATION, ...
-        L2QBM_BIT_FULL_SATURATION + ...
-        L2QBM_BIT_PARTIAL_SATURATION);
-
-      %=================
-      % THRUSTER_FIRING
-      %=================
-      % NOTE: There will be an L1 QUALITY_BITMASK bit for thruster firings in
-      % the future according to
-      % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
-      % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
-      % (YK 2020-11-03 did not ask for any to be set.)
-      QrcsL2Map("THRUSTER_FIRING") = ...
-        bicas.proc.QrcSetting(...
-        uint8(1), ...
-        uint16(0));    % NOTE: No quality bit set!
 
       %====================
       % CHANNEL SATURATION
@@ -597,10 +559,82 @@ classdef const
         % bit(mask)_i = 2^(i-1) = 1..32
         l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
 
-        QrcsL2Map(qrcid) = bicas.proc.QrcSetting(...
-          QUALITY_FLAG_CHANNEL_SATURATION, l2qbmBit);
+        QrcsMap(qrcid) = bicas.proc.QrcSetting(...
+          bicas.const.QUALITY_FLAG_SATURATION, l2qbmBit);
       end
+    end
 
+
+
+    % Function for initializing constant.
+    %
+    % RETURN VALUE
+    % ============
+    % Map QRCID-->bicas.proc.QrcSetting
+    %
+    function QrcsMap = init_QRCS_L2_MAP()
+      % PROPOSAL: Create global constant for channel saturation QRCIDs.
+      %   PROBLEM: This function can not return an additional constant for
+      %            setting that constant.
+      %     TODO-NI: Is that true?
+      %     PROPOSAL: Have that constant string list as an argument to this
+      %               function.
+      %     PROPOSAL: Separate function for setting map/dictionary with
+      %               channel saturation QRCSs. Can then use object key list.
+      %               -- IMPLEMENTED
+      %       ~CON: Needs constant (argument) for information shared with global
+      %             saturation (QUALITY_FLAG value).
+      %       CON: Function for creating map/dictionary for all L2 QRCSs can
+      %            not call that function.
+      %         CON-PROPOSAL: It can read the constant instead.
+      %     PROPOSAL: Set constant struct "C" using more extensive code which
+      %               is more free to set and read its own constants in any
+      %               order.
+
+      QrcsMap = containers.Map();
+
+      % -----------------------------------------
+      % Global saturation quality variable scheme
+      % -----------------------------------------
+      % Quality bits (bitmasks). NOT QRCIDs.
+      % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
+      L2QBM_BIT_PARTIAL_SATURATION     = uint16(1);
+      L2QBM_BIT_FULL_SATURATION        = uint16(2);
+      QUALITY_FLAG_FULL_SATURATION     = bicas.const.QUALITY_FLAG_SATURATION;
+
+      %====================
+      % PARTIAL_SATURATION
+      %====================
+      QrcsMap("PARTIAL_SATURATION") = ...
+        bicas.proc.QrcSetting(...
+        uint8(1), ...
+        L2QBM_BIT_PARTIAL_SATURATION);
+
+      %=================
+      % FULL_SATURATION
+      %=================
+      % NOTE: Also set PARTIAL saturation bit when FULL
+      % saturation. /YK 2020-10-02.
+      QrcsMap("FULL_SATURATION") = ...
+        bicas.proc.QrcSetting(...
+        QUALITY_FLAG_FULL_SATURATION, ...
+        L2QBM_BIT_FULL_SATURATION + ...
+        L2QBM_BIT_PARTIAL_SATURATION);
+
+      %=================
+      % THRUSTER_FIRING
+      %=================
+      % NOTE: There will be an L1 QUALITY_BITMASK bit for thruster firings in
+      % the future according to
+      % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
+      % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
+      % (YK 2020-11-03 did not ask for any to be set.)
+      QrcsMap("THRUSTER_FIRING") = ...
+        bicas.proc.QrcSetting(...
+        uint8(1), ...
+        uint16(0));    % NOTE: No quality bit set!
+
+      QrcsMap = [QrcsMap; bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP];
     end
 
 

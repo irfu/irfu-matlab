@@ -65,7 +65,7 @@ classdef ChannelDataAsrCollection < handle
   %             Need string keys to identify zVariables (hardcoded).
   %     PRO?: Replace bicas.utils.SameRowsMap.
   %     PRO: Can use as argument for
-  %          bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation().
+  %          bicas.proc.L1L2.qual.get_quality_ZVs_autodetected_saturation().
   %     PROPOSAL: The object/class itself emulates a 1-D array.
   %       PRO: Class can be used recursively.
   %       PRO: Can extract object for sets of row indices (also recursively).

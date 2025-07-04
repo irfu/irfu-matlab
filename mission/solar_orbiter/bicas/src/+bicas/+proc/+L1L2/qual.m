@@ -116,13 +116,7 @@ classdef qual
 
 
 
-    % Given 9x ASR VSIBs (channel-specific VSIBs), derive quality variables
-    % wrt. channel saturation.
-    %
-    % NOTE: Can only be applied to 9x ASRs *AFTER* reconstruction, using
-    %       the already set VSIBs contained within the SCHDs.
-    % Ex: V1 and V2 are saturated by being high ==> V12 = 0 (approx.)
-    %     ==> V12 does not appear saturated.
+    % Derive quality ZVs wrt. autodetected saturation.
     %
     % NOTE: Can produce quality variable values using either old scheme
     % ("GLOBAL_SATURATION") and new scheme ("CHANNEL_SATURATION") for
@@ -137,94 +131,117 @@ classdef qual
     %       (which QRCIDs are actually used).
     %
     %
-    % IMPLEMENTATION NOTE: Channels to use for QRCS
-    % =============================================
+    % IMPLEMENTATION NOTE: Data to use for autodetecting channel saturation
+    % =====================================================================
     % Uses ASR channel (SDID) VSIBs to determine QRCSs for channels in this
     % function, despite that there are no SSIDs and that the ASR channels really
     % correspond to ZVs, which may be non-ASR samples in rare cases, e.g. GND
     % (BSM=6/7). This is necessary since reconstructed samples never have SSIDs.
     % Therefore, this operation can not be performed on the BLTSs.
     %
+    function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
+        get_quality_ZVs_autodetected_saturation(...
+        Cdac, tt2000Ar, isSwf, ...
+        vstbFractionThreshold, cwfSlidingWindowLengthSec, ...
+        saturationQualitySchemeId)
+
+      assert(isscalar(saturationQualitySchemeId) & isstring(saturationQualitySchemeId))
+
+      nRec = Cdac.nRecords;
+
+      ChannelSaturationQrcFlagsMap = ...
+        bicas.proc.L1L2.qual.get_channel_saturation_QRC_flags(...
+        Cdac, tt2000Ar, isSwf, ...
+        vstbFractionThreshold, cwfSlidingWindowLengthSec);
+
+      GlobalSaturationQrcFlagsMap = ...
+        bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRC_flags(...
+        ChannelSaturationQrcFlagsMap, nRec);
+
+      switch(saturationQualitySchemeId)
+        case "GLOBAL_SATURATION"
+          QrcFlagsMap = GlobalSaturationQrcFlagsMap;
+        case "CHANNEL_SATURATION"
+          QrcFlagsMap = ChannelSaturationQrcFlagsMap;
+        otherwise
+          error("BICAS:ConfigurationBug", ...
+            "Illegal argument saturationQualitySchemeId=""%s"".", ...
+            saturationQualitySchemeId)
+      end
+
+      [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
+        bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
+        nRec, QrcFlagsMap, bicas.const.QRCS_L2_MAP);
+    end
+
+
+
+    % Given VSIBs for 9x ASRs (incl. reconstruction), derive channel saturation
+    % QRC flags.
     %
-    % IMPLEMENTATION NOTE: Using moving window algo. on ASRs instead of BLTSs
+    % NOTE: One can only obtain channel saturation on the 9x ASRs *AFTER*
+    %       reconstruction, using the already set VSIBs contained within
+    %       the SCHDs.
+    %       Ex: V1 and V2 are saturated by being high ==> V12 = 0 (approx.)
+    %           ==> V12 does not appear saturated, but the reconstructed V12
+    %               value is still affected by the saturation on V1 and V2.
+    %
+    %
+    % IMPLEMENTATION NOTE: Using moving window algo. (CWF) on ASRs instead of
+    %                      on BLTSs
     % =======================================================================
     % This function applies the moving window algorithm
     % (bicas.proc.L1L2.qual.sliding_window_over_fraction()) on the ASR (CWF)
     % channels rather than on the BLTSs, since one can then avoid possible bad
     % VSQB behaviour.
-    % --
+    %
     % Ex 1: Consider a reconstructed channel when a VSQB (after moving window)
     % ends on one underlying source channel and begins on another, at roughly
-    % the same time: If there is a non-saturated hole between the end and
-    % beginning, then the reconstructed channel may have a non-saturated hole
-    % that would never exist if moving window was applied on the reconstructed
-    % channel's threshold saturation bits instead of the two source channels.
-    % --
-    % Ex 2: If the two source channels for a reconstructed channel separately
-    % contain too few threshold saturated samples for the moving window algo.
-    % (e.g. 30% for a window fraction 50%), but enough when combined (e.g.
-    % 30%+30%>50%), then the reconstructed channel's saturation bits would be
-    % zero, despite being very much affected by saturation.
+    % the same time: If there is a non-saturated hole (VSQB=0) between the end
+    % and beginning, then the reconstructed channel will have a non-saturated
+    % hole (VSQB=0) that might never have existed if moving window was applied
+    % on the reconstructed channel's threshold saturation bits instead of the
+    % two source channels.
     %
-    function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs_channel_saturation(...
+    % Ex 2: If the two source channels for a reconstructed channel separately
+    % contain too few threshold saturated samples for the moving window algo. to
+    % set VSQB=1 (e.g. 30% for a window fraction 50%), but enough when combined
+    % (e.g. 30%+30% > 50%), then the reconstructed channel's saturation bits
+    % would be zero, despite being very much affected by saturation.
+    %
+    function QrcFlagsMap = get_channel_saturation_QRC_flags(...
         Cdac, tt2000Ar, isSwf, ...
-        vstbFractionThreshold, cwfSlidingWindowLengthSec, saturationQualitySchemeId)
-      % PROPOSAL: Separate function for one ASR/channel at a time.
+        vstbFractionThreshold, cwfSlidingWindowLengthSec)
+
       % PROPOSAL: Somehow only submit VSIBs, not SCHDs with channel samples.
-      %   PRO: Easier to have separate functions for applying moving window
-      %        algo. to VSIBs (for all channels) in a separate function (not
-      %        called from here).
-      % PROPOSAL: Reorg. to
-      %   (1) function for converting samples to channel saturation QRC flags,
-      %   (2) function for converting channel saturation QRC flags to
-      %       global saturation QRC flags
-      %   (3) function for selecting channel/global saturation QRC flags
-      %       depending on saturation scheme,
-      %   (4) using generic function for QRC flags-->quality variables,
-      %       bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs().
 
       assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
       assert(isscalar(isSwf) & islogical(isSwf))
-      assert(isscalar(saturationQualitySchemeId) & isstring(saturationQualitySchemeId))
 
-      nRec = Cdac.nRecords;
-
-      % Default, "empty", quality ZVs which will be modified for different
-      % combinations of SDID and QRCID.
-      QUALITY_FLAG       = repmat(bicas.const.QUALITY_FLAG_MAX, nRec, 1);
-      L2_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
+      % IMPLEMENTATION NOTE: containers.Map does not support string-valued keys
+      % (sic!)
+      QrcFlagsMap = containers.Map("keyType", "char", "valueType", "any");
 
       function handle_channel(sdidStr, channelSaturationQrcid)
-        switch(saturationQualitySchemeId)
-          case "GLOBAL_SATURATION"
-            qrcid = 'FULL_SATURATION';
-          case "CHANNEL_SATURATION"
-            qrcid = channelSaturationQrcid;
-          otherwise
-            error("BICAS:ConfigurationBug", ...
-              "Illegal argument saturationQualitySchemeId=""%s"".", ...
-              saturationQualitySchemeId)
-        end
-
-        Qrcs = bicas.const.QRCS_L2_MAP(qrcid);
         sdid = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
         Schd = Cdac.get_channel(sdid);
 
         if isSwf
-          vsqbSdidAr = Schd.vsibAr;
+          vsibSdidAr = Schd.vsibAr;
         else
-          vsqbSdidAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
+          vsibSdidAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
             tt2000Ar, Schd.vsibAr, ...
             vstbFractionThreshold, cwfSlidingWindowLengthSec);
         end
 
-        QUALITY_FLAG_sdid = ...
-            uint8( vsqbSdidAr) * Qrcs.QUALITY_FLAG ...
-          + uint8(~vsqbSdidAr) * bicas.const.QUALITY_FLAG_MAX;
-        L2_QUALITY_BITMASK_sdid = uint16(vsqbSdidAr) * Qrcs.Lx_QUALITY_BITMASK;
-
-        QUALITY_FLAG       = min(QUALITY_FLAG, QUALITY_FLAG_sdid);
-        L2_QUALITY_BITMASK = bitor(L2_QUALITY_BITMASK, L2_QUALITY_BITMASK_sdid);
+        % IMPLEMENTATION NOTE: The (nested) function is called for the same
+        % QRCID up to two times.
+        if QrcFlagsMap.isKey(channelSaturationQrcid)
+          vsibSdidPrevAr = QrcFlagsMap(channelSaturationQrcid);
+        else
+          vsibSdidPrevAr = false(size(tt2000Ar));
+        end
+        QrcFlagsMap(channelSaturationQrcid) = vsibSdidPrevAr | vsibSdidAr;
       end
 
       handle_channel('DC_V1',  'SATURATION_ZV_V1')
@@ -236,6 +253,34 @@ classdef qual
       handle_channel('AC_V12', 'SATURATION_ZV_V12')
       handle_channel('AC_V13', 'SATURATION_ZV_V13')
       handle_channel('AC_V23', 'SATURATION_ZV_V23')
+    end
+
+
+
+    % Convert channel saturation QRC flags to global saturation QRC flags.
+    % NOTE: Can not
+    function GlobalSaturationQrcFlagsMap = ...
+        channel_saturation_to_global_saturation_QRC_flags( ...
+        ChannelSaturationQrcidFlagsMap, nRecords)
+
+      irf.assert.castring_sets_equal(...
+        ChannelSaturationQrcidFlagsMap.keys, ...
+        bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys)
+
+      qrcFullSaturationFlags = false(nRecords, 1);
+      for qrcidCa = bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys
+        qrcFullSaturationFlags = ...
+          qrcFullSaturationFlags | ChannelSaturationQrcidFlagsMap(qrcidCa{1});
+      end
+
+      GlobalSaturationQrcFlagsMap = ...
+        containers.Map("keyType", "char", "valueType", "any");
+
+      GlobalSaturationQrcFlagsMap("FULL_SATURATION")    = qrcFullSaturationFlags;
+      % NOTE: Always false since partial saturation can not be autodetected.
+      % NOTE: This refers to the QRCID="PARTIAL_SATURATION", not the quality bit
+      %       for partial saturation.
+      GlobalSaturationQrcFlagsMap("PARTIAL_SATURATION") = false(nRecords, 1);
     end
 
 

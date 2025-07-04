@@ -169,7 +169,6 @@ classdef qual
     %       Array element is set when the corresponding QRC applies.
     % QrcsMap
     %       containers.Map: QRCID-->bicas.proc.QrcSetting
-    %       NOTE: The set of QRCIDs must be identical to that of QrcFlagsMap.
     %
     %
     % RETURN VALUES
@@ -184,7 +183,13 @@ classdef qual
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
         nRec, QrcFlagsMap, QrcsMap)
 
-      irf.assert.castring_sets_equal(QrcFlagsMap.keys, QrcsMap.keys)
+      % PROPOSAL: Keys in QrcFlagsMap and QrcsMap do not have to be identical.
+      %   -- IMPLEMENTED
+      %   CON: Loses fail-check.
+      %   PRO: Easier to call.
+      %     PRO: Can just submit ~global map of  QRCSs
+
+      %irf.assert.castring_sets_equal(QrcFlagsMap.keys, QrcsMap.keys)
 
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, quality bits=0), which can then later be "lowered"
