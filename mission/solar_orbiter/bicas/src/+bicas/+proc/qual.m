@@ -151,11 +151,11 @@ classdef qual
     % Given an array(s) of QRC bits (one bit per CDF record and QRC), translate
     % that into
     % (1) ZV QUALITY_FLAG, and
-    % (2) ZV *_QUALITY_BITMASK.
+    % (2) ZV L*_QUALITY_BITMASK.
     %
-    % NOTE: Does not work with FPAs, since the internal algorithm can not produce
-    % unknown values. The caller is supposed to decide how to interpret unknown
-    % values (QRC flags) before calling the function.
+    % NOTE: Does not work with FPAs, since the internal algorithm can not
+    % produce unknown values. The caller is supposed to decide how to interpret
+    % unknown values (QRC flags) before calling the function.
     %
     %
     % ARGUMENTS
@@ -178,8 +178,8 @@ classdef qual
     %       QUALITY_FLAG max value wrt. to QRCs handled in this function.
     % Lx_QUALITY_BITMASK
     %       L*_QUALITY_BITMASK value wrt. to QRCs handled in this function.
-    %       Refers to L2_QUALITY_BITMASK or L3_QUALITY_BITMASK
-    %       depending on context.
+    %       Refers to L2_QUALITY_BITMASK or L3_QUALITY_BITMASK depending on
+    %       context.
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
         nRec, QrcFlagsMap, QrcsMap)

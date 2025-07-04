@@ -174,6 +174,15 @@ classdef qual
       %   PRO: Easier to have separate functions for applying moving window
       %        algo. to VSIBs (for all channels) in a separate function (not
       %        called from here).
+      % PROPOSAL: Reorg. to
+      %   (1) function for converting samples to channel saturation QRC flags,
+      %   (2) function for converting channel saturation QRC flags to
+      %       global saturation QRC flags
+      %   (3) function for selecting channel/global saturation QRC flags
+      %       depending on saturation scheme,
+      %   (4) using generic function for QRC flags-->quality variables,
+      %       bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs().
+
       assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
       assert(isscalar(isSwf) & islogical(isSwf))
       assert(isscalar(saturationQualitySchemeId) & isstring(saturationQualitySchemeId))
@@ -241,6 +250,7 @@ classdef qual
     % zvAsrSamplesAVoltSrm
     %       ASR samples.
     %       NOTE: Handle object which is MODIFIED in-place.
+    %
     function zvCurrentAAmpere = set_voltage_current_FV(...
         zv_Epoch, zvAsrSamplesAVoltSrm, zvCurrentAAmpere, zvUfv, L)
       % PROPOSAL: Separate functions for ASR samples and bias currents.
@@ -310,6 +320,8 @@ classdef qual
       % PROPOSAL: Arguments for settings.
       %   CON: Logs the settings keys.
       %   CON: Settings used depends on argument isLfr.
+      % PROPOSAL: Create QRCID and QRC flags and use generic functionality for
+      %   setting data to FV (functionality which does not yet exist).
 
       bicas.utils.assert_ZV_Epoch(zv_Epoch)
       assert(islogical(isLfr));
@@ -421,7 +433,6 @@ classdef qual
       %   "sliding_window"
       %   moving window
       %   interval over fraction
-      %   smooth
       %   density (of set bits/flags)
       %   bit, flag
       %

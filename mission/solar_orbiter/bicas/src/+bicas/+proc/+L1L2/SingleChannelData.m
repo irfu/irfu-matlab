@@ -60,6 +60,13 @@ classdef SingleChannelData
   %        the same for all channels).
   %   NOTE: Requires checking that lengths of snapshots are consistent when
   %         combining multiple objects (plus/minus).
+  %   CON-PROPOSAL: Generic class for jagged array, for elements of "any"
+  %                 MATLAB class.
+  %     CON: Can not handle fill values like FPAs.
+  %       PRO: Can not replace with FPAs in the long term unless
+  %            (1) the class itself uses FPAs, or
+  %            (2) implements fill positions itself.
+  %
   % PROPOSAL: Add SDID/SSID (one value).
   %   PRO: SSID (source) is used when calibrating.
   %   PRO: SSID (source) is used when deriving VSIBs (when calling

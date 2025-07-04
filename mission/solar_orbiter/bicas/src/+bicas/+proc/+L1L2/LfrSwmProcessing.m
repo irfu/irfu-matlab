@@ -137,7 +137,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       % Ex: QUALITY_BITMASK uses CDF_UINT1/uint8 in
       %
       if ~strcmp(InSciNorm.ZvFpa.QUALITY_BITMASK.mc, 'uint16')
-        error('BICAS:DatasetFormat', 'zVariable QUALITY_BITMASK is not uint16 (MATLAB class).')
+        error('BICAS:DatasetFormat', ...
+          'zVariable QUALITY_BITMASK is not uint16 (MATLAB class).')
       end
 
 
@@ -145,8 +146,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %===================================
       % Normalize CALIBRATION_TABLE_INDEX
       %===================================
-      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
-        bicas.proc.L1L2.normalize_ZVCTI(...
+      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_ZVCTI(...
         InSci.Zv, nRecords, obj.inputSciDsi);
 
 
@@ -281,7 +281,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.bltsSamplesTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
 
       Zv.Epoch                   = InSci.Zv.Epoch;
-      % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
+      % NOTE: DELTA_PLUS_MINUS only applies to Epoch, and must therefore have
       % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
         zvFreqHz, 1);
@@ -337,8 +337,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Ga.OBS_ID    = InSci.Ga.OBS_ID;
       Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
 
-      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
-
+      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(...
+        Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
     end    % process_CDF_to_DCIP
 
 

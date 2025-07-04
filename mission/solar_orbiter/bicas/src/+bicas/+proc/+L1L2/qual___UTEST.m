@@ -43,35 +43,37 @@ classdef qual___UTEST < matlab.unittest.TestCase
         0 0 0 0 1 0 0 1 0   0  3 N*16; ...
         0 0 0 0 0 1 0 0 1   0  3 N*32; ...
         ];
-      N_ROWS      = size(DATA, 1);
-      SAMPLES_AR  = zeros(N_ROWS, 1);   % NOTE: Only the size is important.
+      N_ROWS     = size(DATA, 1);
       % NOTE: (Almost) only the size is important.
-      TT2000_AR   = int64([1:N_ROWS] * 1e9)';
+      TT2000_AR  = int64([1:N_ROWS] * 1e9)';
+      SAMPLES_AR = zeros(N_ROWS, 1);   % NOTE: Only the size is important.
+      % (iRec, iSdid)
       VSIB_AR_ALL                               = logical(DATA(:, 1:9));
       EXP_QUALITY_FLAG                          = uint8(  DATA(:, 10 ));
       EXP_L2_QUALITY_BITMASK_GLOBAL_SATURATION  = uint16( DATA(:, 11 ));
       EXP_L2_QUALITY_BITMASK_CHANNEL_SATURATION = uint16( DATA(:, 12 ));
 
       Cdac = bicas.proc.L1L2.ChannelDataAsrCollection(N_ROWS);
-      function set_channel(ssidStr, iVsib)
+      function set_CDAC_channel(ssidStr, iVsib)
         ssid = bicas.proc.L1L2.const.C.SDID_DICT(ssidStr);
         Schd = bicas.proc.L1L2.SingleChannelData(SAMPLES_AR, VSIB_AR_ALL(:, iVsib));
         Cdac.set_channel(ssid, Schd);
       end
-      set_channel("DC_V1",  1)
-      set_channel("DC_V2",  2)
-      set_channel("DC_V3",  3)
-      set_channel("DC_V12", 4)
-      set_channel("DC_V13", 5)
-      set_channel("DC_V23", 6)
-      set_channel("AC_V12", 7)
-      set_channel("AC_V13", 8)
-      set_channel("AC_V23", 9)
+      set_CDAC_channel("DC_V1",  1)
+      set_CDAC_channel("DC_V2",  2)
+      set_CDAC_channel("DC_V3",  3)
+      set_CDAC_channel("DC_V12", 4)
+      set_CDAC_channel("DC_V13", 5)
+      set_CDAC_channel("DC_V23", 6)
+      set_CDAC_channel("AC_V12", 7)
+      set_CDAC_channel("AC_V13", 8)
+      set_CDAC_channel("AC_V23", 9)
 
       isSwf                     = false;
       vstbFractionThreshold     = 0.9;
       cwfSlidingWindowLengthSec = 1.01;
 
+      % CALL TESTED FUNCTION
       [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
         bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation( ...
         Cdac, TT2000_AR, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, ...
@@ -80,6 +82,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
       testCase.assertEqual(act_QUALITY_FLAG,       EXP_QUALITY_FLAG)
       testCase.assertEqual(act_L2_QUALITY_BITMASK, EXP_L2_QUALITY_BITMASK_GLOBAL_SATURATION)
 
+      % CALL TESTED FUNCTION
       [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
         bicas.proc.L1L2.qual.get_quality_ZVs_channel_saturation( ...
         Cdac, TT2000_AR, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, ...

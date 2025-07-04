@@ -72,31 +72,21 @@ function errorCode = main( varargin )
 %   PRO: Contains 9 functions (2024-01-24).
 %
 % PROPOSAL: Set option for MATLAB warnings. Disable?
-%   NOTE: TN claims warnings are sent to stdout.
-% TODO-NI: Is the application allowed to overwrite output files?
+%   NOTE: Thomas Nilsson claims warnings are sent to stdout.
 %
-% PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (somethinger easier that the S/W descriptor).
-%   PRO: Useful when S/W descriptor becomes big and complex.
+% PROPOSAL: Put a summarized version of CLI syntax in "bicas --help" (something
+%           simpler than the SWD).
+%   PRO: Useful when SWD becomes big and complex.
 %
-% PROPOSAL: Split up the "main_without_error_handling" function into several functions
-%           (outsource chunks of its code to smaller functions which are called).
-%   PROPOSAL: Printing CLI arguments.
-%
-% PROPOSAL: Better handling of errors in dataobj (reading CDF files).
-%   PROPOSAL: Wrap dataobj in function and catch and rethrow errors with BICAS' error IDs.
-%
-% PROPOSAL: Print MATLAB path (return value from path()).
-%   CON: Too many rows.
-%
-% PROPOSAL: Option for overriding settings via CLI argument in MATLAB using a containers.Map value.
-%   PROBLEM: Not obvious which order of precedence makes sense. Complicated to use order among settings arguments.
-%       PROPOSAL: Applies setting BEFORE CLI settings args.
-%       PROPOSAL: Applies setting AFTER CLI settings args.
+% PROPOSAL: Split up the main_without_error_handling() function into several
+%           (testable) functions.
+%   PROPOSAL: Function for printing CLI arguments.
 %
 % PROPOSAL: Log some kind of indicator of de facto code version.
 %   PROBLEM: How handle if runs outside git repo?
 %   PROPOSAL: git commit (latest)
 %       NOTE: Different on irfu-matlab and bicas_ROC.
+%       NOTE: Needs to call system command.
 %   PROPOSAL: git branch
 %
 % PROPOSAL: Use irf.str.assist_print_table more.
@@ -675,7 +665,7 @@ end
 
 %L.logf('info', 'nsoTablePath = "%s"', nsoTablePath);
 L.logf('info', 'Loading NSO table XML file "%s"', nsoTablePath)
-NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath);
+NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath, bicas.const.ALL_QRCID_AR);
 
 
 

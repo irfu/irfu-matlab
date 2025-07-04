@@ -93,10 +93,9 @@ classdef NsoTable
       %============
       % ASSERTIONS
       %============
-      % PROPOSAL: Move ~all assertions to bicas.NsoTable.read_file_BICAS ?
+      % PROPOSAL: Move ~all assertions to bicas.NsoTable.read_file_BICAS()?
       % PROPOSAL: Collect ~all assertions, in constructor (here) and in
       %           bicas.NsoTable.read_file_BICAS ?
-      % PROPOSAL: Check that FULL_SATURATION and PARTIAL SATURATION do not overlap.
       irf.assert.sizes(...
         evtStartTt2000Array, [-1], ...
         evtStopTt2000Array,  [-1], ...
@@ -137,10 +136,10 @@ classdef NsoTable
           timestampsListStr);
       end
 
-      %----------------------------------------------------------------
+      %---------------------------------------------------------------
       % ASSERTION: Events with the same QRCID do not overlap (and are
       % time sorted).
-      %----------------------------------------------------------------
+      %---------------------------------------------------------------
       uniqueEvtQrcidAr = unique(evtQrcidAr);
       for i = 1:numel(uniqueEvtQrcidAr)
         qrcid = uniqueEvtQrcidAr{i};
@@ -149,10 +148,10 @@ classdef NsoTable
         % NOTE: ASSUMPTION: Start timestamps are already time-sorted.
         % NOTE: Transposing before 2D-->1D vector.
         % NOTE: 'strictascend' excludes ~adjacent events.
-        temp = [...
+        tt2000Array = [...
           evtStartTt2000Array(b), ...
           evtStopTt2000Array(b)]';
-        tt2000Array = temp(:);
+        tt2000Array = tt2000Array(:);
         assert(issorted(tt2000Array, 'strictascend'), ...
           ['At least two events for qrcid="%s"', ...
           ' seem to overlap with each other.'], qrcid)
@@ -195,13 +194,14 @@ classdef NsoTable
     %       NOTE: Useful for identifying event in NSO table, and hence the
     %             begin & end timestamps for logging.
     %
-    function [bEvtArraysCa, evtQrcidAr, iGlobalEventsArray] = get_NSO_timestamps(obj, tt2000Array)
+    function [bEvtArraysCa, evtQrcidAr, iGlobalEventsArray] = ...
+        get_NSO_timestamps(obj, tt2000Array)
       % PROPOSAL: Sort return data by QRCID, i.e. all return values have a
       %           top-level index iQrcid.
       %   PRO: Quality algorithms should only operate on a per-sample and
       %   per-QRCID basis basis and do not need to be aware of separate.
       %   CON: Too complicated data structure.
-      %       CON-PROPOSAL: Use struct array.
+      %       CON-PROPOSAL: Use array of objects/structs.
       %           MatchArray(iQrcid)
       %               .bMatch
       %               .qrcid
@@ -303,13 +303,13 @@ classdef NsoTable
 
     % Read SolO non-standard operations (NSO) XML file for *BICAS* and
     % return the content as an instance of bicas.NsoTable.
-    function NsoTable = read_file_BICAS(filePath)
+    function NsoTable = read_file_BICAS(filePath, permittedQrcidAr)
       [evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr] = ...
         bicas.NsoTable.read_file_raw(filePath);
 
       % ASSERTION: No non-BICAS QRCIDs
       % ------------------------------
-      illegalEvtQrcidSet = setdiff(evtQrcidAr, bicas.const.ALL_QRCID);
+      illegalEvtQrcidSet = setdiff(evtQrcidAr, permittedQrcidAr);
       assert(isempty(illegalEvtQrcidSet), ...
         'NSO table file contains illegal QRCID(s): %s.',  ...
         ['"', strjoin(illegalEvtQrcidSet, '", "'), '"'])

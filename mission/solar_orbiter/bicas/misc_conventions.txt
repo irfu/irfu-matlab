@@ -342,7 +342,7 @@ OSR
     Original Sampling Rate. Used in the context of downsampling. Cf DSR.
 PFIID
     Production Function Input ID. String constant which is used to distinguish
-    between different input values (datasets) to production functions.
+    between different input values (datasets) as seen from production functions.
     In practice one PFIID represents one of multiple different DSIs (different
     DSI for different SWMs).
 PFOID
@@ -351,21 +351,21 @@ PFOID
 Production Function
     Abstract method bicas.proc.SwmProcessing.production_function() and its
     implementations in subclasses which do the core of data processing.
-QF
-    zVariable QUALITY_FLAG.
 QRC
     Quality-Related Condition. Condition that, when it applies, can be used to
-    set/modify quality ZVs and/or blanking of data.
+    set/modify quality ZVs and/or blanking of data. QRCs are uniquely identified
+    using QRCIDs.
     Ex: Thruster firing, saturation, bad density.
-    QRCs are uniquely identified using QRCIDs.
     NOTE: QRCs are distinct from quality bits themselves. Any particular QRC may
-    correspond to setting zero, one, or multiple quality bits.
-    Ex: QRCID="FULL_SATURATION" ==> Set quality bits "full saturation" AND
-    "partial saturation".
+          correspond to setting zero, one, or multiple quality bits.
+          Ex: QRCID="FULL_SATURATION" ==> Set quality bits "full saturation" AND
+              "partial saturation".
+          Ex: QRCID="THRUSTER_FIRING" ==> Cap QUALITY_FLAG, but does not set any
+              quality bit.
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.
-    Not all QRCIDs are meant to be used in the NSO table.
+    NOTE: Not all QRCIDs can/should be specified in the NSO table.
         Ex: BAD_DENSITY
 QUALITY_FLAG
     Quality ZV defined by ROC. Higher value is better.
@@ -392,8 +392,9 @@ RCTD
 RCTDC
     Class bicas.proc.L1L2.cal.RctdCollection.
 RCTTID
-    RCT Type ID. String constant that represents a *type* of RCT, not a
-    particular RTC file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
+    RCT Type ID. String constant that represents a *type* of RCT (not a
+    particular RTC file). Permitted values: "BIAS", "LFR", "TDS-CWF",
+    "TDS-RSWF".
 Reconstruction
     Deriving samples for channels which are not present in TM for that time.
     Ex: If V1_DC, V12_DC, and V23_DC are present in TM, then V2_DC, V3_DC, and

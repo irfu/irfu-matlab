@@ -27,8 +27,8 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
 
 
-    % Test method bicas.NsoTable.get_NSO_timestamps(), but indirectly
-    % uses/tests bicas.NsoTable() (constructor) by its nature.
+    % Test method bicas.NsoTable.get_NSO_timestamps(). Also indirectly
+    % uses/tests bicas.NsoTable() constructor by its nature.
     function test_get_NSO_timestamps(testCase)
       % PROBLEM: How handle that return value may change the order of
       %          events depending on implementation?
@@ -42,14 +42,16 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
         evtStopTt2000Array  = int64(evtStopTt2000Array(:));
         evtQrcidAr          = evtQrcidAr(:);
         tt2000Array         = int64(tt2000Array(:));
-        % Normalize output
+        % Normalize (expected) output
         expBEvtArraysCa       = expBEvtArraysCa(:);
         expEvtQrcidAr         = expEvtQrcidAr(:);
         expIGlobalEventsArray = expIGlobalEventsArray(:);
 
-        NsoTable = bicas.NsoTable(evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr);
+        NsoTable = bicas.NsoTable(...
+          evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr);
 
-        [actBEvtArraysCa, actEvtQrcidAr, actIGlobalEventsArray] = NsoTable.get_NSO_timestamps(tt2000Array);
+        [actBEvtArraysCa, actEvtQrcidAr, actIGlobalEventsArray] = ...
+          NsoTable.get_NSO_timestamps(tt2000Array);
         testCase.verifyEqual(actBEvtArraysCa,       expBEvtArraysCa)
         testCase.verifyEqual(actEvtQrcidAr,         expEvtQrcidAr)
         testCase.verifyEqual(actIGlobalEventsArray, expIGlobalEventsArray)
@@ -57,19 +59,21 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
       %===================================================================
 
-      QRCID_1 = "FULL_SATURATION";
-      QRCID_2 = "PARTIAL_SATURATION";
+      QRCID_1 = "QRCID_1_FOR_TESTING";
+      QRCID_2 = "QRCID_2_FOR_TESTING_MORE";
 
-      ESA = strings(0, 1);
-      ENA = zeros(0, 1);   % Empty Numeric Array
-      ECA = cell(0, 1);    % Empty Cell    Array
+      ESA = strings(0, 1);   % ESA=Empty String  Array
+      ENA = zeros(  0, 1);   % ENA=Empty Numeric Array
+      ECA = cell(   0, 1);   % ECA=Empty Cell    Array
 
+      % Test empty output
+      % -----------------
       % Test every combination of
       % (1) empty & (2) non-empty
       % for (a) NSO table & (b) submitted timestamps
       % without any overlap (empty output).
       for tt2000ArrayCa = {ENA, [100:200]'}
-        tt2000Array = int64(tt2000ArrayCa{1});
+        tt2000Array = tt2000ArrayCa{1};
 
         % Empty NSO table.
         test(...
@@ -84,21 +88,23 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
           ECA, ESA, ENA)
       end
 
-      % NSOs do not overlap beginning & end.
+      % NSO events do not overlap beginning & end.
       test(...
         [1, 5], [2, 7], [QRCID_1, QRCID_2], ...
         [0:9], ...
         {...
+        %        0  1  2  3  4  5  6  7  8  9
         logical([0, 1, 1, 0, 0, 0, 0, 0, 0, 0]'), ...
         logical([0, 0, 0, 0, 0, 1, 1, 1, 0, 0]') ...
         }, ...
         [QRCID_1, QRCID_2], [1, 2])
 
-      % NSOs overlap beginning & end.
+      % NSO events overlap beginning & end.
       test(...
         [-1, 5], [2, 12], [QRCID_1, QRCID_2], ...
         [0:9], ...
         {...
+        %        0  1  2  3  4  5  6  7  8  9
         logical([1, 1, 1, 0, 0, 0, 0, 0, 0, 0]'), ...
         logical([0, 0, 0, 0, 0, 1, 1, 1, 1, 1]') ...
         }, ...
@@ -109,6 +115,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
         [ 1, 3], [5, 8], [QRCID_1, QRCID_2], ...
         [0:9], ...
         {...
+        %        0  1  2  3  4  5  6  7  8  9
         logical([0, 1, 1, 1, 1, 1, 0, 0, 0, 0]'), ...
         logical([0, 0, 0, 1, 1, 1, 1, 1, 1, 0]') ...
         }, ...
@@ -120,6 +127,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
     function test_read_file_BICAS(testCase)
       % NOTE: Only read BICAS's own default file (in BICAS's git repo).
+
       bicasRootPath = bicas.utils.get_BICAS_root_dir();
 
       Bso = bicas.create_default_BSO();
@@ -129,7 +137,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
       nsoFilePath = fullfile(bicasRootPath, nsoTableRelativePath);
 
       % CALL TESTED CODE
-      NsoTable = bicas.NsoTable.read_file_BICAS(nsoFilePath);
+      NsoTable = bicas.NsoTable.read_file_BICAS(nsoFilePath, bicas.const.ALL_QRCID_AR);
 
       testCase.verifyTrue(isa(NsoTable, 'bicas.NsoTable'))
       testCase.assertTrue(isstring(NsoTable.evtQrcidAr))

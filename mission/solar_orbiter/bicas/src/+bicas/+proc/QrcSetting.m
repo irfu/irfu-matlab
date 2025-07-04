@@ -2,7 +2,7 @@
 % Class that represents how to convert one particular QRCID into modifications
 % of quality ZVs.
 %
-% NOTE: Class does not include the QRCID itself.
+% NOTE: The class does not include the QRCID itself.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

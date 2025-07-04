@@ -220,7 +220,7 @@ classdef dc
         bicas.utils.FPArray(QUALITY_FLAG));
       Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
 
-      % NOTE: Function modifies AsrSamplesAVoltSrm handle object!
+      % NOTE: Function modifies AsrSamplesAVoltSrm handle object in-place!
       Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
         Dcip.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
       Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
@@ -730,6 +730,23 @@ classdef dc
         bltsSamplesAVoltAr, nValidSamplesPerRecord, bltsSsidAr, isAchgFpa, Bso, L)
       % PROPOSAL: SatSettings as argument.
       %   PRO: Simpler test code.
+      % PROPOSAL: Replace bltsSamplesAVoltAr --> 5x SCHD
+      %   PRO: Simpler handling of dimensions.
+      %   PRO: Less risk of memory problems if iterates manually over BLTSs.
+      %   PRO: SCHD could be modified to only store nValidSamplesPerRecord per
+      %        record (handle padded snapshots well).
+      %   CON: SCHD contains 1 VSIB/record. This function is intended for
+      %        setting that VSIB array.
+      %   CON-PROPOSAL: Custom class representing jagged array (jagged in one
+      %                 dimension, dim.=2 for BICAS) for any generic MATLAB
+      %                 class.
+      %     PRO: SCHD could use it in its implementation.
+      %     CON: Can not handle fill values like FPAs.
+      %       PRO: Can not replace with FPAs in the long term unless
+      %            (1) the class itself uses FPAs, or
+      %            (2) implements fill positions itself.
+      %     Ex: Store for VSTB for SWF data.
+      %     Ex: Store samples for SWF (in particular TDS-LFM SWF).
 
       Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
 
