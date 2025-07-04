@@ -362,6 +362,10 @@ QRC
               "partial saturation".
           Ex: QRCID="THRUSTER_FIRING" ==> Cap QUALITY_FLAG, but does not set any
               quality bit.
+QRCB
+    Quality-Related Condition Bit.
+    Bit (or array of bits) which is set when a QRC applies.
+    This is distinct from QRC which represents "a concept".
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.

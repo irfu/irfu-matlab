@@ -17,16 +17,16 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_NSO_table_to_QRC_flag_arrays(testCase)
+    function test_NSO_table_to_QRCB_arrays(testCase)
 
-      function test(allQrcidAr, NsoTable, Epoch, ExpQrcFlagsMap)
+      function test(allQrcidAr, NsoTable, Epoch, ExpQrcbMap)
         % Normalize/modify arguments
         Epoch = int64(Epoch(:));
 
         L = bicas.Logger('HUMAN_READABLE', false);
 
         % CALL TESTED FUNCTION
-        ActQrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
+        ActQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
           allQrcidAr, NsoTable, Epoch, L);
 
         % ASSERT EXPECTED RESULT
@@ -36,15 +36,15 @@ classdef qual___UTEST < matlab.unittest.TestCase
         % debugging by understanding any found difference between the
         % two maps. Therefore explicitly comparing the map subcomponents.
         testCase.assertEqual(...
-          sort(ActQrcFlagsMap.keys), ...
-          sort(ExpQrcFlagsMap.keys))
+          sort(ActQrcbMap.keys), ...
+          sort(ExpQrcbMap.keys))
 
-        qrcidCa = ActQrcFlagsMap.keys;
+        qrcidCa = ActQrcbMap.keys;
         for i = 1:numel(qrcidCa)
           qrcid = qrcidCa{i};
           testCase.assertEqual(...
-            ActQrcFlagsMap(qrcid), ...
-            ExpQrcFlagsMap(qrcid))
+            ActQrcbMap(qrcid), ...
+            ExpQrcbMap(qrcid))
         end
       end
 
@@ -65,11 +65,11 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
         for i = 1:numel(EPOCH_DOUBLE_CA)
           Epoch_double = EPOCH_DOUBLE_CA{i};
-          ExpQrcFlagsMap = containers.Map();
+          ExpQrcbMap = containers.Map();
           test(...
             strings(0, 1), EMPTY_NSO_TABLE, ...
             Epoch_double, ...
-            ExpQrcFlagsMap ...
+            ExpQrcbMap ...
             )
         end
       end
@@ -86,37 +86,37 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
       if ALL_ENABLED
         % Time interval is superset of NSO 1/2.
-        ExpQrcFlagsMap = containers.Map();
-        ExpQrcFlagsMap("QRCID1") = logical([0 1 1 0]');
-        ExpQrcFlagsMap("QRCID2") = false(4,1);
+        ExpQrcbMap = containers.Map();
+        ExpQrcbMap("QRCID1") = logical([0 1 1 0]');
+        ExpQrcbMap("QRCID2") = false(4,1);
         test(...
           ALL_QRCID_AR, NSO_TABLE, ...
           [0:3]*1e9, ...
-          ExpQrcFlagsMap ...
+          ExpQrcbMap ...
           );
       end
 
       if ALL_ENABLED
         % Time interval is superset of NSO 2/2.
-        ExpQrcFlagsMap = containers.Map();
-        ExpQrcFlagsMap("QRCID1") = false(4,1);
-        ExpQrcFlagsMap("QRCID2") = logical([0 1 1 0]');
+        ExpQrcbMap = containers.Map();
+        ExpQrcbMap("QRCID1") = false(4,1);
+        ExpQrcbMap("QRCID2") = logical([0 1 1 0]');
         test(...
           ALL_QRCID_AR, NSO_TABLE, ...
           [3:6]*1e9, ...
-          ExpQrcFlagsMap ...
+          ExpQrcbMap ...
           );
       end
 
       if ALL_ENABLED
         % Time interval from middle of NSO 1 to middle of NSO 2.
-        ExpQrcFlagsMap = containers.Map();
-        ExpQrcFlagsMap("QRCID1") = logical([1 0 0]');
-        ExpQrcFlagsMap("QRCID2") = logical([0 0 1]');
+        ExpQrcbMap = containers.Map();
+        ExpQrcbMap("QRCID1") = logical([1 0 0]');
+        ExpQrcbMap("QRCID2") = logical([0 0 1]');
         test(...
           ALL_QRCID_AR, NSO_TABLE, ...
           [2:4]'*1e9, ...
-          ExpQrcFlagsMap ...
+          ExpQrcbMap ...
           );
       end
 
@@ -131,44 +131,44 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
       if ALL_ENABLED
         % Time interval covers all NSOs.
-        ExpQrcFlagsMap = containers.Map();
-        ExpQrcFlagsMap("QRCID1") = logical([0 1 1 0 0]');
-        ExpQrcFlagsMap("QRCID2") = logical([0 0 1 1 0]');
-        ExpQrcFlagsMap("QRCID3") = logical([0 0 0 0 0]');
+        ExpQrcbMap = containers.Map();
+        ExpQrcbMap("QRCID1") = logical([0 1 1 0 0]');
+        ExpQrcbMap("QRCID2") = logical([0 0 1 1 0]');
+        ExpQrcbMap("QRCID3") = logical([0 0 0 0 0]');
         test(...
           ALL_QRCID_AR, NSO_TABLE, ...
           [0:4]*1e9, ...
-          ExpQrcFlagsMap ...
+          ExpQrcbMap ...
           );
       end
 
       if ALL_ENABLED
         % Epoch does not overlap with any NSOs (though time interval does).
-        ExpQrcFlagsMap = containers.Map();
-        ExpQrcFlagsMap("QRCID1") = logical([0 0]');
-        ExpQrcFlagsMap("QRCID2") = logical([0 0]');
-        ExpQrcFlagsMap("QRCID3") = logical([0 0]');
+        ExpQrcbMap = containers.Map();
+        ExpQrcbMap("QRCID1") = logical([0 0]');
+        ExpQrcbMap("QRCID2") = logical([0 0]');
+        ExpQrcbMap("QRCID3") = logical([0 0]');
         test(...
           ALL_QRCID_AR, NSO_TABLE, ...
           [-1, 4]*1e9, ...
-          ExpQrcFlagsMap ...
+          ExpQrcbMap ...
           );
       end
     end
 
 
 
-    function test_QRC_flag_arrays_to_quality_ZVs(testCase)
+    function test_QRCB_arrays_to_quality_ZVs(testCase)
 
-      function test(nRec, QrcFlagsMap, QrcsMap, ...
+      function test(nRec, QrcbMap, QrcsMap, ...
           exp_QUALITY_FLAG, exp_L2_QUALITY_BITMASK)
         exp_QUALITY_FLAG       = uint8( exp_QUALITY_FLAG(:));
         exp_L2_QUALITY_BITMASK = uint16(exp_L2_QUALITY_BITMASK(:));
 
         % CALL TESTED FUNCTION
         [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
-          bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-          nRec, QrcFlagsMap, QrcsMap);
+          bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
+          nRec, QrcbMap, QrcsMap);
 
         testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
         testCase.assertEqual(act_L2_QUALITY_BITMASK, exp_L2_QUALITY_BITMASK)
@@ -178,15 +178,15 @@ classdef qual___UTEST < matlab.unittest.TestCase
       % Zero QRCIDs are defined
       % =======================
       QrcsMap     = containers.Map();
-      QrcFlagsMap = containers.Map();
+      QrcbMap = containers.Map();
 
       % Zero records
-      test(0, QrcFlagsMap, QrcsMap, ...
+      test(0, QrcbMap, QrcsMap, ...
         [], [] ...
         )
 
       % Non-zero records
-      test(3, QrcFlagsMap, QrcsMap, ...
+      test(3, QrcbMap, QrcsMap, ...
         4*ones(3,1), zeros(3,1) ...
         )
 
@@ -198,18 +198,18 @@ classdef qual___UTEST < matlab.unittest.TestCase
       QrcsMap('QRCID2') = bicas.proc.QrcSetting(uint8(3), uint16(4));
 
       % Zero records
-      QrcFlagsMap = containers.Map();
-      QrcFlagsMap('QRCID1') = false(0, 1);
-      QrcFlagsMap('QRCID2') = false(0, 1);
-      test(0, QrcFlagsMap, QrcsMap, ...
+      QrcbMap = containers.Map();
+      QrcbMap('QRCID1') = false(0, 1);
+      QrcbMap('QRCID2') = false(0, 1);
+      test(0, QrcbMap, QrcsMap, ...
         [], [] ...
         )
 
       % Non-zero records
-      QrcFlagsMap = containers.Map();
-      QrcFlagsMap('QRCID1') = logical([0 0 1 1]');
-      QrcFlagsMap('QRCID2') = logical([0 1 0 1]');
-      test(4, QrcFlagsMap, QrcsMap, ...
+      QrcbMap = containers.Map();
+      QrcbMap('QRCID1') = logical([0 0 1 1]');
+      QrcbMap('QRCID2') = logical([0 1 0 1]');
+      test(4, QrcbMap, QrcsMap, ...
         [4 3 2 2], [0 4 2 4+2] ...
         )
     end

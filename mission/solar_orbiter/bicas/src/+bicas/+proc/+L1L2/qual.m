@@ -77,7 +77,7 @@ classdef qual
     %
     % ARGUMENTS
     % =========
-    % isFullSaturation
+    % fullSaturationQrcbAr
     %       Autodetected full saturation array (as opposed to derived from NSO
     %       table).
     %
@@ -92,26 +92,26 @@ classdef qual
     %       merged (OR:ed) with pre-existing global L2_QUALITY_BITMASK.
     %
     % function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
-    %     QrcsL2Map, NsoTable, Epoch, isFullSaturation, L)
+    %     QrcsL2Map, NsoTable, Epoch, fullSaturationQrcbAr, L)
     %
-    %   assert(islogical(isFullSaturation))
+    %   assert(islogical(fullSaturationQrcbAr))
     %
-    %   QrcFlagsMap = bicas.proc.qual.NSO_table_to_QRC_flag_arrays(...
+    %   QrcbMap = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
     %     bicas.const.ALL_QRCID_AR, NsoTable, Epoch, L);
     %
     %   % Remove QRCIDs which this function can not handle (and should not
     %   % need to) since they are not intended for L2_QUALITY_BITMASK.
-    %   QrcFlagsMap.remove("BAD_DENSITY");
+    %   QrcbMap.remove("BAD_DENSITY");
     %
     %   % Add autodetected saturation.
-    %   b = QrcFlagsMap("FULL_SATURATION");
-    %   b = b | isFullSaturation;
-    %   QrcFlagsMap("FULL_SATURATION") = b;
+    %   qrcbAr = QrcbMap("FULL_SATURATION");
+    %   qrcbAr = qrcbAr | fullSaturationQrcbAr;
+    %   QrcbMap("FULL_SATURATION") = qrcbAr;
     %
     %   % Call generic function for setting QUALITY_FLAG and *_QUALITY_BITMASK.
     %   [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-    %     bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-    %     size(Epoch, 1), QrcFlagsMap, QrcsL2Map);
+    %     bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
+    %     size(Epoch, 1), QrcbMap, QrcsL2Map);
     % end
 
 
@@ -149,20 +149,20 @@ classdef qual
 
       nRec = Cdac.nRecords;
 
-      ChannelSaturationQrcFlagsMap = ...
-        bicas.proc.L1L2.qual.get_channel_saturation_QRC_flags(...
+      ChannelSaturationQrcbMap = ...
+        bicas.proc.L1L2.qual.get_channel_saturation_QRCBs(...
         Cdac, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
-      GlobalSaturationQrcFlagsMap = ...
-        bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRC_flags(...
-        ChannelSaturationQrcFlagsMap, nRec);
+      GlobalSaturationQrcbMap = ...
+        bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
+        ChannelSaturationQrcbMap, nRec);
 
       switch(saturationQualitySchemeId)
         case "GLOBAL_SATURATION"
-          QrcFlagsMap = GlobalSaturationQrcFlagsMap;
+          QrcbMap = GlobalSaturationQrcbMap;
         case "CHANNEL_SATURATION"
-          QrcFlagsMap = ChannelSaturationQrcFlagsMap;
+          QrcbMap = ChannelSaturationQrcbMap;
         otherwise
           error("BICAS:ConfigurationBug", ...
             "Illegal argument saturationQualitySchemeId=""%s"".", ...
@@ -170,14 +170,14 @@ classdef qual
       end
 
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-        bicas.proc.qual.QRC_flag_arrays_to_quality_ZVs(...
-        nRec, QrcFlagsMap, bicas.const.QRCS_L2_MAP);
+        bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
+        nRec, QrcbMap, bicas.const.QRCS_L2_MAP);
     end
 
 
 
     % Given VSIBs for 9x ASRs (incl. reconstruction), derive channel saturation
-    % QRC flags.
+    % QRCBs.
     %
     % NOTE: One can only obtain channel saturation on the 9x ASRs *AFTER*
     %       reconstruction, using the already set VSIBs contained within
@@ -209,7 +209,7 @@ classdef qual
     % (e.g. 30%+30% > 50%), then the reconstructed channel's saturation bits
     % would be zero, despite being very much affected by saturation.
     %
-    function QrcFlagsMap = get_channel_saturation_QRC_flags(...
+    function QrcbMap = get_channel_saturation_QRCBs(...
         Cdac, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec)
 
@@ -220,7 +220,7 @@ classdef qual
 
       % IMPLEMENTATION NOTE: containers.Map does not support string-valued keys
       % (sic!)
-      QrcFlagsMap = containers.Map("keyType", "char", "valueType", "any");
+      QrcbMap = containers.Map("keyType", "char", "valueType", "any");
 
       function handle_channel(sdidStr, channelSaturationQrcid)
         sdid = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
@@ -236,12 +236,12 @@ classdef qual
 
         % IMPLEMENTATION NOTE: The (nested) function is called for the same
         % QRCID up to two times.
-        if QrcFlagsMap.isKey(channelSaturationQrcid)
-          vsibSdidPrevAr = QrcFlagsMap(channelSaturationQrcid);
+        if QrcbMap.isKey(channelSaturationQrcid)
+          vsibSdidPrevAr = QrcbMap(channelSaturationQrcid);
         else
           vsibSdidPrevAr = false(size(tt2000Ar));
         end
-        QrcFlagsMap(channelSaturationQrcid) = vsibSdidPrevAr | vsibSdidAr;
+        QrcbMap(channelSaturationQrcid) = vsibSdidPrevAr | vsibSdidAr;
       end
 
       handle_channel('DC_V1',  'SATURATION_ZV_V1')
@@ -257,30 +257,33 @@ classdef qual
 
 
 
-    % Convert channel saturation QRC flags to global saturation QRC flags.
-    % NOTE: Can not
-    function GlobalSaturationQrcFlagsMap = ...
-        channel_saturation_to_global_saturation_QRC_flags( ...
-        ChannelSaturationQrcidFlagsMap, nRecords)
+    % Convert channel saturation QRCBs to global saturation QRCBs.
+    %
+    % NOTE: Always sets partial saturation QRCB=false since it can not be
+    %       autodetected.
+    %
+    function GlobalSaturationQrcbMap = ...
+        channel_saturation_to_global_saturation_QRCBs( ...
+        ChannelSaturationQrcbMap, nRecords)
 
       irf.assert.castring_sets_equal(...
-        ChannelSaturationQrcidFlagsMap.keys, ...
+        ChannelSaturationQrcbMap.keys, ...
         bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys)
 
-      qrcFullSaturationFlags = false(nRecords, 1);
+      fullSaturationQrcbAr = false(nRecords, 1);
       for qrcidCa = bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys
-        qrcFullSaturationFlags = ...
-          qrcFullSaturationFlags | ChannelSaturationQrcidFlagsMap(qrcidCa{1});
+        fullSaturationQrcbAr = ...
+          fullSaturationQrcbAr | ChannelSaturationQrcbMap(qrcidCa{1});
       end
 
-      GlobalSaturationQrcFlagsMap = ...
+      GlobalSaturationQrcbMap = ...
         containers.Map("keyType", "char", "valueType", "any");
 
-      GlobalSaturationQrcFlagsMap("FULL_SATURATION")    = qrcFullSaturationFlags;
+      GlobalSaturationQrcbMap("FULL_SATURATION")    = fullSaturationQrcbAr;
       % NOTE: Always false since partial saturation can not be autodetected.
       % NOTE: This refers to the QRCID="PARTIAL_SATURATION", not the quality bit
       %       for partial saturation.
-      GlobalSaturationQrcFlagsMap("PARTIAL_SATURATION") = false(nRecords, 1);
+      GlobalSaturationQrcbMap("PARTIAL_SATURATION") = false(nRecords, 1);
     end
 
 
@@ -365,7 +368,7 @@ classdef qual
       % PROPOSAL: Arguments for settings.
       %   CON: Logs the settings keys.
       %   CON: Settings used depends on argument isLfr.
-      % PROPOSAL: Create QRCID and QRC flags and use generic functionality for
+      % PROPOSAL: Create QRCID and QRCBs and use generic functionality for
       %   setting data to FV (functionality which does not yet exist).
 
       bicas.utils.assert_ZV_Epoch(zv_Epoch)

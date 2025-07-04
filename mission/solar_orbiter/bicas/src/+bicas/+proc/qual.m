@@ -76,12 +76,12 @@ classdef qual
     %
     % RETURN VALUE
     % ============
-    % QrcFlagsMap
+    % QrcbMap
     %       containers.Map. QRCID->logical array
     %       Contains keys for all QRCIDs specified in allQrcidCa, not just
     %       those present in NsoTable.
     %
-    function QrcFlagsMap = NSO_table_to_QRC_flag_arrays(...
+    function QrcbMap = NSO_table_to_QRCB_arrays(...
         allQrcidAr, NsoTable, Epoch, L)
 
       % Local variable naming conventions:
@@ -103,13 +103,13 @@ classdef qual
         ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
         nCe, nGe);
 
-      % Initialize "empty" QrcFlagsMap (all QRCs set to false)
-      % ------------------------------------------------------
+      % Initialize "empty" QrcbMap (all QRCBs set to false)
+      % ---------------------------------------------------
       % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!).
-      QrcFlagsMap = containers.Map('keyType', 'char', 'valueType', 'any');
+      QrcbMap = containers.Map('keyType', 'char', 'valueType', 'any');
       for i = 1:numel(allQrcidAr)
-        QrcFlagsMap(allQrcidAr(i)) = false(size(Epoch));
-        % QrcFlagsMap(allQrcidCa{i}) = bicas.utils.FPArray(false(size(Epoch)));
+        QrcbMap(allQrcidAr(i)) = false(size(Epoch));
+        % QrcbMap(allQrcidCa{i}) = bicas.utils.FPArray(false(size(Epoch)));
       end
 
       % Iterate over events in NSO events table which apply to the
@@ -140,9 +140,9 @@ classdef qual
         %======================================
         % Set corresponding QRC array elements
         %======================================
-        bQrc                    = QrcFlagsMap(eventQrcid);
-        bQrc(bCeRecords)        = true;
-        QrcFlagsMap(eventQrcid) = bQrc;
+        qrcbAr              = QrcbMap(eventQrcid);
+        qrcbAr(bCeRecords)  = true;
+        QrcbMap(eventQrcid) = qrcbAr;
       end    % for
     end
 
@@ -155,7 +155,7 @@ classdef qual
     %
     % NOTE: Does not work with FPAs, since the internal algorithm can not
     % produce unknown values. The caller is supposed to decide how to interpret
-    % unknown values (QRC flags) before calling the function.
+    % unknown values (QRCBs) before calling the function.
     %
     %
     % ARGUMENTS
@@ -164,7 +164,7 @@ classdef qual
     %       Number of CDF records (rows).
     %       IMPLEMENTATION NOTE: Needed for handling the case of zero
     %       QRCIDs.
-    % QrcFlagsMap
+    % QrcbMap
     %       containers.Map: QRCID-->Logical column array
     %       Array element is set when the corresponding QRC applies.
     % QrcsMap
@@ -180,16 +180,16 @@ classdef qual
     %       Refers to L2_QUALITY_BITMASK or L3_QUALITY_BITMASK depending on
     %       context.
     %
-    function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRC_flag_arrays_to_quality_ZVs(...
-        nRec, QrcFlagsMap, QrcsMap)
+    function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
+        nRec, QrcbMap, QrcsMap)
 
-      % PROPOSAL: Keys in QrcFlagsMap and QrcsMap do not have to be identical.
+      % PROPOSAL: Keys in QrcbMap and QrcsMap do not have to be identical.
       %   -- IMPLEMENTED
       %   CON: Loses fail-check.
       %   PRO: Easier to call.
       %     PRO: Can just submit ~global map of  QRCSs
 
-      %irf.assert.castring_sets_equal(QrcFlagsMap.keys, QrcsMap.keys)
+      %irf.assert.castring_sets_equal(QrcbMap.keys, QrcsMap.keys)
 
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, quality bits=0), which can then later be "lowered"
@@ -200,22 +200,22 @@ classdef qual
       %=================================
       % Iterate over QRCIDs in argument
       %=================================
-      qrcidCa = QrcFlagsMap.keys();
+      qrcidCa = QrcbMap.keys();
       for i = 1:numel(qrcidCa)
-        qrcid = qrcidCa{i};
-        Qrcs  = QrcsMap(qrcid);
-        bQrc  = QrcFlagsMap(qrcid);
+        qrcid  = qrcidCa{i};
+        Qrcs   = QrcsMap(qrcid);
+        qrcbAr = QrcbMap(qrcid);
 
-        assert(isa(bQrc, 'logical'))
-        assert(isequal( size(bQrc), [nRec, 1] ))
+        assert(isa(qrcbAr, 'logical'))
+        assert(isequal( size(qrcbAr), [nRec, 1] ))
 
         %------------------
         % Set QUALITY_FLAG
         %------------------
         % IMPLEMENTATION NOTE: Only adjusts relevant indices since the
         % operation is more natural (simpler) that way.
-        QUALITY_FLAG(bQrc) = min(...
-          QUALITY_FLAG(bQrc), ...
+        QUALITY_FLAG(qrcbAr) = min(...
+          QUALITY_FLAG(qrcbAr), ...
           Qrcs.QUALITY_FLAG);
 
         %------------------------
@@ -223,7 +223,7 @@ classdef qual
         %------------------------
         Lx_QUALITY_BITMASK = bitor(...
           Lx_QUALITY_BITMASK, ...
-          Qrcs.Lx_QUALITY_BITMASK * uint16(bQrc));
+          Qrcs.Lx_QUALITY_BITMASK * uint16(qrcbAr));
       end
     end
 
