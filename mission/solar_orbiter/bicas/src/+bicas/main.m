@@ -665,7 +665,8 @@ end
 
 %L.logf('info', 'nsoTablePath = "%s"', nsoTablePath);
 L.logf('info', 'Loading NSO table XML file "%s"', nsoTablePath)
-NsoTable = bicas.NsoTable.read_file_BICAS(nsoTablePath, bicas.const.ALL_QRCID_AR);
+NsoTable = bicas.NsoTable.read_file_validated(...
+  nsoTablePath, bicas.const.ALL_QRCID_AR);
 
 
 

@@ -169,18 +169,18 @@ classdef const
 
     QRCS_L2_CHANNEL_SATURATION_MAP = bicas.const.init_QRCS_L2_CHANNEL_SATURATION_MAP()
     QRCS_L2_MAP                    = bicas.const.init_QRCS_L2_MAP();
-    QRCS_L3_MAP_DENSITY            = bicas.const.init_QRCS_L3_MAP_DENSITY();
+    QRCS_L3_DENSITY_MAP            = bicas.const.init_QRCS_L3_DENSITY_MAP();
 
 
 
-    % All legal RCS QRCIDs. This defines the set of legal QRCIDs, including ones
+    % All legal QRCIDs. This defines the set of legal QRCIDs, including ones
     % that can be used in the NSO table file. Strings can be used as constants
     % for those strings inside BICAS.
     %
     % NOTE: This includes QRCIDs for both (a) L2, and (b) L3 density.
     ALL_QRCID_AR = [...
       string(bicas.const.QRCS_L2_MAP.keys), ...
-      string(bicas.const.QRCS_L3_MAP_DENSITY.keys)];
+      string(bicas.const.QRCS_L3_DENSITY_MAP.keys)];
 
 
     % Minimum number of non-FV OSR records per bin/DSR record.
@@ -650,10 +650,10 @@ classdef const
     % ============
     % Map QRCID-->bicas.proc.QrcSetting
     %
-    function QrcsL3Map = init_QRCS_L3_MAP_DENSITY()
-      QrcsL3Map = containers.Map();
+    function QrcsMap = init_QRCS_L3_DENSITY_MAP()
+      QrcsMap = containers.Map();
 
-      QrcsL3Map("BAD_DENSITY") = ...
+      QrcsMap("BAD_DENSITY") = ...
         bicas.proc.QrcSetting(...
         uint8(1), ...
         uint16(1));

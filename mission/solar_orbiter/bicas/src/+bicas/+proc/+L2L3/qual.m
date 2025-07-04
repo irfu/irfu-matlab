@@ -4,7 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual   % < handle
+classdef qual
   % PROPOSAL: Automatic test code.
 
 
@@ -33,7 +33,7 @@ classdef qual   % < handle
 
       [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        size(badDensityQrcbAr, 1), QrcbMap, bicas.const.QRCS_L3_MAP_DENSITY);
+        size(badDensityQrcbAr, 1), QrcbMap, bicas.const.QRCS_L3_DENSITY_MAP);
     end
 
 

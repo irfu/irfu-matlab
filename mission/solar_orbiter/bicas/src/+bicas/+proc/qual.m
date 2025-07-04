@@ -5,51 +5,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qual
-  %
-  % Data structure for storing QRC-->quality ZV modification: QrdidSetting:
-  %   PROPOSAL: Replace QUALITY_FLAG and *_QUALITY_BITMASK with containers.Map:
-  %             key--> QUALITY_FLAG and *_QUALITY_BITMASK value.
-  %       PRO: Can simultaneously specify different behaviour different types of output datasets.
-  %       TODO-DEC: What should map key be?
-  %           PROPOSAL: DSI
-  %               CON: Too many identical entries.
-  %           PROPOSAL: Informal group of output datasets.
-  %               Ex: L2, L3_density
-  %       PROPOSAL: Class method with DSI as argument returns only relevant
-  %                 values.
-  %           CON: Can not handle (hypothetically) qualitatively different types
-  %                 of quality variables for different groups of output datasets,
-  %                 if method output should always be on the same format.
-  %               Ex: Density has L3_QUALITY_BITMASK but EFIELD and SCPOT do not
-  %                   (I think).
-  %               Ex: Hypothetical: Varying number of bits in *_QUALITY_BITMASK in
-  %                   different output datasets.
-  %               CON: There is no (real) such case.
-  %
-  % PROBLEM: How represent all translations from QRC to quality ZV modifications?
-  %   NOTE: QUALITY_FLAG has the same definition for all output datasets.
-  %   NOTE: L2_QUALITY_BITMASK and L3_QUALITY_BITMASK have different bit
-  %         definitions.
-  %   NOTE: L3_QUALITY_BITMASK *might* have different definitions for
-  %         different datasets in the future.
-  %   NOTE: Not all QRCs are defined for all datasets.
-  %       Ex: Density quality bit
-  %   NOTE: Not all datasets set quality bits at all.
-  %       Ex: EFIELD, SCPOT.
-  %       Ex: L2 CWF DSR
-  %   NOTE: Quality bits which are set for one dataset may effectively be
-  %         inherited from another output dataset in the processing.
-  %       Ex: DENSITY OSR --> DENSITY DSR
-  %       Ex: LFR CWF OSR --> LFR CWF DSR
-  %   NOTE: Quality bits are inherited from L2 to L3 (and should remain
-  %         unchanged).
-  %   PROPOSAL: In principle: One "quality function" per group of datasets
-  %             which sets quality variables.
-  %               [QUALITY_FLAG_array, L2/L3_QUALITY_BITMASK_array] = ...
-  %                   get_quality_ZVs(qrcArray1, ..., qrcArray2, [NsoTable])
-  %       PROBLEM: How reuse code that translates QRC arrays into different bitmask array?
-  %                (L2_QUALITY_BITMASK vs L3_QUALITY_BITMASK)
-  %           NOTE: Not a problem for QUALITY_FLAG
 
 
 
@@ -82,45 +37,56 @@ classdef qual
     %       those present in NsoTable.
     %
     function QrcbMap = NSO_table_to_QRCB_arrays(...
-        allQrcidAr, NsoTable, Epoch, L)
+        allQrcidAr, NsoTable, tt2000Ar, L)
+
+      % PROPOSAL: Redefine allQrcidAr to only be those QRCIDs for which one
+      %           wants to be used for populating the return value QrcbMap.
+      %   PRO: Useful for separating relevant QRCs, e.g. for only L2, only L3,
+      %        only L3 density etc.
+      %   CON: Can not use allQrcidAr for asserting only legal QRCIDs in NSO
+      %        table.
+      %   CON-PROPOSAL: Separate function for filtering QrcbMap wrt. QRCIDs.
 
       % Local variable naming conventions:
       % ----------------------------------
       % GE = Global Event = NSO event in global NSO event table.
-      % CE = CDF Event    = NSO event that overlaps with CDF records.
-      % Ar                = (Non-cell) Array
+      % LE = Local Event  = NSO event that overlaps with the specified
+      %                     timestamps.
 
       assert(isstring(allQrcidAr))
 
 
 
-      % NOTE: iCeAr = CDF events as indices to global events.
-      [bCeRecordsCa, ceQrcidCa, iCeAr] = NsoTable.get_NSO_timestamps(Epoch);
-      nCe = numel(ceQrcidCa);
+      % NOTE: iGeForLeAr = Indices into global list of events for local events.
+      [bLeRecordsCa, leQrcidCa, iGeForLeAr] = ...
+        NsoTable.get_NSO_events_timestamps(tt2000Ar);
+
+      nLe = numel(leQrcidCa);
       nGe = numel(NsoTable.evtQrcidAr);
       L.logf('info', ...
         ['Searched non-standard operations (NSO) table.', ...
         ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
-        nCe, nGe);
+        nLe, nGe);
 
+      %-----------------------------------------------------
       % Initialize "empty" QrcbMap (all QRCBs set to false)
-      % ---------------------------------------------------
-      % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!).
+      %-----------------------------------------------------
+      % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!) and can
+      %                      therefore not be used.
       QrcbMap = containers.Map('keyType', 'char', 'valueType', 'any');
       for i = 1:numel(allQrcidAr)
-        QrcbMap(allQrcidAr(i)) = false(size(Epoch));
-        % QrcbMap(allQrcidCa{i}) = bicas.utils.FPArray(false(size(Epoch)));
+        QrcbMap(allQrcidAr(i)) = false(size(tt2000Ar));
       end
 
-      % Iterate over events in NSO events table which apply to the
-      % specified timestamps (Epoch).
-      for kCe = 1:nCe
+      %-----------------------------------------------------------------------
+      % Iterate over NSO events and set QRCBs for resp. QRCIDs and timestamps
+      %-----------------------------------------------------------------------
+      for kLe = 1:nLe
 
-        % Index into GLOBAL NSO events table.
-        iGe        = iCeAr(kCe);
-        eventQrcid = ceQrcidCa{kCe};
+        iGe        = iGeForLeAr(kLe);    % Index into GLOBAL NSO events table.
+        eventQrcid = leQrcidCa{kLe};
         % Indices into ZVs.
-        bCeRecords = bCeRecordsCa{kCe};
+        bLeRecords = bLeRecordsCa{kLe};
 
         %===========================================================
         % Log the relevant NSO event in the GLOBAL NSO events table
@@ -131,18 +97,16 @@ classdef qual
           eventQrcid);
 
         % ASSERTION
-        % NOTE: Not perfect assertion on legal QRCIDs since code only
-        % checks those relevant for the data (time interval) currently
-        % processed. (Therefore also checks all QRCIDs when reads NSO
-        % table.)
-        assert(ismember(eventQrcid, allQrcidAr), 'Can not interpret QRCID "%s".', eventQrcid)
+        % NOTE: Not perfect assertion on legal QRCIDs since the code only checks
+        % those relevant for the data (time interval) currently processed.
+        % (Therefore also checks all QRCIDs when reads NSO table.)
+        assert(ismember(eventQrcid, allQrcidAr), ...
+          'Can not interpret QRCID "%s".', eventQrcid)
 
         %======================================
         % Set corresponding QRC array elements
         %======================================
-        qrcbAr              = QrcbMap(eventQrcid);
-        qrcbAr(bCeRecords)  = true;
-        QrcbMap(eventQrcid) = qrcbAr;
+        QrcbMap(eventQrcid) = QrcbMap(eventQrcid) | qrbcAr;
       end    % for
     end
 

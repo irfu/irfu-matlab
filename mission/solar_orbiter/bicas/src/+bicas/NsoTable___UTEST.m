@@ -21,15 +21,15 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
 
     % % Test constructor.
-    % % NOTE: test_get_NSO_timestamps() indirectly tests the constructor.
+    % % NOTE: test_get_NSO_events_timestamps() indirectly tests the constructor.
     % function test_NsoTable(testCase)
     % end
 
 
 
-    % Test method bicas.NsoTable.get_NSO_timestamps(). Also indirectly
+    % Test method bicas.NsoTable.get_NSO_events_timestamps(). Also indirectly
     % uses/tests bicas.NsoTable() constructor by its nature.
-    function test_get_NSO_timestamps(testCase)
+    function test_get_NSO_events_timestamps(testCase)
       % PROBLEM: How handle that return value may change the order of
       %          events depending on implementation?
 
@@ -51,7 +51,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
           evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr);
 
         [actBEvtArraysCa, actEvtQrcidAr, actIGlobalEventsArray] = ...
-          NsoTable.get_NSO_timestamps(tt2000Array);
+          NsoTable.get_NSO_events_timestamps(tt2000Array);
         testCase.verifyEqual(actBEvtArraysCa,       expBEvtArraysCa)
         testCase.verifyEqual(actEvtQrcidAr,         expEvtQrcidAr)
         testCase.verifyEqual(actIGlobalEventsArray, expIGlobalEventsArray)
@@ -73,18 +73,18 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
       % for (a) NSO table & (b) submitted timestamps
       % without any overlap (empty output).
       for tt2000ArrayCa = {ENA, [100:200]'}
-        tt2000Array = tt2000ArrayCa{1};
+        tt2000Ar = tt2000ArrayCa{1};
 
         % Empty NSO table.
         test(...
           ENA, ENA, ESA, ...
-          tt2000Array, ...
+          tt2000Ar, ...
           ECA, ESA, ENA)
 
         % Non-empty NSO table.
         test(...
           [10], [20], QRCID_1, ...
-          tt2000Array, ...
+          tt2000Ar, ...
           ECA, ESA, ENA)
       end
 
@@ -125,7 +125,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_read_file_BICAS(testCase)
+    function test_read_file_validated(testCase)
       % NOTE: Only read BICAS's own default file (in BICAS's git repo).
 
       bicasRootPath = bicas.utils.get_BICAS_root_dir();
@@ -137,7 +137,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
       nsoFilePath = fullfile(bicasRootPath, nsoTableRelativePath);
 
       % CALL TESTED CODE
-      NsoTable = bicas.NsoTable.read_file_BICAS(nsoFilePath, bicas.const.ALL_QRCID_AR);
+      NsoTable = bicas.NsoTable.read_file_validated(nsoFilePath, bicas.const.ALL_QRCID_AR);
 
       testCase.verifyTrue(isa(NsoTable, 'bicas.NsoTable'))
       testCase.assertTrue(isstring(NsoTable.evtQrcidAr))

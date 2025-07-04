@@ -111,9 +111,6 @@ classdef SingleChannelData
   %#########################
   %#########################
   methods
-    % TODO-NI: Why is this within in a separate method statement? Seems to be
-    %          public anyway. Because it defines the behaviour of a dependant
-    %          field variable?
 
 
 
