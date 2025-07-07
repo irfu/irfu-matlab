@@ -363,37 +363,36 @@ classdef utils
 
 
 
+    % Derive statistics on the contents of a numeric variable (any
+    % dimensionality) and return it so that it can easily be logged, e.g. in
+    % a table:
+    %   ** Array size
+    %   ** Number of and percentage NaN,
+    %   ** unique values, min-max.
+    % Primarily intended for zVariables and derivatives thereof. Can be
+    % useful for knowing which settings are used (e.g. HK_BIA_DIFF_GAIN),
+    % constant/varying bias current, suspect input datasets.
+    %
+    % Effectively a utility function for bicas.utils.log_zVar().
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % varName
+    % varValue
+    % varType
+    %       String constant. 'NUMERIC_ZV' or 'Epoch_LIKE_ZV'.
+    %       Determines how varValue is interpreted.
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % ColumnStrs
+    %       Struct with fields corresponding to different column values for
+    %       one row in a table.
+    %
     function ColumnStrs = get_array_statistics_strings(...
         varName, varValue, varType, Bso)
-      %
-      % Derive statistics on the contents of a numeric variable (any
-      % dimensionality) and return it so that it can easily be logged, e.g. in
-      % a table:
-      %   ** Array size
-      %   ** Number of and percentage NaN,
-      %   ** unique values, min-max.
-      % Primarily intended for zVariables and derivatives thereof. Can be
-      % useful for knowing which settings are used (e.g. HK_BIA_DIFF_GAIN),
-      % constant/varying bias current, suspect input datasets.
-      %
-      % Effectively a utility function for bicas.utils.log_zVar().
-      %
-      %
-      % ARGUMENTS
-      % =========
-      % varName
-      % varValue
-      % varType
-      %       String constant. 'NUMERIC_ZV' or 'Epoch_LIKE_ZV'.
-      %       Determines how varValue is interpreted.
-      %
-      %
-      % RETURN VALUE
-      % ============
-      % ColumnStrs
-      %       Struct with fields corresponding to different column values for
-      %       one row in a table.
-      %
 
       % PROPOSAL: Test code.
       % PROPOSAL: Move to +utils.

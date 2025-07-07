@@ -62,7 +62,8 @@ classdef swpdet
     % BDN=4 <=> sweep
     %
     function isSweepingSbda = SBDA_wo_margins(tt2000, bdmFpa, Bso)
-      sbdaEndTt2000  = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC'));
+      sbdaEndTt2000  = spdfcomputett2000(...
+        Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC'));
 
       irf.assert.sizes(...
         tt2000, [-1, 1], ...

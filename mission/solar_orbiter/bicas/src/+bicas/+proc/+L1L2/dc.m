@@ -145,9 +145,6 @@ classdef dc
         % TODO: Convert Cdac samples to AsrSamplesAVoltSrm (or at least use
         %       it).
 
-        % PROPOSAL: Compare SDID-separated VSIBs combined into one with old
-        %           VSQBs.
-
         % ======================================================================
         % DEBUG: Check that samples derived using OLD and NEW code are identical
         % ======================================================================

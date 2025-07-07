@@ -5,6 +5,29 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qual
+  % PROPOSAL: Class for containers.Map QRCID-->QRCB array.
+  %   PRO: Simplifies documentation (description of arguments).
+  %   PRO: Easier assertions.
+  %     PRO: Shorter assertions when used in code. Reused assertions in class.
+  %   PRO: Natural grouping of related functionality including tests.
+  %   PRO: Simplifies tests
+  %     PRO: Easier to initialize empty map.
+  %     CON: Must have tests for equality.
+  %   CON: Must implement support for equality for test code.
+  %     CON: Easy to implement equality. Can just delegate to isequal(map1,
+  %          map2).
+  %   NOTE: ~Needs abbreviation?
+  %     PROPOSAL: QRCBM
+  %   NOTE: ~Must be handle class.
+  %   TODO-NI: Class name?
+  %     ~QRCID, ~QRCB, ~map
+  %     ~arrays
+  %     QrcbMap
+  %       QRCBM=
+  %     QrcBitMap
+  %       CON: Sounds too much like bitmap (image).
+  %     QrcbArraysMap
+  %       QAM=
 
 
 
@@ -21,13 +44,15 @@ classdef qual
     % return value map that contains keys for all QRCIDs, in case the
     % NsoTable does not contain all QRCIDs.
     %
-    % IMPLEMENTATION NOTE: allQrcidCa is an argument due to automated tests.
-    % Could otherwise be derived from constants.
-    %
     % ARGUMENTS
     % =========
-    % allQrcidCa
-    %       1D cell array of all QRCIDs.
+    % requestedQrcidAr
+    %       Column array of QRCIDs for which the return value shall contain
+    %       data. This is a way of filtering the content of the NSO table. The
+    %       function will return default values (QRCB=false) for QRCIDs for
+    %       which there are no events which overlap with the specified time
+    %       stamps.
+    %
     %
     % RETURN VALUE
     % ============
@@ -37,7 +62,7 @@ classdef qual
     %       those present in NsoTable.
     %
     function QrcbMap = NSO_table_to_QRCB_arrays(...
-        allQrcidAr, NsoTable, tt2000Ar, L)
+        requestedQrcidAr, NsoTable, tt2000Ar, L)
 
       % PROPOSAL: Redefine allQrcidAr to only be those QRCIDs for which one
       %           wants to be used for populating the return value QrcbMap.
@@ -53,7 +78,7 @@ classdef qual
       % LE = Local Event  = NSO event that overlaps with the specified
       %                     timestamps.
 
-      assert(isstring(allQrcidAr))
+      assert(isstring(requestedQrcidAr) & iscolumn(requestedQrcidAr))
 
       NsoEventMatchAr = NsoTable.get_NSO_event_matches(tt2000Ar);
 
@@ -64,14 +89,14 @@ classdef qual
         ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
         nLe, nGe);
 
-      %-----------------------------------------------------
-      % Initialize "empty" QrcbMap (all QRCBs set to false)
-      %-----------------------------------------------------
+      %----------------------------------------------------------------------
+      % Initialize "empty" QrcbMap (elements=false) for all requested QRCIDs
+      %----------------------------------------------------------------------
       % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!) and can
       %                      therefore not be used.
       QrcbMap = containers.Map('keyType', 'char', 'valueType', 'any');
-      for i = 1:numel(allQrcidAr)
-        QrcbMap(allQrcidAr(i)) = false(size(tt2000Ar));
+      for i = 1:numel(requestedQrcidAr)
+        QrcbMap(requestedQrcidAr(i)) = false(size(tt2000Ar));
       end
 
       %-----------------------------------------------------------------------
@@ -96,7 +121,7 @@ classdef qual
         % NOTE: Not perfect assertion on legal QRCIDs since the code only checks
         % those relevant for the data (time interval) currently processed.
         % (Therefore also checks all QRCIDs when reads NSO table.)
-        assert(ismember(eventQrcid, allQrcidAr), ...
+        assert(ismember(eventQrcid, requestedQrcidAr), ...
           'Can not interpret QRCID "%s".', eventQrcid)
 
         %======================================
@@ -122,8 +147,7 @@ classdef qual
     % =========
     % nRec
     %       Number of CDF records (rows).
-    %       IMPLEMENTATION NOTE: Needed for handling the case of zero
-    %       QRCIDs.
+    %       IMPLEMENTATION NOTE: Needed for handling the case of zero QRCIDs.
     % QrcbMap
     %       containers.Map: QRCID-->Logical column array
     %       Array element is set when the corresponding QRC applies.

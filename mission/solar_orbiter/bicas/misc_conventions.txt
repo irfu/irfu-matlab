@@ -438,12 +438,14 @@ sampere
 SBDA
     Sweep BDM Detection Algorithm. BDM=4 is interpreted as equivalent to
     sweeping.
+    See SCDA.
 SCDA
     Sweep Current Detection Algorithm.
     A sliding window autodetection algorithm is used for detecting sweeps from
     measured HK currents. If the max-min current difference within that window
     exceeds a specified threshold, then the entire window is labeled as being
     part of a sweep.
+    See SBDA.
 SCHD
     Class bicas.proc.L1L2.SingleChannelData.
 SDID

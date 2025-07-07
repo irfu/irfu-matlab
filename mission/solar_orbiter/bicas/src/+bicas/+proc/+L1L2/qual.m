@@ -136,8 +136,8 @@ classdef qual
     % Uses ASR channel (SDID) VSIBs to determine QRCSs for channels in this
     % function, despite that there are no SSIDs and that the ASR channels really
     % correspond to ZVs, which may be non-ASR samples in rare cases, e.g. GND
-    % (BSM=6/7). This is necessary since reconstructed samples never have SSIDs.
-    % Therefore, this operation can not be performed on the BLTSs.
+    % (BSM=6/7). This is necessary since reconstructed samples do not have any
+    % SSIDs. Therefore, this operation can not be performed on the BLTSs.
     %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         get_quality_ZVs_autodetected_saturation(...
@@ -350,10 +350,17 @@ classdef qual
 
 
 
+    % IT APPEARS THAT THIS FUNCTION IS NOT USING bicas.proc.L1L2.swpdet AND
+    % SHOULD NOT BE USED. STILL, IT IS CALLED from (bicas.proc.L1L2.dc).
+    % PROPOSAL: DELETE AND NOT CALL?
+    % TODO: INVESTIGATE
+    %
+    %
     % Find CDF records to remove (set to fill value) based on settings (not
     % data itself, almost, since BDM is data).
     %
-    % Ex: Sweeps
+    % Ex: Historically, sweeps, but sweeps should currently be removed using
+    %     bicas.proc.L1L2.swpdet.
     %
     % NOTE: It is not obvious that data should be set to FV instead of having
     % quality bitmask/flag modified. Nonetheless, I think setting data to fill
@@ -363,9 +370,12 @@ classdef qual
     % NOTE: This function is a historical remnant from old functionality for
     % removing sweeps using BDM=4 when BDM=0 was the nominal BDM. This
     % functionality has not been used for a long time and could potentially be
-    % removed. Setting PROCESSING.L2.REMOVE_DATA.MUX_MODES would be removed with
+    % removed. Settings
+    % PROCESSING.L2.REMOVE_DATA.MUX_MODES,
+    % PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC,
+    % PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC would be removed with
     % it.
-    % /Erik P G Johansson 2025-01-16
+    % /Erik P G Johansson 2025-07-08
     %
     %
     % ARGUMENTS
