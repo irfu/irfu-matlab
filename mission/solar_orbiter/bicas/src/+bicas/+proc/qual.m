@@ -55,14 +55,10 @@ classdef qual
 
       assert(isstring(allQrcidAr))
 
+      NsoEventMatchAr = NsoTable.get_NSO_events_timestamps(tt2000Ar);
 
-
-      % NOTE: iGeForLeAr = Indices into global list of events for local events.
-      [bLeRecordsCa, leQrcidCa, iGeForLeAr] = ...
-        NsoTable.get_NSO_events_timestamps(tt2000Ar);
-
-      nLe = numel(leQrcidCa);
-      nGe = numel(NsoTable.evtQrcidAr);
+      nLe = numel(NsoEventMatchAr);
+      nGe = NsoTable.nEvents;
       L.logf('info', ...
         ['Searched non-standard operations (NSO) table.', ...
         ' Found %i relevant NSO events out of a total of %i NSO events.'], ...
@@ -82,15 +78,15 @@ classdef qual
       % Iterate over NSO events and set QRCBs for resp. QRCIDs and timestamps
       %-----------------------------------------------------------------------
       for kLe = 1:nLe
+        % Index into GLOBAL NSO events table.
+        iGe        = NsoEventMatchAr(kLe).iNsoEvent;
+        eventQrcid = NsoEventMatchAr(kLe).qrcid;
+        % Logical indices into tt2000Ar.
+        qrbcAr     = NsoEventMatchAr(kLe).qrcbAr;
 
-        iGe        = iGeForLeAr(kLe);    % Index into GLOBAL NSO events table.
-        eventQrcid = leQrcidCa{kLe};
-        % Indices into ZVs.
-        bLeRecords = bLeRecordsCa{kLe};
-
-        %===========================================================
-        % Log the relevant NSO event in the GLOBAL NSO events table
-        %===========================================================
+        %=====================================================================
+        % Log relevant NSO events by referring to the GLOBAL NSO events table
+        %=====================================================================
         L.logf('info', '    %s -- %s %s', ...
           bicas.utils.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGe), 9), ...
           bicas.utils.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGe), 9), ...

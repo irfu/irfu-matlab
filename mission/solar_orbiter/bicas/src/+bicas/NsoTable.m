@@ -61,19 +61,33 @@ classdef NsoTable
   properties(SetAccess=immutable, GetAccess=public)
     % See constructor.
     % NOTE: All fields are Nx1 vectors.
-
     evtStartTt2000Array
     evtStopTt2000Array
     evtQrcidAr
   end
+  properties(Dependent)
+    nEvents
+  end
 
 
 
-  %#####################
-  %#####################
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods
+
+
+
+    function nRows = get.nEvents(obj)
+      nRows = numel(obj.evtStartTt2000Array);
+    end
+
+
+
+  end
   methods(Access=public)
-    %#####################
-    %#####################
 
 
 
@@ -184,126 +198,31 @@ classdef NsoTable
     %
     % ARGUMENTS
     % =========
-    % tt2000Array
+    % tt2000Ar
     %       Column array of TT2000 timestamps. Intended to be ZV Epoch.
     %
     %
     % RETURN VALUES
     % =============
-    % bEvtArraysCa
-    %       Column cell array of arrays of logical indices into tt2000Array.
-    %       {iMatchingEvent}(iTimestamp) = logical
-    % evtQrcidAr
-    %       Column array of QRCIDs. {iMatchingEvent} = qrcid
-    % iGlobalEventsArray
-    %       Column array of indices into NSO event list. Can be used for logging
-    %       the tabulated (global) NSO events that affect e.g. a particular
-    %       CDF.
-    %       (iMatchingEvent) = iGlobalEvt
-    %       NOTE: Useful for identifying event in NSO table, and hence the
-    %             begin & end timestamps for logging.
+    % NsoEventMatchAr
+    %       Column array of bicas.NsoEventMatch, one per NSO event which
+    %       overlaps with at least one of the timestamps in tt2000Array.
     %
-    function [bEvtArraysCa, evtQrcidAr, iGlobalEventsArray] = ...
-        get_NSO_events_timestamps(obj, tt2000Array)
-      % PROPOSAL: Sort return data by QRCID only (not NSO events).
-      %   PRO: Quality algorithms should only operate on a per-sample and
-      %        per-QRCID basis basis and do not need to be aware of separate NSO
-      %        events.
-      %   CON: Caller can not iterate over events.
-      %   CON: Caller can not construct log/error messages which refer to the
-      %        event.
-      %   PROPOSAL: Replace return values bEvtArraysCa, evtQrcidAr with
-      %             containers.Map QRCID-->bAr.
-      %     NOTE: bicas.proc.qual.NSO_table_to_QRCB_arrays() converts to (roughly)
-      %           this format.
-      %   PROPOSAL: Return containers.Map
-      %             QRCID-->array (iTimestamp)=iGlobalEvent/0
-      %             0=No event for that timestamp.
-      %     PRO: Can trivially convert to array qrcbAr by checking for
-      %          equality with zero.
-      %     CON: Harder to extract separate NSO events (but doable).
-      %
-      % PROPOSAL: Return struct/object array with fields
-      %   .bEvt
-      %   .evtQrcid
-      %   .iGlobalEvents
-      %   PRO: Clearer meaning of return value.
-      %   CON: Can not have struct array where field value is array (unless
-      %        using cell array as trick).
-      %     CON-PROPOSAL: Use object/class: NsoEvent.
-      %
-      % PROPOSAL: Use term QRCB.
+    function NsoEventMatchAr = get_NSO_events_timestamps(obj, tt2000Ar)
+      assert(isa(tt2000Ar, 'int64') && iscolumn(tt2000Ar), ...
+        'tt2000Ar is not an int64 column vector.')
 
-      assert(isa(tt2000Array, 'int64') && iscolumn(tt2000Array), ...
-        'tt2000Array is not an int64 column vector.')
+      NsoEventMatchAr = bicas.NsoEventMatch.empty(0, 1);
+      for iEvent = 1:obj.nEvents
+        tt2000start = obj.evtStartTt2000Array(iEvent);
+        tt2000stop  = obj.evtStopTt2000Array(iEvent);
 
-      % ===================================================================
-      % Extract subset of NSO table which is relevant for the current call
-      % ===================================================================
-      % Indirectly also removes irrelevant QRCIDs (not just events) for the code
-      % after.
-      if isempty(tt2000Array)
-        bEvents = false(0, 1);
-      else
-        bEvents = irf.utils.intervals_intersect(...
-          obj.evtStartTt2000Array, ...
-          obj.evtStopTt2000Array, ...
-          min(tt2000Array), ...
-          max(tt2000Array), ...
-          'closed intervals');
+        qrbcAr = (tt2000start <= tt2000Ar) & (tt2000Ar <= tt2000stop);
+        if any(qrbcAr)
+          NsoEventMatchAr(end+1, 1) = bicas.NsoEventMatch(...
+            qrbcAr, obj.evtQrcidAr(iEvent), iEvent);
+        end
       end
-      evtStartTt2000Array = obj.evtStartTt2000Array(bEvents);
-      evtStopTt2000Array  = obj.evtStopTt2000Array(bEvents);
-      evtQrcidAr          = obj.evtQrcidAr(bEvents);
-      iGlobalEventsArray  = find(bEvents);
-
-      % Normalize 0x0 to 0x1
-      % --------------------
-      % IMPLEMENTATION NOTE: Must normalize empty vectors due to
-      % inconsistent MATLAB behaviour. Otherwise column vectors become
-      % non-column vectors.
-      % Ex:
-      %     a = [3, 4, 5]';  size(a(false(3,1)))  == [0, 1]
-      %     a = [3];         size(a(false))       == [0, 0]    # NOTE!
-      %     a = zeros(0, 1); size(a(false(0, 1))) == [0, 1]
-      evtStartTt2000Array = evtStartTt2000Array(:);
-      evtStopTt2000Array  = evtStopTt2000Array(:);
-      evtQrcidAr          = evtQrcidAr(:);
-      % Ex:
-      %     size(find(false(0, 1))) == [0, 1]
-      %     size(find(false(1, 1))) == [0, 0]    # NOTE!
-      %     size(find(false(3, 1))) == [0, 1]
-      iGlobalEventsArray  = iGlobalEventsArray(:);
-
-
-
-      % ===================
-      % Assign bEvtArraysCa
-      % ===================
-      % IMPLEMENTATION NOTE: obj.evtQrcidAr is NOT a list of unique QRCIDs, but
-      % the return value "evtQrcidAr" must be a list of unique QRCIDs. One must
-      % distinguish between these two.
-      nEvents      = numel(evtQrcidAr);
-      bEvtArraysCa = cell(nEvents, 1);
-      for iEvent = 1:nEvents    % Matching events (not global).
-
-        tt2000start = evtStartTt2000Array(iEvent);
-        tt2000stop  = evtStopTt2000Array(iEvent);
-
-        bMatch = (tt2000start <= tt2000Array) & (tt2000Array <= tt2000stop);
-        bEvtArray         = false(size(tt2000Array));   % Allocate full array.
-        bEvtArray(bMatch) = true;
-
-        bEvtArraysCa{iEvent, 1} = bEvtArray;
-      end
-
-
-
-      % ASSERTIONS
-      irf.assert.sizes(...
-        bEvtArraysCa,       [-1], ...
-        evtQrcidAr,         [-1], ...
-        iGlobalEventsArray, [-1])
     end    % get_NSO_events_timestamps
 
 
