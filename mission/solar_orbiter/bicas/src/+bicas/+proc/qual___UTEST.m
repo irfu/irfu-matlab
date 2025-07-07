@@ -17,143 +17,105 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_NSO_table_to_QRCB_arrays(testCase)
+    function test_NSO_table_to_QRCB_arrays___empty(testCase)
+      % Empty NSO table. Various Epoch ZVs.
 
-      function test(allQrcidAr, NsoTable, Epoch, ExpQrcbMap)
-        % Normalize/modify arguments
-        Epoch = int64(Epoch(:));
+      EMPTY_NSO_TABLE = bicas.NsoTable(...
+        int64(zeros(0, 1)), ...
+        int64(zeros(0, 1)), ...
+        strings(0, 1));
+      EPOCH_DOUBLE_CA = {
+        zeros(0,1),   % No timestamps
+        [10],         % One timestamp
+        [10;20;30]    % Multiple timestamps
+        };
 
-        L = bicas.Logger('HUMAN_READABLE', false);
-
-        % CALL TESTED FUNCTION
-        ActQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
-          allQrcidAr, NsoTable, Epoch, L);
-
-        % ASSERT EXPECTED RESULT
-        % ----------------------
-        % IMPLEMENTATION NOTE: testCase.assertEqual() (and isequaln())
-        % can handle containers.Map, but that is not very helpful for
-        % debugging by understanding any found difference between the
-        % two maps. Therefore explicitly comparing the map subcomponents.
-        testCase.assertEqual(...
-          sort(ActQrcbMap.keys), ...
-          sort(ExpQrcbMap.keys))
-
-        qrcidCa = ActQrcbMap.keys;
-        for i = 1:numel(qrcidCa)
-          qrcid = qrcidCa{i};
-          testCase.assertEqual(...
-            ActQrcbMap(qrcid), ...
-            ExpQrcbMap(qrcid))
-        end
+      for i = 1:numel(EPOCH_DOUBLE_CA)
+        Epoch_double = EPOCH_DOUBLE_CA{i};
+        ExpQrcbMap = containers.Map();
+        testCase.test_NSO_table_to_QRCB_arrays(...
+          strings(0, 1), EMPTY_NSO_TABLE, ...
+          Epoch_double, ...
+          ExpQrcbMap ...
+          )
       end
+    end
 
 
 
-      ALL_ENABLED = true;
-      %ALL_ENABLED = false;
+    function test_NSO_table_to_QRCB_arrays___nonoverlapping_events(testCase)
+      % Two non-overlapping NSO events
 
-      %====================================
-      % Empty NSO table. Various Epoch ZVs
-      %====================================
-      if ALL_ENABLED
-        EMPTY_NSO_TABLE = bicas.NsoTable(...
-          int64(zeros(0, 1)), ...
-          int64(zeros(0, 1)), ...
-          strings(0, 1));
-        EPOCH_DOUBLE_CA = {zeros(0,1), [10], [10;20;30]};
-
-        for i = 1:numel(EPOCH_DOUBLE_CA)
-          Epoch_double = EPOCH_DOUBLE_CA{i};
-          ExpQrcbMap = containers.Map();
-          test(...
-            strings(0, 1), EMPTY_NSO_TABLE, ...
-            Epoch_double, ...
-            ExpQrcbMap ...
-            )
-        end
-      end
-
-      %=========================================
-      % Two non-overlapping NSOs, one at a time
-      %=========================================
-      % Nontrivial NSO settings.
+      % Nontrivial NSO table.
       ALL_QRCID_AR = ["QRCID1", "QRCID2"];
       NSO_TABLE = bicas.NsoTable(...
         int64([1, 4]'*1e9), ...
         int64([2, 5]'*1e9), ...
         ["QRCID1", "QRCID2"]');
 
-      if ALL_ENABLED
-        % Time interval is superset of NSO 1/2.
-        ExpQrcbMap = containers.Map();
-        ExpQrcbMap("QRCID1") = logical([0 1 1 0]');
-        ExpQrcbMap("QRCID2") = false(4,1);
-        test(...
-          ALL_QRCID_AR, NSO_TABLE, ...
-          [0:3]*1e9, ...
-          ExpQrcbMap ...
-          );
-      end
+      % Time interval is superset of NSO event 1/2.
+      ExpQrcbMap = containers.Map();
+      ExpQrcbMap("QRCID1") = logical([0 1 1 0]');
+      ExpQrcbMap("QRCID2") = false(4,1);
+      testCase.test_NSO_table_to_QRCB_arrays(...
+        ALL_QRCID_AR, NSO_TABLE, ...
+        [0:3]*1e9, ...
+        ExpQrcbMap ...
+        );
 
-      if ALL_ENABLED
-        % Time interval is superset of NSO 2/2.
-        ExpQrcbMap = containers.Map();
-        ExpQrcbMap("QRCID1") = false(4,1);
-        ExpQrcbMap("QRCID2") = logical([0 1 1 0]');
-        test(...
-          ALL_QRCID_AR, NSO_TABLE, ...
-          [3:6]*1e9, ...
-          ExpQrcbMap ...
-          );
-      end
+      % Time interval is superset of NSO event 2/2.
+      ExpQrcbMap = containers.Map();
+      ExpQrcbMap("QRCID1") = false(4,1);
+      ExpQrcbMap("QRCID2") = logical([0 1 1 0]');
+      testCase.test_NSO_table_to_QRCB_arrays(...
+        ALL_QRCID_AR, NSO_TABLE, ...
+        [3:6]*1e9, ...
+        ExpQrcbMap ...
+        );
 
-      if ALL_ENABLED
-        % Time interval from middle of NSO 1 to middle of NSO 2.
-        ExpQrcbMap = containers.Map();
-        ExpQrcbMap("QRCID1") = logical([1 0 0]');
-        ExpQrcbMap("QRCID2") = logical([0 0 1]');
-        test(...
-          ALL_QRCID_AR, NSO_TABLE, ...
-          [2:4]'*1e9, ...
-          ExpQrcbMap ...
-          );
-      end
+      % Time interval from middle of NSO event 1 to middle of NSO event 2.
+      ExpQrcbMap = containers.Map();
+      ExpQrcbMap("QRCID1") = logical([1 0 0]');
+      ExpQrcbMap("QRCID2") = logical([0 0 1]');
+      testCase.test_NSO_table_to_QRCB_arrays(...
+        ALL_QRCID_AR, NSO_TABLE, ...
+        [2:4]'*1e9, ...
+        ExpQrcbMap ...
+        );
+    end
 
-      %========================================
-      % Two overlapping NSOs, one unused QRCID
-      %========================================
+
+
+    function test_NSO_table_to_QRCB_arrays___overlapping_events_nonexistent_requested_QRCID(testCase)
+      % Two overlapping NSOs, one requested non-existing QRCID.
+
       ALL_QRCID_AR = ["QRCID1", "QRCID2", "QRCID3"];
       NSO_TABLE = bicas.NsoTable(...
         int64([1, 2]'*1e9), ...
         int64([2, 3]'*1e9), ...
         ["QRCID1", "QRCID2"]');
 
-      if ALL_ENABLED
-        % Time interval covers all NSOs.
-        ExpQrcbMap = containers.Map();
-        ExpQrcbMap("QRCID1") = logical([0 1 1 0 0]');
-        ExpQrcbMap("QRCID2") = logical([0 0 1 1 0]');
-        ExpQrcbMap("QRCID3") = logical([0 0 0 0 0]');
-        test(...
-          ALL_QRCID_AR, NSO_TABLE, ...
-          [0:4]*1e9, ...
-          ExpQrcbMap ...
-          );
-      end
+      % Time interval covers all NSOs.
+      ExpQrcbMap = containers.Map();
+      ExpQrcbMap("QRCID1") = logical([0 1 1 0 0]');
+      ExpQrcbMap("QRCID2") = logical([0 0 1 1 0]');
+      ExpQrcbMap("QRCID3") = logical([0 0 0 0 0]');
+      testCase.test_NSO_table_to_QRCB_arrays(...
+        ALL_QRCID_AR, NSO_TABLE, ...
+        [0:4]*1e9, ...
+        ExpQrcbMap ...
+        );
 
-      if ALL_ENABLED
-        % Epoch does not overlap with any NSOs (though time interval does).
-        ExpQrcbMap = containers.Map();
-        ExpQrcbMap("QRCID1") = logical([0 0]');
-        ExpQrcbMap("QRCID2") = logical([0 0]');
-        ExpQrcbMap("QRCID3") = logical([0 0]');
-        test(...
-          ALL_QRCID_AR, NSO_TABLE, ...
-          [-1, 4]*1e9, ...
-          ExpQrcbMap ...
-          );
-      end
+      % Epoch does not overlap with any NSOs (though time interval does).
+      ExpQrcbMap = containers.Map();
+      ExpQrcbMap("QRCID1") = logical([0 0]');
+      ExpQrcbMap("QRCID2") = logical([0 0]');
+      ExpQrcbMap("QRCID3") = logical([0 0]');
+      testCase.test_NSO_table_to_QRCB_arrays(...
+        ALL_QRCID_AR, NSO_TABLE, ...
+        [-1, 4]*1e9, ...
+        ExpQrcbMap ...
+        );
     end
 
 
@@ -217,6 +179,49 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
+
+
+
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
+
+
+
+      function test_NSO_table_to_QRCB_arrays(...
+          testCase, requestedQrcidAr, NsoTable, Epoch, ExpQrcbMap)
+
+        % Normalize/modify arguments
+        Epoch = int64(Epoch(:));
+
+        L = bicas.Logger('HUMAN_READABLE', false);
+
+        % CALL TESTED FUNCTION
+        ActQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
+          requestedQrcidAr, NsoTable, Epoch, L);
+
+        % ASSERT EXPECTED RESULT
+        % ----------------------
+        % IMPLEMENTATION NOTE: testCase.assertEqual() (and isequaln())
+        % can handle containers.Map, but that is not very helpful for
+        % debugging by understanding any found difference between the
+        % two maps. Therefore explicitly comparing the map subcomponents.
+        testCase.assertEqual(...
+          sort(ActQrcbMap.keys), ...
+          sort(ExpQrcbMap.keys))
+
+        qrcidCa = ActQrcbMap.keys;
+        for i = 1:numel(qrcidCa)
+          qrcid = qrcidCa{i};
+          testCase.assertEqual(...
+            ActQrcbMap(qrcid), ...
+            ExpQrcbMap(qrcid))
+        end
+      end
+    end    % methods(Access=private)
 
 
 
