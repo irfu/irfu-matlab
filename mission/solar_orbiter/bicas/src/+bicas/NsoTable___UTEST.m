@@ -21,15 +21,15 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
 
     % % Test constructor.
-    % % NOTE: test_get_NSO_events_timestamps() indirectly tests the constructor.
+    % % NOTE: test_get_NSO_event_matches() indirectly tests the constructor.
     % function test_NsoTable(testCase)
     % end
 
 
 
-    % Test method bicas.NsoTable.get_NSO_events_timestamps(). Also indirectly
+    % Test method bicas.NsoTable.get_NSO_event_matches(). Also indirectly
     % uses/tests bicas.NsoTable() constructor by its nature.
-    function test_get_NSO_events_timestamps(testCase)
+    function test_get_NSO_event_matches(testCase)
       % PROBLEM: How handle that return value may change the order of
       %          events depending on implementation?
 
@@ -51,7 +51,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
         % CALL TESTED CODE
         NsoTable = bicas.NsoTable(...
           evtStartTt2000Ar, evtStopTt2000Ar, evtQrcidAr);
-        ActNsoEventMatchAr = NsoTable.get_NSO_events_timestamps(tt2000Ar);
+        ActNsoEventMatchAr = NsoTable.get_NSO_event_matches(tt2000Ar);
 
         testCase.assertEqual(ActNsoEventMatchAr, ExpNsoEventMatchAr)
       end

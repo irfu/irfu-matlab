@@ -55,7 +55,7 @@ classdef qual
 
       assert(isstring(allQrcidAr))
 
-      NsoEventMatchAr = NsoTable.get_NSO_events_timestamps(tt2000Ar);
+      NsoEventMatchAr = NsoTable.get_NSO_event_matches(tt2000Ar);
 
       nLe = numel(NsoEventMatchAr);
       nGe = NsoTable.nEvents;

@@ -208,7 +208,7 @@ classdef NsoTable
     %       Column array of bicas.NsoEventMatch, one per NSO event which
     %       overlaps with at least one of the timestamps in tt2000Array.
     %
-    function NsoEventMatchAr = get_NSO_events_timestamps(obj, tt2000Ar)
+    function NsoEventMatchAr = get_NSO_event_matches(obj, tt2000Ar)
       assert(isa(tt2000Ar, 'int64') && iscolumn(tt2000Ar), ...
         'tt2000Ar is not an int64 column vector.')
 
@@ -223,7 +223,7 @@ classdef NsoTable
             qrbcAr, obj.evtQrcidAr(iEvent), iEvent);
         end
       end
-    end    % get_NSO_events_timestamps
+    end    % get_NSO_event_matches
 
 
 

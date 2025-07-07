@@ -1,5 +1,5 @@
 %
-% Return value from bicas.NsoTable.get_NSO_events_timestamps().
+% Return value from bicas.NsoTable.get_NSO_event_matches().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
