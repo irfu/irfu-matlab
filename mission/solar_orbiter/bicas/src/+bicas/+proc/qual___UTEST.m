@@ -132,6 +132,26 @@ classdef qual___UTEST < matlab.unittest.TestCase
     end
 
 
+    function test_NSO_table_to_QRCB_arrays___QRCID_req_omitted_req_nonexist(testCase)
+      % (1) Request QRCID which does not exist in NSO table.
+      % (2) Omit to request QRCID in NSO table.
+
+      NSO_TABLE = bicas.NsoTable(...
+        int64([1, 2]'*1e9), ...
+        int64([2, 3]'*1e9), ...
+        ["QRCID1", "QRCID2"]');
+
+      ExpQrcbMap = containers.Map();
+      ExpQrcbMap("QRCID1") = logical([0 1 1 0 0 0]');
+      ExpQrcbMap("QRCID3") = logical([0 0 0 0 0 0]');
+      testCase.test_NSO_table_to_QRCB_arrays(...
+        string(ExpQrcbMap.keys'), NSO_TABLE, ...
+        [0:5]*1e9, ...
+        ExpQrcbMap ...
+        );
+    end
+
+
 
     function test_QRCB_arrays_to_quality_ZVs(testCase)
 

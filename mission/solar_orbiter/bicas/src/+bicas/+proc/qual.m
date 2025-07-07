@@ -64,14 +64,6 @@ classdef qual
     function QrcbMap = NSO_table_to_QRCB_arrays(...
         requestedQrcidAr, NsoTable, tt2000Ar, L)
 
-      % PROPOSAL: Redefine allQrcidAr to only be those QRCIDs for which one
-      %           wants to be used for populating the return value QrcbMap.
-      %   PRO: Useful for separating relevant QRCs, e.g. for only L2, only L3,
-      %        only L3 density etc.
-      %   CON: Can not use allQrcidAr for asserting only legal QRCIDs in NSO
-      %        table.
-      %   CON-PROPOSAL: Separate function for filtering QrcbMap wrt. QRCIDs.
-
       % Local variable naming conventions:
       % ----------------------------------
       % GE = Global Event = NSO event in global NSO event table.
@@ -103,31 +95,27 @@ classdef qual
       % Iterate over NSO events and set QRCBs for resp. QRCIDs and timestamps
       %-----------------------------------------------------------------------
       for kLe = 1:nLe
-        % Index into GLOBAL NSO events table.
-        iGe        = NsoEventMatchAr(kLe).iNsoEvent;
         eventQrcid = NsoEventMatchAr(kLe).qrcid;
-        % Logical indices into tt2000Ar.
-        qrbcAr     = NsoEventMatchAr(kLe).qrcbAr;
 
-        %=====================================================================
-        % Log relevant NSO events by referring to the GLOBAL NSO events table
-        %=====================================================================
-        L.logf('info', '    %s -- %s %s', ...
-          bicas.utils.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGe), 9), ...
-          bicas.utils.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGe), 9), ...
-          eventQrcid);
+        if ismember(eventQrcid, requestedQrcidAr)
+          % Index into GLOBAL NSO events table.
+          iGe    = NsoEventMatchAr(kLe).iNsoEvent;
+          % Logical indices into tt2000Ar.
+          qrbcAr = NsoEventMatchAr(kLe).qrcbAr;
 
-        % ASSERTION
-        % NOTE: Not perfect assertion on legal QRCIDs since the code only checks
-        % those relevant for the data (time interval) currently processed.
-        % (Therefore also checks all QRCIDs when reads NSO table.)
-        assert(ismember(eventQrcid, requestedQrcidAr), ...
-          'Can not interpret QRCID "%s".', eventQrcid)
+          %=====================================================================
+          % Log relevant NSO events by referring to the GLOBAL NSO events table
+          %=====================================================================
+          L.logf('info', '    %s -- %s %s', ...
+            bicas.utils.TT2000_to_UTC_str(NsoTable.evtStartTt2000Array(iGe), 9), ...
+            bicas.utils.TT2000_to_UTC_str(NsoTable.evtStopTt2000Array( iGe), 9), ...
+            eventQrcid);
 
-        %======================================
-        % Set corresponding QRC array elements
-        %======================================
-        QrcbMap(eventQrcid) = QrcbMap(eventQrcid) | qrbcAr;
+          %====================================
+          % Update corresponding QRCB elements
+          %====================================
+          QrcbMap(eventQrcid) = QrcbMap(eventQrcid) | qrbcAr;
+        end
       end    % for
     end
 
