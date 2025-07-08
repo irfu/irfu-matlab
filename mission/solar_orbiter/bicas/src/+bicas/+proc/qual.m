@@ -40,9 +40,10 @@ classdef qual
 
 
 
-    % IMPLEMENTATION NOTE: Without allQrcidCa, the function can not create a
-    % return value map that contains keys for all QRCIDs, in case the
-    % NsoTable does not contain all QRCIDs.
+    % IMPLEMENTATION NOTE: Without requestedQrcidAr, the function can not create
+    % a return value map that contains keys for all QRCIDs, in case the NsoTable
+    % does not contain all QRCIDs.
+    %
     %
     % ARGUMENTS
     % =========
@@ -121,8 +122,7 @@ classdef qual
 
 
 
-    % Given an array(s) of QRC bits (one bit per CDF record and QRC), translate
-    % that into
+    % Given QRCB arrays, translate them into
     % (1) ZV QUALITY_FLAG, and
     % (2) ZV L*_QUALITY_BITMASK.
     %
@@ -141,6 +141,7 @@ classdef qual
     %       Array element is set when the corresponding QRC applies.
     % QrcsMap
     %       containers.Map: QRCID-->bicas.proc.QrcSetting
+    %       Must contain at least the QRCIDs in QrcbMap.
     %
     %
     % RETURN VALUES
@@ -155,17 +156,11 @@ classdef qual
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
         nRec, QrcbMap, QrcsMap)
 
-      % PROPOSAL: Keys in QrcbMap and QrcsMap do not have to be identical.
-      %   -- IMPLEMENTED
-      %   CON: Loses fail-check.
-      %   PRO: Easier to call.
-      %     PRO: Can just submit ~global map of  QRCSs
-
       %irf.assert.castring_sets_equal(QrcbMap.keys, QrcsMap.keys)
 
       % Create "empty" quality variable arrays, with max possible quality
-      % (QUALITY_FLAG max, quality bits=0), which can then later be "lowered"
-      % if necessary.
+      % (QUALITY_FLAG max, Lx_QUALITY_BITMASK=0), which can then later be
+      % "lowered" if necessary.
       QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
       Lx_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
 
@@ -184,8 +179,9 @@ classdef qual
         %------------------
         % Set QUALITY_FLAG
         %------------------
-        % IMPLEMENTATION NOTE: Only adjusts relevant indices since the
-        % operation is more natural (simpler) that way.
+        % IMPLEMENTATION NOTE: Only adjusts relevant indices since the operation
+        % is more natural (simpler, shorter) that way. min() should only be
+        % applied to the indices where QRCB=true.
         QUALITY_FLAG(qrcbAr) = min(...
           QUALITY_FLAG(qrcbAr), ...
           Qrcs.QUALITY_FLAG);

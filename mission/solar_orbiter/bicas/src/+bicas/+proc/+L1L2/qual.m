@@ -120,6 +120,7 @@ classdef qual
         tt2000Ar, NsoTable, saturationQualitySchemeId, ...
         Cdac, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, L)
 
+      % PROPOSAL: Change order of arguments.
       % PROPOSAL: Select saturationQualitySchemeId behaviour by replacing
       %           bicas.const.QRCS_L2_MAP with call to function where
       %           saturationQualitySchemeId is an argument.

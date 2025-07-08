@@ -59,6 +59,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       InputCurCdf = InputDatasetsMap('CUR_cdf');
       InputSciCdf = InputDatasetsMap('SCI_cdf');
 
+      % TEST
+      % InputSciCdf.ZvFpa.QUALITY_FLAG(:) = bicas.utils.FPArray(uint8(3));
+
 
 
       %==========================================

@@ -129,9 +129,9 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       % 4: L2_QUALITY_BITMASK
       % 5: nanData
       % --
-      % NOTE: nanData is almost same as QUALITY_FLAG < 2, except for bin
-      % filled with only QUALITY_FLAG=FV (sic!). Might change
-      % implementation w.r.t. this behaviour some day.
+      % NOTE: nanData is almost same as QUALITY_FLAG < 2, except for bin filled
+      % with only QUALITY_FLAG=FV (sic!). Might change implementation w.r.t.
+      % this behaviour some day.
       DATA_DSR = [...
         10,    2,     0,     0, 1; ...
         20,  255, 65535, 65535, 1; ...
@@ -144,7 +144,8 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         90,    2,     0,     0, 1; ...
         100,   2,     0,     0, 1; ...
         ];
-      bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, ACT_EXP_DATA_OSR, DATA_DSR)
+      bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, ...
+        ACT_EXP_DATA_OSR, DATA_DSR)
 
       % Normal bin
       % Test merging QUALITY_BITMASK bits.
@@ -285,14 +286,14 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(ActDsr.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
       end
 
-      testCase.assertEqual(all(ActEfieldDsr.Zv.EDC_SRF.fpAr,    2),   ExpDsr.nanData);
-      testCase.assertEqual(all(ActEfieldDsr.Zv.EDCSTD_SRF.fpAr, 2),   ExpDsr.nanData);
-      testCase.assertEqual(    ActDensityDsr.Zv.DENSITY.fpAr        , ExpDsr.nanData);
-      testCase.assertEqual(    ActDensityDsr.Zv.DENSITYSTD.fpAr     , ExpDsr.nanData);
-      testCase.assertEqual(    ActScpotDsr.Zv.SCPOT.fpAr            , ExpDsr.nanData);
-      testCase.assertEqual(    ActScpotDsr.Zv.SCPOTSTD.fpAr         , ExpDsr.nanData);
-      testCase.assertEqual(    ActScpotDsr.Zv.PSP.fpAr              , ExpDsr.nanData);
-      testCase.assertEqual(    ActScpotDsr.Zv.PSPSTD.fpAr           , ExpDsr.nanData);
+      testCase.assertEqual(all(ActEfieldDsr.Zv.EDC_SRF.fpAr,    2), ExpDsr.nanData);
+      testCase.assertEqual(all(ActEfieldDsr.Zv.EDCSTD_SRF.fpAr, 2), ExpDsr.nanData);
+      testCase.assertEqual(    ActDensityDsr.Zv.DENSITY.fpAr      , ExpDsr.nanData);
+      testCase.assertEqual(    ActDensityDsr.Zv.DENSITYSTD.fpAr   , ExpDsr.nanData);
+      testCase.assertEqual(    ActScpotDsr.Zv.SCPOT.fpAr          , ExpDsr.nanData);
+      testCase.assertEqual(    ActScpotDsr.Zv.SCPOTSTD.fpAr       , ExpDsr.nanData);
+      testCase.assertEqual(    ActScpotDsr.Zv.PSP.fpAr            , ExpDsr.nanData);
+      testCase.assertEqual(    ActScpotDsr.Zv.PSPSTD.fpAr         , ExpDsr.nanData);
     end
 
 

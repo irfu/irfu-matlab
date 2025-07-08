@@ -21,10 +21,11 @@ classdef qual
     function [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
         get_quality_ZVs_density(badDensityQrcbAr)
 
-      % IMPLEMENTATION NOTE: Function is (as of 2023-12-18) in principle
-      % more complicated than necessary w.r.t. L3_QUALITY_BITMASK but the
-      % architecture is chosen to (1) be analogue with
-      % bicas.proc.L1L2.qual.get_quality_ZVs().
+      % IMPLEMENTATION NOTE: Function is (as of 2023-12-18) in principle more
+      % complicated than necessary w.r.t. L3_QUALITY_BITMASK but the
+      % architecture is chosen to be analogue with
+      % bicas.proc.L1L2.qual.get_quality_ZVs() so that it can be expanded in a
+      % similar way if needed.
 
       assert(islogical(badDensityQrcbAr))
 
