@@ -313,9 +313,9 @@ classdef const
         ' file matches regular expression.']);
 
       % NSO table error
-      MAP('FailedToReadInterpretNsOps')        = init_struct(1, ...
+      MAP('FailedToReadInterpretNsoTable')     = init_struct(1, ...
         ['Can not read or interpret the content of the non-standard', ...
-        ' operations file.']);
+        ' operations (NSO) table.']);
 
       % IMPLEMENTATION NOTE: Using a nested function merely to keep the
       % function call short.
