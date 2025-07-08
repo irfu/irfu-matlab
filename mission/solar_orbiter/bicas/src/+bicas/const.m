@@ -179,8 +179,8 @@ classdef const
     %
     % NOTE: This includes QRCIDs for both (a) L2, and (b) L3 density.
     ALL_QRCID_AR = [...
-      string(bicas.const.QRCS_L2_MAP.keys), ...
-      string(bicas.const.QRCS_L3_DENSITY_MAP.keys)];
+      string(bicas.const.QRCS_L2_MAP.keys'); ...
+      string(bicas.const.QRCS_L3_DENSITY_MAP.keys')];
 
 
     % Minimum number of non-FV OSR records per bin/DSR record.

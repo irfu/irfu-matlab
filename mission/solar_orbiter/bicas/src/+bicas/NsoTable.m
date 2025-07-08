@@ -246,16 +246,20 @@ classdef NsoTable
     % assert that the file is valid, without making this class less generic.
     %
     function NsoTable = read_file_validated(filePath, legalQrcidAr)
+      assert(iscolumn(legalQrcidAr) & isstring(legalQrcidAr))
 
       [evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr] = ...
         bicas.NsoTable.read_file_raw(filePath);
 
       % ASSERTION: No illegal QRCIDs (as specified in argument)
       % -------------------------------------------------------
-      illegalEvtQrcidSet = setdiff(evtQrcidAr, legalQrcidAr);
-      assert(isempty(illegalEvtQrcidSet), ...
-        'NSO table file contains illegal QRCID(s): %s.',  ...
-        ['"', strjoin(illegalEvtQrcidSet, '", "'), '"'])
+      illegalEvtQrcidAr    = setdiff(evtQrcidAr, legalQrcidAr);
+      if ~isempty(illegalEvtQrcidAr)
+        illegalEvtQrcidAr2 = arrayfun(@(s) ('"'+s+'"'), illegalEvtQrcidAr);
+        illegalEvtQrcidArStr = strjoin(illegalEvtQrcidAr2, ", ");
+        error("BICAS:FailedToReadInterpretNsOps", ...
+          'NSO table file contains illegal QRCID(s): %s.', illegalEvtQrcidArStr)
+      end
 
       NsoTable = bicas.NsoTable(...
         evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr);
