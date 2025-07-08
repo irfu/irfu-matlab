@@ -200,6 +200,14 @@ it is assumed that no sweep is underway.
 ============
  Saturation
 ============
+BICAS can label data as saturated according to one of two schemes (setting
+PROCESSING.SATURATION.QUALITY_SCHEME): one old scheme (to be phased out), and
+one new scheme (under evaluation).
+
+
+-----------------------------
+Old scheme: GLOBAL_SATURATION
+-----------------------------
 BICAS can determine that L2 data is either "partially saturated" or
 "fully saturated" in the following ways:
 (1) time interval is labelled as "partially saturated" in the NSO table,
@@ -221,6 +229,35 @@ Condition             | Action taken when condition applies
                       |     Set L2_QUALITY_BITMASK: "full saturation"
                       |                             AND "partial saturation"
                       |     Set QUALITY_FLAG=0.
+
+
+------------------------------
+New scheme: CHANNEL_SATURATION
+------------------------------
+There is one quality bit per channel, where AC and DC diffs share the same bits.
+Reconstructed channels (i.e. channel samples which BICAS has derived from other
+channels) and are affected by saturation on the source channels are also
+labelled as saturated.
+
+Algorithm for detecting saturation:
+Step 1: For every sample, saturation is preliminarily detected using
+thresholds for every sample separately.
+Step 2: For a moving window on each channel (both source and reconstructed
+channels), if the fraction of saturated samples (inverse sampling
+frequency-weighted) from step (1) exceeds a threshold, then the entire window
+counts as saturated.
+
+Note 1: Due to step (2), individual samples may be saturated (as in exceeding
+thresholds) without being labelled as saturated.
+Note 2: Due to step (2), a reconstructed channel can be labelled as saturated
+despite that neither of the two source channels is labelled as saturated in
+unusual cases.
+
+Condition            | Action taken when condition applies
+--------------------------------------------------------------------------------
+Channel is saturated | L2 CWF, SWF/RSWF:
+                     |      Set QUALITY_FLAG=0
+                     |      Set L2_QUALITY_BITMASK: Channel V1/V2/V3/V12/V13/V23
 
 
 =================
