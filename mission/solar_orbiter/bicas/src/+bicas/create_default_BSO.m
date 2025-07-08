@@ -85,9 +85,6 @@ function Bso = create_default_BSO()
 % PROPOSAL: Abolish settings/functionality:
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
-%   PROCESSING.L2.REMOVE_DATA.MUX_MODES
-%   PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC
-%   PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC
 %   PROCESSING.HK.USE_ZV_ACQUISITION_TIME
 %       Related to INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC.
 %   INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC
@@ -138,7 +135,6 @@ function Bso = create_default_BSO()
 %           Ex: L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
 %           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
 %   Ex: For now, "L2" refers to algorithms to use when processing L2 as output.
-%       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
 %   --
 %   NEED: Specify whether refers to input or output data (not necessarily datasets).
 %       Ex: Distinguish processing L1/L1R-->L2, L2-->L3.
@@ -421,25 +417,6 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 %     Old scheme (to eventually be phased out): 'GLOBAL_SATURATION'
 %     New scheme (to eventually be phased in):  'CHANNEL_SATURATION'
 S.define_setting('PROCESSING.SATURATION.QUALITY_SCHEME', 'CHANNEL_SATURATION')
-
-
-%============================================================================
-% Settings for when to remove data by setting it to fill value
-% ------------------------------------------------------------
-% "L2" refers to output datasets. Both voltage and current data. In practice,
-% this functionality was intended as a temporary solution for removing sweeps.
-% It has not been used since the introduction of automatic sweep detection.
-%============================================================================
-S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
-
-% Lower number since using LFR BDM (mux mode; unless configured not to),
-% which has same cadence as science data.
-% See PROCESSING.LFR.MUX_MODE_SOURCE.
-S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC',  0)
-
-% Higher number since using BIAS HK for TDS, which means that the BDM is
-% known with a lower time resolution.
-S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC', 30)
 
 
 

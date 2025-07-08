@@ -303,3 +303,8 @@ Version X.Y.Z (????-??-??)
   Controlled by new setting PROCESSING.SATURATION.QUALITY_SCHEME.
 * Speedup by using custom implementation of MATLAB dictionary lookup
   (bicas.utils.dict_lookup()).
+* Removed unused functionality for removing data based on BDM. Therefore removed
+  below settings:
+  PROCESSING.L2.REMOVE_DATA.MUX_MODES
+  PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC
+  PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC

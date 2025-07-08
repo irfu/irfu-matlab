@@ -205,16 +205,13 @@ classdef dc
       %   ZvIn, Dcip.isLfr, NsoTable, Bso, L);
       % clear ZvIn
 
-      zvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
-        Dcip.Zv.Epoch, Dcip.Zv.bdmFpa, Dcip.isLfr, Bso, L);
-
 
 
       %################################
       % Set UFV and "final" zVariables
       %################################
       Zv = struct();
-      zvUfv                 = Dcip.Zv.ufv | zvUfv;
+      zvUfv                 = Dcip.Zv.ufv;
       Zv.QUALITY_FLAG       = Dcip.Zv.QUALITY_FLAG.min(...
         bicas.utils.FPArray(QUALITY_FLAG));
       Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
