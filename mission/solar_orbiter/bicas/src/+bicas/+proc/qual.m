@@ -5,29 +5,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qual
-  % PROPOSAL: Class for containers.Map QRCID-->QRCB array.
-  %   PRO: Simplifies documentation (description of arguments).
-  %   PRO: Easier assertions.
-  %     PRO: Shorter assertions when used in code. Reused assertions in class.
-  %   PRO: Natural grouping of related functionality including tests.
-  %   PRO: Simplifies tests
-  %     PRO: Easier to initialize empty map.
-  %     CON: Must have tests for equality.
-  %   CON: Must implement support for equality for test code.
-  %     CON: Easy to implement equality. Can just delegate to isequal(map1,
-  %          map2).
-  %   NOTE: ~Needs abbreviation?
-  %     PROPOSAL: QRCBM
-  %   NOTE: ~Must be handle class.
-  %   TODO-NI: Class name?
-  %     ~QRCID, ~QRCB, ~map
-  %     ~arrays
-  %     QrcbMap
-  %       QRCBM=
-  %     QrcBitMap
-  %       CON: Sounds too much like bitmap (image).
-  %     QrcbArraysMap
-  %       QAM=
 
 
 
@@ -58,11 +35,10 @@ classdef qual
     % RETURN VALUE
     % ============
     % QrcbMap
-    %       containers.Map. QRCID->logical array
-    %       Contains keys for all QRCIDs specified in allQrcidCa, not just
+    %       Contains keys for all QRCIDs specified in requestedQrcidAr, not just
     %       those present in NsoTable.
     %
-    function QrcbMap = NSO_table_to_QRCB_arrays(...
+    function QrcbMap = NSO_table_to_QRCB_map(...
         requestedQrcidAr, NsoTable, tt2000Ar, L)
 
       % Local variable naming conventions:
@@ -87,9 +63,9 @@ classdef qual
       %----------------------------------------------------------------------
       % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!) and can
       %                      therefore not be used.
-      QrcbMap = containers.Map('keyType', 'char', 'valueType', 'any');
+      QrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
       for i = 1:numel(requestedQrcidAr)
-        QrcbMap(requestedQrcidAr(i)) = false(size(tt2000Ar));
+        QrcbMap.add(requestedQrcidAr(i), false(size(tt2000Ar)));
       end
 
       %-----------------------------------------------------------------------
@@ -115,7 +91,7 @@ classdef qual
           %====================================
           % Update corresponding QRCB elements
           %====================================
-          QrcbMap(eventQrcid) = QrcbMap(eventQrcid) | qrbcAr;
+          QrcbMap.set(eventQrcid, QrcbMap.get(eventQrcid) | qrbcAr);
         end
       end    % for
     end
@@ -156,7 +132,7 @@ classdef qual
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
         nRec, QrcbMap, QrcsMap)
 
-      %irf.assert.castring_sets_equal(QrcbMap.keys, QrcsMap.keys)
+      assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
 
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, Lx_QUALITY_BITMASK=0), which can then later be
@@ -167,11 +143,9 @@ classdef qual
       %=================================
       % Iterate over QRCIDs in argument
       %=================================
-      qrcidCa = QrcbMap.keys();
-      for i = 1:numel(qrcidCa)
-        qrcid  = qrcidCa{i};
+      for qrcid = QrcbMap.qrcidAr'
         Qrcs   = QrcsMap(qrcid);
-        qrcbAr = QrcbMap(qrcid);
+        qrcbAr = QrcbMap.get(qrcid);
 
         assert(isa(qrcbAr, 'logical'))
         assert(isequal( size(qrcbAr), [nRec, 1] ))
@@ -192,36 +166,6 @@ classdef qual
         Lx_QUALITY_BITMASK = bitor(...
           Lx_QUALITY_BITMASK, ...
           Qrcs.Lx_QUALITY_BITMASK * uint16(qrcbAr));
-      end
-    end
-
-
-
-    % Given two maps QRCID-->QRCB array, add one to the other. Non-overlapping
-    % keys are just added. Overlapping keys have their values OR'ed together.
-    %
-    % ARGUMENTS
-    % =========
-    % QrcbMap
-    %       NOTE: This object is modified in-place (containers.Map is a handle
-    %       class).
-    %
-    function add_QRCB_map(QrcbMap, AddedQrcbMap)
-      assert(isa(QrcbMap,      "containers.Map"))
-      assert(isa(AddedQrcbMap, "containers.Map"))
-      assert(strcmp(QrcbMap.KeyType,        "char"))
-      assert(strcmp(AddedQrcbMap.KeyType,   "char"))
-      assert(strcmp(QrcbMap.ValueType,      "any"))
-      assert(strcmp(AddedQrcbMap.ValueType, "any"))
-
-      AddedKeyCa = AddedQrcbMap.keys;
-      for i = 1:numel(AddedKeyCa)
-        key         = AddedKeyCa{i};
-        if QrcbMap.isKey(key)
-          QrcbMap(key) = QrcbMap(key) | AddedQrcbMap(key);
-        else
-          QrcbMap(key) = AddedQrcbMap(key);
-        end
       end
     end
 

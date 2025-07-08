@@ -127,17 +127,18 @@ classdef qual
       %   NOTE: Only makes sense if function is called once.
       %   NOTE: Needs functionality for reducing number of QRCIDs in QrcbMap.
 
-      QrcbMap = containers.Map("KeyType", "char", "ValueType", "any");
+      QrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
 
-      NsoTableQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
+      NsoTableQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
         string(bicas.const.QRCS_L2_MAP.keys)', NsoTable, tt2000Ar, L);
-      bicas.proc.qual.add_QRCB_map(QrcbMap, NsoTableQrcbMap);
+      QrcbMap.add_map(NsoTableQrcbMap)
       clear NsoTableQrcbMap
 
-      ChannelSaturationQrcbMap = bicas.proc.L1L2.qual.get_QRCBs_channel_saturation(...
+      ChannelSaturationQrcbMap = ...
+        bicas.proc.L1L2.qual.get_QRCBs_channel_saturation(...
         Cdac, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
-      bicas.proc.qual.add_QRCB_map(QrcbMap, ChannelSaturationQrcbMap);
+      QrcbMap.add_map(ChannelSaturationQrcbMap)
       clear ChannelSaturationQrcbMap
 
       % Derive GLOBAL_SATURATION QRCBs from CHANNEL_SATURATION QRCBs
@@ -148,7 +149,7 @@ classdef qual
       GlobalSaturationQrcbMap = ...
         bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
         QrcbMap, numel(tt2000Ar));
-      bicas.proc.qual.add_QRCB_map(QrcbMap, GlobalSaturationQrcbMap);
+      QrcbMap.add_map(GlobalSaturationQrcbMap);
       clear GlobalSaturationQrcbMap
 
 
@@ -157,8 +158,8 @@ classdef qual
       % two source maps may both contain the same key (FULL_SATURATION).
       switch(saturationQualitySchemeId)
         case "GLOBAL_SATURATION"
-          for qrcidCa = bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys
-            QrcbMap.remove(qrcidCa{1});
+          for qrcid = string(bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys)
+            QrcbMap.remove(qrcid);
           end
 
         case "CHANNEL_SATURATION"
@@ -222,7 +223,7 @@ classdef qual
 
       % IMPLEMENTATION NOTE: containers.Map does not support string-valued keys
       % (sic!)
-      QrcbMap = containers.Map("keyType", "char", "valueType", "any");
+      QrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
 
 
 
@@ -241,25 +242,25 @@ classdef qual
 
         % IMPLEMENTATION NOTE: The (nested) function is called for the same
         % QRCID up to two times.
-        if QrcbMap.isKey(channelSaturationQrcid)
-          vsibSdidPrevAr = QrcbMap(channelSaturationQrcid);
+        if QrcbMap.has_QRCID(channelSaturationQrcid)
+          QrcbMap.set(channelSaturationQrcid, ...
+            QrcbMap.get(channelSaturationQrcid) | vsibSdidAr)
         else
-          vsibSdidPrevAr = false(size(tt2000Ar));
+          QrcbMap.add(channelSaturationQrcid, vsibSdidAr);
         end
-        QrcbMap(channelSaturationQrcid) = vsibSdidPrevAr | vsibSdidAr;
       end
 
 
 
-      handle_channel('DC_V1',  'SATURATION_ZV_V1')
-      handle_channel('DC_V2',  'SATURATION_ZV_V2')
-      handle_channel('DC_V3',  'SATURATION_ZV_V3')
-      handle_channel('DC_V12', 'SATURATION_ZV_V12')
-      handle_channel('DC_V13', 'SATURATION_ZV_V13')
-      handle_channel('DC_V23', 'SATURATION_ZV_V23')
-      handle_channel('AC_V12', 'SATURATION_ZV_V12')
-      handle_channel('AC_V13', 'SATURATION_ZV_V13')
-      handle_channel('AC_V23', 'SATURATION_ZV_V23')
+      handle_channel("DC_V1",  "SATURATION_ZV_V1")
+      handle_channel("DC_V2",  "SATURATION_ZV_V2")
+      handle_channel("DC_V3",  "SATURATION_ZV_V3")
+      handle_channel("DC_V12", "SATURATION_ZV_V12")
+      handle_channel("DC_V13", "SATURATION_ZV_V13")
+      handle_channel("DC_V23", "SATURATION_ZV_V23")
+      handle_channel("AC_V12", "SATURATION_ZV_V12")
+      handle_channel("AC_V13", "SATURATION_ZV_V13")
+      handle_channel("AC_V23", "SATURATION_ZV_V23")
     end
 
 
@@ -284,18 +285,17 @@ classdef qual
         ChannelSaturationQrcbMap, nRecords)
 
       fullSaturationQrcbAr = false(nRecords, 1);
-      for qrcidCa = bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys
+      for qrcid = string(bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys)
         fullSaturationQrcbAr = ...
-          fullSaturationQrcbAr | ChannelSaturationQrcbMap(qrcidCa{1});
+          fullSaturationQrcbAr | ChannelSaturationQrcbMap.get(qrcid);
       end
 
-      GlobalSaturationQrcbMap = ...
-        containers.Map("keyType", "char", "valueType", "any");
+      GlobalSaturationQrcbMap = bicas.proc.QrcbMap(nRecords);
 
-      GlobalSaturationQrcbMap("FULL_SATURATION")    = fullSaturationQrcbAr;
+      GlobalSaturationQrcbMap.add("FULL_SATURATION",    fullSaturationQrcbAr);
       % NOTE: Always false since partial saturation (QRC) can not be
       % autodetected.
-      GlobalSaturationQrcbMap("PARTIAL_SATURATION") = false(nRecords, 1);
+      GlobalSaturationQrcbMap.add("PARTIAL_SATURATION", false(nRecords, 1));
     end
 
 

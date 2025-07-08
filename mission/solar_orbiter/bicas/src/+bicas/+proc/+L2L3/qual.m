@@ -29,12 +29,14 @@ classdef qual
 
       assert(islogical(badDensityQrcbAr))
 
-      QrcbMap = containers.Map();
-      QrcbMap("BAD_DENSITY") = badDensityQrcbAr;
+      nRecords = size(badDensityQrcbAr, 1);
+
+      QrcbMap = bicas.proc.QrcbMap(nRecords);
+      QrcbMap.add("BAD_DENSITY", badDensityQrcbAr);
 
       [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        size(badDensityQrcbAr, 1), QrcbMap, bicas.const.QRCS_L3_DENSITY_MAP);
+        nRecords, QrcbMap, bicas.const.QRCS_L3_DENSITY_MAP);
     end
 
 
