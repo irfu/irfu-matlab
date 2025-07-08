@@ -56,7 +56,7 @@ classdef qual
     %   % Find CDF records to remove due to settings
     %   %============================================
     %   zvUfv = bicas.proc.L1L2.qual.get_UFV_from_removing_BDMs(...
-    %     Epoch, BdmFpa, isLfr, Bso, L);
+    %     Epoch, BdmFpa, isLfr, Bso, L);    % CALL TO DELETED FUNCTION
     %
     %   %============================================
     %   % Create quality ZVs based on
@@ -223,6 +223,9 @@ classdef qual
       % (sic!)
       QrcbMap = containers.Map("keyType", "char", "valueType", "any");
 
+
+
+      % Update QrcbMap wrt. the corresponding arguments.
       function handle_channel(sdidStr, channelSaturationQrcid)
         sdid = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
         Schd = Cdac.get_channel(sdid);
@@ -244,6 +247,8 @@ classdef qual
         end
         QrcbMap(channelSaturationQrcid) = vsibSdidPrevAr | vsibSdidAr;
       end
+
+
 
       handle_channel('DC_V1',  'SATURATION_ZV_V1')
       handle_channel('DC_V2',  'SATURATION_ZV_V2')
