@@ -211,6 +211,71 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_add_QRCB_map___empty(testCase)
+      QrcbMap      = containers.Map("KeyType", "char", "ValueType", "any");
+      AddedQrcbMap = containers.Map("KeyType", "char", "ValueType", "any");
+      ExpQrcbMap   = containers.Map("KeyType", "char", "ValueType", "any");
+
+      bicas.proc.qual.add_QRCB_map(QrcbMap, AddedQrcbMap);
+      testCase.assertEqual(QrcbMap, ExpQrcbMap)
+    end
+
+
+
+    function test_add_QRCB_map___one_empty_1(testCase)
+      QrcbMap              = containers.Map();
+      QrcbMap("QRCID1")    = logical([0; 1; 0]);
+      QrcbMap("QRCID2")    = logical([1; 0; 1]);
+
+      AddedQrcbMap         = containers.Map("KeyType", "char", "ValueType", "any");
+
+      ExpQrcbMap           = containers.Map();
+      ExpQrcbMap("QRCID1") = logical([0; 1; 0]);
+      ExpQrcbMap("QRCID2") = logical([1; 0; 1]);
+
+      bicas.proc.qual.add_QRCB_map(QrcbMap, AddedQrcbMap);
+      testCase.assertEqual(QrcbMap, ExpQrcbMap)
+    end
+
+
+
+    function test_add_QRCB_map___one_empty_2(testCase)
+      QrcbMap                = containers.Map("KeyType", "char", "ValueType", "any");
+
+      AddedQrcbMap           = containers.Map();
+      AddedQrcbMap("QRCID1") = logical([0; 1; 0]);
+      AddedQrcbMap("QRCID2") = logical([1; 0; 1]);
+
+      ExpQrcbMap             = containers.Map();
+      ExpQrcbMap("QRCID1")   = logical([0; 1; 0]);
+      ExpQrcbMap("QRCID2")   = logical([1; 0; 1]);
+
+      bicas.proc.qual.add_QRCB_map(QrcbMap, AddedQrcbMap);
+      testCase.assertEqual(QrcbMap, ExpQrcbMap)
+    end
+
+
+
+    function test_add_QRCB_map___overlap(testCase)
+      QrcbMap                        = containers.Map();
+      QrcbMap("QRCID1")              = logical([0; 0; 0; 0]);
+      QrcbMap("QRCID2_overlap")      = logical([0; 0; 1; 1]);
+
+      AddedQrcbMap                   = containers.Map();
+      AddedQrcbMap("QRCID2_overlap") = logical([0; 1; 0; 1]);
+      AddedQrcbMap("QRCID3")         = logical([1; 0; 1; 0]);
+
+      ExpQrcbMap                     = containers.Map();
+      ExpQrcbMap("QRCID1")           = logical([0; 0; 0; 0]);
+      ExpQrcbMap("QRCID2_overlap")   = logical([0; 1; 1; 1]);
+      ExpQrcbMap("QRCID3")           = logical([1; 0; 1; 0]);
+
+      bicas.proc.qual.add_QRCB_map(QrcbMap, AddedQrcbMap);
+      testCase.assertEqual(QrcbMap, ExpQrcbMap)
+    end
+
+
+
   end    % methods(Test)
 
 

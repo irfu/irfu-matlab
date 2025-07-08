@@ -201,6 +201,36 @@ classdef qual
 
 
 
+    % Given two maps QRCID-->QRCB array, add one to the other. Non-overlapping
+    % keys are just added. Overlapping keys have their values OR'ed together.
+    %
+    % ARGUMENTS
+    % =========
+    % QrcbMap
+    %       NOTE: This object is modified in-place (containers.Map is a handle
+    %       class).
+    %
+    function add_QRCB_map(QrcbMap, AddedQrcbMap)
+      assert(isa(QrcbMap,      "containers.Map"))
+      assert(isa(AddedQrcbMap, "containers.Map"))
+      assert(strcmp(QrcbMap.KeyType,        "char"))
+      assert(strcmp(AddedQrcbMap.KeyType,   "char"))
+      assert(strcmp(QrcbMap.ValueType,      "any"))
+      assert(strcmp(AddedQrcbMap.ValueType, "any"))
+
+      AddedKeyCa = AddedQrcbMap.keys;
+      for i = 1:numel(AddedKeyCa)
+        key         = AddedKeyCa{i};
+        if QrcbMap.isKey(key)
+          QrcbMap(key) = QrcbMap(key) | AddedQrcbMap(key);
+        else
+          QrcbMap(key) = AddedQrcbMap(key);
+        end
+      end
+    end
+
+
+
   end    % methods(Static)
 
 

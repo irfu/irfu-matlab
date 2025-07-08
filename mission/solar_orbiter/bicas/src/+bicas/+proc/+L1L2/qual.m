@@ -116,62 +116,54 @@ classdef qual
 
 
 
-    % Derive quality ZVs wrt. autodetected saturation.
-    %
-    % NOTE: Can produce quality variable values using either old scheme
-    % ("GLOBAL_SATURATION") and new scheme ("CHANNEL_SATURATION") for
-    % backward-compatibility during development and testing. "GLOBAL_SATURATION"
-    % should be phased out eventually. /Erik P G Johansson, 2025-07-02
-    %
-    %
-    % ARGUMENTS
-    % =========
-    % saturationQualitySchemeId
-    %       String constant. Which scheme to use for setting quality zVariables
-    %       (which QRCIDs are actually used).
-    %
-    %
-    % IMPLEMENTATION NOTE: Data to use for autodetecting channel saturation
-    % =====================================================================
-    % Uses ASR channel (SDID) VSIBs to determine QRCSs for channels in this
-    % function, despite that there are no SSIDs and that the ASR channels really
-    % correspond to ZVs, which may be non-ASR samples in rare cases, e.g. GND
-    % (BSM=6/7). This is necessary since reconstructed samples do not have any
-    % SSIDs. Therefore, this operation can not be performed on the BLTSs.
-    %
-    function [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-        get_quality_ZVs_autodetected_saturation(...
-        Cdac, tt2000Ar, isSwf, ...
-        vstbFractionThreshold, cwfSlidingWindowLengthSec, ...
-        saturationQualitySchemeId)
+    function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
+        tt2000Ar, NsoTable, saturationQualitySchemeId, ...
+        Cdac, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, L)
 
-      % PROPOSAL: Do not call bicas.proc.qual.QRCB_arrays_to_quality_ZVs() and
-      %           return QrcbMap instead.
-      %           Let merging of quality be done via QRCBs (QrcbMap) instead of
-      %           in quality variables.
-      %   PROPOSAL: Generic function for merging QrcbMaps.
+      % PROPOSAL: Select saturationQualitySchemeId behaviour by replacing
+      %           bicas.const.QRCS_L2_MAP with call to function where
+      %           saturationQualitySchemeId is an argument.
+      %   NOTE: Only makes sense if function is called once.
+      %   NOTE: Needs functionality for reducing number of QRCIDs in QrcbMap.
 
-      assert(isscalar(saturationQualitySchemeId) & isstring(saturationQualitySchemeId))
+      QrcbMap = containers.Map("KeyType", "char", "ValueType", "any");
 
-      nRec = Cdac.nRecords;
+      NsoTableQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
+        string(bicas.const.QRCS_L2_MAP.keys)', NsoTable, tt2000Ar, L);
+      bicas.proc.qual.add_QRCB_map(QrcbMap, NsoTableQrcbMap);
+      clear NsoTableQrcbMap
 
-      % Get channel saturation
-      ChannelSaturationQrcbMap = ...
-        bicas.proc.L1L2.qual.get_channel_saturation_QRCBs(...
+      ChannelSaturationQrcbMap = bicas.proc.L1L2.qual.get_QRCBs_channel_saturation(...
         Cdac, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
+      bicas.proc.qual.add_QRCB_map(QrcbMap, ChannelSaturationQrcbMap);
+      clear ChannelSaturationQrcbMap
 
-      % Get global saturation
+      % Derive GLOBAL_SATURATION QRCBs from CHANNEL_SATURATION QRCBs
+      % ------------------------------------------------------------
+      % NOTE: Important to do this after merging NsoTableQrcbMap and
+      % ChannelSaturationQrcbMap since both may load channel saturation QRCBs
+      % which can be converted.
       GlobalSaturationQrcbMap = ...
         bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
-        ChannelSaturationQrcbMap, nRec);
+        QrcbMap, numel(tt2000Ar));
+      bicas.proc.qual.add_QRCB_map(QrcbMap, GlobalSaturationQrcbMap);
+      clear GlobalSaturationQrcbMap
 
-      % Keep one of (1) global saturation, or (2) channel saturation.
+
+
+      % IMPLEMENTATION NOTE: Removing QRCBs only from merged QrcbMap since the
+      % two source maps may both contain the same key (FULL_SATURATION).
       switch(saturationQualitySchemeId)
         case "GLOBAL_SATURATION"
-          QrcbMap = GlobalSaturationQrcbMap;
+          for qrcidCa = bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys
+            QrcbMap.remove(qrcidCa{1});
+          end
+
         case "CHANNEL_SATURATION"
-          QrcbMap = ChannelSaturationQrcbMap;
+          QrcbMap.remove("PARTIAL_SATURATION");
+          QrcbMap.remove("FULL_SATURATION");
+
         otherwise
           error("BICAS:ConfigurationBug", ...
             "Illegal argument saturationQualitySchemeId=""%s"".", ...
@@ -180,7 +172,7 @@ classdef qual
 
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        nRec, QrcbMap, bicas.const.QRCS_L2_MAP);
+        numel(tt2000Ar), QrcbMap, bicas.const.QRCS_L2_MAP);
     end
 
 
@@ -218,7 +210,7 @@ classdef qual
     % (e.g. 30%+30% > 50%), then the reconstructed channel's saturation bits
     % would be zero, despite being very much affected by saturation.
     %
-    function QrcbMap = get_channel_saturation_QRCBs(...
+    function QrcbMap = get_QRCBs_channel_saturation(...
         Cdac, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec)
 
@@ -268,20 +260,22 @@ classdef qual
 
     % Convert channel saturation QRCBs to global saturation QRCBs.
     %
-    % NOTE: Always sets partial saturation QRCB=false since it can not be
-    %       autodetected.
-    %       NOTE: This refers to the QRCID="PARTIAL_SATURATION", not
-    %             the quality bit for partial saturation.
+    % NOTE: Always sets QRCID="PARTIAL_SATURATION" QRCB=false since it can not
+    %       be autodetected.
+    % NOTE: Produces QRCB values using both the old scheme ("GLOBAL_SATURATION")
+    %       and new scheme ("CHANNEL_SATURATION") for backward-compatibility
+    %       during development and testing. "GLOBAL_SATURATION" should be phased
+    %       out eventually. /Erik P G Johansson, 2025-07-08
+    %
+    % ARGUMENTS
+    % =========
+    % ChannelSaturationQrcbMap
+    %       Must contain at least all the CHANNEL_SATURATION QRCIDs, but may
+    %       contain more which are then ignored.
     %
     function GlobalSaturationQrcbMap = ...
         channel_saturation_to_global_saturation_QRCBs( ...
         ChannelSaturationQrcbMap, nRecords)
-
-      irf.assert.castring_sets_equal(...
-        ChannelSaturationQrcbMap.keys, ...
-        bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys)
-
-
 
       fullSaturationQrcbAr = false(nRecords, 1);
       for qrcidCa = bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys
