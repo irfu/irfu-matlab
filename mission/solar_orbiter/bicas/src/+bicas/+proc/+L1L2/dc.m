@@ -121,9 +121,20 @@ classdef dc
       % OUTPUT: 9x SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
       %######################################################################
       % NOTE: Needs VSIB for propagating VSIB to reconstructed channels.
-      Cdac = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
+      SchdZvm = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
         bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
-      Cdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
+      bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(SchdZvm);
+
+
+
+      % Convert SchdZvm --> SamplesZvm + VsibZvm
+      SamplesZvm = bicas.utils.ZvMap(SchdZvm.nRecords);
+      VsibZvm    = bicas.utils.ZvMap(SchdZvm.nRecords);
+      for keyCa = SchdZvm.keyCa'
+        SamplesZvm.add(keyCa{1}, SchdZvm.get(keyCa{1}).samplesAr);
+        VsibZvm.add(   keyCa{1}, SchdZvm.get(keyCa{1}).vsibAr);
+      end
+      clear SchdZvm
 
 
 
@@ -135,7 +146,7 @@ classdef dc
         bicas.proc.L1L2.qual.get_quality_ZVs(...
         Dcip.Zv.Epoch, NsoTable, ...
         string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')), ...
-        Cdac, Dcip.hasSwfFormat, ...
+        VsibZvm, Dcip.hasSwfFormat, ...
         SatSettings.vstbFractionThreshold, ...
         SatSettings.cwfSlidingWindowLengthSec, L);
 
@@ -150,16 +161,10 @@ classdef dc
         bicas.utils.FPArray(QUALITY_FLAG));
       Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
 
-      % NOTE: Function modifies Cdac handle object in-place (handle object)!
-      %
-      % IMPLEMENTATION NOTE: Should not really use CDAC object here since it
-      % includes VSIBs. Ideally, CDAC should have been converted to some other
-      % data structure without VSIBs. Not doing so yet (2025-07-09) in
-      % anticipation of creating more generic class for ZV-like objecs/arrays.
+      % NOTE: Function modifies ZVM handle object in-place (handle object)!
       Zv.currentAAmpere     = bicas.proc.L1L2.qual.set_voltage_current_FV(...
-        Dcip.Zv.Epoch, Cdac, currentAAmpere, zvUfv, L);
-      Zv.Cdac               = Cdac;
-      clear Cdac
+        Dcip.Zv.Epoch, SamplesZvm, currentAAmpere, zvUfv, L);
+      Zv.SamplesZvm         = SamplesZvm;
 
 
 
@@ -741,7 +746,7 @@ classdef dc
     % Convert samples stored as 5x BLTSs to 9x ASRs (without reconstructing
     % missing data).
     %
-    function Cdac = convert_samples_5xBLTS_to_9xASR_NEW( ...
+    function SchdZvm = convert_samples_5xBLTS_to_9xASR_NEW( ...
         bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)
 
       % Tmk = bicas.utils.Timekeeper(...
@@ -762,13 +767,13 @@ classdef dc
           bltsVsibAr(        :,    iBlts));
       end
 
-      %==================================================
-      % Convert bltsSchdCa --> Cdac
-      % ---------------------------
-      % Copy values from 5x BLTSs into 9x SCHD (1x Cdac)
-      % (but no reconstruction of missing values)
-      %==================================================
-      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection(nRec);
+      %========================================================================
+      % Convert bltsSchdCa --> SchdZvm
+      % ------------------------------
+      % Copy values from 5x BLTSs into 9x SCHD (without reconstructing missing
+      % values)
+      %========================================================================
+      SchdZvm = bicas.utils.ZvMap(nRec);
       for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
 
         % ~Preallocate empty SCHD for the current ASR/SDID.
@@ -784,7 +789,7 @@ classdef dc
           BltsSchd          = bltsSchdCa{iBlts};
           AsrSchd(bRecCopy) = BltsSchd(bRecCopy);
         end
-        Cdac = Cdac.set_channel(asrSdid, AsrSchd);
+        SchdZvm.add(asrSdid, AsrSchd)
       end
 
       % Tmk.stop_log(nRec, 'record')

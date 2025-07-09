@@ -399,7 +399,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,0,0,    0, 0, 0,   1, 0,0;
         0,0,0,    0, 0, 1,   1, 0,0;
         ]);
-      Cdac = testCase.create_Cdac(SAMPLES_AR_DATA, VSIB_AR_DATA);
+      Zvm = testCase.create_ASR_SCDH_ZVM(SAMPLES_AR_DATA, VSIB_AR_DATA);
 
 
 
@@ -413,21 +413,20 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,1,1,    0, 0, 0,   1, 0,1;
         0,0,1,    0, 1, 1,   1, 0,0;
         ]);
-      ExpCdac = testCase.create_Cdac(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
+      ExpZvm = testCase.create_ASR_SCDH_ZVM(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
 
 
 
-      ActCdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
+      bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Zvm);
+      ActZvm = Zvm;
 
-      % IMPLEMENTATION NOTE: Not comparing entire
-      % bicas.proc.L1L2.ChannelDataAsrCollection objects since
-      % (1) it will fail also when the objects are identical (since has not
-      %     implemented support for testing equality?), and
-      % (2) it helps to compare object components separately when debugging
-      %     tests.
+      testCase.assertEqual(ActZvm.nEntries, 9)
+
+      % IMPLEMENTATION NOTE: Not only comparing entire ZVM objects since it
+      % helps to compare object components separately when debugging tests.
       for sdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        ActSchd = ActCdac.get_channel(sdid);
-        ExpSchd = ExpCdac.get_channel(sdid);
+        ActSchd = ActZvm.get(sdid);
+        ExpSchd = ExpZvm.get(sdid);
 
         % Print/log component values if not equal (for debugging).
         if ~isequaln(ActSchd.samplesAr, ExpSchd.samplesAr)
@@ -444,6 +443,38 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         % Check everything (partially overlapping with above).
         testCase.assertEqual(ActSchd, ExpSchd)
       end
+      testCase.assertEqual(ActZvm, ExpZvm)
+    end
+
+
+
+    function test_get_ASR_ZVM_nWholeRowIsNan(testCase)
+      SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
+
+      % 3x2
+      SAMPLES_AR_0 = [NaN,2; 3,NaN; NaN,NaN];
+      VSIB_AR      = logical([0; 1; 0]);
+
+      Zvm = bicas.utils.ZvMap(3);
+
+      for i = 1:numel(SDID_ASR_AR)
+        sdid = SDID_ASR_AR(i);
+
+        Schd = bicas.proc.L1L2.SingleChannelData(SAMPLES_AR_0+i, VSIB_AR);
+        Zvm.add(sdid, Schd);
+
+        actNWholeRowIsNan = bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(Zvm);
+        testCase.assertEqual(actNWholeRowIsNan, 1*i)
+      end
+
+      % Double checks. Not needed for the test.
+      testCase.assertEqual(Zvm.nRecords, 3)
+      ExpSchd = bicas.proc.L1L2.SingleChannelData(SAMPLES_AR_0+3, VSIB_AR);
+      ActSchd = Zvm.get(SDID_ASR_AR(3));
+      testCase.assertEqual(ActSchd, ExpSchd)
+
+      actNWholeRowIsNan = bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(Zvm);
+      testCase.assertEqual(actNWholeRowIsNan, numel(SDID_ASR_AR)*1)
     end
 
 
@@ -461,8 +492,8 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    % Fast-and-easy function for creating one bicas.proc.L1L2.ChannelDataAsrCollection
-    % from variables on a format suitable for hardcoding (CWF only).
+    % Fast-and-easy function for creating one ZVM SDID-->SCHD from variables on
+    % a format suitable for hardcoding (CWF only).
     %
     % ARGUMENTS
     % =========
@@ -471,17 +502,21 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
     %       SCHD.
     % vsibArData
     %       (iRec, iSdid)
-    function Cdac = create_Cdac(samplesArData, vsibArData)
-      SDID_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
+    %
+    function Zvm = create_ASR_SCDH_ZVM(samplesArData, vsibArData)
+      assert(size(samplesArData, 2) == 9)
+      assert(size(vsibArData,    2) == 9)
+
+      SDID_AR  = bicas.proc.L1L2.const.C.SDID_ASR_AR;
       nRecords = size(vsibArData, 1);
 
-      Cdac = bicas.proc.L1L2.ChannelDataAsrCollection(nRecords);
+      Zvm = bicas.utils.ZvMap(nRecords);
       for iSdid = 1:numel(SDID_AR)
 
         Schd = bicas.proc.L1L2.SingleChannelData(...
           samplesArData(:, iSdid), ...
           vsibArData(   :, iSdid));
-        Cdac = Cdac.set_channel(SDID_AR(iSdid), Schd);
+        Zvm.add(SDID_AR(iSdid), Schd);
       end
     end
 

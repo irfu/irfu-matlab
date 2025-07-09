@@ -425,6 +425,12 @@ classdef demuxer
 
 
 
+    % ARGUMENTS
+    % =========
+    % SamplesZvm
+    %       ZVM for ASR SDID-->SCHD
+    %       NOTE: Is modified in-place.
+    %
     % IMPORTANT: SCHD emulating column vector makes it important and non-trivial
     % what should be considered a row fill position. Can *NOT* use [fill
     % position <=> at least one NaN on row] since there can be both NaN and
@@ -432,9 +438,11 @@ classdef demuxer
     % elements) which causes data to be not used for reconstructing other
     % channels.
     %
-    function Cdac = reconstruct_ASR_samples_NEW(Cdac)
+    function reconstruct_ASR_samples_NEW(SamplesZvm)
 
-      assert(isa(Cdac, 'bicas.proc.L1L2.ChannelDataAsrCollection'))
+      assert(isa(SamplesZvm, 'bicas.utils.ZvMap'))
+      assert(isa(SamplesZvm, "handle"))
+      assert(SamplesZvm.nEntries == 9)
 
       % Shorten variable name.
       SDID_DICT = bicas.proc.L1L2.const.C.SDID_DICT;
@@ -442,16 +450,17 @@ classdef demuxer
 
 
       % Reconstruct values using relationship
-      % samples(SDID_1) = samples(SDID_2) + samples(SDID_3).
+      % samples(SDID_1) = samples(SDID_2) + samples(SDID_3)
+      % iteratively until as many samples have been reconstructed as possible.
       function reconstruct_missing_data_helper(sumSdidStr1, termSdidStr2, termSdidStr3)
         % NOTE: Below printout is very useful for being able to follow how
         % values are being reconstructed, e.g. when debugging and verifying
         % automated tests.
         % fprintf("%-6s = %-6s + %-6s\n", sumSdidStr1, termSdidStr2, termSdidStr3)
 
-        Schd1 = Cdac.get_channel(SDID_DICT( sumSdidStr1));
-        Schd2 = Cdac.get_channel(SDID_DICT(termSdidStr2));
-        Schd3 = Cdac.get_channel(SDID_DICT(termSdidStr3));
+        Schd1 = SamplesZvm.get(SDID_DICT( sumSdidStr1));
+        Schd2 = SamplesZvm.get(SDID_DICT(termSdidStr2));
+        Schd3 = SamplesZvm.get(SDID_DICT(termSdidStr3));
 
         [...
           Schd1, ...
@@ -470,9 +479,9 @@ classdef demuxer
           @(x,y) (x-y) ...
           );
 
-        Cdac = Cdac.set_channel(SDID_DICT( sumSdidStr1), Schd1);
-        Cdac = Cdac.set_channel(SDID_DICT(termSdidStr2), Schd2);
-        Cdac = Cdac.set_channel(SDID_DICT(termSdidStr3), Schd3);
+        SamplesZvm.set(SDID_DICT( sumSdidStr1), Schd1);
+        SamplesZvm.set(SDID_DICT(termSdidStr2), Schd2);
+        SamplesZvm.set(SDID_DICT(termSdidStr3), Schd3);
       end
 
 
@@ -482,19 +491,20 @@ classdef demuxer
       %================
       % AC ASRs are separate from DC ASRs and only satisfy one relationship
       % since there are only three of them. Therefore does not have to be in
-      % loop.
-      reconstruct_missing_data_helper("AC_V13",   "AC_V12", "AC_V23")
+      % the loop.
+      reconstruct_missing_data_helper("AC_V13", "AC_V12", "AC_V23")
 
       %================
       % Derive DC ASRs
       %================
-      nWholeRowIsNan0 = Cdac.nWholeRowIsNan;
+      nWholeRowIsNan0 = ...
+        bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(SamplesZvm);
       while true
         % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for deriving
         % diffs (i.e. it should come first) since it is better to derive a diff
         % from (initially available) diffs rather than singles, directly or
         % indirectly, if possible.
-        % Ex: The is only information on V1, V12, V23.
+        % Ex: The is only information on V1, V12, V23 (BDM=0, DLR=0).
         % ==> Derive V13 first, then use V1 to derive V2, V3.
         % ==> If V1 is lower-accuracy, then it will not affect V13.
         %     If V1 is saturated,      then it will not affect V13.
@@ -509,10 +519,25 @@ classdef demuxer
         reconstruct_missing_data_helper("DC_V2",   "DC_V23", "DC_V3");
 
         % NOTE: Impossible to get Dcd.nWholeRowIsNan == 0...
-        if (Cdac.nWholeRowIsNan == nWholeRowIsNan0) || (Cdac.nWholeRowIsNan == 0)
+        nWholeRowIsNan = ...
+          bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(SamplesZvm);
+        if (nWholeRowIsNan == nWholeRowIsNan0) || (nWholeRowIsNan == 0)
           break
         end
-        nWholeRowIsNan0 = Cdac.nWholeRowIsNan;
+        nWholeRowIsNan0 = nWholeRowIsNan;
+      end
+    end
+
+
+
+    function nWholeRowIsNan = get_ASR_ZVM_nWholeRowIsNan(AsrZvm)
+      assert(isa(AsrZvm, "bicas.utils.ZvMap"))
+
+      nWholeRowIsNan = 0;
+
+      for keyCa = AsrZvm.keyCa'
+        Schd           = AsrZvm.get(keyCa{1});
+        nWholeRowIsNan = nWholeRowIsNan + sum(Schd.bWholeRowIsNan);
       end
     end
 

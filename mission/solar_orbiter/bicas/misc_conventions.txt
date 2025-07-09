@@ -131,6 +131,7 @@ CA
     Cell Array. See "AR".
 CDAC
     Class bicas.proc.L1L2.ChannelDataAsrCollection.
+    NOTE: This class should be obsolete.
 Channel saturation (quality variable scheme)
     Scheme for setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK).
     Set 6x quality bits, one per single/diff channel (DC and AC diffs share
@@ -562,6 +563,8 @@ ZVCTI
 ZVCTI2
     Element within the second column of ZVCTI for a given CDF record, i.e. any
     value ZVCTI(iCdfRecord, 2).
+ZVM
+    Class bicas.utils.ZvMap.
 ZVS
     zVariable Struct. Struct where each field emulates the data content of a
     zVariable (either as an array or an FPA).

@@ -50,7 +50,7 @@ classdef ChannelDataAsrCollection < handle
   %     CON: Memory problems?
   %   PRO: More natural to assert similarities between constituent SCHDs.
   %
-  % PROPOSAL: Make more generic.
+  % PROPOSAL: Make more generic. -- Effectively IMPLEMENTED via bicas.ZvMap.
   %   CON: Current implementation derives nWholeRowIsNan, which is not generic.
   %     CON-PROPOSAL: Convert to separate function (not method).
   %   PROPOSAL: Store values which are always emulate the size/shape of
@@ -71,6 +71,7 @@ classdef ChannelDataAsrCollection < handle
   %       PRO: Can extract object for sets of row indices (also recursively).
   %       PRO: Can set object for sets of row indices.
   %         NOTE: Cf. bicas.utils.SameRowsMap.set_rows()
+  %       PROBLEM?: Does non-scalar size not imply meaningful indexing?
   %
   % PROPOSAL: Assert that all SCHDs have the same size (columns) and data types.
 

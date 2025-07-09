@@ -118,7 +118,7 @@ classdef qual
 
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
         tt2000Ar, NsoTable, saturationQualitySchemeId, ...
-        Cdac, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, L)
+        VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, L)
 
       % PROPOSAL: Change order of arguments.
       % PROPOSAL: Select saturationQualitySchemeId behaviour by replacing
@@ -140,7 +140,7 @@ classdef qual
 
       ChannelSaturationQrcbMap = ...
         bicas.proc.L1L2.qual.get_QRCBs_channel_saturation(...
-        Cdac, tt2000Ar, isSwf, ...
+        VsibZvm, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
       QrcbMap.add_map(ChannelSaturationQrcbMap)
       clear ChannelSaturationQrcbMap
@@ -217,12 +217,10 @@ classdef qual
     % would be zero, despite being very much affected by saturation.
     %
     function QrcbMap = get_QRCBs_channel_saturation(...
-        Cdac, tt2000Ar, isSwf, ...
+        VsibZvm, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec)
 
-      % PROPOSAL: Somehow only submit VSIBs, not SCHDs with channel samples.
-
-      assert(isa(Cdac, "bicas.proc.L1L2.ChannelDataAsrCollection"))
+      assert(isa(VsibZvm, "bicas.utils.ZvMap"))
       assert(isscalar(isSwf) & islogical(isSwf))
 
       % IMPLEMENTATION NOTE: containers.Map does not support string-valued keys
@@ -233,14 +231,12 @@ classdef qual
 
       % Update QrcbMap wrt. the corresponding arguments.
       function handle_channel(sdidStr, channelSaturationQrcid)
-        sdid = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
-        Schd = Cdac.get_channel(sdid);
+        sdid       = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
+        vsibSdidAr = VsibZvm.get(sdid);
 
-        if isSwf
-          vsibSdidAr = Schd.vsibAr;
-        else
+        if ~isSwf
           vsibSdidAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
-            tt2000Ar, Schd.vsibAr, ...
+            tt2000Ar, vsibSdidAr, ...
             vstbFractionThreshold, cwfSlidingWindowLengthSec);
         end
 
@@ -307,20 +303,15 @@ classdef qual
     % Overwrite records of voltage & current with FVs as specified in arbitrary
     % array.
     %
-    % IMPLEMENTATION NOTE: Should not really use CDAC object here since it
-    % includes VSIBs. Ideally, CDAC should have been converted to some other
-    % data structure without VSIBs. Not doing so yet (2025-07-09) in
-    % anticipation of creating more generic class for ZV-like objecs/arrays.
-    %
     % ARGUMENTS
     % =========
     % zv_Epoch
     %       NOTE: Only needed for logging.
-    % Cdac
+    % SamplesZvm
     %       NOTE: Handle object which is MODIFIED in-place.
     %
     function zvCurrentAAmpere = set_voltage_current_FV(...
-        zv_Epoch, Cdac, zvCurrentAAmpere, zvUfv, L)
+        zv_Epoch, SamplesZvm, zvCurrentAAmpere, zvUfv, L)
 
       % PROPOSAL: Separate functions for ASR samples and bias currents.
       %   PRO: Clearer/simpler testing
@@ -328,8 +319,8 @@ classdef qual
       %     CON-PROPOSAL: This function calls two sub-functions.
 
       assert(islogical(zvUfv))
-      assert(isa(Cdac, 'bicas.proc.L1L2.ChannelDataAsrCollection'))
-      assert(isa(Cdac, 'handle'))
+      assert(isa(SamplesZvm, 'bicas.utils.ZvMap'))
+      assert(isa(SamplesZvm, 'handle'))
 
       % Log
       logHeaderStr = sprintf(...
@@ -345,20 +336,13 @@ classdef qual
       % ====================================
       % Set VOLTAGE values to fill value/NaN
       % ====================================
-      % IMPLEMENTATION NOTE: Should ideally be implemented using some kind of
-      % class support for setting elements using indexing(?) but that has to
-      % wait until using planned future class. /2025-07-09.
+      % IMPLEMENTATION NOTE: Should ideally(?) be implemented using some kind of
+      % class support for setting elements using indexing(?) of ZVMs, especially
+      % if there is a performance issue here. /2025-07-09.
       for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        Schd1               = Cdac.get_channel(asrSdid);
-        samplesAr           = Schd1.samplesAr;
+        samplesAr           = SamplesZvm.get(asrSdid);
         samplesAr(zvUfv, :) = NaN;
-        % NOTE: Keeping the VSIBs, even if blanking data. One could imagine
-        % blanking them too. This should however only matter, if also setting
-        % quality ZVs after calling this function which is currently
-        % (2025-07-09) not done. Right/wrong?
-        Schd2                = bicas.proc.L1L2.SingleChannelData(...
-          samplesAr, Schd1.vsibAr);
-        Cdac.set_channel(asrSdid, Schd2);
+        SamplesZvm.set(asrSdid, samplesAr)
       end
     end
 

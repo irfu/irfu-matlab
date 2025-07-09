@@ -484,24 +484,20 @@ classdef utils
     %
     % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
     % ===========================================================
-    % Dcop.Zv.Cdac
-    %       bicas.proc.L1L2.ChannelDataAsrCollection.
+    % Dcop.Zv.SamplesZvm
+    %       bicas.utils.ZvMap.
     %
     function nRows = assert_struct_num_fields_have_same_N_rows(S)
       % NOTE: Function name somewhat bad.
       % TODO-NI: Function only used for cases where ALL fields should have
       %          same number of rows? (Due to previous refactoring.)
       % PROBLEM: Function is an obstacle to converting variable(s) to a class.
-      %   NOTE: An AsrSamplesAVoltSrm class should ensure INTERNALLY consistent array
+      %   NOTE: Class bicas.utils.ZvMap should ensure INTERNALLY consistent array
       %         sizes, but not consistent with a parent struct.
-      %   PROPOSAL: Special case for the specific class.
+      %   PROPOSAL: Special case for the specific class. -- IMPLEMENTED
       %   PROPOSAL: Convert all "Zv" data structs into class that enforces what
       %             this function tests.
-      %   PROPOSAL: Redefine as  ~assert_ZV_struct().
-      %       PRO: Special case for future class AsrSamplesAVoltSrm is more
-      %            natural.
-      %   PROPOSAL: Create class for collections of variables for which this is
-      %             a method.
+      %     PROPOSAL: Extend bicas.utils.ZvMap to work recursively.
 
       fieldNamesList1 = fieldnames(S);
       nRowsArray = [];
@@ -513,8 +509,8 @@ classdef utils
 
           nRowsArray(end+1) = size(fieldValue, 1);
 
-        elseif isa(fieldValue, 'bicas.proc.L1L2.ChannelDataAsrCollection')
-          nRowsArray(end+1) = fieldValue.nRecords();
+        elseif isa(fieldValue, 'bicas.utils.ZvMap')
+          nRowsArray(end+1) = fieldValue.nRecords;
 
         else
           % CASE: Other field value type.
