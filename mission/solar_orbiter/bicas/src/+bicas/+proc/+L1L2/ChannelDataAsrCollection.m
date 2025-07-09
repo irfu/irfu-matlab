@@ -63,7 +63,7 @@ classdef ChannelDataAsrCollection < handle
   %     PRO: Can store all zVariables, both regular arrays and FPAs.
   %       NOTE: Can then not constrain keys to only be ASR SDIDs.
   %             Need string keys to identify zVariables (hardcoded).
-  %     PRO?: Replace bicas.utils.SameRowsMap.
+  %     PRO: Replace bicas.utils.SameRowsMap. -- IMPLEMENTED
   %     PRO: Can use as argument for
   %          bicas.proc.L1L2.qual.get_QRCBs_channel_saturationn().
   %     PROPOSAL: The object/class itself emulates a 1-D array.

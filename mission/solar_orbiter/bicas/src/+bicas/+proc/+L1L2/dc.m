@@ -106,109 +106,44 @@ classdef dc
 
 
 
+      %#####################################
+      % Get VSIB for BLTS-labelled channels
+      %#####################################
+      bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
+        bltsSamplesAVolt, Dcip.Zv.nValidSamplesPerRecord, ...
+        bltsSsidArray, Dcip.Zv.isAchgFpa, Bso, L);
+
+
+
       %######################################################################
       % ~"DEMUX" VOLTAGES:
-      % INPUT:  5x SIGNALS LABELLED BY SDID/BLTS (not SSID)
+      % INPUT:  5x SIGNALS LABELLED BY SSID/BLTS
       % OUTPUT: 9x SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
       %######################################################################
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR(...
-        bltsSamplesAVolt, bltsSdidArray, L);
-
-      if 1
-        % ############
-        % EXPERIMENTAL
-        % ############
-        TmkNewImpl = bicas.utils.Timekeeper(...
-          'bicas.proc.L1L2.dc.process_calibrate_demux: NEW IMPLEMENTATION', L);
-
-        % 5x SIGNALS LABELLED BY SSID/BLTS.
-        % NOTE: Incomplete detection of VSQB.
-        % NOTE: No SCHD as input (though as output).
-        % NOTE: Is QUITE SLOW, at least for LFR SWF (?).
-        bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
-          bltsSamplesAVolt, Dcip.Zv.nValidSamplesPerRecord, ...
-          bltsSsidArray, Dcip.Zv.isAchgFpa, Bso, L);
-
-        Cdac = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
-          bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
-
-        Cdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
-
-        SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
-        [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-          bicas.proc.L1L2.qual.get_quality_ZVs(...
-          Dcip.Zv.Epoch, NsoTable, ...
-          string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')), ...
-          Cdac, Dcip.hasSwfFormat, ...
-          SatSettings.vstbFractionThreshold, ...
-          SatSettings.cwfSlidingWindowLengthSec, L);
-
-        TmkNewImpl.stop_log()
-
-        % ======================================================================
-        % DEBUG: Check that samples derived using OLD and NEW code are identical
-        % ======================================================================
-        % NOTE: Check may fail if new code splits samples into subsequences in
-        %       new way, e.g. BLTS per BLTS.
-        % PROPOSAL: Permit approximative equality.
-        % PROPOSAL: Store max difference.
-
-        % maxDiff = 0;
-        for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-          asid = bicas.proc.L1L2.const.C.SDID_ASID_DICT(asrSdid);
-          oldImplSamplesAVolt = AsrSamplesAVoltSrm(asid);               % Samples from OLD impl.
-          newImplSamplesAvolt = Cdac.get_channel(asrSdid).samplesAr;    % Samples from NEW impl.
-
-          % NOTE: Treat NaN as equal itself.
-          if ~isequaln(oldImplSamplesAVolt, newImplSamplesAvolt)
-            L.logf('debug', 'Samples are different for asid = %g', asid)
-            if ~isequal(isnan(oldImplSamplesAVolt), isnan(newImplSamplesAvolt))
-              L.logf('debug', 'isnan() is different.')
-            end
-            error('Samples differ.')
-          end
-
-          % NOTE: max() ignores NaN.
-          % d = max(abs(A - B), [], 'ALL');
-          % maxDiff = max(maxDiff, d);
-        end
-        % if logical(maxDiff)
-        %   L.logf('debug', 'maxDiff = %g', maxDiff)
-        % end
-      end    % if EXPERIMENTAL
+      % NOTE: Needs VSIB for propagating VSIB to reconstructed channels.
+      Cdac = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
+        bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
+      Cdac = bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(Cdac);
 
 
 
-      %######################################################
-      % ~Derive quality variables, and UFV from quality QRCs
-      % USING OLD CODE/SCHEME TO BE PHASED OUT
-      %######################################################
-      % AUTODETECT SATURATION.
-      % NOTE: Derives *ONE* saturation bit for *ALL* signals combined (per CDF
-      %       record).
-      % autodetectedVsqb = bicas.proc.L1L2.sat.get_VSQB_OLD(...
-      %   Bso, ...
-      %   Dcip.Zv.Epoch, ...
-      %   AsrSamplesAVoltSrm, ...
-      %   Dcip.Zv.nValidSamplesPerRecord, ...
-      %   bltsSsidArray, ...
-      %   Dcip.Zv.isAchgFpa, ...
-      %   Dcip.hasSwfFormat, L);
-      %
-      % ZvIn = struct(...
-      %   'Epoch',            Dcip.Zv.Epoch, ...
-      %   'bdmFpa',           Dcip.Zv.bdmFpa, ...
-      %   'autodetectedVsqb', autodetectedVsqb);
-      % [zvUfv, QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-      %   bicas.proc.L1L2.qual.get_UFV_quality_ZVs(...
-      %   ZvIn, Dcip.isLfr, NsoTable, Bso, L);
-      % clear ZvIn
+      %####################
+      % Obtain quality ZVs
+      %####################
+      SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
+      [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
+        bicas.proc.L1L2.qual.get_quality_ZVs(...
+        Dcip.Zv.Epoch, NsoTable, ...
+        string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')), ...
+        Cdac, Dcip.hasSwfFormat, ...
+        SatSettings.vstbFractionThreshold, ...
+        SatSettings.cwfSlidingWindowLengthSec, L);
 
 
 
-      %################################
-      % Set UFV and "final" zVariables
-      %################################
+      %#########################
+      % Set UFV and "final" ZVs
+      %#########################
       Zv = struct();
       zvUfv                 = Dcip.Zv.ufv;
       Zv.QUALITY_FLAG       = Dcip.Zv.QUALITY_FLAG.min(...
@@ -223,9 +158,7 @@ classdef dc
       % anticipation of creating more generic class for ZV-like objecs/arrays.
       Zv.currentAAmpere     = bicas.proc.L1L2.qual.set_voltage_current_FV(...
         Dcip.Zv.Epoch, Cdac, currentAAmpere, zvUfv, L);
-      % Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
       Zv.Cdac               = Cdac;
-      clear AsrSamplesAVoltSrm
       clear Cdac
 
 
@@ -680,46 +613,46 @@ classdef dc
 
 
 
-    function AsrSamplesAVoltSrm = relabel_reconstruct_samples_5xBLTS_to_9xASR(...
-        bltsSamplesAvolt, bltsSdidArray, L)
-      % PROPOSAL: Automated tests.
-
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR', L);
-
-      [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
-        bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
-        bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
-
-      % -----------------------------------------------------------------
-      % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
-      % -----------------------------------------------------------------
-      % IMPLEMENTATION NOTE: Preallocation is very important for speeding up
-      % LFR-SWF which tends to be broken into subsequences of 1 record due to
-      % changing sampling rate.
-      AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
-        "uint8", nRecTot, 'CONSTANT', ...
-        NaN(nRecTot, nSamplesPerRecordChannel), ...
-        bicas.proc.L1L2.const.C.ASID_DICT.values);
-
-
-
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(bltsSdidArray);
-      for iSs = 1:nSs
-        iRec1 = iRec1Ar(iSs);
-        iRec2 = iRec2Ar(iSs);
-
-        SsAsrSamplesAVoltSrm = ...
-          bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
-          bltsSdidArray(   iRec1,          :), ...
-          bltsSamplesAvolt(iRec1:iRec2, :, :));
-
-        % Set demuxed subsequence signals (some records/indices) in the
-        % pre-existing global arrays (all records).
-        AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
-      end
-
-      Tmk.stop_log(nRecTot, 'record', nSs, 'subsequence')
-    end
+    % function AsrSamplesAVoltSrm = relabel_reconstruct_samples_5xBLTS_to_9xASR_OLD(...
+    %     bltsSamplesAvolt, bltsSdidArray, L)
+    %   % PROPOSAL: Automated tests.
+    %
+    %   Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_OLD', L);
+    %
+    %   [nRecTot, nSamplesPerRecordChannel] = irf.assert.sizes(...
+    %     bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
+    %     bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
+    %
+    %   % -----------------------------------------------------------------
+    %   % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
+    %   % -----------------------------------------------------------------
+    %   % IMPLEMENTATION NOTE: Preallocation is very important for speeding up
+    %   % LFR-SWF which tends to be broken into subsequences of 1 record due to
+    %   % changing sampling rate.
+    %   AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
+    %     "uint8", nRecTot, 'CONSTANT', ...
+    %     NaN(nRecTot, nSamplesPerRecordChannel), ...
+    %     bicas.proc.L1L2.const.C.ASID_DICT.values);
+    %
+    %
+    %
+    %   [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(bltsSdidArray);
+    %   for iSs = 1:nSs
+    %     iRec1 = iRec1Ar(iSs);
+    %     iRec2 = iRec2Ar(iSs);
+    %
+    %     SsAsrSamplesAVoltSrm = ...
+    %       bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence_OLD(...
+    %       bltsSdidArray(   iRec1,          :), ...
+    %       bltsSamplesAvolt(iRec1:iRec2, :, :));
+    %
+    %     % Set demuxed subsequence signals (some records/indices) in the
+    %     % pre-existing global arrays (all records).
+    %     AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
+    %   end
+    %
+    %   Tmk.stop_log(nRecTot, 'record', nSs, 'subsequence')
+    % end
 
 
 
@@ -807,9 +740,6 @@ classdef dc
 
     % Convert samples stored as 5x BLTSs to 9x ASRs (without reconstructing
     % missing data).
-    %
-    % Intended as future partial conceptual replacement for
-    % bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR().
     %
     function Cdac = convert_samples_5xBLTS_to_9xASR_NEW( ...
         bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)

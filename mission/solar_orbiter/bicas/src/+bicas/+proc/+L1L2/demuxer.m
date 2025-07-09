@@ -1,8 +1,5 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
-% See
-%   bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence()
-%   bicas.proc.L1L2.AntennaSignalId
 %
 %
 % NOTE
@@ -224,27 +221,27 @@ classdef demuxer
     % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote
     % that they are organized by BLTS and ASRs respectively.
     %
-    function AsrSamplesAVoltSrm = ...
-        relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
-        sdidArray, bltsSamplesAVolt)
-      % PROPOSAL: Log message for SDID=NOWHERE.
-
-      % ASSERTIONS
-      assert(isa(sdidArray, 'uint8'))
-      assert(isnumeric(bltsSamplesAVolt))
-      irf.assert.sizes(...
-        bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
-        sdidArray,        [ 1,     bicas.const.N_BLTS])
-
-      % Assign arrays only for those ASIDs for which there is data.
-      AsrSamplesAVoltSrm = ...
-        bicas.proc.L1L2.demuxer.relabel_samples_5xBLTS_to_NxASR_subsequence(...
-        bltsSamplesAVolt, sdidArray);
-
-      % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
-      % NOTE: The function modifies the ARGUMENT (handle object).
-      bicas.proc.L1L2.demuxer.reconstruct_samples_NxASR_to_9xASR_subsequence(AsrSamplesAVoltSrm);
-    end
+    % function AsrSamplesAVoltSrm = ...
+    %     relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence_OLD(...
+    %     sdidArray, bltsSamplesAVolt)
+    %   % PROPOSAL: Log message for SDID=NOWHERE.
+    %
+    %   % ASSERTIONS
+    %   assert(isa(sdidArray, 'uint8'))
+    %   assert(isnumeric(bltsSamplesAVolt))
+    %   irf.assert.sizes(...
+    %     bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
+    %     sdidArray,        [ 1,     bicas.const.N_BLTS])
+    %
+    %   % Assign arrays only for those ASIDs for which there is data.
+    %   AsrSamplesAVoltSrm = ...
+    %     bicas.proc.L1L2.demuxer.relabel_samples_5xBLTS_to_NxASR_subsequence_OLD(...
+    %     bltsSamplesAVolt, sdidArray);
+    %
+    %   % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
+    %   % NOTE: The function modifies the ARGUMENT (handle object).
+    %   bicas.proc.L1L2.demuxer.reconstruct_samples_NxASR_to_9xASR_subsequence_OLD(AsrSamplesAVoltSrm);
+    % end
 
 
 
@@ -270,96 +267,91 @@ classdef demuxer
     % AsrSamplesAVoltSrm
     %       NOTE: Function modifies the argument (handle class)!
     %
-    function reconstruct_samples_NxASR_to_9xASR_subsequence(AsrSamplesAVoltSrm)
-      % PROPOSAL: Better name
-      %   NOTE: Can not always reconstruct all signals.
-      %   --
-      %   ASR
-      %   ASID
-      %   complete
-      %   complement
-      %   reconstruct
-      %   signals
-      %   missing (antenna) signals
-      %   singles, diffs
-      %   --
-      %   reconstruct_missing_signals
-      %   reconstruct_missing_antenna_signals
-      %   reconstruct_missing_ASRs
-      %   add_missing_ASRs
-      %   add_missing_ASIDs
-      %   add_reconstruct_missing_ASRs
-      %   --
-      %   If using SDID keys (in the future), then
-      %     add_missing_SDIDs
-
-      assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
-
-      % Shorten variable names.
-      A     = bicas.proc.L1L2.const.C.ASID_DICT;
-      AsSrm = AsrSamplesAVoltSrm;
-
-      %================
-      % Derive AC ASRs
-      %================
-      % AC ASRs are separate from DC. Does not have to be in loop.
-      % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
-      % nFnAfter == 9 condition does not work.
-      AsSrm = bicas.proc.L1L2.demuxer.complete_relation(...
-        AsSrm, A("AC_V13"), A("AC_V12"), A("AC_V23"));
-
-      %================
-      % Derive DC ASRs
-      %================
-      nAsidBefore = AsSrm.numEntries;
-      while true
-        % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for
-        % deriving diffs since it is better to derive a diff from
-        % (initially available) diffs rather than singles, directly or
-        % indirectly, if possible.
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V13"), A("DC_V12"), A("DC_V23"));
-
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V1"),  A("DC_V12"), A("DC_V2"));
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V1"),  A("DC_V13"), A("DC_V3"));
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V2"),  A("DC_V23"), A("DC_V3"));
-        nAsidAfter = AsSrm.numEntries;
-
-        if (nAsidBefore == nAsidAfter) || (nAsidAfter == 9)
-          break
-        end
-        nAsidBefore = nAsidAfter;
-      end
-
-      %===================================================================
-      % Add all ASIDs which have not yet been assigned
-      % ----------------------------------------------
-      % IMPLEMENTATION NOTE: This is needed to handle for situations when
-      % the supplied fields can not be used to determine all nine fields.
-      %   Ex: bdm=1,2,3
-      %===================================================================
-
-      useAsidArray = AsSrm.keys;
-
-      % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
-      % for deriving the entire size (samples per record), until possibly
-      % using a future bicas.utils.SameSizeTypeMap instead.
-      tempNaN = nan(size(AsrSamplesAVoltSrm(useAsidArray(1))));
-
-      for asid = bicas.proc.L1L2.const.C.ASID_DICT.values'
-        if ~AsSrm.isKey(asid)
-          AsSrm.add(asid, tempNaN);
-        end
-      end
-
-    end
-
-
-
-    % EXPERIMENTAL, UNUSED FUNCTION
+    % function reconstruct_samples_NxASR_to_9xASR_subsequence_OLD(AsrSamplesAVoltSrm)
+    %   % PROPOSAL: Better name
+    %   %   NOTE: Can not always reconstruct all signals.
+    %   %   --
+    %   %   ASR
+    %   %   ASID
+    %   %   complete
+    %   %   complement
+    %   %   reconstruct
+    %   %   signals
+    %   %   missing (antenna) signals
+    %   %   singles, diffs
+    %   %   --
+    %   %   reconstruct_missing_signals
+    %   %   reconstruct_missing_antenna_signals
+    %   %   reconstruct_missing_ASRs
+    %   %   add_missing_ASRs
+    %   %   add_missing_ASIDs
+    %   %   add_reconstruct_missing_ASRs
+    %   %   --
+    %   %   If using SDID keys (in the future), then
+    %   %     add_missing_SDIDs
     %
-    % Intended as future conceptual replacement for
-    % bicas.proc.L1L2.demuxer.complete_relation().
+    %   assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
     %
+    %   % Shorten variable names.
+    %   A     = bicas.proc.L1L2.const.C.ASID_DICT;
+    %   AsSrm = AsrSamplesAVoltSrm;
+    %
+    %   %================
+    %   % Derive AC ASRs
+    %   %================
+    %   % AC ASRs are separate from DC. Does not have to be in loop.
+    %   % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
+    %   % nFnAfter == 9 condition does not work.
+    %   AsSrm = bicas.proc.L1L2.demuxer.complete_relation_OLD(...
+    %     AsSrm, A("AC_V13"), A("AC_V12"), A("AC_V23"));
+    %
+    %   %================
+    %   % Derive DC ASRs
+    %   %================
+    %   nAsidBefore = AsSrm.numEntries;
+    %   while true
+    %     % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for
+    %     % deriving diffs since it is better to derive a diff from
+    %     % (initially available) diffs rather than singles, directly or
+    %     % indirectly, if possible.
+    %     AsSrm = bicas.proc.L1L2.demuxer.complete_relation_OLD(AsSrm, A("DC_V13"), A("DC_V12"), A("DC_V23"));
+    %
+    %     AsSrm = bicas.proc.L1L2.demuxer.complete_relation_OLD(AsSrm, A("DC_V1"),  A("DC_V12"), A("DC_V2"));
+    %     AsSrm = bicas.proc.L1L2.demuxer.complete_relation_OLD(AsSrm, A("DC_V1"),  A("DC_V13"), A("DC_V3"));
+    %     AsSrm = bicas.proc.L1L2.demuxer.complete_relation_OLD(AsSrm, A("DC_V2"),  A("DC_V23"), A("DC_V3"));
+    %     nAsidAfter = AsSrm.numEntries;
+    %
+    %     if (nAsidBefore == nAsidAfter) || (nAsidAfter == 9)
+    %       break
+    %     end
+    %     nAsidBefore = nAsidAfter;
+    %   end
+    %
+    %   %===================================================================
+    %   % Add all ASIDs which have not yet been assigned
+    %   % ----------------------------------------------
+    %   % IMPLEMENTATION NOTE: This is needed to handle for situations when
+    %   % the supplied fields can not be used to determine all nine fields.
+    %   %   Ex: bdm=1,2,3
+    %   %===================================================================
+    %
+    %   useAsidArray = AsSrm.keys;
+    %
+    %   % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
+    %   % for deriving the entire size (samples per record), until possibly
+    %   % using a future bicas.utils.SameSizeTypeMap instead.
+    %   tempNaN = nan(size(AsrSamplesAVoltSrm(useAsidArray(1))));
+    %
+    %   for asid = bicas.proc.L1L2.const.C.ASID_DICT.values'
+    %     if ~AsSrm.isKey(asid)
+    %       AsSrm.add(asid, tempNaN);
+    %     end
+    %   end
+    %
+    % end
+
+
+
     % Generic function for complementing/deriving redundant data in three
     % same-sized arrays., where missing array elements can be set using three
     % functions.
@@ -433,12 +425,6 @@ classdef demuxer
 
 
 
-    % EXPERIMENTAL, UNUSED FUNCTION
-    %
-    % Intended as future conceptual replacement for
-    % bicas.proc.L1L2.demuxer.reconstruct_samples_NxASR_to_9xASR_subsequence() (though
-    % "global", not for a subsequence).
-    %
     % IMPORTANT: SCHD emulating column vector makes it important and non-trivial
     % what should be considered a row fill position. Can *NOT* use [fill
     % position <=> at least one NaN on row] since there can be both NaN and
@@ -553,30 +539,30 @@ classdef demuxer
     % * Can be three, if DLR is unknown.
     % * Can probably be zero, if mux mode/BDM is unknown.
     %
-    function AsrSamplesSrm = relabel_samples_5xBLTS_to_NxASR_subsequence(...
-        bltsSamplesAVolt, sdidArray)
-
-      % ASSERTIONS
-      assert(isnumeric(bltsSamplesAVolt))
-      nRows = irf.assert.sizes( ...
-        bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
-        sdidArray,        [ 1,     bicas.const.N_BLTS]);
-
-      AsrSamplesSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
-      for iBlts = 1:bicas.const.N_BLTS
-        sdid = sdidArray(iBlts);
-        if ~bicas.proc.L1L2.const.SDID_is_nowhere(sdid)
-
-          % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
-          %       if conceptually sensible.
-          %   PROPOSAL: AsrSamplesSrm should be converted to representing
-          %             ASR SDID-->samples.
-          asid = bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdid);
-
-          AsrSamplesSrm.add(asid, bltsSamplesAVolt(:, :, iBlts));
-        end
-      end
-    end
+    % function AsrSamplesSrm = relabel_samples_5xBLTS_to_NxASR_subsequence_OLD(...
+    %     bltsSamplesAVolt, sdidArray)
+    %
+    %   % ASSERTIONS
+    %   assert(isnumeric(bltsSamplesAVolt))
+    %   nRows = irf.assert.sizes( ...
+    %     bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
+    %     sdidArray,        [ 1,     bicas.const.N_BLTS]);
+    %
+    %   AsrSamplesSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
+    %   for iBlts = 1:bicas.const.N_BLTS
+    %     sdid = sdidArray(iBlts);
+    %     if ~bicas.proc.L1L2.const.SDID_is_nowhere(sdid)
+    %
+    %       % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
+    %       %       if conceptually sensible.
+    %       %   PROPOSAL: AsrSamplesSrm should be converted to representing
+    %       %             ASR SDID-->samples.
+    %       asid = bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdid);
+    %
+    %       AsrSamplesSrm.add(asid, bltsSamplesAVolt(:, :, iBlts));
+    %     end
+    %   end
+    % end
 
 
 
@@ -594,39 +580,39 @@ classdef demuxer
     %       through the relationship value1 = value2 + value3. In other
     %       cases, "AsSrm" is returned unmodified.
     %
-    function AsSrm = complete_relation(AsSrm, asid1, asid2, asid3)
-      % PROPOSAL: Handle propagating quality bits derived from BLTSs.
-      %   NOTE: BLTS saturation bits should propagate.
-      %   This is thus a qualitatively different behaviour from samples which
-      %   are reconstructed.
-      %
-      % PROPOSAL: More generic implementation independent of SRMs and ASIDs.
-      %   PROBLEM: Needs way to detect missing data (channels) and a way to add
-      %            the reconstructed data.
-      %     PROPOSAL: Input is FPAs for all ASRs/SDIDs.
-      % PROPOSAL: Handle both samples and quality bits.
-      %
-      % NOTE: Truly generic vectorized algorithm. FP = Fill Position as in FPAs.
-      %   NOTE: Can handle both
-      %     (1) reconstructing data (e.g. diffs from singles), and
-      %     (2) "spread" of data (e.g. saturation bits).
-      %   bSet1 =  bFp1 & ~bFp2 & ~bFp3
-      %   bSet2 = ~bFp1 &  bFp2 & ~bFp3
-      %   bSet3 = ~bFp1 & ~bFp2 &  bFp3
-      %   A1(bSet1) = func_1_from_23(A2(bSet1), A3(bSet1))
-      %   A2(bSet2) = func_2_from_13(A1(bSet2), A3(bSet2))
-      %   A3(bSet3) = func_3_from_12(A1(bSet3), A2(bSet3))
-      assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))
-
-      e1 = AsSrm.isKey(asid1);
-      e2 = AsSrm.isKey(asid2);
-      e3 = AsSrm.isKey(asid3);
-
-      if     ~e1 &&  e2 &&  e3   AsSrm.add(asid1, AsSrm(asid2) + AsSrm(asid3));
-      elseif  e1 && ~e2 &&  e3   AsSrm.add(asid2, AsSrm(asid1) - AsSrm(asid3));
-      elseif  e1 &&  e2 && ~e3   AsSrm.add(asid3, AsSrm(asid1) - AsSrm(asid2));
-      end
-    end
+    % function AsSrm = complete_relation_OLD(AsSrm, asid1, asid2, asid3)
+    %   % PROPOSAL: Handle propagating quality bits derived from BLTSs.
+    %   %   NOTE: BLTS saturation bits should propagate.
+    %   %   This is thus a qualitatively different behaviour from samples which
+    %   %   are reconstructed.
+    %   %
+    %   % PROPOSAL: More generic implementation independent of SRMs and ASIDs.
+    %   %   PROBLEM: Needs way to detect missing data (channels) and a way to add
+    %   %            the reconstructed data.
+    %   %     PROPOSAL: Input is FPAs for all ASRs/SDIDs.
+    %   % PROPOSAL: Handle both samples and quality bits.
+    %   %
+    %   % NOTE: Truly generic vectorized algorithm. FP = Fill Position as in FPAs.
+    %   %   NOTE: Can handle both
+    %   %     (1) reconstructing data (e.g. diffs from singles), and
+    %   %     (2) "spread" of data (e.g. saturation bits).
+    %   %   bSet1 =  bFp1 & ~bFp2 & ~bFp3
+    %   %   bSet2 = ~bFp1 &  bFp2 & ~bFp3
+    %   %   bSet3 = ~bFp1 & ~bFp2 &  bFp3
+    %   %   A1(bSet1) = func_1_from_23(A2(bSet1), A3(bSet1))
+    %   %   A2(bSet2) = func_2_from_13(A1(bSet2), A3(bSet2))
+    %   %   A3(bSet3) = func_3_from_12(A1(bSet3), A2(bSet3))
+    %   assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))
+    %
+    %   e1 = AsSrm.isKey(asid1);
+    %   e2 = AsSrm.isKey(asid2);
+    %   e3 = AsSrm.isKey(asid3);
+    %
+    %   if     ~e1 &&  e2 &&  e3   AsSrm.add(asid1, AsSrm(asid2) + AsSrm(asid3));
+    %   elseif  e1 && ~e2 &&  e3   AsSrm.add(asid2, AsSrm(asid1) - AsSrm(asid3));
+    %   elseif  e1 &&  e2 && ~e3   AsSrm.add(asid3, AsSrm(asid1) - AsSrm(asid2));
+    %   end
+    % end
 
 
 
