@@ -484,8 +484,8 @@ classdef utils
     %
     % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
     % ===========================================================
-    % Dcop.Zv.AsrSamplesAVolt
-    %       bicas.utils.SameRowsMap.
+    % Dcop.Zv.Cdac
+    %       bicas.proc.L1L2.ChannelDataAsrCollection.
     %
     function nRows = assert_struct_num_fields_have_same_N_rows(S)
       % NOTE: Function name somewhat bad.
@@ -513,8 +513,8 @@ classdef utils
 
           nRowsArray(end+1) = size(fieldValue, 1);
 
-        elseif isa(fieldValue, 'bicas.utils.SameRowsMap')
-          nRowsArray(end+1) = fieldValue.nRows();
+        elseif isa(fieldValue, 'bicas.proc.L1L2.ChannelDataAsrCollection')
+          nRowsArray(end+1) = fieldValue.nRecords();
 
         else
           % CASE: Other field value type.

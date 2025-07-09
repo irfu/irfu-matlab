@@ -127,8 +127,9 @@ classdef ChannelDataAsrCollection < handle
     function obj = set_channel(obj, asrSdid, Schd)
       % IMPLEMENTATION NOTE: Can not assert that the caller does not overwrite
       % the CHSD for a specified ASR SDID since overwriting is required by
-      % bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW()
-      % /reconstruct_missing_data_helper() (inner function).
+      % (1) bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW()
+      %     /reconstruct_missing_data_helper() (inner function)
+      % (2) bicas.proc.L1L2.qual.set_voltage_current_FV()
       assert(isscalar(asrSdid))
       assert(ismember(asrSdid, bicas.proc.L1L2.const.C.SDID_ASR_AR))
       assert(isa(Schd, 'bicas.proc.L1L2.SingleChannelData'))

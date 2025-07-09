@@ -307,24 +307,29 @@ classdef qual
     % Overwrite records of voltage & current with FVs as specified in arbitrary
     % array.
     %
+    % IMPLEMENTATION NOTE: Should not really use CDAC object here since it
+    % includes VSIBs. Ideally, CDAC should have been converted to some other
+    % data structure without VSIBs. Not doing so yet (2025-07-09) in
+    % anticipation of creating more generic class for ZV-like objecs/arrays.
+    %
     % ARGUMENTS
     % =========
     % zv_Epoch
     %       NOTE: Only needed for logging.
-    % zvAsrSamplesAVoltSrm
-    %       ASR samples.
+    % Cdac
     %       NOTE: Handle object which is MODIFIED in-place.
     %
     function zvCurrentAAmpere = set_voltage_current_FV(...
-        zv_Epoch, zvAsrSamplesAVoltSrm, zvCurrentAAmpere, zvUfv, L)
+        zv_Epoch, Cdac, zvCurrentAAmpere, zvUfv, L)
+
       % PROPOSAL: Separate functions for ASR samples and bias currents.
       %   PRO: Clearer/simpler testing
       %   CON: Non-quality code should call *ONE* function wrt. blanking data.
       %     CON-PROPOSAL: This function calls two sub-functions.
 
       assert(islogical(zvUfv))
-      assert(isa(zvAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
-      assert(isa(zvAsrSamplesAVoltSrm, 'handle'))
+      assert(isa(Cdac, 'bicas.proc.L1L2.ChannelDataAsrCollection'))
+      assert(isa(Cdac, 'handle'))
 
       % Log
       logHeaderStr = sprintf(...
@@ -340,18 +345,21 @@ classdef qual
       % ====================================
       % Set VOLTAGE values to fill value/NaN
       % ====================================
-      % NOTE: Ugly way of obtaining number of SPR.
-      keyArray = zvAsrSamplesAVoltSrm.keys;
-      nSpr     = size(zvAsrSamplesAVoltSrm(keyArray(1)), 2);
-
-      % IMPLEMENTATION NOTE: bicas.utils.SameRowsMap.set_rows() can not
-      % handle logical indexing.
-      iUfv     = find(zvUfv);
-      nanArray = NaN(size(iUfv, 1), nSpr);
-      nanSrm   = bicas.utils.SameRowsMap(...
-        "uint8",    size(nanArray, 1), ...
-        'CONSTANT', nanArray, zvAsrSamplesAVoltSrm.keys);
-      zvAsrSamplesAVoltSrm.set_rows(nanSrm, iUfv);
+      % IMPLEMENTATION NOTE: Should ideally be implemented using some kind of
+      % class support for setting elements using indexing(?) but that has to
+      % wait until using planned future class. /2025-07-09.
+      for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
+        Schd1               = Cdac.get_channel(asrSdid);
+        samplesAr           = Schd1.samplesAr;
+        samplesAr(zvUfv, :) = NaN;
+        % NOTE: Keeping the VSIBs, even if blanking data. One could imagine
+        % blanking them too. This should however only matter, if also setting
+        % quality ZVs after calling this function which is currently
+        % (2025-07-09) not done. Right/wrong?
+        Schd2                = bicas.proc.L1L2.SingleChannelData(...
+          samplesAr, Schd1.vsibAr);
+        Cdac.set_channel(asrSdid, Schd2);
+      end
     end
 
 

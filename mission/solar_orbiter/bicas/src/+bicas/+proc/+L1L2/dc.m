@@ -145,9 +145,6 @@ classdef dc
 
         TmkNewImpl.stop_log()
 
-        % TODO: Convert Cdac samples to AsrSamplesAVoltSrm (or at least use
-        %       it).
-
         % ======================================================================
         % DEBUG: Check that samples derived using OLD and NEW code are identical
         % ======================================================================
@@ -218,11 +215,18 @@ classdef dc
         bicas.utils.FPArray(QUALITY_FLAG));
       Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
 
-      % NOTE: Function modifies AsrSamplesAVoltSrm handle object in-place!
-      Zv.currentAAmpere = bicas.proc.L1L2.qual.set_voltage_current_FV(...
-        Dcip.Zv.Epoch, AsrSamplesAVoltSrm, currentAAmpere, zvUfv, L);
-      Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
+      % NOTE: Function modifies Cdac handle object in-place (handle object)!
+      %
+      % IMPLEMENTATION NOTE: Should not really use CDAC object here since it
+      % includes VSIBs. Ideally, CDAC should have been converted to some other
+      % data structure without VSIBs. Not doing so yet (2025-07-09) in
+      % anticipation of creating more generic class for ZV-like objecs/arrays.
+      Zv.currentAAmpere     = bicas.proc.L1L2.qual.set_voltage_current_FV(...
+        Dcip.Zv.Epoch, Cdac, currentAAmpere, zvUfv, L);
+      % Zv.AsrSamplesAVoltSrm = AsrSamplesAVoltSrm;
+      Zv.Cdac               = Cdac;
       clear AsrSamplesAVoltSrm
+      clear Cdac
 
 
 
