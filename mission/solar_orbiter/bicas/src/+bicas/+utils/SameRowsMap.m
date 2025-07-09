@@ -7,6 +7,7 @@
 % Some method names are chosen to be identical with dictionary.
 %
 %
+% NOTE: Is handle class.
 % NOTE: Enforces that the MATLAB class for keys is consistent, i.e. treating
 % (1) char<>string, and
 % (2) all numeric MATLAB classes are distinct (different).
@@ -204,7 +205,8 @@ classdef SameRowsMap < handle
     % mcKeys
     %       MATLAB class for keys.
     % varargin
-    %       initType == 'EMPTY':    Zero length.
+    %       initType == 'EMPTY':
+    %           varargin must be zero length.
     %       initType == 'CONSTANT':
     %           varargin{1} = Array of values
     %           varargin{2} = Column array of keys which all should have the
@@ -212,6 +214,7 @@ classdef SameRowsMap < handle
     %
     % NOTE: To initialize with multiple keys with unique values, use both
     %       constructor and method "add".
+    %
     function obj = SameRowsMap(mcKeys, nRows, initType, varargin)
       assert(isnumeric(nRows) && nRows >= 0, 'nRows is not a non-negative number.')
 
@@ -240,9 +243,8 @@ classdef SameRowsMap < handle
 
         otherwise
           error('BICAS:Assertion:IllegalArgument', ...
-            'Illegal argument initType="%s"', initType)
+            'Illegal argument initType="%s".', initType)
       end
-
     end
 
 
@@ -260,7 +262,7 @@ classdef SameRowsMap < handle
     %
     % NOTE: Method name chosen to be identical with dictionary.keys().
     function keysArray = keys(obj)
-      keysArray = obj.Dict.keys;
+      keysArray = obj.Dict.keys;   % NOTE: Column array.
     end
 
 
@@ -286,10 +288,13 @@ classdef SameRowsMap < handle
 
     % Add NEW key-value pair. Disallow overwriting.
     function add(obj, key, value)
-      assert(isa(key, obj.mcKeys), 'class(key)="%s" is inconsistent with expected MATLAB class "%s".', class(key), obj.mcKeys)
+      assert(isa(key, obj.mcKeys), ...
+        "class(key)=""%s"" is inconsistent with expected MATLAB class ""%s"".", ...
+        class(key), obj.mcKeys)
       assert(~obj.Dict.isKey(key))
       assert(obj.nRows2 == size(value, 1), ...
-        'The argument''s number of rows (%i) is not equal to the object''s number of rows (%i).', ...
+        "The argument's number of rows (%i) is not equal to" ...
+        + "the object's number of rows (%i).", ...
         obj.nRows2, size(value, 1))
 
       obj.Dict(key) = bicas.utils.HandleWrapper(value);
@@ -348,8 +353,8 @@ classdef SameRowsMap < handle
         % consistent).
         hw1.v(iRowsArray, :) = hw2.v(:, :);
 
-        % IMPLEMENTATION NOTE: Does not need to set obj.Dict(key) since
-        % using handle classes.
+        % IMPLEMENTATION NOTE: Does not need to set obj.Dict(key) since hw1 is a
+        % handle class.
       end
     end
 
@@ -362,16 +367,18 @@ classdef SameRowsMap < handle
 
       switch(S(1).type)
         case '()'
+          % CASE: ()
           assert(isscalar(S))
           assert(isscalar(S.subs), 'Illegal index. Must be exactly one argument.')
-
           assert(isscalar(S.subs{1}), 'Illegal index. Value must be scalar.')
 
-          % IMPLEMENTATION NOTE: Only intended for singular values,
-          % whether strings or numbers. Should not support indices
-          % like "1,2", colons, or "end".
+          % IMPLEMENTATION NOTE: Only intended for singular values, whether
+          % strings or numbers. Should not support indices like "1,2", colons,
+          % or "end".
           key = S.subs{1};
-          assert(isa(key, obj.mcKeys), 'Key has illegal MATLAB class "%s". Key class must be "%s".', class(key), obj.mcKeys)
+          assert(isa(key, obj.mcKeys), ...
+            'Key has illegal MATLAB class "%s". Key class must be "%s".', ...
+            class(key), obj.mcKeys)
           varargout = {obj.Dict(key).v};
 
         otherwise
@@ -385,7 +392,9 @@ classdef SameRowsMap < handle
 
 
     % Number of rows in child arrays.
-    % NOTE: Does not implement size() for this purpose.
+    %
+    % NOTE: Can not implement size() since sizes of values are not guaranteed to
+    % be identical.
     function nRows = nRows(obj)
       nRows = obj.nRows2;
     end

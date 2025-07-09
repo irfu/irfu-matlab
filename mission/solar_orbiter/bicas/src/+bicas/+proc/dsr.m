@@ -280,7 +280,6 @@ classdef dsr
       %
       % PROPOSAL: Separate function for generating boundaries.
 
-      tTicToc = tic();
       Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.get_downsampling_bins', L);
 
 

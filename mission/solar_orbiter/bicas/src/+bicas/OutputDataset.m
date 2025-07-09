@@ -65,8 +65,8 @@ classdef OutputDataset
       assert(isstruct(Ga)   & isscalar(Ga))
       assert(iscell(RctdCa) & iscolumn(RctdCa))
 
-      obj.Zv = Zv;
-      obj.Ga = Ga;
+      obj.Zv     = Zv;
+      obj.Ga     = Ga;
       obj.RctdCa = RctdCa;
     end
 

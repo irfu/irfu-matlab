@@ -22,7 +22,6 @@ classdef Database___UTEST < matlab.unittest.TestCase
       % Constructor
       % ===========
 
-      Gmdb = bicas.ga.mods.Database({});
       Gmdb = bicas.ga.mods.Database({'DSI_1', 'DSI_2'});
 
 

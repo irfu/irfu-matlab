@@ -14,6 +14,8 @@ classdef dc
   %   cdr = calibration+demuxing+reconstruction (same order as execution)
   %   cdrq = calibration+demuxing+reconstruction+quality
   %     CON: Setting quality variables is not necessarily last in the execution.
+  %      Ex: Blanking data due to failed antenna should be done in TM channels
+  %          (planned implementation).
   %       CON: Minor. Quality variables are still set somewhere in this file.
   %
   % PROPOSAL: Automatic test code.
@@ -687,11 +689,12 @@ classdef dc
       % -----------------------------------------------------------------
       % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
       % -----------------------------------------------------------------
-      % IMPLEMENTATION NOTE: Preallocation is very important for speeding
-      % up LFR-SWF which tends to be broken into subsequences of 1 record.
+      % IMPLEMENTATION NOTE: Preallocation is very important for speeding up
+      % LFR-SWF which tends to be broken into subsequences of 1 record due to
+      % changing sampling rate.
       AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
         "uint8", nRecTot, 'CONSTANT', ...
-        nan(nRecTot, nSamplesPerRecordChannel), ...
+        NaN(nRecTot, nSamplesPerRecordChannel), ...
         bicas.proc.L1L2.const.C.ASID_DICT.values);
 
 
@@ -701,12 +704,13 @@ classdef dc
         iRec1 = iRec1Ar(iSs);
         iRec2 = iRec2Ar(iSs);
 
-        SsAsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
+        SsAsrSamplesAVoltSrm = ...
+          bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
           bltsSdidArray(   iRec1,          :), ...
           bltsSamplesAvolt(iRec1:iRec2, :, :));
 
-        % Set demuxed subsequence signals (some records) to the global arrays
-        % (all records).
+        % Set demuxed subsequence signals (some records/indices) in the
+        % pre-existing global arrays (all records).
         AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
       end
 

@@ -38,7 +38,6 @@ classdef DemultiplexingCalibrationOutput
       bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
 
       obj.Zv = Zv;
-
     end
 
   end    % methods(Access=public)

@@ -27,8 +27,9 @@ classdef demuxer
 %   ~demultiplexing, demuxing
 %   ~reconstruction
 %   ~relabel
-%   PRO: Code really implements "relabel BLTS to ASR" and "reconstructing
-%        ASRs".
+%   demux
+%   PRO: The module code really implements "relabel BLTS to ASR" and
+%        "reconstructing ASRs".
 %
 % PROPOSAL: Separate file for reconstruction of channel samples.
 
@@ -223,7 +224,8 @@ classdef demuxer
     % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote
     % that they are organized by BLTS and ASRs respectively.
     %
-    function AsrSamplesAVoltSrm = relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
+    function AsrSamplesAVoltSrm = ...
+        relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence(...
         sdidArray, bltsSamplesAVolt)
       % PROPOSAL: Log message for SDID=NOWHERE.
 
@@ -235,12 +237,13 @@ classdef demuxer
         sdidArray,        [ 1,     bicas.const.N_BLTS])
 
       % Assign arrays only for those ASIDs for which there is data.
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.relabel_samples_5xBLTS_to_9xASR_subsequence(...
+      AsrSamplesAVoltSrm = ...
+        bicas.proc.L1L2.demuxer.relabel_samples_5xBLTS_to_NxASR_subsequence(...
         bltsSamplesAVolt, sdidArray);
 
       % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
       % NOTE: The function modifies the ARGUMENT (handle object).
-      bicas.proc.L1L2.demuxer.reconstruct_9xASR_samples_subsequence(AsrSamplesAVoltSrm);
+      bicas.proc.L1L2.demuxer.reconstruct_samples_NxASR_to_9xASR_subsequence(AsrSamplesAVoltSrm);
     end
 
 
@@ -267,7 +270,7 @@ classdef demuxer
     % AsrSamplesAVoltSrm
     %       NOTE: Function modifies the argument (handle class)!
     %
-    function reconstruct_9xASR_samples_subsequence(AsrSamplesAVoltSrm)
+    function reconstruct_samples_NxASR_to_9xASR_subsequence(AsrSamplesAVoltSrm)
       % PROPOSAL: Better name
       %   NOTE: Can not always reconstruct all signals.
       %   --
@@ -433,7 +436,7 @@ classdef demuxer
     % EXPERIMENTAL, UNUSED FUNCTION
     %
     % Intended as future conceptual replacement for
-    % bicas.proc.L1L2.demuxer.reconstruct_9xASR_samples_subsequence() (though
+    % bicas.proc.L1L2.demuxer.reconstruct_samples_NxASR_to_9xASR_subsequence() (though
     % "global", not for a subsequence).
     %
     % IMPORTANT: SCHD emulating column vector makes it important and non-trivial
@@ -541,10 +544,16 @@ classdef demuxer
 
 
 
-    % Given FIVE BLTS sample arrays, copy those which correspond to ASRs (five
-    % or fewer!) into an SRM with correct ASID keys for the corresponding
-    % arrays.
-    function AsrSamplesSrm = relabel_samples_5xBLTS_to_9xASR_subsequence(...
+    % Given FIVE BLTS sample arrays, copy those which correspond to ASRs into an
+    % SRM with correct ASID keys for the corresponding arrays.
+    %
+    % NOTE: The number of output ASR channels can be:
+    % * At most five (sic!) because the selection between DC/AC diffs is not
+    %   made here. Unused DC/AC diff channels are NaN(?).
+    % * Can be three, if DLR is unknown.
+    % * Can probably be zero, if mux mode/BDM is unknown.
+    %
+    function AsrSamplesSrm = relabel_samples_5xBLTS_to_NxASR_subsequence(...
         bltsSamplesAVolt, sdidArray)
 
       % ASSERTIONS
@@ -555,13 +564,14 @@ classdef demuxer
 
       AsrSamplesSrm = bicas.utils.SameRowsMap("uint8", nRows, 'EMPTY');
       for iBlts = 1:bicas.const.N_BLTS
-        if ~bicas.proc.L1L2.const.SDID_is_nowhere(sdidArray(iBlts))
+        sdid = sdidArray(iBlts);
+        if ~bicas.proc.L1L2.const.SDID_is_nowhere(sdid)
 
           % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
-          % if conceptually sensible.
+          %       if conceptually sensible.
           %   PROPOSAL: AsrSamplesSrm should be converted to representing
           %             ASR SDID-->samples.
-          asid = bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdidArray(iBlts));
+          asid = bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdid);
 
           AsrSamplesSrm.add(asid, bltsSamplesAVolt(:, :, iBlts));
         end

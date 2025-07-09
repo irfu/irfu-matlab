@@ -1,7 +1,7 @@
 %
 % Dumb class for making it possible to have a handle to a non-handle object,
 % e.g. regular arrays. Can be used for ensuring meaningful pre-allocation inside
-% e.g. containers.Map values to increase performance.
+% e.g. containers.Map or dictionary values to increase performance.
 %
 % Used by bicas.utils.SameRowsMap for increasing performance.
 %
@@ -11,7 +11,7 @@
 classdef HandleWrapper < handle
 
   properties(Access=public)
-    v
+    v   % Value to be stored in side object.
   end
 
   methods

@@ -65,8 +65,8 @@ ASR, Antenna Signal Representation.
     (1) A reference to a particular type of "physical antenna signal channel"
         which BIAS-LFR/TDS is trying to measure.
         NOTE: ASID always represents a reference to such a channel (but not
-              the samples themselves). SSID and SDID may reference such a channel
-              (but not the samples), but do not always (e.g. ground).
+              the samples themselves). SSID and SDID may reference such
+              a channel (but not the samples), but do not always (e.g. ground).
     (2) The sample values in a measurement of such a channel as referenced in
         (1), whether indirect or not.
     In reality, the terminology is:
@@ -313,8 +313,8 @@ LSF
 LV
     Latest (Dataset) Version.
 MC
-    MATLAB Class. MATLAB data type represented as a string constant.
-    Return value from "class()".
+    MATLAB Class. MATLAB data type represented as a string constant. Return
+    value from "class()".
 MSTD
     Modified STandard Deviation. Like standard deviation but using an
     arbitrary reference (e.g. median) instead of the conventional mean.

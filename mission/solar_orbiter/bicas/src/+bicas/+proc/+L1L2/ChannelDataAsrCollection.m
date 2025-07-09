@@ -122,7 +122,8 @@ classdef ChannelDataAsrCollection < handle
 
 
 
-    % Set channel data.
+    % Set channel data. Either (1) add new channel, or (2) overwrite
+    % pre-existing channel.
     function obj = set_channel(obj, asrSdid, Schd)
       % IMPLEMENTATION NOTE: Can not assert that the caller does not overwrite
       % the CHSD for a specified ASR SDID since overwriting is required by
@@ -143,32 +144,6 @@ classdef ChannelDataAsrCollection < handle
       ca   = obj.Dict(asrSdid);
       Schd = ca{1};
     end
-
-
-
-    % function groups = getPropertyGroups(obj)
-    %   % PROPOSAL: Separate properties for MATLAB class and size.
-    %   %   PRO: Avoids repetition.
-    %   %   CON: Less good for debugging class itself.
-    %
-    %   % IMPLEMENTATION NOTE: It appear that one can only represent
-    %   % "properties" using single-row strings.
-    %
-    %   properties = struct(...
-    %     'dataAr', bicas.utils.FPArray.value_to_single_row_string(obj.dataAr, obj.fpAr), ...
-    %     'fpAr',   bicas.utils.FPArray.value_to_single_row_string(obj.fpAr), ...
-    %     'size',   size(obj), ...
-    %     'mc',     obj.mc, ...
-    %     'onlyFp', all( obj.fpAr, 'all'), ...
-    %     'noFp',   all(~obj.fpAr, 'all') ...
-    %     );
-    %   groups = matlab.mixin.util.PropertyGroup(properties);
-    % end
-    % function groups = getPropertyGroups(obj)
-    %   properties = struct(...
-    %     );
-    %   groups = matlab.mixin.util.PropertyGroup(properties);
-    % end
 
 
 

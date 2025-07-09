@@ -14,7 +14,6 @@
 % First created 2017-02-10, with source code from data_manager_old.m.
 %
 classdef L1L2
-  %############################################################################
   %
   % PROPOSAL: Move normalize_ZVCTI() to some collection of utils.
   %   PROPOSAL: bicas.proc.utils
@@ -27,8 +26,6 @@ classdef L1L2
   %           compare with zVar SAMPS_PER_CH (which seems to be bad).
   %
   % PROPOSAL: Class for HkSciTime.
-  %
-  %############################################################################
 
 
 
@@ -340,10 +337,10 @@ classdef L1L2
           OutSci.Zv.QUALITY_FLAG,    [nRecords, 1])
 
         % Try to pre-allocate to save RAM/speed up.
-        tempNaN = nan(nRecords, 3);
-        OutSci.Zv.VDC = tempNaN;
-        OutSci.Zv.EDC = tempNaN;
-        OutSci.Zv.EAC = tempNaN;
+        tempNan = nan(nRecords, 3);
+        OutSci.Zv.VDC = tempNan;
+        OutSci.Zv.EDC = tempNan;
+        OutSci.Zv.EAC = tempNan;
 
         OutSci.Zv.VDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V1"));
         OutSci.Zv.VDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V2"));
@@ -386,10 +383,10 @@ classdef L1L2
           SAMPLES_PER_RECORD_CHANNEL)
 
         % Try to pre-allocate to save RAM/speed up.
-        tempNaN = nan(nRecords, nSamplesPerRecordChannel, 3);
-        OutSci.Zv.VDC = tempNaN;
-        OutSci.Zv.EDC = tempNaN;
-        OutSci.Zv.EAC = tempNaN;
+        tempNan = nan(nRecords, nSamplesPerRecordChannel, 3);
+        OutSci.Zv.VDC = tempNan;
+        OutSci.Zv.EDC = tempNan;
+        OutSci.Zv.EAC = tempNan;
 
         OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V1"));
         OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V2"));
@@ -428,12 +425,16 @@ classdef L1L2
 
       % NOTE: Not really necessary since the list of ZVs will be checked
       % against the master CDF?
-      % ZV "SAMPLE_IDX" only exists for SWF (not CWF).
+      if C.isSwf
+        optionalFnSet = {'SAMPLE_IDX', 'SAMPLE_LABEL'};
+      else
+        optionalFnSet = {};
+      end
       irf.assert.struct(OutSci.Zv, {...
         'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
         'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
         'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, ...
-        {'SAMPLE_IDX', 'SAMPLE_LABEL'})
+        optionalFnSet)
 
     end    % process_DCOP_to_CDF
 

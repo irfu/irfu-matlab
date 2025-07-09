@@ -126,11 +126,6 @@ while true
   %====================================================
   % Autocreate all possible BPCIs based on input paths
   %====================================================
-  if isempty(referenceDir)
-    referenceDirCa = cell(0, 1);
-  else
-    referenceDirCa = {referenceDir};
-  end
   [filePathsCa,    ~] = irf.fs.get_file_paths(inputPathsCa);
   [InputDsmdArray, ~] = solo.adm.paths_to_DSMD_array(filePathsCa);
   if DEBUG_ENABLED
@@ -194,11 +189,6 @@ while true
   iPass = iPass + 1;
 end
 
-
-
-% Assign return values.
-becArray = [BpcsAllArray.errorCode];
-nTpd     = numel(tpdFilenamesCa);
 end
 
 

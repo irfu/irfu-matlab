@@ -291,7 +291,6 @@ Condition     | Action taken when condition applies
               |     Cap QUALITY_FLAG<=1.
 
 
-
 =================================================================
  L2 data used for generating L2 LFR CWF downsampled (unofficial)
 =================================================================

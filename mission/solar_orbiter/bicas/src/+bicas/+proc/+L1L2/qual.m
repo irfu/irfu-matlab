@@ -126,6 +126,10 @@ classdef qual
       %           saturationQualitySchemeId is an argument.
       %   NOTE: Only makes sense if function is called once.
       %   NOTE: Needs functionality for reducing number of QRCIDs in QrcbMap.
+      %   CON: bicas.const.QRCS_L2_MAP.keys is used for obtaining QRCBs from NSO
+      %        table. This should be the union of GLOBAL_SATURATION and
+      %        FULL_SATURATION QRCIDs which is unnatural to generate with a
+      %        function for generating a QRCB map.
 
       QrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
 
@@ -314,6 +318,9 @@ classdef qual
     function zvCurrentAAmpere = set_voltage_current_FV(...
         zv_Epoch, zvAsrSamplesAVoltSrm, zvCurrentAAmpere, zvUfv, L)
       % PROPOSAL: Separate functions for ASR samples and bias currents.
+      %   PRO: Clearer/simpler testing
+      %   CON: Non-quality code should call *ONE* function wrt. blanking data.
+      %     CON-PROPOSAL: This function calls two sub-functions.
 
       assert(islogical(zvUfv))
       assert(isa(zvAsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
@@ -333,19 +340,18 @@ classdef qual
       % ====================================
       % Set VOLTAGE values to fill value/NaN
       % ====================================
-      % NOTE: Should really use future bicas.utils.SameSizeTypeMap here
-      %       (if implemented) which contains size on other dimensions.
+      % NOTE: Ugly way of obtaining number of SPR.
       keyArray = zvAsrSamplesAVoltSrm.keys;
       nSpr     = size(zvAsrSamplesAVoltSrm(keyArray(1)), 2);
 
       % IMPLEMENTATION NOTE: bicas.utils.SameRowsMap.set_rows() can not
       % handle logical indexing.
-      iUfv = find(zvUfv);
+      iUfv     = find(zvUfv);
       nanArray = NaN(size(iUfv, 1), nSpr);
-      tempSrm = bicas.utils.SameRowsMap(...
-        "uint8", size(nanArray, 1), ...
+      nanSrm   = bicas.utils.SameRowsMap(...
+        "uint8",    size(nanArray, 1), ...
         'CONSTANT', nanArray, zvAsrSamplesAVoltSrm.keys);
-      zvAsrSamplesAVoltSrm.set_rows(tempSrm, iUfv);
+      zvAsrSamplesAVoltSrm.set_rows(nanSrm, iUfv);
     end
 
 

@@ -65,8 +65,8 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
       end
       testCase.verifyError(@() dataAr_assign_fail(), ?MException)
       if 0
-        % Read dataAr (should fail).
-        % NOTE: Does not work, since class does not work.
+        % Read dataAr (private property ==> should fail).
+        % NOTE: Does not work for unknown reason!
         testCase.verifyError(@() (Fpa.dataAr), ?MException)
       end
 

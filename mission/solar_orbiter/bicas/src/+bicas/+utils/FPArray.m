@@ -142,8 +142,14 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
   %#####################
   properties(GetAccess=private, SetAccess=private)
     % NOTE: Should be completely private, but in practice it is possible to
-    % read "dataAr" under MATLAB R2019b. Unknown why. Property is
-    % write-protected though. Update test w.r.t. to this if fixed.
+    % read "dataAr" under MATLAB R2019b/R2024a. Unknown why. Property is
+    % write-protected though.
+    % https://se.mathworks.com/help/matlab/matlab_oop/property-attributes.html
+    % Gets the same (bad) result for
+    % properties(GetAccess=private, SetAccess=private)
+    % properties(SetAccess=private, GetAccess=private)
+    % properties(Access=private).
+    % NOTE: Need to update test w.r.t. to this if fixed.
     dataAr
   end
 

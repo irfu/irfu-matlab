@@ -489,8 +489,6 @@ classdef utils
     %
     function nRows = assert_struct_num_fields_have_same_N_rows(S)
       % NOTE: Function name somewhat bad.
-      % PROPOSAL: Make recursive?!
-      % PROPOSAL: Implement using new features in irf.assert.sizes().
       % TODO-NI: Function only used for cases where ALL fields should have
       %          same number of rows? (Due to previous refactoring.)
       % PROBLEM: Function is an obstacle to converting variable(s) to a class.
@@ -514,24 +512,6 @@ classdef utils
           % CASE: Numeric & logical field.
 
           nRowsArray(end+1) = size(fieldValue, 1);
-
-          %                 elseif iscell(fieldValue)
-          %                     % CASE: Cell array
-          %
-          %                     for iCc = 1:numel(fieldValue)
-          %                         nRowsArray(end+1) = size(fieldValue{iCc}, 1);
-          %                     end
-
-          %                 elseif isstruct(fieldValue)
-          %                     % CASE: Struct
-          %                     % Check number of rows in every field (regardless of type).
-          %
-          %                     fieldNamesList2 = fieldnames(fieldValue);
-          %                     for iFn2 = 1:length(fieldNamesList2)
-          %                         nRowsArray(end+1) = size(...
-          %                             fieldValue.(fieldNamesList2{iFn2}), ...
-          %                             1);
-          %                     end
 
         elseif isa(fieldValue, 'bicas.utils.SameRowsMap')
           nRowsArray(end+1) = fieldValue.nRows();

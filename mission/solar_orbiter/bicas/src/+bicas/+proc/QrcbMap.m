@@ -108,7 +108,7 @@ classdef QrcbMap < handle
       assert(isstring(qrcid) & isscalar(qrcid))
       assert(obj.Map.isKey(qrcid))
 
-      obj.Map.remove(qrcid)
+      obj.Map.remove(qrcid);
     end
 
 

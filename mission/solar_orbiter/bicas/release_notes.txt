@@ -298,7 +298,6 @@ Version X.Y.Z (????-??-??)
 * Support both setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK)
   using old (almost) and new scheme for saturation:
   Old scheme: "global saturation" (FULL_SATURATION & PARTIAL_SATURATION)
-              (Not entirely supported, but almost.)
   New scheme: "channel saturation" (six bits; one per single/diff, AC=DC)
   Controlled by new setting PROCESSING.SATURATION.QUALITY_SCHEME.
 * Speedup by using custom implementation of MATLAB dictionary lookup
