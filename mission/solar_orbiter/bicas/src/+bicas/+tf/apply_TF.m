@@ -171,6 +171,7 @@ assert(...
   S.snfSubseqMinSamples >= 1)
 
 % ASSERTION: Arguments
+assert(isscalar(dt))
 assert(iscolumn(y1), 'Argument y1 is not a column vector.')
 
 

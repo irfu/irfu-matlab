@@ -523,9 +523,11 @@ classdef Cal < handle
 
       % ASSERTIONS
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
-      assert(iscell(bltsSamplesTmCa))
-      assert(isvector(bltsSamplesTmCa))
-      irf.assert.sizes(zvcti, [1,2])
+      assert(iscell(bltsSamplesTmCa) & iscolumn(bltsSamplesTmCa))
+      irf.assert.sizes(...
+        zvcti,           [1, 2], ...
+        dtSec,           [-1], ...
+        bltsSamplesTmCa, [-1])
       assert(islogical(ufv) && isscalar(ufv))
 
 
@@ -591,8 +593,15 @@ classdef Cal < handle
 
     % ARGUMENTS
     % =========
-    % samplesTm    : 1D cell array of numeric 1D arrays.
-    % samplesAVolt : 1D cell array of numeric 1D arrays.
+    % dtSec
+    %       Numeric column array.
+    % bltsSamplesTmCa
+    %       Column cell array of numeric 1D arrays.
+    %
+    % RETURN VALUE
+    % ============
+    % bltsSamplesAVoltCa
+    %       Column cell array of numeric 1D arrays.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
         dtSec, bltsSamplesTmCa, CalSettings, iNonBiasRct, zvcti2)
@@ -602,10 +611,10 @@ classdef Cal < handle
       % IMPLEMENTATION NOTE: bicas.proc.L1L2.CalibrationSettings permits TDS
       % data for which iLsf=NaN.
       bicas.proc.L1L2.cal.utils.assert_iLsf(CalSettings.iLsf)
-      irf.assert.vector(bltsSamplesTmCa)
-      assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
-      irf.assert.vector(dtSec)
-      assert(numel(bltsSamplesTmCa) == numel(dtSec))
+      assert(iscell(bltsSamplesTmCa))
+      irf.assert.sizes( ...
+        dtSec,           [-1], ...
+        bltsSamplesTmCa, [-1])
 
 
 
@@ -658,9 +667,10 @@ classdef Cal < handle
       iCalibTimeH  = CalSettings.iCalibTimeH;
 
       % ASSERTIONS
-      irf.assert.vector(dtSec)
-      assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
-      assert(numel(bltsSamplesTmCa) == numel(dtSec))
+      assert(iscell(bltsSamplesTmCa))
+      irf.assert.sizes( ...
+        dtSec,           [-1], ...
+        bltsSamplesTmCa, [-1])
       assert(iNonBiasRct >= 1)
 
       if obj.useZvcti2
@@ -749,9 +759,10 @@ classdef Cal < handle
       iCalibTimeH  = CalSettings.iCalibTimeH;
 
       % ASSERTIONS
-      irf.assert.vector(dtSec)
-      assert(iscell(bltsSamplesTmCa) && isvector(bltsSamplesTmCa))
-      assert(numel(bltsSamplesTmCa) == numel(dtSec))
+      assert(iscell(bltsSamplesTmCa))
+      irf.assert.sizes( ...
+        dtSec,           [-1], ...
+        bltsSamplesTmCa, [-1])
       assert(iNonBiasRct >= 1)
 
       if obj.useZvcti2
