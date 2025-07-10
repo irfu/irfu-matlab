@@ -38,19 +38,20 @@
 % First created 2020-08-13.
 %
 function [i1Array, i2Array, n] = split_by_change(varargin)
-% NOTE: In principle, one might not want to split by every change.
-%   Ex: BICAS UFV=1 ==> voltageNaN=true ==> One block, regardless of other
-%       arguments.
 % PROPOSAL: Return the constant values found.
 % PROPOSAL: Not use irf.utils.find_equalities().
+%   PRO: Should probably ideally phase out irf.utils.find_equalities(),
+%        especially functionality with argument searchDistance<>Inf.
+%   PRO: Algorithm only needs to compare subsequent rows. ==> Simple.
 % PROPOSAL: Recursive call.
 %   PRO: Potentially faster.
+% PROPOSAL: Permit zero array arguments. Return zero index intervals.
 
 % ASSERTION
-% Require at least one argument, since size of return values is ~undefined
-% (?!!) otherwise.
+% Requires at least one argument array, since the return values are
+% undefined otherwise (at least sizes are).
 assert(numel(varargin) >= 1, 'Zero arguments. Must have at least one argument.')
-% NOTE: irf.utils.find_equalities checks that the arguments have the
+% NOTE: irf.utils.find_equalities() checks that the arguments have the
 % same number of rows.
 
 

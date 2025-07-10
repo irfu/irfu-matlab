@@ -91,7 +91,7 @@ if(Hapgood)
   UT            = timeVec(:,4)+timeVec(:,5)/60+timeVec(:,6)/3600;
 else
   D_J2000 = tts / 86400; % Julian date (of req. time) from J2000
-  D0_J2000 = floor(tts/86400) - 0.5; % Julian date (of preceeding midnight of req. time) from J2000
+  D0_J2000 = floor(tts/86400) - 0.5; % Julian date (of preceding midnight of req. time) from J2000
   T_J2000 = D_J2000/36525; % Julian centuries (of req. time) since J2000
   H_J2000 = 24*(D_J2000 - D0_J2000); % Hours in the of req. time (since midnight).
 end

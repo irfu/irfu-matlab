@@ -15,7 +15,7 @@ function off = mms_sdp_get_offset(scId, procId, time, TMmode, Vpsp)
 %                    the resulting cdf file).
 %
 % If calibration files are found, offsets will be the last values just
-% preceeding the start of time. (Start of data interval processing). If no
+% preceding the start of time. (Start of data interval processing). If no
 % files are found a static value is used.
 %
 % NOTE: if processing Slow L2pre than also include the otherwise optional

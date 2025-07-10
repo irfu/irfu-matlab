@@ -120,7 +120,7 @@ classdef solo_db < handle
 
         % NOTE: If "res" is a cell array, then always add next time series in
         % cell array, without checking whether this or the immediately
-        % preceeding time series are "compatible" (have consistent metadata).
+        % preceding time series are "compatible" (have consistent metadata).
         % Bug or feature? /EJ 2023-07-06
         if iscell(res), res = [res {v}]; return, end
         if ~comp_struct(res,v)
