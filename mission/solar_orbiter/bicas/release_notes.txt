@@ -307,3 +307,6 @@ Version X.Y.Z (????-??-??)
   PROCESSING.L2.REMOVE_DATA.MUX_MODES
   PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC
   PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC
+* Speedfix: Groups non-consecutive CDF records for SWF data. Speeds up
+  the processing of L1R LFR-SWF data significantly.
+  data significantly.

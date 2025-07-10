@@ -358,43 +358,15 @@ classdef dc
 
 
 
-      %========================================================================
-      % (1) Find continuous subsequences of records with identical settings.
+      %==================================================================
+      % (1) Find groups/subsequences of records with identical settings.
       % (2) Process data separately for each such sequence.
-      % --------------------------------------------------------------------
+      % ----------------------------------------------------------------
       % SS = Subsequence
-      %
-      % NOTE: Empirically, splitting by changing settings is not really useful
-      %       for real LFR SWF datasets where the LSF changes in every record
-      %       anyway, meaning that the subsequences are all 1 record long.
-      %       Suspect that this implies that the indexing of arrays becomes a
-      %       performance problem since removing bltsSsidArray argument (which
-      %       was mistakenly added despite being unused) speed up BICAS
-      %       significantly for SWF data: about half of the time added after
-      %       adding bltsSsidArray+bltsSdidArray.
-      %       /Erik P G Johansson, 2024-10-29
-      %
-      % NOTE: One can make a test of the potential speedup by temporarily
-      % ignoring changes in the variables which change:
-      %   Zv.freqHz
-      %   Zv.iLsf
-      %   Zv.CALIBRATION_TABLE_INDEX
-      %   ==> 2 subsequences; ~31 s --> 4s
-      %========================================================================
-      % PROPOSAL: Do not use irf.utils.split_by_change() for SWF data. It is
-      %           enough to group by identical values (not use continuous
-      %           blocks of CDF records).
-      %   PRO: Faster
-      %   CON: Uses knowledge of how the calibration works: that CDF records
-      %        are calibrated separately.
-      %   PROPOSAL: Create similar function which finds groups of unique
-      %             combinations.
-      %           [iMembersCa, iHeadsCa] = group_unique_combinations(...)
-      %     PROPOSAL: Implement using recursion: Find unique values (rows) for
-      %               one argument at a time.
-      %========================================================================
-      %Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:irf.utils.split_by_change', A.L);
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(...
+      %==================================================================
+      Tmk = bicas.utils.Timekeeper(...
+        'bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:irf.utils.split_by_change', A.L);
+      settingsCa = {...
         Zv.isAchgFpa.logical2doubleNan(), ...
         Zv.freqHz, ...
         Zv.iLsf, ...
@@ -402,19 +374,42 @@ classdef dc
         Zv.ufv, ...
         Zv.bltsSsidArray, ...
         iCalibLZv, ...
-        iCalibHZv);
-      %Tmk.stop_log(nRecords, 'record', nSs, 'subsequence')
+        iCalibHZv};
+      if A.hasSwfFormat
+        % IMPLEMENTATION NOTE: SWF data is calibrated in a way where consecutive
+        % records (snapshots) do NOT affect each other. One can therefore group
+        % CDF records in groups of non-consecutive CDF records. This is
+        % important for LFR-SWF data which tends to change calibration-relevant
+        % settings with every new CDF record and which then becomes a
+        % performance problem. Grouping non-consecutive CDF records for LFR-SWF
+        % data makes a significant speedup!!!
+        % Ex:
+        %     solo_L1R_rpw-lfr-surv-swf-e-cdag_20200213_V10.cdf for the relevant
+        %     code section: ~29 s --> ~4 s (843 CDF records)
+        iGroupArCa = bicas.utils.group_unique_rows(settingsCa{:});
+      else
+        % IMPLEMENTATION NOTE: CWF data is calibrated in a way where consecutive
+        % records affect each other. Must therefore divide CDF records in groups
+        % (subsequences) of continuous CDF records.
+        iGroupArCa = bicas.utils.group_by_change(settingsCa{:});
+      end
+      nGroups = numel(iGroupArCa);
+      Tmk.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
 
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:Calibrating voltages', A.L);
-      for iSs = 1:nSs
-        iRec1 = iRec1Ar(iSs);
-        iRec2 = iRec2Ar(iSs);
+      %===========
+      % Calibrate
+      %===========
+      Tmk = bicas.utils.Timekeeper(...
+        'bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:Calibrating voltages', A.L);
+      for iGroup = 1:nGroups
+        iGroupAr = iGroupArCa{iGroup};
+        iRec1    = iGroupAr(1);
 
         ssBltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS_subsequence( ...
           Cal                      = A.Cal, ...
           ... % ===============================================================
           ... % Variables which do VARY over CDF records, but not over
-          ... % the subsequence.
+          ... % the subsequence/group.
           isAchgFpa                = Zv.isAchgFpa(              iRec1), ...
           freqHz                   = Zv.freqHz(                 iRec1), ...
           iLsf                     = Zv.iLsf(                   iRec1), ...
@@ -431,15 +426,15 @@ classdef dc
           nSamplesPerRecordChannel = nSamplesPerRecordChannel, ...
           ... % ===============================================================
           ... % Variables which vary by CDF records, and which vary over
-          ....% the subsequence.
-          Epoch                    = Zv.Epoch(                 iRec1:iRec2), ...
-          bltsSamplesTm            = Zv.bltsSamplesTm(         iRec1:iRec2, :, :), ...
-          zvNValidSamplesPerRecord = Zv.nValidSamplesPerRecord(iRec1:iRec2));
+          ....% the subsequence/group.
+          Epoch                    = Zv.Epoch(                 iGroupAr), ...
+          bltsSamplesTm            = Zv.bltsSamplesTm(         iGroupAr, :, :), ...
+          zvNValidSamplesPerRecord = Zv.nValidSamplesPerRecord(iGroupAr));
 
-        % Add subsequence signals to the global array (all records).
-        bltsSamplesAVolt(iRec1:iRec2, :, :) = ssBltsSamplesAVolt;
+        % Add subsequence/group signals to the global array (all records).
+        bltsSamplesAVolt(iGroupAr, :, :) = ssBltsSamplesAVolt;
       end    % for
-      Tmk.stop_log(nRecords, 'record', nSs, 'subsequence')
+      Tmk.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
 
     end    % calibrate_voltages_5xBLTS
 
