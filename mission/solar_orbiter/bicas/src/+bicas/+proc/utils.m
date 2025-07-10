@@ -396,7 +396,7 @@ classdef utils
     % RETURN VALUE
     % ============
     % ca
-    %       Column cell array of 1D vectors.
+    %       Column cell array of row vectors.
     %       ca{i}(j). j = 1:nCopyColsPerRowArray(i)
     %
     function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
@@ -406,7 +406,7 @@ classdef utils
       irf.assert.vector(nCopyColsPerRowArray)
       nRows = irf.assert.sizes(...
         M,                    [-1, NaN], ...
-        nCopyColsPerRowArray, [-1, 1]);
+        nCopyColsPerRowArray, [-1]);
 
       % Create "ca".
       ca = cell(nRows, 1);

@@ -296,12 +296,6 @@ classdef dc
       % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
       %           for CWF.
       %
-      % PROPOSAL: Integrate into bicas.proc.L1L2.demuxer (as method).
-      % NOTE: Calibration is really separate from the demultiplexer.
-      %       Demultiplexer only needs to split into subsequences based on BDM
-      %       and DLR, nothing else.
-      %   PROPOSAL: Separate out demultiplexer. Do not call from this function.
-      %
       % PROPOSAL: Reorg.
       %   FROM
       %     (1) Iterate over subsequences for all channels.
@@ -419,7 +413,8 @@ classdef dc
         ssBltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS_subsequence( ...
           Cal                      = A.Cal, ...
           ... % ===============================================================
-          ... % NOTE: Variables which do VARY over CDF records.
+          ... % Variables which do VARY over CDF records, but not over
+          ... % the subsequence.
           isAchgFpa                = Zv.isAchgFpa(              iRec1), ...
           freqHz                   = Zv.freqHz(                 iRec1), ...
           iLsf                     = Zv.iLsf(                   iRec1), ...
@@ -429,12 +424,14 @@ classdef dc
           iCalibL                  = iCalibLZv(                 iRec1), ...
           iCalibH                  = iCalibHZv(                 iRec1), ...
           ... % ===============================================================
-          ... % NOTE: Variables which do not vary over CDF records.
+          ... % Variables which do not vary over CDF records ("constants").
           hasSwfFormat             = A.hasSwfFormat, ...
           isLfr                    = A.isLfr, ...
           isTdsCwf                 = A.isTdsCwf, ...
           nSamplesPerRecordChannel = nSamplesPerRecordChannel, ...
-          ...   % Variables which vary by CDF records.
+          ... % ===============================================================
+          ... % Variables which vary by CDF records, and which vary over
+          ....% the subsequence.
           Epoch                    = Zv.Epoch(                 iRec1:iRec2), ...
           bltsSamplesTm            = Zv.bltsSamplesTm(         iRec1:iRec2, :, :), ...
           zvNValidSamplesPerRecord = Zv.nValidSamplesPerRecord(iRec1:iRec2));
@@ -457,6 +454,7 @@ classdef dc
     %       Constant values. Scalar values which do NOT VARY by CDF record.
     % Vv
     %       Varying values. Struct with values which DO VARY by CDF record.
+    %
     function ssBltsSamplesAVolt = calibrate_voltages_5xBLTS_subsequence(A, Cv, Vv)
       arguments
         A.Cal
@@ -472,29 +470,34 @@ classdef dc
         Cv.bltsSsidArray
         Cv.iCalibL
         Cv.iCalibH
-        % NOTE: Below variables do not vary over CDF records at all.
+        % Below variables do not vary over CDF records at all.
         Cv.nSamplesPerRecordChannel
         Cv.hasSwfFormat
         Cv.isLfr
         Cv.isTdsCwf
-        %
+        % Below variables vary over CDF records in subsequence.
         Vv.Epoch
         Vv.bltsSamplesTm
         Vv.zvNValidSamplesPerRecord
       end
       irf.assert.sizes( ...
-        Vv.Epoch,                    [-1], ...
         Cv.bltsSsidArray,            [ 1,                              bicas.const.N_BLTS], ...
+        Vv.Epoch,                    [-1], ...
         Vv.bltsSamplesTm,            [-1, Cv.nSamplesPerRecordChannel, bicas.const.N_BLTS], ...
         Vv.zvNValidSamplesPerRecord, [-1])
 
       nRows = numel(Vv.Epoch);
 
       if Cv.hasSwfFormat
-        % NOTE: Vector of constant numbers (one per snapshot).
+        % CASE: SWF
+        % NOTE: Column vector of (identical) numbers (one per snapshot, which
+        %       will all be processed separately).
         dtSec = ones(nRows, 1) / Cv.freqHz;
       else
-        % NOTE: Scalar (one for entire sequence).
+        % CASE: CWF
+        % NOTE: Scalar (since all data will be processed in one session).
+        % BUG RISK: Has the possibility of data gaps been excluded at this point
+        % in the code, since the calculation seems to rely on it?
         dtSec = double( Vv.Epoch(end) - Vv.Epoch(1) ) / (nRows-1) * 1e-9;
       end
 
@@ -504,8 +507,10 @@ classdef dc
       ssBltsSamplesAVolt = nan(nRows, Cv.nSamplesPerRecordChannel, bicas.const.N_BLTS);
       for iBlts = 1:bicas.const.N_BLTS
         ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_1xBLTS_subsequence(...
+          ... % Below variables vary within the subsequence.
           samplesTm                = Vv.bltsSamplesTm(:, :, iBlts), ...
           zvNValidSamplesPerRecord = Vv.zvNValidSamplesPerRecord, ...
+          ... % Below variables DO NOT vary within the subsequence (almost).
           ssid                     = Cv.bltsSsidArray(iBlts), ...
           iBlts                    = iBlts, ...
           hasSwfFormat             = Cv.hasSwfFormat, ...
@@ -554,6 +559,8 @@ classdef dc
       % PROPOSAL: Reorder arguments to group them.
       %   PROPOSAL: Group arguments from DCIP.
 
+      % ASSERTIONS
+      % ----------
       % IMPLEMENTATION NOTE: It seems that data processing submits
       % different types of floats for LFR and TDS. This difference in
       % processing is unintended and should probably ideally be
@@ -566,12 +573,14 @@ classdef dc
       end
       irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel. CWF/SWF.
 
+
+
       if isequaln(A.ssid, bicas.proc.L1L2.const.C.SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
         samplesAVolt = nan(size(A.samplesTm));
 
-      elseif isequaln(A.ssid, bicas.proc.L1L2.const.C.SSID_DICT("GND")) || ...
-          isequaln(A.ssid, bicas.proc.L1L2.const.C.SSID_DICT("REF25V"))
+      elseif ismember(...
+          A.ssid, bicas.proc.L1L2.const.C.SSID_DICT(["GND", "REF25V"]))
         % ==> No calibration.
         % NOTE: samplesTm stores TM units using float!
         samplesAVolt = A.samplesTm;
@@ -612,12 +621,14 @@ classdef dc
         %#######################################################
 
         if A.hasSwfFormat
+          % CASE: SWF
           [samplesAVolt, ~] = ...
             bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
             ssBltsSamplesAVoltCa, ...
             size(A.samplesTm, 2));
         else
-          % Scalar cell array since not snapshot.
+          % CASE: CWF
+          % NOTE: Scalar, since not snapshot.
           assert(isscalar(ssBltsSamplesAVoltCa))
           % NOTE: Cell content must be column array.
           samplesAVolt = ssBltsSamplesAVoltCa{1};

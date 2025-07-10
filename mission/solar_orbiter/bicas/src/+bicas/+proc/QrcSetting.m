@@ -65,7 +65,7 @@ classdef QrcSetting
     % Bits that should be set in either ZV "L2_QUALITY_BITMASK" or
     % "L3_QUALITY_BITMASK". The context in which this class is used
     % determines which.
-    % NOTE: The value is supposed to be OR:ed with a preceeding value, i.e. only
+    % NOTE: The value is supposed to be OR:ed with a preceding value, i.e. only
     % set bits override the previous value.
     Lx_QUALITY_BITMASK
   end

@@ -19,24 +19,25 @@ classdef split_by_change___UTEST < matlab.unittest.TestCase
 
     function test_1(testCase)
 
-      function test(vararginCa, expI1Array, expI2Array)
+      function test(arraysCa, expI1Array, expI2Array)
         expN = numel(expI1Array);
 
         [actI1Array, actI2Array, actN] = ...
-          irf.utils.split_by_change(vararginCa{:});
+          irf.utils.split_by_change(arraysCa{:});
 
         testCase.assertEqual(actI1Array, expI1Array)
         testCase.assertEqual(actI2Array, expI2Array)
         testCase.assertEqual(actN,       expN)
       end
 
-      function test_exc(vararginCa)
+      function test_exc(arraysCa)
         testCase.assertError(...
-          @() irf.utils.split_by_change(vararginCa{:}), ...
+          @() irf.utils.split_by_change(arraysCa{:}), ...
           ?MException)
       end
 
       test_exc({})
+
       % Unequal number of rows.
       test_exc({zeros(0, 1), [1]})
       test_exc({[2;3], [1]})

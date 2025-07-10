@@ -532,11 +532,12 @@ classdef Cal < handle
 
 
 
-      % Set iNonBiasRct, zvcti2 by extracting values from zvcti or emulating it.
+      % Set iNonBiasRct.
       if obj.useGactRct
         % NOTE: Incrementing by one (index into MATLAB array).
-        iNonBiasRct = 1 + zvcti(1,1);
+        iNonBiasRct = 1 + zvcti(1, 1);
       else
+        % Emulating having a ZVCTI value.
         iNonBiasRct = 1;
       end
       % NOTE: NOT incrementing value by one, since the variable's meaning
@@ -660,11 +661,11 @@ classdef Cal < handle
 
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
 
-      iBlts        = CalSettings.iBlts;
-      ssid         = CalSettings.ssid;
-      isAchg       = CalSettings.isAchg;
-      iCalibTimeL  = CalSettings.iCalibTimeL;
-      iCalibTimeH  = CalSettings.iCalibTimeH;
+      iBlts       = CalSettings.iBlts;
+      ssid        = CalSettings.ssid;
+      isAchg      = CalSettings.isAchg;
+      iCalibTimeL = CalSettings.iCalibTimeL;
+      iCalibTimeH = CalSettings.iCalibTimeH;
 
       % ASSERTIONS
       assert(iscell(bltsSamplesTmCa))
@@ -731,7 +732,7 @@ classdef Cal < handle
         end
 
       else
-        % CASE: BLTS 4-5 which TDS does NOT support.
+        % CASE: BLTS 4-5 which TDS does NOT support (forbidden in h/w).
 
         for i = 1:numel(bltsSamplesTmCa)
           % Always return NaN.
@@ -752,11 +753,11 @@ classdef Cal < handle
 
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
 
-      iBlts        = CalSettings.iBlts;
-      ssid         = CalSettings.ssid;
-      isAchg       = CalSettings.isAchg;
-      iCalibTimeL  = CalSettings.iCalibTimeL;
-      iCalibTimeH  = CalSettings.iCalibTimeH;
+      iBlts       = CalSettings.iBlts;
+      ssid        = CalSettings.ssid;
+      isAchg      = CalSettings.isAchg;
+      iCalibTimeL = CalSettings.iCalibTimeL;
+      iCalibTimeH = CalSettings.iCalibTimeH;
 
       % ASSERTIONS
       assert(iscell(bltsSamplesTmCa))
@@ -783,6 +784,7 @@ classdef Cal < handle
       % Initialize empty output variable.
       bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
       if ismember(iBlts, [1,2,3])
+        % CASE: BLTS 1-3 which TDS does support.
 
         %======================================
         % Create combined ITF for TDS and BIAS
@@ -821,8 +823,8 @@ classdef Cal < handle
           bltsSamplesAVoltCa{i} = tempSamplesAVolt + BiasCalibData.offsetAVolt;
         end
       else
+        % CASE: BLTS 4-5 which TDS does not support (forbidden in h/w).
         for i = 1:numel(bltsSamplesTmCa)
-          % CASE: BLTS 4-5 which TDS does not support.
           % Always return NaN.
           bltsSamplesAVoltCa{i} = NaN * bltsSamplesTmCa{i};
         end

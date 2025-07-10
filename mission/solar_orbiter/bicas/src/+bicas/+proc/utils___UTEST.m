@@ -35,7 +35,6 @@ classdef utils___UTEST < matlab.unittest.TestCase
           @() bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg), ...
           ?MException)
       end
-      %===================================================================
 
       for isMonotonic = [false, true]
         test(zeros(0, 1), isMonotonic)
@@ -53,34 +52,35 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
     function test_set_NaN_end_of_rows(testCase)
 
-      function test(inputsCa, expOutputsCa)
-        % Pre-allocate correct size for later assignment via function
-        actOutputs = cell(size(expOutputsCa));
-
-        [actOutputs{:}] = bicas.proc.utils.set_NaN_end_of_rows(inputsCa{:});
-        testCase.verifyEqual(actOutputs, expOutputsCa)
+      function test(zv, snapshotLengths, expZv)
+        actZv = bicas.proc.utils.set_NaN_end_of_rows(zv, snapshotLengths);
+        testCase.verifyEqual(actZv, expZv)
       end
-      %===================================================================
-      test({ones(0,4),              ones(0,1)},   {ones(0,4)});
-      test({[0,1,2],                [3]},   {[0,1,2]});
-      test({[0,1,2,3,4; 5,6,7,8,9], [2;4]}, {[0,1,NaN,NaN,NaN; 5,6,7,8,NaN]});
+
+      test(ones(0,4),              ones(0,1), ones(0,4));
+      test([0,1,2],                [3],       [0,1,2]);
+      test([0,1,2,3,4; 5,6,7,8,9], [2;4],     [0,1,NaN,NaN,NaN; 5,6,7,8,NaN]);
     end
 
 
 
     function test_convert_matrix_to_cell_array_of_vectors(testCase)
 
-      function test(inputsCa, expOutputsCa)
-        % Pre-allocate correct size for later assignment via function.
-        actOutputs = cell(size(expOutputsCa));
+      function test(M, nCopyColsPerRowArray, expCa)
+        actCa = bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
+          M, nCopyColsPerRowArray);
 
-        [actOutputs{:}] = bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(inputsCa{:});
-        testCase.verifyEqual(actOutputs, expOutputsCa)
+        testCase.verifyEqual(actCa, expCa)
       end
-      %===================================================================
-      test({zeros(0,1), zeros(0,1)}, {cell(0,1)});
-      test({[1,2,3,4,5], [3]}, {{[1,2,3]}});
-      test({[1,2,3,4,5; 6,7,8,9,0], [3; 2]}, {{[1,2,3]; [6,7]}});
+
+      test(zeros(0,1),  zeros(0,1), cell(0,1));
+
+      test([1,2,3,4,5], [0],        {zeros(1, 0)});
+      test([1,2,3,4,5], [3],        {[1,2,3]});
+      test([1,2,3,4,5], [5],        {[1,2,3,4,5]});
+
+      test([1,2,3,4,5; 6,7,8,9,0], [3; 2], {[1,2,3]; [6,7]});
+      test([1,2,3,4,5; 6,7,8,9,0], [0; 5], {zeros(1, 0); [6,7,8,9,0]});
     end
 
 
@@ -95,8 +95,8 @@ classdef utils___UTEST < matlab.unittest.TestCase
         testCase.verifyEqual(expM,                  actM)
         testCase.verifyEqual(expNCopyColsPerRowVec, actNCopyColsPerRowVec)
       end
-      %===================================================================
-      % zero rows
+
+      % Zero rows
       for nCols = [0, 10]
         test(...
           cell(0, 1), nCols, ...
