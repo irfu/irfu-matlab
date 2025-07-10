@@ -60,6 +60,12 @@ ASID
     (1) uint8 value, or
     (2) class bicas.proc.L1L2.AntennaSignalId.
     Compare ASR.
+ASPR
+    Allocated Samples Per Record (per channel)
+    Number of samples/elements in an array on the dimension which represents
+    samples in a snapshot (or can be size one for CWF data). This value does not
+    vary between CDF records.
+    See USPR.
 ASR, Antenna Signal Representation.
     Either of:
     (1) A reference to a particular type of "physical antenna signal channel"
@@ -533,6 +539,13 @@ UFV
     Use Fill Values. Refers to CDF records for which science data should be
     overwritten with fill values. This refers to both bias currents and
     measured voltages.
+USPR
+    Used Samples Per Record (and channel)
+    Number of samples/elements in an array which are actually intended for
+    storing sample values as opposed to additional elements which may exist as
+    padding. This includes fill values which "could have been" actual samples
+    values. This value can thus vary between CDF records.
+    See ASPR.
 VBMC
     Validate BICAS Master CDFs. Standalone tool.
 WOLS

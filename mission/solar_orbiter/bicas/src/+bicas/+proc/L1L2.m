@@ -294,8 +294,8 @@ classdef L1L2
 
 
 
-      nRecords                 = size(SciDcip.Zv.Epoch, 1);
-      nSamplesPerRecordChannel = size(SciDcop.Zv.SamplesZvm.get(S("DC_V1")), 2);
+      nRecords = size(SciDcip.Zv.Epoch, 1);
+      aspr     = size(SciDcop.Zv.SamplesZvm.get(S("DC_V1")), 2);
 
       OutSci = [];
 
@@ -328,7 +328,7 @@ classdef L1L2
         %===========
 
         % ASSERTIONS
-        assert(nSamplesPerRecordChannel == 1, ...
+        assert(aspr == 1, ...
           'BICAS:Assertion:IllegalArgument', ...
           ['Number of samples per CDF record is not 1, as expected.', ...
           ' Bad input CDF?'])
@@ -375,15 +375,15 @@ classdef L1L2
         end
 
         % ASSERTION
-        assert(nSamplesPerRecordChannel == SAMPLES_PER_RECORD_CHANNEL, ...
+        assert(aspr == SAMPLES_PER_RECORD_CHANNEL, ...
           'BICAS:Assertion:IllegalArgument', ...
           ['Number of samples per CDF record (%i) is not', ...
           ' %i, as expected. Bad Input CDF?'], ...
-          nSamplesPerRecordChannel, ...
+          aspr, ...
           SAMPLES_PER_RECORD_CHANNEL)
 
         % Try to pre-allocate to save RAM/speed up.
-        tempNan = nan(nRecords, nSamplesPerRecordChannel, 3);
+        tempNan = nan(nRecords, aspr, 3);
         OutSci.Zv.VDC = tempNan;
         OutSci.Zv.EDC = tempNan;
         OutSci.Zv.EAC = tempNan;
