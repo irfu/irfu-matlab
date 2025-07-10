@@ -382,7 +382,8 @@ classdef utils
 
 
 
-    % Convert 2D array --> 1D cell array of 1D arrays, one per source row.
+    % Convert 2D array --> 1D cell array of varying-length column arrays, one
+    % per row.
     %
     %
     % ARGUMENTS
@@ -396,7 +397,7 @@ classdef utils
     % RETURN VALUE
     % ============
     % ca
-    %       Column cell array of row vectors.
+    %       Column cell array of column vectors.
     %       ca{i}(j). j = 1:nCopyColsPerRowArray(i)
     %
     function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
@@ -411,7 +412,7 @@ classdef utils
       % Create "ca".
       ca = cell(nRows, 1);
       for iRow = 1:nRows
-        ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
+        ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow))';   % Column array.
       end
     end
 
