@@ -88,6 +88,7 @@ classdef dc
       %##################################################################
       % CALIBRATE VOLTAGES: 5x CHANNELS LABELLED BY SSID/BLTS (not SDID)
       %##################################################################
+      % NOTE: Takes most of the time LFR-SWF.
       bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(...
         Epoch                   = Dcip.Zv.Epoch, ...
         bltsSamplesTm           = Dcip.Zv.bltsSamplesTm, ...
@@ -378,6 +379,13 @@ classdef dc
       %       significantly for SWF data: about half of the time added after
       %       adding bltsSsidArray+bltsSdidArray.
       %       /Erik P G Johansson, 2024-10-29
+      %
+      % NOTE: One can make a test of the potential speedup by temporarily
+      % ignoring changes in the variables which change:
+      %   Zv.freqHz
+      %   Zv.iLsf
+      %   Zv.CALIBRATION_TABLE_INDEX
+      %   ==> 2 subsequences; ~31 s --> 4s
       %========================================================================
       % PROPOSAL: Do not use irf.utils.split_by_change() for SWF data. It is
       %           enough to group by identical values (not use continuous

@@ -133,11 +133,17 @@ classdef qual
 
       QrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
 
+      %-----------
+      % NSO table
+      %-----------
       NsoTableQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
         string(bicas.const.QRCS_L2_MAP.keys)', NsoTable, tt2000Ar, L);
       QrcbMap.add_map(NsoTableQrcbMap)
       clear NsoTableQrcbMap
 
+      %--------------------
+      % Channel saturation
+      %--------------------
       ChannelSaturationQrcbMap = ...
         bicas.proc.L1L2.qual.get_QRCBs_channel_saturation(...
         VsibZvm, tt2000Ar, isSwf, ...
@@ -145,8 +151,9 @@ classdef qual
       QrcbMap.add_map(ChannelSaturationQrcbMap)
       clear ChannelSaturationQrcbMap
 
+      %--------------------------------------------------------------
       % Derive GLOBAL_SATURATION QRCBs from CHANNEL_SATURATION QRCBs
-      % ------------------------------------------------------------
+      %--------------------------------------------------------------
       % NOTE: Important to do this after merging NsoTableQrcbMap and
       % ChannelSaturationQrcbMap since both may load channel saturation QRCBs
       % which can be converted.

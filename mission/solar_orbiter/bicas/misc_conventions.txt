@@ -484,6 +484,7 @@ SRF
     Name of a particular s/c coordinate system. "Spacecraft Reference Frame"?
 SRM
     Class bicas.utils.SameRowsMap.
+    NOTE: This class should be obsolete.
 SSID
     Signal Source ID. Constant representing the signal source of samples in a
     BLTS. This source may be either

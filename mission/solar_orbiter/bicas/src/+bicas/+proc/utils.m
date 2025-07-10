@@ -488,7 +488,7 @@ classdef utils
     %       bicas.utils.ZvMap.
     %
     function nRows = assert_struct_num_fields_have_same_N_rows(S)
-      % NOTE: Function name somewhat bad.
+      % NOTE: Function name is somewhat bad.
       % TODO-NI: Function only used for cases where ALL fields should have
       %          same number of rows? (Due to previous refactoring.)
       % PROBLEM: Function is an obstacle to converting variable(s) to a class.
