@@ -312,13 +312,13 @@ classdef qual
     %
     % ARGUMENTS
     % =========
-    % zv_Epoch
+    % zvTt2000Ar
     %       NOTE: Only needed for logging.
     % SamplesZvm
     %       NOTE: Handle object which is MODIFIED in-place.
     %
     function zvCurrentAAmpere = set_voltage_current_FV(...
-        zv_Epoch, SamplesZvm, zvCurrentAAmpere, zvUfv, L)
+        zvTt2000Ar, SamplesZvm, zvCurrentAAmpere, zvUfv, L)
 
       % PROPOSAL: Separate functions for ASR samples and bias currents.
       %   PRO: Clearer/simpler testing
@@ -333,7 +333,7 @@ classdef qual
       logHeaderStr = sprintf(...
         ['Interval(s) of CDF records for which data should be set', ...
         ' to fill values (i.e. removed), regardless of reason.\n']);
-      bicas.proc.L1L2.qual.log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
+      bicas.proc.L1L2.qual.log_UFV_records(zvTt2000Ar, zvUfv, logHeaderStr, L)
 
       % ====================================
       % Set CURRENT values to fill value/NaN

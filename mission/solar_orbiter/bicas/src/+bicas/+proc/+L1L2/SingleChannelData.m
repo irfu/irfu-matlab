@@ -31,16 +31,14 @@ classdef SingleChannelData
   %   metadata
   %   demultiplexing input & output
   %     CON: Might also use class for deriving saturation.
+  %   reconstructing/reconstruction
   %   --
   %   DIOC = DemultiplexingIOChannel
   %   DCIO = DemultiplexingChannelIO
-  %   CHD, CHND = ChannelData
-  %   OCD = OneChannelData
   %   SCD, SCHD = SingleChannelData -- IMPLEMENTED
   %     SCD is substring of SCDA, isCdag.
   %     CON: Too generic?
-  %   SCH = SingleChannel
-  %     SCH is substring of ischar.
+  %   DRC = DemultiplexingReconstructionChannel
   %   --
   %   NOTE: If changing name of this class, then should also change name of
   %         Cdac=bicas.proc.L1L2.ChannelDataAsrCollection.

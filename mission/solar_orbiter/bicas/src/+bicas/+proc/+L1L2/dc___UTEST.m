@@ -1,6 +1,8 @@
 %
 % matlab.unittest automatic test code for bicas.proc.L1L2.dc().
 %
+% NOTE: Most functions are not tested due to being hard to test.
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
@@ -113,7 +115,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
       isAchgFpa              = repmat(bicas.utils.FPArray(false, 'NO_FILL_POSITIONS'), [3, 1]);
       nValidSamplesPerRecord = repmat(1, [3, 1]);
 
-      expBltsVsibAr         = permute(logical([ ...
+      expBltsVsibAr          = permute(logical([ ...
         0 1 1;
         0 0 1;
         1 0 0;

@@ -292,6 +292,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.freqHz                  = zvFreqHz;
       Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
       Zv.BW                      = InSci.Zv.BW;
+      % NOTE: Blanking data when
+      % (1) LFR ZV BW says BIAS is OFF, or
+      % (2) BIAS is sweeping.
       Zv.ufv                     = ~logical(InSci.Zv.BW) | HkSciTime.isSweepingFpa.array(false);
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;
       Zv.dlrFpa                  = HkSciTime.dlrFpa;
@@ -348,8 +351,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
     function [OutSci] = process_DCOP_to_CDF(obj, SciDcip, SciDcop)
-      % NOTE: Most processing is done in function shared between LFR and
-      %       TDS.
+      % NOTE: Most processing is done in function which is shared between LFR and
+      %       TDS. This wrapper is needed to handle the difference between LFR
+      %       and TDS.
       OutSci = bicas.proc.L1L2.process_DCOP_to_CDF(...
         SciDcip, SciDcop, obj.outputDsi);
 

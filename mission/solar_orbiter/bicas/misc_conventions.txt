@@ -61,10 +61,10 @@ ASID
     (2) class bicas.proc.L1L2.AntennaSignalId.
     Compare ASR.
 ASPR
-    Allocated Samples Per Record (per channel)
-    Number of samples/elements in an array on the dimension which represents
-    samples in a snapshot (or can be size one for CWF data). This value does not
-    vary between CDF records.
+    Allocated/Array Samples Per Record (per channel)
+    Number of samples/elements in an array per CDF record and channel. This
+    includes padding to account for varying-length snapshots. Should be equal to
+    one for CWF data. This value does not vary between CDF records.
     See USPR.
 ASR, Antenna Signal Representation.
     Either of:
@@ -540,11 +540,12 @@ UFV
     overwritten with fill values. This refers to both bias currents and
     measured voltages.
 USPR
-    Used Samples Per Record (and channel)
+    Used Samples Per (CDF) Record (and channel).
     Number of samples/elements in an array which are actually intended for
-    storing sample values as opposed to additional elements which may exist as
-    padding. This includes fill values which "could have been" actual samples
-    values. This value can thus vary between CDF records.
+    storing sample values (per CDF record and channel) as opposed to additional
+    elements which may exist as padding. This includes fill values which "could
+    have been" actual samples values. This value can thus vary between CDF
+    records.
     See ASPR.
 VBMC
     Validate BICAS Master CDFs. Standalone tool.
@@ -569,8 +570,11 @@ VSTB
     NOTE: The order of words in the phrase is somewhat illogical but is formed
     to be similar/analogous to VSIB and VSQB.
 ZV
-    CDF zVariable, or MATLAB variable that is analogous to one. First dimension
-    corresponds to CDF record.
+    (1) CDF zVariable, or MATLAB variable that is analogous to one. First
+    dimension corresponds to CDF record.
+    (2) When used as a variable prefix, means that the MATLAB variable is
+    analogous to a zVariable, where the first dimension corresponds to CDF
+    record, even if no analogous zVariable exists in any CDF file.
 ZVCTI
     (L1R) ZV CALIBRATION_TABLE_INDEX, and synthetic versions thereof, e.g. for
     L1.

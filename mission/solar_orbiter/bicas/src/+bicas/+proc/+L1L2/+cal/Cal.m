@@ -72,17 +72,19 @@
 % First created 2017-02-15
 %
 classdef Cal < handle
-  % All methods 2024-09-05
-  % ----------------------
+  % All methods as of 2024-09-05
+  % ----------------------------
   % function obj = Cal(...
   % function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
   % function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
+  % --
   % function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
   %   Delegates to calibrate_voltage_*() but also handles
   %   allVoltageCalibDisabled, ufv, useGact(=false) itself.
   % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
   % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
   % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
+  % --
   % function iCalib = get_BIAS_calibration_time_index_L(obj, Epoch)
   % function iCalib = get_BIAS_calibration_time_index_H(obj, Epoch)
   % function BiasCalibData = get_BIAS_calib_data(obj, ...
@@ -92,17 +94,21 @@ classdef Cal < handle
   %
   %
   %
-  % PROPOSAL: Separate classes for different types of data. At least separate
+  % PROPOSAL: Separate subclasses for different types of data. At least separate
   %           for LFR, TDS-CWF, TDS-RSWF.
-  %   NOTE: Should then also have separate class for current calibration.
-  %   PROPOSAL: Functions
+  %   PROPOSAL: Separate class (separate from voltage calibration class
+  %             hierarchy) for bias current calibration.
+  %   PROPOSAL: Methods
   %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
   %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
   %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
-  %   should then be separate implementations of abstract superclass mathod.
+  %   should then be separate implementations of one abstract superclass mathod.
   %     PROPOSAL: Separate non-abstract superclass method (which handles
   %       allVoltageCalibDisabled, ufv, useGact(=false)) calls the subclass
   %        method.
+  %   PROPOSAL: Separate subclasses (voltage+current) for mocking in automated
+  %             tests.
+  %   PRO: Large class: 1172 rows. /2025-07-11
   %
   %
   %

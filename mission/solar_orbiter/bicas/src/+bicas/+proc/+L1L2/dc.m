@@ -310,14 +310,24 @@ classdef dc
       %   --
       %   PRO: Less code which sees subsequences, more code which only sees
       %        arrays covering entire datasets.
-      %   PRO: Can potentially have different sets subsequences for different
-      %        BLTSs.
+      %   PRO: Can potentially have different sets of groups/subsequences for
+      %        different BLTSs.
       %     Ex: ACHG, SSID
-      %   PRO: Probably simpler tests(?)
+      %     PRO: Split depending on fill value/NaN data gaps (instead of UFV).
+      %       Might be required if using different blanking for different
+      %       BLTS channels.
+      %       PRO: Can abolish UFV in bicas.proc.L1L2.Cal.
+      %   PRO: Probably simpler automated tests(?)
       %   PRO: Easier to implement/support separate calibration functions for
       %        different channels?!
       %   CON: Splits into subsequences multiple times.
       %     PRO: Potentially slower (in particular SWF).
+      %       PRO: Potentially slower wrt. finding subsequences/groups.
+      %       PRO: Potentially slower wrt. indexing (which may be what grouping
+      %            mitigates for LFR-SWF?).
+      %         CON: bltsSamplesTm is the largest array (for SWF) but it is
+      %              subdivided by BLTSs first, and again for
+      %              subsequences/groups in this scheme.
 
       arguments
         Zv.Epoch
@@ -337,7 +347,7 @@ classdef dc
       end
 
       % ASSERTIONS
-      assert(isscalar( A.hasSwfFormat))
+      assert(isscalar(A.hasSwfFormat))
       assert(isnumeric(Zv.bltsSamplesTm))
       assert(isa(Zv.bltsSsidArray, 'uint8'))
       [nRecords, aspr] = irf.assert.sizes(...
@@ -567,6 +577,7 @@ classdef dc
         assert(isa(A.samplesTm, 'double'))
       end
       irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel. CWF/SWF.
+      assert(isscalar(A.ufv))
 
 
 
@@ -625,7 +636,6 @@ classdef dc
           % CASE: CWF
           % NOTE: Scalar, since not snapshot.
           assert(isscalar(ssBltsSamplesAVoltCa))
-          % NOTE: Cell content must be column array.
           samplesAVolt = ssBltsSamplesAVoltCa{1};
         end
       end
