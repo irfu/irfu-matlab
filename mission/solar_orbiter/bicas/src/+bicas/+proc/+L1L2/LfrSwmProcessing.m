@@ -64,9 +64,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %==========================================
-      % Configure bicas.proc.L1L2.cal.Cal object
-      %==========================================
+      %==============================================
+      % Configure bicas.proc.L1L2.cal.CalImpl object
+      %==============================================
       useGactRct = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
       useZvcti2  = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
 
@@ -79,7 +79,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
         max(InputSciCdf.Zv.Epoch), ...
         L);
 
-      Cal = bicas.proc.L1L2.cal.Cal(Rctdc, useGactRct, useZvcti2, Bso);
+      Cal = bicas.proc.L1L2.cal.CalImpl(Rctdc, useGactRct, useZvcti2, Bso);
 
 
 

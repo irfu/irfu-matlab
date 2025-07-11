@@ -71,10 +71,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-15
 %
-classdef Cal < handle
+classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
   % All methods as of 2025-07-11
   % ----------------------------
-  % function obj = Cal(...
+  % function obj = CalImpl(...
   % function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
   % function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
   % --
@@ -341,10 +341,10 @@ classdef Cal < handle
     %    from the class (better modularization, better for automatic test
     %    code).
     % ** it makes it possible to inspect & modify the RCT content before
-    %    submitting it to bicas.proc.L1L2.cal.Cal
+    %    submitting it to bicas.proc.L1L2.cal.CalAbstract
     % ** it simplifies the constructor.
     %
-    function obj = Cal(Rctdc, useGactRct, useZvcti2, Bso)
+    function obj = CalImpl(Rctdc, useGactRct, useZvcti2, Bso)
 
       % ASSERTIONS: Arguments
       assert(islogical(useGactRct) & isscalar(useGactRct))
@@ -467,6 +467,7 @@ classdef Cal < handle
     % IMPORTANT NOTE: The HK bias current values are measured onboard but are
     % only meant as DIAGNOSTIC values, NOT AS THE PROPER BIAS CURRENT values
     % for nominal use. Therefore the values should only be seen as approximate.
+    % NOTE: This function is therefore not used by BICAS.
     %
     % NOTE: Walter Puccio, IRF-U 2019-09-06: Values are measured on the order
     % of once per second (and sent back as HK even more rarely). Expect errors
@@ -931,7 +932,7 @@ classdef Cal < handle
             offsetAVolt  = 0;
           elseif isnan(isAchg)
             % CASE: GAIN unknown when it is NEEDED for calibration.
-            biasItfAvpiv = bicas.proc.L1L2.cal.Cal.NAN_TF;
+            biasItfAvpiv = obj.NAN_TF;
             kFtfIvpav    = NaN;
             offsetAVolt  = NaN;
           else
@@ -981,7 +982,7 @@ classdef Cal < handle
 
         % NOTE: There is no tabulated LFR TF and no such combination
         % signal route, so the TF can not be returned even in principle.
-        lfrItfIvpt = bicas.proc.L1L2.cal.Cal.NAN_TF;
+        lfrItfIvpt = obj.NAN_TF;
       else
         LfrRctdCa = obj.Rctdc.get_RCTD_CA('LFR');
 

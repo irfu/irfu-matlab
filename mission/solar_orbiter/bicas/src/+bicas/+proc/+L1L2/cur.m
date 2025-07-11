@@ -19,9 +19,11 @@ classdef cur
 
 
     function currentAAmpere = calibrate_bias_currents(sciEpoch, InCurPd, Cal, Bso, L)
+      assert(isa(Cal, "bicas.proc.L1L2.cal.CalAbstract"))
+
       currentSAmpere = bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME(...
         sciEpoch, InCurPd, Bso, L);
-      currentTm      = bicas.proc.L1L2.cal.Cal.calibrate_current_sampere_to_TM(currentSAmpere);
+      currentTm      = Cal.calibrate_current_sampere_to_TM(currentSAmpere);
 
       currentAAmpere          = nan(size(currentSAmpere));    % Preallocate.
       iCalibLZv               = Cal.get_BIAS_calibration_time_index_L(sciEpoch);

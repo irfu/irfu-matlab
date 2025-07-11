@@ -66,9 +66,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %==========================================
-      % Configure bicas.proc.L1L2.cal.Cal object
-      %==========================================
+      %==============================================
+      % Configure bicas.proc.L1L2.cal.CalImpl object
+      %==============================================
       % NOTE: TDS L1R never uses ZVCTI2.
       if obj.inputSci.isTdsCwf
         settingUseGactRct = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
@@ -97,7 +97,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         max(InputSciCdf.Zv.Epoch), ...
         L);
 
-      Cal = bicas.proc.L1L2.cal.Cal(Rctdc, useGactRct, useZvcti2, Bso);
+      Cal = bicas.proc.L1L2.cal.CalImpl(Rctdc, useGactRct, useZvcti2, Bso);
 
 
 
