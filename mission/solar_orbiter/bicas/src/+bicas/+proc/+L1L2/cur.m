@@ -18,19 +18,24 @@ classdef cur
 
 
 
-    function currentAAmpere = calibrate_bias_currents(sciEpoch, InCurPd, Cal, Bso, L)
-      assert(isa(Cal, "bicas.proc.L1L2.cal.CalAbstract"))
+    % Calibrate currents the way the are found in CDFs.
+    %
+    function currentAAmpere = calibrate_bias_currents( ...
+        sciEpoch, InCurPd, Ccal, Bso, L)
+
+      assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
 
       currentSAmpere = bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME(...
         sciEpoch, InCurPd, Bso, L);
-      currentTm      = Cal.calibrate_current_sampere_to_TM(currentSAmpere);
+      currentTm      = Ccal.calibrate_current_sampere_to_TM(currentSAmpere);
 
-      currentAAmpere          = nan(size(currentSAmpere));    % Preallocate.
-      iCalibLZv               = Cal.get_BIAS_calibration_time_index_L(sciEpoch);
-      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibLZv);
+      currentAAmpere = nan(size(currentSAmpere));    % Preallocate.
+      iCalibL        = Ccal.get_BIAS_calibration_time_index_L(sciEpoch);
+
       L.logf('info', ...
         ['Calibrating currents -', ...
         ' One sequence of records with identical settings at a time.'])
+      [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(iCalibL);
       for iSs = 1:nSs
         iRec1    = iRec1Ar(iSs);
         iRec2    = iRec2Ar(iSs);
@@ -45,8 +50,8 @@ classdef cur
           %--------------------
           % CALIBRATE CURRENTS
           %--------------------
-          currentAAmpere(iRecords, iAnt) = Cal.calibrate_current_TM_to_aampere(...
-            currentTm(iRecords, iAnt), iAnt, iCalibLZv(iRecords));
+          currentAAmpere(iRecords, iAnt) = Ccal.calibrate_current_TM_to_aampere(...
+            currentTm(iRecords, iAnt), iAnt, iCalibL(iRecords));
         end
       end    % for
 

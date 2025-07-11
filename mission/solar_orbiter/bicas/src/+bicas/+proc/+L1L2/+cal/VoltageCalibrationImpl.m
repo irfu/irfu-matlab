@@ -1,8 +1,9 @@
 %
-% Class for functions that calibrate data.
+% Nominal implementation of superclass for calibrating voltages.
+%
 % An instance of this class contains
-%   (1) relevant settings (loaded from BSO) on how to calibrate data, and
-%   (2) calibration data.
+%   (1) relevant settings (loaded from BSO) on how to calibrate voltages, and
+%   (2) actual calibration data (from RCTs).
 % An instance may or may not contain calibration data for __ALL__ types of
 % data/RCTs depending on how it was initialized.
 %
@@ -31,7 +32,7 @@
 % (4) to detect changing RCT formats, in particular in RCTs from non-BIAS teams.
 % --
 % NOTE: All calibration functions of measured data are assumed to accept data
-% from all BLTS (1-5), i.e. including TDS, in order to reduce the number
+% from all BLTSs (1-5), i.e. including TDS, in order to reduce the number
 % assumptions that the calling code needs to make.
 %
 %
@@ -72,13 +73,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-15
 %
-classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
+classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   % All methods as of 2025-07-11
   % ----------------------------
-  % function obj = CalImpl(...
-  % function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
-  % function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
-  % --
+  % function obj = VoltageCalibrationImpl(...
   % function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
   %   Delegates to calibrate_voltage_*() but also handles
   %   allVoltageCalibDisabled, ufv, useGact(=false) itself.
@@ -92,14 +90,11 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
   % function BiasCalibData = get_BIAS_calib_data(obj, ...
   % function lfrItfIvpt    = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
   % function [CalData]     = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
-  % function biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
   %
   %
   %
   % PROPOSAL: Separate subclasses for different types of data. At least separate
   %           for LFR, TDS-CWF, TDS-RSWF.
-  %   PROPOSAL: Separate class (separate from voltage calibration class
-  %             hierarchy) for bias current calibration.
   %   PROPOSAL: Methods
   %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
   %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
@@ -109,9 +104,8 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
   %       allVoltageCalibDisabled, ufv, useGact(=false)) calls the subclass
   %        method.
   %   PROPOSAL: Separate subclass for ignoring calibration.
-  %   PROPOSAL: Separate subclasses (voltage+current) for mocking in automated
-  %             tests.
-  %   TODO-DEC: Class names?
+  %   PROPOSAL: Separate subclass for mocking in automated tests.
+  %   TODO-DEC: Class names? Abbreviations?
   %     CurrentAbstract/Impl/Test
   %     VoltageAbstract, VoltageLfr, VoltageTdsCwf, VoltageTdsRswf
   %     --
@@ -120,6 +114,11 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
   %       VoltageCalibrationLfr
   %       VoltageCalibrationTdsCwf
   %       VoltageCalibrationTdsRswf
+  %     CCAL = CurrentCalibAbstract/Impl/Test
+  %     VCAL = VoltageCalibAbstract
+  %       VoltageCalibLfr
+  %       VoltageCalibTdsCwf
+  %       VoltageCalibTdsRswf
   %   --
   %   PRO: Large class: 1172 rows. /2025-07-11
   %
@@ -141,36 +140,16 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
   %           CON: Can not test arguments sent to bicas.tf.apply_TF_freq().
   %               CON: Relies on the implementation of what is being tested.
   %       NOTE: (1) As a function/code module,
-  %                   bicas.proc.L1L2.cal.Cal encloses/contains/"secretly uses"
+  %                   bicas.proc.L1L2.cal.VoltageCalibrationImpl
+  %                   encloses/contains/"secretly uses"
   %                   bicas.tf.apply_TF_freq().
   %             (2) For testing, one wants to verify the path (both ways) between
-  %                   bicas.proc.L1L2.cal.Cal and
+  %                   bicas.proc.L1L2.cal.VoltageCalibrationImpl and
   %                   bicas.tf.apply_TF_freq().
   %             ==> One wants to test one unit of code at a time, but what a
   %                "unit" is ambiguous:
   %                 one wants small units of code
   %                 unit is ambiguous when a unit uses/call other unit(s).
-  %
-  %
-  %
-  % PROPOSAL: Move (charge) current calibration to separate class.
-  %   NOTE: Functions
-  %       calibrate_current_TM_to_aampere()
-  %           Uses BiasRctd == Uses RCT.
-  %       calibrate_current_HK_TM_to_aampere()
-  %           Uses
-  %               obj.HkBiasCurrent.gainAapt
-  %               obj.HkBiasCurrent.offsetTm
-  %       calibrate_current_sampere_to_TM()
-  %           Static
-  %           Uses solo.hwzv.const.TM_PER_SAMPERE
-  %   PRO: Class is large, ~1200 rows.
-  %   PRO: Remaining class becomes entirely about voltage calibration.
-  %   CON: Use needs to instantiate two calibration objects.
-  %   TODO-DEC: Name of new class?
-  %       ~cal_curr
-  %   PROPOSAL: Rename remaining class: Only about voltage calibration.
-  %       ~cal_volt
   %
   %
   %
@@ -281,7 +260,6 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
     % BIAS scalar (simplified) calibration, not in the RCTs. For
     % debugging/testing purposes.
     BiasScalarGain
-    HkBiasCurrent
 
 
 
@@ -360,10 +338,10 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
     %    from the class (better modularization, better for automatic test
     %    code).
     % ** it makes it possible to inspect & modify the RCT content before
-    %    submitting it to bicas.proc.L1L2.cal.CalAbstract
+    %    submitting it to bicas.proc.L1L2.cal.VoltageCalibrationAbstract
     % ** it simplifies the constructor.
     %
-    function obj = CalImpl(Rctdc, useGactRct, useZvcti2, Bso)
+    function obj = VoltageCalibrationImpl(Rctdc, useGactRct, useZvcti2, Bso)
 
       % ASSERTIONS: Arguments
       assert(islogical(useGactRct) & isscalar(useGactRct))
@@ -389,9 +367,6 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
       %   ** Potentially gives faster access to values (better
       %      performance).
       %==================================================================
-      obj.HkBiasCurrent.offsetTm         = Bso.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
-      obj.HkBiasCurrent.gainAapt         = Bso.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT');
-
       obj.BiasScalarGain.alphaIvpav      = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
       obj.BiasScalarGain.betaIvpav       = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
       obj.BiasScalarGain.gammaIvpav.achg = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
@@ -440,85 +415,6 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
       %============================
       obj.useGactRct = useGactRct;
       obj.useZvcti2  = useZvcti2;
-    end
-
-
-
-    % Convert/calibrate TC bias current: TM units --> physical units.
-    %
-    % NOTE: This is the normal way of obtaining bias current in physical
-    % units (as opposed to HK bias current).
-    %
-    % ARGUMENTS
-    % =========
-    % iCalibTimeL
-    %       Has to be same size as "biasCurrentTm".
-    %
-    function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
-        biasCurrentTm, iAntenna, iCalibTimeL)
-
-      assert(isscalar(iAntenna))
-      assert(isequaln(...
-        size(biasCurrentTm), ...
-        size(iCalibTimeL)))
-
-      %==============================
-      % Obtain calibration constants
-      %==============================
-      BiasRctdCa    = obj.Rctdc.get_RCTD_CA('BIAS');
-      offsetAAmpere = BiasRctdCa{1}.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
-      gainAapt      = BiasRctdCa{1}.Current.gainsAapt(     iCalibTimeL, iAntenna);
-
-      % CALIBRATE
-      %
-      % LINEAR FUNCTION
-      biasCurrentAAmpere = offsetAAmpere + gainAapt .* double(biasCurrentTm);
-    end
-
-
-
-    % Convert/calibrate diagnostic HK TM bias current values to physical
-    % units. Refers to BIAS HK ZVs HK_BIA_BIAS1/2/3.
-    %
-    %
-    % NOTES
-    % =====
-    % IMPORTANT NOTE: The HK bias current values are measured onboard but are
-    % only meant as DIAGNOSTIC values, NOT AS THE PROPER BIAS CURRENT values
-    % for nominal use. Therefore the values should only be seen as approximate.
-    % NOTE: This function is therefore not used by BICAS.
-    %
-    % NOTE: Walter Puccio, IRF-U 2019-09-06: Values are measured on the order
-    % of once per second (and sent back as HK even more rarely). Expect errors
-    % on the order of 5%.
-    %
-    % NOTE: The calibration data are NOT stored in the BIAS RCT.
-    %
-    % NOTE: The conversion function can be found in the BIAS specification,
-    % sections 3.4.4.{1-3} ("BIAS1" etc) under "Telemetry". (Not to be confused
-    % with the corresponding telecommands.). The conversion functions are
-    % identical for all three probes.
-    %
-    function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
-        biasCurrentTm, iAntenna)
-
-      % ASSERTION: zVar HK_BIA_BIAS1/2/3's class in BIAS HK.
-      % Not strictly required, but the variable has to be some integer.
-      assert(isa(biasCurrentTm, 'uint16'))
-
-      %=============================================================
-      % CALIBRATE
-      % ---------
-      % Unsigned integer which represents ~signed integer.
-      % ==> Intervals 0..0x7FFF and 0x8000...0xFFFF need to
-      %     "change places".
-      % ==> Need to flip bit representing sign to have one interval
-      %     0...0xFFFF with monotonic function for TM-to-calibrated
-      %     values.
-      %=============================================================
-      biasCurrentTm      = bitxor(biasCurrentTm, hex2dec('8000'));    % FLIP BIT
-      biasCurrentAAmpere = obj.HkBiasCurrent.gainAapt(iAntenna) * ...
-        (biasCurrentTm + obj.HkBiasCurrent.offsetTm(iAntenna));    % LINEAR FUNCTION
     end
 
 
@@ -1171,27 +1067,6 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
     %
     %             error('BICAS:OperationNotImplemented', 'Function not implemented Yet.')
     %         end
-
-
-
-    % Convert "set current" to TC/TM units.
-    %
-    function biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
-
-      % ASSERTION: Input values are within range.
-      % NOTE: max(...) ignores NaN, unless that is the only value, which
-      % then becomes the max value.
-      [maxAbsSAmpere, iMax] = max(abs(currentSAmpere(:)));
-      if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= solo.hwzv.const.MAX_ABS_SAMPERE))
-        error('BICAS:Assertion:IllegalArgument', ...
-          ['Argument currentSAmpere (unit: set current/ampere)', ...
-          ' contains illegally large value(s).', ...
-          ' Largest found value is %g.'], ...
-          currentSAmpere(iMax))
-      end
-
-      biasCurrentTm = currentSAmpere * solo.hwzv.const.TM_PER_SAMPERE;
-    end
 
 
 

@@ -1,6 +1,8 @@
 %
-% Abstract superclass to bicas.proc.L1L2.cal.CalImpl to facilitate mocking in
-% automated tests.
+% Abstract superclass to bicas.proc.L1L2.cal.VoltageCalibrationImpl to (at
+% least) facilitate mocking in automated tests.
+%
+% Class for functions which calibrate voltages.
 %
 % NOTE: Might not implement all abstract methods for all subclass methods which
 % actually used externally. This needs to be done if automated tests (which
@@ -9,7 +11,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef(Abstract) CalAbstract
+classdef(Abstract) VoltageCalibrationAbstract
 
 
 
@@ -26,26 +28,14 @@ classdef(Abstract) CalAbstract
         dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, ...
         zvcti, ufv)
 
+    % IMPLEMENTATION NOTE: This method technically has the same purpose as
+    % bicas.proc.L1L2.cal.CurrentCalibrationAbstract.get_BIAS_calibration_time_index_L().
+    iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
+    iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
+
 
 
   end    % methods(Access=public)
-
-
-
-  %#######################
-  %#######################
-  % PUBLIC STATIC METHODS
-  %#######################
-  %#######################
-  methods(Abstract, Static)
-
-
-
-    biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
-
-
-
-  end    % methods(Static)
 
 
 

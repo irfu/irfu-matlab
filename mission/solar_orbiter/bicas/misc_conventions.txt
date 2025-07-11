@@ -141,6 +141,8 @@ BSO
     stores the settings for BICAS as a whole.
 CA
     Cell Array. See "AR".
+CCAL
+    Class bicas.proc.L1L2.cal.CurrentCalibrationAbstract and subclasses thereof.
 CDAC
     Class bicas.proc.L1L2.ChannelDataAsrCollection.
     NOTE: This class should be obsolete.
@@ -555,8 +557,8 @@ USPR
     See ASPR.
 VBMC
     Validate BICAS Master CDFs. Standalone tool.
-WOLS
-    WithOut Leap Seconds
+VCAL
+    Class bicas.proc.L1L2.cal.VoltageCalibrationAbstract and subclasses thereof.
 VSIB
     Voltage Saturation Intermediate Bit. Internal bit used by the implementation
     when deriving VSQB. The exact meaning varies by context. The abbreviation
@@ -575,6 +577,8 @@ VSTB
     Bit which represents whether threshold saturation occurs for a given sample.
     NOTE: The order of words in the phrase is somewhat illogical but is formed
     to be similar/analogous to VSIB and VSQB.
+WOLS
+    WithOut Leap Seconds
 ZV
     (1) CDF zVariable, or MATLAB variable that is analogous to one. First
     dimension corresponds to CDF record.

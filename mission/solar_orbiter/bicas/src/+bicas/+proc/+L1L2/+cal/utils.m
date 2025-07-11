@@ -1,8 +1,6 @@
 %
-% Collection of utility functions used by bicas.proc.L1L2.cal.Cal to reduce its
-% size. Only meant to contain static methods.
-%
-% Selected functions in bicas.proc.L1L2.cal.Cal are meant to be moved here.
+% Collection of utility functions to reduce the sizes of other
+% bicas.proc.L1L2.cal files.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

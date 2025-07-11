@@ -1,6 +1,7 @@
 %
-% Functions (static methods) associated with bicas.proc.L1L2.cal.Cal finding,
-% reading, and logging RCTs so that bicas.proc.L1L2.cal.Cal does not need to.
+% Functions (static methods) associated with
+% bicas.proc.L1L2.cal.VoltageCalibrationImpl finding, reading, and logging RCTs
+% so that that class itself does not need to.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -42,16 +43,11 @@ classdef findread
 
 
     % Get an instance of RCTDC needed for a nominal instantiation of
-    % bicas.proc.L1L2.cal.Cal.
+    % bicas.proc.L1L2.cal.VoltageCalibrationImpl.
     function Rctdc = get_nominal_RCTDC(...
         useGactRct, nonBiasRcttid, rctDir, ...
         gact, zvcti, zv_BW, tt2000Begin, tt2000End, L)
       % PROPOSAL: Better name.
-      %   nominal
-      % PROPOSAL: Make function instantiate bicas.proc.L1L2.cal.Cal.
-      %   CON: Bad for testing.
-      %     CON: Testing this function is impossible anyway.
-      %   CON: Conceptually bad. Makes function "less generic".
 
       assert(islogical(useGactRct))
 

@@ -64,9 +64,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %==============================================
-      % Configure bicas.proc.L1L2.cal.CalImpl object
-      %==============================================
+      %======================
+      % Create VCAL and CCAL
+      %======================
       useGactRct = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
       useZvcti2  = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
 
@@ -78,8 +78,10 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
         min(InputSciCdf.Zv.Epoch), ...
         max(InputSciCdf.Zv.Epoch), ...
         L);
+      BiasRctdCa = Rctdc.get_RCTD_CA('BIAS');
 
-      Cal = bicas.proc.L1L2.cal.CalImpl(Rctdc, useGactRct, useZvcti2, Bso);
+      Vcal = bicas.proc.L1L2.cal.VoltageCalibrationImpl(Rctdc, useGactRct, useZvcti2, Bso);
+      Ccal = bicas.proc.L1L2.cal.CurrentCalibrationImpl(BiasRctdCa{1}, Bso);
 
 
 
@@ -89,7 +91,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf, Bso, L);
       SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd, Bso, L);
-      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
+      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Vcal, Ccal, NsoTable, Bso, L);
       OutputSciCdf = obj.process_DCOP_to_CDF(                         SciDcip, SciDcop);
 
 

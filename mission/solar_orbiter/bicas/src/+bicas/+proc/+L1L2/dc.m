@@ -56,15 +56,17 @@ classdef dc
     %       samples (e.g. DC_V12 := DC_V1 - DC_V2)
     % * Set quality variables.
     %
-    function Dcop = process_calibrate_demux(Dcip, InCurPd, Cal, NsoTable, Bso, L)
+    function Dcop = process_calibrate_demux(...
+        Dcip, InCurPd, Vcal, Ccal, NsoTable, Bso, L)
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
       % ASSERTION
-      assert(isa(Cal, "bicas.proc.L1L2.cal.CalAbstract"))
-      assert(isa(Dcip, 'bicas.proc.L1L2.DemultiplexingCalibrationInput'));
+      assert(isa(Vcal, "bicas.proc.L1L2.cal.VoltageCalibrationAbstract"))
+      assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
+      assert(isa(Dcip, "bicas.proc.L1L2.DemultiplexingCalibrationInput"));
 
-      bicas.proc.L1L2.dc.log_input_calibration_settings(Dcip, Cal, L)
+      bicas.proc.L1L2.dc.log_input_calibration_settings(Dcip, Vcal, L)
 
 
 
@@ -72,7 +74,7 @@ classdef dc
       % Calibrate bias CURRENTS
       %#########################
       currentAAmpere = bicas.proc.L1L2.cur.calibrate_bias_currents(...
-        Dcip.Zv.Epoch, InCurPd, Cal, Bso, L);
+        Dcip.Zv.Epoch, InCurPd, Ccal, Bso, L);
 
 
 
@@ -103,7 +105,7 @@ classdef dc
         isLfr        = Dcip.isLfr, ...
         hasSwfFormat = Dcip.hasSwfFormat, ...
         uspr         = Dcip.Zv.uspr, ...
-        Cal          = Cal, ...
+        Vcal         = Vcal, ...
         L            = L);
 
 
@@ -218,7 +220,7 @@ classdef dc
 
 
 
-    function log_input_calibration_settings(Dcip, Cal, L)
+    function log_input_calibration_settings(Dcip, Vcal, L)
       % IMPLEMENTATION NOTE: Implemented separately from processing functions
       % since:
       % (1) removes dependence on logger object,
@@ -228,8 +230,8 @@ classdef dc
       %     be, and
       % (4) can potentially turn table into proper table with column headers.
 
-      iCalibL = Cal.get_BIAS_calibration_time_index_L(Dcip.Zv.Epoch);
-      iCalibH = Cal.get_BIAS_calibration_time_index_H(Dcip.Zv.Epoch);
+      iCalibL = Vcal.get_BIAS_calibration_time_index_L(Dcip.Zv.Epoch);
+      iCalibH = Vcal.get_BIAS_calibration_time_index_H(Dcip.Zv.Epoch);
 
       % IMPLEMENTATION NOTE: Do not log for LFR SWF since it produces
       % unnecessarily many log messages since sampling frequencies change
@@ -318,7 +320,7 @@ classdef dc
       %     PRO: Split depending on fill value/NaN data gaps (instead of UFV).
       %       Might be required if using different blanking for different
       %       BLTS channels.
-      %       PRO: Can abolish UFV in bicas.proc.L1L2.Cal.
+      %       PRO: Can abolish UFV in bicas.proc.L1L2.cal.VoltageCalibrationImpl.
       %   PRO: Probably simpler automated tests(?)
       %   PRO: Easier to implement/support separate calibration functions for
       %        different channels?!
@@ -333,7 +335,7 @@ classdef dc
 
       arguments
         % Variables which DO NOT VARY over CDF records at all.
-        Cv.Cal
+        Cv.Vcal
         Cv.L
         Cv.hasSwfFormat
         Cv.isTdsCwf
@@ -351,7 +353,7 @@ classdef dc
       end
 
       % ASSERTIONS
-      assert(isa(Cv.Cal, "bicas.proc.L1L2.cal.CalAbstract"))
+      assert(isa(Cv.Vcal, "bicas.proc.L1L2.cal.VoltageCalibrationAbstract"))
       assert(isscalar(Cv.hasSwfFormat))
       assert(isnumeric(Zv.samplesTm))
       assert(isa(Zv.ssid, 'uint8'))
@@ -380,7 +382,7 @@ classdef dc
         bltsSamplesAVolt2 = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
           ... % ===============================================================
           ... % Variables which DO NOT VARY over CDF records at all.
-          Cal          = Cv.Cal, ...
+          Vcal         = Cv.Vcal, ...
           L            = Cv.L, ...
           iBlts        = iBlts, ...
           hasSwfFormat = Cv.hasSwfFormat, ...
@@ -425,7 +427,7 @@ classdef dc
         %       handle sequences of only NaN.
         %
         % Variables which DO NOT VARY over CDF records at all.
-        Cv.Cal
+        Cv.Vcal
         Cv.L
         Cv.iBlts
         Cv.hasSwfFormat
@@ -450,8 +452,8 @@ classdef dc
 
 
 
-      iCalibL = Cv.Cal.get_BIAS_calibration_time_index_L(Zv.tt2000);
-      iCalibH = Cv.Cal.get_BIAS_calibration_time_index_H(Zv.tt2000);
+      iCalibL = Cv.Vcal.get_BIAS_calibration_time_index_L(Zv.tt2000);
+      iCalibH = Cv.Vcal.get_BIAS_calibration_time_index_H(Zv.tt2000);
 
       %==================================================================
       % (1) Find groups/subsequences of records with identical settings.
@@ -508,7 +510,7 @@ classdef dc
         samplesAVolt(iGroupAr, :) = bicas.proc.L1L2.dc.calibrate_1xBLTS_subsequence(...
           ... % ===============================================================
           ... % Variables which DO NOT VARY over CDF records at all.
-          Cal          = Cv.Cal, ...
+          Vcal         = Cv.Vcal, ...
           iBlts        = Cv.iBlts, ...
           hasSwfFormat = Cv.hasSwfFormat, ...
           isLfr        = Cv.isLfr, ...
@@ -538,7 +540,7 @@ classdef dc
     % Calibrate one BLTS channel.
     function samplesAVolt = calibrate_1xBLTS_subsequence(Cv, Zv)
       arguments
-        Cv.Cal
+        Cv.Vcal
         Cv.iBlts
         Cv.ssid
         Cv.hasSwfFormat
@@ -573,7 +575,7 @@ classdef dc
       % processing is unintended and should probably ideally be
       % eliminated. Can use integers or bicas.utils.FPArray?
       % NOTE: Storing TM units with floats!
-      assert(isa(Cv.Cal, "bicas.proc.L1L2.cal.CalAbstract"))
+      assert(isa(Cv.Vcal, "bicas.proc.L1L2.cal.VoltageCalibrationAbstract"))
       if Cv.isLfr
         assert(isa(Zv.samplesTm, 'single'))
       else
@@ -645,7 +647,7 @@ classdef dc
           Cv.iBlts, Cv.ssid, Cv.isAchgFpa.logical2doubleNan(), ...
           Cv.iCalibL, Cv.iCalibH, Cv.iLsf);
         %#######################################################
-        samplesAVoltCa = Cv.Cal.calibrate_voltage_all(...
+        samplesAVoltCa = Cv.Vcal.calibrate_voltage_all(...
           dtSec, samplesTmCa, ...
           Cv.isLfr, Cv.isTdsCwf, CalSettings, ...
           Cv.zvcti, Cv.ufv);

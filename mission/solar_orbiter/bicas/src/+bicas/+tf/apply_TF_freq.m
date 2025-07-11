@@ -257,8 +257,8 @@ tfZLookups(bNegativeFreq) = conj(tfZLookups(bNegativeFreq));   % Modify some ind
 %if ~all(isfinite(tfZLookups) | isnan(tfZLookups))
 if ~all(~isinf(tfZLookups))
   % NOTE: Deliberately permits Z=NaN (but not infinity) since
-  % bicas.proc.L1L2.cal.Cal is designed to create TFs that return Z=NaN for
-  % impossible combinations where it does not matter anyway.
+  % bicas.proc.L1L2.cal.VoltageCalibrationImpl is designed to create TFs that
+  % return Z=NaN for impossible combinations where it does not matter anyway.
   % /EJ 2020-11-05
   error(...
     'BICAS:Assertion', ...

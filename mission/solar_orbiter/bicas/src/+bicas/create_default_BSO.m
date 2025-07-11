@@ -656,8 +656,9 @@ S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)
 % Whether to disable LFR/TDS transfer functions (but still potentially use
 % the BIAS transfer functions). This effectively means that TM voltage
 % corresponds to interface volt.
-% NOTE: This useful for separately using bicas.proc.L1L2.cal.Cal for analyzing
-% BIAS standalone calibration tables (BSACT).
+% NOTE: This useful for using bicas.proc.L1L2.cal.VoltageCalibrationImpl
+% separately from BICAS for (e.g. manually) analyzing BIAS standalone
+% calibration tables (BSACT).
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED', false);
 
 
