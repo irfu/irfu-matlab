@@ -90,20 +90,20 @@ classdef dc
       %##################################################################
       % NOTE: Takes most of the time LFR-SWF.
       bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(...
-        Epoch                   = Dcip.Zv.Epoch, ...
-        bltsSamplesTm           = Dcip.Zv.bltsSamplesTm, ...
-        isAchgFpa               = Dcip.Zv.isAchgFpa, ...
-        CALIBRATION_TABLE_INDEX = Dcip.Zv.CALIBRATION_TABLE_INDEX, ...
-        freqHz                  = Dcip.Zv.freqHz, ...
-        iLsf                    = Dcip.Zv.iLsf, ...
-        ufv                     = Dcip.Zv.ufv, ...
-        bltsSsidArray           = bltsSsidArray, ...
-        isTdsCwf                = Dcip.isTdsCwf, ...
-        isLfr                   = Dcip.isLfr, ...
-        hasSwfFormat            = Dcip.hasSwfFormat, ...
-        uspr                    = Dcip.Zv.uspr, ...
-        Cal                     = Cal, ...
-        L                       = L);
+        tt2000       = Dcip.Zv.Epoch, ...
+        samplesTm    = Dcip.Zv.bltsSamplesTm, ...
+        isAchgFpa    = Dcip.Zv.isAchgFpa, ...
+        zvcti        = Dcip.Zv.CALIBRATION_TABLE_INDEX, ...
+        freqHz       = Dcip.Zv.freqHz, ...
+        iLsf         = Dcip.Zv.iLsf, ...
+        ufv          = Dcip.Zv.ufv, ...
+        ssid         = bltsSsidArray, ...
+        isTdsCwf     = Dcip.isTdsCwf, ...
+        isLfr        = Dcip.isLfr, ...
+        hasSwfFormat = Dcip.hasSwfFormat, ...
+        uspr         = Dcip.Zv.uspr, ...
+        Cal          = Cal, ...
+        L            = L);
 
 
 
@@ -292,16 +292,17 @@ classdef dc
     %
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %
-    function bltsSamplesAVolt = calibrate_voltages_5xBLTS(Zv, A)
+    function samplesAVolt = calibrate_voltages_5xBLTS(Cv, Zv)
       % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
       %           for CWF.
       %
-      % PROPOSAL: Reorg.
+      % PROPOSAL: Reorg. -- IMPLEMENTED
       %   FROM
       %     (1) Iterate over subsequences for all channels.
       %         (bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(); this function)
       %     (2) Iterate over BLTSs (for the same subsequence).
-      %         (bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS_subsequence(); sub-function)
+      %         (bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS();
+      %         subfunction)
       %     (3) Calibrate one BLTS for one subsequence.
       %   TO
       %     (1) Iterate over BLTSs (for all subsequences).
@@ -325,35 +326,44 @@ classdef dc
       %       PRO: Potentially slower wrt. finding subsequences/groups.
       %       PRO: Potentially slower wrt. indexing (which may be what grouping
       %            mitigates for LFR-SWF?).
-      %         CON: bltsSamplesTm is the largest array (for SWF) but it is
+      %         CON: samplesTm is the largest array (for SWF) but it is
       %              subdivided by BLTSs first, and again for
       %              subsequences/groups in this scheme.
+      %
+      % PROPOSAL: Derive iCalibL, iCalibH in subfunction.
+      %           calibrate_voltages_1xBLTS() or
+      %   NOTE: Requires Epoch.
+      %   PRO: Fewer arguments.
+      %   CON: One execution is replaced by one execution per BLTS.
+      %     CON: Likely insignificant.
 
       arguments
-        Zv.Epoch
-        Zv.bltsSamplesTm
-        Zv.isAchgFpa
-        Zv.CALIBRATION_TABLE_INDEX
-        Zv.freqHz
-        Zv.iLsf
-        Zv.ufv
-        Zv.bltsSsidArray
+        % Variables which DO NOT VARY over CDF records at all.
+        Cv.Cal
+        Cv.L
+        Cv.hasSwfFormat
+        Cv.isTdsCwf
+        Cv.isLfr
+        % Variables which VARY over CDF records.
+        Zv.tt2000
+        Zv.samplesTm
+        Zv.ssid
         Zv.uspr
-        A.isTdsCwf
-        A.isLfr
-        A.hasSwfFormat
-        A.Cal
-        A.L
+        Zv.freqHz
+        Zv.isAchgFpa
+        Zv.iLsf
+        Zv.zvcti
+        Zv.ufv
       end
 
       % ASSERTIONS
-      assert(isscalar(A.hasSwfFormat))
-      assert(isnumeric(Zv.bltsSamplesTm))
-      assert(isa(Zv.bltsSsidArray, 'uint8'))
+      assert(isscalar(Cv.hasSwfFormat))
+      assert(isnumeric(Zv.samplesTm))
+      assert(isa(Zv.ssid, 'uint8'))
       [nRecords, aspr] = irf.assert.sizes(...
-        Zv.isAchgFpa,     [-1], ...
-        Zv.bltsSsidArray, [-1,     bicas.const.N_BLTS], ...
-        Zv.bltsSamplesTm, [-1, -2, bicas.const.N_BLTS]);
+        Zv.isAchgFpa, [-1], ...
+        Zv.ssid,      [-1,     bicas.const.N_BLTS], ...
+        Zv.samplesTm, [-1, -2, bicas.const.N_BLTS]);
 
 
 
@@ -361,90 +371,47 @@ classdef dc
       % ---------------------------------------------------------------
       % IMPLEMENTATION NOTE: Preallocation is very important for speeding
       % up LFR-SWF which tends to be broken into subsequences of 1 record.
-      bltsSamplesAVolt = nan(nRecords, aspr, bicas.const.N_BLTS);
+      samplesAVolt = nan(nRecords, aspr, bicas.const.N_BLTS);
 
-      iCalibLZv = A.Cal.get_BIAS_calibration_time_index_L(Zv.Epoch);
-      iCalibHZv = A.Cal.get_BIAS_calibration_time_index_H(Zv.Epoch);
+      iCalibL = Cv.Cal.get_BIAS_calibration_time_index_L(Zv.tt2000);
+      iCalibH = Cv.Cal.get_BIAS_calibration_time_index_H(Zv.tt2000);
 
 
-
-      %==================================================================
-      % (1) Find groups/subsequences of records with identical settings.
-      % (2) Process data separately for each such sequence.
-      % ----------------------------------------------------------------
-      % SS = Subsequence
-      %==================================================================
-      Tmk = bicas.utils.Timekeeper(...
-        'bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:irf.utils.split_by_change', A.L);
-      settingsCa = {...
-        Zv.isAchgFpa.logical2doubleNan(), ...
-        Zv.freqHz, ...
-        Zv.iLsf, ...
-        Zv.CALIBRATION_TABLE_INDEX, ...
-        Zv.ufv, ...
-        Zv.bltsSsidArray, ...
-        iCalibLZv, ...
-        iCalibHZv};
-      if A.hasSwfFormat
-        % IMPLEMENTATION NOTE: SWF data is calibrated in a way where consecutive
-        % records (snapshots) do NOT affect each other. One can therefore group
-        % CDF records in groups of non-consecutive CDF records. This is
-        % important for LFR-SWF data which tends to change calibration-relevant
-        % settings with every new CDF record and which then becomes a
-        % performance problem. Grouping non-consecutive CDF records for LFR-SWF
-        % data makes a significant speedup!!!
-        % Ex:
-        %     solo_L1R_rpw-lfr-surv-swf-e-cdag_20200213_V10.cdf for the relevant
-        %     code section: ~29 s --> ~4 s (843 CDF records)
-        iGroupArCa = bicas.utils.group_unique_rows(settingsCa{:});
-      else
-        % IMPLEMENTATION NOTE: CWF data is calibrated in a way where consecutive
-        % records affect each other. Must therefore divide CDF records in groups
-        % (subsequences) of continuous CDF records.
-        iGroupArCa = bicas.utils.group_by_change(settingsCa{:});
-      end
-      nGroups = numel(iGroupArCa);
-      Tmk.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
 
       %===========
       % Calibrate
       %===========
       Tmk = bicas.utils.Timekeeper(...
-        'bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:Calibrating voltages', A.L);
-      for iGroup = 1:nGroups
-        iGroupAr = iGroupArCa{iGroup};
-        iRec1    = iGroupAr(1);
+        'bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:Calibrating voltages', Cv.L);
+      for iBlts = 1:bicas.const.N_BLTS
 
-        ssBltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS_subsequence( ...
-          Cal           = A.Cal, ...
+        bltsSamplesAVolt2 = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
           ... % ===============================================================
-          ... % Variables which do VARY over CDF records, but not over
-          ... % the subsequence/group.
-          isAchgFpa     = Zv.isAchgFpa(              iRec1), ...
-          freqHz        = Zv.freqHz(                 iRec1), ...
-          iLsf          = Zv.iLsf(                   iRec1), ...
-          zvcti         = Zv.CALIBRATION_TABLE_INDEX(iRec1, :), ...
-          ufv           = Zv.ufv(                    iRec1), ...
-          bltsSsidArray = Zv.bltsSsidArray(          iRec1, :), ...
-          iCalibL       = iCalibLZv(                 iRec1), ...
-          iCalibH       = iCalibHZv(                 iRec1), ...
+          ... % Variables which DO NOT VARY over CDF records at all.
+          Cal          = Cv.Cal, ...
+          L            = Cv.L, ...
+          iBlts        = iBlts, ...
+          hasSwfFormat = Cv.hasSwfFormat, ...
+          isLfr        = Cv.isLfr, ...
+          isTdsCwf     = Cv.isTdsCwf, ...
           ... % ===============================================================
-          ... % Variables which do not vary over CDF records ("constants").
-          hasSwfFormat  = A.hasSwfFormat, ...
-          isLfr         = A.isLfr, ...
-          isTdsCwf      = A.isTdsCwf, ...
-          aspr          = aspr, ...
-          ... % ===============================================================
-          ... % Variables which vary by CDF records, and which vary over
-          ....% the subsequence/group.
-          Epoch         = Zv.Epoch(                 iGroupAr), ...
-          bltsSamplesTm = Zv.bltsSamplesTm(         iGroupAr, :, :), ...
-          uspr          = Zv.uspr(iGroupAr));
+          ... % Variables which VARY over CDF records.
+          tt2000       = Zv.tt2000, ...
+          ufv          = Zv.ufv, ...
+          ssid         = Zv.ssid(     :,    iBlts), ...
+          samplesTm    = Zv.samplesTm(:, :, iBlts), ...
+          uspr         = Zv.uspr, ...
+          freqHz       = Zv.freqHz, ...
+          iLsf         = Zv.iLsf, ...
+          isAchgFpa    = Zv.isAchgFpa, ...
+          zvcti        = Zv.zvcti, ...
+          iCalibL      = iCalibL, ...
+          iCalibH      = iCalibH);
 
         % Add subsequence/group signals to the global array (all records).
-        bltsSamplesAVolt(iGroupAr, :, :) = ssBltsSamplesAVolt;
+        samplesAVolt(:, :, iBlts) = bltsSamplesAVolt2;
       end    % for
-      Tmk.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
+      Tmk.stop_log(nRecords, 'record')
 
     end    % calibrate_voltages_5xBLTS
 
@@ -460,98 +427,137 @@ classdef dc
     % Vv
     %       Varying values. Struct with values which DO VARY by CDF record.
     %
-    function ssBltsSamplesAVolt = calibrate_voltages_5xBLTS_subsequence(A, Cv, Vv)
+    function samplesAVolt = calibrate_voltages_1xBLTS(Cv, Zv)
       arguments
-        A.Cal
         %
         % NOTE: Excluding LRX since it is only needed for splitting time/CDF
         %       record intervals, not for calibration since calibration can
         %       handle sequences of only NaN.
-        Cv.isAchgFpa
-        Cv.freqHz
-        Cv.iLsf
-        Cv.zvcti
-        Cv.ufv
-        Cv.bltsSsidArray
-        Cv.iCalibL
-        Cv.iCalibH
-        % Below variables do not vary over CDF records at all.
-        Cv.aspr
+        %
+        % Variables which DO NOT VARY over CDF records at all.
+        Cv.Cal
+        Cv.L
+        Cv.iBlts
         Cv.hasSwfFormat
         Cv.isLfr
         Cv.isTdsCwf
-        % Below variables vary over CDF records in subsequence.
-        Vv.Epoch
-        Vv.bltsSamplesTm
-        Vv.uspr
+        % Variables which VARY over CDF records.
+        Zv.tt2000
+        Zv.ufv
+        Zv.ssid
+        Zv.samplesTm
+        Zv.uspr
+        Zv.freqHz
+        Zv.iLsf
+        Zv.isAchgFpa
+        Zv.zvcti
+        Zv.iCalibL
+        Zv.iCalibH
       end
-      irf.assert.sizes( ...
-        Cv.bltsSsidArray, [ 1,          bicas.const.N_BLTS], ...
-        Vv.Epoch,         [-1], ...
-        Vv.bltsSamplesTm, [-1, Cv.aspr, bicas.const.N_BLTS], ...
-        Vv.uspr,          [-1])
+      [nRecords, aspr] = irf.assert.sizes( ...
+        Zv.ssid,      [-1,     1], ...
+        Zv.tt2000,    [-1], ...
+        Zv.samplesTm, [-1, -2, 1], ...
+        Zv.uspr,      [-1]);
 
-      nRows = numel(Vv.Epoch);
 
+
+      %==================================================================
+      % (1) Find groups/subsequences of records with identical settings.
+      % (2) Process data separately for each such sequence.
+      % ----------------------------------------------------------------
+      % SS = Subsequence
+      %==================================================================
+      Tmk = bicas.utils.Timekeeper(...
+        'bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS:grouping algo.', Cv.L);
+      settingsCa = {...
+        Zv.isAchgFpa.logical2doubleNan(), ...
+        Zv.freqHz, ...
+        Zv.iLsf, ...
+        Zv.zvcti, ...
+        Zv.ufv, ...
+        Zv.ssid, ...
+        Zv.iCalibL, ...
+        Zv.iCalibH};
       if Cv.hasSwfFormat
-        % CASE: SWF
-        % NOTE: Column vector of (identical) numbers (one per snapshot, which
-        %       will all be processed separately).
-        dtSec = ones(nRows, 1) / Cv.freqHz;
+        % IMPLEMENTATION NOTE: SWF data is calibrated in a way where consecutive
+        % records (snapshots) do NOT affect each other. One can therefore group
+        % SWF CDF records in groups of non-consecutive CDF records. This is
+        % important for LFR-SWF data which tends to change calibration-relevant
+        % settings with every new CDF record and which then becomes a
+        % performance problem. Grouping non-consecutive CDF records for LFR-SWF
+        % data leads to a significant speedup!!!
+        % Ex:
+        %     solo_L1R_rpw-lfr-surv-swf-e-cdag_20200213_V10.cdf for the relevant
+        %     code section: ~29 s --> ~4 s (843 CDF records)
+        iGroupArCa = bicas.utils.group_unique_rows(settingsCa{:});
       else
-        % CASE: CWF
-        % NOTE: Scalar (since all data will be processed in one session).
-        % BUG RISK: Has the possibility of data gaps been excluded at this point
-        % in the code, since the calculation seems to rely on it?
-        dtSec = double( Vv.Epoch(end) - Vv.Epoch(1) ) / (nRows-1) * 1e-9;
+        % IMPLEMENTATION NOTE: CWF data is calibrated in a way where consecutive
+        % records affect each other. Must therefore divide CDF records in groups
+        % (subsequences) of continuous CDF records.
+        iGroupArCa = bicas.utils.group_by_change(settingsCa{:});
       end
+      nGroups = numel(iGroupArCa);
+      Tmk.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
 
       %====================
       % CALIBRATE VOLTAGES
       %====================
-      ssBltsSamplesAVolt = nan(nRows, Cv.aspr, bicas.const.N_BLTS);
-      for iBlts = 1:bicas.const.N_BLTS
-        ssBltsSamplesAVolt(:, :, iBlts) = bicas.proc.L1L2.dc.calibrate_1xBLTS_subsequence(...
-          ... % Below variables vary within the subsequence.
-          samplesTm    = Vv.bltsSamplesTm(:, :, iBlts), ...
-          uspr         = Vv.uspr, ...
-          ... % Below variables DO NOT vary within the subsequence (almost).
-          ssid         = Cv.bltsSsidArray(iBlts), ...
-          iBlts        = iBlts, ...
+      samplesAVolt = nan(nRecords, aspr);
+
+      for iGroup = 1:nGroups
+        iGroupAr = iGroupArCa{iGroup};
+        iRec1    = iGroupAr(1);
+
+        samplesAVolt(iGroupAr, :) = bicas.proc.L1L2.dc.calibrate_1xBLTS_subsequence(...
+          ... % ===============================================================
+          ... % Variables which DO NOT VARY over CDF records at all.
+          Cal          = Cv.Cal, ...
+          iBlts        = Cv.iBlts, ...
           hasSwfFormat = Cv.hasSwfFormat, ...
-          isAchg       = Cv.isAchgFpa.logical2doubleNan(), ...
-          iCalibL      = Cv.iCalibL, ...
-          iCalibH      = Cv.iCalibH, ...
-          iLsf         = Cv.iLsf, ...
-          dtSec        = dtSec, ...
           isLfr        = Cv.isLfr, ...
           isTdsCwf     = Cv.isTdsCwf, ...
-          zvcti        = Cv.zvcti, ...
-          ufv          = Cv.ufv, ...
-          Cal          = A.Cal);
+          ... % ===============================================================
+          ... % Variables which DO NOT VARY over the subsequence/group.
+          ssid         = Zv.ssid(     iRec1), ...
+          freqHz       = Zv.freqHz(   iRec1), ...
+          isAchgFpa    = Zv.isAchgFpa(iRec1), ...
+          iLsf         = Zv.iLsf(     iRec1), ...
+          zvcti        = Zv.zvcti(    iRec1, :), ...
+          iCalibL      = Zv.iCalibL(  iRec1), ...
+          iCalibH      = Zv.iCalibH(  iRec1), ...
+          ufv          = Zv.ufv(      iRec1), ...
+          ... % ===============================================================
+          ... % Variables which VARY within the subsequence/group.
+          tt2000       = Zv.tt2000(   iGroupAr), ...
+          samplesTm    = Zv.samplesTm(iGroupAr, :), ...
+          uspr         = Zv.uspr(     iGroupAr) ...
+          ...
+          );
       end
-    end    % calibrate_voltages_5xBLTS_subsequence
+    end    % calibrate_voltages_1xBLTS
 
 
 
     % Calibrate one BLTS channel.
-    function samplesAVolt = calibrate_1xBLTS_subsequence(A)
+    function samplesAVolt = calibrate_1xBLTS_subsequence(Cv, Zv)
       arguments
-        A.ssid
-        A.samplesTm
-        A.iBlts
-        A.hasSwfFormat
-        A.uspr
-        A.isAchg
-        A.iCalibL
-        A.iCalibH
-        A.iLsf
-        A.dtSec
-        A.isLfr
-        A.isTdsCwf
-        A.zvcti
-        A.ufv
-        A.Cal
+        Cv.Cal
+        Cv.iBlts
+        Cv.ssid
+        Cv.hasSwfFormat
+        Cv.isAchgFpa
+        Cv.iCalibL
+        Cv.iCalibH
+        Cv.freqHz
+        Cv.iLsf
+        Cv.isLfr
+        Cv.isTdsCwf
+        Cv.zvcti
+        Cv.ufv
+        Zv.tt2000
+        Zv.samplesTm
+        Zv.uspr
       end
       % IMPLEMENTATION NOTE: It is ugly to have this many parameters (15!),
       % but the original code made calibrate_voltages_5xBLTS() to large and
@@ -571,37 +577,58 @@ classdef dc
       % processing is unintended and should probably ideally be
       % eliminated. Can use integers or bicas.utils.FPArray?
       % NOTE: Storing TM units with floats!
-      if A.isLfr
-        assert(isa(A.samplesTm, 'single'))
+      if Cv.isLfr
+        assert(isa(Zv.samplesTm, 'single'))
       else
-        assert(isa(A.samplesTm, 'double'))
+        assert(isa(Zv.samplesTm, 'double'))
       end
-      irf.assert.sizes(A.samplesTm, [-1, -2])   % One BLTS channel. CWF/SWF.
-      assert(isscalar(A.ufv))
+      [nRecords, aspr] = irf.assert.sizes(Zv.samplesTm, [-1, -2, 1]);
+      assert(isscalar(Cv.ufv))
+      assert(isscalar(Cv.freqHz))
+      assert(isscalar(Cv.iLsf))
 
 
 
-      if isequaln(A.ssid, bicas.proc.L1L2.const.C.SSID_DICT("UNKNOWN"))
+      % Derive dtSec
+      % ------------
+      % NOTE: Different number of rows depending on CWF/SWF! One element per
+      %       cell element in samplesTmCa.
+      if Cv.hasSwfFormat
+        % CASE: SWF
+        % NOTE: Column vector of (identical) numbers (one per snapshot, which
+        %       will all be processed separately).
+        dtSec = ones(nRecords, 1) ./ Cv.freqHz;
+      else
+        % CASE: CWF
+        % NOTE: Scalar (since all data will be processed in one session).
+        % BUG RISK: Has the possibility of data gaps been excluded at this point
+        % in the code, since the calculation seems to rely on it?
+        dtSec = double( Zv.tt2000(end) - Zv.tt2000(1) ) / (nRecords-1) * 1e-9;
+      end
+
+
+
+      if isequaln(Cv.ssid, bicas.proc.L1L2.const.C.SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
-        samplesAVolt = nan(size(A.samplesTm));
+        samplesAVolt = nan(size(Zv.samplesTm));
 
       elseif ismember(...
-          A.ssid, bicas.proc.L1L2.const.C.SSID_DICT(["GND", "REF25V"]))
+          Cv.ssid, bicas.proc.L1L2.const.C.SSID_DICT(["GND", "REF25V"]))
         % ==> No calibration.
         % NOTE: samplesTm stores TM units using float!
-        samplesAVolt = A.samplesTm;
+        samplesAVolt = Zv.samplesTm;
 
       else
-        assert(bicas.proc.L1L2.const.SSID_is_ASR(A.ssid))
+        assert(bicas.proc.L1L2.const.SSID_is_ASR(Cv.ssid))
         % ==> Calibrate (unless explicitly stated that should not)
 
-        if A.hasSwfFormat
-          bltsSamplesTmCa = ...
+        if Cv.hasSwfFormat
+          samplesTmCa = ...
             bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
-            double(A.samplesTm), A.uspr);
+            double(Zv.samplesTm), Zv.uspr);
         else
-          assert(all(A.uspr == 1))
-          bltsSamplesTmCa = {double(A.samplesTm)};
+          assert(all(Zv.uspr == 1))
+          samplesTmCa = {double(Zv.samplesTm)};
         end
 
         %######################
@@ -618,25 +645,27 @@ classdef dc
         % This incidentally also potentially speeds up the code.
         % Ex: LFR SWF 2020-02-25, 2020-02-28.
         CalSettings = bicas.proc.L1L2.CalibrationSettings(...
-          A.iBlts, A.ssid, A.isAchg, A.iCalibL, A.iCalibH, A.iLsf);
+          Cv.iBlts, Cv.ssid, Cv.isAchgFpa.logical2doubleNan(), ...
+          Cv.iCalibL, Cv.iCalibH, Cv.iLsf);
         %#######################################################
-        ssBltsSamplesAVoltCa = A.Cal.calibrate_voltage_all(...
-          A.dtSec, bltsSamplesTmCa, ...
-          A.isLfr, A.isTdsCwf, CalSettings, ...
-          A.zvcti, A.ufv);
+        samplesAVoltCa = Cv.Cal.calibrate_voltage_all(...
+          dtSec, samplesTmCa, ...
+          Cv.isLfr, Cv.isTdsCwf, CalSettings, ...
+          Cv.zvcti, Cv.ufv);
         %#######################################################
 
-        if A.hasSwfFormat
+        if Cv.hasSwfFormat
           % CASE: SWF
           [samplesAVolt, ~] = ...
             bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
-            ssBltsSamplesAVoltCa, ...
-            size(A.samplesTm, 2));
+            samplesAVoltCa, aspr...
+            );
         else
           % CASE: CWF
           % NOTE: Scalar, since not snapshot.
-          assert(isscalar(ssBltsSamplesAVoltCa))
-          samplesAVolt = ssBltsSamplesAVoltCa{1};
+          assert(isscalar(samplesAVoltCa))
+
+          samplesAVolt = samplesAVoltCa{1};
         end
       end
     end    % calibrate_1xBLTS_subsequence
