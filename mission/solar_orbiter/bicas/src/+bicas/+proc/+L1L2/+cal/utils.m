@@ -452,7 +452,8 @@ classdef utils
 
 
 
-    % Utility function for creating string representing 1D vector.
+    % Utility function for creating a human-readable string representing a 1D
+    % vector.
     % Ex: '(3.1416, 2.7183, 1.6180)'
     function s = vector_string(pattern, v)
       assert(~isempty(v))

@@ -18,7 +18,7 @@ classdef cur
 
 
 
-    % Calibrate currents the way the are found in CDFs.
+    % Calibrate currents on the format they are found in CDFs.
     %
     function currentAAmpere = calibrate_bias_currents( ...
         sciEpoch, InCurPd, Ccal, Bso, L)

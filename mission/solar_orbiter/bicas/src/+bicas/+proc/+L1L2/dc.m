@@ -30,11 +30,12 @@ classdef dc
   %   * Consist of more isolated/modular/generic separate steps.
   %   * Be more easily testable.
   %   * Be easier to understand.
-  %   * Not require splitting up in subsequences with constant "settings" (values
-  %     for specific zVariables not varying as a function of CDF record), in
-  %     particular not require many constant "settings".
+  %   * Not require (as much) splitting up CDF records into subsequences with
+  %     constant "settings" (values for specific zVariables not varying as
+  %     a function of CDF record), in particular not require many constant
+  %     "settings".
   %   * Use more vector operations.
-  %   * More natural to implement.
+  %   * Be more natural to implement.
 
 
 
@@ -718,42 +719,24 @@ classdef dc
     %
     % RETURN VALUE
     % ============
-    % bltsVsibAr
+    % vsibAr
     %       N x 5. SWF: Set if at least one bit is set for any sample within
     %       a snapshot.
     %
-    function bltsVsibAr = get_VSIB_5xBLTS_NEW(...
-        bltsSamplesAVoltAr, hasSwfFormat, uspr, bltsSsidAr, isAchgFpa, Bso, L)
+    function vsibAr = get_VSIB_5xBLTS_NEW(...
+        samplesAVoltAr, hasSwfFormat, uspr, ssidAr, isAchgFpa, Bso, L)
       % PROPOSAL: SatSettings as argument.
       %   PRO: Simpler test code.
-      % PROPOSAL: Replace bltsSamplesAVoltAr --> 5x SCHD
-      %   PRO: Simpler handling of dimensions.
-      %   PRO: Less risk of memory problems if iterates manually over BLTSs.
-      %   PRO: SCHD could be modified to store USPR and
-      %        handle padded snapshots explicitly.
-      %   CON: SCHD contains 1 VSIB/record. This function is intended for
-      %        setting that VSIB array.
-      %   CON-PROPOSAL: Custom class representing jagged array (jagged in one
-      %                 dimension, dim.=2 for BICAS) for any generic MATLAB
-      %                 class.
-      %     PRO: SCHD could use it in its implementation.
-      %     CON: Can not handle fill values like FPAs.
-      %       PRO: Can not replace with FPAs in the long term unless
-      %            (1) the class itself uses FPAs, or
-      %            (2) implements fill positions itself.
-      %     Ex: Store for VSTB for SWF data.
-      %     Ex: Store samples for SWF (in particular TDS-LFM SWF).
 
       Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
 
-      % size(bltsSamplesAVoltAr), size(bltsSsidAr), size(isAchgFpa)
       [nRec, aspr] = irf.assert.sizes(...
-        bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
-        uspr,               [-1], ...
-        bltsSsidAr,         [-1,     bicas.const.N_BLTS], ...
-        isAchgFpa,          [-1]);
+        samplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
+        uspr,           [-1], ...
+        ssidAr,         [-1,     bicas.const.N_BLTS], ...
+        isAchgFpa,      [-1]);
       assert(isscalar(hasSwfFormat) && islogical(hasSwfFormat))
-      assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
+      assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
 
       % Expand variables to be of the same size as bltsSamplesAVoltAr
       % -------------------------------------------------------------
@@ -761,8 +744,8 @@ classdef dc
       % NOTE: This could possibly lead to memory problems, which could be
       % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSTB_NEW()
       % once per BLTS.
-      isAchgFpa   = repmat(        isAchgFpa,              [1, aspr, bicas.const.N_BLTS]);
-      bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, aspr, 1                 ]);
+      isAchgFpa = repmat(        isAchgFpa,          [1, aspr, bicas.const.N_BLTS]);
+      ssidAr    = repmat(permute(ssidAr, [1, 3, 2]), [1, aspr, 1                 ]);
 
       % Expand variable to size nRec x 1 x N_BLTS, needed for later comparison
       uspr        = repmat(uspr, [1, 1, 5]);
@@ -771,8 +754,8 @@ classdef dc
 
 
 
-      bltsVstbAr  = bicas.proc.L1L2.sat.get_VSTB_NEW(...
-        SatSettings, bltsSamplesAVoltAr, bltsSsidAr, isAchgFpa);
+      vstbAr = bicas.proc.L1L2.sat.get_VSTB_NEW(...
+        SatSettings, samplesAVoltAr, ssidAr, isAchgFpa);
 
       % Normalize CWF/SWF data to one array format (one VSIB per record & BLTS).
       % N x M x 5 --> N x 1 x 5 --> N x 5
@@ -783,14 +766,14 @@ classdef dc
         % POTENTIAL BUG: Relies on that VSTB=false for padded samples/elements
         % at the end of TDS-RSWF snapshots (the arrays are padded not account
         % for varying-length snapshots).
-        bltsVsibAr = (sum(bltsVstbAr, 2) ./ uspr) >= SatSettings.vstbFractionThreshold;
+        vsibAr = (sum(vstbAr, 2) ./ uspr) >= SatSettings.vstbFractionThreshold;
       else
         % CASE: CWF
-        bltsVsibAr = bltsVstbAr;
+        vsibAr = vstbAr;
       end
-      bltsVsibAr = permute(bltsVsibAr, [1, 3, 2]);
+      vsibAr = permute(vsibAr, [1, 3, 2]);
 
-      irf.assert.sizes(bltsVsibAr, [nRec, bicas.const.N_BLTS])
+      irf.assert.sizes(vsibAr, [nRec, bicas.const.N_BLTS])
 
       Tmk.stop_log(nRec, 'record')
     end

@@ -14,8 +14,8 @@
 %
 % SHORTCOMINGS(?)
 % ===============
-% Does not implement parasitic capacitance due to lack of calibration values (at
-% least). Should not need to implement support for this effect according to
+% Does not implement parasitic capacitance due to lack of calibration values
+% (at least). Should not need to implement support for this effect according to
 % Thomas Chust(?).
 %
 %
@@ -29,7 +29,8 @@
 % (1) undiscovered calibration bugs could be considered extra bad,
 % (2) it is expected to be hard to detect certain bugs,
 % (3) it could be hard to use automatic testing here,
-% (4) to detect changing RCT formats, in particular in RCTs from non-BIAS teams.
+% (4) to detect changing RCT formats, in particular in RCTs from non-BIAS
+%     teams.
 % --
 % NOTE: All calibration functions of measured data are assumed to accept data
 % from all BLTSs (1-5), i.e. including TDS, in order to reduce the number
@@ -715,6 +716,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         % Create combined ITF for TDS and BIAS
         %======================================
         if obj.lfrTdsTfDisabled
+          % BUG?: Should be @(omegaRps) (ones(size(omegaRps))) ?
           tdsItfIvpt = @(omegaRps) (ones(omegaRps));
         else
           RctdCa     = obj.Rctdc.get_RCTD_CA('TDS-RSWF');
