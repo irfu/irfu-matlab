@@ -15,6 +15,12 @@ The code should however converge on the following:
       of static methods): Should be CamelCase. Initial in uppercase.
     - Classes which are not instantiated: Should have short names and use
       lowercase without underscore.
+    - Abstract superclasses which exist for the purpose of making mocking in
+      automated tests possible should be named *Abstract.
+    - Subclasses which implement abstract superclasses, where the superclass is
+      created for the purpose of mocking in automated tests, should be named
+      *Impl.
+    - Subclasses for mocking in automated tests should be named *Test.
 - Functions should be named using snake_case but with abbreviations in
   uppercase.
 - Special types of variables:
@@ -61,7 +67,7 @@ ASID
     (2) class bicas.proc.L1L2.AntennaSignalId.
     Compare ASR.
 ASPR
-    Allocated/Array Samples Per Record (per channel)
+    Allocated/Array Samples Per Record (per channel).
     Number of samples/elements in an array per CDF record and channel. This
     includes padding to account for varying-length snapshots. Should be equal to
     one for CWF data. This value does not vary between CDF records.

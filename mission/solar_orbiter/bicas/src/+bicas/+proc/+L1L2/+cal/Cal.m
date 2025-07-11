@@ -72,7 +72,7 @@
 % First created 2017-02-15
 %
 classdef Cal < handle
-  % All methods as of 2024-09-05
+  % All methods as of 2025-07-11
   % ----------------------------
   % function obj = Cal(...
   % function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
@@ -85,8 +85,9 @@ classdef Cal < handle
   % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
   % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
   % --
-  % function iCalib = get_BIAS_calibration_time_index_L(obj, Epoch)
-  % function iCalib = get_BIAS_calibration_time_index_H(obj, Epoch)
+  % function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
+  % function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
+  % --
   % function BiasCalibData = get_BIAS_calib_data(obj, ...
   % function lfrItfIvpt = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
   % function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
@@ -106,8 +107,10 @@ classdef Cal < handle
   %     PROPOSAL: Separate non-abstract superclass method (which handles
   %       allVoltageCalibDisabled, ufv, useGact(=false)) calls the subclass
   %        method.
+  %   PROPOSAL: Separate subclass for ignoring calibration.
   %   PROPOSAL: Separate subclasses (voltage+current) for mocking in automated
   %             tests.
+  %   --
   %   PRO: Large class: 1172 rows. /2025-07-11
   %
   %
@@ -461,21 +464,20 @@ classdef Cal < handle
     %
     % NOTES
     % =====
-    % IMPORTANT NOTE: The HK bias current values are measured onboard but
-    % are only meant as DIAGNOSTIC values, NOT AS THE PROPER BIAS CURRENT
-    % values for nominal use. Therefore the values should only be seen as
-    % approximate.
+    % IMPORTANT NOTE: The HK bias current values are measured onboard but are
+    % only meant as DIAGNOSTIC values, NOT AS THE PROPER BIAS CURRENT values
+    % for nominal use. Therefore the values should only be seen as approximate.
     %
-    % NOTE: Walter Puccio, IRF-U 2019-09-06: Values are measured on the
-    % order of once per second (and sent back as HK even more rarely).
-    % Expect errors on the order of 5%.
+    % NOTE: Walter Puccio, IRF-U 2019-09-06: Values are measured on the order
+    % of once per second (and sent back as HK even more rarely). Expect errors
+    % on the order of 5%.
     %
     % NOTE: The calibration data are NOT stored in the BIAS RCT.
     %
     % NOTE: The conversion function can be found in the BIAS specification,
-    % sections 3.4.4.{1-3} ("BIAS1" etc) under "Telemetry". (Not to be
-    % confused with the corresponding telecommands.). The conversion
-    % functions are identical for all three probes.
+    % sections 3.4.4.{1-3} ("BIAS1" etc) under "Telemetry". (Not to be confused
+    % with the corresponding telecommands.). The conversion functions are
+    % identical for all three probes.
     %
     function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
         biasCurrentTm, iAntenna)
@@ -501,8 +503,9 @@ classdef Cal < handle
 
 
 
-    % Calibrate all voltages. Function will choose the more specific
-    % algorithm internally.
+    % Calibrate all voltages. Function will choose the more specific algorithm
+    % internally.
+    %
     %
     % ARGUMENTS
     % =========

@@ -18,7 +18,7 @@ classdef dc
   %          (planned implementation).
   %       CON: Minor. Quality variables are still set somewhere in this file.
   %
-  % PROPOSAL: Automatic test code.
+  % PROPOSAL: More automatic test code.
   %
   % PROPOSAL:   process_calibrate_demux()
   %           & calibrate_voltages_5xBLTS()
@@ -111,7 +111,7 @@ classdef dc
       % Get VSIB for BLTS-labelled channels
       %#####################################
       bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
-        bltsSamplesAVolt, Dcip.Zv.uspr, ...
+        bltsSamplesAVolt, Dcip.hasSwfFormat, Dcip.Zv.uspr, ...
         bltsSsidArray, Dcip.Zv.isAchgFpa, Bso, L);
 
 
@@ -479,6 +479,11 @@ classdef dc
         % Ex:
         %     solo_L1R_rpw-lfr-surv-swf-e-cdag_20200213_V10.cdf for the relevant
         %     code section: ~29 s --> ~4 s (843 CDF records)
+        %
+        % NOTE: It is possible that bicas.utils.group_unique_rows() becomes
+        % slow (t~O(n^2)) for large LFR-SWF CDFs with mode changes at the end
+        % due to the algorithm. May need to optimize the algorithm if this is
+        % observed.
         iGroupArCa = bicas.utils.group_unique_rows(settingsCa{:});
       else
         % IMPLEMENTATION NOTE: CWF data is calibrated in a way where consecutive
@@ -711,8 +716,9 @@ classdef dc
     % bltsVsibAr
     %       N x 5. SWF: Set if at least one bit is set for any sample within
     %       a snapshot.
+    %
     function bltsVsibAr = get_VSIB_5xBLTS_NEW(...
-        bltsSamplesAVoltAr, uspr, bltsSsidAr, isAchgFpa, Bso, L)
+        bltsSamplesAVoltAr, hasSwfFormat, uspr, bltsSsidAr, isAchgFpa, Bso, L)
       % PROPOSAL: SatSettings as argument.
       %   PRO: Simpler test code.
       % PROPOSAL: Replace bltsSamplesAVoltAr --> 5x SCHD
@@ -741,6 +747,7 @@ classdef dc
         uspr,               [-1], ...
         bltsSsidAr,         [-1,     bicas.const.N_BLTS], ...
         isAchgFpa,          [-1]);
+      assert(isscalar(hasSwfFormat) && islogical(hasSwfFormat))
       assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
 
       % Expand variables to be of the same size as bltsSamplesAVoltAr
@@ -765,7 +772,7 @@ classdef dc
       % Normalize CWF/SWF data to one array format (one VSIB per record & BLTS).
       % N x M x 5 --> N x 1 x 5 --> N x 5
       % VSTB --> VSIB
-      if aspr >= 2
+      if hasSwfFormat
         % CASE: SWF
 
         % POTENTIAL BUG: Relies on that VSTB=false for padded samples/elements

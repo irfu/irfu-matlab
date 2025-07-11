@@ -243,27 +243,26 @@ classdef utils
 
 
 
+    % Convert time in from ACQUISITION_TIME to tt2000 which is used for
+    % Epoch in CDF files.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % ACQUSITION_TIME            : NOTE: Can be negative since it is uint32.
+    % ACQUISITION_TIME_EPOCH_UTC :
+    %               Numeric row vector. The time in UTC at
+    %               which ACQUISITION_TIME == [0,0], expressed as
+    %               [year, month, day, hour, minute, second,
+    %                millisecond, microsecond(0-999), nanoseconds(0-999)].
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % tt2000 : NOTE: int64
+    %
     function tt2000 = ACQUISITION_TIME_to_TT2000(...
         ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
-      %
-      % Convert time in from ACQUISITION_TIME to tt2000 which is used for
-      % Epoch in CDF files.
-      %
-      %
-      % ARGUMENTS
-      % =========
-      % ACQUSITION_TIME            : NOTE: Can be negative since it is uint32.
-      % ACQUISITION_TIME_EPOCH_UTC :
-      %               Numeric row vector. The time in UTC at
-      %               which ACQUISITION_TIME == [0,0], expressed as
-      %               [year, month, day, hour, minute, second,
-      %                millisecond, microsecond(0-999), nanoseconds(0-999)].
-      %
-      %
-      % RETURN VALUE
-      % ============
-      % tt2000 : NOTE: int64
-      %
 
       bicas.utils.assert_ZV_ACQUISITION_TIME(ACQUISITION_TIME)
 
@@ -277,21 +276,20 @@ classdef utils
 
 
 
+    % Convert from tt2000 to ACQUISITION_TIME.
+    %
+    % ARGUMENTS
+    % =========
+    % t_tt2000
+    %       Nx1 vector. Required to be int64 like the real zVar Epoch.
+    %
+    % RETURN VALUE
+    % ============
+    % ACQUISITION_TIME : Nx2 vector. uint32.
+    %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
+    %
     function ACQUISITION_TIME = TT2000_to_ACQUISITION_TIME(...
         tt2000, ACQUISITION_TIME_EPOCH_UTC)
-      %
-      % Convert from tt2000 to ACQUISITION_TIME.
-      %
-      % ARGUMENTS
-      % =========
-      % t_tt2000
-      %       Nx1 vector. Required to be int64 like the real zVar Epoch.
-      %
-      % RETURN VALUE
-      % ============
-      % ACQUISITION_TIME : Nx2 vector. uint32.
-      %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
-      %
 
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(tt2000)
@@ -321,32 +319,30 @@ classdef utils
 
 
 
-    function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
-      %
-      % Derive value for zVar DELTA_PLUS_MINUS.
-      %
-      % NOTE: All values on any given row (CDF record) of DELTA_PLUS_MINUS are
-      % identical. Not sure why multiple values per row are needed but it is
-      % probably intentional, as per YK's instruction.
-      %
-      %
-      % ARGUMENTS
-      % =========
-      % freqHz
-      %       Frequency column vector in s^-1.
-      %       Can not handle freqHz=NaN since the output is an integer
-      %       (assertion).
-      % nSpr
-      %       Number of samples/record.
-      %
-      %
-      % RETURN VALUE
-      % ============
-      % DELTA_PLUS_MINUS
-      %       Analogous to BIAS zVariable. CDF_INT8=int64.
-      %       NOTE: Unit ns.
+    % Derive value for zVar DELTA_PLUS_MINUS.
+    %
+    % NOTE: All values on any given row (CDF record) of DELTA_PLUS_MINUS are
+    % identical. Not sure why multiple values per row are needed but it is
+    % probably intentional, as per YK's instruction.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % freqHz
+    %       Frequency column vector in s^-1.
+    %       Can not handle freqHz=NaN since the output is an integer
+    %       (assertion).
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % DELTA_PLUS_MINUS
+    %       Analogous to BIAS zVariable. CDF_INT8=int64.
+    %       NOTE: Unit ns.
+    %
+    function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, aspr)
 
-      ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
+      ZV_DELTA_PLUS_MINUS_CDF_DATA_TYPE = 'CDF_INT8';
 
       % ASSERTIONS
       nRecords = irf.assert.sizes(freqHz, [-1]);
@@ -369,7 +365,7 @@ classdef utils
       end
       zv_DELTA_PLUS_MINUS = cast(zv_DELTA_PLUS_MINUS, ...
         irf.cdf.convert_CDF_type_to_MATLAB_class(...
-        ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
+        ZV_DELTA_PLUS_MINUS_CDF_DATA_TYPE, 'Only CDF data types'));
     end
 
 
@@ -382,8 +378,8 @@ classdef utils
 
 
 
-    % Convert 2D array --> 1D cell array of varying-length column arrays, one
-    % per row.
+    % Convert 2D array --> Column cell array of varying-length column arrays,
+    % one per 2D array row.
     %
     %
     % ARGUMENTS
@@ -404,7 +400,6 @@ classdef utils
 
       % ASSERTIONS
       assert(isnumeric(M))
-      irf.assert.vector(usprAr)
       nRows = irf.assert.sizes(...
         M,      [-1, NaN], ...
         usprAr, [-1]);
@@ -418,11 +413,15 @@ classdef utils
 
 
 
+    % Convert column cell array of varying-length column arrays --> 2D array,
+    % with one row per cell array element.
+    %
+    %
     % ARGUMENTS
     % =========
     % ca
     %       Column cell array of 1D vectors.
-    % nMatrixColumns
+    % aspr
     %       Scalar. Number of columns in M.
     %
     %
@@ -431,24 +430,22 @@ classdef utils
     % M
     %       Numeric 2D matrix.
     %       NOTE: Sets unset elements to NaN.
-    % nCopyColsPerRowVec
+    % usprAr
     %       1D vector.
     %       {i}=Length of ca{i}=Number of elements copied to M{i,:}.
-    function [M, nCopyColsPerRowVec] = ...
-        convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
+    %
+    function [M, usprAr] = convert_cell_array_of_vectors_to_matrix(ca, aspr)
 
-      assert(iscell(ca))
-      assert(iscolumn(ca))
-      assert(isscalar(nMatrixColumns))
+      assert(iscell(ca) & iscolumn(ca))
+      assert(isscalar(aspr))
 
-      nRows              = numel(ca);
-      nCopyColsPerRowVec = zeros(nRows, 1);   % Always column vector.
-      M                  = nan(  nRows, nMatrixColumns);
-      for iRow = 1:numel(nCopyColsPerRowVec)
-        nCopyColsPerRowVec(iRow)            = numel(ca{iRow});
-        M(iRow, 1:nCopyColsPerRowVec(iRow)) = ca{iRow};
+      nRows   = numel(ca);
+      usprAr  = zeros(nRows, 1);
+      M       = nan(  nRows, aspr);
+      for iRow = 1:numel(usprAr)
+        usprAr(iRow)            = numel(ca{iRow});
+        M(iRow, 1:usprAr(iRow)) = ca{iRow};
       end
-
     end
 
 
