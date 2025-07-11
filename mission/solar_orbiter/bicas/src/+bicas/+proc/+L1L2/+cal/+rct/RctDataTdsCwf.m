@@ -26,6 +26,7 @@ classdef RctDataTdsCwf < bicas.proc.L1L2.cal.rct.RctDataImpl
 
 
     function obj = RctDataTdsCwf(filePath)
+      % Call superclass constructor.
       obj@bicas.proc.L1L2.cal.rct.RctDataImpl(filePath)
 
       % NOTE: RCT contains no TFs and data is therefore trivial to use as it is

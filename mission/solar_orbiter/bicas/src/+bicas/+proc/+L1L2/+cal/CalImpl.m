@@ -14,7 +14,8 @@
 % SHORTCOMINGS(?)
 % ===============
 % Does not implement parasitic capacitance due to lack of calibration values (at
-% least). Should not need to implement according to Thomas Chust(?).
+% least). Should not need to implement support for this effect according to
+% Thomas Chust(?).
 %
 %
 % IMPLEMENTATION NOTES
@@ -89,8 +90,8 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
   % function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
   % --
   % function BiasCalibData = get_BIAS_calib_data(obj, ...
-  % function lfrItfIvpt = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
-  % function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
+  % function lfrItfIvpt    = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
+  % function [CalData]     = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
   % function biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
   %
   %
@@ -110,6 +111,15 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
   %   PROPOSAL: Separate subclass for ignoring calibration.
   %   PROPOSAL: Separate subclasses (voltage+current) for mocking in automated
   %             tests.
+  %   TODO-DEC: Class names?
+  %     CurrentAbstract/Impl/Test
+  %     VoltageAbstract, VoltageLfr, VoltageTdsCwf, VoltageTdsRswf
+  %     --
+  %     CCAL = CurrentCalibrationAbstract/Impl/Test
+  %     VCAL = VoltageCalibrationAbstract
+  %       VoltageCalibrationLfr
+  %       VoltageCalibrationTdsCwf
+  %       VoltageCalibrationTdsRswf
   %   --
   %   PRO: Large class: 1172 rows. /2025-07-11
   %
@@ -240,15 +250,23 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
 
 
 
+  %###########
+  %###########
+  % CONSTANTS
+  %###########
+  %###########
   properties(Access=private, Constant)
-
     % Local TF constant for convenience.
     NAN_TF = @(omegaRps) (omegaRps * NaN);
-
   end
 
 
 
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(SetAccess=private, GetAccess=public)
 
     %==================
@@ -301,10 +319,11 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
 
 
 
-  %###########################################################################
-
-
-
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
 
 
@@ -366,7 +385,7 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
       % ----------------------------------
       % IMPLEMENTATION NOTE: This useful since it is:
       %   ** More convenient to access values via shorter field names
-      %       (more readable code).
+      %      (more readable code).
       %   ** Potentially gives faster access to values (better
       %      performance).
       %==================================================================
@@ -980,8 +999,14 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
       if (iLsf == 4) && ismember(iBlts, [4,5])
         % CASE: F3 and BLTS={4,5}
 
-        % NOTE: There is no tabulated LFR TF and no such combination
-        % signal route, so the TF can not be returned even in principle.
+        % IMPLEMENTATION NOTE: There is no tabulated LFR TF for this case and
+        % the h/w does not support it, so an accurate TF can not be returned
+        % even in principle. However, the BICAS implementation (2025-07-11)
+        % iterates over all 5x BLTS channels no matter the value of LSF, e.g.
+        % for F3 (iLsf=4) when there is only real data on BLTS1-3. It can
+        % therefore request "calibration" for this case anyway, even if it means
+        % calibrating an empty channel (converting NaN values to NaN). For this
+        % reason, the code can not raise an exception for this case.
         lfrItfIvpt = obj.NAN_TF;
       else
         LfrRctdCa = obj.Rctdc.get_RCTD_CA('LFR');
@@ -1122,10 +1147,11 @@ classdef CalImpl < bicas.proc.L1L2.cal.CalAbstract
 
 
 
-  %###########################################################################
-
-
-
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
   methods(Static, Access=public)
 
 

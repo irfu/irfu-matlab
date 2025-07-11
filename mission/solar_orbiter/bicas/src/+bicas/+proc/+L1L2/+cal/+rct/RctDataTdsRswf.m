@@ -27,6 +27,7 @@ classdef RctDataTdsRswf < bicas.proc.L1L2.cal.rct.RctDataImpl
 
 
     function obj = RctDataTdsRswf(filePath)
+      % Call superclass constructor.
       obj@bicas.proc.L1L2.cal.rct.RctDataImpl(filePath)
 
       RctRawData = bicas.proc.L1L2.cal.rct.RctDataTdsRswf.read_RCT(filePath);

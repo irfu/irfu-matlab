@@ -58,11 +58,11 @@ classdef findread
       DtDataBegin = datetime(irf.cdf.TT2000_to_datevec(tt2000Begin), 'TimeZone', 'UTCLeapSeconds');
       DtDataEnd   = datetime(irf.cdf.TT2000_to_datevec(tt2000End),   'TimeZone', 'UTCLeapSeconds');
 
-      Rctdc = bicas.proc.L1L2.cal.RctdCollection();
+      Rctdc       = bicas.proc.L1L2.cal.RctdCollection();
 
-      %==========
-      % BIAS RCT
-      %==========
+      %==================
+      % Add 1x BIAS RCTD
+      %==================
       [biasRctPath, brvfPath] = bicas.proc.L1L2.cal.rct.findread.get_BRVF_RCT_path(...
         rctDir, DtDataBegin, DtDataEnd);
       L.logf('info', 'Read "%s".', brvfPath)
@@ -70,9 +70,9 @@ classdef findread
         'BIAS', biasRctPath, L);
       Rctdc.add_RCTD('BIAS', {BiasRctd});
 
-      %===============
-      % Non-BIAS RCTs
-      %===============
+      %=======================
+      % Add Nx non-BIAS RCTDs
+      %=======================
       if useGactRct
         NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_ZVCTI_GACT(...
           nonBiasRcttid, rctDir, ...

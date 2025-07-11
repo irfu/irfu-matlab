@@ -1,16 +1,16 @@
 %
-% Collection of RCTDs as used by bicas.proc.L1L2.cal.Cal.
+% Collection of RCTDs as used by bicas.proc.L1L2.cal.CalImpl.
 %
-% Stores column cell arrays of RCTDs, one array per RCTTID. For non-BIAS, array
+% Stores map RCTTID-->column cell array of RCTDs. For non-BIAS, the array
 % corresponds to GACT. Index iRct-1 corresponds to GACT and ZVCTI(:,1) when
 % those are used. Permits empty cell elements to avoid loading RCTs which are
-% not used by BICAS processing(!)
+% not used by BICAS processing(!).
 %
 % IMPLEMENTATION NOTE: Permits (1) adding more than the nominal number of
 % RCTTIDs (1x BIAS + 1x non-BIAS) to make the bicas.proc.L1L2.cal.Cal work for
 % all types of signals at the same time which could be useful for manual
-% experimentation with calibraiton, (2) for historical reasons. Ideally,
-% bicas.proc.L1L2.cal.Cal should probably be split up into multiple classes
+% experimentation with calibration, (2) for historical reasons. Ideally,
+% bicas.proc.L1L2.cal.CalImpl should probably be split up into multiple classes
 % after which this class probably makes no sense.
 %
 %
@@ -51,8 +51,7 @@ classdef RctdCollection
     function add_RCTD(obj, rcttid, RctdCa)
       assert(~obj.RctdCaMap.isKey(rcttid))
       assert(ismember(...
-        rcttid, ...
-        bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP.keys))
+        rcttid, bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP.keys))
 
       assert(iscell(RctdCa) && iscolumn(RctdCa))
       for iRctd = 1:numel(RctdCa)

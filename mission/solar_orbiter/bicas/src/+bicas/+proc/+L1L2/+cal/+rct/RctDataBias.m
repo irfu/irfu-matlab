@@ -37,6 +37,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
 
 
     function obj = RctDataBias(filePath)
+      % Call superclass constructor.
       obj@bicas.proc.L1L2.cal.rct.RctDataImpl(filePath)
 
       RctRawData = bicas.proc.L1L2.cal.rct.RctDataBias.read_RCT(filePath);
