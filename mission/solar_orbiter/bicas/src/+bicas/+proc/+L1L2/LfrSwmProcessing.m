@@ -263,11 +263,11 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       E = single(permute(InSci.Zv.E, [1,3,2]));
 
       % ASSERTIONS
-      nCdfSamplesPerRecord = irf.assert.sizes(...
+      aspr = irf.assert.sizes(...
         InSci.Zv.V, [nRecords, -1], ...
         E,          [nRecords, -1, 2]);
-      if obj.inputSci.isLfrSurvSwf,   assert(nCdfSamplesPerRecord == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
-      else,                           assert(nCdfSamplesPerRecord == 1)
+      if obj.inputSci.isLfrSurvSwf,   assert(aspr == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
+      else,                           assert(aspr == 1)
       end
 
 
@@ -290,7 +290,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
         zvFreqHz, 1);
       Zv.freqHz                  = zvFreqHz;
-      Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
+      Zv.uspr                    = ones(nRecords, 1) * aspr;
       Zv.BW                      = InSci.Zv.BW;
       % NOTE: Blanking data when
       % (1) LFR ZV BW says BIAS is OFF, or

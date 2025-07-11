@@ -1,6 +1,6 @@
 %
 % Class which stores
-% * one channel of data (array of samples; nRecords x nSpr), and
+% * one channel of data (array of samples; nRecords x ASPR), and
 % * VSIBs (nRecords x 1).
 % for one SDID/SSID value.
 %

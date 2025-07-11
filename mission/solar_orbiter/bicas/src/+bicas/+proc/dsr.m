@@ -413,7 +413,7 @@ classdef dsr
       assert(isa(OsrFpa, 'bicas.utils.FPArray'))
       assert(strcmp(OsrFpa.mc, 'double'))
       assert(nMinNfpSamplesPerBin >= 0)
-      [nRecordsOsr, nBins, nSpr] = irf.assert.sizes(...
+      [nRecordsOsr, nBins, aspr] = irf.assert.sizes(...
         OsrFpa,          [-1, -3], ...
         iRecordsInBinCa, [-2]);
       nRecordsDsr = numel(iRecordsInBinCa);
@@ -428,8 +428,8 @@ classdef dsr
       fpOsr   = OsrFpa.fpAr();
 
       % Pre-allocate DSR arrays.
-      medianDsr = zeros(nBins, nSpr, OsrFpa.mc);
-      mstdDsr   = zeros(nBins, nSpr, OsrFpa.mc);
+      medianDsr = zeros(nBins, aspr, OsrFpa.mc);
+      mstdDsr   = zeros(nBins, aspr, OsrFpa.mc);
 
       % Pre-allocate DSR bin arrays.
       binDsrSize    = size(dataOsr);
@@ -443,7 +443,7 @@ classdef dsr
         binDataOsr = dataOsr(kBin, :);
         binFpOsr   = fpOsr  (kBin, :);
 
-        for iChannel = 1:nSpr
+        for iChannel = 1:aspr
 
           % Vector of NFP samples (for one channel/bin column).
           binChannelData    = binDataOsr              (:, iChannel);

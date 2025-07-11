@@ -353,13 +353,13 @@ classdef utils
       assert(isfloat(freqHz) && all(isfinite(freqHz)), ...
         'BICAS:Assertion:IllegalArgument', ...
         'Argument "freqHz" does not consist of non-NaN floats.')
-      assert(isscalar(nSpr), ...
+      assert(isscalar(aspr), ...
         'BICAS:Assertion:IllegalArgument', ...
-        'Argument "nSpr" is not a scalar.')
+        'Argument "aspr" is not a scalar.')
 
 
 
-      zv_DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
+      zv_DELTA_PLUS_MINUS = zeros([nRecords, aspr]);
       for i = 1:nRecords
         % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
         % that the unit is the same as for Epoch.
@@ -390,7 +390,7 @@ classdef utils
     % =========
     % M
     %       2D matrix
-    % nCopyColsPerRowArray
+    % usprAr
     %       1D column vector. Numeric.
     %       (i) = Number of elements to copy from M(i,:).
     %
@@ -398,21 +398,21 @@ classdef utils
     % ============
     % ca
     %       Column cell array of column vectors.
-    %       ca{i}(j). j = 1:nCopyColsPerRowArray(i)
+    %       ca{i}(j). j = 1:usprAr(i)
     %
-    function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
+    function ca = convert_matrix_to_cell_array_of_vectors(M, usprAr)
 
       % ASSERTIONS
       assert(isnumeric(M))
-      irf.assert.vector(nCopyColsPerRowArray)
+      irf.assert.vector(usprAr)
       nRows = irf.assert.sizes(...
-        M,                    [-1, NaN], ...
-        nCopyColsPerRowArray, [-1]);
+        M,      [-1, NaN], ...
+        usprAr, [-1]);
 
       % Create "ca".
       ca = cell(nRows, 1);
       for iRow = 1:nRows
-        ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow))';   % Column array.
+        ca{iRow} = M(iRow, 1:usprAr(iRow))';   % Column array.
       end
     end
 

@@ -106,16 +106,16 @@ classdef dc___UTEST < matlab.unittest.TestCase
         6 3 1;
         7 9 7;
         9 7 9]);
-      bltsSamplesAVoltAr     = permute(bltsSamplesAVoltAr, [2 3 1]);
+      bltsSamplesAVoltAr = permute(bltsSamplesAVoltAr, [2 3 1]);
 
-      bltsSsidAr             = permute(bicas.proc.L1L2.const.C.SSID_DICT(...
+      bltsSsidAr         = permute(bicas.proc.L1L2.const.C.SSID_DICT(...
         ["DC_V1" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]), [3 2 1]);
-      bltsSsidAr             = repmat(bltsSsidAr, [3 1 1]);
+      bltsSsidAr         = repmat(bltsSsidAr, [3 1 1]);
 
-      isAchgFpa              = repmat(bicas.utils.FPArray(false, 'NO_FILL_POSITIONS'), [3, 1]);
-      nValidSamplesPerRecord = repmat(1, [3, 1]);
+      isAchgFpa          = repmat(bicas.utils.FPArray(false, 'NO_FILL_POSITIONS'), [3, 1]);
+      uspr               = repmat(1, [3, 1]);
 
-      expBltsVsibAr          = permute(logical([ ...
+      expBltsVsibAr      = permute(logical([ ...
         0 1 1;
         0 0 1;
         1 0 0;
@@ -125,7 +125,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED CODE
       actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
-        bltsSamplesAVoltAr, nValidSamplesPerRecord, ...
+        bltsSamplesAVoltAr, uspr, ...
         bltsSsidAr, isAchgFpa, Bso, L);
 
       testCase.assertEqual(actBltsVsibAr, expBltsVsibAr)
@@ -134,7 +134,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
     function test_get_VSIB_5xBLTS_NEW___SWF(testCase)
-      % PROPOSAL: nValidSamplesPerRecord that varies over records.
+      % PROPOSAL: USPR test data that varies over records.
       %   CON: Must have multiple records. ==> More test data.
       L = bicas.Logger('NO_STDOUT', false);
 
@@ -150,15 +150,15 @@ classdef dc___UTEST < matlab.unittest.TestCase
         1 3 3 1 0 0;
         1 3 3 3 0 0;
         3 3 3 3 0 0]);
-      bltsSamplesAVoltAr     = permute(bltsSamplesAVoltAr, [3 2 1]);
-      bltsSsidAr             = repmat(bicas.proc.L1L2.const.C.SSID_DICT("DC_V12"),     [1, 5]);
-      isAchgFpa              = repmat(bicas.utils.FPArray(false, 'NO_FILL_POSITIONS'), [1, 1]);   % Value should be irrelevant
-      expBltsVsibAr          = permute(logical([0 0 1 1 1]), [3, 2, 1]);
-      nValidSamplesPerRecord = repmat(4, [1, 1]);
+      bltsSamplesAVoltAr = permute(bltsSamplesAVoltAr, [3 2 1]);
+      bltsSsidAr         = repmat(bicas.proc.L1L2.const.C.SSID_DICT("DC_V12"),     [1, 5]);
+      isAchgFpa          = repmat(bicas.utils.FPArray(false, 'NO_FILL_POSITIONS'), [1, 1]);   % Value should be irrelevant
+      expBltsVsibAr      = permute(logical([0 0 1 1 1]), [3, 2, 1]);
+      uspr               = repmat(4, [1, 1]);
 
       % CALL TESTED CODE
       actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
-        bltsSamplesAVoltAr, nValidSamplesPerRecord, ...
+        bltsSamplesAVoltAr, uspr, ...
         bltsSsidAr, isAchgFpa, Bso, L);
 
       testCase.assertEqual(actBltsVsibAr, expBltsVsibAr)

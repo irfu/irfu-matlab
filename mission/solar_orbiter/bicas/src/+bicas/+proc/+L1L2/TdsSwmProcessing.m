@@ -314,7 +314,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         ['Voltage (science) dataset timestamps Epoch do not', ...
         ' increase monotonously.']...
         )
-      [nRecords, WAVEFORM_DATA_nChannels, nCdfSamplesPerRecord] = irf.assert.sizes(...
+      [nRecords, WAVEFORM_DATA_nChannels, aspr] = irf.assert.sizes(...
         InSci.Zv.Epoch,         [-1], ...
         InSci.Zv.WAVEFORM_DATA, [-1, -2, -3]);
       if     obj.inputSci.isL1r,   WAVEFORM_DATA_nChannels_expected = 3;
@@ -338,11 +338,11 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %     solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V09.cdf   : 16384 samples/record
       if obj.inputSci.isTdsRswf
         assert(...
-          nCdfSamplesPerRecord == solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD, ...
+          aspr == solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD, ...
           'Unexpected number of samples per CDF record (%i). Expected %i.', ...
-          nCdfSamplesPerRecord, solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD)
+          aspr, solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD)
       else
-        assert(nCdfSamplesPerRecord == 1)
+        assert(aspr == 1)
       end
 
 
@@ -372,9 +372,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %=====================================
-      % Set Zv.nValidSamplesPerRecord
-      %=====================================
+      %=============
+      % Set Zv.uspr
+      %=============
       if obj.inputSci.isTdsRswf
         %================================================================
         % NOTE: This might only be appropriate for TDS's "COMMON_MODE"
@@ -391,18 +391,18 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         % Converting to double because code did so before code
         % reorganization. Reason unknown. Needed to avoid precision
         % problems when doing math with other variables?
-        Zv.nValidSamplesPerRecord = double(InSci.Zv.SAMPS_PER_CH);
+        Zv.uspr = double(InSci.Zv.SAMPS_PER_CH);
       else
-        Zv.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
+        Zv.uspr = ones(nRecords, 1) * 1;
       end
-      assert(all(Zv.nValidSamplesPerRecord <= nCdfSamplesPerRecord), ...
+      assert(all(Zv.uspr <= aspr), ...
         'BICAS:Assertion:DatasetFormat', ...
         ['Dataset indicates that the number of valid samples per CDF', ...
-        ' record (max(Zv.nValidSamplesPerRecord)=%i) is', ...
+        ' record (max(Zv.uspr)=%i) is', ...
         ' NOT fewer than the number of indices per CDF record', ...
         ' (nCdfMaxSamplesPerSnapshot=%i).'], ...
-        max(Zv.nValidSamplesPerRecord), ...
-        nCdfSamplesPerRecord)
+        max(Zv.uspr), ...
+        aspr)
 
 
 
@@ -411,11 +411,11 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %======================
       zv_WAVEFORM_DATA_modif = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
 
-      Zv.bltsSamplesTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
-      Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
-      Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
-      Zv.bltsSamplesTm(:, :, 4) = nan(nRecords, nCdfSamplesPerRecord);
-      Zv.bltsSamplesTm(:, :, 5) = nan(nRecords, nCdfSamplesPerRecord);
+      Zv.bltsSamplesTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.uspr );
+      Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.uspr );
+      Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.uspr );
+      Zv.bltsSamplesTm(:, :, 4) = nan(nRecords, aspr);
+      Zv.bltsSamplesTm(:, :, 5) = nan(nRecords, aspr);
 
 
 

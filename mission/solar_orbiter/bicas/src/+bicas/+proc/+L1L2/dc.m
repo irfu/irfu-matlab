@@ -101,7 +101,7 @@ classdef dc
         isTdsCwf                = Dcip.isTdsCwf, ...
         isLfr                   = Dcip.isLfr, ...
         hasSwfFormat            = Dcip.hasSwfFormat, ...
-        nValidSamplesPerRecord  = Dcip.Zv.nValidSamplesPerRecord, ...
+        uspr                    = Dcip.Zv.uspr, ...
         Cal                     = Cal, ...
         L                       = L);
 
@@ -111,7 +111,7 @@ classdef dc
       % Get VSIB for BLTS-labelled channels
       %#####################################
       bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
-        bltsSamplesAVolt, Dcip.Zv.nValidSamplesPerRecord, ...
+        bltsSamplesAVolt, Dcip.Zv.uspr, ...
         bltsSsidArray, Dcip.Zv.isAchgFpa, Bso, L);
 
 
@@ -338,7 +338,7 @@ classdef dc
         Zv.iLsf
         Zv.ufv
         Zv.bltsSsidArray
-        Zv.nValidSamplesPerRecord
+        Zv.uspr
         A.isTdsCwf
         A.isLfr
         A.hasSwfFormat
@@ -439,7 +439,7 @@ classdef dc
           ....% the subsequence/group.
           Epoch         = Zv.Epoch(                 iGroupAr), ...
           bltsSamplesTm = Zv.bltsSamplesTm(         iGroupAr, :, :), ...
-          uspr          = Zv.nValidSamplesPerRecord(iGroupAr));
+          uspr          = Zv.uspr(iGroupAr));
 
         % Add subsequence/group signals to the global array (all records).
         bltsSamplesAVolt(iGroupAr, :, :) = ssBltsSamplesAVolt;
@@ -694,14 +694,14 @@ classdef dc
     %       N x 5. SWF: Set if at least one bit is set for any sample within
     %       a snapshot.
     function bltsVsibAr = get_VSIB_5xBLTS_NEW(...
-        bltsSamplesAVoltAr, nValidSamplesPerRecord, bltsSsidAr, isAchgFpa, Bso, L)
+        bltsSamplesAVoltAr, uspr, bltsSsidAr, isAchgFpa, Bso, L)
       % PROPOSAL: SatSettings as argument.
       %   PRO: Simpler test code.
       % PROPOSAL: Replace bltsSamplesAVoltAr --> 5x SCHD
       %   PRO: Simpler handling of dimensions.
       %   PRO: Less risk of memory problems if iterates manually over BLTSs.
-      %   PRO: SCHD could be modified to only store nValidSamplesPerRecord per
-      %        record (handle padded snapshots well).
+      %   PRO: SCHD could be modified to store USPR and
+      %        handle padded snapshots explicitly.
       %   CON: SCHD contains 1 VSIB/record. This function is intended for
       %        setting that VSIB array.
       %   CON-PROPOSAL: Custom class representing jagged array (jagged in one
@@ -718,11 +718,11 @@ classdef dc
       Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
 
       % size(bltsSamplesAVoltAr), size(bltsSsidAr), size(isAchgFpa)
-      [nRec, nSpr] = irf.assert.sizes(...
-        bltsSamplesAVoltAr,     [-1, -2, bicas.const.N_BLTS], ...
-        nValidSamplesPerRecord, [-1], ...
-        bltsSsidAr,             [-1,     bicas.const.N_BLTS], ...
-        isAchgFpa,              [-1]);
+      [nRec, aspr] = irf.assert.sizes(...
+        bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
+        uspr,               [-1], ...
+        bltsSsidAr,         [-1,     bicas.const.N_BLTS], ...
+        isAchgFpa,          [-1]);
       assert(bicas.proc.L1L2.const.is_SSID(bltsSsidAr))
 
       % Expand variables to be of the same size as bltsSamplesAVoltAr
@@ -731,11 +731,11 @@ classdef dc
       % NOTE: This could possibly lead to memory problems, which could be
       % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSTB_NEW()
       % once per BLTS.
-      isAchgFpa   = repmat(        isAchgFpa,              [1, nSpr, bicas.const.N_BLTS]);
-      bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, nSpr, 1                 ]);
+      isAchgFpa   = repmat(        isAchgFpa,              [1, aspr, bicas.const.N_BLTS]);
+      bltsSsidAr  = repmat(permute(bltsSsidAr, [1, 3, 2]), [1, aspr, 1                 ]);
 
       % Expand variable to size nRec x 1 x N_BLTS, needed for later comparison
-      nValidSamplesPerRecord = repmat(nValidSamplesPerRecord, [1, 1, 5]);
+      uspr        = repmat(uspr, [1, 1, 5]);
 
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
 
@@ -747,14 +747,13 @@ classdef dc
       % Normalize CWF/SWF data to one array format (one VSIB per record & BLTS).
       % N x M x 5 --> N x 1 x 5 --> N x 5
       % VSTB --> VSIB
-      if nSpr >= 2
+      if aspr >= 2
         % CASE: SWF
 
         % POTENTIAL BUG: Relies on that VSTB=false for padded samples/elements
         % at the end of TDS-RSWF snapshots (the arrays are padded not account
         % for varying-length snapshots).
-        bltsVsibAr = (sum(bltsVstbAr, 2) ./ nValidSamplesPerRecord) >= SatSettings.vstbFractionThreshold;
-        %bltsVsibAr = (sum(bltsVstbAr, 2) / nSpr) >= SatSettings.vstbFractionThreshold;
+        bltsVsibAr = (sum(bltsVstbAr, 2) ./ uspr) >= SatSettings.vstbFractionThreshold;
       else
         % CASE: CWF
         bltsVsibAr = bltsVstbAr;
