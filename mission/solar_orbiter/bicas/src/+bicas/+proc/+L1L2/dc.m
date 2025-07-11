@@ -329,13 +329,6 @@ classdef dc
       %         CON: samplesTm is the largest array (for SWF) but it is
       %              subdivided by BLTSs first, and again for
       %              subsequences/groups in this scheme.
-      %
-      % PROPOSAL: Derive iCalibL, iCalibH in subfunction.
-      %           calibrate_voltages_1xBLTS() or
-      %   NOTE: Requires Epoch.
-      %   PRO: Fewer arguments.
-      %   CON: One execution is replaced by one execution per BLTS.
-      %     CON: Likely insignificant.
 
       arguments
         % Variables which DO NOT VARY over CDF records at all.
@@ -373,9 +366,6 @@ classdef dc
       % up LFR-SWF which tends to be broken into subsequences of 1 record.
       samplesAVolt = nan(nRecords, aspr, bicas.const.N_BLTS);
 
-      iCalibL = Cv.Cal.get_BIAS_calibration_time_index_L(Zv.tt2000);
-      iCalibH = Cv.Cal.get_BIAS_calibration_time_index_H(Zv.tt2000);
-
 
 
       %===========
@@ -404,9 +394,7 @@ classdef dc
           freqHz       = Zv.freqHz, ...
           iLsf         = Zv.iLsf, ...
           isAchgFpa    = Zv.isAchgFpa, ...
-          zvcti        = Zv.zvcti, ...
-          iCalibL      = iCalibL, ...
-          iCalibH      = iCalibH);
+          zvcti        = Zv.zvcti);
 
         % Add subsequence/group signals to the global array (all records).
         samplesAVolt(:, :, iBlts) = bltsSamplesAVolt2;
@@ -451,8 +439,6 @@ classdef dc
         Zv.iLsf
         Zv.isAchgFpa
         Zv.zvcti
-        Zv.iCalibL
-        Zv.iCalibH
       end
       [nRecords, aspr] = irf.assert.sizes( ...
         Zv.ssid,      [-1,     1], ...
@@ -461,6 +447,9 @@ classdef dc
         Zv.uspr,      [-1]);
 
 
+
+      iCalibL = Cv.Cal.get_BIAS_calibration_time_index_L(Zv.tt2000);
+      iCalibH = Cv.Cal.get_BIAS_calibration_time_index_H(Zv.tt2000);
 
       %==================================================================
       % (1) Find groups/subsequences of records with identical settings.
@@ -477,8 +466,8 @@ classdef dc
         Zv.zvcti, ...
         Zv.ufv, ...
         Zv.ssid, ...
-        Zv.iCalibL, ...
-        Zv.iCalibH};
+        iCalibL, ...
+        iCalibH};
       if Cv.hasSwfFormat
         % IMPLEMENTATION NOTE: SWF data is calibrated in a way where consecutive
         % records (snapshots) do NOT affect each other. One can therefore group
@@ -524,8 +513,8 @@ classdef dc
           isAchgFpa    = Zv.isAchgFpa(iRec1), ...
           iLsf         = Zv.iLsf(     iRec1), ...
           zvcti        = Zv.zvcti(    iRec1, :), ...
-          iCalibL      = Zv.iCalibL(  iRec1), ...
-          iCalibH      = Zv.iCalibH(  iRec1), ...
+          iCalibL      = iCalibL(     iRec1), ...
+          iCalibH      = iCalibH(     iRec1), ...
           ufv          = Zv.ufv(      iRec1), ...
           ... % ===============================================================
           ... % Variables which VARY within the subsequence/group.
