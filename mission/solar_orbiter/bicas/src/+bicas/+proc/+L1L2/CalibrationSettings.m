@@ -9,6 +9,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef CalibrationSettings
+  % PROPOSAL: Abolish.
+  %   PRO: Only used in one location (bicas.proc.L1L2.dc).
+  %   PROPSOAL: Use keyword arguments instead.
 
 
 

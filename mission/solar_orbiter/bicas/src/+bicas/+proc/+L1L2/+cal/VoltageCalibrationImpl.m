@@ -100,22 +100,46 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %        method.
   %   PROPOSAL: Separate subclass for ignoring calibration.
   %   PROPOSAL: Separate subclass for mocking in automated tests.
-  %   TODO-DEC: Class names? Abbreviations?
-  %     CurrentAbstract/Impl/Test
-  %     VoltageAbstract, VoltageLfr, VoltageTdsCwf, VoltageTdsRswf
+  %   CON/PROBLEM: Methods duplicate the derivation of BIAS TF (by calling one
+  %                function) and the combining of BIAS TF & LFR/TDS TF.
+  %                Combining TFs should really be done centrally, and obtaining
+  %                BIAS TF should be done once. ==> Separate methods/sources
+  %                for producing BIAS TF and LFR/TDS TF. ==> Ambiguous how to
+  %                apply "mocking design pattern". Does not make sense for
+  %                subclass to override both or only one of these methods.
+  %     PROPOSAL: Test subclass overrides both BIAS TF and LFR/TDS TF methods.
+  %       PRO: Simple.
+  %         PRO: Realistically, a test always needs to override both BIAS TF and
+  %              LFR/TDS TFs at the same time.
+  %       CON: Conceptually ugly.
+  %       CON/PROBLEM: Test subclass is forced to load RCTDs!!!!!
+  %         NOTE: The BIAS/LFR/TDS TF-producing methods need RCTDs but the
+  %               implementing subclasses can load these.
+  %         PRO: get_BIAS_calibration_time_index_L/H() need BIAS RCTDs.
+  %           NOTE: CCAL also needs BIAS RCTD for implementing
+  %                 get_BIAS_calibration_time_index_L().
+  %       NOTE: Can then abolish bicas.proc.L1L2.cal.VoltageCalibrationAbstract.
   %     --
-  %     CCAL = CurrentCalibrationAbstract/Impl/Test
-  %     VCAL = VoltageCalibrationAbstract
-  %       VoltageCalibrationLfr
-  %       VoltageCalibrationTdsCwf
-  %       VoltageCalibrationTdsRswf
-  %     CCAL = CurrentCalibAbstract/Impl/Test
-  %     VCAL = VoltageCalibAbstract
-  %       VoltageCalibLfr
-  %       VoltageCalibTdsCwf
-  %       VoltageCalibTdsRswf
+  %     PROPOSAL: Class uses separately mockable classes for producing BIAS TF
+  %               and LFR/TDS TF.
+  %       CON: Gets too many classes
+  %         VCAL (no abstract+impl.+test)
+  %           Non-BIAS TF: Abstract+test + LFR, TDS-CWF, TDS-RSWF (impl.)
+  %           BIAS TF:     Abstract+test + impl.
+  %         CON: Can (probably) abolish VCAL abstract+test.
+  %         CON-PROPOSAL: Abolish VCAL?!!!
+  %           PRO: The only "real" VCAL function is calibrate_voltage_all().
+  %       PROPOSAL: Merge CCAL+BIAS TF producer.
+  %         PRO: Both use BIAS RCT.
+  %         PROPOSAL: Name
+  %           BCAL=BiasCalibration, BiasUnitCalibratio, BiasHwCalibration.
+  %       NOTE: BIAS+LFR/TDS TF classes must separately load RCTDs.
+  %         PRO?: Handling of BIAS and LFR/TDS RCTs are different anyway.
+  %     --
+  %     PROPOSAL: VCAL makes it really easy for one subclass to combine LFR/TDS
+  %               TF with BIAS TF.
   %   --
-  %   PRO: Large class: 1172 rows. /2025-07-11
+  %   PRO: Large class: 1004 rows. /2025-07-14
   %
   %
   %
@@ -150,7 +174,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %
   % TODO-DEC: How distribute the calibration formulas/algorithms between
   %   (1) calibrate_* functions,
-  %   (2) functions that select relevant calibration data (get_BIAS_calib_data)
+  %   (2) functions that select relevant calibration data
   %   (2) RCT reading functions,
   %   (3) classes that store TFs?
   %   --
@@ -193,11 +217,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %
   %
   %
-  % TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
-  % TODO-NI: What parasitic capacitance value(s) should one use?
-  % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
-  %
-  % PROPOSAL: Store all versions of TFs internally.
+  % PROPOSAL: Store all possible versions of TFs internally.
   %   Ex: FTF, ITF, tabulated ITF with extrapolation+interpolation+modification
   %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
   %   NOTE: BIAS & LFR RCTs contain FTFs, TDS RCT contains ITFs.
@@ -214,9 +234,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %       NOTE/CON: All structs/TFs must have the same fields if true struct array.
   %
   %
-  %
-  % PROPOSAL: Refactor to use a struct constant for those arguments to
-  %           bicas.tf.apply_TF() which are constant.
   %
   % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least
   %      not for LFR.
@@ -239,13 +256,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %   rather than having the type-specific methods implement it separately:
   %   get_LFR_ITF/TDS_CWF/TDS_RSWF().
   %   Make those function return a transfer function instead.
-  %   NOTE: get_BIAS_LFR_calib_data() called from calibrate_voltage_BIAS_LFR()
-  %     effectively already returns information needed for calling
-  %     bicas.tf.apply_TF(), plus
-  %       CalibData.detrendingDegreeOf
-  %       CalibData.retrendingEnabled
-  %     which it needs to set since AC needs different settings (and only LFR
-  %     uses AC).
   %
   %
   %
@@ -509,10 +519,10 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         % back the fit, is by its nature inappropriate for non-lowpass filters,
         % i.e. for AC. (The fit can not be scaled with the 0 Hz signal
         % amplitude)
-        detrendingDegreeOf = obj.acDetrendingDegreeOf;
-        retrendingEnabled  = false;   % NOTE: HARDCODED SETTING.
+        detrendingDegreeOf = obj.acDetrendingDegreeOf;    % NOTE: AC!
+        retrendingEnabled  = false;                   % NOTE: HARDCODED SETTING.
       else
-        detrendingDegreeOf = obj.dcDetrendingDegreeOf;
+        detrendingDegreeOf = obj.dcDetrendingDegreeOf;    % NOTE: DC!
         retrendingEnabled  = obj.dcRetrendingEnabled;
       end
 
@@ -548,9 +558,9 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
           CalSettings.iCalibTimeL, ...
           CalSettings.iCalibTimeH);
 
-        %===================
-        % Obtain LFR/TDS TF
-        %===================
+        %====================
+        % Obtain LFR/TDS ITF
+        %====================
         if isLfr
           %===========
           % CASE: LFR
@@ -728,7 +738,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
         itfIvpt = obj.NAN_TF;
       end
-
     end    % get_TDS_RSWF_ITF()
 
 
@@ -785,8 +794,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       BiasRctd   = BiasRctdCa{1};
 
       %###################################################################
-      % kIvpav = Multiplication factor "k" that represents/replaces the
-      % (forward) transfer function.
+      % kFtfIvpav = Multiplication factor "k" that represents/replaces the
+      % (forward) transfer function for scalar calibration.
       asid         = bicas.proc.L1L2.const.SSID_ASR_to_ASID( ssid);
       asidCategory = bicas.proc.L1L2.const.get_ASID_category(asid);
       antennas     = bicas.proc.L1L2.const.get_ASID_antennas(asid);
@@ -883,7 +892,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         % later stage if these assertions are false. Checking for these
         % criteria here makes it easier to understand these particular
         % types of error.
-        assert(numel(LfrRctdCa) <= iLfrRctd, ...
+        assert(iLfrRctd <= numel(LfrRctdCa), ...
           'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
           ['LFR LfrRctdCa is too small for argument iLfrRctd=%g.', ...
           ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
@@ -917,6 +926,10 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
+    % TODO-NI: Where does the parasitic capacitance TF fit into the calibration formulas?
+    % TODO-NI: What parasitic capacitance value(s) should one use?
+    % PROPOSAL: Add TF for (arbitrary) capacitance. (Needed for ~debugging/testing.)
+    %
     %         function tfZ = parasitic_capacitance_TF(tfOmega)
     %             % Calculate Z(omega) values for TF representing parasitic
     %             % capacitances (based on analytic function).
