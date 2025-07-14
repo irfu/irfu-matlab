@@ -92,12 +92,13 @@ classdef dc___UTEST < matlab.unittest.TestCase
     function test_get_VSIB_5xBLTS_NEW___CWF(testCase)
       L = bicas.Logger('NO_STDOUT', false);
 
-      Bso = bicas.create_default_BSO();
-      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',          2, 'test');
-      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',            5, 'test');
-      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   8, 'test');
-      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  1, 'test');
-      Bso.make_read_only();
+      SatSettings = struct();
+      %SatSettings.cwfSlidingWindowLengthSec   = NaN;   % Not used by test.
+      %SatSettings.vstbFractionThreshold       = NaN;   % Not used by test.
+      SatSettings.upperThresholdAVoltDcSingle = 2;
+      SatSettings.upperThresholdAVoltDcDiff   = 5;
+      SatSettings.upperThresholdAVoltAclg     = 8;
+      SatSettings.upperThresholdAVoltAchg     = 1;
 
       % (5 BLTS) x (3 records)
       bltsSamplesAVoltAr = single([...
@@ -126,7 +127,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
       % CALL TESTED CODE
       actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
         bltsSamplesAVoltAr, false, uspr, ...
-        bltsSsidAr, isAchgFpa, Bso, L);
+        bltsSsidAr, isAchgFpa, SatSettings, L);
 
       testCase.assertEqual(actBltsVsibAr, expBltsVsibAr)
     end
@@ -138,10 +139,15 @@ classdef dc___UTEST < matlab.unittest.TestCase
       %   CON: Must have multiple records. ==> More test data.
       L = bicas.Logger('NO_STDOUT', false);
 
-      Bso = bicas.create_default_BSO();
-      Bso.override_value('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF', 2,    'test');
-      Bso.override_value('PROCESSING.SATURATION.SAMPLE_FRACTION_THRESHOLD',      0.49, 'test');
-      Bso.make_read_only();
+      SatSettings = struct();
+      %SatSettings.cwfSlidingWindowLengthSec   = NaN;
+      SatSettings.vstbFractionThreshold       = 0.49;
+      SatSettings.upperThresholdAVoltDcSingle = NaN;   % Not used by test.
+      SatSettings.upperThresholdAVoltDcDiff   = 2;
+      SatSettings.upperThresholdAVoltAclg     = NaN;   % Not used by test.
+      SatSettings.upperThresholdAVoltAchg     = NaN;   % Not used by test.
+
+
 
       % (5 BLTS) x (1 record) x (4 spr)
       bltsSamplesAVoltAr = single([...
@@ -159,7 +165,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
       % CALL TESTED CODE
       actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
         bltsSamplesAVoltAr, true, uspr, ...
-        bltsSsidAr, isAchgFpa, Bso, L);
+        bltsSsidAr, isAchgFpa, SatSettings, L);
 
       testCase.assertEqual(actBltsVsibAr, expBltsVsibAr)
     end

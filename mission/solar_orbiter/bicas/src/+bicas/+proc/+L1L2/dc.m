@@ -114,9 +114,10 @@ classdef dc
       %#####################################
       % Get VSIB for BLTS-labelled channels
       %#####################################
-      bltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
+      SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
+      bltsVsibAr  = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
         bltsSamplesAVolt, Dcip.hasSwfFormat, Dcip.Zv.uspr, ...
-        bltsSsidArray, Dcip.Zv.isAchgFpa, Bso, L);
+        bltsSsidArray, Dcip.Zv.isAchgFpa, SatSettings, L);
 
 
 
@@ -724,9 +725,7 @@ classdef dc
     %       a snapshot.
     %
     function vsibAr = get_VSIB_5xBLTS_NEW(...
-        samplesAVoltAr, hasSwfFormat, uspr, ssidAr, isAchgFpa, Bso, L)
-      % PROPOSAL: SatSettings as argument.
-      %   PRO: Simpler test code.
+        samplesAVoltAr, hasSwfFormat, uspr, ssidAr, isAchgFpa, SatSettings, L)
 
       Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
 
@@ -749,8 +748,6 @@ classdef dc
 
       % Expand variable to size nRec x 1 x N_BLTS, needed for later comparison
       uspr        = repmat(uspr, [1, 1, 5]);
-
-      SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
 
 
 
