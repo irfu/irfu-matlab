@@ -72,18 +72,15 @@
 classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   % All methods as of 2025-07-14
   % ----------------------------
-  % function obj = VoltageCalibrationImpl(...
+  % function obj = VoltageCalibrationImpl(Rctdc, useGactRct, useZvcti2, Bso)
   % function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
-  %   Delegates to calibrate_voltage_*() but also handles
-  %   allVoltageCalibDisabled, ufv, useGact(=false) itself.
-  % function bltsSamplesAVoltCa = get_LFR_ITF(obj, ...
-  % function bltsSamplesAVoltCa = get_TDS_CWF_ITF(obj, ...
-  % function bltsSamplesAVoltCa = get_TDS_RSWF_ITF(obj, ...
+  % function [itfAvpiv, offsetAvolt] = get_BIAS_ITF(obj, ...
+  % function itfIvpt = get_LFR_ITF(obj, iBlts, iLsf, iNonBiasRct, zvcti2)
+  % function itfIvpt = get_TDS_CWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
+  % function itfIvpt = get_TDS_RSWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
   % --
   % function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
   % function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
-  % --
-  % function BiasCalibData = get_BIAS_ITF(obj, ...
   %
   %
   %
@@ -615,7 +612,108 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
-    % Obtain LFR ITF, but also handle the case that should never happen for
+    % Return BIAS ITF and BIAS offset:
+    %
+    % NOTE: May return calibration values corresponding to scalar
+    % calibration, depending on BSO:
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % isAchg
+    %       NUMERIC value: 0=Off, 1=ON, or NaN=Value not known.
+    %       IMPLEMENTATION NOTE: Needs value to represent that isAchg
+    %       is unknown. Sometimes, if isAchg is unknown, then it is
+    %       useful to process as usual since some of the data can still be
+    %       derived/calibrated, so that the caller does not need to handle
+    %       the special case.
+    %
+    function [itfAvpiv, offsetAvolt] = get_BIAS_ITF(obj, ...
+        ssid, isAchg, iCalibTimeL, iCalibTimeH)
+
+      % PROPOSAL: Log warning message when simultaneously isAchg=NaN
+      %           and the value is needed.
+      % PROPOSAL: Separate functions for TF and scalar calibration.
+
+      % ASSERTION
+      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
+      assert(bicas.proc.L1L2.const.SSID_is_ASR(ssid))
+      assert(isscalar(isAchg) && isnumeric(isAchg))
+      assert(isscalar(iCalibTimeL))
+      assert(isscalar(iCalibTimeH))
+
+      BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
+      BiasRctd   = BiasRctdCa{1};
+
+      %###################################################################
+      % kFtfIvpav = Multiplication factor "k" that represents/replaces the
+      % (forward) transfer function for scalar calibration.
+      asid         = bicas.proc.L1L2.const.SSID_ASR_to_ASID( ssid);
+      asidCategory = bicas.proc.L1L2.const.get_ASID_category(asid);
+      antennas     = bicas.proc.L1L2.const.get_ASID_antennas(asid);
+      switch(asidCategory)
+
+        case 'DC_SINGLE'
+
+          % NOTE: List of ITFs for different times.
+          itfAvpiv    = BiasRctd.ItfSet.dcSingleAvpiv{iCalibTimeL};
+          kFtfIvpav   = obj.BiasScalarGain.alphaIvpav;
+          offsetAvolt = BiasRctd.dcSingleOffsetsAVolt(iCalibTimeH, antennas);
+
+        case 'DC_DIFF'
+
+          itfAvpiv = BiasRctd.ItfSet.dcDiffAvpiv{iCalibTimeL};
+          kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
+          if     isequal(antennas, [1,2]);   offsetAvolt = BiasRctd.DcDiffOffsets.E12AVolt(iCalibTimeH);
+          elseif isequal(antennas, [1,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E13AVolt(iCalibTimeH);
+          elseif isequal(antennas, [2,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E23AVolt(iCalibTimeH);
+          else
+            error('BICAS:Assertion:IllegalArgument', 'Illegal argument "ssid".');
+          end
+
+        case 'AC_DIFF'
+
+          if     isAchg == 0
+            itfAvpiv    = BiasRctd.ItfSet.aclgAvpiv{iCalibTimeL};
+            kFtfIvpav   = obj.BiasScalarGain.gammaIvpav.aclg;
+            offsetAvolt = 0;
+          elseif isAchg == 1
+            itfAvpiv    = BiasRctd.ItfSet.achgAvpiv{iCalibTimeL};
+            kFtfIvpav   = obj.BiasScalarGain.gammaIvpav.achg;
+            offsetAvolt = 0;
+          elseif isnan(isAchg)
+            % CASE: AC GAIN unknown when it is NEEDED (i.e. when AC data).
+            itfAvpiv    = obj.NAN_TF;
+            kFtfIvpav   = NaN;
+            offsetAvolt = NaN;
+          else
+            error('BICAS:Assertion:IllegalArgument', ...
+              'Illegal argument isAchg=%g.', isAchg)
+          end
+
+        otherwise
+          error('BICAS:Assertion:IllegalArgument', ...
+            ['Illegal argument "ssid" implies illegal ASID category="%s".', ...
+            ' Can not obtain calibration data for this type of signal.'], ...
+            asidCategory)
+      end
+
+      %============================================
+      % Modify return values for specific settings
+      %============================================
+      if obj.biasOffsetsDisabled && ~isnan(offsetAvolt)
+        % NOTE: Overwrites "offsetAvolt".
+        offsetAvolt = 0;
+      end
+      if obj.useBiasTfScalar
+        % NOTE: Overwrites "itfAvpiv".
+        itfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
+      end
+    end
+
+
+
+    % Return LFR ITF, but also handle the case that should never happen for
     % actual non-NaN data (LSF F3 + BLTS 4 or 5) and return an ITF that only
     % returns NaN instead. BICAS may still iterate over that combination when
     % calibrating.
@@ -784,107 +882,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
       iCalibH = bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
         Epoch, BiasRctdCa{1}.epochH);
-    end
-
-
-
-    % Return subset of already loaded BIAS calibration data, for specified
-    % settings.
-    %
-    % NOTE: May return calibration values corresponding to scalar
-    % calibration, depending on BSO:
-    %
-    %
-    % ARGUMENTS
-    % =========
-    % isAchg
-    %       NUMERIC value: 0=Off, 1=ON, or NaN=Value not known.
-    %       IMPLEMENTATION NOTE: Needs value to represent that isAchg
-    %       is unknown. Sometimes, if isAchg is unknown, then it is
-    %       useful to process as usual since some of the data can still be
-    %       derived/calibrated, so that the caller does not need to handle
-    %       the special case.
-    %
-    function [itfAvpiv, offsetAvolt] = get_BIAS_ITF(obj, ...
-        ssid, isAchg, iCalibTimeL, iCalibTimeH)
-
-      % PROPOSAL: Log warning message when simultaneously isAchg=NaN
-      % and the value is needed.
-
-      % ASSERTION
-      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
-      assert(bicas.proc.L1L2.const.SSID_is_ASR(ssid))
-      assert(isscalar(isAchg) && isnumeric(isAchg))
-      assert(isscalar(iCalibTimeL))
-      assert(isscalar(iCalibTimeH))
-
-      BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
-      BiasRctd   = BiasRctdCa{1};
-
-      %###################################################################
-      % kFtfIvpav = Multiplication factor "k" that represents/replaces the
-      % (forward) transfer function for scalar calibration.
-      asid         = bicas.proc.L1L2.const.SSID_ASR_to_ASID( ssid);
-      asidCategory = bicas.proc.L1L2.const.get_ASID_category(asid);
-      antennas     = bicas.proc.L1L2.const.get_ASID_antennas(asid);
-      switch(asidCategory)
-
-        case 'DC_SINGLE'
-
-          % NOTE: List of ITFs for different times.
-          itfAvpiv    = BiasRctd.ItfSet.dcSingleAvpiv{iCalibTimeL};
-          kFtfIvpav   = obj.BiasScalarGain.alphaIvpav;
-          offsetAvolt = BiasRctd.dcSingleOffsetsAVolt(iCalibTimeH, antennas);
-
-        case 'DC_DIFF'
-
-          itfAvpiv = BiasRctd.ItfSet.dcDiffAvpiv{iCalibTimeL};
-          kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
-          if     isequal(antennas, [1,2]);   offsetAvolt = BiasRctd.DcDiffOffsets.E12AVolt(iCalibTimeH);
-          elseif isequal(antennas, [1,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E13AVolt(iCalibTimeH);
-          elseif isequal(antennas, [2,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E23AVolt(iCalibTimeH);
-          else
-            error('BICAS:Assertion:IllegalArgument', 'Illegal argument "ssid".');
-          end
-
-        case 'AC_DIFF'
-
-          if     isAchg == 0
-            itfAvpiv    = BiasRctd.ItfSet.aclgAvpiv{iCalibTimeL};
-            kFtfIvpav   = obj.BiasScalarGain.gammaIvpav.aclg;
-            offsetAvolt = 0;
-          elseif isAchg == 1
-            itfAvpiv    = BiasRctd.ItfSet.achgAvpiv{iCalibTimeL};
-            kFtfIvpav   = obj.BiasScalarGain.gammaIvpav.achg;
-            offsetAvolt = 0;
-          elseif isnan(isAchg)
-            % CASE: AC GAIN unknown when it is NEEDED (i.e. when AC data).
-            itfAvpiv    = obj.NAN_TF;
-            kFtfIvpav   = NaN;
-            offsetAvolt = NaN;
-          else
-            error('BICAS:Assertion:IllegalArgument', ...
-              'Illegal argument isAchg=%g.', isAchg)
-          end
-
-        otherwise
-          error('BICAS:Assertion:IllegalArgument', ...
-            ['Illegal argument "ssid" implies illegal ASID category="%s".', ...
-            ' Can not obtain calibration data for this type of signal.'], ...
-            asidCategory)
-      end
-
-      %============================================
-      % Modify return values for specific settings
-      %============================================
-      if obj.biasOffsetsDisabled && ~isnan(offsetAvolt)
-        % NOTE: Overwrites "offsetAvolt".
-        offsetAvolt = 0;
-      end
-      if obj.useBiasTfScalar
-        % NOTE: Overwrites "itfAvpiv".
-        itfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
-      end
     end
 
 
