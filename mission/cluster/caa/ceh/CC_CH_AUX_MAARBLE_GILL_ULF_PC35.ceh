@@ -16,6 +16,10 @@ START_META     =   DATA_TYPE
    ENTRY       =   "CP>CAA_Parameter"
 END_META       =   DATA_TYPE
 !
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Spectra"
+END_META       =   DATASET_TYPE
+!
 START_META     =   DATASET_TITLE
    ENTRY       =   "CARISMA GILL ground-based magnetometer array PC3-5 power"
 END_META       =   DATASET_TITLE
@@ -108,7 +112,7 @@ START_VARIABLE     =   STATION_GEOC_POSITION__CC_CP_AUX_MAARBLE_GILL_ULF_PC35
    PARAMETER_TYPE     = "Support_Data"
    CATDESC            = "Station Geographic Position"
    UNITS              = "deg"
-   SI_CONVERSION      = "1.0>deg"
+   SI_CONVERSION      = "0.01745>rad"
    TENSOR_ORDER       = 1
    SIZES              = 2
    VALUE_TYPE         = FLOAT
