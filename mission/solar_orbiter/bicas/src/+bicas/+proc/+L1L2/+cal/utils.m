@@ -338,10 +338,8 @@ classdef utils
 
 
 
-    function itf = create_LFR_BIAS_ITF(...
+    function itf = combine_BIAS_ITF_and_LFR_TDS_ITF(...
         itfLfr, itfBias, isAc, acConstGainLowFreqRps)
-      % PROPOSAL: Re-purpose into function only for combining BIAS and
-      % non-BIAS TFs.
 
       assert(isscalar(isAc), islogical(isAc))
 

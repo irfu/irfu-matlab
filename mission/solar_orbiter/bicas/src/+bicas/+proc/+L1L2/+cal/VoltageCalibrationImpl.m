@@ -70,31 +70,30 @@
 % First created 2017-02-15
 %
 classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
-  % All methods as of 2025-07-11
+  % All methods as of 2025-07-14
   % ----------------------------
   % function obj = VoltageCalibrationImpl(...
   % function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
   %   Delegates to calibrate_voltage_*() but also handles
   %   allVoltageCalibDisabled, ufv, useGact(=false) itself.
-  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
-  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
-  % function bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
+  % function bltsSamplesAVoltCa = get_LFR_ITF(obj, ...
+  % function bltsSamplesAVoltCa = get_TDS_CWF_ITF(obj, ...
+  % function bltsSamplesAVoltCa = get_TDS_RSWF_ITF(obj, ...
   % --
   % function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
   % function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
   % --
   % function BiasCalibData = get_BIAS_calib_data(obj, ...
-  % function lfrItfIvpt    = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
-  % function [CalData]     = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
+  % function lfrItfIvpt    = get_LFR_ITF_raw(obj, iLfrRctd, iBlts, iLsf)
   %
   %
   %
   % PROPOSAL: Separate subclasses for different types of data. At least separate
   %           for LFR, TDS-CWF, TDS-RSWF.
   %   PROPOSAL: Methods
-  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_LFR(obj, ...
-  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_CWF(obj, ...
-  %     bltsSamplesAVoltCa = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
+  %     bltsSamplesAVoltCa = get_LFR_ITF(obj, ...
+  %     bltsSamplesAVoltCa = get_TDS_CWF_ITF(obj, ...
+  %     bltsSamplesAVoltCa = get_TDS_RSWF_ITF(obj, ...
   %   should then be separate implementations of one abstract superclass mathod.
   %     PROPOSAL: Separate non-abstract superclass method (which handles
   %       allVoltageCalibDisabled, ufv, useGact(=false)) calls the subclass
@@ -234,11 +233,11 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %
   % PROPOSAL: calibrate_voltage_all() should centralize
   %   (1) one shared loop over sample sequences in argument cell array,  -- IMPLEMENTED
-  %   (2) combining BIAS TF and LFR/TDS TF,                              -- *NOT* IMPLEMENTED
+  %   (2) combining BIAS TF and LFR/TDS TF,                              -- IMPLEMENTED
   %   (3) call to bicas.tf.apply_TF(),                                   -- IMPLEMENTED
   %   (4) add BIAS offset                                                -- IMPLEMENTED
   %   rather than having the type-specific methods implement it separately:
-  %   calibrate_voltage_BIAS_LFR/TDS_CWF/TDS_RSWF().
+  %   get_LFR_ITF/TDS_CWF/TDS_RSWF().
   %   Make those function return a transfer function instead.
   %   NOTE: get_BIAS_LFR_calib_data() called from calibrate_voltage_BIAS_LFR()
   %     effectively already returns information needed for calling
@@ -481,6 +480,9 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       assert(islogical(ufv)      && isscalar(ufv))
       assert(islogical(isTdsCwf) && isscalar(isTdsCwf))
 
+      iBlts = CalSettings.iBlts;
+      iLsf  = CalSettings.iLsf;
+
 
 
       % Set iNonBiasRct.
@@ -516,59 +518,75 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
+      %================
+      % Obtain itfAvpt
+      %================
       if obj.allVoltageCalibDisabled || ufv
-
-        CalibData = struct();
 
         if obj.allVoltageCalibDisabled
           % CASE: Set voltages to TM values.
 
-          CalibData.itfAvpt     = obj.ONE_TF;
-          CalibData.offsetAvolt = 0;
+          itfAvpt     = obj.ONE_TF;
+          offsetAvolt = 0;
         end
         if ufv
           % CASE: Set voltages to NaN.
 
           % IMPLEMENTATION NOTE: Potentially overwrites value set in above "if"
           % statement.
-          CalibData.itfAvpt     = obj.NAN_TF;
-          CalibData.offsetAvolt = NaN;
+          itfAvpt     = obj.NAN_TF;
+          offsetAvolt = NaN;
         end
 
       else
+        %=======================
+        % Obtain BIAS TF+offset
+        %=======================
+        BiasCalibData = obj.get_BIAS_calib_data(...
+          CalSettings.ssid, ...
+          CalSettings.isAchg, ...
+          CalSettings.iCalibTimeL, ...
+          CalSettings.iCalibTimeH);
+        offsetAvolt   = BiasCalibData.offsetAVolt;
 
+        %===================
+        % Obtain LFR/TDS TF
+        %===================
         if isLfr
           %===========
           % CASE: LFR
           %===========
-          CalibData = obj.calibrate_voltage_BIAS_LFR(...
-            CalSettings, iNonBiasRct, zvcti2);
+          itfIvpt = obj.get_LFR_ITF(iBlts, iLsf, iNonBiasRct, zvcti2);
         else
           %===========
           % CASE: TDS
           %===========
           if isTdsCwf
             % CASE: TDS CWF
-            CalibData = obj.calibrate_voltage_BIAS_TDS_CWF(...
-              CalSettings, iNonBiasRct, zvcti2);
+            itfIvpt = obj.get_TDS_CWF_ITF(iBlts, iNonBiasRct, zvcti2);
           else
             % CASE: TDS RSWF
-            CalibData = obj.calibrate_voltage_BIAS_TDS_RSWF(...
-              CalSettings, iNonBiasRct, zvcti2);
+            itfIvpt = obj.get_TDS_RSWF_ITF(iBlts, iNonBiasRct, zvcti2);
           end
         end
 
+        itfAvpt = bicas.proc.L1L2.cal.utils.combine_BIAS_ITF_and_LFR_TDS_ITF(...
+          itfIvpt, BiasCalibData.itfAvpiv, ...
+          bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid), ...
+          obj.itfAcConstGainLowFreqRps);
       end
 
 
 
+      %======================================
+      % Apply BIAS+LFR/TDS+offset to samples
+      %======================================
       bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
       for i = 1:numel(bltsSamplesTmCa)
-        % APPLY TRANSFER FUNCTION (BIAS + LFR/TDS)
          tempSamplesAVolt = bicas.tf.apply_TF(...
           dtSec(i), ...
           bltsSamplesTmCa{i}(:), ...
-          CalibData.itfAvpt, ...
+          itfAvpt, ...
           'method',                  obj.tfMethod, ...
           'detrendingDegreeOf',      detrendingDegreeOf, ...
           'retrendingEnabled',       retrendingEnabled, ...
@@ -578,39 +596,26 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
           'snfEnabled',              obj.snfEnabled, ...
           'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
 
-         bltsSamplesAVoltCa{i, 1} = tempSamplesAVolt + CalibData.offsetAvolt;
+         bltsSamplesAVoltCa{i, 1} = tempSamplesAVolt + offsetAvolt;
       end
 
     end
 
 
 
-    % ARGUMENTS AND RETURN VALUES
-    % ===========================
-    % CalibData
-    %       Struct with values needed for calibration.
+    % RETURN VALUE
+    % ============
+    % itfIvpt
+    %       LFR ITF, TM-->ivolt
     %
-    function CalibData = calibrate_voltage_BIAS_LFR(obj, ...
-        CalSettings, iNonBiasRct, zvcti2)
+    function itfIvpt = get_LFR_ITF(obj, iBlts, iLsf, iNonBiasRct, zvcti2)
 
       % ASSERTIONS
-      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
-      % IMPLEMENTATION NOTE: bicas.proc.L1L2.CalibrationSettings permits TDS
-      % data for which iLsf=NaN. This function should not permit that.
-      bicas.proc.L1L2.cal.utils.assert_iLsf(CalSettings.iLsf)
-      assert(bicas.proc.L1L2.const.SSID_is_ASR(CalSettings.ssid))
+      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
+      bicas.proc.L1L2.cal.utils.assert_iLsf( iLsf)
       assert(isscalar(iNonBiasRct))
       assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
       % No assertion on zvcti2 unless used (determined later).
-
-      iBlts        = CalSettings.iBlts;
-      ssid         = CalSettings.ssid;
-      isAchg       = CalSettings.isAchg;
-      iCalibTimeL  = CalSettings.iCalibTimeL;
-      iCalibTimeH  = CalSettings.iCalibTimeH;
-      iLsf         = CalSettings.iLsf;
-
-
 
       %==================================================
       % The only place to potentially make use of zvcti2
@@ -637,58 +642,27 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
-      %==============================
-      % Obtain BIAS calibration data
-      %==============================
-      BiasCalibData = obj.get_BIAS_calib_data(...
-        ssid, isAchg, iCalibTimeL, iCalibTimeH);
-
       %========================================
       % Obtain (official) LFR calibration data
       %========================================
       if obj.lfrTdsTfDisabled
-        lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
+        itfIvpt = obj.ONE_TF;
       else
-        lfrItfIvpt = obj.get_LFR_ITF(iNonBiasRct, iBlts, iLsf);
+        itfIvpt = obj.get_LFR_ITF_raw(iNonBiasRct, iBlts, iLsf);
       end
-
-      %======================================
-      % Create combined ITF for LFR and BIAS
-      %======================================
-      itfAvpt = bicas.proc.L1L2.cal.utils.create_LFR_BIAS_ITF(...
-        lfrItfIvpt, ...
-        BiasCalibData.itfAvpiv, ...
-        bicas.proc.L1L2.const.SSID_is_AC(ssid), ...
-        obj.itfAcConstGainLowFreqRps);
-
-      %===========================================
-      % CALIBRATION INFO: LFR TM --> TM --> avolt
-      %===========================================
-      CalibData = struct();
-      CalibData.itfAvpt     = itfAvpt;
-      CalibData.offsetAvolt = BiasCalibData.offsetAVolt;
-    end    % calibrate_voltage_BIAS_LFR()
+    end    % get_LFR_ITF()
 
 
 
     % ARGUMENTS AND RETURN VALUES
     % ===========================
-    % See calibrate_voltage_BIAS_LFR.
+    % See get_LFR_ITF().
     %
-    function CalibData = calibrate_voltage_BIAS_TDS_CWF(obj, ...
-        CalSettings, iNonBiasRct, zvcti2)
-
-      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
-
-      iBlts       = CalSettings.iBlts;
-      ssid        = CalSettings.ssid;
-      isAchg      = CalSettings.isAchg;
-      iCalibTimeL = CalSettings.iCalibTimeL;
-      iCalibTimeH = CalSettings.iCalibTimeH;
+    function itfIvpt = get_TDS_CWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
 
       % ASSERTIONS
+      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
       assert(iNonBiasRct >= 1)
-
       if obj.useZvcti2
         % TODO? ASSERTION: zvcti2 = 0???
         error(...
@@ -698,18 +672,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
-      CalibData = struct();
-
       if ismember(iBlts, [1,2,3])
         % CASE: BLTS 1-3 which TDS does support.
-
-        %==============================
-        % Obtain calibration constants
-        %==============================
-        % NOTE: AC low/high gain is irrelevant for TDS. Argument value is
-        % therefore arbitrary.
-        BiasCalibData = obj.get_BIAS_calib_data(...
-          ssid, isAchg, iCalibTimeL, iCalibTimeH);
 
         if obj.lfrTdsTfDisabled
           tdsFactorIvpt = 1;
@@ -718,41 +682,25 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
           tdsFactorIvpt = RctdCa{iNonBiasRct}.factorsIvpt(iBlts);
         end
 
-        %===========================================
-        % CALIBRATION INFO: TDS TM --> antenna volt
-        %===========================================
-        CalibData.itfAvpt     = @(omegaRps) (tdsFactorIvpt * BiasCalibData.itfAvpiv(omegaRps));
-        CalibData.offsetAvolt = BiasCalibData.offsetAVolt;
-
+        itfIvpt = @(omegaRps) (tdsFactorIvpt * ones(size(omegaRps)));
       else
         % CASE: BLTS 4-5 which TDS does NOT support (forbidden in h/w).
 
-        CalibData.itfAvpt     = obj.NAN_TF;
-        CalibData.offsetAvolt = NaN;
+        itfIvpt = obj.NAN_TF;
       end
-
-    end    % calibrate_voltage_BIAS_TDS_CWF()
+    end    % get_TDS_CWF_ITF()
 
 
 
     % ARGUMENTS AND RETURN VALUES
     % ===========================
-    % See calibrate_voltage_BIAS_LFR.
+    % See get_LFR_ITF().
     %
-    function CalibData = calibrate_voltage_BIAS_TDS_RSWF(obj, ...
-        CalSettings, iNonBiasRct, zvcti2)
-
-      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
-
-      iBlts       = CalSettings.iBlts;
-      ssid        = CalSettings.ssid;
-      isAchg      = CalSettings.isAchg;
-      iCalibTimeL = CalSettings.iCalibTimeL;
-      iCalibTimeH = CalSettings.iCalibTimeH;
+    function itfIvpt = get_TDS_RSWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
 
       % ASSERTIONS
+      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
       assert(iNonBiasRct >= 1)
-
       if obj.useZvcti2
         % TODO? ASSERTION: zvcti2 = 0???
         error(...
@@ -762,17 +710,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
-      CalibData = struct();
-
-      %==============================
-      % Obtain calibration constants
-      %==============================
-      % NOTE: Low/high gain is irrelevant for TDS. Argument value
-      % arbitrary.
-      BiasCalibData = obj.get_BIAS_calib_data(...
-        ssid, isAchg, iCalibTimeL, iCalibTimeH);
-
-      % Initialize empty output variable.
       if ismember(iBlts, [1,2,3])
         % CASE: BLTS 1-3 which TDS does support.
 
@@ -781,30 +718,19 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         %======================================
         if obj.lfrTdsTfDisabled
           % BUG?: Should be @(omegaRps) (ones(size(omegaRps))) ?
-          tdsItfIvpt = @(omegaRps) (ones(omegaRps));
+          itfIvpt = @(omegaRps) (ones(omegaRps));
         else
           RctdCa     = obj.Rctdc.get_RCTD_CA('TDS-RSWF');
-          tdsItfIvpt = RctdCa{iNonBiasRct}.itfModifIvptCa{iBlts};
+          itfIvpt = RctdCa{iNonBiasRct}.itfModifIvptCa{iBlts};
         end
 
-        itfAvpt = @(omegaRps) (...
-          tdsItfIvpt(omegaRps) ...
-          .* ...
-          BiasCalibData.itfAvpiv(omegaRps));
-
-        %===========================================
-        % CALIBRATION INFO: TDS TM --> antenna volt
-        %===========================================
-        CalibData.itfAvpt     = itfAvpt;
-        CalibData.offsetAvolt = BiasCalibData.offsetAVolt;
       else
         % CASE: BLTS 4-5 which TDS does not support (forbidden in h/w).
 
-        CalibData.itfAvpt     = obj.NAN_TF;
-        CalibData.offsetAvolt = NaN;
+        itfIvpt = obj.NAN_TF;
       end
 
-    end    % calibrate_voltage_BIAS_TDS_RSWF()
+    end    % get_TDS_RSWF_ITF()
 
 
 
@@ -935,7 +861,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
     % returns NaN instead. BICAS may still iterate over that combination
     % though when calibrating.
     %
-    function lfrItfIvpt = get_LFR_ITF(obj, iLfrRctd, iBlts, iLsf)
+    function lfrItfIvpt = get_LFR_ITF_raw(obj, iLfrRctd, iBlts, iLsf)
       % ASSERTIONS
       assert(iLfrRctd >= 1)
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
