@@ -581,25 +581,96 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       % ASSERTIONS
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
       % IMPLEMENTATION NOTE: bicas.proc.L1L2.CalibrationSettings permits TDS
-      % data for which iLsf=NaN.
+      % data for which iLsf=NaN. This function should not permit that.
       bicas.proc.L1L2.cal.utils.assert_iLsf(CalSettings.iLsf)
+      assert(bicas.proc.L1L2.const.SSID_is_ASR(CalSettings.ssid))
+      assert(isscalar(iNonBiasRct))
+      assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
+      % No assertion on zvcti2 unless used (determined later).
+
+      iBlts        = CalSettings.iBlts;
+      ssid         = CalSettings.ssid;
+      isAchg       = CalSettings.isAchg;
+      iCalibTimeL  = CalSettings.iCalibTimeL;
+      iCalibTimeH  = CalSettings.iCalibTimeH;
+      iLsf         = CalSettings.iLsf;
 
 
 
-      %=============================
-      % Obtain all calibration data
-      %=============================
-      BiasLfrCalibData = obj.get_BIAS_LFR_calib_data(...
-        CalSettings, iNonBiasRct, zvcti2);
+      %==================================================
+      % The only place to potentially make use of zvcti2
+      %==================================================
+      if obj.useZvcti2
+        % ASSERTIONS
+        assert(isscalar(zvcti2), ...
+          'BICAS:IllegalArgument:Assertion', ...
+          'Argument zvcti2 is not scalar.')
+        assert(zvcti2 >= 0, ...
+          'BICAS:IllegalArgument:Assertion', ...
+          ['Illegal argument zvcti2=%g', ...
+          ' (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))'], ...
+          zvcti2)
+        assert(iLsf == zvcti2+1, ...
+          'BICAS:IllegalArgument:Assertion', ...
+          'zvcti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
+          zvcti2+1, iLsf)
+
+        % NOTE: Override earlier iLsf.
+        % NOTE: This is the only place zvcti2 is used in this class.
+        iLsf = zvcti2 + 1;
+      end
+
+
+
+      %=========================================
+      % Obtain settings for bicas.tf.apply_TF()
+      %=========================================
+      if bicas.proc.L1L2.const.SSID_is_AC(ssid)
+        % IMPLEMENTATION NOTE: DC is (optionally) detrended via
+        % bicas.tf.apply_TF() in the sense of a linear fit being removed, TF
+        % applied, and then added back. That same algorithm, or at least adding
+        % back the fit, is by its nature inappropriate for non-lowpass filters,
+        % i.e. for AC. (The fit can not be scaled with the 0 Hz signal
+        % amplitude)
+        detrendingDegreeOf = obj.acDetrendingDegreeOf;
+        retrendingEnabled  = false;   % NOTE: HARDCODED SETTING.
+      else
+        detrendingDegreeOf = obj.dcDetrendingDegreeOf;
+        retrendingEnabled  = obj.dcRetrendingEnabled;
+      end
+
+      %==============================
+      % Obtain BIAS calibration data
+      %==============================
+      BiasCalibData = obj.get_BIAS_calib_data(...
+        ssid, isAchg, iCalibTimeL, iCalibTimeH);
+
+      %========================================
+      % Obtain (official) LFR calibration data
+      %========================================
+      if obj.lfrTdsTfDisabled
+        lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
+      else
+        lfrItfIvpt = obj.get_LFR_ITF(iNonBiasRct, iBlts, iLsf);
+      end
+
+      %======================================
+      % Create combined ITF for LFR and BIAS
+      %======================================
+      itfAvpt = bicas.proc.L1L2.cal.utils.create_LFR_BIAS_ITF(...
+        lfrItfIvpt, ...
+        BiasCalibData.itfAvpiv, ...
+        bicas.proc.L1L2.const.SSID_is_AC(ssid), ...
+        obj.itfAcConstGainLowFreqRps);
 
       %===========================================
       % CALIBRATION INFO: LFR TM --> TM --> avolt
       %===========================================
       CalibData = struct();
-      CalibData.itfAvpt            = BiasLfrCalibData.itfAvpt;
-      CalibData.offsetAvolt        = BiasLfrCalibData.BiasCalibData.offsetAVolt;
-      CalibData.detrendingDegreeOf = BiasLfrCalibData.detrendingDegreeOf;
-      CalibData.retrendingEnabled  = BiasLfrCalibData.retrendingEnabled;
+      CalibData.itfAvpt            = itfAvpt;
+      CalibData.offsetAvolt        = BiasCalibData.offsetAVolt;
+      CalibData.detrendingDegreeOf = detrendingDegreeOf;
+      CalibData.retrendingEnabled  = retrendingEnabled;
     end    % calibrate_voltage_BIAS_LFR()
 
 
@@ -859,8 +930,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       end
       %###################################################################
 
-
-
+      BiasCalibData             = struct();
       BiasCalibData.itfAvpiv    = biasItfAvpiv;
       BiasCalibData.offsetAVolt = offsetAVolt;
 
@@ -916,112 +986,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
         lfrItfIvpt = LfrRctdCa{iLfrRctd}.ItfModifIvptCaCa{iLsf}{iBlts};
       end
-    end
-
-
-
-    % Return calibration data for LFR+BIAS calibration.
-    %
-    % RATIONALE
-    % =========
-    % Method exists to
-    % (1) simplify & clarify calibrate_voltage_BIAS_LFR(),
-    % (2) be useful for non-BICAS code to inspect the calibration data used
-    %     for a particular calibration case, in particular the combined
-    %     (LFR+BIAS) transfer functions.
-    %     NOTE: This is also the reason why this method is public.
-    %
-    % IMPLEMENTATION NOTE: Return one struct instead of multiple return
-    % values to make sure that the caller does not confuse the return values
-    % with each other.
-    %
-    function CalData = get_BIAS_LFR_calib_data(obj, ...
-        CalSettings, iNonBiasRct, zvcti2)
-
-      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
-
-      iBlts        = CalSettings.iBlts;
-      ssid         = CalSettings.ssid;
-      isAchg       = CalSettings.isAchg;
-      iCalibTimeL  = CalSettings.iCalibTimeL;
-      iCalibTimeH  = CalSettings.iCalibTimeH;
-      iLsf         = CalSettings.iLsf;
-
-      % ASSERTIONS
-      assert(bicas.proc.L1L2.const.SSID_is_ASR(ssid))
-      assert(isscalar(iNonBiasRct))
-      assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
-      % No assertion on zvcti2 unless used (determined later).
-
-
-
-      %==================================================
-      % The only place to potentially make use of zvcti2
-      %==================================================
-      if obj.useZvcti2
-        % ASSERTIONS
-        assert(isscalar(zvcti2), ...
-          'BICAS:IllegalArgument:Assertion', ...
-          'Argument zvcti2 is not scalar.')
-        assert(zvcti2 >= 0, ...
-          'BICAS:IllegalArgument:Assertion', ...
-          ['Illegal argument zvcti2=%g', ...
-          ' (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))'], ...
-          zvcti2)
-        assert(iLsf == zvcti2+1, ...
-          'BICAS:IllegalArgument:Assertion', ...
-          'zvcti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
-          zvcti2+1, iLsf)
-
-        % NOTE: Override earlier iLsf.
-        % NOTE: This is the only place zvcti2 is used in this class.
-        iLsf = zvcti2 + 1;
-      end
-
-
-
-      CalData = struct();
-
-      %=========================================
-      % Obtain settings for bicas.tf.apply_TF()
-      %=========================================
-      if bicas.proc.L1L2.const.SSID_is_AC(ssid)
-        % IMPLEMENTATION NOTE: DC is (optionally) detrended via
-        % bicas.tf.apply_TF() in the sense of a linear fit being removed, TF
-        % applied, and then added back. That same algorithm, or at least adding
-        % back the fit, is by its nature inappropriate for non-lowpass filters,
-        % i.e. for AC. (The fit can not be scaled with the 0 Hz signal
-        % amplitude)
-        CalData.detrendingDegreeOf = obj.acDetrendingDegreeOf;
-        CalData.retrendingEnabled  = false;   % NOTE: HARDCODED SETTING.
-      else
-        CalData.detrendingDegreeOf = obj.dcDetrendingDegreeOf;
-        CalData.retrendingEnabled  = obj.dcRetrendingEnabled;
-      end
-
-      %==============================
-      % Obtain BIAS calibration data
-      %==============================
-      CalData.BiasCalibData = obj.get_BIAS_calib_data(...
-        ssid, isAchg, iCalibTimeL, iCalibTimeH);
-
-      %========================================
-      % Obtain (official) LFR calibration data
-      %========================================
-      if obj.lfrTdsTfDisabled
-        CalData.lfrItfIvpt = @(omegaRps) (ones(size(omegaRps)));
-      else
-        CalData.lfrItfIvpt = obj.get_LFR_ITF(iNonBiasRct, iBlts, iLsf);
-      end
-
-      %======================================
-      % Create combined ITF for LFR and BIAS
-      %======================================
-      CalData.itfAvpt = bicas.proc.L1L2.cal.utils.create_LFR_BIAS_ITF(...
-        CalData.lfrItfIvpt, ...
-        CalData.BiasCalibData.itfAvpiv, ...
-        bicas.proc.L1L2.const.SSID_is_AC(ssid), ...
-        obj.itfAcConstGainLowFreqRps);
     end
 
 
