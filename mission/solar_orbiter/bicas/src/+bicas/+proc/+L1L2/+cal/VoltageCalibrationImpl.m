@@ -497,6 +497,25 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
+      %=========================================
+      % Obtain settings for bicas.tf.apply_TF()
+      %=========================================
+      if bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid)
+        % IMPLEMENTATION NOTE: DC is (optionally) detrended via
+        % bicas.tf.apply_TF() in the sense of a linear fit being removed, TF
+        % applied, and then added back. That same algorithm, or at least adding
+        % back the fit, is by its nature inappropriate for non-lowpass filters,
+        % i.e. for AC. (The fit can not be scaled with the 0 Hz signal
+        % amplitude)
+        detrendingDegreeOf = obj.acDetrendingDegreeOf;
+        retrendingEnabled  = false;   % NOTE: HARDCODED SETTING.
+      else
+        detrendingDegreeOf = obj.dcDetrendingDegreeOf;
+        retrendingEnabled  = obj.dcRetrendingEnabled;
+      end
+
+
+
       if obj.allVoltageCalibDisabled || ufv
 
         CalibData = struct();
@@ -515,10 +534,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
           CalibData.itfAvpt     = obj.NAN_TF;
           CalibData.offsetAvolt = NaN;
         end
-
-        % NOTE: Values are not important but required.
-        CalibData.detrendingDegreeOf = -1;    % -1 = No detrending
-        CalibData.retrendingEnabled  = false;
 
       else
 
@@ -555,8 +570,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
           bltsSamplesTmCa{i}(:), ...
           CalibData.itfAvpt, ...
           'method',                  obj.tfMethod, ...
-          'detrendingDegreeOf',      CalibData.detrendingDegreeOf, ...
-          'retrendingEnabled',       CalibData.retrendingEnabled, ...
+          'detrendingDegreeOf',      detrendingDegreeOf, ...
+          'retrendingEnabled',       retrendingEnabled, ...
           'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction, ...
           'kernelEdgePolicy',        obj.kernelEdgePolicy, ...
           'kernelHannWindow',        obj.kernelHannWindow, ...
@@ -622,23 +637,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
-      %=========================================
-      % Obtain settings for bicas.tf.apply_TF()
-      %=========================================
-      if bicas.proc.L1L2.const.SSID_is_AC(ssid)
-        % IMPLEMENTATION NOTE: DC is (optionally) detrended via
-        % bicas.tf.apply_TF() in the sense of a linear fit being removed, TF
-        % applied, and then added back. That same algorithm, or at least adding
-        % back the fit, is by its nature inappropriate for non-lowpass filters,
-        % i.e. for AC. (The fit can not be scaled with the 0 Hz signal
-        % amplitude)
-        detrendingDegreeOf = obj.acDetrendingDegreeOf;
-        retrendingEnabled  = false;   % NOTE: HARDCODED SETTING.
-      else
-        detrendingDegreeOf = obj.dcDetrendingDegreeOf;
-        retrendingEnabled  = obj.dcRetrendingEnabled;
-      end
-
       %==============================
       % Obtain BIAS calibration data
       %==============================
@@ -667,10 +665,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       % CALIBRATION INFO: LFR TM --> TM --> avolt
       %===========================================
       CalibData = struct();
-      CalibData.itfAvpt            = itfAvpt;
-      CalibData.offsetAvolt        = BiasCalibData.offsetAVolt;
-      CalibData.detrendingDegreeOf = detrendingDegreeOf;
-      CalibData.retrendingEnabled  = retrendingEnabled;
+      CalibData.itfAvpt     = itfAvpt;
+      CalibData.offsetAvolt = BiasCalibData.offsetAVolt;
     end    % calibrate_voltage_BIAS_LFR()
 
 
@@ -703,8 +699,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
       CalibData = struct();
-      CalibData.detrendingDegreeOf = obj.dcDetrendingDegreeOf;
-      CalibData.retrendingEnabled  = obj.dcRetrendingEnabled;
 
       if ismember(iBlts, [1,2,3])
         % CASE: BLTS 1-3 which TDS does support.
@@ -769,8 +763,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
       CalibData = struct();
-      CalibData.detrendingDegreeOf = obj.dcDetrendingDegreeOf;
-      CalibData.retrendingEnabled  = obj.dcRetrendingEnabled;
 
       %==============================
       % Obtain calibration constants
