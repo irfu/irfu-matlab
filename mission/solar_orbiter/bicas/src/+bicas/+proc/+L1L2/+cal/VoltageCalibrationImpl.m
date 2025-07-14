@@ -561,21 +561,25 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         %====================
         % Obtain LFR/TDS ITF
         %====================
-        if isLfr
-          %===========
-          % CASE: LFR
-          %===========
-          itfIvpt = obj.get_LFR_ITF(iBlts, iLsf, iNonBiasRct, zvcti2);
+        if obj.lfrTdsTfDisabled
+          itfIvpt = obj.ONE_TF;
         else
-          %===========
-          % CASE: TDS
-          %===========
-          if isTdsCwf
-            % CASE: TDS CWF
-            itfIvpt = obj.get_TDS_CWF_ITF(iBlts, iNonBiasRct, zvcti2);
+          if isLfr
+            %===========
+            % CASE: LFR
+            %===========
+            itfIvpt = obj.get_LFR_ITF(iBlts, iLsf, iNonBiasRct, zvcti2);
           else
-            % CASE: TDS RSWF
-            itfIvpt = obj.get_TDS_RSWF_ITF(iBlts, iNonBiasRct, zvcti2);
+            %===========
+            % CASE: TDS
+            %===========
+            if isTdsCwf
+              % CASE: TDS CWF
+              itfIvpt = obj.get_TDS_CWF_ITF(iBlts, iNonBiasRct, zvcti2);
+            else
+              % CASE: TDS RSWF
+              itfIvpt = obj.get_TDS_RSWF_ITF(iBlts, iNonBiasRct, zvcti2);
+            end
           end
         end
 
@@ -654,11 +658,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       %========================================
       % Obtain (official) LFR calibration data
       %========================================
-      if obj.lfrTdsTfDisabled
-        itfIvpt = obj.ONE_TF;
-      else
-        itfIvpt = obj.get_LFR_ITF_raw(iNonBiasRct, iBlts, iLsf);
-      end
+      itfIvpt = obj.get_LFR_ITF_raw(iNonBiasRct, iBlts, iLsf);
     end    % get_LFR_ITF()
 
 
@@ -684,12 +684,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       if ismember(iBlts, [1,2,3])
         % CASE: BLTS 1-3 which TDS does support.
 
-        if obj.lfrTdsTfDisabled
-          tdsFactorIvpt = 1;
-        else
-          RctdCa        = obj.Rctdc.get_RCTD_CA('TDS-CWF');
-          tdsFactorIvpt = RctdCa{iNonBiasRct}.factorsIvpt(iBlts);
-        end
+        RctdCa        = obj.Rctdc.get_RCTD_CA('TDS-CWF');
+        tdsFactorIvpt = RctdCa{iNonBiasRct}.factorsIvpt(iBlts);
 
         itfIvpt = @(omegaRps) (tdsFactorIvpt * ones(size(omegaRps)));
       else
@@ -725,13 +721,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         %======================================
         % Create combined ITF for TDS and BIAS
         %======================================
-        if obj.lfrTdsTfDisabled
-          % BUG?: Should be @(omegaRps) (ones(size(omegaRps))) ?
-          itfIvpt = @(omegaRps) (ones(omegaRps));
-        else
-          RctdCa     = obj.Rctdc.get_RCTD_CA('TDS-RSWF');
-          itfIvpt = RctdCa{iNonBiasRct}.itfModifIvptCa{iBlts};
-        end
+        RctdCa     = obj.Rctdc.get_RCTD_CA('TDS-RSWF');
+        itfIvpt = RctdCa{iNonBiasRct}.itfModifIvptCa{iBlts};
 
       else
         % CASE: BLTS 4-5 which TDS does not support (forbidden in h/w).
