@@ -12,6 +12,7 @@ clean:
         CC_CH_AUX_MAARBLE_TH[A-E]_ULF_PC12.ceh \
         CC_CH_AUX_MAARBLE_TH[A-E]_ULF_PC35.ceh \
         CC_CH_AUX_MAARBLE_TH[A-E]_ULF_FACMATR.ceh \
+	CC_CH_AUX_MAARBLE_TH[A-E]_VLF.ceh \
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_PC12.ceh \
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_PC35.ceh \
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_FACMATR.ceh \
