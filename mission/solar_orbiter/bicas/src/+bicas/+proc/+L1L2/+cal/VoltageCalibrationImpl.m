@@ -84,7 +84,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   % function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
   % --
   % function BiasCalibData = get_BIAS_ITF(obj, ...
-  % function lfrItfIvpt    = get_LFR_ITF_raw(obj, iLfrRctd, iBlts, iLsf)
   %
   %
   %
@@ -616,6 +615,11 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
+    % Obtain LFR ITF, but also handle the case that should never happen for
+    % actual non-NaN data (LSF F3 + BLTS 4 or 5) and return an ITF that only
+    % returns NaN instead. BICAS may still iterate over that combination when
+    % calibrating.
+    %
     % RETURN VALUE
     % ============
     % itfIvpt
@@ -655,10 +659,43 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
-      %========================================
-      % Obtain (official) LFR calibration data
-      %========================================
-      itfIvpt = obj.get_LFR_ITF_raw(iNonBiasRct, iBlts, iLsf);
+      if (iLsf == 4) && ismember(iBlts, [4,5])
+        % CASE: F3 and BLTS={4,5}
+
+        % IMPLEMENTATION NOTE: There is no tabulated LFR TF for this case and
+        % the h/w does not support it, so an accurate TF can not be returned
+        % even in principle. However, the BICAS implementation (2025-07-11)
+        % iterates over all 5x BLTS channels no matter the value of LSF, e.g.
+        % for F3 (iLsf=4) when there is only real data on BLTS1-3. It can
+        % therefore request "calibration" for this case anyway, even if it means
+        % calibrating an empty channel (converting NaN values to NaN). For this
+        % reason, the code can not raise an exception for this case.
+        itfIvpt = obj.NAN_TF;
+      else
+        LfrRctdCa = obj.Rctdc.get_RCTD_CA('LFR');
+
+        % ASSERTION
+        % IMPLEMENTATION NOTE: Anonymous function below will fail at a
+        % later stage if these assertions are false. Checking for these
+        % criteria here makes it easier to understand these particular
+        % types of error.
+        assert(iNonBiasRct <= numel(LfrRctdCa), ...
+          'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
+          ['LFR LfrRctdCa is too small for argument iLfrRctd=%g.', ...
+          ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
+          ' value is larger than glob. attr. CALIBRATION TABLE allows.'], ...
+          iNonBiasRct)
+        assert(~isempty(LfrRctdCa{iNonBiasRct}), ...
+          'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
+          ['LFR LfrRctdCa contains no RCT data corresponding', ...
+          ' to argument iNonBiasRct=%g. This may indicate that', ...
+          ' a zVar CALIBRATION_TABLE_INDEX(:,1) value is wrong or', ...
+          ' that BICAS did not try to load the corresponding RCT', ...
+          ' in glob. attr. CALIBRATION_TABLE.'], ...
+          iNonBiasRct)
+
+        itfIvpt = LfrRctdCa{iNonBiasRct}.ItfModifIvptCaCa{iLsf}{iBlts};
+      end
     end    % get_LFR_ITF()
 
 
@@ -847,58 +884,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       if obj.useBiasTfScalar
         % NOTE: Overwrites "itfAvpiv".
         itfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
-      end
-    end
-
-
-
-    % Obtain LFR ITF, but handle the case that should never happen for
-    % actual non-NaN data (LSF F3 + BLTS 4 or 5) and return a TF that only
-    % returns NaN instead. BICAS may still iterate over that combination
-    % though when calibrating.
-    %
-    function lfrItfIvpt = get_LFR_ITF_raw(obj, iLfrRctd, iBlts, iLsf)
-      % ASSERTIONS
-      assert(iLfrRctd >= 1)
-      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
-
-      if (iLsf == 4) && ismember(iBlts, [4,5])
-        % CASE: F3 and BLTS={4,5}
-
-        % IMPLEMENTATION NOTE: There is no tabulated LFR TF for this case and
-        % the h/w does not support it, so an accurate TF can not be returned
-        % even in principle. However, the BICAS implementation (2025-07-11)
-        % iterates over all 5x BLTS channels no matter the value of LSF, e.g.
-        % for F3 (iLsf=4) when there is only real data on BLTS1-3. It can
-        % therefore request "calibration" for this case anyway, even if it means
-        % calibrating an empty channel (converting NaN values to NaN). For this
-        % reason, the code can not raise an exception for this case.
-        lfrItfIvpt = obj.NAN_TF;
-      else
-        LfrRctdCa = obj.Rctdc.get_RCTD_CA('LFR');
-
-        % ASSERTION
-        % IMPLEMENTATION NOTE: Anonymous function below will fail at a
-        % later stage if these assertions are false. Checking for these
-        % criteria here makes it easier to understand these particular
-        % types of error.
-        assert(iLfrRctd <= numel(LfrRctdCa), ...
-          'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
-          ['LFR LfrRctdCa is too small for argument iLfrRctd=%g.', ...
-          ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
-          ' value is larger than glob. attr. CALIBRATION TABLE allows.'], ...
-          iLfrRctd)
-        assert(~isempty(LfrRctdCa{iLfrRctd}), ...
-          'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
-          ['LFR LfrRctdCa contains no RCT data corresponding', ...
-          ' to argument iLfrRctd=%g. This may indicate that', ...
-          ' a zVar CALIBRATION_TABLE_INDEX(:,1) value is wrong or', ...
-          ' that BICAS did not try to load the corresponding RCT', ...
-          ' in glob. attr. CALIBRATION_TABLE.'], ...
-          iLfrRctd)
-
-        lfrItfIvpt = LfrRctdCa{iLfrRctd}.ItfModifIvptCaCa{iLsf}{iBlts};
       end
     end
 
