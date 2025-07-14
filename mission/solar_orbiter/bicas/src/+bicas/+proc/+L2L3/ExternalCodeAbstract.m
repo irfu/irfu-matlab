@@ -12,7 +12,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef ExternalCodeAbstract
+classdef(Abstract) ExternalCodeAbstract
   % PROPOSAL: Better name with better abbreviation for class with subclasses?
   %   ~external code
   %   ~science

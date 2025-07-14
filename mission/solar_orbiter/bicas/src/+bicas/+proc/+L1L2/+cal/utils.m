@@ -110,11 +110,11 @@ classdef utils
     %       omegaLimitRps. Primarily intended to be equal to be equal to
     %       tf(omegaLimitRps), but does not have to be.
     %       NOTE: Allowed to be NaN.
-    %       NOTE: Function could determine this value but asks the caller to
-    %       evaluate it. Since this function is meant to be used in
-    %       anonymous functions/function handles (e.g. as a wrapper around a
-    %       tf), this avoids calling argument tf every time this function is
-    %       called.
+    %       NOTE: This function could determine this value itself but instead
+    %       asks the caller to evaluate it. Since this function is meant to be
+    %       used in anonymous functions/function handles (e.g. as a wrapper
+    %       around a tf), this avoids calling argument "tf" every time this
+    %       function is called.
     %
     function Z = TF_LF_constant_abs_Z(tf, omegaRps, omegaLimitRps, zLimit)
 
@@ -130,21 +130,21 @@ classdef utils
       % NOTE: May evaluate 1/0 at 0 Hz (for e.g. BIAS AC TF), but that
       % should be overwritten afterwards.
       Z = tf(omegaRps);
-      b = omegaRps < (omegaLimitRps);
+      bBelowLimit = omegaRps < (omegaLimitRps);
 
       % Handling of special case
       % ========================
       % Z(0 Hz) non-finite (e.g. for BIAS AC ITF).
       % ==> Phase is undetermined.
       % ==> Can not set to non-zero gain with same phase as before.
-      % IMPLEMENTATION NOTE: Identifies indices before normalizing, just
-      % to be sure that condition stems from input data, not normalization
-      % bugs.
-      b2 = ~isfinite(Z(b)) & omegaRps(b)==0;
+      % IMPLEMENTATION NOTE: Identifies indices before normalizing, just to be
+      % sure that condition stems from input data, not normalization bugs.
+      b2       = ~isfinite(Z(bBelowLimit)) & omegaRps(bBelowLimit)==0;
+      bSetZero = bBelowLimit(b2);
 
-      Z(b) = Z(b) ./ abs(Z(b)) * abs(zLimit);
+      Z(bBelowLimit) = Z(bBelowLimit) ./ abs(Z(bBelowLimit)) * abs(zLimit);
 
-      Z(b(b2)) = 0;
+      Z(bSetZero) = 0;
     end
 
 
@@ -347,8 +347,8 @@ classdef utils
 
       itf = @(omegaRps) (TF_product(omegaRps));
 
-      if isAc()
-        % NOTE: Modifies combined LFR+BIAS TF.
+      if isAc
+        % NOTE: Modifies the already created, combined LFR+BIAS TF.
 
         zLimit = itf(acConstGainLowFreqRps);
 

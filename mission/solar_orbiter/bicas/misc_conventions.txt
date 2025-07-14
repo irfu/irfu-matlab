@@ -1,3 +1,11 @@
+############################
+Purpose & scope of this file
+############################
+This file documents various conventions used internally by the BICAS source
+code.
+
+
+
 ####################
  Naming conventions
 ####################
@@ -89,12 +97,14 @@ ASR, Antenna Signal Representation.
     can refer also to signals not represented by any single BLTS, given a
     chosen mux mode (BDM) and demultiplexer latching relay (DLR) setting.
     Compare ASID.
-AV, avolt, Antenna Volt
+avolt, Antenna Volt
     Calibrated volt at the antennas, i.e. the final calibrated (measured)
     value, including for reconstructed signals (e.g. diffs calculated from
     singles). May also refer to offsets and values without offsets.
 AVPIV
-    AV/IV = Antenna Volt Per Interface Volt (unit).
+    avolt/ivolt = Antenna Volt Per Interface Volt (unit).
+AVPT
+    avolt/TM = Antenna Volt Per TM unit
 BDM, "mux mode"
     BIAS Demultiplexer Mode. Corresponds to BIAS HK ZV "HK_BIA_MODE_MUX_SET".
     Abbreviation partly just to have one consistent name (replacing "mux",
@@ -289,12 +299,12 @@ ICD
 ITF
     Inverse Transfer Function = TF that describes the conversion of physical
     OUTPUT to INPUT (not the reverse). Cf. FTF.
-IV, ivolt, Interface Volt
+ivolt, Interface Volt
     Calibrated signal in volts at the interface between BIAS and LFR/TDS.
 IVPAV
-    IV/AV = Interface volt Per Antenna volt (unit).
+    ivolt/avolt = Interface volt Per Antenna volt (unit).
 IVPT
-    IV/TM = Interface volt Per TM unit.
+    ivolt/TM = Interface volt Per TM unit.
 L2_QUALITY_BITMASK,
 L3_QUALITY_BITMASK
     Quality ZV defined by ROC which is set in L2 and L3 CDFs respectively.

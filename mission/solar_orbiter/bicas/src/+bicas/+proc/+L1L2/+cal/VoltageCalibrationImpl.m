@@ -37,11 +37,6 @@
 % assumptions that the calling code needs to make.
 %
 %
-% DEFINITIONS, NAMING CONVENTIONS
-% ===============================
-% Note: See readme.txt.
-%
-%
 % HOW USING L1R CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX (L1R) WORK
 % ====================================================================
 % CALIBRATION_TABLE       : CDF L1R global attribute
@@ -63,9 +58,9 @@
 %
 % Summary
 % -------
-% CALIBRATION_TABLE{CALIBRATION_TABLE_INDEX{iRecord, 1} + 1}
+% GA CALIBRATION_TABLE{CALIBRATION_TABLE_INDEX{iRecord, 1} + 1}
 %     == RCT filename
-% CALIBRATION_TABLE_INDEX{iRecord, 2}
+% ZV CALIBRATION_TABLE_INDEX{iRecord, 2}
 %     == ZVCTI2
 %     == Index/pointer to some calibration value(s) to use in the corresponding
 %        RCT. The exact interpretation depends on the RCT.
@@ -227,6 +222,35 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least
   %      not for LFR.
   %   PROPOSAL: Tests.
+  %
+  %
+  %
+  % PROPOSAL: Phase out some features which could potentially be achieved by
+  %           using alternative subclasses.
+  %   Ex: ufv, allVoltageCalibDisabled
+  % PROPOSAL: Phase out features which have never been used (or not for many
+  %           years anyway).
+  %   Ex: lfrTdsTfDisabled
+  %
+  % PROPOSAL: calibrate_voltage_all() should centralize
+  %   (1) one shared loop over sample sequences in argument cell array,
+  %   (2) combining BIAS TF and LFR/TDS TF,
+  %   (3) call to bicas.tf.apply_TF(),
+  %   (4) add BIAS offset
+  %   rather than having the type-specific methods implement it separately:
+  %   calibrate_voltage_BIAS_LFR/TDS_CWF/TDS_RSWF().
+  %   Make those function return a transfer function instead.
+  %   NOTE: get_BIAS_LFR_calib_data() called from calibrate_voltage_BIAS_LFR()
+  %     effectively already returns information needed for calling
+  %     bicas.tf.apply_TF(), plus
+  %       CalibData.detrendingDegreeOf
+  %       CalibData.retrendingEnabled
+  %     which it needs to set since AC needs different settings (and only LFR
+  %     uses AC).
+  %
+  %
+  %
+  % PROPOSAL: Convert transfer function handles into class(es).
 
 
 
@@ -444,17 +468,17 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
     %           to true.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
-        dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, ...
-        zvcti, ufv)
+        dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, zvcti, ufv)
 
       % ASSERTIONS
-      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
-      assert(iscell(bltsSamplesTmCa) & iscolumn(bltsSamplesTmCa))
+      assert(iscell(bltsSamplesTmCa))
       irf.assert.sizes(...
-        zvcti,           [1, 2], ...
+        zvcti,           [ 1, 2], ...
         dtSec,           [-1], ...
         bltsSamplesTmCa, [-1])
-      assert(islogical(ufv) && isscalar(ufv))
+      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+      assert(islogical(ufv)      && isscalar(ufv))
+      assert(islogical(isTdsCwf) && isscalar(isTdsCwf))
 
 
 
@@ -574,7 +598,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         % ADD BIAS offset
         bltsSamplesAVoltCa{i} = tempSamplesAVolt + CalibData.BiasCalibData.offsetAVolt;
       end
-    end
+    end    % calibrate_voltage_BIAS_LFR()
 
 
 
@@ -606,6 +630,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
           'TDS-CWF calibration never uses ZVCTI2.')
       end
+
+
 
       % Initialize empty output variable.
       bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
@@ -666,7 +692,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         end
       end
 
-    end
+    end    % calibrate_voltage_BIAS_TDS_CWF()
 
 
 
@@ -698,6 +724,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
           'TDS-RSWF calibration never uses ZVCTI2.')
       end
+
+
 
       %==============================
       % Obtain calibration constants
@@ -757,7 +785,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         end
       end
 
-    end
+    end    % calibrate_voltage_BIAS_TDS_RSWF()
 
 
 
@@ -815,10 +843,11 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       %###################################################################
       % kIvpav = Multiplication factor "k" that represents/replaces the
       % (forward) transfer function.
-      asid         = bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssid);
+      asid         = bicas.proc.L1L2.const.SSID_ASR_to_ASID( ssid);
       asidCategory = bicas.proc.L1L2.const.get_ASID_category(asid);
       antennas     = bicas.proc.L1L2.const.get_ASID_antennas(asid);
       switch(asidCategory)
+
         case 'DC_SINGLE'
 
           % NOTE: List of ITFs for different times.
@@ -949,7 +978,9 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
     % IMPLEMENTATION NOTE: Return one struct instead of multiple return
     % values to make sure that the caller does not confuse the return values
     % with each other.
-    function [CalData] = get_BIAS_LFR_calib_data(obj, CalSettings, iNonBiasRct, zvcti2)
+    %
+    function CalData = get_BIAS_LFR_calib_data(obj, ...
+        CalSettings, iNonBiasRct, zvcti2)
 
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
 
@@ -995,16 +1026,16 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
       CalData = struct();
 
-      %====================================================
+      %=========================================
       % Obtain settings for bicas.tf.apply_TF()
-      %====================================================
+      %=========================================
       if bicas.proc.L1L2.const.SSID_is_AC(ssid)
         % IMPLEMENTATION NOTE: DC is (optionally) detrended via
-        % bicas.tf.apply_TF() in the sense of a linear fit
-        % being removed, TF applied, and then added back. That same
-        % algorithm, or at least adding back the fit, is by its nature
-        % inappropriate for non-lowpass filters, i.e. for AC. (The fit
-        % can not be scaled with the 0 Hz signal amplitude)
+        % bicas.tf.apply_TF() in the sense of a linear fit being removed, TF
+        % applied, and then added back. That same algorithm, or at least adding
+        % back the fit, is by its nature inappropriate for non-lowpass filters,
+        % i.e. for AC. (The fit can not be scaled with the 0 Hz signal
+        % amplitude)
         CalData.detrendingDegreeOf = obj.acDetrendingDegreeOf;
         CalData.retrendingEnabled  = false;   % NOTE: HARDCODED SETTING.
       else
@@ -1030,7 +1061,6 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       %======================================
       % Create combined ITF for LFR and BIAS
       %======================================
-
       CalData.itfAvpt = bicas.proc.L1L2.cal.utils.create_LFR_BIAS_ITF(...
         CalData.lfrItfIvpt, ...
         CalData.BiasCalibData.itfAvpiv, ...

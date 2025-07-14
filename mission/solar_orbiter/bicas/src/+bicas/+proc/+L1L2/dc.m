@@ -300,40 +300,6 @@ classdef dc
     function samplesAVolt = calibrate_voltages_5xBLTS(Cv, Zv)
       % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
       %           for CWF.
-      %
-      % PROPOSAL: Reorg. -- IMPLEMENTED
-      %   FROM
-      %     (1) Iterate over subsequences for all channels.
-      %         (bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(); this function)
-      %     (2) Iterate over BLTSs (for the same subsequence).
-      %         (bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS();
-      %         subfunction)
-      %     (3) Calibrate one BLTS for one subsequence.
-      %   TO
-      %     (1) Iterate over BLTSs (for all subsequences).
-      %     (2) Iterate over subsequences for one BLTS.
-      %     (3) Calibrate one BLTS for one subsequence (same as before).
-      %   --
-      %   PRO: Less code which sees subsequences, more code which only sees
-      %        arrays covering entire datasets.
-      %   PRO: Can potentially have different sets of groups/subsequences for
-      %        different BLTSs.
-      %     Ex: ACHG, SSID
-      %     PRO: Split depending on fill value/NaN data gaps (instead of UFV).
-      %       Might be required if using different blanking for different
-      %       BLTS channels.
-      %       PRO: Can abolish UFV in bicas.proc.L1L2.cal.VoltageCalibrationImpl.
-      %   PRO: Probably simpler automated tests(?)
-      %   PRO: Easier to implement/support separate calibration functions for
-      %        different channels?!
-      %   CON: Splits into subsequences multiple times.
-      %     PRO: Potentially slower (in particular SWF).
-      %       PRO: Potentially slower wrt. finding subsequences/groups.
-      %       PRO: Potentially slower wrt. indexing (which may be what grouping
-      %            mitigates for LFR-SWF?).
-      %         CON: samplesTm is the largest array (for SWF) but it is
-      %              subdivided by BLTSs first, and again for
-      %              subsequences/groups in this scheme.
 
       arguments
         % Variables which DO NOT VARY over CDF records at all.
@@ -379,6 +345,15 @@ classdef dc
       %===========
       Tmk = bicas.utils.Timekeeper(...
         'bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:Calibrating voltages', Cv.L);
+      % IMPLEMENTATION NOTE: Iterating over BLTSs before iterating over
+      % subsequences/groups of CDF records in subfunction because
+      % PRO: Less code sees samples combined over BLTSs.
+      %      ==> Simpler automated tests (Easier to hardcode data).
+      % PRO: Can split CDF records into subsequences/groups differently
+      %      depending on BLTS/channel. This is needed for splitting based on
+      %      NaN/FV/data gap (planned; 2025-07-14).
+      %   Ex: ACHG, SSID
+      % PRO: Can potentially parallelize processing over different BLTSs.
       for iBlts = 1:bicas.const.N_BLTS
 
         bltsSamplesAVolt2 = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
@@ -423,10 +398,9 @@ classdef dc
     %
     function samplesAVolt = calibrate_voltages_1xBLTS(Cv, Zv)
       arguments
-        %
         % NOTE: Excluding LRX since it is only needed for splitting time/CDF
-        %       record intervals, not for calibration since calibration can
-        %       handle sequences of only NaN.
+        %       record intervals (but ssid should handle that), not for
+        %       calibration since calibration can handle sequences of only NaN.
         %
         % Variables which DO NOT VARY over CDF records at all.
         Cv.Vcal
@@ -475,16 +449,16 @@ classdef dc
         iCalibL, ...
         iCalibH};
       if Cv.hasSwfFormat
-        % IMPLEMENTATION NOTE: SWF data is calibrated in a way where consecutive
-        % records (snapshots) do NOT affect each other. One can therefore group
-        % SWF CDF records in groups of non-consecutive CDF records. This is
-        % important for LFR-SWF data which tends to change calibration-relevant
-        % settings with every new CDF record and which then becomes a
-        % performance problem. Grouping non-consecutive CDF records for LFR-SWF
-        % data leads to a significant speedup!!!
+        % IMPLEMENTATION NOTE: SWF data is calibrated in a way where
+        % consecutive records (snapshots) do NOT affect each other. One can
+        % therefore group SWF CDF records in groups of non-consecutive CDF
+        % records. This is important for LFR-SWF data which tends to change
+        % calibration-relevant settings with every new CDF record and which
+        % then becomes a performance problem. Grouping non-consecutive CDF
+        % records for LFR-SWF data leads to a significant speedup!!!
         % Ex:
-        %     solo_L1R_rpw-lfr-surv-swf-e-cdag_20200213_V10.cdf for the relevant
-        %     code section: ~29 s --> ~4 s (843 CDF records)
+        %     solo_L1R_rpw-lfr-surv-swf-e-cdag_20200213_V10.cdf for the
+        %     relevant code section: ~29 s --> ~4 s (843 CDF records)
         %
         % NOTE: It is possible that bicas.utils.group_unique_rows() becomes
         % slow (t~O(n^2)) for large LFR-SWF CDFs with mode changes at the end
@@ -492,9 +466,9 @@ classdef dc
         % observed.
         iGroupArCa = bicas.utils.group_unique_rows(settingsCa{:});
       else
-        % IMPLEMENTATION NOTE: CWF data is calibrated in a way where consecutive
-        % records affect each other. Must therefore divide CDF records in groups
-        % (subsequences) of continuous CDF records.
+        % IMPLEMENTATION NOTE: CWF data is calibrated in a way where
+        % consecutive records affect each other. Must therefore divide CDF
+        % records in groups (subsequences) of continuous CDF records.
         iGroupArCa = bicas.utils.group_by_change(settingsCa{:});
       end
       nGroups = numel(iGroupArCa);

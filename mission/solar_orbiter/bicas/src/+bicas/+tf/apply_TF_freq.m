@@ -101,7 +101,7 @@
 %       NOTE: May contain non-finite values.
 % tf
 %       Function handle to function z=tf(omega). z is a complex value
-%       (amplitude+phase) and has not unit. omega unit: rad/s.
+%       (amplitude+phase) and has no intrinsic unit. omega unit: rad/s.
 %       Will only be called for omega>=0. tf(0) must be real.
 %       NOTE: Permitted to return NaN, but not infinity.
 %       NOTE: If the caller wants to use a tabulated TF, then s/he should
@@ -113,9 +113,10 @@
 %
 % RETURN VALUES
 % =============
-% y2       : y1 after the application of the TF.
-%            If y1 contains at least one NaN, then all components in y2 will be
-%            NaN. No error will be thrown if that is the case.
+% y2
+%       y1 after the application of the TF.
+%       If y1 contains at least one NaN, then all components in y2 will be
+%       NaN. No error will be thrown if that is the case.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

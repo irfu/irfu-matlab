@@ -22,6 +22,14 @@ classdef cur
     %
     function currentAAmpere = calibrate_bias_currents( ...
         sciEpoch, InCurPd, Ccal, Bso, L)
+      % PROPOSAL: Replace InCurPd (.ZvFpa, .ZvFv, .Ga etc.) with only the
+      %           needed values (Epoch, IBIAS_1/2/3).
+      %   PRO: Simpler testing (does not yet exist).
+      %   PRO: Clear function dependency.
+      %   NOTE: Argument contains data on CURRENT dataset time (not SCIENCE
+      %         dataset time). ==> This function changes the timestamps of
+      %         uncalibrated data using
+      %         bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME().
 
       assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
 
@@ -76,6 +84,8 @@ classdef cur
         sciEpoch, InCur, Bso, L)
 
       % PROPOSAL: Change function name. process_* implies converting struct-->struct.
+      % PROPOSAL: Replace InCurPd (.ZvFpa, .ZvFv, .Ga etc.) with only the
+      %           needed values (Epoch, IBIAS_1/2/3).
 
       % ASSERTIONS
       assert(isa(InCur, 'bicas.InputDataset'))
