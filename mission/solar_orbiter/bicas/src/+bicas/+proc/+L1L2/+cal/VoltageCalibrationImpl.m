@@ -83,7 +83,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   % function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
   % function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
   % --
-  % function BiasCalibData = get_BIAS_calib_data(obj, ...
+  % function BiasCalibData = get_BIAS_ITF(obj, ...
   % function lfrItfIvpt    = get_LFR_ITF_raw(obj, iLfrRctd, iBlts, iLsf)
   %
   %
@@ -539,15 +539,14 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         end
 
       else
-        %=======================
-        % Obtain BIAS TF+offset
-        %=======================
-        BiasCalibData = obj.get_BIAS_calib_data(...
+        %========================
+        % Obtain BIAS ITF+offset
+        %========================
+        [itfAvpiv, offsetAvolt] = obj.get_BIAS_ITF(...
           CalSettings.ssid, ...
           CalSettings.isAchg, ...
           CalSettings.iCalibTimeL, ...
           CalSettings.iCalibTimeH);
-        offsetAvolt   = BiasCalibData.offsetAVolt;
 
         %===================
         % Obtain LFR/TDS TF
@@ -571,7 +570,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         end
 
         itfAvpt = bicas.proc.L1L2.cal.utils.combine_BIAS_ITF_and_LFR_TDS_ITF(...
-          itfIvpt, BiasCalibData.itfAvpiv, ...
+          itfIvpt, itfAvpiv, ...
           bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid), ...
           obj.itfAcConstGainLowFreqRps);
       end
@@ -769,7 +768,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
     %       derived/calibrated, so that the caller does not need to handle
     %       the special case.
     %
-    function BiasCalibData = get_BIAS_calib_data(obj, ...
+    function [itfAvpiv, offsetAvolt] = get_BIAS_ITF(obj, ...
         ssid, isAchg, iCalibTimeL, iCalibTimeH)
 
       % PROPOSAL: Log warning message when simultaneously isAchg=NaN
@@ -796,17 +795,17 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         case 'DC_SINGLE'
 
           % NOTE: List of ITFs for different times.
-          biasItfAvpiv = BiasRctd.ItfSet.dcSingleAvpiv{iCalibTimeL};
-          kFtfIvpav    = obj.BiasScalarGain.alphaIvpav;
-          offsetAVolt  = BiasRctd.dcSingleOffsetsAVolt(iCalibTimeH, antennas);
+          itfAvpiv    = BiasRctd.ItfSet.dcSingleAvpiv{iCalibTimeL};
+          kFtfIvpav   = obj.BiasScalarGain.alphaIvpav;
+          offsetAvolt = BiasRctd.dcSingleOffsetsAVolt(iCalibTimeH, antennas);
 
         case 'DC_DIFF'
 
-          biasItfAvpiv = BiasRctd.ItfSet.dcDiffAvpiv{iCalibTimeL};
+          itfAvpiv = BiasRctd.ItfSet.dcDiffAvpiv{iCalibTimeL};
           kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
-          if     isequal(antennas, [1,2]);   offsetAVolt = BiasRctd.DcDiffOffsets.E12AVolt(iCalibTimeH);
-          elseif isequal(antennas, [1,3]);   offsetAVolt = BiasRctd.DcDiffOffsets.E13AVolt(iCalibTimeH);
-          elseif isequal(antennas, [2,3]);   offsetAVolt = BiasRctd.DcDiffOffsets.E23AVolt(iCalibTimeH);
+          if     isequal(antennas, [1,2]);   offsetAvolt = BiasRctd.DcDiffOffsets.E12AVolt(iCalibTimeH);
+          elseif isequal(antennas, [1,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E13AVolt(iCalibTimeH);
+          elseif isequal(antennas, [2,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E23AVolt(iCalibTimeH);
           else
             error('BICAS:Assertion:IllegalArgument', 'Illegal argument "ssid".');
           end
@@ -814,18 +813,18 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
         case 'AC_DIFF'
 
           if     isAchg == 0
-            biasItfAvpiv = BiasRctd.ItfSet.aclgAvpiv{iCalibTimeL};
-            kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.aclg;
-            offsetAVolt  = 0;
+            itfAvpiv    = BiasRctd.ItfSet.aclgAvpiv{iCalibTimeL};
+            kFtfIvpav   = obj.BiasScalarGain.gammaIvpav.aclg;
+            offsetAvolt = 0;
           elseif isAchg == 1
-            biasItfAvpiv = BiasRctd.ItfSet.achgAvpiv{iCalibTimeL};
-            kFtfIvpav    = obj.BiasScalarGain.gammaIvpav.achg;
-            offsetAVolt  = 0;
+            itfAvpiv    = BiasRctd.ItfSet.achgAvpiv{iCalibTimeL};
+            kFtfIvpav   = obj.BiasScalarGain.gammaIvpav.achg;
+            offsetAvolt = 0;
           elseif isnan(isAchg)
-            % CASE: GAIN unknown when it is NEEDED for calibration.
-            biasItfAvpiv = obj.NAN_TF;
-            kFtfIvpav    = NaN;
-            offsetAVolt  = NaN;
+            % CASE: AC GAIN unknown when it is NEEDED (i.e. when AC data).
+            itfAvpiv    = obj.NAN_TF;
+            kFtfIvpav   = NaN;
+            offsetAvolt = NaN;
           else
             error('BICAS:Assertion:IllegalArgument', ...
               'Illegal argument isAchg=%g.', isAchg)
@@ -838,20 +837,17 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
             asidCategory)
       end
 
-      if obj.biasOffsetsDisabled && ~isnan(offsetAVolt)
-        % NOTE: Overwrites "offsetAVolt".
-        offsetAVolt = 0;
+      %============================================
+      % Modify return values for specific settings
+      %============================================
+      if obj.biasOffsetsDisabled && ~isnan(offsetAvolt)
+        % NOTE: Overwrites "offsetAvolt".
+        offsetAvolt = 0;
       end
       if obj.useBiasTfScalar
-        % NOTE: Overwrites "biasItfAvpiv".
-        biasItfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
+        % NOTE: Overwrites "itfAvpiv".
+        itfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
       end
-      %###################################################################
-
-      BiasCalibData             = struct();
-      BiasCalibData.itfAvpiv    = biasItfAvpiv;
-      BiasCalibData.offsetAVolt = offsetAVolt;
-
     end
 
 
