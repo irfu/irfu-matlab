@@ -98,7 +98,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         L);
       BiasRctdCa = Rctdc.get_RCTD_CA('BIAS');
 
-      Vcal = bicas.proc.L1L2.cal.VoltageCalibrationImpl(Rctdc, useGactRct, useZvcti2, Bso);
+      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl(Rctdc, useZvcti2, Bso);
+      Vcal = bicas.proc.L1L2.cal.VoltageCalibrationImpl(Vcds, useGactRct, Bso);
       Ccal = bicas.proc.L1L2.cal.CurrentCalibrationImpl(BiasRctdCa{1}, Bso);
 
 

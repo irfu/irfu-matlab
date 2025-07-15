@@ -1,18 +1,18 @@
 %
-% Collection of RCTDs as used by bicas.proc.L1L2.cal.VoltageCalibrationImpl.
+% Collection of RCTDs as used by
+% bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl.
 %
 % Stores map RCTTID-->column cell array of RCTDs. For non-BIAS, the array
 % corresponds to GACT. Index iRct-1 corresponds to GACT and ZVCTI(:,1) when
 % those are used. Permits empty cell elements to avoid loading RCTs which are
 % not used by BICAS processing(!).
 %
-% IMPLEMENTATION NOTE: Permits (1) adding more than the nominal number of
-% RCTTIDs (1x BIAS + 1x non-BIAS) to make the
-% bicas.proc.L1L2.cal.VoltageCalibrationImpl work for all types of signals at
-% the same time which could be useful for manual experimentation with
-% calibration, (2) for historical reasons. Ideally,
-% bicas.proc.L1L2.cal.VoltageCalibrationImpl should probably be split up into
-% multiple classes after which this class probably makes no sense.
+% IMPLEMENTATION NOTE: Permits adding more than the nominal number of RCTTIDs
+% (1x BIAS + 1x non-BIAS)
+% (1) to make the bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl work
+%     for all types of signals at the same time which could be useful for
+%     manual experimentation with calibration,
+% (2) for historical reasons.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

@@ -24,7 +24,7 @@ classdef(Abstract) VoltageCalibrationAbstract
 
 
 
-    bltsSamplesAVoltCa = calibrate_voltage_all(obj, ...
+    bltsSamplesAVoltCa = calibrate_voltage_TM_to_avolt(obj, ...
         dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, zvcti, ufv)
 
 
