@@ -71,13 +71,11 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %======================
       % NOTE: TDS L1R never uses ZVCTI2.
       if obj.inputSci.isTdsCwf
-        settingUseGactRct = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid         = 'TDS-CWF';
+        tdsRcttid = 'TDS-CWF';
       else
-        settingUseGactRct = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid         = 'TDS-RSWF';
+        tdsRcttid = 'TDS-RSWF';
       end
-      useGactRct = obj.inputSci.isL1r && Bso.get_fv(settingUseGactRct);
+      useGactRct = obj.inputSci.isL1r;
       useZvcti2  = false;    % Always false for TDS.
 
       % Create a synthetic zv_BW since it does not exist for TDS (only LFR).

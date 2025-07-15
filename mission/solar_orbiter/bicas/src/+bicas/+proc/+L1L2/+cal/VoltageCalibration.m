@@ -54,14 +54,15 @@
 %   of the value to be used inside the calibration table file.""""
 %
 % NOTE: Neither exists in L1 datasets.
+% NOTE: ZVCTI2 is not set (used) for TDS. Therefore no such settings for TDS.
 %
 % Source: ROC-PRO-DAT-NTT-00006-LES_Iss01_Rev02(ROC_Data_Products).Draft2020-04-06.pdf
 %
 % Summary
 % -------
-% GA CALIBRATION_TABLE{CALIBRATION_TABLE_INDEX{iRecord, 1} + 1}
+% L1R GA CALIBRATION_TABLE{CALIBRATION_TABLE_INDEX{iRecord, 1} + 1}
 %     == RCT filename
-% ZV CALIBRATION_TABLE_INDEX{iRecord, 2}
+% L1R ZV CALIBRATION_TABLE_INDEX{iRecord, 2}
 %     == ZVCTI2
 %     == Index/pointer to some calibration value(s) to use in the corresponding
 %        RCT. The exact interpretation depends on the RCT.

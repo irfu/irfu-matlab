@@ -67,8 +67,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %======================
       % Create VCAL and CCAL
       %======================
-      useGactRct = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
-      useZvcti2  = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
+      useGactRct = obj.inputSci.isL1r;
+      useZvcti2  = obj.inputSci.isL1r;
 
       Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
         useGactRct, 'LFR', rctDir, ...

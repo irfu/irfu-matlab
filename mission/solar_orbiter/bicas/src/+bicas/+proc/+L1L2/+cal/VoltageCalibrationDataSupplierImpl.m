@@ -20,8 +20,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierAbstract
-% PROPOSAL: Abolish useZvcti2. Move it to VCAL.
-%   TODO-NI: Is it well-defined what that means?
+% PROPOSAL: Remove useZvcti2 as TDS argument since not supported.
+%   NOTE: Constructor must still have it as argument since it is relevant for
+%         LFR calibration.
+%     PROPOSAL: useZvti2-->useLfrZvcti2.
 
 
 
