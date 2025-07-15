@@ -87,10 +87,10 @@
 %
 function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 % PROPOSAL: Move bicas.tf to bicas.proc.L1L2.tf.
-%   PRO: Code only used for L1/L1R-->L2.
-%   CON: Implies that code is less generic.
+%   PRO: Code is only used for processing L1/L1R-->L2.
+%   CON: Implies that code is less generic/reusable.
 %
-% PROPOSAL: Check that data is finite. Only call bicas.tf.apply_TF_freq
+% PROPOSAL: Check that data is finite. Only call bicas.tf.apply_TF_freq()
 %           if all data is non-finite.
 %   PRO: bicas.tf.apply_TF_freq() can assume (needs to be updated) that
 %        always Z<>NaN and thereby detect if TF can not be evaluated via NaN.
@@ -99,42 +99,6 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 %            evaluated).
 %           CON: Not necessarily best solution. TFs could give error when
 %                not being able to return value.
-%
-% PROPOSAL: Somehow make function/code reusable for case of applying TF
-%           using arbitrary method and algorithm modifications.
-%   Ex: Freq-domain application of TF (FFT+multiplication)
-%   Ex: Time-domain application of TF (convolution+kernel).
-%   Ex: Time & freq.:  De- & re-trending
-%   Ex: Freq. only(?): Cutting freq. TF at Nyquist frequency
-%   Ex: Time only:     Hann windows on kernel, time-domain edge handling.
-%   --
-%   PROPOSAL: Integrate all different applications of TF into same function
-%             together with all algorithm modifications.
-%   PROPOSAL: Refactor functionality into separate reusable code.
-%   PROPOSAL: Accept function handle to equivalent of
-%             bicas.tf.apply_TF_freq().
-%       PRO: Forces application of both de- & re-trending.
-%       CON: Less clear code.
-%           PRO: Kludgy if having to do logic between retrending & retrending.
-%               Ex: Select how to apply TF (frequency domain, time domain).
-%               CON: Can still put that logic into one function that is always being called.
-%           PRO: Kludgy if using same principle (function accepting function
-%                handle) for multiple functionalities consisting of before &
-%                after operations.
-%               Ex: ?!!
-%   PROPOSAL: Replace with pair of functions: before and after call to bicas.tf.apply_TF_freq().
-%   PROPOSAL: Replace with class with two non-constructor methods
-%             y=c.method(y) before & after.
-%
-% TODO-DEC: Format for RVs of modified signals split up?
-%   PROPOSAL: Cell arrays signals
-%       PRO: Minimizes amount of data.
-%       PRO: Explicitly enumerates/isolates time intervals.
-%       PROPOSAL: Cell array for first, last indices into initial array.
-%
-%   PROPOSAL: Analogous with actual returned signal: One long array with
-%             non-finite values between intervals of data.
-%       PRO: Good for plotting.
 %
 % PROPOSAL: Better abbbreviation for SNF.
 %   ~split, values, samples, time series
@@ -152,14 +116,14 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 %   NFS = Non-Finite Splitting
 
 
-DEFAULT_SETTINGS.detrendingDegreeOf         = -1;
-DEFAULT_SETTINGS.retrendingEnabled          = false;
-DEFAULT_SETTINGS.tfHighFreqLimitFraction    = Inf;
-DEFAULT_SETTINGS.method                     = 'FFT';
-DEFAULT_SETTINGS.kernelEdgePolicy           = 'MIRROR';
-DEFAULT_SETTINGS.kernelHannWindow           = false;
-DEFAULT_SETTINGS.snfEnabled                 = false;
-DEFAULT_SETTINGS.snfSubseqMinSamples        = 1;
+DEFAULT_SETTINGS.detrendingDegreeOf      = -1;
+DEFAULT_SETTINGS.retrendingEnabled       = false;
+DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
+DEFAULT_SETTINGS.method                  = 'FFT';
+DEFAULT_SETTINGS.kernelEdgePolicy        = 'MIRROR';
+DEFAULT_SETTINGS.kernelHannWindow        = false;
+DEFAULT_SETTINGS.snfEnabled              = false;
+DEFAULT_SETTINGS.snfSubseqMinSamples     = 1;
 
 S = irf.utils.interpret_settings_args(...
   DEFAULT_SETTINGS, varargin);

@@ -298,9 +298,6 @@ classdef dc
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %
     function samplesAVolt = calibrate_voltages_5xBLTS(Cv, Zv)
-      % PROPOSAL: Sequence of constant settings includes constant NaN/non-NaN
-      %           for CWF.
-
       arguments
         % Variables which DO NOT VARY over CDF records at all.
         Cv.Vcal
@@ -397,6 +394,10 @@ classdef dc
     %       Varying values. Struct with values which DO VARY by CDF record.
     %
     function samplesAVolt = calibrate_voltages_1xBLTS(Cv, Zv)
+      % PROPOSAL: Also split sequence based constant isnan() (isfinite()?)
+      %           for CWF (not SWF).
+      %   NOTE: bicas.tf.apply_TF() can split based on isfinite() (not isnan()).
+
       arguments
         % NOTE: Excluding LRX since it is only needed for splitting time/CDF
         %       record intervals (but ssid should handle that), not for
@@ -506,7 +507,6 @@ classdef dc
           tt2000       = Zv.tt2000(   iGroupAr), ...
           samplesTm    = Zv.samplesTm(iGroupAr, :), ...
           uspr         = Zv.uspr(     iGroupAr) ...
-          ...
           );
       end
     end    % calibrate_voltages_1xBLTS

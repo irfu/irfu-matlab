@@ -1,5 +1,7 @@
 %
-% Return value from bicas.NsoTable.get_NSO_event_matches().
+% Dumb class for storing return value from
+% bicas.NsoTable.get_NSO_event_matches(). One instance represents *ONE* NSO
+% event.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

@@ -72,89 +72,6 @@
 % First created 2017-02-15
 %
 classdef VoltageCalibration
-  % PROPOSAL: Separate subclasses for different types of data. At least separate
-  %           for LFR, TDS-CWF, TDS-RSWF.
-  %   PROPOSAL: Methods
-  %     bltsSamplesAVoltCa = get_LFR_ITF(obj, ...
-  %     bltsSamplesAVoltCa = get_TDS_CWF_ITF(obj, ...
-  %     bltsSamplesAVoltCa = get_TDS_RSWF_ITF(obj, ...
-  %   should then be separate implementations of one abstract superclass mathod.
-  %     PROPOSAL: Separate non-abstract superclass method (which handles
-  %       ufv, useGact(=false)) calls the subclass method.
-  %   PROPOSAL: Separate subclass for ignoring calibration.
-  %     CON: There is too much code that is not nominal ITFs (from RCTs), that
-  %          could need testing and should not be "mocked away".
-  %   PROPOSAL: Separate subclass for mocking in automated tests.
-  %   CON/PROBLEM: Methods duplicate the derivation of BIAS TF (by calling one
-  %                function) and the combining of BIAS TF & LFR/TDS TF.
-  %                Combining TFs should really be done centrally, and obtaining
-  %                BIAS TF should be done once. ==> Separate methods/sources
-  %                for producing BIAS TF and LFR/TDS TF. ==> Ambiguous how to
-  %                apply "mocking design pattern". Does not make sense for
-  %                subclass to override both or only one of these methods.
-  %     PROPOSAL: Test subclass overrides both BIAS TF and LFR/TDS TF methods.
-  %       PRO: Simple.
-  %         PRO: Realistically, a test always needs to override both BIAS TF and
-  %              LFR/TDS TFs at the same time.
-  %       CON: Conceptually ugly.
-  %       CON/PROBLEM: Test subclass is "forced" to load RCTDs!!!!!
-  %         NOTE: The BIAS/LFR/TDS TF-producing methods need RCTDs but the
-  %               implementing subclasses can load these.
-  %         PRO: get_BIAS_calibration_time_index_L/H() need BIAS RCTDs.
-  %              ==> Re-implemented in multiple subclasses, unless the
-  %              superclass (needed for testing) should also load the BIAS RCT!
-  %           NOTE: CCAL also needs BIAS RCTD for implementing
-  %                 get_BIAS_calibration_time_index_L().
-  %       PRO: Can then abolish bicas.proc.L1L2.cal.VoltageCalibrationAbstract. -- IMPLEMENTED
-  %     --
-  %     PROPOSAL: Class uses separately mockable classes for producing BIAS TF
-  %               and LFR/TDS TF.
-  %       CON: Gets too many classes
-  %         VCAL (no abstract+impl.+test)
-  %           Non-BIAS TF: Abstract+test + LFR, TDS-CWF, TDS-RSWF (impl.)
-  %           BIAS TF:     Abstract+test + impl.
-  %         CON: Can (probably) abolish VCAL abstract+test.
-  %         CON-PROPOSAL: Abolish VCAL?!!!
-  %           PRO: The only "real" VCAL function is calibrate_voltage_TM_to_avolt().
-  %       CON: Conceptually, LFR+TDS calibration is not exchangeable (can not be
-  %            substituted for each other) and is applied to different types of
-  %            data (with different flags).
-  %            ==> Should not have separate subclasses.
-  %       PROPOSAL: One abstract+impl+test set of classes for BIAS+LFR/TDS TFs. -- IMPLEMENTED
-  %       PROPOSAL: Merge CCAL+BIAS TF producer.
-  %         PRO: Both use BIAS RCT.
-  %       PROPOSAL: Class names
-  %         Offset
-  %         ~TF
-  %           CON: Not all calibration uses a (frequency-dependent) TF.
-  %         Calibration
-  %         Voltage
-  %         BIAS, LF/TDS
-  %         --
-  %         BIAS
-  %           BCAL=BiasCalibration
-  %           BiasUnitCalibration
-  %           VCBH=VoltageCalibrationBiasHw
-  %         NonBias
-  %           VoltageCalibrationNonBias
-  %           VCLT=VoltageCalibrationLfrTdsAbstract
-  %             VoltageCalibrationLfr
-  %             VoltageCalibrationTdsCwf
-  %             VoltageCalibrationTdsRswf
-  %           TmBltsVoltageCalibration
-  %
-  %       NOTE: BIAS+LFR/TDS TF classes must separately load RCTDs.
-  %         PRO?: Handling of BIAS and LFR/TDS RCTs are different anyway.
-  %     --
-  %     PROPOSAL: VCAL makes it really easy for one subclass to combine LFR/TDS
-  %               TF with BIAS TF by supplying method for it.
-  %
-  %
-  %
-  % PROPOSAL: Tests for non-ASR SSIDs.
-  %
-  %
-  %
   % PROPOSAL: Store all possible versions of TFs internally.
   %   Ex: FTF, ITF, tabulated ITF with extrapolation+interpolation+modification
   %   PRO: Useful for debugging. Can easily inspect & plot FTFs.
@@ -173,12 +90,9 @@ classdef VoltageCalibration
   %
   %
   %
-  % PROPOSAL: Phase out some features which could potentially be achieved by
-  %           using alternative subclasses.
-  %   NOTE: May want to disable calibration (use unit TF) for non-ASR signals.
-  %     NOTE: Disable reconstruction for this case too?!!
   % PROPOSAL: Phase out features which have never been used (or not for many
   %           years anyway).
+  %   Ex: biasOffsetsDisabled, useBiasTfScalar
   %
   % PROPOSAL: Convert transfer function handles into class(es).
   % PROPOSAL: Move itfHighFreqLimitFraction out of bicas.tf.apply_TF() and

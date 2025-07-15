@@ -59,9 +59,6 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       InputCurCdf = InputDatasetsMap('CUR_cdf');
       InputSciCdf = InputDatasetsMap('SCI_cdf');
 
-      % TEST
-      % InputSciCdf.ZvFpa.QUALITY_FLAG(:) = bicas.utils.FPArray(uint8(3));
-
 
 
       %======================
@@ -232,8 +229,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
         zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
       else
         zvILsf = InSci.Zv.FREQ + 1;
-        % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
-        % index values (1=F0) used in loaded RCT data structs.
+        % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF index
+        % values (1=F0) used in loaded RCT data structs.
       end
       irf.assert.sizes(zvILsf, [nRecords])
 

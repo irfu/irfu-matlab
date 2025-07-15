@@ -36,7 +36,8 @@ function execute_SWM(...
 %   PROPOSAL: function matchesMaster(DataObj, MasterDataobj)
 %       PRO: Want to use dataobj to avoid reading file (input dataset) twice.
 %
-% PROPOSAL: Print variable statistics also for zVariables which are created with fill values.
+% PROPOSAL: Print variable statistics also for zVariables which are created with
+%           fill values.
 %   NOTE: These do not use NaN, but fill values.
 
 

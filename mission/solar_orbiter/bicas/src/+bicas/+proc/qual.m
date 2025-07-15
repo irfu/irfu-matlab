@@ -17,19 +17,19 @@ classdef qual
 
 
 
-    % IMPLEMENTATION NOTE: Without requestedQrcidAr, the function can not create
-    % a return value map that contains keys for all QRCIDs, in case the NsoTable
-    % does not contain all QRCIDs.
+    % Obtain QRCBs from NSO table for specified timestamps.
     %
     %
     % ARGUMENTS
     % =========
     % requestedQrcidAr
     %       Column array of QRCIDs for which the return value shall contain
-    %       data. This is a way of filtering the content of the NSO table. The
-    %       function will return default values (QRCB=false) for QRCIDs for
-    %       which there are no events which overlap with the specified time
-    %       stamps.
+    %       data. This is both for being able to
+    %       (1) filter the content of the NSO table (only return data for
+    %           selected QRCIDs), and
+    %       (2) return default values (QRCB=false) for QRCIDs for which there
+    %           are no events which overlap with the specified time stamps (or
+    %           no such events at all).
     %
     %
     % RETURN VALUE
@@ -40,6 +40,10 @@ classdef qual
     %
     function QrcbMap = NSO_table_to_QRCB_map(...
         requestedQrcidAr, NsoTable, tt2000Ar, L)
+
+      % IMPLEMENTATION NOTE: Without requestedQrcidAr, the function can not
+      % create a return value map that contains keys for all QRCIDs, in case
+      % the NsoTable does not contain all QRCIDs.
 
       % Local variable naming conventions:
       % ----------------------------------

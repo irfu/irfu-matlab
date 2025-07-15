@@ -116,6 +116,12 @@ classdef qual
 
 
 
+    % ARGUMENTS
+    % =========
+    % VsibZvm
+    %       ZVM with VSIBs (not VSTBs, not VSQBs, not QRCBs) for the respective
+    %       ASR channels.
+    %
     function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
         tt2000Ar, NsoTable, saturationQualitySchemeId, ...
         VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, L)

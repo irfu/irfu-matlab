@@ -25,11 +25,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   % PROPOSAL: Automatic test code.
   %   NOTE: There are limited tests.
   %
-  % PROPOSAL: Better name.
-  %   OSR, DSR
-  %   L2, L3
-  %   Density, Efield, ScPot = DES
-  %
   % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT
   %           into separate SWMs.
   %   PRO: Faster processing when only processing subset of L3 DSIs.
@@ -71,6 +66,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
     % OVERRIDE
+    %
+    % NOTE: Does not use NsoTable.
+    %
     function OutputDatasetsMap = production_function(obj, ...
         InputDatasetsMap, rctDir, NsoTable, Bso, L)
 
@@ -143,7 +141,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(...
           uint8(ones(size(InLfrCwf.ZvFpa.QUALITY_FLAG))) * 2, ...
           'NO_FILL_POSITIONS');  % TEST
-        InLfrCwf.ZvFpa.L2_QUALITY_BITMASK       = bicas.utils.FPArray(...
+        InLfrCwf.ZvFpa.L2_QUALITY_BITMASK = bicas.utils.FPArray(...
           uint16(ones(size(InLfrCwf.ZvFpa.L2_QUALITY_BITMASK))) * 0, ...
           'NO_FILL_POSITIONS');  % TEST
       end

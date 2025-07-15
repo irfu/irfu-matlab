@@ -29,6 +29,12 @@ classdef QrcbMap < handle
   %
   % NOTE: add_map() is not entirely analogous to add(), but rather a combination
   % of add() and set().
+  %
+  % NOTE: Similar to bicas.utils.ZvMap.
+  %   PROPOSAL: Implement using bicas.utils.ZvMap somehow?
+  %     CON: ZVM does not enforce
+  %          QRCID (scalar string)-->QRCB (logical; column array)
+  %     CON: ZVM does not support add_map() with OR:ing for overlapping keys.
 
 
 
@@ -81,9 +87,9 @@ classdef QrcbMap < handle
     % Add key-value pair. Must not pre-exist.
     function add(obj, qrcid, qrcbAr)
       assert(isstring(qrcid)   & isscalar(qrcid))
-      assert(islogical(qrcbAr) & iscolumn(qrcbAr))
+      assert(islogical(qrcbAr) & iscolumn(qrcbAr), "qrcbAr is not a logical column.")
 
-      assert(~obj.Map.isKey(qrcid))    % Requrie not overwriting key.
+      assert(~obj.Map.isKey(qrcid))    % Require not overwriting key.
       assert(size(qrcbAr, 1) == obj.nRecords)
 
       obj.Map(qrcid) = qrcbAr;
@@ -115,7 +121,9 @@ classdef QrcbMap < handle
 
     function qrcbAr = get(obj, qrcid)
       assert(isstring(qrcid) & isscalar(qrcid))
-
+      if ~obj.has_QRCID(qrcid)
+        error("Object does not contain qrcid=""%s"".", qrcid)
+      end
       qrcbAr = obj.Map(qrcid);
     end
 

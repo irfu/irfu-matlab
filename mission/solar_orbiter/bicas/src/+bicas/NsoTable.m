@@ -193,7 +193,9 @@ classdef NsoTable
 
 
 
-    % Determine the timestamps to which NSO events apply.
+    % Determine the timestamps to which NSO events apply in the form of arrays
+    % of NSO events, each one containing logical indices to mathching
+    % timestamps.
     %
     %
     % ARGUMENTS

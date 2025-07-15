@@ -24,6 +24,8 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
 %   NOTE: Constructor must still have it as argument since it is relevant for
 %         LFR calibration.
 %     PROPOSAL: useZvti2-->useLfrZvcti2.
+%   PROPOSAL: Move to VCAL.
+%     PRO: This class should not do logic and is not meant to be tested.
 
 
 
@@ -63,6 +65,7 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
 
       obj.Rctdc                          = Rctdc;
 
+      % NOTE: Below values are FTF.
       obj.BiasScalarGain.alphaIvpav      = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.ALPHA_IVPAV');
       obj.BiasScalarGain.betaIvpav       = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.BETA_IVPAV');
       obj.BiasScalarGain.gammaIvpav.achg = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
