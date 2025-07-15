@@ -10,6 +10,18 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
 
+  %#####################
+  %#####################
+  % CONSTANT PROPERTIES
+  %#####################
+  %#####################
+  properties(Constant)
+    L = bicas.Logger('HUMAN_READABLE', false);
+    S = bicas.proc.L1L2.const.C.SSID_DICT;
+  end
+
+
+
   %##############
   %##############
   % TEST METHODS
@@ -19,8 +31,99 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
 
+    % Split data due to UFV and NaN.
+    %
+    % NOTE: bicas.tf.apply_TF() itself splits by NaN (by default).
+    %
+    function test_calibrate_voltages_1xBLTS___CWF_UFV_NaN(testCase)
+      Bso = testCase.get_simple_TF_BSO();
+
+      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierTest( ...
+        itfBiasAvpiv=@(omegaRps) (ones(size(omegaRps))*2), ...
+        offsetAvolt=1, ...
+        itfLfrAvpiv =@(omegaRps) (ones(size(omegaRps))*3));
+      Vcal = bicas.proc.L1L2.cal.VoltageCalibration(Vcds, true, Bso);
+
+      SAMPLES_TM = [1 2 3 4 5 6 NaN 8 9]';   % NOTE: NaN!
+      I_LSF      = 1;
+      FREQ_HZ    = solo.hwzv.const.LSF_HZ(I_LSF);
+
+      actSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
+        ... % Variables which DO NOT VARY over CDF records at all.
+        Vcal         = Vcal, ...
+        L            = testCase.L, ...
+        iBlts        = 1, ...
+        isLfr        = true, ...
+        isTdsCwf     = false, ...
+        hasSwfFormat = false, ...
+        ... % Variables which DO VARY over CDF records.
+        tt2000       = uint64( [1:9]' * 1e9 / FREQ_HZ), ...
+        ufv          = logical([0; 0; 1; 1; 0; 0; 0; 0; 0]), ...    % NOTE!
+        ssid         = testCase.S(repmat(["DC_V2"], 9, 1)), ...
+        samplesTm    = single(SAMPLES_TM), ...
+        uspr         = repmat(1,       9, 1), ...
+        freqHz       = repmat(FREQ_HZ, 9, 1), ...
+        iLsf         = repmat(I_LSF,   9, 1), ...
+        isAchgFpa    = bicas.utils.FPArray(logical(repmat(0, 9, 1)), 'NO_FILL_POSITIONS'), ...
+        zvcti        = repmat([1, 0], 9, 1));
+
+      expSamplesAvolt          = SAMPLES_TM*2*3 + 1;
+      expSamplesAvolt([3,4,7]) = NaN;
+      testCase.assertEqual(actSamplesAVolt, expSamplesAvolt, AbsTol=1e-14)
+    end
+
+
+
+    % Test UFV and NaN data.
+    function test_calibrate_voltages_1xBLTS___SWF_UFV_NaN(testCase)
+      Bso = testCase.get_simple_TF_BSO();
+
+      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierTest( ...
+        itfBiasAvpiv=@(omegaRps) (ones(size(omegaRps))*2), ...
+        offsetAvolt=1, ...
+        itfLfrAvpiv =@(omegaRps) (ones(size(omegaRps))*3));
+      Vcal = bicas.proc.L1L2.cal.VoltageCalibration(Vcds, true, Bso);
+
+      SAMPLES_TM = [...
+        1:9;  ...
+        2:10; ...
+        3:11;
+        NaN(1, 9)];
+      I_LSF      = 2;
+      FREQ_HZ    = solo.hwzv.const.LSF_HZ(I_LSF);
+
+      % NOTE: Split data due to UFV and NaN. bicas.tf.apply_TF() splits by NaN
+      % (by default).
+      actSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
+        ... % Variables which DO NOT VARY over CDF records at all.
+        Vcal         = Vcal, ...
+        L            = testCase.L, ...
+        iBlts        = 1, ...
+        isLfr        = true, ...
+        isTdsCwf     = false, ...
+        hasSwfFormat = true, ...
+        ... % Variables which DO VARY over CDF records.
+        tt2000       = uint64( [1:4]' * 1e9 / FREQ_HZ), ...
+        ufv          = logical([0; 1; 0; 0]), ...                        % NOTE!
+        ssid         = testCase.S(repmat(["DC_V2"], 4, 1)), ...
+        samplesTm    = single(SAMPLES_TM), ...
+        uspr         = [4 5 6 7]', ...
+        freqHz       = repmat(FREQ_HZ, 4, 1), ...
+        iLsf         = repmat(I_LSF,   4, 1), ...
+        isAchgFpa    = bicas.utils.FPArray(logical(repmat(0, 4, 1)), 'NO_FILL_POSITIONS'), ...
+        zvcti        = repmat([1, 0], 4, 1));
+
+      expSamplesAvolt         = SAMPLES_TM*2*3 + 1;
+      expSamplesAvolt(1, 5:9) = NaN;
+      expSamplesAvolt(2, :  ) = NaN;
+      expSamplesAvolt(3, 7:9) = NaN;
+      testCase.assertEqual(actSamplesAVolt, expSamplesAvolt, AbsTol=1e-14)
+    end
+
+
+
     function test_get_SSID_SDID_arrays(testCase)
-      S = bicas.proc.L1L2.const.C.SSID_DICT;
+      S = testCase.S;
       D = bicas.proc.L1L2.const.C.SDID_DICT;
 
       %=============================================================
@@ -182,6 +285,25 @@ classdef dc___UTEST < matlab.unittest.TestCase
   %##########################
   %##########################
   methods(Access=private)
+
+
+
+    function Bso = get_simple_TF_BSO(testCase)
+      % IMPLEMENTATION NOTE: The default configuration makes it hard to predict
+      % the behaviour for bicas.tf.apply_TF() even for simple TFs and data.
+      % Therefore deactivating multiple features.
+      Bso = bicas.create_default_BSO();
+
+      Bso.override_value('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', -1,    'test');
+      Bso.override_value('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    false, 'test');
+      Bso.override_value('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', -1,    'test');
+      Bso.override_value('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',      true,  'test');
+      % NOTE: FV_SPLITTING.MIN_SAMPLES is independent of FV_SPLITTING.ENABLED.
+      Bso.override_value('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES',  2,     'test');
+      Bso.override_value('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION',  Inf,   'test');
+
+      Bso.make_read_only()
+    end
 
 
 
