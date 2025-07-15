@@ -83,7 +83,6 @@ function Bso = create_default_BSO()
 %       config file values, CLI argument values.
 %
 % PROPOSAL: Abolish settings/functionality:
-%   PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
 %   PROCESSING.HK.USE_ZV_ACQUISITION_TIME
@@ -571,10 +570,6 @@ S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT', -0.008198754    
 %===============================================================
 % Disable/simplify different parts of the calibration algorithm
 %===============================================================
-% Disable all voltage calibration. Output dataset data contain TM units.
-% BIAS demultiplexer addition/subtraction of BLTS necessary to derive
-% antenna signals is still done though.
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLED',              false);
 % Whether to disable BIAS offsets.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', false);
 % Whether to use transfer functions or scalar multiplication for calibration
@@ -643,14 +638,6 @@ S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',     true)
 % NOTE: Limit does not apply if there was no splitting (for "backward
 % compatibility").
 S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)
-
-% Whether to disable LFR/TDS transfer functions (but still potentially use
-% the BIAS transfer functions). This effectively means that TM voltage
-% corresponds to interface volt.
-% NOTE: This useful for using bicas.proc.L1L2.cal.VoltageCalibration
-% separately from BICAS for (e.g. manually) analyzing BIAS standalone
-% calibration tables (BSACT).
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED', false);
 
 
 

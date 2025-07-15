@@ -80,8 +80,7 @@ classdef VoltageCalibration
   %     bltsSamplesAVoltCa = get_TDS_RSWF_ITF(obj, ...
   %   should then be separate implementations of one abstract superclass mathod.
   %     PROPOSAL: Separate non-abstract superclass method (which handles
-  %       allVoltageCalibDisabled, ufv, useGact(=false)) calls the subclass
-  %        method.
+  %       ufv, useGact(=false)) calls the subclass method.
   %   PROPOSAL: Separate subclass for ignoring calibration.
   %     CON: There is too much code that is not nominal ITFs (from RCTs), that
   %          could need testing and should not be "mocked away".
@@ -176,14 +175,10 @@ classdef VoltageCalibration
   %
   % PROPOSAL: Phase out some features which could potentially be achieved by
   %           using alternative subclasses.
-  %   Ex: allVoltageCalibDisabled
   %   NOTE: May want to disable calibration (use unit TF) for non-ASR signals.
   %     NOTE: Disable reconstruction for this case too?!!
-  %   PROPOSAL: Convert allVoltageCalibDisabled to method argument (currently
-  %             set at initialization).
   % PROPOSAL: Phase out features which have never been used (or not for many
   %           years anyway).
-  %   Ex: lfrTdsTfDisabled
   %
   % PROPOSAL: Convert transfer function handles into class(es).
   % PROPOSAL: Move itfHighFreqLimitFraction out of bicas.tf.apply_TF() and
@@ -235,9 +230,7 @@ classdef VoltageCalibration
     snfSubseqMinSamples
 
     % What type of calibration to use.
-    allVoltageCalibDisabled    % Use TM values (not set to NaN).
     useBiasTfScalar
-    lfrTdsTfDisabled
 
     % Whether to select non-BIAS RCTs using GACT (and ZVCTI).
     useGactRct
@@ -308,9 +301,6 @@ classdef VoltageCalibration
       obj.kernelHannWindow         = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
       obj.snfEnabled               = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
       obj.snfSubseqMinSamples      = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
-
-      obj.allVoltageCalibDisabled  = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.DISABLED');
-      obj.lfrTdsTfDisabled         = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED');
 
       %============================
       % Store some argument values
@@ -393,43 +383,34 @@ classdef VoltageCalibration
       end
 
 
+      if bicas.proc.L1L2.const.SSID_is_ASR(CalSettings.ssid)
+        % CASE: ASR SSID
 
-      %================
-      % Obtain itfAvpt
-      %================
-      if obj.allVoltageCalibDisabled || ufv
-
-        if obj.allVoltageCalibDisabled
-          % CASE: Set voltages to TM values.
-
-          itfAvpt     = obj.ONE_TF;
-          offsetAvolt = 0;
-        end
+        %================
+        % Obtain itfAvpt
+        %================
         if ufv
-          % CASE: Set voltages to NaN.
 
-          % IMPLEMENTATION NOTE: Potentially overwrites value set in above "if"
-          % statement.
-          itfAvpt     = bicas.const.NAN_TF;
-          offsetAvolt = NaN;
-        end
+          if ufv
+            % CASE: Set voltages to NaN.
 
-      else
-        %========================
-        % Obtain BIAS ITF+offset
-        %========================
-        [itfAvpiv, offsetAvolt] = obj.Vcds.get_BIAS_ITF_and_offset(...
-          CalSettings.ssid, ...
-          CalSettings.isAchg, ...
-          CalSettings.iCalibTimeL, ...
-          CalSettings.iCalibTimeH);
+            itfAvpt     = bicas.const.NAN_TF;
+            offsetAvolt = NaN;
+          end
 
-        %====================
-        % Obtain LFR/TDS ITF
-        %====================
-        if obj.lfrTdsTfDisabled
-          itfIvpt = obj.ONE_TF;
         else
+          %========================
+          % Obtain BIAS ITF+offset
+          %========================
+          [itfAvpiv, offsetAvolt] = obj.Vcds.get_BIAS_ITF_and_offset(...
+            CalSettings.ssid, ...
+            CalSettings.isAchg, ...
+            CalSettings.iCalibTimeL, ...
+            CalSettings.iCalibTimeH);
+
+          %====================
+          % Obtain LFR/TDS ITF
+          %====================
           if isLfr
             %===========
             % CASE: LFR
@@ -447,14 +428,17 @@ classdef VoltageCalibration
               itfIvpt = obj.Vcds.get_TDS_RSWF_ITF(iBlts, iNonBiasRct, zvcti2);
             end
           end
+
+          itfAvpt = bicas.proc.L1L2.cal.utils.combine_BIAS_ITF_and_LFR_TDS_ITF(...
+            itfIvpt, itfAvpiv, ...
+            bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid), ...
+            obj.itfAcConstGainLowFreqRps);
         end
-
-        itfAvpt = bicas.proc.L1L2.cal.utils.combine_BIAS_ITF_and_LFR_TDS_ITF(...
-          itfIvpt, itfAvpiv, ...
-          bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid), ...
-          obj.itfAcConstGainLowFreqRps);
+      else
+        % CASE: Non-ASR SSID
+        itfAvpt     = obj.ONE_TF;
+        offsetAvolt = 0;
       end
-
 
 
       %======================================
