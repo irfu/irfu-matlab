@@ -1,6 +1,7 @@
 %
-% Generic general-purpose function for applying a TF (linear frequency-dependent
-% transfer function) to a sequence of real-valued (time domain) samples.
+% Generic general-purpose function for applying a TF (linear
+% frequency-dependent transfer function) to a sequence of real-valued (time
+% domain) samples.
 %
 % Wrapper around bicas.tf.apply_TF_kernel().
 %

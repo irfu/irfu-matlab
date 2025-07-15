@@ -59,6 +59,9 @@
 %         * 'tfHighFreqLimitFraction'
 %               Fraction of Nyquist frequency (1/dt). TF is regarded as zero
 %               above this frequency. Can be Inf.
+%         * 'snfSubseqMinSamples'
+%               Positive integer. Required minimum number of finite-valued
+%               samples in a subsequence to processed (not returned as NaN).
 %         +more. See implementation.
 %
 %
@@ -171,7 +174,7 @@ assert(...
   S.snfSubseqMinSamples >= 1)
 
 % ASSERTION: Arguments
-assert(isscalar(dt))
+assert(isscalar(dt) & (dt > 0))
 assert(iscolumn(y1), 'Argument y1 is not a column vector.')
 
 
@@ -201,7 +204,7 @@ if S.snfEnabled
   %===================================================================
   % SS = SubSequence
   [i1Array, i2Array] = irf.utils.split_by_false(isfinite(y1));
-  nSs = numel(i1Array);
+  nSs                = numel(i1Array);
 else
   i1Array = 1;
   i2Array = numel(y1);
@@ -241,7 +244,6 @@ end
 
 
 function [y2, Debug] = apply_TF_with_DRT(dt, y1, tf, Settings)
-
 
 %#####################
 % Optionally DE-trend

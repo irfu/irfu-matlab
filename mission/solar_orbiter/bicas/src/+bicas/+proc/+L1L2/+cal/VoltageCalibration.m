@@ -383,72 +383,71 @@ classdef VoltageCalibration
       end
 
 
-      if bicas.proc.L1L2.const.SSID_is_ASR(CalSettings.ssid)
+
+      %================
+      % Obtain itfAvpt
+      %================
+      if ufv
+        % CASE: Set voltages to NaN.
+        % NOTE: This overrides any other condition
+
+        itfAvpt     = bicas.const.NAN_TF;
+        offsetAvolt = NaN;
+
+      elseif bicas.proc.L1L2.const.SSID_is_ASR(CalSettings.ssid)
         % CASE: ASR SSID
 
-        %================
-        % Obtain itfAvpt
-        %================
-        if ufv
+        %========================
+        % Obtain BIAS ITF+offset
+        %========================
+        [itfAvpiv, offsetAvolt] = obj.Vcds.get_BIAS_ITF_and_offset(...
+          CalSettings.ssid, ...
+          CalSettings.isAchg, ...
+          CalSettings.iCalibTimeL, ...
+          CalSettings.iCalibTimeH);
 
-          if ufv
-            % CASE: Set voltages to NaN.
-
-            itfAvpt     = bicas.const.NAN_TF;
-            offsetAvolt = NaN;
-          end
-
+        %====================
+        % Obtain LFR/TDS ITF
+        %====================
+        if isLfr
+          %===========
+          % CASE: LFR
+          %===========
+          itfIvpt = obj.Vcds.get_LFR_ITF(iBlts, iLsf, iNonBiasRct, zvcti2);
         else
-          %========================
-          % Obtain BIAS ITF+offset
-          %========================
-          [itfAvpiv, offsetAvolt] = obj.Vcds.get_BIAS_ITF_and_offset(...
-            CalSettings.ssid, ...
-            CalSettings.isAchg, ...
-            CalSettings.iCalibTimeL, ...
-            CalSettings.iCalibTimeH);
-
-          %====================
-          % Obtain LFR/TDS ITF
-          %====================
-          if isLfr
-            %===========
-            % CASE: LFR
-            %===========
-            itfIvpt = obj.Vcds.get_LFR_ITF(iBlts, iLsf, iNonBiasRct, zvcti2);
+          %===========
+          % CASE: TDS
+          %===========
+          if isTdsCwf
+            % CASE: TDS CWF
+            itfIvpt = obj.Vcds.get_TDS_CWF_ITF(iBlts, iNonBiasRct, zvcti2);
           else
-            %===========
-            % CASE: TDS
-            %===========
-            if isTdsCwf
-              % CASE: TDS CWF
-              itfIvpt = obj.Vcds.get_TDS_CWF_ITF(iBlts, iNonBiasRct, zvcti2);
-            else
-              % CASE: TDS RSWF
-              itfIvpt = obj.Vcds.get_TDS_RSWF_ITF(iBlts, iNonBiasRct, zvcti2);
-            end
+            % CASE: TDS RSWF
+            itfIvpt = obj.Vcds.get_TDS_RSWF_ITF(iBlts, iNonBiasRct, zvcti2);
           end
-
-          itfAvpt = bicas.proc.L1L2.cal.utils.combine_BIAS_ITF_and_LFR_TDS_ITF(...
-            itfIvpt, itfAvpiv, ...
-            bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid), ...
-            obj.itfAcConstGainLowFreqRps);
         end
+
+        itfAvpt = obj.combine_BIAS_ITF_and_LFR_TDS_ITF(...
+          itfIvpt, itfAvpiv, ...
+          bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid), ...
+          obj.itfAcConstGainLowFreqRps);
+
       else
-        % CASE: Non-ASR SSID
+        % CASE: Non-ASR SSID (ufv=false)
         itfAvpt     = obj.ONE_TF;
         offsetAvolt = 0;
       end
 
 
+
       %======================================
       % Apply BIAS+LFR/TDS+offset to samples
       %======================================
-      bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));
+      bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));    % Pre-allocate
       for i = 1:numel(bltsSamplesTmCa)
-         tempSamplesAVolt = bicas.tf.apply_TF(...
+        tempSamplesAVolt = bicas.tf.apply_TF(...
           dtSec(i), ...
-          bltsSamplesTmCa{i}(:), ...
+          bltsSamplesTmCa{i}, ...
           itfAvpt, ...
           'method',                  obj.tfMethod, ...
           'detrendingDegreeOf',      detrendingDegreeOf, ...
@@ -479,6 +478,52 @@ classdef VoltageCalibration
 
 
   end    % methods(Access=private)
+
+
+
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
+  methods(Static, Access=private)
+
+
+
+    % Combine BIAS and LFR/TDS ITFs, with a special modification for (LFR) AC.
+    %
+    function itf = combine_BIAS_ITF_and_LFR_TDS_ITF(...
+        itfLfr, itfBias, isAc, acConstGainLowFreqRps)
+
+      assert(isscalar(isAc), islogical(isAc))
+
+      itf = @(omegaRps) (TF_product(omegaRps));
+
+      if isAc
+        % NOTE: Modifies the already created, combined LFR+BIAS TF.
+
+        zLimit = itf(acConstGainLowFreqRps);
+
+        itf = @(omegaRps) (bicas.proc.L1L2.cal.utils.TF_LF_constant_abs_Z(...
+          itf, omegaRps, acConstGainLowFreqRps, zLimit));
+      end
+
+
+      %###################################################################
+      % IMPLEMENTATION NOTE: In principle, this function is quite
+      % unnecessary for multiplying TFs, but it is useful for putting
+      % breakpoints in when debugging TFs which are built from layers of
+      % anonymous functions and function handles.
+      function Z = TF_product(omegaRps)
+        Z = itfLfr(omegaRps) ...
+          .* ...
+          itfBias(omegaRps);
+      end
+    end
+
+
+
+  end    % methods(Static, Access=private)
 
 
 

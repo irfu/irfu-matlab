@@ -338,37 +338,6 @@ classdef utils
 
 
 
-    function itf = combine_BIAS_ITF_and_LFR_TDS_ITF(...
-        itfLfr, itfBias, isAc, acConstGainLowFreqRps)
-
-      assert(isscalar(isAc), islogical(isAc))
-
-      itf = @(omegaRps) (TF_product(omegaRps));
-
-      if isAc
-        % NOTE: Modifies the already created, combined LFR+BIAS TF.
-
-        zLimit = itf(acConstGainLowFreqRps);
-
-        itf = @(omegaRps) (bicas.proc.L1L2.cal.utils.TF_LF_constant_abs_Z(...
-          itf, omegaRps, acConstGainLowFreqRps, zLimit));
-      end
-
-
-      %###################################################################
-      % IMPLEMENTATION NOTE: In principle, this function is quite
-      % unnecessary for multiplying TFs, but it is useful for putting
-      % breakpoints in when debugging TFs which are built from layers of
-      % anonymous functions and function handles.
-      function Z = TF_product(omegaRps)
-        Z = itfLfr(omegaRps) ...
-          .* ...
-          itfBias(omegaRps);
-      end
-    end
-
-
-
     function log_TF_tabulated(logLevel, tfName, Tf, L)
       % PROPOSAL: Somehow prevent printing unnecessary trailing zeros.
 
@@ -387,16 +356,17 @@ classdef utils
 
     % ARGUMENTS
     % =========
-    % freqHzArray  : Array of frequencies for which the TF Z value should be
-    %                logged.
-    % TfFunchandle : Z(omegaRps).
-    %                NOTE: rad/s (omegaRps) as opposed to Hz (freqHzArray).
+    % freqHzArray
+    %       Array of frequencies for which the TF Z value should be logged.
+    % tfFh
+    %       Function handle, Z(omegaRps).
+    %       NOTE: rad/s (omegaRps) as opposed to Hz (freqHzArray).
     %
     function log_TF_function_handle(...
-        logLevel, tfName, tfUnit, freqHzArray, tfFuncHandle, L)
-      assert(isa(tfFuncHandle, 'function_handle'))
+        logLevel, tfName, tfUnit, freqHzArray, tfFh, L)
+      assert(isa(tfFh, 'function_handle'))
 
-      zArray = tfFuncHandle(freqHzArray * 2*pi);
+      zArray = tfFh(freqHzArray * 2*pi);
       for i=1:numel(freqHzArray)
         freqHz = freqHzArray(i);
         Z      = zArray(i);

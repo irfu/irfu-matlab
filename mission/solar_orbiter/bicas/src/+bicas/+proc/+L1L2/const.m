@@ -59,9 +59,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef const
-% PROPOSAL: Code for printing human-readable tables with values which can be
-%           copy-pasted to comments in this file.
-%
 % PROPOSAL: Rename class to something implying the theme of ASID, SSID, SDID
 %           rather than constants.
 %   PRO: Contains function relating to ASID, SSID, SDID.
@@ -77,6 +74,9 @@ classdef const
 %     CON: "CID" is part of "QRCID", "decide", "incidence".
 %       CON: Is not a real abbrevation.
 %     CON: Does not deal with channels, more like addresses.
+%
+% PROPOSAL: Code for printing human-readable tables with values which can be
+%           copy-pasted to comments in this file.
 %
 % PROPOSAL: Rename ASID class AntennaSignalId.
 %   PRO: Clearer distinction between ASID class and uint8 values.
