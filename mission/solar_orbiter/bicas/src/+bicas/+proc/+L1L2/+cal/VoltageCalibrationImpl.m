@@ -17,6 +17,9 @@
 % Does not implement parasitic capacitance due to lack of calibration values
 % (at least). Should not need to implement support for this effect according to
 % Thomas Chust(?).
+% --
+% BUG: Can likely not handle data with non-ASR SSID (Unknown, GND, or 2.5V
+%      Ref).
 %
 %
 % IMPLEMENTATION NOTES
@@ -95,6 +98,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %       allVoltageCalibDisabled, ufv, useGact(=false)) calls the subclass
   %        method.
   %   PROPOSAL: Separate subclass for ignoring calibration.
+  %     CON: There is too much code that is not nominal ITFs (from RCTs), that
+  %          could need testing and should not be "mocked away".
   %   PROPOSAL: Separate subclass for mocking in automated tests.
   %   CON/PROBLEM: Methods duplicate the derivation of BIAS TF (by calling one
   %                function) and the combining of BIAS TF & LFR/TDS TF.
@@ -108,13 +113,15 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %         PRO: Realistically, a test always needs to override both BIAS TF and
   %              LFR/TDS TFs at the same time.
   %       CON: Conceptually ugly.
-  %       CON/PROBLEM: Test subclass is forced to load RCTDs!!!!!
+  %       CON/PROBLEM: Test subclass is "forced" to load RCTDs!!!!!
   %         NOTE: The BIAS/LFR/TDS TF-producing methods need RCTDs but the
   %               implementing subclasses can load these.
   %         PRO: get_BIAS_calibration_time_index_L/H() need BIAS RCTDs.
+  %              ==> Re-implemented in multiple subclasses, unless the
+  %              superclass (needed for testing) should also load the BIAS RCT!
   %           NOTE: CCAL also needs BIAS RCTD for implementing
   %                 get_BIAS_calibration_time_index_L().
-  %       NOTE: Can then abolish bicas.proc.L1L2.cal.VoltageCalibrationAbstract.
+  %       PRO: Can then abolish bicas.proc.L1L2.cal.VoltageCalibrationAbstract.
   %     --
   %     PROPOSAL: Class uses separately mockable classes for producing BIAS TF
   %               and LFR/TDS TF.
@@ -125,17 +132,40 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %         CON: Can (probably) abolish VCAL abstract+test.
   %         CON-PROPOSAL: Abolish VCAL?!!!
   %           PRO: The only "real" VCAL function is calibrate_voltage_all().
+  %       CON: Conceptually, LFR+TDS calibration is not exchangeable (can not be
+  %            substituted for each other) and is applied to different types of
+  %            data (with different flags).
+  %            ==> Should not have separate subclasses.
+  %       PROPOSAL: One abstract+impl+test set of classes for BIAS+LFR/TDS TFs.
   %       PROPOSAL: Merge CCAL+BIAS TF producer.
   %         PRO: Both use BIAS RCT.
-  %         PROPOSAL: Name
-  %           BCAL=BiasCalibration, BiasUnitCalibratio, BiasHwCalibration.
+  %       PROPOSAL: Class names
+  %         Offset
+  %         ~TF
+  %           CON: Not all calibration uses a (frequency-dependent) TF.
+  %         Calibration
+  %         Voltage
+  %         BIAS, LF/TDS
+  %         --
+  %         BIAS
+  %           BCAL=BiasCalibration
+  %           BiasUnitCalibration
+  %           VCBH=VoltageCalibrationBiasHw
+  %         NonBias
+  %           VoltageCalibrationNonBias
+  %           VCLT=VoltageCalibrationLfrTdsAbstract
+  %             VoltageCalibrationLfr
+  %             VoltageCalibrationTdsCwf
+  %             VoltageCalibrationTdsRswf
+  %           TmBltsVoltageCalibration
+  %
   %       NOTE: BIAS+LFR/TDS TF classes must separately load RCTDs.
   %         PRO?: Handling of BIAS and LFR/TDS RCTs are different anyway.
   %     --
   %     PROPOSAL: VCAL makes it really easy for one subclass to combine LFR/TDS
-  %               TF with BIAS TF.
+  %               TF with BIAS TF by supplying method for it.
   %   --
-  %   PRO: Large class: 1004 rows. /2025-07-14
+  %   PRO: Large class: 912 rows. /2025-07-15
   %
   %
   %
@@ -165,51 +195,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %                "unit" is ambiguous:
   %                 one wants small units of code
   %                 unit is ambiguous when a unit uses/call other unit(s).
-  %
-  %
-  %
-  % TODO-DEC: How distribute the calibration formulas/algorithms between
-  %   (1) calibrate_* functions,
-  %   (2) functions that select relevant calibration data
-  %   (2) RCT reading functions,
-  %   (3) classes that store TFs?
-  %   --
-  %   Ex: Invert the (rat.func., tabulated) TFs
-  %   Ex: Extrapolate the tabulated TFs to zero
-  %   Ex: Extrapolate the tabulated LFR TF to higher frequencies.
-  %   Ex: Modify AC TF at lower frequencies (change amplitude, keep phase)
-  %   Ex: Interpolation algorithm of tabulated TFs.
-  %   Ex: If one modifies the TFs before applying the inverse (hypothetical; not implemented)
-  %   --
-  %   NEED: Plot all TFs.
-  %   NEED: Plot all versions of any particular TF as it gets modified.
-  %   NEED: Plot all TFs used for a particular calibration case
-  %         (when calibrating using bicas.caib only, without BICAS).
-  %   PROPOSAL: Separate modifications/choices/code that
-  %       (1) only need to be done/run once during the execution:
-  %               modification of calibration data,
-  %       (2) are done every calibration (call to calibrate_*):
-  %               exact algorithms/formulas through which data is fed
-  %   PROPOSAL: read_*_RCT should not modify any calibration data, just store it:
-  %             Not invert TFs, not extrapolate TFs to 0 Hz.
-  %       CON: Must separate unmodified and modified calibration data.
-  %       CON: "Must" label variables that they are modified/unmodified.
-  %       CON-PROBLEM: No clear line for what is a modification or not.
-  %           NOTE: Difference between
-  %               (1) modification (information potentially destroyed), and
-  %               (2) conversion (no information destroyed; e.g. format conversion)
-  %           Ex: TF frequency Hz-->omega rad/s
-  %           Ex: TF amplitude+phase-->Z
-  %           Ex: Apply upper frequency cut-off to ITF, in particular analytical ITFs.
-  %           Ex: Extrapolate tabulated TF
-  %           Ex: How/where make different choices for how to calibrate?
-  %               (1) No calibration
-  %               (2) Scalar calibration (a) with/(b) without offsets
-  %               (3) Full calibration
-  %               (4) Full calibration except without parasitic capacitance.
-  %       TODO-DEC: Where is it natural to modify calibration data then?!
-  %   PROPOSAL: General philosophy should be that calibrate_* chooses as much as
-  %             possible, and thus chooses different functions to call.
+  % PROPOSAL: Tests for non-ASR SSIDs.
   %
   %
   %
@@ -231,15 +217,13 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %
   %
   %
-  % BUG: Can likely not handle data with SSID = Unknown or 2.5V Ref, at least
-  %      not for LFR.
-  %   PROPOSAL: Tests.
-  %
-  %
-  %
   % PROPOSAL: Phase out some features which could potentially be achieved by
   %           using alternative subclasses.
-  %   Ex: ufv, allVoltageCalibDisabled
+  %   Ex: allVoltageCalibDisabled
+  %   NOTE: May want to disable calibration (use unit TF) for non-ASR signals.
+  %     NOTE: Disable reconstruction for this case too?!!
+  %   PROPOSAL: Convert allVoltageCalibDisabled to method argument (currently
+  %             set at initialization).
   % PROPOSAL: Phase out features which have never been used (or not for many
   %           years anyway).
   %   Ex: lfrTdsTfDisabled
@@ -256,6 +240,9 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %
   %
   % PROPOSAL: Convert transfer function handles into class(es).
+  % PROPOSAL: Move itfHighFreqLimitFraction out of bicas.tf.apply_TF() and
+  %           convert it into a modification of the TF instead.
+  %   PRO: Simplifies bicas.tf.apply_TF().
 
 
 
@@ -701,13 +688,13 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
       %============================================
       % Modify return values for specific settings
       %============================================
-      if obj.biasOffsetsDisabled && ~isnan(offsetAvolt)
-        % NOTE: Overwrites "offsetAvolt".
-        offsetAvolt = 0;
-      end
       if obj.useBiasTfScalar
         % NOTE: Overwrites "itfAvpiv".
         itfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
+      end
+      if obj.biasOffsetsDisabled
+        % NOTE: Overwrites "offsetAvolt".
+        offsetAvolt = 0;
       end
     end
 
@@ -798,6 +785,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
+    % Return TDS-CWF nominal ITF as stored in RCT, except also handle BLTS 4-5.
+    %
     % ARGUMENTS AND RETURN VALUES
     % ===========================
     % See get_LFR_ITF().
@@ -832,6 +821,8 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
 
 
 
+    % Return TDS-RSWF nominal ITF as stored in RCT, except also handle BLTS 4-5.
+    %
     % ARGUMENTS AND RETURN VALUES
     % ===========================
     % See get_LFR_ITF().
