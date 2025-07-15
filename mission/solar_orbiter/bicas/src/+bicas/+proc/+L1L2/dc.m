@@ -63,7 +63,7 @@ classdef dc
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
       % ASSERTION
-      assert(isa(Vcal, "bicas.proc.L1L2.cal.VoltageCalibrationAbstract"))
+      assert(isa(Vcal, "bicas.proc.L1L2.cal.VoltageCalibration"))
       assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
       assert(isa(Dcip, "bicas.proc.L1L2.DemultiplexingCalibrationInput"));
 
@@ -321,7 +321,7 @@ classdef dc
       end
 
       % ASSERTIONS
-      assert(isa(Cv.Vcal, "bicas.proc.L1L2.cal.VoltageCalibrationAbstract"))
+      assert(isa(Cv.Vcal, "bicas.proc.L1L2.cal.VoltageCalibration"))
       assert(isscalar(Cv.hasSwfFormat))
       assert(isnumeric(Zv.samplesTm))
       assert(isa(Zv.ssid, 'uint8'))
@@ -551,7 +551,7 @@ classdef dc
       % processing is unintended and should probably ideally be
       % eliminated. Can use integers or bicas.utils.FPArray?
       % NOTE: Storing TM units with floats!
-      assert(isa(Cv.Vcal, "bicas.proc.L1L2.cal.VoltageCalibrationAbstract"))
+      assert(isa(Cv.Vcal, "bicas.proc.L1L2.cal.VoltageCalibration"))
       if Cv.isLfr
         assert(isa(Zv.samplesTm, 'single'))
       else

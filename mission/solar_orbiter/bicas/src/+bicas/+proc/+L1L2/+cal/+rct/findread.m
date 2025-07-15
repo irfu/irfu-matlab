@@ -1,6 +1,6 @@
 %
 % Functions (static methods) associated with
-% bicas.proc.L1L2.cal.VoltageCalibrationImpl finding, reading, and logging RCTs
+% bicas.proc.L1L2.cal.VoltageCalibration finding, reading, and logging RCTs
 % so that that class itself does not need to.
 %
 %
@@ -43,7 +43,7 @@ classdef findread
 
 
     % Get an instance of RCTDC needed for a nominal instantiation of
-    % bicas.proc.L1L2.cal.VoltageCalibrationImpl.
+    % bicas.proc.L1L2.cal.VoltageCalibration.
     function Rctdc = get_nominal_RCTDC(...
         useGactRct, nonBiasRcttid, rctDir, ...
         gact, zvcti, zv_BW, tt2000Begin, tt2000End, L)

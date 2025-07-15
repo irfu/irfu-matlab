@@ -27,7 +27,7 @@ classdef(Abstract) CurrentCalibrationAbstract
         biasCurrentTm, iAntenna)
 
     % IMPLEMENTATION NOTE: This method technically has the same purpose as
-    % bicas.proc.L1L2.cal.VoltageCalibrationAbstract.get_BIAS_calibration_time_index_L().
+    % bicas.proc.L1L2.cal.VoltageCalibration.get_BIAS_calibration_time_index_L().
     iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
 
 

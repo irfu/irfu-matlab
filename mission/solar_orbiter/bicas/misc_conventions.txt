@@ -571,7 +571,7 @@ USPR
 VBMC
     Validate BICAS Master CDFs. Standalone tool.
 VCAL
-    Class bicas.proc.L1L2.cal.VoltageCalibrationAbstract and subclasses thereof.
+    Class bicas.proc.L1L2.cal.VoltageCalibration.
 VCDS
     Class bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierAbstract and subclasses
     thereof.

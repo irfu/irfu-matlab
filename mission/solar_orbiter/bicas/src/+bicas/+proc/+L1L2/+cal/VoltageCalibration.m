@@ -1,6 +1,4 @@
 %
-% Nominal implementation of superclass for calibrating voltages.
-%
 % An instance of this class contains
 %   (1) relevant settings (loaded from BSO) on how to calibrate voltages, and
 %   (2) VCDS that can return actual calibration data (from RCTs).
@@ -72,7 +70,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2017-02-15
 %
-classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
+classdef VoltageCalibration
   % PROPOSAL: Separate subclasses for different types of data. At least separate
   %           for LFR, TDS-CWF, TDS-RSWF.
   %   PROPOSAL: Methods
@@ -107,7 +105,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
   %              superclass (needed for testing) should also load the BIAS RCT!
   %           NOTE: CCAL also needs BIAS RCTD for implementing
   %                 get_BIAS_calibration_time_index_L().
-  %       PRO: Can then abolish bicas.proc.L1L2.cal.VoltageCalibrationAbstract.
+  %       PRO: Can then abolish bicas.proc.L1L2.cal.VoltageCalibrationAbstract. -- IMPLEMENTED
   %     --
   %     PROPOSAL: Class uses separately mockable classes for producing BIAS TF
   %               and LFR/TDS TF.
@@ -276,22 +274,7 @@ classdef VoltageCalibrationImpl < bicas.proc.L1L2.cal.VoltageCalibrationAbstract
     % or
     % (3) manually (for manual debugging/analysis/testing).
     %
-    %
-    % IMPLEMENTATION NOTE
-    % ===================
-    % The class (instance methods, including constructor) deliberately does
-    % not itself read the RCTs, nor figure out which ones should be read.
-    % This is useful since
-    % ** it completely separates
-    %       (a) algorithms for determining RCTs to load, and
-    %       (b) reading RCT,
-    %    from the class (better modularization, better for automatic test
-    %    code).
-    % ** it makes it possible to inspect & modify the RCT content before
-    %    submitting it to bicas.proc.L1L2.cal.VoltageCalibrationAbstract
-    % ** it simplifies the constructor.
-    %
-    function obj = VoltageCalibrationImpl(Vcds, useGactRct, Bso)
+    function obj = VoltageCalibration(Vcds, useGactRct, Bso)
       % ASSERTIONS: Arguments
       assert(isa(Vcds, "bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierAbstract"))
       assert(islogical(useGactRct) & isscalar(useGactRct))

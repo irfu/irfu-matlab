@@ -25,8 +25,9 @@
 %     (1b) stdout, or
 %     (2) don't log at all.
 % Ex: Switch between log prefixes or not.
-% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.proc.L1L2.cal.VoltageCalibrationAbstract) can
-%     have other logging, or none.
+% Ex: Non-BICAS code that uses BICAS code (e.g.
+%     bicas.proc.L1L2.cal.VoltageCalibration) can have configure other logging,
+%     or no logging.
 % Ex: Can implement accepting log messages before specifying the log file, by
 %     temporarily storing the messages.
 %
