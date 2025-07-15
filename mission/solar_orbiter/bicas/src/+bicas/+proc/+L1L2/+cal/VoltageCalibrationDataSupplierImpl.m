@@ -42,9 +42,6 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
     % debugging/testing purposes.
     BiasScalarGain
 
-    biasOffsetsDisabled
-    useBiasTfScalar
-
     % Whether to use ZVCTI2 for calibration.
     useZvcti2
   end    % properties(SetAccess=immutable)
@@ -71,49 +68,13 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
       obj.BiasScalarGain.gammaIvpav.achg = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
       obj.BiasScalarGain.gammaIvpav.aclg = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
 
-      obj.biasOffsetsDisabled            = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
       obj.useZvcti2                      = useZvcti2;
-
-      %-------------------------
-      % Set obj.useBiasTfScalar
-      %-------------------------
-      settingBiasTf                      = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
-      switch(settingBiasTf)
-        case 'FULL'
-          obj.useBiasTfScalar = false;
-        case 'SCALAR'
-          obj.useBiasTfScalar = true;
-        otherwise
-          error(...
-            'BICAS:Assertion:ConfigurationBug', ...
-            ['Illegal value for setting',...
-            ' PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".'], ...
-            settingBiasTf)
-      end
     end
 
 
 
-    % Return BIAS ITF and BIAS offset.
-    %
-    % NOTE: May return calibration values corresponding to scalar
-    % calibration, depending on BSO:
-    %
-    %
-    % ARGUMENTS
-    % =========
-    % isAchg
-    %       NUMERIC value: 0=Off, 1=ON, or NaN=Value not known.
-    %       IMPLEMENTATION NOTE: Needs value to represent that isAchg
-    %       is unknown. Sometimes, if isAchg is unknown, then it is
-    %       useful to process as usual since some of the data can still be
-    %       derived/calibrated, so that the caller does not need to handle
-    %       the special case.
-    %
-    function [itfAvpiv, offsetAvolt] = get_BIAS_ITF_and_offset(obj, ...
+    function [itfAvpiv, kItfAvpiv, offsetAvolt] = get_BIAS_ITF_and_offset(obj, ...
         ssid, isAchg, iCalibTimeL, iCalibTimeH)
-
-      % PROPOSAL: Separate functions for TF and scalar calibration.
 
       % ASSERTION
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
@@ -127,9 +88,6 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
       BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
       BiasRctd   = BiasRctdCa{1};
 
-      %###################################################################
-      % kFtfIvpav = Multiplication factor "k" that represents/replaces the
-      % (forward) transfer function for scalar calibration.
       asid         = bicas.proc.L1L2.const.SSID_ASR_to_ASID( ssid);
       asidCategory = bicas.proc.L1L2.const.get_ASID_category(asid);
       antennas     = bicas.proc.L1L2.const.get_ASID_antennas(asid);
@@ -180,17 +138,7 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
             asidCategory)
       end
 
-      %============================================
-      % Modify return values for specific settings
-      %============================================
-      if obj.useBiasTfScalar
-        % NOTE: Overwrites "itfAvpiv".
-        itfAvpiv = @(omegaRps) (ones(size(omegaRps)) / kFtfIvpav);
-      end
-      if obj.biasOffsetsDisabled
-        % NOTE: Overwrites "offsetAvolt".
-        offsetAvolt = 0;
-      end
+      kItfAvpiv = 1 / kFtfIvpav;
     end
 
 

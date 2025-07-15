@@ -20,7 +20,29 @@ classdef(Abstract) VoltageCalibrationDataSupplierAbstract
 
 
 
-    [itfAvpiv, offsetAvolt] = get_BIAS_ITF_and_offset(obj, ...
+    % Return BIAS ITF, BIAS scalar (ITF) calibration factor, and BIAS offset.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % isAchg
+    %       NUMERIC value: 0=Off, 1=ON, or NaN=Value not known.
+    %       IMPLEMENTATION NOTE: Needs value to represent that isAchg
+    %       is unknown. Sometimes, if isAchg is unknown, then it is
+    %       useful to process as usual since some of the data can still be
+    %       derived/calibrated, so that the caller does not need to handle
+    %       the special case.
+    %
+    % RETURN VALUE
+    % ============
+    % kItfAvpiv
+    %       Multiplication factor "k" that represents/replaces the ITF for
+    %       scalar calibration.
+    % offsetAvolt
+    %       Offset intended to be used with ITF, but could be used with scalar
+    %       calibration too.
+    %
+    [itfAvpiv, kItfAvpiv, offsetAvolt] = get_BIAS_ITF_and_offset(obj, ...
         ssid, isAchg, iCalibTimeL, iCalibTimeH)
 
     itfIvpt = get_LFR_ITF(obj, iBlts, iLsf, iNonBiasRct, zvcti2)

@@ -229,8 +229,12 @@ classdef VoltageCalibration
     snfEnabled
     snfSubseqMinSamples
 
-    % What type of calibration to use.
+    biasOffsetsDisabled
+
+    % What type of BIAS calibration to use.
     useBiasTfScalar
+
+
 
     % Whether to select non-BIAS RCTs using GACT (and ZVCTI).
     useGactRct
@@ -301,6 +305,26 @@ classdef VoltageCalibration
       obj.kernelHannWindow         = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
       obj.snfEnabled               = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
       obj.snfSubseqMinSamples      = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
+
+      obj.biasOffsetsDisabled      = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED');
+
+      %-------------------------
+      % Set obj.useBiasTfScalar
+      %-------------------------
+      settingBiasTf                = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF');
+      switch(settingBiasTf)
+        case 'FULL'
+          obj.useBiasTfScalar = false;
+        case 'SCALAR'
+          obj.useBiasTfScalar = true;
+        otherwise
+          error(...
+            'BICAS:Assertion:ConfigurationBug', ...
+            ['Illegal value for setting',...
+            ' PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF="%s".'], ...
+            settingBiasTf)
+      end
+
 
       %============================
       % Store some argument values
@@ -400,11 +424,17 @@ classdef VoltageCalibration
         %========================
         % Obtain BIAS ITF+offset
         %========================
-        [itfAvpiv, offsetAvolt] = obj.Vcds.get_BIAS_ITF_and_offset(...
+        [itfAvpiv, kItfAvpiv, offsetAvolt] = obj.Vcds.get_BIAS_ITF_and_offset(...
           CalSettings.ssid, ...
           CalSettings.isAchg, ...
           CalSettings.iCalibTimeL, ...
           CalSettings.iCalibTimeH);
+
+        if obj.useBiasTfScalar
+          % NOTE: Overwrites "itfAvpiv".
+          itfAvpiv = @(omegaRps) (ones(size(omegaRps)) * kItfAvpiv);
+        end
+
 
         %====================
         % Obtain LFR/TDS ITF
@@ -435,6 +465,11 @@ classdef VoltageCalibration
       else
         % CASE: Non-ASR SSID (ufv=false)
         itfAvpt     = obj.ONE_TF;
+        offsetAvolt = 0;
+      end
+
+      if obj.biasOffsetsDisabled
+        % NOTE: Overwrites "offsetAvolt", including for ufv=true.
         offsetAvolt = 0;
       end
 
