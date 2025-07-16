@@ -18,85 +18,104 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-    % NOTE: Does not test setting NSO table
-    %
-    function test_get_quality_ZVs(testCase)
-       % NOTE: Does not (truly) test the call to
-       % bicas.proc.L1L2.qual.sliding_window_over_fraction().
+    function test_get_saturation_QRCBs(testCase)
+      % NOTE: Does not (truly) test the call to
+      % bicas.proc.L1L2.qual.sliding_window_over_fraction().
 
-       L = bicas.Logger("HUMAN_READABLE", false);
+      DATA_AR = [...
+        0 0 0  0 0 0  0 0 0 ; ...
+        1 0 0  0 0 0  0 0 0 ; ...
+        0 1 0  0 0 0  0 0 0 ; ...
+        0 0 1  0 0 0  0 0 0 ; ...
+        0 0 0  0 0 0  0 0 0 ; ...
+        0 0 0  1 0 0  0 0 0 ; ...
+        0 0 0  0 1 0  0 0 0 ; ...
+        0 0 0  0 0 1  0 0 0 ; ...
+        0 0 0  0 0 0  0 0 0 ; ...
+        0 0 0  0 0 0  1 0 0 ; ...
+        0 0 0  0 0 0  0 1 0 ; ...
+        0 0 0  0 0 0  0 0 1 ; ...
+        0 0 0  0 0 0  0 0 0 ; ...
+        1 1 1  1 1 1  0 0 0 ; ...
+        % Below: Both DC_V12 and AC_V12 saturation, but still only one bit set.
+        0 0 0  1 0 0  1 0 0 ; ...
+        0 0 0  0 1 0  0 1 0 ; ...
+        0 0 0  0 0 1  0 0 1 ; ...
+      ];
+      N_ROWS    = size(DATA_AR, 1);
+      % NOTE: (Almost) only the size is important.
+      TT2000_AR = int64((1:N_ROWS) * 1e9)';
+      % (iRec, iSdid)
+      VSIB_AR_ALL = logical(DATA_AR(:, 1:9));
+      CHANNEL_SATURATION_AR = [...
+        VSIB_AR_ALL(:, 1:3), ...
+        VSIB_AR_ALL(:, 4:6) | VSIB_AR_ALL(:, 7:9)];
+      FULL_SATURATION_AR    = any(VSIB_AR_ALL, 2);
 
-       N = 1;    % Bitmask for the lowest channel saturation quality bit.
-       DATA = [...
-         0 0 0 0 0 0 0 0 0   4  0 0; ...
-         1 0 0 0 0 0 0 0 0   0  3 N* 1; ...
-         0 1 0 0 0 0 0 0 0   0  3 N* 2; ...
-         0 0 1 0 0 0 0 0 0   0  3 N* 4; ...
-         0 0 0 0 0 0 0 0 0   4  0 0; ...
-         0 0 0 1 0 0 0 0 0   0  3 N* 8; ...
-         0 0 0 0 1 0 0 0 0   0  3 N*16; ...
-         0 0 0 0 0 1 0 0 0   0  3 N*32; ...
-         0 0 0 0 0 0 0 0 0   4  0 0; ...
-         0 0 0 0 0 0 1 0 0   0  3 N* 8; ...
-         0 0 0 0 0 0 0 1 0   0  3 N*16; ...
-         0 0 0 0 0 0 0 0 1   0  3 N*32; ...
-         0 0 0 0 0 0 0 0 0   4  0 0; ...
-         1 1 1 1 1 1 0 0 0   0  3 N*(1+2+4 + 8+16+32); ...
-         % Below: Both DC_V12 and AC_V12 saturation, but still only one bit set.
-         0 0 0 1 0 0 1 0 0   0  3 N*8; ...
-         0 0 0 0 1 0 0 1 0   0  3 N*16; ...
-         0 0 0 0 0 1 0 0 1   0  3 N*32; ...
-         ];
-       N_ROWS     = size(DATA, 1);
-       % NOTE: (Almost) only the size is important.
-       TT2000_AR  = int64([1:N_ROWS] * 1e9)';
-       % (iRec, iSdid)
-       VSIB_AR_ALL                               = logical(DATA(:, 1:9));
-       EXP_QUALITY_FLAG                          = uint8(  DATA(:, 10 ));
-       EXP_L2_QUALITY_BITMASK_FULL_SATURATION    = uint16( DATA(:, 11 ));
-       EXP_L2_QUALITY_BITMASK_CHANNEL_SATURATION = uint16( DATA(:, 12 ));
 
-       VsibZvm = bicas.utils.ZvMap(N_ROWS);
-       function add_channel(ssidStr, iVsib)
-         ssid = bicas.proc.L1L2.const.C.SDID_DICT(ssidStr);
-         VsibZvm.add(ssid, VSIB_AR_ALL(:, iVsib));
-       end
-       add_channel("DC_V1",  1)
-       add_channel("DC_V2",  2)
-       add_channel("DC_V3",  3)
-       add_channel("DC_V12", 4)
-       add_channel("DC_V13", 5)
-       add_channel("DC_V23", 6)
-       add_channel("AC_V12", 7)
-       add_channel("AC_V13", 8)
-       add_channel("AC_V23", 9)
 
-       isSwf                     = false;
-       vstbFractionThreshold     = 0.9;
-       cwfSlidingWindowLengthSec = 1.01;
+      VsibZvm = bicas.utils.ZvMap(N_ROWS);
+      function add_channel_VSIB(ssidStr, iVsib)
+        ssid = bicas.proc.L1L2.const.C.SDID_DICT(ssidStr);
+        VsibZvm.add(ssid, VSIB_AR_ALL(:, iVsib));
+      end
+      add_channel_VSIB("DC_V1",  1)
+      add_channel_VSIB("DC_V2",  2)
+      add_channel_VSIB("DC_V3",  3)
+      add_channel_VSIB("DC_V12", 4)
+      add_channel_VSIB("DC_V13", 5)
+      add_channel_VSIB("DC_V23", 6)
+      add_channel_VSIB("AC_V12", 7)
+      add_channel_VSIB("AC_V13", 8)
+      add_channel_VSIB("AC_V23", 9)
 
-       NSO_TABLE_EMPTY = bicas.NsoTable(...
-         int64.empty(0, 1), ...
-         int64.empty(0, 1), ...
-         string.empty(0, 1));
+      ExpGlobalSaturationQrcbMap  = bicas.proc.QrcbMap(N_ROWS);
 
-       % CALL TESTED FUNCTION
-       [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
-         bicas.proc.L1L2.qual.get_quality_ZVs( ...
-         TT2000_AR, NSO_TABLE_EMPTY, "GLOBAL_SATURATION", VsibZvm, isSwf, ...
-         vstbFractionThreshold, cwfSlidingWindowLengthSec, L);
+      ExpGlobalSaturationQrcbMap.add("FULL_SATURATION",    FULL_SATURATION_AR)
+      ExpGlobalSaturationQrcbMap.add("PARTIAL_SATURATION", false(N_ROWS, 1))
 
-       testCase.assertEqual(act_QUALITY_FLAG,       EXP_QUALITY_FLAG)
-       testCase.assertEqual(act_L2_QUALITY_BITMASK, EXP_L2_QUALITY_BITMASK_FULL_SATURATION)
+      ExpChannelSaturationQrcbMap = bicas.proc.QrcbMap(N_ROWS);
 
-       % CALL TESTED FUNCTION
-       [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
-         bicas.proc.L1L2.qual.get_quality_ZVs( ...
-         TT2000_AR, NSO_TABLE_EMPTY, "CHANNEL_SATURATION", VsibZvm, isSwf, ...
-         vstbFractionThreshold, cwfSlidingWindowLengthSec, L);
+      ExpChannelSaturationQrcbMap.add("FULL_SATURATION",    false(N_ROWS, 1))
+      ExpChannelSaturationQrcbMap.add("PARTIAL_SATURATION", false(N_ROWS, 1))
 
-       testCase.assertEqual(act_QUALITY_FLAG,       EXP_QUALITY_FLAG)
-       testCase.assertEqual(act_L2_QUALITY_BITMASK, EXP_L2_QUALITY_BITMASK_CHANNEL_SATURATION)
+      function add_channel_saturation_QRCB(qrcid, iCol)
+        ExpGlobalSaturationQrcbMap.add( qrcid, false(N_ROWS, 1))
+
+        qrcbAr = CHANNEL_SATURATION_AR(:, iCol);
+        ExpChannelSaturationQrcbMap.add(qrcid, qrcbAr)
+
+      end
+      add_channel_saturation_QRCB("SATURATION_ZV_V1",  1)
+      add_channel_saturation_QRCB("SATURATION_ZV_V2",  2)
+      add_channel_saturation_QRCB("SATURATION_ZV_V3",  3)
+      add_channel_saturation_QRCB("SATURATION_ZV_V12", 4)
+      add_channel_saturation_QRCB("SATURATION_ZV_V13", 5)
+      add_channel_saturation_QRCB("SATURATION_ZV_V23", 6)
+
+
+
+      isSwf                     = false;
+      vstbFractionThreshold     = 0.9;
+      cwfSlidingWindowLengthSec = 1.01;
+
+
+
+      % CALL TESTED FUNCTION
+      ActQrcbMap = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
+        TT2000_AR, "GLOBAL_SATURATION", VsibZvm, isSwf, ...
+        vstbFractionThreshold, cwfSlidingWindowLengthSec);
+
+      testCase.assertEqual(ActQrcbMap, ExpGlobalSaturationQrcbMap)
+
+
+
+      % CALL TESTED FUNCTION
+      ActQrcbMap = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
+      TT2000_AR, "CHANNEL_SATURATION", VsibZvm, isSwf, ...
+      vstbFractionThreshold, cwfSlidingWindowLengthSec);
+
+      testCase.assertEqual(ActQrcbMap, ExpChannelSaturationQrcbMap)
     end
 
 

@@ -122,30 +122,11 @@ classdef qual
     %       ZVM with VSIBs (not VSTBs, not VSQBs, not QRCBs) for the respective
     %       ASR channels.
     %
-    function [QUALITY_FLAG, L2_QUALITY_BITMASK] = get_quality_ZVs(...
-        tt2000Ar, NsoTable, saturationQualitySchemeId, ...
-        VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec, L)
+    function SaturationQrcbMap = get_saturation_QRCBs(...
+        tt2000Ar, saturationQualitySchemeId, ...
+        VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec)
 
       % PROPOSAL: Change order of arguments.
-      % PROPOSAL: Select saturationQualitySchemeId behaviour by replacing
-      %           bicas.const.QRCS_L2_MAP with call to function where
-      %           saturationQualitySchemeId is an argument.
-      %   NOTE: Only makes sense if function is called once.
-      %   NOTE: Needs functionality for reducing number of QRCIDs in QrcbMap.
-      %   CON: bicas.const.QRCS_L2_MAP.keys is used for obtaining QRCBs from NSO
-      %        table. This should be the union of GLOBAL_SATURATION and
-      %        FULL_SATURATION QRCIDs which is unnatural to generate with a
-      %        function for generating a QRCB map.
-
-      QrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
-
-      %-----------
-      % NSO table
-      %-----------
-      NsoTableQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
-        string(bicas.const.QRCS_L2_MAP.keys)', NsoTable, tt2000Ar, L);
-      QrcbMap.add_map(NsoTableQrcbMap)
-      clear NsoTableQrcbMap
 
       %--------------------
       % Channel saturation
@@ -154,8 +135,6 @@ classdef qual
         bicas.proc.L1L2.qual.get_QRCBs_channel_saturation(...
         VsibZvm, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
-      QrcbMap.add_map(ChannelSaturationQrcbMap)
-      clear ChannelSaturationQrcbMap
 
       %--------------------------------------------------------------
       % Derive GLOBAL_SATURATION QRCBs from CHANNEL_SATURATION QRCBs
@@ -165,33 +144,34 @@ classdef qual
       % which can be converted.
       GlobalSaturationQrcbMap = ...
         bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
-        QrcbMap, numel(tt2000Ar));
-      QrcbMap.add_map(GlobalSaturationQrcbMap);
+        ChannelSaturationQrcbMap, numel(tt2000Ar));
+
+      % Merge QRCB maps.
+      SaturationQrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
+      SaturationQrcbMap.add_map(ChannelSaturationQrcbMap)
+      SaturationQrcbMap.add_map(GlobalSaturationQrcbMap);
+      clear ChannelSaturationQrcbMap
       clear GlobalSaturationQrcbMap
 
-
-
-      % IMPLEMENTATION NOTE: Removing QRCBs only from merged QrcbMap since the
-      % two source maps may both contain the same key (FULL_SATURATION).
+      %---------------------------
+      % Set unused QRCBs to false
+      %---------------------------
+      qrcbFalseAr = false(size(tt2000Ar));
       switch(saturationQualitySchemeId)
         case "GLOBAL_SATURATION"
           for qrcid = string(bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys)
-            QrcbMap.remove(qrcid);
+            SaturationQrcbMap.set(qrcid, qrcbFalseAr)
           end
 
         case "CHANNEL_SATURATION"
-          QrcbMap.remove("PARTIAL_SATURATION");
-          QrcbMap.remove("FULL_SATURATION");
+          SaturationQrcbMap.set("PARTIAL_SATURATION", qrcbFalseAr);
+          SaturationQrcbMap.set("FULL_SATURATION",    qrcbFalseAr);
 
         otherwise
           error("BICAS:ConfigurationBug", ...
             "Illegal argument saturationQualitySchemeId=""%s"".", ...
             saturationQualitySchemeId)
       end
-
-      [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-        bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        numel(tt2000Ar), QrcbMap, bicas.const.QRCS_L2_MAP);
     end
 
 

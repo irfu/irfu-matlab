@@ -155,15 +155,14 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
     function test_QRCB_arrays_to_quality_ZVs(testCase)
 
-      function test(nRec, QrcbMap, QrcsMap, ...
-          exp_QUALITY_FLAG, exp_L2_QUALITY_BITMASK)
+      function test(QrcbMap, QrcsMap, exp_QUALITY_FLAG, exp_L2_QUALITY_BITMASK)
+
         exp_QUALITY_FLAG       = uint8( exp_QUALITY_FLAG(:));
         exp_L2_QUALITY_BITMASK = uint16(exp_L2_QUALITY_BITMASK(:));
 
         % CALL TESTED FUNCTION
         [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
-          bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-          nRec, QrcbMap, QrcsMap);
+          bicas.proc.qual.QRCB_arrays_to_quality_ZVs(QrcbMap, QrcsMap);
 
         testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
         testCase.assertEqual(act_L2_QUALITY_BITMASK, exp_L2_QUALITY_BITMASK)
@@ -172,16 +171,17 @@ classdef qual___UTEST < matlab.unittest.TestCase
       % =======================
       % Zero QRCIDs are defined
       % =======================
-      QrcsMap = containers.Map();
       QrcbMap = bicas.proc.QrcbMap(0);
+      QrcsMap = containers.Map();
 
       % Zero records
-      test(0, QrcbMap, QrcsMap, ...
+      test(QrcbMap, QrcsMap, ...
         [], [] ...
         )
 
       % Non-zero records
-      test(3, QrcbMap, QrcsMap, ...
+      QrcbMap = bicas.proc.QrcbMap(3);
+      test(QrcbMap, QrcsMap, ...
         4*ones(3,1), zeros(3,1) ...
         )
 
@@ -196,7 +196,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
       QrcbMap = bicas.proc.QrcbMap(0);
       QrcbMap.add("QRCID1", false(0, 1));
       QrcbMap.add("QRCID2", false(0, 1));
-      test(0, QrcbMap, QrcsMap, ...
+      test(QrcbMap, QrcsMap, ...
         [], [] ...
         )
 
@@ -204,7 +204,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
       QrcbMap = bicas.proc.QrcbMap(4);
       QrcbMap.add("QRCID1", logical([0 0 1 1]'));
       QrcbMap.add("QRCID2", logical([0 1 0 1]'));
-      test(4, QrcbMap, QrcsMap, ...
+      test(QrcbMap, QrcsMap, ...
         [4 3 2 2], [0 4 2 4+2] ...
         )
     end

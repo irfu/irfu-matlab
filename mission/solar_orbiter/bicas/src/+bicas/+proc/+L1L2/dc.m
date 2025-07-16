@@ -71,6 +71,17 @@ classdef dc
 
 
 
+      %#####################
+      % NSO table --> QRCBs
+      %#####################
+      % Read NSO table into QRCBs ONCE, so that it does not need to be done
+      % later.
+      AllQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
+        string(bicas.const.QRCS_L2_MAP.keys)', NsoTable, Dcip.Zv.Epoch, L);
+      clear NsoTable
+
+
+
       %#########################
       % Calibrate bias CURRENTS
       %#########################
@@ -148,13 +159,17 @@ classdef dc
       % Obtain quality ZVs
       %####################
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
-      [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-        bicas.proc.L1L2.qual.get_quality_ZVs(...
-        Dcip.Zv.Epoch, NsoTable, ...
+      SaturationQrcbMap = bicas.proc.L1L2.qual.get_saturation_QRCBs(...
+        Dcip.Zv.Epoch,  ...
         string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')), ...
         VsibZvm, Dcip.hasSwfFormat, ...
         SatSettings.vstbFractionThreshold, ...
-        SatSettings.cwfSlidingWindowLengthSec, L);
+        SatSettings.cwfSlidingWindowLengthSec);
+      AllQrcbMap.add_map(SaturationQrcbMap)
+      % --
+      [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
+        bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
+        AllQrcbMap, bicas.const.QRCS_L2_MAP);
 
 
 

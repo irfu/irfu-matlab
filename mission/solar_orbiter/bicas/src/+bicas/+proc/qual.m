@@ -134,9 +134,11 @@ classdef qual
     %       context.
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
-        nRec, QrcbMap, QrcsMap)
+        QrcbMap, QrcsMap)
 
       assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
+
+      nRec = QrcbMap.nRecords;
 
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, Lx_QUALITY_BITMASK=0), which can then later be
@@ -150,9 +152,6 @@ classdef qual
       for qrcid = QrcbMap.qrcidAr'
         Qrcs   = QrcsMap(qrcid);
         qrcbAr = QrcbMap.get(qrcid);
-
-        assert(isa(qrcbAr, 'logical'))
-        assert(isequal( size(qrcbAr), [nRec, 1] ))
 
         %------------------
         % Set QUALITY_FLAG

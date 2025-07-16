@@ -35,6 +35,15 @@ classdef QrcbMap < handle
   %     CON: ZVM does not enforce
   %          QRCID (scalar string)-->QRCB (logical; column array)
   %     CON: ZVM does not support add_map() with OR:ing for overlapping keys.
+  %
+  % PROPOSAL: Functionality for adding/initializing QRCBs to false.
+  %   PRO: Class already has the array size.
+  %   PRO: Useful for tests.
+  %     Ex: bicas.proc.L1L2.qual___UTEST/test_get_saturation_QRCBs
+  %   NOTE: Already has method for add_map() to add (OR) to optionally
+  %         pre-existing QRCID.
+  %   PROPOSAL: Specify QRCIDs in constructor.
+  %   PROPOSAL: Method add() without value implicitly adds QRCB=false.
 
 
 
