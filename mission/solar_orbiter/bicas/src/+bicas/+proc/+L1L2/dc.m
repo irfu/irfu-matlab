@@ -122,6 +122,16 @@ classdef dc
 
 
 
+      %#################################################
+      % Set 5xBLTS channels to NaN/FV according to QRCs
+      %#################################################
+      aspr        = size(bltsSamplesAVolt, 2);
+      btlsSsidAr2 = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
+      bltsSamplesAVolt = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
+        bltsSamplesAVolt, btlsSsidAr2, AllQrcbMap, bicas.const.QRCS_L2_MAP);
+
+
+
       %#####################################
       % Get VSIB for BLTS-labelled channels
       %#####################################

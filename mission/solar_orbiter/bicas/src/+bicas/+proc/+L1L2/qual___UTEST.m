@@ -120,6 +120,82 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_set_5xBLTS_voltage_samples_FV(testCase)
+
+      function test(samplesAvoltAr, ssidAr, QrcbMap, QrcsMap, bExpNan)
+        expSamplesAvoltAr          = samplesAvoltAr;
+        expSamplesAvoltAr(bExpNan) = NaN;
+
+        actSamplesAvoltAr = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
+          samplesAvoltAr, ssidAr, QrcbMap, QrcsMap);
+
+        testCase.assertEqual(actSamplesAvoltAr, expSamplesAvoltAr)
+      end
+
+      S = bicas.proc.L1L2.const.C.SSID_DICT;
+
+
+
+      function test_empty()
+        QrcbMap = bicas.proc.QrcbMap(0);
+        QrcsMap = containers.Map();
+        test(...
+          double.empty(0, 1), ...
+          uint8.empty( 0, 1), ...
+          QrcbMap, QrcsMap, ...
+          logical.empty(0, 1))
+      end
+
+      function test_nonempty_samples_empty_maps()
+        QrcbMap = bicas.proc.QrcbMap(2);
+        QrcsMap = containers.Map();
+
+        samplesAvoltAr = reshape(1:2*3, [2, 3]);
+        ssidAr         = S(["DC_V1" "DC_V12" "DC_V23"; "DC_V1" "DC_V2" "DC_V3"]);
+        test(...
+          samplesAvoltAr, ...
+          ssidAr, ...
+          QrcbMap, QrcsMap, ...
+          false(2, 3))
+      end
+
+      % Deliberately 3D arrays.
+      function test_complex_3D()
+        QrcbMap = bicas.proc.QrcbMap(4);
+        QrcbMap.add("QRCID_1", logical([1 1 0 0]'))
+        QrcbMap.add("QRCID_2", logical([0 1 1 0]'))
+
+        QrcsMap = containers.Map();
+        QrcsMap("QRCID_1") = bicas.proc.QrcSettingL1rL2(...
+          uint8(4), uint16(0), S(["DC_V1"; "DC_V12"]));
+        QrcsMap("QRCID_2") = bicas.proc.QrcSettingL1rL2(...
+          uint8(4), uint16(0), S(["DC_V1"; "DC_V2"]));
+
+        samplesAvoltAr = reshape(1:4*3*2, [4, 3, 2]);
+        ssidAr(:, :, 1) = S([...
+          "DC_V1"  "DC_V2"  "DC_V3"; ...
+          "DC_V12" "DC_V13" "DC_V23" ; ...
+          "DC_V2"  "DC_V3"  "DC_V1"; ...
+          "AC_V12" "AC_V13" "AC_V23"]);
+        ssidAr(:, :, 2) = ssidAr(end:-1:1, :, 1);   % Reverse rows.
+
+        bExpNan(:, :, 1) = logical([1 0 0; 1 0 0; 1 0 1; 0 0 0]);
+        bExpNan(:, :, 2) = logical([0 0 0; 1 0 1; 0 0 0; 0 0 0]);
+
+        test(...
+          samplesAvoltAr, ...
+          ssidAr, ...
+          QrcbMap, QrcsMap, ...
+          bExpNan)
+      end
+
+      test_empty()
+      test_nonempty_samples_empty_maps()
+      test_complex_3D()
+    end
+
+
+
     function test_set_voltage_current_FV(testCase)
 
       function test(...

@@ -568,8 +568,8 @@ classdef const
         % bit(mask)_i = 2^(i-1) = 1..32
         l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
 
-        QrcsMap(qrcid) = bicas.proc.QrcSetting(...
-          bicas.const.QUALITY_FLAG_SATURATION, l2qbmBit);
+        QrcsMap(qrcid) = bicas.proc.QrcSettingL1rL2(...
+          bicas.const.QUALITY_FLAG_SATURATION, l2qbmBit, uint8.empty(0, 1));
       end
     end
 
@@ -600,6 +600,11 @@ classdef const
       %               is more free to set and read its own constants in any
       %               order.
 
+
+
+      % No circular dependence?!! bicas.proc.L1L2.const <-> bicas.const
+      S = bicas.proc.L1L2.const.C.SSID_DICT;
+
       QrcsMap = containers.Map();
 
       % -----------------------------------------
@@ -614,21 +619,20 @@ classdef const
       %====================
       % PARTIAL_SATURATION
       %====================
-      QrcsMap("PARTIAL_SATURATION") = ...
-        bicas.proc.QrcSetting(...
+      QrcsMap("PARTIAL_SATURATION") = bicas.proc.QrcSettingL1rL2(...
         uint8(1), ...
-        L2QBM_BIT_PARTIAL_SATURATION);
+        L2QBM_BIT_PARTIAL_SATURATION, ...
+        uint8.empty(0, 1));
 
       %=================
       % FULL_SATURATION
       %=================
       % NOTE: Also set PARTIAL saturation bit when FULL
       % saturation. /YK 2020-10-02.
-      QrcsMap("FULL_SATURATION") = ...
-        bicas.proc.QrcSetting(...
+      QrcsMap("FULL_SATURATION") = bicas.proc.QrcSettingL1rL2(...
         QUALITY_FLAG_FULL_SATURATION, ...
-        L2QBM_BIT_FULL_SATURATION + ...
-        L2QBM_BIT_PARTIAL_SATURATION);
+        L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION, ...
+        uint8.empty(0, 1));
 
       %=================
       % THRUSTER_FIRING
@@ -638,10 +642,32 @@ classdef const
       % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
       % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
       % (YK 2020-11-03 did not ask for any to be set.)
-      QrcsMap("THRUSTER_FIRING") = ...
-        bicas.proc.QrcSetting(...
+      QrcsMap("THRUSTER_FIRING") = bicas.proc.QrcSettingL1rL2(...
         uint8(1), ...
-        uint16(0));    % NOTE: No quality bit set!
+        uint16(0), ...     % NOTE: No quality bit set!
+        uint8.empty(0, 1));
+
+      %==============
+      % ANTx_FAILING
+      %==============
+      QUALITY_FLAG_ANTx_FAILING = bicas.const.QUALITY_FLAG_MAX;   % TEMPORARY. Good value not decided.
+      L2QBM_ANTx_FAILING        = uint16(0);                      % TEMPORARY. Good value not decided.
+      %QUALITY_FLAG_ANTx_FAILING = uint8(0);        % TEST
+      %L2QBM_ANTx_FAILING        = uint16(65535);   % TEST
+      QrcsMap("ANT1_FAILING") = bicas.proc.QrcSettingL1rL2(...
+        QUALITY_FLAG_ANTx_FAILING, ...
+        L2QBM_ANTx_FAILING, ...
+        S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
+      QrcsMap("ANT2_FAILING") = bicas.proc.QrcSettingL1rL2(...
+        QUALITY_FLAG_ANTx_FAILING, ...
+        L2QBM_ANTx_FAILING, ...
+        S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
+      QrcsMap("ANT3_FAILING") = bicas.proc.QrcSettingL1rL2(...
+        QUALITY_FLAG_ANTx_FAILING, ...
+        L2QBM_ANTx_FAILING, ...
+        S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
+
+
 
       QrcsMap = [QrcsMap; bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP];
     end

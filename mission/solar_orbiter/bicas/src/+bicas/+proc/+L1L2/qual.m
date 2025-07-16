@@ -293,6 +293,49 @@ classdef qual
 
 
 
+    % Set BLTS-labelled samples based on NSO table and SSIDs.
+    %
+    % ARGUMENTS
+    % =========
+    % samplesAr
+    % ssidAr
+    %       Same size as samplesAr. Same number of rows as QrcbMap.
+    %
+    function samplesAr = set_5xBLTS_voltage_samples_FV(...
+        samplesAr, ssidAr, QrcbMap, QrcsMap)
+
+      % IMPLEMENTATION NOTE: Input arrays samplesAvoltAr, ssidAr must have same
+      % arbitrary size (except for first dimension).
+      %   PRO: It simplifies testing.
+      %   PRO: It simplifies the implementation.
+      %   PRO: It makes the function more generic.
+
+      % TODO-DEC: Relationship between QRCIDs in maps?
+      %           Same set?
+      %           One is subset of the other? In which direction?
+
+      % ASSERTIONS
+      assert(isfloat(samplesAr))
+      assert(isequal(size(samplesAr), size(ssidAr)))
+      assert(QrcbMap.nRecords == size(samplesAr, 1))    % Nbr. of records.
+      sizeAr = size(samplesAr);
+
+      bFv = false(sizeAr);
+      for qrcid = QrcbMap.qrcidAr'
+        Qrcs       = QrcsMap(    qrcid);
+        qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
+
+        % Same size as samplesAvoltAr.
+        bQrcbAr    = repmat(qrcbAr, [1, sizeAr(2:end)]);
+        bSsidMatch = ismember(ssidAr, Qrcs.voltageSamplesFvSsidAr);
+
+        bFv        = bFv | bQrcbAr & bSsidMatch;
+      end
+      samplesAr(bFv) = NaN;
+    end
+
+
+
     % Overwrite records of voltage & current with FVs as specified in arbitrary
     % array.
     %
