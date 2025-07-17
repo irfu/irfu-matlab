@@ -219,7 +219,7 @@ Dict
     MATLAB dictionary.
 DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
-    of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",
+    of the demultiplexer. See BIAS specification, section "3.4.4.14 MODE",
     "Data D3 = Diff probe 1&2(0), Diff probe 1&3(1)".
     Corresponds to BIAS HK zVariable "HK_BIA_MODE_DIFF_PROBE". The convention
     used for representing the value in BICAS is the same as in the BIAS HK ZV:
@@ -356,15 +356,15 @@ NSO (Event)
 NSO table
     Separate XML file that contains a list of time intervals which have been
     manually labeled as NSOs. BICAS uses this list for potentially modifying
-    processed data. Every NSO in the table is categorized using exactly one
-    QRCID.
+    processed data. Every NSO event in the table is categorized using exactly
+    one QRCID.
     Located at irfu-matlab/mission/solar_orbiter/bicas/data/solo_ns_ops.xml .
     See readme.txt.
 Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
 OSR
-    Original Sampling Rate. Used in the context of downsampling. Cf DSR.
+    Original Sampling Rate. Used in the context of downsampling. Cf. DSR.
 PFIID
     Production Function Input ID. String constant which is used to distinguish
     between different input values (datasets) as seen from production functions.
@@ -587,7 +587,7 @@ VSQB
         datasets (i.e. can be OR:ed with some other VSQB).
     Only one bit per CWF sample or snapshot.
     VSQB is "close to" the value actually stored in datasets, as opposed to VSIB
-    which is an intermediate value (which may be a VSQB, but also not). Cf VSIB.
+    which is an intermediate value (which may be a VSQB, but also not). Cf. VSIB.
 VSTB
     Voltage Saturation Threshold Bit.
     Bit which represents whether threshold saturation occurs for a given sample.

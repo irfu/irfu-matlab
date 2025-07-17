@@ -17,7 +17,7 @@ classdef const
   % PROPOSAL: Split up in multiple files.
   %   NOTE: There is already bicas.proc.L1L2.const.
   %   --
-  %   PRO: Too large file. ~886 rows
+  %   PRO: Too large file. ~1045 rows  /2025-07-17
   %     PRO: init_GA_MODS_DB() is  ~300 rows and will grow over time.
   %     PRO: init_SWD_metadata() is ~170 rows and will grow over time (if
   %          keeping commented-out info from every old BICAS version).
@@ -539,7 +539,8 @@ classdef const
     %
     % RETURN VALUE
     % ============
-    % Map QRCID-->bicas.proc.QrcSetting
+    % QrcsMap
+    %       containers.Map QRCID-->bicas.proc.QrcSetting.
     %
     function QrcsMap = init_QRCS_L2_CHANNEL_SATURATION_MAP()
       QrcsMap = containers.Map();
@@ -582,26 +583,6 @@ classdef const
     % Map QRCID-->bicas.proc.QrcSetting
     %
     function QrcsMap = init_QRCS_L2_MAP()
-      % PROPOSAL: Create global constant for channel saturation QRCIDs.
-      %   PROBLEM: This function can not return an additional constant for
-      %            setting that constant.
-      %     TODO-NI: Is that true?
-      %     PROPOSAL: Have that constant string list as an argument to this
-      %               function.
-      %     PROPOSAL: Separate function for setting map/dictionary with
-      %               channel saturation QRCSs. Can then use object key list.
-      %               -- IMPLEMENTED
-      %       ~CON: Needs constant (argument) for information shared with global
-      %             saturation (QUALITY_FLAG value).
-      %       CON: Function for creating map/dictionary for all L2 QRCSs can
-      %            not call that function.
-      %         CON-PROPOSAL: It can read the constant instead.
-      %     PROPOSAL: Set constant struct "C" using more extensive code which
-      %               is more free to set and read its own constants in any
-      %               order.
-
-
-
       % No circular dependence?!! bicas.proc.L1L2.const <-> bicas.const
       S = bicas.proc.L1L2.const.C.SSID_DICT;
 

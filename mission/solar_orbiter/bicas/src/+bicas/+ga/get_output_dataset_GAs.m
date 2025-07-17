@@ -264,13 +264,19 @@ end
 
 
 
-% (1) Given a set of RCTDs, obtain (column) cell array with elements equal to
-%     the field value of every RCTD.
+% (1) Given a set of RCTDs, obtain (column) cell array with elements equal to a
+%     specified field value in the RCTDs.
 % (2) Normalize empty, absent values.
 %
 % NOTE: Zero RCTDs ==> Zero GA enties (*NOT* one GA entry with one whitespace).
 %
 % RATIONALE: Exists to easily set RCT-related GAs.
+%
+% ARGUMENTS
+% =========
+% rctdFieldName
+%       String. Name of RCTD property.
+%
 function gaCa = get_RCTD_field_CA_GA(RctdCa, rctdFieldName)
 gaCa = cell(0, 1);
 

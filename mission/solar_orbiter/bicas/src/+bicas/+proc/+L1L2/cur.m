@@ -26,8 +26,8 @@ classdef cur
       %           needed values (Epoch, IBIAS_1/2/3).
       %   PRO: Simpler testing (does not yet exist).
       %   PRO: Clear function dependency.
-      %   NOTE: Argument contains data on CURRENT dataset time (not SCIENCE
-      %         dataset time). ==> This function changes the timestamps of
+      %   NOTE: Argument contains data on CURRENT CDF time (not SCIENCE
+      %         CDF time). ==> This function changes the timestamps of
       %         uncalibrated data using
       %         bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME().
 
@@ -70,7 +70,13 @@ classdef cur
     function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
         sciEpoch, InCur, Bso, L)
 
-      % PROPOSAL: Change function name. process_* implies converting struct-->struct.
+      % PROPOSAL: Better name.
+      %   PRO: Does not imply unit, or changing units (set nanoampere-->set
+      %        ampere).
+      %     CON: Return value name implies unit.
+      %     CON-PROPOSAL: Converting InCur to separate arguments sets unit
+      %                   names in the the new argument names.
+      %
       % PROPOSAL: Replace InCurPd (.ZvFpa, .ZvFv, .Ga etc.) with only the
       %           needed values (Epoch, IBIAS_1/2/3).
 
@@ -96,7 +102,8 @@ classdef cur
           ' Can therefore not determine currents for all voltage timestamps.'], ...
           curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
 
-        bicas.default_anomaly_handling(L, settingValue, settingKey, 'ERROR_WARNING_ILLEGAL_SETTING', ...
+        bicas.default_anomaly_handling(L, settingValue, settingKey, ...
+          'ERROR_WARNING_ILLEGAL_SETTING', ...
           anomalyDescrMsg, 'BICAS:SWMProcessing')
       end
 

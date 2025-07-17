@@ -125,6 +125,8 @@ classdef dc
       %#################################################
       % Set 5xBLTS channels to NaN/FV according to QRCs
       %#################################################
+      % BUG: Setting NaN/FV *AFTER* calibration which means that calibration of
+      % non-blanked samples is influenced by samples which are later blanked.
       aspr        = size(bltsSamplesAVolt, 2);
       btlsSsidAr2 = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
       bltsSamplesAVolt = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
@@ -169,6 +171,9 @@ classdef dc
       % Obtain quality ZVs
       %####################
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
+      % NOTE: Whether voltage samples have already been blanked (set to NaN/FV)
+      % or not based on QRCs, affects the saturation detection. Can not
+      % autodetect saturation in blanked data.
       SaturationQrcbMap = bicas.proc.L1L2.qual.get_saturation_QRCBs(...
         Dcip.Zv.Epoch,  ...
         string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')), ...

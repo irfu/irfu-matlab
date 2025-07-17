@@ -50,7 +50,9 @@ classdef NsoTable
   %           invoking constructor.
   %       (3) No assertions (besides valid XML file) in read_file_raw().
   %
-  % PROPOSAL: Change NSO table XML format: rcsNsoId --> Nsoid
+  % PROPOSAL: Change NSO table XML format: rcsNsoId --> nsoId
+  %   PRO: More consistens with YK's terminology?
+  % PROPOSAL: Change NSO table XML format: rcsNsoId --> qrcid
   %   PRO: Consistent with code and readme.txt.
   %   PROBLEM: Must update BICAS version simultaneously as NSO table file,
   %            also on brain. Can not update NSO table file only with e.g. new
@@ -312,10 +314,10 @@ classdef NsoTable
         startUtc = bicas.NsoTable.getXmlChildElemStr(EventXmlElem, 'startTimeUtc');
         stopUtc  = bicas.NsoTable.getXmlChildElemStr(EventXmlElem, 'stopTimeUtc');
         qrcid    = bicas.NsoTable.getXmlChildElemStr(EventXmlElem, 'rcsNsoId');
-        % NOTE: NSO XML file contains string "rcsNsoId" which is
-        % technically against the naming convention (w.r.t.
-        % capitalization) used in the source code. Keeping the old
-        % format in the XML file for compatibility.
+        % NOTE: NSO XML file contains string "rcsNsoId" which is technically
+        % against the naming convention (w.r.t. capitalization) used in the
+        % source code. Keeping the old format in the XML file for
+        % compatibility.
 
         startTt2000 = spdfparsett2000(startUtc);
         stopTt2000  = spdfparsett2000(stopUtc);
