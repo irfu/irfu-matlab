@@ -102,13 +102,25 @@ classdef dc
 
 
 
+      %#################################################
+      % Set 5xBLTS channels to NaN/FV according to QRCs
+      %#################################################
+      % BUG: Setting NaN/FV *AFTER* calibration which means that calibration of
+      % non-blanked samples is influenced by samples which are later blanked.
+      aspr        = size(Dcip.Zv.bltsSamplesTm, 2);
+      btlsSsidAr2 = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
+      bltsSamplesTm = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
+        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, AllQrcbMap, bicas.const.QRCS_L2_MAP);
+
+
+
       %##################################################################
       % CALIBRATE VOLTAGES: 5x CHANNELS LABELLED BY SSID/BLTS (not SDID)
       %##################################################################
       % NOTE: Takes most of the time LFR-SWF.
       bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(...
         tt2000       = Dcip.Zv.Epoch, ...
-        samplesTm    = Dcip.Zv.bltsSamplesTm, ...
+        samplesTm    = bltsSamplesTm, ...              % Blanked by QRCs.
         isAchgFpa    = Dcip.Zv.isAchgFpa, ...
         zvcti        = Dcip.Zv.CALIBRATION_TABLE_INDEX, ...
         freqHz       = Dcip.Zv.freqHz, ...
@@ -121,18 +133,6 @@ classdef dc
         uspr         = Dcip.Zv.uspr, ...
         Vcal         = Vcal, ...
         L            = L);
-
-
-
-      %#################################################
-      % Set 5xBLTS channels to NaN/FV according to QRCs
-      %#################################################
-      % BUG: Setting NaN/FV *AFTER* calibration which means that calibration of
-      % non-blanked samples is influenced by samples which are later blanked.
-      aspr        = size(bltsSamplesAVolt, 2);
-      btlsSsidAr2 = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
-      bltsSamplesAVolt = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
-        bltsSamplesAVolt, btlsSsidAr2, AllQrcbMap, bicas.const.QRCS_L2_MAP);
 
 
 
