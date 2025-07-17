@@ -5,7 +5,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef cur
-  % PROPOSAL: Automatic test code.
 
 
 
@@ -21,24 +20,16 @@ classdef cur
     % Calibrate currents on the format they are found in CDFs.
     %
     function currentAAmpere = calibrate_bias_currents( ...
-        sciEpoch, InCurPd, Ccal, Bso, L)
-      % PROPOSAL: Replace InCurPd (.ZvFpa, .ZvFv, .Ga etc.) with only the
-      %           needed values (Epoch, IBIAS_1/2/3).
-      %   PRO: Simpler testing (does not yet exist).
-      %   PRO: Clear function dependency.
-      %   NOTE: Argument contains data on CURRENT CDF time (not SCIENCE
-      %         CDF time). ==> This function changes the timestamps of
-      %         uncalibrated data using
-      %         bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME().
+        curTt2000Ar, currentSampere, sciTt2000Ar, Ccal, Bso, L)
 
       assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
 
-      currentSAmpere = bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME(...
-        sciEpoch, InCurPd, Bso, L);
-      currentTm      = Ccal.calibrate_current_sampere_to_TM(currentSAmpere);
+      currentSampere = bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME(...
+        curTt2000Ar, currentSampere, sciTt2000Ar, Bso, L);
+      currentTm      = Ccal.calibrate_current_sampere_to_TM(currentSampere);
 
-      currentAAmpere = nan(size(currentSAmpere));    % Preallocate.
-      iCalibL        = Ccal.get_BIAS_calibration_time_index_L(sciEpoch);
+      currentAAmpere = nan(size(currentSampere));    % Preallocate.
+      iCalibL        = Ccal.get_BIAS_calibration_time_index_L(sciTt2000Ar);
 
       L.logf('info', ...
         ['Calibrating currents -', ...
@@ -51,8 +42,8 @@ classdef cur
 
         L.logf('info', 'Records %8i-%8i : %s -- %s', ...
           iRec1, iRec2, ...
-          bicas.utils.TT2000_to_UTC_str(sciEpoch(iRec1), 9), ...
-          bicas.utils.TT2000_to_UTC_str(sciEpoch(iRec2), 9))
+          bicas.utils.TT2000_to_UTC_str(sciTt2000Ar(iRec1), 9), ...
+          bicas.utils.TT2000_to_UTC_str(sciTt2000Ar(iRec2), 9))
 
         for iAnt = 1:3
           %--------------------
@@ -68,20 +59,19 @@ classdef cur
 
 
     function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
-        sciEpoch, InCur, Bso, L)
+        curTt2000Ar, currentSampereAr, sciTt2000Ar, Bso, L)
 
       % PROPOSAL: Better name.
       %   PRO: Does not imply unit, or changing units (set nanoampere-->set
       %        ampere).
-      %     CON: Return value name implies unit.
-      %     CON-PROPOSAL: Converting InCur to separate arguments sets unit
-      %                   names in the the new argument names.
-      %
-      % PROPOSAL: Replace InCurPd (.ZvFpa, .ZvFv, .Ga etc.) with only the
-      %           needed values (Epoch, IBIAS_1/2/3).
+      %     CON: Argument and return value name implies unit.
 
       % ASSERTIONS
-      assert(isa(InCur, 'bicas.InputDataset'))
+      irf.assert.sizes(...
+        curTt2000Ar,      [-1], ...
+        currentSampereAr, [-1, 3])
+      bicas.utils.assert_ZV_Epoch(curTt2000Ar)
+      bicas.utils.assert_ZV_Epoch(sciTt2000Ar)
 
 
 
@@ -89,10 +79,10 @@ classdef cur
       % CDF ASSERTION: CURRENT data begins before SCI data (i.e. there is
       % enough CURRENT data).
       %===================================================================
-      if ~(min(InCur.Zv.Epoch) <= min(sciEpoch))
-        curRelativeSec    = 1e-9 * (min(InCur.Zv.Epoch) - min(sciEpoch));
-        sciEpochUtcStr    = bicas.utils.TT2000_to_UTC_str(min(sciEpoch),       9);
-        curEpochMinUtcStr = bicas.utils.TT2000_to_UTC_str(min(InCur.Zv.Epoch), 9);
+      if ~(min(curTt2000Ar) <= min(sciTt2000Ar))
+        curRelativeSec    = 1e-9 * (min(curTt2000Ar) - min(sciTt2000Ar));
+        sciEpochUtcStr    = bicas.utils.TT2000_to_UTC_str(min(sciTt2000Ar), 9);
+        curEpochMinUtcStr = bicas.utils.TT2000_to_UTC_str(min(curTt2000Ar), 9);
 
         [settingValue, settingKey] = Bso.get_fv(...
           'PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
@@ -120,16 +110,17 @@ classdef cur
       %       ==> Monotonically increasing sequences for each antenna
       %           separately, but not even increasing when combined.
       %====================================================================
-      assert(issorted(InCur.Zv.Epoch), ...
+      assert(issorted(curTt2000Ar), ...
         'BICAS:DatasetFormat', ...
         'CURRENT timestamps zVar Epoch does not increase (all antennas combined).')
 
       % NOTE: bicas.proc.L1L2.cur.zv_TC_to_current() checks that Epoch
       % increases monotonically.
       currentNanoSAmpere = [];
-      currentNanoSAmpere(:,1) = bicas.proc.L1L2.cur.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_1, sciEpoch, L, Bso);
-      currentNanoSAmpere(:,2) = bicas.proc.L1L2.cur.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_2, sciEpoch, L, Bso);
-      currentNanoSAmpere(:,3) = bicas.proc.L1L2.cur.zv_TC_to_current(InCur.Zv.Epoch, InCur.Zv.IBIAS_3, sciEpoch, L, Bso);
+      for iAnt = 1:3
+        currentNanoSAmpere(:,iAnt) = bicas.proc.L1L2.cur.zv_TC_to_current(...
+          curTt2000Ar, currentSampereAr(:,iAnt), sciTt2000Ar, L, Bso);
+      end
 
       currentSAmpere = 1e-9 * currentNanoSAmpere;
     end

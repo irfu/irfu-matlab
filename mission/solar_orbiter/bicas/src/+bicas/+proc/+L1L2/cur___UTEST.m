@@ -18,8 +18,10 @@ classdef cur___UTEST < matlab.unittest.TestCase
 
 
     function test_calibrate_bias_currents(testCase)
+      % NOTE: Could also check
+      %       INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY but does not.
 
-      function [argsCa, expCurrentAAmpere] = convert_test_arguments(...
+      function [argsCa, expCurrentAampere] = convert_test_arguments(...
           Tt2000CurrentNanoSampereAr1, tt2000CurrentSampereAr2, Ccal, policyId)
 
         Bso = bicas.create_default_BSO();
@@ -29,17 +31,13 @@ classdef cur___UTEST < matlab.unittest.TestCase
 
         L  = bicas.Logger('HUMAN_READABLE', false);
 
-        Zv.Epoch          = int64(Tt2000CurrentNanoSampereAr1(:, 1));
-        Zv.IBIAS_1        =       Tt2000CurrentNanoSampereAr1(:, 2);
-        Zv.IBIAS_2        =       Tt2000CurrentNanoSampereAr1(:, 3);
-        Zv.IBIAS_3        =       Tt2000CurrentNanoSampereAr1(:, 4);
+        curTt2000Ar          = int64(Tt2000CurrentNanoSampereAr1(:, 1));
+        currentNanoSampereAr =       Tt2000CurrentNanoSampereAr1(:, 2:4);
 
         sciTt2000Ar       = int64(tt2000CurrentSampereAr2(:, 1));
-        expCurrentAAmpere =       tt2000CurrentSampereAr2(:, 2:4);
+        expCurrentAampere =       tt2000CurrentSampereAr2(:, 2:4);
 
-        InCur  = bicas.InputDataset(struct(), Zv, struct(), struct(), '');
-
-        argsCa = {sciTt2000Ar, InCur, Ccal, Bso, L};
+        argsCa = {curTt2000Ar, currentNanoSampereAr, sciTt2000Ar, Ccal, Bso, L};
       end
 
       function test(varargin)
@@ -84,8 +82,7 @@ classdef cur___UTEST < matlab.unittest.TestCase
 
     function test_convert_CUR_to_CUR_on_SCI_TIME(testCase)
       % NOTE: Could also check
-      %       INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY but does
-      %       not.
+      %       INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY but does not.
 
       function [argsCa, expCurrentSampere] = convert_test_arguments(...
           Tt2000CurrentNanoSampereAr1, tt2000CurrentSampereAr2, policyId)
@@ -97,17 +94,13 @@ classdef cur___UTEST < matlab.unittest.TestCase
 
         L  = bicas.Logger('HUMAN_READABLE', false);
 
-        Zv.Epoch          = int64(Tt2000CurrentNanoSampereAr1(:, 1));
-        Zv.IBIAS_1        =       Tt2000CurrentNanoSampereAr1(:, 2);
-        Zv.IBIAS_2        =       Tt2000CurrentNanoSampereAr1(:, 3);
-        Zv.IBIAS_3        =       Tt2000CurrentNanoSampereAr1(:, 4);
+        curTt2000Ar      = int64(Tt2000CurrentNanoSampereAr1(:, 1));
+        currentSampereAr =       Tt2000CurrentNanoSampereAr1(:, 2:4);
 
         sciTt2000Ar       = int64(tt2000CurrentSampereAr2(:, 1));
         expCurrentSampere =       tt2000CurrentSampereAr2(:, 2:4);
 
-        InCur  = bicas.InputDataset(struct(), Zv, struct(), struct(), '');
-
-        argsCa = {sciTt2000Ar, InCur, Bso, L};
+        argsCa = {curTt2000Ar, currentSampereAr, sciTt2000Ar, Bso, L};
       end
 
       function test(varargin)

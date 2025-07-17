@@ -86,7 +86,9 @@ classdef dc
       % Calibrate bias CURRENTS
       %#########################
       currentAAmpere = bicas.proc.L1L2.cur.calibrate_bias_currents(...
-        Dcip.Zv.Epoch, InCurPd, Ccal, Bso, L);
+        InCurPd.Zv.Epoch, ...
+        [InCurPd.Zv.IBIAS_1, InCurPd.Zv.IBIAS_2, InCurPd.Zv.IBIAS_3], ...
+        Dcip.Zv.Epoch, Ccal, Bso, L);
 
 
 
