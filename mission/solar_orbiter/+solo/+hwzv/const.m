@@ -18,13 +18,13 @@ classdef const
   properties(Constant)
 
     % LFR sampling frequencies.
+    % The string names (F[0-3]) follow LFR's naming scheme.
     LFR_F0_HZ = 24576;
     LFR_F1_HZ =  4096;
     LFR_F2_HZ =   256;
     LFR_F3_HZ =    16;
 
     % LSF = LFR Sampling Frequencies: F0, F1, F2, F3
-    % The string names (F[0-3]) follow LFR's naming scheme.
     LSF_HZ = [...
       solo.hwzv.const.LFR_F0_HZ, ...
       solo.hwzv.const.LFR_F1_HZ, ...

@@ -136,6 +136,11 @@ function Settings = interpret_settings_args(DefaultSettings, argsCa)
 %   ~parse=p
 %   ~interpret=i
 %   psa, isa, isargs, parse_sargs, psargs
+%
+% PROPOSAL: Replace usage of this function with MATLAB's builtin name-value
+%           arguments.
+%   CON: Can probably not specify entirely arbitrary default values.
+%     TODO-NI: True?
 
 assert(iscell(argsCa), 'Argument "argsCa" is not a cell array.')
 

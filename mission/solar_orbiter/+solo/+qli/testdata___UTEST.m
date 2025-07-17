@@ -1,7 +1,7 @@
 %
 % matlab.unittest automatic test code for solo.qli.testdata.
 %
-% Could add tests for mroe code, but that seems unnecessary. The tested code
+% Could add tests for more code, but that seems unnecessary. The tested code
 % supports automatic and manual tests.
 %
 %
@@ -25,8 +25,8 @@ classdef testdata___UTEST < matlab.unittest.TestCase
       N_LARGE = 100;
 
       % NOTE: Does not test the exact return value, only its general
-      % properties. The exact return value is not important and can change
-      % with future implementations.
+      % properties. The exact return value is not important and can change with
+      % future implementations.
       function test(nRows, nCols, aMin, aMax)
         VARIATION_SCALE = 0.8;
         SCALES_CA = {'LIN', 'LOG'};

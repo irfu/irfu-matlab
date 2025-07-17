@@ -379,47 +379,20 @@ classdef assert
     %
     function struct(S, requiredFnSet, optionalFnSet)
       % PROPOSAL: Have it apply to a set of strings (e.g. fieldnames), not a struct as such.
-      % PROPOSAL: Let optionalFnSet be optional (empty by default).
-      %   PRO: Shorter for the most common case.
-      %   PRO: Backward-compatibility with some of the syntax for struct(predecessor assertion function).
-      %   CON: Bad for future extensions of function.
-      %
-      % PROPOSAL: Be able to (optionally) specify properties of individual fields.
-      %   PROPOSAL: Arguments (one or many in a row) with prefix describe properties of previous field.
-      %       Ex: 'fieldName', '-cell'
-      %       Ex: 'fieldName', '-scalar'
-      %       Ex: 'fieldName', '-double'
-      %       Ex: 'fieldName', '-castring'
-      %       Ex: 'fieldName', '-vector'
-      %       Ex: 'fieldName', '-column vector'
-      %       PRO: Can be combined with recursive scheme for structs, which can be regarded as an extension of
-      %            this scheme. In that case, a cell array is implicitly interpreted as the assertion that the
-      %            field is a struct with the specified (required and optional) subfields.
-      %
-      % PROPOSAL: Recursive structs field names.
-      %   TODO-DEC: How specify fieldnames? Can not use cell arrays recursively.
-      %   PROPOSAL: Define other, separate assertion method.
-      %   PROPOSAL: Tolerate/ignore that structs are array structs.
-      %   PROPOSAL: struct(S, {'PointA.x', 'PointA.y'}, {'PointA.z'})
-      %   PROPOSAL: struct(S, {'PointA', {'x', 'y'}}, {'PointA', {'z'}})   % Recursively
-      %       Cell array means previous argument was the parent struct.
-      %   PROPOSAL: struct(S, {'name', 'ReqPointA', {{'reqX', 'reqY'}, {'optZ'}}},
-      %           {'OptPointB', {{'reqX', 'reqY'}, {'optZ'}}})
-      %       Cell array means previous argument was the parent struct.
-      %       Groups together required and optional with every parent struct.
-      %       PRO: Optional fields can be structs with both required and optional fields, recursively.
-      %       PRO: Can be implemented recursively(?).
-      %   TODO-NI: Required & optional is well-defined?
-      %   CON: Rarely needed.
-      %       CON: Maybe not
-      %           Ex: Settings structs
-      %   CON-PROPOSAL: Can manually call irf.assert.struct multiple times, once for each substruct,
-      %                 instead (if only required field names).
       %
       % PROPOSAL: Assertion: Intersection requiredFnSet-optionalFnSet is empty.
       %
-      % PROPOSAL: Separate out condition function.
-      %   PRO: Useful for distinguishing between multiple "struct formats".
+      % TODO-DEC: How handle char vectors & strings?
+      %   NOTE: setdiff() does not permit cell arrays of mixed char vectors and
+      %         strings, but it does permit (non-cell) vectors of strings.
+      %   PROPOSAL: Require string arrays.
+      %     PRO: Stricter.
+      %   PROPOSAL: Permit both (1) cell arrays of strings/char vectors and
+      %             (2) string arrays.
+      %       PRO: Easy to implement: use strAr=string(strCa).
+      %       PRO: Backwards compatible.
+      %       PRO: May be useful during any transition period from cell arrays to
+      %            string arrays.
 
       assert(isstruct(S))
       structFnSet          = fieldnames(S);
