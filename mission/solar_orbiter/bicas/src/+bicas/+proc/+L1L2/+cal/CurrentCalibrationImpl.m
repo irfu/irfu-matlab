@@ -48,6 +48,27 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
 
 
 
+    % Convert "set current" to TC/TM units.
+    %
+    function biasCurrentTm = calibrate_current_sampere_to_TM(obj, currentSampere)
+
+      % ASSERTION: Input values are within range.
+      % NOTE: max(...) ignores NaN, unless that is the only value, which
+      % then becomes the max value.
+      [maxAbsSampere, iMax] = max(abs(currentSampere(:)));
+      if ~(isnan(maxAbsSampere) || (maxAbsSampere <= solo.hwzv.const.MAX_ABS_SAMPERE))
+        error('BICAS:Assertion:IllegalArgument', ...
+          ['Argument currentSAmpere (unit: set current/ampere)', ...
+          ' contains illegally large value(s).', ...
+          ' Largest found value is %g.'], ...
+          currentSampere(iMax))
+      end
+
+      biasCurrentTm = currentSampere * solo.hwzv.const.TM_PER_SAMPERE;
+    end
+
+
+
     % Convert/calibrate TC bias current: TM units --> physical units.
     %
     % NOTE: This is the normal way of obtaining bias current in physical

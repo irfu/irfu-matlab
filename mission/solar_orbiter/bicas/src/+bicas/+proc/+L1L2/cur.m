@@ -67,19 +67,6 @@ classdef cur
 
 
 
-  end    % methods(Static)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-
-
-
     function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
         sciEpoch, InCur, Bso, L)
 
@@ -142,12 +129,23 @@ classdef cur
 
 
 
-    % Wrapper around solo.hwzv.CURRENT_ZV_to_current_interpolate for
-    % anomaly handling.
+  end    % methods(Static)
+
+
+
+  %########################
+  %########################
+  % PRIVATE STATIC METHODS
+  %########################
+  %########################
+  methods(Static, Access=private)
+
+
+
+    % Wrapper around solo.hwzv.CURRENT_ZV_to_current_interpolate() for anomaly
+    % handling.
     function sciZv_IBIASx = zv_TC_to_current(...
         curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, Bso)
-
-
 
       %====================
       % Calibrate currents

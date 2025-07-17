@@ -20,6 +20,8 @@ classdef(Abstract) CurrentCalibrationAbstract
 
 
 
+    biasCurrentTm = calibrate_current_sampere_to_TM(obj, currentSampere)
+
     biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
         biasCurrentTm, iAntenna, iCalibTimeL)
 
@@ -33,40 +35,6 @@ classdef(Abstract) CurrentCalibrationAbstract
 
 
   end    % methods(Abstract, Access=public)
-
-
-
-  %#######################
-  %#######################
-  % PUBLIC STATIC METHODS
-  %#######################
-  %#######################
-  methods(Static)
-
-
-
-    % Convert "set current" to TC/TM units.
-    %
-    function biasCurrentTm = calibrate_current_sampere_to_TM(currentSAmpere)
-
-      % ASSERTION: Input values are within range.
-      % NOTE: max(...) ignores NaN, unless that is the only value, which
-      % then becomes the max value.
-      [maxAbsSAmpere, iMax] = max(abs(currentSAmpere(:)));
-      if ~(isnan(maxAbsSAmpere) || (maxAbsSAmpere <= solo.hwzv.const.MAX_ABS_SAMPERE))
-        error('BICAS:Assertion:IllegalArgument', ...
-          ['Argument currentSAmpere (unit: set current/ampere)', ...
-          ' contains illegally large value(s).', ...
-          ' Largest found value is %g.'], ...
-          currentSAmpere(iMax))
-      end
-
-      biasCurrentTm = currentSAmpere * solo.hwzv.const.TM_PER_SAMPERE;
-    end
-
-
-
-  end    % methods(Static)
 
 
 
