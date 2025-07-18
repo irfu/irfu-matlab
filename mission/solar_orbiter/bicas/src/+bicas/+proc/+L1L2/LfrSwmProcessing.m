@@ -65,19 +65,19 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       % Create VCAL and CCAL
       %======================
       useGactRct = obj.inputSci.isL1r;
-      useZvcti2  = obj.inputSci.isL1r;
+      useNbci    = obj.inputSci.isL1r;
 
       Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
         useGactRct, 'LFR', rctDir, ...
         InputSciCdf.Ga.CALIBRATION_TABLE, ...
-        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX(:, 1) + 1, ...
         InputSciCdf.Zv.BW, ...
         min(InputSciCdf.Zv.Epoch), ...
         max(InputSciCdf.Zv.Epoch), ...
         L);
       BiasRctdCa = Rctdc.get_RCTD_CA('BIAS');
 
-      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl(Rctdc, useZvcti2, Bso);
+      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl(Rctdc, useNbci, Bso);
       Vcal = bicas.proc.L1L2.cal.VoltageCalibration(Vcds, useGactRct, Bso);
       Ccal = bicas.proc.L1L2.cal.CurrentCalibrationImpl(BiasRctdCa{1}, Bso);
 
@@ -150,7 +150,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       %===================================
       % Normalize CALIBRATION_TABLE_INDEX
       %===================================
-      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_ZVCTI(...
+      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
+        bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
         InSci.Zv, nRecords, obj.inputSciDsi);
 
 
@@ -291,7 +292,16 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
         zvFreqHz, 1);
       Zv.freqHz                  = zvFreqHz;
       Zv.uspr                    = ones(nRecords, 1) * aspr;
-      Zv.BW                      = InSci.Zv.BW;    % Copied to output CDF.
+      % BW needed because it is copied to the output CDF.
+      Zv.BW                      = InSci.Zv.BW;
+
+      Zv.isAchgFpa               = HkSciTime.isAchgFpa;
+      Zv.dlrFpa                  = HkSciTime.dlrFpa;
+      Zv.iLsf                    = zvILsf;
+      Zv.lrx                     = zvLrx;
+      Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
+      Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
+      Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
 
       % QRCB arrayss for
       % (1) when LFR ZV BW says BIAS is OFF, and
@@ -300,17 +310,14 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.biasOffQrcb             = ~logical(InSci.Zv.BW);
       Zv.sweepQrcb               = HkSciTime.isSweepingFpa.array(false);
 
-      Zv.isAchgFpa               = HkSciTime.isAchgFpa;
-      Zv.dlrFpa                  = HkSciTime.dlrFpa;
-      Zv.iLsf                    = zvILsf;
 
-      Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
-      Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
-      Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
-      Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
-
-      Zv.lrx                     = zvLrx;
+      % Replace CALIBRATION_TABLE_INDEX-->NbriFpa + NbciFpa
+      bBlank                     = ~logical(InSci.Zv.BW);
+      Zv.NbriFpa          = bicas.utils.FPArray(...
+        InSci.Zv.CALIBRATION_TABLE_INDEX(:, 1), 'FILL_POSITIONS', bBlank) + uint8(1);
+      Zv.NbciFpa  = bicas.utils.FPArray(...
+        InSci.Zv.CALIBRATION_TABLE_INDEX(:, 2), 'FILL_POSITIONS', bBlank);
 
 
 

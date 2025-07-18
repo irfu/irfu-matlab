@@ -70,19 +70,28 @@ classdef VoltageCalibrationDataSupplierTest < bicas.proc.L1L2.cal.VoltageCalibra
 
 
 
-    function itfIvpt = get_LFR_ITF(obj, iBlts, iLsf, iNonBiasRct, zvcti2)
+    function itfIvpt = get_LFR_ITF(obj, iBlts, NbriFpa, NbciFpa, iLsf)
+      assert(isa(NbriFpa, "bicas.utils.FPArray") & isscalar(NbriFpa))
+      assert(isa(NbciFpa, "bicas.utils.FPArray") & isscalar(NbciFpa))
+
       itfIvpt = obj.itfLfrAvpiv;
     end
 
 
 
-    function itfIvpt = get_TDS_CWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
+    function itfIvpt = get_TDS_CWF_ITF(obj, iBlts, NbriFpa, NbciFpa)
+      assert(isa(NbriFpa, "bicas.utils.FPArray") & isscalar(NbriFpa))
+      assert(isa(NbciFpa, "bicas.utils.FPArray") & isscalar(NbciFpa))
+
       itfIvpt = obj.itfTdsCwfAvpiv;
     end
 
 
 
-    function itfIvpt = get_TDS_RSWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
+    function itfIvpt = get_TDS_RSWF_ITF(obj, iBlts, NbriFpa, NbciFpa)
+      assert(isa(NbriFpa, "bicas.utils.FPArray") & isscalar(NbriFpa))
+      assert(isa(NbciFpa, "bicas.utils.FPArray") & isscalar(NbciFpa))
+
       itfIvpt = obj.itfTdsRswfAvpiv;
     end
 

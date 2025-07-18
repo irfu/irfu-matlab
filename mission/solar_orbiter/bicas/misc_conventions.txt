@@ -346,6 +346,18 @@ MSTD
     arbitrary reference (e.g. median) instead of the conventional mean.
 MVPM
     Milli-Volt Per Meter (mV/m).
+NBCI
+    Non-BIAS Calibration Index.
+    Same as L1R LFR ZV CALIBRATION_INDEX_TABLE(i, 2) *INCREMENTED NY ONE*,
+    except for some handling of unused values, and synthetic versions thereof,
+    e.g. for L1. Index that could in principle be needed for/used by LFR/TDS
+    calibration, with different meaning for different types of calibration. In
+    practice it is not needed by BICAS. ROC specifies that it should be used.
+NBRI
+    Non-BIAS RCT/RCTD Index.
+    Same as LFR ZV CALIBRATION_INDEX_TABLE(i, 1), except for some handling of
+    illegal values. Index into GACT.
+    See NBCI.
 NFP
     Non-Fill Position, in the context of FPAs.
 NS
@@ -601,12 +613,6 @@ ZV
     (2) When used as a variable prefix, means that the MATLAB variable is
     analogous to a zVariable, where the first dimension corresponds to CDF
     record, even if no analogous zVariable exists in any CDF file.
-ZVCTI
-    (L1R) ZV CALIBRATION_TABLE_INDEX, and synthetic versions thereof, e.g. for
-    L1.
-ZVCTI2
-    Element within the second column of ZVCTI for a given CDF record, i.e. any
-    value ZVCTI(iCdfRecord, 2).
 ZVM
     Class bicas.utils.ZvMap.
 ZVS

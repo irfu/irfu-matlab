@@ -154,7 +154,8 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
       isLfr       = true;
       isTdsCwf    = false;
-      zvcti       = [1, 1];
+      NbriFpa     = bicas.utils.FPArray(1, 'NO_FILL_POSITIONS');
+      NbciFpa     = bicas.utils.FPArray(1, 'NO_FILL_POSITIONS');
 
       iBlts       = 1;
       isAchg      = true;
@@ -173,7 +174,7 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED CODE
       actSamplesAvoltCa = Vcal.calibrate_voltage_TM_to_avolt( ...
-        dtSec, A.bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, zvcti);
+        dtSec, A.bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, NbriFpa, NbciFpa);
 
       testCase.assertEqual(actSamplesAvoltCa, A.expSamplesAvoltCa)
     end

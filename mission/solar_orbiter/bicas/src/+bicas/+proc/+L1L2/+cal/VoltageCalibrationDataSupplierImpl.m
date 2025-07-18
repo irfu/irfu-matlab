@@ -20,10 +20,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierAbstract
-% PROPOSAL: Remove useZvcti2 as TDS argument since not supported.
+% PROPOSAL: Remove useNbci as TDS argument since not supported.
 %   NOTE: Constructor must still have it as argument since it is relevant for
 %         LFR calibration.
-%     PROPOSAL: useZvti2-->useLfrZvcti2.
 %   PROPOSAL: Move to VCAL.
 %     PRO: This class should not do logic and is not meant to be tested.
 %
@@ -58,8 +57,8 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
     % debugging/testing purposes.
     BiasScalarGain
 
-    % Whether to use ZVCTI2 for calibration.
-    useZvcti2
+    % Whether to use NBCI for calibration.
+    useNbci
   end    % properties(SetAccess=immutable)
 
 
@@ -73,9 +72,9 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
 
 
 
-    function obj = VoltageCalibrationDataSupplierImpl(Rctdc, useZvcti2, Bso)
+    function obj = VoltageCalibrationDataSupplierImpl(Rctdc, useNbci, Bso)
       assert(isa(Rctdc, 'bicas.proc.L1L2.cal.RctdCollection'))
-      assert(islogical(useZvcti2) & isscalar(useZvcti2))
+      assert(islogical(useNbci) & isscalar(useNbci))
 
       obj.Rctdc                          = Rctdc;
 
@@ -85,7 +84,7 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
       obj.BiasScalarGain.gammaIvpav.achg = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.HIGH_GAIN');
       obj.BiasScalarGain.gammaIvpav.aclg = Bso.get_fv('PROCESSING.CALIBRATION.VOLTAGE.BIAS.GAIN.GAMMA_IVPAV.LOW_GAIN');
 
-      obj.useZvcti2                      = useZvcti2;
+      obj.useNbci                        = useNbci;
     end
 
 
@@ -170,60 +169,13 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
     % itfIvpt
     %       LFR ITF, TM-->ivolt
     %
-    function itfIvpt = get_LFR_ITF(obj, iBlts, iLsf, iNonBiasRct, zvcti2)
-      % TODO-DEC: How handle when iNonBiasRct does not specify an RCTD (and does
-      %           not need to) due to BW=0?
-      %   PROPOSAL: Return an ITF anyway.
-      %     PRO: Other code should work without modification.
-      %     PRO: BW/BIAS_HW_OFF QRCB should still lead to that the data is
-      %          blanked later.
-      %     PROPOSAL: Return NaN ITF. -- IMPLEMENTED
-      %       CON: Blanks data if CALIBRATION_TABLE_INDEX is ever wrong (BW=1).
-      %       CON: Can not determine whether CALIBRATION_TABLE_INDEX is wrong.
-      %     PROPOSAL: Return ITF that does not do any (LFR) calibration (keeps
-      %               TM units).
-      %       CON There will still be BIAS calibration, including BIAS offset.
-      %   PROPOSAL: Caller should convert CALIBRATION_TABLE_INDEX into some
-      %             form which distinguishes between
-      %             CALBRATION_TABLE_INDEX(i,1) values which (1) legitimately,
-      %             and (2) illegitimately, do not point to an RCTD.
-      %     PROPOSAL: Use FPAs. Fill position = Legitimately does not point to
-      %               RCTD.
-      %       CON: Misuse of FPA if variable corresponds to ZV where fill value
-      %            has a specific (other) (ISTP) meaning in the CDF file.
-      %         CON-PROPOSAL: Variable should be redefined/renamed.
+    function itfIvpt = get_LFR_ITF(obj, iBlts, NbriFpa, NbciFpa, iLsf)
 
       % ASSERTIONS
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
       bicas.proc.L1L2.cal.utils.assert_iLsf( iLsf)
-      assert(isscalar(iNonBiasRct))
-      assert(iNonBiasRct >= 1, 'Illegal iNonBiasRct=%g', iNonBiasRct)
-      % No assertion on zvcti2 unless used (determined later).
-
-      %==================================================
-      % The only place to potentially make use of zvcti2
-      %==================================================
-      if obj.useZvcti2
-        % ASSERTIONS
-        assert(isscalar(zvcti2), ...
-          'BICAS:IllegalArgument:Assertion', ...
-          'Argument zvcti2 is not scalar.')
-        assert(zvcti2 >= 0, ...
-          'BICAS:IllegalArgument:Assertion', ...
-          ['Illegal argument zvcti2=%g', ...
-          ' (=zVar CALIBRATION_TABLE_INDEX(iRecord, 2))'], ...
-          zvcti2)
-        assert(iLsf == zvcti2+1, ...
-          'BICAS:IllegalArgument:Assertion', ...
-          'zvcti2+1=%i != iLsf=%i (before overwriting iLsf)', ...
-          zvcti2+1, iLsf)
-
-        % NOTE: Override earlier iLsf.
-        % NOTE: This is the only place zvcti2 is used in this class.
-        iLsf = zvcti2 + 1;
-      end
-
-
+      assert(isscalar(NbriFpa))
+      assert(isscalar(NbciFpa))
 
       if (iLsf == 4) && ismember(iBlts, [4,5])
         % CASE: F3 and BLTS={4,5}
@@ -238,49 +190,90 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
         % reason, the code can not raise an exception for this case.
         itfIvpt = bicas.const.NAN_TF;
       else
-        LfrRctdCa = obj.Rctdc.get_RCTD_CA('LFR');
 
-        % ASSERTION
-        % IMPLEMENTATION NOTE: Anonymous function below will fail at a
-        % later stage if these assertions are false. Checking for these
-        % criteria here makes it easier to understand these particular
-        % types of error.
-        assert(iNonBiasRct <= numel(LfrRctdCa), ...
-          'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
-          ['LFR LfrRctdCa is too small for argument iLfrRctd=%g.', ...
-          ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
-          ' value is larger than glob. attr. CALIBRATION TABLE allows.'], ...
-          iNonBiasRct)
+        Rctd = obj.get_RCTD(NbriFpa, 'LFR');
 
-        % assert(~isempty(LfrRctdCa{iNonBiasRct}), ...
-        %   'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
-        %   ['LFR LfrRctdCa contains no RCT data corresponding', ...
-        %   ' to argument iNonBiasRct=%g. This may indicate that', ...
-        %   ' zVariable CALIBRATION_TABLE_INDEX(:,1) value is wrong or', ...
-        %   ' that BICAS did not try to load the corresponding RCT', ...
-        %   ' specified in glob. attr. CALIBRATION_TABLE.'], ...
-        %   iNonBiasRct)
-        if isempty(LfrRctdCa{iNonBiasRct})
-          % CASE: There is no RCTD for the given iNonBiasRct
-          % ------------------------------------------------
-          % This should imply that either
-          % (1) LFR ZV BW=0 (BIAS h/W is off), or
-          %     Ex: solo_L1R_rpw-lfr-surv-swf-e-cdag_20200225_V10.cdf
-          %     Ex: solo_L1R_rpw-lfr-surv-swf-e-cdag_20200228_V10.cdf
-          % (2) that the value of ZV CALIBRATION_TABLE_INDEX(i, 1) is wrong.
-
-          % PROPOSAL: Log warning.
-          %   CON: This function and at least two higher parent functions have
-          %        no access to the logger.
-          %   CON: This class is, sort of, made to be used for experimenting
-          %        with calibration in isolation (without BICAS), i.e. without
-          %        logging.
+        if isempty(Rctd)
           itfIvpt = bicas.const.NAN_TF;
         else
-          itfIvpt = LfrRctdCa{iNonBiasRct}.ItfModifIvptCaCa{iLsf}{iBlts};
+          %==================================================================
+          % The only place to potentially make use of NbciFpa
+          %==================================================================
+          % IMPLEMENTATION NOTE: Executing this after that a RCTD has been
+          % identified and first when this value is actually needed to simplify
+          % the assertions on NbciFpa.
+          if obj.useNbci
+            % ASSERTIONS
+            assert(isscalar(NbciFpa))
+            assert(~NbciFpa.fpAr)
+
+            nbci = NbciFpa.array();
+
+            assert(nbci >= 0)
+            % assert(iLsf == nbci+1, ...
+            %   'BICAS:IllegalArgument:Assertion', ...
+            %   'nbci=%i != iLsf=%i (before overwriting iLsf)', ...
+            %   nbci, iLsf)
+
+            % NOTE: Override earlier iLsf.
+            % NOTE: This is the only place where nbci is used in
+            %       this class.
+            iLsf = nbci + 1;
+          end
+
+          itfIvpt = Rctd.ItfModifIvptCaCa{iLsf}{iBlts};
         end
+
       end
     end    % get_LFR_ITF()
+
+
+
+    % Utility function for reducing code.  Mostly for asserting that
+    % NbriFpa is valid and does not imply a bad
+    % CALIBRATION_TABLE_INDEX(i,1) value.
+    %
+    function Rctd = get_RCTD(obj, NbriFpa, rcttid)
+      assert(isscalar(NbriFpa))
+
+      RctdCa = obj.Rctdc.get_RCTD_CA(rcttid);
+
+      if NbriFpa.fpAr
+        % CASE: There is no RCTD for the given nbri
+        % ------------------------------------------------
+        % This should ALWAYS imply that LFR ZV BW=0 (BIAS h/W is off) since
+        % preceding code has set it to fill value.
+        % Ex: solo_L1R_rpw-lfr-surv-swf-e-cdag_20200225_V10.cdf
+        % Ex: solo_L1R_rpw-lfr-surv-swf-e-cdag_20200228_V10.cdf
+
+        Rctd = [];
+      else
+        % CASE: NbriFpa is scalar AND not a fill position.
+
+        nbri = NbriFpa.array();
+
+        % ASSERTIONS
+        % Assert that the value of ZV CALIBRATION_TABLE_INDEX(i, 1) is correct.
+        assert(nbri >= 1, 'Illegal nbri=%g', nbri)
+        assert(nbri <= numel(RctdCa), ...
+          'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
+          ['LFR/TDA RctdCa is too small for argument nbri=%g.', ...
+          ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
+          ' value is larger than glob. attr. CALIBRATION TABLE allows.'], ...
+          nbri)
+        assert(~isempty(RctdCa{nbri}), ...
+          'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
+          ['LFR LfrRctdCa contains no RCT data corresponding', ...
+          ' to argument nbri=%g. This may indicate that', ...
+          ' zVariable CALIBRATION_TABLE_INDEX(:,1) value is wrong or', ...
+          ' that BICAS did not try to load the corresponding RCT', ...
+          ' specified in glob. attr. CALIBRATION_TABLE.'], ...
+          nbri)
+
+        Rctd = RctdCa{nbri};
+      end
+
+    end
 
 
 
@@ -290,16 +283,18 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
     % ===========================
     % See get_LFR_ITF().
     %
-    function itfIvpt = get_TDS_CWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
+    function itfIvpt = get_TDS_CWF_ITF(obj, iBlts, NbriFpa, NbciFpa)
 
       % ASSERTIONS
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(iNonBiasRct >= 1)
-      if obj.useZvcti2
-        % TODO? ASSERTION: zvcti2 = 0???
+      assert(~NbriFpa.fpAr, 'Illegal CALIBRATION_TABLE_INDEX(i,1) value.')
+      nbri = NbriFpa.array();
+      assert(nbri >= 1)
+
+      if obj.useNbci
         error(...
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-          'TDS-CWF calibration never uses ZVCTI2.')
+          'TDS-CWF calibration never uses NBCI.')
       end
 
 
@@ -308,7 +303,7 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
         % CASE: BLTS 1-3 which TDS does support.
 
         RctdCa        = obj.Rctdc.get_RCTD_CA('TDS-CWF');
-        tdsFactorIvpt = RctdCa{iNonBiasRct}.factorsIvpt(iBlts);
+        tdsFactorIvpt = RctdCa{nbri}.factorsIvpt(iBlts);
 
         itfIvpt       = @(omegaRps) (tdsFactorIvpt * ones(size(omegaRps)));
       else
@@ -326,16 +321,17 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
     % ===========================
     % See get_LFR_ITF().
     %
-    function itfIvpt = get_TDS_RSWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
+    function itfIvpt = get_TDS_RSWF_ITF(obj, iBlts, NbriFpa, NbciFpa)
 
       % ASSERTIONS
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
-      assert(iNonBiasRct >= 1)
-      if obj.useZvcti2
-        % TODO? ASSERTION: zvcti2 = 0???
+      assert(~NbriFpa.fpAr, 'Illegal CALIBRATION_TABLE_INDEX(i,1) value.')
+      nbri = NbriFpa.array();
+      assert(nbri >= 1)
+      if obj.useNbci
         error(...
           'BICAS:Assertion:IllegalCodeConfiguration:OperationNotImplemented', ...
-          'TDS-RSWF calibration never uses ZVCTI2.')
+          'TDS-RSWF calibration never uses NBCI.')
       end
 
 
@@ -347,7 +343,7 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
         % Create combined ITF for TDS and BIAS
         %======================================
         RctdCa  = obj.Rctdc.get_RCTD_CA('TDS-RSWF');
-        itfIvpt = RctdCa{iNonBiasRct}.itfModifIvptCa{iBlts};
+        itfIvpt = RctdCa{nbri}.itfModifIvptCa{iBlts};
 
       else
         % CASE: BLTS 4-5 which TDS does not support (forbidden in h/w).

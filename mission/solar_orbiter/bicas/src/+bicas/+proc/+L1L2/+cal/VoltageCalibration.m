@@ -54,7 +54,7 @@
 %   of the value to be used inside the calibration table file.""""
 %
 % NOTE: Neither exists in L1 datasets.
-% NOTE: ZVCTI2 is not set (used) for TDS. Therefore no such settings for TDS.
+% NOTE: NBCI is not set (used) for TDS. Therefore no such settings for TDS.
 %
 % Source: ROC-PRO-DAT-NTT-00006-LES_Iss01_Rev02(ROC_Data_Products).Draft2020-04-06.pdf
 %
@@ -63,7 +63,7 @@
 % L1R GA CALIBRATION_TABLE{CALIBRATION_TABLE_INDEX{iRecord, 1} + 1}
 %     == RCT filename
 % L1R ZV CALIBRATION_TABLE_INDEX{iRecord, 2}
-%     == ZVCTI2
+%     == NBCI
 %     == Index/pointer to some calibration value(s) to use in the corresponding
 %        RCT. The exact interpretation depends on the RCT.
 %
@@ -150,7 +150,7 @@ classdef VoltageCalibration
 
 
 
-    % Whether to select non-BIAS RCTs using GACT (and ZVCTI).
+    % Whether to select non-BIAS RCTs using GACT (and NBRI).
     useGactRct
 
   end
@@ -251,16 +251,15 @@ classdef VoltageCalibration
     %
     % ARGUMENTS
     % =========
-    % zvcti
-    %       NOTE: Only one record (row) of ZVCTI! Not entire ZV.
+    % NbriFpa, NbciFpa
+    %       NOTE: Only one record of NBRI, NBCI!.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_TM_to_avolt(obj, ...
-        dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, zvcti)
+        dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, NbriFpa, NbciFpa)
 
       % ASSERTIONS
       assert(iscell(bltsSamplesTmCa))
       irf.assert.sizes(...
-        zvcti,           [ 1, 2], ...
         dtSec,           [-1], ...
         bltsSamplesTmCa, [-1])
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
@@ -271,17 +270,11 @@ classdef VoltageCalibration
 
 
 
-      % Set iNonBiasRct.
-      if obj.useGactRct
-        % NOTE: Incrementing by one (index into MATLAB array).
-        iNonBiasRct = 1 + zvcti(1, 1);
-      else
-        % Emulating having a ZVCTI value.
-        iNonBiasRct = 1;
+      % Normalize NbriFpa.
+      if ~obj.useGactRct
+        % Emulating having an NBRI value.
+        NbriFpa = bicas.utils.FPArray(1, 'NO_FILL_POSITIONS');
       end
-      % NOTE: NOT incrementing value by one, since the variable's meaning
-      % can vary between LFR, TDS-CWF, TDS-RSWF.
-      zvcti2 = zvcti(1, 2);
 
 
 
@@ -332,17 +325,17 @@ classdef VoltageCalibration
           %===========
           % CASE: LFR
           %===========
-          itfIvpt = obj.Vcds.get_LFR_ITF(iBlts, iLsf, iNonBiasRct, zvcti2);
+          itfIvpt = obj.Vcds.get_LFR_ITF(iBlts, NbriFpa, NbciFpa, iLsf);
         else
           %===========
           % CASE: TDS
           %===========
           if isTdsCwf
             % CASE: TDS CWF
-            itfIvpt = obj.Vcds.get_TDS_CWF_ITF(iBlts, iNonBiasRct, zvcti2);
+            itfIvpt = obj.Vcds.get_TDS_CWF_ITF(iBlts, NbriFpa, NbciFpa);
           else
             % CASE: TDS RSWF
-            itfIvpt = obj.Vcds.get_TDS_RSWF_ITF(iBlts, iNonBiasRct, zvcti2);
+            itfIvpt = obj.Vcds.get_TDS_RSWF_ITF(iBlts, NbriFpa, NbciFpa);
           end
         end
 

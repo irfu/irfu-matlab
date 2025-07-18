@@ -3,9 +3,8 @@
 % bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl.
 %
 % Stores map RCTTID-->column cell array of RCTDs. For non-BIAS, the array
-% corresponds to GACT. Index iRct-1 corresponds to GACT and ZVCTI(:,1) when
-% those are used. Permits empty cell elements to avoid loading RCTs which are
-% not used by BICAS processing(!).
+% corresponds to GACT indexed by NBRI when those are used. Permits empty cell
+% elements to avoid loading RCTs which are not used by BICAS processing(!).
 %
 % IMPLEMENTATION NOTE: Permits adding more than the nominal number of RCTTIDs
 % (1x BIAS + 1x non-BIAS)

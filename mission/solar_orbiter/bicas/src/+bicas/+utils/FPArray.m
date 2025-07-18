@@ -656,6 +656,10 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
       Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 >= a2));
     end
 
+    function Fpa = plus(obj1, obj2)
+      Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 + a2));
+    end
+
     % Overload operator .*  (not *).
     %
     % IMPLEMENTATION NOTE: Overloading operator for elementwise

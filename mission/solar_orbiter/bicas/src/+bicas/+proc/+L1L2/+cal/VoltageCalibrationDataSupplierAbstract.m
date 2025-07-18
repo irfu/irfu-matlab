@@ -45,9 +45,9 @@ classdef(Abstract) VoltageCalibrationDataSupplierAbstract
     [itfAvpiv, kItfAvpiv, offsetAvolt] = get_BIAS_ITF_and_offset(obj, ...
         ssid, isAchg, iCalibTimeL, iCalibTimeH)
 
-    itfIvpt = get_LFR_ITF(obj, iBlts, iLsf, iNonBiasRct, zvcti2)
-    itfIvpt = get_TDS_CWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
-    itfIvpt = get_TDS_RSWF_ITF(obj, iBlts, iNonBiasRct, zvcti2)
+    itfIvpt = get_LFR_ITF(     obj, iBlts, NbriFpa, NbciFpa, iLsf)
+    itfIvpt = get_TDS_CWF_ITF( obj, iBlts, NbriFpa, NbciFpa)
+    itfIvpt = get_TDS_RSWF_ITF(obj, iBlts, NbriFpa, NbciFpa)
 
     iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
     iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)

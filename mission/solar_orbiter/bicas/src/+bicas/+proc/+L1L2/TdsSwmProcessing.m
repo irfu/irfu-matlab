@@ -69,14 +69,14 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %======================
       % Create VCAL and CCAL
       %======================
-      % NOTE: TDS L1R never uses ZVCTI2.
+      % NOTE: TDS L1R never uses NBCI.
       if obj.inputSci.isTdsCwf
         tdsRcttid = 'TDS-CWF';
       else
         tdsRcttid = 'TDS-RSWF';
       end
       useGactRct = obj.inputSci.isL1r;
-      useZvcti2  = false;    % Always false for TDS.
+      useNbci    = false;    % Always false for TDS.
 
       % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
       % --
@@ -89,14 +89,14 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
         useGactRct, tdsRcttid, rctDir, ...
         InputSciCdf.Ga.CALIBRATION_TABLE, ...
-        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX(:, 1) + 1, ...
         zv_BW, ...
         min(InputSciCdf.Zv.Epoch), ...
         max(InputSciCdf.Zv.Epoch), ...
         L);
       BiasRctdCa = Rctdc.get_RCTD_CA('BIAS');
 
-      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl(Rctdc, useZvcti2, Bso);
+      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl(Rctdc, useNbci, Bso);
       Vcal = bicas.proc.L1L2.cal.VoltageCalibration(Vcds, useGactRct, Bso);
       Ccal = bicas.proc.L1L2.cal.CurrentCalibrationImpl(BiasRctdCa{1}, Bso);
 
@@ -152,7 +152,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %===================================
       % Normalize CALIBRATION_TABLE_INDEX
       %===================================
-      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_ZVCTI(...
+      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
+        bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
         InSci.Zv, nRecords, obj.inputSciDsi);
 
 
@@ -377,7 +378,12 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.biasOffQrcb             = false(size(InSci.Zv.Epoch));   % Real value is unknown.
       Zv.sweepQrcb               = HkSciTime.isSweepingFpa.array(false);
 
-      Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
+      % Replace CALIBRATION_TABLE_INDEX-->NbriFpa + NbciFpa
+      Zv.NbriFpa          = bicas.utils.FPArray(...
+        InSci.Zv.CALIBRATION_TABLE_INDEX(:, 1), 'NO_FILL_POSITIONS') + uint8(1);
+      Zv.NbciFpa  = bicas.utils.FPArray(...
+        InSci.Zv.CALIBRATION_TABLE_INDEX(:, 2), 'NO_FILL_POSITIONS');
+
 
 
 

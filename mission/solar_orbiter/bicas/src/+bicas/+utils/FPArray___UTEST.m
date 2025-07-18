@@ -604,6 +604,31 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_plus(testCase)
+      import bicas.utils.FPArray___UTEST.Fpa
+
+      function test(Fpa1, Fpa2, ExpFpa)
+        ActFpa12  = Fpa1 + Fpa2;
+        ActFpa21  = Fpa2 + Fpa1;
+        ActFpa12b = Fpa1 + Fpa2.array();
+        ActFpa21b = Fpa2 + Fpa1.array();
+
+        testCase.assertEqual(ActFpa12,  ExpFpa)
+        testCase.assertEqual(ActFpa21,  ExpFpa)
+        testCase.assertEqual(ActFpa12b, ExpFpa)
+        testCase.assertEqual(ActFpa21b, ExpFpa)
+      end
+
+      % Non-scalar + non-scalar
+      test(Fpa([2, 3], NaN), Fpa([4, 5], NaN), Fpa([6, 8], NaN))
+      % Scalar + non-scalar
+      test(Fpa([2],    NaN), Fpa([4; 5], NaN), Fpa([6; 7], NaN))
+      % Scalar + scalar
+      test(Fpa([2],    NaN), Fpa([4],    NaN), Fpa([6],    NaN))
+    end
+
+
+
     function test_times(testCase)
       import bicas.utils.FPArray___UTEST.Fpa
 
