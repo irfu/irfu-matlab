@@ -8,16 +8,6 @@
 % First created 2021-08-16.
 %
 classdef findread
-  % PROPOSAL: Abbreviation for "bias_rct_validity.json".
-  %   BIAS, RCT, validity
-  %   JSON
-  %     CON: Implementation detail.
-  %   file
-  %   --
-  %   BRJ  = BIAS RCT JSON
-  %   BRJF = BIAS RCT JSON File
-  %   BRVF = BIAS RCT Validity File -- IMPLEMENTED
-  %   BRVJ = BIAS RCT Validity JSON (also the words in the filename)
 
 
 
@@ -55,6 +45,10 @@ classdef findread
       %   CON: Is less rigorous.
       %     CON: Rigor is already gone due to
       %          VoltageCalibrationDataSupplierImpl.get_LFR_ITF() behaviour.
+      %   CON: findread.find_read_RCTs_by_ZVCTI_GACT() still needs to be able
+      %        to tell which RCTs it can read and not.
+      %        CALIBRATION_TABLE_INDEX(i, 1) can point to a non-existing file
+      %        (or one which BICAS can not read?).
       %   PROPOSAL: Replace with BIAS_HW_OFF QRCB.
       %     CON: Is not yet defined when this function is called.
 

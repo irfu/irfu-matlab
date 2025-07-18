@@ -50,20 +50,20 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
     % IMPLEMENTATION NOTE: It is not obvious whether this processing should
-    % be run as a part of a separate s/w mode
+    % be run as a part of a separate SWM
     %   SOLO_L2_LFR-RPW-CWF-E --> DSR,
-    % or as part of the s/w mode
+    % or as part of the SWM
     %   SOLO_L1/L1R_LFR-RPW-CWF --> SOLO_L2_LFR-RPW-CWF-E (+DSR).
     % The code is therefore designed so that it is easy to switch between
     % the two.
     %
     % IMPLEMENTATION NOTE: It is tempting to merge this function with
-    % process_L2_to_L3() and have the same S/W MODE use it, since it
+    % process_L2_to_L3() and have the same SWM use it, since it
     % (1) has the same one input dataset, and
     % (2) produces a similarily downsampled dataset.
     % However, that might be a bad idea since it also
     % (1) uses another sampling rate (less shared processing), and
-    % (2) should remain unofficial (both s/w mode and the output dataset),
+    % (2) should remain unofficial (both SWM and the output dataset),
     %     as opposed to process_L2_to_L3() which produces official datasets
     %     and might one day be "officially" run at ROC.
     %

@@ -275,7 +275,8 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
     % fv
     %       Fill value to use for fill positions. Is optional for MATLAB
     %       classes for which a value can be automatially derived.
-    %       NOTE: This is allowed to be identical to any non-FP element.
+    %       NOTE: This value (both specified value and default value) is
+    %       allowed to be identical to any non-FP element.
     %
     function dataAr = array(obj, fv)
       % IMPLEMENTATION NOTE: There are times when you want the FV to be
@@ -798,15 +799,17 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
     % Fpa1
     %       Instance of FPA.
     % obj2
-    %       FPA, or some other object/array.
-    %       Must have same MATLAB class (obj2.mc if it is an FPA) as
-    %       "Fpa1.mc".
+    %       Either
+    %       (1) FPA: obj2.mc must match Fpa1.mc
+    %       or
+    %       (2) some other object/array: Matlab class must match Fpa1.mc
     % fhBinaryArrayOperation
     %       Function handle. Combines two non-FPA arrays to produce third
     %       non-FPA array. Input arrays have to have same MATLAB class, and
-    %       either (a) same size or (b) one of them has to be scalar. The
-    %       operation has to be element-wise. (Otherwise the handling of FPs
-    %       won't work.)
+    %       either (a) same size, or (b) one of them has to be scalar. The
+    %       operation has to be element-wise, i.e. every output element is only
+    %       a function of the corresponding elements in the input objects
+    %       (otherwise the handling of FPs won't work).
     %
     %
     % NOTE: Always outputs an FPA.
@@ -839,12 +842,16 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
       %   CON: Has proven true for all cases so far.
 
       if isa(obj2, 'bicas.utils.FPArray')
-        assert(strcmp(Fpa1.mc, obj2.mc), 'FPA (%s) and FPA obj2 (%s) have different MATLAB classes.', Fpa1.mc, obj2.mc)
+        assert(strcmp(Fpa1.mc, obj2.mc), ...
+          'FPA (%s) and FPA obj2 (%s) have different MATLAB classes.', ...
+          Fpa1.mc, obj2.mc)
 
         dataAr2 = obj2.dataAr;
         fpAr2   = obj2.fpAr;
       else
-        assert(strcmp(Fpa1.mc, class(obj2)), 'FPA (%s) and obj2 (%s) have different MATLAB classes.', Fpa1.mc, class(obj2))
+        assert(strcmp(Fpa1.mc, class(obj2)), ...
+          'FPA (%s) and obj2 (%s) have different MATLAB classes.', ...
+          Fpa1.mc, class(obj2))
 
         dataAr2 = obj2;
         fpAr2  = false(size(obj2));

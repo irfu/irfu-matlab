@@ -26,6 +26,20 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
 %     PROPOSAL: useZvti2-->useLfrZvcti2.
 %   PROPOSAL: Move to VCAL.
 %     PRO: This class should not do logic and is not meant to be tested.
+%
+% PROPOSAL: Separate calibration data-retrieving methods
+%     get_BIAS_ITF_and_offset()
+%     get_LFR_ITF()
+%     get_TDS_CWF_ITF()
+%     get_TDS_RSWF_ITF()
+%   into
+%     (1) "core": crash for cases when there is no data,
+%     and
+%     (2) "wrapper": call "core", but return NaN TF etc for cases when there is
+%                    no data.
+%   Move "wrapper" to VCAL.
+%   PRO: Can test wrapper functionality.
+%     Ex: CALIBRATION_TABLE_INDEX(i, 1)=wrong when BW=0/1.
 
 
 

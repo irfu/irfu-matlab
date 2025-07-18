@@ -362,19 +362,19 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
         zvFreqHz, 1);
       Zv.freqHz                  = zvFreqHz;
-      Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
-      Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
       Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
       Zv.bdmFpa                  = HkSciTime.bdmFpa;
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;
       Zv.dlrFpa                  = HkSciTime.dlrFpa;
+      Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
+      Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
 
       % QRCB arrayss for
       % (1) if LFR ZV BW says BIAS is OFF (which is unknown for TDS processing),
       %     and
       % (2) BIAS is sweeping.
       % so that "quality actions" can be taken later based on these.
-      Zv.biasOffQrcb             = false(size(InSci.Zv.Epoch));   % The real value unknown.
+      Zv.biasOffQrcb             = false(size(InSci.Zv.Epoch));   % Real value is unknown.
       Zv.sweepQrcb               = HkSciTime.isSweepingFpa.array(false);
 
       Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
@@ -428,14 +428,18 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      Ga = [];
-      Ga.OBS_ID    = InSci.Ga.OBS_ID;
-      Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
-
       % Only set because the code shared with LFR requires it.
       Zv.iLsf      = nan( nRecords, 1);
       Zv.lrx       = ones(nRecords, 1);
+      % BW only needed for LFR/TDS normalization of output data. Should be
+      % unused.
       Zv.BW        = true(nRecords, 1);
+
+
+
+      Ga = [];
+      Ga.OBS_ID    = InSci.Ga.OBS_ID;
+      Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
 
       Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(...
         Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);

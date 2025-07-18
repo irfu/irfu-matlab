@@ -291,7 +291,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
         zvFreqHz, 1);
       Zv.freqHz                  = zvFreqHz;
       Zv.uspr                    = ones(nRecords, 1) * aspr;
-      Zv.BW                      = InSci.Zv.BW;                         % TO DELETE?
+      Zv.BW                      = InSci.Zv.BW;    % Copied to output CDF.
 
       % QRCB arrayss for
       % (1) when LFR ZV BW says BIAS is OFF, and

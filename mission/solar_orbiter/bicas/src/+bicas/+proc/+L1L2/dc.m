@@ -362,10 +362,10 @@ classdef dc
 
 
 
-      % Pre-allocate calibrated array. All (BLTS) channels, all records
-      % ---------------------------------------------------------------
-      % IMPLEMENTATION NOTE: Preallocation is very important for speeding
-      % up LFR-SWF which tends to be broken into subsequences of 1 record.
+      % Pre-allocate array of calibrated voltage samples: All (BLTS) channels
+      % ---------------------------------------------------------------------
+      % IMPLEMENTATION NOTE: Preallocation is very important for speeding up
+      % LFR-SWF which tends to be broken into subsequences of 1 record.
       samplesAVolt = nan(nRecords, aspr, bicas.const.N_BLTS);
 
 
