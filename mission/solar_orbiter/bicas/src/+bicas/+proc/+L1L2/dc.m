@@ -87,7 +87,9 @@ classdef dc
       %#########################
       currentAAmpere = bicas.proc.L1L2.cur.calibrate_bias_currents(...
         InCurPd.Zv.Epoch, ...
-        [InCurPd.Zv.IBIAS_1, InCurPd.Zv.IBIAS_2, InCurPd.Zv.IBIAS_3], ...
+        [InCurPd.Zv.IBIAS_1, ...
+        InCurPd.Zv.IBIAS_2, ...
+        InCurPd.Zv.IBIAS_3], ...
         Dcip.Zv.Epoch, Ccal, Bso, L);
 
 
@@ -105,10 +107,11 @@ classdef dc
       %#################################################
       % Set 5xBLTS channels to NaN/FV according to QRCs
       %#################################################
-      % BUG: Setting NaN/FV *AFTER* calibration which means that calibration of
-      % non-blanked samples is influenced by samples which are later blanked.
-      aspr        = size(Dcip.Zv.bltsSamplesTm, 2);
-      btlsSsidAr2 = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
+      % BUG: Setting voltage NaN/FVs from QRCs *BEFORE* calibration which means
+      % that calibration of non-blanked samples is *NOT* influenced by samples
+      % which are later blanked.
+      aspr          = size(Dcip.Zv.bltsSamplesTm, 2);
+      btlsSsidAr2   = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
       bltsSamplesTm = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
         Dcip.Zv.bltsSamplesTm, btlsSsidAr2, AllQrcbMap, bicas.const.QRCS_L2_MAP);
 
@@ -158,7 +161,7 @@ classdef dc
 
 
 
-      % Convert SchdZvm --> SamplesZvm + VsibZvm
+      % Replace/split variable: SchdZvm --> SamplesZvm + VsibZvm
       SamplesZvm = bicas.utils.ZvMap(SchdZvm.nRecords);
       VsibZvm    = bicas.utils.ZvMap(SchdZvm.nRecords);
       for keyCa = SchdZvm.keyCa'
@@ -199,7 +202,7 @@ classdef dc
         bicas.utils.FPArray(QUALITY_FLAG));
       Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
 
-      % NOTE: Function modifies ZVM handle object in-place (handle object)!
+      % NOTE: Function modifies SamplesZvm handle object in-place!
       Zv.currentAAmpere     = bicas.proc.L1L2.qual.set_voltage_current_FV(...
         Dcip.Zv.Epoch, SamplesZvm, currentAAmpere, zvUfv, L);
       Zv.SamplesZvm         = SamplesZvm;

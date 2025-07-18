@@ -98,7 +98,8 @@ classdef QrcbMap < handle
       assert(isstring(qrcid)   & isscalar(qrcid))
       assert(islogical(qrcbAr) & iscolumn(qrcbAr), "qrcbAr is not a logical column.")
 
-      assert(~obj.Map.isKey(qrcid))    % Require not overwriting key.
+      % Require not overwriting key.
+      assert(~obj.Map.isKey(qrcid), "Object already has a key qrcid=""%s"".", qrcid)
       assert(size(qrcbAr, 1) == obj.nRecords)
 
       obj.Map(qrcid) = qrcbAr;

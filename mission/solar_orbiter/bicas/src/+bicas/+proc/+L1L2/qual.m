@@ -293,45 +293,50 @@ classdef qual
 
 
 
-    % Set BLTS-labelled samples based on NSO table and SSIDs.
+    % Set samples based on NSO table and SSIDs.
     %
     % ARGUMENTS
     % =========
-    % samplesAr
+    % voltageAr
+    %       Float. 1D or more dimensions. First dimension is CDF records.
+    %       NOTE: Does not have to have any particular unit.
     % ssidAr
     %       Same size as samplesAr. Same number of rows as QrcbMap.
     %
-    function samplesAr = set_5xBLTS_voltage_samples_FV(...
-        samplesAr, ssidAr, QrcbMap, QrcsMap)
+    function voltageAr = set_5xBLTS_voltage_samples_FV(...
+        voltageAr, ssidAr, QrcbMap, QrcsMap)
 
-      % IMPLEMENTATION NOTE: Input arrays samplesAvoltAr, ssidAr must have same
-      % arbitrary size (except for first dimension).
+      % IMPLEMENTATION NOTE: Input arrays samplesAr & ssidAr must have same
+      % arbitrary size (not arbitrary for first dimension).
       %   PRO: It simplifies testing.
       %   PRO: It simplifies the implementation.
       %   PRO: It makes the function more generic.
+      % IMPLEMENTATION NOTE: Argument QrcsMap is there (instead of global
+      % constant) to make testing simpler & more robust.
 
-      % TODO-DEC: Relationship between QRCIDs in maps?
-      %           Same set?
-      %           One is subset of the other? In which direction?
+      % TODO-DEC: What should be the relationship between QRCIDs in the two map
+      %           arguments? Identical sets? One is subset of the other? In
+      %           which direction?
 
       % ASSERTIONS
-      assert(isfloat(samplesAr))
-      assert(isequal(size(samplesAr), size(ssidAr)))
-      assert(QrcbMap.nRecords == size(samplesAr, 1))    % Nbr. of records.
-      sizeAr = size(samplesAr);
+      assert(isfloat(voltageAr))
+      assert(isequal(size(voltageAr), size(ssidAr)))
+      assert(QrcbMap.nRecords == size(voltageAr, 1))    % Nbr. of records.
 
-      bFv = false(sizeAr);
+      sizeAr = size(voltageAr);
+      bFv    = false(sizeAr);
       for qrcid = QrcbMap.qrcidAr'
-        Qrcs       = QrcsMap(    qrcid);
         qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
+        Qrcs       = QrcsMap(    qrcid);
+        assert(isa(Qrcs, "bicas.proc.QrcSettingL1rL2"))
 
-        % Same size as samplesAvoltAr.
+        % Arrays of the same size as voltageAr.
         bQrcbAr    = repmat(qrcbAr, [1, sizeAr(2:end)]);
         bSsidMatch = ismember(ssidAr, Qrcs.voltageSamplesFvSsidAr);
 
-        bFv        = bFv | bQrcbAr & bSsidMatch;
+        bFv        = bFv | (bQrcbAr & bSsidMatch);
       end
-      samplesAr(bFv) = NaN;
+      voltageAr(bFv) = NaN;
     end
 
 

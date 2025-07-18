@@ -159,7 +159,7 @@ classdef const
 
     % QUALITY_FLAG value for both
     % (1) global saturation's "full saturation" QRC, and
-    % (2) channel saturation.
+    % (2) channel saturation QRCs.
     QUALITY_FLAG_SATURATION = uint8(0);
 
     % Maps QRCID-->QRCS for different sets of QRCIDs.

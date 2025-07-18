@@ -52,6 +52,11 @@ classdef QrcSetting
   %     ~Condition
   %     Special Case Condition
   %     Special Condition
+  %
+  % PROPOSAL: Use only keyword arguments with default values.
+  %   PRO: Common to not set all values.
+  %     Ex: Hardcoding tests.
+  %   CON: Longer calls.
 
 
 

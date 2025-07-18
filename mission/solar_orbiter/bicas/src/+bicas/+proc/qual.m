@@ -118,10 +118,9 @@ classdef qual
     %       IMPLEMENTATION NOTE: Needed for handling the case of zero QRCIDs.
     % QrcbMap
     %       containers.Map: QRCID-->Logical column array
-    %       Array element is set when the corresponding QRC applies.
     % QrcsMap
     %       containers.Map: QRCID-->bicas.proc.QrcSetting
-    %       Must contain at least the QRCIDs in QrcbMap.
+    %       Must contain a superset of the QRCIDs in QrcbMap.
     %
     %
     % RETURN VALUES
@@ -152,6 +151,9 @@ classdef qual
       for qrcid = QrcbMap.qrcidAr'
         Qrcs   = QrcsMap(qrcid);
         qrcbAr = QrcbMap.get(qrcid);
+
+        % NOTE: Generic (not a subclass, e.g. bicas.proc.QrcSettingL1rL2).
+        assert(isa(Qrcs, "bicas.proc.QrcSetting"))
 
         %------------------
         % Set QUALITY_FLAG

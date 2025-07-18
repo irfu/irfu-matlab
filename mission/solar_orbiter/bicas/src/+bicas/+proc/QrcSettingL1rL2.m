@@ -9,6 +9,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef QrcSettingL1rL2 < bicas.proc.QrcSetting
+  % PROPOSAL: Use only keyword arguments with default values.
+  %   PRO: Common to not set all values.
+  %     Ex: Hardcoding tests.
+  %   CON: Longer calls.
 
 
 
@@ -18,7 +22,7 @@ classdef QrcSettingL1rL2 < bicas.proc.QrcSetting
   %#####################
   %#####################
   properties(SetAccess=immutable)
-    % Array (set) of SSIDs for which voltage samples should be blanked.
+    % Column array (set) of unique SSIDs for which voltage samples should be blanked.
     voltageSamplesFvSsidAr
   end    % properties(SetAccess=immutable)
 
