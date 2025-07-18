@@ -256,23 +256,9 @@ classdef VoltageCalibration
     % =========
     % zvcti
     %       NOTE: Only one record (row) of ZVCTI! Not entire ZV.
-    % ufv
-    %       Scalar logical.
-    %       Whether to set output voltages to NaN (representing fill values)
-    %       and thus not execute any (real) calibration.
-    %       RATIONALE: This option is useful to
-    %       (1) potentially speed up BICAS when it is known that
-    %           data will be overwritten with fill values later.
-    %       (2) avoid executing calibration algorithms when it is
-    %           known that there is no calibration configuration anyway
-    %           Ex: LFR zVar BW=0 ==> zvcti(1,:) value is illegal.
-    %               ==> Can not calibrate.
-    %           Note: This means that this function technically accepts
-    %           an illegal calibration configuration when this argument is set
-    %           to true.
     %
     function bltsSamplesAVoltCa = calibrate_voltage_TM_to_avolt(obj, ...
-        dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, zvcti, ufv)
+        dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, zvcti)
 
       % ASSERTIONS
       assert(iscell(bltsSamplesTmCa))
@@ -281,7 +267,6 @@ classdef VoltageCalibration
         dtSec,           [-1], ...
         bltsSamplesTmCa, [-1])
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
-      assert(islogical(ufv)      && isscalar(ufv))
       assert(islogical(isTdsCwf) && isscalar(isTdsCwf))
 
       iBlts = CalSettings.iBlts;
@@ -325,14 +310,7 @@ classdef VoltageCalibration
       %================
       % Obtain itfAvpt
       %================
-      if ufv
-        % CASE: Set voltages to NaN.
-        % NOTE: This overrides any other condition
-
-        itfAvpt     = bicas.const.NAN_TF;
-        offsetAvolt = NaN;
-
-      elseif bicas.proc.L1L2.const.SSID_is_ASR(CalSettings.ssid)
+      if bicas.proc.L1L2.const.SSID_is_ASR(CalSettings.ssid)
         % CASE: ASR SSID
 
         %========================
@@ -377,13 +355,13 @@ classdef VoltageCalibration
           obj.itfAcConstGainLowFreqRps);
 
       else
-        % CASE: Non-ASR SSID (ufv=false)
+        % CASE: Non-ASR SSID
         itfAvpt     = obj.ONE_TF;
         offsetAvolt = 0;
       end
 
       if obj.biasOffsetsDisabled
-        % NOTE: Overwrites "offsetAvolt", including for ufv=true.
+        % NOTE: Overwrites "offsetAvolt".
         offsetAvolt = 0;
       end
 

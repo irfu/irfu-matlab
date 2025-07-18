@@ -157,6 +157,27 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
     %       LFR ITF, TM-->ivolt
     %
     function itfIvpt = get_LFR_ITF(obj, iBlts, iLsf, iNonBiasRct, zvcti2)
+      % TODO-DEC: How handle when iNonBiasRct does not specify an RCTD (and does
+      %           not need to) due to BW=0?
+      %   PROPOSAL: Return an ITF anyway.
+      %     PRO: Other code should work without modification.
+      %     PRO: BW/BIAS_HW_OFF QRCB should still lead to that the data is
+      %          blanked later.
+      %     PROPOSAL: Return NaN ITF. -- IMPLEMENTED
+      %       CON: Blanks data if CALIBRATION_TABLE_INDEX is ever wrong (BW=1).
+      %       CON: Can not determine whether CALIBRATION_TABLE_INDEX is wrong.
+      %     PROPOSAL: Return ITF that does not do any (LFR) calibration (keeps
+      %               TM units).
+      %       CON There will still be BIAS calibration, including BIAS offset.
+      %   PROPOSAL: Caller should convert CALIBRATION_TABLE_INDEX into some
+      %             form which distinguishes between
+      %             CALBRATION_TABLE_INDEX(i,1) values which (1) legitimately,
+      %             and (2) illegitimately, do not point to an RCTD.
+      %     PROPOSAL: Use FPAs. Fill position = Legitimately does not point to
+      %               RCTD.
+      %       CON: Misuse of FPA if variable corresponds to ZV where fill value
+      %            has a specific (other) (ISTP) meaning in the CDF file.
+      %         CON-PROPOSAL: Variable should be redefined/renamed.
 
       % ASSERTIONS
       bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
@@ -216,16 +237,34 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
           ' This could indicate that a zVar CALIBRATION_TABLE_INDEX(:,1)', ...
           ' value is larger than glob. attr. CALIBRATION TABLE allows.'], ...
           iNonBiasRct)
-        assert(~isempty(LfrRctdCa{iNonBiasRct}), ...
-          'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
-          ['LFR LfrRctdCa contains no RCT data corresponding', ...
-          ' to argument iNonBiasRct=%g. This may indicate that', ...
-          ' a zVar CALIBRATION_TABLE_INDEX(:,1) value is wrong or', ...
-          ' that BICAS did not try to load the corresponding RCT', ...
-          ' in glob. attr. CALIBRATION_TABLE.'], ...
-          iNonBiasRct)
 
-        itfIvpt = LfrRctdCa{iNonBiasRct}.ItfModifIvptCaCa{iLsf}{iBlts};
+        % assert(~isempty(LfrRctdCa{iNonBiasRct}), ...
+        %   'BICAS:IllegalArgument:DatasetFormat:Assertion', ...
+        %   ['LFR LfrRctdCa contains no RCT data corresponding', ...
+        %   ' to argument iNonBiasRct=%g. This may indicate that', ...
+        %   ' zVariable CALIBRATION_TABLE_INDEX(:,1) value is wrong or', ...
+        %   ' that BICAS did not try to load the corresponding RCT', ...
+        %   ' specified in glob. attr. CALIBRATION_TABLE.'], ...
+        %   iNonBiasRct)
+        if isempty(LfrRctdCa{iNonBiasRct})
+          % CASE: There is no RCTD for the given iNonBiasRct
+          % ------------------------------------------------
+          % This should imply that either
+          % (1) LFR ZV BW=0 (BIAS h/W is off), or
+          %     Ex: solo_L1R_rpw-lfr-surv-swf-e-cdag_20200225_V10.cdf
+          %     Ex: solo_L1R_rpw-lfr-surv-swf-e-cdag_20200228_V10.cdf
+          % (2) that the value of ZV CALIBRATION_TABLE_INDEX(i, 1) is wrong.
+
+          % PROPOSAL: Log warning.
+          %   CON: This function and at least two higher parent functions have
+          %        no access to the logger.
+          %   CON: This class is, sort of, made to be used for experimenting
+          %        with calibration in isolation (without BICAS), i.e. without
+          %        logging.
+          itfIvpt = bicas.const.NAN_TF;
+        else
+          itfIvpt = LfrRctdCa{iNonBiasRct}.ItfModifIvptCaCa{iLsf}{iBlts};
+        end
       end
     end    % get_LFR_ITF()
 

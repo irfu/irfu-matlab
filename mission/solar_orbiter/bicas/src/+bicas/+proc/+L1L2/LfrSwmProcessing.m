@@ -291,11 +291,15 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
         zvFreqHz, 1);
       Zv.freqHz                  = zvFreqHz;
       Zv.uspr                    = ones(nRecords, 1) * aspr;
-      Zv.BW                      = InSci.Zv.BW;
-      % NOTE: Blanking data when
-      % (1) LFR ZV BW says BIAS is OFF, or
+      Zv.BW                      = InSci.Zv.BW;                         % TO DELETE?
+
+      % QRCB arrayss for
+      % (1) when LFR ZV BW says BIAS is OFF, and
       % (2) BIAS is sweeping.
-      Zv.ufv                     = ~logical(InSci.Zv.BW) | HkSciTime.isSweepingFpa.array(false);
+      % so that "quality actions" can be taken later based on these.
+      Zv.biasOffQrcb             = ~logical(InSci.Zv.BW);
+      Zv.sweepQrcb               = HkSciTime.isSweepingFpa.array(false);
+
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;
       Zv.dlrFpa                  = HkSciTime.dlrFpa;
       Zv.iLsf                    = zvILsf;

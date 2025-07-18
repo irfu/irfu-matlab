@@ -31,11 +31,11 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
 
-    % Split data due to UFV and NaN.
+    % Test CWF NaN data.
     %
     % NOTE: bicas.tf.apply_TF() itself splits by NaN (by default).
     %
-    function test_calibrate_voltages_1xBLTS___CWF_UFV_NaN(testCase)
+    function test_calibrate_voltages_1xBLTS___CWF_NaN(testCase)
       Bso = testCase.get_simple_TF_BSO();
 
       Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierTest( ...
@@ -44,7 +44,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
         itfLfrAvpiv =@(omegaRps) (ones(size(omegaRps))*3));
       Vcal = bicas.proc.L1L2.cal.VoltageCalibration(Vcds, true, Bso);
 
-      SAMPLES_TM = [1 2 3 4 5 6 NaN 8 9]';   % NOTE: NaN!
+      SAMPLES_TM = [1 2 3 NaN 5 6 NaN 8 NaN]';   % NOTE: Pre-existing NaN!
       I_LSF      = 1;
       FREQ_HZ    = solo.hwzv.const.LSF_HZ(I_LSF);
 
@@ -58,7 +58,6 @@ classdef dc___UTEST < matlab.unittest.TestCase
         hasSwfFormat = false, ...
         ... % Variables which DO VARY over CDF records.
         tt2000       = uint64( [1:9]' * 1e9 / FREQ_HZ), ...
-        ufv          = logical([0; 0; 1; 1; 0; 0; 0; 0; 0]), ...    % NOTE!
         ssid         = testCase.S(repmat(["DC_V2"], 9, 1)), ...
         samplesTm    = single(SAMPLES_TM), ...
         uspr         = repmat(1,       9, 1), ...
@@ -67,15 +66,18 @@ classdef dc___UTEST < matlab.unittest.TestCase
         isAchgFpa    = bicas.utils.FPArray(logical(repmat(0, 9, 1)), 'NO_FILL_POSITIONS'), ...
         zvcti        = repmat([1, 0], 9, 1));
 
-      expSamplesAvolt          = SAMPLES_TM*2*3 + 1;
-      expSamplesAvolt([3,4,7]) = NaN;
+      % Emulated calibration
+      expSamplesAvolt    = SAMPLES_TM*2*3 + 1;
+      % NOTE: Setting one extra NaN due to
+      % PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES.
+      expSamplesAvolt(8) = NaN;
       testCase.assertEqual(actSamplesAVolt, expSamplesAvolt, AbsTol=1e-14)
     end
 
 
 
-    % Test UFV and NaN data.
-    function test_calibrate_voltages_1xBLTS___SWF_UFV_NaN(testCase)
+    % Test SWF NaN data.
+    function test_calibrate_voltages_1xBLTS___SWF_NaN(testCase)
       Bso = testCase.get_simple_TF_BSO();
 
       Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierTest( ...
@@ -87,13 +89,14 @@ classdef dc___UTEST < matlab.unittest.TestCase
       SAMPLES_TM = [...
         1:9;  ...
         2:10; ...
-        3:11;
+        3 NaN 5 6 NaN 8 9 10 11;   % NaN (not excluded by USPR).
         NaN(1, 9)];
+      USPR = [5 6 7 8]';
       I_LSF      = 2;
       FREQ_HZ    = solo.hwzv.const.LSF_HZ(I_LSF);
 
-      % NOTE: Split data due to UFV and NaN. bicas.tf.apply_TF() splits by NaN
-      % (by default).
+      % NOTE: Split data due to NaN. bicas.tf.apply_TF() splits by NaN (by
+      % default).
       actSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
         ... % Variables which DO NOT VARY over CDF records at all.
         Vcal         = Vcal, ...
@@ -104,19 +107,22 @@ classdef dc___UTEST < matlab.unittest.TestCase
         hasSwfFormat = true, ...
         ... % Variables which DO VARY over CDF records.
         tt2000       = uint64( [1:4]' * 1e9 / FREQ_HZ), ...
-        ufv          = logical([0; 1; 0; 0]), ...                        % NOTE!
         ssid         = testCase.S(repmat(["DC_V2"], 4, 1)), ...
         samplesTm    = single(SAMPLES_TM), ...
-        uspr         = [4 5 6 7]', ...
+        uspr         = USPR, ...
         freqHz       = repmat(FREQ_HZ, 4, 1), ...
         iLsf         = repmat(I_LSF,   4, 1), ...
         isAchgFpa    = bicas.utils.FPArray(logical(repmat(0, 4, 1)), 'NO_FILL_POSITIONS'), ...
         zvcti        = repmat([1, 0], 4, 1));
 
-      expSamplesAvolt         = SAMPLES_TM*2*3 + 1;
-      expSamplesAvolt(1, 5:9) = NaN;
-      expSamplesAvolt(2, :  ) = NaN;
-      expSamplesAvolt(3, 7:9) = NaN;
+      % Emulated calibration
+      expSamplesAvolt                 = SAMPLES_TM*2*3 + 1;
+      expSamplesAvolt(1, USPR(1)+1:9) = NaN;
+      expSamplesAvolt(2, USPR(2)+1:9) = NaN;
+      expSamplesAvolt(3, USPR(3)+1:9) = NaN;
+      % NOTE: Setting one extra NaN due to
+      % PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES.
+      expSamplesAvolt(3, 1)           = NaN;
       testCase.assertEqual(actSamplesAVolt, expSamplesAvolt, AbsTol=1e-14)
     end
 

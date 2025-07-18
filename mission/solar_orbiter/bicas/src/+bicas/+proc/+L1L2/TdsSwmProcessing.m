@@ -368,7 +368,15 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.bdmFpa                  = HkSciTime.bdmFpa;
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;
       Zv.dlrFpa                  = HkSciTime.dlrFpa;
-      Zv.ufv                     = HkSciTime.isSweepingFpa.array(false);
+
+      % QRCB arrayss for
+      % (1) if LFR ZV BW says BIAS is OFF (which is unknown for TDS processing),
+      %     and
+      % (2) BIAS is sweeping.
+      % so that "quality actions" can be taken later based on these.
+      Zv.biasOffQrcb             = false(size(InSci.Zv.Epoch));   % The real value unknown.
+      Zv.sweepQrcb               = HkSciTime.isSweepingFpa.array(false);
+
       Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
 
 

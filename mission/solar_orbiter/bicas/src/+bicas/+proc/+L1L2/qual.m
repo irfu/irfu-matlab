@@ -341,50 +341,40 @@ classdef qual
 
 
 
-    % Overwrite records of voltage & current with FVs as specified in arbitrary
-    % array.
+    % Overwrite records of current with FVs as specified in QRCBs.
+    % Cf. bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV().
     %
     % ARGUMENTS
     % =========
-    % zvTt2000Ar
-    %       NOTE: Only needed for logging.
-    % SamplesZvm
-    %       NOTE: Handle object which is MODIFIED in-place.
+    % currentAr
+    %       Float. Size (nRecords, 3).
     %
-    function zvCurrentAAmpere = set_voltage_current_FV(...
-        zvTt2000Ar, SamplesZvm, zvCurrentAAmpere, zvUfv, L)
+    function currentAr = set_current_samples_FV(currentAr, QrcbMap, QrcsMap)
+      % IMPLEMENTATION NOTE: Argument QrcsMap is there (instead of global
+      % constant) to make testing simpler & more robust.
 
-      % PROPOSAL: Separate functions for ASR samples and bias currents.
-      %   PRO: Clearer/simpler testing
-      %   CON: Non-quality code should call *ONE* function wrt. blanking data.
-      %     CON-PROPOSAL: This function calls two sub-functions.
+      assert(isfloat(currentAr))
+      assert(isa(QrcbMap, 'bicas.proc.QrcbMap'))
+      assert(isa(QrcsMap, 'containers.Map'))
+      irf.assert.sizes(currentAr, [QrcbMap.nRecords, 3])
 
-      assert(islogical(zvUfv))
-      assert(isa(SamplesZvm, 'bicas.utils.ZvMap'))
-      assert(isa(SamplesZvm, 'handle'))
+      % PROPOSAL: Create and use bAntennas = logical size (1, 3) + repmat.
+      %   PRO: Faster?
 
-      % Log
-      logHeaderStr = sprintf(...
-        ['Interval(s) of CDF records for which data should be set', ...
-        ' to fill values (i.e. removed), regardless of reason.\n']);
-      bicas.proc.L1L2.qual.log_UFV_records(zvTt2000Ar, zvUfv, logHeaderStr, L)
+      iAntennaAr = repmat([1:3], [QrcbMap.nRecords, 1]);
+      bFv        = false(size(currentAr));
+      for qrcid = QrcbMap.qrcidAr'
+        qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
+        Qrcs       = QrcsMap(    qrcid);
+        assert(isa(Qrcs, "bicas.proc.QrcSettingL1rL2"))
 
-      % ====================================
-      % Set CURRENT values to fill value/NaN
-      % ====================================
-      zvCurrentAAmpere(zvUfv, :) = NaN;
+        % Arrays of the same size as currentAr.
+        bQrcbAr       = repmat(qrcbAr, [1, 3]);
+        bAntennaMatch = ismember(iAntennaAr, Qrcs.currentSamplesFvIAntAr);
 
-      % ====================================
-      % Set VOLTAGE values to fill value/NaN
-      % ====================================
-      % IMPLEMENTATION NOTE: Should ideally(?) be implemented using some kind of
-      % class support for setting elements using indexing(?) of ZVMs, especially
-      % if there is a performance issue here. /2025-07-09.
-      for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        samplesAr           = SamplesZvm.get(asrSdid);
-        samplesAr(zvUfv, :) = NaN;
-        SamplesZvm.set(asrSdid, samplesAr)
+        bFv           = bFv | (bQrcbAr & bAntennaMatch);
       end
+      currentAr(bFv) = NaN;
     end
 
 
@@ -676,58 +666,6 @@ classdef qual
 
 
   end    % methods(Static)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-
-
-
-    % Log UFV records
-    %
-    % NOTE: Only logs (including header) if there are records to remove.
-    %
-    function log_UFV_records(zv_Epoch, zvUfv, logHeaderStr, L)
-      % PROPOSAL: Redefine, rework to function that can be used for
-      % logging separate UFVs obtained in different ways.
-      %   Ex: UFVs due to excluding BDMs.
-      %   Ex: UFVs due to automatically detected sweeps.
-      %   Ex: UFVs due to detected sweeps via QUALITY_BITMASK (future).
-
-      LL = 'info';    % LL = Log Level
-
-      [i1Array, i2Array] = irf.utils.split_by_false(zvUfv);
-      nUfvIntervals = numel(i1Array);
-      if nUfvIntervals > 0
-
-        %==============
-        % Log settings
-        %==============
-        L.logf(LL, logHeaderStr)
-
-        %===============
-        % Log intervals
-        %===============
-        for iRi = 1:nUfvIntervals
-          iCdfRecord1 = i1Array(iRi);
-          iCdfRecord2 = i2Array(iRi);
-          utcStr1 = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord1), 9);
-          utcStr2 = bicas.utils.TT2000_to_UTC_str(zv_Epoch(iCdfRecord2), 9);
-          L.logf(LL, '    Records %8i-%8i, %s -- %s', ...
-            iCdfRecord1, iCdfRecord2, utcStr1, utcStr2);
-        end
-      end
-
-    end
-
-
-
-  end    % methods(Static, Access=private)
 
 
 

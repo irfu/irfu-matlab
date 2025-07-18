@@ -30,14 +30,33 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
 
     function test_calibrate_voltage_TM_to_avolt___nominal(testCase)
-      SAMPLES_TM_CA = {[1 2 3]'; [4 5 6 7]'};
+      SAMPLES_TM_CA = {[1 2 3]'; [4 5 6 7]'; zeros(0, 1)};
       expSamplesAvoltCa = cellfun(@(x) (2*3*x+1), SAMPLES_TM_CA, ...
         'UniformOutput', false);
 
       testCase.test_basic(...
         bltsSamplesTmCa  =SAMPLES_TM_CA, ...
-        expSamplesAvoltCa=expSamplesAvoltCa, ...
-        ufv              =false)
+        expSamplesAvoltCa=expSamplesAvoltCa)
+    end
+
+
+
+    % Checks behaviour w.r.t. sample=NaN.
+    % NOTE: Basic check on the splitting of 1D arrays of samples which should
+    %       be used under the hood.
+    function test_calibrate_voltage_TM_to_avolt___NaN(testCase)
+      N = NaN;
+
+      SAMPLES_TM_CA = {[N N N]'; [4 N 6 7 N N 10 11 12]'};
+      expSamplesAvoltCa = cellfun(@(x) (2*3*x+1), SAMPLES_TM_CA, ...
+        'UniformOutput', false);
+      % Sample which PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES will
+      % set to NaN.
+      expSamplesAvoltCa{2}(1) = NaN;    % NOTE: WORKS despite syntax!
+
+      testCase.test_basic(...
+        bltsSamplesTmCa  =SAMPLES_TM_CA, ...
+        expSamplesAvoltCa=expSamplesAvoltCa)
     end
 
 
@@ -75,7 +94,7 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
       expSamplesAvoltCa = cellfun(@(x) (2*3*x+1), SAMPLES_TM_CA, ...
         'UniformOutput', false);
 
-      testCase.test_basic(ufv=false, ...
+      testCase.test_basic(...
         bltsSamplesTmCa  =SAMPLES_TM_CA, ...
         expSamplesAvoltCa=expSamplesAvoltCa, ...
         ssid             =testCase.SSID("AC_V12"))
@@ -83,21 +102,8 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_calibrate_voltage_TM_to_avolt___ASR_UFV(testCase)
-      SAMPLES_TM_CA     = {[1 2 3]'; [4 5 6 7]'};
-      expSamplesAvoltCa = cellfun(@(x) (NaN*x), SAMPLES_TM_CA, ...
-        'UniformOutput', false);
-
-      testCase.test_basic(...
-        bltsSamplesTmCa  =SAMPLES_TM_CA, ...
-        expSamplesAvoltCa=expSamplesAvoltCa, ...
-        ufv              =true)
-    end
-
-
-
-  % Non-ASR SSIDs, with/without UFV.
-    function test_calibrate_voltage_TM_to_avolt___Non_ASR_w_wo_UFV(testCase)
+  % Non-ASR SSIDs.
+    function test_calibrate_voltage_TM_to_avolt___Non_ASR(testCase)
       SAMPLES_TM_CA = {[1 2 3]'; [4 5 6 7]'};
 
       for ssid = testCase.SSID(["GND", "REF25V", "UNKNOWN"])
@@ -107,15 +113,6 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
           bltsSamplesTmCa  =SAMPLES_TM_CA, ...
           expSamplesAvoltCa=expSamplesAvoltCa, ...
           ssid             =ssid)
-
-        % +UFV
-        expSamplesAvoltCa = cellfun(@(x) (NaN*x), SAMPLES_TM_CA, ...
-          'UniformOutput', false);
-        testCase.test_basic(...
-          bltsSamplesTmCa  =SAMPLES_TM_CA, ...
-          expSamplesAvoltCa=expSamplesAvoltCa, ...
-          ssid             =ssid, ...
-          ufv              =true)
       end
     end
 
@@ -144,7 +141,6 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
         testCase
         A.bltsSamplesTmCa
         A.expSamplesAvoltCa
-        A.ufv                 = false
         A.ssid                = testCase.SSID("DC_V1");
         A.biasOffsetsDisabled = false
         A.useBiasTfScalar     = false
@@ -177,7 +173,7 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED CODE
       actSamplesAvoltCa = Vcal.calibrate_voltage_TM_to_avolt( ...
-        dtSec, A.bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, zvcti, A.ufv);
+        dtSec, A.bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, zvcti);
 
       testCase.assertEqual(actSamplesAvoltCa, A.expSamplesAvoltCa)
     end
@@ -216,9 +212,9 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
       Bso.override_value('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', -1,    'test');
       Bso.override_value('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    false, 'test');
       Bso.override_value('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE', -1,    'test');
-      Bso.override_value('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',      false, 'test');
+      Bso.override_value('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',      true,  'test');
       % NOTE: FV_SPLITTING.MIN_SAMPLES is independent of FV_SPLITTING.ENABLED.
-      Bso.override_value('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES',  1,     'test');
+      Bso.override_value('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES',  2,     'test');
       Bso.override_value('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION',  Inf,   'test');
 
       Bso.override_value('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', A.biasOffsetsDisabled, 'test');

@@ -48,6 +48,15 @@ classdef findread
         useGactRct, nonBiasRcttid, rctDir, ...
         gact, zvcti, zv_BW, tt2000Begin, tt2000End, L)
       % PROPOSAL: Better name.
+      % PROPOSAL: Abolish BW argument.
+      %   PRO: VoltageCalibrationDataSupplierImpl.get_LFR_ITF() returns NAN ITF
+      %        when CALIBRATION_TABLE_INDEX(i, 1) does not point to an RCTD,
+      %        e.g. for LFR BW=0.
+      %   CON: Is less rigorous.
+      %     CON: Rigor is already gone due to
+      %          VoltageCalibrationDataSupplierImpl.get_LFR_ITF() behaviour.
+      %   PROPOSAL: Replace with BIAS_HW_OFF QRCB.
+      %     CON: Is not yet defined when this function is called.
 
       assert(islogical(useGactRct))
 

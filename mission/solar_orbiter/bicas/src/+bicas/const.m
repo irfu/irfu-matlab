@@ -157,6 +157,19 @@ classdef const
 
 
 
+    % Constants for common values
+    % ---------------------------
+    % NOTE: Useful for e.g. testing.
+    % PROPOSAL: Move to bicas.proc.QrcsSetting.
+    %   Only QRCS-specific ones?
+    LxQBM_NONE           = uint16(0);
+    QRCS_VOLTAGE_FV_NONE = uint8.empty(0, 1);
+    QRCS_CURRENT_FV_NONE = zeros(0, 1);
+    % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
+    % external metadata standards.
+    QUALITY_FLAG_MIN = uint8(0);
+    QUALITY_FLAG_MAX = uint8(4);
+
     % QUALITY_FLAG value for both
     % (1) global saturation's "full saturation" QRC, and
     % (2) channel saturation QRCs.
@@ -190,11 +203,6 @@ classdef const
     N_MIN_OSR_SAMPLES_PER_BIN = 3;
 
 
-
-    % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
-    % external metadata standards.
-    QUALITY_FLAG_MIN = uint8(0);
-    QUALITY_FLAG_MAX = uint8(4);
 
     % Number of BLTSs.
     N_BLTS = 5;
@@ -570,7 +578,10 @@ classdef const
         l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
 
         QrcsMap(qrcid) = bicas.proc.QrcSettingL1rL2(...
-          bicas.const.QUALITY_FLAG_SATURATION, l2qbmBit, uint8.empty(0, 1));
+          bicas.const.QUALITY_FLAG_SATURATION, ...
+          l2qbmBit, ...
+          bicas.const.QRCS_VOLTAGE_FV_NONE, ...
+          bicas.const.QRCS_CURRENT_FV_NONE);
       end
     end
 
@@ -583,19 +594,18 @@ classdef const
     % Map QRCID-->bicas.proc.QrcSetting
     %
     function QrcsMap = init_QRCS_L2_MAP()
-      % No circular dependence?!! bicas.proc.L1L2.const <-> bicas.const
-      S = bicas.proc.L1L2.const.C.SSID_DICT;
 
       QrcsMap = containers.Map();
 
-      % -----------------------------------------
-      % Global saturation quality variable scheme
-      % -----------------------------------------
-      % Quality bits (bitmasks). NOT QRCIDs.
+      %=================
+      % Local constants
+      %=================
+      % No circular dependence?!! bicas.proc.L1L2.const <-> bicas.const
+      S               = bicas.proc.L1L2.const.C.SSID_DICT;
+      % Global saturation quality variable scheme:
       % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
       L2QBM_BIT_PARTIAL_SATURATION = uint16(1);
       L2QBM_BIT_FULL_SATURATION    = uint16(2);
-      QUALITY_FLAG_FULL_SATURATION = bicas.const.QUALITY_FLAG_SATURATION;
 
       %====================
       % PARTIAL_SATURATION
@@ -603,7 +613,8 @@ classdef const
       QrcsMap("PARTIAL_SATURATION") = bicas.proc.QrcSettingL1rL2(...
         uint8(1), ...
         L2QBM_BIT_PARTIAL_SATURATION, ...
-        uint8.empty(0, 1));
+        bicas.const.QRCS_VOLTAGE_FV_NONE, ...
+        bicas.const.QRCS_CURRENT_FV_NONE);
 
       %=================
       % FULL_SATURATION
@@ -611,9 +622,10 @@ classdef const
       % NOTE: Also set PARTIAL saturation bit when FULL
       % saturation. /YK 2020-10-02.
       QrcsMap("FULL_SATURATION") = bicas.proc.QrcSettingL1rL2(...
-        QUALITY_FLAG_FULL_SATURATION, ...
+        bicas.const.QUALITY_FLAG_SATURATION, ...
         L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION, ...
-        uint8.empty(0, 1));
+        bicas.const.QRCS_VOLTAGE_FV_NONE, ...
+        bicas.const.QRCS_CURRENT_FV_NONE);
 
       %=================
       % THRUSTER_FIRING
@@ -625,28 +637,51 @@ classdef const
       % (YK 2020-11-03 did not ask for any to be set.)
       QrcsMap("THRUSTER_FIRING") = bicas.proc.QrcSettingL1rL2(...
         uint8(1), ...
-        uint16(0), ...     % NOTE: No quality bit set!
-        uint8.empty(0, 1));
+        bicas.const.LxQBM_NONE, ...     % NOTE: No quality bit set!
+        bicas.const.QRCS_VOLTAGE_FV_NONE, ...
+        bicas.const.QRCS_CURRENT_FV_NONE);
+
+      %=============
+      % BIAS_HW_OFF
+      %=============
+      % In practice, when LFR ZV "BW" says that BIAS h/w is off.
+      QrcsMap("BIAS_HW_OFF") = bicas.proc.QrcSettingL1rL2(...
+        bicas.const.QUALITY_FLAG_MAX, ...
+        bicas.const.LxQBM_NONE, ...
+        S.values, ...
+        [1:3]');
+
+      %=======
+      % SWEEP
+      %=======
+      QrcsMap("SWEEP") = bicas.proc.QrcSettingL1rL2(...
+        bicas.const.QUALITY_FLAG_MAX, ...
+        bicas.const.LxQBM_NONE, ...
+        S.values, ...
+        [1:3]');
 
       %==============
       % ANTx_FAILING
       %==============
       QUALITY_FLAG_ANTx_FAILING = bicas.const.QUALITY_FLAG_MAX;   % TEMPORARY. Good value not decided.
-      L2QBM_ANTx_FAILING        = uint16(0);                      % TEMPORARY. Good value not decided.
-      %QUALITY_FLAG_ANTx_FAILING = uint8(0);        % TEST
+      L2QBM_ANTx_FAILING        = bicas.const.LxQBM_NONE;         % TEMPORARY. Good value not decided.
+      %QUALITY_FLAG_ANTx_FAILING =bicas.const.QUALITY_FLAG_MIN;    % TEST
       %L2QBM_ANTx_FAILING        = uint16(65535);   % TEST
       QrcsMap("ANT1_FAILING") = bicas.proc.QrcSettingL1rL2(...
         QUALITY_FLAG_ANTx_FAILING, ...
         L2QBM_ANTx_FAILING, ...
-        S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
+        S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'), ...
+        bicas.const.QRCS_CURRENT_FV_NONE);
       QrcsMap("ANT2_FAILING") = bicas.proc.QrcSettingL1rL2(...
         QUALITY_FLAG_ANTx_FAILING, ...
         L2QBM_ANTx_FAILING, ...
-        S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
+        S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'), ...
+        bicas.const.QRCS_CURRENT_FV_NONE);
       QrcsMap("ANT3_FAILING") = bicas.proc.QrcSettingL1rL2(...
         QUALITY_FLAG_ANTx_FAILING, ...
         L2QBM_ANTx_FAILING, ...
-        S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
+        S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'), ...
+        bicas.const.QRCS_CURRENT_FV_NONE);
 
 
 

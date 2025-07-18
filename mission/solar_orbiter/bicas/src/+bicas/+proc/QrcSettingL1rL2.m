@@ -24,6 +24,10 @@ classdef QrcSettingL1rL2 < bicas.proc.QrcSetting
   properties(SetAccess=immutable)
     % Column array (set) of unique SSIDs for which voltage samples should be blanked.
     voltageSamplesFvSsidAr
+
+    % Column array (set) of unique antenna numbers (1-3) for which current samples should be
+    % blanked.
+    currentSamplesFvIAntAr
   end    % properties(SetAccess=immutable)
 
 
@@ -38,14 +42,21 @@ classdef QrcSettingL1rL2 < bicas.proc.QrcSetting
 
 
     function obj = QrcSettingL1rL2(...
-        QUALITY_FLAG, L2_QUALITY_BITMASK, voltageSamplesFvSsidAr)
+        QUALITY_FLAG, L2_QUALITY_BITMASK, ...
+        voltageSamplesFvSsidAr, ...
+        currentSamplesFvIantAr)
+
       obj = obj@bicas.proc.QrcSetting(QUALITY_FLAG, L2_QUALITY_BITMASK);
 
       assert(iscolumn(voltageSamplesFvSsidAr))
       assert(bicas.proc.L1L2.const.is_SSID(voltageSamplesFvSsidAr))
       assert(numel(unique(voltageSamplesFvSsidAr)) == numel(voltageSamplesFvSsidAr))
-
       obj.voltageSamplesFvSsidAr = voltageSamplesFvSsidAr;
+
+      assert(iscolumn(currentSamplesFvIantAr))
+      assert(all(ismember(currentSamplesFvIantAr, [1, 2, 3])))
+      assert(numel(unique(currentSamplesFvIantAr)) == numel(currentSamplesFvIantAr))
+      obj.currentSamplesFvIAntAr = currentSamplesFvIantAr;
     end
 
 
