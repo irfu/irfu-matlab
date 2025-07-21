@@ -155,17 +155,17 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
     function test_QRCB_arrays_to_quality_ZVs(testCase)
 
-      function test(QrcbMap, QrcsMap, exp_QUALITY_FLAG, exp_L2_QUALITY_BITMASK)
+      function test(QrcbMap, QrcsMap, qualityFlagName, lxqbmName, exp_QUALITY_FLAG, exp_Lx_QUALITY_BITMASK)
 
         exp_QUALITY_FLAG       = uint8( exp_QUALITY_FLAG(:));
-        exp_L2_QUALITY_BITMASK = uint16(exp_L2_QUALITY_BITMASK(:));
+        exp_Lx_QUALITY_BITMASK = uint16(exp_Lx_QUALITY_BITMASK(:));
 
         % CALL TESTED FUNCTION
-        [act_QUALITY_FLAG, act_L2_QUALITY_BITMASK] = ...
-          bicas.proc.qual.QRCB_arrays_to_quality_ZVs(QrcbMap, QrcsMap);
+        [act_QUALITY_FLAG, act_Lx_QUALITY_BITMASK] = ...
+          bicas.proc.qual.QRCB_arrays_to_quality_ZVs(QrcbMap, QrcsMap, qualityFlagName, lxqbmName);
 
         testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
-        testCase.assertEqual(act_L2_QUALITY_BITMASK, exp_L2_QUALITY_BITMASK)
+        testCase.assertEqual(act_Lx_QUALITY_BITMASK, exp_Lx_QUALITY_BITMASK)
       end
 
       % =======================
@@ -175,40 +175,39 @@ classdef qual___UTEST < matlab.unittest.TestCase
       QrcsMap = containers.Map();
 
       % Zero records
-      test(QrcbMap, QrcsMap, ...
-        [], [] ...
-        )
+      test(QrcbMap, QrcsMap, "L2_QUALITY_FLAG", "L2_QUALITY_BITMASK", ...
+        [], [])
 
       % Non-zero records
       QrcbMap = bicas.proc.QrcbMap(3);
-      test(QrcbMap, QrcsMap, ...
-        4*ones(3,1), zeros(3,1) ...
-        )
+      test(QrcbMap, QrcsMap, "L3_QUALITY_FLAG", "L3_QUALITY_BITMASK_density", ...
+        4*ones(3,1), zeros(3,1))
 
       % ==========================
       % Several QRCIDs are defined
       % ==========================
       QrcsMap = containers.Map();
       QrcsMap("QRCID1") = bicas.proc.QrcSetting(...
-        QUALITY_FLAG=uint8(2), Lx_QUALITY_BITMASK=uint16(2));
+        L2_QUALITY_FLAG=uint8(2), L2_QUALITY_BITMASK=uint16(2));
       QrcsMap("QRCID2") = bicas.proc.QrcSetting(...
-        QUALITY_FLAG=uint8(3), Lx_QUALITY_BITMASK=uint16(4));
+        L2_QUALITY_FLAG=uint8(3), L2_QUALITY_BITMASK=uint16(4));
 
       % Zero records
       QrcbMap = bicas.proc.QrcbMap(0);
       QrcbMap.add("QRCID1", false(0, 1));
       QrcbMap.add("QRCID2", false(0, 1));
-      test(QrcbMap, QrcsMap, ...
-        [], [] ...
-        )
+      test(QrcbMap, QrcsMap, "L2_QUALITY_FLAG", "L2_QUALITY_BITMASK", ...
+        [], [])
 
       % Non-zero records
       QrcbMap = bicas.proc.QrcbMap(4);
       QrcbMap.add("QRCID1", logical([0 0 1 1]'));
       QrcbMap.add("QRCID2", logical([0 1 0 1]'));
-      test(QrcbMap, QrcsMap, ...
-        [4 3 2 2], [0 4 2 4+2] ...
-        )
+      test(QrcbMap, QrcsMap, "L2_QUALITY_FLAG", "L2_QUALITY_BITMASK", ...
+        [4 3 2 2], [0 4 2 4+2])
+
+      test(QrcbMap, QrcsMap, "L3_QUALITY_FLAG_density", "L3_QUALITY_BITMASK_density", ...
+        [4 4 4 4], [0 0 0 0])
     end
 
 

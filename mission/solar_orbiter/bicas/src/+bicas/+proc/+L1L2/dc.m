@@ -77,7 +77,7 @@ classdef dc
       % Read NSO table into QRCBs ONCE, so that it does not need to be done
       % later.
       AllQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
-        string(bicas.const.QRCS_L2_MAP.keys)', NsoTable, Dcip.Zv.Epoch, L);
+        string(bicas.const.QRCS_MAP.keys)', NsoTable, Dcip.Zv.Epoch, L);
       AllQrcbMap.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb );
       AllQrcbMap.set("SWEEP",       Dcip.Zv.sweepQrcb);
       % PROPOSAL: Remove Dcip.Zv.biasOffQrcb & Dcip.Zv.sweepQrcb.
@@ -116,7 +116,7 @@ classdef dc
       aspr          = size(Dcip.Zv.bltsSamplesTm, 2);
       btlsSsidAr2   = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
       bltsSamplesTm = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
-        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, AllQrcbMap, bicas.const.QRCS_L2_MAP);
+        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, AllQrcbMap, bicas.const.QRCS_MAP);
 
 
 
@@ -192,7 +192,8 @@ classdef dc
       % --
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        AllQrcbMap, bicas.const.QRCS_L2_MAP);
+        AllQrcbMap, bicas.const.QRCS_MAP, ...
+        "L2_QUALITY_FLAG", "L2_QUALITY_BITMASK");
 
 
 
@@ -206,7 +207,7 @@ classdef dc
 
       % NOTE: Function modifies SamplesZvm handle object in-place!
       Zv.currentAAmpere     = bicas.proc.L1L2.qual.set_current_samples_FV(...
-        currentAAmpere, AllQrcbMap, bicas.const.QRCS_L2_MAP);
+        currentAAmpere, AllQrcbMap, bicas.const.QRCS_MAP);
       Zv.SamplesZvm         = SamplesZvm;
 
 

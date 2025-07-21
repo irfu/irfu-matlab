@@ -36,7 +36,8 @@ classdef qual
 
       [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        QrcbMap, bicas.const.QRCS_L3_DENSITY_MAP);
+        QrcbMap, bicas.const.QRCS_MAP, ...
+        "L3_QUALITY_FLAG_density", "L3_QUALITY_BITMASK_density");
     end
 
 

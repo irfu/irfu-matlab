@@ -41,14 +41,15 @@ classdef QrcSetting
     %
     % NOTE: This is interpretation is in compliance with how the ZV
     % QUALITY_FLAG is supposed to be set/updated.
-    QUALITY_FLAG
+    L2_QUALITY_FLAG
+    L3_QUALITY_FLAG_density
 
-    % Bits that should be set in either ZV "L2_QUALITY_BITMASK" or
-    % "L3_QUALITY_BITMASK". The context in which this class is used
-    % determines which.
+    % Bits (bitmask) that should be set in either ZV "L2_QUALITY_BITMASK" or
+    % "L3_QUALITY_BITMASK".
     % NOTE: The value is supposed to be OR:ed with a preceding value, i.e. only
     % set bits override the previous value.
-    Lx_QUALITY_BITMASK
+    L2_QUALITY_BITMASK
+    L3_QUALITY_BITMASK_density
 
     % Column array (set) of unique SSIDs for which L2 voltage samples should be
     % blanked.
@@ -67,17 +68,23 @@ classdef QrcSetting
 
     function obj = QrcSetting(A)
       arguments
-        A.QUALITY_FLAG       uint8  = bicas.const.QUALITY_FLAG_MAX
-        A.Lx_QUALITY_BITMASK uint16 = uint16(0)
-        A.l2VoltageFvSsidAr  uint8  = bicas.const.QRCS_VOLTAGE_FV_NONE
-        A.l2CurrentFvIantAr         = bicas.const.QRCS_CURRENT_FV_NONE
+        A.L2_QUALITY_FLAG            uint8  = bicas.const.QUALITY_FLAG_MAX
+        A.L3_QUALITY_FLAG_density    uint8  = bicas.const.QUALITY_FLAG_MAX
+        A.L2_QUALITY_BITMASK         uint16 = uint16(0)
+        A.L3_QUALITY_BITMASK_density uint16 = uint16(0)
+        A.l2VoltageFvSsidAr          uint8  = uint16.empty(0, 1)
+        A.l2CurrentFvIantAr                 = zeros(0, 1)
       end
 
-      assert(bicas.utils.validate_ZV_QUALITY_FLAG(A.QUALITY_FLAG))
-      obj.QUALITY_FLAG       =                    A.QUALITY_FLAG;
+      assert(bicas.utils.validate_ZV_QUALITY_FLAG(A.L2_QUALITY_FLAG))
+      assert(bicas.utils.validate_ZV_QUALITY_FLAG(A.L3_QUALITY_FLAG_density))
+      obj.L2_QUALITY_FLAG         =               A.L2_QUALITY_FLAG;
+      obj.L3_QUALITY_FLAG_density =               A.L3_QUALITY_FLAG_density;
 
-      assert(isa(              A.Lx_QUALITY_BITMASK, 'uint16'))
-      obj.Lx_QUALITY_BITMASK = A.Lx_QUALITY_BITMASK;
+      assert(isa(                       A.L2_QUALITY_BITMASK,         'uint16'))
+      assert(isa(                       A.L3_QUALITY_BITMASK_density, 'uint16'))
+      obj.L2_QUALITY_BITMASK          = A.L2_QUALITY_BITMASK;
+      obj.L3_QUALITY_BITMASK_density  = A.L3_QUALITY_BITMASK_density;
 
       assert(iscolumn(                     A.l2VoltageFvSsidAr))
       assert(bicas.proc.L1L2.const.is_SSID(A.l2VoltageFvSsidAr))

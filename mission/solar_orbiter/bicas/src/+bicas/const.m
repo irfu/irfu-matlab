@@ -163,8 +163,6 @@ classdef const
     % PROPOSAL: Move to bicas.proc.QrcsSetting.
     %   Only QRCS-specific ones?
     LxQBM_NONE           = uint16(0);
-    QRCS_VOLTAGE_FV_NONE = uint8.empty(0, 1);
-    QRCS_CURRENT_FV_NONE = zeros(0, 1);
     % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
     % external metadata standards.
     QUALITY_FLAG_MIN = uint8(0);
@@ -181,8 +179,7 @@ classdef const
     % the corresponding CDF skeletons.
 
     QRCS_L2_CHANNEL_SATURATION_MAP = bicas.const.init_QRCS_L2_CHANNEL_SATURATION_MAP()
-    QRCS_L2_MAP                    = bicas.const.init_QRCS_L2_MAP();
-    QRCS_L3_DENSITY_MAP            = bicas.const.init_QRCS_L3_DENSITY_MAP();
+    QRCS_MAP                       = [bicas.const.init_QRCS_L2_MAP(); bicas.const.init_QRCS_L3_DENSITY_MAP()]
 
 
 
@@ -191,9 +188,8 @@ classdef const
     % for those strings inside BICAS.
     %
     % NOTE: This includes QRCIDs for both (a) L2, and (b) L3 density.
-    ALL_QRCID_AR = [...
-      string(bicas.const.QRCS_L2_MAP.keys'); ...
-      string(bicas.const.QRCS_L3_DENSITY_MAP.keys')];
+    ALL_QRCID_AR = string(bicas.const.QRCS_MAP.keys');
+
 
 
     % Minimum number of non-FV OSR records per bin/DSR record.
@@ -578,8 +574,8 @@ classdef const
         l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
 
         QrcsMap(qrcid) = bicas.proc.QrcSetting(...
-          QUALITY_FLAG      =bicas.const.QUALITY_FLAG_SATURATION, ...
-          Lx_QUALITY_BITMASK=l2qbmBit);
+          L2_QUALITY_FLAG   =bicas.const.QUALITY_FLAG_SATURATION, ...
+          L2_QUALITY_BITMASK=l2qbmBit);
       end
     end
 
@@ -609,8 +605,8 @@ classdef const
       % PARTIAL_SATURATION
       %====================
       QrcsMap("PARTIAL_SATURATION") = bicas.proc.QrcSetting(...
-        QUALITY_FLAG      =uint8(1), ...
-        Lx_QUALITY_BITMASK=L2QBM_BIT_PARTIAL_SATURATION);
+        L2_QUALITY_FLAG   =uint8(1), ...
+        L2_QUALITY_BITMASK=L2QBM_BIT_PARTIAL_SATURATION);
 
       %=================
       % FULL_SATURATION
@@ -618,8 +614,8 @@ classdef const
       % NOTE: Also set PARTIAL saturation bit when FULL
       % saturation. /YK 2020-10-02.
       QrcsMap("FULL_SATURATION") = bicas.proc.QrcSetting(...
-        QUALITY_FLAG      =bicas.const.QUALITY_FLAG_SATURATION, ...
-        Lx_QUALITY_BITMASK=L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
+        L2_QUALITY_FLAG   =bicas.const.QUALITY_FLAG_SATURATION, ...
+        L2_QUALITY_BITMASK=L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
 
       %=================
       % THRUSTER_FIRING
@@ -629,7 +625,7 @@ classdef const
       % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
       % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
       % (YK 2020-11-03 did not ask for any to be set.)
-      QrcsMap("THRUSTER_FIRING") = bicas.proc.QrcSetting(QUALITY_FLAG=uint8(1));
+      QrcsMap("THRUSTER_FIRING") = bicas.proc.QrcSetting(L2_QUALITY_FLAG=uint8(1));
 
       %=============
       % BIAS_HW_OFF
@@ -655,16 +651,16 @@ classdef const
       %QUALITY_FLAG_ANTx_FAILING =bicas.const.QUALITY_FLAG_MIN;    % TEST
       %L2QBM_ANTx_FAILING        = uint16(65535);   % TEST
       QrcsMap("ANT1_FAILING") = bicas.proc.QrcSetting(...
-        QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
-        Lx_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
+        L2_QUALITY_FLAG   =QUALITY_FLAG_ANTx_FAILING, ...
+        L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         l2VoltageFvSsidAr =S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
       QrcsMap("ANT2_FAILING") = bicas.proc.QrcSetting(...
-        QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
-        Lx_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
+        L2_QUALITY_FLAG   =QUALITY_FLAG_ANTx_FAILING, ...
+        L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         l2VoltageFvSsidAr =S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
       QrcsMap("ANT3_FAILING") = bicas.proc.QrcSetting(...
-        QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
-        Lx_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
+        L2_QUALITY_FLAG   =QUALITY_FLAG_ANTx_FAILING, ...
+        L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         l2VoltageFvSsidAr =S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
 
 
@@ -689,8 +685,8 @@ classdef const
       QrcsMap = containers.Map();
 
       QrcsMap("BAD_DENSITY") = bicas.proc.QrcSetting(...
-        QUALITY_FLAG      =uint8(1), ...
-        Lx_QUALITY_BITMASK=uint16(1));
+        L3_QUALITY_FLAG_density    =uint8(1), ...
+        L3_QUALITY_BITMASK_density=uint16(1));
     end
 
 
