@@ -71,16 +71,17 @@ classdef dc
 
 
 
-      %#####################
-      % NSO table --> QRCBs
-      %#####################
+      %##########################
+      % NSO table, ZVs --> QRCBs
+      %##########################
       % Read NSO table into QRCBs ONCE, so that it does not need to be done
       % later.
       AllQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
         string(bicas.const.QRCS_MAP.keys)', NsoTable, Dcip.Zv.Epoch, L);
       AllQrcbMap.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb );
       AllQrcbMap.set("SWEEP",       Dcip.Zv.sweepQrcb);
-      % PROPOSAL: Remove Dcip.Zv.biasOffQrcb & Dcip.Zv.sweepQrcb.
+      % PROPOSAL: Clear Dcip.Zv.biasOffQrcb & Dcip.Zv.sweepQrcb since they
+      %           should not be used after this point.
       clear NsoTable
 
 

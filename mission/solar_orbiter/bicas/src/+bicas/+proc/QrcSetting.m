@@ -38,14 +38,13 @@ classdef QrcSetting
 
   properties(SetAccess=immutable)
     % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.
-    %
     % NOTE: This is interpretation is in compliance with how the ZV
     % QUALITY_FLAG is supposed to be set/updated.
     L2_QUALITY_FLAG
     L3_QUALITY_FLAG_density
 
     % Bits (bitmask) that should be set in either ZV "L2_QUALITY_BITMASK" or
-    % "L3_QUALITY_BITMASK".
+    % "L3_QUALITY_BITMASK" (density).
     % NOTE: The value is supposed to be OR:ed with a preceding value, i.e. only
     % set bits override the previous value.
     L2_QUALITY_BITMASK

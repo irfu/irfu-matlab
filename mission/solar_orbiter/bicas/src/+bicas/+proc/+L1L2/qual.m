@@ -116,6 +116,9 @@ classdef qual
 
 
 
+    % NOTE: Sets QRCB arrays differently depending on
+    % "saturationQualitySchemeId".
+    %
     % ARGUMENTS
     % =========
     % VsibZvm

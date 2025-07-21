@@ -263,6 +263,11 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       Zv = struct();
       Zv.Epoch              = InLfrCwf.Zv.Epoch;
+      Zv.DELTA_PLUS_MINUS   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
+
+      %-------------------------------------
+      % Copy quality ZVs from input dataset
+      %-------------------------------------
       Zv.QUALITY_FLAG       = InLfrCwf.ZvFpa.QUALITY_FLAG;
       % Zv.QUALITY_FLAG       = bicas.utils.FPArray(...
       %   uint8(ones(size(InLfrCwf.ZvFpa.QUALITY_FLAG))) * 2, ...
@@ -272,7 +277,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % Zv.L2_QUALITY_BITMASK       = bicas.utils.FPArray(...
       %   uint16(ones(size(InLfrCwf.ZvFpa.L2_QUALITY_BITMASK))) * 0, ...
       %   'NO_FILL_POSITIONS');  % TEST
-      Zv.DELTA_PLUS_MINUS   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
 
       TemplateOsr = struct('Ga', Ga, 'Zv', Zv);
     end

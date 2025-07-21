@@ -162,7 +162,7 @@ classdef const
     % NOTE: Useful for e.g. testing.
     % PROPOSAL: Move to bicas.proc.QrcsSetting.
     %   Only QRCS-specific ones?
-    LxQBM_NONE           = uint16(0);
+    LxQBM_NONE       = uint16(0);
     % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
     % external metadata standards.
     QUALITY_FLAG_MIN = uint8(0);
@@ -539,7 +539,7 @@ classdef const
 
 
 
-    % Function for initializing constant.
+    % Function for initializing channel saturations QRCSs.
     %
     % RETURN VALUE
     % ============
@@ -550,8 +550,8 @@ classdef const
       QrcsMap = containers.Map();
 
       % Lowest bit among the channel saturation quality bits, described as the
-      % bit value/bitmask.
-      L2QBM_BIT_CHANNEL_SATURATION_LSB = uint16(1);
+      % bit position where 0=LSB.
+      L2QBM_BIT_CHANNEL_SATURATION_LOWEST_BIT_POSITION = 0;
 
       %====================
       % CHANNEL SATURATION
@@ -570,8 +570,14 @@ classdef const
         "SATURATION_ZV_V23"];
       for i = 1:numel(QRCID_CHANNEL_SATURATION_AR)
         qrcid    = QRCID_CHANNEL_SATURATION_AR(i);
+
         % bit(mask)_i = 2^(i-1) = 1..32
-        l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
+        %l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
+
+        % IMPLEMENTATION NOTE: i=1=LSB for bitset()!
+        % NOTE: Loop begins with 1.
+        bitPos   = i + L2QBM_BIT_CHANNEL_SATURATION_LOWEST_BIT_POSITION;
+        l2qbmBit = bitset(0, bitPos);
 
         QrcsMap(qrcid) = bicas.proc.QrcSetting(...
           L2_QUALITY_FLAG   =bicas.const.QUALITY_FLAG_SATURATION, ...

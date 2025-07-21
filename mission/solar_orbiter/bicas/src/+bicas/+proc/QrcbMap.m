@@ -95,7 +95,7 @@ classdef QrcbMap < handle
 
     % Add key-value pair. Must not pre-exist.
     function add(obj, qrcid, qrcbAr)
-      assert(isstring(qrcid)   & isscalar(qrcid))
+      assert(isstring(qrcid)   & isscalar(qrcid), "qrcid is not a scalar string.")
       assert(islogical(qrcbAr) & iscolumn(qrcbAr), "qrcbAr is not a logical column.")
 
       % Require not overwriting key.

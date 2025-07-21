@@ -117,7 +117,7 @@ classdef qual
     %       Number of CDF records (rows).
     %       IMPLEMENTATION NOTE: Needed for handling the case of zero QRCIDs.
     % QrcbMap
-    %       containers.Map: QRCID-->Logical column array
+    %       bicas.proc.QrcbMap
     % QrcsMap
     %       containers.Map: QRCID-->bicas.proc.QrcSetting
     %       Must contain a superset of the QRCIDs in QrcbMap.
@@ -136,6 +136,7 @@ classdef qual
         QrcbMap, QrcsMap, qualityFlagName, lxqbmName)
 
       assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
+      assert(isa(QrcsMap, "containers.Map"))
 
       nRec = QrcbMap.nRecords;
 

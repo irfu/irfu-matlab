@@ -306,6 +306,8 @@ IVPAV
     ivolt/avolt = Interface volt Per Antenna volt (unit).
 IVPT
     ivolt/TM = Interface volt Per TM unit.
+Lx_QUALITY_BITMASK
+    L2_QUALITY_BITMASK or L3_QUALITY_BITMASK, or both at the same time.
 L2_QUALITY_BITMASK,
 L3_QUALITY_BITMASK
     Quality ZV defined by ROC which is set in L2 and L3 CDFs respectively.
@@ -318,6 +320,8 @@ L3_QUALITY_BITMASK
     (2) the final L*_QUALITY_BITMASK value, which is obtained by
         OR:ing multiple L*_QUALITY_BITMASK values for subsets of QRCs.
     See QUALITY_FLAG.
+LxQBM
+    L2QBM or L3QBM, or both at the same time.
 L2QBM
     zVariable L2_QUALITY_BITMASK.
 L3QBM
@@ -409,6 +413,8 @@ QRCID
     The NSO table uses QRCIDs to label NSO events.
     NOTE: Not all QRCIDs can/should be specified in the NSO table.
         Ex: BAD_DENSITY
+QRCS
+    Class bicas.proc.QrcSetting and subclasses thereof.
 QUALITY_FLAG
     Quality ZV defined by ROC. Higher value is better.
     In the implementation, QUALITY_FLAG may refer to
