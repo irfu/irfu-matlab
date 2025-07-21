@@ -152,7 +152,6 @@ classdef qual
         Qrcs   = QrcsMap(qrcid);
         qrcbAr = QrcbMap.get(qrcid);
 
-        % NOTE: Generic (not a subclass, e.g. bicas.proc.QrcSettingL1rL2).
         assert(isa(Qrcs, "bicas.proc.QrcSetting"))
 
         %------------------

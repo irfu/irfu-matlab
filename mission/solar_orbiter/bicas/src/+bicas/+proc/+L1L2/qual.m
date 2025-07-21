@@ -328,11 +328,11 @@ classdef qual
       for qrcid = QrcbMap.qrcidAr'
         qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
         Qrcs       = QrcsMap(    qrcid);
-        assert(isa(Qrcs, "bicas.proc.QrcSettingL1rL2"))
+        assert(isa(Qrcs, "bicas.proc.QrcSetting"))
 
         % Arrays of the same size as voltageAr.
         bQrcbAr    = repmat(qrcbAr, [1, sizeAr(2:end)]);
-        bSsidMatch = ismember(ssidAr, Qrcs.voltageSamplesFvSsidAr);
+        bSsidMatch = ismember(ssidAr, Qrcs.l2VoltageFvSsidAr);
 
         bFv        = bFv | (bQrcbAr & bSsidMatch);
       end
@@ -366,11 +366,11 @@ classdef qual
       for qrcid = QrcbMap.qrcidAr'
         qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
         Qrcs       = QrcsMap(    qrcid);
-        assert(isa(Qrcs, "bicas.proc.QrcSettingL1rL2"))
+        assert(isa(Qrcs, "bicas.proc.QrcSetting"))
 
         % Arrays of the same size as currentAr.
         bQrcbAr       = repmat(qrcbAr, [1, 3]);
-        bAntennaMatch = ismember(iAntennaAr, Qrcs.currentSamplesFvIAntAr);
+        bAntennaMatch = ismember(iAntennaAr, Qrcs.l2CurrentFvIantAr);
 
         bFv           = bFv | (bQrcbAr & bAntennaMatch);
       end

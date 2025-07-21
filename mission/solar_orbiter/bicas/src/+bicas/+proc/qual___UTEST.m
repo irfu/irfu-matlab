@@ -189,8 +189,10 @@ classdef qual___UTEST < matlab.unittest.TestCase
       % Several QRCIDs are defined
       % ==========================
       QrcsMap = containers.Map();
-      QrcsMap("QRCID1") = bicas.proc.QrcSetting(uint8(2), uint16(2));
-      QrcsMap("QRCID2") = bicas.proc.QrcSetting(uint8(3), uint16(4));
+      QrcsMap("QRCID1") = bicas.proc.QrcSetting(...
+        QUALITY_FLAG=uint8(2), Lx_QUALITY_BITMASK=uint16(2));
+      QrcsMap("QRCID2") = bicas.proc.QrcSetting(...
+        QUALITY_FLAG=uint8(3), Lx_QUALITY_BITMASK=uint16(4));
 
       % Zero records
       QrcbMap = bicas.proc.QrcbMap(0);
