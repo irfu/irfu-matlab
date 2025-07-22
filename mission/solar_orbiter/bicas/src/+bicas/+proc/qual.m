@@ -134,6 +134,10 @@ classdef qual
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
         QrcbMap, QrcsMap, dsi, lxqbmName)
+      % PROPOSAL: Split into separate functions for QUALITY_FLAG and LXQBM.
+      %   PRO: EFIELD and SCPOT do not have L3QBM.
+      %   PRO: Simpler-ish testing
+      %   CON: More code. Functions will resemble each other.
 
       assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
       assert(isa(QrcsMap, "containers.Map"))

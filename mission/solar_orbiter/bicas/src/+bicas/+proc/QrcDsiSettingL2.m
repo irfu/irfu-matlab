@@ -1,5 +1,5 @@
 %
-% QRCDS primarily for producing L2 datasets.
+% QRCDS for producing official (OSR) L2 datasets.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

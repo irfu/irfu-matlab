@@ -21,6 +21,8 @@ classdef QrcSetting < handle
   %             to QRCSs (hide?) and QRCDSs. Make class contain global list of
   %             DSIs and use it for assertions.
   %     PRO: Encapsulates access to data. ==> Safer to change.
+  %       PRO: Could hide/abolish QrcSetting. Becomes implementation detail.
+  %         PRO: Simplifies initialization of data structure.
   %     PRO: Simplifies assertions for a QRCS map as an argument.
   %     TODO-DEC: Name?
   %       ~QSDB = QrcSettingDatabase
@@ -111,7 +113,17 @@ classdef QrcSetting < handle
   %         L2 derivation when processing L2-->L3?!!
   %
   %
-  % TODO: Rename voltageFvSsidAr, currentFvIantAr to exclude "L2".
+  %
+  % PROBLEM: How hardcode QRCSs for L3 OSR and DSR respectively?
+  %   PROPOSAL: Implicit that L3 OSR QRCSs apply also to DSRs?
+  % PROBLEM: How hardcode blanking of input data to L3?
+  %          L2 CWF-->L3 EFIELD+SCPOT; L3 SCPOT-->L3 DENSITY.
+  %   PROPOSAL: See L3 DENSITY as function of L3 SCPOT (CDF to CDF).
+  %             ==> Implicit that QRCS for L3 SCPOT affects L3 DENSITY.
+  %     PROBLEM: Still one variable for both L3 EFIELD+SCPOT.
+  % PROPOSAL: QRCDSs should not be function of DSI, but some
+  %           ~"processing type ID" which can group output DSIs arbitrarily.
+  %   PROPOSAL: Replace QRCDS-->QRCGS=QrcGroupSettings.
 
 
 
