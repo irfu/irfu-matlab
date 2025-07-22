@@ -23,9 +23,9 @@ function [xvariable,yvariable,powerxy] = fk_powerspec_ampere(varargin)
 %                   required.
 %       plotEpower - pass E or another quantity (TSeries) to plot power in spectrograms instead of B
 %       frange -    select frequency range for k-k plots. [minf maxf]
-%       kmax -      Value of maximum wave number considered. 
+%       kmax -      Value of maximum wave number considered.
 %       fmax -      Maximum frequency considered. Should exceed maxf in
-%                   frange parameter. 
+%                   frange parameter.
 %
 % Output:
 %       powerxy    - array of powers as a function of frequency and
