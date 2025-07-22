@@ -178,6 +178,78 @@ classdef qual
 
 
 
+    % UNUSED. EXPERIMENTAL
+    %
+    % Given some QRCSs which set unique quality bits, set QRCBs from the
+    % quality bits. Asserts that this is easily doable by requiring all QRCSs
+    % to set exactly one quality bit which is unique.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % QrcsMap
+    %       containers.Map QRCID-->QRCS.
+    %       Must only contain those QRCSs which quality bits should be read
+    %       from L2QBM.
+    %
+    function QrcbMap = LxQBM_to_QRCB_maps(l2qbmAr, lxqbmName, QrcsMap)
+      % IMPLEMENTATION NOTE: Function is designed for
+      % SOLO_L2_RPW-LFR-SURV-CWF-E's L2_QUALITY_BITMASK but is generalized to
+      % arbitrary DSIs and bitmask ZVs, partly to simplify testing and not mix
+      % algorithms with global constants.
+
+      assert(isa(QrcsMap, "containers.Map"))
+      assert(iscolumn(l2qbmAr) & isa(l2qbmAr, "uint16"))
+      assert(isstring(lxqbmName))
+
+      QrcbMap     = bicas.proc.QrcbMap(numel(l2qbmAr));
+      % Collection of quality bit positions for all used QRCDSs. Only used for
+      % asserting against collisions.
+      allBitPosAr = zeros(0, 1);
+
+      for qrcidCa = QrcsMap.keys
+        qrcid = string(qrcidCa{1});
+        Qrcs  = QrcsMap(qrcid);
+        assert(isa(Qrcs, "bicas.proc.QrcSetting"))
+
+        qrcLxqbm = Qrcs.(lxqbmName);
+        bitPosAr = bicas.proc.qual.LxQBM_to_bit_positions(qrcLxqbm);
+        assert(isscalar(bitPosAr), "QRC does not set exactly one bit.")
+
+        allBitPosAr(end+1, 1) = bitPosAr;
+
+        qrcbAr = logical(bitand(l2qbmAr, qrcLxqbm));
+        QrcbMap.add(qrcid, qrcbAr)
+      end
+
+      % ASSERTION: No overlap in (specified) QRCS quality bits.
+      % NOTE: Can not verify against quality bits in QRCS not submitted to this
+      %       function.
+      irf.assert.number_set(allBitPosAr)
+    end
+
+
+
+    % UNUSED. EXPERIMENTAL
+    %
+    function bitPosAr = LxQBM_to_bit_positions(lxqbm)
+      % Not vectorized!
+      % TODO-DEC: How handle fill value?!
+      %   PROPOSAL: Does not need to handle since only intended for analyzing
+      %             QRCSs.
+
+      assert(isscalar(lxqbm) & isa(lxqbm, "uint16"))
+
+      bitPosAr = zeros(0, 1);
+      for i = 0:15
+        if bitget(lxqbm, i+1)
+          bitPosAr(end+1, 1) = i;
+        end
+      end
+    end
+
+
+
   end    % methods(Static)
 
 

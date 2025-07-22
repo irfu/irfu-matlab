@@ -183,6 +183,29 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
+      % EXPERIMENTAL
+      % %#########################################
+      % % NSO table, L2_QUALITY_BITMASK --> QRCBs
+      % %#########################################
+      % % Read NSO table into QRCBs ONCE, so that it does not need to be done
+      % % later.
+      % AllQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
+      %   bicas.const.Q.ALL_QRCID_AR, NsoTable, InLfrCwf.Zv.Epoch, L);
+      % clear NsoTable
+      % %
+      % saturationQualitySchemeId = Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME');
+      % l2qbmAr = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK.array(uint16(0));
+      % % TEST
+      % if 0
+      %   l2qbmAr = uint16(zeros(size(l2qbmAr)));
+      %   l2qbmAr(1:100) = 1;
+      % end
+      % SaturationQrcbMap = bicas.proc.L2L3.qual.get_saturation_QRCBs_from_L2QBM(...
+      %   l2qbmAr, saturationQualitySchemeId);
+      % AllQrcbMap.add_map(SaturationQrcbMap)
+
+
+
       %=======================================
       % Call BICAS-external code to calculate
       % (1) EFIELD, SCPOT, and from that
@@ -194,6 +217,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       LfrCwfZv.EDC_Fpa          = InLfrCwf.ZvFpa.EDC;
       LfrCwfZv.QUALITY_FLAG_Fpa = InLfrCwf.ZvFpa.QUALITY_FLAG;
       R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Excd, Bso);
+
+
+
+      % EXPERIMENTAL
+      % % Update QRCB.
+      % AllQrcbMap.set("BAD_DENSITY", R.NeScpQualityBitFpa.array(false));
 
 
 

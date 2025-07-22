@@ -116,6 +116,31 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_get_QRCID_QRCS_map(T)
+      Qrcsm = bicas.proc.QrcSettingsMap(["PTID_1"; "PTID_2"; "PTID_3"]);
+
+      Qrcsm.add("QRCID_1", "PTID_1", T.QRCS_1)
+      Qrcsm.add("QRCID_2", "PTID_1", T.QRCS_2)
+      Qrcsm.add("QRCID_1", "PTID_2", T.QRCS_3)   % Same QRCID.
+      % NOTE: No QRCS for PTID_3.
+
+      ActQrcsMap = Qrcsm.get_QRCID_QRCS_map("PTID_1");
+      ExpQrcsMap = containers.Map();
+      ExpQrcsMap("QRCID_1") = T.QRCS_1;
+      ExpQrcsMap("QRCID_2") = T.QRCS_2;
+      T.assertEqual(ActQrcsMap, ExpQrcsMap)
+
+      ActQrcsMap = Qrcsm.get_QRCID_QRCS_map("PTID_2");
+      ExpQrcsMap = containers.Map();
+      ExpQrcsMap("QRCID_1") = T.QRCS_3;
+      T.assertEqual(ActQrcsMap, ExpQrcsMap)
+
+      ActQrcsMap = Qrcsm.get_QRCID_QRCS_map("PTID_3");
+      T.assertEqual(ActQrcsMap, containers.Map())
+    end
+
+
+
     function test_equality(T)
       Qrcsm1 = bicas.proc.QrcSettingsMap(["PTID_1"; "PTID_2"]);
       Qrcsm2 = bicas.proc.QrcSettingsMap(["PTID_1"; "PTID_2"]);

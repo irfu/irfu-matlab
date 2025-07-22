@@ -246,6 +246,29 @@ classdef QrcSettingsMap < handle
 
 
 
+    % RETURN VALUE
+    % ============
+    % containers.Map QRCID-->QRCS for the specified PTID.
+    %
+    function QrcsMap = get_QRCID_QRCS_map(obj, ptid)
+      assert(ismember(ptid, obj.legalPtidAr))
+
+      QrcsMap = containers.Map();
+
+      for key = obj.QrcsDict.keys'
+        currentQrcid = key{1}{1};
+        currentPtid  = key{1}{2};
+        QrcsCaCa    = obj.QrcsDict(key);
+        Qrcs        = QrcsCaCa{1}{1};
+
+        if ptid == currentPtid
+          QrcsMap(currentQrcid) = Qrcs;
+        end
+      end
+    end
+
+
+
   end    % methods(Access=public)
 
 
