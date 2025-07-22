@@ -58,11 +58,12 @@ classdef dc
     % * Set quality variables.
     %
     function Dcop = process_calibrate_demux(...
-        Dcip, InCurPd, Vcal, Ccal, NsoTable, Bso, L)
+        Dcip, InCurPd, outputDsi, Vcal, Ccal, NsoTable, Bso, L)
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
       % ASSERTION
+      assert(ischar(outputDsi))
       assert(isa(Vcal, "bicas.proc.L1L2.cal.VoltageCalibration"))
       assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
       assert(isa(Dcip, "bicas.proc.L1L2.DemultiplexingCalibrationInput"));
@@ -77,7 +78,8 @@ classdef dc
       % Read NSO table into QRCBs ONCE, so that it does not need to be done
       % later.
       AllQrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
-        string(bicas.const.QRCS_MAP.keys)', NsoTable, Dcip.Zv.Epoch, L);
+        bicas.const.Q.ALL_QRCID_AR, NsoTable, Dcip.Zv.Epoch, L);
+      % Convert information about BIAS ON/OFF and sweeps into QRCBs.
       AllQrcbMap.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb );
       AllQrcbMap.set("SWEEP",       Dcip.Zv.sweepQrcb);
       % PROPOSAL: Clear Dcip.Zv.biasOffQrcb & Dcip.Zv.sweepQrcb since they
@@ -117,7 +119,8 @@ classdef dc
       aspr          = size(Dcip.Zv.bltsSamplesTm, 2);
       btlsSsidAr2   = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
       bltsSamplesTm = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
-        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, AllQrcbMap, bicas.const.QRCS_MAP);
+        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, AllQrcbMap, bicas.const.Q.QRCS_MAP, ...
+        outputDsi);
 
 
 
@@ -193,8 +196,7 @@ classdef dc
       % --
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        AllQrcbMap, bicas.const.QRCS_MAP, ...
-        "L2_QUALITY_FLAG", "L2_QUALITY_BITMASK");
+        AllQrcbMap, bicas.const.Q.QRCS_MAP, outputDsi, "L2_QUALITY_BITMASK");
 
 
 
@@ -208,7 +210,7 @@ classdef dc
 
       % NOTE: Function modifies SamplesZvm handle object in-place!
       Zv.currentAAmpere     = bicas.proc.L1L2.qual.set_current_samples_FV(...
-        currentAAmpere, AllQrcbMap, bicas.const.QRCS_MAP);
+        currentAAmpere, AllQrcbMap, bicas.const.Q.QRCS_MAP, outputDsi);
       Zv.SamplesZvm         = SamplesZvm;
 
 

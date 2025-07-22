@@ -408,6 +408,8 @@ QRCB
     Quality-Related Condition Bit.
     Bit (or array of bits) which is set iff the corresponding QRC applies.
     This is distinct from a QRC which represents a "concept".
+QRCDS
+    Class bicas.proc.QrcDsiSetting and subclasses thereof.
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.

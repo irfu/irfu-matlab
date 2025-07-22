@@ -122,12 +122,12 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
     function test_set_5xBLTS_voltage_samples_FV(testCase)
 
-      function test(samplesAvoltAr, ssidAr, QrcbMap, QrcsMap, bExpNan)
+      function test(samplesAvoltAr, ssidAr, QrcbMap, QrcsMap, dsi, bExpNan)
         expSamplesAvoltAr          = samplesAvoltAr;
         expSamplesAvoltAr(bExpNan) = NaN;
 
         actSamplesAvoltAr = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
-          samplesAvoltAr, ssidAr, QrcbMap, QrcsMap);
+          samplesAvoltAr, ssidAr, QrcbMap, QrcsMap, dsi);
 
         testCase.assertEqual(actSamplesAvoltAr, expSamplesAvoltAr)
       end
@@ -142,7 +142,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         test(...
           double.empty(0, 1), ...
           uint8.empty( 0, 1), ...
-          QrcbMap, QrcsMap, ...
+          QrcbMap, QrcsMap, 'TEST_DSI', ...
           logical.empty(0, 1))
       end
 
@@ -155,7 +155,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         test(...
           samplesAvoltAr, ...
           ssidAr, ...
-          QrcbMap, QrcsMap, ...
+          QrcbMap, QrcsMap, 'TEST_DSI', ...
           false(2, 3))
       end
 
@@ -166,10 +166,10 @@ classdef qual___UTEST < matlab.unittest.TestCase
         QrcbMap.add("QRCID_2", logical([0 1 1 0]'))
 
         QrcsMap = containers.Map();
-        QrcsMap("QRCID_1") = bicas.proc.QrcSetting(...
-          l2VoltageFvSsidAr=S(["DC_V1"; "DC_V12"]));
-        QrcsMap("QRCID_2") = bicas.proc.QrcSetting(...
-          l2VoltageFvSsidAr=S(["DC_V1"; "DC_V2" ]));
+        Qrcds = bicas.proc.QrcDsiSettingL2(voltageFvSsidAr=S(["DC_V1"; "DC_V12"]));
+        QrcsMap("QRCID_1") = bicas.proc.QrcSetting({'TEST_DSI'}, Qrcds);
+        Qrcds = bicas.proc.QrcDsiSettingL2(voltageFvSsidAr=S(["DC_V1"; "DC_V2" ]));
+        QrcsMap("QRCID_2") = bicas.proc.QrcSetting({'TEST_DSI'}, Qrcds);
 
         samplesAvoltAr = reshape(1:4*3*2, [4, 3, 2]);
         ssidAr(:, :, 1) = S([...
@@ -185,7 +185,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         test(...
           samplesAvoltAr, ...
           ssidAr, ...
-          QrcbMap, QrcsMap, ...
+          QrcbMap, QrcsMap, 'TEST_DSI', ...
           bExpNan)
       end
 
@@ -198,11 +198,11 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
     function test_set_current_samples_FV(testCase)
 
-      function test(QrcbMap, QrcsMap, currentAr, expCurrentAr)
+      function test(QrcbMap, QrcsMap, dsi, currentAr, expCurrentAr)
         irf.assert.sizes(currentAr, [QrcbMap.nRecords, 3]);
 
         actCurrentAr = bicas.proc.L1L2.qual.set_current_samples_FV(...
-          currentAr, QrcbMap, QrcsMap);
+          currentAr, QrcbMap, QrcsMap, dsi);
 
         testCase.verifyEqual(actCurrentAr, expCurrentAr)
       end
@@ -214,7 +214,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         QrcbMap = bicas.proc.QrcbMap(0);
         QrcsMap = containers.Map();
         test( ...
-          QrcbMap, QrcsMap, ...
+          QrcbMap, QrcsMap, 'TEST_DSI', ...
           zeros(0, 3),  ...
           zeros(0, 3)  ...
           )
@@ -222,29 +222,33 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
       % Non-empty input data that is not altered.
       function test_data_unaltered()
-        % NC = No change
-        function test_NC()
+        % NED = Non-empty data
+        % NC  = No change
+        function test_NED_NC(dsi)
           test( ...
-            QrcbMap, QrcsMap, ...
+            QrcbMap, QrcsMap, dsi, ...
             zeros(5, 3),  ...
             zeros(5, 3)  ...
             )
         end
 
-        % Empty maps.
+        % Zero QRCB arrays, zero QRCSs.
         QrcbMap = bicas.proc.QrcbMap(5);
         QrcsMap = containers.Map();
-        test_NC()
+        test_NED_NC('TEST_DSI')
 
         % QRCB=false, QRCS=all antennas FV
         QrcbMap.add("QRCID_1", false(5, 1))
-        QrcsMap("QRCID_1") = bicas.proc.QrcSetting(l2CurrentFvIantAr=[1:3]');
-        test_NC()
+        Qrcds = bicas.proc.QrcDsiSettingL2(currentFvIantAr=[1:3]');
+        QrcsMap("QRCID_1") = bicas.proc.QrcSetting({'TEST_DSI'}, Qrcds);
+        test_NED_NC('TEST_DSI')
 
         % QRCB=true, QRCS=no antennas FV
         QrcbMap.set("QRCID_1", true(5, 1))
-        QrcsMap("QRCID_1") = bicas.proc.QrcSetting();
-        test_NC()
+        Qrcds = bicas.proc.QrcDsiSettingL2();
+        QrcsMap("QRCID_1") = bicas.proc.QrcSetting({'TEST_DSI'}, Qrcds);
+        test_NED_NC('TEST_DSI')
+        test_NED_NC('TEST_DSI_OTHER')
       end
 
       function test_data_altered_unaltered()
@@ -256,12 +260,14 @@ classdef qual___UTEST < matlab.unittest.TestCase
         QrcbMap.add("QRCID_23", logical([0 0 0 1 1]'))
 
 
-        QrcsMap("QRCID_1")  = bicas.proc.QrcSetting(l2CurrentFvIantAr=[1]');
-        QrcsMap("QRCID_23") = bicas.proc.QrcSetting(l2CurrentFvIantAr=[2 3]');
+        Qrcds = bicas.proc.QrcDsiSettingL2(currentFvIantAr=[1]');
+        QrcsMap("QRCID_1")  = bicas.proc.QrcSetting({'TEST_DSI'}, Qrcds);
+        Qrcds = bicas.proc.QrcDsiSettingL2(currentFvIantAr=[2 3]');
+        QrcsMap("QRCID_23") = bicas.proc.QrcSetting({'TEST_DSI'}, Qrcds);
 
         N = NaN;
         test( ...
-          QrcbMap, QrcsMap, ...
+          QrcbMap, QrcsMap, 'TEST_DSI', ...
           [...
           1  2  3; ...
           11 12 13; ...

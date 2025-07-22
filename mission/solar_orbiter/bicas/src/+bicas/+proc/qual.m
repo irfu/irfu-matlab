@@ -133,10 +133,12 @@ classdef qual
     %       context.
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
-        QrcbMap, QrcsMap, qualityFlagName, lxqbmName)
+        QrcbMap, QrcsMap, dsi, lxqbmName)
 
       assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
       assert(isa(QrcsMap, "containers.Map"))
+      assert(ischar(dsi))
+      assert(isstring(lxqbmName))
 
       nRec = QrcbMap.nRecords;
 
@@ -154,6 +156,10 @@ classdef qual
         qrcbAr = QrcbMap.get(qrcid);
 
         assert(isa(Qrcs, "bicas.proc.QrcSetting"))
+        Qrcds = Qrcs.get(dsi);
+        if isempty(Qrcds)
+          continue
+        end
 
         %------------------
         % Set QUALITY_FLAG
@@ -163,14 +169,14 @@ classdef qual
         % applied to the indices where QRCB=true.
         QUALITY_FLAG(qrcbAr) = min(...
           QUALITY_FLAG(qrcbAr), ...
-          Qrcs.(qualityFlagName));
+          Qrcds.QUALITY_FLAG);
 
         %------------------------
         % Set Lx_QUALITY_BITMASK
         %------------------------
         Lx_QUALITY_BITMASK = bitor(...
           Lx_QUALITY_BITMASK, ...
-          Qrcs.(lxqbmName) * uint16(qrcbAr));
+          Qrcds.(lxqbmName) * uint16(qrcbAr));
       end
     end
 

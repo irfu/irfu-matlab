@@ -97,7 +97,7 @@ classdef qual
     %   assert(islogical(fullSaturationQrcbAr))
     %
     %   QrcbMap = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
-    %     bicas.const.ALL_QRCID_AR, NsoTable, Epoch, L);
+    %     bicas.const.Q.ALL_QRCID_AR, NsoTable, Epoch, L);
     %
     %   % Remove QRCIDs which this function can not handle (and should not
     %   % need to) since they are not intended for L2_QUALITY_BITMASK.
@@ -162,7 +162,7 @@ classdef qual
       qrcbFalseAr = false(size(tt2000Ar));
       switch(saturationQualitySchemeId)
         case "GLOBAL_SATURATION"
-          for qrcid = string(bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys)
+          for qrcid = bicas.const.Q.CHANNEL_SATURATION_QRCID_AR'
             SaturationQrcbMap.set(qrcid, qrcbFalseAr)
           end
 
@@ -281,7 +281,7 @@ classdef qual
         ChannelSaturationQrcbMap, nRecords)
 
       fullSaturationQrcbAr = false(nRecords, 1);
-      for qrcid = string(bicas.const.QRCS_L2_CHANNEL_SATURATION_MAP.keys)
+      for qrcid = bicas.const.Q.CHANNEL_SATURATION_QRCID_AR'
         fullSaturationQrcbAr = ...
           fullSaturationQrcbAr | ChannelSaturationQrcbMap.get(qrcid);
       end
@@ -307,7 +307,7 @@ classdef qual
     %       Same size as samplesAr. Same number of rows as QrcbMap.
     %
     function voltageAr = set_5xBLTS_voltage_samples_FV(...
-        voltageAr, ssidAr, QrcbMap, QrcsMap)
+        voltageAr, ssidAr, QrcbMap, QrcsMap, dsi)
 
       % IMPLEMENTATION NOTE: Input arrays samplesAr & ssidAr must have same
       % arbitrary size (not arbitrary for first dimension).
@@ -325,6 +325,7 @@ classdef qual
       assert(isfloat(voltageAr))
       assert(isequal(size(voltageAr), size(ssidAr)))
       assert(QrcbMap.nRecords == size(voltageAr, 1))    % Nbr. of records.
+      assert(ischar(dsi))
 
       sizeAr = size(voltageAr);
       bFv    = false(sizeAr);
@@ -332,10 +333,14 @@ classdef qual
         qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
         Qrcs       = QrcsMap(    qrcid);
         assert(isa(Qrcs, "bicas.proc.QrcSetting"))
+        Qrcds      = Qrcs.get(dsi);
+        if isempty(Qrcds)
+          continue
+        end
 
         % Arrays of the same size as voltageAr.
         bQrcbAr    = repmat(qrcbAr, [1, sizeAr(2:end)]);
-        bSsidMatch = ismember(ssidAr, Qrcs.l2VoltageFvSsidAr);
+        bSsidMatch = ismember(ssidAr, Qrcds.voltageFvSsidAr);
 
         bFv        = bFv | (bQrcbAr & bSsidMatch);
       end
@@ -352,14 +357,15 @@ classdef qual
     % currentAr
     %       Float. Size (nRecords, 3).
     %
-    function currentAr = set_current_samples_FV(currentAr, QrcbMap, QrcsMap)
-      % IMPLEMENTATION NOTE: Argument QrcsMap is there (instead of global
-      % constant) to make testing simpler & more robust.
+    function currentAr = set_current_samples_FV(currentAr, QrcbMap, QrcsMap, dsi)
+      % IMPLEMENTATION NOTE: Argument QrcsMap is there (instead of using a
+      % global constant) to make test code simpler & more robust.
 
       assert(isfloat(currentAr))
       assert(isa(QrcbMap, 'bicas.proc.QrcbMap'))
       assert(isa(QrcsMap, 'containers.Map'))
       irf.assert.sizes(currentAr, [QrcbMap.nRecords, 3])
+      assert(ischar(dsi))
 
       % PROPOSAL: Create and use bAntennas = logical size (1, 3) + repmat.
       %   PRO: Faster?
@@ -370,10 +376,14 @@ classdef qual
         qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
         Qrcs       = QrcsMap(    qrcid);
         assert(isa(Qrcs, "bicas.proc.QrcSetting"))
+        Qrcds      = Qrcs.get(dsi);
+        if isempty(Qrcds)
+          continue
+        end
 
         % Arrays of the same size as currentAr.
         bQrcbAr       = repmat(qrcbAr, [1, 3]);
-        bAntennaMatch = ismember(iAntennaAr, Qrcs.l2CurrentFvIantAr);
+        bAntennaMatch = ismember(iAntennaAr, Qrcds.currentFvIantAr);
 
         bFv           = bFv | (bQrcbAr & bAntennaMatch);
       end

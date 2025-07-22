@@ -19,7 +19,8 @@ classdef qual
 
 
     function [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
-        get_quality_ZVs_density(badDensityQrcbAr)
+        get_quality_ZVs_density(badDensityQrcbAr, dsi)
+      % NOTE: Can not get NSO events from NSO table.
 
       % IMPLEMENTATION NOTE: Function is (as of 2023-12-18) in principle more
       % complicated than necessary w.r.t. L3_QUALITY_BITMASK but the
@@ -36,8 +37,7 @@ classdef qual
 
       [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        QrcbMap, bicas.const.QRCS_MAP, ...
-        "L3_QUALITY_FLAG_density", "L3_QUALITY_BITMASK_density");
+        QrcbMap, bicas.const.Q.QRCS_MAP, dsi, "L3_QUALITY_BITMASK");
     end
 
 
