@@ -119,7 +119,7 @@ classdef dc
       aspr          = size(Dcip.Zv.bltsSamplesTm, 2);
       btlsSsidAr2   = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
       bltsSamplesTm = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
-        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, AllQrcbMap, bicas.const.Q.QRCS_MAP, ...
+        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, AllQrcbMap, bicas.const.Q.QRCSM, ...
         outputDsi);
 
 
@@ -196,7 +196,7 @@ classdef dc
       % --
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        AllQrcbMap, bicas.const.Q.QRCS_MAP, outputDsi, "L2_QUALITY_BITMASK");
+        AllQrcbMap, bicas.const.Q.QRCSM, outputDsi, "L2_QUALITY_BITMASK");
 
 
 
@@ -210,7 +210,7 @@ classdef dc
 
       % NOTE: Function modifies SamplesZvm handle object in-place!
       Zv.currentAAmpere     = bicas.proc.L1L2.qual.set_current_samples_FV(...
-        currentAAmpere, AllQrcbMap, bicas.const.Q.QRCS_MAP, outputDsi);
+        currentAAmpere, AllQrcbMap, bicas.const.Q.QRCSM, outputDsi);
       Zv.SamplesZvm         = SamplesZvm;
 
 

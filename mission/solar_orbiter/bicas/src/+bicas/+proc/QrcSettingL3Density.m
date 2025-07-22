@@ -1,12 +1,12 @@
 %
-% QRCDS for producing L3 density datasets.
+% QRCS for producing L3 density datasets.
 %
 % NOTE: The class does not include the QRCID itself.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef QrcDsiSettingL3Density < bicas.proc.QrcDsiSetting
+classdef QrcSettingL3Density < bicas.proc.QrcSetting
 
 
 
@@ -29,7 +29,7 @@ classdef QrcDsiSettingL3Density < bicas.proc.QrcDsiSetting
 
 
 
-    function obj = QrcDsiSettingL3Density(A)
+    function obj = QrcSettingL3Density(A)
       arguments
         A.QUALITY_FLAG       uint8  = bicas.const.QUALITY_FLAG_MAX
         A.L3_QUALITY_BITMASK uint16 = uint16(0)

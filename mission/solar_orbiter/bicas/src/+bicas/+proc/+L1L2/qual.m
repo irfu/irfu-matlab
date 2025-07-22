@@ -307,40 +307,36 @@ classdef qual
     %       Same size as samplesAr. Same number of rows as QrcbMap.
     %
     function voltageAr = set_5xBLTS_voltage_samples_FV(...
-        voltageAr, ssidAr, QrcbMap, QrcsMap, dsi)
+        voltageAr, ssidAr, QrcbMap, Qrcsm, dsi)
 
       % IMPLEMENTATION NOTE: Input arrays samplesAr & ssidAr must have same
       % arbitrary size (not arbitrary for first dimension).
       %   PRO: It simplifies testing.
       %   PRO: It simplifies the implementation.
       %   PRO: It makes the function more generic.
-      % IMPLEMENTATION NOTE: Argument QrcsMap is there (instead of global
-      % constant) to make testing simpler & more robust.
-
-      % TODO-DEC: What should be the relationship between QRCIDs in the two map
-      %           arguments? Identical sets? One is subset of the other? In
-      %           which direction?
+      % IMPLEMENTATION NOTE: Argument Qrcsm is there instead of global
+      % constant to make testing simpler & more robust.
 
       % ASSERTIONS
       assert(isfloat(voltageAr))
       assert(isequal(size(voltageAr), size(ssidAr)))
+      assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
       assert(QrcbMap.nRecords == size(voltageAr, 1))    % Nbr. of records.
       assert(ischar(dsi))
 
       sizeAr = size(voltageAr);
       bFv    = false(sizeAr);
       for qrcid = QrcbMap.qrcidAr'
-        qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
-        Qrcs       = QrcsMap(    qrcid);
-        assert(isa(Qrcs, "bicas.proc.QrcSetting"))
-        Qrcds      = Qrcs.get(dsi);
-        if isempty(Qrcds)
+        qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
+        Qrcs  = Qrcsm.get(qrcid, dsi);
+
+        if isempty(Qrcs)
           continue
         end
 
         % Arrays of the same size as voltageAr.
         bQrcbAr    = repmat(qrcbAr, [1, sizeAr(2:end)]);
-        bSsidMatch = ismember(ssidAr, Qrcds.voltageFvSsidAr);
+        bSsidMatch = ismember(ssidAr, Qrcs.voltageFvSsidAr);
 
         bFv        = bFv | (bQrcbAr & bSsidMatch);
       end
@@ -357,13 +353,13 @@ classdef qual
     % currentAr
     %       Float. Size (nRecords, 3).
     %
-    function currentAr = set_current_samples_FV(currentAr, QrcbMap, QrcsMap, dsi)
-      % IMPLEMENTATION NOTE: Argument QrcsMap is there (instead of using a
+    function currentAr = set_current_samples_FV(currentAr, QrcbMap, Qrcsm, dsi)
+      % IMPLEMENTATION NOTE: Argument Qrcsm is there (instead of using a
       % global constant) to make test code simpler & more robust.
 
       assert(isfloat(currentAr))
       assert(isa(QrcbMap, 'bicas.proc.QrcbMap'))
-      assert(isa(QrcsMap, 'containers.Map'))
+      assert(isa(Qrcsm, 'bicas.proc.QrcSettingsMap'))
       irf.assert.sizes(currentAr, [QrcbMap.nRecords, 3])
       assert(ischar(dsi))
 
@@ -373,17 +369,16 @@ classdef qual
       iAntennaAr = repmat([1:3], [QrcbMap.nRecords, 1]);
       bFv        = false(size(currentAr));
       for qrcid = QrcbMap.qrcidAr'
-        qrcbAr     = QrcbMap.get(qrcid);    % (nRecords, 1)
-        Qrcs       = QrcsMap(    qrcid);
-        assert(isa(Qrcs, "bicas.proc.QrcSetting"))
-        Qrcds      = Qrcs.get(dsi);
-        if isempty(Qrcds)
+        qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
+        Qrcs  = Qrcsm.get(qrcid, dsi);
+
+        if isempty(Qrcs)
           continue
         end
 
         % Arrays of the same size as currentAr.
         bQrcbAr       = repmat(qrcbAr, [1, 3]);
-        bAntennaMatch = ismember(iAntennaAr, Qrcds.currentFvIantAr);
+        bAntennaMatch = ismember(iAntennaAr, Qrcs.currentFvIantAr);
 
         bFv           = bFv | (bQrcbAr & bAntennaMatch);
       end

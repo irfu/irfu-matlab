@@ -1,10 +1,10 @@
 %
-% QRCDS for producing official (OSR) L2 datasets.
+% QRCS for producing official (OSR) L2 datasets.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef QrcDsiSettingL2 < bicas.proc.QrcDsiSetting
+classdef QrcSettingL2 < bicas.proc.QrcSetting
 
 
 
@@ -34,7 +34,7 @@ classdef QrcDsiSettingL2 < bicas.proc.QrcDsiSetting
 
 
 
-    function obj = QrcDsiSettingL2(A)
+    function obj = QrcSettingL2(A)
       arguments
         A.QUALITY_FLAG       uint8  = bicas.const.QUALITY_FLAG_MAX
         A.L2_QUALITY_BITMASK uint16 = uint16(0)

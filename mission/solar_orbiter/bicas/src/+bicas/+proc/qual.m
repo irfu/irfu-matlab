@@ -116,11 +116,6 @@ classdef qual
     % nRec
     %       Number of CDF records (rows).
     %       IMPLEMENTATION NOTE: Needed for handling the case of zero QRCIDs.
-    % QrcbMap
-    %       bicas.proc.QrcbMap
-    % QrcsMap
-    %       containers.Map: QRCID-->bicas.proc.QrcSetting
-    %       Must contain a superset of the QRCIDs in QrcbMap.
     %
     %
     % RETURN VALUES
@@ -133,14 +128,14 @@ classdef qual
     %       context.
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
-        QrcbMap, QrcsMap, dsi, lxqbmName)
+        QrcbMap, Qrcsm, dsi, lxqbmName)
       % PROPOSAL: Split into separate functions for QUALITY_FLAG and LXQBM.
       %   PRO: EFIELD and SCPOT do not have L3QBM.
       %   PRO: Simpler-ish testing
       %   CON: More code. Functions will resemble each other.
 
       assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
-      assert(isa(QrcsMap, "containers.Map"))
+      assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
       assert(ischar(dsi))
       assert(isstring(lxqbmName))
 
@@ -156,12 +151,10 @@ classdef qual
       % Iterate over QRCIDs in argument
       %=================================
       for qrcid = QrcbMap.qrcidAr'
-        Qrcs   = QrcsMap(qrcid);
         qrcbAr = QrcbMap.get(qrcid);
+        Qrcs  = Qrcsm.get(qrcid, dsi);
 
-        assert(isa(Qrcs, "bicas.proc.QrcSetting"))
-        Qrcds = Qrcs.get(dsi);
-        if isempty(Qrcds)
+        if isempty(Qrcs)
           continue
         end
 
@@ -173,14 +166,14 @@ classdef qual
         % applied to the indices where QRCB=true.
         QUALITY_FLAG(qrcbAr) = min(...
           QUALITY_FLAG(qrcbAr), ...
-          Qrcds.QUALITY_FLAG);
+          Qrcs.QUALITY_FLAG);
 
         %------------------------
         % Set Lx_QUALITY_BITMASK
         %------------------------
         Lx_QUALITY_BITMASK = bitor(...
           Lx_QUALITY_BITMASK, ...
-          Qrcds.(lxqbmName) * uint16(qrcbAr));
+          Qrcs.(lxqbmName) * uint16(qrcbAr));
       end
     end
 
