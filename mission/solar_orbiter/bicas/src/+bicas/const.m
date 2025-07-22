@@ -171,6 +171,9 @@ classdef const
     % (2) channel saturation QRCs.
     QUALITY_FLAG_SATURATION = uint8(0);
 
+    % All permitted PTIDs. Used for assertions.
+    PTID_AR = ["OFFICIAL_L2"; "OFFICIAL_L3_DENSITY"];
+
     % QRC-related constants initialized with code.
     Q = bicas.const.init_QRC_constants();
 
@@ -533,7 +536,7 @@ classdef const
     % Function for the initializing channel saturations QRCSM.
     %
     function Qrcsm = init_CHANNEL_SATURATION_QRCSM()
-      Qrcsm = bicas.proc.QrcSettingsMap();
+      Qrcsm = bicas.proc.QrcSettingsMap(["OFFICIAL_L2"]);
 
       % Lowest bit among the channel saturation quality bits, described as the
       % bit position where 0=LSB.
@@ -568,7 +571,7 @@ classdef const
         Qrcs = bicas.proc.QrcSettingL2(...
           QUALITY_FLAG      =bicas.const.QUALITY_FLAG_SATURATION, ...
           L2_QUALITY_BITMASK=l2qbmBit);
-        Qrcsm.add(qrcid, bicas.const.L2_LFR_TDS_DSI_CA, Qrcs);
+        Qrcsm.add(qrcid, "OFFICIAL_L2", Qrcs);
       end
     end
 
@@ -583,7 +586,7 @@ classdef const
     function Qrcsm = init_QRCSM(ChannelSaturationsQrcsm)
       assert(isa(ChannelSaturationsQrcsm, "bicas.proc.QrcSettingsMap"))
 
-      Qrcsm = bicas.proc.QrcSettingsMap();
+      Qrcsm = bicas.proc.QrcSettingsMap(["OFFICIAL_L2"; "OFFICIAL_L3_DENSITY"]);
 
       %=================
       % Local constants
@@ -601,7 +604,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG      =uint8(1), ...
         L2_QUALITY_BITMASK=L2QBM_BIT_PARTIAL_SATURATION);
-      Qrcsm.add("PARTIAL_SATURATION", bicas.const.L2_LFR_TDS_DSI_CA, Qrcs)
+      Qrcsm.add("PARTIAL_SATURATION", "OFFICIAL_L2", Qrcs)
 
       %=================
       % FULL_SATURATION
@@ -611,7 +614,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG      =bicas.const.QUALITY_FLAG_SATURATION, ...
         L2_QUALITY_BITMASK=L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
-      Qrcsm.add("FULL_SATURATION", bicas.const.L2_LFR_TDS_DSI_CA, Qrcs);
+      Qrcsm.add("FULL_SATURATION", "OFFICIAL_L2", Qrcs);
 
       %=================
       % THRUSTER_FIRING
@@ -622,7 +625,7 @@ classdef const
       % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
       % (YK 2020-11-03 did not ask for any to be set.)
       Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(1));
-      Qrcsm.add("THRUSTER_FIRING", bicas.const.L2_LFR_TDS_DSI_CA, Qrcs);
+      Qrcsm.add("THRUSTER_FIRING", "OFFICIAL_L2", Qrcs);
 
       %=============
       % BIAS_HW_OFF
@@ -632,7 +635,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL2(...
         voltageFvSsidAr=S.values, ...
         currentFvIantAr=[1:3]');
-      Qrcsm.add("BIAS_HW_OFF", bicas.const.L2_LFR_TDS_DSI_CA, Qrcs);
+      Qrcsm.add("BIAS_HW_OFF", "OFFICIAL_L2", Qrcs);
 
       %=======
       % SWEEP
@@ -640,7 +643,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL2(...
         voltageFvSsidAr=S.values, ...
         currentFvIantAr=[1:3]');
-      Qrcsm.add("SWEEP", bicas.const.L2_LFR_TDS_DSI_CA, Qrcs);
+      Qrcsm.add("SWEEP", "OFFICIAL_L2", Qrcs);
 
       %==============
       % ANTx_FAILING
@@ -654,19 +657,19 @@ classdef const
         QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
         L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         voltageFvSsidAr =S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
-      Qrcsm.add("ANT1_FAILING", bicas.const.L2_LFR_TDS_DSI_CA, Qrcs);
+      Qrcsm.add("ANT1_FAILING", "OFFICIAL_L2", Qrcs);
 
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
         L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         voltageFvSsidAr =S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
-      Qrcsm.add("ANT2_FAILING", bicas.const.L2_LFR_TDS_DSI_CA, Qrcs);
+      Qrcsm.add("ANT2_FAILING", "OFFICIAL_L2", Qrcs);
 
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG     =QUALITY_FLAG_ANTx_FAILING, ...
         L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         voltageFvSsidAr =S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
-      Qrcsm.add("ANT3_FAILING", bicas.const.L2_LFR_TDS_DSI_CA, Qrcs);
+      Qrcsm.add("ANT3_FAILING", "OFFICIAL_L2", Qrcs);
 
 
 
@@ -680,7 +683,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL3Density(...
         QUALITY_FLAG      =uint8(1), ...
         L3_QUALITY_BITMASK=uint16(1));
-      Qrcsm.add("BAD_DENSITY", bicas.const.L3_DENSITY_DSI_CA, Qrcs);
+      Qrcsm.add("BAD_DENSITY", "OFFICIAL_L3_DENSITY", Qrcs);
 
 
 

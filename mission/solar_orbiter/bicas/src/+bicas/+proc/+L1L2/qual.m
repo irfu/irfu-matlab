@@ -307,7 +307,7 @@ classdef qual
     %       Same size as samplesAr. Same number of rows as QrcbMap.
     %
     function voltageAr = set_5xBLTS_voltage_samples_FV(...
-        voltageAr, ssidAr, QrcbMap, Qrcsm, dsi)
+        voltageAr, ssidAr, QrcbMap, Qrcsm, ptid)
 
       % IMPLEMENTATION NOTE: Input arrays samplesAr & ssidAr must have same
       % arbitrary size (not arbitrary for first dimension).
@@ -322,13 +322,12 @@ classdef qual
       assert(isequal(size(voltageAr), size(ssidAr)))
       assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
       assert(QrcbMap.nRecords == size(voltageAr, 1))    % Nbr. of records.
-      assert(ischar(dsi))
 
       sizeAr = size(voltageAr);
       bFv    = false(sizeAr);
       for qrcid = QrcbMap.qrcidAr'
         qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
-        Qrcs  = Qrcsm.get(qrcid, dsi);
+        Qrcs   = Qrcsm.get(qrcid, ptid);
 
         if isempty(Qrcs)
           continue
@@ -353,7 +352,7 @@ classdef qual
     % currentAr
     %       Float. Size (nRecords, 3).
     %
-    function currentAr = set_current_samples_FV(currentAr, QrcbMap, Qrcsm, dsi)
+    function currentAr = set_current_samples_FV(currentAr, QrcbMap, Qrcsm, ptid)
       % IMPLEMENTATION NOTE: Argument Qrcsm is there (instead of using a
       % global constant) to make test code simpler & more robust.
 
@@ -361,7 +360,6 @@ classdef qual
       assert(isa(QrcbMap, 'bicas.proc.QrcbMap'))
       assert(isa(Qrcsm, 'bicas.proc.QrcSettingsMap'))
       irf.assert.sizes(currentAr, [QrcbMap.nRecords, 3])
-      assert(ischar(dsi))
 
       % PROPOSAL: Create and use bAntennas = logical size (1, 3) + repmat.
       %   PRO: Faster?
@@ -370,7 +368,7 @@ classdef qual
       bFv        = false(size(currentAr));
       for qrcid = QrcbMap.qrcidAr'
         qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
-        Qrcs  = Qrcsm.get(qrcid, dsi);
+        Qrcs  = Qrcsm.get(qrcid, ptid);
 
         if isempty(Qrcs)
           continue

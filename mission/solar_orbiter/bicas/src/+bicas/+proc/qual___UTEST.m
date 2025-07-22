@@ -155,14 +155,14 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
     function test_QRCB_arrays_to_quality_ZVs(testCase)
 
-      function test(QrcbMap, Qrcsm, dsi, lxqbmName, exp_QUALITY_FLAG, exp_Lx_QUALITY_BITMASK)
+      function test(QrcbMap, Qrcsm, ptid, lxqbmName, exp_QUALITY_FLAG, exp_Lx_QUALITY_BITMASK)
 
         exp_QUALITY_FLAG       = uint8( exp_QUALITY_FLAG(:));
         exp_Lx_QUALITY_BITMASK = uint16(exp_Lx_QUALITY_BITMASK(:));
 
         % CALL TESTED FUNCTION
         [act_QUALITY_FLAG, act_Lx_QUALITY_BITMASK] = ...
-          bicas.proc.qual.QRCB_arrays_to_quality_ZVs(QrcbMap, Qrcsm, dsi, lxqbmName);
+          bicas.proc.qual.QRCB_arrays_to_quality_ZVs(QrcbMap, Qrcsm, ptid, lxqbmName);
 
         testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
         testCase.assertEqual(act_Lx_QUALITY_BITMASK, exp_Lx_QUALITY_BITMASK)
@@ -172,26 +172,26 @@ classdef qual___UTEST < matlab.unittest.TestCase
       % Zero QRCIDs defined
       function test_zero_QRCIDs()
         QrcbMap = bicas.proc.QrcbMap(0);
-        Qrcsm = bicas.proc.QrcSettingsMap();
+        Qrcsm   = bicas.proc.QrcSettingsMap(["PTID_1"]);
 
         % Zero records
-        test(QrcbMap, Qrcsm, 'TEST_DSI', "L2_QUALITY_BITMASK", [], [])
+        test(QrcbMap, Qrcsm, '"PTID_1"', "L2_QUALITY_BITMASK", [], [])
 
         % Non-zero records
         QrcbMap = bicas.proc.QrcbMap(3);
-        test(QrcbMap, Qrcsm, 'TEST_DSI', "L2_QUALITY_BITMASK", ...
+        test(QrcbMap, Qrcsm, '"PTID_1"', "L2_QUALITY_BITMASK", ...
           4*ones(3,1), zeros(3,1))
       end
 
       % Several QRCIDs are defined
       function test_nonzero_QRCIDs()
-        Qrcsm = bicas.proc.QrcSettingsMap();
+        Qrcsm = bicas.proc.QrcSettingsMap(["PTID_1"; "PTID_2"]);
 
         Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(2), L2_QUALITY_BITMASK=uint16(2));
-        Qrcsm.add("QRCID1", {'TEST_DSI_L2'}, Qrcs);
+        Qrcsm.add("QRCID1", "PTID_1", Qrcs);
 
         Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(3), L2_QUALITY_BITMASK=uint16(4));
-        Qrcsm.add("QRCID2", {'TEST_DSI_L2'}, Qrcs);
+        Qrcsm.add("QRCID2", "PTID_1", Qrcs);
 
 
 
@@ -199,18 +199,18 @@ classdef qual___UTEST < matlab.unittest.TestCase
         QrcbMap = bicas.proc.QrcbMap(0);
         QrcbMap.add("QRCID1", false(0, 1));
         QrcbMap.add("QRCID2", false(0, 1));
-        test(QrcbMap, Qrcsm, 'TEST_DSI_L2', "L2_QUALITY_BITMASK", ...
+        test(QrcbMap, Qrcsm, "PTID_1", "L2_QUALITY_BITMASK", ...
           [], [])
 
         % Non-zero records
         QrcbMap = bicas.proc.QrcbMap(4);
         QrcbMap.add("QRCID1", logical([0 0 1 1]'));
         QrcbMap.add("QRCID2", logical([0 1 0 1]'));
-        test(QrcbMap, Qrcsm, 'TEST_DSI_L2', "L2_QUALITY_BITMASK", ...
+        test(QrcbMap, Qrcsm, "PTID_1", "L2_QUALITY_BITMASK", ...
           [4 3 2 2], [0 4 2 4+2])
 
         % DSI for which there is no QRCS.
-        test(QrcbMap, Qrcsm, 'TEST_DSI_L3', "L3_QUALITY_BITMASK", ...
+        test(QrcbMap, Qrcsm, "PTID_2", "L3_QUALITY_BITMASK", ...
           [4 4 4 4], [0 0 0 0])
       end
 

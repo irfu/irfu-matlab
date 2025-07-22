@@ -110,7 +110,9 @@ classdef QrcSettingsMap < handle
   %     PROBLEM: Still one variable for both L3 EFIELD+SCPOT.
   % PROPOSAL: QRCSs should not be function of DSI, but some
   %           ~"processing type ID" which can group output DSIs arbitrarily.
-  %   PROPOSAL: Replace QRCS-->QRCGS=QrcGroupSettings.
+  %   PROPOSAL: Represent group of datasets.
+  %     TODO-DEC: Name?
+  %       QDID=QRC Datasets ID.
   %
   %
   %
@@ -120,12 +122,16 @@ classdef QrcSettingsMap < handle
   % TODO: DSI arguments--> ~ProcessingType ID?
   %
   % TODO-DEC: Require legal DSI/PTID when initializing?
-  % TODO-DEC: Require existing QRCID+DSI/PTID combination when calling?
+  % TODO-DEC: Require existing QRCID+DSI/PTID combination when calling? -- DONE
   %   PROPOSAL: Method for "locking" object. After that point, .get() always
   %             verifies against the separate lists of QRCIDs and DSIs found in
   %             the object.
   %     CON: May work for QRCIDs, but not necessarily for DSIs. Not all DSIs
   %          might have any QRCS.
+  %   PROPOSAL: Hardcode global list of DSIs/PTDs into class.
+  %   PROPOSAL: Requires QRCs for all used combinations of QRCID and DSI/PTIDs.
+  %     PROPOSAL: Method for obtaining all QRCIDs for a given PTID. => Can
+  %               obtain only relevant the QRCIDs.
 
 
 
@@ -135,7 +141,9 @@ classdef QrcSettingsMap < handle
   %#####################
   %#####################
   properties(SetAccess=private, GetAccess=private)
+  %properties(SetAccess=private, GetAccess=public)    % TEST
     QrcsDict
+    legalPtidAr
   end
 
 
@@ -149,30 +157,37 @@ classdef QrcSettingsMap < handle
 
 
 
-    function obj = QrcSettingsMap()
+    % ARGUMENTS
+    % =========
+    % legalPtidAr
+    %       Column array of string constants. These are the only allowed PTIDs
+    %       that can be used with this instance.
+    %       RATIONALE: This is a safeguard against typos.
+    %
+    function obj = QrcSettingsMap(legalPtidAr)
       % IMPLEMENTATION NOTE: configureDictionary("cell",
       % "bicas.proc.QrcSetting") does not work since dictionary apparently
       % does not permit abstract classes. Therefore using cell values.
       % MATLAB error message: "Unable to configure dictionary with abstract type
       % 'bicas.proc.QrcSetting'."
-      obj.QrcsDict = configureDictionary("cell", "cell");
+
+      assert(isstring(legalPtidAr) & iscolumn(legalPtidAr))
+
+      obj.QrcsDict    = configureDictionary("cell", "cell");
+      obj.legalPtidAr = legalPtidAr;
     end
 
 
 
     % Add new QRCS. Can not overwrite (assertion).
-    function add(obj, qrcid, dsiCa, Qrcs)
+    function add(obj, qrcid, ptid, Qrcs)
       assert(isa(Qrcs, "bicas.proc.QrcSetting") & isscalar(Qrcs))
-      assert(iscell(dsiCa) & iscolumn(dsiCa))
 
-      for dsiCa0 = dsiCa'
-        dsi = dsiCa0{1};
-        key = obj.assert_get_dictionary_key(qrcid, dsi);
+      key = obj.assert_get_dictionary_key(qrcid, ptid);
 
-        assert(~obj.QrcsDict.isKey(key))
+      assert(~obj.QrcsDict.isKey(key))
 
-        obj.QrcsDict(key) = {{Qrcs}};   % NOTE: Cell in cell.
-      end
+      obj.QrcsDict(key) = {{Qrcs}};   % NOTE: Cell in cell.
     end
 
 
@@ -181,9 +196,11 @@ classdef QrcSettingsMap < handle
     % ============
     % QRCS for specified key, if key exists.
     % Empty, if key does not exist.
-    function Qrcs = get(obj, qrcid, dsi)
-      key = obj.assert_get_dictionary_key(qrcid, dsi);
+    function Qrcs = get(obj, qrcid, ptid)
+      key = obj.assert_get_dictionary_key(qrcid, ptid);
 
+      % assert(obj.QrcsDict.isKey(key), ...
+      %   "There is no key for qrcid=""%s"" and ptid=""%s"".", qrcid, ptid)
       if obj.QrcsDict.isKey(key)
         QrcidCaCa = obj.QrcsDict(key);
         Qrcs     = QrcidCaCa{1}{1};
@@ -223,7 +240,8 @@ classdef QrcSettingsMap < handle
       assert(TempDict.numEntries == ...
         obj.QrcsDict.numEntries + Qrcsm.QrcsDict.numEntries)
 
-      obj.QrcsDict = TempDict;
+      obj.QrcsDict    = TempDict;
+      obj.legalPtidAr = unique([obj.legalPtidAr; Qrcsm.legalPtidAr]);
     end
 
 
@@ -238,43 +256,24 @@ classdef QrcSettingsMap < handle
   %##########################
   %##########################
   methods(Access=private)
-  end    % methods(Access=private)
 
 
 
-  %#######################
-  %#######################
-  % PUBLIC STATIC METHODS
-  %#######################
-  %#######################
-  methods(Static)
-  end    % methods(Static)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-
-
-
-    function mapKey = assert_get_dictionary_key(qrcid, dsi)
+    function mapKey = assert_get_dictionary_key(obj, qrcid, ptid)
       assert(isstring(qrcid))
-      assert(ischar(dsi))
+      assert(isstring(ptid) & isscalar(ptid))
+      assert(ismember(ptid, obj.legalPtidAr))
 
       % NOTE: Must use cell array within cell array. Dictionary will vectorize
       % the outer cell array.
       % IMPLEMENTATION NOTE: containers.Map() will not allow using
       % non-vectorized cell arrays at all.
-      mapKey = {{qrcid; dsi}};
+      mapKey = {{qrcid; ptid}};
     end
 
 
 
-  end    % methods(Static, Access=private)
+  end    % methods(Access=private)
 
 
 
