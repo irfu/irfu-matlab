@@ -408,6 +408,8 @@ QRCB
     Quality-Related Condition Bit.
     Bit (or array of bits) which is set iff the corresponding QRC applies.
     This is distinct from a QRC which represents a "concept".
+QRCBM
+    Class bicas.proc.QrcbMap.
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.
@@ -416,7 +418,7 @@ QRCID
 QRCS
     Class bicas.proc.QrcSetting and subclasses thereof.
 QRCSM
-    Class bicas.proc.QrcSettingsMap and subclasses thereof.
+    Class bicas.proc.QrcSettingsMap.
 QUALITY_FLAG
     Quality ZV defined by ROC. Higher value is better.
     In the implementation, QUALITY_FLAG may refer to

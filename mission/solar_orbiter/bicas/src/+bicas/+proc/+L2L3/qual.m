@@ -36,12 +36,12 @@ classdef qual
 
       nRecords = size(badDensityQrcbAr, 1);
 
-      QrcbMap = bicas.proc.QrcbMap(nRecords);
-      QrcbMap.add("BAD_DENSITY", badDensityQrcbAr);
+      Qrcbm = bicas.proc.QrcbMap(nRecords);
+      Qrcbm.add("BAD_DENSITY", badDensityQrcbAr);
 
       [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        QrcbMap, bicas.const.Q.L3DENSITY_QRCSM, "L3_QUALITY_BITMASK");
+        Qrcbm, bicas.const.Q.L3DENSITY_QRCSM, "L3_QUALITY_BITMASK");
     end
 
 
@@ -59,7 +59,7 @@ classdef qual
     %       Must ONLY contain those QRCSs which quality bits should be read
     %       from L2QBM.
     %
-    function QrcbMap = L2QBM_to_QRCBs(l2qbmAr, L2QualityBitSettingQrcsm)
+    function Qrcbm = L2QBM_to_QRCBs(l2qbmAr, L2QualityBitSettingQrcsm)
       % IMPLEMENTATION NOTE: Function is designed for
       % SOLO_L2_RPW-LFR-SURV-CWF-E's L2_QUALITY_BITMASK but is generalized to
       % arbitrary QRCSs, partly to simplify testing and not mix algorithms with
@@ -68,7 +68,7 @@ classdef qual
       assert(isa(L2QualityBitSettingQrcsm, "bicas.proc.QrcSettingsMap"))
       assert(iscolumn(l2qbmAr) & isa(l2qbmAr, "uint16"))
 
-      QrcbMap     = bicas.proc.QrcbMap(numel(l2qbmAr));
+      Qrcbm     = bicas.proc.QrcbMap(numel(l2qbmAr));
       % Collection of quality bit positions for all used QRCDSs. Only used for
       % asserting against collisions.
       allBitPosAr = zeros(0, 1);
@@ -84,7 +84,7 @@ classdef qual
         allBitPosAr(end+1, 1) = bitPosAr;
 
         qrcbAr = logical(bitand(l2qbmAr, qrcLxqbm));
-        QrcbMap.add(qrcid, qrcbAr)
+        Qrcbm.add(qrcid, qrcbAr)
       end
 
       % ASSERTION: No overlap in (specified) QRCS quality bits.
@@ -100,20 +100,20 @@ classdef qual
     % NOTE: Always sets the GLOBAL_SATURATION and CHANNEL_SATURATION QRCIDs but
     % sets the QRCB arrays differently depending on "saturationQualitySchemeId".
     %
-    function SaturationQrcbMap = L2QBM_to_saturation_QRCBs(...
+    function SaturationQrcbm = L2QBM_to_saturation_QRCBs(...
         l2qbmAr, saturationQualitySchemeId)
 
       assert(iscolumn(l2qbmAr) & isa(l2qbmAr, "uint16"))
 
-      SaturationQrcbMap = bicas.proc.QrcbMap(numel(l2qbmAr));
-      SaturationQrcbMap.add_false(bicas.const.Q.SATURATION_QRCID_AR)
+      SaturationQrcbm = bicas.proc.QrcbMap(numel(l2qbmAr));
+      SaturationQrcbm.add_false(bicas.const.Q.SATURATION_QRCID_AR)
 
       switch saturationQualitySchemeId
         case 'CHANNEL_SATURATION'
 
-          ChannelSaturationQrcbMap = bicas.proc.L2L3.qual.L2QBM_to_QRCBs(...
+          ChannelSaturationQrcbm = bicas.proc.L2L3.qual.L2QBM_to_QRCBs(...
             l2qbmAr, bicas.const.Q.L2_CHANNEL_SATURATION_QRCSM);
-          SaturationQrcbMap.union(ChannelSaturationQrcbMap)
+          SaturationQrcbm.union(ChannelSaturationQrcbm)
 
         case 'GLOBAL_SATURATION'
 
@@ -131,7 +131,7 @@ classdef qual
       end
 
       assert(isequal( ...
-        sort(SaturationQrcbMap.qrcidAr), ...
+        sort(SaturationQrcbm.qrcidAr), ...
         sort(bicas.const.Q.SATURATION_QRCID_AR)))
     end
 
@@ -142,13 +142,13 @@ classdef qual
     % For blanking VDC and EDC before they are passed to EXCD
     %
     function [VDC_Fpa, EDC_Fpa] = set_VDC_EDC_samples_FV(...
-        VDC_Fpa, EDC_Fpa, QrcbMap, Qrcsm)
+        VDC_Fpa, EDC_Fpa, Qrcbm, Qrcsm)
 
-      assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
+      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       assert(isa(Qrcsm,   "bicas.proc.QrcSettingsMap"))
       assert(isa(VDC_Fpa, "bicas.utils.FPArray"))
       assert(isa(EDC_Fpa, "bicas.utils.FPArray"))
-      nRecords = QrcbMap.nRecords;
+      nRecords = Qrcbm.nRecords;
       irf.assert.sizes(...
         VDC_Fpa, [nRecords, 3], ...
         EDC_Fpa, [nRecords, 3])
@@ -157,8 +157,8 @@ classdef qual
       bEdcFv         = false(nRecords, 3);
       channelIndexAr = repmat([1:3], [nRecords, 1]);
 
-      for qrcid = QrcbMap.qrcidAr'
-        qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
+      for qrcid = Qrcbm.qrcidAr'
+        qrcbAr = Qrcbm.get(qrcid);    % (nRecords, 1)
         Qrcs   = Qrcsm.get(  qrcid);
         assert(isa(Qrcs, "bicas.proc.QrcSettingL3"))
 

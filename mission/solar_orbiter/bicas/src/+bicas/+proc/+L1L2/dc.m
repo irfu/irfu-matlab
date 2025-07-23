@@ -77,12 +77,12 @@ classdef dc
       %##################################
       % Read NSO table into QRCBs ONCE, so that it does not need to be done
       % later.
-      L2QrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
+      L2Qrcbm = bicas.proc.qual.NSO_table_to_QRCBM(...
         bicas.const.Q.L2_QRCSM.qrcidAr, NsoTable, Dcip.Zv.Epoch, L);
       clear NsoTable
       % Convert information about BIAS ON/OFF and sweeps into QRCBs.
-      L2QrcbMap.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb);
-      L2QrcbMap.set("SWEEP",       Dcip.Zv.sweepQrcb);
+      L2Qrcbm.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb);
+      L2Qrcbm.set("SWEEP",       Dcip.Zv.sweepQrcb);
       % PROPOSAL: Clear Dcip.Zv.biasOffQrcb & Dcip.Zv.sweepQrcb since they
       %           should not be used after this point.
 
@@ -119,7 +119,7 @@ classdef dc
       aspr          = size(Dcip.Zv.bltsSamplesTm, 2);
       btlsSsidAr2   = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
       bltsSamplesTm = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
-        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, L2QrcbMap, bicas.const.Q.L2_QRCSM);
+        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, L2Qrcbm, bicas.const.Q.L2_QRCSM);
 
 
 
@@ -185,17 +185,17 @@ classdef dc
       % NOTE: Whether voltage samples have already been blanked (set to NaN/FV)
       % or not based on QRCs, affects the saturation detection. Can not
       % autodetect saturation in blanked data.
-      SaturationQrcbMap = bicas.proc.L1L2.qual.get_saturation_QRCBs(...
+      SaturationQrcbm = bicas.proc.L1L2.qual.get_saturation_QRCBs(...
         Dcip.Zv.Epoch,  ...
         string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')), ...
         VsibZvm, Dcip.hasSwfFormat, ...
         SatSettings.vstbFractionThreshold, ...
         SatSettings.cwfSlidingWindowLengthSec);
-      L2QrcbMap.union(SaturationQrcbMap)
+      L2Qrcbm.union(SaturationQrcbm)
       % --
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        L2QrcbMap, bicas.const.Q.L2_QRCSM, "L2_QUALITY_BITMASK");
+        L2Qrcbm, bicas.const.Q.L2_QRCSM, "L2_QUALITY_BITMASK");
 
 
 
@@ -209,7 +209,7 @@ classdef dc
 
       % NOTE: Function modifies SamplesZvm handle object in-place!
       Zv.currentAAmpere     = bicas.proc.L1L2.qual.set_current_samples_FV(...
-        currentAAmpere, L2QrcbMap, bicas.const.Q.L2_QRCSM);
+        currentAAmpere, L2Qrcbm, bicas.const.Q.L2_QRCSM);
       Zv.SamplesZvm         = SamplesZvm;
 
 

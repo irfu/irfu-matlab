@@ -34,11 +34,11 @@ classdef qual
     %
     % RETURN VALUE
     % ============
-    % QrcbMap
+    % Qrcbm
     %       Contains keys for all QRCIDs specified in requestedQrcidAr, not just
     %       those present in NsoTable.
     %
-    function QrcbMap = NSO_table_to_QRCB_map(...
+    function Qrcbm = NSO_table_to_QRCBM(...
         requestedQrcidAr, NsoTable, tt2000Ar, L)
 
       % IMPLEMENTATION NOTE: Without requestedQrcidAr, the function can not
@@ -63,13 +63,13 @@ classdef qual
         nLe, nGe);
 
       %----------------------------------------------------------------------
-      % Initialize "empty" QrcbMap (elements=false) for all requested QRCIDs
+      % Initialize "empty" Qrcbm (elements=false) for all requested QRCIDs
       %----------------------------------------------------------------------
       % IMPLEMENTATION NOTE: valueType=logical implies scalar (sic!) and can
       %                      therefore not be used.
-      QrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
+      Qrcbm = bicas.proc.QrcbMap(numel(tt2000Ar));
       for i = 1:numel(requestedQrcidAr)
-        QrcbMap.add(requestedQrcidAr(i), false(size(tt2000Ar)));
+        Qrcbm.add(requestedQrcidAr(i), false(size(tt2000Ar)));
       end
 
       %-----------------------------------------------------------------------
@@ -95,7 +95,7 @@ classdef qual
           %====================================
           % Update corresponding QRCB elements
           %====================================
-          QrcbMap.set(eventQrcid, QrcbMap.get(eventQrcid) | qrbcAr);
+          Qrcbm.set(eventQrcid, Qrcbm.get(eventQrcid) | qrbcAr);
         end
       end    % for
     end
@@ -128,17 +128,17 @@ classdef qual
     %       context.
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
-        QrcbMap, Qrcsm, lxqbmName)
+        Qrcbm, Qrcsm, lxqbmName)
       % PROPOSAL: Split into separate functions for QUALITY_FLAG and LXQBM.
       %   PRO: EFIELD and SCPOT do not have L3QBM.
       %   PRO: Simpler-ish testing
       %   CON: More code. Functions will resemble each other.
 
-      assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
+      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
       assert(isstring(lxqbmName))
 
-      nRec = QrcbMap.nRecords;
+      nRec = Qrcbm.nRecords;
 
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, Lx_QUALITY_BITMASK=0), which can then later be
@@ -149,8 +149,8 @@ classdef qual
       %=================================
       % Iterate over QRCIDs in argument
       %=================================
-      for qrcid = QrcbMap.qrcidAr'
-        qrcbAr = QrcbMap.get(qrcid);
+      for qrcid = Qrcbm.qrcidAr'
+        qrcbAr = Qrcbm.get(qrcid);
         Qrcs   = Qrcsm.get(qrcid);
 
         % if isempty(Qrcs)

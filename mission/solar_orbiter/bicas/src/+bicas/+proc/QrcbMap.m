@@ -148,23 +148,23 @@ classdef QrcbMap < handle
 
 
 
-    % Add one QRCB map to the current one. Non-overlapping keys are just added.
+    % Add one QRCBM to the current one. Non-overlapping keys are just added.
     % Overlapping keys have their values OR'ed together.
     %
-    function union(obj, QrcbMap)
-      assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
-      assert(obj.nRecords == QrcbMap.nRecords)
+    function union(obj, Qrcbm)
+      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
+      assert(obj.nRecords == Qrcbm.nRecords)
 
-      newKeyCa = QrcbMap.Map.keys;
+      newKeyCa = Qrcbm.Map.keys;
       for i = 1:numel(newKeyCa)
         key = newKeyCa{i};
 
         if obj.Map.isKey(key)
           % Merge key-value pairs.
-          obj.Map(key) = obj.Map(key) | QrcbMap.Map(key);
+          obj.Map(key) = obj.Map(key) | Qrcbm.Map(key);
         else
           % Add key-value pair.
-          obj.Map(key) = QrcbMap.Map(key);
+          obj.Map(key) = Qrcbm.Map(key);
         end
       end
     end

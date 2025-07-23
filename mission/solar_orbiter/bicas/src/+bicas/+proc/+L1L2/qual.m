@@ -96,22 +96,22 @@ classdef qual
     %
     %   assert(islogical(fullSaturationQrcbAr))
     %
-    %   QrcbMap = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
+    %   Qrcbm = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
     %     bicas.const.Q.ALL_QRCID_AR, NsoTable, Epoch, L);
     %
     %   % Remove QRCIDs which this function can not handle (and should not
     %   % need to) since they are not intended for L2_QUALITY_BITMASK.
-    %   QrcbMap.remove("BAD_DENSITY");
+    %   Qrcbm.remove("BAD_DENSITY");
     %
     %   % Add autodetected saturation.
-    %   qrcbAr = QrcbMap("FULL_SATURATION");
+    %   qrcbAr = Qrcbm("FULL_SATURATION");
     %   qrcbAr = qrcbAr | fullSaturationQrcbAr;
-    %   QrcbMap("FULL_SATURATION") = qrcbAr;
+    %   Qrcbm("FULL_SATURATION") = qrcbAr;
     %
     %   % Call generic function for setting QUALITY_FLAG and *_QUALITY_BITMASK.
     %   [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
     %     bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-    %     size(Epoch, 1), QrcbMap, QrcsL2Map);
+    %     size(Epoch, 1), Qrcbm, QrcsL2Map);
     % end
 
 
@@ -125,19 +125,19 @@ classdef qual
     %       ZVM with VSIBs (not VSTBs, not VSQBs, not QRCBs) for the respective
     %       ASR channels.
     %
-    function SaturationQrcbMap = get_saturation_QRCBs(...
+    function SaturationQrcbm = get_saturation_QRCBs(...
         tt2000Ar, saturationQualitySchemeId, ...
         VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec)
 
       % PROPOSAL: Change order of arguments.
 
-      SaturationQrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
-      SaturationQrcbMap.add_false(bicas.const.Q.SATURATION_QRCID_AR)
+      SaturationQrcbm = bicas.proc.QrcbMap(numel(tt2000Ar));
+      SaturationQrcbm.add_false(bicas.const.Q.SATURATION_QRCID_AR)
 
       %---------------------------------
       % Obtain CHANNEL_SATURATION QRCBs
       %---------------------------------
-      ChannelSaturationQrcbMap = ...
+      ChannelSaturationQrcbm = ...
         bicas.proc.L1L2.qual.get_QRCBs_channel_saturation(...
         VsibZvm, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
@@ -147,13 +147,13 @@ classdef qual
         %------------------------------------------------------
         % CHANNEL_SATURATION QRCBs --> GLOBAL_SATURATION QRCBs
         %------------------------------------------------------
-        GlobalSaturationQrcbMap = ...
+        GlobalSaturationQrcbm = ...
           bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
-          ChannelSaturationQrcbMap, numel(tt2000Ar));
-          SaturationQrcbMap.union(GlobalSaturationQrcbMap)
+          ChannelSaturationQrcbm, numel(tt2000Ar));
+          SaturationQrcbm.union(GlobalSaturationQrcbm)
 
         case "CHANNEL_SATURATION"
-          SaturationQrcbMap.union(ChannelSaturationQrcbMap)
+          SaturationQrcbm.union(ChannelSaturationQrcbm)
 
         otherwise
           error("BICAS:ConfigurationBug", ...
@@ -162,7 +162,7 @@ classdef qual
       end
 
       assert(isequal( ...
-        sort(SaturationQrcbMap.qrcidAr), ...
+        sort(SaturationQrcbm.qrcidAr), ...
         sort(bicas.const.Q.SATURATION_QRCID_AR)))
     end
 
@@ -201,7 +201,7 @@ classdef qual
     % (e.g. 30%+30% > 50%), then the reconstructed channel's saturation bits
     % would be zero, despite being very much affected by saturation.
     %
-    function QrcbMap = get_QRCBs_channel_saturation(...
+    function Qrcbm = get_QRCBs_channel_saturation(...
         VsibZvm, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec)
 
@@ -210,11 +210,11 @@ classdef qual
 
       % IMPLEMENTATION NOTE: containers.Map does not support string-valued keys
       % (sic!)
-      QrcbMap = bicas.proc.QrcbMap(numel(tt2000Ar));
+      Qrcbm = bicas.proc.QrcbMap(numel(tt2000Ar));
 
 
 
-      % Update QrcbMap wrt. the corresponding arguments.
+      % Update Qrcbm wrt. the corresponding arguments.
       function handle_channel(sdidStr, channelSaturationQrcid)
         sdid       = bicas.proc.L1L2.const.C.SDID_DICT(sdidStr);
         vsibSdidAr = VsibZvm.get(sdid);
@@ -227,11 +227,11 @@ classdef qual
 
         % IMPLEMENTATION NOTE: The (nested) function is called for the same
         % QRCID up to two times.
-        if QrcbMap.has_QRCID(channelSaturationQrcid)
-          QrcbMap.set(channelSaturationQrcid, ...
-            QrcbMap.get(channelSaturationQrcid) | vsibSdidAr)
+        if Qrcbm.has_QRCID(channelSaturationQrcid)
+          Qrcbm.set(channelSaturationQrcid, ...
+            Qrcbm.get(channelSaturationQrcid) | vsibSdidAr)
         else
-          QrcbMap.add(channelSaturationQrcid, vsibSdidAr);
+          Qrcbm.add(channelSaturationQrcid, vsibSdidAr);
         end
       end
 
@@ -261,26 +261,26 @@ classdef qual
     %
     % ARGUMENTS
     % =========
-    % ChannelSaturationQrcbMap
+    % ChannelSaturationQrcbm
     %       Must contain at least all the CHANNEL_SATURATION QRCIDs, but may
     %       contain more which are then ignored.
     %
-    function GlobalSaturationQrcbMap = ...
+    function GlobalSaturationQrcbm = ...
         channel_saturation_to_global_saturation_QRCBs( ...
-        ChannelSaturationQrcbMap, nRecords)
+        ChannelSaturationQrcbm, nRecords)
 
       fullSaturationQrcbAr = false(nRecords, 1);
       for qrcid = bicas.const.Q.CHANNEL_SATURATION_QRCID_AR'
         fullSaturationQrcbAr = ...
-          fullSaturationQrcbAr | ChannelSaturationQrcbMap.get(qrcid);
+          fullSaturationQrcbAr | ChannelSaturationQrcbm.get(qrcid);
       end
 
-      GlobalSaturationQrcbMap = bicas.proc.QrcbMap(nRecords);
+      GlobalSaturationQrcbm = bicas.proc.QrcbMap(nRecords);
 
-      GlobalSaturationQrcbMap.add("FULL_SATURATION",    fullSaturationQrcbAr);
+      GlobalSaturationQrcbm.add("FULL_SATURATION",    fullSaturationQrcbAr);
       % NOTE: Always false since partial saturation (QRC) can not be
       % autodetected.
-      GlobalSaturationQrcbMap.add("PARTIAL_SATURATION", false(nRecords, 1));
+      GlobalSaturationQrcbm.add("PARTIAL_SATURATION", false(nRecords, 1));
     end
 
 
@@ -293,10 +293,10 @@ classdef qual
     %       Float. 1D or more dimensions. First dimension is CDF records.
     %       NOTE: Does not have to have any particular unit.
     % ssidAr
-    %       Same size as samplesAr. Same number of rows as QrcbMap.
+    %       Same size as samplesAr. Same number of rows as Qrcbm.
     %
     function voltageAr = set_5xBLTS_voltage_samples_FV(...
-        voltageAr, ssidAr, QrcbMap, Qrcsm)
+        voltageAr, ssidAr, Qrcbm, Qrcsm)
 
       % IMPLEMENTATION NOTE: Input arrays samplesAr & ssidAr must have same
       % arbitrary size (not arbitrary for first dimension).
@@ -310,12 +310,12 @@ classdef qual
       assert(isfloat(voltageAr))
       assert(isequal(size(voltageAr), size(ssidAr)))
       assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
-      assert(QrcbMap.nRecords == size(voltageAr, 1))    % Nbr. of records.
+      assert(Qrcbm.nRecords == size(voltageAr, 1))    % Nbr. of records.
 
       sizeAr = size(voltageAr);
       bFv    = false(sizeAr);
-      for qrcid = QrcbMap.qrcidAr'
-        qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
+      for qrcid = Qrcbm.qrcidAr'
+        qrcbAr = Qrcbm.get(qrcid);    % (nRecords, 1)
         Qrcs   = Qrcsm.get(qrcid);
 
         % if isempty(Qrcs)
@@ -341,22 +341,22 @@ classdef qual
     % currentAr
     %       Float. Size (nRecords, 3).
     %
-    function currentAr = set_current_samples_FV(currentAr, QrcbMap, Qrcsm)
+    function currentAr = set_current_samples_FV(currentAr, Qrcbm, Qrcsm)
       % IMPLEMENTATION NOTE: Argument Qrcsm is there (instead of using a
       % global constant) to make test code simpler & more robust.
 
       assert(isfloat(currentAr))
-      assert(isa(QrcbMap, 'bicas.proc.QrcbMap'))
+      assert(isa(Qrcbm, 'bicas.proc.QrcbMap'))
       assert(isa(Qrcsm, 'bicas.proc.QrcSettingsMap'))
-      irf.assert.sizes(currentAr, [QrcbMap.nRecords, 3])
+      irf.assert.sizes(currentAr, [Qrcbm.nRecords, 3])
 
       % PROPOSAL: Create and use bAntennas = logical size (1, 3) + repmat.
       %   PRO: Faster?
 
-      iAntennaAr = repmat([1:3], [QrcbMap.nRecords, 1]);
+      iAntennaAr = repmat([1:3], [Qrcbm.nRecords, 1]);
       bFv        = false(size(currentAr));
-      for qrcid = QrcbMap.qrcidAr'
-        qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
+      for qrcid = Qrcbm.qrcidAr'
+        qrcbAr = Qrcbm.get(qrcid);    % (nRecords, 1)
         Qrcs  = Qrcsm.get(qrcid);
 
         if isempty(Qrcs)

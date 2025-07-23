@@ -70,20 +70,20 @@ classdef qual___UTEST < matlab.unittest.TestCase
       add_channel_VSIB("AC_V23", 9)
 
       % Expected value for schema GLOBAL_SATURATION.
-      ExpGlobalSaturationQrcbMap  = bicas.proc.QrcbMap(N_ROWS);
-      ExpGlobalSaturationQrcbMap.add(      "FULL_SATURATION", FULL_SATURATION_AR)
-      ExpGlobalSaturationQrcbMap.add_false("PARTIAL_SATURATION")
+      ExpGlobalSaturationQrcbm  = bicas.proc.QrcbMap(N_ROWS);
+      ExpGlobalSaturationQrcbm.add(      "FULL_SATURATION", FULL_SATURATION_AR)
+      ExpGlobalSaturationQrcbm.add_false("PARTIAL_SATURATION")
 
       % Expected value for schema CHANNEL_SATURATION.
-      ExpChannelSaturationQrcbMap = bicas.proc.QrcbMap(N_ROWS);
-      ExpChannelSaturationQrcbMap.add_false("FULL_SATURATION")
-      ExpChannelSaturationQrcbMap.add_false("PARTIAL_SATURATION")
+      ExpChannelSaturationQrcbm = bicas.proc.QrcbMap(N_ROWS);
+      ExpChannelSaturationQrcbm.add_false("FULL_SATURATION")
+      ExpChannelSaturationQrcbm.add_false("PARTIAL_SATURATION")
 
       function add_channel_saturation_QRCB(qrcid, iCol)
-        ExpGlobalSaturationQrcbMap.add_false(qrcid)
+        ExpGlobalSaturationQrcbm.add_false(qrcid)
 
         qrcbAr = CHANNEL_SATURATION_AR(:, iCol);
-        ExpChannelSaturationQrcbMap.add(qrcid, qrcbAr)
+        ExpChannelSaturationQrcbm.add(qrcid, qrcbAr)
       end
       add_channel_saturation_QRCB("SATURATION_ZV_V1",  1)
       add_channel_saturation_QRCB("SATURATION_ZV_V2",  2)
@@ -101,32 +101,32 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
       % CALL TESTED FUNCTION
-      ActQrcbMap = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
+      ActQrcbm = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
         TT2000_AR, "GLOBAL_SATURATION", VsibZvm, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
-      testCase.assertEqual(ActQrcbMap, ExpGlobalSaturationQrcbMap)
+      testCase.assertEqual(ActQrcbm, ExpGlobalSaturationQrcbm)
 
 
 
       % CALL TESTED FUNCTION
-      ActQrcbMap = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
+      ActQrcbm = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
       TT2000_AR, "CHANNEL_SATURATION", VsibZvm, isSwf, ...
       vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
-      testCase.assertEqual(ActQrcbMap, ExpChannelSaturationQrcbMap)
+      testCase.assertEqual(ActQrcbm, ExpChannelSaturationQrcbm)
     end
 
 
 
     function test_set_5xBLTS_voltage_samples_FV(testCase)
 
-      function test(samplesAvoltAr, ssidAr, QrcbMap, Qrcsm, bExpNan)
+      function test(samplesAvoltAr, ssidAr, Qrcbm, Qrcsm, bExpNan)
         expSamplesAvoltAr          = samplesAvoltAr;
         expSamplesAvoltAr(bExpNan) = NaN;
 
         actSamplesAvoltAr = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
-          samplesAvoltAr, ssidAr, QrcbMap, Qrcsm);
+          samplesAvoltAr, ssidAr, Qrcbm, Qrcsm);
 
         testCase.assertEqual(actSamplesAvoltAr, expSamplesAvoltAr)
       end
@@ -136,17 +136,17 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
       function test_empty()
-        QrcbMap = bicas.proc.QrcbMap(0);
+        Qrcbm = bicas.proc.QrcbMap(0);
         Qrcsm   = bicas.proc.QrcSettingsMap();
         test(...
           double.empty(0, 1), ...
           uint8.empty( 0, 1), ...
-          QrcbMap, Qrcsm, ...
+          Qrcbm, Qrcsm, ...
           logical.empty(0, 1))
       end
 
       function test_nonempty_samples_empty_maps()
-        QrcbMap = bicas.proc.QrcbMap(2);
+        Qrcbm = bicas.proc.QrcbMap(2);
         Qrcsm   = bicas.proc.QrcSettingsMap();
 
         samplesAvoltAr = reshape(1:2*3, [2, 3]);
@@ -154,15 +154,15 @@ classdef qual___UTEST < matlab.unittest.TestCase
         test(...
           samplesAvoltAr, ...
           ssidAr, ...
-          QrcbMap, Qrcsm, ...
+          Qrcbm, Qrcsm, ...
           false(2, 3))
       end
 
       % Deliberately 3D arrays.
       function test_complex_3D()
-        QrcbMap = bicas.proc.QrcbMap(4);
-        QrcbMap.add("QRCID_1", logical([1 1 0 0]'))
-        QrcbMap.add("QRCID_2", logical([0 1 1 0]'))
+        Qrcbm = bicas.proc.QrcbMap(4);
+        Qrcbm.add("QRCID_1", logical([1 1 0 0]'))
+        Qrcbm.add("QRCID_2", logical([0 1 1 0]'))
 
         Qrcsm  = bicas.proc.QrcSettingsMap();
         Qrcs = bicas.proc.QrcSettingL2(voltageFvSsidAr=S(["DC_V1"; "DC_V12"]));
@@ -184,7 +184,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         test(...
           samplesAvoltAr, ...
           ssidAr, ...
-          QrcbMap, Qrcsm, ...
+          Qrcbm, Qrcsm, ...
           bExpNan)
       end
 
@@ -197,11 +197,11 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
     function test_set_current_samples_FV(testCase)
 
-      function test(QrcbMap, Qrcsm, currentAr, expCurrentAr)
-        irf.assert.sizes(currentAr, [QrcbMap.nRecords, 3]);
+      function test(Qrcbm, Qrcsm, currentAr, expCurrentAr)
+        irf.assert.sizes(currentAr, [Qrcbm.nRecords, 3]);
 
         actCurrentAr = bicas.proc.L1L2.qual.set_current_samples_FV(...
-          currentAr, QrcbMap, Qrcsm);
+          currentAr, Qrcbm, Qrcsm);
 
         testCase.verifyEqual(actCurrentAr, expCurrentAr)
       end
@@ -210,11 +210,11 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
       % Empty data.
       function test_empty_empty()
-        QrcbMap = bicas.proc.QrcbMap(0);
+        Qrcbm = bicas.proc.QrcbMap(0);
         Qrcsm   = bicas.proc.QrcSettingsMap();
 
         test( ...
-          QrcbMap, Qrcsm, ...
+          Qrcbm, Qrcsm, ...
           zeros(0, 3),  ...
           zeros(0, 3))
       end
@@ -226,24 +226,24 @@ classdef qual___UTEST < matlab.unittest.TestCase
         % NC  = No change (in output)
         function test_NED_NC()
           test( ...
-            QrcbMap, Qrcsm, ...
+            Qrcbm, Qrcsm, ...
             zeros(5, 3),  ...
             zeros(5, 3))
         end
 
         % Zero QRCB arrays, zero QRCSs.
-        QrcbMap = bicas.proc.QrcbMap(5);
+        Qrcbm = bicas.proc.QrcbMap(5);
         Qrcsm   = bicas.proc.QrcSettingsMap();
         test_NED_NC()
 
         % QRCB=false, QRCS=all antennas FV
-        QrcbMap.add("QRCID_1", false(5, 1))
+        Qrcbm.add("QRCID_1", false(5, 1))
         Qrcs = bicas.proc.QrcSettingL2(currentFvIantAr=[1:3]');
         Qrcsm.add("QRCID_1", Qrcs);
         test_NED_NC()
 
         % QRCB=true, QRCS=no antennas FV
-        QrcbMap.set("QRCID_1", true(5, 1))
+        Qrcbm.set("QRCID_1", true(5, 1))
         Qrcsm = bicas.proc.QrcSettingsMap();
         Qrcs  = bicas.proc.QrcSettingL2();    % Default ==> Does nothing.
         Qrcsm.add("QRCID_1", Qrcs);
@@ -252,11 +252,11 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
       function test_data_altered_unaltered()
         % Non-empty input data that is altered: 2 unaltered + (1+2) altered
-        QrcbMap = bicas.proc.QrcbMap(5);
+        Qrcbm = bicas.proc.QrcbMap(5);
         Qrcsm   = bicas.proc.QrcSettingsMap();
 
-        QrcbMap.add("QRCID_1",  logical([0 1 0 0 0]'))
-        QrcbMap.add("QRCID_23", logical([0 0 0 1 1]'))
+        Qrcbm.add("QRCID_1",  logical([0 1 0 0 0]'))
+        Qrcbm.add("QRCID_23", logical([0 0 0 1 1]'))
 
         Qrcs = bicas.proc.QrcSettingL2(currentFvIantAr=[1]');
         Qrcsm.add("QRCID_1",  Qrcs);
@@ -265,7 +265,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
         N = NaN;
         test( ...
-          QrcbMap, Qrcsm, ...
+          Qrcbm, Qrcsm, ...
           [...
           1  2  3; ...
           11 12 13; ...
