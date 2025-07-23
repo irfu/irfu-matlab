@@ -58,6 +58,18 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_add_false(T)
+      QrcbMap = bicas.proc.QrcbMap(2);
+
+      QrcbMap.add_false(string.empty(0, 1))
+
+      QrcbMap.add_false(["QRCID_1"; "QRCID_2"])
+      T.assertEqual(QrcbMap.get("QRCID_1"), false(2, 1))
+      T.assertEqual(QrcbMap.get("QRCID_2"), false(2, 1))
+    end
+
+
+
     function test_remove(testCase)
       QrcbMap = bicas.proc.QrcbMap(2);
 

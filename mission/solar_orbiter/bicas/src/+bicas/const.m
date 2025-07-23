@@ -697,11 +697,17 @@ classdef const
     function Q = init_QRC_constants()
       Q = struct();
 
-      L2_CHANNEL_SATURATION_QRCSM = bicas.const.init_L2_CHANNEL_SATURATION_QRCSM();
-      Q.CHANNEL_SATURATION_QRCID_AR = string(L2_CHANNEL_SATURATION_QRCSM.get_QRCIDs());
+      % IMPLEMENTATION NOTE: Separate
+      Q.L2_CHANNEL_SATURATION_QRCSM = bicas.const.init_L2_CHANNEL_SATURATION_QRCSM();
+
+      Q.CHANNEL_SATURATION_QRCID_AR = string(Q.L2_CHANNEL_SATURATION_QRCSM.get_QRCIDs());
+      Q.SATURATION_QRCID_AR = [...
+        Q.CHANNEL_SATURATION_QRCID_AR; ...
+        "PARTIAL_SATURATION"; ...
+        "FULL_SATURATION"];
 
       [Q.L2_QRCSM, Q.L3DENSITY_QRCSM] = bicas.const.init_L2_L3Density_QRCSM(...
-        L2_CHANNEL_SATURATION_QRCSM);
+        Q.L2_CHANNEL_SATURATION_QRCSM);
 
       % All legal QRCIDs, or all kinds of processing. This defines the set of
       % legal QRCIDs, including ones that can be used in the NSO table file.

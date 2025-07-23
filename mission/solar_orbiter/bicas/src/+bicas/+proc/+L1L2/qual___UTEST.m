@@ -69,22 +69,21 @@ classdef qual___UTEST < matlab.unittest.TestCase
       add_channel_VSIB("AC_V13", 8)
       add_channel_VSIB("AC_V23", 9)
 
+      % Expected value for schema GLOBAL_SATURATION.
       ExpGlobalSaturationQrcbMap  = bicas.proc.QrcbMap(N_ROWS);
+      ExpGlobalSaturationQrcbMap.add(      "FULL_SATURATION", FULL_SATURATION_AR)
+      ExpGlobalSaturationQrcbMap.add_false("PARTIAL_SATURATION")
 
-      ExpGlobalSaturationQrcbMap.add("FULL_SATURATION",    FULL_SATURATION_AR)
-      ExpGlobalSaturationQrcbMap.add("PARTIAL_SATURATION", false(N_ROWS, 1))
-
+      % Expected value for schema CHANNEL_SATURATION.
       ExpChannelSaturationQrcbMap = bicas.proc.QrcbMap(N_ROWS);
-
-      ExpChannelSaturationQrcbMap.add("FULL_SATURATION",    false(N_ROWS, 1))
-      ExpChannelSaturationQrcbMap.add("PARTIAL_SATURATION", false(N_ROWS, 1))
+      ExpChannelSaturationQrcbMap.add_false("FULL_SATURATION")
+      ExpChannelSaturationQrcbMap.add_false("PARTIAL_SATURATION")
 
       function add_channel_saturation_QRCB(qrcid, iCol)
-        ExpGlobalSaturationQrcbMap.add( qrcid, false(N_ROWS, 1))
+        ExpGlobalSaturationQrcbMap.add_false(qrcid)
 
         qrcbAr = CHANNEL_SATURATION_AR(:, iCol);
         ExpChannelSaturationQrcbMap.add(qrcid, qrcbAr)
-
       end
       add_channel_saturation_QRCB("SATURATION_ZV_V1",  1)
       add_channel_saturation_QRCB("SATURATION_ZV_V2",  2)

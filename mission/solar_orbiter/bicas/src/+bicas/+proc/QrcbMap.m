@@ -29,21 +29,14 @@ classdef QrcbMap < handle
   %
   % NOTE: add_map() is not entirely analogous to add(), but rather a combination
   % of add() and set().
+  %   PROPOSAL: Rename add_map()-->merge().
+  %     PRO: Analogous to bicas.proc.QrcSettingsMap().merge().
   %
   % NOTE: Similar to bicas.utils.ZvMap.
   %   PROPOSAL: Implement using bicas.utils.ZvMap somehow?
   %     CON: ZVM does not enforce
   %          QRCID (scalar string)-->QRCB (logical; column array)
   %     CON: ZVM does not support add_map() with OR:ing for overlapping keys.
-  %
-  % PROPOSAL: Functionality for adding/initializing QRCBs to false.
-  %   PRO: Class already has the array size.
-  %   PRO: Useful for tests.
-  %     Ex: bicas.proc.L1L2.qual___UTEST/test_get_saturation_QRCBs
-  %   NOTE: Already has method for add_map() to add (OR) to optionally
-  %         pre-existing QRCID.
-  %   PROPOSAL: Specify QRCIDs in constructor.
-  %   PROPOSAL: Method add() without value implicitly adds QRCB=false.
 
 
 
@@ -103,6 +96,18 @@ classdef QrcbMap < handle
       assert(size(qrcbAr, 1) == obj.nRecords)
 
       obj.Map(qrcid) = qrcbAr;
+    end
+
+
+
+    % Add QRCIDs with QRCB=false. useful for initialization.
+    function add_false(obj, qrcidAr)
+      assert(iscolumn(qrcidAr))
+
+      qrcbAr = false([obj.nRecords, 1]);
+      for qrcid = qrcidAr'
+        obj.add(qrcid, qrcbAr)
+      end
     end
 
 

@@ -1,0 +1,47 @@
+%
+% QRCS for producing L3 datasets (not just density).
+%
+%
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
+%
+classdef QrcSettingL3 < bicas.proc.QrcSetting
+
+
+
+  properties(SetAccess=immutable)
+    % Column arrays of column indices into ZV VDC/EDC (i.e. in interval 1-3).
+    % Specifies which components should be blanked.
+    vdcFvIndexAr
+    edcFvIndexAr
+  end
+
+
+
+  methods(Access=public)
+
+
+
+    function obj = QrcSettingL3(A)
+      arguments
+        A.vdcFvIndexAr = zeros(0, 1);
+        A.edcFvIndexAr = zeros(0, 1);
+      end
+
+      assert(iscolumn(      A.vdcFvIndexAr))
+      assert(all(ismember(  A.vdcFvIndexAr, [1, 2, 3])))
+      irf.assert.number_set(A.vdcFvIndexAr)
+      obj.vdcFvIndexAr =    A.vdcFvIndexAr;
+
+      assert(iscolumn(      A.edcFvIndexAr))
+      assert(all(ismember(  A.edcFvIndexAr, [1, 2, 3])))
+      irf.assert.number_set(A.edcFvIndexAr)
+      obj.edcFvIndexAr =    A.edcFvIndexAr;
+    end
+
+
+
+  end
+
+
+
+end

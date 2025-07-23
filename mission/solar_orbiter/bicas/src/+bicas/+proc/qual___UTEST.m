@@ -218,50 +218,6 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_LxQBM_to_QRCB_maps(testCase)
-
-      function test(l2QbmAr, QrcsMap, ExpQrcbMap)
-        ActQrcbMap = bicas.proc.qual.LxQBM_to_QRCB_maps(...
-          l2QbmAr, "L2_QUALITY_BITMASK", QrcsMap);
-
-        testCase.assertEqual(ActQrcbMap, ExpQrcbMap);
-      end
-
-      % Empty
-      test( ...
-        uint16.empty(0, 1), ...
-        containers.Map(), ...    %bicas.proc.QrcSettingsMap(string.empty(0, 1)), ...
-        bicas.proc.QrcbMap(0))
-
-      % Empty QRCs, non-empty L2QBM
-      test( ...
-        uint16([0:15]'), ...
-        containers.Map(), ...    %bicas.proc.QrcSettingsMap(string.empty(0, 1)), ...
-        bicas.proc.QrcbMap(16))
-
-      % Non-empty L2QBM, non-empty QRCS map
-      % Qrcsm = bicas.proc.QrcSettingsMap("PTID_1");
-      QrcsMap = containers.Map();
-
-      Qrcs = bicas.proc.QrcSettingL2(L2_QUALITY_BITMASK=uint16(1));
-      % Qrcsm.add("QRCID_1", "PTID_1", Qrcs);
-      QrcsMap("QRCID_1") = Qrcs;
-      Qrcs = bicas.proc.QrcSettingL2(L2_QUALITY_BITMASK=uint16(4));
-      % Qrcsm.add("QRCID_2", "PTID_1", Qrcs);
-      QrcsMap("QRCID_2") = Qrcs;
-
-      ExpQrcbMap = bicas.proc.QrcbMap(8);
-      ExpQrcbMap.add("QRCID_1", logical([0 1 0 1 0 1 0 1]'))
-      ExpQrcbMap.add("QRCID_2", logical([0 0 0 0 1 1 1 1]'))
-
-      test( ...
-        uint16(0:7)', ...
-        QrcsMap, ....   %Qrcsm, ...
-        ExpQrcbMap)
-    end
-
-
-
     function test_LxQBM_to_bit_positions(testCase)
       function test(lxqbm, expBitPosAr)
         lxqbm       = uint16(lxqbm);
