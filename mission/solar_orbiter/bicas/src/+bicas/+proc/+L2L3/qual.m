@@ -73,7 +73,7 @@ classdef qual
       % asserting against collisions.
       allBitPosAr = zeros(0, 1);
 
-      for qrcid = L2QualityBitSettingQrcsm.get_QRCIDs()'
+      for qrcid = L2QualityBitSettingQrcsm.qrcidAr'
         Qrcs = L2QualityBitSettingQrcsm.get(qrcid);
         assert(isa(Qrcs, "bicas.proc.QrcSettingL2"))
 
@@ -113,7 +113,7 @@ classdef qual
 
           ChannelSaturationQrcbMap = bicas.proc.L2L3.qual.L2QBM_to_QRCBs(...
             l2qbmAr, bicas.const.Q.L2_CHANNEL_SATURATION_QRCSM);
-          SaturationQrcbMap.add_map(ChannelSaturationQrcbMap)
+          SaturationQrcbMap.union(ChannelSaturationQrcbMap)
 
         case 'GLOBAL_SATURATION'
 

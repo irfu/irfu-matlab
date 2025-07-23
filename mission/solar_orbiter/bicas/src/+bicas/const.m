@@ -689,7 +689,7 @@ classdef const
 
 
 
-      L2Qrcsm.merge(L2ChannelSaturationsQrcsm);
+      L2Qrcsm.add_QRCSM(L2ChannelSaturationsQrcsm);
     end
 
 
@@ -700,7 +700,7 @@ classdef const
       % IMPLEMENTATION NOTE: Separate
       Q.L2_CHANNEL_SATURATION_QRCSM = bicas.const.init_L2_CHANNEL_SATURATION_QRCSM();
 
-      Q.CHANNEL_SATURATION_QRCID_AR = string(Q.L2_CHANNEL_SATURATION_QRCSM.get_QRCIDs());
+      Q.CHANNEL_SATURATION_QRCID_AR = string(Q.L2_CHANNEL_SATURATION_QRCSM.qrcidAr);
       Q.SATURATION_QRCID_AR = [...
         Q.CHANNEL_SATURATION_QRCID_AR; ...
         "PARTIAL_SATURATION"; ...
@@ -713,7 +713,7 @@ classdef const
       % legal QRCIDs, including ones that can be used in the NSO table file.
       % IMPLEMENTATION NOTE: This is required for asserting QRCIDs in the NSO
       % table file.
-      Q.ALL_QRCID_AR = [Q.L2_QRCSM.get_QRCIDs(); Q.L3DENSITY_QRCSM.get_QRCIDs()];
+      Q.ALL_QRCID_AR = [Q.L2_QRCSM.qrcidAr; Q.L3DENSITY_QRCSM.qrcidAr];
     end
 
 

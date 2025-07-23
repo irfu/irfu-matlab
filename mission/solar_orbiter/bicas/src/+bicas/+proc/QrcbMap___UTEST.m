@@ -83,19 +83,19 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_add_map___empty(testCase)
+    function test_union___empty(testCase)
       QrcbMap      = bicas.proc.QrcbMap(3);
       AddedQrcbMap = bicas.proc.QrcbMap(3);
       ExpQrcbMap   = bicas.proc.QrcbMap(3);
 
-      QrcbMap.add_map(AddedQrcbMap);
+      QrcbMap.union(AddedQrcbMap);
 
       testCase.assertEqual(QrcbMap, ExpQrcbMap)
     end
 
 
 
-    function test_add_map___one_empty_1(testCase)
+    function test_union___one_empty_1(testCase)
       QrcbMap      = bicas.proc.QrcbMap(3);
       QrcbMap.add(   "QRCID1", logical([0; 1; 0]));
       QrcbMap.add(   "QRCID2", logical([1; 0; 1]));
@@ -106,14 +106,14 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
       ExpQrcbMap.add("QRCID1", logical([0; 1; 0]));
       ExpQrcbMap.add("QRCID2", logical([1; 0; 1]));
 
-      QrcbMap.add_map(AddedQrcbMap);
+      QrcbMap.union(AddedQrcbMap);
 
       testCase.assertEqual(QrcbMap, ExpQrcbMap)
     end
 
 
 
-    function test_add_map___one_empty_2(testCase)
+    function test_union___one_empty_2(testCase)
       QrcbMap      = bicas.proc.QrcbMap(3);
 
       AddedQrcbMap = bicas.proc.QrcbMap(3);
@@ -124,14 +124,14 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
       ExpQrcbMap.add(  "QRCID1", logical([0; 1; 0]));
       ExpQrcbMap.add(  "QRCID2", logical([1; 0; 1]));
 
-      QrcbMap.add_map(AddedQrcbMap);
+      QrcbMap.union(AddedQrcbMap);
 
       testCase.assertEqual(QrcbMap, ExpQrcbMap)
     end
 
 
 
-    function test_add_map___overlap(testCase)
+    function test_union___overlap(testCase)
       QrcbMap      = bicas.proc.QrcbMap(4);
       QrcbMap.add("QRCID1",              logical([0; 0; 0; 0]));
       QrcbMap.add("QRCID2_overlap",      logical([0; 0; 1; 1]));
@@ -145,7 +145,7 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
       ExpQrcbMap.add("QRCID2_overlap",   logical([0; 1; 1; 1]));
       ExpQrcbMap.add("QRCID3",           logical([1; 0; 1; 0]));
 
-      QrcbMap.add_map(AddedQrcbMap);
+      QrcbMap.union(AddedQrcbMap);
 
       testCase.assertEqual(QrcbMap, ExpQrcbMap)
     end

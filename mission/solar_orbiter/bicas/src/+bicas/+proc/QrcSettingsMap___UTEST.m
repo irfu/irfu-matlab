@@ -30,6 +30,21 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_qrcidAr(T)
+      Qrcsm = bicas.proc.QrcSettingsMap();
+      T.assertEqual(Qrcsm.qrcidAr, string.empty(0, 1))
+
+      % IMPLEMENTATION NOTE: Deliberately add QRCIDs in non-alphanumeric order.
+      Qrcsm.add("QRCID_2", T.QRCS_2);
+      T.assertEqual(Qrcsm.qrcidAr, "QRCID_2")
+
+      % Deliberately assert alphanumeric order for return value.
+      Qrcsm.add("QRCID_1", T.QRCS_1);
+      T.assertEqual(Qrcsm.qrcidAr, ["QRCID_1"; "QRCID_2"])
+    end
+
+
+
     function test_add_get(T)
       Qrcsm = bicas.proc.QrcSettingsMap();
 
@@ -48,30 +63,17 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_QRCIDs(T)
-      Qrcsm = bicas.proc.QrcSettingsMap();
-
-      T.assertEqual(Qrcsm.get_QRCIDs(), string.empty(0, 1))
-
-      Qrcsm.add("QRCID_2", T.QRCS_2);
-      Qrcsm.add("QRCID_1", T.QRCS_1);
-
-      T.assertEqual(Qrcsm.get_QRCIDs(), ["QRCID_1"; "QRCID_2"])
-    end
-
-
-
-    function test_merge___empty(T)
+    function test_add_QRCSM___empty(T)
       Qrcsm1 = bicas.proc.QrcSettingsMap();
       Qrcsm2 = bicas.proc.QrcSettingsMap();
 
-      Qrcsm1.merge(Qrcsm2)
+      Qrcsm1.add_QRCSM(Qrcsm2)
       T.assertEqual(Qrcsm1, Qrcsm2)
     end
 
 
 
-    function test_merge___nonempty(T)
+    function test_add_QRCSM___nonempty(T)
       Qrcsm1 = bicas.proc.QrcSettingsMap();
       Qrcsm1.add("QRCID_1", T.QRCS_1);
       Qrcsm1.add("QRCID_2", T.QRCS_2);
@@ -79,7 +81,7 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
       Qrcsm2 = bicas.proc.QrcSettingsMap();
       Qrcsm2.add("QRCID_3", T.QRCS_3);
 
-      Qrcsm1.merge(Qrcsm2)
+      Qrcsm1.add_QRCSM(Qrcsm2)
 
       ExpQrcsm = bicas.proc.QrcSettingsMap();
       ExpQrcsm.add("QRCID_1", T.QRCS_1);
@@ -91,7 +93,7 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_merge___collision(T)
+    function test_add_QRCSM___collision(T)
       Qrcsm1 = bicas.proc.QrcSettingsMap();
       Qrcsm1.add("QRCID_1", T.QRCS_1);
       Qrcsm1.add("QRCID_2", T.QRCS_2);    % Key collision
@@ -101,7 +103,7 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
       Qrcsm2.add("QRCID_3", T.QRCS_3);
 
       T.assertError(...
-          @() Qrcsm1.merge(Qrcsm2), ...
+          @() Qrcsm1.add_QRCSM(Qrcsm2), ...
           ?MException)
     end
 

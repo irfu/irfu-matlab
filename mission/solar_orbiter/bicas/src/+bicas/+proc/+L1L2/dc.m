@@ -78,7 +78,7 @@ classdef dc
       % Read NSO table into QRCBs ONCE, so that it does not need to be done
       % later.
       L2QrcbMap = bicas.proc.qual.NSO_table_to_QRCB_map(...
-        bicas.const.Q.L2_QRCSM.get_QRCIDs(), NsoTable, Dcip.Zv.Epoch, L);
+        bicas.const.Q.L2_QRCSM.qrcidAr, NsoTable, Dcip.Zv.Epoch, L);
       clear NsoTable
       % Convert information about BIAS ON/OFF and sweeps into QRCBs.
       L2QrcbMap.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb);
@@ -191,7 +191,7 @@ classdef dc
         VsibZvm, Dcip.hasSwfFormat, ...
         SatSettings.vstbFractionThreshold, ...
         SatSettings.cwfSlidingWindowLengthSec);
-      L2QrcbMap.add_map(SaturationQrcbMap)
+      L2QrcbMap.union(SaturationQrcbMap)
       % --
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...

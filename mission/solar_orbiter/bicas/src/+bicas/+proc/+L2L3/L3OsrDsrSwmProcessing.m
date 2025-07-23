@@ -202,7 +202,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % end
       % SaturationQrcbMap = bicas.proc.L2L3.qual.get_saturation_QRCBs_from_L2QBM(...
       %   l2qbmAr, saturationQualitySchemeId);
-      % AllQrcbMap.add_map(SaturationQrcbMap)
+      % AllQrcbMap.union(SaturationQrcbMap)
 
 
 

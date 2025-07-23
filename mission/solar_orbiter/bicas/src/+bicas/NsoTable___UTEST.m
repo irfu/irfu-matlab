@@ -137,8 +137,8 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED CODE
       qrcidAr = [...
-        bicas.const.Q.L2_QRCSM.get_QRCIDs(); ...
-        bicas.const.Q.L3DENSITY_QRCSM.get_QRCIDs()];
+        bicas.const.Q.L2_QRCSM.qrcidAr; ...
+        bicas.const.Q.L3DENSITY_QRCSM.qrcidAr];
       NsoTable = bicas.NsoTable.read_file_validated(nsoFilePath, qrcidAr);
 
       testCase.verifyTrue(isa(NsoTable, 'bicas.NsoTable'))

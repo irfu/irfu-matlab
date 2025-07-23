@@ -12,8 +12,8 @@ classdef QrcSettingsMap < handle
   % PROPOSAL: Rename QrcsMap.
   %   PRO: More analogous to QrcbMap.
   %
-  % PROPOSAL: Change get_QRCIDs() to dependent property qrcidAr.
-  %
+  % PROPOSAL: Require that all QRCSs are of a certain subclass. Add MC to
+  %           constructor.
   %
   % PROBLEM: The same QRCID may apply to both L1/L1R-->L2 and L2-->L3 processing,
   %          and may be read from NSO table for both.
@@ -133,6 +133,9 @@ classdef QrcSettingsMap < handle
   % INSTANCE PROPERTIES
   %#####################
   %#####################
+  properties(Dependent)
+    qrcidAr
+  end
   properties(SetAccess=private, GetAccess=private)
     QrcsDict
     % legalPtidAr
@@ -145,6 +148,21 @@ classdef QrcSettingsMap < handle
   % PUBLIC INSTANCE METHODS
   %#########################
   %#########################
+  methods
+
+
+
+    % Return list of QRCIDs.
+    function qrcidAr = get.qrcidAr(obj)
+      % IMPLEMENTATION NOTE: Sort to gain deterministic result which is good for
+      % testing.
+      qrcidAr = sort(obj.QrcsDict.keys);
+      assert(isstring(qrcidAr) & iscolumn(qrcidAr))
+    end
+
+
+
+  end
   methods(Access=public)
 
 
@@ -208,28 +226,8 @@ classdef QrcSettingsMap < handle
 
 
 
-    % Return list of unique QRCIDs.
-    function qrcidAr = get_QRCIDs(obj)
-      % qrcidAr = string.empty(0, 1);
-      %
-      % for keyCaCa = obj.QrcsDict.keys'
-      %   qrcid = keyCaCa{1}{1};
-      %
-      %   qrcidAr(end+1, 1) = qrcid;
-      % end
-      %
-      % % NOTE: unique() should convert column-->column.
-      % qrcidAr = unique(qrcidAr);
-
-      % IMPLEMENTATION NOTE: Sort to gain deterministic result which is good for
-      % testing.
-      qrcidAr = sort(obj.QrcsDict.keys);
-      assert(isstring(qrcidAr) & iscolumn(qrcidAr))
-    end
-
-
-
-    function merge(obj, Qrcsm)
+    % NOTE: Asserts against QRCID collisions.
+    function add_QRCSM(obj, Qrcsm)
       assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
 
       % IMPLEMENTATION NOTE: dictionary is not a handle object.

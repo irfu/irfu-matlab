@@ -150,10 +150,10 @@ classdef qual
         GlobalSaturationQrcbMap = ...
           bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
           ChannelSaturationQrcbMap, numel(tt2000Ar));
-          SaturationQrcbMap.add_map(GlobalSaturationQrcbMap)
+          SaturationQrcbMap.union(GlobalSaturationQrcbMap)
 
         case "CHANNEL_SATURATION"
-          SaturationQrcbMap.add_map(ChannelSaturationQrcbMap)
+          SaturationQrcbMap.union(ChannelSaturationQrcbMap)
 
         otherwise
           error("BICAS:ConfigurationBug", ...

@@ -20,23 +20,15 @@ classdef QrcbMap < handle
   %     QrcbArraysMap
   %       QAM=
   %
-  % PROPOSAL: Make add() permit pre-existing key.
-  %   PRO: Can remove set().
-  % PROPOSAL: Replace set() with method for OR:ing.
-  % PROPOSAL: Replace add() and set() with method which does not require
-  %           pre-existing key and which does OR:ing.
-  %   PRO: Can simplify add_map().
-  %
-  % NOTE: add_map() is not entirely analogous to add(), but rather a combination
-  % of add() and set().
-  %   PROPOSAL: Rename add_map()-->merge().
-  %     PRO: Analogous to bicas.proc.QrcSettingsMap().merge().
+  % PROPOSAL: Method which does not require pre-existing key and which does
+  %           OR:ing.
+  %   PRO: Can simplify union().
   %
   % NOTE: Similar to bicas.utils.ZvMap.
   %   PROPOSAL: Implement using bicas.utils.ZvMap somehow?
   %     CON: ZVM does not enforce
   %          QRCID (scalar string)-->QRCB (logical; column array)
-  %     CON: ZVM does not support add_map() with OR:ing for overlapping keys.
+  %     CON: ZVM does not support union() with OR:ing for overlapping keys.
 
 
 
@@ -159,7 +151,7 @@ classdef QrcbMap < handle
     % Add one QRCB map to the current one. Non-overlapping keys are just added.
     % Overlapping keys have their values OR'ed together.
     %
-    function add_map(obj, QrcbMap)
+    function union(obj, QrcbMap)
       assert(isa(QrcbMap, "bicas.proc.QrcbMap"))
       assert(obj.nRecords == QrcbMap.nRecords)
 
