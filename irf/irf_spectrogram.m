@@ -45,6 +45,11 @@ function [hout,hcb,hlpe] = irf_spectrogram(varargin)
 [h,args,nargs] = axescheck(varargin{:});
 if isempty(h)
   fig = get(groot,'CurrentFigure'); h = get(fig,'Children');
+  ii_ok = false(1,length(h));
+  for ii = 1:length(h)
+      if strcmp(get(h(ii),'type'),'axes'), ii_ok (ii) = true; end
+  end
+  h = h(ii_ok);
 end
 
 %% Defaults
@@ -199,7 +204,7 @@ for comp=1:min(length(h),ncomp)
     ff=fnew;
   else                   % if frequency steps are given
     if isstruct(specrec.df)                % if df is structure df.plus and df.minus should be specified
-      if numel(specrec.df.plus)==1           % if df.plus is scalar
+      if isscalar(specrec.df.plus)           % if df.plus is scalar
         dfplus=double(specrec.df.plus);   %    assign it
       elseif min(size(specrec.df.plus))==1   % if df.plus is vector
         dfplus=double(specrec.df.plus(:))'; %    make df.plus row vector
@@ -207,7 +212,7 @@ for comp=1:min(length(h),ncomp)
       else                                    % if df.plus is matrix
         dfplus=double(specrec.df.plus);     %    assign it
       end
-      if numel(specrec.df.minus)==1          % if df.minus is scalar
+      if isscalar(specrec.df.minus)          % if df.minus is scalar
         dfminus=double(specrec.df.minus); %    assign it
       elseif min(size(specrec.df.minus))==1  % if df.minus is vector
         dfminus=double(specrec.df.minus(:))';%    make df.minus row vector
