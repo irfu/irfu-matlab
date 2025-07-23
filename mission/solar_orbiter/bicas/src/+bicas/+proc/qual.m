@@ -128,7 +128,7 @@ classdef qual
     %       context.
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
-        QrcbMap, Qrcsm, ptid, lxqbmName)
+        QrcbMap, Qrcsm, lxqbmName)
       % PROPOSAL: Split into separate functions for QUALITY_FLAG and LXQBM.
       %   PRO: EFIELD and SCPOT do not have L3QBM.
       %   PRO: Simpler-ish testing
@@ -151,11 +151,11 @@ classdef qual
       %=================================
       for qrcid = QrcbMap.qrcidAr'
         qrcbAr = QrcbMap.get(qrcid);
-        Qrcs   = Qrcsm.get(qrcid, ptid);
+        Qrcs   = Qrcsm.get(qrcid);
 
-        if isempty(Qrcs)
-          continue
-        end
+        % if isempty(Qrcs)
+        %   continue
+        % end
 
         %------------------
         % Set QUALITY_FLAG

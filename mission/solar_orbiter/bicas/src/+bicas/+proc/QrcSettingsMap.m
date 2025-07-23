@@ -9,19 +9,19 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef QrcSettingsMap < handle
-  % PROBLEM: Misspelled DSIs leads get() to assume that it is a DSI for which
-  %          there is no QRCS.
-  %   PROPOSAL: QrcSettingsMap constructor accepts list of all possible DSIs and asserts
-  %             using it.
+  % PROPOSAL: Rename QrcsMap.
+  %   PRO: More analogous to QrcbMap.
+  %
+  % PROPOSAL: Change get_QRCIDs() to dependent property qrcidAr.
   %
   %
-  %
-  % PROBLEM: The same QRCID may apply to both L1R-->L2 and L2-->L3 processing,
-  %          may be read from NSO table. -- ~IMPLEMENTED
+  % PROBLEM: The same QRCID may apply to both L1/L1R-->L2 and L2-->L3 processing,
+  %          and may be read from NSO table for both.
   %   Ex: Floating V3 after sweeps labelled in L2, not used for L3 EFIELD.
   %       https://github.com/irfu/irfu-matlab/issues/156
-  %   CON: QRCs can apply to L2-->L3 but not L1R-->L2, which makes them very
-  %        artificial being used in L1R-->L2 code.
+  %   Ex: ANTx_FAIL
+  %   NOTE: QRCs may also ONLY apply to L2-->L3 and NOT L1R-->L2, which makes
+  %         them very artificial being used in L1R-->L2 code.
   %     Ex: Bad density.
   %   --
   %   PROPOSAL: Read quality bits set in L2 when processing L2-->L3.
@@ -52,42 +52,6 @@ classdef QrcSettingsMap < handle
   %              code that is generic to LxQBM.
   %       PROBLEM: Need to distinguish L2QBM for L1R-->L2 and L2-->L2.
   %     CON-PROPOSAL: Use multiple inheritance, but only when relevant.
-  %   --
-  %   PROPOSAL: Have QRCSs represent *all* types of processing. -- IMPLEMENTED
-  %     PROPOSAL: QRCS (QrcSettings) owns separate "sub-QRCS" objects/classes
-  %               for different kinds of processing.
-  %       PRO: Can reference "entire set of QRC settings" for type of
-  %            processing.
-  %       PROPOSAL: Singleton "database" which is map from QRCID+DSI-->~QRCS.
-  %         NOTE: Assumes that there is no need for information associated with
-  %               QRCID only.
-  %       PROPOSAL: Have one sub-QRCS per DSI.
-  %         CON?: How handle different types of processing producing the same
-  %               DSI?
-  %           CON: Should only happen for unofficial processing.
-  %         CON: Must be initialized with many default values.
-  %           CON-PROPOSAL: Absent sub-QRCS implies defaults.
-  %             PRO: Can handle multiple sub-QRCS classes.
-  %         TODO-DEC: Class names, abbreviations?
-  %           QRCS=QrcSetting: All settings for QRCID
-  %           QRCS=QrcSetting: All settings for one QRCID+DSI.
-  %       PROPOSAL: bicas.proc.qual.QRCB_arrays_to_quality_ZVs() should have
-  %                 argument for (one) DSI. Only execute the needed DSI.
-  %
-  %
-  %
-  % PROPOSAL: Treat input L2QBM as another generic (though not completely)
-  %           input source for QRCBs, next to NSO table and autodetection,
-  %           using QRCS L2QBM bit.
-  %   PROBLEM: How distinguish between QRCs which can be determines this way
-  %            and not?
-  %     PROPOSAL: There is exactly one L2QBM quality bit.
-  %     PROPOSAL: Enumerate QRCIDs (hardcoded).
-  %     PROPOSAL: Assert that QRCS defines exactly one (unique?) L2QBM quality
-  %               bit.
-  %     PROPOSAL: Dedicated flag in QRCS.
-  %     CON-PROPOSAL: Only implement for QRCs for which it is relevant.
-  %                   Having general system is unnecessary, too broad.
   %
   %
   %
@@ -108,30 +72,59 @@ classdef QrcSettingsMap < handle
   %   PROPOSAL: See L3 DENSITY as function of L3 SCPOT (CDF to CDF).
   %             ==> Implicit that QRCS for L3 SCPOT affects L3 DENSITY.
   %     PROBLEM: Still one variable for both L3 EFIELD+SCPOT.
-  % PROPOSAL: QRCSs should not be function of DSI, but some
-  %           ~"processing type ID" which can group output DSIs arbitrarily.
-  %   PROPOSAL: Represent group of datasets.
-  %     TODO-DEC: Name?
-  %       QDID=QRC Datasets ID.
+  %
+  %
+  % PROPOSAL: Convert class to only maintaining map QRCID-->QRCS, for QRCSs for
+  %           ONLY the same type of processing. Use separate global constants for
+  %           storing different subsets of QRCSs, e.g. for different types of
+  %           processing. If needs different QRC settings for e.g. different
+  %           DSIs for the same type of processing, then that should be selected
+  %           outside of the qual functions which use QRC settings.
+  %   CON: Destroys any link between the same QRCID for different types of
+  %        processing.
+  %     CON: Code execution assures some correspondence (should): identical
+  %          QRCIDs.
+  %     CON: Code which assigns maps should co-locate related QRCSs.
+  %
+  % PROPOSAL: Require that all QRCSs are of a certain subclass. Add MC to
+  %           constructor.
   %
   %
   %
-  % TODO: Remove QrcSettings. Eliminate QRCS abbreviation. -- DONE
-  % TODO: Rename QrcSettingsDb --> QrcsMap=QrcSettingsMap(?) -- DONE
-  % TODO: Convert QrcDsiSettings --> ~QRCS=QrcSettings? -- DONE
-  % TODO: DSI arguments--> ~ProcessingType ID?
+  % PROPOSAL: qual functions should only need to know about mapping
+  %   QRCID-->action (e.g. QRCS). They should not need to know how the QRCSs
+  %   were selected, e.g. due to PTID or DSI.
+  % ============================================================================
+  % NOTE: Important qual functions for QRC settings:
+  %   bicas.proc.qual.NSO_table_to_QRCB_map(requestedQrcidAr, NsoTable, tt2000Ar, L))
+  %     NOTE: No QRCSs needed, except QRCIDs for the type of processing.
+  %   bicas.proc.qual.LxQBM_to_QRCB_maps(l2qbmAr, lxqbmName, QrcsMap)
+  %     EXPERIMENTAL. UNUSED.
+  %     NOTE: Should ideally only use the subset of QRCSs for which quality bits
+  %           are read.
+  %       NOTE: Uses QRCSs for processing which created the quality bits
+  %             (L1/L1R-->L2), but sets QRCBs for QRCIDs used in the processing
+  %             that will use the information (L2-->L3).
+  %   bicas.proc.qual.QRCB_arrays_to_quality_ZVs(QrcbMap, Qrcsm, ptid, lxqbmName))
+  %   bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(voltageAr, ssidAr, QrcbMap, Qrcsm, ptid)
+  %   bicas.proc.L1L2.qual.set_current_samples_FV(currentAr, QrcbMap, Qrcsm, ptid)
+  %   bicas.proc.L2L3.get_saturation_QRCBs_from_L2QBM(l2qbmAr, saturationQualitySchemeId)
+  %     EXPERIMENTAL. UNUSED.
+  %   bicas.proc.L2L3.set_VDC_EDC_samples_FV(VDC_Fpa, EDC_Fpa, QrcbMap, QrcsMap)
+  %     EXPERIMENTAL. UNUSED.
   %
-  % TODO-DEC: Require legal DSI/PTID when initializing?
-  % TODO-DEC: Require existing QRCID+DSI/PTID combination when calling? -- DONE
-  %   PROPOSAL: Method for "locking" object. After that point, .get() always
-  %             verifies against the separate lists of QRCIDs and DSIs found in
-  %             the object.
-  %     CON: May work for QRCIDs, but not necessarily for DSIs. Not all DSIs
-  %          might have any QRCS.
-  %   PROPOSAL: Hardcode global list of DSIs/PTDs into class.
-  %   PROPOSAL: Requires QRCs for all used combinations of QRCID and DSI/PTIDs.
-  %     PROPOSAL: Method for obtaining all QRCIDs for a given PTID. => Can
-  %               obtain only relevant the QRCIDs.
+  % NOTE: qual functions which do not need QRCSs but do need subsets of QRCs (subset relative to a type of
+  %       processing):
+  % bicas.proc.L1L2.get_saturation_QRCBs(tt2000Ar, saturationQualitySchemeId, VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec)
+  %   Iterates over CHANNEL_SATURATION QRCIDs.
+  %   Calls bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(ChannelSaturationQrcbMap, nRecords).
+  % bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs()
+  %   Iterates over CHANNEL_SATURATION QRCIDs.
+  % bicas.proc.L2L3.get_saturation_QRCBs_from_L2QBM(l2qbmAr, saturationQualitySchemeId)
+  %   EXPERIMENTAL. UNUSED.
+  %   Wrapper around bicas.proc.qual.LxQBM_to_QRCB_maps().
+  %   NOTE: Needs set QRCSs for which quality bits to read (CHANNEL_SATURATION QRCIDs).
+  % ============================================================================
 
 
 
@@ -141,9 +134,8 @@ classdef QrcSettingsMap < handle
   %#####################
   %#####################
   properties(SetAccess=private, GetAccess=private)
-  %properties(SetAccess=private, GetAccess=public)    % TEST
     QrcsDict
-    legalPtidAr
+    % legalPtidAr
   end
 
 
@@ -164,65 +156,75 @@ classdef QrcSettingsMap < handle
     %       that can be used with this instance.
     %       RATIONALE: This is a safeguard against typos.
     %
-    function obj = QrcSettingsMap(legalPtidAr)
+    function obj = QrcSettingsMap()
       % IMPLEMENTATION NOTE: configureDictionary("cell",
       % "bicas.proc.QrcSetting") does not work since dictionary apparently
       % does not permit abstract classes. Therefore using cell values.
       % MATLAB error message: "Unable to configure dictionary with abstract type
       % 'bicas.proc.QrcSetting'."
 
-      assert(isstring(legalPtidAr) & iscolumn(legalPtidAr))
+      % assert(isstring(legalPtidAr) & iscolumn(legalPtidAr))
 
-      obj.QrcsDict    = configureDictionary("cell", "cell");
-      obj.legalPtidAr = legalPtidAr;
+      obj.QrcsDict    = configureDictionary("string", "cell");
+      % obj.legalPtidAr = legalPtidAr;
     end
 
 
 
     % Add new QRCS. Can not overwrite (assertion).
-    function add(obj, qrcid, ptid, Qrcs)
+    function add(obj, qrcid, Qrcs)
       assert(isa(Qrcs, "bicas.proc.QrcSetting") & isscalar(Qrcs))
 
-      key = obj.assert_get_dictionary_key(qrcid, ptid);
+      key = obj.assert_get_dictionary_key(qrcid);
 
       assert(~obj.QrcsDict.isKey(key))
 
-      obj.QrcsDict(key) = {{Qrcs}};   % NOTE: Cell in cell.
+      obj.QrcsDict(key) = {Qrcs};   % NOTE: Cell in cell.
     end
 
 
 
     % RETURN VALUE
     % ============
-    % QRCS for specified key, if key exists.
-    % Empty, if key does not exist.
-    function Qrcs = get(obj, qrcid, ptid)
-      key = obj.assert_get_dictionary_key(qrcid, ptid);
+    % QRCS for specified key. Key must exist.
+    function Qrcs = get(obj, qrcid)
+      key = obj.assert_get_dictionary_key(qrcid);
+
+      assert(obj.QrcsDict.isKey(key), ...
+        "There is no key qrcid=""%s"".", qrcid)
+
+      QrcsCa = obj.QrcsDict(qrcid);
+      Qrcs   = QrcsCa{1};
 
       % assert(obj.QrcsDict.isKey(key), ...
       %   "There is no key for qrcid=""%s"" and ptid=""%s"".", qrcid, ptid)
-      if obj.QrcsDict.isKey(key)
-        QrcidCaCa = obj.QrcsDict(key);
-        Qrcs     = QrcidCaCa{1}{1};
-      else
-        Qrcs = [];
-      end
+      % if obj.QrcsDict.isKey(key)
+      %   QrcidCaCa = obj.QrcsDict(key);
+      %   Qrcs     = QrcidCaCa{1}{1};
+      % else
+      %   Qrcs = [];
+      % end
     end
 
 
 
     % Return list of unique QRCIDs.
     function qrcidAr = get_QRCIDs(obj)
-      qrcidAr = string.empty(0, 1);
+      % qrcidAr = string.empty(0, 1);
+      %
+      % for keyCaCa = obj.QrcsDict.keys'
+      %   qrcid = keyCaCa{1}{1};
+      %
+      %   qrcidAr(end+1, 1) = qrcid;
+      % end
+      %
+      % % NOTE: unique() should convert column-->column.
+      % qrcidAr = unique(qrcidAr);
 
-      for keyCaCa = obj.QrcsDict.keys'
-        qrcid = keyCaCa{1}{1};
-
-        qrcidAr(end+1, 1) = qrcid;
-      end
-
-      % NOTE: unique() should convert column-->column.
-      qrcidAr = unique(qrcidAr);
+      % IMPLEMENTATION NOTE: Sort to gain deterministic result which is good for
+      % testing.
+      qrcidAr = sort(obj.QrcsDict.keys);
+      assert(isstring(qrcidAr) & iscolumn(qrcidAr))
     end
 
 
@@ -241,7 +243,7 @@ classdef QrcSettingsMap < handle
         obj.QrcsDict.numEntries + Qrcsm.QrcsDict.numEntries)
 
       obj.QrcsDict    = TempDict;
-      obj.legalPtidAr = unique([obj.legalPtidAr; Qrcsm.legalPtidAr]);
+      % obj.legalPtidAr = unique([obj.legalPtidAr; Qrcsm.legalPtidAr]);
     end
 
 
@@ -250,22 +252,22 @@ classdef QrcSettingsMap < handle
     % ============
     % containers.Map QRCID-->QRCS for the specified PTID.
     %
-    function QrcsMap = get_QRCID_QRCS_map(obj, ptid)
-      assert(ismember(ptid, obj.legalPtidAr))
-
-      QrcsMap = containers.Map();
-
-      for key = obj.QrcsDict.keys'
-        currentQrcid = key{1}{1};
-        currentPtid  = key{1}{2};
-        QrcsCaCa    = obj.QrcsDict(key);
-        Qrcs        = QrcsCaCa{1}{1};
-
-        if ptid == currentPtid
-          QrcsMap(currentQrcid) = Qrcs;
-        end
-      end
-    end
+    % function QrcsMap = get_QRCID_QRCS_map(obj, ptid)
+    %   assert(ismember(ptid, obj.legalPtidAr))
+    %
+    %   QrcsMap = containers.Map();
+    %
+    %   for key = obj.QrcsDict.keys'
+    %     currentQrcid = key{1}{1};
+    %     currentPtid  = key{1}{2};
+    %     QrcsCaCa    = obj.QrcsDict(key);
+    %     Qrcs        = QrcsCaCa{1}{1};
+    %
+    %     if ptid == currentPtid
+    %       QrcsMap(currentQrcid) = Qrcs;
+    %     end
+    %   end
+    % end
 
 
 
@@ -282,16 +284,19 @@ classdef QrcSettingsMap < handle
 
 
 
-    function mapKey = assert_get_dictionary_key(obj, qrcid, ptid)
-      assert(isstring(qrcid))
-      assert(isstring(ptid) & isscalar(ptid))
-      assert(ismember(ptid, obj.legalPtidAr))
+    function mapKey = assert_get_dictionary_key(obj, qrcid)
+      % PROPOSAL: Abolish. Exists for historical reasons only.
+
+      assert(isstring(qrcid) & isscalar(qrcid))
+      % assert(isstring(ptid) & isscalar(ptid))
+      % assert(ismember(ptid, obj.legalPtidAr))
 
       % NOTE: Must use cell array within cell array. Dictionary will vectorize
       % the outer cell array.
       % IMPLEMENTATION NOTE: containers.Map() will not allow using
       % non-vectorized cell arrays at all.
-      mapKey = {{qrcid; ptid}};
+      % mapKey = {{qrcid; ptid}};
+      mapKey = qrcid;
     end
 
 

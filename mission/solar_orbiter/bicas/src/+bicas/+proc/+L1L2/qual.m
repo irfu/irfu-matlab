@@ -307,7 +307,7 @@ classdef qual
     %       Same size as samplesAr. Same number of rows as QrcbMap.
     %
     function voltageAr = set_5xBLTS_voltage_samples_FV(...
-        voltageAr, ssidAr, QrcbMap, Qrcsm, ptid)
+        voltageAr, ssidAr, QrcbMap, Qrcsm)
 
       % IMPLEMENTATION NOTE: Input arrays samplesAr & ssidAr must have same
       % arbitrary size (not arbitrary for first dimension).
@@ -327,11 +327,11 @@ classdef qual
       bFv    = false(sizeAr);
       for qrcid = QrcbMap.qrcidAr'
         qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
-        Qrcs   = Qrcsm.get(qrcid, ptid);
+        Qrcs   = Qrcsm.get(qrcid);
 
-        if isempty(Qrcs)
-          continue
-        end
+        % if isempty(Qrcs)
+        %   continue
+        % end
 
         % Arrays of the same size as voltageAr.
         bQrcbAr    = repmat(qrcbAr, [1, sizeAr(2:end)]);
@@ -352,7 +352,7 @@ classdef qual
     % currentAr
     %       Float. Size (nRecords, 3).
     %
-    function currentAr = set_current_samples_FV(currentAr, QrcbMap, Qrcsm, ptid)
+    function currentAr = set_current_samples_FV(currentAr, QrcbMap, Qrcsm)
       % IMPLEMENTATION NOTE: Argument Qrcsm is there (instead of using a
       % global constant) to make test code simpler & more robust.
 
@@ -368,7 +368,7 @@ classdef qual
       bFv        = false(size(currentAr));
       for qrcid = QrcbMap.qrcidAr'
         qrcbAr = QrcbMap.get(qrcid);    % (nRecords, 1)
-        Qrcs  = Qrcsm.get(qrcid, ptid);
+        Qrcs  = Qrcsm.get(qrcid);
 
         if isempty(Qrcs)
           continue

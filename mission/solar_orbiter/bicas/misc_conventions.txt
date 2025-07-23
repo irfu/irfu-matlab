@@ -393,11 +393,6 @@ PFOID
 Production Function
     Abstract method bicas.proc.SwmProcessing.production_function() and its
     implementations in subclasses which do the core of data processing.
-PTID
-    Processing Type ID.
-    String constant used for grouping together QRC settings for a given type of
-    processing, e.g. L1/L1R->L2, which uses the same QRCS (quality settings) for
-    the same QRCID.
 QRC
     Quality-Related Condition. Condition that, when it applies, can be used to
     set/modify quality ZVs and/or blanking of data. QRCs are uniquely identified

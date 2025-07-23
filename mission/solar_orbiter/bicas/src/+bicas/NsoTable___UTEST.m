@@ -136,7 +136,10 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
       nsoFilePath = fullfile(bicasRootPath, nsoTableRelativePath);
 
       % CALL TESTED CODE
-      NsoTable = bicas.NsoTable.read_file_validated(nsoFilePath, bicas.const.Q.ALL_QRCID_AR);
+      qrcidAr = [...
+        bicas.const.Q.L2_QRCSM.get_QRCIDs(); ...
+        bicas.const.Q.L3DENSITY_QRCSM.get_QRCIDs()];
+      NsoTable = bicas.NsoTable.read_file_validated(nsoFilePath, qrcidAr);
 
       testCase.verifyTrue(isa(NsoTable, 'bicas.NsoTable'))
       testCase.assertTrue(isstring(NsoTable.evtQrcidAr))

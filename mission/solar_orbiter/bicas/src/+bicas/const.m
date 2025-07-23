@@ -171,9 +171,6 @@ classdef const
     % (2) channel saturation QRCs.
     QUALITY_FLAG_SATURATION = uint8(0);
 
-    % All permitted PTIDs. Used for assertions.
-    PTID_AR = ["OFFICIAL_L2"; "OFFICIAL_L3_DENSITY"];
-
     % QRC-related constants initialized with code.
     Q = bicas.const.init_QRC_constants();
 
@@ -533,10 +530,11 @@ classdef const
 
 
 
-    % Function for the initializing channel saturations QRCSM.
+    % Function for the initializing QRCSM with all QRCSs for channel saturation
+    % in L2 CDFs.
     %
-    function Qrcsm = init_CHANNEL_SATURATION_QRCSM()
-      Qrcsm = bicas.proc.QrcSettingsMap(["OFFICIAL_L2"]);
+    function Qrcsm = init_L2_CHANNEL_SATURATION_QRCSM()
+      Qrcsm = bicas.proc.QrcSettingsMap();
 
       % Lowest bit among the channel saturation quality bits, described as the
       % bit position where 0=LSB.
@@ -571,22 +569,26 @@ classdef const
         Qrcs = bicas.proc.QrcSettingL2(...
           QUALITY_FLAG      =bicas.const.QUALITY_FLAG_SATURATION, ...
           L2_QUALITY_BITMASK=l2qbmBit);
-        Qrcsm.add(qrcid, "OFFICIAL_L2", Qrcs);
+        Qrcsm.add(qrcid, Qrcs);
       end
     end
 
 
 
-    % Function for initializing the global QRCSM.
+    % Function for initializing QRCSMs containing all QRCSs for producing
+    % (1) all (official) L2 CDFs, and
+    % (3) all L3 density CDFs.
     %
     % NOTE: The quality bit definitions here must be consistent with the
     % definitions in the corresponding CDF skeletons. Definitions in general
     % must be consistent with documentation.
     %
-    function Qrcsm = init_QRCSM(ChannelSaturationsQrcsm)
-      assert(isa(ChannelSaturationsQrcsm, "bicas.proc.QrcSettingsMap"))
+    function [L2Qrcsm, L3DensityQrcsm] = ...
+      init_L2_L3Density_QRCSM(L2ChannelSaturationsQrcsm)
+      assert(isa(L2ChannelSaturationsQrcsm, "bicas.proc.QrcSettingsMap"))
 
-      Qrcsm = bicas.proc.QrcSettingsMap(["OFFICIAL_L2"; "OFFICIAL_L3_DENSITY"]);
+      L2Qrcsm        = bicas.proc.QrcSettingsMap();
+      L3DensityQrcsm = bicas.proc.QrcSettingsMap();
 
       %=================
       % Local constants
@@ -604,7 +606,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG      =uint8(1), ...
         L2_QUALITY_BITMASK=L2QBM_BIT_PARTIAL_SATURATION);
-      Qrcsm.add("PARTIAL_SATURATION", "OFFICIAL_L2", Qrcs)
+      L2Qrcsm.add("PARTIAL_SATURATION", Qrcs)
 
       %=================
       % FULL_SATURATION
@@ -614,7 +616,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG      =bicas.const.QUALITY_FLAG_SATURATION, ...
         L2_QUALITY_BITMASK=L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
-      Qrcsm.add("FULL_SATURATION", "OFFICIAL_L2", Qrcs);
+      L2Qrcsm.add("FULL_SATURATION", Qrcs);
 
       %=================
       % THRUSTER_FIRING
@@ -625,7 +627,7 @@ classdef const
       % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
       % (YK 2020-11-03 did not ask for any to be set.)
       Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(1));
-      Qrcsm.add("THRUSTER_FIRING", "OFFICIAL_L2", Qrcs);
+      L2Qrcsm.add("THRUSTER_FIRING", Qrcs);
 
       %=============
       % BIAS_HW_OFF
@@ -635,7 +637,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL2(...
         voltageFvSsidAr=S.values, ...
         currentFvIantAr=[1:3]');
-      Qrcsm.add("BIAS_HW_OFF", "OFFICIAL_L2", Qrcs);
+      L2Qrcsm.add("BIAS_HW_OFF", Qrcs);
 
       %=======
       % SWEEP
@@ -643,7 +645,7 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL2(...
         voltageFvSsidAr=S.values, ...
         currentFvIantAr=[1:3]');
-      Qrcsm.add("SWEEP", "OFFICIAL_L2", Qrcs);
+      L2Qrcsm.add("SWEEP", Qrcs);
 
       %==============
       % ANTx_FAILING
@@ -657,19 +659,19 @@ classdef const
         QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
         L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         voltageFvSsidAr =S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
-      Qrcsm.add("ANT1_FAILING", "OFFICIAL_L2", Qrcs);
+      L2Qrcsm.add("ANT1_FAILING", Qrcs);
 
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
         L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         voltageFvSsidAr =S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
-      Qrcsm.add("ANT2_FAILING", "OFFICIAL_L2", Qrcs);
+      L2Qrcsm.add("ANT2_FAILING", Qrcs);
 
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG     =QUALITY_FLAG_ANTx_FAILING, ...
         L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
         voltageFvSsidAr =S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
-      Qrcsm.add("ANT3_FAILING", "OFFICIAL_L2", Qrcs);
+      L2Qrcsm.add("ANT3_FAILING", Qrcs);
 
 
 
@@ -683,11 +685,11 @@ classdef const
       Qrcs = bicas.proc.QrcSettingL3Density(...
         QUALITY_FLAG      =uint8(1), ...
         L3_QUALITY_BITMASK=uint16(1));
-      Qrcsm.add("BAD_DENSITY", "OFFICIAL_L3_DENSITY", Qrcs);
+      L3DensityQrcsm.add("BAD_DENSITY", Qrcs);
 
 
 
-      Qrcsm.merge(ChannelSaturationsQrcsm);
+      L2Qrcsm.merge(L2ChannelSaturationsQrcsm);
     end
 
 
@@ -695,15 +697,17 @@ classdef const
     function Q = init_QRC_constants()
       Q = struct();
 
-      CHANNEL_SATURATION_QRCSM = bicas.const.init_CHANNEL_SATURATION_QRCSM();
-      Q.CHANNEL_SATURATION_QRCID_AR = string(CHANNEL_SATURATION_QRCSM.get_QRCIDs());
+      L2_CHANNEL_SATURATION_QRCSM = bicas.const.init_L2_CHANNEL_SATURATION_QRCSM();
+      Q.CHANNEL_SATURATION_QRCID_AR = string(L2_CHANNEL_SATURATION_QRCSM.get_QRCIDs());
 
-      Q.QRCSM = bicas.const.init_QRCSM(CHANNEL_SATURATION_QRCSM);
+      [Q.L2_QRCSM, Q.L3DENSITY_QRCSM] = bicas.const.init_L2_L3Density_QRCSM(...
+        L2_CHANNEL_SATURATION_QRCSM);
 
       % All legal QRCIDs, or all kinds of processing. This defines the set of
       % legal QRCIDs, including ones that can be used in the NSO table file.
-      % Strings can be used as constants for those strings inside BICAS.
-      Q.ALL_QRCID_AR = string(Q.QRCSM.get_QRCIDs());
+      % IMPLEMENTATION NOTE: This is required for asserting QRCIDs in the NSO
+      % table file.
+      Q.ALL_QRCID_AR = [Q.L2_QRCSM.get_QRCIDs(); Q.L3DENSITY_QRCSM.get_QRCIDs()];
     end
 
 
