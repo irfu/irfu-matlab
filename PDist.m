@@ -565,7 +565,7 @@ classdef PDist < TSeries
           case 'method'
             l = 2;
             method = args{2};
-            args = args(l+1:end);            
+            args = args(l+1:end);
           otherwise
             irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
             args = args(l+1:end);
@@ -3376,7 +3376,7 @@ classdef PDist < TSeries
               spectype = 'pitchangle';
             end
             %            spectype = 'pitchangle';
-            irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));          
+            irf.log('warning',sprintf('Spectype not given, default spectype for distribution type ''%s'' is ''%s''.',obj.type, spectype));
           otherwise
             irf.log('warning',sprintf('Distribution type ''%s'' not supported. Using spectype ''energy'' for whatever backwards compatibility there might be. This option will be removed in a future version.',obj.type));
             spectype = 'energy';
@@ -4024,7 +4024,7 @@ classdef PDist < TSeries
       % Set all NaNs to zero
       obj.data(isnan(obj.data)) = 0;
 
-      % Data from PDist in spherical coordinate system     
+      % Data from PDist in spherical coordinate system
       sizedata = obj.datasize;
       mass = obj.mass;
 
@@ -4039,9 +4039,9 @@ classdef PDist < TSeries
         vol = obj.d3v.data;
       end
 
-      % Assign a method of how the particles should be 
-      % divided/partitioned amongst the cells.          
-      switch Ntot_division % 
+      % Assign a method of how the particles should be
+      % divided/partitioned amongst the cells.
+      switch Ntot_division %
         case {'dn','fdv','f*dv'} % Proportional to the partial density of each cell.
           % The sum of out.dn should give the particle density
           % rounds up
@@ -4050,9 +4050,9 @@ classdef PDist < TSeries
         case {'f'} % Proportional to f, rounds up
           dn = f;
           f_round = @(x) ceil(x);
-        case 'counts' % Also proportional to 'f', which could also be 
-          % counts, but rounds down, because counts are e.g. 1.0001, 
-          % which should give one macroparticle, e.g. if one want one 
+        case 'counts' % Also proportional to 'f', which could also be
+          % counts, but rounds down, because counts are e.g. 1.0001,
+          % which should give one macroparticle, e.g. if one want one
           % macroparticle per real particle
           dn = f;
           f_round = @(x) floor(x);
@@ -4060,7 +4060,7 @@ classdef PDist < TSeries
 
       if doNtot
         % Total density of each timestep, something wrong here, or just badly
-        % messed up by background noise and particle contamination?            
+        % messed up by background noise and particle contamination?
         n_tot = sum(dn(:,:),2);
 
         % Fraction of density in each separate bin
@@ -4151,7 +4151,7 @@ classdef PDist < TSeries
                   tmp_azim   = azim_minus(iAzim)        + dazim*rand(N_bin,1);   % deg
                   tmp_polar  = polar_minus(iPolar)      + dpolar*rand(N_bin,1);  % deg
                   tmp_v = sqrt(tmp_energy*units.eV*2/mass)/1000; % km/s
-                
+
 
                   if doScpot % check if energy is negative, then skip
                     if iEnergy>8  % debug
@@ -4164,7 +4164,7 @@ classdef PDist < TSeries
                     N_bin = numel(tmp_v);
                   end
 
-                  % Transform into cartesian velocity components    
+                  % Transform into cartesian velocity components
                   tmp_vx = -tmp_v.*sind(tmp_polar).*cosd(tmp_azim); % '-' because the data shows which direction the particles were coming from
                   tmp_vy = -tmp_v.*sind(tmp_polar).*sind(tmp_azim);
                   tmp_vz = -tmp_v.*cosd(tmp_polar);

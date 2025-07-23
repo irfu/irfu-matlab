@@ -1,4 +1,4 @@
-%% Turbulence model spectra and noise       
+%% Turbulence model spectra and noise
 
 Units=irf_units;
 if 1 % parameters
@@ -12,7 +12,7 @@ if 1 % parameters
   T_plasma_eV=30; % plasma temperature in eV
   n = 20*1e6;      % plasma density m^-3
   title_text=[title_text 'T_p=' num2str(T_plasma_eV) ' eV, '];
-  
+
   % ADA
   ADA_antenna_eff_length=4/2; % efficient distance between antennas
   ADA_R_plasma_nobias=8.4e6;ADA_R_plasma_bias=3.5e6; % ne=20cc, Te=30cc.
@@ -443,10 +443,10 @@ if 1 % plot electric field noises
 
     loglog(SDP_instr_noise(:,1), SDP_instr_noise(:,2),'k');
     text(SDP_instr_noise(2,1)*2,SDP_instr_noise(end,2)*0.9,'preamp noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
-    
+
     loglog(hca,SDP_EMC.f,SDP_EMC.Epower,'o-','markersize',10,'color',[0 0.8 0]);
     text(0.98,0.55,'SCI-REQ','fontsize',12,'fontweight','demi','color',[0 0.8 0],'units','normalized','horizontalalignment','right','parent',hca);
-  
+
     %loglog(hca,SDP_EMC.f(1:3),SDP_EMC.Epower(1:3),'--','color',[0 0.5 0]);
     %loglog(hca,SDP_EMC_OLD.f,SDP_EMC_OLD.Epower,'o-','markersize',10,'color',[0 0.8 0]);
     %text(0.97,0.45,'EMC req','fontsize',12,'fontweight','demi','color',[0 0.8 0],'units','normalized','horizontalalignment','right','parent',hca);
