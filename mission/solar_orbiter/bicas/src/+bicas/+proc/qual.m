@@ -113,6 +113,9 @@ classdef qual
     %
     % ARGUMENTS
     % =========
+    % Qrcbm
+    % Qrcsm
+    %       Must contain the same keys as Qrcbm.
     % nRec
     %       Number of CDF records (rows).
     %       IMPLEMENTATION NOTE: Needed for handling the case of zero QRCIDs.
@@ -136,6 +139,7 @@ classdef qual
 
       assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
+      assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))
       assert(isstring(lxqbmName))
 
       nRec = Qrcbm.nRecords;

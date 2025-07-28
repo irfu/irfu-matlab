@@ -294,6 +294,9 @@ classdef qual
     %       NOTE: Does not have to have any particular unit.
     % ssidAr
     %       Same size as samplesAr. Same number of rows as Qrcbm.
+    % Qrcbm
+    % Qrcsm
+    %       Must contain the same keys as Qrcbm.
     %
     function voltageAr = set_5xBLTS_voltage_samples_FV(...
         voltageAr, ssidAr, Qrcbm, Qrcsm)
@@ -309,7 +312,9 @@ classdef qual
       % ASSERTIONS
       assert(isfloat(voltageAr))
       assert(isequal(size(voltageAr), size(ssidAr)))
+      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
+      assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))
       assert(Qrcbm.nRecords == size(voltageAr, 1))    % Nbr. of records.
 
       sizeAr = size(voltageAr);
@@ -340,6 +345,9 @@ classdef qual
     % =========
     % currentAr
     %       Float. Size (nRecords, 3).
+    % Qrcbm
+    % Qrcsm
+    %       Must contain the same keys as Qrcbm.
     %
     function currentAr = set_current_samples_FV(currentAr, Qrcbm, Qrcsm)
       % IMPLEMENTATION NOTE: Argument Qrcsm is there (instead of using a
@@ -348,6 +356,7 @@ classdef qual
       assert(isfloat(currentAr))
       assert(isa(Qrcbm, 'bicas.proc.QrcbMap'))
       assert(isa(Qrcsm, 'bicas.proc.QrcSettingsMap'))
+      assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))
       irf.assert.sizes(currentAr, [Qrcbm.nRecords, 3])
 
       % PROPOSAL: Create and use bAntennas = logical size (1, 3) + repmat.

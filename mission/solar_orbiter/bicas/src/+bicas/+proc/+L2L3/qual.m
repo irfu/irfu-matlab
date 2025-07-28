@@ -139,13 +139,18 @@ classdef qual
 
     % UNUSED SO FAR.
     %
-    % For blanking VDC and EDC before they are passed to EXCD
+    % ARGUMENTS
+    % =========
+    % Qrcbm
+    % Qrcsm
+    %       Must contain the same keys as Qrcbm.
     %
     function [VDC_Fpa, EDC_Fpa] = set_VDC_EDC_samples_FV(...
         VDC_Fpa, EDC_Fpa, Qrcbm, Qrcsm)
 
       assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       assert(isa(Qrcsm,   "bicas.proc.QrcSettingsMap"))
+      assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))
       assert(isa(VDC_Fpa, "bicas.utils.FPArray"))
       assert(isa(EDC_Fpa, "bicas.utils.FPArray"))
       nRecords = Qrcbm.nRecords;
