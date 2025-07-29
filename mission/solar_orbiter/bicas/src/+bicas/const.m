@@ -562,9 +562,9 @@ classdef const
       L3Qrcsm.add("SATURATION_ZV_V1",  bicas.proc.QrcSettingL3(vdcFvIndexAr=1))
       L3Qrcsm.add("SATURATION_ZV_V2",  bicas.proc.QrcSettingL3(vdcFvIndexAr=2))
       L3Qrcsm.add("SATURATION_ZV_V3",  bicas.proc.QrcSettingL3(vdcFvIndexAr=3))
-      L3Qrcsm.add("SATURATION_ZV_V12", bicas.proc.QrcSettingL3(vdcFvIndexAr=1))
-      L3Qrcsm.add("SATURATION_ZV_V13", bicas.proc.QrcSettingL3(vdcFvIndexAr=2))
-      L3Qrcsm.add("SATURATION_ZV_V23", bicas.proc.QrcSettingL3(vdcFvIndexAr=3))
+      L3Qrcsm.add("SATURATION_ZV_V12", bicas.proc.QrcSettingL3(edcFvIndexAr=1))
+      L3Qrcsm.add("SATURATION_ZV_V13", bicas.proc.QrcSettingL3(edcFvIndexAr=2))
+      L3Qrcsm.add("SATURATION_ZV_V23", bicas.proc.QrcSettingL3(edcFvIndexAr=3))
 
       assert(isequal(L2Qrcsm.qrcidAr, L3Qrcsm.qrcidAr))
     end
