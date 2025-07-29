@@ -184,48 +184,50 @@ classdef qual
 
 
 
-    % Blank VDC and EDC (FPAs). Intended for blanking before VDC and EDC are
-    % passed to EXCD.
+    % Blank 2D FPA based on QRCBs. Intended for blanking e.g. VDC and EDC
+    % before they are passed to solo.vdccal() and solo.psp2ne(), or their
+    % return values.
+    %
     %
     % ARGUMENTS
     % =========
     % Qrcbm
     % Qrcsm
     %       Must contain the same keys as Qrcbm.
+    % qrcsFieldName
+    %       String. Must refer to QRCS field containing column array of channel
+    %       indices (second dimension in Fpa).
     %
-    function [VDC_Fpa, EDC_Fpa] = set_VDC_EDC_samples_FV(...
-        VDC_Fpa, EDC_Fpa, Qrcbm, Qrcsm)
-
-      assert(isa(Qrcbm,   "bicas.proc.QrcbMap"))
-      assert(isa(Qrcsm,   "bicas.proc.QrcSettingsMap"))
+    function Fpa = set_FPA_samples_FP(Fpa, Qrcbm, Qrcsm, qrcsFieldName)
+      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
+      assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
       assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))
-      assert(isa(VDC_Fpa, "bicas.utils.FPArray"))
-      assert(isa(EDC_Fpa, "bicas.utils.FPArray"))
-      nRecords = Qrcbm.nRecords;
-      irf.assert.sizes(...
-        VDC_Fpa, [nRecords, 3], ...
-        EDC_Fpa, [nRecords, 3])
+      assert(isa(Fpa,   "bicas.utils.FPArray"))
+      assert(isstring(qrcsFieldName))
+      nRecords  = Qrcbm.nRecords;
+      nChannels = irf.assert.sizes(Fpa, [nRecords, -1]);
 
-      bVdcFv         = false(nRecords, 3);
-      bEdcFv         = false(nRecords, 3);
-      channelIndexAr = repmat([1:3], [nRecords, 1]);
+      bFv            = false(nRecords, nChannels);
+      channelIndexAr = repmat(1:nChannels, [nRecords, 1]);
 
       for qrcid = Qrcbm.qrcidAr'
         qrcbAr = Qrcbm.get(qrcid);    % (nRecords, 1)
-        Qrcs   = Qrcsm.get(  qrcid);
+        Qrcs   = Qrcsm.get(qrcid);
         assert(isa(Qrcs, "bicas.proc.QrcSettingL3"))
 
-        % Arrays of the same size as VDC_Fpa & EDC_Fpa.
-        bQrcbAr          = repmat(qrcbAr, [1, 3]);
-        bVdcChannelMatch = ismember(channelIndexAr, Qrcs.vdcFvIndexAr);
-        bEdcChannelMatch = ismember(channelIndexAr, Qrcs.edcFvIndexAr);
+        fvChannelIndexAr = Qrcs.(qrcsFieldName);
 
-        bVdcFv           = bVdcFv | (bQrcbAr & bVdcChannelMatch);
-        bEdcFv           = bEdcFv | (bQrcbAr & bEdcChannelMatch);
+        % ASSERTIONS
+        assert(iscolumn(fvChannelIndexAr))
+
+        % Arrays of the same size as Fpa.
+        bQrcbAr         = repmat(qrcbAr, [1, nChannels]);
+        bChannelMatchAr = ismember(channelIndexAr, fvChannelIndexAr);
+
+        bFv = bFv | (bQrcbAr & bChannelMatchAr);
       end
 
-      VDC_Fpa(bVdcFv) = bicas.utils.FPArray.FP_SINGLE;
-      EDC_Fpa(bEdcFv) = bicas.utils.FPArray.FP_SINGLE;
+      Fpa(bFv) = bicas.utils.FPArray.get_scalar_FP(Fpa.mc);
     end
 
 

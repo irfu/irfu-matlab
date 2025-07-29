@@ -241,22 +241,39 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % (1) EFIELD, SCPOT, and from that
       % (2) DENSITY.
       %=======================================
-      % Blank data before sending it to processing.
-      [VDC_Fpa, EDC_Fpa] = bicas.proc.L2L3.qual.set_VDC_EDC_samples_FV(...
-        Zv.VDC_Fpa, Zv.EDC_Fpa, L3Qrcbm, bicas.const.Q.L3_QRCSM);
-      % IMPLEMENTATION NOTE: Using Zv.QUALITY_FLAG_nonsatFpa for determining
-      % which data should be used by EXCD.
-      R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(Excd, Bso, ...
-        Epoch           =Zv.Epoch, ...
-        VDC_Fpa         =VDC_Fpa, ...
-        EDC_Fpa         =EDC_Fpa, ...
-        QUALITY_FLAG_Fpa=Zv.QUALITY_FLAG_nonsatFpa);
 
+      %--------------------------------
+      % Blank input data based on QRCs
+      %--------------------------------
+      VDC_Fpa = bicas.proc.L2L3.qual.set_FPA_samples_FP(...
+        Zv.VDC_Fpa, L3Qrcbm, bicas.const.Q.L3_QRCSM, "vdcFvIndexAr");
+      EDC_Fpa = bicas.proc.L2L3.qual.set_FPA_samples_FP(...
+        Zv.EDC_Fpa, L3Qrcbm, bicas.const.Q.L3_QRCSM, "edcFvIndexAr");
 
+      %-------------------------------------------------------
+      % Blank input data when QUALITY_FLAG is below threshold
+      %-------------------------------------------------------
+      % IMPORTANT NOTE: Uses QUALITY_FLAG_nonsatFpa (not QUALITY_FLAG from
+      %                 input file)!
+      % NOTE: Unclear how to treat QUALITY_FLAG=FV.
+      % NOTE: Treatment of this special case is documented in readme.txt.
+      QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
+        'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
+      bNotUsedFpa             = Zv.QUALITY_FLAG_nonsatFpa < QUALITY_FLAG_minForUse;
+      bNotUsed                = bNotUsedFpa.array(false);   % Is [FP==>false] wise?
+      Zv.VDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
+      Zv.EDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
+      %--------------------------
+      % Call BICAS-external code
+      %--------------------------
+      R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(Excd, ...
+        Epoch  =Zv.Epoch, ...
+        VDC_Fpa=VDC_Fpa, ...
+        EDC_Fpa=EDC_Fpa);
 
-      % Update L3 density BAD_DENSITY QRCB using information from
-      % solo.psp2ne().
-      % --
+      %----------------------------------------------------------------------
+      % Set L3 density BAD_DENSITY QRCB using information from solo.psp2ne()
+      %----------------------------------------------------------------------
       % NOTE: Behaviour w.r.t. FPs:
       %   Density bit FP ==> L3_QUALITY_BITMASK density bit=false
       %                      (since there is no FP for individual quality bits).

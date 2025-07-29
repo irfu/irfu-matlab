@@ -101,81 +101,75 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_set_VDC_EDC_samples_FV(T)
+    function test_set_FPA_samples_FP(T)
+      % PROPOSAL: Split up in separate test functions.
 
-      function test(VDC, EDC, Qrcbm, Qrcsm, Exp_VDC, Exp_EDC)
-        FV = single(-1);
-        VDC_Fpa     = bicas.utils.FPArray(single(VDC),     'FILL_VALUE', FV);
-        EDC_Fpa     = bicas.utils.FPArray(single(EDC),     'FILL_VALUE', FV);
-        Exp_VDC_Fpa = bicas.utils.FPArray(single(Exp_VDC), 'FILL_VALUE', FV);
-        Exp_EDC_Fpa = bicas.utils.FPArray(single(Exp_EDC), 'FILL_VALUE', FV);
+      function test(v, Qrcbm, Qrcsm, qrcsFieldName, expV)
+        FV     = cast(-1, class(v));
+        Fpa    = bicas.utils.FPArray(v,    'FILL_VALUE', FV);
+        ExpFpa = bicas.utils.FPArray(expV, 'FILL_VALUE', FV);
 
-        [Act_VDC_Fpa, Act_EDC_Fpa] = bicas.proc.L2L3.qual.set_VDC_EDC_samples_FV(...
-          VDC_Fpa, EDC_Fpa, Qrcbm, Qrcsm);
+        ActFpa = bicas.proc.L2L3.qual.set_FPA_samples_FP(...
+          Fpa, Qrcbm, Qrcsm, qrcsFieldName);
 
-        T.assertEqual(Act_VDC_Fpa, Exp_VDC_Fpa)
-        T.assertEqual(Act_EDC_Fpa, Exp_EDC_Fpa)
+        T.assertEqual(ActFpa, ExpFpa)
       end
 
       function test_zero_rows()
         Qrcbm = bicas.proc.QrcbMap(0);
         Qrcbm.add("QRCID_1", logical.empty(0, 1))
         Qrcbm.add("QRCID_2", logical.empty(0, 1))
-        VDC     = zeros(0, 3);
-        Exp_VDC = zeros(0, 3);
-        EDC     = zeros(0, 3);
-        Exp_EDC = zeros(0, 3);
+        v    = zeros(0, 3);
+        expV = zeros(0, 3);
 
         Qrcsm = bicas.proc.QrcSettingsMap();
         Qrcsm.add("QRCID_1", bicas.proc.QrcSettingL3(vdcFvIndexAr=[1 2]'))
-        Qrcsm.add("QRCID_2", bicas.proc.QrcSettingL3(edcFvIndexAr=[2 3]'))
+        Qrcsm.add("QRCID_2", bicas.proc.QrcSettingL3(vdcFvIndexAr=[2 3]'))
 
-        test(VDC, EDC, Qrcbm, Qrcsm, Exp_VDC, Exp_EDC)
+        test(v, Qrcbm, Qrcsm, "vdcFvIndexAr", expV)
       end
 
       function test_zero_QRCBs_QRCSs()
         DATA = [
-          -1  2  3    -1 3 4; ...
-           2 -1  4     3 4 5; ...
-           3  4  5     4 5 6; ...
-           4  5  6     5 6 7; ...
+          -1  2  3; ...
+           2 -1  4; ...
+           3  4  5; ...
+           4  5  6; ...
         ];
         Qrcbm = bicas.proc.QrcbMap(size(DATA, 1));
-        VDC     = DATA(:,  1:3);
-        Exp_VDC = VDC;
-        EDC     = DATA(:,  4:6);
-        Exp_EDC = EDC;
+        v    = DATA(:,  1:3);
+        expV = v;
 
         Qrcsm = bicas.proc.QrcSettingsMap();
 
-        test(VDC, EDC, Qrcbm, Qrcsm, Exp_VDC, Exp_EDC)
+        test(v, Qrcbm, Qrcsm, "vdcFvIndexAr", expV)
       end
 
-      function test_complex()
+      function test_complex(mc)
         DATA = [
-          0 1   -1  2  3   -1  2  3   -1 3 4  -1 -1 -1; ...
-          1 1    2 -1  4   -1 -1  4    3 4 5   3 -1 -1; ...
-          1 1    3  4  5   -1 -1  5    4 5 6   4 -1 -1; ...
-          1 0    4  5  6   -1 -1  6    5 6 7   5  6  7; ...
+          0 1   -1  2  3   -1  2 -1; ...
+          1 0    2 -1  4   -1 -1  4; ...
+          1 0    3  4  5   -1 -1  5; ...
+          1 1    4  5  6   -1 -1 -1; ...
         ];
         Qrcbm = bicas.proc.QrcbMap(size(DATA, 1));
         Qrcbm.add("QRCID_1", logical(DATA(:, 1)))
         Qrcbm.add("QRCID_2", logical(DATA(:, 2)))
-        VDC     = DATA(:,  3:5);
-        Exp_VDC = DATA(:,  6:8);
-        EDC     = DATA(:,  9:11);
-        Exp_EDC = DATA(:, 12:14);
+        v    = cast(DATA(:, 3:5), mc);
+        expV = cast(DATA(:, 6:8), mc);
 
         Qrcsm = bicas.proc.QrcSettingsMap();
         Qrcsm.add("QRCID_1", bicas.proc.QrcSettingL3(vdcFvIndexAr=[1 2]'))
-        Qrcsm.add("QRCID_2", bicas.proc.QrcSettingL3(edcFvIndexAr=[2 3]'))
+        Qrcsm.add("QRCID_2", bicas.proc.QrcSettingL3(vdcFvIndexAr=[  3]'))
 
-        test(VDC, EDC, Qrcbm, Qrcsm, Exp_VDC, Exp_EDC)
+        test(v, Qrcbm, Qrcsm, "vdcFvIndexAr", expV)
       end
 
       test_zero_rows()
       test_zero_QRCBs_QRCSs()
-      test_complex()
+      test_complex("double")
+      test_complex("single")
+      test_complex("int8")
     end
 
 

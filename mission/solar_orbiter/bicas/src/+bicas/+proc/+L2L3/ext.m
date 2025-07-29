@@ -11,14 +11,6 @@ classdef ext
   % PROPOSAL: Automatic test code.
   %   NOTE: Should take advantage of bicas.proc.L2L3.ExternalCodeAbstract.
   % PROPOSAL: Move constants to bicas.const.
-  %
-  % PROPOSAL: calc_EFIELD_SCPOT(): Replace QUALITY_FLAG_minForUse --> bUse
-  %           calc_EFIELD_SCPOT_DENSITY(): Should not read setting
-  %           PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN, but instead have argument
-  %           bUse.
-  %   PRO: The condition (formula and constants) for using science data is not
-  %        hidden inside EXCD.
-  %   PRO: Easier testing.
 
 
 
@@ -44,34 +36,23 @@ classdef ext
     % Indirectly call BICAS-external code to calculate
     % (1) EFIELD, SCPOT (solo.vdccal), and from that
     % (2) DENSITY       (solo.psp2ne).
-    function R = calc_EFIELD_SCPOT_DENSITY(Excd, Bso, Zv)
+    function R = calc_EFIELD_SCPOT_DENSITY(Excd, Zv)
       arguments
         Excd
-        Bso
         Zv.Epoch
         Zv.VDC_Fpa
         Zv.EDC_Fpa
-        Zv.QUALITY_FLAG_Fpa
       end
       assert(isa(Excd, 'bicas.proc.L2L3.ExternalCodeAbstract'))
-
-      % Minimum L2 data QUALITY_FLAG value to use for deriving L3 data
-      % --------------------------------------------------------------
-      % NOTE: bicas.proc.L2L3.ext.calc_EFIELD_SCPOT() uses this value
-      % explicitly, but bicas.proc.L2L3.ext.calc_DENSITY() uses it implicitly
-      % since it uses the return value from the former.
-      QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
-        'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
 
       % =================================
       % Call wrapper around solo.vdccal()
       % =================================
       R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(...
-        QUALITY_FLAG_minForUse, Excd, ...
-        Epoch           =Zv.Epoch, ...
-        VDC_Fpa         =Zv.VDC_Fpa, ...
-        EDC_Fpa         =Zv.EDC_Fpa, ...
-        QUALITY_FLAG_Fpa=Zv.QUALITY_FLAG_Fpa);
+        Excd, ...
+        Epoch  =Zv.Epoch, ...
+        VDC_Fpa=Zv.VDC_Fpa, ...
+        EDC_Fpa=Zv.EDC_Fpa);
 
       % =================================
       % Call wrapper around solo.psp2ne()
@@ -96,7 +77,6 @@ classdef ext
       R.EdcSrfMvpmFpa      = bicas.utils.FPArray(R1.EdcSrfTs.data, 'FILL_VALUE', NaN);
       R.vdccalCodeVerStr   = R1.vdccalCodeVerStr;
       R.vdccalMatVerStr    = R1.vdccalMatVerStr;
-      R.bNotUsed           = R1.bNotUsed;
       R.NeScpCm3Fpa        = bicas.utils.FPArray(NeScpTs.data, 'FILL_VALUE', NaN);
       % NOTE: Ignoring return value NeScpQualityBit(Ts) for now. Value is
       %       expected to be used by BICAS later.
@@ -139,33 +119,19 @@ classdef ext
     %       return values and avoid confusing similar return results with
     %       each other.
     %
-    function R = calc_EFIELD_SCPOT(QUALITY_FLAG_minForUse, Excd, Zv)
-      % PROPOSAL: Take bNotUsed as an argument.
-      %   PRO: Can be used also for bicas.proc.L2L3.ext.calc_DENSITY()
-      %        (which it currently does not).
+    function R = calc_EFIELD_SCPOT(Excd, Zv)
       arguments
-        QUALITY_FLAG_minForUse, Excd
+        Excd
         Zv.Epoch
         Zv.VDC_Fpa
         Zv.EDC_Fpa
-        Zv.QUALITY_FLAG_Fpa
       end
 
 
 
-      %=============================================================
+      %==========================================
       % Create input variables for solo.vdccal()
-      % ----------------------------------------
-      % Set input records to NaN when QUALITY_FLAG below threshold.
-      %=============================================================
-      % NOTE: Unclear how to treat QUALITY_FLAG=FV.
-      % NOTE: Treatment of this special case is documented in readme.txt.
-      bNotUsedFpa             = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;
-      bNotUsed                = bNotUsedFpa.array(false);   % Is [FP==>false] wise?
-      % --
-      Zv.VDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
-      Zv.EDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
-      %
+      %==========================================
       % NOTE: Should TSeries objects really use TensorOrder=1 and
       % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
       % of three scalars. Probably does not matter. solo.vdccal() does
@@ -252,7 +218,6 @@ classdef ext
       R.EdcSrfTs         = EdcSrfTs;
       R.vdccalCodeVerStr = vdccalCodeVerStr;
       R.vdccalMatVerStr  = vdccalMatVerStr;
-      R.bNotUsed         = bNotUsed;
     end
 
 

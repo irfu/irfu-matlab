@@ -93,9 +93,7 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   %   bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(voltageAr, ssidAr, Qrcbm, Qrcsm, ptid)
   %   bicas.proc.L1L2.qual.set_current_samples_FV(currentAr, Qrcbm, Qrcsm, ptid)
   %   bicas.proc.L2L3.L2QBM_to_channel_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
-  %     EXPERIMENTAL. UNUSED.
-  %   bicas.proc.L2L3.set_VDC_EDC_samples_FV(VDC_Fpa, EDC_Fpa, Qrcbm, Qrcsm)
-  %     EXPERIMENTAL. UNUSED.
+  %   bicas.proc.L2L3.set_FPA_samples_FP(Fpa, Qrcbm, Qrcsm, qrcsFieldName)
   %
   % NOTE: qual functions which do not need QRCSs but do need subsets of QRCs (subset relative to a type of
   %       processing):
