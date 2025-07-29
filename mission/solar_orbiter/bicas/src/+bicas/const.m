@@ -602,6 +602,8 @@ classdef const
       L2QBM_BIT_PARTIAL_SATURATION = uint16(1);
       L2QBM_BIT_FULL_SATURATION    = uint16(2);
 
+
+
       %====================
       % PARTIAL_SATURATION
       %====================

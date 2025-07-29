@@ -5,7 +5,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qual
-  % PROPOSAL: Automatic test code.
+  % PROPOSAL: Rename to "qrc" (together with other "qual").
 
 
 
@@ -126,6 +126,7 @@ classdef qual
         case 'GLOBAL_SATURATION'
 
           ;   % Do nothing. All saturation QRCBs are false.
+
           % IMPLEMENTATION NOTE: (1) Can not use the global saturation for
           % anything sensible (can not blank selected channels), and (2) the
           % GLOBAL_SATURATION functionality is supposed to be phased out
@@ -195,7 +196,7 @@ classdef qual
     function [VDC_Fpa, EDC_Fpa] = set_VDC_EDC_samples_FV(...
         VDC_Fpa, EDC_Fpa, Qrcbm, Qrcsm)
 
-      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
+      assert(isa(Qrcbm,   "bicas.proc.QrcbMap"))
       assert(isa(Qrcsm,   "bicas.proc.QrcSettingsMap"))
       assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))
       assert(isa(VDC_Fpa, "bicas.utils.FPArray"))

@@ -5,12 +5,16 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef QrcSettingL3 < bicas.proc.QrcSetting
+  % PROPOSAL: Add QUALITY_FLAG?
+  % NOTE: L3_QUALITY_BITMASK is only in L3 density.
 
 
 
   properties(SetAccess=immutable)
-    % Column arrays of column indices into ZV VDC/EDC (i.e. in interval 1-3).
-    % Specifies which components should be blanked.
+    % Column arrays of column indices into the L2 input ZV VDC/EDC (i.e. in
+    % interval 1-3) which are used for deriving L3 data. Specifies which
+    % components should be blanked before the information is passed on to
+    % solo.vdccal() and psp2ne().
     vdcFvIndexAr
     edcFvIndexAr
   end

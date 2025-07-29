@@ -51,12 +51,12 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
       assert(iscolumn(                     A.voltageFvSsidAr))
       assert(bicas.proc.L1L2.const.is_SSID(A.voltageFvSsidAr))
       irf.assert.number_set(               A.voltageFvSsidAr)
-      obj.voltageFvSsidAr  =             A.voltageFvSsidAr;
+      obj.voltageFvSsidAr  =               A.voltageFvSsidAr;
 
-      assert(iscolumn(         A.currentFvIantAr))
-      assert(all(ismember(     A.currentFvIantAr, [1, 2, 3])))
-      irf.assert.number_set(   A.currentFvIantAr)
-      obj.currentFvIantAr  = A.currentFvIantAr;
+      assert(iscolumn(      A.currentFvIantAr))
+      assert(all(ismember(  A.currentFvIantAr, [1, 2, 3])))
+      irf.assert.number_set(A.currentFvIantAr)
+      obj.currentFvIantAr = A.currentFvIantAr;
     end
 
 

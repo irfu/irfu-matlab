@@ -43,8 +43,8 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       %              underlying code needs to be refactored somehow.
       %   NOTE: Test sets GAs!
       %   PRO: This test code really tests
-      %       bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template() to a large extent. That
-      %       function sets:
+      %       bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template() to a large extent.
+      %       That function sets:
       %         Epoch
       %         QUALITY_FLAG
       %         QUALITY_BITMASK

@@ -9,7 +9,7 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(VDC_i
 % VDC_inp, EDC_inp
 %       TSeries objects with data from L2 CWF file(s).
 %       NOTE: 2023-10-04: BICAS calls this function but sets samples to NaN for
-%       timestamps for which QUALITY_FLAG are (strictly) lower than BICAS
+%       timestamps for which QUALITY_FLAG is (strictly) lower than BICAS
 %       setting PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN which is set to "2" by
 %       default.
 %       VDC_inp: x, y, z = V1,  V2,  V3
@@ -160,6 +160,10 @@ for iSub = 1:length(sub_int_times)-1
   bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
 
   % Resample calibration parameters
+
+  % NOTE: Somehow extrapolates data to outside of the time interval for which
+  %       there is data. ==> Generates "calibrated" values (not NaN) also
+  %       outside of time interval for which there is calibration data!
   d23R  = a.d23.tlim(subTint).resample(VDC);
   k23R  = a.k23.tlim(subTint).resample(VDC);
   K123R = a.K123.tlim(subTint).resample(VDC);

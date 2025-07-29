@@ -1,7 +1,5 @@
 %
-% QRCS for producing L3 density datasets.
-%
-% NOTE: The class does not include the QRCID itself.
+% QRCS for producing L3 *DENSITY* datasets.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

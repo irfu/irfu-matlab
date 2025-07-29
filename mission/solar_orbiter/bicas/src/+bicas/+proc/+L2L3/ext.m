@@ -11,6 +11,14 @@ classdef ext
   % PROPOSAL: Automatic test code.
   %   NOTE: Should take advantage of bicas.proc.L2L3.ExternalCodeAbstract.
   % PROPOSAL: Move constants to bicas.const.
+  %
+  % PROPOSAL: calc_EFIELD_SCPOT(): Replace QUALITY_FLAG_minForUse --> bUse
+  %           calc_EFIELD_SCPOT_DENSITY(): Should not read setting
+  %           PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN, but instead have argument
+  %           bUse.
+  %   PRO: The condition (formula and constants) for using science data is not
+  %        hidden inside EXCD.
+  %   PRO: Easier testing.
 
 
 
@@ -145,12 +153,11 @@ classdef ext
 
 
 
-
-      %======================================================
+      %=============================================================
       % Create input variables for solo.vdccal()
       % ----------------------------------------
-      % Set records to NaN for QUALITY_FLAG below threshold.
-      %======================================================
+      % Set input records to NaN when QUALITY_FLAG below threshold.
+      %=============================================================
       % NOTE: Unclear how to treat QUALITY_FLAG=FV.
       % NOTE: Treatment of this special case is documented in readme.txt.
       bNotUsedFpa             = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;

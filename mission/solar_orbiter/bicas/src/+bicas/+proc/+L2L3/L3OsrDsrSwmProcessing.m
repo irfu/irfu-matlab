@@ -45,8 +45,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-    % Define length of bins, and relative position of corresponding
-    % bin timestamps.
+    % Define length of bins, and relative position of corresponding bin
+    % timestamps.
     BIN_LENGTH_WOLS_NS        = int64(10e9);
     BIN_TIMESTAMP_POS_WOLS_NS = int64(bicas.proc.L2L3.L3OsrDsrSwmProcessing.BIN_LENGTH_WOLS_NS / 2);
 

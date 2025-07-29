@@ -3,7 +3,7 @@
 % into modifications of quality ZVs, data blanking etc. for multiple DSIs.
 % Stores up to one QRCS per QRCID+DSI.
 %
-% NOTE: Is handle class because of convenience.
+% NOTE: Is handle class.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -74,26 +74,10 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   %     PROBLEM: Still one variable for both L3 EFIELD+SCPOT.
   %
   %
-  % PROPOSAL: Convert class to only maintaining map QRCID-->QRCS, for QRCSs for
-  %           ONLY the same type of processing. Use separate global constants for
-  %           storing different subsets of QRCSs, e.g. for different types of
-  %           processing. If needs different QRC settings for e.g. different
-  %           DSIs for the same type of processing, then that should be selected
-  %           outside of the qual functions which use QRC settings.
-  %   CON: Destroys any link between the same QRCID for different types of
-  %        processing.
-  %     CON: Code execution assures some correspondence (should): identical
-  %          QRCIDs.
-  %     CON: Code which assigns maps should co-locate related QRCSs.
-  %
-  % PROPOSAL: Require that all QRCSs are of a certain subclass. Add MC to
-  %           constructor.
-  %
-  %
   %
   % PROPOSAL: qual functions should only need to know about mapping
   %   QRCID-->action (e.g. QRCS). They should not need to know how the QRCSs
-  %   were selected, e.g. due to PTID or DSI.
+  %   were selected, e.g. due to PTID or DSI. -- IMPLEMENTED
   % ============================================================================
   % NOTE: Important qual functions for QRC settings:
   %   bicas.proc.qual.NSO_table_to_QRCBM(requestedQrcidAr, NsoTable, tt2000Ar, L))
@@ -189,7 +173,7 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
 
 
 
-    % Add new QRCS. Can not overwrite (assertion).
+    % Add new QRCS. Must not reuse QRCID (assertion).
     function add(obj, qrcid, Qrcs)
       assert(isa(Qrcs, "bicas.proc.QrcSetting") & isscalar(Qrcs))
 
@@ -256,7 +240,8 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
 
       % ASSERT: No key collisions.
       assert(TempDict.numEntries == ...
-        obj.QrcsDict.numEntries + Qrcsm.QrcsDict.numEntries)
+        obj.QrcsDict.numEntries + Qrcsm.QrcsDict.numEntries, ...
+        "QRCSMs have overlapping QRCIDs.")
 
       obj.QrcsDict    = TempDict;
       % obj.legalPtidAr = unique([obj.legalPtidAr; Qrcsm.legalPtidAr]);

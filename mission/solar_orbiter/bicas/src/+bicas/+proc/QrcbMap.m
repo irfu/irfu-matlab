@@ -23,12 +23,6 @@ classdef QrcbMap < handle
   % PROPOSAL: Method which does not require pre-existing key and which does
   %           OR:ing.
   %   PRO: Can simplify union().
-  %
-  % NOTE: Similar to bicas.utils.ZvMap.
-  %   PROPOSAL: Implement using bicas.utils.ZvMap somehow?
-  %     CON: ZVM does not enforce
-  %          QRCID (scalar string)-->QRCB (logical; column array)
-  %     CON: ZVM does not support union() with OR:ing for overlapping keys.
 
 
 
@@ -59,6 +53,8 @@ classdef QrcbMap < handle
 
 
     function qrcidAr = get.qrcidAr(obj)
+      % IMPLEMENTATION NOTE: Sort to gain deterministic result which is good for
+      % testing.
       qrcidAr = sort(string(obj.Map.keys'));
     end
 
@@ -117,6 +113,7 @@ classdef QrcbMap < handle
 
 
 
+    % NOTE: Method might be unused.
     function remove(obj, qrcid)
       assert(isstring(qrcid) & isscalar(qrcid))
       assert(obj.Map.isKey(qrcid))

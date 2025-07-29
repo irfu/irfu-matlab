@@ -307,9 +307,9 @@ or fill value (!)                            |     values are set to fill
                                              |     values before downsampling.
 
 
-=============================================
- L2 data used for generating L3 EFIELD,SCPOT
-=============================================
+=====================================================
+ L2 data used for generating L3 DENSITY,EFIELD,SCPOT
+=====================================================
 L3 DENSITY+EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E alone, but
 only when its quality is deemed good enough using setting
 PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-02-19).
