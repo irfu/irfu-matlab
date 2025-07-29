@@ -36,7 +36,15 @@ classdef ext
     % Indirectly call BICAS-external code to calculate
     % (1) EFIELD, SCPOT (solo.vdccal), and from that
     % (2) DENSITY       (solo.psp2ne).
-    function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Excd, Bso)
+    function R = calc_EFIELD_SCPOT_DENSITY(Excd, Bso, Zv)
+      arguments
+        Excd
+        Bso
+        Zv.Epoch
+        Zv.VDC_Fpa
+        Zv.EDC_Fpa
+        Zv.QUALITY_FLAG_Fpa
+      end
       assert(isa(Excd, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
       % Minimum L2 data QUALITY_FLAG value to use for deriving L3 data
@@ -50,7 +58,12 @@ classdef ext
       % =================================
       % Call wrapper around solo.vdccal()
       % =================================
-      R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(LfrCwfZv, QUALITY_FLAG_minForUse, Excd);
+      R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(...
+        QUALITY_FLAG_minForUse, Excd, ...
+        Epoch           =Zv.Epoch, ...
+        VDC_Fpa         =Zv.VDC_Fpa, ...
+        EDC_Fpa         =Zv.EDC_Fpa, ...
+        QUALITY_FLAG_Fpa=Zv.QUALITY_FLAG_Fpa);
 
       % =================================
       % Call wrapper around solo.psp2ne()
@@ -118,12 +131,18 @@ classdef ext
     %       return values and avoid confusing similar return results with
     %       each other.
     %
-    function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse, Excd)
+    function R = calc_EFIELD_SCPOT(QUALITY_FLAG_minForUse, Excd, Zv)
       % PROPOSAL: Take bNotUsed as an argument.
       %   PRO: Can be used also for bicas.proc.L2L3.ext.calc_DENSITY()
       %        (which it currently does not).
+      arguments
+        QUALITY_FLAG_minForUse, Excd
+        Zv.Epoch
+        Zv.VDC_Fpa
+        Zv.EDC_Fpa
+        Zv.QUALITY_FLAG_Fpa
+      end
 
-      irf.assert.struct(Zv, {'Epoch', 'VDC_Fpa', 'EDC_Fpa', 'QUALITY_FLAG_Fpa'}, {})
 
 
 

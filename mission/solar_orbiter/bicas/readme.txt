@@ -313,6 +313,9 @@ or fill value (!)                            |     values are set to fill
 L3 DENSITY+EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E alone, but
 only when its quality is deemed good enough using setting
 PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-02-19).
+NOTE: This setting's value is *NOT* compared against the literal input
+SOLO_L2_RPW-LFR-SURV-CWF-E QUALITY_FLAG but a reconstructed value ignoring
+saturation (too complicated to describe here; see source code).
 
 Condition                                  | Action taken when condition applies
 --------------------------------------------------------------------------------

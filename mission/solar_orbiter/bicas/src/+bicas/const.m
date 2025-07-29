@@ -531,14 +531,11 @@ classdef const
 
 
     % Function for the initializing QRCSM with all QRCSs for channel saturation
-    % in L2 CDFs.
+    % in L2 CDFs and L3 CDFs.
     %
-    function Qrcsm = init_L2_CHANNEL_SATURATION_QRCSM()
-      Qrcsm = bicas.proc.QrcSettingsMap();
-
-      % Lowest bit among the channel saturation quality bits, described as the
-      % bit position where 0=LSB.
-      L2QBM_BIT_CHANNEL_SATURATION_LOWEST_BIT_POSITION = 0;
+    function [L2Qrcsm, L3Qrcsm] = init_L2_L3_CHANNEL_SATURATION_QRCSM()
+      L2Qrcsm = bicas.proc.QrcSettingsMap();
+      L3Qrcsm = bicas.proc.QrcSettingsMap();
 
       %====================
       % CHANNEL SATURATION
@@ -548,29 +545,28 @@ classdef const
       %       corresponding ZVs, not the specified ASR SSIDs. This is only
       %       important if adding automatic saturation detection for non-ASRs
       %       (which is highly unlikely).
-      QRCID_CHANNEL_SATURATION_AR = [...
-        "SATURATION_ZV_V1", ...
-        "SATURATION_ZV_V2", ...
-        "SATURATION_ZV_V3", ...
-        "SATURATION_ZV_V12", ...
-        "SATURATION_ZV_V13", ...
-        "SATURATION_ZV_V23"];
-      for i = 1:numel(QRCID_CHANNEL_SATURATION_AR)
-        qrcid    = QRCID_CHANNEL_SATURATION_AR(i);
-
-        % bit(mask)_i = 2^(i-1) = 1..32
-        %l2qbmBit = uint16(2^(i-1)) * L2QBM_BIT_CHANNEL_SATURATION_LSB;
-
-        % IMPLEMENTATION NOTE: i=1=LSB for bitset()!
-        % NOTE: Loop begins with 1.
-        bitPos   = i + L2QBM_BIT_CHANNEL_SATURATION_LOWEST_BIT_POSITION;
-        l2qbmBit = bitset(0, bitPos);
-
-        Qrcs = bicas.proc.QrcSettingL2(...
+      function add_L2_ch_sat_QRCS(qrcid, l2qbmBit)
+        L2Qrcs = bicas.proc.QrcSettingL2(...
           QUALITY_FLAG      =bicas.const.QUALITY_FLAG_SATURATION, ...
           L2_QUALITY_BITMASK=l2qbmBit);
-        Qrcsm.add(qrcid, Qrcs);
+        L2Qrcsm.add(qrcid, L2Qrcs);
       end
+
+      add_L2_ch_sat_QRCS("SATURATION_ZV_V1",   1)
+      add_L2_ch_sat_QRCS("SATURATION_ZV_V2",   2)
+      add_L2_ch_sat_QRCS("SATURATION_ZV_V3",   4)
+      add_L2_ch_sat_QRCS("SATURATION_ZV_V12",  8)
+      add_L2_ch_sat_QRCS("SATURATION_ZV_V13", 16)
+      add_L2_ch_sat_QRCS("SATURATION_ZV_V23", 32)
+
+      L3Qrcsm.add("SATURATION_ZV_V1",  bicas.proc.QrcSettingL3(vdcFvIndexAr=1))
+      L3Qrcsm.add("SATURATION_ZV_V2",  bicas.proc.QrcSettingL3(vdcFvIndexAr=2))
+      L3Qrcsm.add("SATURATION_ZV_V3",  bicas.proc.QrcSettingL3(vdcFvIndexAr=3))
+      L3Qrcsm.add("SATURATION_ZV_V12", bicas.proc.QrcSettingL3(vdcFvIndexAr=1))
+      L3Qrcsm.add("SATURATION_ZV_V13", bicas.proc.QrcSettingL3(vdcFvIndexAr=2))
+      L3Qrcsm.add("SATURATION_ZV_V23", bicas.proc.QrcSettingL3(vdcFvIndexAr=3))
+
+      assert(isequal(L2Qrcsm.qrcidAr, L3Qrcsm.qrcidAr))
     end
 
 
@@ -583,18 +579,24 @@ classdef const
     % definitions in the corresponding CDF skeletons. Definitions in general
     % must be consistent with documentation.
     %
-    function [L2Qrcsm, L3DensityQrcsm] = ...
-      init_L2_L3Density_QRCSM(L2ChannelSaturationsQrcsm)
-      assert(isa(L2ChannelSaturationsQrcsm, "bicas.proc.QrcSettingsMap"))
+    function Q = init_L2_L3_L3Density_QRCSM()
+
+      [Q.L2_CHANNEL_SATURATION_QRCSM, ...
+      Q.L3_CHANNEL_SATURATION_QRCSM] = ...
+        bicas.const.init_L2_L3_CHANNEL_SATURATION_QRCSM();
 
       L2Qrcsm        = bicas.proc.QrcSettingsMap();
+      L3Qrcsm        = bicas.proc.QrcSettingsMap();
       L3DensityQrcsm = bicas.proc.QrcSettingsMap();
+
+      L2Qrcsm.add_QRCSM(Q.L2_CHANNEL_SATURATION_QRCSM);
+      L3Qrcsm.add_QRCSM(Q.L3_CHANNEL_SATURATION_QRCSM);
 
       %=================
       % Local constants
       %=================
       % No circular dependence?!! bicas.proc.L1L2.const <-> bicas.const
-      S               = bicas.proc.L1L2.const.C.SSID_DICT;
+      S = bicas.proc.L1L2.const.C.SSID_DICT;
       % Global saturation quality variable scheme:
       % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
       L2QBM_BIT_PARTIAL_SATURATION = uint16(1);
@@ -689,16 +691,23 @@ classdef const
 
 
 
-      L2Qrcsm.add_QRCSM(L2ChannelSaturationsQrcsm);
+      %======================
+      % REMOVE_L3_INPUT_DATA
+      %======================
+      % Qrcs = bicas.proc.QrcSetting(vdcFvIndexAr=[1,2,3], edcFvIndexAr=[1,2,3]);
+      % L3DensityQrcsm.add("REMOVE_L3_INPUT_DATA", Qrcs);
+
+
+
+      Q.L2_QRCSM         = L2Qrcsm;
+      Q.L3_QRCSM         = L3Qrcsm;
+      Q.L3_DENSITY_QRCSM = L3DensityQrcsm;
     end
 
 
 
     function Q = init_QRC_constants()
-      Q = struct();
-
-      % IMPLEMENTATION NOTE: Separate
-      Q.L2_CHANNEL_SATURATION_QRCSM = bicas.const.init_L2_CHANNEL_SATURATION_QRCSM();
+      Q = bicas.const.init_L2_L3_L3Density_QRCSM();
 
       Q.CHANNEL_SATURATION_QRCID_AR = string(Q.L2_CHANNEL_SATURATION_QRCSM.qrcidAr);
       Q.SATURATION_QRCID_AR = [...
@@ -706,14 +715,11 @@ classdef const
         "PARTIAL_SATURATION"; ...
         "FULL_SATURATION"];
 
-      [Q.L2_QRCSM, Q.L3DENSITY_QRCSM] = bicas.const.init_L2_L3Density_QRCSM(...
-        Q.L2_CHANNEL_SATURATION_QRCSM);
-
       % All legal QRCIDs, or all kinds of processing. This defines the set of
       % legal QRCIDs, including ones that can be used in the NSO table file.
       % IMPLEMENTATION NOTE: This is required for asserting QRCIDs in the NSO
       % table file.
-      Q.ALL_QRCID_AR = [Q.L2_QRCSM.qrcidAr; Q.L3DENSITY_QRCSM.qrcidAr];
+      Q.ALL_QRCID_AR = [Q.L2_QRCSM.qrcidAr; Q.L3_DENSITY_QRCSM.qrcidAr];
     end
 
 

@@ -57,23 +57,30 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_L2QBM_to_saturation_QRCBs(T)
+    function test_L2QBM_to_channel_saturation_QRCBs(T)
 
       function test(l2qbmAr, saturationQualitySchemeId, ExpQrcbm)
-        ActQrcbm = bicas.proc.L2L3.qual.L2QBM_to_saturation_QRCBs(...
+        ActQrcbm = bicas.proc.L2L3.qual.L2QBM_to_channel_saturation_QRCBs(...
           l2qbmAr, saturationQualitySchemeId);
 
-        % for qrcid = ActQrcbm.qrcidAr'
-        %   qrcid
-        %   T.assertEqual(ActQrcbm.get(qrcid), ExpQrcbm.get(qrcid))
-        % end
+        if 0
+          % Separately compare parts of QRCBM to make debugging easier.
+          T.assertEqual(ActQrcbm.qrcidAr, ExpQrcbm.qrcidAr)
+          for qrcid = ActQrcbm.qrcidAr'
+            qrcid
+            T.assertEqual(ActQrcbm.get(qrcid), ExpQrcbm.get(qrcid))
+          end
+        end
+
         T.assertEqual(ActQrcbm, ExpQrcbm)
       end
+
+
 
       function test_GLOBAL_SATURATION()
         l2qbmAr = uint16(2.^[0:15]');
         ExcQrcbm = bicas.proc.QrcbMap(numel(l2qbmAr));
-        ExcQrcbm.add_false(bicas.const.Q.SATURATION_QRCID_AR)
+        ExcQrcbm.add_false(bicas.const.Q.CHANNEL_SATURATION_QRCID_AR)
         test(l2qbmAr, "GLOBAL_SATURATION", ExcQrcbm)
       end
 
@@ -82,7 +89,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         % then it still becomes hard to test non-saturation bits.
         l2qbmAr = uint16(2.^[4:6]');
         ExcQrcbm = bicas.proc.QrcbMap(numel(l2qbmAr));
-        ExcQrcbm.add_false(bicas.const.Q.SATURATION_QRCID_AR)
+        ExcQrcbm.add_false(bicas.const.Q.CHANNEL_SATURATION_QRCID_AR)
         ExcQrcbm.set("SATURATION_ZV_V13", logical([1 0 0]'))
         ExcQrcbm.set("SATURATION_ZV_V23", logical([0 1 0]'))
         test(l2qbmAr, "CHANNEL_SATURATION", ExcQrcbm)

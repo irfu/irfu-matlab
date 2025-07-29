@@ -8,7 +8,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef QrcSettingsMap < handle
+classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   % PROPOSAL: Rename QrcsMap.
   %   PRO: More analogous to QrcbMap.
   %
@@ -108,7 +108,7 @@ classdef QrcSettingsMap < handle
   %   bicas.proc.qual.QRCB_arrays_to_quality_ZVs(Qrcbm, Qrcsm, ptid, lxqbmName))
   %   bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(voltageAr, ssidAr, Qrcbm, Qrcsm, ptid)
   %   bicas.proc.L1L2.qual.set_current_samples_FV(currentAr, Qrcbm, Qrcsm, ptid)
-  %   bicas.proc.L2L3.L2QBM_to_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
+  %   bicas.proc.L2L3.L2QBM_to_channel_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
   %     EXPERIMENTAL. UNUSED.
   %   bicas.proc.L2L3.set_VDC_EDC_samples_FV(VDC_Fpa, EDC_Fpa, Qrcbm, Qrcsm)
   %     EXPERIMENTAL. UNUSED.
@@ -120,7 +120,7 @@ classdef QrcSettingsMap < handle
   %   Calls bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(ChannelSaturationQrcbm, nRecords).
   % bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs()
   %   Iterates over CHANNEL_SATURATION QRCIDs.
-  % bicas.proc.L2L3.L2QBM_to_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
+  % bicas.proc.L2L3.L2QBM_to_channel_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
   %   EXPERIMENTAL. UNUSED.
   %   Wrapper around bicas.proc.L2L3.qual.L2QBM_to_QRCBs().
   %   NOTE: Needs set QRCSs for which quality bits to read (CHANNEL_SATURATION QRCIDs).
@@ -202,6 +202,24 @@ classdef QrcSettingsMap < handle
 
 
 
+    function remove(obj, qrcid)
+      assert(isstring(qrcid) & isscalar(qrcid))
+      assert(obj.QrcsDict.isKey(qrcid))
+
+      obj.QrcsDict = obj.QrcsDict.remove(qrcid);
+    end
+
+
+
+    function remove_many(obj, qrcidAr)
+      assert(iscolumn(qrcidAr))
+      for qrcid = qrcidAr'
+        obj.remove(qrcid)
+      end
+    end
+
+
+
     % RETURN VALUE
     % ============
     % QRCS for specified key. Key must exist.
@@ -247,6 +265,31 @@ classdef QrcSettingsMap < handle
 
 
   end    % methods(Access=public)
+
+
+
+  %############################
+  %############################
+  % PROTECTED INSTANCE METHODS
+  %############################
+  %############################
+  methods(Access = protected)
+
+
+
+    % Support deep copies with copy() by overriding matlab.mixin.copyable
+    % method.
+    function QrcbmCopy = copyElement(obj)
+      QrcbmCopy = bicas.proc.QrcSettingsMap();
+
+      for qrcid = obj.qrcidAr'
+        QrcbmCopy.add(qrcid, obj.get(qrcid))
+      end
+    end
+
+
+
+  end
 
 
 

@@ -131,6 +131,38 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_remove_many(T)
+      Qrcsm = bicas.proc.QrcSettingsMap();
+
+      Qrcsm.add("QRCID_1", T.QRCS_1);
+      Qrcsm.add("QRCID_2", T.QRCS_2);
+      ExpQrcsm = copy(Qrcsm);
+      Qrcsm.remove_many(string.empty(0, 1))
+      T.assertEqual(Qrcsm, ExpQrcsm);
+
+      Qrcsm.remove_many(["QRCID_2"; "QRCID_1"])
+      ExpQrcsm = bicas.proc.QrcSettingsMap();
+      T.assertEqual(Qrcsm, ExpQrcsm);
+    end
+
+
+
+    function test_copy(T)
+      Qrcsm1 = bicas.proc.QrcSettingsMap();
+      Qrcsm1.add("QRCID_1", T.QRCS_1);
+
+      Qrcsm2 = copy(Qrcsm1);
+      T.assertEqual(Qrcsm1, Qrcsm2);
+
+      Qrcsm2.add("QRCID_2", T.QRCS_2);
+      T.assertNotEqual(Qrcsm1, Qrcsm2);
+
+      Qrcsm1.add("QRCID_2", T.QRCS_2);
+      T.assertEqual(Qrcsm1, Qrcsm2);
+    end
+
+
+
   end    % methods(Test)
 
 
