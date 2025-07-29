@@ -10,41 +10,76 @@ classdef QrcSettingL3 < bicas.proc.QrcSetting
 
 
 
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(SetAccess=immutable)
-    % Column arrays of column indices into the L2 input ZV VDC/EDC (i.e. in
-    % interval 1-3) which are used for deriving L3 data. Specifies which
-    % components should be blanked before the information is passed on to
+    % Column arrays of indices in the second dimension. Specifies which
+    % components should be blanked.
+
+    % For blanking L2 ZV VDC/EDC before being used before data is passed on to
     % solo.vdccal() and psp2ne().
     vdcFvIndexAr
     edcFvIndexAr
+
+    % For blanking EFIELD data (after derivation; not intput).
+    efieldFvIndexAr
   end
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
 
 
 
     function obj = QrcSettingL3(A)
       arguments
-        A.vdcFvIndexAr = zeros(0, 1);
-        A.edcFvIndexAr = zeros(0, 1);
+        A.vdcFvIndexAr    = zeros(0, 1);
+        A.edcFvIndexAr    = zeros(0, 1);
+        A.efieldFvIndexAr = zeros(0, 1);
       end
 
-      assert(iscolumn(      A.vdcFvIndexAr))
-      assert(all(ismember(  A.vdcFvIndexAr, [1, 2, 3])))
-      irf.assert.number_set(A.vdcFvIndexAr)
-      obj.vdcFvIndexAr =    A.vdcFvIndexAr;
+      obj.assert_fvIndexAr(A.vdcFvIndexAr, 3)
+      obj.vdcFvIndexAr    = A.vdcFvIndexAr;
 
-      assert(iscolumn(      A.edcFvIndexAr))
-      assert(all(ismember(  A.edcFvIndexAr, [1, 2, 3])))
-      irf.assert.number_set(A.edcFvIndexAr)
-      obj.edcFvIndexAr =    A.edcFvIndexAr;
+      obj.assert_fvIndexAr(A.edcFvIndexAr, 3)
+      obj.edcFvIndexAr    = A.edcFvIndexAr;
+
+      obj.assert_fvIndexAr(A.efieldFvIndexAr, 3)
+      obj.efieldFvIndexAr = A.efieldFvIndexAr;
     end
 
 
 
   end
+
+
+
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
+  methods(Static)
+
+
+
+    function assert_fvIndexAr(fvIndexAr, nIndices)
+      assert(iscolumn(      fvIndexAr))
+      assert(all(ismember(  fvIndexAr, 1:nIndices)))
+      irf.assert.number_set(fvIndexAr)
+    end
+
+
+
+  end    % methods(Static)
 
 
 

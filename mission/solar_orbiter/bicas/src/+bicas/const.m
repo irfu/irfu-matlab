@@ -693,11 +693,13 @@ classdef const
 
 
 
-      %======================
-      % REMOVE_L3_INPUT_DATA
-      %======================
-      % Qrcs = bicas.proc.QrcSetting(vdcFvIndexAr=[1,2,3], edcFvIndexAr=[1,2,3]);
-      % L3DensityQrcsm.add("REMOVE_L3_INPUT_DATA", Qrcs);
+      %===============
+      % REMOVE_EFIELD
+      %===============
+      % Remove EFIELD output from solo.vdccal() (i.e. not by removing input to
+      % solo.vdccal()).
+      Qrcs = bicas.proc.QrcSettingL3(efieldFvIndexAr=[1 2 3]');
+      L3Qrcsm.add("REMOVE_EFIELD", Qrcs);
 
 
 
@@ -721,7 +723,10 @@ classdef const
       % legal QRCIDs, including ones that can be used in the NSO table file.
       % IMPLEMENTATION NOTE: This is required for asserting QRCIDs in the NSO
       % table file.
-      Q.ALL_QRCID_AR = [Q.L2_QRCSM.qrcidAr; Q.L3_DENSITY_QRCSM.qrcidAr];
+      Q.ALL_QRCID_AR = [...
+        Q.L2_QRCSM.qrcidAr; ...
+        Q.L3_QRCSM.qrcidAr; ...
+        Q.L3_DENSITY_QRCSM.qrcidAr];
     end
 
 
