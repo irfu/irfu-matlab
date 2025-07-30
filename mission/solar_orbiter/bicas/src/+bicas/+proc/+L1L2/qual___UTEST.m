@@ -1,6 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.proc.L1L2.qual, except for
-% method bicas.proc.L1L2.qual.sliding_window_over_fraction().
+% matlab.unittest automatic test code for bicas.proc.L1L2.qual.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -20,7 +19,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
     function test_get_saturation_QRCBs(testCase)
       % NOTE: Does not (truly) test the call to
-      % bicas.proc.L1L2.qual.sliding_window_over_fraction().
+      % bicas.utils.sliding_window_over_fraction().
 
       DATA_AR = [...
         0 0 0  0 0 0  0 0 0 ; ...

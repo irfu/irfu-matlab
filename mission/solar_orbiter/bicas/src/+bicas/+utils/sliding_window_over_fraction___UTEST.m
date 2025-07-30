@@ -1,14 +1,11 @@
 %
 % matlab.unittest automatic test code for function
-% bicas.proc.L1L2.qual.sliding_window_over_fraction().
-%
-% This code is also an experiment in spliting up a large test functions into
-% many smaller ones.
+% bicas.utils.sliding_window_over_fraction().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual_sliding_window_over_fraction___UTEST < matlab.unittest.TestCase
+classdef sliding_window_over_fraction___UTEST < matlab.unittest.TestCase
 
 
 
@@ -277,7 +274,7 @@ classdef qual_sliding_window_over_fraction___UTEST < matlab.unittest.TestCase
         tt2000Ar, bFlag1Ar, expBFlagAr, flagFractionThreshold, intervalLengthSec)
 
       % CALL TESTED FUNCTION
-      actBFlagAr = bicas.proc.L1L2.qual.sliding_window_over_fraction(...
+      actBFlagAr = bicas.utils.sliding_window_over_fraction(...
         tt2000Ar, bFlag1Ar, flagFractionThreshold, intervalLengthSec);
 
       testCase.assertEqual(actBFlagAr, expBFlagAr)

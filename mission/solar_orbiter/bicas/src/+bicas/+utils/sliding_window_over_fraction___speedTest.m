@@ -63,6 +63,6 @@ end
 
 function tSec = test(tt2000Ar, bFlag1Ar, minFlaggedFraction, windowLengthSec)
 tTicToc = tic();
-[~] = bicas.proc.L1L2.qual.sliding_window_over_fraction(tt2000Ar, bFlag1Ar, minFlaggedFraction, windowLengthSec);
+[~] = bicas.utils.sliding_window_over_fraction(tt2000Ar, bFlag1Ar, minFlaggedFraction, windowLengthSec);
 tSec = toc(tTicToc);
 end
