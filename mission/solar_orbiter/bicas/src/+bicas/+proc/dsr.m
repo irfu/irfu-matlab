@@ -79,7 +79,6 @@ classdef dsr
       % NOTE: Function argument InLfrCwfOsr contains too much information!
       % PROPOSAL: Only take argument for the needed variables.
       %   PROPOSAL: Wait until only using FPAs.
-      %       PRO: Can abolish .ZvFv.
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template', L);
 
