@@ -200,7 +200,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_VSIB_5xBLTS_NEW___CWF(testCase)
+    function test_get_VSIB_5xBLTS___CWF(testCase)
       L = bicas.Logger('NO_STDOUT', false);
 
       SatSettings = struct();
@@ -236,7 +236,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
         ]), [2 1]);
 
       % CALL TESTED CODE
-      actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
+      actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS(...
         bltsSamplesAVoltAr, false, uspr, ...
         bltsSsidAr, isAchgFpa, SatSettings, L);
 
@@ -245,7 +245,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_VSIB_5xBLTS_NEW___SWF(testCase)
+    function test_get_VSIB_5xBLTS___SWF(testCase)
       % PROPOSAL: USPR test data that varies over records.
       %   CON: Must have multiple records. ==> More test data.
       L = bicas.Logger('NO_STDOUT', false);
@@ -274,7 +274,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
       uspr               = repmat(4, [1, 1]);
 
       % CALL TESTED CODE
-      actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
+      actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS(...
         bltsSamplesAVoltAr, true, uspr, ...
         bltsSsidAr, isAchgFpa, SatSettings, L);
 

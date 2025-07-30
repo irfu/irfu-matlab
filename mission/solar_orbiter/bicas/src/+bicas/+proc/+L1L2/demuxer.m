@@ -268,7 +268,7 @@ classdef demuxer
     % elements) which causes data to be not used for reconstructing other
     % channels.
     %
-    function reconstruct_ASR_samples_NEW(SamplesZvm)
+    function reconstruct_ASR_samples(SamplesZvm)
 
       assert(isa(SamplesZvm, 'bicas.utils.ZvMap'))
       assert(isa(SamplesZvm, "handle"))

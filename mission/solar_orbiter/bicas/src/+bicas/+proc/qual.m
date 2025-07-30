@@ -182,8 +182,6 @@ classdef qual
 
 
 
-    % UNUSED. EXPERIMENTAL
-    %
     function bitPosAr = LxQBM_to_bit_positions(lxqbm)
       % Not vectorized!
       % TODO-DEC: How handle fill value?!

@@ -65,7 +65,7 @@ classdef SingleChannelData
   % PROPOSAL: Add SDID/SSID (one value).
   %   PRO: SSID (source) is used when calibrating.
   %   PRO: SSID (source) is used when deriving VSIBs (when calling
-  %         bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW()).
+  %         bicas.proc.L1L2.dc.get_VSIB_5xBLTS()).
   %   PRO: SDID (destination) used when reconstructing missing channel data.
   %   PRO: SDID/SSID and SCHD are often together as function arguments.
   %   PROPOSAL: Add both SSID and SDID.

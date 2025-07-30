@@ -83,7 +83,6 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   %   bicas.proc.qual.NSO_table_to_QRCBM(requestedQrcidAr, NsoTable, tt2000Ar, L))
   %     NOTE: No QRCSs needed, except QRCIDs for the type of processing.
   %   bicas.proc.L2L3.qual.L2QBM_to_QRCBs(l2qbmAr, lxqbmName, Qrcsm)
-  %     EXPERIMENTAL. UNUSED.
   %     NOTE: Should ideally only use the subset of QRCSs for which quality bits
   %           are read.
   %       NOTE: Uses QRCSs for processing which created the quality bits
@@ -103,7 +102,6 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   % bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs()
   %   Iterates over CHANNEL_SATURATION QRCIDs.
   % bicas.proc.L2L3.L2QBM_to_channel_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
-  %   EXPERIMENTAL. UNUSED.
   %   Wrapper around bicas.proc.L2L3.qual.L2QBM_to_QRCBs().
   %   NOTE: Needs set QRCSs for which quality bits to read (CHANNEL_SATURATION QRCIDs).
   % ============================================================================

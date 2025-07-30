@@ -149,7 +149,7 @@ classdef dc
       % Get VSIB for BLTS-labelled channels
       %#####################################
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
-      bltsVsibAr  = bicas.proc.L1L2.dc.get_VSIB_5xBLTS_NEW(...
+      bltsVsibAr  = bicas.proc.L1L2.dc.get_VSIB_5xBLTS(...
         bltsSamplesAVolt, Dcip.hasSwfFormat, Dcip.Zv.uspr, ...
         bltsSsidArray, Dcip.Zv.isAchgFpa, SatSettings, L);
 
@@ -161,9 +161,9 @@ classdef dc
       % OUTPUT: 9x SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
       %######################################################################
       % NOTE: Needs VSIB for propagating VSIB to reconstructed channels.
-      SchdZvm = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW(...
+      SchdZvm = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR(...
         bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
-      bicas.proc.L1L2.demuxer.reconstruct_ASR_samples_NEW(SchdZvm);
+      bicas.proc.L1L2.demuxer.reconstruct_ASR_samples(SchdZvm);
 
 
 
@@ -695,10 +695,10 @@ classdef dc
     %       N x 5. SWF: Set if at least one bit is set for any sample within
     %       a snapshot.
     %
-    function vsibAr = get_VSIB_5xBLTS_NEW(...
+    function vsibAr = get_VSIB_5xBLTS(...
         samplesAVoltAr, hasSwfFormat, uspr, ssidAr, isAchgFpa, SatSettings, L)
 
-      Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS_NEW', L);
+      Tmk = bicas.utils.Timekeeper('get_VSIB_5xBLTS', L);
 
       [nRec, aspr] = irf.assert.sizes(...
         samplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
@@ -710,9 +710,9 @@ classdef dc
 
       % Expand variables to be of the same size as bltsSamplesAVoltAr
       % -------------------------------------------------------------
-      % Needed for submitting arguments to bicas.proc.L1L2.sat.get_VSTB_NEW()
+      % Needed for submitting arguments to bicas.proc.L1L2.sat.get_VSTB()
       % NOTE: This could possibly lead to memory problems, which could be
-      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSTB_NEW()
+      % mitigated by e.g. calling bicas.proc.L1L2.sat.get_VSTB()
       % once per BLTS.
       isAchgFpa = repmat(        isAchgFpa,          [1, aspr, bicas.const.N_BLTS]);
       ssidAr    = repmat(permute(ssidAr, [1, 3, 2]), [1, aspr, 1                 ]);
@@ -722,7 +722,7 @@ classdef dc
 
 
 
-      vstbAr = bicas.proc.L1L2.sat.get_VSTB_NEW(...
+      vstbAr = bicas.proc.L1L2.sat.get_VSTB(...
         SatSettings, samplesAVoltAr, ssidAr, isAchgFpa);
 
       % Normalize CWF/SWF data to one array format (one VSIB per record & BLTS).
@@ -751,11 +751,11 @@ classdef dc
     % Convert samples stored as 5x BLTSs to 9x ASRs (without reconstructing
     % missing data).
     %
-    function SchdZvm = convert_samples_5xBLTS_to_9xASR_NEW( ...
+    function SchdZvm = convert_samples_5xBLTS_to_9xASR( ...
         bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)
 
       % Tmk = bicas.utils.Timekeeper(...
-      %   'bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR_NEW', L);
+      %   'bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR', L);
 
       [nRec, aspr] = irf.assert.sizes(...
         bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...

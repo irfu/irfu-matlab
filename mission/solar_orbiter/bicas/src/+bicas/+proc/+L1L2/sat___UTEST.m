@@ -20,14 +20,14 @@ classdef sat___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_VSTB_NEW(testCase)
+    function test_get_VSTB(testCase)
       SatSettings.upperThresholdAVoltDcSingle = 2;
       SatSettings.upperThresholdAVoltDcDiff   = 3;
       SatSettings.upperThresholdAVoltAclg     = 12;
       SatSettings.upperThresholdAVoltAchg     = 13;
 
       function test(samplesAVolt, ssidStrAr, isAchgFpa, expVstbAr)
-        actVstbAr = bicas.proc.L1L2.sat.get_VSTB_NEW(...
+        actVstbAr = bicas.proc.L1L2.sat.get_VSTB(...
           SatSettings, samplesAVolt, ...
           bicas.proc.L1L2.const.C.SSID_DICT(ssidStrAr), isAchgFpa);
 
