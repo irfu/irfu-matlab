@@ -188,7 +188,6 @@ classdef const
 
 
 
-
     NAN_TF = @(omegaRps) (omegaRps * NaN);
 
 

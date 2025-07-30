@@ -132,7 +132,7 @@ for iZv = 1:length(zVariableNameList)
   % ZVs converted to FPAs, but temporary conversions FPA-->array require
   % this any way.
   ZvFv.(zvName) = fv;
-end
+end    % for
 
 
 
@@ -228,7 +228,7 @@ if ~issorted(Zvs.Epoch)
         'ERROR_WARNING_ILLEGAL_SETTING', ...
         anomalyDescrMsg, 'BICAS:DatasetFormat')
   end
-end
+end    % if
 
 
 

@@ -1,4 +1,8 @@
 %
+% Class for defining QRC-related constants, in particular QRCSs (inside
+% QRCSMs).
+%
+%
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qrc
@@ -9,6 +13,7 @@ classdef qrc
   % PROPOSAL: Replace bicas.const.qrc.Q with separate constants.
   %   PRO: Shorter variables paths.
   %   CON: Can not shorten/copy in code: Q = bicas.const.qrc.Q.
+  %     CON: Has not been needed so far.
 
 
 

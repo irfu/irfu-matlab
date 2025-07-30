@@ -182,6 +182,13 @@ classdef qrc
 
 
 
+    % Convert a (scalar) LxQBM to an array of indices of where the bits are set.
+    %
+    % RETURN VALUE
+    % ============
+    % bitPosAr
+    %       Column array. Variable-length. Element value 0=LSB.
+    %
     function bitPosAr = LxQBM_to_bit_positions(lxqbm)
       % Not vectorized!
       % TODO-DEC: How handle fill value?!
