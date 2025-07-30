@@ -2322,6 +2322,14 @@
 
 
 
+        <event>
+            <startTimeUtc>2024-03-15T17:06:27.50</startTimeUtc>
+            <stopTimeUtc> 2024-03-15T23:27:18</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description>Previously interpreted as ANT3 failure, but this is probably a better interpretation.</description>
+        </event>
+
+
 
         <event>
             <startTimeUtc>2024-03-19T01:04:16</startTimeUtc>
@@ -2365,24 +2373,72 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+
+
+
+        <event>
+            <startTimeUtc>2024-04-21T23:36:27.50</startTimeUtc>
+            <stopTimeUtc> 2024-04-24T02:01:25</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
         <event>
             <startTimeUtc>2024-04-22T09:49:20</startTimeUtc>
             <stopTimeUtc> 2024-04-22T10:17:52</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+
+
+
+        <event>
+            <startTimeUtc>2024-04-26T20:36:27.45</startTimeUtc>
+            <stopTimeUtc> 2024-05-01T02:01:26</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
         <event>
             <startTimeUtc>2024-04-29T01:04:18</startTimeUtc>
             <stopTimeUtc> 2024-04-29T01:24:03</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+
+
+
+        <event>
+            <startTimeUtc>2024-05-01T13:06:27.50</startTimeUtc>
+            <stopTimeUtc> 2024-05-08T02:01:27</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
         <event>
             <startTimeUtc>2024-05-06T01:04:17</startTimeUtc>
             <stopTimeUtc> 2024-05-06T01:18:21</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+
+
+
+        <event>
+            <startTimeUtc>2024-05-11T12:06:27.60</startTimeUtc>
+            <stopTimeUtc> 2024-05-15T02:01:52</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
         <event>
             <startTimeUtc>2024-05-13T01:04:19</startTimeUtc>
             <stopTimeUtc> 2024-05-13T01:16:53</stopTimeUtc>
@@ -2395,12 +2451,36 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+
+
+
+        <event>
+            <startTimeUtc>2024-05-21T12:08:39.50</startTimeUtc>
+            <stopTimeUtc> 2024-05-22T02:01:53</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description>Specified beginning is at literal sweep end since non-blanked sweep data implies the anomaly begins then.</description>
+        </event>
+
+
+
         <event>
             <startTimeUtc>2024-05-27T01:04:23</startTimeUtc>
             <stopTimeUtc> 2024-05-27T01:14:31</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+
+
+
+        <event>
+            <startTimeUtc>2024-05-31T12:08:39.60</startTimeUtc>
+            <stopTimeUtc> 2024-06-05T02:01:55</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description>Specified beginning is at literal sweep end since non-blanked sweep data implies the anomaly begins then. Odd change of measured HK bias 2024-06-01 which temporarily changes V1 and V2, but not V3.</description>
+        </event>
+
+
+
         <event>
             <startTimeUtc>2024-06-03T01:04:21</startTimeUtc>
             <stopTimeUtc> 2024-06-03T01:14:17</stopTimeUtc>
@@ -2413,12 +2493,36 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+
+
+
+        <event>
+            <startTimeUtc>2024-06-11T12:08:39.60</startTimeUtc>
+            <stopTimeUtc> 2024-06-12T02:01:56</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description>Specified beginning is at literal sweep end since non-blanked sweep data implies the anomaly begins then.</description>
+        </event>
+
+
+
         <event>
             <startTimeUtc>2024-06-17T01:04:19</startTimeUtc>
             <stopTimeUtc> 2024-06-17T01:23:24</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+
+
+
+        <event>
+            <startTimeUtc>2024-06-21T12:08:39.50</startTimeUtc>
+            <stopTimeUtc> 2024-06-26T02:01:58</stopTimeUtc>
+            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description></description>
+        </event>
+
+
+
         <event>
             <startTimeUtc>2024-06-24T01:04:18</startTimeUtc>
             <stopTimeUtc> 2024-06-24T01:22:40</stopTimeUtc>
