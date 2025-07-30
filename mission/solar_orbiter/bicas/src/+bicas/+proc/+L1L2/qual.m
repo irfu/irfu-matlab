@@ -144,12 +144,12 @@ classdef qual
 
       switch(saturationQualitySchemeId)
         case "GLOBAL_SATURATION"
-        %------------------------------------------------------
-        % CHANNEL_SATURATION QRCBs --> GLOBAL_SATURATION QRCBs
-        %------------------------------------------------------
-        GlobalSaturationQrcbm = ...
-          bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
-          ChannelSaturationQrcbm, numel(tt2000Ar));
+          %------------------------------------------------------
+          % CHANNEL_SATURATION QRCBs --> GLOBAL_SATURATION QRCBs
+          %------------------------------------------------------
+          GlobalSaturationQrcbm = ...
+            bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
+            ChannelSaturationQrcbm, numel(tt2000Ar));
           SaturationQrcbm.union(GlobalSaturationQrcbm)
 
         case "CHANNEL_SATURATION"

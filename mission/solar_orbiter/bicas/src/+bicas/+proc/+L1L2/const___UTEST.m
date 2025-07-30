@@ -37,11 +37,11 @@ classdef const___UTEST < matlab.unittest.TestCase
       ssidUnknown = C.SSID_DICT("UNKNOWN");
       sdidNowhere = C.SDID_DICT("NOWHERE");
       testCase.assertError(...
-          @() bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssidUnknown), ...
-          ?MException)
+        @() bicas.proc.L1L2.const.SSID_ASR_to_ASID(ssidUnknown), ...
+        ?MException)
       testCase.assertError(...
-          @() bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdidNowhere), ...
-          ?MException)
+        @() bicas.proc.L1L2.const.SDID_ASR_to_ASID(sdidNowhere), ...
+        ?MException)
     end
 
 
@@ -60,7 +60,7 @@ classdef const___UTEST < matlab.unittest.TestCase
       testCase.assertTrue(bicas.proc.L1L2.const.is_ASID(C.ASID_DICT(...
         ["AC_V23", "DC_V12"; "DC_V1", "DC_V13"])))
 
-       % Test non-ASID
+      % Test non-ASID
       testCase.assertFalse(bicas.proc.L1L2.const.is_ASID(C.SSID_DICT("DC_V1")))
       testCase.assertFalse(bicas.proc.L1L2.const.is_ASID(C.SDID_DICT("AC_V23")))
     end

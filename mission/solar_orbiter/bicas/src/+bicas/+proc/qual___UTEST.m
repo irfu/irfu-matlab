@@ -253,38 +253,38 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
 
-      function test_NSO_table_to_QRCBM(...
-          testCase, requestedQrcidAr, NsoTable, tt2000Ar, ExpQrcbm)
+    function test_NSO_table_to_QRCBM(...
+        testCase, requestedQrcidAr, NsoTable, tt2000Ar, ExpQrcbm)
 
-        assert(isa(ExpQrcbm, "bicas.proc.QrcbMap"))
+      assert(isa(ExpQrcbm, "bicas.proc.QrcbMap"))
 
-        % Normalize/modify arguments
-        requestedQrcidAr = requestedQrcidAr(:);
-        tt2000Ar         = int64(tt2000Ar(:));
+      % Normalize/modify arguments
+      requestedQrcidAr = requestedQrcidAr(:);
+      tt2000Ar         = int64(tt2000Ar(:));
 
-        L = bicas.Logger('HUMAN_READABLE', false);
+      L = bicas.Logger('HUMAN_READABLE', false);
 
-        % CALL TESTED FUNCTION
-        ActQrcbm = bicas.proc.qual.NSO_table_to_QRCBM(...
-          requestedQrcidAr, NsoTable, tt2000Ar, L);
+      % CALL TESTED FUNCTION
+      ActQrcbm = bicas.proc.qual.NSO_table_to_QRCBM(...
+        requestedQrcidAr, NsoTable, tt2000Ar, L);
 
-        % ASSERT EXPECTED RESULT
-        % ----------------------
-        % IMPLEMENTATION NOTE: testCase.assertEqual() (and isequaln()) can
-        % handle containers.Map, but that is not very helpful for debugging by
-        % understanding any found difference between the two maps. Therefore
-        % explicitly comparing the map subcomponents.
+      % ASSERT EXPECTED RESULT
+      % ----------------------
+      % IMPLEMENTATION NOTE: testCase.assertEqual() (and isequaln()) can
+      % handle containers.Map, but that is not very helpful for debugging by
+      % understanding any found difference between the two maps. Therefore
+      % explicitly comparing the map subcomponents.
+      testCase.assertEqual(...
+        sort(ActQrcbm.qrcidAr), ...
+        sort(ExpQrcbm.qrcidAr))
+
+      for qrcid = ActQrcbm.qrcidAr'
         testCase.assertEqual(...
-          sort(ActQrcbm.qrcidAr), ...
-          sort(ExpQrcbm.qrcidAr))
-
-        for qrcid = ActQrcbm.qrcidAr'
-          testCase.assertEqual(...
-            ActQrcbm.get(qrcid), ...
-            ExpQrcbm.get(qrcid))
-        end
+          ActQrcbm.get(qrcid), ...
+          ExpQrcbm.get(qrcid))
       end
-    end    % methods(Access=private)
+    end
+  end    % methods(Access=private)
 
 
 

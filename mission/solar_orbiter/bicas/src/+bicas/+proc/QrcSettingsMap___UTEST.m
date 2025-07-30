@@ -103,8 +103,8 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
       Qrcsm2.add("QRCID_3", T.QRCS_3);
 
       T.assertError(...
-          @() Qrcsm1.add_QRCSM(Qrcsm2), ...
-          ?MException)
+        @() Qrcsm1.add_QRCSM(Qrcsm2), ...
+        ?MException)
     end
 
 

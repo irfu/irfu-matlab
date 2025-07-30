@@ -37,8 +37,8 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
       Qrcbm = bicas.proc.QrcbMap(2);
 
       testCase.assertError(...
-          @() Qrcbm.set("QRCID1", ~QRCB_AR), ...
-          ?MException)
+        @() Qrcbm.set("QRCID1", ~QRCB_AR), ...
+        ?MException)
 
       testCase.assertFalse(Qrcbm.has_QRCID("QRCID1"))
 
@@ -47,8 +47,8 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
       testCase.assertTrue(Qrcbm.has_QRCID("QRCID1"))
 
       testCase.assertError(...
-          @() Qrcbm.add("QRCID1", ~QRCB_AR), ...
-          ?MException)
+        @() Qrcbm.add("QRCID1", ~QRCB_AR), ...
+        ?MException)
 
       Qrcbm.set("QRCID1", ~QRCB_AR)
 
@@ -204,21 +204,21 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
-      function assert_equal(testCase, Qrcbm1, Qrcbm2)
-        testCase.assertTrue(isequal(Qrcbm1, Qrcbm2))
-        testCase.assertEqual(       Qrcbm1, Qrcbm2)
-        testCase.assertTrue(isequal(Qrcbm2, Qrcbm1))
-        testCase.assertEqual(       Qrcbm2, Qrcbm1)
-      end
+    function assert_equal(testCase, Qrcbm1, Qrcbm2)
+      testCase.assertTrue(isequal(Qrcbm1, Qrcbm2))
+      testCase.assertEqual(       Qrcbm1, Qrcbm2)
+      testCase.assertTrue(isequal(Qrcbm2, Qrcbm1))
+      testCase.assertEqual(       Qrcbm2, Qrcbm1)
+    end
 
 
 
-      function assert_not_equal(testCase, Qrcbm1, Qrcbm2)
-        testCase.assertFalse(isequal(Qrcbm1, Qrcbm2))
-        testCase.assertNotEqual(     Qrcbm1, Qrcbm2)
-        testCase.assertFalse(isequal(Qrcbm2, Qrcbm1))
-        testCase.assertNotEqual(     Qrcbm2, Qrcbm1)
-      end
+    function assert_not_equal(testCase, Qrcbm1, Qrcbm2)
+      testCase.assertFalse(isequal(Qrcbm1, Qrcbm2))
+      testCase.assertNotEqual(     Qrcbm1, Qrcbm2)
+      testCase.assertFalse(isequal(Qrcbm2, Qrcbm1))
+      testCase.assertNotEqual(     Qrcbm2, Qrcbm1)
+    end
 
 
 

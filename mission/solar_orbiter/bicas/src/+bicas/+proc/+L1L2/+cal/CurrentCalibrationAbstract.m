@@ -23,10 +23,10 @@ classdef(Abstract) CurrentCalibrationAbstract
     biasCurrentTm = calibrate_current_sampere_to_TM(obj, currentSampere)
 
     biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
-        biasCurrentTm, iAntenna, iCalibTimeL)
+      biasCurrentTm, iAntenna, iCalibTimeL)
 
     biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
-        biasCurrentTm, iAntenna)
+      biasCurrentTm, iAntenna)
 
     % IMPLEMENTATION NOTE: This method technically has the same purpose as
     % bicas.proc.L1L2.cal.VoltageCalibration.get_BIAS_calibration_time_index_L().

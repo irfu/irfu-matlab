@@ -23,8 +23,8 @@ classdef ZvMap___UTEST < matlab.unittest.TestCase
 
       % Illegal number of value rows.
       testCase.assertError(...
-          @() Zvm.add(double(3), ones(2,2)), ...
-          ?MException)
+        @() Zvm.add(double(3), ones(2,2)), ...
+        ?MException)
 
       testCase.test_add_set_get_OK(Zvm, "KEY",     uint8(ones(0, 2, 3)), int16(ones(0, 3, 2)))
 
@@ -36,8 +36,8 @@ classdef ZvMap___UTEST < matlab.unittest.TestCase
 
       % Pre-existing key.
       testCase.assertError(...
-          @() Zvm.add(uint16(3), ones(0, 2)), ...
-          ?MException)
+        @() Zvm.add(uint16(3), ones(0, 2)), ...
+        ?MException)
     end
 
 
@@ -121,33 +121,33 @@ classdef ZvMap___UTEST < matlab.unittest.TestCase
 
 
 
-      % NOTE: Also indirectly tests whether the object is actually modified
-      % without the variable needing to be assigned, i.e. whether it is a
-      % (working) handle class.
-      function test_add_set_get_OK(testCase, Zvm, key, value1, value2)
-        assert(~isequaln(value1, value2))
+    % NOTE: Also indirectly tests whether the object is actually modified
+    % without the variable needing to be assigned, i.e. whether it is a
+    % (working) handle class.
+    function test_add_set_get_OK(testCase, Zvm, key, value1, value2)
+      assert(~isequaln(value1, value2))
 
-        % add(), get()
-        Zvm.add(key, value1)
-        actValue1 = Zvm.get(key);
-        testCase.assertEqual(actValue1, value1)
+      % add(), get()
+      Zvm.add(key, value1)
+      actValue1 = Zvm.get(key);
+      testCase.assertEqual(actValue1, value1)
 
-        % set(), get()
-        Zvm.set(key, value2)
-        actValue2 = Zvm.get(key);
-        testCase.assertEqual(actValue2, value2)
-      end
+      % set(), get()
+      Zvm.set(key, value2)
+      actValue2 = Zvm.get(key);
+      testCase.assertEqual(actValue2, value2)
+    end
 
 
 
-      % Test both equality and inequality.
-      function test_equality_helper(testCase, Zvm1a, Zvm1b, Zvm2)
-        testCase.assertTrue(isequaln( Zvm1a, Zvm1b))
-        testCase.assertEqual(         Zvm1a, Zvm1b)
+    % Test both equality and inequality.
+    function test_equality_helper(testCase, Zvm1a, Zvm1b, Zvm2)
+      testCase.assertTrue(isequaln( Zvm1a, Zvm1b))
+      testCase.assertEqual(         Zvm1a, Zvm1b)
 
-        testCase.assertFalse(isequaln(Zvm1a, Zvm2))
-        testCase.assertNotEqual(      Zvm1a, Zvm2)
-      end
+      testCase.assertFalse(isequaln(Zvm1a, Zvm2))
+      testCase.assertNotEqual(      Zvm1a, Zvm2)
+    end
 
 
 

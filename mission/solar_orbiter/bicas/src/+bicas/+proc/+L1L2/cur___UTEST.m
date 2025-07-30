@@ -118,8 +118,8 @@ classdef cur___UTEST < matlab.unittest.TestCase
 
         % CALL TESTED CODE
         testCase.assertError(...
-            @() bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME(argsCa{:}), ...
-            ?MException)
+          @() bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME(argsCa{:}), ...
+          ?MException)
       end
 
       % IOP = Independent Of Policy

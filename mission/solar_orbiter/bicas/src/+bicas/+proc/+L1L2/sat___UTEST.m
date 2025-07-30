@@ -5,9 +5,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef sat___UTEST < matlab.unittest.TestCase
-% PROPOSAL: Split up into multiple files.
-%   CON: init_object() is used by tests for multiple methods.
-%   CON: Might want to share instance field S = bicas.proc.L1L2.const.C.SSID_DICT;
+  % PROPOSAL: Split up into multiple files.
+  %   CON: init_object() is used by tests for multiple methods.
+  %   CON: Might want to share instance field S = bicas.proc.L1L2.const.C.SSID_DICT;
 
 
 
@@ -170,7 +170,7 @@ classdef sat___UTEST < matlab.unittest.TestCase
         bicas.utils.FPArray(false(3,2), 'NO_FILL_POSITIONS'), ...
         bicas.utils.FPArray(true( 3,2), 'NO_FILL_POSITIONS'), ...
         bicas.utils.FPArray(true( 3,2), 'ONLY_FILL_POSITIONS') ...
-      };
+        };
       for i = 1:numel(IS_ACHG_FPA_CA)
         test( ...
           ["DC_V3", "DC_V13"; ...
@@ -747,8 +747,8 @@ classdef sat___UTEST < matlab.unittest.TestCase
 
 
     function SatSettings = init_SatSettings(varargin)
-        Bso         = bicas.proc.L1L2.sat___UTEST.init_BSO(varargin{:});
-        SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
+      Bso         = bicas.proc.L1L2.sat___UTEST.init_BSO(varargin{:});
+      SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
     end
 
 

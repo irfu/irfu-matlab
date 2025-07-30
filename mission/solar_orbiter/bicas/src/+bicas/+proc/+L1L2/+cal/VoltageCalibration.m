@@ -375,7 +375,7 @@ classdef VoltageCalibration
           'snfEnabled',              obj.snfEnabled, ...
           'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
 
-         bltsSamplesAVoltCa{i, 1} = tempSamplesAVolt + offsetAvolt;
+        bltsSamplesAVoltCa{i, 1} = tempSamplesAVolt + offsetAvolt;
       end
 
     end

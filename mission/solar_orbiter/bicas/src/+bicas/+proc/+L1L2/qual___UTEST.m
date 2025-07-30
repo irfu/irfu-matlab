@@ -41,7 +41,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         0 0 0  1 0 0  1 0 0 ; ...
         0 0 0  0 1 0  0 1 0 ; ...
         0 0 0  0 0 1  0 0 1 ; ...
-      ];
+        ];
       N_ROWS    = size(DATA_AR, 1);
       % NOTE: (Almost) only the size is important.
       TT2000_AR = int64((1:N_ROWS) * 1e9)';
@@ -111,8 +111,8 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED FUNCTION
       ActQrcbm = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
-      TT2000_AR, "CHANNEL_SATURATION", VsibZvm, isSwf, ...
-      vstbFractionThreshold, cwfSlidingWindowLengthSec);
+        TT2000_AR, "CHANNEL_SATURATION", VsibZvm, isSwf, ...
+        vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
       testCase.assertEqual(ActQrcbm, ExpChannelSaturationQrcbm)
     end

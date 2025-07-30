@@ -20,15 +20,15 @@
 % First created 2019-11-18
 %
 classdef demuxer
-% PROPOSAL: Better name.
-%   ~demultiplexing, demuxing
-%   ~reconstruction
-%   ~relabel
-%   demux
-%   PRO: The module code really implements "relabel BLTS to ASR" and
-%        "reconstructing ASRs".
-%
-% PROPOSAL: Separate file for reconstruction of channel samples.
+  % PROPOSAL: Better name.
+  %   ~demultiplexing, demuxing
+  %   ~reconstruction
+  %   ~relabel
+  %   demux
+  %   PRO: The module code really implements "relabel BLTS to ASR" and
+  %        "reconstructing ASRs".
+  %
+  % PROPOSAL: Separate file for reconstruction of channel samples.
 
 
 
@@ -466,7 +466,7 @@ classdef demuxer
           Schd1, ...
           Schd2, ...
           Schd3 ...
-        ] = ...
+          ] = ...
           bicas.proc.L1L2.demuxer.reconstruct_missing_data(...
           Schd1, ...
           Schd2, ...

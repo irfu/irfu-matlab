@@ -59,50 +59,50 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef const
-% PROPOSAL: Rename class to something implying the theme of ASID, SSID, SDID
-%           rather than constants.
-%   PRO: Contains function relating to ASID, SSID, SDID.
-%   ~signal, ~channel
-%   ~address, ~label, ~source/destination
-%   ~id
-%   aid = Address ID(s)
-%   sid = Signal ID(s)
-%     PRO: Same components as in ASID, SSID, SDID.
-%     CON: Abbreviation occurs in many words
-%       Ex: "side", "outside", "inside", "consider", SSID/ASID
-%   cid = Channel ID(s)
-%     CON: "CID" is part of "QRCID", "decide", "incidence".
-%       CON: Is not a real abbrevation.
-%     CON: Does not deal with channels, more like addresses.
-%
-% PROPOSAL: Code for printing human-readable tables with values which can be
-%           copy-pasted to comments in this file.
-%
-% PROPOSAL: Rename ASID class AntennaSignalId.
-%   PRO: Clearer distinction between ASID class and uint8 values.
-%   CON: Different abbreviations?
-%   ~definition
-%   ~info, ~data, metadata
-%   ~BLTS
-%   --
-%   AntennaSignalDefinition
-%   AntennaSignalIdDefinition
-%   AntennaSignalIdInfo
-%
-% PROPOSAL: Abolish ASID uint8. Abolish SSID, SDID classes (keep ASID class?).
-%
-% PROPOSAL: Abolish ASID class.
-%   NOTE: ASID class is only instantiated in this file, and is
-%         most likely only used in this file too.
-%
-% PROPOSAL: Hardcode information in structs (or objects) in private
-%           dictionaries which bicas.proc.L1L2.const function implementations then use.
-%   PRO: Automatic checks on uint8 (type), integer range (dictionary keys).
-%   PRO: Does not need rely on adding/subtracting to translate between
-%        ASID, SSID, SDID.
-%
-%  PROBLEM: SSID_ASID_DICT.keys and SDID_ASID_DICT.keys are de facto
-%           the authoritative sets of SSID/SDID ASR values.
+  % PROPOSAL: Rename class to something implying the theme of ASID, SSID, SDID
+  %           rather than constants.
+  %   PRO: Contains function relating to ASID, SSID, SDID.
+  %   ~signal, ~channel
+  %   ~address, ~label, ~source/destination
+  %   ~id
+  %   aid = Address ID(s)
+  %   sid = Signal ID(s)
+  %     PRO: Same components as in ASID, SSID, SDID.
+  %     CON: Abbreviation occurs in many words
+  %       Ex: "side", "outside", "inside", "consider", SSID/ASID
+  %   cid = Channel ID(s)
+  %     CON: "CID" is part of "QRCID", "decide", "incidence".
+  %       CON: Is not a real abbrevation.
+  %     CON: Does not deal with channels, more like addresses.
+  %
+  % PROPOSAL: Code for printing human-readable tables with values which can be
+  %           copy-pasted to comments in this file.
+  %
+  % PROPOSAL: Rename ASID class AntennaSignalId.
+  %   PRO: Clearer distinction between ASID class and uint8 values.
+  %   CON: Different abbreviations?
+  %   ~definition
+  %   ~info, ~data, metadata
+  %   ~BLTS
+  %   --
+  %   AntennaSignalDefinition
+  %   AntennaSignalIdDefinition
+  %   AntennaSignalIdInfo
+  %
+  % PROPOSAL: Abolish ASID uint8. Abolish SSID, SDID classes (keep ASID class?).
+  %
+  % PROPOSAL: Abolish ASID class.
+  %   NOTE: ASID class is only instantiated in this file, and is
+  %         most likely only used in this file too.
+  %
+  % PROPOSAL: Hardcode information in structs (or objects) in private
+  %           dictionaries which bicas.proc.L1L2.const function implementations then use.
+  %   PRO: Automatic checks on uint8 (type), integer range (dictionary keys).
+  %   PRO: Does not need rely on adding/subtracting to translate between
+  %        ASID, SSID, SDID.
+  %
+  %  PROBLEM: SSID_ASID_DICT.keys and SDID_ASID_DICT.keys are de facto
+  %           the authoritative sets of SSID/SDID ASR values.
 
 
 

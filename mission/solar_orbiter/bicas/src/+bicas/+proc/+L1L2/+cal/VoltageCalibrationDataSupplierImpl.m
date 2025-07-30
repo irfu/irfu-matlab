@@ -20,25 +20,25 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierAbstract
-% PROPOSAL: Remove useNbci as TDS argument since not supported.
-%   NOTE: Constructor must still have it as argument since it is relevant for
-%         LFR calibration.
-%   PROPOSAL: Move to VCAL.
-%     PRO: This class should not do logic and is not meant to be tested.
-%
-% PROPOSAL: Separate calibration data-retrieving methods
-%     get_BIAS_ITF_and_offset()
-%     get_LFR_ITF()
-%     get_TDS_CWF_ITF()
-%     get_TDS_RSWF_ITF()
-%   into
-%     (1) "core": crash for cases when there is no data,
-%     and
-%     (2) "wrapper": call "core", but return NaN TF etc for cases when there is
-%                    no data.
-%   Move "wrapper" to VCAL.
-%   PRO: Can test wrapper functionality.
-%     Ex: CALIBRATION_TABLE_INDEX(i, 1)=wrong when BW=0/1.
+  % PROPOSAL: Remove useNbci as TDS argument since not supported.
+  %   NOTE: Constructor must still have it as argument since it is relevant for
+  %         LFR calibration.
+  %   PROPOSAL: Move to VCAL.
+  %     PRO: This class should not do logic and is not meant to be tested.
+  %
+  % PROPOSAL: Separate calibration data-retrieving methods
+  %     get_BIAS_ITF_and_offset()
+  %     get_LFR_ITF()
+  %     get_TDS_CWF_ITF()
+  %     get_TDS_RSWF_ITF()
+  %   into
+  %     (1) "core": crash for cases when there is no data,
+  %     and
+  %     (2) "wrapper": call "core", but return NaN TF etc for cases when there is
+  %                    no data.
+  %   Move "wrapper" to VCAL.
+  %   PRO: Can test wrapper functionality.
+  %     Ex: CALIBRATION_TABLE_INDEX(i, 1)=wrong when BW=0/1.
 
 
 
