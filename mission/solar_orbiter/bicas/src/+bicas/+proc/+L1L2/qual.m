@@ -97,7 +97,7 @@ classdef qual
     %   assert(islogical(fullSaturationQrcbAr))
     %
     %   Qrcbm = bicas.proc.qual.NSO_table_to_QRCB_arrays(...
-    %     bicas.const.Q.ALL_QRCID_AR, NsoTable, Epoch, L);
+    %     bicas.const.qrc.Q.ALL_QRCID_AR, NsoTable, Epoch, L);
     %
     %   % Remove QRCIDs which this function can not handle (and should not
     %   % need to) since they are not intended for L2_QUALITY_BITMASK.
@@ -132,7 +132,7 @@ classdef qual
       % PROPOSAL: Change order of arguments.
 
       SaturationQrcbm = bicas.proc.QrcbMap(numel(tt2000Ar));
-      SaturationQrcbm.add_false(bicas.const.Q.SATURATION_QRCID_AR)
+      SaturationQrcbm.add_false(bicas.const.qrc.Q.SATURATION_QRCID_AR)
 
       %---------------------------------
       % Obtain CHANNEL_SATURATION QRCBs
@@ -163,7 +163,7 @@ classdef qual
 
       assert(isequal( ...
         sort(SaturationQrcbm.qrcidAr), ...
-        sort(bicas.const.Q.SATURATION_QRCID_AR)))
+        sort(bicas.const.qrc.Q.SATURATION_QRCID_AR)))
     end
 
 
@@ -270,7 +270,7 @@ classdef qual
         ChannelSaturationQrcbm, nRecords)
 
       fullSaturationQrcbAr = false(nRecords, 1);
-      for qrcid = bicas.const.Q.CHANNEL_SATURATION_QRCID_AR'
+      for qrcid = bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR'
         fullSaturationQrcbAr = ...
           fullSaturationQrcbAr | ChannelSaturationQrcbm.get(qrcid);
       end

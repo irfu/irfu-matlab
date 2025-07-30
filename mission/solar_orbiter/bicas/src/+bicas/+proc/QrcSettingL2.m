@@ -36,8 +36,8 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
 
     function obj = QrcSettingL2(A)
       arguments
-        A.QUALITY_FLAG       uint8  = bicas.const.QUALITY_FLAG_MAX
-        A.L2_QUALITY_BITMASK uint16 = uint16(0)
+        A.QUALITY_FLAG       uint8  = bicas.const.qrc.QUALITY_FLAG_MAX
+        A.L2_QUALITY_BITMASK uint16 = bicas.const.qrc.LxQBM_NONE
         A.voltageFvSsidAr    uint8  = uint16.empty(0, 1)
         A.currentFvIantAr           = zeros(0, 1)
       end

@@ -171,9 +171,9 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
     % Normal bin
     % Test merging QUALITY_BITMASK bits.
     function test_process_L2_to_L3___2(testCase)
-      assert(bicas.const.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V12").L2_QUALITY_BITMASK == uint16( 8));
-      assert(bicas.const.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V13").L2_QUALITY_BITMASK == uint16(16));
-      assert(bicas.const.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V23").L2_QUALITY_BITMASK == uint16(32));
+      assert(bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V12").L2_QUALITY_BITMASK == uint16( 8));
+      assert(bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V13").L2_QUALITY_BITMASK == uint16(16));
+      assert(bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V23").L2_QUALITY_BITMASK == uint16(32));
 
       DATA_OSR = [ ...
         -1,  2, 4,  1,  8,   1,2,3, -1,-2,-3; ...

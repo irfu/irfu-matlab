@@ -41,7 +41,7 @@ classdef qual
     %
     %   [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
     %     bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-    %     Qrcbm, bicas.const.Q.L3DENSITY_QRCSM, "L3_QUALITY_BITMASK");
+    %     Qrcbm, bicas.const.qrc.Q.L3DENSITY_QRCSM, "L3_QUALITY_BITMASK");
     % end
 
 
@@ -113,14 +113,14 @@ classdef qual
       assert(iscolumn(l2qbmAr) & isa(l2qbmAr, "uint16"))
 
       SaturationQrcbm = bicas.proc.QrcbMap(numel(l2qbmAr));
-      SaturationQrcbm.add_false(bicas.const.Q.CHANNEL_SATURATION_QRCID_AR)
+      SaturationQrcbm.add_false(bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR)
 
       switch saturationQualitySchemeId
         case 'CHANNEL_SATURATION'
 
           % Update CHANNEL_SATURATION QRCBs.
           ChannelSaturationQrcbm = bicas.proc.L2L3.qual.L2QBM_to_QRCBs(...
-            l2qbmAr, bicas.const.Q.L2_CHANNEL_SATURATION_QRCSM);
+            l2qbmAr, bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM);
           SaturationQrcbm.union(ChannelSaturationQrcbm)
 
         case 'GLOBAL_SATURATION'
@@ -141,7 +141,7 @@ classdef qual
 
       assert(isequal( ...
         sort(SaturationQrcbm.qrcidAr), ...
-        sort(bicas.const.Q.CHANNEL_SATURATION_QRCID_AR)))
+        sort(bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR)))
     end
 
 
@@ -168,8 +168,8 @@ classdef qual
       %          lxqbmName and QRCSs which contain some LxQBM value.
       %       CON-PROPOSAL: Special value to ignore retrieving a QRCS LxQBM value.
 
-      L2NonsaturationQrcsm = copy(bicas.const.Q.L2_QRCSM);
-      L2NonsaturationQrcsm.remove_many(bicas.const.Q.SATURATION_QRCID_AR);
+      L2NonsaturationQrcsm = copy(bicas.const.qrc.Q.L2_QRCSM);
+      L2NonsaturationQrcsm.remove_many(bicas.const.qrc.Q.SATURATION_QRCID_AR);
 
       L2Qrcbm = bicas.proc.qual.NSO_table_to_QRCBM(...
         L2NonsaturationQrcsm.qrcidAr, NsoTable, tt2000Ar, L);

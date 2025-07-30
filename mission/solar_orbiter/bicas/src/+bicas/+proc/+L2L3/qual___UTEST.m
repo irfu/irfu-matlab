@@ -80,7 +80,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
       function test_GLOBAL_SATURATION()
         l2qbmAr = uint16(2.^[0:15]');
         ExcQrcbm = bicas.proc.QrcbMap(numel(l2qbmAr));
-        ExcQrcbm.add_false(bicas.const.Q.CHANNEL_SATURATION_QRCID_AR)
+        ExcQrcbm.add_false(bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR)
         test(l2qbmAr, "GLOBAL_SATURATION", ExcQrcbm)
       end
 
@@ -89,7 +89,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         % then it still becomes hard to test non-saturation bits.
         l2qbmAr = uint16(2.^[4:6]');
         ExcQrcbm = bicas.proc.QrcbMap(numel(l2qbmAr));
-        ExcQrcbm.add_false(bicas.const.Q.CHANNEL_SATURATION_QRCID_AR)
+        ExcQrcbm.add_false(bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR)
         ExcQrcbm.set("SATURATION_ZV_V13", logical([1 0 0]'))
         ExcQrcbm.set("SATURATION_ZV_V23", logical([0 1 0]'))
         test(l2qbmAr, "CHANNEL_SATURATION", ExcQrcbm)

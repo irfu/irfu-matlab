@@ -147,7 +147,7 @@ classdef qual
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, Lx_QUALITY_BITMASK=0), which can then later be
       % "lowered" if necessary.
-      QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.QUALITY_FLAG_MAX;
+      QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.qrc.QUALITY_FLAG_MAX;
       Lx_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
 
       %=================================

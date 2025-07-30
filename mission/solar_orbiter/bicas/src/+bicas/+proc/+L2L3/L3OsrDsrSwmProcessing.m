@@ -206,10 +206,10 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %             L3 DENSITY QRCBs
       %------------------------------
       L3Qrcbm = bicas.proc.qual.NSO_table_to_QRCBM(...
-        bicas.const.Q.L3_QRCSM.qrcidAr, ...
+        bicas.const.qrc.Q.L3_QRCSM.qrcidAr, ...
         NsoTable, Zv.Epoch, L);
       L3DensityQrcbm = bicas.proc.qual.NSO_table_to_QRCBM(...
-        bicas.const.Q.L3_DENSITY_QRCSM.qrcidAr, ...
+        bicas.const.qrc.Q.L3_DENSITY_QRCSM.qrcidAr, ...
         NsoTable, Zv.Epoch, L);
 
       %-------------------------------
@@ -242,9 +242,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % Blank input data based on QRCs
       %--------------------------------
       VDC_Fpa = bicas.proc.L2L3.qual.set_FPA_samples_FP(...
-        Zv.VDC_Fpa, L3Qrcbm, bicas.const.Q.L3_QRCSM, "vdcFvIndexAr");
+        Zv.VDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "vdcFvIndexAr");
       EDC_Fpa = bicas.proc.L2L3.qual.set_FPA_samples_FP(...
-        Zv.EDC_Fpa, L3Qrcbm, bicas.const.Q.L3_QRCSM, "edcFvIndexAr");
+        Zv.EDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "edcFvIndexAr");
 
       %-------------------------------------------------------
       % Blank input data when QUALITY_FLAG is below threshold
@@ -276,7 +276,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % IMPLEMENTATION NOTE: Can add blanking of other L3 variables too, if
       % needed.
       R.EdcSrfMvpmFpa = bicas.proc.L2L3.qual.set_FPA_samples_FP(...
-        R.EdcSrfMvpmFpa, L3Qrcbm, bicas.const.Q.L3_QRCSM, "efieldFvIndexAr");
+        R.EdcSrfMvpmFpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "efieldFvIndexAr");
 
       %----------------------------------------------------------------------
       % Set L3 density BAD_DENSITY QRCB using information from solo.psp2ne()
@@ -415,7 +415,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Out.Zv.DENSITY                   = NeScpCm3Fpa.cast('single');
 
       [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-        L3DensityQrcbm, bicas.const.Q.L3_DENSITY_QRCSM, "L3_QUALITY_BITMASK");
+        L3DensityQrcbm, bicas.const.qrc.Q.L3_DENSITY_QRCSM, "L3_QUALITY_BITMASK");
 
       Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
       Out.Zv.L3_QUALITY_BITMASK       = bicas.utils.FPArray(L3_QUALITY_FLAG);
