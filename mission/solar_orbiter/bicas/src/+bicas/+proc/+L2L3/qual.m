@@ -18,34 +18,6 @@ classdef qual
 
 
 
-    % PLANNED TO BE PHASED OUT
-    %
-    % NOTE: Sets quality ZVs based on BAD_DENSITY QRCB *ONLY*.
-    % NOTE: ONLY FOR DENSITY.
-    % function [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
-    %     get_quality_ZVs_density(badDensityQrcbAr)
-    %   % NOTE: Can not get NSO events from NSO table.
-    %
-    %   % IMPLEMENTATION NOTE: Function is (as of 2023-12-18) in principle more
-    %   % complicated than necessary w.r.t. L3_QUALITY_BITMASK but the
-    %   % architecture is chosen to be analogue with
-    %   % bicas.proc.L1L2.qual.get_quality_ZVs() so that it can be expanded in a
-    %   % similar way if needed.
-    %
-    %   assert(islogical(badDensityQrcbAr))
-    %
-    %   nRecords = size(badDensityQrcbAr, 1);
-    %
-    %   Qrcbm = bicas.proc.QrcbMap(nRecords);
-    %   Qrcbm.add("BAD_DENSITY", badDensityQrcbAr);
-    %
-    %   [QUALITY_FLAG, L3_QUALITY_BITMASK] = ...
-    %     bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
-    %     Qrcbm, bicas.const.qrc.Q.L3DENSITY_QRCSM, "L3_QUALITY_BITMASK");
-    % end
-
-
-
     % Given some L2 QRCSs which set unique L2QBM bits, set (L3) QRCBs (with the
     % same QRCIDs) from those quality bits. Asserts that this is easily doable
     % by requiring all QRCSs to set exactly one quality bit which is unique.
