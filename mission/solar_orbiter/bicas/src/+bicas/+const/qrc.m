@@ -227,8 +227,21 @@ classdef qrc
       %===============
       % REMOVE_EFIELD
       %===============
-      % Remove EFIELD output from solo.vdccal() (i.e. not by removing input to
-      % solo.vdccal()).
+      % V3 is unintentionally floating after sweeps due to bad commanding.
+      % https://github.com/irfu/irfu-matlab/issues/156
+      % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing
+      % input to solo.vdccal()).
+      Qrcs = bicas.proc.QrcSettingL3(efieldFvIndexAr=[1 2 3]');
+      L3Qrcsm.add("V3_UNINTENTIONALLY_FLOATING", Qrcs);
+
+
+
+      %===============
+      % REMOVE_EFIELD
+      %===============
+      % Intended for when there are arbitrary reasons to remove EFIELD data.
+      % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing
+      % input to solo.vdccal()).
       Qrcs = bicas.proc.QrcSettingL3(efieldFvIndexAr=[1 2 3]');
       L3Qrcsm.add("REMOVE_EFIELD", Qrcs);
 
