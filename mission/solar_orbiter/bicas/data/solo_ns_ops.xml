@@ -2319,12 +2319,6 @@
             <rcsNsoId>ANT3_FAILING</rcsNsoId>
             <description></description>
         </event>
-        <event>
-            <startTimeUtc>2024-03-15T16:59:29.42</startTimeUtc>
-            <stopTimeUtc> 2024-03-15T23:38:42.03</stopTimeUtc>
-            <rcsNsoId>ANT3_FAILING</rcsNsoId>
-            <description></description>
-        </event>
 
 
 
