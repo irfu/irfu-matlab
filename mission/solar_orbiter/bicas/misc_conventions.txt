@@ -57,9 +57,9 @@ AA, aampere
 AAPT
     Antenna Ampere/TM (unit).
 ACHG
-    (BIAS diff) AC High Gain. Corresponds to HK_BIA_DIFF_GAIN=1.
+    (BIAS diff) AC High Gain. Corresponds to (BIAS HK ZV) HK_BIA_DIFF_GAIN=1.
 ACLG
-    (BIAS diff) AC Low Gain. Corresponds to HK_BIA_DIFF_GAIN=0.
+    (BIAS diff) AC Low Gain. Corresponds to (BIAS HK ZV) HK_BIA_DIFF_GAIN=0.
 APATH
     Absolute Path
 AR

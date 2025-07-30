@@ -31,7 +31,7 @@ classdef ZvMap < handle
   %          nRecords. If class is more generic, the property should be called
   %          nRows.
   %
-  % PROPOSAL: Use bicas.utils.HandleWrapper.
+  % PROPOSAL: Use handle class which wraps a non-handle value.
   %   PRO: May be needed for implementing
   %    (1) subsasgn() for a specified key value (modify value without
   %        reading+modifying+overwriting with high performance.

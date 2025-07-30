@@ -32,6 +32,11 @@ classdef demuxer
 
 
 
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
   methods(Static, Access=public)
 
 

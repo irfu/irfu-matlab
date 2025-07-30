@@ -19,12 +19,16 @@ classdef swpdet
   %   PROPOSAL: For separate algorithm functions instead(?) of for consolidated
   %             functions which use multiple algorithms.
   %
-  % PROPOSAL: Separate function(s) for detecting sweeps using L1R
-  %           QUALITY_BITMASK. Return value in science time.
   % PROPOSAL: Separate time margins t_before, t_after.
-
+  %
   % PROPOSAL: SBDA_wo_margins() should not use BSO as argument.
   %   PRO: Only uses one setting.
+  %
+  % PROPOSAL: Sweep algorithm which looks for data gaps. Entire time period
+  %           bounded by data gaps is excluded.
+  %   PROPOSAL: Max length of sweep exclusion time interval.
+  %     TODO-DEC: What happens if exceeded?
+  % PROPOSAL: Sweep algorithm which uses QUALITY_BITMASK sweep bits.
 
 
 

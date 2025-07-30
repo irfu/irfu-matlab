@@ -198,11 +198,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %#########################################
+      %=========================================
       % NSO table, L2_QUALITY_BITMASK --> QRCBs
-      %#########################################
-      % Read NSO table into QRCBs ONCE, so that it does not need to be done
-      % later.
+      %=========================================
       %------------------------------
       % NSO table-->L3 QRCBs
       %             L3 DENSITY QRCBs
@@ -217,7 +215,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %-------------------------------
       % L2_QUALITY_BITMASK-->L3 QRCBs
       %-------------------------------
-      % Determine channel saturation QRCBs by reading L2_QUALITY bitmask.
+      % Obtain channel saturation QRCBs by reading L2_QUALITY bitmask.
       ChannelSaturationQrcbm = bicas.proc.L2L3.qual.L2QBM_to_channel_saturation_QRCBs(...
         Zv.L2_QUALITY_BITMASK_Fpa.array(uint16(0)), ...
         Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'));
@@ -228,7 +226,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % been for saturation or sweeps(!).
       %-------------------------------------------------------------------------
       % IMPLEMENTATION NOTE: Must distinguish between
-      % (1) the derived L2 non-saturation, and
+      % (1) the derived L2 non-saturation QUALITY_FLAG, and
       % (2) the (true) L2 input QUALITY FLAG.
       Zv.QUALITY_FLAG_nonsatFpa = ...
         bicas.proc.L2L3.qual.get_L2_nonsaturation_nonsweep_QUALITY_FLAG( ...
@@ -236,11 +234,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %=======================================
-      % Call BICAS-external code to calculate
-      % (1) EFIELD, SCPOT, and from that
-      % (2) DENSITY.
-      %=======================================
+      %==========================
+      % Call BICAS-external code
+      %==========================
 
       %--------------------------------
       % Blank input data based on QRCs
@@ -263,9 +259,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       bNotUsed                = bNotUsedFpa.array(false);   % Is [FP==>false] wise?
       Zv.VDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
       Zv.EDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
-      %--------------------------
-      % Call BICAS-external code
-      %--------------------------
+
+      %---------------------------------------
+      % Call BICAS-external code to calculate
+      % (1) EFIELD, SCPOT, and from that
+      % (2) DENSITY.
+      %---------------------------------------
       R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(Excd, ...
         Epoch  =Zv.Epoch, ...
         VDC_Fpa=VDC_Fpa, ...

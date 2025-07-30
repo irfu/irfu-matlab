@@ -504,7 +504,7 @@ S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC', 180)
 %    IMPORTANT: This is not needed for (nominal) processing of *L1R* (voltage)
 %               datasets.
 % ** BIAS & TDS have previously not followed the correct filenaming
-%    convention but does now (2020-11-20).
+%    convention but do now (2020-11-20).
 % ** LFR do not seem to follow the filenaming covention (2020-11-20)
 %    NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
 %    seconds=2_digits).

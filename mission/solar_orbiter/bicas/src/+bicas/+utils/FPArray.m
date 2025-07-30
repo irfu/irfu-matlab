@@ -77,11 +77,6 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
   % TODO-DEC: Tolerate cell arrays?
   %   NOTE: Should not be needed for BICAS.
   %
-  % PROPOSAL: Performance w.r.t. pre-allocation?
-  %   TODO-DEC:  Is it a relevant question? Would such code use FPA?
-  %   PROPOSAL: Use HandleWrapper internally.
-  %       NOTE: Class needs to become handle class.
-  %
   % PROBLEM: Can not call e.g. isnumeric(Fpa), isfloat(Fpa), islogical().
   %   PROPOSAL: isnumeric(cast(0, Fpa.mc)) etc.
   %
@@ -416,6 +411,7 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
     function Fpa = ensure_NFP(obj, fv)
       % PROPOSAL: Better name.
       %   PROBLEM: Unclear that new instance is created.
+      %     CON: Is not handle class. ==> Can not modify object in place.
       %   PROPOSAL: all_NFP, only_NFP
 
       Fpa = bicas.utils.FPArray(obj.array(fv));

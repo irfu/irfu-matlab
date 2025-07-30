@@ -17,7 +17,7 @@ classdef const
   % PROPOSAL: Split up in multiple files.
   %   NOTE: There is already bicas.proc.L1L2.const.
   %   --
-  %   PRO: Too large file. ~1045 rows  /2025-07-17
+  %   PRO: Too large file. ~1073 rows  /2025-07-30
   %     PRO: init_GA_MODS_DB() is  ~300 rows and will grow over time.
   %     PRO: init_SWD_metadata() is ~170 rows and will grow over time (if
   %          keeping commented-out info from every old BICAS version).
@@ -27,9 +27,19 @@ classdef const
   %   PROBLEM: Functions used for setting constants may need to use constants
   %            themselves. ==> Need to avoid cyclic dependence.
   %            ==> Affects splitting.
-  %     Ex: init_GA_MODS_DB() uses bicas.const.*.
+  %     Ex: init_GA_MODS_DB() uses bicas.const.* but is used for setting
+  %         bicas.const value.
   %     Ex: init_SWD_metadata() does not use bicas.const.* values but could
   %         conceivably do in the future.
+  %     Ex: init_QRC_constants() does not truly (?) use bicas.const.* values
+  %         but could conceivably do in the future.
+  %     PROPOSAL: See them as separate "const" files, used only for setting
+  %               the corresponding constants.
+  %       PROPOSAL: Modules bicas.const.*.
+  %         Ex: bicas.const.metadata
+  %         Ex: bicas.const.swdmd:   init_SWD_metadata()
+  %         Ex: bicas.const.gamods:  init_GA_MODS_DB()
+  %         Ex: bicas.const.qrc:     init_QRC_constants()
   %   --
   %   PROPOSAL: Separate file for BICAS version/metadata constants:
   %     Ex: init_GA_MODS_DB(), init_SWD_metadata()
@@ -647,7 +657,7 @@ classdef const
       % SWEEP
       %=======
       Qrcs = bicas.proc.QrcSettingL2(...
-        voltageFvSsidAr=S.values, ...
+        voltageFvSsidAr=S.values, ...   % Blank all SSIDs.
         currentFvIantAr=[1:3]');
       L2Qrcsm.add("SWEEP", Qrcs);
 

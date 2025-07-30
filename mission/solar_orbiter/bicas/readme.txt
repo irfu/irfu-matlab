@@ -333,7 +333,7 @@ deemed good enough using setting PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN (=0
 as of 2025-05-23).
 
 Condition                                    | Action taken when condition applies
---------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
 L2 LFR CWF QUALITY_FLAG is either            | L2 LFR CWF downsampled:
 >= PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN |     VDC, EDC, VDCSTD, EDCSTD
 or fill value (!)                            |     values are set to fill
