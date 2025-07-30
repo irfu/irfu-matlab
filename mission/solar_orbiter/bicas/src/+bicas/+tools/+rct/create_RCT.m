@@ -49,7 +49,7 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir, beginDt, endDt, version
 % PROPOSAL: Somehow separate the code with the hard-coded data into a separate file.
 %
 % PROPOSAL: Merge definition of bicas.ga.mods.Database() with that of BICAS
-%           proper (bicas.const.GA_MODS_DB).
+%           proper (bicas.const.gamods.GA_MODS_DB).
 %   CON: Must then use BICAS versions.
 %   CON: Obscures the definition, since RCTs are a bit separate from BICAS
 %        proper. BICAS must be compatible with the RCT format, but the method of

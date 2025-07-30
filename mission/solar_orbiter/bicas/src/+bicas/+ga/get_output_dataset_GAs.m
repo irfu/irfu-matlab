@@ -167,7 +167,7 @@ OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end)
 
 
 
-OutGaSubset.MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
+OutGaSubset.MODS = bicas.const.gamods.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
 
 
 

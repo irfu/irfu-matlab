@@ -17,8 +17,7 @@ classdef const
   % PROPOSAL: Split up in multiple files.
   %   NOTE: There is already bicas.proc.L1L2.const.
   %   --
-  %   PRO: Too large file. ~1073 rows  /2025-07-30
-  %     PRO: init_GA_MODS_DB() is  ~300 rows and will grow over time.
+  %   PRO: Too large file. ~764 rows  /2025-07-30
   %     PRO: init_SWD_metadata() is ~170 rows and will grow over time (if
   %          keeping commented-out info from every old BICAS version).
   %     PRO: init_EMIDP_2_INFO() is ~80 rows.
@@ -27,8 +26,6 @@ classdef const
   %   PROBLEM: Functions used for setting constants may need to use constants
   %            themselves. ==> Need to avoid cyclic dependence.
   %            ==> Affects splitting.
-  %     Ex: init_GA_MODS_DB() uses bicas.const.* but is used for setting
-  %         bicas.const value.
   %     Ex: init_SWD_metadata() does not use bicas.const.* values but could
   %         conceivably do in the future.
   %     Ex: init_QRC_constants() does not truly (?) use bicas.const.* values
@@ -38,11 +35,10 @@ classdef const
   %       PROPOSAL: Modules bicas.const.*.
   %         Ex: bicas.const.metadata
   %         Ex: bicas.const.swdmd:   init_SWD_metadata()
-  %         Ex: bicas.const.gamods:  init_GA_MODS_DB()
   %         Ex: bicas.const.qrc:     init_QRC_constants()
   %   --
   %   PROPOSAL: Separate file for BICAS version/metadata constants:
-  %     Ex: init_GA_MODS_DB(), init_SWD_metadata()
+  %     Ex: init_SWD_metadata()
   %     PROPOSAL: New file is dependent on bicas.const (but not the reverse).
   %   PROPOSAL: Separate file for quality configuration.
   %
@@ -56,17 +52,21 @@ classdef const
   % PROPOSAL: Log all constants.
   %   CON: Not straightforward/easy to log all constants since they use
   %        "non-primitive" data structures.
-  %       Ex: SWD_METADATA = bicas.const.init_SWD_metadata();
+  %       Ex: bicas.const.SWD_METADATA;
   %           Map-->Strings
-  %       Ex: EMIDP_2_INFO = bicas.const.init_EMIDP_2_INFO;
+  %       Ex: bicas.const.EMIDP_2_INFO;
   %           Map-->Struct
-  %       Ex: GA_MODS_DB = bicas.const.init_GA_MODS_DB();
+  %       Ex: bicas.const.gamods.GA_MODS_DB;
   %           Custom objects.
   %       PROPOSAL: Only log those which are easy.
   % PROPOSAL: Move bicas.const.N_BLTS to solo.hwzv.const.
   %
   % PROPOSAL: Derive lists of datasets using
   %           bicas.classify_BICAS_L1_L1R_to_L2_DSI() or reverse.
+  %
+  % PROPOSAL: Lists for both official+unofficial DSIs.
+  %   NOTE: See bicas.const.gamods.init_GA_MODS_DB().
+  %   TODO-DEC: Notation?
 
 
 
@@ -199,10 +199,9 @@ classdef const
 
 
 
-    GA_MODS_DB = bicas.const.init_GA_MODS_DB();
-
-
-
+    %===============
+    % Lists of DSIs
+    %===============
     % NOTE: Only official datasets.
     L2_LFR_DSI_CA = {...
       'SOLO_L2_RPW-LFR-SBM1-CWF-E'; ...
@@ -224,10 +223,22 @@ classdef const
     L2_SWF_DSI_CA = {
       'SOLO_L2_RPW-LFR-SURV-SWF-E', ...
       'SOLO_L2_RPW-TDS-LFM-RSWF-E'}
+    %
     L3_DENSITY_DSI_CA = {...
       'SOLO_L3_RPW-BIA-DENSITY'; ...
       'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS'};
+    L3_EFIELD_SCPOT_DSI_CA = {...
+      'SOLO_L3_RPW-BIA-EFIELD'; ...
+      'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'; ...
+      'SOLO_L3_RPW-BIA-SCPOT'; ...
+      'SOLO_L3_RPW-BIA-SCPOT-10-SECONDS'};
+    % DES = Density+EField+Scpot (OSR+DSR; not VHT).
+    L3_DENSITY_EFIELD_SCPOT_DSI_CA = [ ...
+      bicas.const.L3_DENSITY_DSI_CA; ...
+      bicas.const.L3_EFIELD_SCPOT_DSI_CA];
+
     RCT_DSI = 'SOLO_CAL_RPW-BIAS';
+
 
 
 
@@ -738,341 +749,6 @@ classdef const
         Q.L3_QRCSM.qrcidAr; ...
         Q.L3_DENSITY_QRCSM.qrcidAr];
     end
-
-
-
-    % Initialize data structure which contains the contents of CDF global
-    % attribute (GA) "MODS".
-    %
-    % RCS ICD 01/05 draft 2021-05-04, Table 4, on MODS:
-    % =================================================
-    % """"It shall be at least one entry for each release of
-    % the RCS software that brings significant change in
-    % the data content. Entry format shall be
-    % “YYYY-MM-DD :: change #1 short description | change
-    % #2 short description”,
-    % where YYYY, MM and DD are respectively the year,
-    % month and day of the new RCS release. Then followed
-    % by the change descriptions, which shall be separated
-    % by the pipe character (“|”)""""
-    %
-    function Gmdb = init_GA_MODS_DB()
-      % PROPOSAL: Exclude VHT since not produced by BICAS proper.
-      %   CON: Production uses BICAS infrastrucutre for writing datasets.
-      %
-      % PROPOSAL: DSI lists as public constants.
-      %   PROPOSAL: solo.hwzv.const.
-      %   PRO: Could be used by functions for classifying DSIs.
-      %       Ex: bicas.classify_BICAS_L1_L1R_to_L2_DSI().
-      %       CON: Not if want to be really general, e.g. accounting for
-      %            ROC-SGSE/SOLO distinctions.
-      % PROPOSAL: Setting L2 and L3 in separate (sub)functions.
-      % PROPOSAL: Test code which reads GA MODS for all DSIs.
-      %   NOTE: Needs global list of DSIs which should probably be the
-      %   same as listed here.
-
-      %====================================================
-      % Lists of commonly used GROUPS of DSIs
-      % --------------------------------------------------
-      % NOTE: Groups are allowed to overlap.
-      % NOTE: Only include OFFICIAL datasets.
-      %====================================================
-      % NOTE: Only include OFFICIAL L2 datasets.
-
-      L3_EFIELD_SCPOT_DSI_CA = {...
-        'SOLO_L3_RPW-BIA-EFIELD'; ...
-        'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'; ...
-        'SOLO_L3_RPW-BIA-SCPOT'; ...
-        'SOLO_L3_RPW-BIA-SCPOT-10-SECONDS'};
-      % DES = Density+EField+Scpot (OSR+DSR; not VHT).
-      L3_DES_DSI_CA = [ ...
-        bicas.const.L3_DENSITY_DSI_CA; ...
-        L3_EFIELD_SCPOT_DSI_CA];
-
-      % All L3.
-      L3_DSI_CA = [L3_DES_DSI_CA; {'SOLO_L3_RPW-BIA-VHT'}];
-
-      %======================================================
-      % Initialize empty data structure for all MODS entries)
-      %======================================================
-      % NOTE: Includes UNOFFICIAL DATASETS to avoid having a special case
-      %       in the code for them w.r.t. MODS.
-      % NOTE: Formal parent dataset(s) might be changed due to
-      %       reorganizing SWM, which could change the technically
-      %       correct value.
-      ALL_DSI_CA = [...
-        bicas.const.L2_LFR_TDS_DSI_CA; L3_DSI_CA; ...
-        {'SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND'}...
-        ]';
-      Gmdb = bicas.ga.mods.Database(ALL_DSI_CA);
-
-
-
-      %##############################################################
-      % ACTUAL MODS ENTRIES, ADDED FOR ONLY THE RELEVANT DSIs
-      %##############################################################
-
-      %===================================================================
-      % L2: At most one entry per BICAS version
-      % ---------------------------------------
-      % NOTE: L2 dates should be taken from ROC's BICAS git repo commits
-      %       since those represent deliveries to ROC.
-      %===================================================================
-      % L3 DENSITY+EFIELD+SCPOT (not VHT): At most one entry per delivery
-      % -----------------------------------------------------------------
-      % NOTE: L3 dates are effectively determined by when dataset
-      %       deliveries to ROC were generated.
-      % --
-      % NOTE:
-      % (1) BICAS is used for generating L3 at IRF (not ROC), and
-      % (2) BICAS version numbers are only updated when delivering to ROC.
-      % Therefore,
-      % (1) the MODS BICAS version numbers do not exactly specify the
-      %     BICAS version, only the previous official version, and
-      % (2) the dates may conflict with the combinations of BICAS version
-      %     and date for other MODS entries.
-      %===================================================================
-      % L3 VHT
-      % ------
-      % NOTE: L3 dates are effectively determined by deliveries to ROC.
-      % NOTE: Including VHT, since VHT uses the same BICAS functions for
-      %       writing datasets (including
-      %       bicas.ga.get_output_dataset_GAs).
-      %===================================================================
-
-      % BICAS v1.0.0 : No MODS needed since there are no changes compared
-      %                to an earlier version.
-
-
-
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2020-05-18', '2.0.1', ...
-        {'Bias currents bugfixed to be correct unit.'}))
-
-
-
-      GmveTds = bicas.ga.mods.VersionEntry('2020-07-07', '3.0.0', ...
-        {'Bias currents changed to nA (not ampere).', ...
-        'Ignoring frequencies above high-frequency cutoff at 0.7 times Nyquist frequency.'});
-      GmveLfr = GmveTds.add_comments({'Hereafter copying LFR L1 zVar BW.'});
-      Gmdb.add_GMVE(bicas.const.L2_LFR_DSI_CA, GmveLfr)
-      Gmdb.add_GMVE(bicas.const.L2_TDS_DSI_CA, GmveTds)
-      clear GmveLfr GmveTds
-
-
-
-      GmveTds = bicas.ga.mods.VersionEntry('2020-09-01', '3.1.0', {...
-        'Crude sweep removal based on mux mode.', ...
-        'Preliminary setting of QUALITY_FLAG (max 2).'});
-      GmveLfr = GmveTds.add_comments({'Bugfix to handle LFR L1 zVar BW=0.'});
-      Gmdb.add_GMVE(bicas.const.L2_LFR_DSI_CA, GmveLfr)
-      Gmdb.add_GMVE(bicas.const.L2_TDS_DSI_CA, GmveTds)
-      clear GmveLfr GmveTds
-
-
-
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2020-09-15', '3.1.1', {...
-        ['Ignoring frequencies above high-frequency cutoff at 0.8', ...
-        ' (instead of 0.7) multiplied by Nyquist frequency.']}))
-
-
-
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2020-10-07', '4.0.0', ...
-        {'Uses table to set zVars QUALITY_FLAG and L2_QUALITY_BITMASK.'}))
-
-
-
-      GmveTds = bicas.ga.mods.VersionEntry('2020-12-07', '4.1.0', {...
-        ['Set QUALITY_FLAG and L2_QUALITY_BITMASK based on', ...
-        ' tabulated thruster firings.']...
-        });
-      GmveLfr = GmveTds.add_comments({...
-        ['Bugfixed AC detrending that only removes mean and does', ...
-        ' not add linear component (mostly SWF).'], ...
-        ['Inverting AC using artificial constant gain for low', ...
-        ' frequencies to not amplify noise.']...
-        });
-      Gmdb.add_GMVE(bicas.const.L2_LFR_DSI_CA, GmveLfr)
-      Gmdb.add_GMVE(bicas.const.L2_TDS_DSI_CA, GmveTds)
-      clear GmveLfr GmveTds
-
-
-
-      % L3 delivery 1: ~2021-01-29
-      % NOTE: No entries, but the date is needed for determining MODS
-      % between delivery 1 and 2.
-
-
-
-      % No new L2 MODS entries (if excluding NSOPS update).
-      Gmdb.add_GMVE(bicas.const.L2_TDS_DSI_CA, bicas.ga.mods.VersionEntry(...
-        '2021-02-02', '5.0.0', ...
-        {['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
-        ' until 2021-01-26.']}))
-
-
-
-      % L3 delivery 2: ~2021-02-16
-      % NOTE: Master CDFs updated according to feedback. ==> No MODS.
-      % psp2ne.m updated ==> DENSITY
-      Gmdb.add_GMVE(...
-        {'SOLO_L3_RPW-BIA-DENSITY', ...
-        'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS'}, ...
-        bicas.ga.mods.VersionEntry('2021-02-16', '5.0.0', ...
-        {'Updated algorithm for density.'}))
-
-
-
-      % L3 delivery 3: ~2021-04-09
-      % vdccal.m updated ==> EFIELD updated.
-      Gmdb.add_GMVE(...
-        {'SOLO_L3_RPW-BIA-EFIELD', ...
-        'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'}, ...
-        bicas.ga.mods.VersionEntry('2021-04-09', '5.0.0', ...
-        {'Updated antenna scaling of E_z.'}))
-
-
-
-      % VHT delivery 1: 2021-04-27 (Generation_time)
-      % NOTE: No entries, but the date is needed for determining MODS for
-      % delivery 2 (i.e. determine modifications between delivery 1 and 2).
-      % 2023-02-07: There has not been any second delivery, and therefore
-      % no MODS.
-
-
-
-      % NOTE: Not included since it does not affect any already existent
-      % datasets: "Salvage LFR DC data when HK does not overlap with
-      % science anywhere in dataset."
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2021-09-21', '6.0.0', ...
-        {...
-        'Set zVar attributes SCALEMIN & SCALEMAX using data min & max.', ...
-        ['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
-        ' until 2021-09-11.']...
-        }))
-
-
-
-      GmveTds = bicas.ga.mods.VersionEntry('2022-09-15', '6.0.1', ...
-        {['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
-        ' until 2022-09-03.']});
-      GmveLfr = GmveTds.add_comments(...
-        {'Bugfix: Use LFR''s R0/R1/R2 for splitting into time intervals.'});
-      Gmdb.add_GMVE(bicas.const.L2_LFR_DSI_CA, GmveLfr)
-      Gmdb.add_GMVE(bicas.const.L2_TDS_DSI_CA, GmveTds)
-      clear GmveLfr GmveTds
-
-
-
-      % BICAS v6.0.2
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2022-12-17', '6.0.2', ...
-        {['Cap QUALITY_FLAG<=1 for tabulated thruster firings up', ...
-        ' until 2022-12-17.']}))
-
-
-
-      % L3 delivery 4: ~2022-12-20
-      Gmdb.add_GMVE(...
-        {'SOLO_L3_RPW-BIA-EFIELD', ...
-        'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS'}, ...
-        bicas.ga.mods.VersionEntry('2022-12-20', '6.0.2', ...
-        {'Bugfix: Updated formula for E_z.', ...
-        'New E field calibration data.'}))
-
-
-
-      % BICAS v7.0.0
-      Gmdb.add_GMVE(ALL_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2023-02-17', '7.0.0', ...
-        {['Updated all CDF skeletons to correct values for', ...
-        ' GAs APPLICABLE and Data_type and correct usage of', ...
-        ' zVar attributes DELTA_PLUS_VAR and DELTA_MINUS_VAR.']}))
-
-
-
-      % BICAS v8.0.0: L3 delivery ~2024-01-18
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-01-11', '8.0.0', ...
-        {...
-        ['Support demultiplexer latching relay setting changing over time.'], ...
-        ['Automatic detection of (full) saturation.'], ...
-        ['Exclude sweeps using automatic detection starting 2023-12-16T00:00:00Z.'] ...
-        }))
-      Gmdb.add_GMVE(L3_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-01-11', '8.0.0', ...
-        {['Updated L3 CDF skeletons to remove LFR from', ...
-        ' GAs Dataset_ID, Descriptor, and SKELETON_PARENT.']}))
-      Gmdb.add_GMVE(bicas.const.L3_DENSITY_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-01-11', '8.0.0', ...
-        {['Add zVariable L3_QUALITY_BITMASK with bad density', ...
-        ' quality bit.']}))
-
-
-
-      % BICAS v8.0.1:
-      Gmdb.add_GMVE(ALL_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-02-01', '8.0.1', ...
-        {['QUALITY_FLAG capped at 3 (previously 2).']}...
-        ) ...
-        )
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-02-01', '8.0.1', ...
-        {'Bugfix for automatic sweep detection (SCDA).'}))
-
-
-
-      % BICAS v8.2.1
-      Gmdb.add_GMVE(bicas.const.L2_CWF_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-07-24', '8.2.1', ...
-        {'Added zVariable CHANNEL_IDX (ISTP metadata).'}))
-      Gmdb.add_GMVE(bicas.const.L2_SWF_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-07-24', '8.2.1', ...
-        {'Added zVariables CHANNEL_IDX and SAMPLE_IDX (ISTP metadata).'}))
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-07-24', '8.2.1', ...
-        {'Added compression for zVariables.'}))
-
-
-
-      % BICAS v8.3.0
-      Gmdb.add_GMVE(ALL_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2024-09-16', '8.3.0', ...
-        {'Improved CDF metadata.'}))
-
-
-
-      % BICAS v8.4.0
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2025-02-14', '8.4.0', ...
-        {'Improved CDF metadata.'}))
-
-
-
-      % BICAS v8.4.1
-      Gmdb.add_GMVE(bicas.const.L2_LFR_TDS_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2025-02-14', '8.4.1', ...
-        {'Bugfix for L2_QUALITY_BITMASK saturation quality bits.'}))
-
-
-
-      % BICAS v8.5.0
-      Gmdb.add_GMVE({'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS'}, ...
-        bicas.ga.mods.VersionEntry('2025-06-26', '8.5.0', ...
-        {['Bugfix: SOLO_L3_RPW-BIA-DENSITY-10-SECONDS ZV QUALITY_FLAG is now a', ...
-        ' downsampled version of SOLO_L3_RPW-BIA-DENSITY ZV QUALITY_FLAG.']}))
-      Gmdb.add_GMVE(L3_EFIELD_SCPOT_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2025-06-26', '8.5.0', ...
-        {['No longer set L3 QUALITY_FLAG to fill value when', ...
-        ' there is no science data.']}))
-      Gmdb.add_GMVE(bicas.const.L3_DENSITY_DSI_CA, ...
-        bicas.ga.mods.VersionEntry('2025-06-26', '8.5.0', ...
-        {['No longer set L3 QUALITY_FLAG and L3_QUALITY_BITMASK to fill', ...
-        ' value when there is no science data.']}))
-    end    % init_GA_MODS_DB
 
 
 
