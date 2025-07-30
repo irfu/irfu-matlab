@@ -1,11 +1,10 @@
 %
-% Collection of code relating to quality ZVs for L2 to L3 processing.
+% Collection of code relating to QRCs for L2 to L3 processing.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual
-  % PROPOSAL: Rename to "qrc" (together with other "qual").
+classdef qrc
 
 
 
@@ -48,7 +47,7 @@ classdef qual
         assert(isa(Qrcs, "bicas.proc.QrcSettingL2"))
 
         qrcLxqbm = Qrcs.("L2_QUALITY_BITMASK");
-        bitPosAr = bicas.proc.qual.LxQBM_to_bit_positions(qrcLxqbm);
+        bitPosAr = bicas.proc.qrc.LxQBM_to_bit_positions(qrcLxqbm);
         assert(isscalar(bitPosAr), "QRC does not set exactly one bit.")
 
         allBitPosAr(end+1, 1) = bitPosAr;
@@ -91,7 +90,7 @@ classdef qual
         case 'CHANNEL_SATURATION'
 
           % Update CHANNEL_SATURATION QRCBs.
-          ChannelSaturationQrcbm = bicas.proc.L2L3.qual.L2QBM_to_QRCBs(...
+          ChannelSaturationQrcbm = bicas.proc.L2L3.qrc.L2QBM_to_QRCBs(...
             l2qbmAr, bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM);
           SaturationQrcbm.union(ChannelSaturationQrcbm)
 
@@ -136,18 +135,18 @@ classdef qual
       % PROPOSAL: Separate function for deriving QUALITY_FLAG.
       %   PRO: Also "needed" for EFIELD+SCPOT which do not use QUALITY_BITMASK.
       %   CON: Can ignore return value.
-      %     CON: bicas.proc.qual.QRCB_arrays_to_quality_ZVs() still requires
+      %     CON: bicas.proc.qrc.QRCB_arrays_to_quality_ZVs() still requires
       %          lxqbmName and QRCSs which contain some LxQBM value.
       %       CON-PROPOSAL: Special value to ignore retrieving a QRCS LxQBM value.
 
       L2NonsaturationQrcsm = copy(bicas.const.qrc.Q.L2_QRCSM);
       L2NonsaturationQrcsm.remove_many(bicas.const.qrc.Q.SATURATION_QRCID_AR);
 
-      L2Qrcbm = bicas.proc.qual.NSO_table_to_QRCBM(...
+      L2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
         L2NonsaturationQrcsm.qrcidAr, NsoTable, tt2000Ar, L);
 
       [nonsaturation_L2_QUALITY_FLAG, ~] = ...
-        bicas.proc.qual.QRCB_arrays_to_quality_ZVs(...
+        bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
         L2Qrcbm, L2NonsaturationQrcsm, "L2_QUALITY_BITMASK");
 
       L2_nonsaturation_QUALITY_FLAG_Fpa = bicas.utils.FPArray(...

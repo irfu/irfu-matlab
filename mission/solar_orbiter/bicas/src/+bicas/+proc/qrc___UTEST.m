@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for bicas.proc.qual.
+% matlab.unittest automatic test code for bicas.proc.qrc.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual___UTEST < matlab.unittest.TestCase
+classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
@@ -162,7 +162,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
         % CALL TESTED FUNCTION
         [act_QUALITY_FLAG, act_Lx_QUALITY_BITMASK] = ...
-          bicas.proc.qual.QRCB_arrays_to_quality_ZVs(Qrcbm, Qrcsm, lxqbmName);
+          bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(Qrcbm, Qrcsm, lxqbmName);
 
         testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
         testCase.assertEqual(act_Lx_QUALITY_BITMASK, exp_Lx_QUALITY_BITMASK)
@@ -222,7 +222,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
       function test(lxqbm, expBitPosAr)
         lxqbm       = uint16(lxqbm);
 
-        actBitPosAr = bicas.proc.qual.LxQBM_to_bit_positions(lxqbm);
+        actBitPosAr = bicas.proc.qrc.LxQBM_to_bit_positions(lxqbm);
         testCase.assertEqual(actBitPosAr, expBitPosAr)
       end
 
@@ -265,7 +265,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
       L = bicas.Logger('HUMAN_READABLE', false);
 
       % CALL TESTED FUNCTION
-      ActQrcbm = bicas.proc.qual.NSO_table_to_QRCBM(...
+      ActQrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
         requestedQrcidAr, NsoTable, tt2000Ar, L);
 
       % ASSERT EXPECTED RESULT

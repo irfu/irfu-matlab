@@ -7,7 +7,7 @@
 % IMPORTANT NOTE: The function's performance (speed) is not great for
 % large datasets (several millions of samples) with mostly saturation
 % (VSIB=1) and length greater than the window. See
-% bicas.proc.L1L2.qual___sliding_window_over_fraction_speedTest.
+% bicas.proc.L1L2.qrc___sliding_window_over_fraction_speedTest.
 % This has been observed to make up almost half of the execution time.
 % Ex: solo_L2_rpw-lfr-surv-cwf-e_20231116_V01.cdf.2024-01-05T22.26.49.log
 % Based on understanding as of 2024-01-08:

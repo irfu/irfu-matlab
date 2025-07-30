@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for bicas.proc.L1L2.qual.
+% matlab.unittest automatic test code for bicas.proc.L1L2.qrc.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual___UTEST < matlab.unittest.TestCase
+classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
@@ -100,7 +100,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
       % CALL TESTED FUNCTION
-      ActQrcbm = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
+      ActQrcbm = bicas.proc.L1L2.qrc.get_saturation_QRCBs( ...
         TT2000_AR, "GLOBAL_SATURATION", VsibZvm, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
@@ -109,7 +109,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
 
 
       % CALL TESTED FUNCTION
-      ActQrcbm = bicas.proc.L1L2.qual.get_saturation_QRCBs( ...
+      ActQrcbm = bicas.proc.L1L2.qrc.get_saturation_QRCBs( ...
         TT2000_AR, "CHANNEL_SATURATION", VsibZvm, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
@@ -124,7 +124,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         expSamplesAvoltAr          = samplesAvoltAr;
         expSamplesAvoltAr(bExpNan) = NaN;
 
-        actSamplesAvoltAr = bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV(...
+        actSamplesAvoltAr = bicas.proc.L1L2.qrc.set_5xBLTS_voltage_samples_FV(...
           samplesAvoltAr, ssidAr, Qrcbm, Qrcsm);
 
         testCase.assertEqual(actSamplesAvoltAr, expSamplesAvoltAr)
@@ -199,7 +199,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
       function test(Qrcbm, Qrcsm, currentAr, expCurrentAr)
         irf.assert.sizes(currentAr, [Qrcbm.nRecords, 3]);
 
-        actCurrentAr = bicas.proc.L1L2.qual.set_current_samples_FV(...
+        actCurrentAr = bicas.proc.L1L2.qrc.set_current_samples_FV(...
           currentAr, Qrcbm, Qrcsm);
 
         testCase.verifyEqual(actCurrentAr, expCurrentAr)

@@ -1,10 +1,10 @@
 %
-% Collection of code relating to quality ZVs for L1/L1R to L2 processing.
+% Collection of code relating to QRCs for L1/L1R to L2 processing.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual
+classdef qrc
 
 
 
@@ -39,7 +39,7 @@ classdef qual
       % Obtain CHANNEL_SATURATION QRCBs
       %---------------------------------
       ChannelSaturationQrcbm = ...
-        bicas.proc.L1L2.qual.get_QRCBs_channel_saturation(...
+        bicas.proc.L1L2.qrc.get_QRCBs_channel_saturation(...
         VsibZvm, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
@@ -49,7 +49,7 @@ classdef qual
           % CHANNEL_SATURATION QRCBs --> GLOBAL_SATURATION QRCBs
           %------------------------------------------------------
           GlobalSaturationQrcbm = ...
-            bicas.proc.L1L2.qual.channel_saturation_to_global_saturation_QRCBs(...
+            bicas.proc.L1L2.qrc.channel_saturation_to_global_saturation_QRCBs(...
             ChannelSaturationQrcbm, numel(tt2000Ar));
           SaturationQrcbm.union(GlobalSaturationQrcbm)
 
@@ -240,7 +240,7 @@ classdef qual
 
 
     % Overwrite records of current with FVs as specified in QRCBs.
-    % Cf. bicas.proc.L1L2.qual.set_5xBLTS_voltage_samples_FV().
+    % Cf. bicas.proc.L1L2.qrc.set_5xBLTS_voltage_samples_FV().
     %
     % ARGUMENTS
     % =========

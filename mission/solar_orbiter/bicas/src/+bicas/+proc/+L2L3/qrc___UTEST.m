@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for bicas.proc.L2L3.qual.
+% matlab.unittest automatic test code for bicas.proc.L2L3.qrc.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual___UTEST < matlab.unittest.TestCase
+classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
@@ -20,7 +20,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
     function test_L2QBM_to_QRCBs(testCase)
 
       function test(l2QbmAr, Qrcsm, ExpQrcbm)
-        ActQrcbm = bicas.proc.L2L3.qual.L2QBM_to_QRCBs(l2QbmAr, Qrcsm);
+        ActQrcbm = bicas.proc.L2L3.qrc.L2QBM_to_QRCBs(l2QbmAr, Qrcsm);
 
         testCase.assertEqual(ActQrcbm, ExpQrcbm);
       end
@@ -60,7 +60,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
     function test_L2QBM_to_channel_saturation_QRCBs(T)
 
       function test(l2qbmAr, saturationQualitySchemeId, ExpQrcbm)
-        ActQrcbm = bicas.proc.L2L3.qual.L2QBM_to_channel_saturation_QRCBs(...
+        ActQrcbm = bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
           l2qbmAr, saturationQualitySchemeId);
 
         if 0
@@ -109,7 +109,7 @@ classdef qual___UTEST < matlab.unittest.TestCase
         Fpa    = bicas.utils.FPArray(v,    'FILL_VALUE', FV);
         ExpFpa = bicas.utils.FPArray(expV, 'FILL_VALUE', FV);
 
-        ActFpa = bicas.proc.L2L3.qual.set_FPA_samples_FP(...
+        ActFpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
           Fpa, Qrcbm, Qrcsm, qrcsFieldName);
 
         T.assertEqual(ActFpa, ExpFpa)

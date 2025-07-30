@@ -1,10 +1,10 @@
 %
-% Collection of reusable, generic code relating to setting quality ZVs.
+% Collection of reusable, generic code relating to QRCs.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef qual
+classdef qrc
 
 
 
