@@ -85,8 +85,8 @@ OutGaSubset.CALIBRATION_VERSION    = get_RCTD_field_CA_GA(RctdCa, 'scalarGa_Data
 
 OutGaSubset.Parents          = get_GA_Parents(InputDatasetsMap);
 OutGaSubset.SPICE_KERNELS    = get_GA_SPICE_KERNELS(InputDatasetsMap);
-OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.identifier');
-OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
+OutGaSubset.Software_name    = bicas.const.swdmd.SWD_METADATA('SWD.identification.identifier');
+OutGaSubset.Software_version = bicas.const.swdmd.SWD_METADATA('SWD.release.version');
 
 % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
 OutGaSubset.Generation_date  = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));

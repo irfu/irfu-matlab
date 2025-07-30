@@ -17,8 +17,8 @@ classdef misc
   %#####################
   %#####################
   properties(Constant)
-    % PROPOSAL: Copy from bicas.const.SWD_METADATA('SWD.release.author').
-    CONTACT_PERSON = bicas.const.SWD_METADATA('SWD.release.author');
+    % PROPOSAL: Copy from bicas.const.swdmd.SWD_METADATA('SWD.release.author').
+    CONTACT_PERSON = bicas.const.swdmd.SWD_METADATA('SWD.release.author');
   end
 
 
@@ -247,7 +247,7 @@ classdef misc
       irf.assert.castring_regexp(letterVersion, '[A-Z]')
 
       % Ex: TESTDATA_RODP_BICAS_V8.2.1A
-      bicasVerStr = bicas.const.SWD_METADATA('SWD.release.version');
+      bicasVerStr = bicas.const.swdmd.SWD_METADATA('SWD.release.version');
 
       rtdpDirName = sprintf('TESTDATA_RODP_BICAS_V%s%s', bicasVerStr, letterVersion);
     end

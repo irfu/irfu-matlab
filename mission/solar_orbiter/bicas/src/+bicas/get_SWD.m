@@ -67,7 +67,7 @@ assert(isa(SwmList, 'bicas.swm.SoftwareMode'))
 %   (SWD) JSON object string. Its fields (field names) should NOT follow
 %   variable naming conventions since they determine the JSON object string
 %   which must follow the RCS ICD.
-SwdMetadataMap = bicas.const.SWD_METADATA;
+SwdMetadataMap = bicas.const.swdmd.SWD_METADATA;
 
 JsonSwd = [];
 JsonSwd.identification.project     = SwdMetadataMap('SWD.identification.project');

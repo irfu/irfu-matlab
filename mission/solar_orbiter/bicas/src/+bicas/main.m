@@ -723,13 +723,13 @@ s = sprintf([...
   'SELECTED (HARD-CODED) INTERNAL BICAS CONSTANTS\n', ...
   '==============================================\n']);
 
-keysCa = bicas.const.SWD_METADATA.keys;   % Always row vector.
+keysCa = bicas.const.swdmd.SWD_METADATA.keys;   % Always row vector.
 keysCa = sort(keysCa)';   % Column vector.
 nKeys  = numel(keysCa);
 
 valuesCa = cell(nKeys, 1);
 for i = 1:nKeys
-  valuesCa{i, 1} = bicas.const.SWD_METADATA(keysCa{i});
+  valuesCa{i, 1} = bicas.const.swdmd.SWD_METADATA(keysCa{i});
 end
 [~, dataCa, ~] = irf.str.assist_print_table(...
   {'Constant', 'Value'}, [keysCa, valuesCa], {'left', 'left'});
