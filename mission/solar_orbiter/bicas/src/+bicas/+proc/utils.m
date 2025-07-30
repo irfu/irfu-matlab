@@ -459,7 +459,6 @@ classdef utils
     % Assert that struct consisting of
     %   logical arrays
     %   numeric arrays
-    %   bicas.utils.SameRowsMap
     % has the same number rows in all its arrays.
     %
     % Useful for structs where all fields represent CDF zVariables and/or

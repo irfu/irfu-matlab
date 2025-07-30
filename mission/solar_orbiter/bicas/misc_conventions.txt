@@ -154,9 +154,6 @@ CA
     Cell Array. See "AR".
 CCAL
     Class bicas.proc.L1L2.cal.CurrentCalibrationAbstract and subclasses thereof.
-CDAC
-    Class bicas.proc.L1L2.ChannelDataAsrCollection.
-    NOTE: This class should be obsolete.
 Channel saturation (quality variable scheme)
     Scheme for setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK).
     Set 6x quality bits, one per single/diff channel (DC and AC diffs share
@@ -529,9 +526,6 @@ SPR
     Ex: Varying-length snapshots for TDS-LFM-RSWF data.
 SRF
     Name of a particular s/c coordinate system. "Spacecraft Reference Frame"?
-SRM
-    Class bicas.utils.SameRowsMap.
-    NOTE: This class should be obsolete.
 SSID
     Signal Source ID. Constant representing the signal source of samples in a
     BLTS. This source may be either

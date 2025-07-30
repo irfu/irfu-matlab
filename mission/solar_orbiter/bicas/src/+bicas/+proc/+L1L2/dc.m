@@ -687,49 +687,6 @@ classdef dc
 
 
 
-    % function AsrSamplesAVoltSrm = relabel_reconstruct_samples_5xBLTS_to_9xASR_OLD(...
-    %     bltsSamplesAvolt, bltsSdidArray, L)
-    %   % PROPOSAL: Automated tests.
-    %
-    %   Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.relabel_reconstruct_samples_5xBLTS_to_9xASR_OLD', L);
-    %
-    %   [nRecTot, aspr] = irf.assert.sizes(...
-    %     bltsSamplesAvolt, [-1, -2, bicas.const.N_BLTS], ...
-    %     bltsSdidArray,    [-1,     bicas.const.N_BLTS]);
-    %
-    %   % -----------------------------------------------------------------
-    %   % Pre-allocate AsrSamplesAVoltSrm: All (ASID) channels, all records
-    %   % -----------------------------------------------------------------
-    %   % IMPLEMENTATION NOTE: Preallocation is very important for speeding up
-    %   % LFR-SWF which tends to be broken into subsequences of 1 record due to
-    %   % changing sampling rate.
-    %   AsrSamplesAVoltSrm = bicas.utils.SameRowsMap(...
-    %     "uint8", nRecTot, 'CONSTANT', ...
-    %     NaN(nRecTot, aspr), ...
-    %     bicas.proc.L1L2.const.C.ASID_DICT.values);
-    %
-    %
-    %
-    %   [iRec1Ar, iRec2Ar, nSs] = irf.utils.split_by_change(bltsSdidArray);
-    %   for iSs = 1:nSs
-    %     iRec1 = iRec1Ar(iSs);
-    %     iRec2 = iRec2Ar(iSs);
-    %
-    %     SsAsrSamplesAVoltSrm = ...
-    %       bicas.proc.L1L2.demuxer.relabel_reconstruct_samples_5xBLTS_to_9xASR_subsequence_OLD(...
-    %       bltsSdidArray(   iRec1,          :), ...
-    %       bltsSamplesAvolt(iRec1:iRec2, :, :));
-    %
-    %     % Set demuxed subsequence signals (some records/indices) in the
-    %     % pre-existing global arrays (all records).
-    %     AsrSamplesAVoltSrm.set_rows(SsAsrSamplesAVoltSrm, [iRec1:iRec2]');
-    %   end
-    %
-    %   Tmk.stop_log(nRecTot, 'record', nSs, 'subsequence')
-    % end
-
-
-
     % Derive VSIB from BLTS samples. Vectorized.
     %
     % RETURN VALUE
