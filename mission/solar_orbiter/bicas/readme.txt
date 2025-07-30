@@ -197,10 +197,10 @@ is taken to be equivalent to a sweep being underway. If BIAS HK is missing, then
 it is assumed that no sweep is underway.
 
 
-============
- Saturation
-============
-BICAS can label data as saturated according to one of two schemes (setting
+===============
+ L2 saturation
+===============
+BICAS can label L2 data as saturated according to one of two schemes (setting
 PROCESSING.SATURATION.QUALITY_SCHEME): one old scheme (to be phased out), and
 one new scheme (under evaluation).
 
@@ -265,15 +265,48 @@ Channel is saturated | L2 CWF, SWF/RSWF:
 =================
 BICAS can determine that data is affected by a SolO thruster firing by reading
 the NSO table.
-NOTE: L1 datasets are planned to eventually contain information on thruster
-      firings being executed but at the time of writing (2025-01-16), this has
-      still not been implemented.
+
+NOTE: L1/L1R QUALITY_BITMASK contains a quality bit for thruster firings but at
+      the time of writing (2025-07-30), this is not being used, due to covering
+      too broad time intervals.
 
 Condition         | Action taken when condition applies
 -------------------------------------------------------
 "thruster firing" | L2 CWF, SWF/RSWF:
                   |     Cap QUALITY_FLAG<=1
                   |     NOTE: No quality bit is set.
+
+
+=============
+ BIAS sweeps
+=============
+BICAS can determine whether L2 data has been colleted during a BIAS sweep (bias
+currents are changed according to a preprogrammed scheme within a short period
+of time).
+
+NOTE: Which data should be excluded due to being affected by sweeps is not
+      well defined since some data before and after the actual sweep is affected
+      due to commanding. Sweeps are detected(!) using algorithms which are not
+     perfect: BICAS uses one of two different algorithms (SBDA or SCDA)
+     depending on the time and it adds a customizable time margin in addition to
+     that and therefore may remove too much or too little data. BICAS does not
+     (yet) use the QUALITY_BITMASK bits to detect sweeps (as of 2025-07-30).
+
+Condition         | Action taken when condition applies
+--------------------------------------------------------------------
+Sweep is detected | L2 CWF, SWF/RSWF:
+                  |     Voltages and currents are set to fill value.
+
+
+==============
+ ANT3 failing
+==============
+BICAS can determine whether ANT3 is failing by reading the NSO table.
+
+Condition       | Action taken when condition applies
+----------------------------------------------------------------------
+ANT3 is failing | L2 CWF, SWF/RSWF:
+                |     V3, V13_DC/AC, V23_DC/AC are set to fill values.
 
 
 ===============
@@ -313,9 +346,13 @@ or fill value (!)                            |     values are set to fill
 L3 DENSITY+EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E alone, but
 only when its quality is deemed good enough using setting
 PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-02-19).
-NOTE: This setting's value is *NOT* compared against the literal input
-SOLO_L2_RPW-LFR-SURV-CWF-E QUALITY_FLAG but a reconstructed value ignoring
-saturation (too complicated to describe here; see source code).
+Saturated L2 data as described by L2_QUALITY_BITMASK (when channel saturation is
+enabled) is set to fill values before being passed on to solo.vdccal() and
+psp2ne().
+
+NOTE: PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN is *NOT* compared to the literal
+      input SOLO_L2_RPW-LFR-SURV-CWF-E QUALITY_FLAG but a reconstructed value
+      ignoring saturation (too complicated to describe here; see source code).
 
 Condition                                  | Action taken when condition applies
 --------------------------------------------------------------------------------
