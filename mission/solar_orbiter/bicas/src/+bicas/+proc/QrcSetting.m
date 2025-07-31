@@ -1,5 +1,5 @@
 %
-% Class that represents how to convert one particular QRC (QRCID into
+% Class that represents how to convert one particular QRC (QRCID) into
 % modifications of quality ZVs, blanking of data etc. for an implicit group of
 % DSIs. Implemented by subclasses which represent different groups of DSIs.
 %

@@ -62,7 +62,7 @@ classdef const
     %       This was later changed to only require MATLAB R2019b.
     %       Source: https://gitlab.obspm.fr/ROC/RCS/BICAS/issues/2#note_10804
     %       Official MATLAB version again was later changed to MATLAB R2024a.
-    % NOTE: Added MATLAB 2023b since it is currently (2024-05-28) the latest
+    % NOTE: Added MATLAB 2023b since it is currently (2025-07-31) the latest
     %       MATLAB version running on brain, spis, anna (IRFU servers). This
     %       should be abolished eventually when beforementioned IRFU servers
     %       support MATLAB 2024a.

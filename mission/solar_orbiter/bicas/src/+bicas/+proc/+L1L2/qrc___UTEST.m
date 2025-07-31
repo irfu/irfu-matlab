@@ -290,30 +290,4 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-
-
-
-    % Utility function for creating a simplified SamplesZvm with identical
-    % values on every channel.
-    function SamplesZvm = init_SamplesZvm(samplesAr)
-      assert(iscolumn(samplesAr))
-
-      SamplesZvm = bicas.utils.ZvMap(numel(samplesAr));
-      for asrSdid = bicas.proc.L1L2.const.C.SDID_ASR_AR'
-        SamplesZvm.add(asrSdid, samplesAr);
-      end
-    end
-
-
-
-  end    % methods(Static, Access=private)
-
-
-
 end

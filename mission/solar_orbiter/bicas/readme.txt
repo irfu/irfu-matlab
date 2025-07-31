@@ -116,12 +116,12 @@ irfu-matlab/mission/solar_orbiter/bicas/data/solo_ns_ops.xml.
 Every entry in the table consists of:
     (1) a start timestamp,
     (2) a stop timestamp,
-    (3) a string constant that can be interpreted by BICAS, and
+    (3) a string constant (NSOID/QRCID) that can be interpreted by BICAS, and
     (4) a human-readable comment string which is ignored.
 This table is used to specify time intervals which should be treated in specific
 ways in particular w.r.t. to data quality, e.g. modifying quality bits,
-zVariable QUALITY_FLAG, blanking data etc. due to e.g. thruster firings and
-saturation.
+zVariable QUALITY_FLAG & L2/L3_QUALITY_BITMASK, blanking data etc. due to e.g.
+thruster firings and saturation.
 
 
 
@@ -132,9 +132,10 @@ BICAS takes many different actions depending on quality, different special
 cases, and settings (configuration), and it can be very hard to keep track of
 this. The purpose of this section is meant to summarize this information.
 
-NOTE: This section is very incomplete, but is intended to be amended over time.
-NOTE: bicas.const contains hard-coded constants describing some of this
-      behaviour. The NSO table is sometimes used for determining when certain
+NOTE: This section might not be complete, but is intended to become so over
+      time.
+NOTE: bicas.const.qrc contains hard-coded constants describing some of this
+      behaviour. The NSO table is also used for determining when some of these
       conditions apply.
 
 
