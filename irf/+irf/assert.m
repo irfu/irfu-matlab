@@ -292,21 +292,27 @@ classdef assert
 
     % Check that numeric/logical array contains only unique values.
     % NaN, Inf, -Inf count as a unique values.
+    %
     function number_set(v)
-      % NOTE: number_set analogous to castring_set.
-      % PROPOSAL: Better name considering the accepted MATLAB classes.
+      % NOTE: number_set() is analogous to castring_set().
 
+      assert(isvector(v))
+
+      % Check that there is at most ONE NaN
+      % -----------------------------------
       % IMPLEMENTATION NOTE: Special cases for "unique".
-      %   NaN:      Every NaN counts as unique (i.e. different from other NaN).
-      %   In, -Inf: Inf counts as equal to itself, -Inf counts as equal to
+      %   NaN:       Every NaN counts as unique (i.e. different from other NaN).
+      %   Inf, -Inf: Inf counts as equal to itself, -Inf counts as equal to
       %              itself.
       % Must therefore count the number of NaNs.
-      % NOTE: Works for logical, (individual) character arrays, but not for cell arrays of strings.
+      % NOTE: Works for logical, (individual) character arrays, but not for cell
+      %       arrays of strings.
       assert(sum(isnan(v)) <= 1, ...
         irf.assert.ASSERTION_EMID, ...
         'Array does not contain only unique numbers. It contains multiple NaN.')
 
-      % IMPLEMENTATION NOTE: Also works for strings (but the NaN check above does not).
+      % IMPLEMENTATION NOTE: Also works for strings (but the NaN check above
+      % does not).
       assert(numel(unique(v)) == numel(v), ...
         irf.assert.ASSERTION_EMID, ...
         'Array does not contain only unique numbers.')

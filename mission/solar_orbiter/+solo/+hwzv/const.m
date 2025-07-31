@@ -1,7 +1,7 @@
 %
 % SolO-related constants.
 %
-% HWZV = HardWare, zVariables
+% HWZV = HardWare, ZVariables
 %
 % NOTE: Not to be confused with BICAS's constants.
 %

@@ -28,11 +28,15 @@
 % First created 2019-07-26
 %
 function newStr = add_prefix_on_every_row(str, prefix)
+% PROPOSAL: Automated tests.
 % PROPOSAL: Separate function for adding/ensuring trailing line feed for one-row
 %           strings.
 %   PRO: bicas.Logger.log needs this separately for stderr printing.
 %   PRO: "More clean".
 %   CON: More hard-coded line feeds.
+
+assert(ischar(str))
+assert(ischar(prefix))
 
 LINE_FEED = char(10);
 

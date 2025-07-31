@@ -31,6 +31,9 @@ function utcStrCa = TT2000_to_UTC_str_many(tt2000Array, nSecondDecimals)
 %        is clear without int64.
 %
 % NOTE: Should be analogous to any future inverted conversion function.
+%
+% BUG: irf.cdf.TT2000_to_UTC_str_many(int64(0+4e9), 0)
+%      ==> {'2000-01-01T11:58:60Z'}
 
 assert(isscalar(nSecondDecimals) && isnumeric(nSecondDecimals) ...
   && nSecondDecimals >= 0)
