@@ -20,7 +20,7 @@
 %     file in the default location to enable tests to themselves specify the
 %     config file in the default location (e.g. no default cofig file).
 %
-% NOTE: The tests (2024-07-26) do temporarily replace any (optinally)
+% NOTE: The tests (2024-07-26) do temporarily replace any (optionally)
 %       pre-existing BICAS default config file (or directory, symlink), and then
 %       moves it back when the tests have completed (setup+teardown).
 %
@@ -30,7 +30,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef main___UTEST < matlab.unittest.TestCase
+classdef bicas___UTEST < matlab.unittest.TestCase
 
 
 
@@ -155,7 +155,7 @@ classdef main___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(errorCode, 0)
       end
 
-      configFileAPath = bicas.main___UTEST.write_default_config_file();
+      configFileAPath = testCase.write_default_config_file();
 
       test('--help')
       test('--version')
@@ -192,7 +192,7 @@ classdef main___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(errorCode, 0)
       end
 
-      configFileAPath = bicas.main___UTEST.write_specified_config_file(testCase, 'test.conf');
+      configFileAPath = testCase.write_specified_config_file(testCase, 'test.conf');
 
       test('--help', '--config', configFileAPath, '--set', 'SWM.L1-L2_ENABLED', 'true')
     end
@@ -209,7 +209,7 @@ classdef main___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(errorCode, 1)
       end
 
-      configFileAPath = bicas.main___UTEST.write_default_config_file();
+      configFileAPath = testCase.write_default_config_file();
       test_error()    % Zero CLI arguments.
       test_error('illegal_argument')
       test_error('--illegal_argument')

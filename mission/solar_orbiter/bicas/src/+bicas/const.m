@@ -68,6 +68,10 @@ classdef const
     %       support MATLAB 2024a.
     PERMITTED_MATLAB_VERSIONS_CA = {'2023b', bicas.const.OFFICIAL_MATLAB_VERSION};
 
+    % Path to "source directory" (the directory under which all source code is
+    % located) relative to BICAS's directory root.
+    SOURCE_DIR_RPATH             = "src";
+
     % Path to "config directory" (the directory where the default config file is
     % located, if any) relative to BICAS's directory root.
     DEFAULT_CONFIG_DIR_RPATH     = 'config';

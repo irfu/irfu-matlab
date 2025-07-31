@@ -12,6 +12,11 @@
 %
 function run_UTESTs()
 tic
-runtests('bicas', 'IncludeSubpackages', true);
+
+% IMPLEMENTATION NOTE: runtests('bicas', 'IncludeSubpackages', true); used to
+% work, but stopped working after creating a file src/bicas.m, presumably
+% because it clashes with src/+bicas/. Must therefore use another command.
+runtests(bicas.utils.get_BICAS_source_dir(), 'IncludeSubfolders', true);
+
 toc
 end

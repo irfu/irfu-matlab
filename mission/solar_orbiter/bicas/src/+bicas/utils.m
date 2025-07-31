@@ -46,6 +46,14 @@ classdef utils
 
 
 
+    function bicasSourceDir = get_BICAS_source_dir()
+      bicasSourceDir = fullfile(...
+        bicas.utils.get_BICAS_root_dir(), ...
+        bicas.const.SOURCE_DIR_RPATH);
+    end
+
+
+
     function bicasConfigDir = get_BICAS_config_dir()
       bicasConfigDir = fullfile(...
         bicas.utils.get_BICAS_root_dir(), ...
