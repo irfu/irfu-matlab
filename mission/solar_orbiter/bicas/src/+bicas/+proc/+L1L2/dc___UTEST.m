@@ -35,7 +35,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
     %
     % NOTE: bicas.tf.apply_TF() itself splits by NaN (by default).
     %
-    function test_calibrate_voltages_1xBLTS___CWF_NaN(testCase)
+    function test_calibrate_voltage_1xBLTS___CWF_NaN(testCase)
       Bso = testCase.get_simple_TF_BSO();
 
       Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierTest( ...
@@ -48,7 +48,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
       I_LSF      = 1;
       FREQ_HZ    = solo.hwzv.const.LSF_HZ(I_LSF);
 
-      actSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
+      actVoltageAVolt = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS( ...
         ... % Variables which DO NOT VARY over CDF records at all.
         Vcal         = Vcal, ...
         L            = testCase.L, ...
@@ -59,7 +59,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
         ... % Variables which DO VARY over CDF records.
         tt2000       = uint64( [1:9]' * 1e9 / FREQ_HZ), ...
         ssid         = testCase.S(repmat(["DC_V2"], 9, 1)), ...
-        samplesTm    = single(SAMPLES_TM), ...
+        voltageTm    = single(SAMPLES_TM), ...
         uspr         = repmat(1,       9, 1), ...
         freqHz       = repmat(FREQ_HZ, 9, 1), ...
         iLsf         = repmat(I_LSF,   9, 1), ...
@@ -68,17 +68,17 @@ classdef dc___UTEST < matlab.unittest.TestCase
         NbciFpa      = bicas.utils.FPArray(repmat(uint8(  0), 9, 1), 'NO_FILL_POSITIONS'));
 
       % Emulated calibration
-      expSamplesAvolt    = SAMPLES_TM*2*3 + 1;
+      expVoltageAvolt    = SAMPLES_TM*2*3 + 1;
       % NOTE: Setting one extra NaN due to
       % PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES.
-      expSamplesAvolt(8) = NaN;
-      testCase.assertEqual(actSamplesAVolt, expSamplesAvolt, AbsTol=1e-14)
+      expVoltageAvolt(8) = NaN;
+      testCase.assertEqual(actVoltageAVolt, expVoltageAvolt, AbsTol=1e-14)
     end
 
 
 
     % Test SWF NaN data.
-    function test_calibrate_voltages_1xBLTS___SWF_NaN(testCase)
+    function test_calibrate_voltage_1xBLTS___SWF_NaN(testCase)
       Bso = testCase.get_simple_TF_BSO();
 
       Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierTest( ...
@@ -98,7 +98,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
       % NOTE: Split data due to NaN. bicas.tf.apply_TF() splits by NaN (by
       % default).
-      actSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
+      actVoltageAVolt = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS( ...
         ... % Variables which DO NOT VARY over CDF records at all.
         Vcal         = Vcal, ...
         L            = testCase.L, ...
@@ -109,7 +109,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
         ... % Variables which DO VARY over CDF records.
         tt2000       = uint64( [1:4]' * 1e9 / FREQ_HZ), ...
         ssid         = testCase.S(repmat(["DC_V2"], 4, 1)), ...
-        samplesTm    = single(SAMPLES_TM), ...
+        voltageTm    = single(SAMPLES_TM), ...
         uspr         = USPR, ...
         freqHz       = repmat(FREQ_HZ, 4, 1), ...
         iLsf         = repmat(I_LSF,   4, 1), ...
@@ -118,14 +118,14 @@ classdef dc___UTEST < matlab.unittest.TestCase
         NbciFpa      = bicas.utils.FPArray(repmat(uint8(  0), 4, 1), 'NO_FILL_POSITIONS'));
 
       % Emulated calibration
-      expSamplesAvolt                 = SAMPLES_TM*2*3 + 1;
-      expSamplesAvolt(1, USPR(1)+1:9) = NaN;
-      expSamplesAvolt(2, USPR(2)+1:9) = NaN;
-      expSamplesAvolt(3, USPR(3)+1:9) = NaN;
+      expVoltageAvolt                 = SAMPLES_TM*2*3 + 1;
+      expVoltageAvolt(1, USPR(1)+1:9) = NaN;
+      expVoltageAvolt(2, USPR(2)+1:9) = NaN;
+      expVoltageAvolt(3, USPR(3)+1:9) = NaN;
       % NOTE: Setting one extra NaN due to
       % PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES.
-      expSamplesAvolt(3, 1)           = NaN;
-      testCase.assertEqual(actSamplesAVolt, expSamplesAvolt, AbsTol=1e-14)
+      expVoltageAvolt(3, 1)           = NaN;
+      testCase.assertEqual(actVoltageAVolt, expVoltageAvolt, AbsTol=1e-14)
     end
 
 
@@ -212,13 +212,13 @@ classdef dc___UTEST < matlab.unittest.TestCase
       SatSettings.upperThresholdAVoltAchg     = 1;
 
       % (5 BLTS) x (3 records)
-      bltsSamplesAVoltAr = single([...
+      bltsVoltageAvoltAr = single([...
         1 3 5;
         1 3 6;
         6 3 1;
         7 9 7;
         9 7 9]);
-      bltsSamplesAVoltAr = permute(bltsSamplesAVoltAr, [2 3 1]);
+      bltsVoltageAvoltAr = permute(bltsVoltageAvoltAr, [2 3 1]);
 
       bltsSsidAr         = permute(bicas.proc.L1L2.const.C.SSID_DICT(...
         ["DC_V1" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]), [3 2 1]);
@@ -237,7 +237,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED CODE
       actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS(...
-        bltsSamplesAVoltAr, false, uspr, ...
+        bltsVoltageAvoltAr, false, uspr, ...
         bltsSsidAr, isAchgFpa, SatSettings, L);
 
       testCase.assertEqual(actBltsVsibAr, expBltsVsibAr)
@@ -261,13 +261,13 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
       % (5 BLTS) x (1 record) x (4 spr)
-      bltsSamplesAVoltAr = single([...
+      bltsVoltageAvoltAr = single([...
         1 1 1 1 0 0;
         1 1 3 1 0 0;
         1 3 3 1 0 0;
         1 3 3 3 0 0;
         3 3 3 3 0 0]);
-      bltsSamplesAVoltAr = permute(bltsSamplesAVoltAr, [3 2 1]);
+      bltsVoltageAvoltAr = permute(bltsVoltageAvoltAr, [3 2 1]);
       bltsSsidAr         = repmat(bicas.proc.L1L2.const.C.SSID_DICT("DC_V12"),     [1, 5]);
       isAchgFpa          = repmat(bicas.utils.FPArray(false, 'NO_FILL_POSITIONS'), [1, 1]);   % Value should be irrelevant
       expBltsVsibAr      = permute(logical([0 0 1 1 1]), [3, 2, 1]);
@@ -275,7 +275,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
       % CALL TESTED CODE
       actBltsVsibAr = bicas.proc.L1L2.dc.get_VSIB_5xBLTS(...
-        bltsSamplesAVoltAr, true, uspr, ...
+        bltsVoltageAvoltAr, true, uspr, ...
         bltsSsidAr, isAchgFpa, SatSettings, L);
 
       testCase.assertEqual(actBltsVsibAr, expBltsVsibAr)

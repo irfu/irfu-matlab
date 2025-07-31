@@ -481,8 +481,7 @@ classdef utils
     %
     % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
     % ===========================================================
-    % Dcop.Zv.SamplesZvm
-    %       bicas.utils.ZvMap.
+    % Dcop.Zv.VoltageZvm: bicas.utils.ZvMap.
     %
     function nRows = assert_struct_num_fields_have_same_N_rows(S)
       % NOTE: Function name is somewhat bad.

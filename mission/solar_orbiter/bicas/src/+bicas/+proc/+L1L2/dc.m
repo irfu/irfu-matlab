@@ -21,7 +21,7 @@ classdef dc
   % PROPOSAL: More automatic test code.
   %
   % PROPOSAL:   process_calibrate_demux()
-  %           & calibrate_voltages_5xBLTS()
+  %           & calibrate_voltage_5xBLTS()
   %           should only accept the needed ZVs and variables.
   %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
   %         from struct.
@@ -51,10 +51,10 @@ classdef dc
     % Derive DCOP from DCIP:
     % * Calibrate bias currents.
     % * Voltages:
-    %   (1) calibrate samples
-    %   (2) demux (demultiplex): Relabel samples from BLTS to SDID.
-    %   (3) reconstruct (derive) samples for missing channels from calibrated
-    %       samples (e.g. DC_V12 := DC_V1 - DC_V2)
+    %   (1) calibrate current and voltage samples
+    %   (2) demux (demultiplex): Relabel voltage samples from BLTS to SDID.
+    %   (3) reconstruct (derive) voltage samples for missing channels from
+    %       calibrated voltage samples (e.g. DC_V12 := DC_V1 - DC_V2)
     % * Set quality variables.
     %
     function Dcop = process_calibrate_demux(...
@@ -116,10 +116,10 @@ classdef dc
       % BUG: Setting voltage NaN/FVs from QRCs *BEFORE* calibration which means
       % that calibration of non-blanked samples is *NOT* influenced by samples
       % which are later blanked.
-      aspr          = size(Dcip.Zv.bltsSamplesTm, 2);
+      aspr          = size(Dcip.Zv.bltsVoltageTm, 2);
       btlsSsidAr2   = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
-      bltsSamplesTm = bicas.proc.L1L2.qrc.set_5xBLTS_voltage_samples_FV(...
-        Dcip.Zv.bltsSamplesTm, btlsSsidAr2, L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM);
+      bltsVoltageTm = bicas.proc.L1L2.qrc.set_5xBLTS_voltage_samples_FV(...
+        Dcip.Zv.bltsVoltageTm, btlsSsidAr2, L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM);
 
 
 
@@ -127,9 +127,9 @@ classdef dc
       % CALIBRATE VOLTAGES: 5x CHANNELS LABELLED BY SSID/BLTS (not SDID)
       %##################################################################
       % NOTE: Takes most of the time LFR-SWF.
-      bltsSamplesAVolt = bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS(...
+      bltsVoltageAVolt = bicas.proc.L1L2.dc.calibrate_voltage_5xBLTS(...
         tt2000       = Dcip.Zv.Epoch, ...
-        samplesTm    = bltsSamplesTm, ...              % Blanked by QRCs.
+        voltageTm    = bltsVoltageTm, ...              % Blanked by QRCs.
         isAchgFpa    = Dcip.Zv.isAchgFpa, ...
         NbriFpa      = Dcip.Zv.NbriFpa, ...
         NbciFpa      = Dcip.Zv.NbciFpa, ...
@@ -150,7 +150,7 @@ classdef dc
       %#####################################
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
       bltsVsibAr  = bicas.proc.L1L2.dc.get_VSIB_5xBLTS(...
-        bltsSamplesAVolt, Dcip.hasSwfFormat, Dcip.Zv.uspr, ...
+        bltsVoltageAVolt, Dcip.hasSwfFormat, Dcip.Zv.uspr, ...
         bltsSsidArray, Dcip.Zv.isAchgFpa, SatSettings, L);
 
 
@@ -161,17 +161,17 @@ classdef dc
       % OUTPUT: 9x SIGNALS LABELLED BY SDID + RECONSTRUCTING MISSING SIGNALS
       %######################################################################
       % NOTE: Needs VSIB for propagating VSIB to reconstructed channels.
-      SchdZvm = bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR(...
-        bltsSamplesAVolt, bltsVsibAr, bltsSdidArray, L);
-      bicas.proc.L1L2.demuxer.reconstruct_ASR_samples(SchdZvm);
+      SchdZvm = bicas.proc.L1L2.dc.convert_voltage_5xBLTS_to_9xASR(...
+        bltsVoltageAVolt, bltsVsibAr, bltsSdidArray, L);
+      bicas.proc.L1L2.demuxer.reconstruct_ASR_voltage_channels(SchdZvm);
 
 
 
-      % Replace/split variable: SchdZvm --> SamplesZvm + VsibZvm
-      SamplesZvm = bicas.utils.ZvMap(SchdZvm.nRecords);
+      % Replace/split variable: SchdZvm --> VoltageZvm + VsibZvm
+      VoltageZvm = bicas.utils.ZvMap(SchdZvm.nRecords);
       VsibZvm    = bicas.utils.ZvMap(SchdZvm.nRecords);
       for keyCa = SchdZvm.keyCa'
-        SamplesZvm.add(keyCa{1}, SchdZvm.get(keyCa{1}).samplesAr);
+        VoltageZvm.add(keyCa{1}, SchdZvm.get(keyCa{1}).samplesAr);
         VsibZvm.add(   keyCa{1}, SchdZvm.get(keyCa{1}).vsibAr);
       end
       clear SchdZvm
@@ -207,10 +207,10 @@ classdef dc
         bicas.utils.FPArray(QUALITY_FLAG));
       Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
 
-      % NOTE: Function modifies SamplesZvm handle object in-place!
+      % NOTE: Function modifies VoltageZvm handle object in-place!
       Zv.currentAAmpere     = bicas.proc.L1L2.qrc.set_current_samples_FV(...
         currentAAmpere, L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM);
-      Zv.SamplesZvm         = SamplesZvm;
+      Zv.VoltageZvm         = VoltageZvm;
 
 
 
@@ -345,7 +345,7 @@ classdef dc
     %
     % NOTE: Can handle arrays of any size if the sizes are consistent.
     %
-    function samplesAVolt = calibrate_voltages_5xBLTS(Cv, Zv)
+    function voltageAVolt = calibrate_voltage_5xBLTS(Cv, Zv)
       arguments
         % Variables which DO NOT VARY over CDF records at all.
         Cv.Vcal
@@ -355,7 +355,7 @@ classdef dc
         Cv.isLfr
         % Variables which VARY over CDF records.
         Zv.tt2000
-        Zv.samplesTm
+        Zv.voltageTm
         Zv.ssid
         Zv.uspr
         Zv.freqHz
@@ -368,12 +368,12 @@ classdef dc
       % ASSERTIONS
       assert(isa(Cv.Vcal, "bicas.proc.L1L2.cal.VoltageCalibration"))
       assert(isscalar(Cv.hasSwfFormat))
-      assert(isnumeric(Zv.samplesTm))
+      assert(isnumeric(Zv.voltageTm))
       assert(isa(Zv.ssid, 'uint8'))
       [nRecords, aspr] = irf.assert.sizes(...
         Zv.isAchgFpa, [-1], ...
         Zv.ssid,      [-1,     bicas.const.N_BLTS], ...
-        Zv.samplesTm, [-1, -2, bicas.const.N_BLTS]);
+        Zv.voltageTm, [-1, -2, bicas.const.N_BLTS]);
 
 
 
@@ -381,7 +381,7 @@ classdef dc
       % ---------------------------------------------------------------------
       % IMPLEMENTATION NOTE: Preallocation is very important for speeding up
       % LFR-SWF which tends to be broken into subsequences of 1 record.
-      samplesAVolt = nan(nRecords, aspr, bicas.const.N_BLTS);
+      voltageAVolt = nan(nRecords, aspr, bicas.const.N_BLTS);
 
 
 
@@ -389,7 +389,7 @@ classdef dc
       % Calibrate
       %===========
       Tmk = bicas.utils.Timekeeper(...
-        'bicas.proc.L1L2.dc.calibrate_voltages_5xBLTS:Calibrating voltages', Cv.L);
+        'bicas.proc.L1L2.dc.calibrate_voltage_5xBLTS:Calibrating voltages', Cv.L);
       % IMPLEMENTATION NOTE: Iterating over BLTSs before iterating over
       % subsequences/groups of CDF records in subfunction because
       % PRO: Less code sees samples combined over BLTSs.
@@ -401,7 +401,7 @@ classdef dc
       % PRO: Can potentially parallelize processing over different BLTSs.
       for iBlts = 1:bicas.const.N_BLTS
 
-        bltsSamplesAVolt2 = bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS( ...
+        bltsVoltageAVolt2 = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS( ...
           ... % ===============================================================
           ... % Variables which DO NOT VARY over CDF records at all.
           Vcal         = Cv.Vcal, ...
@@ -414,7 +414,7 @@ classdef dc
           ... % Variables which VARY over CDF records.
           tt2000       = Zv.tt2000, ...
           ssid         = Zv.ssid(     :,    iBlts), ...
-          samplesTm    = Zv.samplesTm(:, :, iBlts), ...
+          voltageTm    = Zv.voltageTm(:, :, iBlts), ...
           uspr         = Zv.uspr, ...
           freqHz       = Zv.freqHz, ...
           iLsf         = Zv.iLsf, ...
@@ -423,11 +423,11 @@ classdef dc
           NbciFpa      = Zv.NbciFpa);
 
         % Add subsequence/group signals to the global array (all records).
-        samplesAVolt(:, :, iBlts) = bltsSamplesAVolt2;
+        voltageAVolt(:, :, iBlts) = bltsVoltageAVolt2;
       end    % for
       Tmk.stop_log(nRecords, 'record')
 
-    end    % calibrate_voltages_5xBLTS
+    end    % calibrate_voltage_5xBLTS
 
 
 
@@ -441,7 +441,7 @@ classdef dc
     % Vv
     %       Varying values. Struct with values which DO VARY by CDF record.
     %
-    function samplesAVolt = calibrate_voltages_1xBLTS(Cv, Zv)
+    function voltageAVolt = calibrate_voltage_1xBLTS(Cv, Zv)
       % PROPOSAL: Also split sequence based constant isnan() (isfinite()?)
       %           for CWF (not SWF).
       %   NOTE: bicas.tf.apply_TF() can split based on isfinite() (not isnan()).
@@ -461,7 +461,7 @@ classdef dc
         % Variables which VARY over CDF records.
         Zv.tt2000
         Zv.ssid
-        Zv.samplesTm
+        Zv.voltageTm
         Zv.uspr
         Zv.freqHz
         Zv.iLsf
@@ -472,7 +472,7 @@ classdef dc
       [nRecords, aspr] = irf.assert.sizes( ...
         Zv.ssid,      [-1,     1], ...
         Zv.tt2000,    [-1], ...
-        Zv.samplesTm, [-1, -2, 1], ...
+        Zv.voltageTm, [-1, -2, 1], ...
         Zv.uspr,      [-1]);
 
 
@@ -485,7 +485,7 @@ classdef dc
       % (2) Process data separately for each such sequence.
       %==================================================================
       Tmk = bicas.utils.Timekeeper(...
-        'bicas.proc.L1L2.dc.calibrate_voltages_1xBLTS:grouping algo.', Cv.L);
+        'bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS:grouping algo.', Cv.L);
       % IMPLEMENTATION NOTE: Important to convert FPAs to builtin arrays to
       % significantly speed up both bicas.utils.group_unique_rows(), and
       % bicas.utils.group_by_change().
@@ -527,13 +527,13 @@ classdef dc
       %====================
       % CALIBRATE VOLTAGES
       %====================
-      samplesAVolt = nan(nRecords, aspr);
+      voltageAVolt = nan(nRecords, aspr);
 
       for iGroup = 1:nGroups
         iGroupAr = iGroupArCa{iGroup};
         iRec1    = iGroupAr(1);
 
-        samplesAVolt(iGroupAr, :) = bicas.proc.L1L2.dc.calibrate_1xBLTS_subsequence(...
+        voltageAVolt(iGroupAr, :) = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS_subsequence(...
           ... % ===============================================================
           ... % Variables which DO NOT VARY over CDF records at all.
           Vcal         = Cv.Vcal, ...
@@ -554,16 +554,16 @@ classdef dc
           ... % ===============================================================
           ... % Variables which VARY within the subsequence/group.
           tt2000       = Zv.tt2000(   iGroupAr), ...
-          samplesTm    = Zv.samplesTm(iGroupAr, :), ...
+          voltageTm    = Zv.voltageTm(iGroupAr, :), ...
           uspr         = Zv.uspr(     iGroupAr) ...
           );
       end
-    end    % calibrate_voltages_1xBLTS
+    end    % calibrate_voltage_1xBLTS
 
 
 
     % Calibrate one BLTS channel.
-    function samplesAVolt = calibrate_1xBLTS_subsequence(Cv, Zv)
+    function voltageAVolt = calibrate_voltage_1xBLTS_subsequence(Cv, Zv)
       arguments
         Cv.Vcal
         Cv.iBlts
@@ -579,11 +579,11 @@ classdef dc
         Cv.NbriFpa
         Cv.NbciFpa
         Zv.tt2000
-        Zv.samplesTm
+        Zv.voltageTm
         Zv.uspr
       end
       % IMPLEMENTATION NOTE: It is ugly to have this many parameters (15!),
-      % but the original code made calibrate_voltages_5xBLTS() to large and
+      % but the original code made calibrate_voltage_5xBLTS() to large and
       % unwieldy. Having many arguments also highlights the exact dependencies.
 
       % PROPOSAL: CalSettings as parameter.
@@ -602,11 +602,11 @@ classdef dc
       % NOTE: Storing TM units with floats!
       assert(isa(Cv.Vcal, "bicas.proc.L1L2.cal.VoltageCalibration"))
       if Cv.isLfr
-        assert(isa(Zv.samplesTm, 'single'))
+        assert(isa(Zv.voltageTm, 'single'))
       else
-        assert(isa(Zv.samplesTm, 'double'))
+        assert(isa(Zv.voltageTm, 'double'))
       end
-      [nRecords, aspr] = irf.assert.sizes(Zv.samplesTm, [-1, -2, 1]);
+      [nRecords, aspr] = irf.assert.sizes(Zv.voltageTm, [-1, -2, 1]);
       assert(isscalar(Cv.freqHz))
       assert(isscalar(Cv.iLsf))
 
@@ -615,7 +615,7 @@ classdef dc
       % Derive dtSec
       % ------------
       % NOTE: Different number of rows depending on CWF/SWF! One element per
-      %       cell element in samplesTmCa.
+      %       cell element in voltageTmCa.
       if Cv.hasSwfFormat
         % CASE: SWF
         % NOTE: Column vector of (identical) numbers (one per snapshot, which
@@ -633,25 +633,25 @@ classdef dc
 
       if isequaln(Cv.ssid, bicas.proc.L1L2.const.C.SSID_DICT("UNKNOWN"))
         % ==> Calibrated data set to NaN.
-        samplesAVolt = nan(size(Zv.samplesTm));
+        voltageAVolt = nan(size(Zv.voltageTm));
 
       elseif ismember(...
           Cv.ssid, bicas.proc.L1L2.const.C.SSID_DICT(["GND", "REF25V"]))
         % ==> No calibration.
-        % NOTE: samplesTm stores TM units using float!
-        samplesAVolt = Zv.samplesTm;
+        % NOTE: voltageTm stores TM units using float!
+        voltageAVolt = Zv.voltageTm;
 
       else
         assert(bicas.proc.L1L2.const.SSID_is_ASR(Cv.ssid))
         % ==> Calibrate (unless explicitly stated that should not)
 
         if Cv.hasSwfFormat
-          samplesTmCa = ...
+          voltageTmCa = ...
             bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
-            double(Zv.samplesTm), Zv.uspr);
+            double(Zv.voltageTm), Zv.uspr);
         else
           assert(all(Zv.uspr == 1))
-          samplesTmCa = {double(Zv.samplesTm)};
+          voltageTmCa = {double(Zv.voltageTm)};
         end
 
         %######################
@@ -663,27 +663,27 @@ classdef dc
           Cv.iBlts, Cv.ssid, Cv.isAchgFpa.logical2doubleNan(), ...
           Cv.iCalibL, Cv.iCalibH, Cv.iLsf);
         %#######################################################
-        samplesAVoltCa = Cv.Vcal.calibrate_voltage_TM_to_avolt(...
-          dtSec, samplesTmCa, ...
+        voltageAVoltCa = Cv.Vcal.calibrate_voltage_TM_to_avolt(...
+          dtSec, voltageTmCa, ...
           Cv.isLfr, Cv.isTdsCwf, CalSettings, ...
           Cv.NbriFpa, Cv.NbciFpa);
         %#######################################################
 
         if Cv.hasSwfFormat
           % CASE: SWF
-          [samplesAVolt, ~] = ...
+          [voltageAVolt, ~] = ...
             bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
-            samplesAVoltCa, aspr...
+            voltageAVoltCa, aspr...
             );
         else
           % CASE: CWF
           % NOTE: Scalar, since not snapshot.
-          assert(isscalar(samplesAVoltCa))
+          assert(isscalar(voltageAVoltCa))
 
-          samplesAVolt = samplesAVoltCa{1};
+          voltageAVolt = voltageAVoltCa{1};
         end
       end
-    end    % calibrate_1xBLTS_subsequence
+    end    % calibrate_voltage_1xBLTS_subsequence
 
 
 
@@ -751,14 +751,14 @@ classdef dc
     % Convert samples stored as 5x BLTSs to 9x ASRs (without reconstructing
     % missing data).
     %
-    function SchdZvm = convert_samples_5xBLTS_to_9xASR( ...
-        bltsSamplesAVoltAr, bltsVsibAr, bltsSdidAr, L)
+    function SchdZvm = convert_voltage_5xBLTS_to_9xASR( ...
+        bltsVoltageAVoltAr, bltsVsibAr, bltsSdidAr, L)
 
       % Tmk = bicas.utils.Timekeeper(...
-      %   'bicas.proc.L1L2.dc.convert_samples_5xBLTS_to_9xASR', L);
+      %   'bicas.proc.L1L2.dc.convert_voltage_5xBLTS_to_9xASR', L);
 
       [nRec, aspr] = irf.assert.sizes(...
-        bltsSamplesAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
+        bltsVoltageAVoltAr, [-1, -2, bicas.const.N_BLTS], ...
         bltsSdidAr,         [-1,     bicas.const.N_BLTS], ...
         bltsVsibAr,         [-1,     bicas.const.N_BLTS]);
 
@@ -768,7 +768,7 @@ classdef dc
       bltsSchdCa = cell(5, 1);
       for iBlts = 1:bicas.const.N_BLTS
         bltsSchdCa{iBlts, 1} = bicas.proc.L1L2.SingleChannelData( ...
-          bltsSamplesAVoltAr(:, :, iBlts), ...
+          bltsVoltageAVoltAr(:, :, iBlts), ...
           bltsVsibAr(        :,    iBlts));
       end
 

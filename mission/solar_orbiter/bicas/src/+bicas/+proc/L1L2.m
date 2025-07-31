@@ -297,7 +297,7 @@ classdef L1L2
 
 
       nRecords = size(SciDcip.Zv.Epoch, 1);
-      aspr     = size(SciDcop.Zv.SamplesZvm.get(S("DC_V1")), 2);
+      aspr     = size(SciDcop.Zv.VoltageZvm.get(S("DC_V1")), 2);
 
       OutSci = [];
 
@@ -344,17 +344,17 @@ classdef L1L2
         OutSci.Zv.EDC = tempNan;
         OutSci.Zv.EAC = tempNan;
 
-        OutSci.Zv.VDC(:,1) = SciDcop.Zv.SamplesZvm.get(S("DC_V1"));
-        OutSci.Zv.VDC(:,2) = SciDcop.Zv.SamplesZvm.get(S("DC_V2"));
-        OutSci.Zv.VDC(:,3) = SciDcop.Zv.SamplesZvm.get(S("DC_V3"));
+        OutSci.Zv.VDC(:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V1"));
+        OutSci.Zv.VDC(:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V2"));
+        OutSci.Zv.VDC(:,3) = SciDcop.Zv.VoltageZvm.get(S("DC_V3"));
 
-        OutSci.Zv.EDC(:,1) = SciDcop.Zv.SamplesZvm.get(S("DC_V12"));
-        OutSci.Zv.EDC(:,2) = SciDcop.Zv.SamplesZvm.get(S("DC_V13"));
-        OutSci.Zv.EDC(:,3) = SciDcop.Zv.SamplesZvm.get(S("DC_V23"));
+        OutSci.Zv.EDC(:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V12"));
+        OutSci.Zv.EDC(:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V13"));
+        OutSci.Zv.EDC(:,3) = SciDcop.Zv.VoltageZvm.get(S("DC_V23"));
 
-        OutSci.Zv.EAC(:,1) = SciDcop.Zv.SamplesZvm.get(S("AC_V12"));
-        OutSci.Zv.EAC(:,2) = SciDcop.Zv.SamplesZvm.get(S("AC_V13"));
-        OutSci.Zv.EAC(:,3) = SciDcop.Zv.SamplesZvm.get(S("AC_V23"));
+        OutSci.Zv.EAC(:,1) = SciDcop.Zv.VoltageZvm.get(S("AC_V12"));
+        OutSci.Zv.EAC(:,2) = SciDcop.Zv.VoltageZvm.get(S("AC_V13"));
+        OutSci.Zv.EAC(:,3) = SciDcop.Zv.VoltageZvm.get(S("AC_V23"));
 
         % ASSERTION
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
@@ -390,17 +390,17 @@ classdef L1L2
         OutSci.Zv.EDC = tempNan;
         OutSci.Zv.EAC = tempNan;
 
-        OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.SamplesZvm.get(S("DC_V1"));
-        OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.SamplesZvm.get(S("DC_V2"));
-        OutSci.Zv.VDC(:,:,3) = SciDcop.Zv.SamplesZvm.get(S("DC_V3"));
+        OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V1"));
+        OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V2"));
+        OutSci.Zv.VDC(:,:,3) = SciDcop.Zv.VoltageZvm.get(S("DC_V3"));
 
-        OutSci.Zv.EDC(:,:,1) = SciDcop.Zv.SamplesZvm.get(S("DC_V12"));
-        OutSci.Zv.EDC(:,:,2) = SciDcop.Zv.SamplesZvm.get(S("DC_V13"));
-        OutSci.Zv.EDC(:,:,3) = SciDcop.Zv.SamplesZvm.get(S("DC_V23"));
+        OutSci.Zv.EDC(:,:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V12"));
+        OutSci.Zv.EDC(:,:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V13"));
+        OutSci.Zv.EDC(:,:,3) = SciDcop.Zv.VoltageZvm.get(S("DC_V23"));
 
-        OutSci.Zv.EAC(:,:,1) = SciDcop.Zv.SamplesZvm.get(S("AC_V12"));
-        OutSci.Zv.EAC(:,:,2) = SciDcop.Zv.SamplesZvm.get(S("AC_V13"));
-        OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.SamplesZvm.get(S("AC_V23"));
+        OutSci.Zv.EAC(:,:,1) = SciDcop.Zv.VoltageZvm.get(S("AC_V12"));
+        OutSci.Zv.EAC(:,:,2) = SciDcop.Zv.VoltageZvm.get(S("AC_V13"));
+        OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.VoltageZvm.get(S("AC_V23"));
 
         % ASSERTION
         % NOTE: Must exclude ZVs "SAMPLE_IDX", "SAMPLE_LABEL".

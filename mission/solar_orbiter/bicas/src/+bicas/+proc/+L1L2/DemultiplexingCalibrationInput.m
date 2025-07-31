@@ -3,12 +3,12 @@
 % L1/L1R-->L2 LFR+TDS processing (i.e. demultiplexing and calibration).
 %
 %
-% IMPLEMENTATION NOTE: bltsSamplesTm and lrx
+% IMPLEMENTATION NOTE: bltsVoltageTm and lrx
 % ==========================================
-% DCIP always represents (has variables/elements for) all five BLTS's,
-% despite that only three are used at any given time. The channels not used
-% are set to NaN. Which ones are actually used can be switched at any given
-% time due to lrx changing.
+% DCIP always represents (has variables/elements for) all five BLTS's, despite
+% that only three are used at any given time (due to how BIAS h/w works). The
+% channels not used are set to NaN. Which ones are actually used can be
+% switched at any given time due to lrx changing.
 %
 % This handling does in principle differ from the handling of other "data
 % parameters" (BW, LSF, isTdsCwf, freqHz, hasSwfFormat, etc.). LRX
@@ -94,14 +94,14 @@ classdef DemultiplexingCalibrationInput
     function obj = DemultiplexingCalibrationInput(Zv, Ga, hasSwfFormat, isLfr, isTdsCwf)
 
       irf.assert.struct(Zv, ...
-        {'Epoch', 'bltsSamplesTm', 'freqHz', 'uspr', ...
+        {'Epoch', 'bltsVoltageTm', 'freqHz', 'uspr', ...
         'bdmFpa', 'isAchgFpa', 'dlrFpa', ...
         'iLsf', ...
         'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
         'DELTA_PLUS_MINUS', 'NbriFpa', 'NbciFpa', ...
         'biasOffQrcb', 'sweepQrcb', 'lrx', 'BW'}, {});
       bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
-      assert(size(Zv.bltsSamplesTm, 3) == 5)
+      assert(size(Zv.bltsVoltageTm, 3) == 5)
       assert(isa(Zv.freqHz,    'double' ))
       assert(isa(hasSwfFormat, 'logical'))
       assert(isa(isLfr,        'logical'))

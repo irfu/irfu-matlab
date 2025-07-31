@@ -275,15 +275,18 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
       Zv = [];
 
-      Zv.bltsSamplesTm(:, :, 1) = single(InSci.Zv.V);
-      % Copy values when there is actual data for that BLTS as determined
-      % by zvLrx. Otherwise NaN.
+      %======================
+      % Set Zv.bltsVoltageTm
+      %======================
+      Zv.bltsVoltageTm(:, :, 1) = single(InSci.Zv.V);
+      % Copy values when there is actual data for that BLTS as determined by
+      % zvLrx. Otherwise NaN.
       % zvLrx == 0: BLTS 4/5 contain data.
       % zvLrx == 1: BLTS 2/3 contain data.
-      Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
-      Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==0 );
-      Zv.bltsSamplesTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
-      Zv.bltsSamplesTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
+      Zv.bltsVoltageTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
+      Zv.bltsVoltageTm(:, :, 3) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==0 );
+      Zv.bltsVoltageTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
+      Zv.bltsVoltageTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
 
       Zv.Epoch                   = InSci.Zv.Epoch;
       % NOTE: DELTA_PLUS_MINUS only applies to Epoch, and must therefore have

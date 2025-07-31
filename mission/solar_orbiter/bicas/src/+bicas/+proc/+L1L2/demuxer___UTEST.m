@@ -78,7 +78,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_reconstruct_ASR_samples(testCase)
+    function test_reconstruct_ASR_voltage_channels(testCase)
       N = NaN;
 
       SAMPLES_AR_DATA = [...
@@ -109,7 +109,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-      bicas.proc.L1L2.demuxer.reconstruct_ASR_samples(Zvm);
+      bicas.proc.L1L2.demuxer.reconstruct_ASR_voltage_channels(Zvm);
       ActZvm = Zvm;
 
       testCase.assertEqual(ActZvm.nEntries, 9)

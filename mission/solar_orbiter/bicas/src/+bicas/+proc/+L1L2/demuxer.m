@@ -28,7 +28,7 @@ classdef demuxer
   %   PRO: The module code really implements "relabel BLTS to ASR" and
   %        "reconstructing ASRs".
   %
-  % PROPOSAL: Separate file for reconstruction of channel samples.
+  % PROPOSAL: Separate file for reconstruction of voltage channel samples.
 
 
 
@@ -262,7 +262,7 @@ classdef demuxer
 
     % ARGUMENTS
     % =========
-    % SamplesZvm
+    % VoltageZvm
     %       ZVM for ASR SDID-->SCHD
     %       NOTE: Is modified in-place.
     %
@@ -273,11 +273,11 @@ classdef demuxer
     % elements) which causes data to be not used for reconstructing other
     % channels.
     %
-    function reconstruct_ASR_samples(SamplesZvm)
+    function reconstruct_ASR_voltage_channels(VoltageZvm)
 
-      assert(isa(SamplesZvm, 'bicas.utils.ZvMap'))
-      assert(isa(SamplesZvm, "handle"))
-      assert(SamplesZvm.nEntries == 9)
+      assert(isa(VoltageZvm, 'bicas.utils.ZvMap'))
+      assert(isa(VoltageZvm, "handle"))
+      assert(VoltageZvm.nEntries == 9)
 
       % Shorten variable name.
       SDID_DICT = bicas.proc.L1L2.const.C.SDID_DICT;
@@ -287,15 +287,17 @@ classdef demuxer
       % Reconstruct values using relationship
       % samples(SDID_1) = samples(SDID_2) + samples(SDID_3)
       % iteratively until as many samples have been reconstructed as possible.
-      function reconstruct_missing_data_helper(sumSdidStr1, termSdidStr2, termSdidStr3)
+      function reconstruct_missing_data_helper(...
+          sumSdidStr1, termSdidStr2, termSdidStr3)
+
         % NOTE: Below printout is very useful for being able to follow how
         % values are being reconstructed, e.g. when debugging and verifying
         % automated tests.
         % fprintf("%-6s = %-6s + %-6s\n", sumSdidStr1, termSdidStr2, termSdidStr3)
 
-        Schd1 = SamplesZvm.get(SDID_DICT( sumSdidStr1));
-        Schd2 = SamplesZvm.get(SDID_DICT(termSdidStr2));
-        Schd3 = SamplesZvm.get(SDID_DICT(termSdidStr3));
+        Schd1 = VoltageZvm.get(SDID_DICT( sumSdidStr1));
+        Schd2 = VoltageZvm.get(SDID_DICT(termSdidStr2));
+        Schd3 = VoltageZvm.get(SDID_DICT(termSdidStr3));
 
         [...
           Schd1, ...
@@ -314,9 +316,9 @@ classdef demuxer
           @(x,y) (x-y) ...
           );
 
-        SamplesZvm.set(SDID_DICT( sumSdidStr1), Schd1);
-        SamplesZvm.set(SDID_DICT(termSdidStr2), Schd2);
-        SamplesZvm.set(SDID_DICT(termSdidStr3), Schd3);
+        VoltageZvm.set(SDID_DICT( sumSdidStr1), Schd1);
+        VoltageZvm.set(SDID_DICT(termSdidStr2), Schd2);
+        VoltageZvm.set(SDID_DICT(termSdidStr3), Schd3);
       end
 
 
@@ -333,7 +335,7 @@ classdef demuxer
       % Derive DC ASRs
       %================
       nWholeRowIsNan0 = ...
-        bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(SamplesZvm);
+        bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(VoltageZvm);
       while true
         % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for deriving
         % diffs (i.e. it should come first) since it is better to derive a diff
@@ -355,7 +357,7 @@ classdef demuxer
 
         % NOTE: Impossible to get Dcd.nWholeRowIsNan == 0...
         nWholeRowIsNan = ...
-          bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(SamplesZvm);
+          bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(VoltageZvm);
         if (nWholeRowIsNan == nWholeRowIsNan0) || (nWholeRowIsNan == 0)
           break
         end

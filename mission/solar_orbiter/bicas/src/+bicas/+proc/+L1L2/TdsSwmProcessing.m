@@ -422,15 +422,15 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
       %======================
-      % Set Zv.bltsSamplesTm
+      % Set Zv.bltsVoltageTm
       %======================
       zv_WAVEFORM_DATA_modif = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
-
-      Zv.bltsSamplesTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.uspr );
-      Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.uspr );
-      Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.uspr );
-      Zv.bltsSamplesTm(:, :, 4) = nan(nRecords, aspr);
-      Zv.bltsSamplesTm(:, :, 5) = nan(nRecords, aspr);
+      %
+      Zv.bltsVoltageTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.uspr );
+      Zv.bltsVoltageTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.uspr );
+      Zv.bltsVoltageTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.uspr );
+      Zv.bltsVoltageTm(:, :, 4) = nan(nRecords, aspr);
+      Zv.bltsVoltageTm(:, :, 5) = nan(nRecords, aspr);
 
 
 
