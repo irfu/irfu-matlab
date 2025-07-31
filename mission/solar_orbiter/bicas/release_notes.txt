@@ -307,16 +307,27 @@ Version X.Y.Z (????-??-??)
   PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS
   PROCESSING.CALIBRATION.VOLTAGE.DISABLED
   PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED
-* Support both setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK)
-  using old (almost) and new scheme for saturation:
-  Old scheme: "global saturation" (FULL_SATURATION & PARTIAL_SATURATION)
-  New scheme: "channel saturation" (six bits; one per single/diff, AC=DC)
-  Controlled by new setting PROCESSING.SATURATION.QUALITY_SCHEME.
-* Implementation uses a new coherent scheme for QRCs and their corresponding
-  actions for L1/L1R->L2 processing. Should be much easier to configure, and to
-  inspect its current configuration.
 * Speedfix: Uses custom implementation of MATLAB dictionary lookup
   (bicas.utils.dict_lookup()).
 * Speedfix: Groups non-consecutive CDF records for SWF data. Speeds up
   the processing of L1R LFR-SWF data significantly.
   data significantly.
+* Implementation uses a new coherent scheme for QRCs and their corresponding
+  actions for L1/L1R->L2 processing. Should be much easier to configure, and to
+  inspect its current configuration.
+* Varios reorganizing/refactoring of demultiplexing, reconstruction, and channel
+  addressing to facilitate other changes.
+* Support both setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK)
+  using old (almost) and new scheme for saturation:
+  Old scheme: "global saturation" (FULL_SATURATION & PARTIAL_SATURATION)
+  New scheme: "channel saturation" (six bits; one per single/diff, AC=DC)
+  Controlled by new setting PROCESSING.SATURATION.QUALITY_SCHEME.
+  https://github.com/irfu/irfu-matlab/issues/143
+* Uses L2 data for L3 processing in the presence of saturation,
+  but first blanks saturated data on affected channels separately.
+  (PROCESSING.SATURATION.QUALITY_SCHEME = CHANNEL_SATURATION only).
+  https://github.com/irfu/irfu-matlab/issues/143
+* Removes L2 data affected by failing ANT3.
+  https://github.com/irfu/irfu-matlab/issues/142
+* Removes EFIELD data when V3 is unintentionally floating.
+  https://github.com/irfu/irfu-matlab/issues/156
