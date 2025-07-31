@@ -338,6 +338,7 @@ classdef const
     end
 
     % Vectorized.
+    % Non-ASR values return false.
     function bAcAr = SSID_is_AC(ssidAr)
       assert(bicas.proc.L1L2.const.is_SSID(ssidAr))
 

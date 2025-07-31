@@ -64,6 +64,11 @@ classdef Logger < handle
 
 
 
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(Access=private)
     % IMPLEMENTATION NOTE: Constant defined here and not centrally (e.g.
     % BSO) to make sure that it is error-safe and always initialized.
@@ -81,7 +86,14 @@ classdef Logger < handle
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
+
+
 
     % Constructor
     %
@@ -317,6 +329,11 @@ classdef Logger < handle
 
 
 
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
   methods(Access=private)
 
 

@@ -21,10 +21,7 @@ classdef dc
   % PROPOSAL: More automatic test code.
   %
   % PROPOSAL:   process_calibrate_demux()
-  %           & calibrate_voltage_5xBLTS()
   %           should only accept the needed ZVs and variables.
-  %   NOTE: Needs some way of packaging/extracting only the relevant ZVs/fields
-  %         from struct.
   %
   % PROPOSAL: Reorg. code to
   %   * Consist of more isolated/modular/generic separate steps.
@@ -34,7 +31,6 @@ classdef dc
   %     constant "settings" (values for specific zVariables not varying as
   %     a function of CDF record), in particular not require many constant
   %     "settings".
-  %   * Use more vector operations.
   %   * Be more natural to implement.
 
 
@@ -271,6 +267,9 @@ classdef dc
       % (3) reduces size of processing function where logging would otherwise
       %     be, and
       % (4) can potentially turn table into proper table with column headers.
+      %
+      % PROPOSAL: Move to where processing splits data.
+      %   NOTE: Splits once per BLTS ==> More output.
 
       iCalibL = Vcal.get_BIAS_calibration_time_index_L(Dcip.Zv.Epoch);
       iCalibH = Vcal.get_BIAS_calibration_time_index_H(Dcip.Zv.Epoch);
@@ -445,6 +444,12 @@ classdef dc
       % PROPOSAL: Also split sequence based constant isnan() (isfinite()?)
       %           for CWF (not SWF).
       %   NOTE: bicas.tf.apply_TF() can split based on isfinite() (not isnan()).
+      %
+      % BUG/INEFFICIENCY: Groups by ACHG also for DC data. ==> Can divide into
+      % unnecesssarily small groups.
+      %   PROPOSAL: Only split on ACHG for AC data. (Check SSID.)
+      %     CON: SSID changes per record.
+      %       CON: In practice, SSID should be either all DC or all AC per BLTS.
 
       arguments
         % NOTE: Excluding LRX since it is only needed for splitting time/CDF
@@ -532,6 +537,20 @@ classdef dc
       for iGroup = 1:nGroups
         iGroupAr = iGroupArCa{iGroup};
         iRec1    = iGroupAr(1);
+
+        if 1
+          % DEBUG (only? make permanent?)
+          iRec2     = iGroupAr(end);
+          NbriFpa   = Zv.NbriFpa(  iRec1);
+          NbciFpa   = Zv.NbciFpa(  iRec1);
+          isAchgFpa = Zv.isAchgFpa(iRec1);
+          Cv.L.logf('debug', 'Calibrating group %s -- %s: iBlts=%i, ssid=%i, freqHz=%d, isAchg=%d, nbri=%d, nbci=%d', ...
+            bicas.utils.TT2000_to_UTC_str(Zv.tt2000(iRec1), 0), ...
+            bicas.utils.TT2000_to_UTC_str(Zv.tt2000(iRec2), 0), ...
+            Cv.iBlts, Zv.ssid(iRec1), Zv.freqHz(iRec1), isAchgFpa.logical2doubleNan(), ...
+            NbriFpa.int2doubleNan(), ...
+            NbciFpa.int2doubleNan())
+        end
 
         voltageAvolt(iGroupAr, :) = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS_subsequence(...
           ... % ===============================================================
