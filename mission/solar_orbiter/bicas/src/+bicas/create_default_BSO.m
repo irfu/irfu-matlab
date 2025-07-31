@@ -391,7 +391,7 @@ S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  0)
 S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 3)
 
 % Path to NSO table file. Relative to BICAS root.
-S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', bicas.const.DEFAULT_NSO_TABLE_RPATH)
+S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', char(bicas.const.DEFAULT_NSO_TABLE_RPATH))
 % Path to NSO table file for debugging purposes.
 % If non-empty, then it overrides PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH.
 % Can be set to absolute path. Intended for testing.

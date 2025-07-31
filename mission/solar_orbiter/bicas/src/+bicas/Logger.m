@@ -242,7 +242,7 @@ classdef Logger < handle
           % as stdout.
           bashWrapperRecipientStr = irf.str.add_prefix_on_every_row(...
             rcsIcdLogMsg, ...
-            bicas.const.LOG_FILE_PREFIX_TBW);
+            char(bicas.const.LOG_FILE_PREFIX_TBW));
 
           obj.write_to_stdout(bashWrapperRecipientStr)
 

@@ -74,7 +74,7 @@ classdef const
 
     % Path to "config directory" (the directory where the default config file is
     % located, if any) relative to BICAS's directory root.
-    DEFAULT_CONFIG_DIR_RPATH     = 'config';
+    DEFAULT_CONFIG_DIR_RPATH     = "config";
 
     DEFAULT_CONFIG_FILENAME      = 'bicas.conf';
 
@@ -84,13 +84,13 @@ classdef const
 
     % MATLAB stdout prefix to signal to bash wrapper that the log message
     % should be passed on to LOG FILE (without the prefix).
-    LOG_FILE_PREFIX_TBW          = 'LOG FILE: ';
+    LOG_FILE_PREFIX_TBW          = "LOG FILE: ";
 
-    SWD_FILENAME                 = 'descriptor.json';
+    SWD_FILENAME                 = "descriptor.json";
 
-    BRVF_FILENAME                = 'bias_rct_validity.json';
+    BRVF_FILENAME                = "bias_rct_validity.json";
 
-    DEFAULT_NSO_TABLE_RPATH      = fullfile('data', 'solo_ns_ops.xml');
+    DEFAULT_NSO_TABLE_RPATH      = fullfile("data", "solo_ns_ops.xml");
 
     % Information to "interpret" and "translate" captured exceptions
     % --------------------------------------------------------------

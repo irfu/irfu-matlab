@@ -32,8 +32,9 @@ classdef utils
       % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
       % Use path of the current MATLAB file.
       [matlabSrcDir, ~, ~] = fileparts(mfilename('fullpath'));
-      bicasRootDir         = fullfile(matlabSrcDir, '..', '..');
+      bicasRootDir         = fullfile(matlabSrcDir, "..", "..");
       bicasRootDir         = irf.fs.get_abs_path(bicasRootDir);
+      bicasRootDir         = string(bicasRootDir);
     end
 
 
