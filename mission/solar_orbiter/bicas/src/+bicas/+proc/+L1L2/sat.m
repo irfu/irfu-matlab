@@ -45,10 +45,10 @@ classdef sat
 
       % Higher thresholds for saturation. Sample values above these values, or
       % below the negated value, count as threshold-saturated (VSIB).
-      S.upperThresholdAVoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
-      S.upperThresholdAVoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
-      S.upperThresholdAVoltAclg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
-      S.upperThresholdAVoltAchg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
+      S.upperThresholdAvoltDcSingle = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE');
+      S.upperThresholdAvoltDcDiff   = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF');
+      S.upperThresholdAvoltAclg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN');
+      S.upperThresholdAvoltAchg     = Bso.get_fv('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN');
 
       % ==========
       % ASSERTIONS
@@ -65,10 +65,10 @@ classdef sat
         isfloat( S.vstbFractionThreshold) && ...
         (0 <= S.vstbFractionThreshold) && (S.vstbFractionThreshold <= 1))
 
-      assert_positive_float(S.upperThresholdAVoltDcSingle)
-      assert_positive_float(S.upperThresholdAVoltDcDiff)
-      assert_positive_float(S.upperThresholdAVoltAclg)
-      assert_positive_float(S.upperThresholdAVoltAchg)
+      assert_positive_float(S.upperThresholdAvoltDcSingle)
+      assert_positive_float(S.upperThresholdAvoltDcDiff)
+      assert_positive_float(S.upperThresholdAvoltAclg)
+      assert_positive_float(S.upperThresholdAvoltAchg)
 
       % Rename return value.
       SatSettings = S;
@@ -78,12 +78,12 @@ classdef sat
 
     % Derive VSTBs. Vectorized.
     function vstbAr = get_VSTB(...
-        SatSettings, samplesAVoltAr, ssidAr, isAchgFpa)
+        SatSettings, samplesAvoltAr, ssidAr, isAchgFpa)
 
-      upperThresholdAVolt = bicas.proc.L1L2.sat.get_upper_thresholds(...
+      upperThresholdAvolt = bicas.proc.L1L2.sat.get_upper_thresholds(...
         SatSettings, ssidAr, isAchgFpa);
 
-      vstbAr = abs(samplesAVoltAr) > upperThresholdAVolt;
+      vstbAr = abs(samplesAvoltAr) > upperThresholdAvolt;
     end
 
 
@@ -98,11 +98,11 @@ classdef sat
     %
     % RETURN VALUE
     % ============
-    % upperThresholdAVoltAr
+    % upperThresholdAvoltAr
     %       Same size as ssidAr. Non-negative threshold values.
     %       Non-ASR SSIDs have threshold NaN.
     %
-    function upperThresholdAVoltAr = get_upper_thresholds(...
+    function upperThresholdAvoltAr = get_upper_thresholds(...
         SatSettings, ssidAr, isAchgFpa)
       % Tmk = bicas.utils.Timekeeper('get_upper_thresholds', L);
 
@@ -127,11 +127,11 @@ classdef sat
       % NOTE: Threshold set to NaN for elements without a set threshold (e.g.
       %       SSID=GND).
       %   NOTE: Inequality with NaN always gives false(!)
-      upperThresholdAVoltAr            = NaN(size(ssidAr));
-      upperThresholdAVoltAr(bDcSingle) = SatSettings.upperThresholdAVoltDcSingle;
-      upperThresholdAVoltAr(bDcDiff)   = SatSettings.upperThresholdAVoltDcDiff;
-      upperThresholdAVoltAr(bAclg)     = SatSettings.upperThresholdAVoltAclg;
-      upperThresholdAVoltAr(bAchg)     = SatSettings.upperThresholdAVoltAchg;
+      upperThresholdAvoltAr            = NaN(size(ssidAr));
+      upperThresholdAvoltAr(bDcSingle) = SatSettings.upperThresholdAvoltDcSingle;
+      upperThresholdAvoltAr(bDcDiff)   = SatSettings.upperThresholdAvoltDcDiff;
+      upperThresholdAvoltAr(bAclg)     = SatSettings.upperThresholdAvoltAclg;
+      upperThresholdAvoltAr(bAchg)     = SatSettings.upperThresholdAvoltAchg;
 
       % Tmk.stop_log(numel(ssidAr), 'element')
     end

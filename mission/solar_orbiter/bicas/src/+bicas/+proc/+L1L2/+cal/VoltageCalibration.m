@@ -254,7 +254,7 @@ classdef VoltageCalibration
     % NbriFpa, NbciFpa
     %       NOTE: Only one record of NBRI, NBCI!.
     %
-    function bltsSamplesAVoltCa = calibrate_voltage_TM_to_avolt(obj, ...
+    function bltsSamplesAvoltCa = calibrate_voltage_TM_to_avolt(obj, ...
         dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, NbriFpa, NbciFpa)
 
       % ASSERTIONS
@@ -360,9 +360,9 @@ classdef VoltageCalibration
       %======================================
       % Apply BIAS+LFR/TDS+offset to samples
       %======================================
-      bltsSamplesAVoltCa = cell(size(bltsSamplesTmCa));    % Pre-allocate
+      bltsSamplesAvoltCa = cell(size(bltsSamplesTmCa));    % Pre-allocate
       for i = 1:numel(bltsSamplesTmCa)
-        tempSamplesAVolt = bicas.tf.apply_TF(...
+        tempSamplesAvolt = bicas.tf.apply_TF(...
           dtSec(i), ...
           bltsSamplesTmCa{i}, ...
           itfAvpt, ...
@@ -375,7 +375,7 @@ classdef VoltageCalibration
           'snfEnabled',              obj.snfEnabled, ...
           'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
 
-        bltsSamplesAVoltCa{i, 1} = tempSamplesAVolt + offsetAvolt;
+        bltsSamplesAvoltCa{i, 1} = tempSamplesAvolt + offsetAvolt;
       end
 
     end

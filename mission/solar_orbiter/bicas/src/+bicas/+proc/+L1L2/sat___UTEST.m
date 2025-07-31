@@ -21,14 +21,14 @@ classdef sat___UTEST < matlab.unittest.TestCase
 
 
     function test_get_VSTB(testCase)
-      SatSettings.upperThresholdAVoltDcSingle = 2;
-      SatSettings.upperThresholdAVoltDcDiff   = 3;
-      SatSettings.upperThresholdAVoltAclg     = 12;
-      SatSettings.upperThresholdAVoltAchg     = 13;
+      SatSettings.upperThresholdAvoltDcSingle = 2;
+      SatSettings.upperThresholdAvoltDcDiff   = 3;
+      SatSettings.upperThresholdAvoltAclg     = 12;
+      SatSettings.upperThresholdAvoltAchg     = 13;
 
-      function test(samplesAVolt, ssidStrAr, isAchgFpa, expVstbAr)
+      function test(samplesAvolt, ssidStrAr, isAchgFpa, expVstbAr)
         actVstbAr = bicas.proc.L1L2.sat.get_VSTB(...
-          SatSettings, samplesAVolt, ...
+          SatSettings, samplesAvolt, ...
           bicas.proc.L1L2.const.C.SSID_DICT(ssidStrAr), isAchgFpa);
 
         testCase.assertEqual(actVstbAr, logical(expVstbAr))
@@ -51,16 +51,16 @@ classdef sat___UTEST < matlab.unittest.TestCase
 
 
     function test_get_upper_thresholds(testCase)
-      SatSettings.upperThresholdAVoltDcSingle = 2;
-      SatSettings.upperThresholdAVoltDcDiff   = 3;
-      SatSettings.upperThresholdAVoltAclg     = 12;
-      SatSettings.upperThresholdAVoltAchg     = 13;
+      SatSettings.upperThresholdAvoltDcSingle = 2;
+      SatSettings.upperThresholdAvoltDcDiff   = 3;
+      SatSettings.upperThresholdAvoltAclg     = 12;
+      SatSettings.upperThresholdAvoltAchg     = 13;
 
-      function test(ssidStrAr, isAchgFpa, expUpperThresholdAVoltAr)
-        actUpperThresholdAVoltAr = bicas.proc.L1L2.sat.get_upper_thresholds(...
+      function test(ssidStrAr, isAchgFpa, expUpperThresholdAvoltAr)
+        actUpperThresholdAvoltAr = bicas.proc.L1L2.sat.get_upper_thresholds(...
           SatSettings, bicas.proc.L1L2.const.C.SSID_DICT(ssidStrAr), isAchgFpa);
 
-        testCase.assertEqual(actUpperThresholdAVoltAr, expUpperThresholdAVoltAr)
+        testCase.assertEqual(actUpperThresholdAvoltAr, expUpperThresholdAvoltAr)
       end
 
       % Empty arrays

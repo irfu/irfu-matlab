@@ -310,9 +310,9 @@ classdef L1L2
       OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.freqHz;
 
       % NOTE: Convert aampere --> nano-aampere
-      OutSci.Zv.IBIAS1 = SciDcop.Zv.currentAAmpere(:, 1) * 1e9;
-      OutSci.Zv.IBIAS2 = SciDcop.Zv.currentAAmpere(:, 2) * 1e9;
-      OutSci.Zv.IBIAS3 = SciDcop.Zv.currentAAmpere(:, 3) * 1e9;
+      OutSci.Zv.IBIAS1 = SciDcop.Zv.currentAampere(:, 1) * 1e9;
+      OutSci.Zv.IBIAS2 = SciDcop.Zv.currentAampere(:, 2) * 1e9;
+      OutSci.Zv.IBIAS3 = SciDcop.Zv.currentAampere(:, 3) * 1e9;
 
       % Shall be copied according to RCS ICD, 1.7.
       OutSci.Ga.OBS_ID    = SciDcip.Ga.OBS_ID;

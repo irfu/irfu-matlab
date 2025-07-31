@@ -19,7 +19,7 @@ classdef cur
 
     % Calibrate currents on the format they are found in CDFs.
     %
-    function currentAAmpere = calibrate_bias_currents( ...
+    function currentAampere = calibrate_bias_currents( ...
         curTt2000Ar, currentSampere, sciTt2000Ar, Ccal, Bso, L)
 
       assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
@@ -28,7 +28,7 @@ classdef cur
         curTt2000Ar, currentSampere, sciTt2000Ar, Bso, L);
       currentTm      = Ccal.calibrate_current_sampere_to_TM(currentSampere);
 
-      currentAAmpere = nan(size(currentSampere));    % Preallocate.
+      currentAampere = nan(size(currentSampere));    % Preallocate.
       iCalibL        = Ccal.get_BIAS_calibration_time_index_L(sciTt2000Ar);
 
       L.logf('info', ...
@@ -49,7 +49,7 @@ classdef cur
           %--------------------
           % CALIBRATE CURRENTS
           %--------------------
-          currentAAmpere(iRecords, iAnt) = Ccal.calibrate_current_TM_to_aampere(...
+          currentAampere(iRecords, iAnt) = Ccal.calibrate_current_TM_to_aampere(...
             currentTm(iRecords, iAnt), iAnt, iCalibL(iRecords));
         end
       end    % for
@@ -58,7 +58,7 @@ classdef cur
 
 
 
-    function currentSAmpere = convert_CUR_to_CUR_on_SCI_TIME(...
+    function currentSampere = convert_CUR_to_CUR_on_SCI_TIME(...
         curTt2000Ar, currentSampereAr, sciTt2000Ar, Bso, L)
 
       % PROPOSAL: Better name.
@@ -116,13 +116,13 @@ classdef cur
 
       % NOTE: bicas.proc.L1L2.cur.zv_TC_to_current() checks that Epoch
       % increases monotonically.
-      currentNanoSAmpere = [];
+      currentNanoSampere = [];
       for iAnt = 1:3
-        currentNanoSAmpere(:,iAnt) = bicas.proc.L1L2.cur.zv_TC_to_current(...
+        currentNanoSampere(:,iAnt) = bicas.proc.L1L2.cur.zv_TC_to_current(...
           curTt2000Ar, currentSampereAr(:,iAnt), sciTt2000Ar, L, Bso);
       end
 
-      currentSAmpere = 1e-9 * currentNanoSAmpere;
+      currentSampere = 1e-9 * currentNanoSampere;
     end
 
 

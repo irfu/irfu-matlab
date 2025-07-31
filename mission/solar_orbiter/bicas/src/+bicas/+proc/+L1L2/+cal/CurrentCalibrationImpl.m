@@ -33,7 +33,7 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
 
 
     function obj = CurrentCalibrationImpl(BiasRctd, Bso)
-      % PROPOSAL: Replace argument BiasRctd --> offsetsAAmpere, gainsAapt,
+      % PROPOSAL: Replace argument BiasRctd --> offsetsAampere, gainsAapt,
       %           epochL
       %   PRO: Good for testing.
       %   CON: Harder to call constructor.
@@ -58,7 +58,7 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
       [maxAbsSampere, iMax] = max(abs(currentSampere(:)));
       if ~(isnan(maxAbsSampere) || (maxAbsSampere <= solo.hwzv.const.MAX_ABS_SAMPERE))
         error('BICAS:Assertion:IllegalArgument', ...
-          ['Argument currentSAmpere (unit: set current/ampere)', ...
+          ['Argument currentSampere (unit: set current/ampere)', ...
           ' contains illegally large value(s).', ...
           ' Largest found value is %g.'], ...
           currentSampere(iMax))
@@ -79,7 +79,7 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
     % iCalibTimeL
     %       Has to be same size as "biasCurrentTm".
     %
-    function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
+    function biasCurrentAampere = calibrate_current_TM_to_aampere(obj, ...
         biasCurrentTm, iAntenna, iCalibTimeL)
 
       assert(isscalar(iAntenna))
@@ -90,13 +90,13 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
       %==============================
       % Obtain calibration constants
       %==============================
-      offsetAAmpere = obj.Current.offsetsAAmpere(iCalibTimeL, iAntenna);
+      offsetAampere = obj.Current.offsetsAampere(iCalibTimeL, iAntenna);
       gainAapt      = obj.Current.gainsAapt(     iCalibTimeL, iAntenna);
 
       % CALIBRATE
       %
       % LINEAR FUNCTION
-      biasCurrentAAmpere = offsetAAmpere + gainAapt .* double(biasCurrentTm);
+      biasCurrentAampere = offsetAampere + gainAapt .* double(biasCurrentTm);
     end
 
 
@@ -125,7 +125,7 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
     % with the corresponding telecommands.). The conversion functions are
     % identical for all three probes.
     %
-    function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
+    function biasCurrentAampere = calibrate_current_HK_TM_to_aampere(obj, ...
         biasCurrentTm, iAntenna)
 
       % ASSERTION: zVar HK_BIA_BIAS1/2/3's class in BIAS HK.
@@ -143,7 +143,7 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
       %     values.
       %=============================================================
       biasCurrentTm      = bitxor(biasCurrentTm, hex2dec('8000'));    % FLIP BIT
-      biasCurrentAAmpere = obj.HkBiasCurrent.gainAapt(iAntenna) * ...
+      biasCurrentAampere = obj.HkBiasCurrent.gainAapt(iAntenna) * ...
         (biasCurrentTm + obj.HkBiasCurrent.offsetTm(iAntenna));    % LINEAR FUNCTION
     end
 

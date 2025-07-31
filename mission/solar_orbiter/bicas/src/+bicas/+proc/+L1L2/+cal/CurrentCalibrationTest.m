@@ -43,15 +43,15 @@ classdef CurrentCalibrationTest < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
 
 
 
-    function biasCurrentAAmpere = calibrate_current_TM_to_aampere(obj, ...
+    function biasCurrentAampere = calibrate_current_TM_to_aampere(obj, ...
         biasCurrentTm, iAntenna, iCalibTimeL)
 
-      biasCurrentAAmpere = biasCurrentTm .* iCalibTimeL + iAntenna;
+      biasCurrentAampere = biasCurrentTm .* iCalibTimeL + iAntenna;
     end
 
 
 
-    function biasCurrentAAmpere = calibrate_current_HK_TM_to_aampere(obj, ...
+    function biasCurrentAampere = calibrate_current_HK_TM_to_aampere(obj, ...
         biasCurrentTm, iAntenna)
 
       error("NOT IMPLEMENTED")

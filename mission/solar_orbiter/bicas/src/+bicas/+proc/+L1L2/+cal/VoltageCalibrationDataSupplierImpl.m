@@ -114,15 +114,15 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
           % NOTE: List of ITFs for different times.
           itfAvpiv    = BiasRctd.ItfSet.dcSingleAvpiv{iCalibTimeL};
           kFtfIvpav   = obj.BiasScalarGain.alphaIvpav;
-          offsetAvolt = BiasRctd.dcSingleOffsetsAVolt(iCalibTimeH, antennas);
+          offsetAvolt = BiasRctd.dcSingleOffsetsAvolt(iCalibTimeH, antennas);
 
         case 'DC_DIFF'
 
           itfAvpiv = BiasRctd.ItfSet.dcDiffAvpiv{iCalibTimeL};
           kFtfIvpav    = obj.BiasScalarGain.betaIvpav;
-          if     isequal(antennas, [1,2]);   offsetAvolt = BiasRctd.DcDiffOffsets.E12AVolt(iCalibTimeH);
-          elseif isequal(antennas, [1,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E13AVolt(iCalibTimeH);
-          elseif isequal(antennas, [2,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E23AVolt(iCalibTimeH);
+          if     isequal(antennas, [1,2]);   offsetAvolt = BiasRctd.DcDiffOffsets.E12Avolt(iCalibTimeH);
+          elseif isequal(antennas, [1,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E13Avolt(iCalibTimeH);
+          elseif isequal(antennas, [2,3]);   offsetAvolt = BiasRctd.DcDiffOffsets.E23Avolt(iCalibTimeH);
           else
             error('BICAS:Assertion:IllegalArgument', 'Illegal argument "ssid".');
           end

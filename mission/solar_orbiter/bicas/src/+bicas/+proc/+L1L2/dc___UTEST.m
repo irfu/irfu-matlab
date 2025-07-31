@@ -48,7 +48,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
       I_LSF      = 1;
       FREQ_HZ    = solo.hwzv.const.LSF_HZ(I_LSF);
 
-      actVoltageAVolt = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS( ...
+      actVoltageAvolt = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS( ...
         ... % Variables which DO NOT VARY over CDF records at all.
         Vcal         = Vcal, ...
         L            = testCase.L, ...
@@ -72,7 +72,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
       % NOTE: Setting one extra NaN due to
       % PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES.
       expVoltageAvolt(8) = NaN;
-      testCase.assertEqual(actVoltageAVolt, expVoltageAvolt, AbsTol=1e-14)
+      testCase.assertEqual(actVoltageAvolt, expVoltageAvolt, AbsTol=1e-14)
     end
 
 
@@ -98,7 +98,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
       % NOTE: Split data due to NaN. bicas.tf.apply_TF() splits by NaN (by
       % default).
-      actVoltageAVolt = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS( ...
+      actVoltageAvolt = bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS( ...
         ... % Variables which DO NOT VARY over CDF records at all.
         Vcal         = Vcal, ...
         L            = testCase.L, ...
@@ -125,7 +125,7 @@ classdef dc___UTEST < matlab.unittest.TestCase
       % NOTE: Setting one extra NaN due to
       % PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES.
       expVoltageAvolt(3, 1)           = NaN;
-      testCase.assertEqual(actVoltageAVolt, expVoltageAvolt, AbsTol=1e-14)
+      testCase.assertEqual(actVoltageAvolt, expVoltageAvolt, AbsTol=1e-14)
     end
 
 
@@ -206,10 +206,10 @@ classdef dc___UTEST < matlab.unittest.TestCase
       SatSettings = struct();
       %SatSettings.cwfSlidingWindowLengthSec   = NaN;   % Not used by test.
       %SatSettings.vstbFractionThreshold       = NaN;   % Not used by test.
-      SatSettings.upperThresholdAVoltDcSingle = 2;
-      SatSettings.upperThresholdAVoltDcDiff   = 5;
-      SatSettings.upperThresholdAVoltAclg     = 8;
-      SatSettings.upperThresholdAVoltAchg     = 1;
+      SatSettings.upperThresholdAvoltDcSingle = 2;
+      SatSettings.upperThresholdAvoltDcDiff   = 5;
+      SatSettings.upperThresholdAvoltAclg     = 8;
+      SatSettings.upperThresholdAvoltAchg     = 1;
 
       % (5 BLTS) x (3 records)
       bltsVoltageAvoltAr = single([...
@@ -253,10 +253,10 @@ classdef dc___UTEST < matlab.unittest.TestCase
       SatSettings = struct();
       %SatSettings.cwfSlidingWindowLengthSec   = NaN;
       SatSettings.vstbFractionThreshold       = 0.49;
-      SatSettings.upperThresholdAVoltDcSingle = NaN;   % Not used by test.
-      SatSettings.upperThresholdAVoltDcDiff   = 2;
-      SatSettings.upperThresholdAVoltAclg     = NaN;   % Not used by test.
-      SatSettings.upperThresholdAVoltAchg     = NaN;   % Not used by test.
+      SatSettings.upperThresholdAvoltDcSingle = NaN;   % Not used by test.
+      SatSettings.upperThresholdAvoltDcDiff   = 2;
+      SatSettings.upperThresholdAvoltAclg     = NaN;   % Not used by test.
+      SatSettings.upperThresholdAvoltAchg     = NaN;   % Not used by test.
 
 
 

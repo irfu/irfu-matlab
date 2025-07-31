@@ -21,7 +21,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
     Current
     FtfRctSet
     ItfSet
-    dcSingleOffsetsAVolt
+    dcSingleOffsetsAvolt
     DcDiffOffsets
   end
 
@@ -79,7 +79,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
       obj.Current              = RctRawData.Current;
       obj.FtfRctSet            = FtfRctSet;    % Change name of field (sic!).
       obj.ItfSet               = ItfSet;
-      obj.dcSingleOffsetsAVolt = RctRawData.dcSingleOffsetsAVolt;
+      obj.dcSingleOffsetsAvolt = RctRawData.dcSingleOffsetsAvolt;
       obj.DcDiffOffsets        = RctRawData.DcDiffOffsets;
     end
 
@@ -106,7 +106,7 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         % Log bias current calibration
         L.logf(LL, '    BIAS current offsets: %s [aampere]',         ...
           bicas.proc.L1L2.cal.utils.vector_string(...
-          '% 10e', obj.Current.offsetsAAmpere(iEpochL, :)))
+          '% 10e', obj.Current.offsetsAampere(iEpochL, :)))
         L.logf(LL, '    BIAS current gain   : %s [aampere/TM unit]', ...
           bicas.proc.L1L2.cal.utils.vector_string(...
           '% 10e', obj.Current.gainsAapt(     iEpochL, :)))
@@ -126,11 +126,11 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
       % Iterate over EpochH
       %=====================
       % NOTE: Must work for multiple CDF records.
-      dcDiffOffsetsAVolt = [...
-        obj.DcDiffOffsets.E12AVolt, ...
-        obj.DcDiffOffsets.E13AVolt, ...
-        obj.DcDiffOffsets.E23AVolt];
-      irf.assert.sizes(dcDiffOffsetsAVolt, [NaN, 3]);
+      dcDiffOffsetsAvolt = [...
+        obj.DcDiffOffsets.E12Avolt, ...
+        obj.DcDiffOffsets.E13Avolt, ...
+        obj.DcDiffOffsets.E23Avolt];
+      irf.assert.sizes(dcDiffOffsetsAvolt, [NaN, 3]);
       for iEpochH = 1:numel(obj.epochH)
 
         L.logf(LL, 'Below values are used for data beginning %s:', ...
@@ -139,11 +139,11 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         L.logf(LL, ...
           '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
           bicas.proc.L1L2.cal.utils.vector_string('%g', ...
-          obj.dcSingleOffsetsAVolt(iEpochH, :)))
+          obj.dcSingleOffsetsAvolt(iEpochH, :)))
         L.logf(LL, ...
           '    BIAS DC diff   voltage offsets (E12,E13,E23): %s [avolt]', ...
           bicas.proc.L1L2.cal.utils.vector_string('%g', ...
-          dcDiffOffsetsAVolt(iEpochH)))
+          dcDiffOffsetsAvolt(iEpochH)))
       end
 
       %###################################################################
@@ -200,10 +200,10 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         %     cases.
         epochL                    = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.Epoch_L);
         epochH                    = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.Epoch_H);
-        biasCurrentOffsetsAAmpere = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
+        biasCurrentOffsetsAampere = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
         biasCurrentGainsAapt      = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
-        dcSingleOffsetsAVolt      = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
-        dcDiffOffsetsAVolt        = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
+        dcSingleOffsetsAvolt      = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
+        dcDiffOffsetsAvolt        = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
         ftfCoeffs                 = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
         nEpochL = size(epochL, 1);
@@ -236,12 +236,12 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         D.epochL = epochL;
         D.epochH = epochH;
 
-        D.Current.offsetsAAmpere = biasCurrentOffsetsAAmpere;
+        D.Current.offsetsAampere = biasCurrentOffsetsAampere;
         D.Current.gainsAapt      = biasCurrentGainsAapt;
-        D.dcSingleOffsetsAVolt   = dcSingleOffsetsAVolt;
-        D.DcDiffOffsets.E12AVolt = dcDiffOffsetsAVolt(:, I_E12);
-        D.DcDiffOffsets.E13AVolt = dcDiffOffsetsAVolt(:, I_E13);
-        D.DcDiffOffsets.E23AVolt = dcDiffOffsetsAVolt(:, I_E23);
+        D.dcSingleOffsetsAvolt   = dcSingleOffsetsAvolt;
+        D.DcDiffOffsets.E12Avolt = dcDiffOffsetsAvolt(:, I_E12);
+        D.DcDiffOffsets.E13Avolt = dcDiffOffsetsAvolt(:, I_E13);
+        D.DcDiffOffsets.E23Avolt = dcDiffOffsetsAvolt(:, I_E23);
 
         % NOTE: Using name "FtfSet" only to avoid "Ftfs" (plural).
         % (List, Table would be wrong? Use "FtfTable"?)
@@ -287,9 +287,9 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         validateattributes(D.epochH, {'numeric'}, {'increasing'})
 
         irf.assert.sizes(...
-          D.Current.offsetsAAmpere, [nEpochL, 3], ...
+          D.Current.offsetsAampere, [nEpochL, 3], ...
           D.Current.gainsAapt,      [nEpochL, 3], ...
-          D.dcSingleOffsetsAVolt,   [nEpochH, 3]);
+          D.dcSingleOffsetsAvolt,   [nEpochH, 3]);
 
         for fn = fieldnames(D.DcDiffOffsets)'
           irf.assert.sizes(D.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
