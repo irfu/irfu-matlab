@@ -112,6 +112,8 @@ classdef dc
       % BUG: Setting voltage NaN/FVs from QRCs *BEFORE* calibration which means
       % that calibration of non-blanked samples is *NOT* influenced by samples
       % which are later blanked.
+      %   TODO-NI: Why is this labelled as a bug?!! This seems OK!
+      %            /EJ 2025-08-01
       aspr          = size(Dcip.Zv.bltsVoltageTm, 2);
       btlsSsidAr2   = repmat(permute(bltsSsidArray, [1 3 2]), [1, aspr, 1]);
       bltsVoltageTm = bicas.proc.L1L2.qrc.set_5xBLTS_voltage_samples_FV(...
@@ -125,7 +127,7 @@ classdef dc
       % NOTE: Takes most of the time LFR-SWF.
       bltsVoltageAvolt = bicas.proc.L1L2.dc.calibrate_voltage_5xBLTS(...
         tt2000       = Dcip.Zv.Epoch, ...
-        voltageTm    = bltsVoltageTm, ...              % Blanked by QRCs.
+        voltageTm    = bltsVoltageTm, ...       % Partially blanked by QRCs.
         isAchgFpa    = Dcip.Zv.isAchgFpa, ...
         NbriFpa      = Dcip.Zv.NbriFpa, ...
         NbciFpa      = Dcip.Zv.NbciFpa, ...
@@ -480,20 +482,21 @@ classdef dc
         Zv.voltageTm, [-1, -2, 1], ...
         Zv.uspr,      [-1]);
 
-
-
       iCalibL = Cv.Vcal.get_BIAS_calibration_time_index_L(Zv.tt2000);
       iCalibH = Cv.Vcal.get_BIAS_calibration_time_index_H(Zv.tt2000);
 
-      %==================================================================
-      % (1) Find groups/subsequences of records with identical settings.
-      % (2) Process data separately for each such sequence.
-      %==================================================================
+
+
+      %=======================================================================
+      % Find groups/subsequences of records with identical settings and which
+      % can be processed separately.
+      %=======================================================================
       Tmk = bicas.utils.Timekeeper(...
         'bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS:grouping algo.', Cv.L);
       % IMPLEMENTATION NOTE: Important to convert FPAs to builtin arrays to
       % significantly speed up both bicas.utils.group_unique_rows(), and
       % bicas.utils.group_by_change().
+
       settingsCa = {...
         Zv.isAchgFpa.logical2doubleNan(), ...
         Zv.freqHz, ...
@@ -504,10 +507,17 @@ classdef dc
         iCalibL, ...
         iCalibH};
       if Cv.hasSwfFormat
+        %================
+        % CASE: SWF/RSWF
+        %================
         % IMPLEMENTATION NOTE: SWF data is calibrated in a way where
-        % consecutive records (snapshots) do NOT affect each other. One can
-        % therefore group SWF CDF records in groups of non-consecutive CDF
-        % records. This is important for LFR-SWF data which tends to change
+        % consecutive records (snapshots) do NOT affect each other.
+        % ==> (1) group SWF CDF records in groups of non-consecutive CDF
+        %     records i.e. use bicas.utils.group_unique_rows()
+        %     (2) does not need to look for data gaps (between
+        %     snapshots/records).
+        %
+        % This is important for LFR-SWF data which tends to change
         % calibration-relevant settings with every new CDF record and which
         % then becomes a performance problem. Grouping non-consecutive CDF
         % records for LFR-SWF data leads to a significant speedup!!!
@@ -521,13 +531,21 @@ classdef dc
         % observed.
         iGroupArCa = bicas.utils.group_unique_rows(settingsCa{:});
       else
+        %===========
+        % CASE: CWF
+        %===========
         % IMPLEMENTATION NOTE: CWF data is calibrated in a way where
         % consecutive records affect each other. Must therefore divide CDF
-        % records in groups (subsequences) of continuous CDF records.
+        % records in groups (subsequences) of *CONTINUOUS* CDF records.
+        % ==> (1) Use bicas.utils.group_by_change(),
+        %     (2) look for data gaps.
+
         iGroupArCa = bicas.utils.group_by_change(settingsCa{:});
       end
       nGroups = numel(iGroupArCa);
       Tmk.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
+
+
 
       %====================
       % CALIBRATE VOLTAGES
@@ -540,13 +558,18 @@ classdef dc
 
         if 1
           % DEBUG (only? make permanent?)
+          % NOTE: There may be multiple isAchg values within a
+          % group/subsequence when it is not used for grouping.
           iRec2     = iGroupAr(end);
           NbriFpa   = Zv.NbriFpa(  iRec1);
           NbciFpa   = Zv.NbciFpa(  iRec1);
           isAchgFpa = Zv.isAchgFpa(iRec1);
-          Cv.L.logf('debug', 'Calibrating group %s -- %s: iBlts=%i, ssid=%i, freqHz=%d, isAchg=%d, nbri=%d, nbci=%d', ...
+          Cv.L.logf('debug', ...
+            ['Calibrating group %s -- %s (%5i-%5i: %5i): ', ...
+            'iBlts=%i, ssid=%i, freqHz=%d, isAchg=%3d, nbri=%d, nbci=%d'], ...
             bicas.utils.TT2000_to_UTC_str(Zv.tt2000(iRec1), 0), ...
             bicas.utils.TT2000_to_UTC_str(Zv.tt2000(iRec2), 0), ...
+            iRec1, iRec2, iRec2-iRec1, ...
             Cv.iBlts, Zv.ssid(iRec1), Zv.freqHz(iRec1), isAchgFpa.logical2doubleNan(), ...
             NbriFpa.int2doubleNan(), ...
             NbciFpa.int2doubleNan())
@@ -631,10 +654,12 @@ classdef dc
 
 
 
+      %--------------
       % Derive dtSec
-      % ------------
-      % NOTE: Different number of rows depending on CWF/SWF! One element per
-      %       cell element in voltageTmCa.
+      %--------------
+      % NOTE: Different interpretation of sampling rate for CWF (samples
+      % between records) and SWF (samples within snapshot). Always one dtSec
+      % value per cell element in voltageTmCa.
       if Cv.hasSwfFormat
         % CASE: SWF
         % NOTE: Column vector of (identical) numbers (one per snapshot, which

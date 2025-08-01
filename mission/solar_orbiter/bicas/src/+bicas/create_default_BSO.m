@@ -656,6 +656,9 @@ S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',     true)
 % Minimum number of samples within a time series (after splitting).
 % NOTE: Limit does not apply if there was no splitting (for "backward
 % compatibility").
+% NOTE: LFR-SBM2-CWF can have many data gaps with data gap free sequences of
+% only 335 samples(!).
+% Ex: solo_L1R_rpw-lfr-sbm2-cwf-e-cdag_20220922T134335-20220922T154536_V01.cdf"
 S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)
 
 

@@ -137,16 +137,16 @@ classdef const
 
 
 
+    % Number of BLTSs.
+    N_BLTS = 5;
+
+
+
     % Minimum number of non-FV OSR records per bin/DSR record.
     %
     % NOTE: Currently used for both L2 downsampled and L3 downsampled.
     % /2021-05-24
     N_MIN_OSR_SAMPLES_PER_BIN = 3;
-
-
-
-    % Number of BLTSs.
-    N_BLTS = 5;
 
 
 
