@@ -685,9 +685,7 @@ classdef dc
       else
         % CASE: CWF
         % NOTE: Scalar (since all data will be processed in one session).
-        % BUG RISK: Has the possibility of data gaps been excluded at this point
-        % in the code, since the calculation seems to rely on it?
-        dtSec = double( Zv.tt2000(end) - Zv.tt2000(1) ) / (nRecords-1) * 1e-9;
+        dtSec = 1 / Cv.freqHz;
       end
 
 
