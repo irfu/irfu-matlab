@@ -547,6 +547,16 @@ classdef dc
         % ==> (1) Use bicas.utils.group_by_change(),
         %     (2) look for data gaps.
 
+        %--------------------------
+        % Split based on data gaps
+        %--------------------------
+        % NOTE: Empirically, this can lead to a lot of splitting for
+        % LFR-SBM2-CWF.
+        % Ex: solo_L1R_rpw-lfr-sbm2-cwf-e-cdag_20220922T134335-20220922T154536_V01.cdf"
+        iSegmentAr = bicas.proc.utils.find_data_gaps(...
+          Zv.tt2000, Zv.freqHz, bicas.const.MAX_SAMPLE_GAP_RATIO);
+        settingsCa{end+1} = iSegmentAr;
+
         iGroupArCa = bicas.utils.group_by_change(settingsCa{:});
       end
       nGroups = numel(iGroupArCa);

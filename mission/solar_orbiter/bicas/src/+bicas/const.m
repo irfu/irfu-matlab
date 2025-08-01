@@ -148,6 +148,9 @@ classdef const
     % /2021-05-24
     N_MIN_OSR_SAMPLES_PER_BIN = 3;
 
+    % Threshold used for determining what counts as a data gap for CWF data.
+    MAX_SAMPLE_GAP_RATIO = 2.0
+
 
 
     %===============

@@ -323,6 +323,60 @@ classdef utils
 
 
 
+    % Find segments of data separated by data gaps. Data gaps are defined as
+    % intervals between two successive timestamps where the ratio of (1) the
+    % actual time difference and (2) the sum of half the integration time
+    % (inverse sampling rate) of the sample before and after excedes a
+    % specified ratio.
+    %
+    % NOTE: The return format is designed to fit with using
+    % bicas.utils.group_by_change() and bicas.utils.group_unique_rows().
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % freqHz
+    %       Sampling rate. Approximately the inverse of the difference between
+    %       successive tt2000Ar values, except when the sampling rate changes
+    %       or there are data gaps.
+    % maxSampleGapRatio
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % iSegmentAr
+    %       Column array of integer values (double), one per sample. The value
+    %       increments iff there is a data gap.
+    %
+    function iSegmentAr = find_data_gaps(tt2000Ar, freqHz, maxSampleGapRatio)
+      bicas.utils.assert_ZV_Epoch(tt2000Ar)
+      nRecords = irf.assert.sizes( ...
+        tt2000Ar, [-1], ...
+        freqHz,   [-1]);
+      assert(isscalar(maxSampleGapRatio) & (maxSampleGapRatio > 0))
+      assert(all(freqHz > 0))
+
+      if nRecords == 0
+        iSegmentAr = zeros(0, 1);
+      else
+        % Length = n
+        integrationTimeSecAr = 1 ./ freqHz;
+
+        % Length = n-1
+        expectedSampleGapSecAr  =  ...
+          0.5 * (integrationTimeSecAr(1:end-1) + integrationTimeSecAr(2:end));
+        actualSampleGapSecAr    = double(diff(tt2000Ar)) / 1e9;
+        sampleGapFractionAr     = actualSampleGapSecAr ./ expectedSampleGapSecAr;
+
+        bDataGap = sampleGapFractionAr > maxSampleGapRatio;
+
+        % Length = n
+        iSegmentAr = [0; cumsum(bDataGap)];
+      end
+    end
+
+
+
     %######################################################################
     % Convert between
     % (1) 2D non-cell array, and
