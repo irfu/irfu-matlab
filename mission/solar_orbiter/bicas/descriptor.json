@@ -133,7 +133,7 @@
       "outputs": {
         "out_sci": {
           "identifier": "SOLO_L2_RPW-TDS-LFM-CWF-E",
-          "name": "LFR L2 CWF science electric LF mode data",
+          "name": "TDS L2 CWF science electric LF mode data",
           "description": "RPW TDS L2 CWF science electric (potential difference) data in LF mode, time-tagged",
           "level": "L2",
           "template": "SOLO_L2_RPW-TDS-LFM-CWF-E_V17.cdf"
@@ -157,7 +157,7 @@
       "outputs": {
         "out_sci": {
           "identifier": "SOLO_L2_RPW-TDS-LFM-RSWF-E",
-          "name": "LFR L2 RSWF science electric LF mode data",
+          "name": "TDS L2 RSWF science electric LF mode data",
           "description": "RPW TDS L2 RSWF science electric (potential difference) data in LF mode, time-tagged",
           "level": "L2",
           "template": "SOLO_L2_RPW-TDS-LFM-RSWF-E_V17.cdf"
