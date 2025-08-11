@@ -20,7 +20,7 @@
             2020-11-12, Erik P G Johansson: I have not managed to manually find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </note>
         <note>
-            2024-09-12, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06. After the creation of this form of labeling, functionality for automatically detecting saturation has been added to BICAS. This functionality does however not distinguish between full and partial saturation. One should therefore not need to manually add more saturated time intervalls than the ones already labelled.
+            2024-09-12, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06. After the creation of this form of labeling, functionality for automatically detecting saturation has been added to BICAS. This functionality does however not distinguish between full and partial saturation. One should therefore not need to manually add more saturated time intervals than the ones already labelled.
         </note>
         <note>
             2025-06-19, Erik P G Johansson: The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2025-05-27 (inclusive). It only contains manually identified thuster firings.

@@ -19,6 +19,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function Swml = get_SWML(Bso)
+% PROPOSAL: Convert into class with static methods.
+%   PRO: Clarifies internal functions (three; plus the main one).
+%
 % PROPOSAL: Replace BSO with arguments for each used setting.
 %   CON: BSO (and L) is used by production functions. Can not
 %        at all eliminate easily.
@@ -66,7 +69,9 @@ function SwmArray = get_SWMs_L1_L1R_to_L2(swmL1L2Enabled)
 %
 % PROPOSAL: Merge LFR and TDS loops.
 
-% Arrays with constants.
+% --------------------------------------------------------------
+% Constants to iterate over: one element per input level L1/L1R
+% --------------------------------------------------------------
 % {1} = S/w modes (science) L1R-->L2
 % {2} = S/w modes (science) L1 -->L2 (optional)
 L1R_INPUT_DATA = struct( ...
@@ -86,8 +91,8 @@ end
 
 
 
-% Define function which replaces specified substrings.
-% "strmod" = string modify, "g"=global
+% Define function which replaces specified substrings depending on input level.
+% "strmod" = string modify, "g"=global (applies to all s/w modes).
 strmodg = @(s, iInputLevel) bicas.utils.strrep_many(s, ...
   '<InLvl>',              INPUT_LEVEL_DATA(iInputLevel).level, ...
   '<I-E>',                INPUT_LEVEL_DATA(iInputLevel).optionalInputDashE, ...
@@ -96,16 +101,9 @@ strmodg = @(s, iInputLevel) bicas.utils.strrep_many(s, ...
 
 
 
-% Input definitions that are reused multiple times.
-HK_INPUT_DEF = bicas.swm.InputDataset(...
-  'in_hk', 'SOLO_HK_RPW-BIA', 'HK_cdf');
-CUR_INPUT_DEF = bicas.swm.InputDataset(...
-  'in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
-
-
-
-% Define arrays of data used for generating s/w modes definitions.
-% One component per pair of s/w modes L1/L1R-->L2.
+%------------------------------------------------------------------------------
+% Constants to iterate over: one element per pair (L1/L1R) of SWMs L1/L1R-->L2
+%------------------------------------------------------------------------------
 LFR_TDS_SKT_VERSION = '17';
 LFR_MODE_STR_CA = {...
   'selective burst mode 1', ...
@@ -124,13 +122,23 @@ TDS_SWM_DATA = struct(...
 
 
 
+% Input definitions that are reused multiple times.
+HK_INPUT_DEF = bicas.swm.InputDataset(...
+  'in_hk', 'SOLO_HK_RPW-BIA', 'HK_cdf');
+CUR_INPUT_DEF = bicas.swm.InputDataset(...
+  'in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
+
+
+
 SwmArray = bicas.swm.SoftwareMode.empty(0, 1);
-% Iterate over [L1R] (one component), or [L1, L1R]...
+%==================================================
+% Iterate over [L1R] (one component), or [L1, L1R]
+%==================================================
 for iInputLevel = 1:numel(INPUT_LEVEL_DATA)
 
-  %==============================================
-  % Iterate over the "fundamental" LFR S/W modes
-  %==============================================
+  %==================================================
+  % Iterate over the "fundamental" **LFR** s/w modes
+  %==================================================
   for iSwm = 1:length(LFR_SWM_DATA)
 
     % Define local string modification function.
@@ -173,9 +181,9 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA)
 
 
 
-  %==============================================
-  % Iterate over the "fundamental" TDS S/W modes
-  %==============================================
+  %==================================================
+  % Iterate over the "fundamental" **TDS** s/w modes
+  %==================================================
   for iSwm = 1:numel(TDS_SWM_DATA)
 
     if strcmp(TDS_SWM_DATA(iSwm).CWF_RSWF, 'RSWF') ...

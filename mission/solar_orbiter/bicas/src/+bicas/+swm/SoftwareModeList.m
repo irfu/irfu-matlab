@@ -81,7 +81,7 @@ classdef SoftwareModeList
   %   Ex: Bso, L, rctDir, NsoTable
   %
   % PROPOSAL: Abolish this class. Only need SWM class + object array/list.
-  %   CON: Implements good to have method Swm = get_SWM(obj, swmCliOption).
+  %   CON: Implements good-to-have method Swm = get_SWM(obj, swmCliOption).
   %     CON-PROPOSAL: Use dictionary.
   %   CON: Alters the BICAS interface which bicas.batch uses.
   %

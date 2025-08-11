@@ -59,6 +59,12 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef const
+  % PROPOSAL: Move file to bicas.const.*.
+  %   PRO: Collects constants.
+  %   CON: Is specific to L1/L1R-->L2 processing.
+  %   PROPOSAL:
+  %     bicas.const.L1L2
+  %
   % PROPOSAL: Rename class to something implying the theme of ASID, SSID, SDID
   %           rather than constants.
   %   PRO: Contains function relating to ASID, SSID, SDID.
