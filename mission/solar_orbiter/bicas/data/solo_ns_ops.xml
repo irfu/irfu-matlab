@@ -23,7 +23,7 @@
             2024-09-12, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06. After the creation of this form of labeling, functionality for automatically detecting saturation has been added to BICAS. This functionality does however not distinguish between full and partial saturation. One should therefore not need to manually add more saturated time intervals than the ones already labelled.
         </note>
         <note>
-            2025-06-19, Erik P G Johansson: The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2025-05-27 (inclusive). It only contains manually identified thuster firings.
+            2025-08-11, Erik P G Johansson: The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2025-06-21 (inclusive). It only contains manually identified thuster firings.
         </note>
         <note>
             2024-01-31, Erik P G Johansson: BICAS detects saturation itself since v8.0.0 and labels it as "full saturation". One should therefore not need to add more FULL_SATURATION entries to this list. FULL_SATURATION entries in this table are additionally treated by BICAS as "full saturation".
@@ -2862,6 +2862,24 @@
         <event>
             <startTimeUtc>2025-05-18T21:04:30</startTimeUtc>
             <stopTimeUtc> 2025-05-18T21:14:02</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unsually short: only five cycles.</description>
+        </event>
+        <event>
+            <startTimeUtc>2025-06-02T00:04:34</startTimeUtc>
+            <stopTimeUtc> 2025-06-02T00:14:55</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unsually short: only six cycles.</description>
+        </event>
+        <event>
+            <startTimeUtc>2025-06-09T01:04:34</startTimeUtc>
+            <stopTimeUtc> 2025-06-09T01:13:44</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unsually short: only four cycles.</description>
+        </event>
+        <event>
+            <startTimeUtc>2025-06-16T01:04:23</startTimeUtc>
+            <stopTimeUtc> 2025-06-16T01:13:38</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
