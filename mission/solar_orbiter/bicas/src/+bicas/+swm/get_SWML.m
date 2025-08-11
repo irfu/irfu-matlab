@@ -69,16 +69,19 @@ function SwmArray = get_SWMs_L1_L1R_to_L2(swmL1L2Enabled)
 % Arrays with constants.
 % {1} = S/w modes (science) L1R-->L2
 % {2} = S/w modes (science) L1 -->L2 (optional)
-INPUT_DATASET_LEVEL_CA = {'L1R'};
-INPUT_DASH_E_CA        = {'-E'};
-SWM_NAME_SUFFIX_CA     = {''};
-SWM_PURPOSE_AMENDM_CA  = {''};
-
+L1R_INPUT_DATA = struct( ...
+  'level',              'L1R', ...
+  'optionalInputDashE', '-E', ...    % Added "-E" (or not).
+  'swmNameSuffix',      '', ...
+  'swmPurposeAmendm',   '');         % Amendment to SWM "purpose string".
+L1_INPUT_DATA = struct( ...
+  'level',              'L1', ...
+  'optionalInputDashE', '', ...
+  'swmNameSuffix',      '_L1', ...
+  'swmPurposeAmendm',   ' UNOFFICIAL wrt. ROC.');
+INPUT_LEVEL_DATA = L1R_INPUT_DATA;
 if swmL1L2Enabled
-  INPUT_DATASET_LEVEL_CA{end+1} = 'L1';
-  INPUT_DASH_E_CA{end+1}        = '';
-  SWM_NAME_SUFFIX_CA{end+1}     = '_L1';
-  SWM_PURPOSE_AMENDM_CA{end+1}  = ' UNOFFICIAL wrt. ROC.';
+  INPUT_LEVEL_DATA(end+1, :) = L1_INPUT_DATA;
 end
 
 
@@ -86,10 +89,10 @@ end
 % Define function which replaces specified substrings.
 % "strmod" = string modify, "g"=global
 strmodg = @(s, iInputLevel) bicas.utils.strrep_many(s, ...
-  '<InLvl>',              INPUT_DATASET_LEVEL_CA{iInputLevel}, ...
-  '<I-E>',                INPUT_DASH_E_CA{iInputLevel}, ...
-  '<SWM name suffix>',    SWM_NAME_SUFFIX_CA{iInputLevel}, ...
-  '<SWM purpose amendm>', SWM_PURPOSE_AMENDM_CA{iInputLevel});
+  '<InLvl>',              INPUT_LEVEL_DATA(iInputLevel).level, ...
+  '<I-E>',                INPUT_LEVEL_DATA(iInputLevel).optionalInputDashE, ...
+  '<SWM name suffix>',    INPUT_LEVEL_DATA(iInputLevel).swmNameSuffix, ...
+  '<SWM purpose amendm>', INPUT_LEVEL_DATA(iInputLevel).swmPurposeAmendm);
 
 
 
@@ -123,7 +126,7 @@ TDS_SWM_DATA = struct(...
 
 SwmArray = bicas.swm.SoftwareMode.empty(0, 1);
 % Iterate over [L1R] (one component), or [L1, L1R]...
-for iInputLevel = 1:numel(INPUT_DATASET_LEVEL_CA)
+for iInputLevel = 1:numel(INPUT_LEVEL_DATA)
 
   %==============================================
   % Iterate over the "fundamental" LFR S/W modes
@@ -176,7 +179,7 @@ for iInputLevel = 1:numel(INPUT_DATASET_LEVEL_CA)
   for iSwm = 1:numel(TDS_SWM_DATA)
 
     if strcmp(TDS_SWM_DATA(iSwm).CWF_RSWF, 'RSWF') ...
-        && strcmp(INPUT_DATASET_LEVEL_CA{iInputLevel}, 'L1')
+        && strcmp(INPUT_LEVEL_DATA(iInputLevel).level, 'L1')
       % CASE: TDS RSWF
       % Exclude SWM since BICAS can not currently (2023-10-09) read
       % TDS RSWF L1 datasets!
