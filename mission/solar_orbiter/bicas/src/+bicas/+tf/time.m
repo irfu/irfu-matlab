@@ -36,9 +36,7 @@ classdef time
     % lenKernel
     %       Length of kernel that shall be generated from tf.
     % edgePolicy
-    % varargin
-    %       Optional settings arguments as interpreted by
-    %       irf.utils.interpret_settings_args().
+    % hannWindowEnabled
     %
     %
     % RETURN VALUES
@@ -55,12 +53,8 @@ classdef time
     % Author: Erik P G Johansson, Uppsala, Sweden
     % First created 2020-08-21.
     %
-    function [y2, yKernelB] = apply_TF(dt, y1, tf, lenKernel, edgePolicy, varargin)
-      %
-      % PROPOSAL: Function for generating kernels.
-      % PROPOSAL: Separate function for Hann Window modification of kernel.
-      %
-      % PROPOSAL: edgePolicy as setting, not named argument.
+    function [y2, yKernel] = apply_TF(...
+        dt, y1, tf, lenKernel, edgePolicy, hannWindowEnabled)
       %
       % PROPOSAL: MTEST code.
       %   PROPOSAL: Use data from L1R datasets. Compare freq. and time domain
@@ -68,22 +62,6 @@ classdef time
       %     PROPOSAL: Load directly from CDF.
       %       PROBLEM: Needs HK:DLR, mux mode, ACHG/ACLG
       %   PROPOSAL: Good enough plots for meetings.
-      %
-      % BUG?! ~Applies detrending+retrending, but so does calling function
-      %       bicas.tf.apply_TF().
-
-      EMID = 'BICAS:Assertion:IllegalArgument';
-
-      DEFAULT_SETTINGS.detrendingDegreeOf = -1;
-      DEFAULT_SETTINGS.retrendingEnabled  = false;
-      DEFAULT_SETTINGS.hannWindow         = false;
-
-      Settings = irf.utils.interpret_settings_args(...
-        DEFAULT_SETTINGS, varargin);
-      irf.assert.struct(Settings, fieldnames(DEFAULT_SETTINGS), {})
-      clear DEFAULT_SETTINGS
-
-
 
       %=============
       % ~ASSERTIONS
@@ -91,14 +69,10 @@ classdef time
       % TODO-DEC: Which argument assertions should one bother to have?
       % bicas.tf.freq.apply_TF() and bicas.tf.kernel.apply_kernel() check most
       % arguments.
-      if ~isnumeric(lenKernel)
-        error(EMID, 'lenKernel is not numeric.')
-      elseif ~isscalar(lenKernel)
-        error(EMID, 'lenKernel is not scalar.')
-      elseif ~(lenKernel>0)
-        error(EMID, 'lenKernel is not positive.')
-      end
-      assert(islogical(Settings.hannWindow))
+      assert(isnumeric(lenKernel), 'lenKernel is not numeric.')
+      assert(isscalar(lenKernel),  'lenKernel is not scalar.')
+      assert(lenKernel>0,          'lenKernel is not positive.')
+      assert(islogical(hannWindowEnabled) & isscalar(hannWindowEnabled))
 
 
 
@@ -110,7 +84,7 @@ classdef time
 
 
 
-      if Settings.hannWindow
+      if hannWindowEnabled
         %=============================
         % Apply Hann window to kernel
         %=============================
@@ -124,15 +98,7 @@ classdef time
       %================
       % Process signal
       %================
-      Drt = bicas.tf.Deretrending(...
-        Settings.detrendingDegreeOf, ...
-        Settings.retrendingEnabled);
-      y1b = Drt.detrend(y1);
-
-      y2b = bicas.tf.kernel.apply_kernel(y1b, yKernel, iKernelOrigin, edgePolicy);
-
-      % NOTE: Using frequency domain-TF for scaling.
-      y2 = Drt.retrend(y2b, tf(0));
+      y2 = bicas.tf.kernel.apply_kernel(y1, yKernel, iKernelOrigin, edgePolicy);
     end
 
 

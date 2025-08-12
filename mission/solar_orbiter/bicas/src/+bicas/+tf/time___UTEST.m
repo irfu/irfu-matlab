@@ -1,9 +1,6 @@
 %
 % matlab.unittest automatic test code for bicas.tf.time.
 %
-% 2021-08-12: Does not test detrending/retrending. Low priority since tested
-% elsewhere.
-%
 %
 % NAMING CONVENTION
 % =================
@@ -61,7 +58,7 @@ classdef time___UTEST < matlab.unittest.TestCase
       % Manually shift/delay signal.
       expY2 = [zeros(nDelaySmpls, 1); y1(1:end-nDelaySmpls)];
 
-      actY2 = bicas.tf.time.apply_TF(dt, y1, tf, N, 'ZEROS');
+      actY2 = bicas.tf.time.apply_TF(dt, y1, tf, N, 'ZEROS', false);
 
       T.verifyEqual(actY2, expY2, 'AbsTol', 1e-13)
 
@@ -71,7 +68,7 @@ classdef time___UTEST < matlab.unittest.TestCase
       % Manually pad with mirrored samples and shift.
       expY2 = [y1(nDelaySmpls:-1:1); y1(1:end-nDelaySmpls)];
 
-      actY2 = bicas.tf.time.apply_TF(dt, y1, tf, N, 'MIRROR');
+      actY2 = bicas.tf.time.apply_TF(dt, y1, tf, N, 'MIRROR', false);
 
       T.verifyEqual(actY2, expY2, 'AbsTol', 1e-13)
     end
@@ -193,8 +190,7 @@ classdef time___UTEST < matlab.unittest.TestCase
       % Manually delay, and multiply with Hann window factor.
       expY2 = [zeros(A.nDelaySmpls, 1); A.y1(1:end-A.nDelaySmpls)] * hwFactor;
       actY2 = bicas.tf.time.apply_TF(...
-        A.dt, A.y1, tf, A.lenKernel, ...
-        'ZEROS', 'hannWindow', true);
+        A.dt, A.y1, tf, A.lenKernel, 'ZEROS', true);
 
       T.verifyEqual(actY2, expY2, 'AbsTol', 1e-13)
 
@@ -205,8 +201,7 @@ classdef time___UTEST < matlab.unittest.TestCase
       % factor.
       expY2 = [A.y1(A.nDelaySmpls:-1:1); A.y1(1:end-A.nDelaySmpls)] * hwFactor;
       actY2 = bicas.tf.time.apply_TF(...
-        A.dt, A.y1, tf, A.lenKernel, ...
-        'MIRROR', 'hannWindow', true);
+        A.dt, A.y1, tf, A.lenKernel, 'MIRROR', true);
 
       T.verifyEqual(actY2, expY2, 'AbsTol', 1e-13)
     end
