@@ -1,11 +1,11 @@
 %
-% matlab.unittest automatic test code for bicas.tf.apply_TF_kernel().
+% matlab.unittest automatic test code for bicas.tf.kernel.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-08-11
 %
-classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
+classdef kernel___UTEST < matlab.unittest.TestCase
 
 
 
@@ -64,7 +64,7 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
       % NOTE: Check error ID to differentiate error from any other empty
       % kernel-caused error.
       T.verifyError(...
-        @() bicas.tf.apply_TF_kernel([2]', zeros(0,1), 1, EDGE_POLICY), ...
+        @() bicas.tf.kernel.apply_kernel([2]', zeros(0,1), 1, EDGE_POLICY), ...
         'BICAS:Assertion:IllegalArgument')
     end
 
@@ -169,7 +169,7 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
     function test(T, y1, yKernel, iKernelOrigin, edgePolicy, expY2)
 
       % NOTE: Transposes vectors.
-        actY2 = bicas.tf.apply_TF_kernel(...
+      actY2 = bicas.tf.kernel.apply_kernel(...
         y1', yKernel', iKernelOrigin, edgePolicy);
 
       T.verifyEqual(actY2, expY2')

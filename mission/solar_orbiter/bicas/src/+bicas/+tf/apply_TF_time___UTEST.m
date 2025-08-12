@@ -43,7 +43,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
     % No HW, no detrending.
     %
     function test0(T)
-      % PROPOSITION: Almost unnecessary since bicas.tf.apply_TF_kernel() tests for same.
+      % PROPOSITION: Almost unnecessary since bicas.tf.kernel.apply_kernel() tests for same.
       %   CON: Tests conversion TF-->kernel.
 
       dt          = 0.1;

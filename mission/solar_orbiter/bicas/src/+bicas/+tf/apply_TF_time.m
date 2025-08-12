@@ -3,7 +3,7 @@
 % frequency-dependent transfer function) to a sequence of real-valued (time
 % domain) samples.
 %
-% Wrapper around bicas.tf.apply_TF_kernel().
+% Wrapper around bicas.tf.kernel.apply_kernel().
 %
 %
 % ARGUMENTS
@@ -72,7 +72,7 @@ clear DEFAULT_SETTINGS
 % ~ASSERTIONS
 %=============
 % TODO-DEC: Which argument assertions should one bother to have?
-% bicas.tf.apply_TF_freq() and bicas.tf.apply_TF_kernel() check most
+% bicas.tf.apply_TF_freq() and bicas.tf.kernel.apply_kernel() check most
 % arguments.
 if ~isnumeric(lenKernel)
   error(EMID, 'lenKernel is not numeric.')
@@ -88,7 +88,7 @@ assert(islogical(Settings.hannWindow))
 %===========================
 % Obtain time domain kernel
 %===========================
-% NOTE: Set "kernel origin" (see bicas.tf.apply_TF_kernel()) to middle, and
+% NOTE: Set "kernel origin" (see bicas.tf.kernel.apply_kernel()) to middle, and
 % rounded down for even-length kernels. The algorithm is designed so that this
 % can be set quite arbitrarily but in reality one probably wants to set it
 % around the middle index.
@@ -141,7 +141,7 @@ end
 Drt = bicas.tf.Deretrending(Settings.detrendingDegreeOf, Settings.retrendingEnabled);
 y1b = Drt.detrend(y1);
 
-y2b = bicas.tf.apply_TF_kernel(y1b, yKernelB, iKernelOrigin, edgePolicy);
+y2b = bicas.tf.kernel.apply_kernel(y1b, yKernelB, iKernelOrigin, edgePolicy);
 
 % NOTE: Using frequency domain-TF for scaling.
 y2 = Drt.retrend(y2b, tf(0));
