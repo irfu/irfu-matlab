@@ -89,7 +89,7 @@ classdef time
       % ~ASSERTIONS
       %=============
       % TODO-DEC: Which argument assertions should one bother to have?
-      % bicas.tf.apply_TF_freq() and bicas.tf.kernel.apply_kernel() check most
+      % bicas.tf.freq.apply_TF() and bicas.tf.kernel.apply_kernel() check most
       % arguments.
       if ~isnumeric(lenKernel)
         error(EMID, 'lenKernel is not numeric.')
@@ -112,8 +112,8 @@ classdef time
       iKernelOrigin           = floor(1 + (lenKernel-1)/2);
       yImpulse                = zeros(lenKernel, 1);
       yImpulse(iKernelOrigin) = 1;
-      yKernel                 = bicas.tf.apply_TF_freq(dt, yImpulse, tf);
-      % NOTE: Uses bicas.tf.apply_TF_freq(), BICAS' other main function for applying
+      yKernel                 = bicas.tf.freq.apply_TF(dt, yImpulse, tf);
+      % NOTE: Uses bicas.tf.freq.apply_TF(), BICAS' other main function for applying
       % transfer functions to signals, using FFT. Here it is only used for obtaining
       % an impulse response in the time domain, i.e. kernel.
 

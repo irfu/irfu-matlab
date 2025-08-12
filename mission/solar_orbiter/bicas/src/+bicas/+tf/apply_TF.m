@@ -42,7 +42,7 @@
 %       Column vector of samples. May be modified by this function before
 %       actually applying the TF.
 % tf
-%       Function handle. Transfer function. Same as for bicas.tf.apply_TF_freq().
+%       Function handle. Transfer function. Same as for bicas.tf.freq.apply_TF().
 % varargin
 %       Optional settings arguments as interpreted by
 %       irf.utils.interpret_settings_args().
@@ -93,12 +93,12 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 % PROPOSAL: Class with static methods.
 %   PRO: Inner functions can be separately tested.
 %     Ex: apply_TF_with_DRT()
-%     Ex: Future function for splitting up samples separated by non-fintite
+%     Ex: Future function for splitting up samples separated by non-finite
 %         samples (SNF).
 %
-% PROPOSAL: Check that data is finite. Only call bicas.tf.apply_TF_freq()
+% PROPOSAL: Check that data is finite. Only call bicas.tf.freq.apply_TF()
 %           if all data is non-finite.
-%   PRO: bicas.tf.apply_TF_freq() can assume (needs to be updated) that
+%   PRO: bicas.tf.freq.apply_TF() can assume (needs to be updated) that
 %        always Z<>NaN and thereby detect if TF can not be evaluated via NaN.
 %       PRO: Can construct TFs in steps/parts where each part does not have
 %            to be evaluated for all omega (return NaN if can not be
@@ -236,7 +236,7 @@ y1Detrended = Drt.detrend(y1);
 switch(Settings.method)
 
   case 'FFT'
-    y2Detrended = bicas.tf.apply_TF_freq(dt, y1Detrended, tf);
+    y2Detrended = bicas.tf.freq.apply_TF(dt, y1Detrended, tf);
 
   case 'KERNEL'
     % TODO-NI: Kernel length == Signal length

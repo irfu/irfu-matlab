@@ -1,7 +1,7 @@
 %
-% matlab.unittest code for function "bicas.tf.apply_TF_freq()".
+% matlab.unittest code for "bicas.tf.freq".
 %
-% NOTE: bicas.tf.apply_TF_freq() does not alter the function before/after the
+% NOTE: bicas.tf.freq.apply_TF() does not alter the function before/after the
 % application of the TF, e.g. de-/re-trending.
 %
 %
@@ -15,7 +15,7 @@
 % First created 2017-02-13.
 % Refactored for matlab.unittest 2021-08-06.
 %
-classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
+classdef freq___UTEST < matlab.unittest.TestCase
   % BOGIQ:
   % ------
   % PROPOSAL: Utility Z(omega) for generating single frequency change.
@@ -35,10 +35,10 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
   %   PROPOSAL: Initialization functions for the respective lists.
   %
   % PROPOSAL: Do same tests on both
-  %       (1) bicas.tf.apply_TF_freq(), and
+  %       (1) bicas.tf.freq.apply_TF(), and
   %       (2) bicas.tf.apply_TF().
   %   PROPOSAL: Move these tests to bicas.tf.apply_TF___UTEST.
-  %       CON: No separate test file for bicas.tf.apply_TF_freq().
+  %       CON: No separate test file for bicas.tf.freq.apply_TF().
   %   PROPOSAL: For every test here, apply same test to bicas.tf.apply_TF() in this file.
   %       CON: Tests two separate files in this file.
   %   PROPOSAL: Do not (deliberately) use the preexistent tests here on those two
@@ -102,9 +102,9 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
       tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
 
-      t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
+      t      = T.time_vector(N, dt);
       y1     = 0.5*(t-3).^2 + 5;
-      y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+      y2_exp = T.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
       T.test({dt, y1, tf}, y2_exp)
@@ -120,7 +120,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
       tf     = bicas.tf.utest_utils.get_TF_constant(2, 2);
 
-      t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
+      t      = T.time_vector(N, dt);
       y1     = 1 * ones(size(t));
       y2_exp = 2 * ones(size(t));
 
@@ -148,9 +148,9 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
         tfTemp(omega0));
       clear tfTemp
 
-      t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
+      t      = T.time_vector(N, dt);
       y1     = 3 + cos(omega0 * (t-pi/5));
-      y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+      y2_exp = T.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
       T.test({dt, y1, tf}, y2_exp)
@@ -174,9 +174,9 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       % radians).
       assert((N*dt) / (1/omega0) >= 10, 'Bad test config.?')
 
-      t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
+      t      = T.time_vector(N, dt);
       y1     = cos(omega0 * (t-pi/5));
-      y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+      y2_exp = T.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
       T.test({dt, y1, tf}, y2_exp)
@@ -192,9 +192,9 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
       tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
 
-      t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
+      t      = T.time_vector(N, dt);
       y1     = exp(t);
-      y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+      y2_exp = T.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
       T.test({dt, y1, tf}, y2_exp)
@@ -210,9 +210,9 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
       tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
 
-      t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
+      t      = T.time_vector(N, dt);
       y1     = (t-5).^3 - 20*t + 25;
-      y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
+      y2_exp = T.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
       T.test({dt, y1, tf}, y2_exp)
@@ -229,7 +229,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
       tf     = bicas.tf.utest_utils.get_TF_constant(z0, 0);
 
-      t      = bicas.tf.apply_TF_freq___UTEST.time_vector(N, dt);
+      t      = T.time_vector(N, dt);
       y1     = 10 * ones(size(t)) + 5 * sin(10*t.^3);
       % Only keep mean (and multiply by factor).
       y2_exp = z0 * ones(size(y1)) * mean(y1);
@@ -288,13 +288,13 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       y1 = argsCa{2};
 
       %================================
-      % CALL bicas.tf.apply_TF_freq
+      % CALL bicas.tf.freq.apply_TF
       %================================
-      y2_act = bicas.tf.apply_TF_freq( argsCa{:} );
+      y2_act = bicas.tf.freq.apply_TF( argsCa{:} );
 
       T.verifyEqual(size(y1), size(y2_act))
 
-      if bicas.tf.apply_TF_freq___UTEST.PLOTTING_ENABLED
+      if T.PLOTTING_ENABLED
         n = (1:length(y2_exp))';
 
         %==============================================
@@ -315,7 +315,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
       T.verifyEqual(...
         y2_act, y2_exp, ...
-        'AbsTol', bicas.tf.apply_TF_freq___UTEST.EPSILON)
+        'AbsTol', T.EPSILON)
     end
 
 
@@ -347,7 +347,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
 
     % Function for creating timestamps vector.
-    function [t, t2] = time_vector(N,dt)
+    function [t, t2] = time_vector(N, dt)
       % ASSERTION: N is integer (but potentially float).
       assert(mod(N, 1) == 0)
 

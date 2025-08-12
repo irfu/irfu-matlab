@@ -64,7 +64,7 @@ classdef kernel
     % NOT-A-NUMBER
     % ============
     % Function is currently designed to permit NaN and allow values to propagate so
-    % that it is ~analogous with bicas.tf.apply_TF_freq().
+    % that it is ~analogous with bicas.tf.freq.apply_TF().
     %
     %
     % IMPLEMENTATION NOTES
@@ -142,7 +142,7 @@ classdef kernel
       %
       % PROPOSAL: Upon detection of NaN in signal or kernel, make entire output
       %           signal NaN.
-      %   PRO: More consistent with bicas.tf.apply_TF_freq().
+      %   PRO: More consistent with bicas.tf.freq.apply_TF().
       %   CON: Bad for CWF.
       %   CON-PROPOSAL: Do in wrapper.
 
@@ -192,7 +192,7 @@ classdef kernel
           % Pad with signal itself, as if it were cyclic
           %==============================================
           % NOTE: This mode is implemented to make it possible to get the exact same
-          % result with bicas.tf.time.apply_TF() as with bicas.tf.apply_TF_freq().
+          % result with bicas.tf.time.apply_TF() as with bicas.tf.freq.apply_TF().
           % IMPLEMENTATION NOTE: Could (?) be implemented with MATLAB's cconv(), but
           % that would defeat the purpose of having this case for testing (to test
           % other code).
