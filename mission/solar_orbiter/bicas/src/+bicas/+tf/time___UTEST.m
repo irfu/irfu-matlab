@@ -2,8 +2,8 @@
 % matlab.unittest automatic test code for bicas.tf.time.
 %
 %
-% NAMING CONVENTION
-% =================
+% LOCAL NAMING CONVENTIONS
+% ========================
 % HW : Hann Window
 %
 %
@@ -11,7 +11,6 @@
 % First created 2021-08-11
 %
 classdef time___UTEST < matlab.unittest.TestCase
-  % PROPOSAL: Odd-length kernels/HWs.
 
 
 
@@ -169,6 +168,7 @@ classdef time___UTEST < matlab.unittest.TestCase
       % IMPLEMENTATION NOTE: The effect of the Hann window can be boiled down
       % to multiplication with a scalar number since the kernel (but not the
       % frequency-domain TF) has only one non-zero value.
+      % NOTE: This requires knowledge of the implementation.
       if mod(A.lenKernel, 2) == 0
         % CASE: EVEN-numbered length kernel
         % Normalized delay: -1 <= x <= 1
@@ -192,7 +192,7 @@ classdef time___UTEST < matlab.unittest.TestCase
       actY2 = bicas.tf.time.apply_TF(...
         A.dt, A.y1, tf, A.lenKernel, 'ZEROS', true);
 
-      T.verifyEqual(actY2, expY2, 'AbsTol', 1e-13)
+      T.assertEqual(actY2, expY2, 'AbsTol', 1e-13)
 
       %======================
       % edgePolicy == MIRROR
@@ -203,7 +203,7 @@ classdef time___UTEST < matlab.unittest.TestCase
       actY2 = bicas.tf.time.apply_TF(...
         A.dt, A.y1, tf, A.lenKernel, 'MIRROR', true);
 
-      T.verifyEqual(actY2, expY2, 'AbsTol', 1e-13)
+      T.assertEqual(actY2, expY2, 'AbsTol', 1e-13)
     end
 
 

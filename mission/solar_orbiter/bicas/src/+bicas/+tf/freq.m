@@ -36,6 +36,26 @@ classdef freq
     % (4)  Compute inverse DFT using MATLAB's "ifft(... , 'symmetric')" function.
     %
     %
+    % NOTES
+    % =====
+    % NOTE: This function effectively implements an approximate convolution.
+    % For an inverse application of a TF (de-convolution), the caller has to
+    % invert the TF first.
+    % --
+    % NOTE: irfu-matlab contains at least two other functions for applying
+    % transfer functions to data. These two other functions are however not
+    % general-purpose (can not easily be reused):
+    % 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency
+    %                            domain; multiple ways of handling edges)
+    % 2) c_efw_burst_bsc_tf.m   (short & simple)
+    % --
+    % NOTE: I am presently not sure if MATLAB has standard functions for
+    % applying a transfer function in the frequency domain and that is
+    % tabulated or function handle.   /Erik P G Johansson 2019-09-11
+    % --
+    % NOTE: This function does not support any kind of edge handling.
+    %
+    %
     % EXPONENT SIGN CONVENTION IN TRANSFER FUNCTIONS
     % ==============================================
     % This function/algorithm uses the following:
@@ -51,25 +71,6 @@ classdef freq
     %   y2(t) == y1(t-tau)
     % if e.g. y1(t) only has one frequency component.
     % NOTE: This should be the same convention as used by the Laplace transform.
-    %
-    %
-    % NOTES
-    % =====
-    % NOTE: This function effectively implements an approximate convolution.
-    % For an inverse application of a TF (de-convolution), the caller has to
-    % invert the TF first.
-    % --
-    % NOTE: irfu-matlab contains at least two other functions for applying
-    % transfer functions to data. These two other functions are however not
-    % general-purpose (can not easily be reused):
-
-    % 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency
-    %                            domain; multiple ways of handling edges)
-    % 2) c_efw_burst_bsc_tf.m   (short & simple)
-    % --
-    % NOTE: I am presently not sure if MATLAB has standard functions for
-    % applying a transfer function in the frequency domain and that is
-    % tabulated or function handle.   /Erik P G Johansson 2019-09-11
     %
     %
     % IMPLEMENTATION NOTES, DESIGN INTENT
@@ -136,16 +137,17 @@ classdef freq
     % First created 2017-02-13
     %
     function [y2] = apply_TF(dt, y1, tf)
-      % TODO-NI: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE THIS FUNCTIONALITY?
+      % TODO-NI: WHY DOES THIS FUNCTION NEED TO EXIST? DOES NOT MATLAB HAVE
+      %          THIS FUNCTIONALITY?
       %
       % PROPOSAL: Assert not inf in signal.
       %   NOTE: NaN is deliberately permitted in signal.
       %   NOTE: NaN but not infinity is deliberately permitted in TF.
       %
-      % PROPOSAL: Eliminate dt from function. Only needed for interpreting tfOmega. Add in wrapper.
-      %
-      % TODO-NI: How does algorithm handle X_(N/2+1) (which has no frequency twin)? Seems like implemention should
-      %   multiply it by a complex Z (generic situation) ==> Complex y2. Still, no such example has been found yet.
+      % TODO-NI: How does algorithm handle X_(N/2+1) (which has no frequency
+      %          twin)? Seems like the implemention should multiply it by a
+      %          complex Z (generic situation) ==> Complex y2. Still, no such
+      %          example has been found yet.
       %   Should be multiplied by abs(Z)?! Z-imag(z)?! Keep as is?!
       %
       % PROPOSAL: Permit submitting multiple y1 at the same time (same length, same

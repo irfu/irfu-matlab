@@ -139,7 +139,7 @@ classdef VoltageCalibration
     acDetrendingDegreeOf
     %
     kernelEdgePolicy
-    kernelHannWindow
+    kernelHannWindowEnabled
     snfEnabled
     snfSubseqMinSamples
 
@@ -214,7 +214,7 @@ classdef VoltageCalibration
       obj.acDetrendingDegreeOf     = Bso.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
 
       obj.kernelEdgePolicy         = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY');
-      obj.kernelHannWindow         = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
+      obj.kernelHannWindowEnabled  = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
       obj.snfEnabled               = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
       obj.snfSubseqMinSamples      = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES');
 
@@ -284,15 +284,18 @@ classdef VoltageCalibration
       %=========================================
       if bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid)
         % IMPLEMENTATION NOTE: DC is (optionally) detrended via
-        % bicas.tf.apply_TF() in the sense of a linear fit being removed, TF
-        % applied, and then added back. That same algorithm, or at least adding
+        % bicas.tf.apply_TF() in the sense of a fit being removed, TF applied,
+        % and the fit then added back. That same algorithm, or at least adding
         % back the fit, is by its nature inappropriate for non-lowpass filters,
         % i.e. for AC. (The fit can not be scaled with the 0 Hz signal
         % amplitude)
-        detrendingDegreeOf = obj.acDetrendingDegreeOf;    % NOTE: AC!
+
+        % NOTE: Setting for AC specifically!
+        detrendingDegreeOf = obj.acDetrendingDegreeOf;
         retrendingEnabled  = false;                   % NOTE: HARDCODED SETTING.
       else
-        detrendingDegreeOf = obj.dcDetrendingDegreeOf;    % NOTE: DC!
+        % NOTE: Settings for DC specifically!
+        detrendingDegreeOf = obj.dcDetrendingDegreeOf;
         retrendingEnabled  = obj.dcRetrendingEnabled;
       end
 
@@ -372,7 +375,7 @@ classdef VoltageCalibration
           'retrendingEnabled',       retrendingEnabled, ...
           'tfHighFreqLimitFraction', obj.itfHighFreqLimitFraction, ...
           'kernelEdgePolicy',        obj.kernelEdgePolicy, ...
-          'kernelHannWindow',        obj.kernelHannWindow, ...
+          'kernelHannWindowEnabled', obj.kernelHannWindowEnabled, ...
           'snfEnabled',              obj.snfEnabled, ...
           'snfSubseqMinSamples',     obj.snfSubseqMinSamples);
 

@@ -6,6 +6,10 @@
 % First created 2021-08-11
 %
 classdef kernel___UTEST < matlab.unittest.TestCase
+  % PROPOSAL: Use bicas.tf.kernel.apply_TF with edgePolicy=ZEROS and reduce
+  %           testing of other edgePolicy values to ZEROS with manually added
+  %           padding and consistency checks across edgePolicy values. --
+  %           IMPLEMENTED, sort of
 
 
 
@@ -178,6 +182,7 @@ classdef kernel___UTEST < matlab.unittest.TestCase
 
 
     % Helper function for testing edgePolicy<>ZEROS.
+    %
     % (1) Manually pad y1 via arguments, corresponding to some edgePolicy value.
     % (2) derive expected y2 using bicas.tf.kernel.apply_kernel() with
     %     edgePolicy=ZEROS.

@@ -597,13 +597,14 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', false);
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
 
 % Which algorithm/method to use for applying transfer function to samples.
-% FFT    : Apply it in the frequency domain.
-% KERNEL : Apply it in the time domain.
+% FFT
+%       Apply TF in the frequency domain.
+% KERNEL
+%       Apply TF in the time domain, using kernel+convolution and edge handling.
 S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT, KERNEL
 %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'KERNEL')   % FFT, KERNEL
-%S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'ZEROS')   % ZEROS, CYCLIC, MIRROR
 S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'MIRROR')   % ZEROS, CYCLIC, MIRROR
-S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)
+S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', true)
 
 
 

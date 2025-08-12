@@ -1,10 +1,11 @@
 %
-% Simple script for testing performance of function.
+% Simple script for testing performance of function
+% bicas.utils.sliding_window_over_fraction().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function qual___sliding_window_over_fraction_speedTest()
+function sliding_window_over_fraction___speedTest()
 close all
 
 xAr    = [];

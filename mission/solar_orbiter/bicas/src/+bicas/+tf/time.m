@@ -6,6 +6,29 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef time
+  % PROPOSAL: MTEST code.
+  %   PROPOSAL: Use data from L1R datasets. Compare freq. and time domain
+  %             applications.
+  %     PROPOSAL: Load directly from CDF.
+  %       PROBLEM: Needs HK:DLR, mux mode, ACHG/ACLG
+  %   PROPOSAL: Good enough plots for meetings.
+  %
+  % PROPOSAL: Scale Hann window to always have max=1.
+  %   PRO: Simplifies tests.
+  %     PRO: Tests use short sequences of samples which are more affected by
+  %          this. Tests must compensate for this scaling.
+  %       NOTE: Real data consist of longer sequences of samples where the
+  %             effect is smaller.
+  %     PRO: More similar behaviour for FFT & KERNEL.
+  %
+  % PROPOSAL: Separate argument for Hann window size ("radius"/"diameter")
+  %           independently of kernel size.
+  %   CON: Function has argument lenKernel. Hann window sets values outside
+  %        window to zero.
+  %        ==> Always implicit that Hann window should have the same "radius"
+  %            as the kernel. Otherwise the caller would have shortened the
+  %            kernel.
+  % PROPOSAL: Separate arguments for kernel length before and after origin.
 
 
 
@@ -35,6 +58,8 @@ classdef time
     %       Function handle. Z = tf(omegaRps). Transfer function.
     % lenKernel
     %       Length of kernel that shall be generated from tf.
+    %       NOTE: The kernel covers both delayed and advanced (future) samples,
+    %       i.e. the kernel covers time both before and after an impulse.
     % edgePolicy
     % hannWindowEnabled
     %
@@ -56,22 +81,16 @@ classdef time
     function [y2, yKernel] = apply_TF(...
         dt, y1, tf, lenKernel, edgePolicy, hannWindowEnabled)
       %
-      % PROPOSAL: MTEST code.
-      %   PROPOSAL: Use data from L1R datasets. Compare freq. and time domain
-      %             applications.
-      %     PROPOSAL: Load directly from CDF.
-      %       PROBLEM: Needs HK:DLR, mux mode, ACHG/ACLG
-      %   PROPOSAL: Good enough plots for meetings.
-
       %=============
       % ~ASSERTIONS
       %=============
       % TODO-DEC: Which argument assertions should one bother to have?
       % bicas.tf.freq.apply_TF() and bicas.tf.kernel.apply_kernel() check most
       % arguments.
-      assert(isnumeric(lenKernel), 'lenKernel is not numeric.')
-      assert(isscalar(lenKernel),  'lenKernel is not scalar.')
-      assert(lenKernel>0,          'lenKernel is not positive.')
+      assert(isnumeric(lenKernel),   'lenKernel is not numeric.')
+      assert(isscalar(lenKernel),    'lenKernel is not scalar.')
+      assert(mod(lenKernel, 1) == 0, 'lenKernel is not an integer.')
+      assert(lenKernel>0,            'lenKernel is not positive.')
       assert(islogical(hannWindowEnabled) & isscalar(hannWindowEnabled))
 
 
@@ -79,8 +98,7 @@ classdef time
       %===========================
       % Obtain time domain kernel
       %===========================
-      [yKernel, iKernelOrigin] = bicas.tf.time.get_impulse_kernel(...
-        lenKernel, dt, tf);
+      [yKernel, iKernelOrigin] = bicas.tf.time.get_kernel(lenKernel, dt, tf);
 
 
 
@@ -111,7 +129,7 @@ classdef time
     % NOTE: Uses bicas.tf.freq.apply_TF(), BICAS' other main function for
     % applying transfer functions to signals, using FFT. Here it is only used
     % for obtaining an impulse response in the time domain, i.e. kernel.
-    function [yKernel, iKernelOrigin] = get_impulse_kernel(lenKernel, dt, tf)
+    function [yKernel, iKernelOrigin] = get_kernel(lenKernel, dt, tf)
       iKernelOrigin           = floor(1 + (lenKernel-1)/2);
       yImpulse                = zeros(lenKernel, 1);
       yImpulse(iKernelOrigin) = 1;
@@ -124,12 +142,17 @@ classdef time
     function shiftedHannWin = get_shifted_Hann_window(iMax, n)
       unshiftedHannWin = hann(n, 'periodic');
 
-      % (Periodic) Hann window center index, i.e. where the Hann window=max=1,
+      % (Periodic) Hann window center index, i.e. where the Hann window max=1,
       % for the initial Hann window produced by hann().
       % --
-      % NOTE: Index is a half-integer for ODD-numbered-length PERIODIC Hann
-      % windows (i.e. ODD-numbered-length kernels). Rounding is therefore
-      % ~arbitrary.
+      % NOTE: The hann() window max value varies depending on parameters.
+      %   (aperiodic), n=even : max<1; has two max elements
+      %   (aperiodic), n=odd  : max=1; has one max element
+      %   'periodic',  n=even : max=1; has one max element
+      %   'periodic',  n=odd  : max<1; has two max elements
+      % NOTE: The center/peak index is a half-integer for ODD-numbered-length
+      % PERIODIC Hann windows (i.e. ODD-numbered-length kernels). Rounding is
+      % therefore ~arbitrary.
       iInitialHannWinCenter = 1 + ceil((n-1)/2);   % Round up.
 
       % Disable?

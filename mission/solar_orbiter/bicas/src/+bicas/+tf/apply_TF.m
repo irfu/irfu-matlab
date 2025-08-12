@@ -121,13 +121,12 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 %   SFV = Split by FV
 %   NFS = Non-Finite Splitting
 
-
 DEFAULT_SETTINGS.detrendingDegreeOf      = -1;
 DEFAULT_SETTINGS.retrendingEnabled       = false;
 DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
 DEFAULT_SETTINGS.method                  = 'FFT';
 DEFAULT_SETTINGS.kernelEdgePolicy        = 'MIRROR';
-DEFAULT_SETTINGS.kernelHannWindow        = false;
+DEFAULT_SETTINGS.kernelHannWindowEnabled = false;
 DEFAULT_SETTINGS.snfEnabled              = false;
 DEFAULT_SETTINGS.snfSubseqMinSamples     = 1;
 
@@ -152,7 +151,7 @@ assert(iscolumn(y1), 'Argument y1 is not a column vector.')
 %=========================================================================
 % Create modified version of TF which is set to zero for high frequencies
 %=========================================================================
-% NOTE: Permit Settings.tfHighFreqLimitFraction to be +Inf.
+% NOTE: Permits Settings.tfHighFreqLimitFraction to be +Inf.
 assert(...
   isnumeric(  S.tfHighFreqLimitFraction) ...
   && isscalar(S.tfHighFreqLimitFraction) ...
@@ -239,12 +238,10 @@ switch(Settings.method)
     y2Detrended = bicas.tf.freq.apply_TF(dt, y1Detrended, tf);
 
   case 'KERNEL'
-    % TODO-NI: Kernel length == Signal length
-    %          ==> Bad for very long time series? E.g. CWF?
-    % NOTE: Length also affects amount of allocated memory (kernel,
-    % padding).
+    % PROBLEM: Kernel length == Signal length
+    %          ==> Bad performance for very long time series.
+    % NOTE: Length also affects amount of allocated memory (kernel, padding).
     lenKernel = length(y1);
-    %lenKernelMax = ceil(10 / dt);
     %lenKernel = min(lenKernel, lenKernelMax);
 
     % NOTE: The called function applies the Hann window instead of current
@@ -252,7 +249,7 @@ switch(Settings.method)
     % de-trending & re-trending).
     y2Detrended = bicas.tf.time.apply_TF(...
       dt, y1Detrended, tf, lenKernel, Settings.kernelEdgePolicy, ...
-      Settings.kernelHannWindow);
+      Settings.kernelHannWindowEnabled);
 
   otherwise
     error('BICAS:Assertion:IllegalArgument', ...
