@@ -596,6 +596,9 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', false);
 % the LFR/TDS transfer functions.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
 
+% Which algorithm/method to use for applying transfer function to samples.
+% FFT    : Apply it in the frequency domain.
+% KERNEL : Apply it in the time domain.
 S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT, KERNEL
 %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'KERNEL')   % FFT, KERNEL
 %S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'ZEROS')   % ZEROS, CYCLIC, MIRROR

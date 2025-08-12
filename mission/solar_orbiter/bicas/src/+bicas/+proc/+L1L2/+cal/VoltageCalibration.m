@@ -196,8 +196,9 @@ classdef VoltageCalibration
       %===============================================================
       % Store miscellaneous BSO key values
       % ----------------------------------
-      % IMPLEMENTATION NOTE: This useful since it is:
-      %   ** More convenient to access values via shorter field names
+      % IMPLEMENTATION NOTE: This useful since it:
+      %   ** Centralizes the extraction of values from BSO.
+      %   ** Is more convenient to access values via shorter field names
       %      (more readable code).
       %   ** Potentially gives faster access to values (better
       %      performance).

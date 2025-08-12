@@ -25,14 +25,13 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase, EDGE_POLICY)
-      import bicas.tf.apply_TF_kernel___UTEST.test
-
-      test(testCase, ...
+    % Tests which are independent of edgePolicy.
+    function test_0(T, EDGE_POLICY)
+      T.test( ...
         [2], [3], 1, EDGE_POLICY, ...
         [3]*2)
 
-      test(testCase, ...
+      T.test( ...
         [0,0,2,0,0,0], [3], 1, EDGE_POLICY, ...
         [0,0,3,0,0,0]*2)
 
@@ -40,23 +39,23 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
       % Even & odd length kernels.
       % Kernel origin at beginning and end of kernel.
       %===============================================
-      test(testCase, ...
+      T.test( ...
         [0,0,1,0,0,0], [1,2], 1, EDGE_POLICY, ...
         [0,0,1,2,0,0]*1)
-      test(testCase, ...
+      T.test( ...
         [0,0,1,0,0,0], [1,2], 2, EDGE_POLICY, ...
         [0,1,2,0,0,0]*1)
-      test(testCase, ...
+      T.test( ...
         [0,0,1,0,0,0], [1,2,3], 1, EDGE_POLICY, ...
         [0,0,1,2,3,0]*1)
-      test(testCase, ...
+      T.test( ...
         [0,0,1,0,0,0], [1,2,3], 3, EDGE_POLICY, ...
         [1,2,3,0,0,0]*1)
 
       %=====================================
       % Multiple non-unit, non-zero samples
       %=====================================
-      test(testCase, ...
+      T.test( ...
         [0,2,3,0,0,0], [1,2,3], 2, EDGE_POLICY, ...
         [1,2,3,0,0,0]*2 + ...
         [0,1,2,3,0,0]*3)
@@ -64,7 +63,7 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
       % Empty kernel ==> Error
       % NOTE: Check error ID to differentiate error from any other empty
       % kernel-caused error.
-      testCase.verifyError(...
+      T.verifyError(...
         @() bicas.tf.apply_TF_kernel([2]', zeros(0,1), 1, EDGE_POLICY), ...
         'BICAS:Assertion:IllegalArgument')
     end
@@ -73,21 +72,19 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
 
     % Special tests for edgeCase == 'ZEROS'
     %
-    function test_ZEROS(testCase)
-      import bicas.tf.apply_TF_kernel___UTEST.test
-
+    function test_ZEROS(T)
       y1      = [1,0,0,0,0,2];
       yKernel = [1,2,3];
       y2p     = conv(y1, yKernel);
 
       for iKc = 1:3
-        test(testCase, ...
+        test(T, ...
           y1, yKernel, iKc, 'ZEROS', ...
           y2p(iKc + [0:5]))
       end
 
       % Kernel longer than signal.
-      test(testCase, ...
+      test(T, ...
         [1,0,0], [1,2,3,4], 2, 'ZEROS', ...
         [2,3,4])
     end
@@ -96,20 +93,17 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
 
     % Special tests for edgeCase == 'CYCLIC'
     %
-    function test_CYCLIC(testCase)
-      import bicas.tf.apply_TF_kernel___UTEST.test
-      import bicas.tf.apply_TF_kernel___UTEST.test_pad
-
+    function test_CYCLIC(T)
       for iKo = 1:3
-        test_pad(testCase, ...
+        T.test_pad( ...
           [0,0,2], [1,0,0,0,0,2], [1,0,0], [1,2,3], iKo, 'CYCLIC')
       end
 
-      test_pad(testCase, ...
+      T.test_pad( ...
         [3,4], [2,1,0,0,3,4], [2,1], [1,2,3,4,5], 3, 'CYCLIC')
 
       % Kernel longer than signal (but still legal).
-      test_pad(testCase, ...
+      T.test_pad( ...
         [1,0,0], [1,0,0], [1,0,0], [1,2,3,4], 3, 'CYCLIC')
     end
 
@@ -117,46 +111,42 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
 
     % Special tests for edgeCase == 'MIRROR'
     %
-    function test_MIRROR(testCase)
-      import bicas.tf.apply_TF_kernel___UTEST.test
-      import bicas.tf.apply_TF_kernel___UTEST.test_pad
-
+    function test_MIRROR(T)
       for iKo = 1:3
-        test_pad(testCase, ...
+        T.test_pad( ...
           [0,0,1], [1,0,0,0,0,2], [2,0,0], [1,2,3], iKo, 'MIRROR')
       end
 
-      test_pad(testCase, ...
+      T.test_pad( ...
         [1,2], [2,1,0,0,3,4], [4,3], [1,2,3,4,5], 3, 'MIRROR')
 
       % Kernel longer than signal (but still legal).
-      test_pad(testCase, ...
+      T.test_pad( ...
         [0,0,1], [1,0,0], [0,0,1], [1,2,3,4], 2, 'MIRROR')
     end
 
 
 
-    function test_NaN(testCase, EDGE_POLICY)
-      import bicas.tf.apply_TF_kernel___UTEST.test
+    function test_NaN(T, EDGE_POLICY)
       N = NaN;   % Shorthand.
 
       %===============
       % NaN in signal
       %===============
-      test(testCase, ...
+      T.test( ...
         [0,0,0,N,0,0,0], [1,2,3], 3, EDGE_POLICY, ...
         [0,N,N,N,0,0,0])
-      test(testCase, ...
+      T.test( ...
         [0,0,0,N,0,0,0], [1,2,3], 1, EDGE_POLICY, ...
         [0,0,0,N,N,N,0])
 
       %===============
       % NaN in kernel
       %===============
-      test(testCase, ...
+      T.test( ...
         [0,0,0,0,0,0,0], [N,0,0], 3, EDGE_POLICY, ...
         [N,N,N,N,N,N,N])
-      test(testCase, ...
+      T.test( ...
         [0,0,0,0,0,0,0], [N,0,0], 1, EDGE_POLICY, ...
         [N,N,N,N,N,N,N])
     end
@@ -167,25 +157,22 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-    %methods(Static, Access=public)
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
 
 
 
-    function test(testCase, ...
-        y1, yKernel, iKernelOrigin, edgePolicy, ...
-        expOutput)
+    function test(T, y1, yKernel, iKernelOrigin, edgePolicy, expY2)
 
       % NOTE: Transposes vectors.
-      testCase.verifyEqual(...
-        bicas.tf.apply_TF_kernel(...
-        y1', yKernel', iKernelOrigin, edgePolicy),...
-        expOutput')
+        actY2 = bicas.tf.apply_TF_kernel(...
+        y1', yKernel', iKernelOrigin, edgePolicy);
+
+      T.verifyEqual(actY2, expY2')
     end
 
 
@@ -193,8 +180,7 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
     % Manually pad y1.
     % NOTE: Function derives the expected output itself, using conv().
     %
-    function test_pad(testCase, ...
-        y1a, y1, y1b, yKernel, iKernelOrigin, edgePolicy)
+    function test_pad(T, y1a, y1, y1b, yKernel, iKernelOrigin, edgePolicy)
 
       assert(isrow(y1a))
       assert(isrow(y1))
@@ -214,10 +200,9 @@ classdef apply_TF_kernel___UTEST < matlab.unittest.TestCase
       iEnd   = iBegin + length(y1) - 1;
       y2exp = y2p(iBegin : iEnd);
 
-      testCase.verifyEqual(...
-        bicas.tf.apply_TF_kernel(...
-        y1, yKernel, iKernelOrigin, edgePolicy),...
-        y2exp)
+      T.test(...
+        y1', yKernel', iKernelOrigin, edgePolicy, ...
+        y2exp')
     end
 
 

@@ -38,12 +38,22 @@
 %
 function [y2, yKernelB] = apply_TF_time(dt, y1, tf, lenKernel, edgePolicy, varargin)
 %
+% PROPOSAL: Class with static methods.
+%   PRO: Better for testing inner functions.
+%     Ex: Future function for generating kernels.
+%   PROPOSAL: Separate function for Hann Window modification of kernel.
+%
 % PROPOSAL: edgePolicy as setting, not named argument.
 %
 % PROPOSAL: MTEST code.
 %   PROPOSAL: Use data from L1R datasets. Compare freq. and time domain
-%           applications.
+%             applications.
+%     PROPOSAL: Load directly from CDF.
+%       PROBLEM: Needs HK:DLR, mux mode, ACHG/ACLG
 %   PROPOSAL: Good enough plots for meetings.
+%
+% BUG?! ~Applies detrending+retrending, but so does calling function
+%       bicas.tf.apply_TF().
 
 EMID = 'BICAS:Assertion:IllegalArgument';
 
@@ -65,7 +75,7 @@ clear DEFAULT_SETTINGS
 % bicas.tf.apply_TF_freq() and bicas.tf.apply_TF_kernel() check most
 % arguments.
 if ~isnumeric(lenKernel)
-  error(EMID, 'lenKernel is not numeric..')
+  error(EMID, 'lenKernel is not numeric.')
 elseif ~isscalar(lenKernel)
   error(EMID, 'lenKernel is not scalar.')
 elseif ~(lenKernel>0)
@@ -75,20 +85,20 @@ assert(islogical(Settings.hannWindow))
 
 
 
-%===============
-% Obtain kernel
-%===============
+%===========================
+% Obtain time domain kernel
+%===========================
 % NOTE: Set "kernel origin" (see bicas.tf.apply_TF_kernel()) to middle, and
-% rounded down for even-length kernels. The algorithm is designed so that
-% this can be set quite arbitrarily but in reality one probably wants to set
-% it around the middle index.
+% rounded down for even-length kernels. The algorithm is designed so that this
+% can be set quite arbitrarily but in reality one probably wants to set it
+% around the middle index.
 iKernelOrigin           = floor(1 + (lenKernel-1)/2);
 yImpulse                = zeros(lenKernel, 1);
 yImpulse(iKernelOrigin) = 1;
 yKernel                 = bicas.tf.apply_TF_freq(dt, yImpulse, tf);
-% NOTE: Uses bicas.tf.apply_TF_freq(), BICAS' other main function for
-% applying transfer functions to signals, using FFT. Here it is only used
-% for obtaining an impulse response in the time domain, i.e. kernel.
+% NOTE: Uses bicas.tf.apply_TF_freq(), BICAS' other main function for applying
+% transfer functions to signals, using FFT. Here it is only used for obtaining
+% an impulse response in the time domain, i.e. kernel.
 
 
 
@@ -111,8 +121,8 @@ if Settings.hannWindow
     (mod(lenKernel, 2) == 1) || ...
     unshiftedHannWin(iInitialHannWinCenter) == 1)
 
-  % Circularly shift Hann Window so that the Hann window max is at the
-  % kernel origin.
+  % Circularly shift Hann Window so that the Hann window max is at the kernel
+  % origin.
   shiftedHannWin = circshift(...
     unshiftedHannWin, ...
     iKernelOrigin - iInitialHannWinCenter);
@@ -133,7 +143,7 @@ y1b = Drt.detrend(y1);
 
 y2b = bicas.tf.apply_TF_kernel(y1b, yKernelB, iKernelOrigin, edgePolicy);
 
-% NOTE: Using freq. domain-TF for scaling.
+% NOTE: Using frequency domain-TF for scaling.
 y2 = Drt.retrend(y2b, tf(0));
 
 end

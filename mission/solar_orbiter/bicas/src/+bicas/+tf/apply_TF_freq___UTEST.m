@@ -48,6 +48,11 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
 
 
+  %#####################
+  %#####################
+  % CONSTANT PROPERTIES
+  %#####################
+  %#####################
   properties(Constant)
     PLOTTING_ENABLED = 0;
     EPSILON = 1e-13;
@@ -56,6 +61,14 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
 
 
+  %#################
+  %#################
+  % TEST PARAMETERS
+  %#################
+  %#################
+  % Technically, additional properties of testCase objects with cell array
+  % default values. Test methods with arguments with the same name will be
+  % called once for every element in the cell arrays.
   properties(TestParameter)
     % Number of samples in time series.
     % NOTE: Want to test both even & odd N, maybe primes.
@@ -70,6 +83,11 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
 
 
+  %##############
+  %##############
+  % TEST METHODS
+  %##############
+  %##############
   methods(Test)
 
 
@@ -79,7 +97,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
     %
     % NOTE: Output signal has discrete jumps due to circular shift.
     %
-    function test1(testCase, N, nDelaySmpls)
+    function test1(T, N, nDelaySmpls)
       dt    = 0.1;
 
       tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
@@ -89,8 +107,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test({dt, y1, tf}, y2_exp)
     end
 
 
@@ -98,7 +115,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
     % Signal: Constant function
     % TF    : Constant Z == 1 (all omega)
     %
-    function test2(testCase, N)
+    function test2(T, N)
       dt     = 0.1;
 
       tf     = bicas.tf.utest_utils.get_TF_constant(2, 2);
@@ -107,8 +124,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       y1     = 1 * ones(size(t));
       y2_exp = 2 * ones(size(t));
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test({dt, y1, tf}, y2_exp)
     end
 
 
@@ -118,7 +134,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
     %         on different frequencies, which produces a chosen time
     %         delay for this specific signal.
     %
-    function test3(testCase, N, nDelaySmpls)
+    function test3(T, N, nDelaySmpls)
       % NOTE: Can not easily automatically derive the output for an
       % arbitrary input signal here (on the subject of combining input
       % signals and TFs).
@@ -137,8 +153,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test({dt, y1, tf}, y2_exp)
     end
 
 
@@ -146,7 +161,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
     % Signal: Single non-zero DFT component
     % TF    : One delay for all frequencies.
     %
-    function test4(testCase, N, nDelaySmpls)
+    function test4(T, N, nDelaySmpls)
       dt    = 0.1;
 
       tf = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
@@ -164,8 +179,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test({dt, y1, tf}, y2_exp)
     end
 
 
@@ -173,7 +187,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
     % Signal: Arbitrary function
     % TF    : Delay
     %
-    function test5(testCase, N, nDelaySmpls)
+    function test5(T, N, nDelaySmpls)
       dt     = 0.01;
 
       tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
@@ -183,8 +197,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test({dt, y1, tf}, y2_exp)
     end
 
 
@@ -192,7 +205,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
     % Signal: Arbitrary function
     % TF    : Delay
     %
-    function test6(testCase, N, nDelaySmpls)
+    function test6(T, N, nDelaySmpls)
       dt     = 1 / (N-1);
 
       tf     = bicas.tf.utest_utils.get_TF_delay(nDelaySmpls*dt);
@@ -202,8 +215,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       y2_exp = bicas.tf.apply_TF_freq___UTEST.ts_delay_func_discrete(...
         y1, nDelaySmpls);
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test({dt, y1, tf}, y2_exp)
     end
 
 
@@ -211,7 +223,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
     % Signal: Constant + sine wave
     % TF    : Non-zero only at omega=0.
     %
-    function test7(testCase, N)
+    function test7(T, N)
       dt     = 1 / (N-1);
       z0     = -2;
 
@@ -222,14 +234,13 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       % Only keep mean (and multiply by factor).
       y2_exp = z0 * ones(size(y1)) * mean(y1);
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test({dt, y1, tf}, y2_exp)
     end
 
 
 
     % Verify expected behaviour for NaN.
-    function test_NaN(testCase)
+    function test_NaN(T)
       %===========
       % TF is NaN
       %===========
@@ -238,8 +249,8 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       tf     = @(omegaRps) (NaN*omegaRps);
       y2_exp = y1 * NaN;
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test(...
+        {dt, y1, tf}, y2_exp)
 
       %=================================
       % ONE, SINGLE NaN in input signal
@@ -250,8 +261,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       tf     = @(omegaRps) (ones(size(omegaRps)));
       y2_exp = y1 * NaN;
 
-      bicas.tf.apply_TF_freq___UTEST.test(...
-        testCase, {dt, y1, tf}, y2_exp)
+      T.test({dt, y1, tf}, y2_exp)
     end
 
 
@@ -260,14 +270,20 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
 
 
-  methods(Static)
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
+
 
 
     % Utility method for test methods.
     %
     % NOTE: Concerning testCase: Method not called by runtests() directly
     % but indirectly via the test methods.
-    function test(testCase, argsCa, y2_exp)
+    function test(T, argsCa, y2_exp)
 
       y1 = argsCa{2};
 
@@ -276,7 +292,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
       %================================
       y2_act = bicas.tf.apply_TF_freq( argsCa{:} );
 
-      testCase.verifyEqual(size(y1), size(y2_act))
+      T.verifyEqual(size(y1), size(y2_act))
 
       if bicas.tf.apply_TF_freq___UTEST.PLOTTING_ENABLED
         n = (1:length(y2_exp))';
@@ -297,10 +313,23 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
         xlabel('Time-domain array index (not t)')
       end
 
-      testCase.verifyEqual(...
+      T.verifyEqual(...
         y2_act, y2_exp, ...
         'AbsTol', bicas.tf.apply_TF_freq___UTEST.EPSILON)
     end
+
+
+
+  end    % methods(Access=private)
+
+
+
+  %########################
+  %########################
+  % PRIVATE STATIC METHODS
+  %########################
+  %########################
+  methods(Static, Access=private)
 
 
 
@@ -328,7 +357,7 @@ classdef apply_TF_freq___UTEST < matlab.unittest.TestCase
 
 
 
-  end    % methods
+  end    % methods(Static, Access=private)
 
 
 

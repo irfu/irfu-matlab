@@ -1,6 +1,6 @@
 %
-% Apply a transfer function in the form of a kernel to a time series, i.e.
-% convolution. Has functionality for how to treat edges of signal.
+% Apply a transfer function in the form of a specified kernel to a time series,
+% i.e. convolution. Has functionality for how to treat edges of signal.
 %
 % Can be seens a wrapper around MATLAB's conv() function.
 %
@@ -76,6 +76,10 @@
 %
 function y2 = apply_TF_kernel(y1, yKernel, iKernelOrigin, edgePolicy)
 %
+% PROPOSAL: Class with static methods.
+%   PRO: Can test inner functions.
+%     Ex: Future function for padding.
+%
 % PROPOSAL: Permit multiple input & output signals.
 %   PRO: More efficient(?)
 %       Ex: Snapshots.
@@ -145,9 +149,9 @@ assert((1 <= iKernelOrigin) & (iKernelOrigin <= lenKernel))
 %-----------------------------------------------------
 % Lengths of minimum necessary padding before & after
 %-----------------------------------------------------
-% Padding length BEFORE signal == Length of kernel AFTER origin.
+% Padding length BEFORE signal == Length of kernel AFTER  origin.
 nPad1 = lenKernel - iKernelOrigin;
-% Padding length AFTER signal == Length of kernel BEFORE origin.
+% Padding length AFTER  signal == Length of kernel BEFORE origin.
 nPad2 = iKernelOrigin - 1;
 
 %====================================
@@ -160,7 +164,7 @@ switch(edgePolicy)
     %================
     % NOTE: Due to how conv() and the algorithm works, padding with
     % zeros is equivalent to not padding at all, IF THERE ARE NO
-    % NOT-A-NUMBER in the signal. Therefore paddign with zeros anyway.
+    % NOT-A-NUMBER in the signal. Therefore padding with zeros anyway.
 
     yPad1 = zeros(nPad1, 1);
     yPad2 = zeros(nPad2, 1);
@@ -169,19 +173,18 @@ switch(edgePolicy)
     %==============================================
     % Pad with signal itself, as if it were cyclic
     %==============================================
-    % NOTE: This mode is implemented to make it possible to get the
-    % exact same result with bicas.tf.apply_TF_time() as with
-    % bicas.tf.apply_TF_freq().
-    % IMPLEMENTATION NOTE: Could (?) be implemented with MATLAB's
-    % cconv(), but that would defeat the purpose of having this case for
-    % testing (to test other code).
+    % NOTE: This mode is implemented to make it possible to get the exact same
+    % result with bicas.tf.apply_TF_time() as with bicas.tf.apply_TF_freq().
+    % IMPLEMENTATION NOTE: Could (?) be implemented with MATLAB's cconv(), but
+    % that would defeat the purpose of having this case for testing (to test
+    % other code).
 
     % ASSERTION
     % NOTE: Could update implementation to eliminate this constraint.
     assert(max(nPad1, nPad2) <= lenY1,...
       EMID, ...
       ['Kernel length implies padding with more mirrored signal', ...
-      ' samples than thera are samples available.'])
+      ' samples than there are samples available.'])
 
     yPad1 = y1(end-nPad1+1 : end,   1);
     yPad2 = y1(1           : nPad2, 1);
@@ -190,11 +193,11 @@ switch(edgePolicy)
     %=============================================================
     % Pad edges with mirrored signals (mirrored around the edges)
     %=============================================================
-    % NOTE: The implementation uses mirror symmetry axes located at
-    % "indices" 0.5 and end+0.5, i.e. the very first and last samples
-    % are mirrored (duplicated).
-    % NOTE: One could also use symmetry around indices "1" and
-    % "end" and not mirror the very first and last samples.
+    % NOTE: The implementation uses mirror symmetry axes located at "indices"
+    % 0.5 and end+0.5, i.e. the very first and last samples are mirrored
+    % (duplicated).
+    % NOTE: One could also use symmetry around indices "1" and "end" and not
+    % mirror the very first and last samples.
 
     % ASSERTION
     assert(max(nPad1, nPad2) <= lenY1,...
@@ -212,7 +215,7 @@ switch(edgePolicy)
 end
 
 % Pad signal.
-y1b   = [yPad1; y1; yPad2];
+y1b = [yPad1; y1; yPad2];
 
 %=====================================================
 % CONVOLVE PADDED SIGNAL USING MATLAB FUNCTION conv()
@@ -224,7 +227,7 @@ y2b = conv(y1b, yKernel);
 %================
 y2  = y2b(nPad1 + iKernelOrigin-1 + [1:lenY1]);
 
-end
+end    % apply_TF_kernel()
 
 
 
@@ -240,4 +243,5 @@ elseif ~isreal(y)
   error(EMID, '%s is not real.', argName)
 
 end
-end
+
+end    % function assert_y()

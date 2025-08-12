@@ -9,9 +9,6 @@
 %               automatically imply RE-trending.
 % Re-trending : ADDING BACK a scaled version of the previously removed fit when
 %               de-trending, AFTER applying the TF.
-% SNF         : Split by Non-Finite values. Splits time series into separate
-%               smaller time series before applying de-trending and (modified)
-%               TF.
 %
 %
 % De-trending / Re-trending
@@ -90,6 +87,15 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 %   PRO: Code is only used for processing L1/L1R-->L2.
 %   CON: Implies that code is less generic/reusable.
 %
+% PROPOSAL: Replace irf.utils.interpret_settings_args() with keyword arguments.
+%   NOTE: Can no longer pass on "Settings" as struct to apply_TF_with_DRT().
+%
+% PROPOSAL: Class with static methods.
+%   PRO: Inner functions can be separately tested.
+%     Ex: apply_TF_with_DRT()
+%     Ex: Future function for splitting up samples separated by non-fintite
+%         samples (SNF).
+%
 % PROPOSAL: Check that data is finite. Only call bicas.tf.apply_TF_freq()
 %           if all data is non-finite.
 %   PRO: bicas.tf.apply_TF_freq() can assume (needs to be updated) that
@@ -157,7 +163,8 @@ assert(...
 % = pi/dt
 nyquistFreqRps     = pi/dt;
 tfHighFreqLimitRps = S.tfHighFreqLimitFraction * nyquistFreqRps;
-tfModif = @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
+tfModif            = ...
+  @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
 
 
 
@@ -193,20 +200,24 @@ for iSs = 1:nSs
 
   if numel(y1ss) >= S.snfSubseqMinSamples
     [y2ss, D] = apply_TF_with_DRT(dt, y1ss, tfModif, S);
+
     Debug.y1ModifCa{iSs} = D.y1Modif;
     Debug.y2ModifCa{iSs} = D.y2Modif;
   else
     y2ss = NaN(size(y1ss));
+
     Debug.y1ModifCa{iSs} = [];
     Debug.y2ModifCa{iSs} = [];
   end
 
   y2(i1:i2) = y2ss;
 end
-end
+
+end    % function apply_TF()
 
 
 
+% Apply TF using detrending.
 function [y2, Debug] = apply_TF_with_DRT(dt, y1, tf, Settings)
 
 %#####################
@@ -215,7 +226,7 @@ function [y2, Debug] = apply_TF_with_DRT(dt, y1, tf, Settings)
 Drt = bicas.tf.Deretrending(...
   Settings.detrendingDegreeOf, ...
   Settings.retrendingEnabled);
-y1Modif = Drt.detrend(y1);
+y1Detrended = Drt.detrend(y1);
 
 
 
@@ -225,8 +236,7 @@ y1Modif = Drt.detrend(y1);
 switch(Settings.method)
 
   case 'FFT'
-    y2Modif = bicas.tf.apply_TF_freq(dt, y1Modif, tf);
-    %[y2B, tfOmegaLookups, tfZLookups] = bicas.tf.apply_TF_freq(dt, y1B, tfB);
+    y2Detrended = bicas.tf.apply_TF_freq(dt, y1Detrended, tf);
 
   case 'KERNEL'
     % TODO-NI: Kernel length == Signal length
@@ -237,11 +247,11 @@ switch(Settings.method)
     %lenKernelMax = ceil(10 / dt);
     %lenKernel = min(lenKernel, lenKernelMax);
 
-    % NOTE: The called function applies the Hann window instead of
-    % current function since it only applies to kernel method (as
-    % opposed to de-trending & re-trending).
-    y2Modif = bicas.tf.apply_TF_time(...
-      dt, y1Modif, tf, lenKernel, Settings.kernelEdgePolicy, ...
+    % NOTE: The called function applies the Hann window instead of current
+    % function since it only applies to kernel method (as opposed to
+    % de-trending & re-trending).
+    y2Detrended = bicas.tf.apply_TF_time(...
+      dt, y1Detrended, tf, lenKernel, Settings.kernelEdgePolicy, ...
       'hannWindow', Settings.kernelHannWindow);
 
   otherwise
@@ -254,11 +264,11 @@ end
 %#####################
 % Optionally RE-trend
 %#####################
-y2 = Drt.retrend(y2Modif, tf(0));
+y2 = Drt.retrend(y2Detrended, tf(0));
 
 
 
 Debug = struct();
-Debug.y1Modif = y1Modif;
-Debug.y2Modif = y2Modif;
+Debug.y1Modif = y1Detrended;
+Debug.y2Modif = y2Detrended;
 end

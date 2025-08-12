@@ -18,11 +18,6 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
 
 
 
-  properties(TestParameter)
-  end
-
-
-
   %##############
   %##############
   % TEST METHODS
@@ -47,7 +42,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
 
     % No HW, no detrending.
     %
-    function test0(testCase)
+    function test0(T)
       % PROPOSITION: Almost unnecessary since bicas.tf.apply_TF_kernel() tests for same.
       %   CON: Tests conversion TF-->kernel.
 
@@ -67,7 +62,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
 
       y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'ZEROS');
 
-      testCase.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
+      T.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
 
       %======================
       % edgePolicy == MIRROR
@@ -77,7 +72,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
 
       y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'MIRROR');
 
-      testCase.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
+      T.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
     end
 
 
@@ -85,7 +80,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
     % Constant delay+HW. ==> Constant scaling due to HW.
     % Even-length kernel/HW.
     %
-    function test_HW0(testCase)
+    function test_HW0(T)
       dt     = 0.1;
       nSmpls = 100;
 
@@ -133,7 +128,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
             dt, y1, tf, lenKernel, ...
             'ZEROS', 'hannWindow', true);
 
-          testCase.verifyEqual(y2act, y2exp, 'AbsTol', 1e-13)
+          T.verifyEqual(y2act, y2exp, 'AbsTol', 1e-13)
 
           %======================
           % edgePolicy == MIRROR
@@ -145,7 +140,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
             dt, y1, tf, lenKernel, ...
             'MIRROR', 'hannWindow', true);
 
-          testCase.verifyEqual(y2act, y2exp, 'AbsTol', 1e-13)
+          T.verifyEqual(y2act, y2exp, 'AbsTol', 1e-13)
 
         end    % for
       end    % for
@@ -155,16 +150,6 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-  end    % methods(Static, Access=private)
 
 
 

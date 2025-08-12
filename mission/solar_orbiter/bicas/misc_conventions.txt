@@ -213,6 +213,8 @@ DCOP
     Class bicas.proc.L1L2.DemultiplexingCalibrationOutput.
 Deg
     Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
+DFT
+    Discrete Fourier Transform
 Dict
     MATLAB dictionary.
 DLR
@@ -349,7 +351,7 @@ MVPM
     Milli-Volt Per Meter (mV/m).
 NBCI
     Non-BIAS Calibration Index.
-    Same as L1R LFR ZV CALIBRATION_INDEX_TABLE(i, 2) *INCREMENTED NY ONE*,
+    Same as L1R LFR ZV CALIBRATION_INDEX_TABLE(i, 2) *INCREMENTED BY ONE*,
     except for some handling of unused values, and synthetic versions thereof,
     e.g. for L1. Index that could in principle be needed for/used by LFR/TDS
     calibration, with different meaning for different types of calibration. In
@@ -515,9 +517,10 @@ SKT
 SKV
     Class bicas.SettingsKeyValue.
 SNF
-    Split By Non-finite.
-    Split time series by non-finite sample values when processing time series
-    through transfer functions.
+    Split by Non-Finite.
+    Split time series into multiple shorter time series, each one separated by
+    non-finite sample values. In the context of processing time series using
+    transfer functions.
 SPR
     Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.
@@ -554,8 +557,8 @@ TBW
     To Bash Wrapper.
 TF
     Transfer Function. Transfer function Z=Z(omega) in the frequency domain.
-    Conventionally here on the form of a complex number (Z) as a function of
-    radians/s (omega).
+    The internal convention is to specify any TF on the form of a complex number
+    (Z) as a function of radians/s (omega).
 Threshold saturation
     Notion of saturation for a sample, equivalent to the sample value exceeding
     the relevant threshold.
