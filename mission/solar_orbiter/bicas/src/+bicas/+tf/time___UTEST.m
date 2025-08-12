@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.tf.apply_TF_time().
+% matlab.unittest automatic test code for bicas.tf.time.
 %
 % 2021-08-12: Does not test detrending/retrending. Low priority since tested
 % elsewhere.
@@ -13,7 +13,7 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-08-11
 %
-classdef apply_TF_time___UTEST < matlab.unittest.TestCase
+classdef time___UTEST < matlab.unittest.TestCase
   % PROPOSAL: Odd-length kernels/HWs.
 
 
@@ -60,7 +60,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
       % Manually shift/delay signal.
       y2_exp = [zeros(nDelaySmpls, 1); y1(1:end-nDelaySmpls)];
 
-      y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'ZEROS');
+      y2 = bicas.tf.time.apply_TF(dt, y1, tf, N, 'ZEROS');
 
       T.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
 
@@ -70,7 +70,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
       % Manually pad with mirrored samples and shift.
       y2_exp = [y1(nDelaySmpls:-1:1); y1(1:end-nDelaySmpls)];
 
-      y2 = bicas.tf.apply_TF_time(dt, y1, tf, N, 'MIRROR');
+      y2 = bicas.tf.time.apply_TF(dt, y1, tf, N, 'MIRROR');
 
       T.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
     end
@@ -124,7 +124,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
           %=====================
           % Manually delay, and multiply Hann window factor.
           y2exp = [zeros(nDelaySmpls, 1); y1(1:end-nDelaySmpls)] * hwFactor;
-          y2act = bicas.tf.apply_TF_time(...
+          y2act = bicas.tf.time.apply_TF(...
             dt, y1, tf, lenKernel, ...
             'ZEROS', 'hannWindow', true);
 
@@ -136,7 +136,7 @@ classdef apply_TF_time___UTEST < matlab.unittest.TestCase
           % Manually pad with mirrored samples, delay, and multiply
           % Hann window factor.
           y2exp = [y1(nDelaySmpls:-1:1); y1(1:end-nDelaySmpls)] * hwFactor;
-          y2act = bicas.tf.apply_TF_time(...
+          y2act = bicas.tf.time.apply_TF(...
             dt, y1, tf, lenKernel, ...
             'MIRROR', 'hannWindow', true);
 

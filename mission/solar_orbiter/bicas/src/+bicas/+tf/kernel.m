@@ -129,7 +129,7 @@ classdef kernel
       % PROPOSAL: Option to pad with signal itself cyclically (to mimic circular
       %       convolution).
       %   PRO: Can be used for automatic tests that can be applied to both
-      %        bicas.tf.apply_TF() and bicas.tf.apply_TF_time().
+      %        bicas.tf.apply_TF() and bicas.tf.time.apply_TF().
       %
       % TODO-NI: Speed up?
       %   PROPOSAL: Do not use plain conv(). Use "overlap save method" as in
@@ -192,7 +192,7 @@ classdef kernel
           % Pad with signal itself, as if it were cyclic
           %==============================================
           % NOTE: This mode is implemented to make it possible to get the exact same
-          % result with bicas.tf.apply_TF_time() as with bicas.tf.apply_TF_freq().
+          % result with bicas.tf.time.apply_TF() as with bicas.tf.apply_TF_freq().
           % IMPLEMENTATION NOTE: Could (?) be implemented with MATLAB's cconv(), but
           % that would defeat the purpose of having this case for testing (to test
           % other code).
