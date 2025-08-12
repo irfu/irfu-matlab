@@ -105,17 +105,8 @@ classdef time
       %===========================
       % Obtain time domain kernel
       %===========================
-      % NOTE: Set "kernel origin" (see bicas.tf.kernel.apply_kernel()) to middle, and
-      % rounded down for even-length kernels. The algorithm is designed so that this
-      % can be set quite arbitrarily but in reality one probably wants to set it
-      % around the middle index.
-      iKernelOrigin           = floor(1 + (lenKernel-1)/2);
-      yImpulse                = zeros(lenKernel, 1);
-      yImpulse(iKernelOrigin) = 1;
-      yKernel                 = bicas.tf.freq.apply_TF(dt, yImpulse, tf);
-      % NOTE: Uses bicas.tf.freq.apply_TF(), BICAS' other main function for applying
-      % transfer functions to signals, using FFT. Here it is only used for obtaining
-      % an impulse response in the time domain, i.e. kernel.
+      [yKernel, iKernelOrigin] = bicas.tf.time.get_impulse_kernel(...
+        lenKernel, dt, tf);
 
 
 
@@ -123,31 +114,9 @@ classdef time
         %=============================
         % Apply Hann window to kernel
         %=============================
-        unshiftedHannWin = hann(lenKernel, 'periodic');
-
-        % (Periodic) Hann window center index, i.e. where the Hann window=max=1,
-        % for the initial Hann window produced by hann().
-        % --
-        % NOTE: Index is a half-integer for ODD-numbered-length PERIODIC Hann
-        % windows (i.e. ODD-numbered-length kernels). Rounding is therefore
-        % ~arbitrary.
-        iInitialHannWinCenter = 1 + ceil((lenKernel-1)/2);   % Round up.
-
-        % Disable?
-        assert(...
-          (mod(lenKernel, 2) == 1) || ...
-          unshiftedHannWin(iInitialHannWinCenter) == 1)
-
-        % Circularly shift Hann Window so that the Hann window max is at the kernel
-        % origin.
-        shiftedHannWin = circshift(...
-          unshiftedHannWin, ...
-          iKernelOrigin - iInitialHannWinCenter);
-
-        yKernelB = yKernel .* shiftedHannWin;
-      else
-        % Do nothing.
-        yKernelB = yKernel;
+        shiftedHannWin = bicas.tf.time.get_shifted_Hann_window(...
+          iKernelOrigin, lenKernel);
+        yKernel        = yKernel .* shiftedHannWin;
       end
 
 
@@ -155,13 +124,58 @@ classdef time
       %================
       % Process signal
       %================
-      Drt = bicas.tf.Deretrending(Settings.detrendingDegreeOf, Settings.retrendingEnabled);
+      Drt = bicas.tf.Deretrending(...
+        Settings.detrendingDegreeOf, ...
+        Settings.retrendingEnabled);
       y1b = Drt.detrend(y1);
 
-      y2b = bicas.tf.kernel.apply_kernel(y1b, yKernelB, iKernelOrigin, edgePolicy);
+      y2b = bicas.tf.kernel.apply_kernel(y1b, yKernel, iKernelOrigin, edgePolicy);
 
       % NOTE: Using frequency domain-TF for scaling.
       y2 = Drt.retrend(y2b, tf(0));
+    end
+
+
+
+    % NOTE: Set "kernel origin" (see bicas.tf.kernel.apply_kernel()) to middle,
+    % and rounded down for even-length kernels. The algorithm is designed so
+    % that this can be set quite arbitrarily but in reality one probably wants
+    % to set it around the middle index.
+    %
+    % NOTE: Uses bicas.tf.freq.apply_TF(), BICAS' other main function for
+    % applying transfer functions to signals, using FFT. Here it is only used
+    % for obtaining an impulse response in the time domain, i.e. kernel.
+    function [yKernel, iKernelOrigin] = get_impulse_kernel(lenKernel, dt, tf)
+      iKernelOrigin           = floor(1 + (lenKernel-1)/2);
+      yImpulse                = zeros(lenKernel, 1);
+      yImpulse(iKernelOrigin) = 1;
+      yKernel                 = bicas.tf.freq.apply_TF(dt, yImpulse, tf);
+    end
+
+
+
+    % Obtain a Hann window, with the maximum at iMax.
+    function shiftedHannWin = get_shifted_Hann_window(iMax, n)
+      unshiftedHannWin = hann(n, 'periodic');
+
+      % (Periodic) Hann window center index, i.e. where the Hann window=max=1,
+      % for the initial Hann window produced by hann().
+      % --
+      % NOTE: Index is a half-integer for ODD-numbered-length PERIODIC Hann
+      % windows (i.e. ODD-numbered-length kernels). Rounding is therefore
+      % ~arbitrary.
+      iInitialHannWinCenter = 1 + ceil((n-1)/2);   % Round up.
+
+      % Disable?
+      assert(...
+        (mod(n, 2) == 1) || ...
+        unshiftedHannWin(iInitialHannWinCenter) == 1)
+
+      % Circularly shift Hann window so that the Hann window max is at the
+      % kernel origin.
+      shiftedHannWin = circshift(...
+        unshiftedHannWin, ...
+        iMax - iInitialHannWinCenter);
     end
 
 

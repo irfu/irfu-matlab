@@ -149,7 +149,6 @@ classdef kernel
       EMID = 'BICAS:Assertion:IllegalArgument';
 
       lenKernel = length(yKernel);
-      lenY1     = length(y1);
 
       %============
       % ASSERTIONS
@@ -168,13 +167,35 @@ classdef kernel
       % Lengths of minimum necessary padding before & after
       %-----------------------------------------------------
       % Padding length BEFORE signal == Length of kernel AFTER  origin.
-      nPad1 = lenKernel - iKernelOrigin;
+      nPadA = lenKernel - iKernelOrigin;
       % Padding length AFTER  signal == Length of kernel BEFORE origin.
-      nPad2 = iKernelOrigin - 1;
+      nPadB = iKernelOrigin - 1;
 
       %====================================
       % Pad signal y1 depending on setting
       %====================================
+      y1padded = bicas.tf.kernel.add_padding(y1, nPadA, nPadB, edgePolicy);
+
+      %=====================================================
+      % CONVOLVE PADDED SIGNAL USING MATLAB FUNCTION conv()
+      %=====================================================
+      y2padded = conv(y1padded, yKernel);
+
+      %================
+      % Remove padding
+      %================
+      i0 = nPadA + iKernelOrigin - 1;    % Index before first index to keep.
+      y2 = y2padded(i0 + [1:length(y1)]);
+    end
+
+
+
+    function y2 = add_padding(y1, nPadA, nPadB, edgePolicy)
+      % PROPOSAL: Add tests.
+      %   NOTE: Currently tested indirectly.
+
+      lenY1 = length(y1);
+
       switch(edgePolicy)
         case 'ZEROS'
           %================
@@ -184,8 +205,8 @@ classdef kernel
           % zeros is equivalent to not padding at all, IF THERE ARE NO
           % NOT-A-NUMBER in the signal. Therefore padding with zeros anyway.
 
-          yPad1 = zeros(nPad1, 1);
-          yPad2 = zeros(nPad2, 1);
+          yPadA = zeros(nPadA, 1);
+          yPadB = zeros(nPadB, 1);
 
         case 'CYCLIC'
           %==============================================
@@ -199,13 +220,12 @@ classdef kernel
 
           % ASSERTION
           % NOTE: Could update implementation to eliminate this constraint.
-          assert(max(nPad1, nPad2) <= lenY1,...
-            EMID, ...
+          assert(max(nPadA, nPadB) <= lenY1,...
             ['Kernel length implies padding with more mirrored signal', ...
             ' samples than there are samples available.'])
 
-          yPad1 = y1(end-nPad1+1 : end,   1);
-          yPad2 = y1(1           : nPad2, 1);
+          yPadA = y1(end-nPadA+1 : end,   1);
+          yPadB = y1(1           : nPadB, 1);
 
         case 'MIRROR'
           %=============================================================
@@ -218,33 +238,21 @@ classdef kernel
           % mirror the very first and last samples.
 
           % ASSERTION
-          assert(max(nPad1, nPad2) <= lenY1,...
-            EMID, ...
+          assert(max(nPadA, nPadB) <= lenY1,...
             ['Kernel length implies padding with more mirrored signal', ...
             ' samples than thera are samples available.'])
 
           % NOTE: Y = wrev(X) reverses the 1D vector X.
-          yPad1 = wrev(y1(1           : nPad1, 1));
-          yPad2 = wrev(y1(end-nPad2+1 : end,   1));
+          yPadA = wrev(y1(1           : nPadA, 1));
+          yPadB = wrev(y1(end-nPadB+1 : end,   1));
 
         otherwise
-          error(EMID, 'Illegal argument edgePolicy="%s".', edgePolicy)
+          error('Illegal argument edgePolicy="%s".', edgePolicy)
 
       end
 
       % Pad signal.
-      y1b = [yPad1; y1; yPad2];
-
-      %=====================================================
-      % CONVOLVE PADDED SIGNAL USING MATLAB FUNCTION conv()
-      %=====================================================
-      y2b = conv(y1b, yKernel);
-
-      %================
-      % Remove padding
-      %================
-      y2  = y2b(nPad1 + iKernelOrigin-1 + [1:lenY1]);
-
+      y2 = [yPadA; y1; yPadB];
     end
 
 
