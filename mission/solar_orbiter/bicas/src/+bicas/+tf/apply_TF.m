@@ -82,13 +82,10 @@
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2020-11-04.
 %
-function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
+function [y2, Debug] = apply_TF(dt, y1, tf, S)
 % PROPOSAL: Move bicas.tf to bicas.proc.L1L2.tf.
 %   PRO: Code is only used for processing L1/L1R-->L2.
 %   CON: Implies that code is less generic/reusable.
-%
-% PROPOSAL: Replace irf.utils.interpret_settings_args() with keyword arguments.
-%   NOTE: Can no longer pass on "Settings" as struct to apply_TF_with_DRT().
 %
 % PROPOSAL: Class with static methods.
 %   PRO: Inner functions can be separately tested.
@@ -121,19 +118,17 @@ function [y2, Debug] = apply_TF(dt, y1, tf, varargin)
 %   SFV = Split by FV
 %   NFS = Non-Finite Splitting
 
-DEFAULT_SETTINGS.detrendingDegreeOf      = -1;
-DEFAULT_SETTINGS.retrendingEnabled       = false;
-DEFAULT_SETTINGS.tfHighFreqLimitFraction = Inf;
-DEFAULT_SETTINGS.method                  = 'FFT';
-DEFAULT_SETTINGS.kernelEdgePolicy        = 'MIRROR';
-DEFAULT_SETTINGS.kernelHannWindowEnabled = false;
-DEFAULT_SETTINGS.snfEnabled              = false;
-DEFAULT_SETTINGS.snfSubseqMinSamples     = 1;
-
-S = irf.utils.interpret_settings_args(...
-  DEFAULT_SETTINGS, varargin);
-irf.assert.struct(S, fieldnames(DEFAULT_SETTINGS), {})
-clear DEFAULT_SETTINGS
+arguments
+  dt, y1, tf
+  S.detrendingDegreeOf      = -1;
+  S.retrendingEnabled       = false;
+  S.tfHighFreqLimitFraction = Inf;
+  S.method                  = 'FFT';
+  S.kernelEdgePolicy        = 'MIRROR';
+  S.kernelHannWindowEnabled = false;
+  S.snfEnabled              = false;
+  S.snfSubseqMinSamples     = 1;
+end
 
 assert(...
   isscalar( S.snfEnabled) && ...
