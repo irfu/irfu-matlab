@@ -158,6 +158,8 @@ classdef kernel
       assert(~isempty(yKernel), ...
         'BICAS:Assertion:IllegalArgument', ...
         'Argument yKernel is empty.')
+      assert(lenKernel <= length(y1))
+      %
       assert(isscalar(iKernelOrigin) & isnumeric(iKernelOrigin))
       assert((1 <= iKernelOrigin) & (iKernelOrigin <= lenKernel))
 

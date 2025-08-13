@@ -83,10 +83,10 @@ classdef kernel___UTEST < matlab.unittest.TestCase
           y2p(iKc + [0:5]))
       end
 
-      % Kernel longer than signal.
+      % Kernel has same length as signal (max length).
       T.test_apply_TF( ...
-        [1,0,0], [1,2,3,4], 2, 'ZEROS', ...
-        [2,3,4])
+        [1,0,0], [1,2,3], 2, 'ZEROS', ...
+        [2,3,0])
     end
 
 
@@ -102,9 +102,9 @@ classdef kernel___UTEST < matlab.unittest.TestCase
       T.test_apply_TF_pad( ...
         [3,4], [2,1,0,0,3,4], [2,1], [1,2,3,4,5], 3, 'CYCLIC')
 
-      % Kernel longer than signal (but still legal).
+      % Kernel has same length as signal (max length).
       T.test_apply_TF_pad( ...
-        [1,0,0], [1,0,0], [1,0,0], [1,2,3,4], 3, 'CYCLIC')
+        [1,0,0], [1,0,0], [1,0,0], [1,2,3], 3, 'CYCLIC')
     end
 
 
@@ -120,9 +120,9 @@ classdef kernel___UTEST < matlab.unittest.TestCase
       T.test_apply_TF_pad( ...
         [1,2], [2,1,0,0,3,4], [4,3], [1,2,3,4,5], 3, 'MIRROR')
 
-      % Kernel longer than signal (but still legal).
+      % Kernel has same length as signal (max length).
       T.test_apply_TF_pad( ...
-        [0,0,1], [1,0,0], [0,0,1], [1,2,3,4], 2, 'MIRROR')
+        [0,0,1], [1,0,0], [0,0,1], [1,2,3], 2, 'MIRROR')
     end
 
 
