@@ -1115,7 +1115,12 @@ GATTRIB.Data_type = {dataType}; % 'fast_l1b_dce2d', 'slow_l1b_dce2d' or 'brst_l1
 GATTRIB.Logical_source = {[datasetPrefix '_' dataType]}; % ie. mms2_edp_fast_l1b_OptDesc FIXME...
 GATTRIB.Logical_source_description = {dataDesc}; % in full words.
 if(~isempty(Dmgr.calFile))
-  GATTRIB.Calibration_file = {Dmgr.calFile}; % Calibration file used.
+  % Calibration file used.
+  if iscell(Dmgr.calFile)
+    GATTRIB.Calibration_file = {strjoin(Dmgr.calFile, ' and ')};
+  else
+    GATTRIB.Calibration_file = {Dmgr.calFile};
+  end
 end
 
 % Replace any NaN with correct FILLVAL
