@@ -22,6 +22,21 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
 
+  %#################
+  %#################
+  % TEST PARAMETERS
+  %#################
+  %#################
+  % Technically, additional properties of testCase objects with cell array
+  % default values. Test methods with arguments with the same name will be
+  % called once for every element in the cell arrays.
+  properties(TestParameter)
+    % All legal values for setting "PROCESSING.CALIBRATION.TF.METHOD".
+    TF_METHOD = {'FFT'; 'KERNEL'}
+  end
+
+
+
   %##############
   %##############
   % TEST METHODS
@@ -35,8 +50,8 @@ classdef dc___UTEST < matlab.unittest.TestCase
     %
     % NOTE: bicas.tf.apply_TF() itself splits by NaN (by default).
     %
-    function test_calibrate_voltage_1xBLTS___CWF_NaN(testCase)
-      Bso = testCase.get_simple_TF_BSO();
+    function test_calibrate_voltage_1xBLTS___CWF_NaN(testCase, TF_METHOD)
+      Bso = testCase.get_simple_TF_BSO(TF_METHOD);
 
       Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierTest( ...
         itfBiasAvpiv=@(omegaRps) (ones(size(omegaRps))*2), ...
@@ -78,8 +93,8 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
     % Test SWF NaN data.
-    function test_calibrate_voltage_1xBLTS___SWF_NaN(testCase)
-      Bso = testCase.get_simple_TF_BSO();
+    function test_calibrate_voltage_1xBLTS___SWF_NaN(testCase, TF_METHOD)
+      Bso = testCase.get_simple_TF_BSO(TF_METHOD);
 
       Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierTest( ...
         itfBiasAvpiv=@(omegaRps) (ones(size(omegaRps))*2), ...
@@ -296,11 +311,13 @@ classdef dc___UTEST < matlab.unittest.TestCase
 
 
 
-    function Bso = get_simple_TF_BSO(testCase)
+    function Bso = get_simple_TF_BSO(testCase, tfMethod)
       % IMPLEMENTATION NOTE: The default configuration makes it hard to predict
       % the behaviour for bicas.tf.apply_TF() even for simple TFs and data.
       % Therefore deactivating multiple features.
       Bso = bicas.create_default_BSO();
+
+      Bso.override_value('PROCESSING.CALIBRATION.TF.METHOD',                    tfMethod, 'test');
 
       Bso.override_value('PROCESSING.CALIBRATION.TF.DC_DE-TRENDING_FIT_DEGREE', -1,    'test');
       Bso.override_value('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED',    false, 'test');
@@ -309,6 +326,12 @@ classdef dc___UTEST < matlab.unittest.TestCase
       % NOTE: FV_SPLITTING.MIN_SAMPLES is independent of FV_SPLITTING.ENABLED.
       Bso.override_value('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES',  2,     'test');
       Bso.override_value('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION',  Inf,   'test');
+
+      % NOTE: Using a Hann window (which only applies to KERNEL method)
+      % effectively scales down also simple TFs (constants) for very short
+      % sequences of samples which affects the tests. Therefore disabling
+      % functionality to simplify tests.
+      Bso.override_value('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false, 'test');
 
       Bso.make_read_only()
     end
