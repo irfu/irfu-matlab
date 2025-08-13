@@ -175,9 +175,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % =========
     % dataAr
     %       Array of actual data. Limited to some data types.
-    % fpDescriptionType == varargin{1}
+    % varargin{1} == fpDescriptionType
     %       String constant. 'NO_FILL_POSITIONS' if not specified.
-    % fpDescription == varargin{2}
+    % varargin{2} == fpDescription
     %       Required or not depending on fpDescriptionType.
     %       Interpretation  depending on fpDescriptionType.
     %       'FILL_VALUE'

@@ -130,8 +130,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
     % Only "normalizes" data to account for technically
     % illegal input TDS datasets. It should try to:
     % ** modify L1 to look like L1R
-    % ** mitigate historical bugs in the input datasets
-    % ** mitigate for not yet implemented features in input datasets
+    % ** mitigate historical bugs in the input datasets (if any)
+    % ** mitigate for not yet implemented features in input datasets (if any)
     %
     function InSciNorm = process_normalize_CDF(obj, InSci, Bso, L)
 
@@ -151,23 +151,36 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %===========================================================
-      % Normalize zVar name SYNCHRO_FLAG
-      % --------------------------------
-      % Both ZVs TIME_SYNCHRO_FLAG, SYNCHRO_FLAG found in input
-      % datasets. Unknown why. "DEFINITION BUG" in definition of
-      % datasets/skeleton? /2020-01-05
-      % Based on skeletons (.skt; L1R, L2), SYNCHRO_FLAG seems
-      % to be the correct one. /2020-01-21
-      %===========================================================
-      [InSci.Zv, fnChangeList] = irf.ds.normalize_struct_fieldnames(...
-        InSci.Zv, ...
-        {{{'TIME_SYNCHRO_FLAG', 'SYNCHRO_FLAG'}, 'SYNCHRO_FLAG'}}, ...
-        'Assert one matching candidate');
+      %========================================================================
+      % Normalize ZV SYNCHRO_FLAG EXISTENCE and CONTENT
+      % -----------------------------------------------
+      % All L1R TDS-LFM-CWF-E datasets have empty SYNCHRO_FLAG ZVs.
+      % /2025-06-10
+      % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
+      % --
+      % All L1R TDS-LFM-RSWF-E datasets lack SYNCHRO_FLAG ZVs. /2025-06-11
+      % https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/100
+      %========================================================================
+      if ~isfield(InSciNorm.Zv, "SYNCHRO_FLAG") || isempty(InSciNorm.Zv.SYNCHRO_FLAG)
+        [settingValue, settingKey] = Bso.get_fv('PROCESSING.L1R.TDS.SYNCHRO_FLAG_MISSING_EMPTY_POLICY');
+        anomalyDescriptionMsg = 'Input dataset zVariable SYNCHRO_FLAG is either missing or empty.';
 
-      bicas.proc.utils.handle_ZV_name_change(...
-        fnChangeList, obj.inputSciDsi, Bso, L, ...
-        'SYNCHRO_FLAG', 'INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY')
+        switch(settingValue)
+          case "USE_FILL_VALUE"
+            % Mitigate by creating correctly sized zVariable.
+            nRecords                  = size(InSci.Zv.Epoch, 1);
+            FILL_VALUE                = uint8(255);
+            InSciNorm.Zv.SYNCHRO_FLAG = zeros(nRecords, 1, "uint8") + FILL_VALUE;
+            bicas.default_anomaly_handling(L, ...
+              settingValue, settingKey, ...
+              'OTHER', anomalyDescriptionMsg, 'BICAS:Assertion')
+
+          otherwise
+            bicas.default_anomaly_handling(L, ...
+              settingValue, settingKey, ...
+              'ERROR_ILLEGAL_SETTING', anomalyDescriptionMsg, 'BICAS:Assertion')
+        end
+      end
 
 
 

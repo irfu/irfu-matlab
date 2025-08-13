@@ -13,18 +13,26 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef ExternalCodeAbstract
-  % PROPOSAL: Name?
-  %   ~external
+  % PROPOSAL: Better name with better abbreviation for class with subclasses?
+  %   PRO: Currently using "Ec" as abbreviation.
+  %   ~external code
   %   ~science
   %   ~science calculations
   %   ~science calibration
   %   ~science processing
   %   ~science data
   %   ~call
+  %   ~L2 (as input)
+  %   ~L3
+  %   ~density, E field, scpot
+  %   ~CWF
+  %   --
   %   ExternalCodeCall*
   %   ExternalCall*
-  %   NOTE: Should fit with naming of subclasses.
-  %
+  %   LSP, L3SP = L3ScienceProcessing
+  %     CON: LSP to common substring.
+  %   ELSP, EL3SP = ExternalL3ScienceProcessing
+  %     CON: ELSP in "doModelSpacecraft" (7 instances)
   % PROPOSAL: How implement interface?
   %   PROPOSAL: nargout = func(varargin)
   %       PRO: Avoids repeating function definitions.

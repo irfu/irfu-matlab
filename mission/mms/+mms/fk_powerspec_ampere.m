@@ -23,6 +23,9 @@ function [xvariable,yvariable,powerxy] = fk_powerspec_ampere(varargin)
 %                   required.
 %       plotEpower - pass E or another quantity (TSeries) to plot power in spectrograms instead of B
 %       frange -    select frequency range for k-k plots. [minf maxf]
+%       kmax -      Value of maximum wave number considered.
+%       fmax -      Maximum frequency considered. Should exceed maxf in
+%                   frange parameter.
 %
 % Output:
 %       powerxy    - array of powers as a function of frequency and
@@ -67,6 +70,8 @@ uselinear = 0;
 wwidth = 1;
 plotEpower = 0;
 frange = 0;
+calckmax = 1;
+fmax = 1/median(diff(time.epochUnix));
 
 args=varargin(5:end);
 if numel(args)>0
@@ -82,6 +87,17 @@ while haveoptions
     case 'numk'
       if numel(args)>1 && isnumeric(args{2})
         numk = floor(args{2});
+      end
+    case 'kmax'
+      if numel(args)>1 && isnumeric(args{2})
+        kmaxval = args{2};
+        calckmax = 0;
+      end
+    case 'fmax'
+      if numel(args)>1 && isnumeric(args{2})
+        if args{2} > 0 && args{2} < fmax
+          fmax = args{2};
+        end
       end
     case 'numf'
       if numel(args)>1 && isnumeric(args{2})
@@ -130,10 +146,10 @@ if ~uselinear
     WE = irf_wavelet(E,'returnpower',0,'cutedge',0,'nf',numf,'wavelet_width',5.36*wwidth);
   end
 else
-  WB = irf_wavelet(B,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth);
-  WJ = irf_wavelet(J,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth);
+  WB = irf_wavelet(B,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth,'f',[0 fmax]);
+  WJ = irf_wavelet(J,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth,'f',[0 fmax]);
   if plotEpower
-    WE = irf_wavelet(E,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth);
+    WE = irf_wavelet(E,'returnpower',0,'cutedge',0,'linear',df,'wavelet_width',5.36*wwidth,'f',[0 fmax]);
   end
 end
 numf = length(WB.f);
@@ -179,8 +195,14 @@ Bbackabsmat = Bback.abs.data*ones(1,numf);
 kpar = (kx.*Bbackxmat + ky.*Bbackymat + kz.*Bbackzmat)./Bbackabsmat;
 kperp = sqrt(kmag.^2 - kpar.^2);
 
-kmax = max(max(kmag))*1.1;
-kmin = -kmax;
+if calckmax
+  kmax = max(max(kmag))*1.1;
+  kmin = -kmax;
+else
+  kmax = abs(kmaxval);
+  kmin = -kmax;
+end
+
 kvec = linspace(-kmax,kmax,numk);
 kmagvec = linspace(0,kmax,numk);
 
@@ -199,7 +221,9 @@ powerkmagf = zeros(numf,numk);
 for mm = 1:L
   for nn = 1:numf
     knumber = floor((kmag(mm,nn))/dkmag)+1;
-    powerkmagf(nn,knumber) = powerkmagf(nn,knumber) + Powerp(mm,nn);
+    if knumber < numk
+      powerkmagf(nn,knumber) = powerkmagf(nn,knumber) + Powerp(mm,nn);
+    end
   end
 end
 
@@ -223,7 +247,9 @@ for mm = 1:L
   for nn = idxf
     kparnumber = floor((kpar(mm,nn)-kmin)/dk)+1;
     kperpnumber = floor((kperp(mm,nn))/dkmag)+1;
-    powerkperpkpar(kparnumber,kperpnumber) = powerkperpkpar(kparnumber,kperpnumber) + Powerp(mm,nn);
+    if kparnumber < numk+1 && kperpnumber < numk+1 && kparnumber > 0
+      powerkperpkpar(kparnumber,kperpnumber) = powerkperpkpar(kparnumber,kperpnumber) + Powerp(mm,nn);
+    end
   end
 end
 
@@ -239,7 +265,9 @@ for mm = 1:L
   for nn = idxf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
-    powerkxky(kynumber,kxnumber) = powerkxky(kynumber,kxnumber) + Powerp(mm,nn);
+    if kynumber < numk+1 && kynumber > 0 && kxnumber < numk+1 && kxnumber > 0
+      powerkxky(kynumber,kxnumber) = powerkxky(kynumber,kxnumber) + Powerp(mm,nn);
+    end
   end
 end
 
@@ -255,7 +283,9 @@ for mm = 1:L
   for nn = idxf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
-    powerkxkz(kznumber,kxnumber) = powerkxkz(kznumber,kxnumber) + Powerp(mm,nn);
+    if kznumber < numk+1 && kznumber > 0 && kxnumber < numk+1 && kxnumber > 0
+      powerkxkz(kznumber,kxnumber) = powerkxkz(kznumber,kxnumber) + Powerp(mm,nn);
+    end
   end
 end
 
@@ -271,7 +301,9 @@ for mm = 1:L
   for nn = idxf
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
-    powerkykz(kznumber,kynumber) = powerkykz(kznumber,kynumber) + Powerp(mm,nn);
+    if kznumber < numk+1 && kznumber > 0 && kynumber < numk+1 && kynumber > 0
+      powerkykz(kznumber,kynumber) = powerkykz(kznumber,kynumber) + Powerp(mm,nn);
+    end
   end
 end
 
@@ -286,7 +318,9 @@ powerkxf = zeros(numf,numk);
 for mm = 1:L
   for nn = 1:numf
     kxnumber = floor((kx(mm,nn)-kmin)/dk)+1;
-    powerkxf(nn,kxnumber) = powerkxf(nn,kxnumber) + Powerp(mm,nn);
+    if kxnumber < numk+1 && kxnumber > 0
+      powerkxf(nn,kxnumber) = powerkxf(nn,kxnumber) + Powerp(mm,nn);
+    end
   end
 end
 
@@ -301,7 +335,9 @@ powerkyf = zeros(numf,numk);
 for mm = 1:L
   for nn = 1:numf
     kynumber = floor((ky(mm,nn)-kmin)/dk)+1;
-    powerkyf(nn,kynumber) = powerkyf(nn,kynumber) + Powerp(mm,nn);
+    if kynumber < numk+1 && kynumber > 0
+      powerkyf(nn,kynumber) = powerkyf(nn,kynumber) + Powerp(mm,nn);
+    end
   end
 end
 
@@ -316,7 +352,9 @@ powerkzf = zeros(numf,numk);
 for mm = 1:L
   for nn = 1:numf
     kznumber = floor((kz(mm,nn)-kmin)/dk)+1;
-    powerkzf(nn,kznumber) = powerkzf(nn,kznumber) + Powerp(mm,nn);
+    if kznumber < numk+1 && kznumber > 0
+      powerkzf(nn,kznumber) = powerkzf(nn,kznumber) + Powerp(mm,nn);
+    end
   end
 end
 

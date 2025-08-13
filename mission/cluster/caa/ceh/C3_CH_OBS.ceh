@@ -12,16 +12,37 @@ END_META       = OBSERVATORY
 
 START_META     = OBSERVATORY_CAVEATS
     ENTRY      = "*C3_CQ"
+    ENTRY = "Main planned commissioning events : "
+    ENTRY = " - 2000-07-16T12:39Z/2000-07-16T12:39Z :  Launch 1"
+    ENTRY = " - 2000-07-16T12:39Z/2000-10-18T19:15Z :  SC not at 15 rpm"
+    ENTRY = " - 2000-07-24T00:00Z/2000-07-24T04:00Z :  ASPOC+CIS cover opening"
+    ENTRY = " - 2000-08-22T12:09Z/2000-08-22T17:39Z :  FGM Switch-on + tests"
+    ENTRY = " - 2000-09-05T19:39Z/2000-09-05T20:19Z :  WEC Spin up satellite to 22 rpm + sphere release (B.5)"
+    ENTRY = " - 2000-10-09T10:35Z/2000-10-09T11:35Z :  WEC First full WEC on (A.4)"
+    ENTRY = " - 2000-10-11T17:15Z/2000-10-11T18:15Z :  WEC Deploy booms 3 & 4 and  to 15 m (B.3)"
+    ENTRY = " - 2000-10-11T18:15Z/2000-10-11T19:15Z :  WEC Deploy booms 1 & 2 from 1.3 m to 15 m (B.4)"
+    ENTRY = " - 2000-10-11T19:15Z/2000-10-11T19:55Z :  WEC Spin up satellite to 22 rpm + sphere release (B.5)"
+    ENTRY = " - 2000-10-16T16:18Z/2000-10-16T17:18Z :  WEC Deploy booms 3 & 4  from 15 m to 35 m (C.2)"
+    ENTRY = " - 2000-10-16T17:18Z/2000-10-16T17:48Z :  WEC Deploy booms 1 & 2  from 15 m to 20 m (C.3)"
+    ENTRY = " - 2000-10-18T15:20Z/2000-10-18T15:55Z :  WEC Deploy booms 3 & 4 from 35 m to 43 m (D.2)"
+    ENTRY = " - 2000-11-08T14:51Z/2000-11-08T16:01Z :  WEC Deploy booms 1 & 2 from 20 m to 43 m (E.2)"
+    ENTRY = " - 2000-12-06T11:00Z/2000-12-20T18:30Z :  Interferences + Intercalibration (6 orbits)/ JSOC OBRQ"
 END_META       = OBSERVATORY_CAVEATS
 
 START_META     = OBSERVATORY_DESCRIPTION  
-    ENTRY      = "Missing" 
-    ENTRY      = "Needs to be filled in." 
+    ENTRY      = "Cluster-3 (Samba)"
+    ENTRY      = "Launched: 16 Jul 2000"
+    ENTRY      = "ESA Number: 3"
+    ENTRY      = "COSPAR ID: 2000-041A"
+    ENTRY      = "USSPACECOM catalogue number: 26410"
+    ENTRY      = "CSDS Code: C3"
+    ENTRY      = "ESOC FD code: S3"
+    ENTRY      = "ESA Flight Model Number: FM7"
 END_META       = OBSERVATORY_DESCRIPTION 
 
 START_META      = OBSERVATORY_TIME_SPAN
     VALUE_TYPE  = ISO_TIME_RANGE
-    ENTRY       = 2000-07-16T12:39:00Z/2005-12-31T23:59:59Z 
+    ENTRY       = 2000-07-16T00:00:00Z/2026-08-31T00:00:00Z
 END_META        = OBSERVATORY_TIME_SPAN
 
 START_META    = OBSERVATORY_REGION 

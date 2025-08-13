@@ -252,8 +252,39 @@ Version 8.4.0 (2025-02-14)
   exceed automatic saturation detection thresholds.
 
 
-Version 8.4.1
--------------
+Version 8.4.1 (2025-02-19)
+--------------------------
 * Bugfix: Automatic saturation detection only sets L2_QUALITY_BITMASK saturation
   bits when samples exceed thresholds on non-reconstructed channels.
 * Require new L3 master CDFs V06/V07.
+
+
+Version 8.5.0 (2026-06-26)
+--------------------------
+* Bugfix: Can now handle multi-valued GA "OBS_ID".
+* Bugfix: SOLO_L3_RPW-BIA-DENSITY-10-SECONDS ZV QUALITY_FLAG is now a
+  downsampled version of SOLO_L3_RPW-BIA-DENSITY ZV QUALITY_FLAG. (Was
+  previously a downsampled version of SOLO_L2_RPW-LFR-SURV-CWF-E ZV
+  QUALITY_FLAG.)
+* Mitigation for empty or missing zVariable SYNCHRO_FLAG in L1R TDS-LFM-CWF/RSWF
+  input datasets. Controlled by new setting
+  PROCESSING.L1R.TDS.SYNCHRO_FLAG_MISSING_EMPTY_POLICY (mitigation enabled by
+  default/"USE_FILL_VALUES").
+  https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/99
+  https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/100
+* No longer set L3 QUALITY_FLAG and L3_QUALITY_BITMASK to FV when there is no
+  science data.
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2025-05-27 (inclusive).
+* New default: PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN=0
+* Removed obsoleted functionality for mitigating misnamed and/or duplicated
+  L1/L1R zVariable SYNCHRO_FLAG (TIME_SYNCHRO_FLAG). Therefore also removed
+  the related settings INPUT_CDF.USING_ZV_NAME_VARIANT_POLICY and
+  INPUT_CDF.LFR.BOTH_SYNCHRO_FLAG_AND_TIME_SYNCHRO_FLAG_WORKAROUND_ENABLED.
+* Removed obsoleted functionality for mitigating (implicitly anomalous) empty
+  zVariables when writing CDFs, i.e. after the bulk processing.
+  Therefore also removed settings
+  OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY and
+  OUTPUT_CDF.EMPTY_NONNUMERIC_ZV_POLICY.
+* Temporarily blank E-field data for 2022-11-30T23:00:00Z to
+  2022-12-01T00:10:00Z.

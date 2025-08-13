@@ -16,6 +16,10 @@ START_META     =   DATA_TYPE
    ENTRY       =   "CP>CAA_Parameter"
 END_META       =   DATA_TYPE
 !
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Spectra"
+END_META       =   DATASET_TYPE
+!
 START_META     =   DATASET_TITLE
    ENTRY       =   "GOES-XXX Pc 1-2 Wave Spectra, Polarization and Propagation Parameters"
 END_META       =   DATASET_TITLE
@@ -55,7 +59,7 @@ START_META     =   DATASET_DESCRIPTION
 END_META       =   DATASET_DESCRIPTION
 !
 START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>MAARBLE Wave Database leader>yuri@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
 START_META     =   TIME_RESOLUTION
@@ -143,7 +147,7 @@ START_VARIABLE = BB_xxyyzz_fac__CC_CP_AUX_MAARBLE_GXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Magnetic_Field"
    PROPERTY           = "Vector"
-   FLUCTUATIONS       = "Wavelet_Power-spectrum"
+   FLUCTUATIONS       = "Wavelet_Power_Spectrum"
    CATDESC            = "Power spectrum in the Pc 3-5 range of the B-field in the FAC system"
    UNITS              = "nT^2 Hz^-1"
    SI_CONVERSION      = "1.0E-18>T^2 Hz^-1"
@@ -169,7 +173,7 @@ START_VARIABLE = KSVD_fac__CC_CP_AUX_MAARBLE_GXXX_ULF_PC12
    PROPERTY           = "Vector"
    CATDESC            = "Direction of propagation in FAC system (SVD)."
    UNITS              = "deg","deg"
-   SI_CONVERSION      = "1>degree","1>degree"
+   SI_CONVERSION      = "0.01745>rad","0.01745>rad"
    SIZES              = 12,2   ! 12 frequency bins x 2 comp (theta,phi) 
    TENSOR_ORDER       = 1
    REPRESENTATION_2   = "t", "p"

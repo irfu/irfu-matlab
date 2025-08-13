@@ -202,8 +202,8 @@ it is assumed that no sweep is underway.
 ============
 BICAS can determine that L2 data is either "partially saturated" or
 "fully saturated" in the following ways:
-(1) time interval being labelled as "partially saturated" in the NSO table,
-(2) time interval being labelled as "fully saturated" in the NSO table,
+(1) time interval is labelled as "partially saturated" in the NSO table,
+(2) time interval is labelled as "fully saturated" in the NSO table,
 (3) algorithm examines L2 data and determines that it is "fully saturated".
 NOTE: There is no algorithm for determining whether L2 data is "partially
       saturated".
@@ -254,20 +254,38 @@ Condition     | Action taken when condition applies
               |     Cap QUALITY_FLAG<=1.
 
 
+
+=================================================================
+ L2 data used for generating L2 LFR CWF downsampled (unofficial)
+=================================================================
+L2 LFR CWF downsampled (SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND; unofficial dataset)
+is derived from SOLO_L2_RPW-LFR-SURV-CWF-E only, but only when its quality
+deemed good enough using setting PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN (=0
+as of 2025-05-23).
+
+Condition                                    | Action taken when condition applies
+--------------------------------------------------------------------------------
+L2 LFR CWF QUALITY_FLAG is either            | L2 LFR CWF downsampled:
+>= PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN |     VDC, EDC, VDCSTD, EDCSTD
+or fill value (!)                            |     values are set to fill
+                                             |     values before downsampling.
+
+
 =============================================
  L2 data used for generating L3 EFIELD,SCPOT
 =============================================
-L3 EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E only, but only when
-its quality is deemed good enough using setting
+L3 DENSITY+EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E alone, but
+only when its quality is deemed good enough using setting
 PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-02-19).
 
 Condition                                  | Action taken when condition applies
 --------------------------------------------------------------------------------
-L2 LFR CWF QUALITY_FLAG is either          | L3 EFIELD+SCPOT:
->= PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN |     EFIELD+SCPOT values are set to
-or fill value (!)                          |     fill values.
+L2 LFR CWF QUALITY_FLAG is either          | L3 DENSITY+EFIELD+SCPOT:
+>= PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN |     DENSITY+EFIELD+SCPOT values are
+or fill value (!)                          |     set to fill values.
 
-NOTE: This rule does not apply to DENSITY.
+NOTE: Historically, this rule did not apply to DENSITY, but it does since
+BICAS 8.5.0.
 
 
 =============================================================
@@ -286,7 +304,7 @@ when downsampling *SCIENCE* data.       | deviation).
 ------------------------------------------------------------------------------
 Zero non-fill value samples in a bin    | Bin is represented by a fill value
 when downsampling quality bitmasks      | in the output data.
-(zvariables QUALITY_BITMASK,            |
+(zVariables QUALITY_BITMASK,            |
 L2_QUALITY_BITMASK, L3_QUALITY_BITMASK) |
 and zVariable QUALITY_FLAG.             |
 
@@ -294,6 +312,7 @@ and zVariable QUALITY_FLAG.             |
 =========================================================
  ROC modifying BICAS output CDFs due for quality reasons
 =========================================================
-ROC sometimes modifies CDFs, *after* they have been produced by BICAS. This may
-happen e.g. for time intervals when e.g. ANT3 has failed and QUALITY_FLAG is
-capped to 1 by ROC. See global attribute CAVEATS.
+ROC sometimes modifies CDFs, *after* they have been produced by BICAS and before
+they are officially delivered to SOAR. This may happen e.g. for time intervals
+when e.g. ANT3 has failed and QUALITY_FLAG is capped to 1 by ROC. See global
+attribute CAVEATS.
