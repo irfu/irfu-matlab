@@ -340,3 +340,6 @@ Version X.Y.Z (????-??-??)
 * Typofix: Correct descriptor.json TDS s/w mode names ("LFR"-->"TDS").
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2025-06-21 (inclusive).
+* Requires new master CDF versions:
+    L2: V18
+    L3: V07/V08

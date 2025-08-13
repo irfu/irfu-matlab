@@ -269,8 +269,8 @@ end
 
 function SwmArray = get_SWMs_L2_to_l3()
 
-L3_EFIELD_SCPOT_SKT_VERSION = '06';
-L3_DENSITY_SKT_VERSION      = '07';
+L3_EFIELD_SCPOT_SKT_VERSION = '07';
+L3_DENSITY_SKT_VERSION      = '08';
 
 
 
