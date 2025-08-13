@@ -1,11 +1,11 @@
 %
-% matlab.unittest automatic test code for bicas.tf.apply_TF().
+% matlab.unittest automatic test code for bicas.tf.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden
 % First created 2021-08-10
 %
-classdef apply_TF___UTEST < matlab.unittest.TestCase
+classdef tf___UTEST < matlab.unittest.TestCase
 
 
 
