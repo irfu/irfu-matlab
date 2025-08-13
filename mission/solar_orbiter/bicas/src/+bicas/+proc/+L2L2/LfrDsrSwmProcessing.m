@@ -67,7 +67,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
     %     as opposed to process_L2_to_L3() which produces official datasets
     %     and might one day be "officially" run at ROC.
     %
-    function OutLfrCwfDsr = process_LFRCWF_to_DSR(InLfrCwf, Bso, L)
+    function OutLfrCwfDsr = process_LFRCWF_to_DSR(InLfrCwfOsr, Bso, L)
       %
       % PROBLEM: How handle leap seconds if bin size <= 1 s?
       %   NOTE: Positive leap seconds are not a problem.
@@ -86,7 +86,6 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
       BIN_LENGTH_WOLS_NS        = int64(1e9);
       BIN_TIMESTAMP_POS_WOLS_NS = int64(BIN_LENGTH_WOLS_NS / 2);
 
-      % 2021-05-24, YK: Only want to use QUALITY_FLAG>=2 data.
       QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
         'PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN'));
 
@@ -96,11 +95,14 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
       % ~Generic initialization
       %=========================
       Ga = struct(...
-        'OBS_ID',    InLfrCwf.Ga.OBS_ID, ...
-        'SOOP_TYPE', InLfrCwf.Ga.SOOP_TYPE);
+        'OBS_ID',    {InLfrCwfOsr.Ga.OBS_ID}, ...
+        'SOOP_TYPE', {InLfrCwfOsr.Ga.SOOP_TYPE});
       %
       [Zv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
-        InLfrCwf, ...
+        InLfrCwfOsr.Zv.Epoch, ...
+        InLfrCwfOsr.ZvFpa.QUALITY_FLAG, ...
+        InLfrCwfOsr.ZvFpa.QUALITY_BITMASK, ...
+        InLfrCwfOsr.ZvFpa.L2_QUALITY_BITMASK, ...
         BIN_LENGTH_WOLS_NS, ...
         BIN_TIMESTAMP_POS_WOLS_NS, ...
         L);
@@ -111,23 +113,27 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      VdcOsrFpa   = InLfrCwf.ZvFpa.VDC;
-      EdcOsrFpa   = InLfrCwf.ZvFpa.EDC;
-      nRecordsOsr = numel(InLfrCwf.Zv.Epoch);
+      VdcOsrFpa   = InLfrCwfOsr.ZvFpa.VDC;
+      EdcOsrFpa   = InLfrCwfOsr.ZvFpa.EDC;
+      nRecordsOsr = numel(InLfrCwfOsr.Zv.Epoch);
 
 
 
-      % NOTE: Unclear how treat QUALITY_FLAG=FV.
+      % ==================================================
+      % Set VDC, EDC to fill values based on QUALITY_FLAG,
+      % *BEFORE* downsampling
+      % ==================================================
+      % NOTE: Unclear how to handle QUALITY_FLAG=FV.
       % QUALITY_FLAG=FV ==> UFV=false
-      bUfvFpa = InLfrCwf.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
-      bUfv    = bUfvFpa.array(false);   % Is it wise to do FV-->false.
+      bUfvFpa = InLfrCwfOsr.ZvFpa.QUALITY_FLAG < QUALITY_FLAG_minForUse;
+      bUfv    = bUfvFpa.array(false);   % Is it wise to do FV-->false?
 
       VdcOsrFpa(bUfv, :) = bicas.utils.FPArray.FP_SINGLE;
       EdcOsrFpa(bUfv, :) = bicas.utils.FPArray.FP_SINGLE;
 
 
 
-      clear InLfrCwf
+      clear InLfrCwfOsr
 
 
 

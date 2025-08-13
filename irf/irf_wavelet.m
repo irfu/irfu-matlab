@@ -79,6 +79,7 @@ wavelet_width=5.36;
 returnpower = 1;
 cutedge = 1;
 lineardf = 0;
+usefmax = 0;
 
 %% Check the options
 while flag_have_options
@@ -125,6 +126,7 @@ while flag_have_options
           %fmax=min(fmax,args{2}(2));
           fmin = args{2}(1);
           fmax = args{2}(2);
+          usefmax = 1;
         else
           irf_log('fcal','parameter ''f'' should have vector with 2 elements as parameter value.')
         end
@@ -146,8 +148,13 @@ anumber=nf; % The number of frequencies
 sigma=wavelet_width/(Fs/2); % The width of the Morlet wavelet
 if lineardf
   fmin = deltaf;
-  anumber = floor(w0/deltaf);
-  fmax = anumber*deltaf;
+  if usefmax
+    anumber = floor(fmax/deltaf);
+    fmax = anumber*deltaf;
+  else
+    anumber = floor(w0/deltaf);
+    fmax = anumber*deltaf;
+  end
   a = w0./(linspace(fmax,fmin,anumber));
 else
   amin=log10(0.5*Fs/fmax); % The highest frequency to consider is 0.5*sampl/10^amin

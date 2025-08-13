@@ -28,19 +28,31 @@
 % First created earliest 2016-10-10 and latest 2019.
 %
 function zvLrx = get_LRX(zvR0, zvR1, zvR2, iLsf)
-% TODO-DEC: Should convey iLsf=NaN as NaN, or assert that iLsf ~= NaN?
+% TODO-DEC: Should convey zvR0/zvR1/zvR2=NaN as NaN, or assert that they are
+%           ~= NaN?
+%   PROPOSAL: Assert that all input arguments are non-NaN and within range.
+%     PRO: Assertion assert(all(~isnan(zvLrx))) appears old and catches Rx
+%          values=NaN (depending on iLsf, but still).
+%     PRO: More rigorous.
+%     CON: Unable to handle fill values, or FPAs.
 % PROPOSAL: Use abbreviations "LRX" (as defined by BICAS).
 %   Ex: Function name (used both in irfu-matlab and outside).
 %   Ex: Implementation.
+%
+% TODO: Test code. Test out-of-range, NaN input.
 
+% NOTE: Prevents that iLsf=NaN or LSF out-of-range ==> NaN. Useful for asserting
+% against mistakenly using the wrong zVariable.
+assert(all(ismember(iLsf, [1:4])), ...
+  'Argument iLsf has illegal values. Are you using the correct zVariable "FREQ" and adding one?')
 irf.assert.sizes(...
   zvR0, [-1, 1], ...
   zvR1, [-1, 1], ...
   zvR2, [-1, 1], ...
   iLsf, [-1, 1]);
 
-% Set to NaN (should always be overwritten if code works) and iLsf has
-% correct values.
+% Set to NaN (should always be overwritten if code works and iLsf has
+% correct values).
 zvLrx = nan(size(iLsf));
 
 b = (iLsf==1);   zvLrx(b) = zvR0(b);
@@ -50,8 +62,9 @@ b = (iLsf==4);   zvLrx(b) = 1;
 % Last value for (iLsf==4) is the value of a hypothetical (non-existent,
 % constant) analogous zVariable "R3".
 
-% NOTE: Prevents that iLsf=NaN ==> NaN. Desirable?
+% NOTE: Prevents that iLsf=NaN or LSF out-of-range ==> NaN. Useful asserting
+% against mistakenly using the wrong zVariable.
 assert(all(~isnan(zvLrx)), ...
   ['Likely that argument iLsf has illegal values (not an integer', ...
-  ' 1-4). Are you using zVar FREQ (integers 0-3)?'])
+  ' 1-4). Are you using the correct zVar "FREQ" (integers 0-3)?'])
 end

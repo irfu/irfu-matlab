@@ -89,7 +89,7 @@ a = load(calFilename);
 % Version of the function (not .mat file).
 % NOTE: This value is meant to be be UPDATED BY HAND, not by an automatic
 % timestamp, so that a constant value represents the same function/algorithm.
-codeVerStr = '2022-12-06T13:23:14';
+codeVerStr = '2025-06-26T17:48:00';
 % Version of the .mat file. Using filename, or at least for now.
 % This string is used by BICAS to set a CDF global attribute in official
 % datasets for traceability.
@@ -227,5 +227,15 @@ DCE_SRF_out.units            = 'mV/m';
 DCE_SRF_out.coordinateSystem = 'SRF';
 PSP_out.units                = 'V';
 ScPot_out.units              = 'V';
+
+% TEMPORARY: Blank (set to NaN) DCE_SRF for a hardcoded time interval
+% -------------------------------------------------------------------
+% This is a temporary measure done in agreement with Andrew Dimmock until
+% updating the corresponding calibration. /Erik P G Johansson, 2025-06-26
+TINT_BLANK = irf.tint('2022-11-30T23:00:00Z/2022-12-01T00:10:00Z');
+bNaN = (DCE_SRF_out.time >= TINT_BLANK(1)) & (DCE_SRF_out.time <= TINT_BLANK(2));
+DCE_SRF_out.data(bNaN, :) = NaN;
+
+
 
 end %function

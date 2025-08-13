@@ -3,6 +3,8 @@
 % reasonably be set via some user interface (default values, configuration file,
 % CLI).
 %
+% Handle class.
+%
 %
 % CONCEPT
 % =======

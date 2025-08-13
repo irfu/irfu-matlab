@@ -17,8 +17,8 @@
 % DEFINITIONS
 % ===========
 % Anomaly : Something that should in theory never happen (and for which there
-%           could in principle be an assertion error), but which can in practice
-%           be handled in multiple depending on a setting.
+%           could in principle be an assertion error), but which can in
+%           practice be handled in multiple ways depending on a setting.
 %           Ex: Anomalies: Bad input dataset metadata which processing does not
 %               need.
 %           Ex: Handling: Error, warning, workaround/mitigation
@@ -27,8 +27,7 @@
 % EXAMPLE 1: Handle ERROR, mitigation/workaround, illegal value
 % =============================================================
 % anomalyDescrMsg = 'Description of anomaly.';
-% [settingValue, settingKey] = Bso.get_fv(...
-%     'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
+% [settingValue, settingKey] = Bso.get_fv('SETTING_KEY');
 % switch(settingValue)
 %     case 'USE_WORKAROUND_1'
 %         bicas.default_anomaly_handling(L, settingValue, settingKey, ...
@@ -52,8 +51,7 @@
 % EXAMPLE 2: Handle ERROR, WARNING, illegal value
 % ===============================================
 % anomalyDescrMsg = 'Description of anomaly.';
-% [settingValue, settingKey] = Bso.get_fv(...
-%     'OUTPUT_CDF.EMPTY_NUMERIC_ZV_POLICY');
+% [settingValue, settingKey] = Bso.get_fv('SETTING_KEY');
 % bicas.default_anomaly_handling(L, settingValue, settingKey, 'ERROR_WARNING_ILLEGAL_SETTING', ...
 %     anomalyDescrMsg, 'BICAS:SWMProcessing')
 %

@@ -2,7 +2,6 @@
 !  CC_CH_AUX_INST.ceh
 !  Global metadata for the Auxilary Contextual INSTRUMENT level metadata
 !
-
 START_META = INSTRUMENT_NAME
     ENTRY = "AUXC"
 END_META = INSTRUMENT_NAME
@@ -23,3 +22,6 @@ END_META = INSTRUMENT_TYPE
 START_META = MEASUREMENT_TYPE
     ENTRY = "Context"
 END_META = MEASUREMENT_TYPE
+
+
+
