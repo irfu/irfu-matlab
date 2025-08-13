@@ -315,6 +315,7 @@ Version X.Y.Z (????-??-??)
 * Bugfix: Split sequences of CWF data with constant settings based on data gaps.
 * Bugfix: Use the correct sampling rate when calibrating CWF in the presence of
   data gaps within sequences of constant settings.
+* Bugfix: Hann window correct for kernel values far from kernel origin.
 * Optimization: Only split CWF sequences of samples wrt. ACHG/ACLG for AC data.
 * Implementation uses a new coherent scheme for QRCs and their corresponding
   actions for L1/L1R->L2 processing. Should be much easier to configure, and to

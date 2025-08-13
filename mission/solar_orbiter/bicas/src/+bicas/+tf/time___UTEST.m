@@ -21,7 +21,6 @@ classdef time___UTEST < matlab.unittest.TestCase
   %##############
   methods(Test)
     % TODO-DEC: Non-trivial tests.
-    %   PROPOSAL: Hann window with unity TF.
     %   PROPOSAL: Hann window with max delay TF. ==> Kernel=0.
     %   PROPOSAL: Hann window with delay=max_delay/2
     %             ==> Kernel=half amplitude.
@@ -89,10 +88,9 @@ classdef time___UTEST < matlab.unittest.TestCase
 
         nds0 = 3;
         nds1 = floor(lenKernel / 8);
-        % NOTE: Yields hwFactor=0 for even lenKernel!
         nds2 = floor(lenKernel / 2);
 
-        for nDelaySmpls = [nds0, nds1, nds2]
+        for nDelaySmpls = [0, nds0, nds1, nds2]
           T.test_apply_TF___HW_delay( ...
             y1=y1, dt=dt, ...
             nDelaySmpls=nDelaySmpls, ...
@@ -106,32 +104,36 @@ classdef time___UTEST < matlab.unittest.TestCase
 
     % NOTE: Expected values have not been verified, but only seem plausible.
     %
-    function test_get_shifted_Hann_window(T)
+    function test_get_truncated_Hann_window(T)
+
       function test(iMax, n, expShiftedHw)
-        actShiftedHw = bicas.tf.time.get_shifted_Hann_window(iMax, n);
+        actShiftedHw = bicas.tf.time.get_truncated_Hann_window(iMax, n);
         T.assertEqual(actShiftedHw, expShiftedHw, "AbsTol", 1e-15)
       end
 
       % iMax=1
       test(1, 1, [1])
-      test(1, 2, [1    0]')
-      test(1, 3, [0.75 0.75 0.00]')
-      test(1, 4, [1.00 0.50 0.00 0.50]')
+      test(1, 2, [1    0.50]')
+      test(1, 3, [1.00 0.75 0.25]')
+      test(1, 4, [...
+        1.00 ...
+        0.853553390593274 ...
+        0.50 ...
+        0.146446609406726]')
 
       % iMax=end
       test(1, 1, [1])
-      test(2, 2, [0    1]')
-      test(3, 3, [0.75 0.00 0.75]')
-      test(4, 4, [0.50 0.00 0.50 1.00]')
+      test(2, 2, [0.50    1.00]')
+      test(3, 3, [0.25 0.75 1.00]')
+      test(4, 4, [...
+        0.146446609406726 ...
+        0.50 ...
+        0.853553390593274 ...
+        1.00]')
 
       % iMax = middle
-      test(2, 4, [0.50 1.00 0.50 0.00]')
-      test(3, 5, [...
-        0; ...
-        0.345491502812526; ...
-        0.904508497187474; ...
-        0.904508497187474; ...
-        0.345491502812526])
+      test(2, 4, [0.75 1.00 0.75 0.25]')
+      test(3, 5, [0.25 0.75 1.00 0.75 0.25]')
     end
 
 
@@ -172,13 +174,13 @@ classdef time___UTEST < matlab.unittest.TestCase
       if mod(A.lenKernel, 2) == 0
         % CASE: EVEN-numbered length kernel
         % Normalized delay: -1 <= x <= 1
-        xHw = A.nDelaySmpls/A.lenKernel;
+        xHw = A.nDelaySmpls/(A.lenKernel/2+1);
       else
         % CASE: ODD-numbered length kernel
         % ==> Has to compensate for rounding to samples.
-        xHw = (A.nDelaySmpls-0.5)/A.lenKernel;
+        xHw = A.nDelaySmpls/(floor(A.lenKernel/2)+1);
       end
-      hwFactor = 0.5 * (1 + cos(xHw*2*pi));
+      hwFactor = cos(pi/2*xHw)^2;
 
       tf = bicas.tf.utest_utils.get_TF_delay(A.nDelaySmpls*A.dt);
 

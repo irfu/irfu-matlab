@@ -106,9 +106,9 @@ classdef time
         %=============================
         % Apply Hann window to kernel
         %=============================
-        shiftedHannWin = bicas.tf.time.get_shifted_Hann_window(...
+        truncatedHannWin = bicas.tf.time.get_truncated_Hann_window(...
           iKernelOrigin, lenKernel);
-        yKernel        = yKernel .* shiftedHannWin;
+        yKernel         = yKernel .* truncatedHannWin;
       end
 
 
@@ -138,33 +138,39 @@ classdef time
 
 
 
-    % Obtain a Hann window, with the maximum at iMax.
-    function shiftedHannWin = get_shifted_Hann_window(iMax, n)
-      unshiftedHannWin = hann(n, 'periodic');
-
-      % (Periodic) Hann window center index, i.e. where the Hann window max=1,
-      % for the initial Hann window produced by hann().
-      % --
-      % NOTE: The hann() window max value varies depending on parameters.
+    % Obtain a Hann window that can be applied to the kernel, with the maximum
+    % value=1 at iMax. Only one element has the maximum value.
+    %
+    function truncatedHannWin = get_truncated_Hann_window(iMax, n)
+      % IMPLEMENTATION NOTE: Does not use MATLAB's hann() function.
+      % PRO: hann() max value varies depending on parameters.
       %   (aperiodic), n=even : max<1; has two max elements
       %   (aperiodic), n=odd  : max=1; has one max element
       %   'periodic',  n=even : max=1; has one max element
       %   'periodic',  n=odd  : max<1; has two max elements
-      % NOTE: The center/peak index is a half-integer for ODD-numbered-length
-      % PERIODIC Hann windows (i.e. ODD-numbered-length kernels). Rounding is
-      % therefore ~arbitrary.
-      iInitialHannWinCenter = 1 + ceil((n-1)/2);   % Round up.
+      %   It is however useful to always have max value=1 and better (probably?;
+      %   or at least more elegant/symmetric) to have the max value in exactly
+      %   one element.
+      % PRO: One can not set the center and "radius" of the Hann window using
+      %      hann().
+      % It is therefore easier to just implement the Hann window function
+      % oneself.
 
-      % Disable?
-      assert(...
-        (mod(n, 2) == 1) || ...
-        unshiftedHannWin(iInitialHannWinCenter) == 1)
+      if n == 1
+        truncatedHannWin = 1;
+      else
+        % "Radius" of the hann window. Sets the boundary on the first element
+        % *OUTSIDE* the kernel.
+        R = (max(iMax-1, n-iMax) + 1);
 
-      % Circularly shift Hann window so that the Hann window max is at the
-      % kernel origin.
-      shiftedHannWin = circshift(...
-        unshiftedHannWin, ...
-        iMax - iInitialHannWinCenter);
+        % Normalized locations within the Hann window:
+        %   center:     x=0
+        %   boundaries: |x|=1
+        %     Where Hann weight=0
+        xAr = ([1:n]' - iMax) / R;
+
+        truncatedHannWin = cos(pi/2*xAr).^2;
+      end
     end
 
 
