@@ -15,9 +15,6 @@
 % Does not implement parasitic capacitance due to lack of calibration values
 % (at least). Should not need to implement support for this effect according to
 % Thomas Chust(?).
-% --
-% BUG: Can likely not handle data with non-ASR SSID (Unknown, GND, or 2.5V
-%      Ref).
 %
 %
 % IMPLEMENTATION NOTES
@@ -36,6 +33,9 @@
 % NOTE: All calibration functions of measured data are assumed to accept data
 % from all BLTSs (1-5), i.e. including TDS, in order to reduce the number
 % assumptions that the calling code needs to make.
+% --
+% This class is *NOT* intended to be substituted by a mock class in tests.
+% Related class VCDS is however.
 %
 %
 % HOW USING L1R CALIBRATION_TABLE & CALIBRATION_TABLE_INDEX (L1R) WORK
@@ -120,9 +120,9 @@ classdef VoltageCalibration
   %#####################
   properties(SetAccess=private, GetAccess=public)
 
-    %==================
-    % Calibration data
-    %==================
+    %============================
+    % Source of calibration data
+    %============================
     Vcds
 
     %==================================================
@@ -194,16 +194,15 @@ classdef VoltageCalibration
       %==============
       obj.Vcds = Vcds;
 
-      %===============================================================
+      %======================================================================
       % Store miscellaneous BSO key values
       % ----------------------------------
       % IMPLEMENTATION NOTE: This useful since it:
       %   ** Centralizes the extraction of values from BSO.
       %   ** Is more convenient to access values via shorter field names
       %      (more readable code).
-      %   ** Potentially gives faster access to values (better
-      %      performance).
-      %===============================================================
+      %   ** Potentially gives faster access to values (better performance).
+      %======================================================================
       obj.tfMethod                 = Bso.get_fv('PROCESSING.CALIBRATION.TF.METHOD');
 
       obj.itfHighFreqLimitFraction = Bso.get_fv('PROCESSING.CALIBRATION.TF.HIGH_FREQ_LIMIT_FRACTION');
@@ -281,9 +280,9 @@ classdef VoltageCalibration
 
 
 
-      %=========================================
-      % Obtain settings for bicas.tf.apply_TF()
-      %=========================================
+      %===============================================================
+      % Obtain detrending/retrending settings for bicas.tf.apply_TF()
+      %===============================================================
       if bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid)
         % IMPLEMENTATION NOTE: DC is (optionally) detrended via
         % bicas.tf.apply_TF() in the sense of a fit being removed, TF applied,
@@ -292,11 +291,11 @@ classdef VoltageCalibration
         % i.e. for AC. (The fit can not be scaled with the 0 Hz signal
         % amplitude)
 
-        % NOTE: Setting for AC specifically!
+        % NOTE: Using setting for AC specifically!
         detrendingDegreeOf = obj.acDetrendingDegreeOf;
         retrendingEnabled  = false;                   % NOTE: HARDCODED SETTING.
       else
-        % NOTE: Settings for DC specifically!
+        % NOTE: Using settings for DC specifically!
         detrendingDegreeOf = obj.dcDetrendingDegreeOf;
         retrendingEnabled  = obj.dcRetrendingEnabled;
       end
@@ -319,10 +318,10 @@ classdef VoltageCalibration
           CalSettings.iCalibTimeH);
 
         if obj.useBiasTfScalar
-          % NOTE: Overwrites "itfAvpiv".
+          % NOTE: Overwrites pre-existing "itfAvpiv" which still needs to be
+          % created first in order to obtain kItfAvpiv (needed here).
           itfAvpiv = @(omegaRps) (ones(size(omegaRps)) * kItfAvpiv);
         end
-
 
         %====================
         % Obtain LFR/TDS ITF
@@ -357,7 +356,7 @@ classdef VoltageCalibration
       end
 
       if obj.biasOffsetsDisabled
-        % NOTE: Overwrites "offsetAvolt".
+        % NOTE: Overwrites pre-existing value of "offsetAvolt".
         offsetAvolt = 0;
       end
 

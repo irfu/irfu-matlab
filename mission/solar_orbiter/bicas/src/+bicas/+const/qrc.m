@@ -1,12 +1,12 @@
 %
-% Class for defining QRC-related constants, in particular QRCSs (inside
+% Class for defining QRC-related constants, in particular QRCSs (stored inside
 % QRCSMs).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qrc
-  % PROPOSAL: Rename QRCS, QRCSM.
+  % PROPOSAL: Rename QRCS or QRCSM.
   %   PRO: QRCS and QRCSM are the only publically visible products of this class.
   %   CON: The subject of the class is QRCs.
   %
@@ -81,19 +81,19 @@ classdef qrc
       %       corresponding ZVs, not the specified ASR SSIDs. This is only
       %       important if adding automatic saturation detection for non-ASRs
       %       (which is highly unlikely).
-      function add_L2_ch_sat_QRCS(qrcid, l2qbmBitmask)
+      function add_L2_channel_saturation_QRCS(qrcid, l2qbmBitmask)
         L2Qrcs = bicas.proc.QrcSettingL2(...
           QUALITY_FLAG      =bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
           L2_QUALITY_BITMASK=l2qbmBitmask);
         L2Qrcsm.add(qrcid, L2Qrcs);
       end
 
-      add_L2_ch_sat_QRCS("SATURATION_ZV_V1",   1)
-      add_L2_ch_sat_QRCS("SATURATION_ZV_V2",   2)
-      add_L2_ch_sat_QRCS("SATURATION_ZV_V3",   4)
-      add_L2_ch_sat_QRCS("SATURATION_ZV_V12",  8)
-      add_L2_ch_sat_QRCS("SATURATION_ZV_V13", 16)
-      add_L2_ch_sat_QRCS("SATURATION_ZV_V23", 32)
+      add_L2_channel_saturation_QRCS("SATURATION_ZV_V1",   1)
+      add_L2_channel_saturation_QRCS("SATURATION_ZV_V2",   2)
+      add_L2_channel_saturation_QRCS("SATURATION_ZV_V3",   4)
+      add_L2_channel_saturation_QRCS("SATURATION_ZV_V12",  8)
+      add_L2_channel_saturation_QRCS("SATURATION_ZV_V13", 16)
+      add_L2_channel_saturation_QRCS("SATURATION_ZV_V23", 32)
 
       L3Qrcsm.add("SATURATION_ZV_V1",  bicas.proc.QrcSettingL3(vdcFvIndexAr=1))
       L3Qrcsm.add("SATURATION_ZV_V2",  bicas.proc.QrcSettingL3(vdcFvIndexAr=2))
@@ -144,8 +144,8 @@ classdef qrc
       % PARTIAL_SATURATION
       %====================
       Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG      =uint8(1), ...
-        L2_QUALITY_BITMASK=L2QBM_BIT_PARTIAL_SATURATION);
+        QUALITY_FLAG       = uint8(1), ...
+        L2_QUALITY_BITMASK = L2QBM_BIT_PARTIAL_SATURATION);
       L2Qrcsm.add("PARTIAL_SATURATION", Qrcs)
 
       %=================
@@ -154,8 +154,8 @@ classdef qrc
       % NOTE: Also set PARTIAL saturation bit when FULL
       % saturation. /YK 2020-10-02.
       Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG      =bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
-        L2_QUALITY_BITMASK=L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
+        QUALITY_FLAG       = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
+        L2_QUALITY_BITMASK = L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
       L2Qrcsm.add("FULL_SATURATION", Qrcs);
 
       %=================
@@ -166,51 +166,56 @@ classdef qrc
       % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
       % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
       % (YK 2020-11-03 did not ask for any to be set.)
-      Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(1));
+      Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG = uint8(1));
       L2Qrcsm.add("THRUSTER_FIRING", Qrcs);
 
       %=============
       % BIAS_HW_OFF
       %=============
       % In practice, when LFR ZV "BW" says that BIAS h/w is off.
-      % NOTE: Delete all values, both voltage & current.
+      % NOTE: Deletes all values, both voltage & current.
       Qrcs = bicas.proc.QrcSettingL2(...
-        voltageFvSsidAr=S.values, ...
-        currentFvIantAr=[1:3]');
+        voltageFvSsidAr = S.values, ...
+        currentFvIantAr = [1:3]');
       L2Qrcsm.add("BIAS_HW_OFF", Qrcs);
 
       %=======
       % SWEEP
       %=======
       Qrcs = bicas.proc.QrcSettingL2(...
-        voltageFvSsidAr=S.values, ...   % Blank all SSIDs.
-        currentFvIantAr=[1:3]');
+        voltageFvSsidAr = S.values, ...   % Blank all SSIDs.
+        currentFvIantAr = [1:3]');
       L2Qrcsm.add("SWEEP", Qrcs);
 
       %==============
       % ANTx_FAILING
       %==============
-      QUALITY_FLAG_ANTx_FAILING = bicas.const.qrc.QUALITY_FLAG_MAX;   % TEMPORARY. Good value not decided.
-      L2QBM_ANTx_FAILING        = bicas.const.qrc.LxQBM_NONE;         % TEMPORARY. Good value not decided.
-      %QUALITY_FLAG_ANTx_FAILING =bicas.const.qrc.QUALITY_FLAG_MIN;    % TEST
-      %L2QBM_ANTx_FAILING        = uint16(65535);   % TEST
+      % NOTE: There is currently (2025-08-14) only a need for ANT3_FAILING, but
+      % in case other antennas fail, one can just create the corresponding
+      % QRCSs for ANT1 & ANT2 and fill the NSO table with the corresponding
+      % entries.
+
+      % TEMPORARY VALUES. Good values not decided.
+      % NOTE: QRC only affects some channels.
+      QUALITY_FLAG_ANTx_FAILING = bicas.const.qrc.QUALITY_FLAG_MAX;
+      L2QBM_ANTx_FAILING        = bicas.const.qrc.LxQBM_NONE;
+
+      % Qrcs = bicas.proc.QrcSettingL2(...
+      %   QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
+      %   L2_QUALITY_BITMASK = L2QBM_ANTx_FAILING, ...
+      %   voltageFvSsidAr    = S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
+      % L2Qrcsm.add("ANT1_FAILING", Qrcs);
+      %
+      % Qrcs = bicas.proc.QrcSettingL2(...
+      %   QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
+      %   L2_QUALITY_BITMASK = L2QBM_ANTx_FAILING, ...
+      %   voltageFvSsidAr    = S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
+      % L2Qrcsm.add("ANT2_FAILING", Qrcs);
 
       Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
-        L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
-        voltageFvSsidAr =S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
-      L2Qrcsm.add("ANT1_FAILING", Qrcs);
-
-      Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG      =QUALITY_FLAG_ANTx_FAILING, ...
-        L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
-        voltageFvSsidAr =S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
-      L2Qrcsm.add("ANT2_FAILING", Qrcs);
-
-      Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG     =QUALITY_FLAG_ANTx_FAILING, ...
-        L2_QUALITY_BITMASK=L2QBM_ANTx_FAILING, ...
-        voltageFvSsidAr =S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
+        QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
+        L2_QUALITY_BITMASK = L2QBM_ANTx_FAILING, ...
+        voltageFvSsidAr    = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
       L2Qrcsm.add("ANT3_FAILING", Qrcs);
 
 
@@ -223,15 +228,15 @@ classdef qrc
       % L3 datasets in the future, then the bits may have different meanings for
       % those datasets.
       Qrcs = bicas.proc.QrcSettingL3Density(...
-        QUALITY_FLAG      =uint8(1), ...
-        L3_QUALITY_BITMASK=uint16(1));
+        QUALITY_FLAG       = uint8(1), ...
+        L3_QUALITY_BITMASK = uint16(1));
       L3DensityQrcsm.add("BAD_DENSITY", Qrcs);
 
 
 
-      %===============
-      % REMOVE_EFIELD
-      %===============
+      %=============================
+      % V3_UNINTENTIONALLY_FLOATING
+      %=============================
       % V3 is unintentionally floating after sweeps due to bad commanding.
       % https://github.com/irfu/irfu-matlab/issues/156
       % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing

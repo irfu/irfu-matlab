@@ -20,8 +20,12 @@ classdef dc
   %
   % PROPOSAL: More automatic test code.
   %
-  % PROPOSAL:   process_calibrate_demux()
-  %           should only accept the needed ZVs and variables.
+  % PROPOSAL: process_calibrate_demux() should only accept the necessary ZVs and
+  %           variables and nothing else. Currently receives Dcip which covers
+  %           all ZVs.
+  %   TODO-NI: Does function actually receive input it does not use? It might
+  %            actually use all input ZVs.
+  %     PROPOSAL: Assertion on Dcip.Zv fields.
   %
   % PROPOSAL: Reorg. code to
   %   * Consist of more isolated/modular/generic separate steps.
@@ -452,6 +456,7 @@ classdef dc
       %   PROPOSAL: Only split on ACHG for AC data. (Check SSID.)
       %     CON: SSID changes per record.
       %       CON: In practice, SSID should be either all DC or all AC per BLTS.
+      %     CON: ACHG probably does not change for DC data. ==> No effect.
 
       arguments
         % NOTE: Excluding LRX since it is only needed for splitting time/CDF

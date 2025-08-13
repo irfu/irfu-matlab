@@ -91,6 +91,8 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
 
     function [itfAvpiv, kItfAvpiv, offsetAvolt] = get_BIAS_ITF_and_offset(obj, ...
         ssid, isAchg, iCalibTimeL, iCalibTimeH)
+      % PROPOSAL: Convert isAchg (double!) to FPA.
+      %   PRO: Can handle fill/unknown/missing value.
 
       % ASSERTION
       assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))

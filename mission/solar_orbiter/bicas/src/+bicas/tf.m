@@ -19,39 +19,39 @@ classdef tf
 
 
 
-    % Apply transfer function to signal according to chosen algorithm. Potentially
-    % modify TF and data before and after application of TF.
+    % Apply transfer function to signal according to chosen algorithm.
+    % Potentially modify TF and data before and after application of TF.
     %
     %
     % TERMINOLOGY
     % ===========
     % De-trending : REMOVING fit on data BEFORE applying the TF. It does NOT
     %               automatically imply RE-trending.
-    % Re-trending : ADDING BACK a scaled version of the previously removed fit when
-    %               de-trending, AFTER applying the TF.
+    % Re-trending : ADDING BACK a scaled version of the previously removed fit
+    %               when de-trending, AFTER applying the TF.
     %
     %
     % De-trending / Re-trending
     % =========================
-    % NOTE: Detrending makes it impossible to modify the amplitude & phase for the
-    % frequency components in the trend itself (the fit), e.g. to delay the signal
-    % in the trend. If the input signal is interpreted as N-periodic (e.g. when
-    % applying TF using FFT), then de-trending affects the jump between the
-    % beginning and end of the signal (reduces it in the case of linear or higher
-    % order de-trending), which should reduce erroneous high-frequency content
-    % (counterexample: sine wave, one cycle). The implementation scales the "trend"
-    % (polynomial fit) by tfZ(omega==0).
+    % NOTE: Detrending makes it impossible to modify the amplitude & phase for
+    % the frequency components in the trend itself (the fit), e.g. to delay the
+    % signal in the trend. If the input signal is interpreted as N-periodic
+    % (e.g. when applying TF using FFT), then de-trending affects the jump
+    % between the beginning and end of the signal (reduces it in the case of
+    % linear or higher order de-trending), which should reduce erroneous
+    % high-frequency content (counterexample: sine wave, one cycle). The
+    % implementation scales the "trend" (polynomial fit) by tfZ(omega==0).
     % --
-    % NOTE: Retrending is bad for non-lowpass filters (TFs) since the retrending
-    % requires scaling the fit by tfZ(omega=0) which is only meaningful for lowpass
-    % filters.
+    % NOTE: Retrending is bad for non-lowpass filters (TFs) since the
+    % retrending requires scaling the fit by tfZ(omega=0) which is only
+    % meaningful for lowpass filters.
     % --
     % ** Code has the ability to enable/disable de-trending:
     %       -- To handle both DC and AC signals.
     %       -- Make testing easier.
-    % ** Code has the ability to make TF zero above frequency cutoff. This cut-off
-    %    is naturally sampling frequency-dependent and is therefore NOT a natural
-    %    part of the TF itself.
+    % ** Code has the ability to make TF zero above frequency cutoff. This
+    %    cut-off is naturally sampling frequency-dependent and is therefore NOT
+    %    a natural part of the TF itself.
     %
     %
     % ARGUMENTS
@@ -62,7 +62,8 @@ classdef tf
     %       Column vector of samples. May be modified by this function before
     %       actually applying the TF.
     % tf
-    %       Function handle. Transfer function. Same as for bicas.tf.freq.apply_TF().
+    %       Function handle. Transfer function. Same as for
+    %       bicas.tf.freq.apply_TF() and bicas.tf.time.apply_TF().
     % S
     %       Optional settings arguments. Available settings:
     %         * 'detrendingDegreeOf'
@@ -94,8 +95,9 @@ classdef tf
     %       .tfModif
     %           The actual (potentially modified) TF used.
     %       .i1Array, .i2Array
-    %           1D column arrays with indices into y1 for the first and last index
-    %           for the respective time intervals separated by non-finite y1 values.
+    %           1D column arrays with indices into y1 for the first and last
+    %           index for the respective time intervals separated by non-finite
+    %           y1 values.
     %
     %
     % Author: Erik P G Johansson, Uppsala, Sweden
@@ -108,6 +110,25 @@ classdef tf
       %
       % PROPOSAL: Function for splitting up samples separated by non-finite
       %           samples (SNF).
+      % PROPOSAL: This function should not support SNF. Should be made easy by
+      %           separate function instead.
+      %   PROBLEM: Needs way of easily putting subsequences together again after
+      %            calibration.
+      %     PROPOSAL: Function which (given algorithm) splits array into CA of
+      %               arrays representing *ALL* samples, including ones which
+      %               can not be calibrated.
+      %               One can then easily execute below steps:
+      %               (1) Use function to split array-->CA of arrays.
+      %               (2) Iterate over arrays and calibrate each separately and
+      %                   store the result in new CA of arrays.
+      %                   NOTE: It is assumed that subsequences which can not be
+      %                   calibrated (due to containing invalid values) are
+      %                   calibrated and that the calibration code fails
+      %                   nicely (e.g. producing only NaN).
+      %               (3) Combine calibrated CA of arrays into one array.
+      %       PRO: Can be implemented using irf.utils.split_by_change().
+      %       CON: Calibrates NaN sequences --> NaN. Multiplies the number of
+      %            sequences to calibrate by ~2.
       %
       % PROPOSAL: Check that data is finite. Only call bicas.tf.freq.apply_TF()
       %           if all data is non-finite.
@@ -130,11 +151,14 @@ classdef tf
       %   Non-finite
       %     Reflects the sample values in the input to this function, what the
       %     function actually sees.
+      %   Invalid values
+      %     Keeps the criterion for splitting open.
       %   --
       %   SNF  = Split by Non-Finite -- IMPLEMENTED
       %   SNFS = Split by Non-Finite Samples
       %   SFV = Split by FV
       %   NFS = Non-Finite Splitting
+      %   SBIV = Split by Invalid Values
 
       arguments
         dt, y1, tf

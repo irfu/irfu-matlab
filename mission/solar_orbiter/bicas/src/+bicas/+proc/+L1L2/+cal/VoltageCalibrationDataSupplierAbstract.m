@@ -33,6 +33,7 @@ classdef(Abstract) VoltageCalibrationDataSupplierAbstract
     %       derived/calibrated, so that the caller does not need to handle
     %       the special case.
     %
+    %
     % RETURN VALUE
     % ============
     % kItfAvpiv

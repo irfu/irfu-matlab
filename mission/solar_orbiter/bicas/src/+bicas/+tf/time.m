@@ -13,14 +13,6 @@ classdef time
   %       PROBLEM: Needs HK:DLR, mux mode, ACHG/ACLG
   %   PROPOSAL: Good enough plots for meetings.
   %
-  % PROPOSAL: Scale Hann window to always have max=1.
-  %   PRO: Simplifies tests.
-  %     PRO: Tests use short sequences of samples which are more affected by
-  %          this. Tests must compensate for this scaling.
-  %       NOTE: Real data consist of longer sequences of samples where the
-  %             effect is smaller.
-  %     PRO: More similar behaviour for FFT & KERNEL.
-  %
   % PROPOSAL: Separate argument for Hann window size ("radius"/"diameter")
   %           independently of kernel size.
   %   CON: Function has argument lenKernel. Hann window sets values outside
@@ -29,6 +21,10 @@ classdef time
   %            as the kernel. Otherwise the caller would have shortened the
   %            kernel.
   % PROPOSAL: Separate arguments for kernel length before and after origin.
+  %
+  % PROPOSAL: Separate public function for obtaining the exact kernel used,
+  %           including Hann window and any other possible modification.
+  %   PRO: Can be used for manually inspecting the kernel.
 
 
 
@@ -50,7 +46,7 @@ classdef time
     %
     % ARGUMENTS
     % =========
-    % dt
+    % dtSec
     %       Scalar, numeric. Seconds. Time between samples.
     % y1
     %       Column vector. Signal.
@@ -79,7 +75,7 @@ classdef time
     % First created 2020-08-21.
     %
     function [y2, yKernel] = apply_TF(...
-        dt, y1, tf, lenKernel, edgePolicy, hannWindowEnabled)
+        dtSec, y1, tf, lenKernel, edgePolicy, hannWindowEnabled)
       %
       %=============
       % ~ASSERTIONS
@@ -98,7 +94,8 @@ classdef time
       %===========================
       % Obtain time domain kernel
       %===========================
-      [yKernel, iKernelOrigin] = bicas.tf.time.get_kernel(lenKernel, dt, tf);
+      [yKernel, iKernelOrigin] = bicas.tf.time.get_raw_kernel(...
+        lenKernel, dtSec, tf);
 
 
 
@@ -129,11 +126,39 @@ classdef time
     % NOTE: Uses bicas.tf.freq.apply_TF(), BICAS' other main function for
     % applying transfer functions to signals, using FFT. Here it is only used
     % for obtaining an impulse response in the time domain, i.e. kernel.
-    function [yKernel, iKernelOrigin] = get_kernel(lenKernel, dt, tf)
+    %
+    function [yKernel, iKernelOrigin] = get_raw_kernel(lenKernel, dtSec, tf)
+      % PROPOSAL: Better name
+      %   kernel
+      %   impulse, impulse response
+      %   TF
+      %   NOTE: Without modifications, e.g. Hann window.
+      %   raw
+      %   --
+      %   get_TF_kernel()
+      %   get_impulse_kernel()
+      %   get_impulse_response_kernel()
+
       iKernelOrigin           = floor(1 + (lenKernel-1)/2);
       yImpulse                = zeros(lenKernel, 1);
       yImpulse(iKernelOrigin) = 1;
-      yKernel                 = bicas.tf.freq.apply_TF(dt, yImpulse, tf);
+      yKernel                 = bicas.tf.freq.apply_TF(dtSec, yImpulse, tf);
+
+      if 0
+        %=============
+        % Plot kernel
+        %=============
+        % t = 0 <=> iKernelOrigin
+        t = [(-iKernelOrigin+1):(lenKernel-iKernelOrigin)] * dtSec;
+        titleStr = sprintf(...
+          "lenKernel=%d; iKernelOrigin=%d; dtSec=%d; lenKernel*dtSec=%g", ...
+          lenKernel, iKernelOrigin, dtSec, lenKernel*dtSec);
+
+        figure
+        plot(t, yKernel, '.-')
+        title(titleStr)
+        xlabel('t [s]')
+      end
     end
 
 
@@ -148,9 +173,9 @@ classdef time
       %   (aperiodic), n=odd  : max=1; has one max element
       %   'periodic',  n=even : max=1; has one max element
       %   'periodic',  n=odd  : max<1; has two max elements
-      %   It is however useful to always have max value=1 and better (probably?;
-      %   or at least more elegant/symmetric) to have the max value in exactly
-      %   one element.
+      %   It is however useful to (1) always have max value=1 and (2) better
+      %   (probably?; or at least more elegant/symmetric) to have the max value
+      %   in exactly one element.
       % PRO: One can not set the center and "radius" of the Hann window using
       %      hann().
       % It is therefore easier to just implement the Hann window function

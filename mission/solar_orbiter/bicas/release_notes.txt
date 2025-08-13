@@ -317,11 +317,12 @@ Version X.Y.Z (????-??-??)
 * Bugfix: Use the correct sampling rate when calibrating CWF in the presence of
   data gaps within sequences of constant settings.
 * Bugfix: Hann window correct for kernel values far from kernel origin.
+* Typofix: Correct descriptor.json TDS s/w mode names ("LFR"-->"TDS").
 * Optimization: Only split CWF sequences of samples wrt. ACHG/ACLG for AC data.
 * Implementation uses a new coherent scheme for QRCs and their corresponding
   actions for L1/L1R->L2 processing. Should be much easier to configure, and to
   inspect its current configuration.
-* Varios reorganizing/refactoring of demultiplexing, reconstruction, and channel
+* Various reorganizing/refactoring of demultiplexing, reconstruction, and channel
   addressing to facilitate other changes.
 * Support both setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK)
   using old (almost) and new scheme for saturation:
@@ -337,7 +338,6 @@ Version X.Y.Z (????-??-??)
   https://github.com/irfu/irfu-matlab/issues/142
 * Removes EFIELD data when V3 is unintentionally floating.
   https://github.com/irfu/irfu-matlab/issues/156
-* Typofix: Correct descriptor.json TDS s/w mode names ("LFR"-->"TDS").
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2025-06-21 (inclusive).
 * Requires new master CDF versions:

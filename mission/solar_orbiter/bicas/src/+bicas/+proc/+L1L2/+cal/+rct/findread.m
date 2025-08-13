@@ -1,7 +1,7 @@
 %
 % Functions (static methods) associated with
-% bicas.proc.L1L2.cal.VoltageCalibration finding, reading, and logging RCTs
-% so that that class itself does not need to.
+% bicas.proc.L1L2.cal.VoltageCalibration finding, reading, and logging RCTs so
+% that that class itself does not need to.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -381,7 +381,7 @@ classdef findread
 
       RctdMetadata = bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP(rcttid);
 
-      % Call constructor(!) of specified class.
+      % Call constructor(!) of the specified class.
       Rctd = feval(RctdMetadata.className, filePath);
 
       Rctd.log_RCT(L);

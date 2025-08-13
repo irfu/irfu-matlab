@@ -257,8 +257,9 @@ unusual cases.
 Condition            | Action taken when condition applies
 --------------------------------------------------------------------------------
 Channel is saturated | L2 CWF, SWF/RSWF:
-                     |      Set QUALITY_FLAG=0
-                     |      Set L2_QUALITY_BITMASK: Channel V1/V2/V3/V12/V13/V23
+                     |      Set QUALITY_FLAG=0.
+                     |      Set L2_QUALITY_BITMASK quality bit for
+                            the corresponding channel (V1/V2/V3/V12/V13/V23).
 
 
 =================
@@ -268,13 +269,13 @@ BICAS can determine that data is affected by a SolO thruster firing by reading
 the NSO table.
 
 NOTE: L1/L1R QUALITY_BITMASK contains a quality bit for thruster firings but at
-      the time of writing (2025-07-30), this is not being used, due to covering
-      too broad time intervals.
+      the time of writing (2025-08-14), this is not being used, due to covering
+      too broad time intervals (multiple hours).
 
 Condition         | Action taken when condition applies
 -------------------------------------------------------
 "thruster firing" | L2 CWF, SWF/RSWF:
-                  |     Cap QUALITY_FLAG<=1
+                  |     Cap QUALITY_FLAG<=1.
                   |     NOTE: No quality bit is set.
 
 
@@ -288,10 +289,11 @@ of time).
 NOTE: Which data should be excluded due to being affected by sweeps is not
       well defined since some data before and after the actual sweep is affected
       due to commanding. Sweeps are detected(!) using algorithms which are not
-     perfect: BICAS uses one of two different algorithms (SBDA or SCDA)
-     depending on the time and it adds a customizable time margin in addition to
-     that and therefore may remove too much or too little data. BICAS does not
-     (yet) use the QUALITY_BITMASK bits to detect sweeps (as of 2025-07-30).
+      perfect: BICAS uses one of two different algorithms (SBDA or SCDA)
+      depending on the time and it adds a customizable time margin in addition
+      to that and therefore may remove too much or too little data. BICAS does
+      not (yet) use the QUALITY_BITMASK bits to detect sweeps (as of
+      2025-08-14).
 
 Condition         | Action taken when condition applies
 --------------------------------------------------------------------
@@ -321,7 +323,7 @@ and SOLO_L3_RPW-BIA-DENSITY-10-SECONDS.
 Condition     | Action taken when condition applies
 ---------------------------------------------------------
 "bad density" | L3 DENSITY:
-              |     Set L3_QUALITY_BITMASK: "bad density"
+              |     Set L3_QUALITY_BITMASK: "bad density".
               |     Cap QUALITY_FLAG<=1.
 
 
@@ -352,8 +354,9 @@ enabled) is set to fill values before being passed on to solo.vdccal() and
 psp2ne().
 
 NOTE: PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN is *NOT* compared to the literal
-      input SOLO_L2_RPW-LFR-SURV-CWF-E QUALITY_FLAG but a reconstructed value
-      ignoring saturation (too complicated to describe here; see source code).
+      input SOLO_L2_RPW-LFR-SURV-CWF-E QUALITY_FLAG but a reconstructed "L2"
+      value which ignores saturation (too complicated to describe here; see
+      source code).
 
 Condition                                  | Action taken when condition applies
 --------------------------------------------------------------------------------

@@ -592,8 +592,8 @@ VBMC
 VCAL
     Class bicas.proc.L1L2.cal.VoltageCalibration.
 VCDS
-    Class bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierAbstract and subclasses
-    thereof.
+    Class bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierAbstract and
+    subclasses thereof.
 VSIB
     Voltage Saturation Intermediate Bit. Internal bit used by the implementation
     when deriving VSQB. The exact meaning varies by context. The abbreviation

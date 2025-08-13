@@ -67,8 +67,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
     % OVERRIDE
     %
-    % NOTE: Does not use NsoTable.
-    %
     function OutputDatasetsMap = production_function(obj, ...
         InputDatasetsMap, rctDir, NsoTable, Bso, L)
 
@@ -149,18 +147,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       assert(isa(NsoTable, "bicas.NsoTable"))
 
-      if 0
-        % TEST
-        % PRETEND that input QUALITY_FLAG, L2_QUALITY_BITMASK have other values
-        % (overwrite).
-        Zv.QUALITY_FLAG_Fpa       = bicas.utils.FPArray(...
-          uint8(ones(size(Zv.QUALITY_FLAG_Fpa))) * 2, ...
-          'NO_FILL_POSITIONS');  % TEST
-        Zv.L2_QUALITY_BITMASK_Fpa = bicas.utils.FPArray(...
-          uint16(ones(size(Zv.L2_QUALITY_BITMASK_Fpa))) * 0, ...
-          'NO_FILL_POSITIONS');  % TEST
-      end
-
 
 
       % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
@@ -221,10 +207,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'));
       L3Qrcbm.union(ChannelSaturationQrcbm)
 
-      %-------------------------------------------------------------------------
-      % Calculate what QUALITY_FLAG for L2 LFR CWF should have been, had it not
-      % been for saturation or sweeps(!).
-      %-------------------------------------------------------------------------
+      %-----------------------------------------------------------------------
+      % Calculate what QUALITY_FLAG for L2 LFR CWF *SHOULD HAVE BEEN*, had it
+      % not been for saturation or sweeps (sic!).
+      %-----------------------------------------------------------------------
+      % NOTE: Sweeps are blanked (in L2), so their QUALITY_FLAG values do not
+      % matter.
       % IMPLEMENTATION NOTE: Must distinguish between
       % (1) the derived L2 non-saturation QUALITY_FLAG, and
       % (2) the (true) L2 input QUALITY FLAG.
@@ -327,7 +315,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       OutDensityOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.OSR_density(TemplateOsr, R.NeScpCm3Fpa,   L3DensityQrcbm, gaDensity_Misc_calibration_versions);
 
       OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( OutEfieldOsr,  R.EdcSrfMvpmFpa,              L);
-      %OutEfieldDsr  = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_efield( TemplateOsr,  R.EdcSrfMvpmFpa,              L);    % TEST
       OutScpotDsr   = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_scpot(  OutScpotOsr,   R.ScpotVoltFpa, R.PspVoltFpa, L);
       OutDensityDsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.DSR_density(OutDensityOsr, R.NeScpCm3Fpa,                L);
 

@@ -9,9 +9,13 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef CalibrationSettings
-  % PROPOSAL: Abolish.
-  %   PRO: Only used in one location (bicas.proc.L1L2.dc).
-  %   PROPSOAL: Use keyword arguments instead.
+  % PROPOSAL: Abolish and replace with separate variables/arguments instead.
+  %   PRO: Really only used in one location (bicas.proc.L1L2.dc and passed on to
+  %        VCAL).
+  %   CON: Loses assertions in constructor.
+  %   PROPOSAL: Use keyword arguments instead.
+  %
+  % PROPOSAL: Move to bicas.proc.L1L2.cal.*.
 
 
 

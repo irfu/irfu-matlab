@@ -112,11 +112,16 @@ classdef kernel
       % TODO-DEC: Does argument iKernelOrigin make sense?
       %   PROPOSAL: Always assume iKernelOrigin=1.
       %   PROPOSAL: Assume iKernelOrigin = lengthKernel/2
-      %     PROPOSAL: Require odd-length kernel so that iKernelOrigin is always
-      %               in the middle element.
+      %     PROPOSAL: Require odd-length kernel where iKernelOrigin is always
+      %               the middle element.
       %     PROPOSAL: Support both odd and even-length kernels.
       % PROPOSAL: Internal implementation pads yKernel to be symmetric
       %           (odd-valued length; iKernelOrigin in the middle).
+      % ~BUG: Imposes kernel length limit, but the real conceptual motivation
+      %       for it is that it should be possible to pad the signal with the
+      %       side of the kernel before/after the kernel origin (the "radius"
+      %       of the kernel), not the kernel length in total. The kernel could
+      %       thus be longer.
 
       lenKernel = length(yKernel);
 
