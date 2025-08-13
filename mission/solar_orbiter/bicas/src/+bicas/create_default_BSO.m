@@ -605,6 +605,11 @@ S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT,
 %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'KERNEL')   % FFT, KERNEL
 S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'MIRROR')   % ZEROS, CYCLIC, MIRROR
 S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', true)
+% Max length of kernel in number of samples.
+% Higher value ==> Better calibration, slower execution.
+% NOTE: Unsure if this the best way to specify the kernel size. Could be some
+%       way to derive it from sampling rate etc.
+S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.MAX_LENGTH_SAMPLES',      1024*10)
 
 
 

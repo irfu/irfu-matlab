@@ -307,6 +307,7 @@ Version X.Y.Z (????-??-??)
   PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS
   PROCESSING.CALIBRATION.VOLTAGE.DISABLED
   PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED
+* Added setting PROCESSING.CALIBRATION.TF.KERNEL.MAX_LENGTH_SAMPLES.
 * Speedfix: Uses custom implementation of MATLAB dictionary lookup
   (bicas.utils.dict_lookup()).
 * Speedfix: Groups non-consecutive CDF records for SWF data. Speeds up

@@ -142,6 +142,7 @@ classdef tf
         S.retrendingEnabled       = false;
         S.tfHighFreqLimitFraction = Inf;
         S.method                  = 'FFT';
+        S.kernelLengthMax         = Inf;
         S.kernelEdgePolicy        = 'MIRROR';
         S.kernelHannWindowEnabled = false;
         S.snfEnabled              = false;
@@ -251,11 +252,8 @@ classdef tf
           y2Detrended = bicas.tf.freq.apply_TF(dt, y1Detrended, tf);
 
         case 'KERNEL'
-          % PROBLEM: Kernel length == Signal length
-          %          ==> Bad performance for very long time series.
-          % NOTE: Length also affects amount of allocated memory (kernel, padding).
-          lenKernel = length(y1);
-          %lenKernel = min(lenKernel, lenKernelMax);
+          % Capping kernel length to improve performance.
+          lenKernel = min(length(y1), Settings.kernelLengthMax);
 
           % NOTE: The called function applies the Hann window instead of current
           % function since it only applies to kernel method (as opposed to

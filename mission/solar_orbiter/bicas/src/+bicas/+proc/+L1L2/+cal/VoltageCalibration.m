@@ -138,6 +138,7 @@ classdef VoltageCalibration
     dcRetrendingEnabled
     acDetrendingDegreeOf
     %
+    kernelLengthMax
     kernelEdgePolicy
     kernelHannWindowEnabled
     snfEnabled
@@ -213,6 +214,7 @@ classdef VoltageCalibration
       obj.dcRetrendingEnabled      = Bso.get_fv('PROCESSING.CALIBRATION.TF.DC_RE-TRENDING_ENABLED');
       obj.acDetrendingDegreeOf     = Bso.get_fv('PROCESSING.CALIBRATION.TF.AC_DE-TRENDING_FIT_DEGREE');
 
+      obj.kernelLengthMax          = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.MAX_LENGTH_SAMPLES');
       obj.kernelEdgePolicy         = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY');
       obj.kernelHannWindowEnabled  = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED');
       obj.snfEnabled               = Bso.get_fv('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED');
@@ -374,6 +376,7 @@ classdef VoltageCalibration
           detrendingDegreeOf      = detrendingDegreeOf, ...
           retrendingEnabled       = retrendingEnabled, ...
           tfHighFreqLimitFraction = obj.itfHighFreqLimitFraction, ...
+          kernelLengthMax         = obj.kernelLengthMax, ...
           kernelEdgePolicy        = obj.kernelEdgePolicy, ...
           kernelHannWindowEnabled = obj.kernelHannWindowEnabled, ...
           snfEnabled              = obj.snfEnabled, ...
