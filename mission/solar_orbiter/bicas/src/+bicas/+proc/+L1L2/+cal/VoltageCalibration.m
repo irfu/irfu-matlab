@@ -267,17 +267,6 @@ classdef VoltageCalibration
       assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
       assert(islogical(isTdsCwf) && isscalar(isTdsCwf))
 
-      iBlts = CalSettings.iBlts;
-      iLsf  = CalSettings.iLsf;
-
-
-
-      % Normalize NbriFpa.
-      if ~obj.useGactRct
-        % Emulating having an NBRI value.
-        NbriFpa = bicas.utils.FPArray(1, 'NO_FILL_POSITIONS');
-      end
-
 
 
       %===============================================================
@@ -302,63 +291,15 @@ classdef VoltageCalibration
 
 
 
-      %================
-      % Obtain itfAvpt
-      %================
-      if bicas.proc.L1L2.const.SSID_is_ASR(CalSettings.ssid)
-        % CASE: ASR SSID
-
-        %========================
-        % Obtain BIAS ITF+offset
-        %========================
-        [itfAvpiv, kItfAvpiv, offsetAvolt] = obj.Vcds.get_BIAS_ITF_and_offset(...
-          CalSettings.ssid, ...
-          CalSettings.isAchg, ...
-          CalSettings.iCalibTimeL, ...
-          CalSettings.iCalibTimeH);
-
-        if obj.useBiasTfScalar
-          % NOTE: Overwrites pre-existing "itfAvpiv" which still needs to be
-          % created first in order to obtain kItfAvpiv (needed here).
-          itfAvpiv = @(omegaRps) (ones(size(omegaRps)) * kItfAvpiv);
-        end
-
-        %====================
-        % Obtain LFR/TDS ITF
-        %====================
-        if isLfr
-          %===========
-          % CASE: LFR
-          %===========
-          itfIvpt = obj.Vcds.get_LFR_ITF(iBlts, NbriFpa, NbciFpa, iLsf);
-        else
-          %===========
-          % CASE: TDS
-          %===========
-          if isTdsCwf
-            % CASE: TDS CWF
-            itfIvpt = obj.Vcds.get_TDS_CWF_ITF(iBlts, NbriFpa, NbciFpa);
-          else
-            % CASE: TDS RSWF
-            itfIvpt = obj.Vcds.get_TDS_RSWF_ITF(iBlts, NbriFpa, NbciFpa);
-          end
-        end
-
-        itfAvpt = obj.combine_BIAS_ITF_and_LFR_TDS_ITF(...
-          itfIvpt, itfAvpiv, ...
-          bicas.proc.L1L2.const.SSID_is_AC(CalSettings.ssid), ...
-          obj.itfAcConstGainLowFreqRps);
-
-      else
-        % CASE: Non-ASR SSID
-        itfAvpt     = obj.ONE_TF;
-        offsetAvolt = 0;
-      end
-
-      if obj.biasOffsetsDisabled
-        % NOTE: Overwrites pre-existing value of "offsetAvolt".
-        offsetAvolt = 0;
-      end
+      %=============================
+      % Obtain itfAvpt, offsetAvolt
+      %=============================
+      [itfAvpt, offsetAvolt] = obj.get_voltage_calibration_ITF_offset(...
+        isLfr       = isLfr, ...
+        isTdsCwf    = isTdsCwf, ...
+        CalSettings = CalSettings, ...
+        NbriFpa     = NbriFpa, ...
+        NbciFpa     = NbciFpa);
 
 
 
@@ -384,6 +325,111 @@ classdef VoltageCalibration
         bltsSamplesAvoltCa{i, 1} = tempSamplesAvolt + offsetAvolt;
       end
 
+    end
+
+
+
+    % Function for producing the exact ITF used by BICAS for all calibration.
+    %
+    % RATIONALE FOR EXISTENCE
+    % =======================
+    % This function exists to make it possible to manually reproduce and
+    % inspect the exact TF+offset used by BICAS, from outside of BICAS proper.
+    % NOTE: This still excludes information on detrending-retrending, use of
+    % Hann window, kernel length.
+    %
+    function [itfAvpt, offsetAvolt] = get_voltage_calibration_ITF_offset(obj, A)
+      % PROPOSAL: Redefine to return all information (arguments) used for
+      %           calling bicas.tf.apply_TF(), including detrending-retrending,
+      %           use of Hann window, kernel length, SNF options.
+      %   PRO: Potentially useful for the same reasons as in the rationale for
+      %        this function.
+      %     CON: Not sure if it is important yet. Issues associated with other
+      %          "calibration parameters" are less subtle than for TFs/kernels.
+      %   CON: Many return values. Need to use struct/class.
+      %
+      % PROPOSAL: Reorg. code to have one function for returning the modified
+      % TF as now done in bicas.tf.apply_TF(), i.e. remove high frequencies.
+
+      arguments
+        obj
+        A.isLfr
+        A.isTdsCwf
+        A.CalSettings
+        A.NbriFpa
+        A.NbciFpa
+      end
+
+      assert(islogical(A.isTdsCwf) && isscalar(A.isTdsCwf))
+      assert(isa(A.NbriFpa, "bicas.utils.FPArray"))
+      assert(isa(A.NbciFpa, "bicas.utils.FPArray"))
+
+      iBlts = A.CalSettings.iBlts;
+
+
+
+      % Normalize NbriFpa.
+      if ~obj.useGactRct
+        % Emulating having an NBRI value.
+        A.NbriFpa = bicas.utils.FPArray(1, 'NO_FILL_POSITIONS');
+      end
+
+
+
+      if bicas.proc.L1L2.const.SSID_is_ASR(A.CalSettings.ssid)
+        % CASE: ASR SSID
+
+        %========================
+        % Obtain BIAS ITF+offset
+        %========================
+        [itfAvpiv, kItfAvpiv, offsetAvolt] = obj.Vcds.get_BIAS_ITF_and_offset(...
+          A.CalSettings.ssid, ...
+          A.CalSettings.isAchg, ...
+          A.CalSettings.iCalibTimeL, ...
+          A.CalSettings.iCalibTimeH);
+
+        if obj.useBiasTfScalar
+          % NOTE: Overwrites pre-existing "itfAvpiv" which still needs to be
+          % created first in order to obtain kItfAvpiv (needed here).
+          itfAvpiv = @(omegaRps) (ones(size(omegaRps)) * kItfAvpiv);
+        end
+
+        %====================
+        % Obtain LFR/TDS ITF
+        %====================
+        if A.isLfr
+          %===========
+          % CASE: LFR
+          %===========
+          itfIvpt = obj.Vcds.get_LFR_ITF(iBlts, A.NbriFpa, A.NbciFpa, A.CalSettings.iLsf);
+        else
+          %===========
+          % CASE: TDS
+          %===========
+          if A.isTdsCwf
+            % CASE: TDS CWF
+            itfIvpt = obj.Vcds.get_TDS_CWF_ITF(iBlts, A.NbriFpa, A.NbciFpa);
+          else
+            % CASE: TDS RSWF
+            itfIvpt = obj.Vcds.get_TDS_RSWF_ITF(iBlts, A.NbriFpa, A.NbciFpa);
+          end
+        end
+
+        itfAvpt = obj.combine_BIAS_ITF_and_LFR_TDS_ITF(...
+          itfIvpt, itfAvpiv, ...
+          bicas.proc.L1L2.const.SSID_is_AC(A.CalSettings.ssid), ...
+          obj.itfAcConstGainLowFreqRps);
+
+      else
+        % CASE: Non-ASR SSID
+        itfAvpt     = obj.ONE_TF;
+        offsetAvolt = 0;
+      end
+
+      if obj.biasOffsetsDisabled
+        % NOTE: Overwrites pre-existing value of "offsetAvolt".
+        offsetAvolt = 0;
+      end
     end
 
 
