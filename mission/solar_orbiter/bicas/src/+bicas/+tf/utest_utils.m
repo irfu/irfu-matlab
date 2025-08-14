@@ -1,6 +1,6 @@
 %
 % Collection of utility functions used by automatic test code for the bicas.tf
-% package.
+% package and class.
 %
 %
 % Author: Erik P G Johansson, Uppsala, Sweden

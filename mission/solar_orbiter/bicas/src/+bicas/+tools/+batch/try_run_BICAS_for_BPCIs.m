@@ -124,4 +124,4 @@ for i = 1:numel(Bpci.inputsArray)
     valid            = false;
   end
 end
-end
+end    % input_dataset_paths_valid()

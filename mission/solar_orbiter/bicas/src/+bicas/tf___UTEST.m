@@ -35,7 +35,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
 
     % Enable RE-trending without DE-trending. ==> Error
     %
-    function test_Illegal_detrending(T, METHOD)
+    function test_apply_TF___illegal_detrending(T, METHOD)
 
       N  = 100;
       dt = 0.1;
@@ -58,7 +58,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
 
     % Zero-order detrending. Constant signal ==> Output=0
     %
-    function test_detrending0(T, METHOD)
+    function test_apply_TF___detrending0(T, METHOD)
 
       N  = 100;
       dt = 0.1;
@@ -86,7 +86,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
     % Test one signal with different parts being removed depending of degree
     % of detrending, and re-trending enabled/disabled.
     %
-    function test_detrending_parts(T, METHOD)
+    function test_apply_TF___detrending_parts(T, METHOD)
 
       N  = 100;
       dt = 0.1;
@@ -167,7 +167,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
     % NOTE: Obsolete since argument "tfHighFreqLimitFraction" and corresponding
     % functionality has been removed.
     %
-    % function test_Freq_cutoff(T)
+    % function test_apply_TF___freq_cutoff(T)
     %
     %   N  = 2^7;
     %   dt = 0.1;
@@ -297,7 +297,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
 
       actTf = bicas.tf.make_hard_low_pass_TF(tf, fraction, dtSec);
 
-      nyquistFreqRps = pi / dtSec;
+      nyquistFreqRps = pi / dtSec;   % 0.5/dtSec [Hz] = pi/dtSec [rad/s]
       omegaRps       = linspace(0, 100);
       expZ           = tf(omegaRps);
       expZ(omegaRps > fraction*nyquistFreqRps) = 0;

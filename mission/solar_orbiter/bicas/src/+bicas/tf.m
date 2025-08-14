@@ -155,7 +155,8 @@ classdef tf
       %   NFS = Non-Finite Splitting
       %   SBIV = Split by Invalid Values
       %
-      % PROPOSAL: Remove Debug.tfModif.
+      % PROPOSAL: Remove Debug.
+      %   NOTE: Only used in bicas.tf___UTEST.
 
       arguments
         dtSec, y1, tf
@@ -228,26 +229,6 @@ classdef tf
       end
 
     end    % function apply_TF()
-
-
-
-    % Create modified TF where Z=0 above certain frequency.
-    function tf2 = make_hard_low_pass_TF(tf, tfHighFreqLimitFraction, dtSec)
-      % NOTE: Permits tfHighFreqLimitFraction to be +Inf.
-      assert(...
-        isnumeric(  tfHighFreqLimitFraction) ...
-        && isscalar(tfHighFreqLimitFraction) ...
-        && ~isnan(  tfHighFreqLimitFraction) ...
-        && (        tfHighFreqLimitFraction >= 0))
-
-      % Nyquist frequency [rad/s] =
-      % = 2*pi [rad/sample] * (1/2 * 1/dt [samples/s])
-      % = pi/dt
-      nyquistFreqRps     = pi/dtSec;
-      tfHighFreqLimitRps = tfHighFreqLimitFraction * nyquistFreqRps;
-      tf2                = ...
-        @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
-    end
 
 
 

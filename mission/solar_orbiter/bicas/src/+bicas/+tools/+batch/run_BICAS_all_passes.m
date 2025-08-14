@@ -189,7 +189,7 @@ while true
   iPass = iPass + 1;
 end
 
-end
+end    % run_BICAS_all_passes()
 
 
 
@@ -201,7 +201,7 @@ filenamesCaCa = arrayfun(...
   'UniformOutput', false);
 
 filenamesCa = cat(1, filenamesCaCa{:});
-end
+end    % run_BICAS_all_passes()
 
 
 
@@ -225,4 +225,4 @@ end
 fprintf('Total: %i\n', nDsmd)
 
 fprintf('\n')
-end
+end    % log_DSMD_array()

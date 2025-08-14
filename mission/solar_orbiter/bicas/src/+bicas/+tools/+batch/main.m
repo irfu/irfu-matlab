@@ -297,8 +297,6 @@ assert(iscell(inputPathsCa) & iscolumn(inputPathsCa))
 SwmArray = get_SWMs(bicasConfigFile);
 
 bicasSettingsArgsCa = {};
-%     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L1-L2_ENABLED', String(Settings.bicasSetting_SWM_L1_L2_ENABLED)};
-%     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L2-L3_ENABLED', Sprint(Settings.bicasSetting_SWM_L2_L3_ENABLED)};
 
 
 
@@ -358,7 +356,7 @@ if nError > 0
   error('%i of %i BICAS calls returned error.', ...
     nError, numel(becArray))
 end
-end
+end    % main()
 
 
 
@@ -387,4 +385,4 @@ BSO.make_read_only();
 
 % NOTE: Converting SWML to array of SWMs.
 SwmArray = bicas.swm.get_SWML(BSO).List;
-end
+end    % get_SWMs()

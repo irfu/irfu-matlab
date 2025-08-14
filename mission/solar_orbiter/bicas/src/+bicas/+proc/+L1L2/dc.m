@@ -11,7 +11,7 @@
 classdef dc
   % PROPOSAL: Better name.
   %   calibration, demuxing, reconstruction, quality
-  %   cdr = calibration+demuxing+reconstruction (same order as execution)
+  %   cdr  = calibration+demuxing+reconstruction (same order as execution)
   %   cdrq = calibration+demuxing+reconstruction+quality
   %     CON: Setting quality variables is not necessarily last in the execution.
   %      Ex: Blanking data due to failed antenna should be done in TM channels
@@ -450,6 +450,13 @@ classdef dc
       % PROPOSAL: Also split sequence based constant isnan() (isfinite()?)
       %           for CWF (not SWF).
       %   NOTE: bicas.tf.apply_TF() can split based on isfinite() (not isnan()).
+      % PROPOSAL: Use parfor for iterating over calls to
+      %           bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS_subsequence().
+      %   PRO: No logging inside loop (by default).
+      %   PROBLEM: MATLAB error when using parfor:
+      %     Exception.identifier = "MATLAB:mir_error_parfor_bad_temporary_variable"
+      %     Exception.message    = "Error: File: dc.m Line: 449 Column: 14
+      %     Unable to classify the variable 'voltageAvolt' in the body of the parfor-loop. For more information, see Parallel for Loops in MATLAB, "Solve Variable Classification Issues in parfor-Loops"."
       %
       % BUG/INEFFICIENCY: Groups by ACHG also for DC data. ==> Can divide into
       % unnecesssarily small groups.
@@ -496,7 +503,7 @@ classdef dc
       % Find groups/subsequences of records with identical settings and which
       % can be processed separately.
       %=======================================================================
-      Tmk = bicas.utils.Timekeeper(...
+      TmkGrouping = bicas.utils.Timekeeper(...
         'bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS:grouping algo.', Cv.L);
       % IMPLEMENTATION NOTE: Important to convert FPAs to builtin arrays to
       % significantly speed up both bicas.utils.group_unique_rows(), and
@@ -522,12 +529,12 @@ classdef dc
         %================
         % CASE: SWF/RSWF
         %================
-        % IMPLEMENTATION NOTE: SWF data is calibrated in a way where
-        % consecutive records (snapshots) do NOT affect each other.
+        % IMPLEMENTATION NOTE: SWF data is by its nature calibrated in a way
+        % where consecutive CDF records (snapshots) do NOT affect each other.
         % ==> (1) group SWF CDF records in groups of non-consecutive CDF
-        %     records i.e. use bicas.utils.group_unique_rows()
+        %         records i.e. use bicas.utils.group_unique_rows()
         %     (2) does not need to look for data gaps (between
-        %     snapshots/records).
+        %         snapshots/records).
         %
         % This is important for LFR-SWF data which tends to change
         % calibration-relevant settings with every new CDF record and which
@@ -565,7 +572,7 @@ classdef dc
         iGroupArCa = bicas.utils.group_by_change(settingsCa{:});
       end
       nGroups = numel(iGroupArCa);
-      Tmk.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
+      TmkGrouping.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
 
 
 
@@ -574,11 +581,13 @@ classdef dc
       %====================
       voltageAvolt = nan(nRecords, aspr);
 
+      TmkCal = bicas.utils.Timekeeper(...
+        'bicas.proc.L1L2.dc.calibrate_voltage_1xBLTS:calibration', Cv.L);
       for iGroup = 1:nGroups
         iGroupAr = iGroupArCa{iGroup};
         iRec1    = iGroupAr(1);
 
-        if 1
+        if 0
           % DEBUG (only? make permanent?)
           % NOTE: There may be multiple isAchg values within a
           % group/subsequence when it is not used for grouping.
@@ -622,6 +631,8 @@ classdef dc
           uspr         = Zv.uspr(     iGroupAr) ...
           );
       end
+      TmkCal.stop_log(nRecords, 'record', nGroups, 'subsequence-group')
+
     end    % calibrate_voltage_1xBLTS
 
 
@@ -688,23 +699,34 @@ classdef dc
         dtSec = 1 / Cv.freqHz;
       else
         % CASE: CWF
-        % NOTE: Scalar (since all data will be processed in one session).
+        % NOTE: Time difference between CDF records.
         dtSec = 1 / Cv.freqHz;
       end
 
 
 
       if isequaln(Cv.ssid, bicas.proc.L1L2.const.C.SSID_DICT("UNKNOWN"))
+        %######################
+        % CASE: SSID = UNKNOWN
+        %######################
         % ==> Calibrated data set to NaN.
+
         voltageAvolt = nan(size(Zv.voltageTm));
 
       elseif ismember(...
           Cv.ssid, bicas.proc.L1L2.const.C.SSID_DICT(["GND", "REF25V"]))
+        %##############################
+        % CASE: SSID = GND or REF 2.5V
+        %##############################
         % ==> No calibration.
+
         % NOTE: voltageTm stores TM units using float!
         voltageAvolt = Zv.voltageTm;
 
       else
+        %###########################
+        % CASE: Actual science data
+        %###########################
         assert(bicas.proc.L1L2.const.SSID_is_ASR(Cv.ssid))
         % ==> Calibrate (unless explicitly stated that should not)
 
@@ -740,7 +762,7 @@ classdef dc
             );
         else
           % CASE: CWF
-          % NOTE: Scalar, since not snapshot.
+          % NOTE: Scalar CA, since not snapshot.
           assert(isscalar(voltageAvoltCa))
 
           voltageAvolt = voltageAvoltCa{1};

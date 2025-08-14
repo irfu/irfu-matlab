@@ -85,8 +85,8 @@ classdef tfkernel_playground
           NbciFpa     = bicas.utils.FPArray(1, 'NO_FILL_POSITIONS'), ...
           dtSec       = dtSec);
 
-        %lenKernel = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.MAX_LENGTH_SAMPLES');
-        lenKernel = 1024;
+        lenKernel = Bso.get_fv('PROCESSING.CALIBRATION.TF.KERNEL.MAX_LENGTH_SAMPLES');
+        %lenKernel = 1024;
 
         [yKernel, iKernelOrigin] = bicas.tf.time.get_raw_kernel(lenKernel, dtSec, itfAvpt);
 
@@ -100,7 +100,7 @@ classdef tfkernel_playground
           irf.graph.escape_str(ssidStr), ...
           iLsf, lenKernel, dtSec, lenKernel*dtSec, 1/dtSec, nyquistFreqRps);
 
-        Fig = figure();
+        Fig             = figure();
         Fig.WindowState = "maximized";
 
         subplot(2,1, 1)
@@ -109,7 +109,8 @@ classdef tfkernel_playground
         zAvpt    = itfAvpt(omegaRps);
         title(titleStr)
         yyaxis left
-        plot(omegaRps, abs(zAvpt))
+        %plot(    omegaRps, abs(zAvpt))
+        semilogx(omegaRps, abs(zAvpt))
         ylabel('abs(Z(omega)) [Avolt/TM unit]')
         grid on
         yyaxis right
@@ -120,6 +121,7 @@ classdef tfkernel_playground
         subplot(2,1, 2)
         plot(t, yKernel, '.-')
         xlabel('t [s]')
+        ylabel('Kernel amplitude [Avolt/TM unit]')
         grid on
         zoom on
 
