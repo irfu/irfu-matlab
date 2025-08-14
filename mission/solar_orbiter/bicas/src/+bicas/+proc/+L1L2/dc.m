@@ -684,9 +684,8 @@ classdef dc
       % value per cell element in voltageTmCa.
       if Cv.hasSwfFormat
         % CASE: SWF
-        % NOTE: Column vector of (identical) numbers (one per snapshot, which
-        %       will all be processed separately).
-        dtSec = ones(nRecords, 1) ./ Cv.freqHz;
+        % NOTE: Time difference between samples within CDF record (snapshot).
+        dtSec = 1 / Cv.freqHz;
       else
         % CASE: CWF
         % NOTE: Scalar (since all data will be processed in one session).

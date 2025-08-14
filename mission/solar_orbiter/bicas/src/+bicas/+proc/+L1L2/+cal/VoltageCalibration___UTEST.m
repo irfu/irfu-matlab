@@ -173,7 +173,7 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
         useBiasTfScalar     = A.useBiasTfScalar, ...
         tfMethod            = A.tfMethod);
 
-      dtSec       = 1/solo.hwzv.const.LFR_F2_HZ * ones(size(A.bltsSamplesTmCa));
+      dtSec       = 1/solo.hwzv.const.LFR_F2_HZ;
 
       isLfr       = true;
       isTdsCwf    = false;

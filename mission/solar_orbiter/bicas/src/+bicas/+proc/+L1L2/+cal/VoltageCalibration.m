@@ -260,10 +260,9 @@ classdef VoltageCalibration
         dtSec, bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, NbriFpa, NbciFpa)
 
       % ASSERTIONS
+      assert(isscalar(dtSec))
       assert(iscell(bltsSamplesTmCa))
-      irf.assert.sizes(...
-        dtSec,           [-1], ...
-        bltsSamplesTmCa, [-1])
+      irf.assert.sizes(bltsSamplesTmCa, [-1])
       assert(isa(CalSettings, 'bicas.proc.L1L2.cal.CalibrationSettings'))
       assert(islogical(isTdsCwf) && isscalar(isTdsCwf))
 
@@ -294,12 +293,13 @@ classdef VoltageCalibration
       %=============================
       % Obtain itfAvpt, offsetAvolt
       %=============================
-      [itfAvpt, offsetAvolt] = obj.get_voltage_calibration_ITF_offset(...
+      [itfAvpt, offsetAvolt] = obj.get_voltage_calibration_final_ITF_offset(...
         isLfr       = isLfr, ...
         isTdsCwf    = isTdsCwf, ...
         CalSettings = CalSettings, ...
         NbriFpa     = NbriFpa, ...
-        NbciFpa     = NbciFpa);
+        NbciFpa     = NbciFpa, ...
+        dtSec       = dtSec);
 
 
 
@@ -309,13 +309,12 @@ classdef VoltageCalibration
       bltsSamplesAvoltCa = cell(size(bltsSamplesTmCa));    % Pre-allocate
       for i = 1:numel(bltsSamplesTmCa)
         tempSamplesAvolt = bicas.tf.apply_TF(...
-          dtSec(i), ...
+          dtSec, ...
           bltsSamplesTmCa{i}, ...
           itfAvpt, ...
           method                  = obj.tfMethod, ...
           detrendingDegreeOf      = detrendingDegreeOf, ...
           retrendingEnabled       = retrendingEnabled, ...
-          tfHighFreqLimitFraction = obj.itfHighFreqLimitFraction, ...
           kernelLengthMax         = obj.kernelLengthMax, ...
           kernelEdgePolicy        = obj.kernelEdgePolicy, ...
           kernelHannWindowEnabled = obj.kernelHannWindowEnabled, ...
@@ -329,16 +328,11 @@ classdef VoltageCalibration
 
 
 
-    % Function for producing the exact ITF used by BICAS for all calibration.
+    % "raw" refers to that the function returns the ITF as specified by the
+    % calibration data, not the modified ITF actually used for calibration.
     %
-    % RATIONALE FOR EXISTENCE
-    % =======================
-    % This function exists to make it possible to manually reproduce and
-    % inspect the exact TF+offset used by BICAS, from outside of BICAS proper.
-    % NOTE: This still excludes information on detrending-retrending, use of
-    % Hann window, kernel length.
-    %
-    function [itfAvpt, offsetAvolt] = get_voltage_calibration_ITF_offset(obj, A)
+    function [itfAvpt, offsetAvolt] = get_voltage_calibration_raw_ITF_offset(...
+        obj, A)
       % PROPOSAL: Redefine to return all information (arguments) used for
       %           calling bicas.tf.apply_TF(), including detrending-retrending,
       %           use of Hann window, kernel length, SNF options.
@@ -347,9 +341,6 @@ classdef VoltageCalibration
       %     CON: Not sure if it is important yet. Issues associated with other
       %          "calibration parameters" are less subtle than for TFs/kernels.
       %   CON: Many return values. Need to use struct/class.
-      %
-      % PROPOSAL: Reorg. code to have one function for returning the modified
-      % TF as now done in bicas.tf.apply_TF(), i.e. remove high frequencies.
 
       arguments
         obj
@@ -430,6 +421,41 @@ classdef VoltageCalibration
         % NOTE: Overwrites pre-existing value of "offsetAvolt".
         offsetAvolt = 0;
       end
+    end
+
+
+
+    % RATIONALE FOR EXISTENCE
+    % =======================
+    % This function exists to make it possible to manually reproduce and
+    % inspect the exact TF+offset used by BICAS, from outside of BICAS proper.
+    % NOTE: This still excludes information on detrending-retrending, use of
+    % Hann window, kernel length.
+    %
+    function [itfAvpt, offsetAvolt] = get_voltage_calibration_final_ITF_offset(...
+        obj, A)
+      arguments
+        obj
+        A.isLfr
+        A.isTdsCwf
+        A.CalSettings
+        A.NbriFpa
+        A.NbciFpa
+        A.dtSec
+      end
+
+      [itfAvpt, offsetAvolt] = obj.get_voltage_calibration_raw_ITF_offset(...
+        isLfr       = A.isLfr, ...
+        isTdsCwf    = A.isTdsCwf, ...
+        CalSettings = A.CalSettings, ...
+        NbriFpa     = A.NbriFpa, ...
+        NbciFpa     = A.NbciFpa);
+
+      %=========================================================================
+      % Create modified version of TF which is set to zero for high frequencies
+      %=========================================================================
+      itfAvpt = bicas.tf.make_hard_low_pass_TF(...
+        itfAvpt, obj.itfHighFreqLimitFraction, A.dtSec);
     end
 
 

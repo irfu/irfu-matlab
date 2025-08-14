@@ -49,9 +49,6 @@ classdef tf
     % ** Code has the ability to enable/disable de-trending:
     %       -- To handle both DC and AC signals.
     %       -- Make testing easier.
-    % ** Code has the ability to make TF zero above frequency cutoff. This
-    %    cut-off is naturally sampling frequency-dependent and is therefore NOT
-    %    a natural part of the TF itself.
     %
     %
     % ARGUMENTS
@@ -72,9 +69,6 @@ classdef tf
     %                <0 : No de-trending.
     %               Default = -1.
     %         * 'retrendingEnabled'
-    %         * 'tfHighFreqLimitFraction'
-    %               Fraction of Nyquist frequency (1/dt). TF is regarded as zero
-    %               above this frequency. Can be Inf.
     %         * 'snfSubseqMinSamples'
     %               Positive integer. Required minimum number of finite-valued
     %               samples in a subsequence to processed (not returned as NaN).
@@ -93,7 +87,8 @@ classdef tf
     %           Data after applying TF and before it is potentially modified
     %           (again).
     %       .tfModif
-    %           The actual (potentially modified) TF used.
+    %           The actual TF used. "Modif" in the name is for historical
+    %           reasons.
     %       .i1Array, .i2Array
     %           1D column arrays with indices into y1 for the first and last
     %           index for the respective time intervals separated by non-finite
@@ -159,12 +154,13 @@ classdef tf
       %   SFV = Split by FV
       %   NFS = Non-Finite Splitting
       %   SBIV = Split by Invalid Values
+      %
+      % PROPOSAL: Remove Debug.tfModif.
 
       arguments
         dtSec, y1, tf
         S.detrendingDegreeOf      = -1;
         S.retrendingEnabled       = false;
-        S.tfHighFreqLimitFraction = Inf;
         S.method                  = 'FFT';
         S.kernelLengthMax         = Inf;
         S.kernelEdgePolicy        = 'MIRROR';
@@ -183,14 +179,6 @@ classdef tf
       % ASSERTION: Arguments
       assert(isscalar(dtSec) & (dtSec > 0))
       assert(iscolumn(y1), 'Argument y1 is not a column vector.')
-
-
-
-      %=========================================================================
-      % Create modified version of TF which is set to zero for high frequencies
-      %=========================================================================
-      tfModif = bicas.tf.make_hard_low_pass_TF(...
-        tf, S.tfHighFreqLimitFraction, dtSec);
 
 
 
@@ -216,7 +204,7 @@ classdef tf
       Debug.y2ModifCa = cell(nSs, 1);   % Pre-allocate
       Debug.i1Array   = i1Array;
       Debug.i2Array   = i2Array;
-      Debug.tfModif   = tfModif;
+      Debug.tfModif   = tf;
 
       for iSs = 1:nSs
         i1 = i1Array(iSs);
@@ -225,7 +213,7 @@ classdef tf
         y1ss = y1(i1:i2);
 
         if numel(y1ss) >= S.snfSubseqMinSamples
-          [y2ss, D] = bicas.tf.apply_TF_with_DRT(dtSec, y1ss, tfModif, S);
+          [y2ss, D] = bicas.tf.apply_TF_with_DRT(dtSec, y1ss, tf, S);
 
           Debug.y1ModifCa{iSs} = D.y1Modif;
           Debug.y2ModifCa{iSs} = D.y2Modif;

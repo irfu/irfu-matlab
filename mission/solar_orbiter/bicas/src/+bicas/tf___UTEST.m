@@ -40,7 +40,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
       N  = 100;
       dt = 0.1;
       y1 = 5 * ones(N, 1);
-      tf = @(omegaRps) (29);
+      tf = bicas.tf.utest_utils.get_TF_constant(29, 29);    % Constant TF.
 
       T.verifyError(...
         @() (bicas.tf.apply_TF(...
@@ -63,7 +63,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
       N  = 100;
       dt = 0.1;
       y1 = 5 * ones(N, 1);
-      tf = @(omegaRps) (29);
+      tf = bicas.tf.utest_utils.get_TF_constant(29, 29);    % Constant TF.
 
       [y2, D] = bicas.tf.apply_TF(...
         dt, y1, tf, ...
@@ -98,7 +98,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
       y1_0 = A * ones(size(x));
       y1_1 = B * x;
       y1   = y1_0 + y1_1;
-      tf   = @(omegaRps) (29);   % Constant TF.
+      tf   = bicas.tf.utest_utils.get_TF_constant(29, 29);    % Constant TF.
 
 
 
@@ -109,9 +109,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
         snfSubseqMinSamples     = T.NON_FV_SPLIT_SETTINGS.snfSubseqMinSamples, ...
         method                  = METHOD, ...
         detrendingDegreeOf      = -1, ...
-        retrendingEnabled       = false, ...
-        tfHighFreqLimitFraction = Inf ...
-        );
+        retrendingEnabled       = false);
       T.verifyEqual(D.y1ModifCa{1}, y1,    'AbsTol', 1e-14)
       T.verifyEqual(D.y2ModifCa{1}, y1*29, 'AbsTol', 1e-13)
       T.verifyEqual(y2,             y1*29, 'AbsTol', 1e-13)
@@ -125,9 +123,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
         snfSubseqMinSamples     = T.NON_FV_SPLIT_SETTINGS.snfSubseqMinSamples, ...
         method                  = METHOD, ...
         detrendingDegreeOf      = 0, ...
-        retrendingEnabled       = false, ...
-        tfHighFreqLimitFraction = Inf ...
-        );
+        retrendingEnabled       = false);
 
       T.verifyEqual(D.y1ModifCa{1}, y1_1,    'AbsTol', 1e-14)
       T.verifyEqual(D.y2ModifCa{1}, y1_1*29, 'AbsTol', 1e-13)
@@ -142,9 +138,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
         snfSubseqMinSamples     = T.NON_FV_SPLIT_SETTINGS.snfSubseqMinSamples, ...
         method                  = METHOD, ...
         detrendingDegreeOf      = 2, ...
-        retrendingEnabled       = false, ...
-        tfHighFreqLimitFraction = Inf ...
-        );
+        retrendingEnabled       = false);
 
       T.verifyEqual(D.y1ModifCa{1}, zeros(size(y1_1)), 'AbsTol', 1e-14)
       T.verifyEqual(D.y2ModifCa{1}, zeros(size(y1_1)), 'AbsTol', 1e-13)
@@ -159,9 +153,7 @@ classdef tf___UTEST < matlab.unittest.TestCase
         snfSubseqMinSamples     = T.NON_FV_SPLIT_SETTINGS.snfSubseqMinSamples, ...
         method                  = METHOD, ...
         detrendingDegreeOf      = 2, ...
-        retrendingEnabled       = true, ...
-        tfHighFreqLimitFraction = Inf ...
-        );
+        retrendingEnabled       = true);
 
       T.verifyEqual(D.y1ModifCa{1}, zeros(size(y1_1)), 'AbsTol', 1e-14)
       T.verifyEqual(D.y2ModifCa{1}, zeros(size(y1_1)), 'AbsTol', 1e-13)
@@ -172,42 +164,44 @@ classdef tf___UTEST < matlab.unittest.TestCase
 
     % Test (Nyquist) frequency cutoff.
     %
-    function test_Freq_cutoff(T)
-      %close all
-
-      N  = 2^7;
-      dt = 0.1;
-      t  = [0:N-1]' * dt;
-
-      nyquistOmegaRps = pi/dt;
-      omega1 = nyquistOmegaRps*0.25;   % Survives   tfHighFreqLimitFraction.
-      omega2 = nyquistOmegaRps*0.50;   % Removed by tfHighFreqLimitFraction.
-      y1_1   = sin(omega1*t);
-      y1_2   = sin(omega2*t);
-      y1     = y1_1 + y1_2;
-
-      tf     = bicas.tf.utest_utils.get_TF_delay(1*dt);
-
-      if 1
-
-        [y2, D] = bicas.tf.apply_TF(...
-          dt, y1, tf, ...
-          snfEnabled              = T.NON_FV_SPLIT_SETTINGS.snfEnabled, ...
-          snfSubseqMinSamples     = T.NON_FV_SPLIT_SETTINGS.snfSubseqMinSamples, ...
-          method                  = 'FFT', ...
-          detrendingDegreeOf      = -1, ...
-          retrendingEnabled       = false, ...
-          tfHighFreqLimitFraction = 0.4 ...
-          );
-
-        y2_exp = circshift(y1_1, 1);   % Requires FFT method.
-        %bicas.tf.apply_TF___UTEST.plot_test(y1, y2, y2_exp)
-
-        T.verifyEqual(abs(D.tfModif(omega1)), 1)
-        T.verifyEqual(abs(D.tfModif(omega2)), 0)
-        T.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
-      end
-    end
+    % NOTE: Obsolete since argument "tfHighFreqLimitFraction" and corresponding
+    % functionality has been removed.
+    %
+    % function test_Freq_cutoff(T)
+    %
+    %   N  = 2^7;
+    %   dt = 0.1;
+    %   t  = [0:N-1]' * dt;
+    %
+    %   nyquistOmegaRps = pi/dt;
+    %   omega1 = nyquistOmegaRps*0.25;   % Survives   tfHighFreqLimitFraction.
+    %   omega2 = nyquistOmegaRps*0.50;   % Removed by tfHighFreqLimitFraction.
+    %   y1_1   = sin(omega1*t);
+    %   y1_2   = sin(omega2*t);
+    %   y1     = y1_1 + y1_2;
+    %
+    %   tf     = bicas.tf.utest_utils.get_TF_delay(1*dt);
+    %
+    %   if 1
+    %
+    %     [y2, D] = bicas.tf.apply_TF(...
+    %       dt, y1, tf, ...
+    %       snfEnabled              = T.NON_FV_SPLIT_SETTINGS.snfEnabled, ...
+    %       snfSubseqMinSamples     = T.NON_FV_SPLIT_SETTINGS.snfSubseqMinSamples, ...
+    %       method                  = 'FFT', ...
+    %       detrendingDegreeOf      = -1, ...
+    %       retrendingEnabled       = false, ...
+    %       tfHighFreqLimitFraction = 0.4 ...
+    %       );
+    %
+    %     y2_exp = circshift(y1_1, 1);   % Requires FFT method.
+    %     %bicas.tf.apply_TF___UTEST.plot_test(y1, y2, y2_exp)
+    %
+    %     T.verifyEqual(abs(D.tfModif(omega1)), 1)
+    %     T.verifyEqual(abs(D.tfModif(omega2)), 0)
+    %     T.verifyEqual(y2, y2_exp, 'AbsTol', 1e-13)
+    %   end
+    % end
 
 
 
@@ -292,6 +286,29 @@ classdef tf___UTEST < matlab.unittest.TestCase
         T.verifyEqual(y2,          Td.y2,        'RelTol', 1e-14)
       end
 
+    end
+
+
+
+    function test_make_hard_low_pass_TF(T)
+      tf       = bicas.tf.utest_utils.get_TF_constant(3, 3);
+      dtSec    = 0.1;
+      fraction = 0.7;
+
+      actTf = bicas.tf.make_hard_low_pass_TF(tf, fraction, dtSec);
+
+      nyquistFreqRps = pi / dtSec;
+      omegaRps       = linspace(0, 100);
+      expZ           = tf(omegaRps);
+      expZ(omegaRps > fraction*nyquistFreqRps) = 0;
+
+      % Verify configuration
+      assert(ismember(0, expZ))
+      assert(ismember(3, expZ))
+
+      actZ = actTf(omegaRps);
+
+      T.assertEqual(actZ, expZ)
     end
 
 
