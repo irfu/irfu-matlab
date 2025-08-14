@@ -264,7 +264,7 @@ classdef VoltageCalibration
       irf.assert.sizes(...
         dtSec,           [-1], ...
         bltsSamplesTmCa, [-1])
-      assert(isa(CalSettings, 'bicas.proc.L1L2.CalibrationSettings'))
+      assert(isa(CalSettings, 'bicas.proc.L1L2.cal.CalibrationSettings'))
       assert(islogical(isTdsCwf) && isscalar(isTdsCwf))
 
 
