@@ -125,6 +125,39 @@ classdef findread
 
 
 
+    % For a given RCTTID+RCT file, do the following operations, customized for
+    % the type of RCT:
+    %   (1) read RCT file,
+    %   (2) modify the content when required (e.g. extrapolate TFs), and
+    %   (3) log the modified RCT content.
+    % Effectively wraps the different RCT-reading functions/methods.
+    %
+    %
+    % IMPLEMENTATION NOTES
+    % ====================
+    % This method exists to
+    % (1) run shared code that should be run when reading any RCT (logging,
+    %     modifying data),
+    % (2) separate the logging from the RCT-reading code, so that external
+    %     code can read RCTs without BICAS.
+    % (3) make it possible to load an RCTD manually (by specifying an explicit
+    %     RCT path) and using it to manually create an RCTDC.
+    %
+    function Rctd = read_RCT_modify_log(rcttid, filePath, L)
+
+      L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
+        'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
+
+      RctdMetadata = bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP(rcttid);
+
+      % Call constructor(!) of the specified class.
+      Rctd = feval(RctdMetadata.className, filePath);
+
+      Rctd.log_RCT(L);
+    end
+
+
+
     function [biasRctPath, brvfPath] = get_BRVF_RCT_path(rctDir, DtDataBegin, DtDataEnd)
       [rctFilename, DtValidityBegin, DtValidityEnd, brvfPath] = ...
         bicas.proc.L1L2.cal.rct.findread.read_BRVF(rctDir);
@@ -354,37 +387,6 @@ classdef findread
         RctdCa{iGactEntry} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           nonBiasRcttid, filePath, L);
       end
-    end
-
-
-
-    % For a given RCTTID+RCT file, do the following operations, customized for
-    % the type of RCT:
-    %   (1) read RCT file,
-    %   (2) modify the content when required (e.g. extrapolate TFs), and
-    %   (3) log the modified RCT content.
-    % Effectively wraps the different RCT-reading functions/methods.
-    %
-    %
-    % IMPLEMENTATION NOTES
-    % ====================
-    % This method exists to
-    % (1) run shared code that should be run when reading any RCT (logging,
-    %     modifying data),
-    % (2) separate the logging from the RCT-reading code, so that external
-    %     code can read RCTs without BICAS.
-    %
-    function Rctd = read_RCT_modify_log(rcttid, filePath, L)
-
-      L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
-        'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
-
-      RctdMetadata = bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP(rcttid);
-
-      % Call constructor(!) of the specified class.
-      Rctd = feval(RctdMetadata.className, filePath);
-
-      Rctd.log_RCT(L);
     end
 
 
