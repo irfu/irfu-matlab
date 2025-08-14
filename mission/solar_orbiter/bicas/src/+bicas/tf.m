@@ -56,8 +56,8 @@ classdef tf
     %
     % ARGUMENTS
     % =========
-    % dt
-    %       Scalar. Time difference between samples.
+    % dtSec
+    %       Scalar. Time difference between samples in seconds.
     % y1
     %       Column vector of samples. May be modified by this function before
     %       actually applying the TF.
@@ -103,7 +103,7 @@ classdef tf
     % Author: Erik P G Johansson, Uppsala, Sweden
     % First created 2020-11-04.
     %
-    function [y2, Debug] = apply_TF(dt, y1, tf, S)
+    function [y2, Debug] = apply_TF(dtSec, y1, tf, S)
       % PROPOSAL: Move bicas.tf to bicas.proc.L1L2.tf.
       %   PRO: Code is only used for processing L1/L1R-->L2.
       %   CON: Implies that code is less generic/reusable.
@@ -161,7 +161,7 @@ classdef tf
       %   SBIV = Split by Invalid Values
 
       arguments
-        dt, y1, tf
+        dtSec, y1, tf
         S.detrendingDegreeOf      = -1;
         S.retrendingEnabled       = false;
         S.tfHighFreqLimitFraction = Inf;
@@ -181,7 +181,7 @@ classdef tf
         S.snfSubseqMinSamples >= 1)
 
       % ASSERTION: Arguments
-      assert(isscalar(dt) & (dt > 0))
+      assert(isscalar(dtSec) & (dtSec > 0))
       assert(iscolumn(y1), 'Argument y1 is not a column vector.')
 
 
@@ -189,19 +189,8 @@ classdef tf
       %=========================================================================
       % Create modified version of TF which is set to zero for high frequencies
       %=========================================================================
-      % NOTE: Permits Settings.tfHighFreqLimitFraction to be +Inf.
-      assert(...
-        isnumeric(  S.tfHighFreqLimitFraction) ...
-        && isscalar(S.tfHighFreqLimitFraction) ...
-        && ~isnan(  S.tfHighFreqLimitFraction) ...
-        && (        S.tfHighFreqLimitFraction >= 0))
-      % Nyquist frequency [rad/s] =
-      % = 2*pi [rad/sample] * (1/2 * 1/dt [samples/s])
-      % = pi/dt
-      nyquistFreqRps     = pi/dt;
-      tfHighFreqLimitRps = S.tfHighFreqLimitFraction * nyquistFreqRps;
-      tfModif            = ...
-        @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
+      tfModif = bicas.tf.make_hard_low_pass_TF(...
+        tf, S.tfHighFreqLimitFraction, dtSec);
 
 
 
@@ -236,7 +225,7 @@ classdef tf
         y1ss = y1(i1:i2);
 
         if numel(y1ss) >= S.snfSubseqMinSamples
-          [y2ss, D] = bicas.tf.apply_TF_with_DRT(dt, y1ss, tfModif, S);
+          [y2ss, D] = bicas.tf.apply_TF_with_DRT(dtSec, y1ss, tfModif, S);
 
           Debug.y1ModifCa{iSs} = D.y1Modif;
           Debug.y2ModifCa{iSs} = D.y2Modif;
@@ -251,6 +240,26 @@ classdef tf
       end
 
     end    % function apply_TF()
+
+
+
+    % Create modified TF where Z=0 above certain frequency.
+    function tf2 = make_hard_low_pass_TF(tf, tfHighFreqLimitFraction, dtSec)
+      % NOTE: Permits tfHighFreqLimitFraction to be +Inf.
+      assert(...
+        isnumeric(  tfHighFreqLimitFraction) ...
+        && isscalar(tfHighFreqLimitFraction) ...
+        && ~isnan(  tfHighFreqLimitFraction) ...
+        && (        tfHighFreqLimitFraction >= 0))
+
+      % Nyquist frequency [rad/s] =
+      % = 2*pi [rad/sample] * (1/2 * 1/dt [samples/s])
+      % = pi/dt
+      nyquistFreqRps     = pi/dtSec;
+      tfHighFreqLimitRps = tfHighFreqLimitFraction * nyquistFreqRps;
+      tf2                = ...
+        @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
+    end
 
 
 
