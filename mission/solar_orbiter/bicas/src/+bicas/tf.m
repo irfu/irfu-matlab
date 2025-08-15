@@ -104,7 +104,7 @@ classdef tf
       %   CON: Implies that code is less generic/reusable.
       %
       % PROPOSAL: Function for splitting up samples separated by non-finite
-      %           samples (SNF).
+      %           samples (SNF). -- IMPLEMENTED
       % PROPOSAL: This function should not support SNF. Should be made easy by
       %           separate function instead.
       %   PROBLEM: Needs way of easily putting subsequences together again after
@@ -121,12 +121,13 @@ classdef tf
       %                   calibrated and that the calibration code fails
       %                   nicely (e.g. producing only NaN).
       %               (3) Combine calibrated CA of arrays into one array.
+      %               -- IMPLEMENTED
       %       PRO: Can be implemented using irf.utils.split_by_change().
       %       CON: Calibrates NaN sequences --> NaN. Multiplies the number of
       %            sequences to calibrate by ~2.
       %
       % PROPOSAL: Check that data is finite. Only call bicas.tf.freq.apply_TF()
-      %           if all data is non-finite.
+      %           if all data is non-finite. -- IMPLEMENTED
       %   PRO: bicas.tf.freq.apply_TF() can assume (needs to be updated) that
       %        always Z<>NaN and thereby detect if TF can not be evaluated via NaN.
       %       PRO: Can construct TFs in steps/parts where each part does not have
@@ -188,52 +189,82 @@ classdef tf
         % Split up time interval into sub-intervals separated by non-finite
         % samples (fill values)
         %===================================================================
-        % SS = SubSequence
-        [i1Array, i2Array] = irf.utils.split_by_false(isfinite(y1));
-        nSs                = numel(i1Array);
+        y1Ca = bicas.tf.split_samples_by_nonfinite(y1);
       else
-        i1Array = 1;
-        i2Array = numel(y1);
-        nSs     = 1;
+        y1Ca = {y1};
       end
 
       % Pre-allocate and initialize values that will not later be overwritten.
-      y2 = NaN(size(y1));
+      % y2  = NaN(size(y1));
+
+      nSs = numel(y1Ca);
 
       Debug = struct();
       Debug.y1ModifCa = cell(nSs, 1);   % Pre-allocate
       Debug.y2ModifCa = cell(nSs, 1);   % Pre-allocate
-      Debug.i1Array   = i1Array;
-      Debug.i2Array   = i2Array;
       Debug.tfModif   = tf;
 
+      y2Ca = cell(nSs, 1);
       for iSs = 1:nSs
-        i1 = i1Array(iSs);
-        i2 = i2Array(iSs);
-
-        y1ss = y1(i1:i2);
-
-        if numel(y1ss) >= S.snfSubseqMinSamples
-          [y2ss, D] = bicas.tf.apply_TF_with_DRT(dtSec, y1ss, tf, S);
-
-          Debug.y1ModifCa{iSs} = D.y1Modif;
-          Debug.y2ModifCa{iSs} = D.y2Modif;
-        else
-          y2ss = NaN(size(y1ss));
-
-          Debug.y1ModifCa{iSs} = [];
-          Debug.y2ModifCa{iSs} = [];
+        y1Ss = y1Ca{iSs};
+        if numel(y1Ss) < S.snfSubseqMinSamples
+          y1Ss = NaN(size(y1Ss));
         end
+        [y2ss, D] = bicas.tf.apply_TF_with_DRT(dtSec, y1Ss, tf, S);
 
-        y2(i1:i2) = y2ss;
+        Debug.y1ModifCa{iSs} = D.y1Modif;
+        Debug.y2ModifCa{iSs} = D.y2Modif;
+
+        y2Ca{iSs} = y2ss;
       end
+      y2 = cell2mat(y2Ca);
+      y2 = y2(:);   % Normalize 0x0 --> 0x1.
 
     end    % function apply_TF()
 
 
 
+    function yCa = split_samples_by_nonfinite(y)
+      % NOTE: Does not implement any constraint on the minimum length of
+      %       subsequences since that can easily be implemented separately.
+      %       Also does not want to implement special behaviour for such
+      %       subsequences, e.g. set to NaN.
+
+      % PROPOSAL: Better function name
+      %   not "samples"?
+      %     CON: Is not a true, generic function. Does not return indices (like
+      %          irf.utils.split_by_change()), but a CA of arrays.
+      %   split_by_nonfinite()
+      %     CON: Sounds too generic.
+      %
+      % PROPOSAL: Permit arbitrary "criterion", bArray.
+
+      assert(iscolumn(y) & isnumeric(y))
+
+      [i1Array, i2Array] = irf.utils.split_by_change(isfinite(y));
+
+      n   = length(i1Array);
+      yCa = cell(n, 1);
+      for i = 1:n
+        yCa{i, 1} = y(i1Array(i):i2Array(i));
+      end
+
+    end
+
+
+
     % Apply TF using detrending.
     function [y2, Debug] = apply_TF_with_DRT(dt, y1, tf, Settings)
+      %-------------------------------------------------
+      % Ensure that data is either all valid or all NaN
+      %-------------------------------------------------
+      % NOTE: Also ensures identical behaviour for FFT and KERNEL methods wrt.
+      % to this (though that is probably not a problem anyway).
+      if any(~isfinite(y1))
+        y1 = NaN(size(y1));
+      end
+
+
 
       %#####################
       % Optionally DE-trend
@@ -281,6 +312,38 @@ classdef tf
       Debug = struct();
       Debug.y1Modif = y1Detrended;
       Debug.y2Modif = y2Detrended;
+    end
+
+
+
+    % Create modified TF where Z=0 above certain frequency.
+    %
+    % ARGUMENTS
+    % =========
+    % tfHighFreqLimitFraction
+    %       Fraction of Nyquist frequency (1/dt). TF is set to zero above this
+    %       frequency. Can be Inf.
+    %
+    function tf2 = make_hard_low_pass_TF(tf, tfHighFreqLimitFraction, dtSec)
+      % PROPOSAL: Move function to bicas.tf.utest_utils and redefine that file
+      %           as bicas.tf.utils.
+      %   NOTE: This function is *NOT* called from inside bicas.tf (e.g.
+      %         bicas.tf.apply_TF()).
+
+      % NOTE: Permits tfHighFreqLimitFraction to be +Inf.
+      assert(...
+        isnumeric(  tfHighFreqLimitFraction) ...
+        && isscalar(tfHighFreqLimitFraction) ...
+        && ~isnan(  tfHighFreqLimitFraction) ...
+        && (        tfHighFreqLimitFraction >= 0))
+
+      % Nyquist frequency [rad/s] =
+      % = 2*pi [rad/sample] * (1/2 * 1/dt [samples/s])
+      % = pi/dt
+      nyquistFreqRps     = pi/dtSec;
+      tfHighFreqLimitRps = tfHighFreqLimitFraction * nyquistFreqRps;
+      tf2                = ...
+        @(omegaRps) (tf(omegaRps) .* (omegaRps < tfHighFreqLimitRps));
     end
 
 
