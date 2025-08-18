@@ -43,9 +43,6 @@ BpcsCa = cell(nBpci, 1);
 %     BICAS instances being executed in parallel.
 % (2) The stdout from bicas.tools.batch contains some seemingly irrelevant
 %     warnings (1) from MATLAB.
-% (3) Below automated test fail however:
-%     bicas.tools.batch.run_BICAS_all_passes___UTEST/test1_2_to_1_and_crash_to_1(FN_VER_ALGO=HIGHEST_USED)
-%     bicas.tools.batch.run_BICAS_all_passes___UTEST/test1_2_to_1_and_crash_to_1(FN_VER_ALGO=ABOVE_HIGHEST_USED)
 % --
 % NOTE: A quick manual test (2025-08-15, irony, network-mounted input
 % /data/solo/remote/data/L2/lfr_wf_e/2025/06/*cwf*_2025060*) reduced the

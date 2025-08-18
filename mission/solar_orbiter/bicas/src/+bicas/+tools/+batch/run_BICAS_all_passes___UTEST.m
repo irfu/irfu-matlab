@@ -235,7 +235,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
       % RUN TESTED CODE
       ActBpcsArray = T.test1(...
-        {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO, [1]);
+        {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO, ...
+        {{INPUT_FILE_1}});
 
       assert(numel(ActBpcsArray) == 3)
       irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240102_V01.cdf'))
@@ -329,9 +330,9 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
       switch(numel(varargin))
         case 0
-          callNonZeroErrorArray = zeros(0, 1);
+          errorInputFilesCaCa = cell(0, 1);
         case 1
-          callNonZeroErrorArray = varargin{1};
+          errorInputFilesCaCa = varargin{1};
         otherwise
           error('Wrong number of arguments.')
       end
@@ -358,7 +359,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
         bicas.swm.OutputDataset('cli_out', DSI_3, 'OUT_cdf', 'SWD name', 'SWD descr.', '03') ...
         );
 
-      BPA = bicas.tools.batch.BicasProcessingAccessTest([SWM_1; SWM_2], callNonZeroErrorArray);
+      BPA = bicas.tools.batch.BicasProcessingAccessTest(...
+        [SWM_1; SWM_2], errorInputFilesCaCa);
 
       % CALL TESTED CODE
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
@@ -409,7 +411,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
         ] ...
         );
 
-      BPA = bicas.tools.batch.BicasProcessingAccessTest([SWM_1; SWM_2], []);
+      BPA = bicas.tools.batch.BicasProcessingAccessTest([SWM_1; SWM_2], cell(0, 1));
 
       % CALL TESTED CODE
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes(...

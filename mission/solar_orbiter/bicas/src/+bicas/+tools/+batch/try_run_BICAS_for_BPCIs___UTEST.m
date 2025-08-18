@@ -63,9 +63,8 @@ classdef try_run_BICAS_for_BPCIs___UTEST < matlab.unittest.TestCase
 
 
     function test_zero_SWMs_zero_BPCIs(T)
-
       BPA = bicas.tools.batch.BicasProcessingAccessTest(...
-        bicas.swm.SoftwareMode.empty(0, 1), []);
+        bicas.swm.SoftwareMode.empty(0, 1), cell(0, 1));
 
       T.test(...
         BPA, ...
@@ -77,7 +76,7 @@ classdef try_run_BICAS_for_BPCIs___UTEST < matlab.unittest.TestCase
 
     function C = prepare_test_complex_BPCIs_BPCSs(T)
       C.BPA = bicas.tools.batch.BicasProcessingAccessTest(...
-        [T.C.SWM_2TO1; T.C.SWM_1TO2], []);
+        [T.C.SWM_2TO1; T.C.SWM_1TO2], cell(0, 1));
 
       % NOTE: Only relative paths.
       % Using subdirectories just to test paths (not just filenames).
