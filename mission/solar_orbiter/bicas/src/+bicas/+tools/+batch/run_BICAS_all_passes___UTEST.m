@@ -228,9 +228,12 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % This a failsafe against the code executing BPCIs in any order (within
     % a given pass).
     function test1_2_to_1_and_crash_to_1(T, FN_VER_ALGO)
-      INPUT_FILE_1 = irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});  % Crashes
-      irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240102_V02.cdf'});
+      INPUT_FILE_1 = irf.fs.write_empty_file(...
+        {T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});  % Crashes
+      irf.fs.write_empty_file(...
+        {T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240102_V02.cdf'});
 
+      % RUN TESTED CODE
       ActBpcsArray = T.test1(...
         {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO, [1]);
 
@@ -311,8 +314,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % Call BICAS for predefined SWMs, but with datasets specified by caller.
     %
     % Hardcoded SWMs:
-    %   1x L1 in --> 1x L2 out
-    %   1x L2 in --> 1x L3 out
+    %   1x L1R in --> 1x L2 out
+    %   1x L2  in --> 1x L3 out
     %
     % NOTE: Hardcoded DSIs.
     % NOTE: The function does not verify the result. The caller has to create
@@ -321,7 +324,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % NOTE: Test functions which use this function should be prefixed
     % "test1".
     %
-    function ActBpcsArray = test1(T, inputPathsCa, referenceDir, outputDir, fnVerAlgorithm, varargin)
+    function ActBpcsArray = test1(T, ...
+        inputPathsCa, referenceDir, outputDir, fnVerAlgorithm, varargin)
 
       switch(numel(varargin))
         case 0
@@ -346,12 +350,12 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       SWM_1 = bicas.swm.SoftwareMode(...
         SWMP, 'CLI_SWM_1', 'SWD purpose', ...
         bicas.swm.InputDataset( 'cli_in',  DSI_1, 'IN_cdf'), ...
-        bicas.swm.OutputDataset('cli_out', DSI_2, 'OUT_cdf', 'SWD ', 'SWD ', '02') ...
+        bicas.swm.OutputDataset('cli_out', DSI_2, 'OUT_cdf', 'SWD name', 'SWD descr.', '02') ...
         );
       SWM_2 = bicas.swm.SoftwareMode(...
         SWMP, 'CLI_SWM_2', 'SWD purpose', ...
         bicas.swm.InputDataset( 'cli_in',  DSI_2, 'IN_cdf'), ...
-        bicas.swm.OutputDataset('cli_out', DSI_3, 'OUT_cdf', 'SWD ', 'SWD ', '03') ...
+        bicas.swm.OutputDataset('cli_out', DSI_3, 'OUT_cdf', 'SWD name', 'SWD descr.', '03') ...
         );
 
       BPA = bicas.tools.batch.BicasProcessingAccessTest([SWM_1; SWM_2], callNonZeroErrorArray);

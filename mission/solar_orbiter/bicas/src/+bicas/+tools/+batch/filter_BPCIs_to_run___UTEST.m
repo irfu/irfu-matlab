@@ -21,6 +21,8 @@ classdef filter_BPCIs_to_run___UTEST < matlab.unittest.TestCase
     function test0(testCase)
 
       function test(BpciArray, doNotNeedToGenerateFilenamesCa, ExpBpciArray)
+        doNotNeedToGenerateFilenamesCa = doNotNeedToGenerateFilenamesCa(:);
+
         % CALL TESTED FUNCTION
         ActBpciArray = bicas.tools.batch.filter_BPCIs_to_run(...
           BpciArray, doNotNeedToGenerateFilenamesCa);
@@ -34,7 +36,7 @@ classdef filter_BPCIs_to_run___UTEST < matlab.unittest.TestCase
 
       ZERO_BPCI = bicas.tools.batch.BicasProcessingCallInfo.empty(0, 1);
 
-      test(ZERO_BPCI, {}, ZERO_BPCI);
+      test(ZERO_BPCI, cell(0, 1), ZERO_BPCI);
 
       INPUT_FILE_1   = 'input_dataset_1.cdf';
       OUTPUT_FILE_1  = 'output_dataset_1.cdf';

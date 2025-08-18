@@ -5,7 +5,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef BicasProcessingAccessTest < bicas.tools.batch.BicasProcessingAccessAbstract
-  % PROPOSAL: Support returning non-zero error code.
   % PROPOSAL: Support raising exception.
 
 
@@ -38,10 +37,10 @@ classdef BicasProcessingAccessTest < bicas.tools.batch.BicasProcessingAccessAbst
     % ARGUMENTS
     % =========
     % callNonZeroErrorArray
-    %       Array of numbers. Those "call numbers" for which method bicas_main()
-    %       should return non-zero error code and simulate failure.
-    %       The "call number" is N when method "bicas_main" is called the N'th
-    %       time. Call number 1=First call.
+    %       Array of "call numbers" for which method bicas_main() should return
+    %       non-zero error code and simulate failure. The "call number" is N
+    %       when method "bicas_main" is called the N'th time. Call number
+    %       1=First call.
     %
     function obj = BicasProcessingAccessTest(SwmArray, callNonZeroErrorArray)
       assert(isa(SwmArray, 'bicas.swm.SoftwareMode') & iscolumn(SwmArray))
@@ -57,33 +56,35 @@ classdef BicasProcessingAccessTest < bicas.tools.batch.BicasProcessingAccessAbst
 
     % OVERRIDE
     function [varargout] = bicas_main(obj, varargin)
+      % ASSERTIONS
+      for i = 1:numel(varargin)
+        assert(ischar(varargin{i}))
+      end
 
       obj.nCalls = obj.nCalls + 1;
       iCall      = obj.nCalls;    % Call number.
+
       if ismember(iCall, obj.callNonZeroErrorArray)
-        %=============================
-        % CASE: Return non-zero error
-        %=============================
+        %===========================
+        % CASE: Non-zero error code
+        %===========================
 
         % Do no processing (generate no output files)
         % -------------------------------------------
-        % NOTE: One could imagine simulating an error after or between
-        % output datasets are generated but that should be overkill.
+        % NOTE: One could imagine simulating an error after or between output
+        % datasets are generated but that should be overkill.
 
         [varargout{1}] = 1;
       else
-        %=======================================
-        % CASE: Error code zero. Do processing.
-        %=======================================
-
-        for i = 1:numel(varargin)
-          assert(ischar(varargin{i}))
-        end
-
+        %=====================================
+        % CASE: No error. Emulate processing.
+        %=====================================
         swmCliOption = varargin{1};
 
         iSwm = find(strcmp(swmCliOption, {obj.SwmArray(:).cliOption}));
-        assert(isscalar(iSwm), 'Did not find exactly one SWM which matches CLI arg. "%s".', swmCliOption)
+        assert(isscalar(iSwm), ...
+          'Did not find exactly one SWM which matches CLI arg. "%s".', ...
+          swmCliOption)
         Swm  = obj.SwmArray(iSwm);
 
 

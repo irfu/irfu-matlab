@@ -26,7 +26,9 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function BpciArray = filter_BPCIs_to_run(BpciArray, doNotNeedToGenerateFilenamesCa)
+function BpciArray = filter_BPCIs_to_run(...
+  BpciArray, doNotNeedToGenerateFilenamesCa)
+
 % PROPOSAL: Better name.
 %   Something more generic with filtering.
 %   filter, keep, remove
@@ -36,7 +38,9 @@ function BpciArray = filter_BPCIs_to_run(BpciArray, doNotNeedToGenerateFilenames
 % ASSERTIONS
 assert(isa(BpciArray, 'bicas.tools.batch.BicasProcessingCallInfo'))
 assert(iscolumn(BpciArray))
-assert(iscell(doNotNeedToGenerateFilenamesCa))
+assert(iscell(  doNotNeedToGenerateFilenamesCa))
+assert(iscolumn(doNotNeedToGenerateFilenamesCa))
+assert(all(cellfun(@(x) (ischar(x)), doNotNeedToGenerateFilenamesCa)))
 
 %============================================================
 % Filter BpciArray:
@@ -45,6 +49,9 @@ assert(iscell(doNotNeedToGenerateFilenamesCa))
 bKeep = false(size(BpciArray));
 for iBpci = 1:numel(BpciArray)
   outputFilenameCa = BpciArray(iBpci).get_output_filenames();
+
+  assert(iscell(outputFilenameCa) & iscolumn(outputFilenameCa))
+  assert(all(cellfun(@(x) (ischar(x)), outputFilenameCa)))
 
   % Keep BPCI if at least one of its output datasets is missing.
   bKeep(iBpci) = ~all(ismember(outputFilenameCa, doNotNeedToGenerateFilenamesCa));

@@ -24,6 +24,7 @@ function BpcsArray = try_run_BICAS_for_BPCIs(...
 assert(isa(Bpa,       'bicas.tools.batch.BicasProcessingAccessAbstract'))
 assert(isa(BpciArray, 'bicas.tools.batch.BicasProcessingCallInfo'))
 assert(iscolumn(BpciArray))
+assert(iscolumn(automountTriggerPathsCa) & iscell(automountTriggerPathsCa))
 assert(iscell(bicasSettingsArgsCa))
 
 % BpcsArray = bicas.tools.batch.BicasProcessingCallSummary.empty(0, 1);
@@ -46,7 +47,7 @@ BpcsCa = cell(nBpci, 1);
 %     bicas.tools.batch.run_BICAS_all_passes___UTEST/test1_2_to_1_and_crash_to_1(FN_VER_ALGO=HIGHEST_USED)
 %     bicas.tools.batch.run_BICAS_all_passes___UTEST/test1_2_to_1_and_crash_to_1(FN_VER_ALGO=ABOVE_HIGHEST_USED)
 % --
-% NOTE: A quick test (irony, network-mounted input
+% NOTE: A quick manual test (2025-08-15, irony, network-mounted input
 % /data/solo/remote/data/L2/lfr_wf_e/2025/06/*cwf*_2025060*) reduced the
 % execution time used 197 s --> 121 s. Shorter test showed no improvement,
 % probably due to the processing pool startup time.
@@ -88,6 +89,11 @@ end    % try_run_BICAS_for_BPCIs()
 
 
 
+% RETURN VALUE
+% ============
+% Bpcs
+%       [], if could not find the files specified by all "Bpci" input paths.
+%
 function Bpcs = execute_BICAS_using_BPCI(...
   Bpa, Bpci, configFile, bicasSettingsArgsCa, automountTriggerPathsCa, iBpci)
 
@@ -148,6 +154,7 @@ fprintf(...
 % CALL BICAS
 %############
 errorCode = Bpa.bicas_main(argsCa{:});
+fprintf('errorCode = %i\n', errorCode)    % DEBUG
 
 fprintf('################################\n')
 fprintf('RETURNING FROM BICAS (iBpci=%i)\n', iBpci)
@@ -186,6 +193,9 @@ for i = 1:numel(Bpci.inputsArray)
   if ~exist(path, 'file')
     firstInvalidPath = path;
     valid            = false;
+    % fprintf('%s -- Found\n', path)   % DEBUG
+  else
+    % fprintf('%s -- Not found\n', path)    % DEBUG
   end
 end
 end    % input_dataset_paths_valid()

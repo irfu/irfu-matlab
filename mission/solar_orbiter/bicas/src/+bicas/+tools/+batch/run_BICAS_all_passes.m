@@ -77,7 +77,9 @@ iPass = 1;
 while true
 
   fprintf('########################\n')
+  fprintf('########################\n')
   fprintf('BEGIN BICAS BATCH PASS %i\n', iPass)
+  fprintf('########################\n')
   fprintf('########################\n')
 
   %=====================
@@ -155,7 +157,7 @@ while true
     bicas.tools.batch.DSMDs_to_filenames(RefDsmdArray), ...
     tpdFilenamesCa);
   BpciRunArray = bicas.tools.batch.filter_BPCIs_to_run(...
-    BpciInputArray, doNotNeedToGenerateFilenamesCa);
+    BpciInputArray, doNotNeedToGenerateFilenamesCa(:));
   fprintf('Number of BPCIs that will be run: %4i\n', numel(BpciRunArray))
 
   if isempty(BpciRunArray)
