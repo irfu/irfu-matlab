@@ -72,8 +72,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
     % Zero relevant input files
     %
-    function test1_zero_relevant_input(testCase)
-      [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
+    function test1_zero_relevant_input(T)
+      [~, P] = T.get_test_dirs({'in', 'out'});
 
       INPUT_1 = irf.fs.write_empty_file({P.in, 'NOT_DATASET.cdf'});
       INPUT_2 = irf.fs.write_empty_file({P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
@@ -81,13 +81,13 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       % ===============================
       % Test specifying input directory
       % ===============================
-      bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+      T.test1(...
         {P.in}, '', P.out, 'HIGHEST_USED');
 
       % ====================================================
       % Test specifying explicit (irrelevant) input datasets
       % ====================================================
-      bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+      T.test1(...
         {INPUT_1, INPUT_2}, '', P.out, 'HIGHEST_USED');
     end
 
@@ -98,13 +98,13 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % No ref. dir.
     % (There is no V01 input file.)
     % --> 1 output file
-    function test1_1LV_1NLV_to_1(testCase, FN_VER_ALGO)
-      [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
+    function test1_1LV_1NLV_to_1(T, FN_VER_ALGO)
+      [~, P] = T.get_test_dirs({'in', 'out'});
 
       irf.fs.write_empty_file(          {P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
       INPUT_2 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf'});
 
-      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+      ActBpcsArray = T.test1(...
         {P.in}, '', P.out, FN_VER_ALGO);
 
       assert(numel(ActBpcsArray) == 1)
@@ -121,15 +121,15 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % ABOVE_HIGHEST_USED ==> Increment version number
     %
     % NOTE: Ref. dir. file. is not V01! Still blocks output.
-    function test1_1_to_01_ref_collision(testCase, FN_VER_ALGO)
-      [testDir, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'ref', 'out'});
+    function test1_1_to_01_ref_collision(T, FN_VER_ALGO)
+      [testDir, P] = T.get_test_dirs({'in', 'ref', 'out'});
       irf.fs.write_empty_file({P.in,  'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
       irf.fs.write_empty_file({P.ref, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V05.cdf' });    % Not V01.
 
-      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+      ActBpcsArray = T.test1(...
         {P.in}, P.ref, P.out, FN_VER_ALGO);
 
-      % bicas.tools.batch.run_BICAS_all_passes___UTEST.disp_dir_tree(testDir)    % DEBUG
+      % T.disp_dir_tree(testDir)    % DEBUG
 
       switch(FN_VER_ALGO)
         case 'HIGHEST_USED'
@@ -150,27 +150,27 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % --> 1x L3
     %
     % NOTE: Output directory is also input directory.
-    function test1_1_to_1_to_1(testCase, FN_VER_ALGO)
+    function test1_1_to_1_to_1(T, FN_VER_ALGO)
       function assert_actual_result()
         assert(numel(ActBpcsArray) == 2)
         irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
         irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
       end
 
-      [~, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
+      [~, P] = T.get_test_dirs({'in', 'out'});
       INPUT_1 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
 
       % ===============================
       % Test specifying input directory
       % ===============================
-      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+      ActBpcsArray = T.test1(...
         {P.in, P.out}, '', P.out, FN_VER_ALGO);
       assert_actual_result()
 
       % =================================================
       % Test specifying explicit (relevant) input dataset
       % =================================================
-      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+      ActBpcsArray = T.test1(...
         {INPUT_1, P.out}, '', P.out, FN_VER_ALGO);
       assert_actual_result()
     end
@@ -187,13 +187,13 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % is guaranteed to run one more pass after the pass where BICAS failed.
     % This a failsafe against the code executing BPCIs in any order (within
     % a given pass).
-    function test1_2_to_1_and_crash_to_1(testCase, FN_VER_ALGO)
-      [testDir, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
+    function test1_2_to_1_and_crash_to_1(T, FN_VER_ALGO)
+      [testDir, P] = T.get_test_dirs({'in', 'out'});
 
       INPUT_FILE_1 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});  % Crashes
       irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240102_V02.cdf'});
 
-      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test1(...
+      ActBpcsArray = T.test1(...
         {P.in, P.out}, '', P.out, FN_VER_ALGO, [1]);
 
       assert(numel(ActBpcsArray) == 3)
@@ -202,11 +202,11 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
       % Assert one error, one non-error (without assuming order).
       errorCodeArray = [ActBpcsArray.errorCode];
-      testCase.assertEqual(sort(errorCodeArray), [0, 0, 1])
+      T.assertEqual(sort(errorCodeArray), [0, 0, 1])
 
       % Assert correct BPCI failed.
       iError = find(errorCodeArray);
-      testCase.assertTrue(strcmp(ActBpcsArray(iError).Bpci.inputsArray(1).path, INPUT_FILE_1))
+      T.assertTrue(strcmp(ActBpcsArray(iError).Bpci.inputsArray(1).path, INPUT_FILE_1))
     end
 
 
@@ -214,12 +214,12 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % Process
     % 2x L1 --> 1x L2 --> 2x L3
     % Empty ref. dir..
-    function test2_2_to_1_to_2(testCase, FN_VER_ALGO)
-      [testDir, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'out'});
+    function test2_2_to_1_to_2(T, FN_VER_ALGO)
+      [testDir, P] = T.get_test_dirs({'in', 'out'});
       irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
       irf.fs.write_empty_file({P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
 
-      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test2(...
+      ActBpcsArray = T.test2(...
         {P.in, P.out}, '', P.out, FN_VER_ALGO);
 
       assert(numel(ActBpcsArray) == 2)
@@ -235,12 +235,12 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % 1x L3 ref. dir. collision.
     % ==> Ref. dir. does not block since there is still one output dataset
     % which is not in the ref. dir..
-    function test2_1_to_2_ref_collision(testCase, FN_VER_ALGO)
-      [testDir, P] = bicas.tools.batch.run_BICAS_all_passes___UTEST.get_test_dirs(testCase, {'in', 'ref', 'out'});
+    function test2_1_to_2_ref_collision(T, FN_VER_ALGO)
+      [testDir, P] = T.get_test_dirs({'in', 'ref', 'out'});
       irf.fs.write_empty_file({P.in,  'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'});
       irf.fs.write_empty_file({P.ref, 'solo_L3_rpw-bia-density_20240101_V01.cdf'});
 
-      ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes___UTEST.test2(...
+      ActBpcsArray = T.test2(...
         {P.in, P.out}, P.ref, P.out, FN_VER_ALGO);
 
       assert(numel(ActBpcsArray) == 1)
@@ -263,12 +263,12 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
 
 
 
@@ -285,7 +285,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % NOTE: Test functions which use this function should be prefixed
     % "test1".
     %
-    function ActBpcsArray = test1(inputPathsCa, referenceDir, outputDir, fnVerAlgorithm, varargin)
+    function ActBpcsArray = test1(T, inputPathsCa, referenceDir, outputDir, fnVerAlgorithm, varargin)
 
       switch(numel(varargin))
         case 0
@@ -338,7 +338,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % NOTE: Test functions which use this function should be prefixed
     % "test2".
     %
-    function ActBpcsArray = test2(inputPathsCa, referenceDir, outputDir, fnVerAlgorithm)
+    function ActBpcsArray = test2(T, inputPathsCa, referenceDir, outputDir, fnVerAlgorithm)
       BICAS_SETTINGS_ARGS_CA = {};
       BICAS_CONFIG_FILE      = 'NO_CONFIG_FILE.conf';
       SETTINGS = [];
@@ -382,13 +382,15 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
     % Helper function for creating multiple test directories.
     %
+    % ARGUMENTS
+    % =========
     % subdirsCa
     %       Subdirectory name. Can not be recursive.
     % P (="Paths)
     %       Struct with fields named after subdirectories, containing full
     %       paths.
-    function [testDir, P] = get_test_dirs(testCase, subdirsCa)
-      testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
+    function [testDir, P] = get_test_dirs(T, subdirsCa)
+      T.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
       testDir = pwd;
       cd('~')    % Move to any OTHER unrelated directory.
 
@@ -406,7 +408,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     %
     % Print files in directory tree. For debugging failed tests.
     %
-    function disp_dir_tree(dirPath)
+    function disp_dir_tree(T, dirPath)
       ROW_LINE = [repmat('=', 1, 120), '\n'];
       fprintf(ROW_LINE)
 
@@ -424,7 +426,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
 
 
-  end    % methods(Static, Access=private)
+  end    % methods(Access=private)
 
 
 

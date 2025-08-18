@@ -36,6 +36,8 @@ The code should however converge on the following:
            indexing.
     i, j = Indices into arrays (linear indexing).
     L    = Singleton instance of class bicas.Logger.
+    T    = Instance of matlab.unittest.TestCase
+           NOTE: This is not followed universally yet.
 --
 String constants should be SCREAMING_SNAKE_CASE.
 Unit tests (classes) have suffix "___UTEST".

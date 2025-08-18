@@ -34,14 +34,17 @@ BpcsCa = cell(nBpci, 1);
 % Loop over BPCIs/calls to BICAS
 %################################
 % NOTE: Loop can be run both using (1) "for", and (2) "parfor" (i.e.
-% parallelized).
-
+% parallelized) and seems to work fine according to manual tests.
+%
 % NOTE: Using "parfor" seems to work (and output CDFs are identical), except
 % that:
 % (1) The stdout from bicas.tools.batch contains a mix of stdout from different
 %     BICAS instances being executed in parallel.
 % (2) The stdout from bicas.tools.batch contains some seemingly irrelevant
 %     warnings (1) from MATLAB.
+% (3) Below automated test fail however:
+%     bicas.tools.batch.run_BICAS_all_passes___UTEST/test1_2_to_1_and_crash_to_1(FN_VER_ALGO=HIGHEST_USED)
+%     bicas.tools.batch.run_BICAS_all_passes___UTEST/test1_2_to_1_and_crash_to_1(FN_VER_ALGO=ABOVE_HIGHEST_USED)
 % --
 % NOTE: A quick test (irony, network-mounted input
 % /data/solo/remote/data/L2/lfr_wf_e/2025/06/*cwf*_2025060*) reduced the

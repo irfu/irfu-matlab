@@ -31,7 +31,7 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
 
 
-    function some_method_name1(testCase)
+    function setup(testCase)
       F = testCase.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
       testCase.testDir = F.Folder;
     end
@@ -79,16 +79,20 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
     function test_empty(testCase)
       testDir = testCase.testDir;
 
+      % Use trick to obtain empty column array of the structs returned from
+      % dir().
       ExpFsoiArray1 = dir('~');
       ExpFsoiArray1 = ExpFsoiArray1([], 1);    % Column array.
 
-      emptyDir1 = irf.fs.get_file_paths___UTEST.create_directory(testDir, {'empty_dir1'});
-      emptyDir2 = irf.fs.get_file_paths___UTEST.create_directory(testDir, {'empty_dir2'});
+      emptyDir1 = testCase.create_directory(testDir, {'empty_dir1'});
+      emptyDir2 = testCase.create_directory(testDir, {'empty_dir2'});
 
       function test(fileDirPathsCa)
-        [actFilePathsCa1, ActFsoiArray1] = irf.fs.get_file_paths___UTEST.test_call(...
-          testCase, fileDirPathsCa);
+        [actFilePathsCa1, ActFsoiArray1] = testCase.test_call(...
+          fileDirPathsCa);
 
+        % NOTE: Always expect empty return values. The function there does not
+        % need arguments for the expected return values.
         testCase.assertEqual(actFilePathsCa1, cell(0, 1))
         testCase.assertEqual(ActFsoiArray1,   ExpFsoiArray1)
       end
@@ -108,12 +112,12 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       testDir = testCase.testDir;
 
       dir1     = fullfile(testDir, 'dir1');
-      emptyDir = irf.fs.get_file_paths___UTEST.create_directory( testDir, {'empty_dir'});
+      emptyDir = testCase.create_directory( testDir, {'empty_dir'});
       file1    = irf.fs.write_empty_file({testDir, 'dir1', 'dir1', 'file1'});
 
       function test(fileDirPathsCa)
-        [actFilePathsCa1, ActFsoiArray1] = irf.fs.get_file_paths___UTEST.test_call(...
-          testCase, fileDirPathsCa);
+        [actFilePathsCa1, ActFsoiArray1] = testCase.test_call(...
+          fileDirPathsCa);
 
         testCase.assertEqual(actFilePathsCa1,      {file1})
       end
@@ -130,10 +134,10 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
     function test_mixed_complex(testCase)
       testDir = testCase.testDir;
 
-      dirWithEmptySubdir = irf.fs.get_file_paths___UTEST.create_directory( testDir, {'dir_with_empty_subdir'});
-      [~]                = irf.fs.get_file_paths___UTEST.create_directory( testDir, {'dir_with_empty_subdir', 'dir1'});
+      dirWithEmptySubdir = testCase.create_directory(testDir, {'dir_with_empty_subdir'});
+      [~]                = testCase.create_directory(testDir, {'dir_with_empty_subdir', 'dir1'});
 
-      dir1     = fullfile(                 testDir, 'dir1');
+      dir1     = fullfile(                testDir, 'dir1');
       file11   = irf.fs.write_empty_file({testDir, 'dir1', 'file1'});
       file111  = irf.fs.write_empty_file({testDir, 'dir1', 'dir1', 'file11'});
       file112  = irf.fs.write_empty_file({testDir, 'dir1', 'dir1', 'file12'});
@@ -141,9 +145,8 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
       file21   = irf.fs.write_empty_file({testDir, 'dir2', 'file1'});
       file211  = irf.fs.write_empty_file({testDir, 'dir2', 'dir1', 'file11'});
 
-      [actFilePathsCa1, ~] = irf.fs.get_file_paths___UTEST.test_call(...
-        testCase, {dirWithEmptySubdir; dir1; file21; file211} ...
-        );
+      [actFilePathsCa1, ~] = testCase.test_call(...
+        {dirWithEmptySubdir; dir1; file21; file211});
 
       testCase.assertEqual(...
         sort(actFilePathsCa1), ...
@@ -157,12 +160,12 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
 
 
 
@@ -184,8 +187,8 @@ classdef get_file_paths___UTEST < matlab.unittest.TestCase
 
 
 
-    function dirPath = create_directory(parentDir, dirRpathPartsCa)
-      % PROPOSAL: Make into generic function.
+    function dirPath = create_directory(testCase, parentDir, dirRpathPartsCa)
+      % PROPOSAL: Turn into generic function.
       %   Cf. irf.fs.write_empty_file().
 
       dirPath = fullfile(parentDir, dirRpathPartsCa{:});
