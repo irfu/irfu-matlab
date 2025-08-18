@@ -44,13 +44,7 @@ classdef try_run_BICAS_for_BPCIs___UTEST < matlab.unittest.TestCase
 
 
     function setup(T)
-      Fixture = T.applyFixture(...
-        matlab.unittest.fixtures.TemporaryFolderFixture);
-      % NOTE: The same fixture should always return the same directory.
-      % T.dir = Fixture.Folder;
-
-      % NOTE: Changes current working directory.
-      cd(Fixture.Folder)
+      T.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture);
     end
 
 
