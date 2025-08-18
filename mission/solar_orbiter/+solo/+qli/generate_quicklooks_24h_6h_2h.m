@@ -64,6 +64,16 @@ function generate_quicklooks_24h_6h_2h(Data, OutputPaths, Tint24h, logoPath)
 % Ex: 2023-03-24, solo.qli.generate_quicklooks_24h_6h_2h___UTEST.test_no_data().
 % /Erik P G Johansson 2024-03-27
 
+% PROPOSAL: Try speeding up with GPUs: gpuArray(), gather(), grpuDevice.
+%   NOTE: Only odin has GPUs, not brain, not spis.
+%   NOTE: Only works for NVIDIA. /Walter Puccio
+%   NOTE: Presumably does not work on irony?
+%         "Graphics Processor: Mesa Intel® HD Graphics 630"
+%         gpuDevice
+%         ==> """"Error using gpuDevice
+%         Graphics driver is out of date. Download and install the latest
+%         graphics driver for your GPU from NVIDIA.""""
+
 
 
 % TODO-NI: Panels 2 & 5 are logarithmic for 24h plots and linear for 6h & 2h?
