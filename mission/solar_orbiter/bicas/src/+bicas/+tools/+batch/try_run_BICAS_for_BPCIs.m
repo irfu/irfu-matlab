@@ -49,8 +49,8 @@ BpcsCa = cell(nBpci, 1);
 % execution time used 197 s --> 121 s. Shorter test showed no improvement,
 % probably due to the processing pool startup time.
 
-for iBpci = 1:nBpci
-% parfor iBpci = 1:nBpci
+% for iBpci = 1:nBpci
+parfor iBpci = 1:nBpci
   Bpci = BpciArray(iBpci);
 
   Bpcs = execute_BICAS_using_BPCI(...
