@@ -61,6 +61,52 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
 
 
+  %############
+  %############
+  % PROPERTIES
+  %############
+  %############
+  % Additional properties of testCase objects. Needed for setup and teardown
+  % methods which store/read their own data from the testCase object.
+  properties
+    inDir
+    outDir
+    refDir
+  end
+
+
+
+  %#######
+  %#######
+  % SETUP
+  %#######
+  %#######
+  methods(TestMethodSetup)
+
+
+
+    function setup(T)
+      Fixture = T.applyFixture(...
+        matlab.unittest.fixtures.TemporaryFolderFixture);
+      testDir = Fixture.Folder;
+
+      T.inDir  = fullfile(testDir, 'in');
+      T.outDir = fullfile(testDir, 'out');
+      T.refDir = fullfile(testDir, 'ref');
+
+      mkdir(T.inDir)
+      mkdir(T.outDir)
+      mkdir(T.refDir)
+
+      cd('~')    % Move to any OTHER unrelated directory.
+    end
+
+
+
+  end
+
+
+
   %##############
   %##############
   % TEST METHODS
@@ -73,22 +119,20 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % Zero relevant input files
     %
     function test1_zero_relevant_input(T)
-      [~, P] = T.get_test_dirs({'in', 'out'});
-
-      INPUT_1 = irf.fs.write_empty_file({P.in, 'NOT_DATASET.cdf'});
-      INPUT_2 = irf.fs.write_empty_file({P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
+      INPUT_1 = irf.fs.write_empty_file({T.inDir, 'NOT_DATASET.cdf'});
+      INPUT_2 = irf.fs.write_empty_file({T.inDir, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
 
       % ===============================
       % Test specifying input directory
       % ===============================
       T.test1(...
-        {P.in}, '', P.out, 'HIGHEST_USED');
+        {T.inDir}, '', T.outDir, 'HIGHEST_USED');
 
       % ====================================================
       % Test specifying explicit (irrelevant) input datasets
       % ====================================================
       T.test1(...
-        {INPUT_1, INPUT_2}, '', P.out, 'HIGHEST_USED');
+        {INPUT_1, INPUT_2}, '', T.outDir, 'HIGHEST_USED');
     end
 
 
@@ -99,18 +143,16 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % (There is no V01 input file.)
     % --> 1 output file
     function test1_1LV_1NLV_to_1(T, FN_VER_ALGO)
-      [~, P] = T.get_test_dirs({'in', 'out'});
-
-      irf.fs.write_empty_file(          {P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
-      INPUT_2 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf'});
+      irf.fs.write_empty_file(          {T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
+      INPUT_2 = irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf'});
 
       ActBpcsArray = T.test1(...
-        {P.in}, '', P.out, FN_VER_ALGO);
+        {T.inDir}, '', T.outDir, FN_VER_ALGO);
 
       assert(numel(ActBpcsArray) == 1)
       % Assert used correct version of input file.
       assert(strcmp(ActBpcsArray(1).Bpci.inputsArray.path, INPUT_2))
-      irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
+      irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
     end
 
 
@@ -122,12 +164,11 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     %
     % NOTE: Ref. dir. file. is not V01! Still blocks output.
     function test1_1_to_01_ref_collision(T, FN_VER_ALGO)
-      [testDir, P] = T.get_test_dirs({'in', 'ref', 'out'});
-      irf.fs.write_empty_file({P.in,  'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
-      irf.fs.write_empty_file({P.ref, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V05.cdf' });    % Not V01.
+      irf.fs.write_empty_file({T.inDir,  'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
+      irf.fs.write_empty_file({T.refDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V05.cdf' });    % Not V01.
 
       ActBpcsArray = T.test1(...
-        {P.in}, P.ref, P.out, FN_VER_ALGO);
+        {T.inDir}, T.refDir, T.outDir, FN_VER_ALGO);
 
       % T.disp_dir_tree(testDir)    % DEBUG
 
@@ -137,7 +178,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
           assert(numel(ActBpcsArray) == 0)
         case 'ABOVE_HIGHEST_USED'
           assert(numel(ActBpcsArray) == 1)
-          irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V06.cdf'))
+          irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V06.cdf'))
         otherwise
           error('')
       end
@@ -153,25 +194,24 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     function test1_1_to_1_to_1(T, FN_VER_ALGO)
       function assert_actual_result()
         assert(numel(ActBpcsArray) == 2)
-        irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
-        irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
+        irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
+        irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
       end
 
-      [~, P] = T.get_test_dirs({'in', 'out'});
-      INPUT_1 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
+      INPUT_1 = irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
 
       % ===============================
       % Test specifying input directory
       % ===============================
       ActBpcsArray = T.test1(...
-        {P.in, P.out}, '', P.out, FN_VER_ALGO);
+        {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO);
       assert_actual_result()
 
       % =================================================
       % Test specifying explicit (relevant) input dataset
       % =================================================
       ActBpcsArray = T.test1(...
-        {INPUT_1, P.out}, '', P.out, FN_VER_ALGO);
+        {INPUT_1, T.outDir}, '', T.outDir, FN_VER_ALGO);
       assert_actual_result()
     end
 
@@ -188,17 +228,15 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % This a failsafe against the code executing BPCIs in any order (within
     % a given pass).
     function test1_2_to_1_and_crash_to_1(T, FN_VER_ALGO)
-      [testDir, P] = T.get_test_dirs({'in', 'out'});
-
-      INPUT_FILE_1 = irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});  % Crashes
-      irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e_20240102_V02.cdf'});
+      INPUT_FILE_1 = irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});  % Crashes
+      irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240102_V02.cdf'});
 
       ActBpcsArray = T.test1(...
-        {P.in, P.out}, '', P.out, FN_VER_ALGO, [1]);
+        {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO, [1]);
 
       assert(numel(ActBpcsArray) == 3)
-      irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240102_V01.cdf'))
-      irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240102_V01.cdf'))
+      irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240102_V01.cdf'))
+      irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density_20240102_V01.cdf'))
 
       % Assert one error, one non-error (without assuming order).
       errorCodeArray = [ActBpcsArray.errorCode];
@@ -215,17 +253,16 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % 2x L1 --> 1x L2 --> 2x L3
     % Empty ref. dir..
     function test2_2_to_1_to_2(T, FN_VER_ALGO)
-      [testDir, P] = T.get_test_dirs({'in', 'out'});
-      irf.fs.write_empty_file({P.in, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
-      irf.fs.write_empty_file({P.in, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
+      irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
+      irf.fs.write_empty_file({T.inDir, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
 
       ActBpcsArray = T.test2(...
-        {P.in, P.out}, '', P.out, FN_VER_ALGO);
+        {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO);
 
       assert(numel(ActBpcsArray) == 2)
-      irf.assert.file_exists(fullfile(P.out, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
-      irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
-      irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density-10-seconds_20240101_V01.cdf'))
+      irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
+      irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
+      irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density-10-seconds_20240101_V01.cdf'))
     end
 
 
@@ -236,21 +273,20 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % ==> Ref. dir. does not block since there is still one output dataset
     % which is not in the ref. dir..
     function test2_1_to_2_ref_collision(T, FN_VER_ALGO)
-      [testDir, P] = T.get_test_dirs({'in', 'ref', 'out'});
-      irf.fs.write_empty_file({P.in,  'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'});
-      irf.fs.write_empty_file({P.ref, 'solo_L3_rpw-bia-density_20240101_V01.cdf'});
+      irf.fs.write_empty_file({T.inDir,  'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'});
+      irf.fs.write_empty_file({T.refDir, 'solo_L3_rpw-bia-density_20240101_V01.cdf'});
 
       ActBpcsArray = T.test2(...
-        {P.in, P.out}, P.ref, P.out, FN_VER_ALGO);
+        {T.inDir, T.outDir}, T.refDir, T.outDir, FN_VER_ALGO);
 
       assert(numel(ActBpcsArray) == 1)
-      irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density-10-seconds_20240101_V01.cdf'))
+      irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density-10-seconds_20240101_V01.cdf'))
       switch(FN_VER_ALGO)
         case 'HIGHEST_USED'
-          irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
+          irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
 
         case 'ABOVE_HIGHEST_USED'
-          irf.assert.file_exists(fullfile(P.out, 'solo_L3_rpw-bia-density_20240101_V02.cdf'))
+          irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density_20240101_V02.cdf'))
         otherwise
           error('')
       end
@@ -376,30 +412,6 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
         BPA, BICAS_SETTINGS_ARGS_CA, ...
         BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa(:), ...
         fnVerAlgorithm, false, [SWM_1; SWM_2], SETTINGS);
-    end
-
-
-
-    % Helper function for creating multiple test directories.
-    %
-    % ARGUMENTS
-    % =========
-    % subdirsCa
-    %       Subdirectory name. Can not be recursive.
-    % P (="Paths)
-    %       Struct with fields named after subdirectories, containing full
-    %       paths.
-    function [testDir, P] = get_test_dirs(T, subdirsCa)
-      T.applyFixture(matlab.unittest.fixtures.WorkingFolderFixture)
-      testDir = pwd;
-      cd('~')    % Move to any OTHER unrelated directory.
-
-      P = struct();
-      for i = 1:numel(subdirsCa)
-        subdirName = subdirsCa{i};
-        mkdir(fullfile(testDir, subdirName))
-        P.(subdirName) = fullfile(testDir, subdirName);
-      end
     end
 
 
