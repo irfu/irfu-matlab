@@ -478,7 +478,7 @@ RTDP
     directory structure containing BICAS example (official) input and output
     datasets for ROC to compare with their own (official) processing.
 RUM
-    Document ROC-PRO-SFT-SUM-00080, "RCS User Manual"
+    Document ROC-PRO-SFT-SUM-00080, "RCS User Manual".
 RV
     Return Value.
 sampere

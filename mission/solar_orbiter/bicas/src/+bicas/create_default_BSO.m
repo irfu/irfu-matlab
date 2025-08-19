@@ -364,11 +364,12 @@ S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_
 %===============
 % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
 % EFIELD, and SCPOT data. Affects both OSR and DSR.
-
+% --
 % NOTE: The value used is compared against the "reconstructed non-saturation
 % non-sweep" QUALITY_FLAG which is derived in the code, not the QUALITY_FLAG
-% that is read from the input L2 LFR CWF file. This is due to wanting to ignore
-% the effects of saturation on QUALITY_FLAG. /Erik P G Johansson 2025-07-29
+% that is actually read from the input L2 LFR CWF file. This is due to wanting
+% to ignore the effects of saturation on QUALITY_FLAG. /Erik P G Johansson
+% 2025-07-29
 S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
 
 % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
@@ -428,6 +429,7 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 % L2_QUALITY_BITMASK. Selecting scheme here does affect the meaning of those
 % bits but does not change the skeletons.
 S.define_setting('PROCESSING.SATURATION.QUALITY_SCHEME', 'CHANNEL_SATURATION')
+%S.define_setting('PROCESSING.SATURATION.QUALITY_SCHEME', 'GLOBAL_SATURATION')
 
 
 

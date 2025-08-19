@@ -98,10 +98,15 @@ classdef qrc
 
           ;   % Do nothing. All saturation QRCBs are false.
 
-          % IMPLEMENTATION NOTE: (1) Can not use the global saturation for
-          % anything sensible (can not blank selected channels), and (2) the
-          % GLOBAL_SATURATION functionality is supposed to be phased out
-          % anyway.
+          % IMPLEMENTATION NOTE: The functionality is technically incorrect
+          % since this option will not set sensible channel saturation QRCBs.
+          % This is not overly important though, since
+          % (1) One can not use the global saturation for anything sensible
+          % (can not blank selected channels), and (2) the GLOBAL_SATURATION
+          % functionality is supposed to be phased out anyway.
+          %
+          % PROPOSAL: Have FULL_SATURATION ==> Set all CHANNEL_SATURATION for
+          %           all channels.
 
         otherwise
 

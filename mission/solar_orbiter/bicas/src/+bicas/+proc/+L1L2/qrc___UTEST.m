@@ -58,6 +58,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
         ssid = bicas.proc.L1L2.const.C.SDID_DICT(ssidStr);
         VsibZvm.add(ssid, VSIB_AR_ALL(:, iVsib));
       end
+
       add_channel_VSIB("DC_V1",  1)
       add_channel_VSIB("DC_V2",  2)
       add_channel_VSIB("DC_V3",  3)

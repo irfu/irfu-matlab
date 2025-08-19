@@ -81,10 +81,10 @@ classdef qrc
       %       corresponding ZVs, not the specified ASR SSIDs. This is only
       %       important if adding automatic saturation detection for non-ASRs
       %       (which is highly unlikely).
-      function add_L2_channel_saturation_QRCS(qrcid, l2qbmBitmask)
+      function add_L2_channel_saturation_QRCS(qrcid, l2qbm)
         L2Qrcs = bicas.proc.QrcSettingL2(...
           QUALITY_FLAG      =bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
-          L2_QUALITY_BITMASK=l2qbmBitmask);
+          L2_QUALITY_BITMASK=l2qbm);
         L2Qrcsm.add(qrcid, L2Qrcs);
       end
 

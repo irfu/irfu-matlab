@@ -114,12 +114,12 @@ classdef QrcbMap < handle
 
 
     % NOTE: Method might be unused.
-    function remove(obj, qrcid)
-      assert(isstring(qrcid) & isscalar(qrcid))
-      assert(obj.Map.isKey(qrcid))
-
-      obj.Map.remove(qrcid);
-    end
+    % function remove(obj, qrcid)
+    %   assert(isstring(qrcid) & isscalar(qrcid))
+    %   assert(obj.Map.isKey(qrcid))
+    %
+    %   obj.Map.remove(qrcid);
+    % end
 
 
 

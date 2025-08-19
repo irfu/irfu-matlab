@@ -51,7 +51,6 @@ of all other (groups of) arguments is arbitrary.
 --config <absolute path to file>       (optional) Specifies the configuration
                                        file to use.
 
-
 <S/W mode>   Selects the S/W mode to use.
 Available S/W modes can be found in the S/W descriptor. They are listed under
 "modes". "name" specifies the string that identifies a given mode and can be
@@ -95,8 +94,7 @@ See "install.txt".
 ####################################
  Known current limitations, caveats
 ####################################
-For limitations and caveats, see the official user manual, the RUM
-document.
+For limitations and caveats, see the official user manual (RUM).
 
 
 
@@ -107,7 +105,7 @@ See "misc_conventions.txt".
 
 
 
-####################################
- Special cases, quality information
-####################################
+#########################################
+ Special cases, data quality information
+#########################################
 See "special_cases.txt"

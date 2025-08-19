@@ -132,7 +132,7 @@ classdef qrc
     %
     function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
         Qrcbm, Qrcsm, lxqbmName)
-      % PROPOSAL: Split into separate functions for QUALITY_FLAG and LXQBM.
+      % PROPOSAL: Split into separate functions for QUALITY_FLAG and LxQBM.
       %   PRO: EFIELD and SCPOT do not have L3QBM.
       %   PRO: Simpler-ish testing
       %   CON: More code. Functions will resemble each other.
@@ -157,16 +157,12 @@ classdef qrc
         qrcbAr = Qrcbm.get(qrcid);
         Qrcs   = Qrcsm.get(qrcid);
 
-        % if isempty(Qrcs)
-        %   continue
-        % end
-
         %------------------
         % Set QUALITY_FLAG
         %------------------
-        % IMPLEMENTATION NOTE: Only adjusts relevant indices since the operation
-        % is more natural (simpler, shorter) that way. min() should only be
-        % applied to the indices where QRCB=true.
+        % IMPLEMENTATION NOTE: Only adjusts relevant indices since the
+        % operation is more natural (simpler, shorter) that way. min() should
+        % only be applied to the indices where QRCB=true.
         QUALITY_FLAG(qrcbAr) = min(...
           QUALITY_FLAG(qrcbAr), ...
           Qrcs.QUALITY_FLAG);

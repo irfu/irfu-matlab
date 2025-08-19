@@ -17,8 +17,9 @@ classdef qrc
 
 
 
-    % NOTE: Always sets the GLOBAL_SATURATION and CHANNEL_SATURATION QRCIDs but
-    % sets the QRCB arrays differently depending on "saturationQualitySchemeId".
+    % NOTE: Always returns both the GLOBAL_SATURATION and CHANNEL_SATURATION
+    % QRCIDs but sets the QRCB arrays differently depending on
+    % "saturationQualitySchemeId".
     %
     % ARGUMENTS
     % =========
@@ -174,7 +175,7 @@ classdef qrc
       GlobalSaturationQrcbm.add("FULL_SATURATION",    fullSaturationQrcbAr);
       % NOTE: Always false since partial saturation (QRC) can not be
       % autodetected.
-      GlobalSaturationQrcbm.add("PARTIAL_SATURATION", false(nRecords, 1));
+      GlobalSaturationQrcbm.add_false("PARTIAL_SATURATION");
     end
 
 

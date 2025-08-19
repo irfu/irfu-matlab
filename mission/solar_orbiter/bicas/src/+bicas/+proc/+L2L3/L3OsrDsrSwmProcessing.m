@@ -22,6 +22,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
+  % PROPOSAL: Class name without "L3".
+  %   PRO: "L3" is implicit from the package "L2L3".
+  %
   % PROPOSAL: Automatic test code.
   %   NOTE: There are limited tests.
   %
@@ -202,7 +205,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % L2_QUALITY_BITMASK-->L3 QRCBs
       %-------------------------------
       % Obtain channel saturation QRCBs by reading L2_QUALITY bitmask.
-      ChannelSaturationQrcbm = bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
+      ChannelSaturationQrcbm = ...
+        bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
         Zv.L2_QUALITY_BITMASK_Fpa.array(uint16(0)), ...
         Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'));
       L3Qrcbm.union(ChannelSaturationQrcbm)
@@ -237,16 +241,16 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %-------------------------------------------------------
       % Blank input data when QUALITY_FLAG is below threshold
       %-------------------------------------------------------
-      % IMPORTANT NOTE: Uses QUALITY_FLAG_nonsatFpa (not QUALITY_FLAG from
-      %                 input file)!
-      % NOTE: Unclear how to treat QUALITY_FLAG=FV.
+      % IMPORTANT NOTE: Uses derived QUALITY_FLAG_nonsatFpa (not QUALITY_FLAG
+      % from L2 input file)!
+      % NOTE: It is unclear what is the best way to treat QUALITY_FLAG=FV.
       % NOTE: Treatment of this special case is documented in readme.txt.
       QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
         'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
-      bNotUsedFpa             = Zv.QUALITY_FLAG_nonsatFpa < QUALITY_FLAG_minForUse;
-      bNotUsed                = bNotUsedFpa.array(false);   % Is [FP==>false] wise?
-      Zv.VDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
-      Zv.EDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
+      bDoNotUseFpa = Zv.QUALITY_FLAG_nonsatFpa < QUALITY_FLAG_minForUse;
+      bDoNotUse    = bDoNotUseFpa.array(false);   % Is [FP==>false] wise?
+      Zv.VDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
+      Zv.EDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
 
       %---------------------------------------
       % Call BICAS-external code to calculate

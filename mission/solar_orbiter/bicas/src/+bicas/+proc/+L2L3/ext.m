@@ -78,8 +78,6 @@ classdef ext
       R.vdccalCodeVerStr   = R1.vdccalCodeVerStr;
       R.vdccalMatVerStr    = R1.vdccalMatVerStr;
       R.NeScpCm3Fpa        = bicas.utils.FPArray(NeScpTs.data, 'FILL_VALUE', NaN);
-      % NOTE: Ignoring return value NeScpQualityBit(Ts) for now. Value is
-      %       expected to be used by BICAS later.
       R.NeScpQualityBitFpa = NeScpQualityBitFpa;
       R.psp2neCodeVerStr   = psp2neCodeVerStr;
     end
