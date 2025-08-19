@@ -240,6 +240,62 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_filter_saturation_QRCBs___zero_QRCBs(testCase)
+      Qrcbm = bicas.proc.QrcbMap(3);
+
+      for saturationQualitySchemeId = ["GLOBAL_SATURATION", "CHANNEL_SATURATION"]
+        ActQrcbm = bicas.proc.qrc.filter_saturation_QRCBs( ...
+          Qrcbm, saturationQualitySchemeId);
+
+        testCase.assertEqual(ActQrcbm, Qrcbm)
+        testCase.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
+      end
+    end
+
+
+
+    function test_filter_saturation_QRCBs___some_QRCBs_global_saturation(testCase)
+      Qrcbm = bicas.proc.QrcbMap(3);
+      Qrcbm.add("FULL_SATURATION",    true(3, 1));
+      Qrcbm.add("PARTIAL_SATURATION", true(3, 1));
+      Qrcbm.add("SATURATION_ZV_V3",   true(3, 1));
+      Qrcbm.add("SWEEP",              true(3, 1));
+
+      ExpQrcbm = bicas.proc.QrcbMap(3);
+      ExpQrcbm.add("FULL_SATURATION",    true( 3, 1));
+      ExpQrcbm.add("PARTIAL_SATURATION", true( 3, 1));
+      ExpQrcbm.add("SATURATION_ZV_V3",   false(3, 1));
+      ExpQrcbm.add("SWEEP",              true( 3, 1));
+
+      ActQrcbm = bicas.proc.qrc.filter_saturation_QRCBs(Qrcbm, "GLOBAL_SATURATION");
+
+      testCase.assertEqual(ActQrcbm, ExpQrcbm)
+      testCase.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
+    end
+
+
+
+    function test_filter_saturation_QRCBs___some_QRCBs_channel_saturation(testCase)
+      Qrcbm = bicas.proc.QrcbMap(3);
+      Qrcbm.add("FULL_SATURATION",    true(3, 1));
+      Qrcbm.add("PARTIAL_SATURATION", true(3, 1));
+      Qrcbm.add("SATURATION_ZV_V3",   true(3, 1));
+      Qrcbm.add("SWEEP",              true(3, 1));
+
+      ExpQrcbm = bicas.proc.QrcbMap(3);
+      ExpQrcbm.add("FULL_SATURATION",    false(3, 1));
+      ExpQrcbm.add("PARTIAL_SATURATION", false(3, 1));
+      ExpQrcbm.add("SATURATION_ZV_V3",   true( 3, 1));
+      ExpQrcbm.add("SWEEP",              true( 3, 1));
+
+      ActQrcbm = bicas.proc.qrc.filter_saturation_QRCBs(Qrcbm, "CHANNEL_SATURATION");
+
+      testCase.assertEqual(ActQrcbm, ExpQrcbm)
+      testCase.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
+    end
+
+
+
   end    % methods(Test)
 
 

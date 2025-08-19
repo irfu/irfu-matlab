@@ -107,38 +107,13 @@ classdef qrc
 
 
 
-    % Function for initializing QRCSMs containing all QRCSs for producing
-    % (1) all (official) L2 CDFs, and
-    % (3) all L3 density CDFs.
-    %
-    % NOTE: The quality bit definitions here must be consistent with the
-    % definitions in the corresponding CDF skeletons. Definitions in general
-    % must be consistent with documentation.
-    %
-    function Q = init_L2_L3_L3Density_QRCSM()
+    function [L2Qrcsm] = init_L2_GLOBAL_SATURATION_QRCSM()
+      L2Qrcsm = bicas.proc.QrcSettingsMap();
 
-      [Q.L2_CHANNEL_SATURATION_QRCSM, ...
-        Q.L3_CHANNEL_SATURATION_QRCSM] = ...
-        bicas.const.qrc.init_L2_L3_CHANNEL_SATURATION_QRCSM();
-
-      L2Qrcsm        = bicas.proc.QrcSettingsMap();
-      L3Qrcsm        = bicas.proc.QrcSettingsMap();
-      L3DensityQrcsm = bicas.proc.QrcSettingsMap();
-
-      L2Qrcsm.add_QRCSM(Q.L2_CHANNEL_SATURATION_QRCSM);
-      L3Qrcsm.add_QRCSM(Q.L3_CHANNEL_SATURATION_QRCSM);
-
-      %=================
-      % Local constants
-      %=================
-      % No circular dependence?!! bicas.proc.L1L2.const <-> bicas.const.qrc
-      S = bicas.proc.L1L2.const.C.SSID_DICT;
       % Global saturation quality variable scheme:
       % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
       L2QBM_BIT_PARTIAL_SATURATION = uint16(1);
       L2QBM_BIT_FULL_SATURATION    = uint16(2);
-
-
 
       %====================
       % PARTIAL_SATURATION
@@ -157,6 +132,42 @@ classdef qrc
         QUALITY_FLAG       = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
         L2_QUALITY_BITMASK = L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
       L2Qrcsm.add("FULL_SATURATION", Qrcs);
+    end
+
+
+
+    % Function for initializing QRCSMs containing all QRCSs for producing
+    % (1) all (official) L2 CDFs, and
+    % (3) all L3 density CDFs.
+    %
+    % NOTE: The quality bit definitions here must be consistent with the
+    % definitions in the corresponding CDF skeletons. Definitions in general
+    % must be consistent with documentation.
+    %
+    function Q = init_L2_L3_L3Density_QRCSM()
+
+      [Q.L2_CHANNEL_SATURATION_QRCSM, ...
+        Q.L3_CHANNEL_SATURATION_QRCSM] = ...
+        bicas.const.qrc.init_L2_L3_CHANNEL_SATURATION_QRCSM();
+
+      Q.L2_GLOBAL_SATURATION_QRCSM = ...
+        bicas.const.qrc.init_L2_GLOBAL_SATURATION_QRCSM();
+
+      L2Qrcsm        = bicas.proc.QrcSettingsMap();
+      L3Qrcsm        = bicas.proc.QrcSettingsMap();
+      L3DensityQrcsm = bicas.proc.QrcSettingsMap();
+
+      L2Qrcsm.add_QRCSM(Q.L2_CHANNEL_SATURATION_QRCSM);
+      L3Qrcsm.add_QRCSM(Q.L3_CHANNEL_SATURATION_QRCSM);
+      L2Qrcsm.add_QRCSM(Q.L2_GLOBAL_SATURATION_QRCSM);
+
+      %=================
+      % Local constants
+      %=================
+      % No circular dependence?!! bicas.proc.L1L2.const <-> bicas.const.qrc
+      S = bicas.proc.L1L2.const.C.SSID_DICT;
+
+
 
       %=================
       % THRUSTER_FIRING
@@ -268,10 +279,10 @@ classdef qrc
       Q = bicas.const.qrc.init_L2_L3_L3Density_QRCSM();
 
       Q.CHANNEL_SATURATION_QRCID_AR = string(Q.L2_CHANNEL_SATURATION_QRCSM.qrcidAr);
+      Q.GLOBAL_SATURATION_QRCID_AR  = string(Q.L2_GLOBAL_SATURATION_QRCSM.qrcidAr);
       Q.SATURATION_QRCID_AR = [...
         Q.CHANNEL_SATURATION_QRCID_AR; ...
-        "PARTIAL_SATURATION"; ...
-        "FULL_SATURATION"];
+        Q.GLOBAL_SATURATION_QRCID_AR];
 
       % All legal QRCIDs, or all kinds of processing. This defines the set of
       % legal QRCIDs, including ones that can be used in the NSO table file.

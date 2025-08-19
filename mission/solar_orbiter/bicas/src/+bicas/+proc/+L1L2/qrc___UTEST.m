@@ -17,7 +17,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_saturation_QRCBs(testCase)
+    function test_VSIBs_to_saturation_QRCBs(testCase)
       % NOTE: Does not (truly) test the call to
       % bicas.utils.sliding_window_over_fraction().
 
@@ -68,21 +68,13 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       add_channel_VSIB("AC_V13", 8)
       add_channel_VSIB("AC_V23", 9)
 
-      % Expected value for schema GLOBAL_SATURATION.
-      ExpGlobalSaturationQrcbm  = bicas.proc.QrcbMap(N_ROWS);
-      ExpGlobalSaturationQrcbm.add(      "FULL_SATURATION", FULL_SATURATION_AR)
-      ExpGlobalSaturationQrcbm.add_false("PARTIAL_SATURATION")
-
-      % Expected value for schema CHANNEL_SATURATION.
-      ExpChannelSaturationQrcbm = bicas.proc.QrcbMap(N_ROWS);
-      ExpChannelSaturationQrcbm.add_false("FULL_SATURATION")
-      ExpChannelSaturationQrcbm.add_false("PARTIAL_SATURATION")
+      ExpQrcbm  = bicas.proc.QrcbMap(N_ROWS);
+      ExpQrcbm.add(      "FULL_SATURATION", FULL_SATURATION_AR)
+      ExpQrcbm.add_false("PARTIAL_SATURATION")
 
       function add_channel_saturation_QRCB(qrcid, iCol)
-        ExpGlobalSaturationQrcbm.add_false(qrcid)
-
         qrcbAr = CHANNEL_SATURATION_AR(:, iCol);
-        ExpChannelSaturationQrcbm.add(qrcid, qrcbAr)
+        ExpQrcbm.add(qrcid, qrcbAr)
       end
       add_channel_saturation_QRCB("SATURATION_ZV_V1",  1)
       add_channel_saturation_QRCB("SATURATION_ZV_V2",  2)
@@ -100,20 +92,11 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
       % CALL TESTED FUNCTION
-      ActQrcbm = bicas.proc.L1L2.qrc.get_saturation_QRCBs( ...
-        TT2000_AR, "GLOBAL_SATURATION", VsibZvm, isSwf, ...
+      ActQrcbm = bicas.proc.L1L2.qrc.VSIBs_to_saturation_QRCBs( ...
+        TT2000_AR, VsibZvm, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
-      testCase.assertEqual(ActQrcbm, ExpGlobalSaturationQrcbm)
-
-
-
-      % CALL TESTED FUNCTION
-      ActQrcbm = bicas.proc.L1L2.qrc.get_saturation_QRCBs( ...
-        TT2000_AR, "CHANNEL_SATURATION", VsibZvm, isSwf, ...
-        vstbFractionThreshold, cwfSlidingWindowLengthSec);
-
-      testCase.assertEqual(ActQrcbm, ExpChannelSaturationQrcbm)
+      testCase.assertEqual(ActQrcbm, ExpQrcbm)
     end
 
 

@@ -79,6 +79,7 @@ classdef dc
       % later.
       L2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
         bicas.const.qrc.Q.L2_QRCSM.qrcidAr, NsoTable, Dcip.Zv.Epoch, L);
+      % L2Qrcbm.create_debug_figure(Dcip.Zv.Epoch, "L2Qrcbm")
       clear NsoTable
       % Convert information about BIAS ON/OFF and sweeps into QRCBs.
       L2Qrcbm.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb);
@@ -154,6 +155,9 @@ classdef dc
       bltsVsibAr  = bicas.proc.L1L2.dc.get_VSIB_5xBLTS(...
         bltsVoltageAvolt, Dcip.hasSwfFormat, Dcip.Zv.uspr, ...
         bltsSsidArray, Dcip.Zv.isAchgFpa, SatSettings, L);
+      if 0    % DEBUG
+        figure; plot(Dcip.Zv.Epoch/1e9, bltsVsibAr(:,1), '.')
+      end
 
 
 
@@ -166,6 +170,9 @@ classdef dc
       SchdZvm = bicas.proc.L1L2.dc.convert_voltage_5xBLTS_to_9xASR(...
         bltsVoltageAvolt, bltsVsibAr, bltsSdidArray, L);
       bicas.proc.L1L2.demuxer.reconstruct_ASR_voltage_channels(SchdZvm);
+      if 0    % DEBUG
+        vsibAr = SchdZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1")).vsibAr; figure; plot(Dcip.Zv.Epoch/1e9, vsibAr)
+      end
 
 
 
@@ -177,6 +184,9 @@ classdef dc
         VsibZvm.add(   keyCa{1}, SchdZvm.get(keyCa{1}).vsibAr);
       end
       clear SchdZvm
+      if 0    % DEBUG
+        vsibAr = VsibZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1")); figure; plot(Dcip.Zv.Epoch/1e9, vsibAr, '.')
+      end
 
 
 
@@ -187,17 +197,26 @@ classdef dc
       % NOTE: Whether voltage samples have already been blanked (set to NaN/FV)
       % or not based on QRCs, affects the saturation detection. Can not
       % autodetect saturation in blanked data.
-      SaturationQrcbm = bicas.proc.L1L2.qrc.get_saturation_QRCBs(...
+      VsibSaturationQrcbm = bicas.proc.L1L2.qrc.VSIBs_to_saturation_QRCBs(...
         Dcip.Zv.Epoch,  ...
-        string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')), ...
         VsibZvm, Dcip.hasSwfFormat, ...
         SatSettings.vstbFractionThreshold, ...
         SatSettings.cwfSlidingWindowLengthSec);
-      L2Qrcbm.union(SaturationQrcbm)
+      L2Qrcbm.union(VsibSaturationQrcbm)
+      L2Qrcbm = bicas.proc.qrc.filter_saturation_QRCBs(L2Qrcbm, string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')));
+      if 0    % DEBUG: Plot selected QRCBs.
+        L2Qrcbm.create_debug_figure(            Dcip.Zv.Epoch, "L2Qrcbm")
+        VsibSaturationQrcbm.create_debug_figure(Dcip.Zv.Epoch, "VsibSaturationQrcbm")
+      end
       % --
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
         bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
         L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM, "L2_QUALITY_BITMASK");
+      if 0    % DEBUG
+        figure('WindowState', 'maximized')
+        plot(Dcip.Zv.Epoch/1e9, L2_QUALITY_BITMASK, '.')
+        legend(irf.graph.escape_str("L2_QUALITY_BITMASK")); grid on
+      end
 
 
 

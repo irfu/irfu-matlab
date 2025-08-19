@@ -96,7 +96,7 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   %
   % NOTE: QRC functions which do not need QRCSs but do need subsets of QRCs (subset relative to a type of
   %       processing):
-  % bicas.proc.L1L2.get_saturation_QRCBs(tt2000Ar, saturationQualitySchemeId, VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec)
+  % bicas.proc.L1L2.qrc.VSIBs_to_saturation_QRCBs(tt2000Ar, saturationQualitySchemeId, VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec)
   %   Iterates over CHANNEL_SATURATION QRCIDs.
   %   Calls bicas.proc.L1L2.qrc.channel_saturation_to_global_saturation_QRCBs(ChannelSaturationQrcbm, nRecords).
   % bicas.proc.L1L2.qrc.channel_saturation_to_global_saturation_QRCBs()

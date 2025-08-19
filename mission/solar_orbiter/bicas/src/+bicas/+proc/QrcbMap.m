@@ -168,6 +168,32 @@ classdef QrcbMap < handle
 
 
 
+    % Method for creating a very simple plot of the content of the object in a
+    % separate figure.
+    % NOTE: ONLY INTENDED FOR DEBUGGING!
+    %
+    function create_debug_figure(obj, tt2000Ar, figName)
+      % PROPOSAL: Move to separate file for debug plot code.
+
+      bicas.utils.assert_ZV_Epoch(tt2000Ar)
+      assert(isstring(figName))
+      assert(numel(tt2000Ar) == obj.nRecords)
+
+      figure('WindowState', 'maximized', "Name", figName);
+      tiledlayout(numel(obj.qrcidAr'), 1, "TileSpacing", "compact", "Padding", "none");
+      for i = 1:numel(obj.qrcidAr')
+        qrcid = obj.qrcidAr(i);
+        h = nexttile;
+        plot(tt2000Ar, obj.get(qrcid), '.-');
+        h.YLim = [-0.05, 1.05];
+        grid on
+
+        legend(irf.graph.escape_str(qrcid))
+      end
+    end
+
+
+
   end    % methods(Access=public)
 
 

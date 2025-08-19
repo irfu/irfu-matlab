@@ -207,6 +207,54 @@ classdef qrc
 
 
 
+    % Sets QRCBs to false for saturation QRCs which should not be used.
+    %
+    % ARGUMENTS
+    % =========
+    % saturationQualitySchemeId
+    %       The saturation quality scheme for which QRCBs should be kept.
+    %
+    % RETURN VALUE
+    % ============
+    % Modified copy of argument.
+    %
+    function Qrcbm = filter_saturation_QRCBs(Qrcbm, saturationQualitySchemeId)
+      assert(isstring(saturationQualitySchemeId))
+      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
+      assert(isa(Qrcbm, 'handle'))
+
+      switch(saturationQualitySchemeId)
+        case "GLOBAL_SATURATION"
+          qrcidFalseAr = bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR;
+
+        case "CHANNEL_SATURATION"
+          qrcidFalseAr = bicas.const.qrc.Q.GLOBAL_SATURATION_QRCID_AR;
+
+        otherwise
+          error("BICAS:ConfigurationBug", ...
+            "Illegal argument saturationQualitySchemeId=""%s"".", ...
+            saturationQualitySchemeId)
+      end
+
+      % Create modified copy of Qrcbm.
+      Qrcbm2      = bicas.proc.QrcbMap(Qrcbm.nRecords);
+      qrcbFalseAr = false(Qrcbm.nRecords, 1);
+      for qrcid = Qrcbm.qrcidAr'
+        if ismember(qrcid, qrcidFalseAr)
+          qrcbAr = qrcbFalseAr;
+        else
+          qrcbAr = Qrcbm.get(qrcid);
+        end
+
+        Qrcbm2.add(qrcid, qrcbAr)
+      end
+
+      % Rename variable.
+      Qrcbm = Qrcbm2;
+    end
+
+
+
   end    % methods(Static)
 
 

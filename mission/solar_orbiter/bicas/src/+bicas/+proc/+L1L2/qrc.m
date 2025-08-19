@@ -26,41 +26,30 @@ classdef qrc
     %       ZVM with VSIBs (not VSTBs, not VSQBs, not QRCBs) for the respective
     %       ASR channels.
     %
-    function SaturationQrcbm = get_saturation_QRCBs(...
-        tt2000Ar, saturationQualitySchemeId, ...
+    function SaturationQrcbm = VSIBs_to_saturation_QRCBs(...
+        tt2000Ar, ...
         VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec)
 
       % PROPOSAL: Change order of arguments.
 
       SaturationQrcbm = bicas.proc.QrcbMap(numel(tt2000Ar));
-      SaturationQrcbm.add_false(bicas.const.qrc.Q.SATURATION_QRCID_AR)
 
       %---------------------------------
       % Obtain CHANNEL_SATURATION QRCBs
       %---------------------------------
       ChannelSaturationQrcbm = ...
-        bicas.proc.L1L2.qrc.get_QRCBs_channel_saturation(...
+        bicas.proc.L1L2.qrc.VSIBs_to_channel_saturation_QRCBs(...
         VsibZvm, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
+      SaturationQrcbm.union(ChannelSaturationQrcbm)
 
-      switch(saturationQualitySchemeId)
-        case "GLOBAL_SATURATION"
-          %------------------------------------------------------
-          % CHANNEL_SATURATION QRCBs --> GLOBAL_SATURATION QRCBs
-          %------------------------------------------------------
-          GlobalSaturationQrcbm = ...
-            bicas.proc.L1L2.qrc.channel_saturation_to_global_saturation_QRCBs(...
-            ChannelSaturationQrcbm, numel(tt2000Ar));
-          SaturationQrcbm.union(GlobalSaturationQrcbm)
-
-        case "CHANNEL_SATURATION"
-          SaturationQrcbm.union(ChannelSaturationQrcbm)
-
-        otherwise
-          error("BICAS:ConfigurationBug", ...
-            "Illegal argument saturationQualitySchemeId=""%s"".", ...
-            saturationQualitySchemeId)
-      end
+      %--------------------------------
+      % Obtain GLOBAL_SATURATION QRCBs
+      %--------------------------------
+      GlobalSaturationQrcbm = ...
+        bicas.proc.L1L2.qrc.channel_saturation_to_global_saturation_QRCBs(...
+        ChannelSaturationQrcbm);
+      SaturationQrcbm.union(GlobalSaturationQrcbm)
 
       assert(isequal( ...
         sort(SaturationQrcbm.qrcidAr), ...
@@ -102,7 +91,7 @@ classdef qrc
     % (e.g. 30%+30% > 50%), then the reconstructed channel's saturation bits
     % would be zero, despite being very much affected by saturation.
     %
-    function Qrcbm = get_QRCBs_channel_saturation(...
+    function Qrcbm = VSIBs_to_channel_saturation_QRCBs(...
         VsibZvm, tt2000Ar, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec)
 
@@ -168,7 +157,11 @@ classdef qrc
     %
     function GlobalSaturationQrcbm = ...
         channel_saturation_to_global_saturation_QRCBs( ...
-        ChannelSaturationQrcbm, nRecords)
+        ChannelSaturationQrcbm)
+
+      assert(isa(ChannelSaturationQrcbm, 'bicas.proc.QrcbMap'))
+
+      nRecords = ChannelSaturationQrcbm.nRecords;
 
       fullSaturationQrcbAr = false(nRecords, 1);
       for qrcid = bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR'
