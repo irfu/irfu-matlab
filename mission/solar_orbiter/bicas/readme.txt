@@ -203,13 +203,13 @@ it is assumed that no sweep is underway.
 ===============
 BICAS can label L2 data as saturated according to one of two schemes (setting
 PROCESSING.SATURATION.QUALITY_SCHEME): one old scheme (to be phased out), and
-one new scheme (under evaluation).
+one new scheme (under evaluation; to be phased in).
 
 
 -----------------------------
 Old scheme: GLOBAL_SATURATION
 -----------------------------
-BICAS can determine that L2 data is either "partially saturated" or
+BICAS can classify saturated L2 data is either "partially saturated" or
 "fully saturated" in the following ways:
 (1) time interval is labelled as "partially saturated" in the NSO table,
 (2) time interval is labelled as "fully saturated" in the NSO table,
@@ -348,24 +348,32 @@ or fill value (!)                            |     values are set to fill
 =====================================================
 L3 DENSITY+EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E alone, but
 only when its quality is deemed good enough using setting
-PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-02-19).
-Saturated L2 data as described by L2_QUALITY_BITMASK (when channel saturation is
+PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-08-19). Saturated L2 data
+as described by L2_QUALITY_BITMASK (when channel saturation is
 enabled) is set to fill values before being passed on to solo.vdccal() and
 psp2ne().
 
 NOTE: PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN is *NOT* compared to the literal
-      input SOLO_L2_RPW-LFR-SURV-CWF-E QUALITY_FLAG but a reconstructed "L2"
-      value which ignores saturation (too complicated to describe here; see
-      source code).
+      input SOLO_L2_RPW-LFR-SURV-CWF-E QUALITY_FLAG but a reconstructed
+      "L2 QUALITY_FLAG" value which ignores saturation (too complicated to
+      describe here; see source code).
 
-Condition                                  | Action taken when condition applies
+Condition                                 | Action taken when condition applies
 --------------------------------------------------------------------------------
-L2 LFR CWF QUALITY_FLAG is either          | L3 DENSITY+EFIELD+SCPOT:
->= PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN |     DENSITY+EFIELD+SCPOT values are
-or fill value (!)                          |     set to fill values.
+A reconstructed variant of L2 LFR         | L3 DENSITY+EFIELD+SCPOT:
+CWF QUALITY_FLAG is either                |     DENSITY+EFIELD+SCPOT values are
+< PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN |     set to fill values.
+or fill value (!)                         |
 
 NOTE: Historically, this rule did not apply to DENSITY, but it does since
 BICAS 8.5.0.
+
+
+Condition                   | Action taken when condition applies
+--------------------------------------------------------------------------
+An L2 channel is saturated. | L3 DENSITY+EFIELD+SCPOT:
+                            |     The affected channel(s) is not used for
+                            |     deriving L3 data.
 
 
 =============================================================
