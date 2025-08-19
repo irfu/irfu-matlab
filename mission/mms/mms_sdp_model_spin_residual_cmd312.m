@@ -64,7 +64,14 @@ t3.ns  = floor(t2-t3.sec*10^9-t3.ms*10^6-t3.us*10^3);
 t0 = spdfcomputett2000([t1(1) t1(2) t1(3) t1(4) t1(5) t3.sec t3.ms t3.us t3.ns]);
 
 phaRad = unwrap(Phase.data*pi/180);
-
+if(any(diff(phaRad)<0))
+  % Problem occurred with mms4_edp_slow_l1b_dce_20250421_v1.4.0.cdf and
+  % mms4_fields_hk_l1b_101_20250421_v0.5.1.cdf, where sunpulse had multiple
+  % large gaps, phase computed in segments with changing revolution speed.
+  % TODO: May need to compute the spin residual in segments as well...
+  logStr = 'Unwrapped phase has negative diff, residual computation may be difficult.';
+  irf.log('warn', logStr);
+end
 STEPS_PER_DEG = 1; phaShift=STEPS_PER_DEG/2;
 phaDegUnw = phaRad*180/pi;
 phaFixed = (fix(phaDegUnw(1)):STEPS_PER_DEG:fix(phaDegUnw(end)))' ...

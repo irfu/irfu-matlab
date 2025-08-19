@@ -1109,7 +1109,13 @@ classdef mms_sdp_dmgr < handle
             irf.log('critical',errStr); error(errStr);
           end
           % Check to see if time is right for S/W wakes or not (based on orbits)
-          indSW = mms_sdp_swwake_enabled_time(DATAC.dce.time, DATAC.scId);
+          [indSW, SWcalFile] = mms_sdp_swwake_enabled_time(DATAC.dce.time, DATAC.scId);
+          if isempty(DATAC.calFile)
+            DATAC.calFile = {SWcalFile}; % Store name of cal file used.
+          else
+            % append name of cal file used.
+            DATAC.calFile = [DATAC.calFile, SWcalFile];
+          end
           diffWake = zeros(length(Phase.data), length(sensors));
           saveWakeDesc = false; % Should wakeDescTs be saved to log path? DO NOT enable on SDC!
           if any(indSW)
@@ -1671,7 +1677,12 @@ classdef mms_sdp_dmgr < handle
         DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
       % Get DSL offsets
       offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Dce.time, DATAC.tmMode);
-      DATAC.calFile = offs.calFile; % Store name of cal file used.
+      if isempty(DATAC.calFile)
+        DATAC.calFile = {offs.calFile}; % Store name of cal file used.
+      else
+        % append name of cal file used.
+        DATAC.calFile = [DATAC.calFile, offs.calFile];
+      end
       dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
       dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
       % Note, positve E56 correspond to minus DSL-Z direction.
@@ -1794,7 +1805,12 @@ classdef mms_sdp_dmgr < handle
       MMS_CONST = DATAC.CONST;
       % Get probe to plasma potential (offs.p2p) for this time interval
       offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, Probe2sc_pot.time, DATAC.tmMode);
-      DATAC.calFile = offs.calFile; % Store name of cal file used.
+      if isempty(DATAC.calFile)
+        DATAC.calFile = {offs.calFile}; % Store name of cal file used.
+      else
+        % append name of cal file used.
+        DATAC.calFile = [DATAC.calFile, offs.calFile];
+      end
       scPot = - Probe2sc_pot.data(:) .* offs.shortening(:) + offs.p2p;
       % Check present time and processing interval if we should set
       % FillValues to ensure SITL does not use Eclipse and/or Maneuvers
@@ -1977,7 +1993,12 @@ classdef mms_sdp_dmgr < handle
           else
             offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.l2a.dce.time, DATAC.tmMode);
           end
-          DATAC.calFile = offs.calFile; % Store name of cal file used.
+          if isempty(DATAC.calFile)
+            DATAC.calFile = {offs.calFile}; % Store name of cal file used.
+          else
+            % append name of cal file used.
+            DATAC.calFile = [DATAC.calFile, offs.calFile];
+          end
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
           DATAC.l2a.dsl_offset = [offs.ex, offs.ey]; % Store removed offset, to be written in L2Pre file
@@ -2029,7 +2050,12 @@ classdef mms_sdp_dmgr < handle
           DeltaOffR = DeltaOff.resample(brstTime);
           dE = mms_sdp_despin(Etmp.e12, Etmp.e34, DATAC.phase.data, DeltaOffR.data(:,1) + DeltaOffR.data(:,2)*1j);
           offs = mms_sdp_get_offset(DATAC.scId, DATAC.procId, DATAC.dce.time, DATAC.tmMode);
-          DATAC.calFile = offs.calFile; % Store name of cal file used.
+          if isempty(DATAC.calFile)
+            DATAC.calFile = {offs.calFile}; % Store name of cal file used.
+          else
+            % append name of cal file used.
+            DATAC.calFile = [DATAC.calFile, offs.calFile];
+          end
           dE(:,1) = dE(:,1) - offs.ex; % Remove sunward
           dE(:,2) = dE(:,2) - offs.ey; % and duskward offsets
           DATAC.l2a.dsl_offset = [offs.ex, offs.ey]; % Store removed offset, to be written in L2Pre file

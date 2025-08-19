@@ -16,6 +16,10 @@ START_META     =   DATA_TYPE
    ENTRY       =   "CP>CAA_Parameter"
 END_META       =   DATA_TYPE
 !
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Support_Data" 
+END_META       =   DATASET_TYPE 
+!
 START_META     =   DATASET_TITLE
    ENTRY       =   "Transformation from ISR2 to FAC coordinate system"
 END_META       =   DATASET_TITLE
@@ -46,7 +50,7 @@ END_META       =   DATASET_DESCRIPTION
 !
 START_META     =   CONTACT_COORDINATES
    ENTRY       =   "Meghan Mella>Cluster ULF data provider>meghan.mella@irfu.se"
-   ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>MAARBLE Wave Database leader>yuri@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
 START_META     =   TIME_RESOLUTION
@@ -69,7 +73,7 @@ START_META     =   PROCESSING_LEVEL
 END_META       =   PROCESSING_LEVEL
 !
 START_META     =   DATASET_CAVEATS
-   ENTRY       =   "To be written"
+   ENTRY       =   "Based on FGM data low-pass filtered at 1.7 mHz."
 END_META       =   DATASET_CAVEATS
 !
 START_META     =   ACKNOWLEDGEMENT
@@ -96,7 +100,7 @@ END_VARIABLE    =  Time__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
 !
 START_VARIABLE = ISR22FAC__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
     ENTITY            = "Transformation"
-    PROPERTY          = "Coordinate_rotation"
+    PROPERTY          = "Coordinate_Rotation"
     SIZES             = 3, 3
     VALUE_TYPE        = FLOAT
     COORDINATE_SYSTEM = "ISR2"
@@ -111,6 +115,7 @@ START_VARIABLE = ISR22FAC__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
     SI_CONVERSION     = "1>unitless"
     UNITS             = "unitless"
     FILLVAL           = -999.
+    SIGNIFICANT_DIGITS = 6
     PARAMETER_TYPE    = "Support_Data"
     CATDESC           = "Transformation from ISR2 to FAC coordinate system"
     DEPEND_0          = Time__CXXX_CP_AUX_MAARBLE_ULF_FACMATR

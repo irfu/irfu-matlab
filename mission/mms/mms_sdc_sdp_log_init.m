@@ -75,6 +75,7 @@ else
   else
     day = '';
   end
+  % "logDir" ends with filesep ("day" may end with filesep, or be empty)
   logDir = [ENVIR.LOG_PATH_ROOT, filesep, 'mms', fileInfo.SCid, filesep, ...
     'edp', filesep, fileInfo.tmmode, filesep, procStr, filesep, descr, ...
     filesep, fileInfo.dateStr(1:4), filesep, fileInfo.dateStr(5:6), filesep, ...
@@ -85,7 +86,9 @@ else
   end
   logFile = ['mms', fileInfo.SCid, '_edp_', fileInfo.tmmode, '_', ...
     procStr, '_', descr, '_', fileInfo.dateStr, '_', runTime, '.log'];
-  irf.log('log_out', [logDir, filesep, logFile]);
+  % recalling note above, "logDir" ends with filesep so no need to add it
+  % extra here
+  irf.log('log_out', [logDir, logFile]);
 end
 
 
