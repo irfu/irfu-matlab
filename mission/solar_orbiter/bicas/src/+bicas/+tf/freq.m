@@ -1,5 +1,6 @@
 %
-% Code for applying TF in the frequency domain. In practice, one main function.
+% Code for applying a TF in the frequency domain. In practice, one main
+% function.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -25,15 +26,16 @@ classdef freq
     % ALGORITHM
     % =========
     % (1)  Compute DFT of samples using MATLAB's "fft" function.
-    % (2a) Interpret the sample DFT component frequencies as pairs of positive and
-    %      negative frequencies (lower and higher half of DFT components).
+    % (2a) Interpret the sample DFT component frequencies as pairs of positive
+    %      and negative frequencies (lower and higher half of DFT components).
     % (2b) Interpret the specified TF as a ~symmetric function,
     %      Z(omega) = Z*(-omega),
     %      which covers both positive & negative frequencies, and where
     %      *=complex conjugate.
-    % (3)  Multiply the sample DFT coefficients with the corresponding complex TF
-    %      values.
-    % (4)  Compute inverse DFT using MATLAB's "ifft(... , 'symmetric')" function.
+    % (3)  Multiply the sample DFT coefficients with the corresponding complex
+    %      TF values.
+    % (4)  Compute inverse DFT using MATLAB's "ifft(... , 'symmetric')"
+    %      function.
     %
     %
     % NOTES
@@ -48,62 +50,70 @@ classdef freq
     % 1) c_efw_invert_tf.m      (extensive; in both time domain and frequency
     %                            domain; multiple ways of handling edges)
     % 2) c_efw_burst_bsc_tf.m   (short & simple)
+    % Above functions do not *APPEAR TO* make use of any particular standard
+    % MATLAB functions for applying transfer functions to data more than
+    % general functions like fft(), ifft(), conv(), cconv(). (One needs to
+    % check the code more to be sure though.)
     % --
     % NOTE: I am presently not sure if MATLAB has standard functions for
     % applying a transfer function in the frequency domain and that is
     % tabulated or function handle.   /Erik P G Johansson 2019-09-11
     % --
-    % NOTE: This function does not support any kind of edge handling.
+    % NOTE: This function does not support any kind of special edge handling.
     %
     %
     % EXPONENT SIGN CONVENTION IN TRANSFER FUNCTIONS
     % ==============================================
     % This function/algorithm uses the following:
-    %   y1(t)     ~ e^(i*omega*t)                # Exponent sign convention used by
-    %                                            # MATLAB's fft() & ifft().
-    %   tf(omega) ~ e^(i*omega*(-tau(omega)))    # Transfer function supplied to
-    %                                            # this function.
+    %   y1(t)     ~ e^(i*omega*t)                # Exponent sign convention
+    %                                            # used by MATLAB's fft()
+    %                                            # & ifft().
+    %   tf(omega) ~ e^(i*omega*(-tau(omega)))    # Transfer function supplied
+    %                                            # to this function.
     %   y2(t)     ~ e^(i*omega*t) * tf(omega)
     %             = e^(i*omega*(t-tau(omega)))
-    % (Weighted summing/integration over exponentials is implicit.) Therefore, a TF
-    % component with a positive tau represents a positive phase delay of tau for
-    % that frequency, i.e.
+    % (Weighted summing/integration over exponentials is implicit.) Therefore,
+    % a TF component with a positive tau represents a positive phase delay of
+    % tau for that frequency, i.e.
     %   y2(t) == y1(t-tau)
     % if e.g. y1(t) only has one frequency component.
-    % NOTE: This should be the same convention as used by the Laplace transform.
+    % NOTE: This should be the same convention as used by the Laplace
+    % transform.
     %
     %
     % IMPLEMENTATION NOTES, DESIGN INTENT
     % ===================================
-    % -- Modifications of the TRANSFER FUNCTION should be made by wrapper functions
-    %    and NOT by this function.
+    % -- Modifications of the TRANSFER FUNCTION should be made by wrapper
+    %    functions and NOT by this function.
     %       Ex: Modifications to fit the input format.
     %           Ex: Turn a given tabulated TF into an actual MATLAB function
     %               (handle).
     %       Ex: Remove high frequency components for inverted lowpass filter.
     %       Ex: Remove/dampen low frequencies for inverted highpass filter.
-    % -- Modification of input/output SAMPLES should be done by wrapper functions
-    %    and NOT in this function.
+    % -- Modification of input/output SAMPLES should be done by wrapper
+    %    functions and NOT in this function.
     %       Ex: De-trending, re-trending
-    %       Ex: Splitting by non-finite values (e.g. data gaps represented by NaN).
-    % -- This function only represents the pure mathematical algorithm and therefore
-    %    only works with "mathematically pure" variables and units: radians, complex
-    %    amplitudes (no dB, no volt^2, no amplitude+phase). This is useful since it
+    %       Ex: Splitting by non-finite values (e.g. data gaps represented by
+    %           NaN).
+    % -- This function only represents the pure mathematical algorithm and
+    %    therefore only works with "mathematically pure" variables and units:
+    %    radians, complex amplitudes (no dB, no volt^2, no amplitude+phase).
+    %    This is useful since it
     % (1) separates
     %       (a) the core processing code from
-    %       (b) related but simple processing of data (changing units, different
-    %           ways of representing transfer functions, checking for constant
-    %           sampling rate),
-    % (2) makes the potentially tricky TF-code easier to understand and check (due
-    %     to (1)),
+    %       (b) related but simple processing of data (changing units,
+    %           different ways of representing transfer functions, checking for
+    %           constant sampling rate),
+    % (2) makes the potentially tricky TF-code easier to understand and check
+    %     (due to (1)),
     % (3) makes a better code unit for code testing,
-    % (4) makes it easier to simultaneously support different forms of input data
-    %     (in wrapper functions),
-    % (5) it is easy to combine multiple TFs on the TF format that this function
-    %     accepts,
-    % (6) easier to use it for mathematically calculated transfer functions, e.g.
-    %     due to RPW's parasitic capacitance (although that should not be done in
-    %     isolation, but rather by combining it with other TFs.
+    % (4) makes it easier to simultaneously support different forms of input
+    %     data (in wrapper functions),
+    % (5) it is easy to combine multiple TFs on the TF format that this
+    %     function accepts,
+    % (6) easier to use it for mathematically calculated transfer functions,
+    %     e.g. due to RPW's parasitic capacitance (although that should not be
+    %     done in isolation, but rather by combining it with other TFs.
     %
     %
     % ARGUMENTS
@@ -121,8 +131,8 @@ classdef freq
     %       NOTE: If the caller wants to use a tabulated TF, then s/he should
     %       construct an anonymous function that interpolates the tabulated TF
     %       (e.g. using "interp1") and submit it as argument.
-    %       NOTE: The transfer function is permitted to return NaN. This will set y2
-    %             to NaN.
+    %       NOTE: The transfer function is permitted to return NaN. This will
+    %             set y2 to NaN.
     %
     %
     % RETURN VALUES
@@ -150,13 +160,13 @@ classdef freq
       %          example has been found yet.
       %   Should be multiplied by abs(Z)?! Z-imag(z)?! Keep as is?!
       %
-      % PROPOSAL: Permit submitting multiple y1 at the same time (same length, same
-      %           dt, same tf).
+      % PROPOSAL: Permit submitting multiple y1 at the same time (same length,
+      %           same dt, same tf).
       %   PRO: Faster?
       %       PRO: Can call tf once.
       %   CON: Not useful for CWF data which tends to have unique lengths.
-      %   CON: Snapshots tend to have the same length but rotates between sampling
-      %        rates, i.e. dt values.
+      %   CON: Snapshots tend to have the same length but rotates between
+      %        sampling rates, i.e. dt values.
 
 
 
@@ -166,14 +176,16 @@ classdef freq
       %============
       % ASSERTIONS
       %============
-      assert(nargin == 3)    % NOTE: The number of arguments has changed historically.
+      % NOTE: The number of arguments has changed historically.
+      assert(nargin == 3)
       if ~iscolumn(y1)
         error(EMID_ARG, 'Argument y1 is not a column vector.')
       elseif ~isnumeric(y1)
         error(EMID_ARG, 'Argument y1 is not numeric.')
       elseif ~isreal(y1)
         error(EMID_ARG, 'y1 is not real.')
-        % NOTE: The algorithm itself does not make sense for non-real functions.
+        % NOTE: The algorithm itself does not make sense for non-real
+        %       functions.
       elseif ~isnumeric(dt)
         error(EMID_ARG, 'dt is not numeric..')
       elseif ~isscalar(dt)
@@ -197,17 +209,19 @@ classdef freq
       %##################################################
       % Compute TF Z(omega) values to later apply to DFT
       %##################################################
-      %=============================================================================
-      % Define the frequencies used to interpret the DFT components X_k (yDft1)
-      % -----------------------------------------------------------------------
+      %========================================================================
+      % Define the frequencies used to interpret the DFT components X_k
+      % (yDft1)
+      % ---------------------------------------------------------------
       % IMPLEMENTATION NOTE:
       % The code only works with REAL-valued time-domain signals. Therefore,
-      % (1) We want to interpret the signal as consisting of pairs of positive and
-      %     negative frequencies (pairs of complex bases), and therefore with
-      %     complex-conjugated weights.
-      % (2) We want to interpret the TF as being a symmetric function, defined for
-      %     both positive and negative frequencies,
-      %     Z(omega) = Z*(-omega), where *=conjugate.
+      % (1) We want to interpret the signal as consisting of pairs of positive
+      %     and negative frequencies (pairs of complex bases), and therefore
+      %     with complex-conjugated weights.
+      % (2) We want to interpret the TF as being a symmetric function, defined
+      %     for both positive and negative frequencies,
+      %       Z(omega) = Z*(-omega),
+      %     where *=conjugate.
       %
       % Excerpt from MATLAB's help text for fft():
       % """"
@@ -222,8 +236,8 @@ classdef freq
       %                   k=1
       % """"
       %
-      % The DFT components X_k, k=1..N can be thought of as representing different
-      % frequencies. The exponents above can be interpreted as
+      % The DFT components X_k, k=1..N can be thought of as representing
+      % different frequencies. The exponents above can be interpreted as
       %   j*2*pi*(k-1)*(n-1)/N = j*omega_k*t
       % where
       %   omega_k = 2*pi*(k-1) / (N*dt)
@@ -233,23 +247,24 @@ classdef freq
       %    e^(i * omega_k * t_n) = e^(i * omega_(k+m*N) * t_n),
       % where
       %    m = any integer,
-      % the exact frequencies associated with DFT components X_k are however subject
-      % to a choice/interpretation, where
+      % the exact frequencies associated with DFT components X_k are however
+      % subject to a choice/interpretation, where
       %    omega_k <--> omega_(k+m*N) .
-      % Since we only work with real-valued signals, we want to interpret the DFT
-      % components as having frequencies
+      % Since we only work with real-valued signals, we want to interpret the
+      % DFT components as having frequencies
       %    omega_1, ..., omega_ceil(N/2), omega_[ceil(N/2)-N+1], ..., omega_0
-      % but to look up values in the TF, we have to use the absolute values of the
-      % above frequencies and conjugate Z when necessary.
+      % but to look up values in the TF, we have to use the absolute values of
+      % the above frequencies and conjugate Z when necessary.
       %
       % NOTE: omega_0 = 0.
       % NOTE: The above must work for both even & odd N. For even N, the DFT
-      %       component X_N/2 (which does not have a frequency twin) should be real
-      %       for real signals.
-      %=============================================================================
+      %       component X_N/2 (which does not have a frequency twin) should be
+      %       real for real signals.
+      %========================================================================
       % Modified k values (~indices) used to calculate omega_k for every X_k.
       kOmegaSamplesAr = [1:ceil(nSamples/2), (ceil(nSamples/2)-nSamples+1):0];
-      % kOmegaSamplesAr2 = [1:nSamples] - [(1:nSamples)>(nSamples/2+1)] * nSamples;    % At least roughly equivalent.
+      % At least roughly equivalent. Not tested.
+      % kOmegaSamplesAr2 = [1:nSamples] - [(1:nSamples)>(nSamples/2+1)] * nSamples;
 
       omegaSamplesAr  = 2*pi * (kOmegaSamplesAr - 1) / double(nSamples*dt);
 
@@ -270,7 +285,8 @@ classdef freq
       if ~all(~isinf(tfZAr))
         % NOTE: Deliberately permits Z=NaN (but not infinity) since
         % bicas.proc.L1L2.cal.VoltageCalibration is designed to create TFs that
-        % return Z=NaN for impossible combinations where it does not matter anyway.
+        % return Z=NaN for impossible combinations where it does not matter
+        % anyway.
         % /EJ 2020-11-05
         error(...
           'BICAS:Assertion', ...
@@ -294,7 +310,7 @@ classdef freq
       % yDft2(N/2+1) values.
       % IMPORTANT NOTE: Must transpose complex vector in a way that does not
       % negate the imaginary part. Transposing with ' (apostrophe) negates the
-      % imaginary part.
+      % imaginary part. transpose() does not negate the imaginary part.
       yDft2 = yDft1 .* transpose(tfZAr);
 
 
@@ -302,17 +318,17 @@ classdef freq
       %#####################
       % Compute inverse DFT
       %#####################
-      % IMPLEMENTATION NOTE: Uses ifft() options to force yDft2 to be (interpreted
-      % as) conjugate symmetric due to possible rounding errors.
+      % IMPLEMENTATION NOTE: Uses ifft() options to force yDft2 to be
+      % (interpreted as) conjugate symmetric due to possible rounding errors.
       %
       % ifft options:
-      %     "ifft(..., 'symmetric') causes ifft to treat X as conjugate symmetric
-      %     along the active dimension.  This option is useful when X is not
-      %     exactly conjugate symmetric merely because of round-off error.  See
-      %     the reference page for the specific mathematical definition of this
-      %     symmetry."
+      %     "ifft(..., 'symmetric') causes ifft to treat X as conjugate
+      %     symmetric along the active dimension.  This option is useful when X
+      %     is not exactly conjugate symmetric merely because of round-off
+      %     error.  See the reference page for the specific mathematical
+      %     definition of this symmetry."
       y2 = ifft(yDft2, 'symmetric');
-      %y2p = ifft(yDft2);    % TEST
+
 
 
       % ASSERTION: Real (numbers) output.

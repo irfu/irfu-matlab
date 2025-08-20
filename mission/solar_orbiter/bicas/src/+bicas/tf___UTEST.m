@@ -307,23 +307,32 @@ classdef tf___UTEST < matlab.unittest.TestCase
 
         actYCa = bicas.tf.split_samples_by_nonfinite(y);
 
+        % Actual return value format check.
+        assert(iscolumn(actYCa))
+        for i = 1:numel(actYCa)
+          assert(iscolumn(actYCa{i}));
+        end
+
         T.verifyEqual(actYCa, expYCa)
       end
 
-      % test(zeros(0, 1), cell(0, 1))
-      %
-      % test([3]', {3}')
-      % test( ...
-      %   [ 3 4 5]', ...
-      %   {[3 4 5]'}')
+      test(zeros(0, 1), cell(0, 1))
 
+      test([3]', {3}')
+      test( ...
+        [ 3 4 5]', ...
+        {[3 4 5]'}')
+
+      test( ...
+        [ inf nan -inf]', ...
+        {[inf nan -inf]'}')
 
       test(...
         [3 inf 5 -inf 7 nan 9]', ...
         {3 inf 5 -inf 7 nan 9}')
-      % test(...
-      %   [inf  2 3    nan inf -inf     4 5 6 7]', ...
-      %   {inf [2 3]' [nan inf -inf]', [4 5 6 7]'}')
+      test(...
+        [inf  2 3    nan inf -inf     4 5 6 7]', ...
+        {inf [2 3]' [nan inf -inf]', [4 5 6 7]'}')
     end
 
 

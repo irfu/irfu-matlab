@@ -171,7 +171,8 @@ classdef dc
         bltsVoltageAvolt, bltsVsibAr, bltsSdidArray, L);
       bicas.proc.L1L2.demuxer.reconstruct_ASR_voltage_channels(SchdZvm);
       if 0    % DEBUG
-        vsibAr = SchdZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1")).vsibAr; figure; plot(Dcip.Zv.Epoch/1e9, vsibAr)
+        vsibAr = SchdZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1")).vsibAr;
+        figure; plot(Dcip.Zv.Epoch/1e9, vsibAr)
       end
 
 
@@ -185,7 +186,8 @@ classdef dc
       end
       clear SchdZvm
       if 0    % DEBUG
-        vsibAr = VsibZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1")); figure; plot(Dcip.Zv.Epoch/1e9, vsibAr, '.')
+        vsibAr = VsibZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1"));
+        figure; plot(Dcip.Zv.Epoch/1e9, vsibAr, '.')
       end
 
 
@@ -232,14 +234,11 @@ classdef dc
       Zv.currentAampere     = bicas.proc.L1L2.qrc.set_current_samples_FV(...
         currentAampere, L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM);
       Zv.VoltageZvm         = VoltageZvm;
-
-
+      Dcop = bicas.proc.L1L2.DemultiplexingCalibrationOutput(Zv);
 
       %##############
       % END FUNCTION
       %##############
-      Dcop = bicas.proc.L1L2.DemultiplexingCalibrationOutput(Zv);
-
       nRecords = size(Dcip.Zv.Epoch, 1);
       Tmk.stop_log(nRecords, 'record')
     end    % process_calibrate_demux

@@ -404,7 +404,8 @@
             <startTimeUtc>2020-08-06T00:00:00</startTimeUtc>
             <stopTimeUtc> 2020-08-09T02:35:00</stopTimeUtc>
             <rcsNsoId>PARTIAL_SATURATION</rcsNsoId>
-            <description>Beginning of time period is set quite arbitrarily. /EJ</description>
+            <description>Beginning of time period is set quite arbitrarily. /EJ
+                Is directly followed by FULL_SATURATION.</description>
         </event>
 
 
@@ -422,8 +423,7 @@
             <startTimeUtc>2020-08-09T02:35:00</startTimeUtc>
             <stopTimeUtc> 2020-08-11T21:30:00</stopTimeUtc>
             <rcsNsoId>FULL_SATURATION</rcsNsoId>
-            <description>
-            </description>
+            <description>Is directly preceded of PARTIAL_SATURATION.</description>
         </event>
 
 

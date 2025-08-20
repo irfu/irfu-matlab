@@ -135,6 +135,15 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         ] ...
         = process_L2_to_L3(InLfrCwf, NsoTable, Excd, Bso, L)
 
+      % PROPOSAL: Abolish struct "Ga".
+      % PROPOSAL: Abolish struct "Zv".
+      %   PRO: Not passed to any function etc.
+      %   PRO: Shorter.
+      %   CON: Makes it less clear which variables are ZV-like and not. Prefix
+      %        "Zv." effectively constitutes an alternative prefix stating
+      %        this.
+      %     CON: This convention is not followed anywhere else.
+
       Ga = struct();
       Ga.SOOP_TYPE              = InLfrCwf.Ga.SOOP_TYPE;
       Ga.OBS_ID                 = InLfrCwf.Ga.OBS_ID;
@@ -210,6 +219,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         Zv.L2_QUALITY_BITMASK_Fpa.array(uint16(0)), ...
         Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'));
       L3Qrcbm.union(ChannelSaturationQrcbm)
+      if 0
+      % DEBUG
+        L3Qrcbm.set("SATURATION_ZV_V2", true(size(Zv.Epoch)))
+        bicas.debug.plot_QRCBM(L3Qrcbm, Zv.Epoch, "L3Qrcbm")
+      end
+
 
       %-----------------------------------------------------------------------
       % Calculate what QUALITY_FLAG for L2 LFR CWF *SHOULD HAVE BEEN*, had it
@@ -233,10 +248,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %--------------------------------
       % Blank input data based on QRCs
       %--------------------------------
+      % bicas.debug.plot_VDC_EDC_FPA(Zv.VDC_Fpa, Zv.EDC_Fpa, Zv.Epoch, "Before QRC blanking")   % DEBUG
       VDC_Fpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         Zv.VDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "vdcFvIndexAr");
       EDC_Fpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         Zv.EDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "edcFvIndexAr");
+      % bicas.debug.plot_VDC_EDC_FPA(VDC_Fpa, EDC_Fpa, Zv.Epoch, "After QRC blanking")    % DEBUG
 
       %-------------------------------------------------------
       % Blank input data when QUALITY_FLAG is below threshold
@@ -251,6 +268,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       bDoNotUse    = bDoNotUseFpa.array(false);   % Is [FP==>false] wise?
       Zv.VDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
       Zv.EDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
+      % BUG?!!: Blanking variables which are not used.
 
       %---------------------------------------
       % Call BICAS-external code to calculate
@@ -327,7 +345,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       nRecordsOsr = size(OutDensityOsr.Zv.Epoch, 1);
       nRecordsDsr = size(OutDensityDsr.Zv.Epoch, 1);
       Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
-    end    % process_L2_to_L3
+    end    % process_L2_to_L3()
 
 
 

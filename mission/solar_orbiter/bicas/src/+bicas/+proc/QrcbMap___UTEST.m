@@ -226,14 +226,4 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-  end    % methods(Static, Access=private)
-
-
-
 end

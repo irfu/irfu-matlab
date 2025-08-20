@@ -6,7 +6,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef tf
-  % PROPOSAL: Automatic test code for bicas.tf.apply_TF_with_DRT()
+  % PROPOSAL: Automatic test code for bicas.tf.apply_TF_with_DRT().
 
 
 
@@ -224,6 +224,10 @@ classdef tf
 
 
 
+    % Given a column array of samples, split it into multiple column arrays,
+    % where every second one contains only non-finite samples, and every second
+    % one only finite samples.
+    %
     function yCa = split_samples_by_nonfinite(y)
       % NOTE: Does not implement any constraint on the minimum length of
       %       subsequences since that can easily be implemented separately.
@@ -231,6 +235,11 @@ classdef tf
       %       subsequences, e.g. set to NaN.
 
       % PROPOSAL: Better function name
+      %   PRO: split_samples_by_nonfinite() is a deceiving name since it
+      %        implies that nonfinite samples are excluded from the output
+      %        (which they are not).
+      %   ~split_samples_by_nonfinite_change()
+      %     NOTE: Cf. split_by_change()
       %   not "samples"?
       %     CON: Is not a true, generic function. Does not return indices (like
       %          irf.utils.split_by_change()), but a CA of arrays.
@@ -248,7 +257,6 @@ classdef tf
       for i = 1:n
         yCa{i, 1} = y(i1Array(i):i2Array(i));
       end
-
     end
 
 

@@ -57,6 +57,7 @@ classdef qrc
   end
 
 
+
   %########################
   %########################
   % PRIVATE STATIC METHODS
@@ -183,8 +184,18 @@ classdef qrc
       %=============
       % BIAS_HW_OFF
       %=============
-      % In practice, when LFR ZV "BW" says that BIAS h/w is off.
-      % NOTE: Deletes all values, both voltage & current.
+      % This condition corresponds when LFR ZV "BW" says that BIAS h/w is off.
+      % --
+      % IMPLEMENTATION NOTE: It could be argued that this condition is not
+      % really an "error", or "quality problem" at all and that the
+      % corresponding functionality should not be implemented using QRCs. It is
+      % an edge case, conceptually. However, it has been implemented as a QRC
+      % anyway to make the hardcoding/documentation/configuration of BICAS's
+      % behaviour when this condition applies clearer. It is "obvious" (?) that
+      % the voltages should be blanked, but not the currents, and that should
+      % (preferably) be configured clearly somewhere.
+      % --
+      % NOTE: Deletes all values, both voltages & currents.
       Qrcs = bicas.proc.QrcSettingL2(...
         voltageFvSsidAr = S.values, ...
         currentFvIantAr = [1:3]');
@@ -201,7 +212,7 @@ classdef qrc
       %==============
       % ANTx_FAILING
       %==============
-      % NOTE: There is currently (2025-08-14) only a need for ANT3_FAILING, but
+      % NOTE: There is currently (2025-08-26) only a need for ANT3_FAILING, but
       % in case other antennas fail, one can just create the corresponding
       % QRCSs for ANT1 & ANT2 and fill the NSO table with the corresponding
       % entries.
@@ -213,19 +224,16 @@ classdef qrc
 
       % Qrcs = bicas.proc.QrcSettingL2(...
       %   QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
-      %   L2_QUALITY_BITMASK = L2QBM_ANTx_FAILING, ...
       %   voltageFvSsidAr    = S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
       % L2Qrcsm.add("ANT1_FAILING", Qrcs);
       %
       % Qrcs = bicas.proc.QrcSettingL2(...
       %   QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
-      %   L2_QUALITY_BITMASK = L2QBM_ANTx_FAILING, ...
       %   voltageFvSsidAr    = S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
       % L2Qrcsm.add("ANT2_FAILING", Qrcs);
 
       Qrcs = bicas.proc.QrcSettingL2(...
         QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
-        L2_QUALITY_BITMASK = L2QBM_ANTx_FAILING, ...
         voltageFvSsidAr    = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
       L2Qrcsm.add("ANT3_FAILING", Qrcs);
 

@@ -210,6 +210,7 @@ classdef kernel
           % NOTE: This mode is implemented to make it possible to get the exact
           % same result with bicas.tf.time.apply_TF() as with
           % bicas.tf.freq.apply_TF().
+
           % IMPLEMENTATION NOTE: Could (?) be implemented with MATLAB's
           % cconv(), but that would defeat the purpose of having this case for
           % testing (to test other code).
@@ -228,12 +229,11 @@ classdef kernel
           %=============================================================
           % Pad edges with mirrored signals (mirrored around the edges)
           %=============================================================
-
           % NOTE: The implementation uses mirror symmetry axes located at
           % "array indices" 0.5 and end+0.5, i.e. the very first and last
           % samples are themselves mirrored (duplicated).
-          % NOTE: One could also use symmetry around indices "1" and "end" and not
-          % mirror the very first and last samples.
+          % NOTE: One could also use symmetry around indices "1" and "end" and
+          % not mirror the very first and last samples.
 
           % ASSERTION
           assert(max(nPadA, nPadB) <= lenY1,...

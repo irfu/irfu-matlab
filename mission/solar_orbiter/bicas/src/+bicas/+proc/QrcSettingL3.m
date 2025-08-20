@@ -21,6 +21,8 @@ classdef QrcSettingL3 < bicas.proc.QrcSetting
 
     % For blanking L2 ZV VDC/EDC before being used before data is passed on to
     % solo.vdccal() and psp2ne().
+    % --
+    % NOTE: L2-->L3 processing does not use AC data.
     vdcFvIndexAr
     edcFvIndexAr
 
