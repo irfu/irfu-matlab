@@ -142,6 +142,7 @@ authors:
     given-names: "Jack"
     affiliation: "Swedish Institute of Space Physics"
     city: "Uppsala"
+    orcid: "https://orcid.org/0009-0006-5817-972X"
   - name: "IRFU-Matlab team"
 repository-code: "https://github.com/irfu/irfu-matlab"
 doi: "10.5281/zenodo.11550090"
