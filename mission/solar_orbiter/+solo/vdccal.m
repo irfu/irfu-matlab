@@ -63,7 +63,12 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(VDC_i
 % PROPOSAL: Have BICAS exclude saturated VDC diffs being sent to this function
 % in the first place. BICAS could exclude VDC diffs based on
 % (not-yet-implemented) quality bits or NSO table.
-TIME_PSP_BEGIN_SINGLE_PROBE = EpochTT('2022-12-15T00:00:00.000000000Z');
+% --
+% UPDATE 2025-08-26: This measure should no longer be necessary. Saturation
+% should lead to the corresponding channels being set to NaN before being
+% passed on to this function, hence making the old functionality for
+% identifying "single-probe data" work also after this timestamp.
+% TIME_PSP_BEGIN_SINGLE_PROBE = EpochTT('2022-12-15T00:00:00.000000000Z');
 
 
 
@@ -89,7 +94,7 @@ a = load(calFilename);
 % Version of the function (not .mat file).
 % NOTE: This value is meant to be be UPDATED BY HAND, not by an automatic
 % timestamp, so that a constant value represents the same function/algorithm.
-codeVerStr = '2025-06-26T17:48:00';
+codeVerStr = '2025-08-26T13:05:00';
 % Version of the .mat file. Using filename, or at least for now.
 % This string is used by BICAS to set a CDF global attribute in official
 % datasets for traceability.
@@ -157,7 +162,7 @@ for iSub = 1:length(sub_int_times)-1
 
   % Indices/samples for which data should be treated as single probe.
   bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
-  bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
+  % bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
 
   % Resample calibration parameters
 
