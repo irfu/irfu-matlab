@@ -79,7 +79,7 @@ classdef dc
       % later.
       L2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
         bicas.const.qrc.Q.L2_QRCSM.qrcidAr, NsoTable, Dcip.Zv.Epoch, L);
-      % L2Qrcbm.create_debug_figure(Dcip.Zv.Epoch, "L2Qrcbm")
+      % bicas.debug.plot_QRCBM(L2Qrcbm, Dcip.Zv.Epoch, "L2Qrcbm")
       clear NsoTable
       % Convert information about BIAS ON/OFF and sweeps into QRCBs.
       L2Qrcbm.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb);
@@ -205,8 +205,8 @@ classdef dc
       L2Qrcbm.union(VsibSaturationQrcbm)
       L2Qrcbm = bicas.proc.qrc.filter_saturation_QRCBs(L2Qrcbm, string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')));
       if 0    % DEBUG: Plot selected QRCBs.
-        L2Qrcbm.create_debug_figure(            Dcip.Zv.Epoch, "L2Qrcbm")
-        VsibSaturationQrcbm.create_debug_figure(Dcip.Zv.Epoch, "VsibSaturationQrcbm")
+        bicas.debug.plot_QRCBM(L2Qrcbm,             Dcip.Zv.Epoch, "L2Qrcbm")
+        bicas.debug.plot_QRCBM(VsibSaturationQrcbm, Dcip.Zv.Epoch, "VsibSaturationQrcbm")
       end
       % --
       [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
