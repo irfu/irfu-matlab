@@ -191,7 +191,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % until skt V12 when it was changed to
       %   QUALITY_BITMASK=CDF_UINT2, fill value 65535 (correct).
 
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', L);
+      Tmk = bicas.utils.Timekeeper(...
+        'bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3', L);
       assert(isa(Excd, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
 
@@ -213,7 +214,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %-------------------------------
       % L2_QUALITY_BITMASK-->L3 QRCBs
       %-------------------------------
-      % Obtain channel saturation QRCBs by reading L2_QUALITY bitmask.
+      % Obtain channel saturation QRCBs by reading L2_QUALITY_BITMASK *AND*
+      % converting it to an QRCBM.
       ChannelSaturationQrcbm = ...
         bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
         Zv.L2_QUALITY_BITMASK_Fpa.array(uint16(0)), ...
@@ -224,6 +226,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         L3Qrcbm.set("SATURATION_ZV_V2", true(size(Zv.Epoch)))
         bicas.debug.plot_QRCBM(L3Qrcbm, Zv.Epoch, "L3Qrcbm")
       end
+
 
 
       %-----------------------------------------------------------------------

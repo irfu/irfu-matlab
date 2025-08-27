@@ -315,8 +315,12 @@ classdef utils
     % NOTE: Not implemented as assertion function in order to make it
     % possible to return proper error message on fail.
     % NOTE: Can not handle fill values.
+    %
     function success = validate_ZV_QUALITY_FLAG(QUALITY_FLAG)
+
       if ~isa(QUALITY_FLAG, 'uint8')
+        success = false;
+      elseif ~iscolumn(QUALITY_FLAG)
         success = false;
       elseif ~all(...
           bicas.const.qrc.QUALITY_FLAG_MIN <= QUALITY_FLAG & ...

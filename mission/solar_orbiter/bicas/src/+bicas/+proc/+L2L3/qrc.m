@@ -144,6 +144,11 @@ classdef qrc
       %          lxqbmName and QRCSs which contain some LxQBM value.
       %       CON-PROPOSAL: Special value to ignore retrieving a QRCS LxQBM value.
 
+      assert(islogical(QUALITY_FLAG_fpAr))
+
+      % NOTE: One could consider also removing/excluding ANT3_FAILING, since
+      % the unaffected channels should be OK. Has no instructions to do so yet
+      % though. /2025-08-27
       L2NonsaturationQrcsm = copy(bicas.const.qrc.Q.L2_QRCSM);
       L2NonsaturationQrcsm.remove_many(bicas.const.qrc.Q.SATURATION_QRCID_AR);
 
