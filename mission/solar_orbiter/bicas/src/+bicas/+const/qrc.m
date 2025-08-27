@@ -83,8 +83,8 @@ classdef qrc
       %       (which is highly unlikely).
       function add_L2_channel_saturation_QRCS(qrcid, l2qbm)
         L2Qrcs = bicas.proc.QrcSettingL2(...
-          QUALITY_FLAG      =bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
-          L2_QUALITY_BITMASK=l2qbm);
+          QUALITY_FLAG       = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
+          L2_QUALITY_BITMASK = uint16(l2qbm));
         L2Qrcsm.add(qrcid, L2Qrcs);
       end
 

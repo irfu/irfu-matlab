@@ -29,8 +29,8 @@ classdef QrcSettingL3Density < bicas.proc.QrcSetting
 
     function obj = QrcSettingL3Density(A)
       arguments
-        A.QUALITY_FLAG       uint8  = bicas.const.qrc.QUALITY_FLAG_MAX
-        A.L3_QUALITY_BITMASK uint16 = bicas.const.qrc.LxQBM_NONE
+        A.QUALITY_FLAG       = bicas.const.qrc.QUALITY_FLAG_MAX
+        A.L3_QUALITY_BITMASK = bicas.const.qrc.LxQBM_NONE
       end
 
       assert(bicas.utils.validate_ZV_QUALITY_FLAG(A.QUALITY_FLAG))
