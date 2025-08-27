@@ -266,9 +266,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
       bDoNotUseFpa = Zv.QUALITY_FLAG_nonsatFpa < QUALITY_FLAG_minForUse;
       bDoNotUse    = bDoNotUseFpa.array(false);   % Is [FP==>false] wise?
-      Zv.VDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
-      Zv.EDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
-      % BUG?!!: Blanking variables which are not used.
+      VDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
+      EDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
 
       %---------------------------------------
       % Call BICAS-external code to calculate
