@@ -216,11 +216,39 @@ classdef qrc
       % in case other antennas fail, one can just create the corresponding
       % QRCSs for ANT1 & ANT2 and fill the NSO table with the corresponding
       % entries.
-
-      % TEMPORARY VALUES. Good values not decided.
-      % NOTE: QRC only affects some channels.
-      QUALITY_FLAG_ANTx_FAILING = bicas.const.qrc.QUALITY_FLAG_MAX;
-      L2QBM_ANTx_FAILING        = bicas.const.qrc.LxQBM_NONE;
+      %
+      % NOTE: This QRC only affects some channels.
+      %
+      % NOTE: ROC modifies CDFs created by BICAS (at ROC; i.e. L2) to cap
+      % QUALITY_FLAG<=1="Known problems, use at your own risk" for ANT3 failing
+      % as defined by ROC. Erik P G Johansson (2025-08-27) is not aware of any
+      % formal document specifying this value (though maybe it is obvious
+      % considering the QUALITY_FLAG value definitions). It was mentioned in an
+      % e-mail thread and is consistent with LIRA-generated CDFs.
+      % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
+      %
+      % """"""""
+      % The RPW data pipeline at LESIA includes the capability to update a
+      % given set of CDF files with specific information for given data
+      % products and time ranges. This function will be for instance used to
+      % notify RPW data users about degraded science data impact during the
+      % periods when the ANT3 failed.
+      %
+      % In the ANT3 case, the idea to is to set the value of the two following
+      % items:
+      %
+	    % - CAVEATS global attribute —> Exact message has to be defined, but
+	    %   should be something like "RPW electrical antenna 3 [MY] failure
+	    %   reported during the current day (see where QUALITY_FLAG=1)."
+	    % - QUALITY_FLAG zVariable —> Will be set to 1 when ANT3 failure is
+	    %   reported
+      %
+      % These changes will be performed for the L1 CDF by the ROC, but same
+      % information shall be also found in the child L2 (and L3 when needed).
+      % """"""""
+      % /Xavier Bonnin e-mail 2024-07-12, 11:24
+      %
+      QUALITY_FLAG_ANTx_FAILING = uint8(1);   % 1="Known problems, use at your own risk"
 
       % Qrcs = bicas.proc.QrcSettingL2(...
       %   QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...

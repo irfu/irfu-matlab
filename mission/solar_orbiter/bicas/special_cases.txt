@@ -209,6 +209,7 @@ Condition       | Action taken when condition applies
 ----------------------------------------------------------------------
 ANT3 is failing | L2 CWF, SWF/RSWF:
                 |     V3, V13_DC/AC, V23_DC/AC are set to fill values.
+                |     Cap QUALITY_FLAG <= 1.
 
 
 ===============
