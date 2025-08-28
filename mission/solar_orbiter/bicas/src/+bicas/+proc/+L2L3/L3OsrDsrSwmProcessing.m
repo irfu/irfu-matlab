@@ -197,80 +197,25 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %=========================================
-      % NSO table, L2_QUALITY_BITMASK --> QRCBs
-      %=========================================
-      %------------------------------
-      % NSO table-->L3 QRCBs
-      %             L3 DENSITY QRCBs
-      %------------------------------
-      L3Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
-        bicas.const.qrc.Q.L3_QRCSM.qrcidAr, ...
-        NsoTable, Zv.Epoch, L);
-      L3DensityQrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
-        bicas.const.qrc.Q.L3_DENSITY_QRCSM.qrcidAr, ...
-        NsoTable, Zv.Epoch, L);
+      %---------------------------------------
+      % Derive QRCBMs, synthetic QUALITY_FLAG
+      %---------------------------------------
+      [L3Qrcbm, L3DensityQrcbm, QUALITY_FLAG_nonsatFpa] = ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_QRCBMs_synthetic_QUALITY_FLAG(...
+        Zv.L2_QUALITY_BITMASK_Fpa, Zv.QUALITY_FLAG_Fpa, Zv.Epoch, NsoTable, ...
+        Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'), L);
 
-      %-------------------------------
-      % L2_QUALITY_BITMASK-->L3 QRCBs
-      %-------------------------------
-      % Obtain channel saturation QRCBs by reading L2_QUALITY_BITMASK *AND*
-      % converting it to an QRCBM.
-      ChannelSaturationQrcbm = ...
-        bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
-        Zv.L2_QUALITY_BITMASK_Fpa.array(uint16(0)), ...
-        Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'));
-      L3Qrcbm.union(ChannelSaturationQrcbm)
-      if 0
-      % DEBUG
-        L3Qrcbm.set("SATURATION_ZV_V2", true(size(Zv.Epoch)))
-        bicas.debug.plot_QRCBM(L3Qrcbm, Zv.Epoch, "L3Qrcbm")
-      end
-
-
-
-      %-----------------------------------------------------------------------
-      % Calculate what QUALITY_FLAG for L2 LFR CWF *SHOULD HAVE BEEN*, had it
-      % not been for saturation or sweeps (sic!).
-      %-----------------------------------------------------------------------
-      % NOTE: Sweeps are blanked (in L2), so their QUALITY_FLAG values do not
-      % matter.
-      % IMPLEMENTATION NOTE: Must distinguish between
-      % (1) the derived L2 non-saturation QUALITY_FLAG, and
-      % (2) the (true) L2 input QUALITY FLAG.
-      Zv.QUALITY_FLAG_nonsatFpa = ...
-        bicas.proc.L2L3.qrc.get_L2_nonsaturation_nonsweep_QUALITY_FLAG( ...
-        Zv.Epoch, NsoTable, Zv.QUALITY_FLAG_Fpa.fpAr, L);
-
-
-
-      %==========================
-      % Call BICAS-external code
-      %==========================
-
-      %--------------------------------
-      % Blank input data based on QRCs
-      %--------------------------------
-      % bicas.debug.plot_VDC_EDC_FPA(Zv.VDC_Fpa, Zv.EDC_Fpa, Zv.Epoch, "Before QRC blanking")   % DEBUG
-      VDC_Fpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
-        Zv.VDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "vdcFvIndexAr");
-      EDC_Fpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
-        Zv.EDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "edcFvIndexAr");
-      % bicas.debug.plot_VDC_EDC_FPA(VDC_Fpa, EDC_Fpa, Zv.Epoch, "After QRC blanking")    % DEBUG
-
-      %-------------------------------------------------------
-      % Blank input data when QUALITY_FLAG is below threshold
-      %-------------------------------------------------------
-      % IMPORTANT NOTE: Uses derived QUALITY_FLAG_nonsatFpa (not QUALITY_FLAG
-      % from L2 input file)!
-      % NOTE: It is unclear what is the best way to treat QUALITY_FLAG=FV.
-      % NOTE: Treatment of this special case is documented in readme.txt.
+      %---------------------------------
+      % Blank selected VDC, EDC samples
+      %---------------------------------
       QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
         'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
-      bDoNotUseFpa = Zv.QUALITY_FLAG_nonsatFpa < QUALITY_FLAG_minForUse;
-      bDoNotUse    = bDoNotUseFpa.array(false);   % Is [FP==>false] wise?
-      VDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
-      EDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
+      [VDC_Fpa, EDC_Fpa] = ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.set_VDC_EDC_FPs_before_processing( ...
+        Zv.VDC_Fpa, Zv.EDC_Fpa, QUALITY_FLAG_nonsatFpa, ...
+        L3Qrcbm, QUALITY_FLAG_minForUse);
+
+
 
       %---------------------------------------
       % Call BICAS-external code to calculate
@@ -327,7 +272,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         SOOP_TYPE             =Ga.SOOP_TYPE, ...
         Epoch                 =Zv.Epoch, ...
         DELTA_PLUS_MINUS_Fpa  =Zv.DELTA_PLUS_MINUS_Fpa, ...
-        QUALITY_FLAG_Fpa      =Zv.QUALITY_FLAG_nonsatFpa, ...
+        QUALITY_FLAG_Fpa      =QUALITY_FLAG_nonsatFpa, ...
         QUALITY_BITMASK_Fpa   =Zv.QUALITY_BITMASK_Fpa, ...
         L2_QUALITY_BITMASK_Fpa=Zv.L2_QUALITY_BITMASK_Fpa);
 
@@ -361,6 +306,109 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   %########################
   %########################
   methods(Static, Access=private)
+
+
+
+    % Function to group together related code in process_L2_to_L3().
+    %
+    % IMPLEMENTATION NOTE: In principle, the call to
+    % bicas.proc.L2L3.qrc.get_L2_nonsaturation_nonsweep_QUALITY_FLAG() is
+    % independent of the function, and does in a sense does not belong there,
+    % but the need to group together code is greater and takes precedence.
+    %
+    function [L3Qrcbm, L3DensityQrcbm, QUALITY_FLAG_nonsatFpa] = ...
+        get_QRCBMs_synthetic_QUALITY_FLAG(...
+        L2_QUALITY_BITMASK_Fpa, QUALITY_FLAG_Fpa, tt2000Ar, NsoTable, ...
+        saturationQualityScheme, L)
+      % PROPOSAL: Move to bicas.proc.L2L3.qrc.
+
+      %=========================================
+      % NSO table, L2_QUALITY_BITMASK --> QRCBs
+      %=========================================
+      %------------------------------
+      % NSO table-->L3 QRCBs
+      %             L3 DENSITY QRCBs
+      %------------------------------
+      L3Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
+        bicas.const.qrc.Q.L3_QRCSM.qrcidAr,         NsoTable, tt2000Ar, L);
+      L3DensityQrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
+        bicas.const.qrc.Q.L3_DENSITY_QRCSM.qrcidAr, NsoTable, tt2000Ar, L);
+
+      %-------------------------------
+      % L2_QUALITY_BITMASK-->L3 QRCBs
+      %-------------------------------
+      % Obtain channel saturation QRCBs by reading L2_QUALITY_BITMASK *AND*
+      % converting it to an QRCBM.
+      ChannelSaturationQrcbm = ...
+        bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
+        L2_QUALITY_BITMASK_Fpa.array(uint16(0)), saturationQualityScheme);
+      L3Qrcbm.union(ChannelSaturationQrcbm)
+      % if 0
+      % % DEBUG
+      %   L3Qrcbm.set("SATURATION_ZV_V2", true(size(Zv.Epoch)))
+      %   bicas.debug.plot_QRCBM(L3Qrcbm, Zv.Epoch, "L3Qrcbm")
+      % end
+
+
+
+      %========================================================================
+      % Calculate a synthetic QUALITY_FLAG, what L2 LFR CWF *SHOULD HAVE BEEN*,
+      % had it not been for saturation or sweeps (sic!).
+      % ----------------------------------------------------------------------
+      % NOTE/BUG: Above is only true if BICAS had entirely determined the L2
+      % QUALITY_FLAG value, i.e. that it had not be capped due to inherited
+      % values from the parent L1/L1R CDF.
+      %-----------------------------------------------------------------------
+      % NOTE: Sweeps are blanked (in L2), so their QUALITY_FLAG values do not
+      % matter.
+      % IMPLEMENTATION NOTE: Must distinguish between
+      % (1) the derived L2 non-saturation QUALITY_FLAG, and
+      % (2) the (true) L2 input QUALITY FLAG.
+      %========================================================================
+      QUALITY_FLAG_nonsatFpa = ...
+        bicas.proc.L2L3.qrc.get_L2_nonsaturation_nonsweep_QUALITY_FLAG( ...
+        tt2000Ar, NsoTable, QUALITY_FLAG_Fpa.fpAr, L);
+    end
+
+
+
+    % Function to group together related code in process_L2_to_L3().
+    % Remove (blank) L2 data before sending it to processing.
+    %
+    function [VDC_Fpa, EDC_Fpa] = set_VDC_EDC_FPs_before_processing( ...
+        VDC_Fpa, EDC_Fpa, QUALITY_FLAG_nonsatFpa, ...
+        L3Qrcbm, QUALITY_FLAG_minForUse)
+      % PROPOSAL: Test code.
+
+      % irf.assert.sizes(...
+      %   VDC_Fpa, [-1, 3], ...
+      %   EDC_Fpa, [-1, 3])
+      % bicas.utils.validate_ZV_QUALITY_FLAG(QUALITY_FLAG_minForUse)
+      % assert(isscalar(QUALITY_FLAG_minForUse))
+      % assert(isa(L3Qrcbm, "bicas.proc.QrcbMap"))
+
+      %--------------------------------
+      % Blank input data based on QRCs
+      %--------------------------------
+      % bicas.debug.plot_VDC_EDC_FPA(Zv.VDC_Fpa, Zv.EDC_Fpa, Zv.Epoch, "Before QRC blanking")   % DEBUG
+      VDC_Fpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
+        VDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "vdcFvIndexAr");
+      EDC_Fpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
+        EDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "edcFvIndexAr");
+      % bicas.debug.plot_VDC_EDC_FPA(VDC_Fpa, EDC_Fpa, Zv.Epoch, "After QRC blanking")    % DEBUG
+
+      %-------------------------------------------------------
+      % Blank input data when QUALITY_FLAG is below threshold
+      %-------------------------------------------------------
+      % IMPORTANT NOTE: Uses derived QUALITY_FLAG_nonsatFpa (not QUALITY_FLAG
+      % from L2 input file)!
+      % NOTE: It is unclear what is the best way to treat QUALITY_FLAG=FV.
+      % NOTE: Treatment of this special case is documented in readme.txt.
+      bDoNotUseFpa = QUALITY_FLAG_nonsatFpa < QUALITY_FLAG_minForUse;
+      bDoNotUse    = bDoNotUseFpa.array(false);   % Is [FP==>false] wise?
+      VDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
+      EDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
+    end
 
 
 
