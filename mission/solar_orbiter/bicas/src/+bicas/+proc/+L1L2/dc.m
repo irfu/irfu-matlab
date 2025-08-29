@@ -211,12 +211,11 @@ classdef dc
         bicas.debug.plot_QRCBM(VsibSaturationQrcbm, Dcip.Zv.Epoch, "VsibSaturationQrcbm")
       end
       % --
-      [QUALITY_FLAG, L2_QUALITY_BITMASK] = ...
-        bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
+      [QUALITY_FLAG, l2qbm] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
         L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM, "L2_QUALITY_BITMASK");
       if 0    % DEBUG
         figure('WindowState', 'maximized')
-        plot(Dcip.Zv.Epoch/1e9, L2_QUALITY_BITMASK, '.')
+        plot(Dcip.Zv.Epoch/1e9, l2qbm, '.')
         legend(irf.graph.escape_str("L2_QUALITY_BITMASK")); grid on
       end
 
@@ -228,7 +227,7 @@ classdef dc
       Zv = struct();
       Zv.QUALITY_FLAG       = Dcip.Zv.QUALITY_FLAG.min(...
         bicas.utils.FPArray(QUALITY_FLAG));
-      Zv.L2_QUALITY_BITMASK = L2_QUALITY_BITMASK;
+      Zv.L2_QUALITY_BITMASK = l2qbm;
 
       % NOTE: Function modifies VoltageZvm handle object in-place!
       Zv.currentAampere     = bicas.proc.L1L2.qrc.set_current_samples_FV(...

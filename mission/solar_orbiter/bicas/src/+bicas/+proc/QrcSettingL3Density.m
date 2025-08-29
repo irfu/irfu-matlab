@@ -18,7 +18,7 @@ classdef QrcSettingL3Density < bicas.proc.QrcSetting
     % "L3_QUALITY_BITMASK" (density).
     % NOTE: The value is supposed to be OR:ed with a preceding value, i.e. only
     % set bits override the previous value.
-    L3_QUALITY_BITMASK
+    l3qbm
   end
 
 
@@ -29,15 +29,15 @@ classdef QrcSettingL3Density < bicas.proc.QrcSetting
 
     function obj = QrcSettingL3Density(A)
       arguments
-        A.QUALITY_FLAG       = bicas.const.qrc.QUALITY_FLAG_MAX
-        A.L3_QUALITY_BITMASK = bicas.const.qrc.LxQBM_NONE
+        A.QUALITY_FLAG = bicas.const.qrc.QUALITY_FLAG_MAX
+        A.l3qbm        = bicas.const.qrc.LxQBM_NONE
       end
 
       assert(bicas.utils.validate_ZV_QUALITY_FLAG(A.QUALITY_FLAG))
       obj.QUALITY_FLAG =                          A.QUALITY_FLAG;
 
-      assert(isa(               A.L3_QUALITY_BITMASK, 'uint16'))
-      obj.L3_QUALITY_BITMASK  = A.L3_QUALITY_BITMASK;
+      assert(isa(        A.l3qbm, 'uint16'))
+      obj.l3qbm        = A.l3qbm;
     end
 
 

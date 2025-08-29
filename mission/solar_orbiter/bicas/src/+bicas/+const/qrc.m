@@ -84,8 +84,8 @@ classdef qrc
       %       (which is highly unlikely).
       function add_L2_channel_saturation_QRCS(qrcid, l2qbm)
         L2Qrcs = bicas.proc.QrcSettingL2(...
-          QUALITY_FLAG       = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
-          L2_QUALITY_BITMASK = uint16(l2qbm));
+          QUALITY_FLAG = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
+          l2qbm        = uint16(l2qbm));
         L2Qrcsm.add(qrcid, L2Qrcs);
       end
 
@@ -120,8 +120,8 @@ classdef qrc
       % PARTIAL_SATURATION
       %====================
       Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG       = uint8(1), ...
-        L2_QUALITY_BITMASK = L2QBM_BIT_PARTIAL_SATURATION);
+        QUALITY_FLAG = uint8(1), ...
+        l2qbm        = L2QBM_BIT_PARTIAL_SATURATION);
       L2Qrcsm.add("PARTIAL_SATURATION", Qrcs)
 
       %=================
@@ -130,8 +130,8 @@ classdef qrc
       % NOTE: Also set PARTIAL saturation bit when FULL
       % saturation. /YK 2020-10-02.
       Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG       = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
-        L2_QUALITY_BITMASK = L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
+        QUALITY_FLAG = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
+        l2qbm        = L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
       L2Qrcsm.add("FULL_SATURATION", Qrcs);
     end
 
@@ -275,8 +275,8 @@ classdef qrc
       % L3 datasets in the future, then the bits may have different meanings for
       % those datasets.
       Qrcs = bicas.proc.QrcSettingL3Density(...
-        QUALITY_FLAG       = uint8(1), ...
-        L3_QUALITY_BITMASK = uint16(1));
+        QUALITY_FLAG = uint8(1), ...
+        l3qbm        = uint16(1));
       L3DensityQrcsm.add("BAD_DENSITY", Qrcs);
 
 

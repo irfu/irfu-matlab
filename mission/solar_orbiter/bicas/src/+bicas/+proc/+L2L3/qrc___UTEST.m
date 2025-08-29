@@ -40,9 +40,9 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       % Non-empty QRCSM, non-zero length L2QBM
       Qrcsm = bicas.proc.QrcSettingsMap();
 
-      Qrcs = bicas.proc.QrcSettingL2(L2_QUALITY_BITMASK=uint16(1));
+      Qrcs = bicas.proc.QrcSettingL2(l2qbm=uint16(1));
       Qrcsm.add("QRCID_1", Qrcs);
-      Qrcs = bicas.proc.QrcSettingL2(L2_QUALITY_BITMASK=uint16(4));
+      Qrcs = bicas.proc.QrcSettingL2(l2qbm=uint16(4));
       Qrcsm.add("QRCID_2", Qrcs);
 
       ExpQrcbm = bicas.proc.QrcbMap(8);

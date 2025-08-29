@@ -302,7 +302,7 @@ classdef L1L2
       OutSci = [];
 
       OutSci.Zv.Epoch              = SciDcip.Zv.Epoch;
-      OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.QUALITY_BITMASK;
+      OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.L1qbmFpa;
       OutSci.Zv.L2_QUALITY_BITMASK = SciDcop.Zv.L2_QUALITY_BITMASK;
       OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QUALITY_FLAG;
       OutSci.Zv.DELTA_PLUS_MINUS   = SciDcip.Zv.DELTA_PLUS_MINUS;

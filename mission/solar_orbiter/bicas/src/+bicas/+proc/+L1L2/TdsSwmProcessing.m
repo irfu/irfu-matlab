@@ -367,7 +367,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.bdmFpa                  = HkSciTime.bdmFpa;
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;
       Zv.dlrFpa                  = HkSciTime.dlrFpa;
-      Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
+      Zv.L1qbmFpa                = InSci.ZvFpa.QUALITY_BITMASK;
       Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
 
       % QRCB arrayss for

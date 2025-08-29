@@ -116,39 +116,54 @@ classdef qrc
     % Qrcbm
     % Qrcsm
     %       Must contain the same keys as Qrcbm.
-    % nRec
-    %       Number of CDF records (rows).
-    %       IMPLEMENTATION NOTE: Needed for handling the case of zero QRCIDs.
+    % lxqbmName
+    %       String constant/ZV name which represents the QRCS field that should
+    %       be referenced for specifying the LxQBM value.
     %
     %
     % RETURN VALUES
     % =============
     % QUALITY_FLAG
     %       QUALITY_FLAG max value wrt. to QRCs handled in this function.
-    % Lx_QUALITY_BITMASK
+    % lqzbm
     %       L*_QUALITY_BITMASK value wrt. to QRCs handled in this function.
     %       Refers to L2_QUALITY_BITMASK or L3_QUALITY_BITMASK depending on
     %       context.
     %
-    function [QUALITY_FLAG, Lx_QUALITY_BITMASK] = QRCB_arrays_to_quality_ZVs(...
+    function [QUALITY_FLAG, lxqbm] = QRCB_arrays_to_quality_ZVs(...
         Qrcbm, Qrcsm, lxqbmName)
       % PROPOSAL: Split into separate functions for QUALITY_FLAG and LxQBM.
       %   PRO: EFIELD and SCPOT do not have L3QBM.
       %   PRO: Simpler-ish testing
       %   CON: More code. Functions will resemble each other.
+      % PROPOSAL: Somehow abolish the "lxqbmName" argument.
+      %   PRO: Is in principle unnecessary since the QRCS class should imply
+      %        it.
+      %   PROPOSAL: All (applicable) QRCS class use the same field name.
+      %   PROPOSAL: This function determines the field name from the QRCS class
+      %             (using hardcoded table).
+      %     CON: Less general.
+      %     NOTE: Already uses hardcoded table.
+
+      % Dictionary for translations from "string constant"/ZV name representing
+      % a field value, to the actual field value.
+      DICT_LXQBM_NAME_TO_FIELD_NAME = dictionary(...
+        ["L2_QUALITY_BITMASK", "L3_QUALITY_BITMASK"], ...
+        ["l2qbm",              "l3qbm"]);
 
       assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
       assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))
       assert(isstring(lxqbmName))
 
-      nRec = Qrcbm.nRecords;
+      nRec           = Qrcbm.nRecords;
+      lxqbmFieldName = DICT_LXQBM_NAME_TO_FIELD_NAME(lxqbmName);
 
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, Lx_QUALITY_BITMASK=0), which can then later be
       % "lowered" if necessary.
-      QUALITY_FLAG       = ones( nRec, 1, 'uint8' ) * bicas.const.qrc.QUALITY_FLAG_MAX;
-      Lx_QUALITY_BITMASK = zeros(nRec, 1, 'uint16');
+      QUALITY_FLAG = ones( nRec, 1, 'uint8' ) * bicas.const.qrc.QUALITY_FLAG_MAX;
+      lxqbm        = zeros(nRec, 1, 'uint16');
 
       %=================================
       % Iterate over QRCIDs in argument
@@ -167,12 +182,12 @@ classdef qrc
           QUALITY_FLAG(qrcbAr), ...
           Qrcs.QUALITY_FLAG);
 
-        %------------------------
-        % Set Lx_QUALITY_BITMASK
-        %------------------------
-        Lx_QUALITY_BITMASK = bitor(...
-          Lx_QUALITY_BITMASK, ...
-          Qrcs.(lxqbmName) * uint16(qrcbAr));
+        %--------------
+        % Update LXQBM
+        %--------------
+        lxqbm = bitor(...
+          lxqbm, ...
+          Qrcs.(lxqbmFieldName) * uint16(qrcbAr));
       end
     end
 

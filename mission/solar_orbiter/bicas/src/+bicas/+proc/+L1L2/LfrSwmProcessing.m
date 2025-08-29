@@ -303,7 +303,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.iLsf                    = zvILsf;
       Zv.lrx                     = zvLrx;
       Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
-      Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
+      Zv.L1qbmFpa                = InSci.ZvFpa.QUALITY_BITMASK;
       Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
 
       % QRCB arrayss for

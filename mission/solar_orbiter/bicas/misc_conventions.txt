@@ -322,7 +322,9 @@ L3_QUALITY_BITMASK
         OR:ing multiple L*_QUALITY_BITMASK values for subsets of QRCs.
     See QUALITY_FLAG.
 LxQBM
-    L2QBM or L3QBM, or both at the same time.
+    L1QBM, L2QBM or L3QBM, or all/any of them.
+L1QBM
+    zVariable QUALITY_BITMASK. Set in L1 CDFs.
 L2QBM
     zVariable L2_QUALITY_BITMASK.
 L3QBM

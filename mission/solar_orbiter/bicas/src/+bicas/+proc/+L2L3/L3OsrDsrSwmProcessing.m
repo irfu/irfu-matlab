@@ -152,8 +152,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Zv.VDC_Fpa                = InLfrCwf.ZvFpa.VDC;
       Zv.EDC_Fpa                = InLfrCwf.ZvFpa.EDC;
       Zv.QUALITY_FLAG_Fpa       = InLfrCwf.ZvFpa.QUALITY_FLAG;
-      Zv.QUALITY_BITMASK_Fpa    = InLfrCwf.ZvFpa.QUALITY_BITMASK;
-      Zv.L2_QUALITY_BITMASK_Fpa = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
+      Zv.L1qbmFpa               = InLfrCwf.ZvFpa.QUALITY_BITMASK;
+      Zv.L2qbmFpa               = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
       Zv.DELTA_PLUS_MINUS_Fpa   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
       clear InLfrCwf
 
@@ -202,7 +202,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %---------------------------------------
       [L3Qrcbm, L3DensityQrcbm, QUALITY_FLAG_nonsatFpa] = ...
         bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_QRCBMs_synthetic_QUALITY_FLAG(...
-        Zv.L2_QUALITY_BITMASK_Fpa, Zv.QUALITY_FLAG_Fpa, Zv.Epoch, NsoTable, ...
+        Zv.L2qbmFpa, Zv.QUALITY_FLAG_Fpa, Zv.Epoch, NsoTable, ...
         Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'), L);
 
       %---------------------------------
@@ -273,8 +273,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         Epoch                 =Zv.Epoch, ...
         DELTA_PLUS_MINUS_Fpa  =Zv.DELTA_PLUS_MINUS_Fpa, ...
         QUALITY_FLAG_Fpa      =QUALITY_FLAG_nonsatFpa, ...
-        QUALITY_BITMASK_Fpa   =Zv.QUALITY_BITMASK_Fpa, ...
-        L2_QUALITY_BITMASK_Fpa=Zv.L2_QUALITY_BITMASK_Fpa);
+        L1qbmFpa              =Zv.L1qbmFpa, ...
+        L2qbmFpa              =Zv.L2qbmFpa);
 
       %=======================================
       % Generate data structures for datasets
@@ -318,7 +318,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     %
     function [L3Qrcbm, L3DensityQrcbm, QUALITY_FLAG_nonsatFpa] = ...
         get_QRCBMs_synthetic_QUALITY_FLAG(...
-        L2_QUALITY_BITMASK_Fpa, QUALITY_FLAG_Fpa, tt2000Ar, NsoTable, ...
+        L2qbmFpa, QUALITY_FLAG_Fpa, tt2000Ar, NsoTable, ...
         saturationQualityScheme, L)
       % PROPOSAL: Move to bicas.proc.L2L3.qrc.
 
@@ -341,7 +341,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % converting it to an QRCBM.
       ChannelSaturationQrcbm = ...
         bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
-        L2_QUALITY_BITMASK_Fpa.array(uint16(0)), saturationQualityScheme);
+        L2qbmFpa.array(uint16(0)), saturationQualityScheme);
       L3Qrcbm.union(ChannelSaturationQrcbm)
       % if 0
       % % DEBUG
@@ -426,8 +426,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         Zv.Epoch
         Zv.DELTA_PLUS_MINUS_Fpa
         Zv.QUALITY_FLAG_Fpa
-        Zv.QUALITY_BITMASK_Fpa
-        Zv.L2_QUALITY_BITMASK_Fpa
+        Zv.L1qbmFpa
+        Zv.L2qbmFpa
       end
       % NOTE: Copies "Ga" directly.
 
@@ -436,8 +436,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Zv2.DELTA_PLUS_MINUS   = Zv.DELTA_PLUS_MINUS_Fpa;
 
       Zv2.QUALITY_FLAG       = Zv.QUALITY_FLAG_Fpa;
-      Zv2.QUALITY_BITMASK    = Zv.QUALITY_BITMASK_Fpa;
-      Zv2.L2_QUALITY_BITMASK = Zv.L2_QUALITY_BITMASK_Fpa;
+      Zv2.QUALITY_BITMASK    = Zv.L1qbmFpa;
+      Zv2.L2_QUALITY_BITMASK = Zv.L2qbmFpa;
 
       TemplateOsr = struct('Ga', Ga, 'Zv', Zv2);
     end

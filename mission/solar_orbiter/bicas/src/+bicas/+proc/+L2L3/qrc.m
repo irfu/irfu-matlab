@@ -46,7 +46,7 @@ classdef qrc
         Qrcs = L2QualityBitSettingQrcsm.get(qrcid);
         assert(isa(Qrcs, "bicas.proc.QrcSettingL2"))
 
-        qrcLxqbm = Qrcs.("L2_QUALITY_BITMASK");
+        qrcLxqbm = Qrcs.("l2qbm");
         bitPosAr = bicas.proc.qrc.LxQBM_to_bit_positions(qrcLxqbm);
         assert(isscalar(bitPosAr), "QRC does not set exactly one bit.")
 

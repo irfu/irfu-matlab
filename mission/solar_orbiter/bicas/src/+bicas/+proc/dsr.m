@@ -73,7 +73,7 @@ classdef dsr
     %       Distribution of non-downsampled records in bins.
     %
     function [TemplateDsrZv, iRecordsInBinCa] = get_LFR_CWF_DSR_ZVs_template(...
-        Epoch, QUALITY_FLAG_Fpa, QUALITY_BITMASK_Fpa, L2_QUALITY_BITMASK_Fpa, ...
+        Epoch, QUALITY_FLAG_Fpa, L1qbmFpa, L2qbmFpa, ...
         binLengthWolsNs, binTimestampPosWolsNs, L)
 
       % NOTE: Function argument InLfrCwfOsr contains too much information!
@@ -172,14 +172,14 @@ classdef dsr
       %   (SKELETON_MODS: V12=Feb 2021)
       % .
 
-      zv_QUALITY_FLAG_FpaDsr       = bicas.proc.dsr.downsample_ZV_minimum(...
+      zv_QUALITY_FLAG_FpaDsr = bicas.proc.dsr.downsample_ZV_minimum(...
         QUALITY_FLAG_Fpa,       iRecordsInBinCa);
 
-      zv_QUALITY_BITMASK_FpaDsr    = bicas.proc.dsr.downsample_ZV_bitmask(...
-        QUALITY_BITMASK_Fpa,    iRecordsInBinCa);
+      L1qbmFpaDsr            = bicas.proc.dsr.downsample_ZV_bitmask(...
+        L1qbmFpa,    iRecordsInBinCa);
 
-      zv_L2_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
-        L2_QUALITY_BITMASK_Fpa, iRecordsInBinCa);
+      L2qbmFpaDsr            = bicas.proc.dsr.downsample_ZV_bitmask(...
+        L2qbmFpa, iRecordsInBinCa);
 
       %============================================================
       % Shared zVariables between all DOWNSAMPLED datasets
@@ -189,8 +189,8 @@ classdef dsr
       Zv = struct();
       Zv.Epoch              = zvEpochDsr;
       Zv.QUALITY_FLAG       = zv_QUALITY_FLAG_FpaDsr;
-      Zv.QUALITY_BITMASK    = zv_QUALITY_BITMASK_FpaDsr;
-      Zv.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK_FpaDsr;
+      Zv.QUALITY_BITMASK    = L1qbmFpaDsr;
+      Zv.L2_QUALITY_BITMASK = L2qbmFpaDsr;
       %
       % NOTE: Takes leap seconds into account.
       % NOTE/BUG: DELTA_PLUS_MINUS not perfect since the bin timestamp is

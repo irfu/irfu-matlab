@@ -155,17 +155,17 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
     function test_QRCB_arrays_to_quality_ZVs(testCase)
 
-      function test(Qrcbm, Qrcsm, lxqbmName, exp_QUALITY_FLAG, exp_Lx_QUALITY_BITMASK)
+      function test(Qrcbm, Qrcsm, lxqbmName, exp_QUALITY_FLAG, expLxqbm)
 
-        exp_QUALITY_FLAG       = uint8( exp_QUALITY_FLAG(:));
-        exp_Lx_QUALITY_BITMASK = uint16(exp_Lx_QUALITY_BITMASK(:));
+        exp_QUALITY_FLAG = uint8( exp_QUALITY_FLAG(:));
+        expLxqbm         = uint16(expLxqbm(:));
 
         % CALL TESTED FUNCTION
-        [act_QUALITY_FLAG, act_Lx_QUALITY_BITMASK] = ...
+        [act_QUALITY_FLAG, actLxqbm] = ...
           bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(Qrcbm, Qrcsm, lxqbmName);
 
-        testCase.assertEqual(act_QUALITY_FLAG,       exp_QUALITY_FLAG)
-        testCase.assertEqual(act_Lx_QUALITY_BITMASK, exp_Lx_QUALITY_BITMASK)
+        testCase.assertEqual(act_QUALITY_FLAG, exp_QUALITY_FLAG)
+        testCase.assertEqual(actLxqbm,         expLxqbm)
       end
 
 
@@ -187,10 +187,10 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       function test_nonzero_QRCIDs()
         Qrcsm = bicas.proc.QrcSettingsMap();
 
-        Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(2), L2_QUALITY_BITMASK=uint16(2));
+        Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(2), l2qbm=uint16(2));
         Qrcsm.add("QRCID_1", Qrcs);
 
-        Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(3), L2_QUALITY_BITMASK=uint16(4));
+        Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(3), l2qbm=uint16(4));
         Qrcsm.add("QRCID_2", Qrcs);
 
 
