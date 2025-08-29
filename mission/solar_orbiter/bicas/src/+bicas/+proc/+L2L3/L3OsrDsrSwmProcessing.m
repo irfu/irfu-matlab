@@ -148,7 +148,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Ga.SOOP_TYPE              = InLfrCwf.Ga.SOOP_TYPE;
       Ga.OBS_ID                 = InLfrCwf.Ga.OBS_ID;
       Zv = struct();            % ----------------------
-      Zv.Epoch                  = InLfrCwf.Zv.Epoch;
+      Zv.tt2000                 = InLfrCwf.Zv.Epoch;
       Zv.VDC_Fpa                = InLfrCwf.ZvFpa.VDC;
       Zv.EDC_Fpa                = InLfrCwf.ZvFpa.EDC;
       Zv.QflFpa                 = InLfrCwf.ZvFpa.QUALITY_FLAG;
@@ -202,7 +202,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %---------------------------------------
       [L3Qrcbm, L3DensityQrcbm, SyntheticL2QflFpa] = ...
         bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_QRCBMs_synthetic_L2_QFL(...
-        Zv.L2qbmFpa, Zv.QflFpa, Zv.Epoch, NsoTable, ...
+        Zv.L2qbmFpa, Zv.QflFpa, Zv.tt2000, NsoTable, ...
         Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'), L);
 
       %---------------------------------
@@ -223,7 +223,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % (2) DENSITY.
       %---------------------------------------
       R = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY(Excd, ...
-        Epoch  =Zv.Epoch, ...
+        tt2000 =Zv.tt2000, ...
         VDC_Fpa=VDC_Fpa, ...
         EDC_Fpa=EDC_Fpa);
 
@@ -270,7 +270,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       TemplateOsr = bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_OSR_template( ...
         OBS_ID                =Ga.OBS_ID, ...
         SOOP_TYPE             =Ga.SOOP_TYPE, ...
-        Epoch                 =Zv.Epoch, ...
+        tt2000                =Zv.tt2000, ...
         DELTA_PLUS_MINUS_Fpa  =Zv.DELTA_PLUS_MINUS_Fpa, ...
         QflFpa                =SyntheticL2QflFpa, ...
         L1qbmFpa              =Zv.L1qbmFpa, ...
@@ -345,8 +345,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       L3Qrcbm.union(ChannelSaturationQrcbm)
       % if 0
       % % DEBUG
-      %   L3Qrcbm.set("SATURATION_ZV_V2", true(size(Zv.Epoch)))
-      %   bicas.debug.plot_QRCBM(L3Qrcbm, Zv.Epoch, "L3Qrcbm")
+      %   L3Qrcbm.set("SATURATION_ZV_V2", true(size(Zv.tt2000)))
+      %   bicas.debug.plot_QRCBM(L3Qrcbm, Zv.tt2000, "L3Qrcbm")
       % end
 
 
@@ -389,12 +389,12 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %--------------------------------
       % Blank input data based on QRCs
       %--------------------------------
-      % bicas.debug.plot_VDC_EDC_FPA(Zv.VDC_Fpa, Zv.EDC_Fpa, Zv.Epoch, "Before QRC blanking")   % DEBUG
+      % bicas.debug.plot_VDC_EDC_FPA(Zv.VDC_Fpa, Zv.EDC_Fpa, Zv.tt2000, "Before QRC blanking")   % DEBUG
       VDC_Fpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         VDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "vdcFvIndexAr");
       EDC_Fpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         EDC_Fpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "edcFvIndexAr");
-      % bicas.debug.plot_VDC_EDC_FPA(VDC_Fpa, EDC_Fpa, Zv.Epoch, "After QRC blanking")    % DEBUG
+      % bicas.debug.plot_VDC_EDC_FPA(VDC_Fpa, EDC_Fpa, Zv.tt2000, "After QRC blanking")    % DEBUG
 
       %-------------------------------------------------------
       % Blank input data when QUALITY_FLAG is below threshold
@@ -422,7 +422,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       arguments
         Ga.OBS_ID
         Ga.SOOP_TYPE
-        Zv.Epoch
+        Zv.tt2000
         Zv.DELTA_PLUS_MINUS_Fpa
         Zv.QflFpa
         Zv.L1qbmFpa
@@ -431,7 +431,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % NOTE: Copies "Ga" directly.
 
       Zv2 = struct();
-      Zv2.Epoch              = Zv.Epoch;
+      Zv2.Epoch              = Zv.tt2000;
       Zv2.DELTA_PLUS_MINUS   = Zv.DELTA_PLUS_MINUS_Fpa;
 
       Zv2.QUALITY_FLAG       = Zv.QflFpa;

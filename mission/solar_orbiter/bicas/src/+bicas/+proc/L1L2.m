@@ -296,12 +296,12 @@ classdef L1L2
 
 
 
-      nRecords = size(SciDcip.Zv.Epoch, 1);
+      nRecords = size(SciDcip.Zv.tt2000, 1);
       aspr     = size(SciDcop.Zv.VoltageZvm.get(S("DC_V1")), 2);
 
       OutSci = [];
 
-      OutSci.Zv.Epoch              = SciDcip.Zv.Epoch;
+      OutSci.Zv.Epoch              = SciDcip.Zv.tt2000;
       OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.L1qbmFpa;
       OutSci.Zv.L2_QUALITY_BITMASK = SciDcop.Zv.L2_QUALITY_BITMASK;
       OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QUALITY_FLAG;

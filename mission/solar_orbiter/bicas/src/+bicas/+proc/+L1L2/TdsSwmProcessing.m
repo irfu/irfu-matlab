@@ -357,7 +357,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
       Zv    = [];
 
-      Zv.Epoch                   = InSci.Zv.Epoch;
+      Zv.tt2000                  = InSci.Zv.Epoch;
       % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
       % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...

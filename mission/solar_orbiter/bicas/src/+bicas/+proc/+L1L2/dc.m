@@ -78,8 +78,8 @@ classdef dc
       % Read NSO table into QRCBs ONCE, so that it does not need to be done
       % later.
       L2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
-        bicas.const.qrc.Q.L2_QRCSM.qrcidAr, NsoTable, Dcip.Zv.Epoch, L);
-      % bicas.debug.plot_QRCBM(L2Qrcbm, Dcip.Zv.Epoch, "L2Qrcbm")
+        bicas.const.qrc.Q.L2_QRCSM.qrcidAr, NsoTable, Dcip.Zv.tt2000, L);
+      % bicas.debug.plot_QRCBM(L2Qrcbm, Dcip.Zv.tt2000, "L2Qrcbm")
       clear NsoTable
       % Convert information about BIAS ON/OFF and sweeps into QRCBs.
       L2Qrcbm.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb);
@@ -97,7 +97,7 @@ classdef dc
         [InCurPd.Zv.IBIAS_1, ...
         InCurPd.Zv.IBIAS_2, ...
         InCurPd.Zv.IBIAS_3], ...
-        Dcip.Zv.Epoch, Ccal, Bso, L);
+        Dcip.Zv.tt2000, Ccal, Bso, L);
 
 
 
@@ -131,7 +131,7 @@ classdef dc
       %##################################################################
       % NOTE: Takes most of the time LFR-SWF.
       bltsVoltageAvolt = bicas.proc.L1L2.dc.calibrate_voltage_5xBLTS(...
-        tt2000       = Dcip.Zv.Epoch, ...
+        tt2000       = Dcip.Zv.tt2000, ...
         voltageTm    = bltsVoltageTm, ...       % Partially blanked by QRCs.
         isAchgFpa    = Dcip.Zv.isAchgFpa, ...
         NbriFpa      = Dcip.Zv.NbriFpa, ...
@@ -156,7 +156,7 @@ classdef dc
         bltsVoltageAvolt, Dcip.hasSwfFormat, Dcip.Zv.uspr, ...
         bltsSsidArray, Dcip.Zv.isAchgFpa, SatSettings, L);
       if 0    % DEBUG
-        figure; plot(Dcip.Zv.Epoch/1e9, bltsVsibAr(:,1), '.')
+        figure; plot(Dcip.Zv.tt2000/1e9, bltsVsibAr(:,1), '.')
       end
 
 
@@ -172,7 +172,7 @@ classdef dc
       bicas.proc.L1L2.demuxer.reconstruct_ASR_voltage_channels(SchdZvm);
       if 0    % DEBUG
         vsibAr = SchdZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1")).vsibAr;
-        figure; plot(Dcip.Zv.Epoch/1e9, vsibAr)
+        figure; plot(Dcip.Zv.tt2000/1e9, vsibAr)
       end
 
 
@@ -187,7 +187,7 @@ classdef dc
       clear SchdZvm
       if 0    % DEBUG
         vsibAr = VsibZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1"));
-        figure; plot(Dcip.Zv.Epoch/1e9, vsibAr, '.')
+        figure; plot(Dcip.Zv.tt2000/1e9, vsibAr, '.')
       end
 
 
@@ -200,22 +200,22 @@ classdef dc
       % or not based on QRCs, affects the saturation detection. Can not
       % autodetect saturation in blanked data.
       VsibSaturationQrcbm = bicas.proc.L1L2.qrc.VSIBs_to_saturation_QRCBs(...
-        Dcip.Zv.Epoch,  ...
+        Dcip.Zv.tt2000,  ...
         VsibZvm, Dcip.hasSwfFormat, ...
         SatSettings.vstbFractionThreshold, ...
         SatSettings.cwfSlidingWindowLengthSec);
       L2Qrcbm.union(VsibSaturationQrcbm)
       L2Qrcbm = bicas.proc.qrc.filter_saturation_QRCBs(L2Qrcbm, string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')));
       if 0    % DEBUG: Plot selected QRCBs.
-        bicas.debug.plot_QRCBM(L2Qrcbm,             Dcip.Zv.Epoch, "L2Qrcbm")
-        bicas.debug.plot_QRCBM(VsibSaturationQrcbm, Dcip.Zv.Epoch, "VsibSaturationQrcbm")
+        bicas.debug.plot_QRCBM(L2Qrcbm,             Dcip.Zv.tt2000, "L2Qrcbm")
+        bicas.debug.plot_QRCBM(VsibSaturationQrcbm, Dcip.Zv.tt2000, "VsibSaturationQrcbm")
       end
       % --
       [qfl, l2qbm] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
         L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM, "L2_QUALITY_BITMASK");
       if 0    % DEBUG
         figure('WindowState', 'maximized')
-        plot(Dcip.Zv.Epoch/1e9, l2qbm, '.')
+        plot(Dcip.Zv.tt2000/1e9, l2qbm, '.')
         legend(irf.graph.escape_str("L2_QUALITY_BITMASK")); grid on
       end
 
@@ -237,7 +237,7 @@ classdef dc
       %##############
       % END FUNCTION
       %##############
-      nRecords = size(Dcip.Zv.Epoch, 1);
+      nRecords = size(Dcip.Zv.tt2000, 1);
       Tmk.stop_log(nRecords, 'record')
     end    % process_calibrate_demux
 
@@ -293,8 +293,8 @@ classdef dc
       % PROPOSAL: Move to where processing splits data.
       %   NOTE: Splits once per BLTS ==> More output.
 
-      iCalibL = Vcal.get_BIAS_calibration_time_index_L(Dcip.Zv.Epoch);
-      iCalibH = Vcal.get_BIAS_calibration_time_index_H(Dcip.Zv.Epoch);
+      iCalibL = Vcal.get_BIAS_calibration_time_index_L(Dcip.Zv.tt2000);
+      iCalibH = Vcal.get_BIAS_calibration_time_index_H(Dcip.Zv.tt2000);
 
       % IMPLEMENTATION NOTE: Do not log for LFR SWF since it produces
       % unnecessarily many log messages since sampling frequencies change
@@ -345,8 +345,8 @@ classdef dc
           ' freqHz=%5g; iCalibL=%i; iCalibH=%i', ...
           ' ~CALIBRATION_TABLE_INDEX=[%i, %i]'], ...
           iRec1, iRec2, ...
-          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.Epoch(iRec1), 9), ...
-          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.Epoch(iRec2), 9), ...
+          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.tt2000(iRec1), 9), ...
+          bicas.utils.TT2000_to_UTC_str(Dcip.Zv.tt2000(iRec2), 9), ...
           bdm(           iRec1), ...
           isAchg(        iRec1), ...
           dlr(           iRec1), ...

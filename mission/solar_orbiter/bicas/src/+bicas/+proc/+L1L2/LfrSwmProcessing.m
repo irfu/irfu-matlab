@@ -288,7 +288,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.bltsVoltageTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
       Zv.bltsVoltageTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
 
-      Zv.Epoch                   = InSci.Zv.Epoch;
+      Zv.tt2000                  = InSci.Zv.Epoch;
       % NOTE: DELTA_PLUS_MINUS only applies to Epoch, and must therefore have
       % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...

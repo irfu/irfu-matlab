@@ -578,8 +578,10 @@ TPIV
 TS
     irfu-matlab's TSeries object/class.
 TT2000
-    Time format defined by the CDF file format. Nanoseconds since epoch. Should
+    (1) Time format defined by the CDF file format. Nanoseconds since epoch. Should
     always be stored as int64 in the MATLAB code.
+    (2) (when used for as a variable name) ZV "Epoch" (which uses time format
+    TT2000 in this application).
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
