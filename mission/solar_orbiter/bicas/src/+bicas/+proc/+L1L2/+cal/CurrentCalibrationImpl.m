@@ -16,7 +16,7 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
   %#####################
   %#####################
   properties(SetAccess=immutable)
-    biasRctdEpochL
+    biasRctdTt2000L
     Current
     HkBiasCurrent
   end    % properties(SetAccess=immutable)
@@ -34,12 +34,12 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
 
     function obj = CurrentCalibrationImpl(BiasRctd, Bso)
       % PROPOSAL: Replace argument BiasRctd --> offsetsAampere, gainsAapt,
-      %           epochL
+      %           tt2000L
       %   PRO: Good for testing.
       %   CON: Harder to call constructor.
       assert(isa(BiasRctd, 'bicas.proc.L1L2.cal.rct.RctDataBias'))
 
-      obj.biasRctdEpochL         = BiasRctd.epochL;
+      obj.biasRctdTt2000L        = BiasRctd.tt2000L;
       obj.Current                = BiasRctd.Current;
 
       obj.HkBiasCurrent.offsetTm = Bso.get_fv('PROCESSING.CALIBRATION.CURRENT.HK.OFFSET_TM');
@@ -151,7 +151,7 @@ classdef CurrentCalibrationImpl < bicas.proc.L1L2.cal.CurrentCalibrationAbstract
 
     function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
       iCalibL = bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
-        Epoch, obj.biasRctdEpochL);
+        Epoch, obj.biasRctdTt2000L);
     end
 
 

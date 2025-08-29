@@ -87,12 +87,12 @@ classdef utils
 
 
 
-    function utcStr = TT2000_to_UTC_str(zvTt2000, nSecondDecimals)
+    function utcStr = TT2000_to_UTC_str(tt2000, nSecondDecimals)
       % BUG: bicas.utils.TT2000_to_UTC_str(int64(0+4e9), 0)
       %      ==> '2000-01-01T11:58:60Z'
 
-      bicas.utils.assert_ZV_Epoch(zvTt2000)
-      utcStr = irf.cdf.TT2000_to_UTC_str(zvTt2000, nSecondDecimals);
+      bicas.utils.assert_ZV_Epoch(tt2000)
+      utcStr = irf.cdf.TT2000_to_UTC_str(tt2000, nSecondDecimals);
     end
 
 

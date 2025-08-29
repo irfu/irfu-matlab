@@ -81,8 +81,8 @@ classdef cur
       %===================================================================
       if ~(min(curTt2000Ar) <= min(sciTt2000Ar))
         curRelativeSec    = 1e-9 * (min(curTt2000Ar) - min(sciTt2000Ar));
-        sciEpochUtcStr    = bicas.utils.TT2000_to_UTC_str(min(sciTt2000Ar), 9);
-        curEpochMinUtcStr = bicas.utils.TT2000_to_UTC_str(min(curTt2000Ar), 9);
+        sciUtcStr    = bicas.utils.TT2000_to_UTC_str(min(sciTt2000Ar), 9);
+        curMinUtcStr = bicas.utils.TT2000_to_UTC_str(min(curTt2000Ar), 9);
 
         [settingValue, settingKey] = Bso.get_fv(...
           'PROCESSING.CUR.TIME_NOT_SUPERSET_OF_SCI_POLICY');
@@ -90,7 +90,7 @@ classdef cur
         anomalyDescrMsg = sprintf(...
           ['Bias current data begins %g s (%s) AFTER voltage data begins (%s).', ....
           ' Can therefore not determine currents for all voltage timestamps.'], ...
-          curRelativeSec, curEpochMinUtcStr, sciEpochUtcStr);
+          curRelativeSec, curMinUtcStr, sciUtcStr);
 
         bicas.default_anomaly_handling(L, settingValue, settingKey, ...
           'ERROR_WARNING_ILLEGAL_SETTING', ...
@@ -100,19 +100,19 @@ classdef cur
 
 
       %====================================================================
-      % CDF ASSERTION: Epoch increases (not monotonically)
-      % --------------------------------------------------
+      % CDF ASSERTION: TT2000 increases (not monotonically)
+      % ---------------------------------------------------
       % NOTE: bicas.proc.L1L2.cur.zv_TC_to_current() checks (and handles)
-      % that Epoch increases monotonically, but only for each antenna
+      % that TT2000 increases monotonically, but only for each antenna
       % separately (which does not capture all cases). Therefore checks
-      % that Epoch is (non-monotonically) increasing.
+      % that TT2000 is (non-monotonically) increasing.
       % Ex: Timestamps, iAntenna = mod(iRecord,3): 1,2,3,5,4,6
       %       ==> Monotonically increasing sequences for each antenna
       %           separately, but not even increasing when combined.
       %====================================================================
       assert(issorted(curTt2000Ar), ...
         'BICAS:DatasetFormat', ...
-        'CURRENT timestamps zVar Epoch does not increase (all antennas combined).')
+        'CURRENT timestamps TT2000/zVar Epoch does not increase (all antennas combined).')
 
       % NOTE: bicas.proc.L1L2.cur.zv_TC_to_current() checks that Epoch
       % increases monotonically.
@@ -143,23 +143,23 @@ classdef cur
     % Wrapper around solo.hwzv.CURRENT_ZV_to_current_interpolate() for anomaly
     % handling.
     function sciZv_IBIASx = zv_TC_to_current(...
-        curZv_Epoch, curZv_IBIAS_x, sciZv_Epoch, L, Bso)
+        curTt2000, cur_IBIAS_x, sciTt2000, L, Bso)
 
       %====================
       % Calibrate currents
       %====================
       [sciZv_IBIASx, duplicateAnomaly] = ...
         solo.hwzv.CURRENT_ZV_to_current_interpolate(...
-        curZv_Epoch, ...
-        curZv_IBIAS_x, ...
-        sciZv_Epoch);
+        curTt2000, ...
+        cur_IBIAS_x, ...
+        sciTt2000);
 
 
 
       if duplicateAnomaly
-        %====================================================
-        % Handle anomaly: Non-monotonically increasing Epoch
-        %====================================================
+        %=====================================================
+        % Handle anomaly: Non-monotonically increasing TT2000
+        %=====================================================
         [settingValue, settingKey] = Bso.get_fv(...
           'INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY');
         anomalyDescriptionMsg = [...

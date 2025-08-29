@@ -73,7 +73,7 @@ classdef dsr
     %       Distribution of non-downsampled records in bins.
     %
     function [TemplateDsrZv, iRecordsInBinCa] = get_LFR_CWF_DSR_ZVs_template(...
-        Epoch, QflFpa, L1qbmFpa, L2qbmFpa, ...
+        tt2000, QflFpa, L1qbmFpa, L2qbmFpa, ...
         binLengthWolsNs, binTimestampPosWolsNs, L)
 
       % NOTE: Function argument InLfrCwfOsr contains too much information!
@@ -92,7 +92,7 @@ classdef dsr
       %================
       % Find bin boundary reference timestamp. This is used for
       % setting the bin boundaries together with the bin length.
-      v = spdfbreakdowntt2000(Epoch(1));
+      v = spdfbreakdowntt2000(tt2000(1));
       % UTC seconds. Not sure of the reason for value=5. Avoid leap seconds?
       v(6)   = 5;
       v(7:9) = 0;   % Milliseconds, microseconds, nanoseconds
@@ -102,14 +102,14 @@ classdef dsr
       %     and
       % (2) which (non-downsampled) records belong to which bins
       %     (=downsampled records).
-      [zvEpochDsr, iRecordsInBinCa, binSizeArrayNs] = ...
+      [tt2000Dsr, iRecordsInBinCa, binSizeArrayNs] = ...
         bicas.proc.dsr.get_downsampling_bins(...
-        Epoch, ...
+        tt2000, ...
         boundaryRefTt2000, ...
         binLengthWolsNs, ...
         binTimestampPosWolsNs, ...
         L);
-      nRecordsOsr = numel(Epoch);
+      nRecordsOsr = numel(tt2000);
       nRecordsDsr = numel(iRecordsInBinCa);
 
 
@@ -187,7 +187,7 @@ classdef dsr
       % (Initial value for QUALITY_FLAG; might be modified later.)
       %============================================================
       Zv = struct();
-      Zv.Epoch              = zvEpochDsr;
+      Zv.Epoch              = tt2000Dsr;
       Zv.QUALITY_FLAG       = QflFpaDsr;
       Zv.QUALITY_BITMASK    = L1qbmFpaDsr;
       Zv.L2_QUALITY_BITMASK = L2qbmFpaDsr;

@@ -28,23 +28,23 @@ classdef utils
     %
     % ARGUMENTS AND RETURN VALUES
     % ===========================
-    % Epoch
-    %       Column vector with Epoch values.
-    % calibEpochAr
-    %       Column vector of monotonically increasing timestamps ("Epoch
-    %       format"). In practice intended to be Bias.epochL or Bias.epochH.
+    % tt2000
+    %       Column vector with TT2000 values.
+    % calibTt2000Ar
+    %       Column vector of monotonically increasing TT2000 timestamps.
+    %       In practice intended to be Bias.tt2000L or Bias.tt2000H.
     % iCalib
     %       Array. iCalibList(i) = calibration time index for Epoch(i).
     %
-    function [iCalib] = get_calibration_time_index(Epoch, calibEpochAr)
+    function [iCalib] = get_calibration_time_index(tt2000, calibTt2000Ar)
 
       % ASSERTIONS
-      bicas.utils.assert_ZV_Epoch(Epoch)
-      bicas.utils.assert_ZV_Epoch(calibEpochAr)
+      bicas.utils.assert_ZV_Epoch(tt2000)
+      bicas.utils.assert_ZV_Epoch(calibTt2000Ar)
 
-      % IMPLEMENTATION NOTE: Function does not work if calibEpochAr is empty,
+      % IMPLEMENTATION NOTE: Function does not work if calibTt2000Ar is empty,
       % since discretize behaves differently for scalar second argument.
-      assert(~isempty(calibEpochAr))
+      assert(~isempty(calibTt2000Ar))
 
       % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for Epoch
       % values outside the outermost edges. Therefore (1) must add upper edge
@@ -53,7 +53,7 @@ classdef utils
       % argument. Adding edges at infinity hides this problem. If one does not
       % add infinities and uses a scalar edge list, then one has to treat those
       % cases manually.
-      iCalib = discretize(Epoch, [calibEpochAr; Inf], 'IncludedEdge', 'left');
+      iCalib = discretize(tt2000, [calibTt2000Ar; Inf], 'IncludedEdge', 'left');
       assert(all(~isnan(iCalib(:))), ...
         'BICAS:SWMProcessing', ...
         ['Can not derive which calibration data to', ...

@@ -460,14 +460,14 @@ classdef VoltageCalibration
 
 
 
-    function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
-      iCalibL = obj.Vcds.get_BIAS_calibration_time_index_L(Epoch);
+    function iCalibL = get_BIAS_calibration_time_index_L(obj, tt2000)
+      iCalibL = obj.Vcds.get_BIAS_calibration_time_index_L(tt2000);
     end
 
 
 
-    function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
-      iCalibH = obj.Vcds.get_BIAS_calibration_time_index_H(Epoch);
+    function iCalibH = get_BIAS_calibration_time_index_H(obj, tt2000)
+      iCalibH = obj.Vcds.get_BIAS_calibration_time_index_H(tt2000);
     end
 
 

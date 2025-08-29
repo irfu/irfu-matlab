@@ -20,20 +20,20 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
     function test_get_calibration_time_index(testCase)
 
-      function test(Epoch, CalibEpochList, expOutput)
+      function test(tt2000, calibTt2000Ar, expOutput)
         % NOTE: Converting arguments to int64, transposing.
         actOutput = bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
-          int64(Epoch)', ...
-          int64(CalibEpochList)');
+          int64(tt2000)', ...
+          int64(calibTt2000Ar)');
 
         testCase.verifyEqual(...
           actOutput, ...
           expOutput')
       end
 
-      function test_exc(Epoch, CalibEpochList)
+      function test_exc(Epoch, calibTt2000Ar)
         f = @() bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
-          int64(Epoch)', int64(CalibEpochList)');
+          int64(Epoch)', int64(calibTt2000Ar)');
 
         testCase.verifyError(...
           f, ?MException);
@@ -49,7 +49,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
       test([5:10], [3]   , [1,1,1,1,1,1]);
       test([5:10], [3, 7], [1,1,2,2,2,2]);
 
-      % CalibEpochList must not be empty.
+      % calibTt2000Ar must not be empty.
       test_exc([1:10], []);
       % Requesting indices before first timestamp.
       test_exc([1:10], [3])

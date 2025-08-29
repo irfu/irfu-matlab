@@ -356,20 +356,20 @@ classdef VoltageCalibrationDataSupplierImpl < bicas.proc.L1L2.cal.VoltageCalibra
 
 
 
-    function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
+    function iCalibL = get_BIAS_calibration_time_index_L(obj, tt2000)
       BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
       iCalibL = bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
-        Epoch, BiasRctdCa{1}.epochL);
+        tt2000, BiasRctdCa{1}.tt2000L);
     end
 
 
 
-    function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
+    function iCalibH = get_BIAS_calibration_time_index_H(obj, tt2000)
       BiasRctdCa = obj.Rctdc.get_RCTD_CA('BIAS');
 
       iCalibH = bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
-        Epoch, BiasRctdCa{1}.epochH);
+        tt2000, BiasRctdCa{1}.tt2000H);
     end
 
 

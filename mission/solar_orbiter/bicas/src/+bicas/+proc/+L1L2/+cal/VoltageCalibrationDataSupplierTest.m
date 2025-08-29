@@ -97,14 +97,14 @@ classdef VoltageCalibrationDataSupplierTest < bicas.proc.L1L2.cal.VoltageCalibra
 
 
 
-    function iCalibL = get_BIAS_calibration_time_index_L(obj, Epoch)
-      iCalibL = ones(size(Epoch));
+    function iCalibL = get_BIAS_calibration_time_index_L(obj, tt2000)
+      iCalibL = ones(size(tt2000));
     end
 
 
 
-    function iCalibH = get_BIAS_calibration_time_index_H(obj, Epoch)
-      iCalibH = ones(size(Epoch));
+    function iCalibH = get_BIAS_calibration_time_index_H(obj, tt2000)
+      iCalibH = ones(size(tt2000));
     end
 
 

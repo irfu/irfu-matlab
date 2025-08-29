@@ -16,8 +16,8 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
     N_MIN_TF_NUMER_DENOM_COEFFS = 8;
   end
   properties(SetAccess=immutable)
-    epochL
-    epochH
+    tt2000L
+    tt2000H
     Current
     FtfRctSet
     ItfSet
@@ -74,8 +74,8 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         ItfSet.achgAvpiv    {iTf} = @(omegaRps) (TempItfAchgAvpiv    .eval(omegaRps));
       end
 
-      obj.epochL               = RctRawData.epochL;
-      obj.epochH               = RctRawData.epochH;
+      obj.tt2000L              = RctRawData.tt2000L;
+      obj.tt2000H              = RctRawData.tt2000H;
       obj.Current              = RctRawData.Current;
       obj.FtfRctSet            = FtfRctSet;    % Change name of field (sic!).
       obj.ItfSet               = ItfSet;
@@ -95,21 +95,21 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
       AC_DIFF_FREQS_HZ = [0, 1000];
       LL               = bicas.proc.L1L2.cal.rct.RctDataImpl.RCT_DATA_LL;
 
-      %=====================
-      % Iterate over EpochL
-      %=====================
-      for iEpochL = 1:numel(obj.epochL)
+      %======================
+      % Iterate over tt2000L
+      %======================
+      for iTt2000L = 1:numel(obj.tt2000L)
 
         L.logf(LL, 'Below values are used for data beginning %s:', ...
-          bicas.utils.TT2000_to_UTC_str(obj.epochL(iEpochL), 9))
+          bicas.utils.TT2000_to_UTC_str(obj.tt2000L(iTt2000L), 9))
 
         % Log bias current calibration
         L.logf(LL, '    BIAS current offsets: %s [aampere]',         ...
           bicas.proc.L1L2.cal.utils.vector_string(...
-          '% 10e', obj.Current.offsetsAampere(iEpochL, :)))
+          '% 10e', obj.Current.offsetsAampere(iTt2000L, :)))
         L.logf(LL, '    BIAS current gain   : %s [aampere/TM unit]', ...
           bicas.proc.L1L2.cal.utils.vector_string(...
-          '% 10e', obj.Current.gainsAapt(     iEpochL, :)))
+          '% 10e', obj.Current.gainsAapt(     iTt2000L, :)))
 
         % Log transfer functions (frequency domain) at selected
         % frequencies.
@@ -122,37 +122,37 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         log_TF('    BIAS ITF AC diff, high gain', AC_DIFF_FREQS_HZ, obj.ItfSet.achgAvpiv)
       end
 
-      %=====================
-      % Iterate over EpochH
-      %=====================
+      %======================
+      % Iterate over Tt2000H
+      %======================
       % NOTE: Must work for multiple CDF records.
       dcDiffOffsetsAvolt = [...
         obj.DcDiffOffsets.E12Avolt, ...
         obj.DcDiffOffsets.E13Avolt, ...
         obj.DcDiffOffsets.E23Avolt];
       irf.assert.sizes(dcDiffOffsetsAvolt, [NaN, 3]);
-      for iEpochH = 1:numel(obj.epochH)
+      for iTt2000H = 1:numel(obj.tt2000H)
 
         L.logf(LL, 'Below values are used for data beginning %s:', ...
-          bicas.utils.TT2000_to_UTC_str(obj.epochH(iEpochH), 9))
+          bicas.utils.TT2000_to_UTC_str(obj.tt2000H(iTt2000H), 9))
 
         L.logf(LL, ...
           '    BIAS DC single voltage offsets ( V1, V2, V3): %s [avolt]', ...
           bicas.proc.L1L2.cal.utils.vector_string('%g', ...
-          obj.dcSingleOffsetsAvolt(iEpochH, :)))
+          obj.dcSingleOffsetsAvolt(iTt2000H, :)))
         L.logf(LL, ...
           '    BIAS DC diff   voltage offsets (E12,E13,E23): %s [avolt]', ...
           bicas.proc.L1L2.cal.utils.vector_string('%g', ...
-          dcDiffOffsetsAvolt(iEpochH)))
+          dcDiffOffsetsAvolt(iTt2000H)))
       end
 
       %###################################################################
       % Nested utility function.
-      % NOTE: Implicitly function of iEpochL, L, LL.
+      % NOTE: Implicitly function of iTt2000L, L, LL.
       function log_TF(name, freqArray, ItfList)
         bicas.proc.L1L2.cal.utils.log_TF_function_handle(...
           LL, name, 'avolt/ivolt', freqArray, ...
-          ItfList{iEpochL}, L);
+          ItfList{iTt2000L}, L);
       end
       %###################################################################
     end
@@ -198,16 +198,16 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         % NOTE: Assumes 1 CDF record or many (time-dependent values).
         % ==> Must handle that dataobj assigns differently for these two
         %     cases.
-        epochL                    = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.Epoch_L);
-        epochH                    = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.Epoch_H);
+        tt2000L                   = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.Epoch_L);
+        tt2000H                   = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.Epoch_H);
         biasCurrentOffsetsAampere = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_OFFSET);      % DEPEND_0 = Epoch_L
         biasCurrentGainsAapt      = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.BIAS_CURRENT_GAIN);        % DEPEND_0 = Epoch_L
         dcSingleOffsetsAvolt      = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.V_OFFSET);                 % DEPEND_0 = Epoch_H
         dcDiffOffsetsAvolt        = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.E_OFFSET);                 % DEPEND_0 = Epoch_H
         ftfCoeffs                 = bicas.proc.L1L2.cal.rct.RctDataBias.normalize_dataobj_ZV(Do.data.TRANSFER_FUNCTION_COEFFS); % DEPEND_0 = Epoch_L
 
-        nEpochL = size(epochL, 1);
-        nEpochH = size(epochH, 1);
+        nTt2000L = size(tt2000L, 1);
+        nTt2000H = size(tt2000H, 1);
 
         % IMPLEMENTATION NOTE: Corrects for what seems to be a bug in
         % dataobj. dataobj permutes/removes indices, and permutes them
@@ -226,15 +226,15 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         % ASSERTIONS: Size of tfCoeffs/TRANSFER_FUNCTION_COEFFS
         %=======================================================
         % ND = Numerator Denominator
-        nNdCoeffs = irf.assert.sizes(ftfCoeffs, [nEpochL, -1, 2, 4]);
+        nNdCoeffs = irf.assert.sizes(ftfCoeffs, [nTt2000L, -1, 2, 4]);
         assert(nNdCoeffs >= bicas.proc.L1L2.cal.rct.RctDataBias.N_MIN_TF_NUMER_DENOM_COEFFS)
 
         %================================
         % Assign struct that is returned
         %================================
         D = struct();
-        D.epochL = epochL;
-        D.epochH = epochH;
+        D.tt2000L = tt2000L;
+        D.tt2000H = tt2000H;
 
         D.Current.offsetsAampere = biasCurrentOffsetsAampere;
         D.Current.gainsAapt      = biasCurrentGainsAapt;
@@ -263,13 +263,13 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
 
         % ASSERTIONS
         irf.assert.sizes(...
-          D.FtfSet.DcSingleAvpiv, [nEpochL, 1], ...
-          D.FtfSet.DcDiffAvpiv,   [nEpochL, 1], ...
-          D.FtfSet.AclgAvpiv,     [nEpochL, 1], ...
-          D.FtfSet.AchgAvpiv,     [nEpochL, 1]);
-        for iEpochL = 1:nEpochL
-          %assert(Bias.ItfSet.DcSingleAvpiv{iEpochL}.eval(0) > 0, 'BICAS:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
-          %assert(Bias.ItfSet.DcDiffAvpiv{iEpochL}.eval(0)   > 0, 'BICAS:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
+          D.FtfSet.DcSingleAvpiv, [nTt2000L, 1], ...
+          D.FtfSet.DcDiffAvpiv,   [nTt2000L, 1], ...
+          D.FtfSet.AclgAvpiv,     [nTt2000L, 1], ...
+          D.FtfSet.AchgAvpiv,     [nTt2000L, 1]);
+        for iTt2000L = 1:nTt2000L
+          %assert(Bias.ItfSet.DcSingleAvpiv{iTt2000L}.eval(0) > 0, 'BICAS:FailedToReadInterpretRCT', 'DC single inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
+          %assert(Bias.ItfSet.DcDiffAvpiv{iTt2000L}.eval(0)   > 0, 'BICAS:FailedToReadInterpretRCT',   'DC diff inverted transfer function is not positive (and real) at 0 Hz. (Wrong sign?)');
           % Unsure if assertion makes sense for AC, or possibly even
           % for DC.
           % 2020-03-10: This criterion is not true for AC high-gain
@@ -281,18 +281,18 @@ classdef RctDataBias < bicas.proc.L1L2.cal.rct.RctDataImpl
         % ASSERTIONS:
         % All variables NOT based on tfCoeffs/TRANSFER_FUNCTION_COEFFS
         %==============================================================
-        bicas.utils.assert_ZV_Epoch(D.epochL)
-        bicas.utils.assert_ZV_Epoch(D.epochH)
-        validateattributes(D.epochL, {'numeric'}, {'increasing'})
-        validateattributes(D.epochH, {'numeric'}, {'increasing'})
+        bicas.utils.assert_ZV_Epoch(D.tt2000L)
+        bicas.utils.assert_ZV_Epoch(D.tt2000H)
+        validateattributes(D.tt2000L, {'numeric'}, {'increasing'})
+        validateattributes(D.tt2000H, {'numeric'}, {'increasing'})
 
         irf.assert.sizes(...
-          D.Current.offsetsAampere, [nEpochL, 3], ...
-          D.Current.gainsAapt,      [nEpochL, 3], ...
-          D.dcSingleOffsetsAvolt,   [nEpochH, 3]);
+          D.Current.offsetsAampere, [nTt2000L, 3], ...
+          D.Current.gainsAapt,      [nTt2000L, 3], ...
+          D.dcSingleOffsetsAvolt,   [nTt2000H, 3]);
 
         for fn = fieldnames(D.DcDiffOffsets)'
-          irf.assert.sizes(D.DcDiffOffsets.(fn{1}), [nEpochH, 1]);
+          irf.assert.sizes(D.DcDiffOffsets.(fn{1}), [nTt2000H, 1]);
         end
 
       catch Exc1
