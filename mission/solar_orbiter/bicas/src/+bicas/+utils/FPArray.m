@@ -62,11 +62,10 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
   %   ~1D
   %   PROPOSAL: General terms: FP, non-FP data, FP + non-FP data.
   %
-  % TODO-DEC: Naming convention for FPA variables?
-  %   *Fpa, Fpa* Fpa_L3_QUALITY_BITMASK
-  %   Fpa_L3_QUALITY_BITMASK
+  % TODO-DEC: Naming convention for FPA variables combined with ZV names (which do not follow naming convention)?
+  %   Ex: L3_QUALITY_BITMASK_Fpa
+  %   *_Fpa, Fpa_*
   %   ZvFpa_L3_QUALITY_BITMASK
-  %   L3_QUALITY_BITMASK_Fpa
   %
   % PROPOSAL: Shorten "doubleNan" --> "dblNan"
   %

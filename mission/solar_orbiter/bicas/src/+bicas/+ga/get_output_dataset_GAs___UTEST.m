@@ -8,16 +8,6 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
 
 
 
-  %#####################
-  %#####################
-  % CONSTANT PROPERTIES
-  %#####################
-  %#####################
-  properties(Constant)
-  end
-
-
-
   %############
   %############
   % PROPERTIES
@@ -56,31 +46,9 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
 
 
     function setup(testCase)
-      % Fixture = testCase.applyFixture(...
-      %   matlab.unittest.fixtures.TemporaryFolderFixture);
-      % % NOTE: The same fixture should always return the same directory.
-      % testCase.dir = Fixture.Folder;
       testCase.L   = bicas.Logger('NO_STDOUT', false);
       testCase.Bso = bicas.create_default_BSO();
       testCase.Bso.make_read_only()
-    end
-
-
-
-  end
-
-
-
-  %##########
-  %##########
-  % TEARDOWN
-  %##########
-  %##########
-  methods(TestMethodTeardown)
-
-
-
-    function teardown(testCase)
     end
 
 
@@ -98,12 +66,11 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test_0(testCase)
 
       %=================
       % 3x InputDataset
       %=================
-
       InputDatasetsMap = containers.Map();
 
       InputDatasetsMap('HK_cdf') = bicas.InputDataset( ...
@@ -130,10 +97,10 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
       RctdBias = bicas.proc.L1L2.cal.rct.RctDataTest( ...
         'solo_CAL_rpw-bias_20200210-20991231_V01.cdf', ...
         '01', 'BIAS team', 'Swedish Institute of Space Physics (IRF)', 'BIAS');
-      RctdLfr = bicas.proc.L1L2.cal.rct.RctDataTest( ...
+      RctdLfr  = bicas.proc.L1L2.cal.rct.RctDataTest( ...
         'SOLO_CAL_RCT-LFR-BIAS_V20190123171020.cdf', ...
         ' ', [], [], []);
-      RctdCa = {RctdBias; RctdLfr};
+      RctdCa   = {RctdBias; RctdLfr};
       OutputDataset = bicas.OutputDataset(Zv, Ga, RctdCa);
 
       outputFilename = 'solo_L2_rpw-lfr-surv-cwf-e_20200213_V01.cdf';
@@ -176,16 +143,6 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
-
-
-
-  %##########################
-  %##########################
-  % PRIVATE INSTANCE METHODS
-  %##########################
-  %##########################
-  methods(Access=private)
-  end    % methods(Access=private)
 
 
 

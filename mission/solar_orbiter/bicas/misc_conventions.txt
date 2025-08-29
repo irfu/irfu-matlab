@@ -1,6 +1,6 @@
-############################
-Purpose & scope of this file
-############################
+##############################
+ Purpose & scope of this file
+##############################
 This file documents various conventions used internally by the BICAS source
 code.
 
@@ -15,9 +15,12 @@ The code should however converge on the following:
 - Variables names: Should use camelCase/CamelCase.
     - Structs, instances of classes: Uppercase initial.
     - All other variables:           Lowercase initial.
-    - Exception: Variables which are direct analogues to zVariables are named
-      as the corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of
-      the time.
+    - Exception: Variables which are direct analogues to zVariables are
+      named as the corresponding zVariables, except when there is no alternate
+      abbreviation and when it is not required that the exact ZV name is used
+      (such as in many struct field names where ZVs are passed on to CDF
+      writing). Such variables use the exact ZV name (i.e. SCREAMING_SNAKE_CASE
+      most of the time).
 - Classes (not instances of classes):
     - Class which are actually instantiated (which are not merely a collection
       of static methods): Should be CamelCase. Initial in uppercase.
@@ -40,7 +43,12 @@ The code should however converge on the following:
            NOTE: This is not followed universally yet.
 --
 String constants should be SCREAMING_SNAKE_CASE.
-Unit tests (classes) have suffix "___UTEST".
+Unit tests (classes) are named in accordance with one of two naming conventions:
+(1) <filename>___UTEST
+    Potentially contains tests of all public members in the file.
+(2) <filename>_<sub>___UTEST
+    Contains tests for public member <sub> (e.g. .a function) in the specified
+    file.
 
 
 
@@ -49,10 +57,11 @@ Unit tests (classes) have suffix "___UTEST".
 ###########################
 NOTE: This list primarily applies to comments and identifiers in the source
 code, including package names, but it may also be relevant for understanding
-log messages and the names of settings. Most of the abbreviations are not
+log messages and the names of settings. They are not necessarily used for naming
+BICAS settings keys. Most of the abbreviations are not
 "official" and have been created specifically for BICAS. The list exists to
 centralize all definitions in one place. This list is therefore very important
-for understanding BICAS.
+for understanding BICAS and keeping consistent if updating it.
 --
 AA, aampere
     Antenna Ampere. Calibrated ampere at the antenna.
@@ -636,9 +645,9 @@ ZVS
 
 
 
-#################
-Other conventions
-#################
+###################
+ Other conventions
+##################
 1D arrays shall be column arrays. This has not always been the case but new code
 should conform to this and old code should converge to this when appropriate.
 

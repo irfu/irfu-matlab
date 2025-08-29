@@ -17,11 +17,11 @@ classdef normalize___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test_0(T)
 
       function test(x, beforeValuesCa, afterValue, expX)
         actX = bicas.ga.normalize(x, beforeValuesCa, afterValue);
-        testCase.assertEqual(actX, expX)
+        T.assertEqual(actX, expX)
       end
 
       % Test the "algorithm" using numbers

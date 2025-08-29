@@ -29,7 +29,7 @@ classdef qrc
     % Constants for common values
     % ---------------------------
     % NOTE: Useful for e.g. testing.
-    LxQBM_NONE       = uint16(0);
+    LxQBM_NONE = uint16(0);
 
     % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
     % external metadata standards.
@@ -137,9 +137,12 @@ classdef qrc
 
 
 
-    % Function for initializing QRCSMs containing all QRCSs for producing
-    % (1) all (official) L2 CDFs, and
+    % Function for initializing QRCSMs in three groups representing different
+    % output CDFs/DSIs. Three groups are:
+    % (1) all (official) L2 CDFs,
+    % (2) all L3 CDFs, and
     % (3) all L3 density CDFs.
+    % NOTE: Groups (2) and (3) overlap.
     %
     % NOTE: The quality bit definitions here must be consistent with the
     % definitions in the corresponding CDF skeletons. Definitions in general
@@ -222,12 +225,13 @@ classdef qrc
       %
       % NOTE: This QRC only affects some channels.
       %
-      % NOTE: ROC modifies CDFs created by BICAS (at ROC; i.e. L2) to cap
-      % QUALITY_FLAG<=1="Known problems, use at your own risk" for ANT3 failing
-      % as defined by ROC. Erik P G Johansson (2025-08-27) is not aware of any
-      % formal document specifying this value (though maybe it is obvious
-      % considering the QUALITY_FLAG value definitions). It was mentioned in an
-      % e-mail thread and is consistent with LIRA-generated CDFs.
+      % NOTE: As of 2025-09-02, ROC modifies CDFs created by BICAS (at ROC;
+      % i.e. L2) to cap QUALITY_FLAG<=1="Known problems, use at your own risk"
+      % for ANT3 failing as defined by ROC. Erik P G Johansson (2025-09-02) is
+      % not aware of any formal document specifying this value (though maybe it
+      % is obvious considering the QUALITY_FLAG value definitions). It was
+      % mentioned in an e-mail thread (below) and is consistent with
+      % LIRA-generated CDFs.
       % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
       %
       % """"""""
@@ -274,9 +278,9 @@ classdef qrc
       % BAD_DENSITY
       %=============
       % NOTE: L3_QUALITY_BITMASK currently only exists for L3 DENSITY datasets
-      % (i.e. not for other L3 datasets). If L3_QUALITY_BITMASK is used for other
-      % L3 datasets in the future, then the bits may have different meanings for
-      % those datasets.
+      % (i.e. not for other L3 datasets). If L3_QUALITY_BITMASK is used for
+      % other L3 datasets in the future, then the bits may have different
+      % meanings for those datasets.
       Qrcs = bicas.proc.QrcSettingL3Density(...
         qfl   = uint8(1), ...
         l3qbm = uint16(1));

@@ -135,11 +135,11 @@ classdef qrc
       % PROPOSAL: Split into separate functions for QUALITY_FLAG and LxQBM.
       %   PRO: EFIELD and SCPOT do not have L3QBM.
       %   PRO: Simpler-ish testing
-      %   CON: More code. Functions will resemble each other.
+      %   CON: More code. Functions will almost be the same.
       % PROPOSAL: Somehow abolish the "lxqbmName" argument.
       %   PRO: Is in principle unnecessary since the QRCS class should imply
       %        it.
-      %   PROPOSAL: All (applicable) QRCS class use the same field name.
+      %   PROPOSAL: All (applicable) QRCS classes use the same field name.
       %   PROPOSAL: This function determines the field name from the QRCS class
       %             (using hardcoded table).
       %     CON: Less general.
@@ -216,7 +216,11 @@ classdef qrc
 
 
 
-    % Sets QRCBs to false for saturation QRCs which should not be used.
+    % Sets QRCBs to false for saturation QRCs which should not be used,
+    % depending on saturation quality scheme.
+    %
+    % NOTE: QRCBs for both saturation quality schemes are always present
+    % regardless of which one is selected.
     %
     % ARGUMENTS
     % =========

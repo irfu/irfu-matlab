@@ -365,9 +365,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
     function [OutSci] = process_DCOP_to_CDF(obj, SciDcip, SciDcop)
-      % NOTE: Most processing is done in function which is shared between LFR and
-      %       TDS. This wrapper is needed to handle the difference between LFR
-      %       and TDS.
+      % NOTE: Most processing is done in a function which is shared between LFR
+      %       and TDS. This wrapper is needed to handle the small difference
+      %       between LFR and TDS.
       OutSci = bicas.proc.L1L2.process_DCOP_to_CDF(...
         SciDcip, SciDcop, obj.outputDsi);
 

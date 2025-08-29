@@ -155,6 +155,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
     function test_QRCB_arrays_to_quality_ZVs(testCase)
 
+      % Test function shared between tests.
       function test(Qrcbm, Qrcsm, lxqbmName, expQfl, expLxqbm)
         expQfl   = uint8( expQfl(:));
         expLxqbm = uint16(expLxqbm(:));
@@ -166,6 +167,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
         testCase.assertEqual(actQfl,   expQfl)
         testCase.assertEqual(actLxqbm, expLxqbm)
       end
+
 
 
       % Zero QRCIDs defined

@@ -8,6 +8,11 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
 
 
 
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(SetAccess=immutable)
     % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.
     % NOTE: This is interpretation is in compliance with how the ZV
@@ -30,6 +35,11 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
 
 
@@ -43,7 +53,7 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
       end
 
       assert(bicas.utils.validate_QFL(A.qfl))
-      obj.qfl            =                        A.qfl;
+      obj.qfl   =                     A.qfl;
 
       assert(isa( A.l2qbm, 'uint16'))
       obj.l2qbm = A.l2qbm;

@@ -27,7 +27,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       InLfrCwf = InputDatasetsMap('OSR_cdf');
 
-      OutLfrCwfDsr = bicas.proc.L2L2.LfrDsrSwmProcessing.process_LFRCWF_to_DSR(InLfrCwf, Bso, L);
+      OutLfrCwfDsr = bicas.proc.L2L2.LfrDsrSwmProcessing.process_LFR_CWF_to_DSR(InLfrCwf, Bso, L);
 
       OutputDatasetsMap = containers.Map();
       OutputDatasetsMap('DSR_cdf') = bicas.OutputDataset(...
@@ -61,20 +61,20 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
     % process_L2_to_L3() and have the same SWM use it, since it
     % (1) has the same one input dataset, and
     % (2) produces a similarily downsampled dataset.
-    % However, that might be a bad idea since it also
+    % However, that might be a bad idea since this function also
     % (1) uses another sampling rate (less shared processing), and
     % (2) should remain unofficial (both SWM and the output dataset),
     %     as opposed to process_L2_to_L3() which produces official datasets
     %     and might one day be "officially" run at ROC.
     %
-    function OutLfrCwfDsr = process_LFRCWF_to_DSR(InLfrCwfOsr, Bso, L)
+    function OutLfrCwfDsr = process_LFR_CWF_to_DSR(InLfrCwfOsr, Bso, L)
       %
       % PROBLEM: How handle leap seconds if bin size <= 1 s?
       %   NOTE: Positive leap seconds are not a problem.
       %   PROPOSAL: Split bins WITH leap seconds? Then there is no
       %             problem(?).
 
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L2L2.process_LFRCWF_to_DSR', L);
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L2L2.process_LFR_CWF_to_DSR', L);
 
 
 
@@ -161,7 +161,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
       Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
-    end    % process_LFRCWF_to_DSR
+    end    % process_LFR_CWF_to_DSR()
 
 
 

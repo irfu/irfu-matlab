@@ -37,7 +37,7 @@ classdef qrc
       assert(isa(L2QualityBitSettingQrcsm, "bicas.proc.QrcSettingsMap"))
       assert(iscolumn(l2qbmAr) & isa(l2qbmAr, "uint16"))
 
-      Qrcbm     = bicas.proc.QrcbMap(numel(l2qbmAr));
+      Qrcbm       = bicas.proc.QrcbMap(numel(l2qbmAr));
       % Collection of quality bit positions for all used QRCDSs. Only used for
       % asserting against collisions.
       allBitPosAr = zeros(0, 1);
@@ -122,8 +122,9 @@ classdef qrc
 
 
 
-    % Better "hack" for obtaining the QUALITY_FLAG for L2 LFR CWF (the input to
-    % L3) in the absence of saturation.
+    % Better "hack" for obtaining the L2 LFR CWF QUALITY_FLAG (the input to L3)
+    % as it had been in the absence of saturation (if on ignores the L1/L1R
+    % QUALITY_FLAG, i.e. the cap).
     %
     % NOTE: In practice, this should be the L2 QUALITY_FLAG derived from the
     % NSO table (minus saturation), i.e. also without autodetected sweeps.

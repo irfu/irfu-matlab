@@ -39,10 +39,15 @@ function write_dataset_CDF(...
 %           dataset
 %           --
 %           cdfout.write_dataset()
-%   PROPOSAL: Convert bicas.write_dataset_CDF and bicas.read_dataset_CDF into
+%   PROPOSAL: Convert bicas.write_dataset_CDF() and bicas.read_dataset_CDF() into
 %             combined package (class?!).
 %       CON: Read & write make up two distinct categories.
+%       CON: Too big file?
 %       TODO-NI: Is there any overlap in functionality?
+%
+% PROPOSAL: Convert to class.
+%   PRO: Can test subfunctions.
+%   PRO: Can indent subfunctions.
 %===========================================================================
 % This function needs GlobalAttributes values from the input files:
 %    Data_version ??!!

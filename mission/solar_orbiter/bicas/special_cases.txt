@@ -1,6 +1,6 @@
-############################
-Purpose & scope of this file
-############################
+##############################
+ Purpose & scope of this file
+##############################
 This file documents how various special cases are handled by BICAS, including
 data quality information.
 
@@ -33,9 +33,10 @@ this. The purpose of this section is meant to summarize this information.
 
 NOTE: This section might not be complete, but is intended to become so over
       time.
-NOTE: bicas.const.qrc contains hard-coded constants describing some of this
-      behaviour. The NSO table is also used for determining when some of these
-      conditions apply.
+NOTE: The NSO table is used for determining when many of these conditions apply
+      or many instances of conditions apply.
+NOTE: bicas.const.qrc contains hard-coded constants describing much of the
+      behaviour/actions taken when a certain condition applies.
 
 
 =======================================
@@ -80,9 +81,9 @@ Condition            | Action taken when condition applies
                      |    All samples are replaced by fill values.
 
 
-------------------------------------------------------------------
-Algorithm for determining whether a BIAS current sweep is underway
-------------------------------------------------------------------
+--------------------------------------------------------------------
+ Algorithm for determining whether a BIAS current sweep is underway
+--------------------------------------------------------------------
 L1/L1R datasets are planned to eventually contain information on sweeps
 being executed in zVariable QUALITY_BITMASK but at the time of writing
 (2025-02-13), this has still not been implemented (is not in use) by ROC.
@@ -105,9 +106,9 @@ PROCESSING.SATURATION.QUALITY_SCHEME): one old scheme (to be phased out), and
 one new scheme (under evaluation; to be phased in).
 
 
------------------------------
-Old scheme: GLOBAL_SATURATION
------------------------------
+-------------------------------
+ Old scheme: GLOBAL_SATURATION
+-------------------------------
 BICAS can classify saturated L2 data is either "partially saturated" or
 "fully saturated" in the following ways:
 (1) time interval is labelled as "partially saturated" in the NSO table,
@@ -131,9 +132,9 @@ Condition             | Action taken when condition applies
                       |     Set QUALITY_FLAG=0.
 
 
-------------------------------
-New scheme: CHANNEL_SATURATION
-------------------------------
+--------------------------------
+ New scheme: CHANNEL_SATURATION
+--------------------------------
 There is one quality bit per channel, where AC and DC diffs share the same bits.
 Reconstructed channels (i.e. channel samples which BICAS has derived from other
 channels) and are affected by saturation on the source channels are also

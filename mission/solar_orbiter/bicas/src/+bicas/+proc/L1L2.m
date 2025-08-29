@@ -303,8 +303,8 @@ classdef L1L2
 
       OutSci.Zv.Epoch              = SciDcip.Zv.tt2000;
       OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.L1qbmFpa;
-      OutSci.Zv.L2_QUALITY_BITMASK = SciDcop.Zv.L2_QUALITY_BITMASK;
-      OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QUALITY_FLAG;
+      OutSci.Zv.L2_QUALITY_BITMASK = SciDcop.Zv.l2qbm;
+      OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QflFpa;
       OutSci.Zv.DELTA_PLUS_MINUS   = SciDcip.Zv.DELTA_PLUS_MINUS;
       OutSci.Zv.SYNCHRO_FLAG       = SciDcip.Zv.SYNCHRO_FLAG;
       OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.freqHz;
@@ -339,10 +339,10 @@ classdef L1L2
           OutSci.Zv.QUALITY_FLAG,    [nRecords, 1])
 
         % Try to pre-allocate to save RAM/speed up.
-        tempNan = nan(nRecords, 3);
-        OutSci.Zv.VDC = tempNan;
-        OutSci.Zv.EDC = tempNan;
-        OutSci.Zv.EAC = tempNan;
+        tempNan            = nan(nRecords, 3);
+        OutSci.Zv.VDC      = tempNan;
+        OutSci.Zv.EDC      = tempNan;
+        OutSci.Zv.EAC      = tempNan;
 
         OutSci.Zv.VDC(:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V1"));
         OutSci.Zv.VDC(:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V2"));
@@ -386,9 +386,9 @@ classdef L1L2
 
         % Try to pre-allocate to save RAM/speed up.
         tempNan = nan(nRecords, aspr, 3);
-        OutSci.Zv.VDC = tempNan;
-        OutSci.Zv.EDC = tempNan;
-        OutSci.Zv.EAC = tempNan;
+        OutSci.Zv.VDC        = tempNan;
+        OutSci.Zv.EDC        = tempNan;
+        OutSci.Zv.EAC        = tempNan;
 
         OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V1"));
         OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V2"));
@@ -425,20 +425,18 @@ classdef L1L2
 
 
 
-      % NOTE: Not really necessary since the list of ZVs will be checked
-      % against the master CDF?
       if C.isSwf
-        optionalFnSet = {'SAMPLE_IDX', 'SAMPLE_LABEL'};
+        optionalZvFnSet = {'SAMPLE_IDX', 'SAMPLE_LABEL'};
       else
-        optionalFnSet = {};
+        optionalZvFnSet = {};
       end
       irf.assert.struct(OutSci.Zv, {...
         'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
         'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
         'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, ...
-        optionalFnSet)
+        optionalZvFnSet)
 
-    end    % process_DCOP_to_CDF
+    end    % process_DCOP_to_CDF()
 
 
 

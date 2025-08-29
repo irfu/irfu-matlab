@@ -143,6 +143,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %        "Zv." effectively constitutes an alternative prefix stating
       %        this.
       %     CON: This convention is not followed anywhere else.
+      %   CON-PROPOSAL: Rename argument InLfrCwf to something short and never
+      %                 rename it in the code.
 
       Ga = struct();
       Ga.SOOP_TYPE              = InLfrCwf.Ga.SOOP_TYPE;
@@ -197,9 +199,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %---------------------------------------
-      % Derive QRCBMs, synthetic QUALITY_FLAG
-      %---------------------------------------
+      %------------------------------------------
+      % Derive QRCBMs and synthetic QUALITY_FLAG
+      %------------------------------------------
       [L3Qrcbm, L3DensityQrcbm, SyntheticL2QflFpa] = ...
         bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_QRCBMs_synthetic_L2_QFL(...
         Zv.L2qbmFpa, Zv.QflFpa, Zv.tt2000, NsoTable, ...
@@ -245,9 +247,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %====================================================================
-      % Derive values for CDF global attribute "Misc_calibration_versions"
-      %====================================================================
+      %================================================
+      % Derive GA values which apply to all 6x L3 CDFs
+      %================================================
       % NOTE: Should not add BICAS version to GA
       % "Misc_calibration_versions" since this is already encoded in GA
       % "Software_version" (together with "Software_name").

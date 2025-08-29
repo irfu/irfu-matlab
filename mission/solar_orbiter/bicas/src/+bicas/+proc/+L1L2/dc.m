@@ -155,9 +155,9 @@ classdef dc
       bltsVsibAr  = bicas.proc.L1L2.dc.get_VSIB_5xBLTS(...
         bltsVoltageAvolt, Dcip.hasSwfFormat, Dcip.Zv.uspr, ...
         bltsSsidArray, Dcip.Zv.isAchgFpa, SatSettings, L);
-      if 0    % DEBUG
-        figure; plot(Dcip.Zv.tt2000/1e9, bltsVsibAr(:,1), '.')
-      end
+      % if 0    % DEBUG
+      %   figure; plot(Dcip.Zv.tt2000/1e9, bltsVsibAr(:,1), '.')
+      % end
 
 
 
@@ -170,10 +170,10 @@ classdef dc
       SchdZvm = bicas.proc.L1L2.dc.convert_voltage_5xBLTS_to_9xASR(...
         bltsVoltageAvolt, bltsVsibAr, bltsSdidArray, L);
       bicas.proc.L1L2.demuxer.reconstruct_ASR_voltage_channels(SchdZvm);
-      if 0    % DEBUG
-        vsibAr = SchdZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1")).vsibAr;
-        figure; plot(Dcip.Zv.tt2000/1e9, vsibAr)
-      end
+      % if 0    % DEBUG
+      %   vsibAr = SchdZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1")).vsibAr;
+      %   figure; plot(Dcip.Zv.tt2000/1e9, vsibAr)
+      % end
 
 
 
@@ -185,10 +185,10 @@ classdef dc
         VsibZvm.add(   keyCa{1}, SchdZvm.get(keyCa{1}).vsibAr);
       end
       clear SchdZvm
-      if 0    % DEBUG
-        vsibAr = VsibZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1"));
-        figure; plot(Dcip.Zv.tt2000/1e9, vsibAr, '.')
-      end
+      % if 0    % DEBUG
+      %   vsibAr = VsibZvm.get(bicas.proc.L1L2.const.C.SDID_DICT("DC_V1"));
+      %   figure; plot(Dcip.Zv.tt2000/1e9, vsibAr, '.')
+      % end
 
 
 
@@ -206,18 +206,18 @@ classdef dc
         SatSettings.cwfSlidingWindowLengthSec);
       L2Qrcbm.union(VsibSaturationQrcbm)
       L2Qrcbm = bicas.proc.qrc.filter_saturation_QRCBs(L2Qrcbm, string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')));
-      if 0    % DEBUG: Plot selected QRCBs.
-        bicas.debug.plot_QRCBM(L2Qrcbm,             Dcip.Zv.tt2000, "L2Qrcbm")
-        bicas.debug.plot_QRCBM(VsibSaturationQrcbm, Dcip.Zv.tt2000, "VsibSaturationQrcbm")
-      end
+      % if 0    % DEBUG: Plot selected QRCBs.
+      %   bicas.debug.plot_QRCBM(L2Qrcbm,             Dcip.Zv.tt2000, "L2Qrcbm")
+      %   bicas.debug.plot_QRCBM(VsibSaturationQrcbm, Dcip.Zv.tt2000, "VsibSaturationQrcbm")
+      % end
       % --
       [qfl, l2qbm] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
         L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM, "L2_QUALITY_BITMASK");
-      if 0    % DEBUG
-        figure('WindowState', 'maximized')
-        plot(Dcip.Zv.tt2000/1e9, l2qbm, '.')
-        legend(irf.graph.escape_str("L2_QUALITY_BITMASK")); grid on
-      end
+      % if 0    % DEBUG
+      %   figure('WindowState', 'maximized')
+      %   plot(Dcip.Zv.tt2000/1e9, l2qbm, '.')
+      %   legend(irf.graph.escape_str("L2_QUALITY_BITMASK")); grid on
+      % end
 
 
 
@@ -225,13 +225,12 @@ classdef dc
       % Set "final" ZVs
       %#################
       Zv = struct();
-      Zv.QUALITY_FLAG       = Dcip.Zv.QflFpa.min(bicas.utils.FPArray(qfl));
-      Zv.L2_QUALITY_BITMASK = l2qbm;
-
+      Zv.QflFpa         = Dcip.Zv.QflFpa.min(bicas.utils.FPArray(qfl));
+      Zv.l2qbm          = l2qbm;
       % NOTE: Function modifies VoltageZvm handle object in-place!
-      Zv.currentAampere     = bicas.proc.L1L2.qrc.set_current_samples_FV(...
+      Zv.currentAampere = bicas.proc.L1L2.qrc.set_current_samples_FV(...
         currentAampere, L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM);
-      Zv.VoltageZvm         = VoltageZvm;
+      Zv.VoltageZvm     = VoltageZvm;
       Dcop = bicas.proc.L1L2.DemultiplexingCalibrationOutput(Zv);
 
       %##############
@@ -239,7 +238,7 @@ classdef dc
       %##############
       nRecords = size(Dcip.Zv.tt2000, 1);
       Tmk.stop_log(nRecords, 'record')
-    end    % process_calibrate_demux
+    end    % process_calibrate_demux()
 
 
 

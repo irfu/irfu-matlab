@@ -91,6 +91,8 @@ classdef DemultiplexingCalibrationInput
   %#########################
   methods(Access=public)
 
+
+
     function obj = DemultiplexingCalibrationInput(Zv, Ga, hasSwfFormat, isLfr, isTdsCwf)
 
       irf.assert.struct(Zv, ...
@@ -114,6 +116,10 @@ classdef DemultiplexingCalibrationInput
       obj.isTdsCwf     = isTdsCwf;
     end
 
+
+
   end    % methods(Access=public)
+
+
 
 end

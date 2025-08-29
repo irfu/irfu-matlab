@@ -56,6 +56,7 @@ function OutGaSubset = get_output_dataset_GAs(...
   InputDatasetsMap, OutputDataset, outputFilename, outputDsi, ...
   Bso, L)
 
+% PROPOSAL: Move inner functions to class.
 % PROPOSAL: Create class for storing GAs.
 %   PRO: Can detect accidental overwriting/reuse of keys.
 
@@ -70,6 +71,7 @@ irf.assert.struct(OutputDataset.Ga, ...
 
 
 
+% Copy GAs from the argument. The rest of the code adds to this.
 OutGaSubset = OutputDataset.Ga;
 
 
@@ -243,7 +245,7 @@ for i = 1:numel(keysCa)
 
     parentGa_SPICE_KERNELS = bicas.ga.normalize(...
       parentGa_SPICE_KERNELS, ...
-      {{'none'}, {' '}}', ...
+      {{'none'}; {' '}}, ...
       cell(0, 1));
   else
     parentGa_SPICE_KERNELS = cell(0, 1);
