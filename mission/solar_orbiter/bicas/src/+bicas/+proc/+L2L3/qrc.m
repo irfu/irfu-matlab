@@ -135,8 +135,8 @@ classdef qrc
     % from non-saturated L2 channels in the presence of other saturated L2
     % channels.
     %
-    function L2_nonsaturation_QUALITY_FLAG_Fpa = ...
-        get_L2_nonsaturation_nonsweep_QUALITY_FLAG(tt2000Ar, NsoTable, QUALITY_FLAG_fpAr, L)
+    function SyntheticL2QflFpa = get_synthetic_L2_QFL( ...
+        tt2000Ar, NsoTable, qflFpAr, L)
       % PROPOSAL: Separate function for deriving QUALITY_FLAG.
       %   PRO: Also "needed" for EFIELD+SCPOT which do not use QUALITY_BITMASK.
       %   CON: Can ignore return value.
@@ -144,23 +144,22 @@ classdef qrc
       %          lxqbmName and QRCSs which contain some LxQBM value.
       %       CON-PROPOSAL: Special value to ignore retrieving a QRCS LxQBM value.
 
-      assert(islogical(QUALITY_FLAG_fpAr))
+      assert(islogical(qflFpAr))
 
       % NOTE: One could consider also removing/excluding ANT3_FAILING, since
       % the unaffected channels should be OK. Has no instructions to do so yet
       % though. /2025-08-27
-      L2NonsaturationQrcsm = copy(bicas.const.qrc.Q.L2_QRCSM);
-      L2NonsaturationQrcsm.remove_many(bicas.const.qrc.Q.SATURATION_QRCID_AR);
+      NonsaturationL2Qrcsm = copy(bicas.const.qrc.Q.L2_QRCSM);
+      NonsaturationL2Qrcsm.remove_many(bicas.const.qrc.Q.SATURATION_QRCID_AR);
 
       L2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
-        L2NonsaturationQrcsm.qrcidAr, NsoTable, tt2000Ar, L);
+        NonsaturationL2Qrcsm.qrcidAr, NsoTable, tt2000Ar, L);
 
-      [nonsaturation_L2_QUALITY_FLAG, ~] = ...
-        bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
-        L2Qrcbm, L2NonsaturationQrcsm, "L2_QUALITY_BITMASK");
+      [NonsaturationL2Qfl, ~] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
+        L2Qrcbm, NonsaturationL2Qrcsm, "L2_QUALITY_BITMASK");
 
-      L2_nonsaturation_QUALITY_FLAG_Fpa = bicas.utils.FPArray(...
-        nonsaturation_L2_QUALITY_FLAG, 'FILL_POSITIONS', QUALITY_FLAG_fpAr);
+      SyntheticL2QflFpa = bicas.utils.FPArray(...
+        NonsaturationL2Qfl, 'FILL_POSITIONS', qflFpAr);
     end
 
 

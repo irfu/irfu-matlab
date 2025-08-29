@@ -14,9 +14,9 @@ classdef QrcSettingsMap___UTEST < matlab.unittest.TestCase
   %#####################
   %#####################
   properties(Constant)
-    QRCS_1 = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(1));
-    QRCS_2 = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(2));
-    QRCS_3 = bicas.proc.QrcSettingL2(QUALITY_FLAG=uint8(3));
+    QRCS_1 = bicas.proc.QrcSettingL2(qfl=uint8(1));
+    QRCS_2 = bicas.proc.QrcSettingL2(qfl=uint8(2));
+    QRCS_3 = bicas.proc.QrcSettingL2(qfl=uint8(3));
   end
 
 

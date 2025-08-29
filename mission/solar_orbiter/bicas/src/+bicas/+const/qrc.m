@@ -33,8 +33,8 @@ classdef qrc
 
     % Absolute min & max for ZV QUALITY_FLAG, according to the definition in
     % external metadata standards.
-    QUALITY_FLAG_MIN = uint8(0);
-    QUALITY_FLAG_MAX = uint8(4);
+    QFL_MIN = uint8(0);
+    QFL_MAX = uint8(4);
 
 
 
@@ -50,7 +50,7 @@ classdef qrc
     % QUALITY_FLAG value for both
     % (1) global saturation's "full saturation" QRC, and
     % (2) channel saturation QRCs.
-    QUALITY_FLAG_SATURATION = uint8(0);
+    QFL_SATURATION = uint8(0);
 
 
 
@@ -84,8 +84,8 @@ classdef qrc
       %       (which is highly unlikely).
       function add_L2_channel_saturation_QRCS(qrcid, l2qbm)
         L2Qrcs = bicas.proc.QrcSettingL2(...
-          QUALITY_FLAG = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
-          l2qbm        = uint16(l2qbm));
+          qfl   = bicas.const.qrc.QFL_SATURATION, ...
+          l2qbm = uint16(l2qbm));
         L2Qrcsm.add(qrcid, L2Qrcs);
       end
 
@@ -120,8 +120,8 @@ classdef qrc
       % PARTIAL_SATURATION
       %====================
       Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG = uint8(1), ...
-        l2qbm        = L2QBM_BIT_PARTIAL_SATURATION);
+        qfl   = uint8(1), ...
+        l2qbm = L2QBM_BIT_PARTIAL_SATURATION);
       L2Qrcsm.add("PARTIAL_SATURATION", Qrcs)
 
       %=================
@@ -130,8 +130,8 @@ classdef qrc
       % NOTE: Also set PARTIAL saturation bit when FULL
       % saturation. /YK 2020-10-02.
       Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG = bicas.const.qrc.QUALITY_FLAG_SATURATION, ...
-        l2qbm        = L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
+        qfl   = bicas.const.qrc.QFL_SATURATION, ...
+        l2qbm = L2QBM_BIT_FULL_SATURATION + L2QBM_BIT_PARTIAL_SATURATION);
       L2Qrcsm.add("FULL_SATURATION", Qrcs);
     end
 
@@ -178,7 +178,10 @@ classdef qrc
       % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
       % Therefore(?) not setting any bit in L2_QUALITY_BITMASK.
       % (YK 2020-11-03 did not ask for any to be set.)
-      Qrcs = bicas.proc.QrcSettingL2(QUALITY_FLAG = uint8(1));
+      % NOTE: Empirically, ROC's thruster firing quality bit covers much longer
+      % time (several hours) than the actual thruster firing according to the
+      % actual effect on data. /Erik P G Johansson 2025-08-29
+      Qrcs = bicas.proc.QrcSettingL2(qfl = uint8(1));
       L2Qrcsm.add("THRUSTER_FIRING", Qrcs);
 
       %=============
@@ -248,21 +251,21 @@ classdef qrc
       % """"""""
       % /Xavier Bonnin e-mail 2024-07-12, 11:24
       %
-      QUALITY_FLAG_ANTx_FAILING = uint8(1);   % 1="Known problems, use at your own risk"
+      QFL_ANTx_FAILING = uint8(1);   % 1="Known problems, use at your own risk"
 
       % Qrcs = bicas.proc.QrcSettingL2(...
-      %   QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
-      %   voltageFvSsidAr    = S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
+      %   qfl             = QFL_ANTx_FAILING, ...
+      %   voltageFvSsidAr = S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
       % L2Qrcsm.add("ANT1_FAILING", Qrcs);
       %
       % Qrcs = bicas.proc.QrcSettingL2(...
-      %   QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
-      %   voltageFvSsidAr    = S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
+      %   qfl             = QFL_ANTx_FAILING, ...
+      %   voltageFvSsidAr = S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
       % L2Qrcsm.add("ANT2_FAILING", Qrcs);
 
       Qrcs = bicas.proc.QrcSettingL2(...
-        QUALITY_FLAG       = QUALITY_FLAG_ANTx_FAILING, ...
-        voltageFvSsidAr    = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
+        qfl             = QFL_ANTx_FAILING, ...
+        voltageFvSsidAr = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
       L2Qrcsm.add("ANT3_FAILING", Qrcs);
 
 
@@ -275,8 +278,8 @@ classdef qrc
       % L3 datasets in the future, then the bits may have different meanings for
       % those datasets.
       Qrcs = bicas.proc.QrcSettingL3Density(...
-        QUALITY_FLAG = uint8(1), ...
-        l3qbm        = uint16(1));
+        qfl   = uint8(1), ...
+        l3qbm = uint16(1));
       L3DensityQrcsm.add("BAD_DENSITY", Qrcs);
 
 

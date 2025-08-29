@@ -73,7 +73,7 @@ classdef dsr
     %       Distribution of non-downsampled records in bins.
     %
     function [TemplateDsrZv, iRecordsInBinCa] = get_LFR_CWF_DSR_ZVs_template(...
-        Epoch, QUALITY_FLAG_Fpa, L1qbmFpa, L2qbmFpa, ...
+        Epoch, QflFpa, L1qbmFpa, L2qbmFpa, ...
         binLengthWolsNs, binTimestampPosWolsNs, L)
 
       % NOTE: Function argument InLfrCwfOsr contains too much information!
@@ -172,13 +172,13 @@ classdef dsr
       %   (SKELETON_MODS: V12=Feb 2021)
       % .
 
-      zv_QUALITY_FLAG_FpaDsr = bicas.proc.dsr.downsample_ZV_minimum(...
-        QUALITY_FLAG_Fpa,       iRecordsInBinCa);
+      QflFpaDsr   = bicas.proc.dsr.downsample_ZV_minimum(...
+        QflFpa,       iRecordsInBinCa);
 
-      L1qbmFpaDsr            = bicas.proc.dsr.downsample_ZV_bitmask(...
+      L1qbmFpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
         L1qbmFpa,    iRecordsInBinCa);
 
-      L2qbmFpaDsr            = bicas.proc.dsr.downsample_ZV_bitmask(...
+      L2qbmFpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
         L2qbmFpa, iRecordsInBinCa);
 
       %============================================================
@@ -188,7 +188,7 @@ classdef dsr
       %============================================================
       Zv = struct();
       Zv.Epoch              = zvEpochDsr;
-      Zv.QUALITY_FLAG       = zv_QUALITY_FLAG_FpaDsr;
+      Zv.QUALITY_FLAG       = QflFpaDsr;
       Zv.QUALITY_BITMASK    = L1qbmFpaDsr;
       Zv.L2_QUALITY_BITMASK = L2qbmFpaDsr;
       %

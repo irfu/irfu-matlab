@@ -304,7 +304,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Zv.lrx                     = zvLrx;
       Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
       Zv.L1qbmFpa                = InSci.ZvFpa.QUALITY_BITMASK;
-      Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
+      Zv.QflFpa                  = InSci.ZvFpa.QUALITY_FLAG;
 
       % QRCB arrayss for
       % (1) when LFR ZV BW says BIAS is OFF, and

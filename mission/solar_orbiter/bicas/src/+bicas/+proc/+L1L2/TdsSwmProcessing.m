@@ -368,7 +368,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;
       Zv.dlrFpa                  = HkSciTime.dlrFpa;
       Zv.L1qbmFpa                = InSci.ZvFpa.QUALITY_BITMASK;
-      Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
+      Zv.QflFpa                  = InSci.ZvFpa.QUALITY_FLAG;
 
       % QRCB arrayss for
       % (1) if LFR ZV BW says BIAS is OFF (which is unknown for TDS processing),

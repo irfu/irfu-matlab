@@ -130,7 +130,7 @@ classdef qrc
     %       Refers to L2_QUALITY_BITMASK or L3_QUALITY_BITMASK depending on
     %       context.
     %
-    function [QUALITY_FLAG, lxqbm] = QRCB_arrays_to_quality_ZVs(...
+    function [qfl, lxqbm] = QRCB_arrays_to_quality_ZVs(...
         Qrcbm, Qrcsm, lxqbmName)
       % PROPOSAL: Split into separate functions for QUALITY_FLAG and LxQBM.
       %   PRO: EFIELD and SCPOT do not have L3QBM.
@@ -162,8 +162,8 @@ classdef qrc
       % Create "empty" quality variable arrays, with max possible quality
       % (QUALITY_FLAG max, Lx_QUALITY_BITMASK=0), which can then later be
       % "lowered" if necessary.
-      QUALITY_FLAG = ones( nRec, 1, 'uint8' ) * bicas.const.qrc.QUALITY_FLAG_MAX;
-      lxqbm        = zeros(nRec, 1, 'uint16');
+      qfl   = ones( nRec, 1, 'uint8' ) * bicas.const.qrc.QFL_MAX;
+      lxqbm = zeros(nRec, 1, 'uint16');
 
       %=================================
       % Iterate over QRCIDs in argument
@@ -178,9 +178,7 @@ classdef qrc
         % IMPLEMENTATION NOTE: Only adjusts relevant indices since the
         % operation is more natural (simpler, shorter) that way. min() should
         % only be applied to the indices where QRCB=true.
-        QUALITY_FLAG(qrcbAr) = min(...
-          QUALITY_FLAG(qrcbAr), ...
-          Qrcs.QUALITY_FLAG);
+        qfl(qrcbAr) = min(qfl(qrcbAr), Qrcs.qfl);
 
         %--------------
         % Update LXQBM

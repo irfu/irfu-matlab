@@ -151,7 +151,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Zv.Epoch                  = InLfrCwf.Zv.Epoch;
       Zv.VDC_Fpa                = InLfrCwf.ZvFpa.VDC;
       Zv.EDC_Fpa                = InLfrCwf.ZvFpa.EDC;
-      Zv.QUALITY_FLAG_Fpa       = InLfrCwf.ZvFpa.QUALITY_FLAG;
+      Zv.QflFpa                 = InLfrCwf.ZvFpa.QUALITY_FLAG;
       Zv.L1qbmFpa               = InLfrCwf.ZvFpa.QUALITY_BITMASK;
       Zv.L2qbmFpa               = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
       Zv.DELTA_PLUS_MINUS_Fpa   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
@@ -200,20 +200,20 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %---------------------------------------
       % Derive QRCBMs, synthetic QUALITY_FLAG
       %---------------------------------------
-      [L3Qrcbm, L3DensityQrcbm, QUALITY_FLAG_nonsatFpa] = ...
-        bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_QRCBMs_synthetic_QUALITY_FLAG(...
-        Zv.L2qbmFpa, Zv.QUALITY_FLAG_Fpa, Zv.Epoch, NsoTable, ...
+      [L3Qrcbm, L3DensityQrcbm, SyntheticL2QflFpa] = ...
+        bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_QRCBMs_synthetic_L2_QFL(...
+        Zv.L2qbmFpa, Zv.QflFpa, Zv.Epoch, NsoTable, ...
         Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'), L);
 
       %---------------------------------
       % Blank selected VDC, EDC samples
       %---------------------------------
-      QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
+      qflMinForUse = uint8(Bso.get_fv(...
         'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
       [VDC_Fpa, EDC_Fpa] = ...
         bicas.proc.L2L3.L3OsrDsrSwmProcessing.set_VDC_EDC_FPs_before_processing( ...
-        Zv.VDC_Fpa, Zv.EDC_Fpa, QUALITY_FLAG_nonsatFpa, ...
-        L3Qrcbm, QUALITY_FLAG_minForUse);
+        Zv.VDC_Fpa, Zv.EDC_Fpa, SyntheticL2QflFpa, ...
+        L3Qrcbm, qflMinForUse);
 
 
 
@@ -272,7 +272,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         SOOP_TYPE             =Ga.SOOP_TYPE, ...
         Epoch                 =Zv.Epoch, ...
         DELTA_PLUS_MINUS_Fpa  =Zv.DELTA_PLUS_MINUS_Fpa, ...
-        QUALITY_FLAG_Fpa      =QUALITY_FLAG_nonsatFpa, ...
+        QflFpa                =SyntheticL2QflFpa, ...
         L1qbmFpa              =Zv.L1qbmFpa, ...
         L2qbmFpa              =Zv.L2qbmFpa);
 
@@ -312,13 +312,13 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % Function to group together related code in process_L2_to_L3().
     %
     % IMPLEMENTATION NOTE: In principle, the call to
-    % bicas.proc.L2L3.qrc.get_L2_nonsaturation_nonsweep_QUALITY_FLAG() is
+    % bicas.proc.L2L3.qrc.get_synthetic_L2_QFL() is
     % independent of the function, and does in a sense does not belong there,
     % but the need to group together code is greater and takes precedence.
     %
-    function [L3Qrcbm, L3DensityQrcbm, QUALITY_FLAG_nonsatFpa] = ...
-        get_QRCBMs_synthetic_QUALITY_FLAG(...
-        L2qbmFpa, QUALITY_FLAG_Fpa, tt2000Ar, NsoTable, ...
+    function [L3Qrcbm, L3DensityQrcbm, SyntheticL2QflFpa] = ...
+        get_QRCBMs_synthetic_L2_QFL(...
+        L2qbmFpa, L2QflFpa, tt2000Ar, NsoTable, ...
         saturationQualityScheme, L)
       % PROPOSAL: Move to bicas.proc.L2L3.qrc.
 
@@ -329,7 +329,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % NSO table-->L3 QRCBs
       %             L3 DENSITY QRCBs
       %------------------------------
-      L3Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
+      L3Qrcbm        = bicas.proc.qrc.NSO_table_to_QRCBM(...
         bicas.const.qrc.Q.L3_QRCSM.qrcidAr,         NsoTable, tt2000Ar, L);
       L3DensityQrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
         bicas.const.qrc.Q.L3_DENSITY_QRCSM.qrcidAr, NsoTable, tt2000Ar, L);
@@ -365,9 +365,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % (1) the derived L2 non-saturation QUALITY_FLAG, and
       % (2) the (true) L2 input QUALITY FLAG.
       %========================================================================
-      QUALITY_FLAG_nonsatFpa = ...
-        bicas.proc.L2L3.qrc.get_L2_nonsaturation_nonsweep_QUALITY_FLAG( ...
-        tt2000Ar, NsoTable, QUALITY_FLAG_Fpa.fpAr, L);
+      SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL( ...
+        tt2000Ar, NsoTable, L2QflFpa.fpAr, L);
     end
 
 
@@ -376,14 +375,14 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % Remove (blank) L2 data before sending it to processing.
     %
     function [VDC_Fpa, EDC_Fpa] = set_VDC_EDC_FPs_before_processing( ...
-        VDC_Fpa, EDC_Fpa, QUALITY_FLAG_nonsatFpa, ...
-        L3Qrcbm, QUALITY_FLAG_minForUse)
+        VDC_Fpa, EDC_Fpa, SyntheticL2QflFpa, ...
+        L3Qrcbm, qflMinForUse)
       % PROPOSAL: Test code.
 
       % irf.assert.sizes(...
       %   VDC_Fpa, [-1, 3], ...
       %   EDC_Fpa, [-1, 3])
-      % bicas.utils.validate_ZV_QUALITY_FLAG(QUALITY_FLAG_minForUse)
+      % bicas.utils.validate_QFL(QUALITY_FLAG_minForUse)
       % assert(isscalar(QUALITY_FLAG_minForUse))
       % assert(isa(L3Qrcbm, "bicas.proc.QrcbMap"))
 
@@ -404,7 +403,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % from L2 input file)!
       % NOTE: It is unclear what is the best way to treat QUALITY_FLAG=FV.
       % NOTE: Treatment of this special case is documented in readme.txt.
-      bDoNotUseFpa = QUALITY_FLAG_nonsatFpa < QUALITY_FLAG_minForUse;
+      bDoNotUseFpa = SyntheticL2QflFpa < qflMinForUse;
       bDoNotUse    = bDoNotUseFpa.array(false);   % Is [FP==>false] wise?
       VDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
       EDC_Fpa(bDoNotUse, :) = bicas.utils.FPArray.FP_SINGLE;
@@ -425,7 +424,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         Ga.SOOP_TYPE
         Zv.Epoch
         Zv.DELTA_PLUS_MINUS_Fpa
-        Zv.QUALITY_FLAG_Fpa
+        Zv.QflFpa
         Zv.L1qbmFpa
         Zv.L2qbmFpa
       end
@@ -435,7 +434,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Zv2.Epoch              = Zv.Epoch;
       Zv2.DELTA_PLUS_MINUS   = Zv.DELTA_PLUS_MINUS_Fpa;
 
-      Zv2.QUALITY_FLAG       = Zv.QUALITY_FLAG_Fpa;
+      Zv2.QUALITY_FLAG       = Zv.QflFpa;
       Zv2.QUALITY_BITMASK    = Zv.L1qbmFpa;
       Zv2.L2_QUALITY_BITMASK = Zv.L2qbmFpa;
 
@@ -473,11 +472,11 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       Out.Zv.DENSITY                   = NeScpCm3Fpa.cast('single');
 
-      [QUALITY_FLAG, L3_QUALITY_FLAG] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
+      [qfl, l3qbm] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
         L3DensityQrcbm, bicas.const.qrc.Q.L3_DENSITY_QRCSM, "L3_QUALITY_BITMASK");
 
-      Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(QUALITY_FLAG);
-      Out.Zv.L3_QUALITY_BITMASK       = bicas.utils.FPArray(L3_QUALITY_FLAG);
+      Out.Zv.QUALITY_FLAG             = Out.Zv.QUALITY_FLAG.min(qfl);
+      Out.Zv.L3_QUALITY_BITMASK       = bicas.utils.FPArray(l3qbm);
 
       Out = bicas.OutputDataset(Out.Zv, Out.Ga, cell(0,1));
     end

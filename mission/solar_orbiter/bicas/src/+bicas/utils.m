@@ -316,15 +316,15 @@ classdef utils
     % possible to return proper error message on fail.
     % NOTE: Can not handle fill values.
     %
-    function success = validate_ZV_QUALITY_FLAG(QUALITY_FLAG)
+    function success = validate_QFL(qflAr)
 
-      if ~isa(QUALITY_FLAG, 'uint8')
+      if ~isa(qflAr, 'uint8')
         success = false;
-      elseif ~iscolumn(QUALITY_FLAG)
+      elseif ~iscolumn(qflAr)
         success = false;
       elseif ~all(...
-          bicas.const.qrc.QUALITY_FLAG_MIN <= QUALITY_FLAG & ...
-          bicas.const.qrc.QUALITY_FLAG_MAX >= QUALITY_FLAG ...
+          bicas.const.qrc.QFL_MIN <= qflAr & ...
+          bicas.const.qrc.QFL_MAX >= qflAr ...
           )
         success = false;
       else

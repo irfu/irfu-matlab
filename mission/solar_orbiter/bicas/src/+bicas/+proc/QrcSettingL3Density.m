@@ -12,7 +12,7 @@ classdef QrcSettingL3Density < bicas.proc.QrcSetting
     % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.
     % NOTE: This is interpretation is in compliance with how the ZV
     % QUALITY_FLAG is supposed to be set/updated.
-    QUALITY_FLAG
+    qfl
 
     % Bits (bitmask) that should be set in either ZV "L2_QUALITY_BITMASK" or
     % "L3_QUALITY_BITMASK" (density).
@@ -29,15 +29,15 @@ classdef QrcSettingL3Density < bicas.proc.QrcSetting
 
     function obj = QrcSettingL3Density(A)
       arguments
-        A.QUALITY_FLAG = bicas.const.qrc.QUALITY_FLAG_MAX
-        A.l3qbm        = bicas.const.qrc.LxQBM_NONE
+        A.qfl    = bicas.const.qrc.QFL_MAX
+        A.l3qbm  = bicas.const.qrc.LxQBM_NONE
       end
 
-      assert(bicas.utils.validate_ZV_QUALITY_FLAG(A.QUALITY_FLAG))
-      obj.QUALITY_FLAG =                          A.QUALITY_FLAG;
+      assert(bicas.utils.validate_QFL(A.qfl))
+      obj.qfl =                                   A.qfl;
 
-      assert(isa(        A.l3qbm, 'uint16'))
-      obj.l3qbm        = A.l3qbm;
+      assert(isa( A.l3qbm, 'uint16'))
+      obj.l3qbm = A.l3qbm;
     end
 
 

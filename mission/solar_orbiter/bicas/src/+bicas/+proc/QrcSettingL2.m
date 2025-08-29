@@ -12,7 +12,7 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
     % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.
     % NOTE: This is interpretation is in compliance with how the ZV
     % QUALITY_FLAG is supposed to be set/updated.
-    QUALITY_FLAG
+    qfl
 
     % Bits (bitmask) that should be set in ZV "L2_QUALITY_BITMASK" or
     % NOTE: The value is supposed to be OR:ed with a preceding value, i.e. only
@@ -36,17 +36,17 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
 
     function obj = QrcSettingL2(A)
       arguments
-        A.QUALITY_FLAG    = bicas.const.qrc.QUALITY_FLAG_MAX
+        A.qfl             = bicas.const.qrc.QFL_MAX
         A.l2qbm           = bicas.const.qrc.LxQBM_NONE
         A.voltageFvSsidAr = uint8.empty(0, 1)
         A.currentFvIantAr = zeros(0, 1)
       end
 
-      assert(bicas.utils.validate_ZV_QUALITY_FLAG(A.QUALITY_FLAG))
-      obj.QUALITY_FLAG            =               A.QUALITY_FLAG;
+      assert(bicas.utils.validate_QFL(A.qfl))
+      obj.qfl            =                        A.qfl;
 
-      assert(isa(                   A.l2qbm, 'uint16'))
-      obj.l2qbm                   = A.l2qbm;
+      assert(isa( A.l2qbm, 'uint16'))
+      obj.l2qbm = A.l2qbm;
 
       assert(iscolumn(                     A.voltageFvSsidAr))
       assert(bicas.proc.L1L2.const.is_SSID(A.voltageFvSsidAr))
