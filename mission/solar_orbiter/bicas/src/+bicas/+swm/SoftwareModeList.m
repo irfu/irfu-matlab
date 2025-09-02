@@ -51,6 +51,26 @@
 % First created 2019-07-31
 %
 classdef SoftwareModeList
+  % PROPOSAL: Abolish this class. Other code really only needs
+  %           SWM class + object array/list.
+  %   CON: Implements good-to-have method Swm = get_SWM(obj, swmCliOption).
+  %     CON-PROPOSAL: Replace with dictionary/containers.Map of SWMs.
+  %       CON: ~Duplicates SWM.cliOption as both key and SWM property.
+  %     CON-PROPOSAL: Replace with array of SWMs, but supply standalone
+  %                   function for searching through array of SWMs.
+  %   CON: Alters the BICAS interface which bicas.batch uses.
+  %   CON: Class is easy and harmless to implement.
+  %     PRO: Class implementation does not overlap with other code.
+  %   CON: Can add desired features.
+  %     Ex: Assert element class, unique SWM.cliOption values.
+  %
+  % PROPOSAL: Better class name. Not "List".
+  % PROPOSAL: Implement ~map-like interface.
+  %   Ex: value=SWML.get(key), SWML.nEntries.
+  %   PROPOSAL: Name "*Map".
+  %       PRO: There is no inherent ordering of SWMs.
+  %       PRO: Consistent with bicas.utils.ZvMap, bicas.proc.QrcSettingsMap.
+  %
   % PROPOSAL: Pick SWD name/descriptions from master CDFs.
   % PROPOSAL: Obtain output dataset level from production function metadata?!!
   %
@@ -62,32 +82,7 @@ classdef SoftwareModeList
   %           shown in the SWD.
   %   PRO: Can handle old datasets with ROG-SGSE DSIs, and otherwise
   %        only use RODP DSIs.
-  %
-  % TODO-DEC: Which arguments should SWML production functions (function handles in
-  %           an instance of bicas.swm.SoftwareModeList) have?
-  %   NOTE: The arguments needed by the underlying production functions
-  %         varies, but the arguments returned by bicas.swm.SoftwareModeList must be the same.
-  %   NOTE: produce_L1R_to_L2_LFR/TDS() are used for multiple s/w modes with some
-  %         arguments hard-coded differently for different s/w modes (input & output DSIs).
-  %   NOTE: SWM/underlying production functions can receive argument values via
-  %       (1) bicas.swm.SoftwareModeList (constructor), or (2) the call in execute_SWM.
-  %   PROPOSAL: All arguments which are known at the time bicas.swm.SoftwareModeList
-  %       constructor is called, should receive values there.
-  %       ==> ~As many as possible.
-  %       CON: bicas.swm.SoftwareModeList not really meant to set production function arguments.
-  %       CON: Makes bicas.swm.SoftwareModeList harder to initialize (outside of BICAS).
-  %   PROPOSAL: All arguments which are different for different (underlying) production
-  %             functions. ==> As few as possible.
-  %   Ex: Bso, L, rctDir, NsoTable
-  %
-  % PROPOSAL: Abolish this class. Only need SWM class + object array/list.
-  %   CON: Implements good-to-have method Swm = get_SWM(obj, swmCliOption).
-  %     CON-PROPOSAL: Use dictionary.
-  %   CON: Alters the BICAS interface which bicas.batch uses.
-  %
-  % PROPOSAL: Better class name
-  %   PROPOSAL: SwmSet
-  %       PRO: There is no inherent ordering of SWMs.
+
 
 
   % PUBLIC, IMMUTABLE
@@ -116,12 +111,12 @@ classdef SoftwareModeList
     % the implementation has not been entirely updated to take advantage of
     % this (not simplified of this).
     %
-    function obj = SoftwareModeList(SwmList)
-      assert(isvector(SwmList))
-      assert(isa(SwmList, 'bicas.swm.SoftwareMode'))
-      irf.assert.castring_set({SwmList(:).cliOption})
+    function obj = SoftwareModeList(SwmAr)
+      assert(iscolumn(SwmAr))
+      assert(isa(SwmAr, 'bicas.swm.SoftwareMode'))
+      irf.assert.castring_set({SwmAr(:).cliOption})
 
-      obj.List = SwmList;
+      obj.List = SwmAr;
     end
 
 

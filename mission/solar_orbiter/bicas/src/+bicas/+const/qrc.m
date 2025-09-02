@@ -6,10 +6,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qrc
-  % PROPOSAL: Rename QRCS or QRCSM.
-  %   PRO: QRCS and QRCSM are the only publically visible products of this class.
-  %   CON: The subject of the class is QRCs.
-  %
   % PROPOSAL: Replace bicas.const.qrc.Q with separate constants.
   %   PRO: Shorter variables paths.
   %   CON: Can not shorten/copy in code: Q = bicas.const.qrc.Q.
@@ -67,7 +63,7 @@ classdef qrc
 
 
 
-    % Function for the initializing QRCSM with all QRCSs for channel saturation
+    % Function for the initializing QRCSM with all QRCSs for CHANNEL saturation
     % in L2 CDFs and L3 CDFs.
     %
     function [L2Qrcsm, L3Qrcsm] = init_L2_L3_CHANNEL_SATURATION_QRCSM()
@@ -86,6 +82,7 @@ classdef qrc
         L2Qrcs = bicas.proc.QrcSettingL2(...
           qfl   = bicas.const.qrc.QFL_SATURATION, ...
           l2qbm = uint16(l2qbm));
+
         L2Qrcsm.add(qrcid, L2Qrcs);
       end
 
@@ -108,10 +105,12 @@ classdef qrc
 
 
 
+    % Function for the initializing QRCSM with all QRCSs for GLOBAL saturation
+    % in L2 CDFs.
+    %
     function [L2Qrcsm] = init_L2_GLOBAL_SATURATION_QRCSM()
       L2Qrcsm = bicas.proc.QrcSettingsMap();
 
-      % Global saturation quality variable scheme:
       % NOTE: L2QBM_BIT_PARTIAL_SATURATION is used for two different QRCIDs.
       L2QBM_BIT_PARTIAL_SATURATION = uint16(1);
       L2QBM_BIT_FULL_SATURATION    = uint16(2);
@@ -268,12 +267,11 @@ classdef qrc
       Qrcs = bicas.proc.QrcSettingL2(...
         qfl             = QFL_ANTx_FAILING, ...
         voltageFvSsidAr = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'), ...
-        gaCaveats=ANT3_FAILING_GA_CAVEATS);
+        gaCaveats       = ANT3_FAILING_GA_CAVEATS);
       L2Qrcsm.add("ANT3_FAILING", Qrcs);
       %
       Qrcs = bicas.proc.QrcSettingL3(...
-        gaCaveats=ANT3_FAILING_GA_CAVEATS);
-      % Qrcs = bicas.proc.QrcSettingL3();
+        gaCaveats = ANT3_FAILING_GA_CAVEATS);
       L3Qrcsm.add("ANT3_FAILING", Qrcs);
 
 
@@ -313,7 +311,7 @@ classdef qrc
       % Intended for when there are arbitrary reasons to remove EFIELD data.
       % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing
       % input to solo.vdccal()).
-      Qrcs = bicas.proc.QrcSettingL3(efieldFvIndexAr=[1 2 3]');
+      Qrcs = bicas.proc.QrcSettingL3(efieldFvIndexAr = [1 2 3]');
       L3Qrcsm.add("REMOVE_EFIELD", Qrcs);
 
 

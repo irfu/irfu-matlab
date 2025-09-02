@@ -175,7 +175,8 @@ classdef swpdet
     %       If greater than the number of CDF records/rows of data, then no
     %       record will be labelled as sweeping.
     %
-    function isSweepingFpa = SBDA_SCDA_with_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
+    function isSweepingFpa = SBDA_SCDA_with_margins(...
+        hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
       % TODO-DEC: Does having argument and return value FPAs make sense?
       %           Should caller convert?
       %
@@ -191,10 +192,12 @@ classdef swpdet
       windowMarginSec = Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC');
 
       % Detect sweeps using SBDA.
-      isSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(hkTt2000, hkBdmFpa, Bso);
+      isSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(...
+        hkTt2000, hkBdmFpa, Bso);
 
       % Detect sweeps using SCDA.
-      isSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso);
+      isSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(...
+        hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso);
 
       % Merge results and add time margins to detected sweeps
       % -----------------------------------------------------

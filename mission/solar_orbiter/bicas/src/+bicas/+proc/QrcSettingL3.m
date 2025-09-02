@@ -16,8 +16,8 @@ classdef QrcSettingL3 < bicas.proc.QrcSetting
   %#####################
   %#####################
   properties(SetAccess=immutable)
-    % Column arrays of indices in the second dimension. Specifies which
-    % components should be blanked.
+    % All (non-inherited) properties are column arrays of indices in the second
+    % dimension. Specifies which components should be blanked.
 
     % For blanking L2 ZV VDC/EDC before being used before data is passed on to
     % solo.vdccal() and psp2ne().

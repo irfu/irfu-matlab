@@ -19,8 +19,8 @@ Every entry in the table consists of:
     (4) a human-readable comment string which is ignored.
 This table is used to specify time intervals which should be treated in specific
 ways in particular w.r.t. to data quality, e.g. modifying quality bits,
-zVariable QUALITY_FLAG & L2/L3_QUALITY_BITMASK, blanking data etc. due to e.g.
-thruster firings and saturation.
+zVariable QUALITY_FLAG & L2/L3_QUALITY_BITMASK, setting global attribute
+CAVEATS, blanking data etc. due to e.g. thruster firings and saturation.
 
 
 
@@ -31,12 +31,11 @@ BICAS takes many different actions depending on quality, different special
 cases, and settings (configuration), and it can be very hard to keep track of
 this. The purpose of this section is meant to summarize this information.
 
-NOTE: This section might not be complete, but is intended to become so over
-      time.
 NOTE: The NSO table is used for determining when many of these conditions apply
       or many instances of conditions apply.
-NOTE: bicas.const.qrc contains hard-coded constants describing much of the
-      behaviour/actions taken when a certain condition applies.
+NOTE: bicas.const.qrc contains hard-coded constants (immutable QRCS objects)
+      which describe much of the behaviour/actions taken when a certain
+      condition applies.
 
 
 =======================================
@@ -104,6 +103,7 @@ it is assumed that no sweep is underway.
 BICAS can label L2 data as saturated according to one of two schemes (setting
 PROCESSING.SATURATION.QUALITY_SCHEME): one old scheme (to be phased out), and
 one new scheme (under evaluation; to be phased in).
+https://github.com/irfu/irfu-matlab/issues/142
 
 
 -------------------------------
@@ -169,8 +169,8 @@ BICAS can determine that data is affected by a SolO thruster firing by reading
 the NSO table.
 
 NOTE: L1/L1R QUALITY_BITMASK contains a quality bit for thruster firings but at
-      the time of writing (2025-08-14), this is not being used, due to covering
-      too broad time intervals (multiple hours).
+      the time of writing (2025-08-14), this is not being used BICAS, due to
+      covering too broad time intervals (multiple hours).
 
 Condition         | Action taken when condition applies
 -------------------------------------------------------
@@ -193,7 +193,7 @@ NOTE: Which data should be excluded due to being affected by sweeps is not
       depending on the time and it adds a customizable time margin in addition
       to that and therefore may remove too much or too little data. BICAS does
       not (yet) use the QUALITY_BITMASK bits to detect sweeps (as of
-      2025-08-14).
+      2025-09-04).
 
 Condition         | Action taken when condition applies
 --------------------------------------------------------------------
@@ -244,9 +244,9 @@ or fill value (!)                            |     values are set to fill
                                              |     values before downsampling.
 
 
-=====================================================
- L2 data used for generating L3 DENSITY,EFIELD,SCPOT
-=====================================================
+=======================================================
+ L2 data used for generating L3 DENSITY, EFIELD, SCPOT
+=======================================================
 L3 DENSITY+EFIELD+SCPOT is derived from SOLO_L2_RPW-LFR-SURV-CWF-E alone, but
 only when its quality is deemed good enough using setting
 PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN (=2 as of 2025-08-19). Saturated L2 data
@@ -293,9 +293,9 @@ and zVariable QUALITY_FLAG.             |
 
 
 
-######################################################
- ROC modifying BICAS output CDFs dfor quality reasons
-######################################################
+#####################################################
+ ROC modifying BICAS output CDFs for quality reasons
+#####################################################
 ROC sometimes modifies CDFs, *after* they have been produced by BICAS and before
 they are officially delivered to SOAR. This may happen e.g. for time intervals
 when e.g. ANT3 has failed and QUALITY_FLAG is capped to 1 by ROC. See global

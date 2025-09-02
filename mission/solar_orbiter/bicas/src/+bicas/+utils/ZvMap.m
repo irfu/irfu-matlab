@@ -26,10 +26,7 @@
 %
 classdef ZvMap < handle
   % PROPOSAL: Automatic test code.
-  %
-  % PROBLEM: If class represents a map of ZVs, then there should be a property
-  %          nRecords. If class is more generic, the property should be called
-  %          nRows.
+  % PROPOSAL: Rename "entries"--> ZVs.
   %
   % PROPOSAL: Use handle class which wraps a non-handle value.
   %   PRO: May be needed for implementing

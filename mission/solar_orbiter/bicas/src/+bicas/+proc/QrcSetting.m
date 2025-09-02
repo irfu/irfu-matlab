@@ -21,6 +21,14 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef(Abstract) QrcSetting
+  % PROPOSAL: QRCS subclass naming which implies category of processing, not
+  %           just output CDFs.
+  %   NOTE: Cf. bicas.proc.*
+  %     bicas.proc.L1L2/L2L2/L2L3
+  %   L1L2
+  %   L2L2 (for which there is currently no QRCS)
+  %   L2L3
+  %   L2L3Density
 
 
 
