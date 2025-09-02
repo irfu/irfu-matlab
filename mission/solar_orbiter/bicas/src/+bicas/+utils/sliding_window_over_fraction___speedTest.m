@@ -17,13 +17,13 @@ for i = logspace(log10(1e3), log10(1e6), 10)
   windowLengthSec    = 6*1;
 
   periodSec   = 1e99;
-  samplFreqHz = 1000;
+  samplRateHz = 1000;
 
   % Log
-  nSamplesPerWindow = windowLengthSec * samplFreqHz;
+  nSamplesPerWindow = windowLengthSec * samplRateHz;
   fprintf('nSamplesPerWindow = %g\n', nSamplesPerWindow);
 
-  tt2000Ar = int64( [1:nSamples]' / samplFreqHz * 1e9 );
+  tt2000Ar = int64( [1:nSamples]' / samplRateHz * 1e9 );
   % square() generates a square wave with values -1 and +1 and a period of
   % 2*pi. square(0) = +1.
   bFlag1Ar = logical(square( tt2000Ar * (2*pi*periodSec/1e9)) == 1);

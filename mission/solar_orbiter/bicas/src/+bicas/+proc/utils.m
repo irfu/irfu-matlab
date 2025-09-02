@@ -281,9 +281,9 @@ classdef utils
     %
     % ARGUMENTS
     % =========
-    % freqHz
+    % samplRateHz
     %       Frequency column vector in s^-1.
-    %       Can not handle freqHz=NaN since the output is an integer
+    %       Can not handle samplRateHz=NaN since the output is an integer
     %       (assertion).
     %
     %
@@ -293,15 +293,15 @@ classdef utils
     %       Analogous to BIAS zVariable. CDF_INT8=int64.
     %       NOTE: Unit ns.
     %
-    function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, aspr)
+    function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(samplRateHz, aspr)
 
       ZV_DELTA_PLUS_MINUS_CDF_DATA_TYPE = 'CDF_INT8';
 
       % ASSERTIONS
-      nRecords = irf.assert.sizes(freqHz, [-1]);
-      assert(isfloat(freqHz) && all(isfinite(freqHz)), ...
+      nRecords = irf.assert.sizes(samplRateHz, [-1]);
+      assert(isfloat(samplRateHz) && all(isfinite(samplRateHz)), ...
         'BICAS:Assertion:IllegalArgument', ...
-        'Argument "freqHz" does not consist of non-NaN floats.')
+        'Argument "samplRateHz" does not consist of non-NaN floats.')
       assert(isscalar(aspr), ...
         'BICAS:Assertion:IllegalArgument', ...
         'Argument "aspr" is not a scalar.')
@@ -310,11 +310,11 @@ classdef utils
 
       zv_DELTA_PLUS_MINUS = zeros([nRecords, aspr]);
       for i = 1:nRecords
-        % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
+        % NOTE: Converts [s] (1/samplRateHz) --> [ns] (DELTA_PLUS_MINUS) so
         % that the unit is the same as for Epoch.
         % NOTE: Seems to work for more than 2D.
         % Unit: nanoseconds
-        zv_DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;
+        zv_DELTA_PLUS_MINUS(i, :) = 1./samplRateHz(i) * 1e9 * 0.5;
       end
       zv_DELTA_PLUS_MINUS = cast(zv_DELTA_PLUS_MINUS, ...
         irf.cdf.convert_CDF_type_to_MATLAB_class(...
@@ -335,7 +335,7 @@ classdef utils
     %
     % ARGUMENTS
     % =========
-    % freqHz
+    % samplRateHz
     %       Sampling rate. Approximately the inverse of the difference between
     %       successive tt2000Ar values, except when the sampling rate changes
     %       or there are data gaps.
@@ -348,19 +348,19 @@ classdef utils
     %       Column array of integer values (double), one per sample. The value
     %       increments iff there is a data gap.
     %
-    function iSegmentAr = find_data_gaps(tt2000Ar, freqHz, maxSampleGapRatio)
+    function iSegmentAr = find_data_gaps(tt2000Ar, samplRateHz, maxSampleGapRatio)
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       nRecords = irf.assert.sizes( ...
         tt2000Ar, [-1], ...
-        freqHz,   [-1]);
+        samplRateHz,   [-1]);
       assert(isscalar(maxSampleGapRatio) & (maxSampleGapRatio > 0))
-      assert(all(freqHz > 0))
+      assert(all(samplRateHz > 0))
 
       if nRecords == 0
         iSegmentAr = zeros(0, 1);
       else
         % Length = n
-        integrationTimeSecAr = 1 ./ freqHz;
+        integrationTimeSecAr = 1 ./ samplRateHz;
 
         % Length = n-1
         expectedSampleGapSecAr  =  ...

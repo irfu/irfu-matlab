@@ -65,11 +65,11 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
     function test_find_data_gaps(T)
-      function test(tt2000Ar, freqHz, maxSampleGapFraction, expISegmentAr)
+      function test(tt2000Ar, samplRateHz, maxSampleGapFraction, expISegmentAr)
         tt2000Ar = int64(tt2000Ar);
 
         actISegmentAr = bicas.proc.utils.find_data_gaps(...
-          tt2000Ar, freqHz, maxSampleGapFraction);
+          tt2000Ar, samplRateHz, maxSampleGapFraction);
 
         T.assertEqual(actISegmentAr, expISegmentAr)
       end

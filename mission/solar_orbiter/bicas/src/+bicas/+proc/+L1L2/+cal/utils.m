@@ -356,20 +356,20 @@ classdef utils
 
     % ARGUMENTS
     % =========
-    % freqHzArray
+    % samplRateHzAr
     %       Array of frequencies for which the TF Z value should be logged.
     % tfFh
     %       Function handle, Z(omegaRps).
-    %       NOTE: rad/s (omegaRps) as opposed to Hz (freqHzArray).
+    %       NOTE: rad/s (omegaRps) as opposed to Hz (samplRateHzAr).
     %
     function log_TF_function_handle(...
-        logLevel, tfName, tfUnit, freqHzArray, tfFh, L)
+        logLevel, tfName, tfUnit, samplRateHzAr, tfFh, L)
       assert(isa(tfFh, 'function_handle'))
 
-      zArray = tfFh(freqHzArray * 2*pi);
-      for i=1:numel(freqHzArray)
-        freqHz = freqHzArray(i);
-        Z      = zArray(i);
+      zAr = tfFh(samplRateHzAr * 2*pi);
+      for i=1:numel(samplRateHzAr)
+        samplRateHz = samplRateHzAr(i);
+        Z           = zAr(i);
 
         inverseZValueStr = sprintf('1/%10.5f', 1/abs(Z));
 
@@ -413,7 +413,7 @@ classdef utils
         % ~"wrapped"?
         L.logf(logLevel, ...
           '%-46s %7.2f [Hz]: abs(Z)=%8.5f=%12s [%s], phase(Z)=% 6.1f [deg]', ...
-          tfName, freqHz, abs(Z), inverseZValueStr, ...
+          tfName, samplRateHz, abs(Z), inverseZValueStr, ...
           tfUnit, rad2deg(angle(Z)))
       end    % for
     end

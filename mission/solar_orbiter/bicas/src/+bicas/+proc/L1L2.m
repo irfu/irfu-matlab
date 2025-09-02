@@ -307,7 +307,7 @@ classdef L1L2
       OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QflFpa;
       OutSci.Zv.DELTA_PLUS_MINUS   = SciDcip.Zv.DELTA_PLUS_MINUS;
       OutSci.Zv.SYNCHRO_FLAG       = SciDcip.Zv.SYNCHRO_FLAG;
-      OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.freqHz;
+      OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.samplRateHz;
 
       % NOTE: Convert aampere --> nano-aampere
       OutSci.Zv.IBIAS1 = SciDcop.Zv.currentAampere(:, 1) * 1e9;

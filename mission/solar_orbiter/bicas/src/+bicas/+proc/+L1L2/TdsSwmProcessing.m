@@ -349,9 +349,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      % TODO-NI: Why convert to double? To avoid precision problems when
-      % doing math with other variables?
-      zvFreqHz = double(InSci.Zv.SAMPLING_RATE);
+      % TODO-NI: Why convert to double? To avoid precision problems when doing
+      % math with other variables?
+      samplRateHz = double(InSci.Zv.SAMPLING_RATE);
 
 
 
@@ -361,8 +361,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
       % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
-        zvFreqHz, 1);
-      Zv.freqHz                  = zvFreqHz;
+        samplRateHz, 1);
+      Zv.samplRateHz             = samplRateHz;
       Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
       Zv.bdmFpa                  = HkSciTime.bdmFpa;
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;

@@ -238,7 +238,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
       % NOTE: Needed also for 1 SPR.
-      zvFreqHz = solo.hwzv.get_LSF( zvILsf );
+      samplRateHz = solo.hwzv.get_LSF( zvILsf );
 
       % Obtain the relevant values (one per record) from zVariables R0,
       % R1, R2, and the virtual "R3".
@@ -292,8 +292,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       % NOTE: DELTA_PLUS_MINUS only applies to Epoch, and must therefore have
       % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
-        zvFreqHz, 1);
-      Zv.freqHz                  = zvFreqHz;
+        samplRateHz, 1);
+      Zv.samplRateHz             = samplRateHz;
       Zv.uspr                    = ones(nRecords, 1) * aspr;
       % BW needed because it is copied to the output CDF.
       Zv.BW                      = InSci.Zv.BW;
