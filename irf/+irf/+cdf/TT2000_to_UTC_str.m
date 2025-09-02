@@ -33,5 +33,5 @@ function utcStr = TT2000_to_UTC_str(tt2000, nSecondDecimals)
 assert(isscalar(tt2000), 'Illegal argument tt2000. Must be scalar.')
 
 utcStrCa = irf.cdf.TT2000_to_UTC_str_many(tt2000, nSecondDecimals);
-utcStr = utcStrCa{1};
+utcStr   = utcStrCa{1};
 end

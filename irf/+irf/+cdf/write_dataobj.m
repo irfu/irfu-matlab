@@ -211,6 +211,9 @@ function write_dataobj(filePath, ...
 %   ensure_ZV_ZVA_data_types_consistent()
 %   --
 %   NOTE: Requires making inner functions, external functions.
+%
+% PROPOSAL: Replace irf.utils.interpret_settings_args() with using name-value
+%           arguments + default values.
 
 
 
@@ -244,7 +247,7 @@ assert(islogical(Settings.calculateMd5Checksum))
 
 
 % ASSERTION: ZV names are all unique and unambiguous
-% ---------------------------------------------------------
+% --------------------------------------------------
 % zvNameAllCa1 previously called for only non-char data. Why?
 zvNameAllCa1 = dataobj_Variables(:, 1);
 zvNameAllCa2 = fieldnames(dataobj_data);
