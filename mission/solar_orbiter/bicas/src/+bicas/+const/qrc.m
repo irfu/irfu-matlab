@@ -257,20 +257,24 @@ classdef qrc
       %
       QFL_ANTx_FAILING = uint8(1);   % 1="Known problems, use at your own risk"
 
-      % Qrcs = bicas.proc.QrcSettingL2(...
-      %   qfl             = QFL_ANTx_FAILING, ...
-      %   voltageFvSsidAr = S(["DC_V1" "DC_V12" "DC_V13" "AC_V12" "AC_V13"]'));
-      % L2Qrcsm.add("ANT1_FAILING", Qrcs);
-      %
-      % Qrcs = bicas.proc.QrcSettingL2(...
-      %   qfl             = QFL_ANTx_FAILING, ...
-      %   voltageFvSsidAr = S(["DC_V2" "DC_V12" "DC_V23" "AC_V12" "AC_V23"]'));
-      % L2Qrcsm.add("ANT2_FAILING", Qrcs);
+      % NOTE: Using the exact same CAVEATS string which ROC uses for setting GA
+      % CAVEATS in CDFs output by RCSs (when agreed upon).  /2025-09-02
+      ANT3_FAILING_GA_CAVEATS = ...
+        "RPW electrical antenna 3 [MY] failure reported during the current day (see QUALITY_FLAG=1).";
 
+      % IMPLEMENTATION NOTE: Creating QRCSs for both 6xL2 and 6xL3 datasets.
+      % This is needed since GA CAVEATS values are *NOT* inherited (or
+      % modified) from parent CDFs as opposed to for QFL and LxQBM.
       Qrcs = bicas.proc.QrcSettingL2(...
         qfl             = QFL_ANTx_FAILING, ...
-        voltageFvSsidAr = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'));
+        voltageFvSsidAr = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'), ...
+        gaCaveats=ANT3_FAILING_GA_CAVEATS);
       L2Qrcsm.add("ANT3_FAILING", Qrcs);
+      %
+      Qrcs = bicas.proc.QrcSettingL3(...
+        gaCaveats=ANT3_FAILING_GA_CAVEATS);
+      % Qrcs = bicas.proc.QrcSettingL3();
+      L3Qrcsm.add("ANT3_FAILING", Qrcs);
 
 
 

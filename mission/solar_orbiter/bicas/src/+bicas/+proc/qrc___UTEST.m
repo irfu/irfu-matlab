@@ -219,6 +219,65 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_QRCB_arrays_to_GA_CAVEATS___zero_QRCs_zero_records(T)
+      Qrcbm = bicas.proc.QrcbMap(0);
+      Qrcsm = bicas.proc.QrcSettingsMap();
+      actGaCaveats = bicas.proc.qrc.QRCB_arrays_to_GA_CAVEATS(Qrcbm, Qrcsm);
+      T.assertEqual(actGaCaveats, string.empty(0, 1))
+    end
+
+
+
+    function test_QRCB_arrays_to_GA_CAVEATS___zero_QRCs_nonzero_records(T)
+      Qrcbm = bicas.proc.QrcbMap(3);
+      Qrcsm = bicas.proc.QrcSettingsMap();
+      actGaCaveats = bicas.proc.qrc.QRCB_arrays_to_GA_CAVEATS(Qrcbm, Qrcsm);
+      T.assertEqual(actGaCaveats, string.empty(0, 1))
+    end
+
+
+
+    function test_QRCB_arrays_to_GA_CAVEATS___empty_QRCS_CAVEATS(T)
+      Qrcbm = bicas.proc.QrcbMap(3);
+      Qrcbm.add("QRCID_1", logical([0; 1; 0]))
+      Qrcbm.add("QRCID_2", logical([0; 0; 0]))
+      Qrcbm.add("QRCID_3", logical([1; 0; 0]))
+
+      Qrcsm = bicas.proc.QrcSettingsMap();
+      Qrcsm.add("QRCID_1", bicas.proc.QrcSettingL2())
+      Qrcsm.add("QRCID_2", bicas.proc.QrcSettingL2())
+      Qrcsm.add("QRCID_3", bicas.proc.QrcSettingL2())
+
+      actGaCaveats = bicas.proc.qrc.QRCB_arrays_to_GA_CAVEATS(Qrcbm, Qrcsm);
+      T.assertEqual(actGaCaveats, string.empty(0, 1))
+    end
+
+
+
+    % Complex test
+    function test_QRCB_arrays_to_GA_CAVEATS___complex(T)
+      Qrcbm = bicas.proc.QrcbMap(3);
+      Qrcbm.add("QRCID_1", logical([0; 1; 0]))
+      Qrcbm.add("QRCID_2", logical([0; 0; 1]))
+      Qrcbm.add("QRCID_3", logical([1; 0; 0]))
+      Qrcbm.add("QRCID_4", logical([0; 0; 0]))
+
+      Qrcsm = bicas.proc.QrcSettingsMap();
+      % NOTE: Test (1) using >=2 CAVEATS strings per QRCS, (2) sorting of
+      % combined CAVEATS strings, (3) empty CAVEATS (for matching QRC).
+      gaCaveats1 = ["d CAVEATS 1a"; "b CAVEATS 1b"];
+      gaCaveats2 = ["c CAVEATS 2a"; "a CAVEATS 2b"];
+      Qrcsm.add("QRCID_1", bicas.proc.QrcSettingL2(gaCaveats=gaCaveats1))
+      Qrcsm.add("QRCID_2", bicas.proc.QrcSettingL2(gaCaveats=gaCaveats2))
+      Qrcsm.add("QRCID_3", bicas.proc.QrcSettingL2())
+      Qrcsm.add("QRCID_4", bicas.proc.QrcSettingL3(gaCaveats=["Should not be used."]))
+
+      actGaCaveats = bicas.proc.qrc.QRCB_arrays_to_GA_CAVEATS(Qrcbm, Qrcsm);
+      T.assertEqual(actGaCaveats, sort([gaCaveats1; gaCaveats2]))
+    end
+
+
+
     function test_LxQBM_to_bit_positions(testCase)
       function test(lxqbm, expBitPosAr)
         lxqbm       = uint16(lxqbm);

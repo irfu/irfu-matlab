@@ -191,6 +191,39 @@ classdef qrc
 
 
 
+    % Given QRCB arrays, translate them into GA "CAVEATS".
+    %
+    % NOTE: This function does not (and should not) handle treat zero CAVEATS
+    % strings as a special case like metadata conventions might require, e.g.
+    % replace an empty column CA representing CAVEATS with a scalar CA
+    % containing the string "none". This functionality should be handled by
+    % bicas.ga.get_output_dataset_GAs() instead.
+    %
+    function gaCaveats = QRCB_arrays_to_GA_CAVEATS(Qrcbm, Qrcsm)
+
+      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
+      assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
+      assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))
+
+      gaCaveats = string.empty(0, 1);
+
+      for qrcid = Qrcbm.qrcidAr'
+        qrcbAr = Qrcbm.get(qrcid);
+        Qrcs   = Qrcsm.get(qrcid);
+
+        if any(qrcbAr)
+          % NOTE: Concatenates two column arrays (not column array + scalar).
+          gaCaveats = [gaCaveats; Qrcs.gaCaveats];
+        end
+      end
+
+      % NOTE: CAVEATS should preferably be sorted to yield predictable array of
+      % CAVEATS strings.
+      gaCaveats = sort(gaCaveats);
+    end
+
+
+
     % Convert a (scalar) LxQBM to an array of indices of where the bits are set.
     %
     % RETURN VALUE

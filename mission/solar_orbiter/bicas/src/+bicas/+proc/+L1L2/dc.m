@@ -192,9 +192,9 @@ classdef dc
 
 
 
-      %####################
-      % Obtain quality ZVs
-      %####################
+      %############################
+      % Obtain quality ZVs and GAs
+      %############################
       SatSettings = bicas.proc.L1L2.sat.from_BSO_extract_saturation_settings(Bso);
       % NOTE: Whether voltage samples have already been blanked (set to NaN/FV)
       % or not based on QRCs, affects the saturation detection. Can not
@@ -219,11 +219,14 @@ classdef dc
       %   legend(irf.graph.escape_str("L2_QUALITY_BITMASK")); grid on
       % end
 
+      gaCaveats = bicas.proc.qrc.QRCB_arrays_to_GA_CAVEATS( ...
+        L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM);
 
 
-      %#################
-      % Set "final" ZVs
-      %#################
+
+      %#########################
+      % Set "final" ZVs and GAs
+      %#########################
       Zv = struct();
       Zv.QflFpa         = Dcip.Zv.QflFpa.min(bicas.utils.FPArray(qfl));
       Zv.l2qbm          = l2qbm;
@@ -231,7 +234,8 @@ classdef dc
       Zv.currentAampere = bicas.proc.L1L2.qrc.set_current_samples_FV(...
         currentAampere, L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM);
       Zv.VoltageZvm     = VoltageZvm;
-      Dcop = bicas.proc.L1L2.DemultiplexingCalibrationOutput(Zv);
+      Ga.CAVEATS        = gaCaveats;
+      Dcop = bicas.proc.L1L2.DemultiplexingCalibrationOutput(Ga, Zv);
 
       %##############
       % END FUNCTION

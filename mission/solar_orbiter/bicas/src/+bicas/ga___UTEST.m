@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for bicas.ga.normalize().
+% matlab.unittest automatic test code for bicas.ga.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef normalize___UTEST < matlab.unittest.TestCase
+classdef ga___UTEST < matlab.unittest.TestCase
 
 
 
@@ -17,10 +17,10 @@ classdef normalize___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_0(T)
+    function test_normalize_value(T)
 
       function test(x, beforeValuesCa, afterValue, expX)
-        actX = bicas.ga.normalize(x, beforeValuesCa, afterValue);
+        actX = bicas.ga.normalize_value(x, beforeValuesCa, afterValue);
         T.assertEqual(actX, expX)
       end
 
@@ -54,6 +54,19 @@ classdef normalize___UTEST < matlab.unittest.TestCase
 
       % Not normalizing (as intended!)
       test({'asd', 'none'}', GA_EMPTY_CA, {' '}, {'asd', 'none'}')
+    end
+
+
+
+    function test_normalize_empty_column_array(T)
+      actGaCa = bicas.ga.normalize_empty_column_array(cell(0, 1), '-');
+      T.assertEqual(actGaCa, {'-'})
+
+      actGaCa = bicas.ga.normalize_empty_column_array({'abc'}, '-');
+      T.assertEqual(actGaCa, {'abc'})
+
+      actGaCa = bicas.ga.normalize_empty_column_array({'abc'; 'ABC'}, '-');
+      T.assertEqual(actGaCa, {'abc'; 'ABC'})
     end
 
 

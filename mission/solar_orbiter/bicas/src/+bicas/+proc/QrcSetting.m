@@ -21,14 +21,34 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef(Abstract) QrcSetting
-  % PROPOSAL: Include QUALITY_FLAG.
+  % PROPOSAL: Include QUALITY_FLAG/qfl.
+  %   NOTE: Currently not a property in bicas.proc.QrcSettingL3.   /2025-09-02
+
+
+
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
+  properties(SetAccess=immutable)
+    % GA "CAVEATS". Column array of strings.
+    gaCaveats
+  end
+
 
 
   methods(Access=public)
 
 
 
-    function obj = QrcSetting()
+    function obj = QrcSetting(A)
+      arguments
+        A.gaCaveats = string.empty(0, 1);
+      end
+
+      assert(iscolumn(A.gaCaveats) & isstring(A.gaCaveats))
+      obj.gaCaveats = A.gaCaveats;
     end
 
 

@@ -314,7 +314,8 @@ classdef L1L2
       OutSci.Zv.IBIAS2 = SciDcop.Zv.currentAampere(:, 2) * 1e9;
       OutSci.Zv.IBIAS3 = SciDcop.Zv.currentAampere(:, 3) * 1e9;
 
-      % Shall be copied according to RCS ICD, 1.7.
+      OutSci.Ga.CAVEATS   = SciDcop.Ga.CAVEATS;
+      % Below GAs shall be copied from input CDF according to RCS ICD, 1.7.
       OutSci.Ga.OBS_ID    = SciDcip.Ga.OBS_ID;
       OutSci.Ga.SOOP_TYPE = SciDcip.Ga.SOOP_TYPE;
 
@@ -430,6 +431,7 @@ classdef L1L2
       else
         optionalZvFnSet = {};
       end
+      irf.assert.struct(OutSci.Ga, {'CAVEATS', 'OBS_ID', 'SOOP_TYPE'}, {})
       irf.assert.struct(OutSci.Zv, {...
         'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
         'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...

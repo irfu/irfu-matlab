@@ -50,7 +50,10 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
         A.l2qbm           = bicas.const.qrc.LxQBM_NONE
         A.voltageFvSsidAr = uint8.empty(0, 1)
         A.currentFvIantAr = zeros(0, 1)
+        A.gaCaveats       = string.empty(0, 1);
       end
+
+      obj@bicas.proc.QrcSetting(gaCaveats=A.gaCaveats);
 
       assert(bicas.utils.validate_QFL(A.qfl))
       obj.qfl   =                     A.qfl;

@@ -63,7 +63,7 @@ function OutGaSubset = get_output_dataset_GAs(...
 % ASSERTIONS
 assert(isa(OutputDataset, 'bicas.OutputDataset'))
 irf.assert.struct(OutputDataset.Ga, ...
-  {'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
+  {'CAVEATS', 'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
 % TODO-NI: Only checking these GAs to make sure that they are there, not
 % necessarily to use their values.
 
@@ -73,6 +73,11 @@ irf.assert.struct(OutputDataset.Ga, ...
 
 % Copy GAs from the argument. The rest of the code adds to this.
 OutGaSubset = OutputDataset.Ga;
+% IMPLEMENTATION NOTE: Convert string array to cell array of strings, since
+%                      subsequent code require GA on that format.
+% IMPLEMENTATION NOTE: Sort entries to ensure consistent output.
+OutGaSubset.CAVEATS                = bicas.ga.normalize_empty_column_array(...
+  cellstr(sort(OutGaSubset.CAVEATS)), 'none');
 
 
 
@@ -243,7 +248,7 @@ for i = 1:numel(keysCa)
   if isfield(InputDataset.Ga, 'SPICE_KERNELS')
     parentGa_SPICE_KERNELS = InputDataset.Ga.SPICE_KERNELS;
 
-    parentGa_SPICE_KERNELS = bicas.ga.normalize(...
+    parentGa_SPICE_KERNELS = bicas.ga.normalize_value(...
       parentGa_SPICE_KERNELS, ...
       {{'none'}; {' '}}, ...
       cell(0, 1));
@@ -255,9 +260,8 @@ for i = 1:numel(keysCa)
 end    % for
 
 % Normalize to the data format used in datasets.
-if isempty(ga_SPICE_KERNELS)
-  ga_SPICE_KERNELS = {'none'};
-end
+ga_SPICE_KERNELS = ...
+  bicas.ga.normalize_empty_column_array(ga_SPICE_KERNELS, 'none');
 end
 
 
@@ -290,7 +294,7 @@ for i = 1:numel(RctdCa)
   assert(~iscell(rctdValue))
 
   % NOTE: Rctd.ga_* values use [] to represent absent GAs.
-  rctdValue = bicas.ga.normalize(rctdValue, {{'none'}, {' '}, []}', ' ');
+  rctdValue = bicas.ga.normalize_value(rctdValue, {{'none'}; {' '}; []}, ' ');
 
   gaCa{i, 1} = rctdValue;
 end

@@ -46,7 +46,10 @@ classdef QrcSettingL3 < bicas.proc.QrcSetting
         A.vdcFvIndexAr    = zeros(0, 1);
         A.edcFvIndexAr    = zeros(0, 1);
         A.efieldFvIndexAr = zeros(0, 1);
+        A.gaCaveats       = string.empty(0, 1);
       end
+
+      obj@bicas.proc.QrcSetting(gaCaveats=A.gaCaveats);
 
       obj.assert_fvIndexAr(A.vdcFvIndexAr, 3)
       obj.vdcFvIndexAr    = A.vdcFvIndexAr;

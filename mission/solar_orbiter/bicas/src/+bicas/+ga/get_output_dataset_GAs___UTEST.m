@@ -90,7 +90,10 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
       %===============
       Epoch = int64([0; 1]);
       Zv    = struct('Epoch', Epoch);
-      Ga    = struct('OBS_ID', {' '}, 'SOOP_TYPE', {' '});
+      Ga    = struct(...
+        'OBS_ID',    {' '}, ...
+        'SOOP_TYPE', {' '}, ...
+        'CAVEATS',   {["CAVEATS 2"; "CAVEATS 1"]});
       % NOTE: LFR RCT does not have values for CAL_ENTITY_NAME,
       % CAL_ENTITY_AFFILIATION, CAL_EQUIPMENT. Code should handle this
       % gracefully.
@@ -136,8 +139,9 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
       test_cell_column(ActOutGaSubset.Parents)
       testCase.assertEqual(size(ActOutGaSubset.Parents), [3,1])
 
-      testCase.assertEqual(ActOutGaSubset.CALIBRATION_VERSION{1}, '01')
-      testCase.assertEqual(ActOutGaSubset.CALIBRATION_VERSION{2}, ' ')
+      testCase.assertEqual(ActOutGaSubset.CALIBRATION_VERSION, {'01'; ' '})
+
+      testCase.assertEqual(ActOutGaSubset.CAVEATS, {'CAVEATS 1'; 'CAVEATS 2'})
     end
 
 

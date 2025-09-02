@@ -38,9 +38,12 @@ classdef QrcSettingL3Density < bicas.proc.QrcSetting
 
     function obj = QrcSettingL3Density(A)
       arguments
-        A.qfl    = bicas.const.qrc.QFL_MAX
-        A.l3qbm  = bicas.const.qrc.LxQBM_NONE
+        A.qfl       = bicas.const.qrc.QFL_MAX
+        A.l3qbm     = bicas.const.qrc.LxQBM_NONE
+        A.gaCaveats = string.empty(0, 1);
       end
+
+      obj@bicas.proc.QrcSetting(gaCaveats=A.gaCaveats);
 
       assert(bicas.utils.validate_QFL(A.qfl))
       obj.qfl   =                     A.qfl;
