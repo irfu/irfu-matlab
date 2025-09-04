@@ -68,16 +68,24 @@ be turned off    |     All samples are replaced by fill values.
 =====================
  BIAS current sweeps
 =====================
-The BIAS subunit can be used for performing bias current sweeps. This
-temporarily changes the usual constant bias current which is otherwise supposed
-to be constant over much longer time periods while still not interrupting
-the sampling of science data. BICAS can determine whether BIAS is sweeping by
-using function bicas.proc.L1L2.swpdet.SBDA_SCDA_with_margins().
+The BIAS subunit regularly performs bias current sweeps. This temporarily
+changes the constant bias current which is otherwise supposed to be constant
+over much longer time periods while still not interrupting the sampling of
+science data. BICAS determines whether BIAS is sweeping by using function
+bicas.proc.L1L2.swpdet.SBDA_SCDA_with_margins().
 
-Condition            | Action taken when condition applies
-------------------------------------------------------------------
-"BIAS current sweep" | L2 CWF, SWF/RSWF:
-                     |    All samples are replaced by fill values.
+NOTE: Which data should be counted as being affected by sweeps is not well
+      defined since some data before and after the actual sweep is affected due
+      to commanding. Sweeps are detected(!) using algorithms which are not
+      perfect: BICAS uses one of two different algorithms (SBDA or SCDA)
+      depending on the time the data was collected and it adds a customizable
+      time margin in addition to that. BICAS does not (yet) use
+      the QUALITY_BITMASK quality bits to detect sweeps (as of 2025-09-04).
+
+Condition          | Action taken when condition applies
+---------------------------------------------------------------------
+Bias current sweep | L2 CWF, SWF/RSWF:
+is detected        |     Voltages and currents are set to fill value.
 
 
 --------------------------------------------------------------------
@@ -179,28 +187,6 @@ Condition         | Action taken when condition applies
                   |     NOTE: No quality bit is set.
 
 
-=============
- BIAS sweeps
-=============
-BICAS can determine whether L2 data has been colleted during a BIAS sweep (bias
-currents are changed according to a preprogrammed scheme within a short period
-of time).
-
-NOTE: Which data should be excluded due to being affected by sweeps is not
-      well defined since some data before and after the actual sweep is affected
-      due to commanding. Sweeps are detected(!) using algorithms which are not
-      perfect: BICAS uses one of two different algorithms (SBDA or SCDA)
-      depending on the time and it adds a customizable time margin in addition
-      to that and therefore may remove too much or too little data. BICAS does
-      not (yet) use the QUALITY_BITMASK bits to detect sweeps (as of
-      2025-09-04).
-
-Condition         | Action taken when condition applies
---------------------------------------------------------------------
-Sweep is detected | L2 CWF, SWF/RSWF:
-                  |     Voltages and currents are set to fill value.
-
-
 ==============
  ANT3 failing
 ==============
@@ -211,21 +197,6 @@ Condition       | Action taken when condition applies
 ANT3 is failing | L2 CWF, SWF/RSWF:
                 |     V3, V13_DC/AC, V23_DC/AC are set to fill values.
                 |     Cap QUALITY_FLAG <= 1.
-
-
-===============
- "Bad density"
-===============
-BICAS can determine that the derived L3 density is "bad density" (less
-reliable). This is determined by solo.psp2ne() returning a quality bit
-("bad density") when deriving density. This applies to SOLO_L3_RPW-BIA-DENSITY
-and SOLO_L3_RPW-BIA-DENSITY-10-SECONDS.
-
-Condition     | Action taken when condition applies
-----------------------------------------------------------
-"bad density" | L3 DENSITY:
-              |     Set L3_QUALITY_BITMASK: "bad density".
-              |     Cap QUALITY_FLAG<=1.
 
 
 =================================================================
@@ -269,6 +240,21 @@ or fill value (!)                         |
 An L2 channel is saturated.               | L3 DENSITY+EFIELD+SCPOT:
                                           |     The affected channel is not
                                           |     used for deriving L3 data.
+
+
+===============
+ "Bad density"
+===============
+BICAS can determine that the derived L3 density is a "bad density" (less
+reliable). This is determined by solo.psp2ne() returning a quality bit
+("bad density") when deriving density. This applies to SOLO_L3_RPW-BIA-DENSITY
+and SOLO_L3_RPW-BIA-DENSITY-10-SECONDS.
+
+Condition     | Action taken when condition applies
+----------------------------------------------------------
+"bad density" | L3 DENSITY:
+              |     Set L3_QUALITY_BITMASK: "bad density".
+              |     Cap QUALITY_FLAG<=1.
 
 
 =============================================================
