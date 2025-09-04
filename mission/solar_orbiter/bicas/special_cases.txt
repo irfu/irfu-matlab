@@ -199,6 +199,21 @@ ANT3 is failing | L2 CWF, SWF/RSWF:
                 |     Cap QUALITY_FLAG <= 1.
 
 
+===================================================
+ V3 unintentionally floating due to bad commanding
+===================================================
+There are a number of instances when V3 was unintentionally floating due to bad
+commanding.
+https://github.com/irfu/irfu-matlab/issues/156
+
+Condition                       | Action taken when condition applies
+---------------------------------------------------------------------
+V3 is unintentionally floating. | L2 CWF, SWF/RSWF
+                                |     Cap QUALITY_FLAG <= 1
+                                | L3 EFIELD
+                                |     E field is set to fill value.
+
+
 =================================================================
  L2 data used for generating L2 LFR CWF downsampled (unofficial)
 =================================================================
