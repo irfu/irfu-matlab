@@ -21,8 +21,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef(Abstract) QrcSetting
-  % PROPOSAL: Include QUALITY_FLAG/qfl.
-  %   NOTE: Currently not a property in bicas.proc.QrcSettingL3.   /2025-09-02
 
 
 
@@ -32,6 +30,11 @@ classdef(Abstract) QrcSetting
   %#####################
   %#####################
   properties(SetAccess=immutable)
+    % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.
+    % NOTE: This is interpretation is in compliance with how the ZV
+    % QUALITY_FLAG is supposed to be set/updated.
+    qfl
+
     % GA "CAVEATS". Column array of strings.
     gaCaveats
   end
@@ -44,8 +47,12 @@ classdef(Abstract) QrcSetting
 
     function obj = QrcSetting(A)
       arguments
-        A.gaCaveats = string.empty(0, 1);
+        A.qfl
+        A.gaCaveats
       end
+
+      assert(bicas.utils.validate_QFL(A.qfl))
+      obj.qfl       =                 A.qfl;
 
       assert(iscolumn(A.gaCaveats) & isstring(A.gaCaveats))
       obj.gaCaveats = A.gaCaveats;

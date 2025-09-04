@@ -43,13 +43,14 @@ classdef QrcSettingL3 < bicas.proc.QrcSetting
 
     function obj = QrcSettingL3(A)
       arguments
+        A.qfl             = bicas.const.qrc.QFL_MAX
         A.vdcFvIndexAr    = zeros(0, 1);
         A.edcFvIndexAr    = zeros(0, 1);
         A.efieldFvIndexAr = zeros(0, 1);
         A.gaCaveats       = string.empty(0, 1);
       end
 
-      obj@bicas.proc.QrcSetting(gaCaveats=A.gaCaveats);
+      obj@bicas.proc.QrcSetting(qfl=A.qfl, gaCaveats=A.gaCaveats);
 
       obj.assert_fvIndexAr(A.vdcFvIndexAr, 3)
       obj.vdcFvIndexAr    = A.vdcFvIndexAr;

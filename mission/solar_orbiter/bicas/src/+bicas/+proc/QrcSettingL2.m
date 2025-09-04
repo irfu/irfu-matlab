@@ -14,11 +14,6 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
   %#####################
   %#####################
   properties(SetAccess=immutable)
-    % *Cap* (max value) for the CDF ZV "QUALITY_FLAG" when the QRC applies.
-    % NOTE: This is interpretation is in compliance with how the ZV
-    % QUALITY_FLAG is supposed to be set/updated.
-    qfl
-
     % Bits (bitmask) that should be set in ZV "L2_QUALITY_BITMASK" or
     % NOTE: The value is supposed to be OR:ed with a preceding value, i.e. only
     % set bits override the previous value.
@@ -53,10 +48,7 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
         A.gaCaveats       = string.empty(0, 1);
       end
 
-      obj@bicas.proc.QrcSetting(gaCaveats=A.gaCaveats);
-
-      assert(bicas.utils.validate_QFL(A.qfl))
-      obj.qfl   =                     A.qfl;
+      obj@bicas.proc.QrcSetting(qfl=A.qfl, gaCaveats=A.gaCaveats);
 
       assert(isa( A.l2qbm, 'uint16'))
       obj.l2qbm = A.l2qbm;
