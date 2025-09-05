@@ -296,11 +296,17 @@ classdef qrc
       % V3 is unintentionally floating after sweeps due to bad commanding.
       % https://github.com/irfu/irfu-matlab/issues/156
       % NOTE: Separate QRCSs for L1/L1R-->L2 and L2-->L3 processing.
-      Qrcs = bicas.proc.QrcSettingL2(qfl = uint8(1));
+      V3_UNINTENTIONALLY_FLOATING_CAVEATS = ...
+        "BIAS unintentionally sets zero bias current on ANT3 (see QUALITY_FLAG=1).";
+      Qrcs = bicas.proc.QrcSettingL2(...
+        qfl       = uint8(1), ...
+        gaCaveats = V3_UNINTENTIONALLY_FLOATING_CAVEATS);
       L2Qrcsm.add("V3_UNINTENTIONALLY_FLOATING", Qrcs);
       % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing
       % *INPUT* to solo.vdccal()).
-      Qrcs = bicas.proc.QrcSettingL3(efieldFvIndexAr = [1 2 3]');
+      Qrcs = bicas.proc.QrcSettingL3(...
+        efieldFvIndexAr = [1 2 3]', ...
+        gaCaveats       = V3_UNINTENTIONALLY_FLOATING_CAVEATS);
       L3Qrcsm.add("V3_UNINTENTIONALLY_FLOATING", Qrcs);
 
 
