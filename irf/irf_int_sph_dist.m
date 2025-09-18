@@ -306,7 +306,7 @@ for i = 1:nV % velocity (energy)
 
       % different procedure for 1D or polar OR cartesian
       if strcmpi(base,'pol') || projDim == 1
-        % ------ 1D AND POLAR CASE ------
+        % ------ 1D OR POLAR CASE ------
         % get indicies for all MC points
         iVg = discretize(vp,vg_edges);
         % fixes bug that exists on some systems, may influence

@@ -49,7 +49,7 @@ ePDist_e64 = ePDist1.e64; % resample energy to 64 energy levels, reduces the tim
 ePDist_specrec = ePDist1.specrec; % change format to specrec, to be used as input to irf_plot or irf_spectrogram
 
 %% Example plots: time series
-nPanels = 7;
+nPanels = 8;
 h = irf_plot(nPanels);
 c_eval('ePDistN = ePDist?; dmpaBN = dmpaB?;',ic)
 
@@ -129,6 +129,21 @@ if 1
   hca.YScale = 'log';
   hca.YTick = 10.^[1 2 3 4];
   irf_legend(hca,{[num2str(palim(1),'%.0f') '<\theta_B<' num2str(palim(2),'%.0f')]},[0.98 0.90],'fontsize',12,'color',[0 0 0]);
+end
+if 1
+  % include parallel and antiparallel electrons, remove photoelectrons
+  elim = [30 Inf];
+  palim_apar = [165 180];
+  palim_par = [0 15];
+  ePitch_apar = ePDistN.elim(elim).pitchangles(dmpaBN,palim_apar);
+  ePitch_par = ePDistN.elim(elim).pitchangles(dmpaBN,palim_par);
+  ePitchFA = ePitch_apar + ePitch_par;
+  hca = irf_panel('e spectrogram field-aligned');
+  irf_spectrogram(hca,ePitchFA.specrec,'log')
+  hca.YScale = 'log';
+  hca.YTick = 10.^[1 2 3 4];
+  irf_legend(hca,{[num2str(palim_apar(1)-180,'%.0f') '<\theta_B<' num2str(palim_par(2),'%.0f') ', ' ...
+    'E_e>' num2str(elim(1),'%.0f') ' eV']},[0.98 0.90],'fontsize',12,'color',[0 0 0]);
 end
 
 irf_zoom(h,'x',tint)
