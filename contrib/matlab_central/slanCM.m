@@ -53,6 +53,11 @@ function colorList=slanCM(type,num)
 %   copper  emergency  fusion  guppy  holly  iceburn  infinity  pride  prinsenvlag  redshift
 %   seasons  seaweed  viola  waterlily  watermelon  wildfire
 
+% Source: Matlab Central File Exchange
+% https://www.mathworks.com/matlabcentral/fileexchange/120088-200-colormap
+
+% SPDX-License-Identifier: BSD-3-Clause
+
 if nargin<2
     num=256;
 end
