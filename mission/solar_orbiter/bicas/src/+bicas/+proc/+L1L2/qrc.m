@@ -218,10 +218,6 @@ classdef qrc
         qrcbAr = Qrcbm.get(qrcid);    % (nRecords, 1)
         Qrcs   = Qrcsm.get(qrcid);
 
-        % if isempty(Qrcs)
-        %   continue
-        % end
-
         % Arrays of the same size as voltageAr.
         bQrcbAr    = repmat(qrcbAr, [1, sizeAr(2:end)]);
         bSsidMatch = ismember(ssidAr, Qrcs.voltageFvSsidAr);
@@ -261,11 +257,7 @@ classdef qrc
       bFv        = false(size(currentAr));
       for qrcid = Qrcbm.qrcidAr'
         qrcbAr = Qrcbm.get(qrcid);    % (nRecords, 1)
-        Qrcs  = Qrcsm.get(qrcid);
-
-        if isempty(Qrcs)
-          continue
-        end
+        Qrcs   = Qrcsm.get(qrcid);
 
         % Arrays of the same size as currentAr.
         bQrcbAr       = repmat(qrcbAr, [1, 3]);

@@ -75,9 +75,6 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   %
   %
   %
-  % PROPOSAL: QRC functions should only need to know about mapping
-  %   QRCID-->action (e.g. QRCS). They should not need to know how the QRCSs
-  %   were selected, e.g. due to PTID or DSI. -- IMPLEMENTED
   % ============================================================================
   % NOTE: Important QRC functions for QRC settings:
   %   bicas.proc.qrc.NSO_table_to_QRCBM(requestedQrcidAr, NsoTable, tt2000Ar, L))
@@ -88,22 +85,23 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   %       NOTE: Uses QRCSs for processing which created the quality bits
   %             (L1/L1R-->L2), but sets QRCBs for QRCIDs used in the processing
   %             that will use the information (L2-->L3).
-  %   bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(Qrcbm, Qrcsm, ptid, lxqbmName))
-  %   bicas.proc.L1L2.qrc.set_5xBLTS_voltage_samples_FV(voltageAr, ssidAr, Qrcbm, Qrcsm, ptid)
-  %   bicas.proc.L1L2.qrc.set_current_samples_FV(currentAr, Qrcbm, Qrcsm, ptid)
-  %   bicas.proc.L2L3.L2QBM_to_channel_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
-  %   bicas.proc.L2L3.set_FPA_samples_FP(Fpa, Qrcbm, Qrcsm, qrcsFieldName)
+  %   bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(Qrcbm, Qrcsm, lxqbmName))
+  %   bicas.proc.L1L2.qrc.set_5xBLTS_voltage_samples_FV(voltageAr, ssidAr, Qrcbm, Qrcsm)
+  %   bicas.proc.L1L2.qrc.set_current_samples_FV(currentAr, Qrcbm, Qrcsm)
+  %   bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
+  %   bicas.proc.L2L3.qrc.set_FPA_samples_FP(Fpa, Qrcbm, Qrcsm, qrcsFieldName)
   %
-  % NOTE: QRC functions which do not need QRCSs but do need subsets of QRCs (subset relative to a type of
-  %       processing):
+  % NOTE: QRC functions which do not need QRCSs but do need subsets of QRCs
+  %       (subset relative to a type of processing):
   % bicas.proc.L1L2.qrc.VSIBs_to_saturation_QRCBs(tt2000Ar, saturationQualitySchemeId, VsibZvm, isSwf, vstbFractionThreshold, cwfSlidingWindowLengthSec)
   %   Iterates over CHANNEL_SATURATION QRCIDs.
   %   Calls bicas.proc.L1L2.qrc.channel_saturation_to_global_saturation_QRCBs(ChannelSaturationQrcbm, nRecords).
-  % bicas.proc.L1L2.qrc.channel_saturation_to_global_saturation_QRCBs()
+  % bicas.proc.L1L2.qrc.channel_saturation_to_global_saturation_QRCBs(ChannelSaturationQrcbm)
   %   Iterates over CHANNEL_SATURATION QRCIDs.
-  % bicas.proc.L2L3.L2QBM_to_channel_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
+  % bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(l2qbmAr, saturationQualitySchemeId)
   %   Wrapper around bicas.proc.L2L3.qrc.L2QBM_to_QRCBs().
-  %   NOTE: Needs set QRCSs for which quality bits to read (CHANNEL_SATURATION QRCIDs).
+  %   NOTE: Needs set of QRCSs for which quality bits to read
+  %         (CHANNEL_SATURATION QRCIDs).
   % ============================================================================
 
 
@@ -118,7 +116,6 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   end
   properties(SetAccess=private, GetAccess=private)
     QrcsDict
-    % legalPtidAr
   end
 
 
@@ -147,24 +144,14 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
 
 
 
-    % ARGUMENTS
-    % =========
-    % legalPtidAr
-    %       Column array of string constants. These are the only allowed PTIDs
-    %       that can be used with this instance.
-    %       RATIONALE: This is a safeguard against typos.
-    %
     function obj = QrcSettingsMap()
       % IMPLEMENTATION NOTE: configureDictionary("cell",
-      % "bicas.proc.QrcSetting") does not work since dictionary apparently
-      % does not permit abstract classes. Therefore using cell values.
-      % MATLAB error message: "Unable to configure dictionary with abstract type
-      % 'bicas.proc.QrcSetting'."
+      % "bicas.proc.QrcSetting") does not work since dictionary apparently does
+      % not permit specifying abstract classes. Therefore using cell values.
+      % MATLAB error message: "Unable to configure dictionary with abstract
+      % type 'bicas.proc.QrcSetting'."
 
-      % assert(isstring(legalPtidAr) & iscolumn(legalPtidAr))
-
-      obj.QrcsDict    = configureDictionary("string", "cell");
-      % obj.legalPtidAr = legalPtidAr;
+      obj.QrcsDict = configureDictionary("string", "cell");
     end
 
 
@@ -172,12 +159,11 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
     % Add new QRCS. Must not reuse QRCID (assertion).
     function add(obj, qrcid, Qrcs)
       assert(isa(Qrcs, "bicas.proc.QrcSetting") & isscalar(Qrcs))
+      obj.assert_scalar_QRCID(qrcid);
 
-      key = obj.assert_get_dictionary_key(qrcid);
+      assert(~obj.QrcsDict.isKey(qrcid))
 
-      assert(~obj.QrcsDict.isKey(key))
-
-      obj.QrcsDict(key) = {Qrcs};   % NOTE: Cell in cell.
+      obj.QrcsDict(qrcid) = {Qrcs};   % NOTE: Cell in cell.
     end
 
 
@@ -204,22 +190,12 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
     % ============
     % QRCS for specified key. Key must exist.
     function Qrcs = get(obj, qrcid)
-      key = obj.assert_get_dictionary_key(qrcid);
-
-      assert(obj.QrcsDict.isKey(key), ...
+      obj.assert_scalar_QRCID(qrcid);
+      assert(obj.QrcsDict.isKey(qrcid), ...
         "There is no key qrcid=""%s"".", qrcid)
 
       QrcsCa = obj.QrcsDict(qrcid);
       Qrcs   = QrcsCa{1};
-
-      % assert(obj.QrcsDict.isKey(key), ...
-      %   "There is no key for qrcid=""%s"" and ptid=""%s"".", qrcid, ptid)
-      % if obj.QrcsDict.isKey(key)
-      %   QrcidCaCa = obj.QrcsDict(key);
-      %   Qrcs     = QrcidCaCa{1}{1};
-      % else
-      %   Qrcs = [];
-      % end
     end
 
 
@@ -239,8 +215,7 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
         obj.QrcsDict.numEntries + Qrcsm.QrcsDict.numEntries, ...
         "QRCSMs have overlapping QRCIDs.")
 
-      obj.QrcsDict    = TempDict;
-      % obj.legalPtidAr = unique([obj.legalPtidAr; Qrcsm.legalPtidAr]);
+      obj.QrcsDict = TempDict;
     end
 
 
@@ -274,33 +249,24 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
 
 
 
-  %##########################
-  %##########################
-  % PRIVATE INSTANCE METHODS
-  %##########################
-  %##########################
-  methods(Access=private)
+  %########################
+  %########################
+  % PRIVATE STATIC METHODS
+  %########################
+  %########################
+  methods(Static, Access=private)
 
 
 
-    function mapKey = assert_get_dictionary_key(obj, qrcid)
-      % PROPOSAL: Abolish. Exists for historical reasons only.
-
+    % NOTE: Assert scalar QRCID, in particular to prevent using an array of
+    % keys on the internal dictionary.
+    function assert_scalar_QRCID(qrcid)
       assert(isstring(qrcid) & isscalar(qrcid))
-      % assert(isstring(ptid) & isscalar(ptid))
-      % assert(ismember(ptid, obj.legalPtidAr))
-
-      % NOTE: Must use cell array within cell array. Dictionary will vectorize
-      % the outer cell array.
-      % IMPLEMENTATION NOTE: containers.Map() will not allow using
-      % non-vectorized cell arrays at all.
-      % mapKey = {{qrcid; ptid}};
-      mapKey = qrcid;
     end
 
 
 
-  end    % methods(Access=private)
+  end    % methods(Static, Access=private)
 
 
 

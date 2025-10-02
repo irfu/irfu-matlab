@@ -243,29 +243,27 @@ classdef qrc
       % In the ANT3 case, the idea to is to set the value of the two following
       % items:
       %
-	    % - CAVEATS global attribute —> Exact message has to be defined, but
-	    %   should be something like "RPW electrical antenna 3 [MY] failure
-	    %   reported during the current day (see where QUALITY_FLAG=1)."
-	    % - QUALITY_FLAG zVariable —> Will be set to 1 when ANT3 failure is
-	    %   reported
+      % - CAVEATS global attribute —> Exact message has to be defined, but
+      %   should be something like "RPW electrical antenna 3 [MY] failure
+      %   reported during the current day (see where QUALITY_FLAG=1)."
+      % - QUALITY_FLAG zVariable —> Will be set to 1 when ANT3 failure is
+      %   reported
       %
       % These changes will be performed for the L1 CDF by the ROC, but same
       % information shall be also found in the child L2 (and L3 when needed).
       % """"""""
       % /Xavier Bonnin e-mail 2024-07-12, 11:24
-      %
-      QFL_ANTx_FAILING = uint8(1);   % 1="Known problems, use at your own risk"
 
-      % NOTE: Using the exact same CAVEATS string which ROC uses for setting GA
-      % CAVEATS in CDFs output by RCSs (when agreed upon).  /2025-09-02
-      ANT3_FAILING_GA_CAVEATS = ...
-        "RPW electrical antenna 3 [MY] failure reported during the current day (see QUALITY_FLAG=1).";
+      % NOTE: Using the *EXACT SAME* string which ROC uses for setting GA
+      % CAVEATS in CDFs output by RCSs (when agreed upon). /2025-09-02
+      ANT3_FAILING_GA_CAVEATS = "RPW electrical antenna 3 [MY] failure" + ...
+        " reported during the current day (see QUALITY_FLAG=1).";
 
       % IMPLEMENTATION NOTE: Creating QRCSs for both 6xL2 and 6xL3 datasets.
       % This is needed since GA CAVEATS values are *NOT* inherited (or
       % modified) from parent CDFs as opposed to for QFL and LxQBM.
       Qrcs = bicas.proc.QrcSettingL2(...
-        qfl             = QFL_ANTx_FAILING, ...
+        qfl             = uint8(1), ...
         voltageFvSsidAr = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'), ...
         gaCaveats       = ANT3_FAILING_GA_CAVEATS);
       L2Qrcsm.add("ANT3_FAILING", Qrcs);
@@ -296,6 +294,8 @@ classdef qrc
       % V3 is unintentionally floating after sweeps due to bad commanding.
       % https://github.com/irfu/irfu-matlab/issues/156
       % NOTE: Separate QRCSs for L1/L1R-->L2 and L2-->L3 processing.
+      % PROPOSAL: Rename QRCID: V3-->ANT3
+      %   PRO: Consistent with ANT3_FAILING.
       V3_UNINTENTIONALLY_FLOATING_CAVEATS = ...
         "BIAS unintentionally sets zero bias current on ANT3 (see QUALITY_FLAG=1).";
       Qrcs = bicas.proc.QrcSettingL2(...

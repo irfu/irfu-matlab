@@ -113,21 +113,15 @@ classdef QrcbMap < handle
 
 
 
-    % NOTE: Method might be unused.
-    % function remove(obj, qrcid)
-    %   assert(isstring(qrcid) & isscalar(qrcid))
-    %   assert(obj.Map.isKey(qrcid))
-    %
-    %   obj.Map.remove(qrcid);
-    % end
-
-
-
+    % RETURN VALUE
+    % ============
+    % QRCB for specified key. Key must exist.
     function qrcbAr = get(obj, qrcid)
       assert(isstring(qrcid) & isscalar(qrcid))
       if ~obj.has_QRCID(qrcid)
         error("Object does not contain qrcid=""%s"".", qrcid)
       end
+
       qrcbAr = obj.Map(qrcid);
     end
 

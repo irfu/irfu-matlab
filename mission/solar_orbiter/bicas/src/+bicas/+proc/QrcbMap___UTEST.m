@@ -70,19 +70,6 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
-    % function test_remove(testCase)
-    %   Qrcbm = bicas.proc.QrcbMap(2);
-    %
-    %   Qrcbm.add("QRCID1", logical([0; 1]))
-    %   Qrcbm.add("QRCID2", logical([1; 0]))
-    %
-    %   Qrcbm.remove("QRCID1")
-    %   testCase.assertFalse(Qrcbm.has_QRCID("QRCID1"))
-    %   testCase.assertTrue(Qrcbm.has_QRCID("QRCID2"))
-    % end
-
-
-
     function test_union___empty(testCase)
       Qrcbm      = bicas.proc.QrcbMap(3);
       AddedQrcbm = bicas.proc.QrcbMap(3);

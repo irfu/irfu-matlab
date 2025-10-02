@@ -20,7 +20,7 @@ classdef QrcSettingL2 < bicas.proc.QrcSetting
     l2qbm
 
     % Column array (set) of unique SSIDs for which L2 voltage samples should be
-    % blanked.
+    % blanked, *BEFORE* reconstruction.
     voltageFvSsidAr
 
     % Column array (set) of unique antenna numbers (1-3) for which L2 current
