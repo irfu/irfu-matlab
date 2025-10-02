@@ -17,7 +17,7 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   %
   % PROBLEM: The same QRCID may apply to both L1/L1R-->L2 and L2-->L3 processing,
   %          and may be read from NSO table for both.
-  %   Ex: Floating V3 after sweeps labelled in L2, not used for L3 EFIELD.
+  %   Ex: Floating ANT3 after sweeps labelled in L2, not used for L3 EFIELD.
   %       https://github.com/irfu/irfu-matlab/issues/156
   %   Ex: ANTx_FAIL
   %   NOTE: QRCs may also ONLY apply to L2-->L3 and NOT L1R-->L2, which makes
@@ -37,7 +37,7 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
   %             processing, e.g. L2-->L2).
   %     PRO: Information does not need to be unambiguously available in quality
   %          zVariables.
-  %       Ex: Floating V3 after sweeps.
+  %       Ex: Floating ANT3 after sweeps.
   %       Ex: QUALITY_FLAG is lowered, but it is not known for which reason:
   %         Ex: Other effect, BICAS's global cap, ROC's global cap.
   %     PRO: Independent of how information is represented in zVariables.

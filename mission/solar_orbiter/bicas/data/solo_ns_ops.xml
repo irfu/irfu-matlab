@@ -32,6 +32,9 @@
             2025-07-08, Erik P G Johansson: The saturation quality bits have been overhauled and string constants "FULL_SATURATION" and "PARTIAL_SATURATION" should no longer have any effect, unless BICAS is run a "backwards-compatibility mode". These strings constants are tolerated until they are phased out.
         </note>
         <note>
+            2025-10-02, Erik P G Johansson: Renaming rcsNsoId/QRCID "V3_UNINTENTIONALLY_FLOATING" to "ANT3_UNINTENTIONALLY_FLOATING" for consistency.
+        </note>
+        <note>
             Note that since data gaps may be filled in after that a time interval has been manually searched for thruster firings etc., this list still might not label all such thruster firings (etc.) in the time period(s) that has/have been stated to be searched.
         </note>
     </notesTable>
@@ -2325,8 +2328,8 @@
         <event>
             <startTimeUtc>2024-03-15T17:06:27.50</startTimeUtc>
             <stopTimeUtc> 2024-03-15T23:27:18</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
-            <description>Previously interpreted as ANT3 failure, but this is probably a better interpretation.</description>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <description>Previously interpreted as ANT3 failure, but ANT3 floating is probably a better interpretation.</description>
         </event>
 
 
@@ -2379,7 +2382,7 @@
         <event>
             <startTimeUtc>2024-04-21T23:36:27.50</startTimeUtc>
             <stopTimeUtc> 2024-04-24T02:01:25</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
             <description></description>
         </event>
 
@@ -2397,7 +2400,7 @@
         <event>
             <startTimeUtc>2024-04-26T20:36:27.45</startTimeUtc>
             <stopTimeUtc> 2024-05-01T02:01:26</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
             <description></description>
         </event>
 
@@ -2415,7 +2418,7 @@
         <event>
             <startTimeUtc>2024-05-01T13:06:27.50</startTimeUtc>
             <stopTimeUtc> 2024-05-08T02:01:27</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
             <description></description>
         </event>
 
@@ -2433,7 +2436,7 @@
         <event>
             <startTimeUtc>2024-05-11T12:06:27.60</startTimeUtc>
             <stopTimeUtc> 2024-05-15T02:01:52</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
             <description></description>
         </event>
 
@@ -2457,7 +2460,7 @@
         <event>
             <startTimeUtc>2024-05-21T12:08:39.50</startTimeUtc>
             <stopTimeUtc> 2024-05-22T02:01:53</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
             <description>Specified beginning is at literal sweep end since non-blanked sweep data implies the anomaly begins then.</description>
         </event>
 
@@ -2475,7 +2478,7 @@
         <event>
             <startTimeUtc>2024-05-31T12:08:39.60</startTimeUtc>
             <stopTimeUtc> 2024-06-05T02:01:55</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
             <description>Specified beginning is at literal sweep end since non-blanked sweep data implies the anomaly begins then. Odd change of measured HK bias 2024-06-01 which temporarily changes V1 and V2, but not V3.</description>
         </event>
 
@@ -2499,7 +2502,7 @@
         <event>
             <startTimeUtc>2024-06-11T12:08:39.60</startTimeUtc>
             <stopTimeUtc> 2024-06-12T02:01:56</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
             <description>Specified beginning is at literal sweep end since non-blanked sweep data implies the anomaly begins then.</description>
         </event>
 
@@ -2517,7 +2520,7 @@
         <event>
             <startTimeUtc>2024-06-21T12:08:39.50</startTimeUtc>
             <stopTimeUtc> 2024-06-26T02:01:58</stopTimeUtc>
-            <rcsNsoId>V3_UNINTENTIONALLY_FLOATING</rcsNsoId>
+            <rcsNsoId>ANT3_UNINTENTIONALLY_FLOATING</rcsNsoId>
             <description></description>
         </event>
 
