@@ -36,12 +36,13 @@ classdef ext
     % Indirectly call BICAS-external code to calculate
     % (1) EFIELD, SCPOT (solo.vdccal), and from that
     % (2) DENSITY       (solo.psp2ne).
-    function R = calc_EFIELD_SCPOT_DENSITY(Excd, Zv)
+    function R = calc_EFIELD_SCPOT_DENSITY(Excd, Zv, A)
       arguments
         Excd
         Zv.tt2000
         Zv.VDC_Fpa
         Zv.EDC_Fpa
+        A.L
       end
       assert(isa(Excd, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
@@ -62,7 +63,7 @@ classdef ext
       % to the data the density is based on, but the quality bit only
       % refers to density (and not to SCPOT).
       [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
-        bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Excd);
+        bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Excd, A.L);
 
       assert(strcmp(R1.PspTs.units,   'V'))
       assert(strcmp(R1.ScpotTs.units, 'V'))
@@ -237,7 +238,7 @@ classdef ext
     % relies on PSP values for which this has already been done.
     %
     function [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
-        calc_DENSITY(PspTs, Excd)
+        calc_DENSITY(PspTs, Excd, L)
 
       %##################################################################
       % CALL BICAS-EXTERNAL CODE
@@ -257,8 +258,18 @@ classdef ext
       assert(all(PspTs.time == NeScpQualityBitTs.time))
 
       assert(isfloat(NeScpTs.data))
-      assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data) ), ...
-        'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
+      if ~all( (NeScpTs.data > 0) | isnan(NeScpTs.data) )
+        errorMsg = 'solo.psp2ne() returned non-positive (non-NaN) plasma density.';
+        nZero     = numel(find(      NeScpTs.data == 0));
+        nNegative = numel(find(      NeScpTs.data <  0));
+        nNan      = numel(find(isnan(NeScpTs.data)));
+        nAll      = numel(NeScpTs.data);
+        L.log( 'error', errorMsg)
+        L.logf('error', '    #Zeroes          = %i (%f%%)', nZero,     100*nZero    /nAll)
+        L.logf('error', '    #Negative values = %i (%f%%)', nNegative, 100*nNegative/nAll)
+        L.logf('error', '    #NaN             = %i (%f%%)', nNan,      100*nNan     /nAll)
+        error(errorMsg)
+      end
       assert(strcmp(NeScpTs.units, 'cm^-3'))
 
       % NOTE: Not permitting NaN quality bit. Unsure if that is the
