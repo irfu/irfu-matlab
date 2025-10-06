@@ -258,8 +258,16 @@ classdef ext
       assert(all(PspTs.time == NeScpQualityBitTs.time))
 
       assert(isfloat(NeScpTs.data))
-      if ~all( (NeScpTs.data > 0) | isnan(NeScpTs.data) )
-        errorMsg = 'solo.psp2ne() returned non-positive (non-NaN) plasma density.';
+      % if ~all( (NeScpTs.data > 0) | isnan(NeScpTs.data) )
+      %   errorMsg = 'solo.psp2ne() returned non-positive (non-NaN) plasma density.';
+      if ~all( (NeScpTs.data >= 0) | isnan(NeScpTs.data) )
+        errorMsg = 'solo.psp2ne() returned negative (non-NaN) plasma density.';
+        % IMPLEMENTATION NOTE: The real check should probably be to assert
+        % positive density values, but this has been TEMPORARILY changed to
+        % non-negative values while awaiting an update to solo.psp2.ne() from
+        % Jordi Boldu. psp2ne() output for 2023-09-06 and 2023-09-07 currently
+        % includes density=0 values.
+        % /Erik P G Johansson 2025-10-06
         nZero     = numel(find(      NeScpTs.data == 0));
         nNegative = numel(find(      NeScpTs.data <  0));
         nNan      = numel(find(isnan(NeScpTs.data)));
