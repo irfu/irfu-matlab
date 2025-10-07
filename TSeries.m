@@ -1509,6 +1509,92 @@ classdef TSeries
       end
       Ts = obj.clone(obj.time,new_data);
     end
+    
+    function varargout = eig(obj,dims)
+      % EIG Calculate eigenvalues and eigenvectors for pressure and temperature.
+      %
+      %   [tsEig_val, tsEig_v1, tsEig_v2, tsEig_v3] = tsP.eig;
+      %
+      %   Apply on subset of matrix, e.g. [P_22 P_23; P_32; P_33];
+      %   [tsEig_val, tsEig_v1, tsEig_v2] = tsP.eig([2 3]);
+      %     
+      
+
+      if obj.tensorOrder ~= 2
+        error('PDist.eig only applicable to order 2 tensors.')
+      end
+
+      if not(exist('dims','var'))
+        dims = [1 2 3];
+      end
+
+      TS = obj;
+      
+      nt_orig = TS.length;
+      if nt_orig == 1 % fix, there is a problem if nt = 1 for some things (singleton dimensions)...
+                      % so just duplicate TSeries and then pick the first indice at the end             
+        TS = TS.clone(TS.time + [0 1],repmat(TS.data,[2 1 1 1 1 1]));        
+      end
+
+      nt = TS.length;
+
+      % Select subset of data to calculate eigenvectors for
+      T = TS.data(:,dims,dims); % extract tensor
+      
+      ndim = size(T,2);
+
+      % Make the data symmetric      
+      T_transposed = permute(T,[1 3 2]); % 3d: (t,d1,d2) -> (t,d2,d1)
+      if any(T_transposed(:) ~= T(:))
+        warning('Matrix is not symmetric. Making the data symmetric. T = (T + T'')/2.')
+        T = (T + T_transposed)/2;
+      end
+          
+      all_eig_vals = zeros(nt,ndim);
+      all_eig_vecs = zeros(nt,ndim,ndim);
+      
+      for it = 1:nt
+        [V,D] = eig(squeeze(T(it,:,:)));
+        [Dsort, idsort] = sort(diag(D),'descend');
+        all_eig_vals(it,:) = Dsort;
+
+        for idim = 1:ndim
+          all_eig_vecs(it,idim,:) = V(:,idsort(idim));          
+        end
+      end
+      
+      % Make Tseries
+      tsEig = irf.ts_scalar(TS.time,all_eig_vals); tsEig.name = 'Eig val';
+      if nt_orig == 1
+        tsEig = tsEig.clone(tsEig.time(1),tsEig.data(1,:,:));
+      end
+      for idim = 1:ndim
+        if ndim == 2
+          tsV = irf.ts_vec_xy(TS.time,squeeze(all_eig_vecs(:,idim,:)));  tsV.name = sprintf('Eig vec %g',idim);
+        elseif ndim == 3
+          tsV = irf.ts_vec_xyz(TS.time,squeeze(all_eig_vecs(:,idim,:))); tsV.name = sprintf('Eig vec %g',idim);
+        end
+        if nt_orig == 1
+          tsV = tsV.clone(tsV.time(1),tsV.data(1,:,:));
+        end
+        tsVs{idim} = tsV;
+      end
+        
+      % Output
+      if nargout == 1
+        varargout{1} = tsEig;
+      elseif nargout == 3
+        varargout{1} = tsEig;
+        varargout{2} = tsVs{1};
+        varargout{3} = tsVs{2};
+      elseif nargout == 4
+        varargout{1} = tsEig;
+        varargout{2} = tsVs{1};
+        varargout{3} = tsVs{2};
+        varargout{4} = tsVs{3};
+      end
+    end
+
     function obj = tlim(obj,tint, mode)
       %TLIM  Returns data within specified time interval
       %
