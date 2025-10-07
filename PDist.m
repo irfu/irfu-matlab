@@ -2046,6 +2046,223 @@ classdef PDist < TSeries
 
 
     end
+    function [dists,moms] = cuts(PD_FA,species)
+    % PDIST.cuts This function takes input a distribution function
+    % rotated into a field aligned coordinate system using the function
+    % PDist.shift with z representing the parallel direction, and x and y
+    % representing the perp_1 and perp_2 directions, and returns parallel
+    % and perpendicular cuts of the distribution along with the full moments
+    % and the moments of the 1D and 2D cuts.
+    %
+    % [dists,moms] = cuts(PDist_FA)
+    % Input:
+    %  PD_FA: skymap dist rotated to FA coordinates.
+    % 
+    % Output:
+    %  dists: structure containting:
+    %       F_par: 1D parallel cut of the distribution
+    %       F_apar: 1D antiparallel cut of the distribution
+    %       F1D_perp: 1D perpendicular cut (integrated in the perp_1, perp_2
+    %       plane)
+    %       F2D_perp: 2D perpendicular cut (in the perp_1, perp_2 plane)
+    %       F2D_bt: 2D parallel-perpendicular distribution (integrated in the
+    %       azimuthal direction)
+    %  moms: structure containing:
+    %       N: full density in cm^-3
+    %       V: full velocity in km/s
+    %       T: full temperature in eV
+    %       N_cut_perp: density of the perpendicular cut distrbiution
+    %       V_cut_perp: velocity of the perpendicular cut distrbiution
+    %       T_cut_perp: temperature of the perpendicular cut distrbiution
+    %       N_cut_par: density of the parallel cut distribution
+    %       V_cut_par: velocity of the parallel cut distribution
+    %       T_cut_par: temperature of the parallel cut distribution
+    
+    
+    
+    u = irf_units;
+    species = PD_FA.species;
+    switch lower(species)
+        case 'electrons'
+            m = u.me;
+        case 'protons'
+            m = u.mp;
+    end
+    
+    PD_FA = PD_FA.convertto('s^3/m^6');
+    %% calculate full moments
+    
+    %%%original coordinate system original reference frame
+    En = PD_FA.depend{1};
+    Vn = sqrt(2*En*u.e/u.me);
+    thn = PD_FA.depend{3};
+    phn = PD_FA.depend{2};
+    
+    Vedges = PD_FA.ancillary.V_edges*1000;
+    thedges = PD_FA.ancillary.theta_edges;
+    phedges = PD_FA.ancillary.phi_edges;
+    
+    %%calculate differential elements
+    dv = diff(Vedges);
+    dth = diff(thedges)*pi/180;
+    dph = diff(phedges)*pi/180;
+    
+    %%calculate d3v for F_3D
+    [VV,PH,TH] = ndgrid(Vn,phn,thn);
+    [dV,dPH,dTH] = ndgrid(dv,dph,dth);
+    d3v = VV.^2.*sind(TH).*dV.*dTH.*dPH;
+    
+    %%calculate d2v for F_2D
+    [dV2,dPH2] = ndgrid(dv,dph);
+    [V2,~] = ndgrid(Vn,phn);
+    d2v = V2.*dV2.*dPH2;
+    
+    %%calculate dv For F_1D
+    dvpar = diff(Vedges);
+    dvfa = [flip(dvpar) dvpar];
+    
+    
+    
+    FF = squeeze(PD_FA.data);
+    %% Full moments
+    Fd3v = FF.*d3v;
+    
+    
+    N = nansum(nansum(nansum(Fd3v)));
+    vn1 = -nansum(nansum(nansum(Fd3v.*VV.*sind(TH).*cosd(PH))))/N;
+    vn2 = -nansum(nansum(nansum(Fd3v.*VV.*sind(TH).*sind(PH))))/N;
+    vn3 = -nansum(nansum(nansum(Fd3v.*VV.*cosd(TH))))/N;
+    
+    Vm_perp1 = vn1/1000;
+    Vm_perp2 = vn2/1000;
+    Vm_par = vn3/1000;
+    Vm = [Vm_perp1, Vm_perp2, Vm_par];
+    
+    P11 = m*nansum(nansum(nansum(Fd3v.*(VV.*sind(TH).*cosd(PH)).^2))) - N*m*vn1*vn1;
+    P22 = m*nansum(nansum(nansum(Fd3v.*(VV.*sind(TH).*sind(PH)).^2))) - N*m*vn2*vn2;
+    P33 = m*nansum(nansum(nansum(Fd3v.*(VV.*cosd(TH)).^2))) - N*m*vn3*vn3;
+    P12 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).^2.*cosd(PH).*sind(PH)))) - N*m*vn1*vn2;
+    P13 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).*cosd(TH).*cosd(PH)))) - N*m*vn1*vn3;
+    P23 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).*cosd(TH).*sind(PH)))) - N*m*vn2*vn3;
+    P21 = P12; P31 = P13; P32 = P23;
+    
+    
+    Nm = N*1e-6;
+    
+    
+    
+    P = nan*ones(3,3);
+    P(1,1) = P11;
+    P(2,2) = P22;
+    P(3,3) = P33;
+    P(1,2) = P12;
+    P(1,3) = P13;
+    P(2,3) = P23;
+    P(2,1) = P21;P(3,1) = P31;P(3,2) = P32;
+    
+    T = P./(N)/u.e;
+    
+    %% calculate taus
+    
+    %% Getting slices of the distribution
+    
+    ith_perp = find(thn>80 & thn<100);
+    %%if the angles are as seen from the spacecraft detectros, so we have
+    %%to flip them to make them correspond to electron trajectories
+    %%(i.e 180 degrees for the detector is zero degrees for the electron)
+    ith_par = thn>170;
+    ith_apar = thn<10;
+    ith_fa = thn<10 | thn>170;
+   
+    
+    
+    %dist in perp1 perp2 plane
+    F2D_perp = FF(:,:,ith_perp);
+    F2D_perp = nanmean(F2D_perp,3);
+    F1D_perp = nansum(F2D_perp.*dPH2,2)/(2*pi);
+    F1D_perp(F1D_perp ==0 )=nan;
+    %dist in FA direction
+    F_apar = FF(:,:,ith_apar).*dPH(:,:,ith_par);
+    F_apar = nansum(nanmean(F_apar,3),2)/(2*pi);
+    F_apar(F_apar==0) = nan;
+    
+    F_par = FF(:,:,ith_par).*dPH(:,:,ith_par);
+    F_par = nansum(nanmean(F_par,3),2)/(2*pi);
+    F_par(F_par==0) = nan;
+    
+    F_fa = [flip(F_apar') F_par'];
+    
+    %dist in perp par plane (intergrated in phi)
+    
+    F2D_bt = squeeze(nansum(FF.*dPH,2))/(2*pi);
+    F2D_bt(F2D_bt==0) = nan;
+   
+    %% Getting moments of 2D perp dist
+    
+    
+    Fd2v_perp = F2D_perp.*d2v;
+    V2_perp = nanmean(VV(:,:,ith_perp),3);
+    P2_perp = nanmean(PH(:,:,ith_perp),3);
+    
+    n_perp = (nansum(nansum(Fd2v_perp)));
+    vt1 = -(nansum(nansum(Fd2v_perp.*V2_perp.*cosd(P2_perp))))/n_perp;
+    vt2 = -(nansum(nansum(Fd2v_perp.*V2_perp.*sind(P2_perp))))/n_perp;
+    Vc_perp1 = vt1/1000;
+    Vc_perp2 = vt2/1000;
+    Vc = [Vc_perp1,Vc_perp2];
+    
+    Pperp(1,1) = m*(nansum(nansum(Fd2v_perp.*(V2_perp.*cosd(P2_perp)).^2))) - n_perp*m*vt1*vt1;
+    Pperp(2,2) = m*(nansum(nansum(Fd2v_perp.*(V2_perp.*sind(P2_perp)).^2))) - n_perp*m*vt2*vt2;
+    Pperp(1,2) = m*(nansum(nansum(Fd2v_perp.*V2_perp.^2.*cosd(P2_perp).*sind(P2_perp)))) - n_perp*m*vt1*vt2;
+    
+    
+    Pperp(2,1) = Pperp(1,2);
+    T_perp = Pperp./(n_perp)/u.e;
+    
+    N_perp = n_perp*1e-6;
+    
+    %% Getting moments of parallel distribution
+    
+    
+    
+    Fd3v_par = F_fa.*dvfa;
+    V2_par = nanmean(nanmean(VV(:,:,ith_fa),3),2);
+    V2_par = [-flip(V2_par)' V2_par'];%this already acounts for the look direction of the instrument so no need to multiply Vb by -1.
+    
+    
+    
+    n_par = nansum(Fd3v_par);
+    
+    vb = nansum(Fd3v_par.*V2_par)/n_par;
+    
+    Vb = vb/1000;
+    
+    Ppar = m*nansum(Fd3v_par.*(V2_par).^2) - n_par*m*vb*vb;
+    
+    T_par = Ppar./(n_par)/u.e;
+    
+    N_par = n_par*1e-6;
+    
+    
+    
+    dists.F_par = F_par;
+    dists.F_apar = F_apar;
+    dists.F2D_perp = F2D_perp;
+    dists.F1D_perp = F1D_perp;
+    dists.F2D_bt = F2D_bt;    
+    moms.N = Nm;
+    moms.V = Vm;
+    moms.T = T;
+    moms.N_cut_perp = N_perp;
+    moms.V_cut_perp = Vc;
+    moms.T_cut_perp = T_perp;
+    moms.N_cut_par = N_par;
+    moms.V_cut_par = Vb;
+    moms.T_cut_par = T_par;
+    moms.Note = 'Density units are in cm^-3, Velocity units are in km/s, and temperature units are in eV';
+    
+    
+    end
     function PD = smooth(obj,step)
       % PDIST.SMOOTH Running average
       % PD = smooth(obj,step)
@@ -4815,6 +5032,148 @@ classdef PDist < TSeries
     end
   end
   methods (Static)
+      function PD = generate_dist(n,Tfac,Vfac,dist_type,varargin)
+        % PDIST.GENERATE_DIST This function Generate a 3D distribution of 
+        %                     electrons/ions in FA coordinate system with 
+        %                     b aligned with z.
+        %
+        % PD = generate_dist(n,Tfac,Vfac,dist_type,varargin)
+        % Input:
+        %  n: density in cm^-3.
+        %  Tfac: [Tperp1, Tperp2, Tpar] temperature in eV 
+        %  Vfac: [Vperp1, Vperp2, Vpar] velocity in km/s        
+        %  dist_type: is a string that determines the type of distribution 
+        %  used.
+        %  Implemented types 'max' for Maxwellian, 'kappa' for Kappa.
+        %  If the distribution has additional parameters, such as the k
+        %  parameter in the kappa distribution, one should input them as
+        %  name, value pairs.
+        %  new_grid: initiates the distribution on a custom grid, otherwise the MMS
+        %  FPI grid is used. After the 'new_grid' flag the function expects three
+        %  inputs: E for energy, th for the polar angle, and phi for the azimuthal
+        %  angle of the grid.
+        %  species: 'electrons' for electrons, 'protons' for protons. Default is 'e'.
+        % Example:
+        % PD = generate_dist(n,Tfac,Vfac,'max')
+        % PD = generate_dist(n,Tfac,Vfac,'kappa','k',5)
+
+        Tperp1 = Tfac(1);Tperp2 = Tfac(2);Tpar = Tfac(3);
+        vdperp1 = Vfac(1);vdperp2 = Vfac(2);vdpar = Vfac(3);
+        u =irf_units;
+        kB=u.kB;
+        qe=u.e; % electron charge, coulombs
+        s = 'electrons';%default is electrons
+        m=u.me; % mass, kg 
+        
+
+        Var = varargin;
+        flag_newgrid = 0;
+        k = 3;%default k = 3
+        
+        while ~isempty(Var)
+            flag = Var{1};
+            switch lower(flag)
+        
+                case 'new_grid'
+                    flag_newgrid = 1;
+                    E = Var{2};
+                    th = Var{3};
+                    phi = Var{4};
+                    Var(1:4) = [];
+                case 'k'
+                    k = Var{2};
+                    Var(1:2) = [];
+                case 'species'
+                    s = Var{2};
+                    switch lower(s)
+                        case 'electrons'
+                            m = u.me;
+                            s = 'electrons';
+                        case 'protons'
+                            m = u.mp;
+                            s = 'protons';
+                    end
+                    Var(1:2) = [];
+                otherwise
+                    error(['undefined input flag: ' flag])
+        
+            end
+        end
+        
+        
+        
+       
+        n = n*1e6;
+        
+        
+        Tpar=Tpar*qe/kB; %  eV -> K 
+        Tperp1=Tperp1*qe/kB; %  eV -> K
+        Tperp2=Tperp2*qe/kB; %  eV -> K
+        
+        
+        
+        
+        vdpar=vdpar*1e3; % vds_z, km/s -> m/s
+        vdperp1=vdperp1*1e3; % vds_x, km/s -> m/s
+        vdperp2=vdperp2*1e3; % vds_x, km/s -> m/s
+        
+        
+        vtz=sqrt(2*kB*Tpar./m); % para thermal velocity, note the sqrt(2)
+        vtperp1=sqrt(2*kB*Tperp1./m); % perp 1 thermal velocity, note the sqrt(2)
+        vtperp2=sqrt(2*kB*Tperp2./m); % perp 2 thermal velocity, note the sqrt(2)
+        
+        switch lower(dist_type)
+            case 'max'
+                f3d=@(vpar,vperp1,vperp2) (1./((pi^(3/2)).*vtz.*vtperp1.*vtperp2)).*exp(-(vpar-vdpar).^2./(vtz.^2)).*exp(-(vperp1-vdperp1).^2./(vtperp1.^2)).*...
+                    exp(-(vperp2-vdperp2).^2./(vtperp2.^2));
+            case 'kappa'
+                Ak = ((1/(pi*(k-3/2)))^(3/2))*gamma(k+1)/(vtz*vtperp1*vtperp2*gamma(k-0.5));
+                Bk =@(vpar,vperp1,vperp2) (((vpar-vdpar)/(vtz)).^2+((vperp1-vdperp1)/(vtperp1)).^2+((vperp2-vdperp2)/(vtperp2)).^2);
+                f3d =@(vpar,vperp1,vperp2) Ak*(1+(Bk(vpar,vperp1,vperp2)./(k-3/2))).^-(k+1);
+        end
+        if flag_newgrid == 0
+        
+            E = [0.0006520   0.0008540   0.0011170   0.0014630   0.0019150   0.0025070   0.0032810   0.0042950   0.0056230   0.0073600   0.0096340   0.0126120   ...
+                0.0165090   0.0216110   0.0282890   0.0370310   0.0484740   0.0634540   0.0830630   0.1087310   0.1423320   0.1863160   0.2438920   0.3192610   ...
+                0.4179200   0.5470680   0.7161250   0.9374250   1.2271121   1.6063200   2.1027110   2.7525001]*1e4;%%energy of FPI
+        
+            th = [5.625 16.875 28.125 39.375 50.625 61.875 73.125 84.375 95.625 106.875 118.125 129.375 140.625 151.875 163.125 174.375];%theta from FPI
+            phi = [2.75   14   25.25   36.5   47.75   59   70.25   81.5   92.75   104   115.25   126.5   137.75   149   160.25   171.5   182.75   194   205.25   216.5 ...
+                227.75   239   250.25   261.5   272.75   284   295.25   306.5   317.75   329   340.25   351.5];%%phi from FPI;
+        end
+        V = sqrt(2*E*qe/m);
+        
+        
+        dE = diff(E);
+        Eedges = [ E(1:end-1)-dE/2 E(end)-dE(end)/2 E(end)+dE(end)/2];
+        Vedges = sqrt(2*u.e*Eedges./u.me);
+        
+        dth = diff(th);
+        thedges = [th(1:end-1)-dth/2 th(end)-dth(end)/2 th(end)+dth(end)/2];
+        
+        dph = diff(phi);
+        phedges = [phi(1:end-1) - dph/2 phi(end)-dph(end)/2 phi(end)+dph(end)/2];
+        
+        [VV,PHI,TH] = ndgrid(V,phi,th);
+        % [Vperp1,Vperp2,Vpar] = sph2cart(PHI,pi/2-TH,VV);
+        
+        Vperp1 = -VV.*sind(TH).*cosd(PHI);
+        Vperp2 = -VV.*sind(TH).*sind(PHI);
+        Vpar = -VV.*cosd(TH);
+        
+        l1 = length(E);l2 = length(phi);l3 = length(th);
+        F3D(1,1:l1,1:l2,1:l3) = n*f3d(Vpar,Vperp1,Vperp2);
+        time = irf_time(date,'date>epochTT');
+        PD = PDist(time,F3D,'skymap',E,phi,th);
+        PD.ancillary.V_edges = Vedges/1000;%km/s
+        PD.ancillary.E_edges = Eedges;
+        PD.ancillary.phi_edges = phedges;
+        PD.ancillary.theta_edges = thedges;
+        PD.ancillary.base = 'sph';
+        PD.units = 's^3/m^6';
+        PD.species = s;
+end
+
     function newUnits = changeunits(from,to)
 
     end
