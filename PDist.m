@@ -737,6 +737,8 @@ classdef PDist < TSeries
           error(sprintf('PDist.d3v not supported for %s',obj.units))
       end
 
+      mass = obj.mass;
+
       % Calculate velocity volume of FPI bin
       % int(sin(th)dth) -> x = -cos(th), dx = sin(th)dth -> int(dx) -> x = [-cos(th2) + cos(th1)] = [cos(th1) - cos(th1)]
       bin_edge_polar = [obj.depend{3} - 0.5*mean(diff(obj.depend{3})) obj.depend{3}(end) + 0.5*mean(diff(obj.depend{3}))];
@@ -758,8 +760,8 @@ classdef PDist < TSeries
         E_minus = (obj.depend{1} - obj.ancillary.delta_energy_minus);
         E_plus = (obj.depend{1} + obj.ancillary.delta_energy_plus);
       end
-      v_minus = sqrt(2*units.e*E_minus/units.me); % m/s
-      v_plus = sqrt(2*units.e*E_plus/units.me); % m/s
+      v_minus = sqrt(2*units.e*E_minus/mass); % m/s
+      v_plus = sqrt(2*units.e*E_plus/mass); % m/s
       d_vel = (v_plus.^3 - v_minus.^3)/3; % (m/s)^3
       d_vel_mat = repmat(d_vel,1,1,32,16);
 
