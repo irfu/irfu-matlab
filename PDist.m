@@ -135,6 +135,9 @@ classdef PDist < TSeries
         case {'pitchangle'} % construct pitchangle distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
           obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'pitchangle'};
+        case {'azimuthangle'} % collapsed into 360 degree
+          obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
+          obj.depend{2} = args{1}; args(1) = []; obj.representation{2} = {'azimuthangle'};
         case {'omni'} % construct omni directional distribution
           obj.depend{1} = args{1}; args(1) = []; obj.representation{1} = {'energy'};
         case {'line (reduced)','1Dcart'} % % construct 1D distribution, through integration over the other 2 dimensions
@@ -681,6 +684,18 @@ classdef PDist < TSeries
           end
         case 'pitch'
       end
+    end
+    function out = vx(obj,varargin)
+      [vx,vy,vz] = v(obj,varargin{:});
+      out = vx;
+    end
+    function out = vy(obj,varargin)
+      [vx,vy,vz] = v(obj,varargin{:});
+      out = vy;
+    end
+    function out = vz(obj,varargin)
+      [vx,vy,vz] = v(obj,varargin{:});
+      out = vz;
     end
     function PD = d3v(obj,varargin)
       % Calculate phase space volume of FPI bins.
@@ -4298,11 +4313,12 @@ classdef PDist < TSeries
 
       % Partial density for each macroparticle
       dn_part = dn./Ntmp_round;
-      df_part = f./Ntmp_round;
+      df_part = f;%./Ntmp_round; % this should be the same as the bin value, butthe dv should be divided by N
+      dv_part = vol./Ntmp_round;
 
       % n_frac = 0 divided by Ntmp_roundup = 0 gives NaN
       dn_part(isnan(dn_part)) = 0;
-      df_part(isnan(df_part)) = 0;
+      df_part(isnan(df_part)) = 0; 
 
       % Edges of energy bins, same for each time step
       energy_minus = obj.depend{1}(1,:) - obj.ancillary.delta_energy_minus;
@@ -4402,7 +4418,7 @@ classdef PDist < TSeries
               % Assign particle density to each macro particle
               tmp_dn = repelem(dn_part(it,iEnergy,iAzim,iPolar),N_bin);
               tmp_df = repelem(df_part(it,iEnergy,iAzim,iPolar),N_bin);
-              tmp_dv = repelem(vol(it,iEnergy,iAzim,iPolar),N_bin);
+              tmp_dv = repelem(dv_part(it,iEnergy,iAzim,iPolar),N_bin);
               tmp_iDep1 = repelem(iEnergy,N_bin);
               tmp_iDep2 = repelem(iAzim,N_bin);
               tmp_iDep3 = repelem(iPolar,N_bin);
@@ -4423,6 +4439,7 @@ classdef PDist < TSeries
             end % end polar angle loop
           end % end azimuthal angle loop
         end % end energy loop
+
         p(it).iDep1 = iDep1_all(1:i_part_count-1);
         p(it).iDep2 = iDep2_all(1:i_part_count-1);
         p(it).iDep3 = iDep3_all(1:i_part_count-1);
@@ -4634,6 +4651,78 @@ classdef PDist < TSeries
       moms.T.units = 'eV';
       moms.T.siConversion = '11604.50520>K';
       % tensorOrder, representation, etc are read-only, how to add?
+    end
+    function PD = dn(obj,varargin)
+      % PDist.dn calculates the partial density dn = f*d3v in each bin
+      %   PD_dn = PD.dn;
+
+      d3v = obj.d3v(varargin{:}).data; % s^3/cm^6 i think, double check
+      f = obj.data;
+      dn = f.*d3v;
+      PD = obj;
+      PD.data = dn;
+      PD.units = 'cm^-3';
+    end
+    function PD = dj(obj,comp,varargin)
+      % PDist.dj calculates the partial flux dj_i = f*v_i*d3v in each bin
+      %   PD_dj = PD.dj(comp); % comp = 'x', 'y', 'z'
+
+      % varargin can only be scpot for now
+       
+      d3v = obj.d3v(varargin{:}).data; % s^3/cm^6 i think, double check
+      f = obj.data;
+      v = obj.(['v' comp])(varargin{:});
+
+      dj = f.*d3v.*v*1e5; % cm/s
+      PD = obj;
+      PD.data = dj;
+      PD.units = '1/cm^2s';
+    end
+    function PD = djx(obj,varargin)
+      % PDist.djx calculates the partial flux dj_x = f*v_x*d3v in each bin
+      %   PD_djx = PD.djx;
+      PD = obj.dj('x',varargin{:});
+    end
+    function PD = djy(obj,varargin)
+      % PDist.djy calculates the partial flux dj_y = f*v_y*d3v in each bin
+      %   PD_djy = PD.djy;
+      PD = obj.dj('y',varargin{:});
+    end
+    function PD = djz(obj,varargin)
+      % PDist.djz calculates the partial flux dj_z = f*v_z*d3v in each bin
+      %   PD_djz = PD.djz;
+      PD = obj.dj('z',varargin{:});
+    end
+    function TS = n(obj,varargin)
+      % PDist.n calculates the density of the distribution
+      % n = PD.n;
+      % n = PD.n;
+      % n = PD.elim([200 Inf]).n;
+      % n = PD.elim([200 Inf]).dn.n; % can also pass through dn first
+
+
+      if strcmp(obj.units,'cm^-3')
+        dn = obj;
+      else
+        dn = obj.dn(varargin{:});
+        %warning('Wrong units of inputs. Must pass through PDist.dn.')
+      end
+      n = sum(dn.data,2:10);  
+      TS = irf.ts_scalar(obj.time,n);
+      
+    end
+    function TS = vel(obj,varargin)
+      % PDist.dn calculates the partial density in each bin
+      
+      n = obj.n(varargin{:}).data;
+      jx = sum(obj.djx(varargin{:}).data,[2:10]); % 1/cm^2s 
+      jy = sum(obj.djy(varargin{:}).data,[2:10]);      
+      jz = sum(obj.djz(varargin{:}).data,[2:10]);
+      vx = jx./n*1e-5; % 1e-5*[1/cm^2s]/[cm^3] = 1e-5*cm/s = km/s
+      vy = jy./n*1e-5;
+      vz = jz./n*1e-5;
+      TS = irf.ts_vec_xyz(obj.time,[vx,vy,vz]);
+      
     end
     function PD = movmean(obj,nMean,varargin)
       % PDIST.MOVMEAN Executes a running average of the distribution.
