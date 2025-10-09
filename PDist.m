@@ -1765,7 +1765,7 @@ classdef PDist < TSeries
           PD.units = obj.units;
       end
     end
-    function varargout = shift(pdist,v_nf,nMC,orient,sc,varargin)
+   function PDistn = shift(PD,v_nf,nMC,orient,sc,varargin)
       % PDIST.SHIFT  Rebin the distribution function to shifted reference
       %              frame and a rotated coordinate system.
       %
@@ -1774,7 +1774,7 @@ classdef PDist < TSeries
       %%%This function rebins the distribution function to shifted reference
       %%%frame and a rotated coordinate system.
       %%% Input:
-      %%% pdist: 3D skymap distribution function
+      %%% PD: 3D skymap distribution function
       %%% v_nf transformation velocity in km/s.
       %%% orient: 3x3 rotation matrix between the old and the new cooridnate system.
       %%% When rotating to a Field alligned coordinate system, if you want the
@@ -1807,16 +1807,43 @@ classdef PDist < TSeries
 
 
       u = irf_units;
-      pdist = pdist.convertto('s^3/m^6');%put in SI units
-      sp = pdist.species;
+      input_units = PD.units;
+      
+      time = PD.time;
+      lt = length(time);
+
+      if ~flag_newgrid
+          le = size(PD.data,2);
+          lph = size(PD.data,3);
+          lth = size(PD.data,4);
+      else
+          le = length(Eedgesn)-1;
+          lph = length(phedgesn)-1;
+          lth = length(thedgesn)-1;
+      end
+
+
+      PD = PD.convertto('s^3/m^6');%put in SI units
+      sp = PD.species;
       switch sp
         case 'ions'
           m = u.mp;
         case 'electrons'
           m = u.me;
       end
-      dat = squeeze(pdist.data);
-      E_old = pdist.depend{1};
+
+      Fn = zeros(lt,le,lph,lth);
+      fprintf('Progress: 0.00%%');
+      for iq = 1:lt
+
+      % due to Matlab functionality, we must explicitly call the overloaded
+      % subsref (defined within this subclass), otherwise it will call the
+      % builtin function
+      subs.type = '()';
+      subs.subs = {iq};
+      PDt = PD.subsref(subs);
+      dat = squeeze(PDt.data);
+      E_old = PDt.depend{1};
       dEo = diff(E_old);
       Eedgeso = [ E_old(1:end-1)-dEo/2 E_old(end)-dEo(end)/2 E_old(end)+dEo(end)/2];
       Eedgeso(Eedgeso<0) = 0;
@@ -1828,13 +1855,13 @@ classdef PDist < TSeries
 
 
       %%use same old polar and azimuthal grid points for new grid
-      th = pdist.depend{3};
+      th = PDt.depend{3};
       %fix for the case when theta and phi points are not in ascending order
       if ~issorted(th);[th,ithsort] = sort(th);dat = dat(:,:,ithsort);end
       dth = diff(th);
       thedges = [th(1:end-1)-dth/2 th(end)-dth(end)/2 th(end)+dth(end)/2];
 
-      ph = pdist.depend{2};
+      ph = PDt.depend{2};
       dph = diff(ph);
       phedges = [ph(1:end-1) - dph/2 ph(end)-dph(end)/2 ph(end)+dph(end)/2];
       %Incorporates SolO where phi is from -180 to 180, make it from 0 to 360
@@ -1852,7 +1879,7 @@ classdef PDist < TSeries
       d3vo = dV3o.*dcosTHo.*dPHo;
       fd3vo = dat.*d3vo;
       %% shift reference frame and rotate to new coordinate system
-      [vx,vy,vz] = pdist.v;
+      [vx,vy,vz] = PDt.v;
       %%%the function PDist.v gives vx vy vz of the electrons. But when rebinning
       %%%I should use vx vy and vz of the instrument bins. Note the instrument
       %%%bins sees the direction  where an electron is coming from so an electron
@@ -2040,30 +2067,38 @@ classdef PDist < TSeries
 
       end
       %%
-      fn = fd3vn./d3vn;
-      Fn = zeros([1,size(fn)]);
-      Fn(1,:,:,:) = fn;
-      PDistn = PDist(pdist.time,Fn,'skymap',En,phn,thn);
+      fn = fd3vn./d3vn;      
+      Fn(iq,:,:,:) = fn;
 
+      percentStr = sprintf('%6.2f%%', iq/lt*100);
+      fprintf('\b\b\b\b\b\b\b');  % backspace over old percentage
+      fprintf('%s', percentStr);
+      end
+      fprintf('\nDone!\n');
+
+
+
+
+      PDistn = PDist(time,Fn,'skymap',En,phn,thn);
       PDistn.ancillary.V_edges = Vedges/1000;%km/s
       PDistn.ancillary.phi_edges = phedges;
       PDistn.ancillary.theta_edges = thedges;
       PDistn.ancillary.base = 'sph';
-      PDistn.units = pdist.units;
-      PDistn.species = pdist.species;
+      PDistn.units = PD.units;
+      PDistn.species = PD.species;
       PDistn.ancillary.energy0 = En;
       PDistn.ancillary.energy1 = En;
       PDistn.ancillary.esteptable = 0;
       PDistn.ancillary.energy = En;
       PDistn.ancillary.delta_energy_plus = -En + Eedgesn(2:end);
       PDistn.ancillary.delta_energy_minus = En - Eedgesn(1:end-1);
-
-      varargout{1} = PDistn;
+      PDistn = PDistn.convertto(input_units);%convert to original units
+      
 
 
 
     end
-    function [dists,moms] = cuts(PD_FA,species)
+    function [dists,moms] = cuts(PD_FA)
     % PDIST.cuts This function takes input a distribution function
     % rotated into a field aligned coordinate system using the function
     % PDist.shift with z representing the parallel direction, and x and y
@@ -2098,11 +2133,11 @@ classdef PDist < TSeries
     
     
     u = irf_units;
-    species = PD_FA.species;
-    switch lower(species)
+    sp = PD_FA.species;
+    switch lower(sp)
         case 'electrons'
             m = u.me;
-        case 'protons'
+        case 'ions'
             m = u.mp;
     end
     
@@ -5123,16 +5158,18 @@ classdef PDist < TSeries
     end
   end
   methods (Static)
-      function PD = generate_dist(n,Tfac,Vfac,dist_type,varargin)
+      function PD = generate_dist(n_in,T_in,V_in,dist_type,varargin)
         % PDIST.GENERATE_DIST This function Generate a 3D distribution of 
-        %                     electrons/ions in FA coordinate system with 
-        %                     b aligned with z.
+        %                     electrons/ions binned on a spherical grid.
         %
-        % PD = generate_dist(n,Tfac,Vfac,dist_type,varargin)
+        % PD = generate_dist(n,T,V,dist_type,varargin)
         % Input:
-        %  n: density in cm^-3.
-        %  Tfac: [Tperp1, Tperp2, Tpar] temperature in eV 
-        %  Vfac: [Vperp1, Vperp2, Vpar] velocity in km/s        
+        %  n: density in cm^-3. Can be either a TSeries or a single scalar.
+        %  T: temperature in eV. Can be either a TSeries of
+        %  the temperature tensor, a TSeries with [Tx,Ty,Tz] vector, or a
+        %  single 1x3 array of the form [Tx, Ty, Tz].
+        %  Vfac: velocity in km/s. Can be either a TSeries of the velocity
+        %  vector, or a single 1x3 array of the form [Vx, Vy, Vz].
         %  dist_type: is a string that determines the type of distribution 
         %  used.
         %  Implemented types 'max' for Maxwellian, 'kappa' for Kappa.
@@ -5143,13 +5180,13 @@ classdef PDist < TSeries
         %  FPI grid is used. After the 'new_grid' flag the function expects three
         %  inputs: E for energy, th for the polar angle, and phi for the azimuthal
         %  angle of the grid.
-        %  species: 'electrons' for electrons, 'protons' for protons. Default is 'e'.
+        %  species: 'electrons' for electrons, 'ions' for protons.
+        %  Default is 'electrons'.
         % Example:
-        % PD = generate_dist(n,Tfac,Vfac,'max')
-        % PD = generate_dist(n,Tfac,Vfac,'kappa','k',5)
+        % PD = generate_dist(n,T,V,'max')
+        % PD = generate_dist(n,T,V,'kappa','k',5)
 
-        Tperp1 = Tfac(1);Tperp2 = Tfac(2);Tpar = Tfac(3);
-        vdperp1 = Vfac(1);vdperp2 = Vfac(2);vdpar = Vfac(3);
+
         u =irf_units;
         kB=u.kB;
         qe=u.e; % electron charge, coulombs
@@ -5180,9 +5217,11 @@ classdef PDist < TSeries
                         case 'electrons'
                             m = u.me;
                             s = 'electrons';
-                        case 'protons'
+                        case 'ions'
                             m = u.mp;
-                            s = 'protons';
+                            s = 'ions';
+                        otherwise
+                            error('Species not defined.')
                     end
                     Var(1:2) = [];
                 otherwise
@@ -5191,37 +5230,23 @@ classdef PDist < TSeries
             end
         end
         
-        
-        
-       
-        n = n*1e6;
-        
-        
-        Tpar=Tpar*qe/kB; %  eV -> K 
-        Tperp1=Tperp1*qe/kB; %  eV -> K
-        Tperp2=Tperp2*qe/kB; %  eV -> K
-        
-        
-        
-        
-        vdpar=vdpar*1e3; % vds_z, km/s -> m/s
-        vdperp1=vdperp1*1e3; % vds_x, km/s -> m/s
-        vdperp2=vdperp2*1e3; % vds_x, km/s -> m/s
-        
-        
-        vtz=sqrt(2*kB*Tpar./m); % para thermal velocity, note the sqrt(2)
-        vtperp1=sqrt(2*kB*Tperp1./m); % perp 1 thermal velocity, note the sqrt(2)
-        vtperp2=sqrt(2*kB*Tperp2./m); % perp 2 thermal velocity, note the sqrt(2)
-        
-        switch lower(dist_type)
-            case 'max'
-                f3d=@(vpar,vperp1,vperp2) (1./((pi^(3/2)).*vtz.*vtperp1.*vtperp2)).*exp(-(vpar-vdpar).^2./(vtz.^2)).*exp(-(vperp1-vdperp1).^2./(vtperp1.^2)).*...
-                    exp(-(vperp2-vdperp2).^2./(vtperp2.^2));
-            case 'kappa'
-                Ak = ((1/(pi*(k-3/2)))^(3/2))*gamma(k+1)/(vtz*vtperp1*vtperp2*gamma(k-0.5));
-                Bk =@(vpar,vperp1,vperp2) (((vpar-vdpar)/(vtz)).^2+((vperp1-vdperp1)/(vtperp1)).^2+((vperp2-vdperp2)/(vtperp2)).^2);
-                f3d =@(vpar,vperp1,vperp2) Ak*(1+(Bk(vpar,vperp1,vperp2)./(k-3/2))).^-(k+1);
+        if isa(T_in,'TSeries')
+            %resample everything to timeline of density
+            time = n_in.time;
+            T_in = T_in.resample(n_in);
+            T_in = T_in.data;
+            V_in = V_in.resample(n_in);
+            V_in = V_in.data;
+            n_in = n_in.data;
+
+        else
+            time = irf_time(date,'date>epochTT');
         end
+        %if the temperature tensor is give, use diagonal terms only
+        if length(size(T_in))>2
+            T_in = [squeeze(T_in(:,1,1)), squeeze(T_in(:,2,2)), squeeze(T_in(:,3,3))];
+        end
+        %% Define the grid
         if flag_newgrid == 0
         
             E = [0.0006520   0.0008540   0.0011170   0.0014630   0.0019150   0.0025070   0.0032810   0.0042950   0.0056230   0.0073600   0.0096340   0.0126120   ...
@@ -5246,15 +5271,51 @@ classdef PDist < TSeries
         phedges = [phi(1:end-1) - dph/2 phi(end)-dph(end)/2 phi(end)+dph(end)/2];
         
         [VV,PHI,TH] = ndgrid(V,phi,th);
-        % [Vperp1,Vperp2,Vpar] = sph2cart(PHI,pi/2-TH,VV);
         
-        Vperp1 = -VV.*sind(TH).*cosd(PHI);
-        Vperp2 = -VV.*sind(TH).*sind(PHI);
-        Vpar = -VV.*cosd(TH);
+        Vx = -VV.*sind(TH).*cosd(PHI);
+        Vy = -VV.*sind(TH).*sind(PHI);
+        Vz = -VV.*cosd(TH);
         
         l1 = length(E);l2 = length(phi);l3 = length(th);
-        F3D(1,1:l1,1:l2,1:l3) = n*f3d(Vpar,Vperp1,Vperp2);
-        time = irf_time(date,'date>epochTT');
+        lt = length(time);
+        F3D = ones(lt,l1,l2,l3)*nan;
+        %% Loop over time
+        for i = 1:lt
+
+        Tx = T_in(i,1);Ty = T_in(i,2);Tz = T_in(i,3);
+        vdx = V_in(i,1);vdy = V_in(i,2);vdz = V_in(i,3);
+       
+        n = n_in(i)*1e6;
+        
+        
+        Tz=Tz*qe/kB; %  eV -> K 
+        Tx=Tx*qe/kB; %  eV -> K
+        Ty=Ty*qe/kB; %  eV -> K
+        
+        
+        
+        
+        vdz=vdz*1e3; % vds_z, km/s -> m/s
+        vdx=vdx*1e3; % vds_x, km/s -> m/s
+        vdy=vdy*1e3; % vds_x, km/s -> m/s
+        
+        
+        vtz=sqrt(2*kB*Tz./m); % z thermal velocity, note the sqrt(2)
+        vtx=sqrt(2*kB*Tx./m); % x thermal velocity, note the sqrt(2)
+        vty=sqrt(2*kB*Ty./m); % y thermal velocity, note the sqrt(2)
+        
+        switch lower(dist_type)
+            case 'max'
+                f3d=@(vx,vy,vz) (1./((pi^(3/2)).*vtz.*vtx.*vty)).*exp(-(vz-vdz).^2./(vtz.^2)).*exp(-(vx-vdx).^2./(vtx.^2)).*...
+                    exp(-(vy-vdy).^2./(vty.^2));
+            case 'kappa'
+                Ak = ((1/(pi*(k-3/2)))^(3/2))*gamma(k+1)/(vtz*vtx*vty*gamma(k-0.5));
+                Bk =@(vx,vy,vz) (((vz-vdz)/(vtz)).^2+((vx-vdx)/(vtx)).^2+((vy-vdy)/(vty)).^2);
+                f3d =@(vx,vy,vz) Ak*(1+(Bk(vz,vx,vy)./(k-3/2))).^-(k+1);
+        end
+        
+        F3D(i,1:l1,1:l2,1:l3) = n*f3d(Vx,Vy,Vz);
+        end
         PD = PDist(time,F3D,'skymap',E,phi,th);
         PD.ancillary.V_edges = Vedges/1000;%km/s
         PD.ancillary.E_edges = Eedges;
@@ -5264,7 +5325,6 @@ classdef PDist < TSeries
         PD.units = 's^3/m^6';
         PD.species = s;
 end
-
     function newUnits = changeunits(from,to)
 
     end
