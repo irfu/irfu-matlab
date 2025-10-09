@@ -1595,6 +1595,24 @@ classdef TSeries
       end
     end
 
+    function Ts = movmean(obj,nMean,varargin)
+      % TSeries.movmean - applies a time-moving-average to data
+      %   
+      %   TS = ni3; % TSeries object
+      %   N = 10; % moving average window
+      %   TSmovmean = TS.movmean(N);
+      %   TSmovmean = TS.movmean(N,args);
+      %     - For additional arguments, see help movmean (Matlabs function)
+      %      
+      %   irf_plot({TS,TS.movmean(5), TS.movmean(20)}, 'comp')
+      %   
+      %   TS.data(200,:) = NaN;
+      %   irf_plot({TS,TS.movmean(100), TS.movmean(100,'includenan'), TS.movmean(100,'omitnan')});
+      
+      new_data = movmean(obj.data,nMean,1,varargin{:}); % the 1 specifies the dimension along which the moving mean is taken      
+      Ts = obj;
+      Ts.data = new_data;      
+    end
     function obj = tlim(obj,tint, mode)
       %TLIM  Returns data within specified time interval
       %
