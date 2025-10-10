@@ -1765,7 +1765,7 @@ classdef PDist < TSeries
           PD.units = obj.units;
       end
     end
-   function PDistn = shift(PD,v_nf,nMC,orient,sc,varargin)
+    function PDistn = shift(PD,v_nf,nMC,orient,sc,varargin)
       % PDIST.SHIFT  Rebin the distribution function to shifted reference
       %              frame and a rotated coordinate system.
       %
@@ -1808,18 +1808,18 @@ classdef PDist < TSeries
 
       u = irf_units;
       input_units = PD.units;
-      
+
       time = PD.time;
       lt = length(time);
 
       if ~flag_newgrid
-          le = size(PD.data,2);
-          lph = size(PD.data,3);
-          lth = size(PD.data,4);
+        le = size(PD.data,2);
+        lph = size(PD.data,3);
+        lth = size(PD.data,4);
       else
-          le = length(Eedgesn)-1;
-          lph = length(phedgesn)-1;
-          lth = length(thedgesn)-1;
+        le = length(Eedgesn)-1;
+        lph = length(phedgesn)-1;
+        lth = length(thedgesn)-1;
       end
 
 
@@ -1836,243 +1836,243 @@ classdef PDist < TSeries
       fprintf('Progress: 0.00%%');
       for iq = 1:lt
 
-      % due to Matlab functionality, we must explicitly call the overloaded
-      % subsref (defined within this subclass), otherwise it will call the
-      % builtin function
-      subs.type = '()';
-      subs.subs = {iq};
-      PDt = PD.subsref(subs);
-      dat = squeeze(PDt.data);
-      E_old = PDt.depend{1};
-      dEo = diff(E_old);
-      Eedgeso = [ E_old(1:end-1)-dEo/2 E_old(end)-dEo(end)/2 E_old(end)+dEo(end)/2];
-      Eedgeso(Eedgeso<0) = 0;
-      %%Define new coordinate system
+        % due to Matlab functionality, we must explicitly call the overloaded
+        % subsref (defined within this subclass), otherwise it will call the
+        % builtin function
+        subs.type = '()';
+        subs.subs = {iq};
+        PDt = PD.subsref(subs);
+        dat = squeeze(PDt.data);
+        E_old = PDt.depend{1};
+        dEo = diff(E_old);
+        Eedgeso = [ E_old(1:end-1)-dEo/2 E_old(end)-dEo(end)/2 E_old(end)+dEo(end)/2];
+        Eedgeso(Eedgeso<0) = 0;
+        %%Define new coordinate system
 
-      e1 = orient(1,:);
-      e2 = orient(2,:);
-      e3 = orient(3,:);
-
-
-      %%use same old polar and azimuthal grid points for new grid
-      th = PDt.depend{3};
-      %fix for the case when theta and phi points are not in ascending order
-      if ~issorted(th);[th,ithsort] = sort(th);dat = dat(:,:,ithsort);end
-      dth = diff(th);
-      thedges = [th(1:end-1)-dth/2 th(end)-dth(end)/2 th(end)+dth(end)/2];
-
-      ph = PDt.depend{2};
-      dph = diff(ph);
-      phedges = [ph(1:end-1) - dph/2 ph(end)-dph(end)/2 ph(end)+dph(end)/2];
-      %Incorporates SolO where phi is from -180 to 180, make it from 0 to 360
-      if ~issorted(ph);[ph,iphsort] = sort(ph);dat = dat(:,iphsort,:);phedges = sort((phedges));end
-
-      %%velocity grid before shifting reference frame
-      vedges_old = sqrt(2*u.e*Eedgeso./m);
-      dv_old = diff(vedges_old);%% velocity increment in the old bin
-
-      %%calculate old d3v and fd3v
-      dv3o = diff(vedges_old.^3)/3;%%dv = int v^2dv = (v^3(2) - v^3(1))/3
-      dcosth = -diff(cosd(thedges));%%int sin(theta) dth = -( cos(theta2) - cos(theta1))
-      dp = diff(phedges)*pi/180;%%int dphi = phi2-phi1
-      [dV3o,dPHo,dcosTHo] = ndgrid(dv3o,dp,dcosth);
-      d3vo = dV3o.*dcosTHo.*dPHo;
-      fd3vo = dat.*d3vo;
-      %% shift reference frame and rotate to new coordinate system
-      [vx,vy,vz] = PDt.v;
-      %%%the function PDist.v gives vx vy vz of the electrons. But when rebinning
-      %%%I should use vx vy and vz of the instrument bins. Note the instrument
-      %%%bins sees the direction  where an electron is coming from so an electron
-      %%%with v = (vx,vy,vz) will be observed in the instrument bin -(vx,vy,vz).
-      vxn = -(squeeze(vx) - v_nf(1));
-      vyn = -(squeeze(vy) - v_nf(2));
-      vzn = -(squeeze(vz) - v_nf(3));
-
-      vxn = vxn*1000;vyn = vyn*1000;vzn = vzn*1000;%put in m/s
-      %%rotate to new coordinate system
-
-      vxnr =  vxn*e1(1) + vyn*e1(2) + vzn*e1(3);
-      vynr =  vxn*e2(1) + vyn*e2(2) + vzn*e2(3);
-      vznr =  vxn*e3(1) + vyn*e3(2) + vzn*e3(3);
-
-      %%get the spherical coordinates of grid points in the shifted reference
-      %%frame
-      [~,~,v_o] = cart2sph(vxnr,vynr,vznr);
+        e1 = orient(1,:);
+        e2 = orient(2,:);
+        e3 = orient(3,:);
 
 
-      %% generate old velocity grid for shifted reference frame and roatated coordinate system
-      %%%determine the location of the grid edges in spherical coordinates in
-      %%%the new frame.
+        %%use same old polar and azimuthal grid points for new grid
+        th = PDt.depend{3};
+        %fix for the case when theta and phi points are not in ascending order
+        if ~issorted(th);[th,ithsort] = sort(th);dat = dat(:,:,ithsort);end
+        dth = diff(th);
+        thedges = [th(1:end-1)-dth/2 th(end)-dth(end)/2 th(end)+dth(end)/2];
 
-      [VO,PHO,THO] = ndgrid(vedges_old,phedges,thedges);
+        ph = PDt.depend{2};
+        dph = diff(ph);
+        phedges = [ph(1:end-1) - dph/2 ph(end)-dph(end)/2 ph(end)+dph(end)/2];
+        %Incorporates SolO where phi is from -180 to 180, make it from 0 to 360
+        if ~issorted(ph);[ph,iphsort] = sort(ph);dat = dat(:,iphsort,:);phedges = sort((phedges));end
 
-      %% generate new velocity grid
-      if ~flag_newgrid
-        %%%the new velocity grid will have the same discretization as the old one
-        %%%except the start and end point will be determined from the minimum and
-        %%%maximum values of the speed in the shifted reference frame.
+        %%velocity grid before shifting reference frame
+        vedges_old = sqrt(2*u.e*Eedgeso./m);
+        dv_old = diff(vedges_old);%% velocity increment in the old bin
 
-        vmin = min(min(min(v_o)));
-        vmin = min([vedges_old(1),vmin-dv_old(1)/2]);
-        % if norm(v_nf)>vedges_old(1)/1000; vmin =0;end
-        if vmin<0; vmin =0;end
+        %%calculate old d3v and fd3v
+        dv3o = diff(vedges_old.^3)/3;%%dv = int v^2dv = (v^3(2) - v^3(1))/3
+        dcosth = -diff(cosd(thedges));%%int sin(theta) dth = -( cos(theta2) - cos(theta1))
+        dp = diff(phedges)*pi/180;%%int dphi = phi2-phi1
+        [dV3o,dPHo,dcosTHo] = ndgrid(dv3o,dp,dcosth);
+        d3vo = dV3o.*dcosTHo.*dPHo;
+        fd3vo = dat.*d3vo;
+        %% shift reference frame and rotate to new coordinate system
+        [vx,vy,vz] = PDt.v;
+        %%%the function PDist.v gives vx vy vz of the electrons. But when rebinning
+        %%%I should use vx vy and vz of the instrument bins. Note the instrument
+        %%%bins sees the direction  where an electron is coming from so an electron
+        %%%with v = (vx,vy,vz) will be observed in the instrument bin -(vx,vy,vz).
+        vxn = -(squeeze(vx) - v_nf(1));
+        vyn = -(squeeze(vy) - v_nf(2));
+        vzn = -(squeeze(vz) - v_nf(3));
 
-        vmax = max(max(max(v_o)));
-        vmax = max([vedges_old(end),vmax+dv_old(end)/2]);
-        Vedges = [vmin vedges_old(2:end-1) vmax];
+        vxn = vxn*1000;vyn = vyn*1000;vzn = vzn*1000;%put in m/s
+        %%rotate to new coordinate system
 
-      else
-        Vedges = sqrt(2*u.e*Eedgesn./m);
-        thedges = thedgesn;
-        phedges = phedgesn;
+        vxnr =  vxn*e1(1) + vyn*e1(2) + vzn*e1(3);
+        vynr =  vxn*e2(1) + vyn*e2(2) + vzn*e2(3);
+        vznr =  vxn*e3(1) + vyn*e3(2) + vzn*e3(3);
 
-      end
-      if strcmpi(sc,'solo')
-        Emin = 0.5*m*(norm(v_nf)*1000)^2/u.e;
-        if Eedgeso(1)-Emin<0
-          Vedges(1) = 0;
+        %%get the spherical coordinates of grid points in the shifted reference
+        %%frame
+        [~,~,v_o] = cart2sph(vxnr,vynr,vznr);
+
+
+        %% generate old velocity grid for shifted reference frame and roatated coordinate system
+        %%%determine the location of the grid edges in spherical coordinates in
+        %%%the new frame.
+
+        [VO,PHO,THO] = ndgrid(vedges_old,phedges,thedges);
+
+        %% generate new velocity grid
+        if ~flag_newgrid
+          %%%the new velocity grid will have the same discretization as the old one
+          %%%except the start and end point will be determined from the minimum and
+          %%%maximum values of the speed in the shifted reference frame.
+
+          vmin = min(min(min(v_o)));
+          vmin = min([vedges_old(1),vmin-dv_old(1)/2]);
+          % if norm(v_nf)>vedges_old(1)/1000; vmin =0;end
+          if vmin<0; vmin =0;end
+
+          vmax = max(max(max(v_o)));
+          vmax = max([vedges_old(end),vmax+dv_old(end)/2]);
+          Vedges = [vmin vedges_old(2:end-1) vmax];
+
+        else
+          Vedges = sqrt(2*u.e*Eedgesn./m);
+          thedges = thedgesn;
+          phedges = phedgesn;
+
         end
-        thedges = linspace(0,180,45);
-        phedges = linspace(0,360,67);
-      end
+        if strcmpi(sc,'solo')
+          Emin = 0.5*m*(norm(v_nf)*1000)^2/u.e;
+          if Eedgeso(1)-Emin<0
+            Vedges(1) = 0;
+          end
+          thedges = linspace(0,180,45);
+          phedges = linspace(0,360,67);
+        end
 
-      %get new velocity and energies at the center of each new grid box
-      %         dV = diff(Vedges);
-      %         Vn = Vedges(1:end-1)+dV/2;
-      %         En = 0.5*m*Vn.^2/u.e;
+        %get new velocity and energies at the center of each new grid box
+        %         dV = diff(Vedges);
+        %         Vn = Vedges(1:end-1)+dV/2;
+        %         En = 0.5*m*Vn.^2/u.e;
 
-      Eedgesn = 0.5*m*Vedges.^2/u.e;
-      En = Eedgesn(1:end-1) + diff(Eedgesn)/2;
-      %         En(2:end-2) = E_old(2:end-2);
-
-
-      dthn = diff(thedges);
-      thn = thedges(1:end-1)+dthn/2;
-
-
-      dphn = diff(phedges);
-      phn = phedges(1:end-1)+dphn/2;
-
-      %%new d3v
-      dv3 = diff(Vedges.^3)/3;
-      dcosth = -diff(cosd(thedges));
-      dp = diff(phedges)*pi/180;
-      [dV3,dPH,dcosTH] = ndgrid(dv3,dp,dcosth);
-      d3vn = dV3.*dcosTH.*dPH;
-
-      %% rebin to new grid in shifted reference frame
-      l1o = size(v_o,1);l2o = size(v_o,2);l3o = size(v_o,3);
-      l1 = size(d3vn,1);l2 = size(d3vn,2);l3 = size(d3vn,3);
-      fd3vn = zeros(l1,l2,l3);
-      for i = 1:l1o
-
-        for j = 1:l2o
-
-          for k = 1:l3o
+        Eedgesn = 0.5*m*Vedges.^2/u.e;
+        En = Eedgesn(1:end-1) + diff(Eedgesn)/2;
+        %         En(2:end-2) = E_old(2:end-2);
 
 
-            fd3vperm = fd3vo(i,j,k)/nMC;%% fd3vperm = fd3v per monte carlo point
-            if fd3vperm == 0
-              continue;
+        dthn = diff(thedges);
+        thn = thedges(1:end-1)+dthn/2;
+
+
+        dphn = diff(phedges);
+        phn = phedges(1:end-1)+dphn/2;
+
+        %%new d3v
+        dv3 = diff(Vedges.^3)/3;
+        dcosth = -diff(cosd(thedges));
+        dp = diff(phedges)*pi/180;
+        [dV3,dPH,dcosTH] = ndgrid(dv3,dp,dcosth);
+        d3vn = dV3.*dcosTH.*dPH;
+
+        %% rebin to new grid in shifted reference frame
+        l1o = size(v_o,1);l2o = size(v_o,2);l3o = size(v_o,3);
+        l1 = size(d3vn,1);l2 = size(d3vn,2);l3 = size(d3vn,3);
+        fd3vn = zeros(l1,l2,l3);
+        for i = 1:l1o
+
+          for j = 1:l2o
+
+            for k = 1:l3o
+
+
+              fd3vperm = fd3vo(i,j,k)/nMC;%% fd3vperm = fd3v per monte carlo point
+              if fd3vperm == 0
+                continue;
+              end
+
+
+
+
+              %%get bin edges in the non-rotated, non-transformed reference
+              %%frame (from now on called F1)
+
+              Vm_o = VO(i,j,k);
+              Vp_o = VO(i+1,j,k);
+
+              Phm_o = PHO(i,j,k);
+              Php_o = PHO(i,j+1,k);
+
+              Thm_o = THO(i,j,k);
+              Thp_o = THO(i,j,k+1);
+
+              %%generate Monte Carlo points in the bin in F1
+
+              vo_MC = rand(nMC,1)*(Vp_o - Vm_o)+Vm_o;
+              tho_MC = rand(nMC,1)*(Thp_o - Thm_o)+Thm_o;
+              pho_MC = rand(nMC,1)*(Php_o - Phm_o)+Phm_o;
+
+              %%Put each MC vector in cartesian coordinate, transform to new
+              %%reference frame and rotated coordinate system (from now on
+              %%called F2) then get the spherical coordinates in that new
+              %%frame
+
+              %%%as before the - sign is to make the velocities of the electrons instead
+              %%%of the instrument. After shifting to the new reference frame I change it
+              %%%back to that of the isntrument.
+
+              VXE = -vo_MC.*sind(tho_MC).*cosd(pho_MC);
+              VYE = -vo_MC.*sind(tho_MC).*sind(pho_MC);
+              VZE = -vo_MC.*cosd(tho_MC);
+
+              VXEnf = -(VXE - v_nf(1)*1000);
+              VYEnf = -(VYE - v_nf(2)*1000);
+              VZEnf = -(VZE - v_nf(3)*1000);
+
+              VXEnfr = VXEnf*e1(1) + VYEnf*e1(2) + VZEnf*e1(3);
+              VYEnfr = VXEnf*e2(1) + VYEnf*e2(2) + VZEnf*e2(3);
+              VZEnfr = VXEnf*e3(1) + VYEnf*e3(2) + VZEnf*e3(3);
+
+              [ph_MC,th_MC,v_MC] = cart2sph(VXEnfr,VYEnfr,VZEnfr);
+
+              %cat2sph returns elevation angle, make it polar angle in the range
+              %(0,180) instead of -pi/2 to pi/2
+              th_MC = (pi/2-th_MC)*180/pi;
+
+              %put in degrees and 0 to 360 range (instead of -pi to pi)
+              ph_MC = ph_MC*180/pi;
+              ph_MC = wrapTo360(ph_MC);
+
+              %Deal with the situation when the first bin in ph does not
+              %start at 0 and last bin does not end at 360. phedges is
+              %assumed to wrap around itself i.e. if x = phedges(1), then
+              %phedges(end) = x+360
+              if max(phedges)<360
+                ph_MC(ph_MC>max(phedges)) = ph_MC(ph_MC>max(phedges)) - 360;
+              elseif max(phedges)>360
+                ph_MC(ph_MC<min(phedges)) = 360 - ph_MC(ph_MC<min(phedges));
+              end
+
+
+
+
+
+              %%Discretize MC into new grid
+              iv = discretize(v_MC,Vedges);
+              ith_n = discretize(th_MC,thedges);
+              iph_n = discretize(ph_MC,phedges);
+
+              %%As of 2024 sub2ind doesn't work with nan, so the following is
+              %%a fix for that. The solution emplyed is to discard points
+              %%that are outside of the new grid.
+              ix = isnan(iv) | isnan(ith_n) | isnan(iph_n);
+
+              loc = sub2ind([l1 l2 l3],iv(~ix),iph_n(~ix),ith_n(~ix));
+              loc(isnan(loc)) = []; % values that fall outside of box becomes nan, remove these
+              hasdata = all(loc>0, 2);
+
+              %%sum all fd3vperm for each MC in each new bin from the old bin
+              sum = accumarray(loc(hasdata,:),fd3vperm,[numel(fd3vn) 1]);
+              fd3vn = fd3vn(:,:,:) + reshape(sum,[ l1 l2 l3]);
+
+
             end
-
-
-
-
-            %%get bin edges in the non-rotated, non-transformed reference
-            %%frame (from now on called F1)
-
-            Vm_o = VO(i,j,k);
-            Vp_o = VO(i+1,j,k);
-
-            Phm_o = PHO(i,j,k);
-            Php_o = PHO(i,j+1,k);
-
-            Thm_o = THO(i,j,k);
-            Thp_o = THO(i,j,k+1);
-
-            %%generate Monte Carlo points in the bin in F1
-
-            vo_MC = rand(nMC,1)*(Vp_o - Vm_o)+Vm_o;
-            tho_MC = rand(nMC,1)*(Thp_o - Thm_o)+Thm_o;
-            pho_MC = rand(nMC,1)*(Php_o - Phm_o)+Phm_o;
-
-            %%Put each MC vector in cartesian coordinate, transform to new
-            %%reference frame and rotated coordinate system (from now on
-            %%called F2) then get the spherical coordinates in that new
-            %%frame
-
-            %%%as before the - sign is to make the velocities of the electrons instead
-            %%%of the instrument. After shifting to the new reference frame I change it
-            %%%back to that of the isntrument.
-
-            VXE = -vo_MC.*sind(tho_MC).*cosd(pho_MC);
-            VYE = -vo_MC.*sind(tho_MC).*sind(pho_MC);
-            VZE = -vo_MC.*cosd(tho_MC);
-
-            VXEnf = -(VXE - v_nf(1)*1000);
-            VYEnf = -(VYE - v_nf(2)*1000);
-            VZEnf = -(VZE - v_nf(3)*1000);
-
-            VXEnfr = VXEnf*e1(1) + VYEnf*e1(2) + VZEnf*e1(3);
-            VYEnfr = VXEnf*e2(1) + VYEnf*e2(2) + VZEnf*e2(3);
-            VZEnfr = VXEnf*e3(1) + VYEnf*e3(2) + VZEnf*e3(3);
-
-            [ph_MC,th_MC,v_MC] = cart2sph(VXEnfr,VYEnfr,VZEnfr);
-
-            %cat2sph returns elevation angle, make it polar angle in the range
-            %(0,180) instead of -pi/2 to pi/2
-            th_MC = (pi/2-th_MC)*180/pi;
-
-            %put in degrees and 0 to 360 range (instead of -pi to pi)
-            ph_MC = ph_MC*180/pi;
-            ph_MC = wrapTo360(ph_MC);
-
-            %Deal with the situation when the first bin in ph does not
-            %start at 0 and last bin does not end at 360. phedges is
-            %assumed to wrap around itself i.e. if x = phedges(1), then
-            %phedges(end) = x+360
-            if max(phedges)<360
-              ph_MC(ph_MC>max(phedges)) = ph_MC(ph_MC>max(phedges)) - 360;
-            elseif max(phedges)>360
-              ph_MC(ph_MC<min(phedges)) = 360 - ph_MC(ph_MC<min(phedges));
-            end
-
-
-
-
-
-            %%Discretize MC into new grid
-            iv = discretize(v_MC,Vedges);
-            ith_n = discretize(th_MC,thedges);
-            iph_n = discretize(ph_MC,phedges);
-
-            %%As of 2024 sub2ind doesn't work with nan, so the following is
-            %%a fix for that. The solution emplyed is to discard points
-            %%that are outside of the new grid.
-            ix = isnan(iv) | isnan(ith_n) | isnan(iph_n);
-
-            loc = sub2ind([l1 l2 l3],iv(~ix),iph_n(~ix),ith_n(~ix));
-            loc(isnan(loc)) = []; % values that fall outside of box becomes nan, remove these
-            hasdata = all(loc>0, 2);
-
-            %%sum all fd3vperm for each MC in each new bin from the old bin
-            sum = accumarray(loc(hasdata,:),fd3vperm,[numel(fd3vn) 1]);
-            fd3vn = fd3vn(:,:,:) + reshape(sum,[ l1 l2 l3]);
-
 
           end
 
         end
+        %%
+        fn = fd3vn./d3vn;
+        Fn(iq,:,:,:) = fn;
 
-      end
-      %%
-      fn = fd3vn./d3vn;      
-      Fn(iq,:,:,:) = fn;
-
-      percentStr = sprintf('%6.2f%%', iq/lt*100);
-      fprintf('\b\b\b\b\b\b\b');  % backspace over old percentage
-      fprintf('%s', percentStr);
+        percentStr = sprintf('%6.2f%%', iq/lt*100);
+        fprintf('\b\b\b\b\b\b\b');  % backspace over old percentage
+        fprintf('%s', percentStr);
       end
       fprintf('\nDone!\n');
 
@@ -2093,227 +2093,227 @@ classdef PDist < TSeries
       PDistn.ancillary.delta_energy_plus = -En + Eedgesn(2:end);
       PDistn.ancillary.delta_energy_minus = En - Eedgesn(1:end-1);
       PDistn = PDistn.convertto(input_units);%convert to original units
-      
+
 
 
 
     end
     function [dists,moms] = cuts(PD_FA)
-    % PDIST.cuts This function takes input a distribution function
-    % rotated into a field aligned coordinate system using the function
-    % PDist.shift with z representing the parallel direction, and x and y
-    % representing the perp_1 and perp_2 directions, and returns parallel
-    % and perpendicular cuts of the distribution along with the full moments
-    % and the moments of the 1D and 2D cuts.
-    %
-    % [dists,moms] = cuts(PDist_FA)
-    % Input:
-    %  PD_FA: skymap dist rotated to FA coordinates.
-    % 
-    % Output:
-    %  dists: structure containting:
-    %       F_par: 1D parallel cut of the distribution
-    %       F_apar: 1D antiparallel cut of the distribution
-    %       F1D_perp: 1D perpendicular cut (integrated in the perp_1, perp_2
-    %       plane)
-    %       F2D_perp: 2D perpendicular cut (in the perp_1, perp_2 plane)
-    %       F2D_bt: 2D parallel-perpendicular distribution (integrated in the
-    %       azimuthal direction)
-    %  moms: structure containing:
-    %       N: full density in cm^-3
-    %       V: full velocity in km/s
-    %       T: full temperature in eV
-    %       N_cut_perp: density of the perpendicular cut distrbiution
-    %       V_cut_perp: velocity of the perpendicular cut distrbiution
-    %       T_cut_perp: temperature of the perpendicular cut distrbiution
-    %       N_cut_par: density of the parallel cut distribution
-    %       V_cut_par: velocity of the parallel cut distribution
-    %       T_cut_par: temperature of the parallel cut distribution
-    
-    
-    
-    u = irf_units;
-    sp = PD_FA.species;
-    switch lower(sp)
+      % PDIST.cuts This function takes input a distribution function
+      % rotated into a field aligned coordinate system using the function
+      % PDist.shift with z representing the parallel direction, and x and y
+      % representing the perp_1 and perp_2 directions, and returns parallel
+      % and perpendicular cuts of the distribution along with the full moments
+      % and the moments of the 1D and 2D cuts.
+      %
+      % [dists,moms] = cuts(PDist_FA)
+      % Input:
+      %  PD_FA: skymap dist rotated to FA coordinates.
+      %
+      % Output:
+      %  dists: structure containting:
+      %       F_par: 1D parallel cut of the distribution
+      %       F_apar: 1D antiparallel cut of the distribution
+      %       F1D_perp: 1D perpendicular cut (integrated in the perp_1, perp_2
+      %       plane)
+      %       F2D_perp: 2D perpendicular cut (in the perp_1, perp_2 plane)
+      %       F2D_bt: 2D parallel-perpendicular distribution (integrated in the
+      %       azimuthal direction)
+      %  moms: structure containing:
+      %       N: full density in cm^-3
+      %       V: full velocity in km/s
+      %       T: full temperature in eV
+      %       N_cut_perp: density of the perpendicular cut distrbiution
+      %       V_cut_perp: velocity of the perpendicular cut distrbiution
+      %       T_cut_perp: temperature of the perpendicular cut distrbiution
+      %       N_cut_par: density of the parallel cut distribution
+      %       V_cut_par: velocity of the parallel cut distribution
+      %       T_cut_par: temperature of the parallel cut distribution
+
+
+
+      u = irf_units;
+      sp = PD_FA.species;
+      switch lower(sp)
         case 'electrons'
-            m = u.me;
+          m = u.me;
         case 'ions'
-            m = u.mp;
-    end
-    
-    PD_FA = PD_FA.convertto('s^3/m^6');
-    %% calculate full moments
-    
-    %%%original coordinate system original reference frame
-    En = PD_FA.depend{1};
-    Vn = sqrt(2*En*u.e/u.me);
-    thn = PD_FA.depend{3};
-    phn = PD_FA.depend{2};
-    
-    Vedges = PD_FA.ancillary.V_edges*1000;
-    thedges = PD_FA.ancillary.theta_edges;
-    phedges = PD_FA.ancillary.phi_edges;
-    
-    %%calculate differential elements
-    dv = diff(Vedges);
-    dth = diff(thedges)*pi/180;
-    dph = diff(phedges)*pi/180;
-    
-    %%calculate d3v for F_3D
-    [VV,PH,TH] = ndgrid(Vn,phn,thn);
-    [dV,dPH,dTH] = ndgrid(dv,dph,dth);
-    d3v = VV.^2.*sind(TH).*dV.*dTH.*dPH;
-    
-    %%calculate d2v for F_2D
-    [dV2,dPH2] = ndgrid(dv,dph);
-    [V2,~] = ndgrid(Vn,phn);
-    d2v = V2.*dV2.*dPH2;
-    
-    %%calculate dv For F_1D
-    dvpar = diff(Vedges);
-    dvfa = [flip(dvpar) dvpar];
-    
-    
-    
-    FF = squeeze(PD_FA.data);
-    %% Full moments
-    Fd3v = FF.*d3v;
-    
-    
-    N = nansum(nansum(nansum(Fd3v)));
-    vn1 = -nansum(nansum(nansum(Fd3v.*VV.*sind(TH).*cosd(PH))))/N;
-    vn2 = -nansum(nansum(nansum(Fd3v.*VV.*sind(TH).*sind(PH))))/N;
-    vn3 = -nansum(nansum(nansum(Fd3v.*VV.*cosd(TH))))/N;
-    
-    Vm_perp1 = vn1/1000;
-    Vm_perp2 = vn2/1000;
-    Vm_par = vn3/1000;
-    Vm = [Vm_perp1, Vm_perp2, Vm_par];
-    
-    P11 = m*nansum(nansum(nansum(Fd3v.*(VV.*sind(TH).*cosd(PH)).^2))) - N*m*vn1*vn1;
-    P22 = m*nansum(nansum(nansum(Fd3v.*(VV.*sind(TH).*sind(PH)).^2))) - N*m*vn2*vn2;
-    P33 = m*nansum(nansum(nansum(Fd3v.*(VV.*cosd(TH)).^2))) - N*m*vn3*vn3;
-    P12 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).^2.*cosd(PH).*sind(PH)))) - N*m*vn1*vn2;
-    P13 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).*cosd(TH).*cosd(PH)))) - N*m*vn1*vn3;
-    P23 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).*cosd(TH).*sind(PH)))) - N*m*vn2*vn3;
-    P21 = P12; P31 = P13; P32 = P23;
-    
-    
-    Nm = N*1e-6;
-    
-    
-    
-    P = nan*ones(3,3);
-    P(1,1) = P11;
-    P(2,2) = P22;
-    P(3,3) = P33;
-    P(1,2) = P12;
-    P(1,3) = P13;
-    P(2,3) = P23;
-    P(2,1) = P21;P(3,1) = P31;P(3,2) = P32;
-    
-    T = P./(N)/u.e;
-    
-    %% calculate taus
-    
-    %% Getting slices of the distribution
-    
-    ith_perp = find(thn>80 & thn<100);
-    %%if the angles are as seen from the spacecraft detectros, so we have
-    %%to flip them to make them correspond to electron trajectories
-    %%(i.e 180 degrees for the detector is zero degrees for the electron)
-    ith_par = thn>170;
-    ith_apar = thn<10;
-    ith_fa = thn<10 | thn>170;
-   
-    
-    
-    %dist in perp1 perp2 plane
-    F2D_perp = FF(:,:,ith_perp);
-    F2D_perp = nanmean(F2D_perp,3);
-    F1D_perp = nansum(F2D_perp.*dPH2,2)/(2*pi);
-    F1D_perp(F1D_perp ==0 )=nan;
-    %dist in FA direction
-    F_apar = FF(:,:,ith_apar).*dPH(:,:,ith_par);
-    F_apar = nansum(nanmean(F_apar,3),2)/(2*pi);
-    F_apar(F_apar==0) = nan;
-    
-    F_par = FF(:,:,ith_par).*dPH(:,:,ith_par);
-    F_par = nansum(nanmean(F_par,3),2)/(2*pi);
-    F_par(F_par==0) = nan;
-    
-    F_fa = [flip(F_apar') F_par'];
-    
-    %dist in perp par plane (intergrated in phi)
-    
-    F2D_bt = squeeze(nansum(FF.*dPH,2))/(2*pi);
-    F2D_bt(F2D_bt==0) = nan;
-   
-    %% Getting moments of 2D perp dist
-    
-    
-    Fd2v_perp = F2D_perp.*d2v;
-    V2_perp = nanmean(VV(:,:,ith_perp),3);
-    P2_perp = nanmean(PH(:,:,ith_perp),3);
-    
-    n_perp = (nansum(nansum(Fd2v_perp)));
-    vt1 = -(nansum(nansum(Fd2v_perp.*V2_perp.*cosd(P2_perp))))/n_perp;
-    vt2 = -(nansum(nansum(Fd2v_perp.*V2_perp.*sind(P2_perp))))/n_perp;
-    Vc_perp1 = vt1/1000;
-    Vc_perp2 = vt2/1000;
-    Vc = [Vc_perp1,Vc_perp2];
-    
-    Pperp(1,1) = m*(nansum(nansum(Fd2v_perp.*(V2_perp.*cosd(P2_perp)).^2))) - n_perp*m*vt1*vt1;
-    Pperp(2,2) = m*(nansum(nansum(Fd2v_perp.*(V2_perp.*sind(P2_perp)).^2))) - n_perp*m*vt2*vt2;
-    Pperp(1,2) = m*(nansum(nansum(Fd2v_perp.*V2_perp.^2.*cosd(P2_perp).*sind(P2_perp)))) - n_perp*m*vt1*vt2;
-    
-    
-    Pperp(2,1) = Pperp(1,2);
-    T_perp = Pperp./(n_perp)/u.e;
-    
-    N_perp = n_perp*1e-6;
-    
-    %% Getting moments of parallel distribution
-    
-    
-    
-    Fd3v_par = F_fa.*dvfa;
-    V2_par = nanmean(nanmean(VV(:,:,ith_fa),3),2);
-    V2_par = [-flip(V2_par)' V2_par'];%this already acounts for the look direction of the instrument so no need to multiply Vb by -1.
-    
-    
-    
-    n_par = nansum(Fd3v_par);
-    
-    vb = nansum(Fd3v_par.*V2_par)/n_par;
-    
-    Vb = vb/1000;
-    
-    Ppar = m*nansum(Fd3v_par.*(V2_par).^2) - n_par*m*vb*vb;
-    
-    T_par = Ppar./(n_par)/u.e;
-    
-    N_par = n_par*1e-6;
-    
-    
-    
-    dists.F_par = F_par;
-    dists.F_apar = F_apar;
-    dists.F2D_perp = F2D_perp;
-    dists.F1D_perp = F1D_perp;
-    dists.F2D_bt = F2D_bt;    
-    moms.N = Nm;
-    moms.V = Vm;
-    moms.T = T;
-    moms.N_cut_perp = N_perp;
-    moms.V_cut_perp = Vc;
-    moms.T_cut_perp = T_perp;
-    moms.N_cut_par = N_par;
-    moms.V_cut_par = Vb;
-    moms.T_cut_par = T_par;
-    moms.Note = 'Density units are in cm^-3, Velocity units are in km/s, and temperature units are in eV';
-    
-    
+          m = u.mp;
+      end
+
+      PD_FA = PD_FA.convertto('s^3/m^6');
+      %% calculate full moments
+
+      %%%original coordinate system original reference frame
+      En = PD_FA.depend{1};
+      Vn = sqrt(2*En*u.e/u.me);
+      thn = PD_FA.depend{3};
+      phn = PD_FA.depend{2};
+
+      Vedges = PD_FA.ancillary.V_edges*1000;
+      thedges = PD_FA.ancillary.theta_edges;
+      phedges = PD_FA.ancillary.phi_edges;
+
+      %%calculate differential elements
+      dv = diff(Vedges);
+      dth = diff(thedges)*pi/180;
+      dph = diff(phedges)*pi/180;
+
+      %%calculate d3v for F_3D
+      [VV,PH,TH] = ndgrid(Vn,phn,thn);
+      [dV,dPH,dTH] = ndgrid(dv,dph,dth);
+      d3v = VV.^2.*sind(TH).*dV.*dTH.*dPH;
+
+      %%calculate d2v for F_2D
+      [dV2,dPH2] = ndgrid(dv,dph);
+      [V2,~] = ndgrid(Vn,phn);
+      d2v = V2.*dV2.*dPH2;
+
+      %%calculate dv For F_1D
+      dvpar = diff(Vedges);
+      dvfa = [flip(dvpar) dvpar];
+
+
+
+      FF = squeeze(PD_FA.data);
+      %% Full moments
+      Fd3v = FF.*d3v;
+
+
+      N = nansum(nansum(nansum(Fd3v)));
+      vn1 = -nansum(nansum(nansum(Fd3v.*VV.*sind(TH).*cosd(PH))))/N;
+      vn2 = -nansum(nansum(nansum(Fd3v.*VV.*sind(TH).*sind(PH))))/N;
+      vn3 = -nansum(nansum(nansum(Fd3v.*VV.*cosd(TH))))/N;
+
+      Vm_perp1 = vn1/1000;
+      Vm_perp2 = vn2/1000;
+      Vm_par = vn3/1000;
+      Vm = [Vm_perp1, Vm_perp2, Vm_par];
+
+      P11 = m*nansum(nansum(nansum(Fd3v.*(VV.*sind(TH).*cosd(PH)).^2))) - N*m*vn1*vn1;
+      P22 = m*nansum(nansum(nansum(Fd3v.*(VV.*sind(TH).*sind(PH)).^2))) - N*m*vn2*vn2;
+      P33 = m*nansum(nansum(nansum(Fd3v.*(VV.*cosd(TH)).^2))) - N*m*vn3*vn3;
+      P12 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).^2.*cosd(PH).*sind(PH)))) - N*m*vn1*vn2;
+      P13 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).*cosd(TH).*cosd(PH)))) - N*m*vn1*vn3;
+      P23 = m*nansum(nansum(nansum(Fd3v.*VV.^2.*sind(TH).*cosd(TH).*sind(PH)))) - N*m*vn2*vn3;
+      P21 = P12; P31 = P13; P32 = P23;
+
+
+      Nm = N*1e-6;
+
+
+
+      P = nan*ones(3,3);
+      P(1,1) = P11;
+      P(2,2) = P22;
+      P(3,3) = P33;
+      P(1,2) = P12;
+      P(1,3) = P13;
+      P(2,3) = P23;
+      P(2,1) = P21;P(3,1) = P31;P(3,2) = P32;
+
+      T = P./(N)/u.e;
+
+      %% calculate taus
+
+      %% Getting slices of the distribution
+
+      ith_perp = find(thn>80 & thn<100);
+      %%if the angles are as seen from the spacecraft detectros, so we have
+      %%to flip them to make them correspond to electron trajectories
+      %%(i.e 180 degrees for the detector is zero degrees for the electron)
+      ith_par = thn>170;
+      ith_apar = thn<10;
+      ith_fa = thn<10 | thn>170;
+
+
+
+      %dist in perp1 perp2 plane
+      F2D_perp = FF(:,:,ith_perp);
+      F2D_perp = nanmean(F2D_perp,3);
+      F1D_perp = nansum(F2D_perp.*dPH2,2)/(2*pi);
+      F1D_perp(F1D_perp ==0 )=nan;
+      %dist in FA direction
+      F_apar = FF(:,:,ith_apar).*dPH(:,:,ith_par);
+      F_apar = nansum(nanmean(F_apar,3),2)/(2*pi);
+      F_apar(F_apar==0) = nan;
+
+      F_par = FF(:,:,ith_par).*dPH(:,:,ith_par);
+      F_par = nansum(nanmean(F_par,3),2)/(2*pi);
+      F_par(F_par==0) = nan;
+
+      F_fa = [flip(F_apar') F_par'];
+
+      %dist in perp par plane (intergrated in phi)
+
+      F2D_bt = squeeze(nansum(FF.*dPH,2))/(2*pi);
+      F2D_bt(F2D_bt==0) = nan;
+
+      %% Getting moments of 2D perp dist
+
+
+      Fd2v_perp = F2D_perp.*d2v;
+      V2_perp = nanmean(VV(:,:,ith_perp),3);
+      P2_perp = nanmean(PH(:,:,ith_perp),3);
+
+      n_perp = (nansum(nansum(Fd2v_perp)));
+      vt1 = -(nansum(nansum(Fd2v_perp.*V2_perp.*cosd(P2_perp))))/n_perp;
+      vt2 = -(nansum(nansum(Fd2v_perp.*V2_perp.*sind(P2_perp))))/n_perp;
+      Vc_perp1 = vt1/1000;
+      Vc_perp2 = vt2/1000;
+      Vc = [Vc_perp1,Vc_perp2];
+
+      Pperp(1,1) = m*(nansum(nansum(Fd2v_perp.*(V2_perp.*cosd(P2_perp)).^2))) - n_perp*m*vt1*vt1;
+      Pperp(2,2) = m*(nansum(nansum(Fd2v_perp.*(V2_perp.*sind(P2_perp)).^2))) - n_perp*m*vt2*vt2;
+      Pperp(1,2) = m*(nansum(nansum(Fd2v_perp.*V2_perp.^2.*cosd(P2_perp).*sind(P2_perp)))) - n_perp*m*vt1*vt2;
+
+
+      Pperp(2,1) = Pperp(1,2);
+      T_perp = Pperp./(n_perp)/u.e;
+
+      N_perp = n_perp*1e-6;
+
+      %% Getting moments of parallel distribution
+
+
+
+      Fd3v_par = F_fa.*dvfa;
+      V2_par = nanmean(nanmean(VV(:,:,ith_fa),3),2);
+      V2_par = [-flip(V2_par)' V2_par'];%this already acounts for the look direction of the instrument so no need to multiply Vb by -1.
+
+
+
+      n_par = nansum(Fd3v_par);
+
+      vb = nansum(Fd3v_par.*V2_par)/n_par;
+
+      Vb = vb/1000;
+
+      Ppar = m*nansum(Fd3v_par.*(V2_par).^2) - n_par*m*vb*vb;
+
+      T_par = Ppar./(n_par)/u.e;
+
+      N_par = n_par*1e-6;
+
+
+
+      dists.F_par = F_par;
+      dists.F_apar = F_apar;
+      dists.F2D_perp = F2D_perp;
+      dists.F1D_perp = F1D_perp;
+      dists.F2D_bt = F2D_bt;
+      moms.N = Nm;
+      moms.V = Vm;
+      moms.T = T;
+      moms.N_cut_perp = N_perp;
+      moms.V_cut_perp = Vc;
+      moms.T_cut_perp = T_perp;
+      moms.N_cut_par = N_par;
+      moms.V_cut_par = Vb;
+      moms.T_cut_par = T_par;
+      moms.Note = 'Density units are in cm^-3, Velocity units are in km/s, and temperature units are in eV';
+
+
     end
     function PD = smooth(obj,step)
       % PDIST.SMOOTH Running average
@@ -4353,7 +4353,7 @@ classdef PDist < TSeries
 
       % n_frac = 0 divided by Ntmp_roundup = 0 gives NaN
       dn_part(isnan(dn_part)) = 0;
-      df_part(isnan(df_part)) = 0; 
+      df_part(isnan(df_part)) = 0;
 
       % Edges of energy bins, same for each time step
       energy_minus = obj.depend{1}(1,:) - obj.ancillary.delta_energy_minus;
@@ -4703,7 +4703,7 @@ classdef PDist < TSeries
       %   PD_dj = PD.dj(comp); % comp = 'x', 'y', 'z'
 
       % varargin can only be scpot for now
-       
+
       d3v = obj.d3v(varargin{:}).data; % s^3/cm^6 i think, double check
       f = obj.data;
       v = obj.(['v' comp])(varargin{:});
@@ -4742,22 +4742,22 @@ classdef PDist < TSeries
         dn = obj.dn(varargin{:});
         %warning('Wrong units of inputs. Must pass through PDist.dn.')
       end
-      n = sum(dn.data,2:10);  
+      n = sum(dn.data,2:10);
       TS = irf.ts_scalar(obj.time,n);
-      
+
     end
     function TS = vel(obj,varargin)
       % PDist.dn calculates the partial density in each bin
-      
+
       n = obj.n(varargin{:}).data;
-      jx = sum(obj.djx(varargin{:}).data,[2:10]); % 1/cm^2s 
-      jy = sum(obj.djy(varargin{:}).data,[2:10]);      
+      jx = sum(obj.djx(varargin{:}).data,[2:10]); % 1/cm^2s
+      jy = sum(obj.djy(varargin{:}).data,[2:10]);
       jz = sum(obj.djz(varargin{:}).data,[2:10]);
       vx = jx./n*1e-5; % 1e-5*[1/cm^2s]/[cm^3] = 1e-5*cm/s = km/s
       vy = jy./n*1e-5;
       vz = jz./n*1e-5;
       TS = irf.ts_vec_xyz(obj.time,[vx,vy,vz]);
-      
+
     end
     function PD = movmean(obj,nMean,varargin)
       % PDIST.MOVMEAN Executes a running average of the distribution.
@@ -5158,173 +5158,173 @@ classdef PDist < TSeries
     end
   end
   methods (Static)
-      function PD = generate_dist(n_in,T_in,V_in,dist_type,varargin)
-        % PDIST.GENERATE_DIST This function Generate a 3D distribution of 
-        %                     electrons/ions binned on a spherical grid.
-        %
-        % PD = generate_dist(n,T,V,dist_type,varargin)
-        % Input:
-        %  n: density in cm^-3. Can be either a TSeries or a single scalar.
-        %  T: temperature in eV. Can be either a TSeries of
-        %  the temperature tensor, a TSeries with [Tx,Ty,Tz] vector, or a
-        %  single 1x3 array of the form [Tx, Ty, Tz].
-        %  Vfac: velocity in km/s. Can be either a TSeries of the velocity
-        %  vector, or a single 1x3 array of the form [Vx, Vy, Vz].
-        %  dist_type: is a string that determines the type of distribution 
-        %  used.
-        %  Implemented types 'max' for Maxwellian, 'kappa' for Kappa.
-        %  If the distribution has additional parameters, such as the k
-        %  parameter in the kappa distribution, one should input them as
-        %  name, value pairs.
-        %  new_grid: initiates the distribution on a custom grid, otherwise the MMS
-        %  FPI grid is used. After the 'new_grid' flag the function expects three
-        %  inputs: E for energy, th for the polar angle, and phi for the azimuthal
-        %  angle of the grid.
-        %  species: 'electrons' for electrons, 'ions' for protons.
-        %  Default is 'electrons'.
-        % Example:
-        % PD = generate_dist(n,T,V,'max')
-        % PD = generate_dist(n,T,V,'kappa','k',5)
+    function PD = generate_dist(n_in,T_in,V_in,dist_type,varargin)
+      % PDIST.GENERATE_DIST This function Generate a 3D distribution of
+      %                     electrons/ions binned on a spherical grid.
+      %
+      % PD = generate_dist(n,T,V,dist_type,varargin)
+      % Input:
+      %  n: density in cm^-3. Can be either a TSeries or a single scalar.
+      %  T: temperature in eV. Can be either a TSeries of
+      %  the temperature tensor, a TSeries with [Tx,Ty,Tz] vector, or a
+      %  single 1x3 array of the form [Tx, Ty, Tz].
+      %  Vfac: velocity in km/s. Can be either a TSeries of the velocity
+      %  vector, or a single 1x3 array of the form [Vx, Vy, Vz].
+      %  dist_type: is a string that determines the type of distribution
+      %  used.
+      %  Implemented types 'max' for Maxwellian, 'kappa' for Kappa.
+      %  If the distribution has additional parameters, such as the k
+      %  parameter in the kappa distribution, one should input them as
+      %  name, value pairs.
+      %  new_grid: initiates the distribution on a custom grid, otherwise the MMS
+      %  FPI grid is used. After the 'new_grid' flag the function expects three
+      %  inputs: E for energy, th for the polar angle, and phi for the azimuthal
+      %  angle of the grid.
+      %  species: 'electrons' for electrons, 'ions' for protons.
+      %  Default is 'electrons'.
+      % Example:
+      % PD = generate_dist(n,T,V,'max')
+      % PD = generate_dist(n,T,V,'kappa','k',5)
 
 
-        u =irf_units;
-        kB=u.kB;
-        qe=u.e; % electron charge, coulombs
-        s = 'electrons';%default is electrons
-        m=u.me; % mass, kg 
-        
+      u =irf_units;
+      kB=u.kB;
+      qe=u.e; % electron charge, coulombs
+      s = 'electrons';%default is electrons
+      m=u.me; % mass, kg
 
-        Var = varargin;
-        flag_newgrid = 0;
-        k = 3;%default k = 3
-        
-        while ~isempty(Var)
-            flag = Var{1};
-            switch lower(flag)
-        
-                case 'new_grid'
-                    flag_newgrid = 1;
-                    E = Var{2};
-                    th = Var{3};
-                    phi = Var{4};
-                    Var(1:4) = [];
-                case 'k'
-                    k = Var{2};
-                    Var(1:2) = [];
-                case 'species'
-                    s = Var{2};
-                    switch lower(s)
-                        case 'electrons'
-                            m = u.me;
-                            s = 'electrons';
-                        case 'ions'
-                            m = u.mp;
-                            s = 'ions';
-                        otherwise
-                            error('Species not defined.')
-                    end
-                    Var(1:2) = [];
-                otherwise
-                    error(['undefined input flag: ' flag])
-        
+
+      Var = varargin;
+      flag_newgrid = 0;
+      k = 3;%default k = 3
+
+      while ~isempty(Var)
+        flag = Var{1};
+        switch lower(flag)
+
+          case 'new_grid'
+            flag_newgrid = 1;
+            E = Var{2};
+            th = Var{3};
+            phi = Var{4};
+            Var(1:4) = [];
+          case 'k'
+            k = Var{2};
+            Var(1:2) = [];
+          case 'species'
+            s = Var{2};
+            switch lower(s)
+              case 'electrons'
+                m = u.me;
+                s = 'electrons';
+              case 'ions'
+                m = u.mp;
+                s = 'ions';
+              otherwise
+                error('Species not defined.')
             end
-        end
-        
-        if isa(T_in,'TSeries')
-            %resample everything to timeline of density
-            time = n_in.time;
-            T_in = T_in.resample(n_in);
-            T_in = T_in.data;
-            V_in = V_in.resample(n_in);
-            V_in = V_in.data;
-            n_in = n_in.data;
+            Var(1:2) = [];
+          otherwise
+            error(['undefined input flag: ' flag])
 
-        else
-            time = irf_time(date,'date>epochTT');
         end
-        %if the temperature tensor is give, use diagonal terms only
-        if length(size(T_in))>2
-            T_in = [squeeze(T_in(:,1,1)), squeeze(T_in(:,2,2)), squeeze(T_in(:,3,3))];
-        end
-        %% Define the grid
-        if flag_newgrid == 0
-        
-            E = [0.0006520   0.0008540   0.0011170   0.0014630   0.0019150   0.0025070   0.0032810   0.0042950   0.0056230   0.0073600   0.0096340   0.0126120   ...
-                0.0165090   0.0216110   0.0282890   0.0370310   0.0484740   0.0634540   0.0830630   0.1087310   0.1423320   0.1863160   0.2438920   0.3192610   ...
-                0.4179200   0.5470680   0.7161250   0.9374250   1.2271121   1.6063200   2.1027110   2.7525001]*1e4;%%energy of FPI
-        
-            th = [5.625 16.875 28.125 39.375 50.625 61.875 73.125 84.375 95.625 106.875 118.125 129.375 140.625 151.875 163.125 174.375];%theta from FPI
-            phi = [2.75   14   25.25   36.5   47.75   59   70.25   81.5   92.75   104   115.25   126.5   137.75   149   160.25   171.5   182.75   194   205.25   216.5 ...
-                227.75   239   250.25   261.5   272.75   284   295.25   306.5   317.75   329   340.25   351.5];%%phi from FPI;
-        end
-        V = sqrt(2*E*qe/m);
-        
-        
-        dE = diff(E);
-        Eedges = [ E(1:end-1)-dE/2 E(end)-dE(end)/2 E(end)+dE(end)/2];
-        Vedges = sqrt(2*u.e*Eedges./u.me);
-        
-        dth = diff(th);
-        thedges = [th(1:end-1)-dth/2 th(end)-dth(end)/2 th(end)+dth(end)/2];
-        
-        dph = diff(phi);
-        phedges = [phi(1:end-1) - dph/2 phi(end)-dph(end)/2 phi(end)+dph(end)/2];
-        
-        [VV,PHI,TH] = ndgrid(V,phi,th);
-        
-        Vx = -VV.*sind(TH).*cosd(PHI);
-        Vy = -VV.*sind(TH).*sind(PHI);
-        Vz = -VV.*cosd(TH);
-        
-        l1 = length(E);l2 = length(phi);l3 = length(th);
-        lt = length(time);
-        F3D = ones(lt,l1,l2,l3)*nan;
-        %% Loop over time
-        for i = 1:lt
+      end
+
+      if isa(T_in,'TSeries')
+        %resample everything to timeline of density
+        time = n_in.time;
+        T_in = T_in.resample(n_in);
+        T_in = T_in.data;
+        V_in = V_in.resample(n_in);
+        V_in = V_in.data;
+        n_in = n_in.data;
+
+      else
+        time = irf_time(date,'date>epochTT');
+      end
+      %if the temperature tensor is give, use diagonal terms only
+      if length(size(T_in))>2
+        T_in = [squeeze(T_in(:,1,1)), squeeze(T_in(:,2,2)), squeeze(T_in(:,3,3))];
+      end
+      %% Define the grid
+      if flag_newgrid == 0
+
+        E = [0.0006520   0.0008540   0.0011170   0.0014630   0.0019150   0.0025070   0.0032810   0.0042950   0.0056230   0.0073600   0.0096340   0.0126120   ...
+          0.0165090   0.0216110   0.0282890   0.0370310   0.0484740   0.0634540   0.0830630   0.1087310   0.1423320   0.1863160   0.2438920   0.3192610   ...
+          0.4179200   0.5470680   0.7161250   0.9374250   1.2271121   1.6063200   2.1027110   2.7525001]*1e4;%%energy of FPI
+
+        th = [5.625 16.875 28.125 39.375 50.625 61.875 73.125 84.375 95.625 106.875 118.125 129.375 140.625 151.875 163.125 174.375];%theta from FPI
+        phi = [2.75   14   25.25   36.5   47.75   59   70.25   81.5   92.75   104   115.25   126.5   137.75   149   160.25   171.5   182.75   194   205.25   216.5 ...
+          227.75   239   250.25   261.5   272.75   284   295.25   306.5   317.75   329   340.25   351.5];%%phi from FPI;
+      end
+      V = sqrt(2*E*qe/m);
+
+
+      dE = diff(E);
+      Eedges = [ E(1:end-1)-dE/2 E(end)-dE(end)/2 E(end)+dE(end)/2];
+      Vedges = sqrt(2*u.e*Eedges./u.me);
+
+      dth = diff(th);
+      thedges = [th(1:end-1)-dth/2 th(end)-dth(end)/2 th(end)+dth(end)/2];
+
+      dph = diff(phi);
+      phedges = [phi(1:end-1) - dph/2 phi(end)-dph(end)/2 phi(end)+dph(end)/2];
+
+      [VV,PHI,TH] = ndgrid(V,phi,th);
+
+      Vx = -VV.*sind(TH).*cosd(PHI);
+      Vy = -VV.*sind(TH).*sind(PHI);
+      Vz = -VV.*cosd(TH);
+
+      l1 = length(E);l2 = length(phi);l3 = length(th);
+      lt = length(time);
+      F3D = ones(lt,l1,l2,l3)*nan;
+      %% Loop over time
+      for i = 1:lt
 
         Tx = T_in(i,1);Ty = T_in(i,2);Tz = T_in(i,3);
         vdx = V_in(i,1);vdy = V_in(i,2);vdz = V_in(i,3);
-       
+
         n = n_in(i)*1e6;
-        
-        
-        Tz=Tz*qe/kB; %  eV -> K 
+
+
+        Tz=Tz*qe/kB; %  eV -> K
         Tx=Tx*qe/kB; %  eV -> K
         Ty=Ty*qe/kB; %  eV -> K
-        
-        
-        
-        
+
+
+
+
         vdz=vdz*1e3; % vds_z, km/s -> m/s
         vdx=vdx*1e3; % vds_x, km/s -> m/s
         vdy=vdy*1e3; % vds_x, km/s -> m/s
-        
-        
+
+
         vtz=sqrt(2*kB*Tz./m); % z thermal velocity, note the sqrt(2)
         vtx=sqrt(2*kB*Tx./m); % x thermal velocity, note the sqrt(2)
         vty=sqrt(2*kB*Ty./m); % y thermal velocity, note the sqrt(2)
-        
+
         switch lower(dist_type)
-            case 'max'
-                f3d=@(vx,vy,vz) (1./((pi^(3/2)).*vtz.*vtx.*vty)).*exp(-(vz-vdz).^2./(vtz.^2)).*exp(-(vx-vdx).^2./(vtx.^2)).*...
-                    exp(-(vy-vdy).^2./(vty.^2));
-            case 'kappa'
-                Ak = ((1/(pi*(k-3/2)))^(3/2))*gamma(k+1)/(vtz*vtx*vty*gamma(k-0.5));
-                Bk =@(vx,vy,vz) (((vz-vdz)/(vtz)).^2+((vx-vdx)/(vtx)).^2+((vy-vdy)/(vty)).^2);
-                f3d =@(vx,vy,vz) Ak*(1+(Bk(vz,vx,vy)./(k-3/2))).^-(k+1);
+          case 'max'
+            f3d=@(vx,vy,vz) (1./((pi^(3/2)).*vtz.*vtx.*vty)).*exp(-(vz-vdz).^2./(vtz.^2)).*exp(-(vx-vdx).^2./(vtx.^2)).*...
+              exp(-(vy-vdy).^2./(vty.^2));
+          case 'kappa'
+            Ak = ((1/(pi*(k-3/2)))^(3/2))*gamma(k+1)/(vtz*vtx*vty*gamma(k-0.5));
+            Bk =@(vx,vy,vz) (((vz-vdz)/(vtz)).^2+((vx-vdx)/(vtx)).^2+((vy-vdy)/(vty)).^2);
+            f3d =@(vx,vy,vz) Ak*(1+(Bk(vz,vx,vy)./(k-3/2))).^-(k+1);
         end
-        
+
         F3D(i,1:l1,1:l2,1:l3) = n*f3d(Vx,Vy,Vz);
-        end
-        PD = PDist(time,F3D,'skymap',E,phi,th);
-        PD.ancillary.V_edges = Vedges/1000;%km/s
-        PD.ancillary.E_edges = Eedges;
-        PD.ancillary.phi_edges = phedges;
-        PD.ancillary.theta_edges = thedges;
-        PD.ancillary.base = 'sph';
-        PD.units = 's^3/m^6';
-        PD.species = s;
-end
+      end
+      PD = PDist(time,F3D,'skymap',E,phi,th);
+      PD.ancillary.V_edges = Vedges/1000;%km/s
+      PD.ancillary.E_edges = Eedges;
+      PD.ancillary.phi_edges = phedges;
+      PD.ancillary.theta_edges = thedges;
+      PD.ancillary.base = 'sph';
+      PD.units = 's^3/m^6';
+      PD.species = s;
+    end
     function newUnits = changeunits(from,to)
 
     end

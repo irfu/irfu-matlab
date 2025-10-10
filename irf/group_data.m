@@ -1,7 +1,7 @@
 function grouped_data = group_data(data,threshold)
 % GROUP_DATA Group sorted data when the difference between consecutive
-% elements is less than a specified threshold. The original idea for this 
-% function was to use it with an array of TT2000 times to group them 
+% elements is less than a specified threshold. The original idea for this
+% function was to use it with an array of TT2000 times to group them
 % into an array of TT2000 tints.
 %
 % Input:

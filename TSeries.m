@@ -1509,7 +1509,7 @@ classdef TSeries
       end
       Ts = obj.clone(obj.time,new_data);
     end
-    
+
     function varargout = eig(obj,dims)
       % EIG Calculate eigenvalues and eigenvectors for pressure and temperature.
       %
@@ -1517,8 +1517,8 @@ classdef TSeries
       %
       %   Apply on subset of matrix, e.g. [P_22 P_23; P_32; P_33];
       %   [tsEig_val, tsEig_v1, tsEig_v2] = tsP.eig([2 3]);
-      %     
-      
+      %
+
 
       if obj.tensorOrder ~= 2
         error('PDist.eig only applicable to order 2 tensors.')
@@ -1529,40 +1529,40 @@ classdef TSeries
       end
 
       TS = obj;
-      
+
       nt_orig = TS.length;
       if nt_orig == 1 % fix, there is a problem if nt = 1 for some things (singleton dimensions)...
-                      % so just duplicate TSeries and then pick the first indice at the end             
-        TS = TS.clone(TS.time + [0 1],repmat(TS.data,[2 1 1 1 1 1]));        
+        % so just duplicate TSeries and then pick the first indice at the end
+        TS = TS.clone(TS.time + [0 1],repmat(TS.data,[2 1 1 1 1 1]));
       end
 
       nt = TS.length;
 
       % Select subset of data to calculate eigenvectors for
       T = TS.data(:,dims,dims); % extract tensor
-      
+
       ndim = size(T,2);
 
-      % Make the data symmetric      
+      % Make the data symmetric
       T_transposed = permute(T,[1 3 2]); % 3d: (t,d1,d2) -> (t,d2,d1)
       if any(T_transposed(:) ~= T(:))
         warning('Matrix is not symmetric. Making the data symmetric. T = (T + T'')/2.')
         T = (T + T_transposed)/2;
       end
-          
+
       all_eig_vals = zeros(nt,ndim);
       all_eig_vecs = zeros(nt,ndim,ndim);
-      
+
       for it = 1:nt
         [V,D] = eig(squeeze(T(it,:,:)));
         [Dsort, idsort] = sort(diag(D),'descend');
         all_eig_vals(it,:) = Dsort;
 
         for idim = 1:ndim
-          all_eig_vecs(it,idim,:) = V(:,idsort(idim));          
+          all_eig_vecs(it,idim,:) = V(:,idsort(idim));
         end
       end
-      
+
       % Make Tseries
       tsEig = irf.ts_scalar(TS.time,all_eig_vals); tsEig.name = 'Eig val';
       if nt_orig == 1
@@ -1579,7 +1579,7 @@ classdef TSeries
         end
         tsVs{idim} = tsV;
       end
-        
+
       % Output
       if nargout == 1
         varargout{1} = tsEig;
@@ -1597,21 +1597,21 @@ classdef TSeries
 
     function Ts = movmean(obj,nMean,varargin)
       % TSeries.movmean - applies a time-moving-average to data
-      %   
+      %
       %   TS = ni3; % TSeries object
       %   N = 10; % moving average window
       %   TSmovmean = TS.movmean(N);
       %   TSmovmean = TS.movmean(N,args);
       %     - For additional arguments, see help movmean (Matlabs function)
-      %      
+      %
       %   irf_plot({TS,TS.movmean(5), TS.movmean(20)}, 'comp')
-      %   
+      %
       %   TS.data(200,:) = NaN;
       %   irf_plot({TS,TS.movmean(100), TS.movmean(100,'includenan'), TS.movmean(100,'omitnan')});
-      
-      new_data = movmean(obj.data,nMean,1,varargin{:}); % the 1 specifies the dimension along which the moving mean is taken      
+
+      new_data = movmean(obj.data,nMean,1,varargin{:}); % the 1 specifies the dimension along which the moving mean is taken
       Ts = obj;
-      Ts.data = new_data;      
+      Ts.data = new_data;
     end
     function obj = tlim(obj,tint, mode)
       %TLIM  Returns data within specified time interval

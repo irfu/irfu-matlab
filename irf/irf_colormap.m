@@ -12,7 +12,7 @@ function cmap1=irf_colormap(varargin)
 %       'batlow' - scientific colour map, (v8.0.1, DOI: 10.5281/zenodo.8409685)
 %       'bluered2'
 %
-%       OTHERWISE: if colormap_name is not listed, irf_colormap will try to 
+%       OTHERWISE: if colormap_name is not listed, irf_colormap will try to
 %                  use slanCM('colormap_name') from contrib/matlab_central/
 %                  e.g. irf_colormap('rainbow')
 %                  There are 200 colormaps to choose from, see:
@@ -633,8 +633,8 @@ if nargs > 0
       bb2 = interp1([1 32 64 96 128 160 192 224 256], ...
         [0.511 0.670 0.828 0.925 0.875 0.408 0.191 0.182 0.182],1:256);
       cmap = [rr2' gg2' bb2'];
-    otherwise % Should stay at the end of cases, can't match wildcards in 
-              % matlab? e.g. 'slancm*' case does not work.
+    otherwise % Should stay at the end of cases, can't match wildcards in
+      % matlab? e.g. 'slancm*' case does not work.
       try
         cmap = slanCM(colormap_name);
       catch
