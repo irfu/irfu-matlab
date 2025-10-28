@@ -342,17 +342,18 @@ switch lower(action)
     % NASA's SPDF cdf patch use compiled mex files. For irfu-matlab only
     % Linux, Mac and Windows (all of which 64 bit) OS are included.
     switch(computer)
-      case({'GLNXA64','PCWIN64','MACI64'})
+      case({'GLNXA64','PCWIN64','MACI64','MACA64'})
         % OK, system is supported.
         disp('Operating system is OK');
         if(nargout), out=true; end
         datastore('irfu_matlab','okCheckOS',true);
       case('PCWIN')
         % Untested, no guarantee it will work.
-        disp('Operating system, Windows 32 bit, is not fully tested with IRFU-MATLAB.');
-        disp('Recommended OS are: Linux, Mac and Windows (all 64 bit).');
-        if(nargout), out=true; end
-        datastore('irfu_matlab','okCheckOS',true);
+	% Note: From Windows 11 it's 64bit only, so if reaching here it is likely older EOL version of Windows
+        disp('Operating system, Windows 32 bit, is not tested nor supported by IRFU-MATLAB.');
+        disp('Recommended OS are: Linux, Mac and Windows (all 64 bit only).');
+        if(nargout), out=false; end
+        datastore('irfu_matlab','okCheckOS', false);
       otherwise
         disp('Currently only compiled SPDF* mex files for the Linux, Windows and Mac operating systems (all 64bit) are included.');
         disp('If running on other system, please contact IRFU for help.');
