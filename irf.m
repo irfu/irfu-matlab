@@ -364,13 +364,25 @@ switch lower(action)
     % Issue warning if running too old Matlab. This should be incremented
     % when irfu-matlab relies on newer Matlab functions not found in older
     % versions of Matlab.
+    % As of 2025-10, also issue a warning if running "too new" Matlab as
+    % R2025a changed how it treats ":" when parsing non scalar values.
     if(verLessThan('matlab','8.4'))
       warning(['IRFU-Matlab relies on code introduced in Matlab R2014b, ',...
         'please look into upgrading your Matlab installation or contacting IRFU for help.']);
     else
-      disp('Matlab version is OK');
-      if(nargout), out=true; end
-      datastore('irfu_matlab','okMatlab',true);
+      if(verLessThan('matlab', '25.1')) %#ok<VERLESSMATLAB>
+        % ok, known good version
+        disp('Matlab version is OK');
+        if(nargout), out=true; end
+        datastore('irfu_matlab','okMatlab',true);
+      else
+        % very new (R2025a or later) may have problems,
+        % similar to https://github.com/irfu/irfu-matlab/issues/169
+        disp('Matlab version is probably OK, but may encounter some incompatibilty issues')
+        disp(' if encountering any problem please report them at https://github.com/irfu/irfu-matlab/issues')
+        if(nargout), out=true; end
+        datastore('irfu_matlab','okMatlab',true);
+      end
     end
 
   case 'path'
