@@ -461,7 +461,7 @@ classdef (Abstract) GenericTimeArray
       elseif ischar(format)
         fmt = format;
         iyyyy = strfind(fmt,'yyyy');
-        imm   = strfind(fmt,'mm');
+        imm   = regexp(fmt, 'mm', 'once');
         idd   = strfind(fmt,'dd');
         iHH   = strfind(fmt,'HH');
         iMM   = strfind(fmt,'MM');
