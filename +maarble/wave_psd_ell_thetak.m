@@ -63,8 +63,8 @@ for ievent=1:numel(TT)
   else
     freq = [tocolumn(ebspPC35.f.data); tocolumn(ebspPC12.f.data)];
   end
-  loweridx = find(abs(freq-lowerFreqBound)<.001);
-  upperidx = find(abs(freq-upperFreqBound)<.001);
+  loweridx = find(abs(freq-lowerFreqBound)<.001, 1);
+  upperidx = find(abs(freq-upperFreqBound)<.001, 1);
   idxFreq = loweridx:upperidx;
 
   if flagSkipPC35

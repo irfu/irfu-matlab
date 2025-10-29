@@ -3263,8 +3263,8 @@ classdef PDist < TSeries
           % pitch angle bins, and only one gap
           diff_theta_edges = diff(theta_edges);
           unique_diff_theta_edges = sort(unique(diff_theta_edges));
-          % assume the smallest on is the proper one
-          ind_pad = find(diff_theta_edges==unique_diff_theta_edges(end));
+          % assume the smallest one is the proper one
+          ind_pad = find(diff_theta_edges==unique_diff_theta_edges(end), 1);
           data = [data(:,1:ind_pad-1) nan(size(data,1),2) data(:,ind_pad:end)];
           theta_edges = [theta_edges(1:ind_pad) NaN theta_edges(ind_pad+1:end)]; % also pad grid, to avoid empty boxes
           %           ngaps = size(theta_edges,2) - 1 - size(dist.depend{2},2);
