@@ -209,7 +209,7 @@ if(p.Results.plotUsc || p.Results.plotDSL)
     end
     irf_plot(h(1),toPlot,'comp');
     title(h(1),['Plot created: ',nowStr,'. Usc and DSL X&Y.']);
-    legend(h(1), 'MMS1', 'MMS2', 'MMS3', 'MMS4');
+    legend(h(1), 'MMS1', 'MMS2', 'MMS3', 'MMS4', 'location', 'northeast');
     ylabel(h(1),{'Spacecraft potential','[V]'});
     clear toPlot uscTs; % save some memory...
   end
@@ -227,7 +227,7 @@ if(p.Results.plotUsc || p.Results.plotDSL)
     % Zoom in
     irf_zoom(h(2),'y',[-10 10])
     irf_zoom(h(3),'y',[-10 10])
-    legend(h(1), 'MMS1', 'MMS2', 'MMS3', 'MMS4');
+    legend(h(1), 'MMS1', 'MMS2', 'MMS3', 'MMS4', 'location', 'northeast');
     ylabel(h(2),{'DSL E-x','[mV/m]'});
     ylabel(h(3),{'DSL E-y','[mV/m]'});
     clear toPlot dslTs; % save some memory..

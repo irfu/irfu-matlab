@@ -93,10 +93,10 @@ fig.dce = figure; h.dce = irf_plot({dce_ts_1, dce_ts_2, dce_ts_3, dce_ts_4});
 fig.dcv = figure; h.dcv = irf_plot({dcv_ts_1, dcv_ts_2, dcv_ts_3, dcv_ts_4});
 
 title(h.dce(1),['Plot created: ', nowStr, '. DCE raw for all four s/c.']);
-legend(h.dce(1), 'DCE 12', 'DCE 34', 'DCE 56');
+legend(h.dce(1), 'DCE 12', 'DCE 34', 'DCE 56', 'location', 'northeast');
 
 title(h.dcv(1),['Plot created: ', nowStr, '. DCV raw for all four s/c.']);
-legend(h.dcv(1), 'DCV 1', 'DCV 3', 'DCV 5');
+legend(h.dcv(1), 'DCV 1', 'DCV 3', 'DCV 5', 'location', 'northeast');
 
 % Improve readability
 % Zoom in to aviod Sweep spikes (typically probe potential should be less
