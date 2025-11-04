@@ -268,20 +268,33 @@ classdef DatasetFilename___UTEST < matlab.unittest.TestCase
 
 
     function test_parse_filename(testCase, filename, ExpDfStruct)
+      % NOTE: Excludes "dsicdagUppercase" which should be private (but is not).
+      EXP_DF_STRUCT_FIELDNAMES = [...
+        "datasetId"; "isCdag"; "Dt1"; "Dt2"; "timeIntervalFormat"; ...
+        "versionNbr"; "lesTestStr"; "cneTestStr"; ...
+        "filenameDsiCdag"; "timeIntervalStr"; "versionStr"; "filename" ...
+      ];
+
+
       ActDf = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
 
       if isstruct(ExpDfStruct)
-        % Remove private property.
-        ActDfStruct = struct(ActDf);
-        ActDfStruct = rmfield(ActDfStruct, 'dsicdagUppercase');
-
         ExpDfStruct.filename = filename;
 
-        % NOTE: struct(object) also returns fields for private properties!
-        testCase.assertEqual(ActDfStruct, ExpDfStruct)
+        % Effectively assert argument fields (except absence of "filename").
+        testCase.assertEqual(...
+          sort(string(fieldnames(ExpDfStruct))), ...
+          sort(EXP_DF_STRUCT_FIELDNAMES))
+
+        for fn = EXP_DF_STRUCT_FIELDNAMES'
+          testCase.assertEqual(ActDf.(fn), ExpDfStruct.(fn))
+        end
 
       elseif isempty(ExpDfStruct)
         testCase.assertEqual(ActDf, ExpDfStruct)
+
+      else
+        error('Illegal argument.')
 
       end
     end
