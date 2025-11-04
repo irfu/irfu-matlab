@@ -323,14 +323,14 @@ function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] ...
 logicalFileId = basename;
 
 % Actually parse the dataset filename.
-Df = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
-assert(~isempty(Df), 'BICAS:Assertion', ...
+Dsfn = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
+assert(~isempty(Dsfn), 'BICAS:Assertion', ...
   ['Can not parse dataset filename "%s" and therefore not', ...
   ' derive values for global attributes', ...
   ' "Logical_source", "Data_version", and "Datetime".', ...
   ' The filename does not appear to follow filenaming conventions.'], filename)
 
-dataVersionStr  = Df.versionStr;
-logicalSource   = Df.filenameDsiCdag;
-timeIntervalStr = Df.timeIntervalStr;
+dataVersionStr  = Dsfn.versionStr;
+logicalSource   = Dsfn.filenameDsiCdag;
+timeIntervalStr = Dsfn.timeIntervalStr;
 end

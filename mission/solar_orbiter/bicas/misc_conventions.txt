@@ -224,8 +224,6 @@ DCOP
     Class bicas.proc.L1L2.DemultiplexingCalibrationOutput.
 Deg
     Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
-DF
-    Class solo.adm.dsfn.DatasetFilename.
 DFT
     Discrete Fourier Transform
 Dict
@@ -242,6 +240,8 @@ DLR
     flips from zero to one at about 2023-08-21T12:04Z.
 DRT
     Class bicas.tf.Deretrending.
+DSFN
+    Class solo.adm.dsfn.DatasetFilename.
 DSI, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
