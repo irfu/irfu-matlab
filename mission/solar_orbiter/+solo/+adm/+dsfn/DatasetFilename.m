@@ -1,7 +1,7 @@
 %
 % Class which represents a parsable dataset filename on an ~official filenaming
-% convention. Contains code for converting between (a) filename and (b)
-% separate filename fields.
+% convention. Contains code for converting between (a) filename, and
+% (b) separate filename fields.
 %
 %
 % RATIONALE
@@ -54,6 +54,11 @@ classdef DatasetFilename
   % PROPOSAL: Require NaT when there is no time interval string.
   % PROPOSAL: Order the filenaming conventions.
   % PROPOSAL: Official abbreviation: DSFN = solo.adm.dsfn.DatasetFilename.
+  %     TODO-DEC: Define where?
+  %         NOTE: solo.adm.dsfn and solo.adm.dsfn.DatasetFilename are used by
+  %               BICAS.
+  %         PROPOSAL: solo.adm.
+  %
   % PROPOSAL: Rename parse_filename() --> parse().
   %   PRO: Shorter.
   %   PRO: Analogous with solo.adm.dsfn.time_interval_str.parse().
@@ -147,11 +152,13 @@ classdef DatasetFilename
   end
 
   properties(GetAccess=private, SetAccess=immutable)
+    % NOTE: Is in practice public for unknown reasons, but should be
+    % private.
     dsicdagUppercase
   end
 
   properties(Dependent)
-    % The combination of DSI and optionally "-cdag" as found in
+    % The combination of (1) DSI, and (2) optionally "-cdag", as found in
     % the filename, including case.
     % In practice meant to be interpreted as dataset glob.attr.
     % "Logical_source", which should include -CDAG when present (for
@@ -183,6 +190,7 @@ classdef DatasetFilename
     % S
     %       Struct which de facto serves as a way to supply named arguments.
     function obj = DatasetFilename(S)
+      % PROPOSAL: Replace struct argument with keyword arguments.
       assert(isstruct(S))
 
       %================================

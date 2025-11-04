@@ -224,6 +224,8 @@ DCOP
     Class bicas.proc.L1L2.DemultiplexingCalibrationOutput.
 Deg
     Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
+DF
+    Class solo.adm.dsfn.DatasetFilename.
 DFT
     Discrete Fourier Transform
 Dict

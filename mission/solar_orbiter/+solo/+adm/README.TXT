@@ -1,8 +1,8 @@
 
 ADM = Automatic Dataset Management
 
-Package for "management" of SolO datasets which follow official file naming
-conventions. E.g. for
+Package for automatic "management" of SolO datasets which follow official file
+naming conventions. E.g. for
 - identifying datasets among non-dataset files (based on filenaming)
 - iterating over datasets
 - finding datasets which overlap with a selected time interval
@@ -13,7 +13,14 @@ etc.
 
 NOTE: The code is used by e.g. BICAS proper and BICAS's batch processing tool
       (bicas.tools.batch).
-NOTE: This code is managed by Erik P G Johansson. Backwards-incompatible changes
-      may be made to it (though rarely)!
+NOTE: This code is developed and managed by Erik P G Johansson.
+      Backwards-incompatible changes may be made to it!
 
-/Erik P G Johansson 2024-09-25
+/Erik P G Johansson 2025-11-04
+
+
+#########################
+Miscellaneous conventions
+#########################
+DF
+      Class solo.adm.dsfn.DatasetFilename
