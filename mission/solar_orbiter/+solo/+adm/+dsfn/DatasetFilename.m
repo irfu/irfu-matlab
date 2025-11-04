@@ -53,11 +53,6 @@ classdef DatasetFilename
   % PROPOSAL: datasetId --> dsi
   % PROPOSAL: Require NaT when there is no time interval string.
   % PROPOSAL: Order the filenaming conventions.
-  % PROPOSAL: Official abbreviation: DSFN = solo.adm.dsfn.DatasetFilename.
-  %     TODO-DEC: Define where?
-  %         NOTE: solo.adm.dsfn and solo.adm.dsfn.DatasetFilename are used by
-  %               BICAS.
-  %         PROPOSAL: solo.adm.
   %
   % PROPOSAL: Rename parse_filename() --> parse().
   %   PRO: Shorter.
@@ -374,11 +369,11 @@ classdef DatasetFilename
 
     % RETURN VALUES
     % =============
-    % Df
+    % Dsfn
     %       Instance of solo.adm.dsfn.DatasetFilename if the string can be
     %       parsed as a filename on official dataset filenaming convention.
     %       Empty [] if it can not.
-    function Df = parse_filename(filename)
+    function Dsfn = parse_filename(filename)
 
       function versionStr = version_RE_match_to_versionNbr(s)
         versionStr = str2double(s(2:end));
@@ -389,7 +384,7 @@ classdef DatasetFilename
 
 
 
-      Df = NO_MATCH_RETURN_VALUE;
+      Dsfn = NO_MATCH_RETURN_VALUE;
 
       % NOTE: Parse from the END.
       [~, trueBasename, n] = irf.str.read_token(filename, -1, '\.cdf');
@@ -420,7 +415,7 @@ classdef DatasetFilename
           dsicdagUppercase = false;
           S.isCdag         = strcmp(filenameDsicdag(end-4:end), '-cdag');
         otherwise
-          Df = NO_MATCH_RETURN_VALUE;
+          Dsfn = NO_MATCH_RETURN_VALUE;
           return
       end
       if S.isCdag
@@ -467,7 +462,7 @@ classdef DatasetFilename
         S.lesTestStr = [];
         S.cneTestStr = [];
 
-        Df = solo.adm.dsfn.DatasetFilename(S);
+        Dsfn = solo.adm.dsfn.DatasetFilename(S);
         return
       end
 
@@ -489,7 +484,7 @@ classdef DatasetFilename
         S.lesTestStr = subStrCa{6};
         S.cneTestStr = [];
 
-        Df = solo.adm.dsfn.DatasetFilename(S);
+        Dsfn = solo.adm.dsfn.DatasetFilename(S);
         return
       end
 
@@ -509,7 +504,7 @@ classdef DatasetFilename
         S.cneTestStr         = subStrCa{2};
         S.versionNbr         = version_RE_match_to_versionNbr(subStrCa{4});
 
-        Df = solo.adm.dsfn.DatasetFilename(S);
+        Dsfn = solo.adm.dsfn.DatasetFilename(S);
         return
       end
 

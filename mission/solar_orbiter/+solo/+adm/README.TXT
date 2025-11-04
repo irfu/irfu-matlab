@@ -22,5 +22,5 @@ NOTE: This code is developed and managed by Erik P G Johansson.
 #########################
 Miscellaneous conventions
 #########################
-DF
-      Class solo.adm.dsfn.DatasetFilename
+DSFN
+      Class solo.adm.dsfn.DatasetFilename.
