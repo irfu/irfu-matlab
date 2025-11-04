@@ -180,6 +180,10 @@ vars = {'R_gse','R_gsm','V_gse','V_gsm',...
   'Ve_gse_fpi_sitl', 'Ve_gse_fpi_ql','Ve_gse_fpi_fast_l2',...
   'Ve_gse_fpi_brst_l1b','Ve_gse_fpi_fast_l1b', ...
   'Ve_gse_fpi_brst_l2', 'partVe_gse_fpi_brst_l2', 'partVe_gse_fpi_fast_l2', ...
+  'SpintoneVi_dbcs_fpi_fast_l2', 'SpintoneVe_dbcs_fpi_fast_l2',...
+  'SpintoneVi_dbcs_fpi_brst_l2', 'SpintoneVe_dbcs_fpi_brst_l2',...
+  'SpintoneVi_gse_fpi_fast_l2', 'SpintoneVe_gse_fpi_fast_l2',...
+  'SpintoneVi_gse_fpi_brst_l2', 'SpintoneVe_gse_fpi_brst_l2',...
   'Ni_fpi_brst_l2', 'partNi_fpi_brst_l2', ...
   'Ni_fpi_brst','Ni_fpi_fast_l2','partNi_fpi_fast_l2',...
   'Ni_fpi_sitl','Ni_fpi_ql',...
@@ -687,6 +691,25 @@ switch Vr.inst
             if ~isempty(res), return, end
           otherwise, error('Only l2 partmoms avaiable now.')
         end
+      case {'SpintoneVi','SpintoneVe'}
+        pref = ['mms' mmsIdS '_' sensor '_bulk'];
+        switch Vr.lev
+          case {'l2','l2pre'}
+            suf = ['_' Vr.cs '_' Vr.tmmode];
+            compS = struct('x','x','y','y','z','z');
+            % try to load V3
+            res = mms.db_get_ts(dsetName,[pref 'v_spintone' suf],Tint);
+            if ~isempty(res), return, end
+          case 'l1b'
+          case 'ql'
+            suf = ['_' Vr.cs '_' Vr.tmmode];
+            compS = struct('x','x','y','y','z','z');
+            % try to load V3
+            res = mms.db_get_ts(dsetName,[pref 'v_spintone' suf],Tint);
+            if ~isempty(res), return, end
+          otherwise, error('should not be here')
+        end
+        res = get_ts('vector');
       otherwise, error('should not be here')
     end
   case 'hpca'
@@ -1491,7 +1514,8 @@ switch param
       'Enfluxi', 'Enfluxe', 'Energyi', 'Energye', 'partEi', 'partEe', 'Epar', 'Sdev12', 'Sdev34',...
       'Flux-amb-pm2','Flux-err-amb-pm2'}
     tensorOrder = 0;
-  case {'Vi', 'partVi', 'Ve', 'partVe', 'B', 'E','E2d','Es12','Es34'}
+  case {'Vi', 'partVi', 'Ve', 'partVe', 'B', 'E','E2d','Es12','Es34',...
+      'SpintoneVi','SpintoneVe'}
     tensorOrder = 1;
   case {'Pi', 'partPi', 'Pe', 'partPe', 'Ti', 'partTi', 'Te', 'partTe'}
     tensorOrder = 2;
