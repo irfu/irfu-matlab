@@ -106,7 +106,7 @@ for id=1:length(SCid)
   irf_plot(h(id), {...
     hk10eDB.(SCid{id}).dac.P1, hk10eDB.(SCid{id}).dac.P2, ...
     hk10eDB.(SCid{id}).dac.P3, hk10eDB.(SCid{id}).dac.P4}, 'comp');
-  legend(h(id), probes(1:4));
+  legend(h(id), probes(1:4), 'location', 'northeast');
   ylabel(h(id), {[upper(SCid{id}), ' DAC'],'[nA]'});
   yMinMax = ylim(h(id));
   % adjust max/min by 6 to allow nicer looking plots (DAC has not ever
@@ -133,7 +133,7 @@ for id=1:length(SCid)
   irf_plot(h(id), {...
     hk10eDB.(SCid{id}).og.P1, hk10eDB.(SCid{id}).og.P2, ...
     hk10eDB.(SCid{id}).og.P3, hk10eDB.(SCid{id}).og.P4}, 'comp');
-  legend(h(id), probes(1:4));
+  legend(h(id), probes(1:4), 'location', 'northeast');
   ylabel(h(id), {[upper(SCid{id}), ' OG'],'[V]'});
   yMinMax = ylim(h(id));
   % adjust max/min by +/-0.1 to allow nicer looking plots.
@@ -157,7 +157,7 @@ for id=1:length(SCid)
   irf_plot(h(id), {...
     hk10eDB.(SCid{id}).ig.P1, hk10eDB.(SCid{id}).ig.P2, ...
     hk10eDB.(SCid{id}).ig.P3, hk10eDB.(SCid{id}).ig.P4}, 'comp');
-  legend(h(id), probes(1:4));
+  legend(h(id), probes(1:4), 'location', 'northeast');
   ylabel(h(id), {[upper(SCid{id}), ' IG'],'[V]'});
   yMinMax = ylim(h(id));
   % adjust max/min by +/-0.1 to allow nicer looking plots.
