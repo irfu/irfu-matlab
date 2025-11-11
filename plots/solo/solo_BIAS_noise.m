@@ -22,7 +22,7 @@ end
 if 1 % read Alexandrova et al. 2009 spectra
     %file reading
     [xx,yy]=textread('alexandrova2009_fig2.dat','%s%s','headerlines',3);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         alexandrova2009_Bspectra(j,1)=10^str2num(xx{j});
         alexandrova2009_Bspectra(j,2)=10^str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
@@ -31,7 +31,7 @@ end
 if 1 % read Sahraoui et al. 2009 spectra
     %file reading
     [xx,yy]=textread('sahraoui2009_fig4.dat','%s%s','headerlines',3);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         sahraoui2009_Espectra(j,1)=10^str2num(xx{j}); 
         sahraoui2009_Espectra(j,2)=10^str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
@@ -40,7 +40,7 @@ end
 if 1 % read Yuris spectra for Sahraoui et al. 2009 event
     %file reading
     [xx,yy]=textread('Cluster_yuri.dat','%s%s','headerlines',3);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         Cluster_Espectra(j,1)=10^str2num(xx{j}); 
         Cluster_Espectra(j,2)=10^str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
@@ -49,7 +49,7 @@ end
 if 1 % read Helios2 noise spectra for Sahraoui et al. 2009 event
     %file reading
     [xx,yy]=textread('Helios2_noise.dat','%s%s','headerlines',3);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         Helios2_Espectra(j,1)=10^str2num(xx{j}); 
         Helios2_Espectra(j,2)=10^str2num(yy{j}); % (V/m)^2/Hz
     end
@@ -58,7 +58,7 @@ end
 if 1 % read example solar wind spectra
     %file reading
     [xx,yy]=textread('THEMIS_solar_wind_example_spectra.txt','%s%s','headerlines',4);
-    for j=1:size(xx,1),
+    for j=1:size(xx,1)
         SW_example_Espectra_THEMIS(j,1)=str2num(xx{j}); % Hz
         SW_example_Espectra_THEMIS(j,2)=str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
@@ -143,7 +143,10 @@ if 1 % calculate spectra R=.3AU
 end
 
 if 1 % initialize figure
-    figure(11);clf
+    hf = figure(11); %Open figure and keep handle. 
+    clf
+    hf=colordef(hf,'white'); %Set color scheme.
+    hf.Color='w'; %Set background color of figure window.
     h=irf_plot(1);
     set(h,'position',[0.15 0.1 0.75 0.75]);
     set(gcf,'defaultLineLineWidth',2);
@@ -232,4 +235,5 @@ if 1 % plot electric field noises
     text(f_range(1)*10,PE_range(1)*10,['biased probe, R=' num2str(R_plasma_bias/1e6,3) 'M\Omega'],'horizontalalignment','left','verticalalignment','middle','color','k');
     irf_legend(hca,['ne=' num2str(n(1)/1e6,3) 'cc, Te=' num2str(T_plasma_eV(1),3) 'eV'],[0.98 0.02])
 end
-irf_legend(0,['SolO noise turb ' datestr(now,31)],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+irf_legend(0,['SolO noise turb ' char(datetime("now","Format","uuuu-MM-dd HH:mm:ss"))],[0,0.001],'interpreter','none','color',[0.5 0.5 0.5])
+irf_print_fig(['SOLO_BIAS_NOISE__' char(datetime("now","Format","uuuuMMdd"))],'png')
