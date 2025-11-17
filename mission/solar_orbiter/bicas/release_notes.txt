@@ -348,6 +348,8 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
   inspect its current configuration.
 * Various reorganizing/refactoring of demultiplexing, reconstruction, and channel
   addressing to facilitate other changes.
+* New default: PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC=240
+  (instead of 180).
 * Support both setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK)
   using old (almost) and new scheme for saturation:
   Old scheme: "global saturation" (FULL_SATURATION & PARTIAL_SATURATION)

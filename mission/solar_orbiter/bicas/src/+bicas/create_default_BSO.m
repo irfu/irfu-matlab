@@ -484,13 +484,15 @@ S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_
 %       meaning that small adjustments to this value might not have any
 %       noticeable effect.
 % NOTE: Sweep that justifies that the value (assuming SCDA) should be at least
-%       180 s:
-%       solo_HK_rpw-bia_20240621_V05.cdf
-%       solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240621_V02.cdf
+%       180 s: solo_HK_rpw-bia_20240621_V05.cdf
+%              solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240621_V02.cdf
 %       NOTE: This sweep is also the beginning of a period with a mistakenly
 %             floating ANT3. Probably irrelevant.
 %             https://github.com/irfu/irfu-matlab/issues/156
-S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC', 180)
+%       Sweep that justifies that the value (assuming SCDA) should be at least
+%       240 s: solo_L2_rpw-lfr-surv-cwf-e_20250701_V01.cdf
+%              solo_HK_rpw-bia_20250701_V06.cdf.
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC', 240)
 
 
 
