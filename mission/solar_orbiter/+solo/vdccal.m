@@ -165,7 +165,8 @@ for iSub = 1:length(sub_int_times)-1
   % bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
 
   % Resample calibration parameters
-
+  % -------------------------------
+  % NOTE: Empirically, .resample() uses linear interpolation.
   % NOTE: Somehow extrapolates data to outside of the time interval for which
   %       there is data. ==> Generates "calibrated" values (not NaN) also
   %       outside of time interval for which there is calibration data!

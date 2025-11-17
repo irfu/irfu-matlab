@@ -46,9 +46,11 @@ classdef const
   %###########
   %###########
   properties(Constant)
+    % NOTE: MATLAB versions are specified as the value returned by
+    % version('-release'). Note that is omits "R".
 
-    % MATLAB version which shall be used when officially running BICAS (value
-    % returned by version('-release')).
+    % MATLAB version which shall be used when OFFICIALLY running BICAS, in
+    % particular at LIRA which only suports one particular MATLAB version.
     % NOTE: Not to be confused with bicas.const.PERMITTED_MATLAB_VERSIONS_CA.
     OFFICIAL_MATLAB_VERSION      = '2024a';
 

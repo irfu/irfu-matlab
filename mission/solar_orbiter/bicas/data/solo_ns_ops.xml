@@ -874,7 +874,6 @@
 
 
 
-
         <event>
             <startTimeUtc>2021-06-01T03:57:17</startTimeUtc>
             <stopTimeUtc> 2021-06-01T05:10:13</stopTimeUtc>
@@ -1476,7 +1475,7 @@
             <startTimeUtc>2022-07-04T16:34:21</startTimeUtc>
             <stopTimeUtc> 2022-07-04T16:46:21</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
-            <description>Note: First observation of a second thruster firing on the same day. /EJ</description>
+            <description>Second thruster firing on the same day. /EJ</description>
         </event>
         <event>
             <startTimeUtc>2022-07-11T00:34:21</startTimeUtc>
@@ -1724,7 +1723,6 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
-
 
 
 

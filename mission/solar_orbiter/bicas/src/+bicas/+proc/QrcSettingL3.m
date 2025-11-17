@@ -19,8 +19,8 @@ classdef QrcSettingL3 < bicas.proc.QrcSetting
     % All (non-inherited) properties are column arrays of indices in the second
     % dimension. Specifies which components should be blanked.
 
-    % For blanking L2 ZV VDC/EDC before being used before data is passed on to
-    % solo.vdccal() and psp2ne().
+    % For blanking L2 ZV VDC/EDC before being passed on to solo.vdccal() and
+    % psp2ne().
     % --
     % NOTE: L2-->L3 processing does not use AC data.
     vdcFvIndexAr

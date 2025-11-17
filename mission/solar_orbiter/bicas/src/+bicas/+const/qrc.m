@@ -10,6 +10,27 @@ classdef qrc
   %   PRO: Shorter variables paths.
   %   CON: Can not shorten/copy in code: Q = bicas.const.qrc.Q.
   %     CON: Has not been needed so far.
+  % PROPOSAL: Constants for QFL values (0..4).
+
+
+
+  % QUALITY_FLAG values according to
+  % https://confluence-lesia.obspm.fr/display/ROC/RPW+Data+Quality+Verification
+  % ===========================================================================
+  % 0	Bad data
+  % 1	Known problems, use at your own risk
+  % 2	Survey data, possibly not publication-quality
+  % 3	Good for publication, subject to PI approval
+  % 4	Excellent data which has received special treatment
+  % """"""""
+  % The QUALITY_FLAG values of the RPW L1 CDF are all set to "3" by default.
+  %
+  % From this initial status, the RCS must then decide in an autonomous way to
+  % change or not the value of QUALITY_FLAG records, when transferring the
+  % quality information to the output RPW CDF. The RCS decision must rely on
+  % relevant data (i.e, QUALITY_BITMASK, other data, parent data, etc.) as
+  % explained in the next section.
+  % """"""""
 
 
 
@@ -63,8 +84,8 @@ classdef qrc
 
 
 
-    % Function for the initializing QRCSM with all QRCSs for CHANNEL saturation
-    % in L2 CDFs and L3 CDFs.
+    % Function for the initializing a QRCSM with all QRCSs for CHANNEL
+    % saturation in L2 CDFs and L3 CDFs.
     %
     function [L2Qrcsm, L3Qrcsm] = init_L2_L3_CHANNEL_SATURATION_QRCSM()
       L2Qrcsm = bicas.proc.QrcSettingsMap();
@@ -86,6 +107,7 @@ classdef qrc
         L2Qrcsm.add(qrcid, L2Qrcs);
       end
 
+      % NOTE: Setting QFL and L2QBM. Not blanking anything.
       add_L2_channel_saturation_QRCS("SATURATION_ZV_V1",   1)
       add_L2_channel_saturation_QRCS("SATURATION_ZV_V2",   2)
       add_L2_channel_saturation_QRCS("SATURATION_ZV_V3",   4)
@@ -93,6 +115,8 @@ classdef qrc
       add_L2_channel_saturation_QRCS("SATURATION_ZV_V13", 16)
       add_L2_channel_saturation_QRCS("SATURATION_ZV_V23", 32)
 
+      % NOTE: *NOT* setting QFL and L3QBM. Blanking L2 input data before using
+      % it for deriving L3* (i.e. not alter the actual content of L2 CDFs).
       L3Qrcsm.add("SATURATION_ZV_V1",  bicas.proc.QrcSettingL3(vdcFvIndexAr=1))
       L3Qrcsm.add("SATURATION_ZV_V2",  bicas.proc.QrcSettingL3(vdcFvIndexAr=2))
       L3Qrcsm.add("SATURATION_ZV_V3",  bicas.proc.QrcSettingL3(vdcFvIndexAr=3))
@@ -137,7 +161,7 @@ classdef qrc
 
 
     % Function for initializing QRCSMs in three groups representing different
-    % output CDFs/DSIs. Three groups are:
+    % output CDFs/DSIs. The three groups are:
     % (1) all (official) L2 CDFs,
     % (2) all L3 CDFs, and
     % (3) all L3 density CDFs.
@@ -189,7 +213,7 @@ classdef qrc
       %=============
       % BIAS_HW_OFF
       %=============
-      % This condition corresponds when LFR ZV "BW" says that BIAS h/w is off.
+      % This condition corresponds when LFR ZV "BW" states that BIAS h/w is off.
       % --
       % IMPLEMENTATION NOTE: It could be argued that this condition is not
       % really an "error", or "quality problem" at all and that the
@@ -198,7 +222,9 @@ classdef qrc
       % anyway to make the hardcoding/documentation/configuration of BICAS's
       % behaviour when this condition applies clearer. It is "obvious" (?) that
       % the voltages should be blanked, but not the currents, and that should
-      % (preferably) be configured clearly somewhere.
+      % (preferably) be configured clearly somewhere and doing it using QRCSs
+      % makes sense. Rather, this use case is an argument for that QRC* should
+      % be renamed.
       % --
       % NOTE: Deletes all values, both voltages & currents.
       Qrcs = bicas.proc.QrcSettingL2(...
@@ -253,6 +279,11 @@ classdef qrc
       % information shall be also found in the child L2 (and L3 when needed).
       % """"""""
       % /Xavier Bonnin e-mail 2024-07-12, 11:24
+      %
+      % NOTE: It is not conceptually obvious whether QUALITY_FLAG should be
+      % capped if data affected by ANT3_FAILING is entirely removed. However,
+      % since ROC caps QUALITY_FLAG<=1 for ANT3_FAILING in L1/L1R (see above),
+      % one could, in principle, capping QFL<=1 should have no influence here.
 
       % NOTE: Using the *EXACT SAME* string which ROC uses for setting GA
       % CAVEATS in CDFs output by RCSs (when agreed upon). /2025-09-02
@@ -300,8 +331,12 @@ classdef qrc
         qfl       = uint8(1), ...
         gaCaveats = ANT3_UNINTENTIONALLY_FLOATING_CAVEATS);
       L2Qrcsm.add("ANT3_UNINTENTIONALLY_FLOATING", Qrcs);
+      % --
       % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing
       % *INPUT* to solo.vdccal()).
+      % NOTE: Unclear what should be the correct QFL value when data is removed.
+      % Therefore not setting it.
+      %   PROPOSAL: QFL=0
       Qrcs = bicas.proc.QrcSettingL3(...
         efieldFvIndexAr = [1 2 3]', ...
         gaCaveats       = ANT3_UNINTENTIONALLY_FLOATING_CAVEATS);

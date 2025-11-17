@@ -165,7 +165,7 @@ classdef qrc
 
 
 
-    % Blank 2D FPA based on QRCBs. Intended for blanking e.g. VDC and EDC
+    % Blank a 2D FPA based on QRCBs. Intended for blanking e.g. VDC and EDC
     % before they are passed to solo.vdccal() and solo.psp2ne(), or their
     % return values.
     %

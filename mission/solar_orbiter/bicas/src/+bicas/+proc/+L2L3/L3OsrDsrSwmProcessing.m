@@ -363,7 +363,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % had it not been for saturation or sweeps (sic!).
       % ----------------------------------------------------------------------
       % NOTE/BUG: Above is only true if BICAS had entirely determined the L2
-      % QUALITY_FLAG value, i.e. that it had not be capped due to inherited
+      % QUALITY_FLAG value, i.e. that it had not been capped due to inherited
       % values from the parent L1/L1R CDF.
       %-----------------------------------------------------------------------
       % NOTE: Sweeps are blanked (in L2), so their QUALITY_FLAG values do not
@@ -379,7 +379,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
     % Function to group together related code in process_L2_to_L3().
-    % Remove (blank) L2 data before sending it to processing.
+    % Remove (blank) L2 data before sending it to the external L2-to-L3
+    % calibration.
     %
     function [VDC_Fpa, EDC_Fpa] = set_VDC_EDC_FPs_before_processing( ...
         VDC_Fpa, EDC_Fpa, SyntheticL2QflFpa, ...
