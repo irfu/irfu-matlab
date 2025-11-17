@@ -365,7 +365,7 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Removes EFIELD data when ANT3 is unintentionally floating.
   https://github.com/irfu/irfu-matlab/issues/156
 * Non-Standard Operations (NSO) table thruster firings updated for until
-  2025-06-21 (inclusive).
+  2025-11-11 (inclusive).
 * Requires new master CDF versions:
     L2: V18
     L3: V07/V08

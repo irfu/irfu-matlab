@@ -23,7 +23,7 @@
             2024-09-12, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06. After the creation of this form of labeling, functionality for automatically detecting saturation has been added to BICAS. This functionality does however not distinguish between full and partial saturation. One should therefore not need to manually add more saturated time intervals than the ones already labelled.
         </note>
         <note>
-            2025-08-11, Erik P G Johansson: The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2025-06-21 (inclusive). It only contains manually identified thuster firings.
+            2025-08-11, Erik P G Johansson: The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2025-11-11 (inclusive). It only contains manually identified thuster firings.
         </note>
         <note>
             2024-01-31, Erik P G Johansson: BICAS detects saturation itself since v8.0.0 and labels it as "full saturation". One should therefore not need to add more FULL_SATURATION entries to this list. FULL_SATURATION entries in this table are additionally treated by BICAS as "full saturation".
@@ -2883,6 +2883,156 @@
         <event>
             <startTimeUtc>2025-06-16T01:04:23</startTimeUtc>
             <stopTimeUtc> 2025-06-16T01:13:38</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-06-23T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2025-06-23T01:12:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Only two spikes.</description>
+        </event>
+        <event>
+            <startTimeUtc>2025-06-30T01:04:23</startTimeUtc>
+            <stopTimeUtc> 2025-06-30T01:14:44</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-07-06T23:04:26</startTimeUtc>
+            <stopTimeUtc> 2025-07-06T23:14:37</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-07-14T01:10:30</startTimeUtc>
+            <stopTimeUtc> 2025-07-14T01:21:12</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-07-20T21:03:21</startTimeUtc>
+            <stopTimeUtc> 2025-07-20T21:13:50</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-07-28T01:04:24</startTimeUtc>
+            <stopTimeUtc> 2025-07-28T01:14:53</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-08-03T21:04:23</startTimeUtc>
+            <stopTimeUtc> 2025-08-03T21:15:24</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-08-11T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2025-08-11T01:18:54</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-08-18T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2025-08-18T01:21:33</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-08-25T00:04:31</startTimeUtc>
+            <stopTimeUtc> 2025-08-25T00:29:47</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-01T01:04:29</startTimeUtc>
+            <stopTimeUtc> 2025-09-01T01:39:21</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-05T01:04:25</startTimeUtc>
+            <stopTimeUtc> 2025-09-05T01:45:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-10T18:04:24</startTimeUtc>
+            <stopTimeUtc> 2025-09-10T18:59:12</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-15T11:54:26</startTimeUtc>
+            <stopTimeUtc> 2025-09-15T12:32:01</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-20T01:04:26</startTimeUtc>
+            <stopTimeUtc> 2025-09-20T01:37:02</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-24T15:04:32</startTimeUtc>
+            <stopTimeUtc> 2025-09-24T15:29:50</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-25T01:59:25</startTimeUtc>
+            <stopTimeUtc> 2025-09-25T02:19:11</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-29T22:56:28</startTimeUtc>
+            <stopTimeUtc> 2025-09-29T23:30:40</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-09-30T04:32:47</startTimeUtc>
+            <stopTimeUtc> 2025-09-30T04:57:42</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Does not look like other thruster firings, but I strongly suspect it is one. QUALITY_BITMASK also indicates it, but over a much longer time period, 2+6 hours, covering the preceding identified thruster firing. /EJ</description>
+        </event>
+        <event>
+            <startTimeUtc>2025-10-04T11:09:25</startTimeUtc>
+            <stopTimeUtc> 2025-10-04T11:34:04</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-10-09T04:19:28</startTimeUtc>
+            <stopTimeUtc> 2025-10-09T04:33:49</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-10-16T17:19:29</startTimeUtc>
+            <stopTimeUtc> 2025-10-16T17:40:46</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-10-16T23:08:47</startTimeUtc>
+            <stopTimeUtc> 2025-10-16T23:19:35</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Does not look like other thruster firings but should be thruster firing. QUALITY_BITMASK indicates possible thruster firing. Second thruster firing the same day! /EJ</description>
+        </event>
+        <event>
+            <startTimeUtc>2025-10-30T01:04:29</startTimeUtc>
+            <stopTimeUtc> 2025-10-30T01:17:06</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-11-10T01:04:31</startTimeUtc>
+            <stopTimeUtc> 2025-11-10T01:19:50</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
