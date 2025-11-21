@@ -32,7 +32,7 @@ if 1 % read Sahraoui et al. 2009 spectra
     %file reading
     [xx,yy]=textread('sahraoui2009_fig4.dat','%s%s','headerlines',3);
     for j=1:size(xx,1)
-        sahraoui2009_Espectra(j,1)=10^str2num(xx{j}); 
+        sahraoui2009_Espectra(j,1)=10^str2num(xx{j});
         sahraoui2009_Espectra(j,2)=10^str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
@@ -41,7 +41,7 @@ if 1 % read Yuris spectra for Sahraoui et al. 2009 event
     %file reading
     [xx,yy]=textread('Cluster_yuri.dat','%s%s','headerlines',3);
     for j=1:size(xx,1)
-        Cluster_Espectra(j,1)=10^str2num(xx{j}); 
+        Cluster_Espectra(j,1)=10^str2num(xx{j});
         Cluster_Espectra(j,2)=10^str2num(yy{j})*1e-6; % (V/m)^2/Hz
     end
     clear xx yy;
@@ -50,7 +50,7 @@ if 1 % read Helios2 noise spectra for Sahraoui et al. 2009 event
     %file reading
     [xx,yy]=textread('Helios2_noise.dat','%s%s','headerlines',3);
     for j=1:size(xx,1)
-        Helios2_Espectra(j,1)=10^str2num(xx{j}); 
+        Helios2_Espectra(j,1)=10^str2num(xx{j});
         Helios2_Espectra(j,2)=10^str2num(yy{j}); % (V/m)^2/Hz
     end
     clear xx yy;
@@ -110,13 +110,13 @@ if 1 % calculate spectra 1AU
     SP.Epower(1)=SP.power(1)*1e-6*VA^2;
     SP.EpowerVf(1)=SP.power(1)*1e-6*Vf^2;
     SP.R_AU=1; % distance in AU
-    
+
     f_dop_ion=Vf/(2*pi*(100*sqrt(2*T)/B))*0.5;
     f_dop_electron=Vf/(2*pi*(sqrt(10*T)/B))*0.5;
     SP.R_RS=1/0.00465; % distance in AU
     SP.f=[f_range(1) 1e-3 f_dop_ion f_dop_electron f_dop_electron*10];
     SP.slopes=[-1 -1.6 -2.8 -4];
-    for i=2:length(SP.f) 
+    for i=2:length(SP.f)
         SP.power(i) = SP.power(i-1)*10^(log10(SP.f(i)/SP.f(i-1))*SP.slopes(i-1));
         SP.Epower(i) = SP.power(i)*1e-6*VA^2;
         SP.EpowerVf(i) = SP.power(i)*1e-6*Vf^2;
@@ -143,7 +143,7 @@ if 1 % calculate spectra R=.3AU
 end
 
 if 1 % initialize figure
-    hf = figure(11); %Open figure and keep handle. 
+    hf = figure(11); %Open figure and keep handle.
     clf
     hf=colordef(hf,'white'); %Set color scheme.
     hf.Color='w'; %Set background color of figure window.
@@ -161,7 +161,7 @@ if 1 % electric field plot
     loglog(hca,SP1AU.f,SP1AU.Epower,'b.-','markersize',20);
     hold(hca,'on');
     loglog(hca,SP03AU.f,SP03AU.Epower,'r.-','markersize',20);
-    
+
     set(hca,'xlim',f_range)
     set(hca,'ylim',PE_range)
     set(hca,'xtick',10.^[log10(f_range(1)):1:log10(f_range(2))]),
@@ -169,10 +169,10 @@ if 1 % electric field plot
     grid(hca,'on');
     set(hca,'xminorgrid','off');
     set(hca,'yminorgrid','off');
-    
+
     ylabel(hca,'S_E [(V/m)^2/Hz]');
     xlabel(hca,'frequency [Hz]');
-    
+
     text(0.97,0.8,'spectra at R=1 AU','fontsize',12,'fontweight','demi','color','b','units','normalized','horizontalalignment','right','parent',hca);
     text(0.97,0.85,'spectra at R=0.3 AU','fontsize',12,'fontweight','demi','color','r','units','normalized','horizontalalignment','right','parent',hca);
     title(hca,['Predicted electric field spectra and noise levels in solar wind \newline' ...
@@ -182,33 +182,33 @@ end
 if 1 % electric field example spectra
     loglog(SW_example_Espectra_THEMIS(:,1), SW_example_Espectra_THEMIS(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
     text(10,3e-12,'THEMIS','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-    
+
     % the power is based on electric field Cluster spectra from Sahraoui et al 2009.
     %loglog(sahraoui2009_Espectra(:,1),sahraoui2009_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
     %text(2,3e-4,'Cluster','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-    
+
     % electric field Cluster spectra for interval Sahraoui et al 2009.
     loglog(Cluster_Espectra(:,1),Cluster_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
     text(3,3e-10,'Cluster','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-    
+
     loglog(Helios2_Espectra(:,1),Helios2_Espectra(:,2),'color',[0.5 0.5 0.5],'linewidth',1);
     text(80,3e-9,'Helios2','fontsize',10,'color',[0.5 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
-    
+
 end
 if 1 % plot electric field noises
-    
+
     loglog(SOFI_total_noise_bias,SOFI_total_noise_bias(:,2),'color',[0.8 0.0 0.0]);
     loglog(SOFI_total_noise_nobias(:,1),SOFI_total_noise_nobias(:,2),'color',[0.8 0.0 0.0],'linestyle',':');
     text(SOFI_total_noise_bias(1,1)*1.5,SOFI_total_noise_bias(1,2),'total noise','fontsize',10,'color',[0.8 0.0 0.0],'units','data','horizontalalignment','left','verticalalignment','bottom');
-    
+
     loglog(thermal_noise_bias(:,1), thermal_noise_bias(:,2),'color',[0.5 0.5 0]);
     loglog(thermal_noise_nobias(:,1), thermal_noise_nobias(:,2),'color',[0.5 0.5 0],'linestyle',':');
     text(thermal_noise_bias(1,1)*200,thermal_noise_bias(1,2),'thermal noise 1eV','fontsize',10,'color',[0.5 0.5 0],'units','data','verticalalignment','bottom');
     irf_legend(['A_{antenna}=' num2str(A_antenna,3) 'm^2, C_{antenna}=' num2str(C_antenna*1e12,3) 'pF'],[0.98 0.98]);
-    
+
     loglog(SOFI_instr_noise(:,1), SOFI_instr_noise(:,2),'k');
     text(SOFI_instr_noise(2,1),SOFI_instr_noise(end,2),'preamp-noise','fontsize',10,'color','k','units','data','horizontalalignment','left','verticalalignment','top');
-    
+
     loglog(SOFI_bit_noise_gain1(:,1), SOFI_bit_noise_gain1(:,2),'color',[0 0.5 0]);
     text(SOFI_bit_noise_gain1(1,1)*1.5,SOFI_bit_noise_gain1(1,2),...
         ['bit noise gain=1\newline 1tm=' num2str(tmunit*1e6,3) '\muV/m\newlinerange \pm' num2str(tmrange,3) 'V/m\newline '],'fontsize',9,'color',[0 0.5 0],'units','data','verticalalignment','middle');
@@ -220,11 +220,11 @@ if 1 % plot electric field noises
     loglog(SOFI_bit_noise_gain1(:,1), SOFI_bit_noise_gain1(:,2)/gain^2,'color',[0 0.5 0]);
     text(SOFI_bit_noise_gain1(1,1)*1.5,SOFI_bit_noise_gain1(1,2)/gain^2,...
         ['bit noise gain=1/15\newline 1tm=' num2str(tmunit/gain*1e6,3) '\muV/m\newlinerange \pm' num2str(tmrange/gain,3) 'V/m\newline '],'fontsize',9,'color',[0 0.5 0],'units','data','verticalalignment','middle');
-    
+
     loglog(SOFI_shot_noise_bias(:,1), SOFI_shot_noise_bias(:,2),'color',[0 0.3 0.3]);
     loglog(SOFI_shot_noise_nobias(:,1), SOFI_shot_noise_nobias(:,2),'color',[0 0.3 0.3],'linestyle',':');
     text(SOFI_shot_noise_bias(1,1)*1.5,SOFI_shot_noise_bias(1,2),'shot noise plasma','fontsize',10,'color',[0 0.3 0.3],'units','data','horizontalalignment','left','verticalalignment','bottom');
-    
+
     loglog(SOFI_shot_noise_photoelectron_bias(:,1), SOFI_shot_noise_photoelectron_bias(:,2),'color',[0 0.5 0.5]);
     loglog(SOFI_shot_noise_photoelectron_nobias(:,1), SOFI_shot_noise_photoelectron_nobias(:,2),'color',[0 0.5 0.5],'linestyle',':');
     text(SOFI_shot_noise_photoelectron_bias(1,1)*1.5,SOFI_shot_noise_photoelectron_bias(1,2),'shot noise photo','fontsize',10,'color',[0 0.5 0.5],'units','data','horizontalalignment','left','verticalalignment','bottom');
