@@ -3537,23 +3537,23 @@ classdef PDist < TSeries
       %   Algorithm:
       %     1. Calculate omnidirectional distribution.
       %     2. Put all zeros to nan.
-      %     3. Apply an N-point moving average. If there is a nan, it will 
+      %     3. Apply an N-point moving average. If there is a nan, it will
       %        propagate.
       %     4. For each time, find the lowest nan-occurrence and
       %        corresponding energy.
-      %     
-      %   Usage: 
+      %
+      %   Usage:
       %     tsElow = iPDist3.noise_energy_limit(5);
       %
       %   Example
-      % 
+      %
 
       if ~exist('nMovMean','var')
         nMovMean = 5;
       end
 
-      PD = obj;      
-      PD = PD.omni; 
+      PD = obj;
+      PD = PD.omni;
       PD.data(PD.data==0) = NaN;
       PD = PD.movmean(nMovMean);
       %omni_movmean.data = movmean(omni_counts_movmean.data,nMovMean,1);
@@ -3572,23 +3572,23 @@ classdef PDist < TSeries
           elow_t(it) = PD.depend{1}(it,idx_nan(it));
         end
       end
-      TS = irf.ts_scalar(PD.time,elow_t); 
+      TS = irf.ts_scalar(PD.time,elow_t);
       %end
     end
     function PD = mask(obj,depint)
-      
+
       data = obj.data;
       datasize = obj.datasize;
-      
+
       %if isnumeric(varargin{1}) && all(size(varargin{1})==datasize(1:2))
       %  depint
 
 
       %nDep = numel(varargin{1});
       nDep = numel(depint);
-      
+
       for it = 1:obj.length
-      for iDep = 1:nDep        
+      for iDep = 1:nDep
         deplim1 = repmat(depint{iDep}(it,1),[1 datasize(2)]);
         deplim2 = repmat(depint{iDep}(it,2),[1 datasize(2)]);
         iMask = intersect(find(obj.depend{iDep}(it,:)>=deplim1), find(obj.depend{iDep}(it,:)<deplim2));
@@ -4861,16 +4861,16 @@ classdef PDist < TSeries
       vx = jx./n*1e-5; % 1e-5*[1/cm^2s]/[cm^3] = 1e-5*cm/s = km/s
       vy = jy./n*1e-5;
       vz = jz./n*1e-5;
-      
+
       % Partial and bulk pressure
       to_SI = 1e12; % kg*[1/cm^3]*[km/s]*[km/s] = kg*[1e6*1/m^3]*[1e3 m/s]*[1e3 m/s] = kg*1e6/m^3*1e6*(m/s)^2
-      dpxx = mass*dn.*(dvx-vx).*(dvx-vx)*to_SI; 
+      dpxx = mass*dn.*(dvx-vx).*(dvx-vx)*to_SI;
       dpxy = mass*dn.*(dvx-vx).*(dvy-vy)*to_SI;
       dpxz = mass*dn.*(dvx-vx).*(dvz-vz)*to_SI;
       dpyy = mass*dn.*(dvy-vy).*(dvy-vy)*to_SI;
       dpyz = mass*dn.*(dvy-vy).*(dvz-vz)*to_SI;
       dpzz = mass*dn.*(dvz-vz).*(dvz-vz)*to_SI;
-      
+
       to_nPa = 1e9;
       pxx = sum(dpxx,2:10,'omitnan')*to_nPa;
       pxy = sum(dpxy,2:10,'omitnan')*to_nPa;
@@ -4878,7 +4878,7 @@ classdef PDist < TSeries
       pyy = sum(dpyy,2:10,'omitnan')*to_nPa;
       pyz = sum(dpyz,2:10,'omitnan')*to_nPa;
       pzz = sum(dpzz,2:10,'omitnan')*to_nPa;
-      
+
       pmat = zeros(obj.length,3,3);
       pmat(:,1,1) = pxx;
       pmat(:,1,2) = pxy;
@@ -4888,7 +4888,7 @@ classdef PDist < TSeries
       pmat(:,3,3) = pzz;
       pmat(:,2,1) = pmat(:,1,2);
       pmat(:,3,1) = pmat(:,1,3);
-      pmat(:,3,2) = pmat(:,2,3);      
+      pmat(:,3,2) = pmat(:,2,3);
 
       TS = irf.ts_tensor_xyz(obj.time,pmat);
     end
@@ -4896,16 +4896,16 @@ classdef PDist < TSeries
       % PDIST.REMOVE_NOISE
       %
       %   PD = remove_noise(PD,nMean,nThresh,PD_counts)
-            
+
       data = obj.data;
       counts = PD_counts.nan2zero.data;
-      
+
       % Pad data to be able to do averages in azimuthal directions
       % NB: I do not have a good solution for the polar angles
       nPad = [0 0 nMean(3) 0]; % only pad in azimuthal directions
       data_pad = padarray(data,nPad,'circular');
       counts_pad = padarray(counts,nPad,'circular');
-      
+
       % Apply moving averages to nMean points surrounding the datapoint
       data_pad_mean = data_pad;
       counts_pad_mean = counts_pad;
@@ -4913,25 +4913,25 @@ classdef PDist < TSeries
       for iDim = 1:numel(nMean)
         data_pad_mean = movmean(data_pad_mean,nMean(iDim),iDim);
         counts_pad_mean = movmean(counts_pad_mean,nMean(iDim),iDim);
-        counts_pad_sum = movsum(counts_pad_sum,nMean(iDim),iDim);        
+        counts_pad_sum = movsum(counts_pad_sum,nMean(iDim),iDim);
       end
 
       % Remove padded dimensions
       data_mean   =   data_pad_mean(nPad(1)+1:end-nPad(1),nPad(2)+1:end-nPad(2),nPad(3)+1:end-nPad(3),nPad(4)+1:end-nPad(4));
       %counts_mean = counts_pad_mean(nPad(1)+1:end-nPad(1),nPad(2)+1:end-nPad(2),nPad(3)+1:end-nPad(3),nPad(4)+1:end-nPad(4));
       counts_sum  =  counts_pad_sum(nPad(1)+1:end-nPad(1),nPad(2)+1:end-nPad(2),nPad(3)+1:end-nPad(3),nPad(4)+1:end-nPad(4));
-      
-      % Remove datapoint if its neighbourhood has less than nThresh counts      
+
+      % Remove datapoint if its neighbourhood has less than nThresh counts
       counts_clean = counts;
       counts_clean(counts_sum<nThresh) = 0;
-      
+
       data_clean = data;
       data_clean(counts_sum<nThresh) = 0;
-      
+
       % Construct PDist
       PD = obj.clone(obj.time,data_clean);
       PD_counts = obj.clone(obj.time,counts_clean);
-      
+
       if nargout == 1
         varargout{1} = PD;
       elseif nargout == 2
