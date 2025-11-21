@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       # Check-out repository
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
@@ -65,7 +65,7 @@ jobs:
     if: github.ref == 'refs/heads/SOdevel'
     steps:
       # Check-out repository
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
