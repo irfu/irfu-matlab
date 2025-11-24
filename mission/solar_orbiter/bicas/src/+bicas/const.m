@@ -66,7 +66,11 @@ classdef const
     %       MATLAB version running on brain, spis, anna (IRFU servers). This
     %       should be abolished eventually when beforementioned IRFU servers
     %       support MATLAB 2024a.
-    PERMITTED_MATLAB_VERSIONS_CA = {'2023b', bicas.const.OFFICIAL_MATLAB_VERSION};
+    % NOTE: Additionally added MATLAB R2025b since (1) this MATLAB version
+    %       supports AI (in the GUI) which is useful for development, and (2) it
+    %       is installed by primary BICAS author Erik P G Johansson
+    %       (2025-11-24).
+    PERMITTED_MATLAB_VERSIONS_CA = {'2023b', bicas.const.OFFICIAL_MATLAB_VERSION, '2025b'};
 
     % Path to "source directory" (the directory under which all source code is
     % located) relative to BICAS's directory root.
