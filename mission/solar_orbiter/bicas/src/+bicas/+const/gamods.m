@@ -1,7 +1,7 @@
 %
 % gamods = GA "MODS"
 %
-% Class for defining one non-trivial constant (data structure) for setting GA
+% Class for defining one non-trivial constant data structure used for setting GA
 % "MODS".
 %
 %
@@ -366,6 +366,12 @@ classdef gamods
         %=============================
         % Data for next BICAS version
         %=============================
+        % TODO-DEC: Should one have an L3 MODS value which is really a function
+        %           of a change in the L2 quality variable behaviour?
+        %   Ex: ANT3_FAILING, ANT3_UNINTENTIONALLY_FLOATING
+        %       ==> L2 QUALITY_FLAG<=1
+        %       ==> Excluded from L3 due to QUALITY_FLAG threshold.
+
         Gmdb.add_GMVE(...
           bicas.const.L2_LFR_TDS_DSI_CA, ...
           bicas.ga.mods.VersionEntry('2025-??-??', 'x.y.z', ...

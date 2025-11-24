@@ -319,8 +319,8 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Renamed setting:
      PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD
   -->PROCESSING.SATURATION.SAMPLE_FRACTION_THRESHOLD
-* Removed unused functionality for removing data based on BDM. Therefore removed
-  below settings:
+* Removed unused functionality for removing data based on BDM (mux mode).
+  Therefore removed below settings:
   PROCESSING.L2.REMOVE_DATA.MUX_MODES
   PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC
   PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC
@@ -346,8 +346,8 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Implementation uses a new coherent scheme for QRCs and their corresponding
   actions for L1/L1R->L2 processing. Should be much easier to configure, and to
   inspect its current configuration.
-* Various reorganizing/refactoring of demultiplexing, reconstruction, and channel
-  addressing to facilitate other changes.
+* Various reorganizing/refactoring of demultiplexing, reconstruction, and
+  channel addressing to facilitate other changes.
 * New default: PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC=240
   (instead of 180).
 * Support both setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK)
@@ -368,4 +368,4 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
   2025-11-11 (inclusive).
 * Requires new master CDF versions:
     L2: V18
-    L3: V07/V08
+    L3: EFIELD, SCPOT: V07; DENSITY: V08

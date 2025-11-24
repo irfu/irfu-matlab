@@ -230,7 +230,7 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA)
   end
 end    % for iInputLevel = 1:numel(inputDatasetLevelCa)
 
-end
+end    % get_SWMs_L1_L1R_to_L2
 
 
 
@@ -263,7 +263,7 @@ SwmArray = bicas.swm.SoftwareMode(...
   [SciInputDataset], ...
   [SciOutputDataset]);
 
-end
+end    % get_SWMs_L2_to_L2
 
 
 
@@ -352,4 +352,4 @@ SwmArray = bicas.swm.SoftwareMode(...
   DensityOutputDataset, ...
   DensityDsrOutputDataset]);
 
-end
+end    % get_SWMs_L2_to_l3

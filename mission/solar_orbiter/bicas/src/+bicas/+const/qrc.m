@@ -244,9 +244,8 @@ classdef qrc
       % ANTx_FAILING
       %==============
       % NOTE: There is currently (2025-08-26) only a need for ANT3_FAILING, but
-      % in case other antennas fail, one can just create the corresponding
-      % QRCSs for ANT1 & ANT2 and fill the NSO table with the corresponding
-      % entries.
+      % in case other antennas fail, one can just create the corresponding QRCSs
+      % for ANT1 & ANT2 and fill the NSO table with the corresponding entries.
       %
       % NOTE: This QRC only affects some channels.
       %
@@ -283,7 +282,8 @@ classdef qrc
       % NOTE: It is not conceptually obvious whether QUALITY_FLAG should be
       % capped if data affected by ANT3_FAILING is entirely removed. However,
       % since ROC caps QUALITY_FLAG<=1 for ANT3_FAILING in L1/L1R (see above),
-      % one could, in principle, capping QFL<=1 should have no influence here.
+      % in principle, capping QFL<=1 should have no influence here, unless
+      % artificially raising it (is allowed for L2-->L3).
 
       % NOTE: Using the *EXACT SAME* string which ROC uses for setting GA
       % CAVEATS in CDFs output by RCSs (when agreed upon). /2025-09-02
@@ -291,8 +291,11 @@ classdef qrc
         " reported during the current day (see QUALITY_FLAG=1).";
 
       % IMPLEMENTATION NOTE: Creating QRCSs for both 6xL2 and 6xL3 datasets.
-      % This is needed since GA CAVEATS values are *NOT* inherited (or
-      % modified) from parent CDFs as opposed to for QFL and LxQBM.
+      % This is needed since GA CAVEATS values are *NOT* inherited (or modified)
+      % from parent CDFs as opposed to for QFL and LxQBM.
+      % --
+      % Blanking data in accordance with
+      % https://github.com/irfu/irfu-matlab/issues/142 .
       Qrcs = bicas.proc.QrcSettingL2(...
         qfl             = uint8(1), ...
         voltageFvSsidAr = S(["DC_V3" "DC_V13" "DC_V23" "AC_V13" "AC_V23"]'), ...
@@ -300,7 +303,7 @@ classdef qrc
       L2Qrcsm.add("ANT3_FAILING", Qrcs);
       %
       Qrcs = bicas.proc.QrcSettingL3(...
-        gaCaveats = ANT3_FAILING_GA_CAVEATS);
+        gaCaveats       = ANT3_FAILING_GA_CAVEATS);
       L3Qrcsm.add("ANT3_FAILING", Qrcs);
 
 
@@ -328,14 +331,16 @@ classdef qrc
       ANT3_UNINTENTIONALLY_FLOATING_CAVEATS = ...
         "BIAS unintentionally sets zero bias current on ANT3 (see QUALITY_FLAG=1).";
       Qrcs = bicas.proc.QrcSettingL2(...
-        qfl       = uint8(1), ...
-        gaCaveats = ANT3_UNINTENTIONALLY_FLOATING_CAVEATS);
+        qfl             = uint8(1), ...
+        gaCaveats       = ANT3_UNINTENTIONALLY_FLOATING_CAVEATS);
       L2Qrcsm.add("ANT3_UNINTENTIONALLY_FLOATING", Qrcs);
       % --
       % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing
-      % *INPUT* to solo.vdccal()).
+      %       *INPUT* to solo.vdccal()).
+      % NOTE: Removing EFIELD should be unnecessary due to (synthetic)
+      %       L2 QUALITY_FLAG < PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
       % NOTE: Unclear what should be the correct QFL value when data is removed.
-      % Therefore not setting it.
+      %       Therefore not setting it.
       %   PROPOSAL: QFL=0
       Qrcs = bicas.proc.QrcSettingL3(...
         efieldFvIndexAr = [1 2 3]', ...

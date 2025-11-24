@@ -37,7 +37,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
     % Conceivable special cases for bins to test, including combinations
     % thereof.
     function test_process_L2_to_L3___0(testCase)
-      % NOTE: Unclear how much testing is meaningful. Could add more tests.
+      % NOTE: Unclear how much testing is meaningful. One could add more tests.
       %
       % PROPOSITION: The complexity of the test code implies that the
       %              underlying code needs to be refactored somehow.

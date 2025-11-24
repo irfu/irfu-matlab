@@ -165,19 +165,20 @@ classdef qrc
 
 
 
-    % Blank a 2D FPA based on QRCBs. Intended for blanking e.g. VDC and EDC
-    % before they are passed to solo.vdccal() and solo.psp2ne(), or their
-    % return values.
+    % Selectively blank a 2D FPA based on QRCBs. Intended for blanking e.g. VDC
+    % and EDC before they are passed to solo.vdccal() and solo.psp2ne(), or
+    % their return values.
     %
     %
     % ARGUMENTS
     % =========
+    % Fpa
     % Qrcbm
     % Qrcsm
     %       Must contain the same keys as Qrcbm.
     % qrcsFieldName
     %       String. Must refer to QRCS field containing column array of channel
-    %       indices (second dimension in Fpa).
+    %       indices (corresponding to the second dimension in Fpa).
     %
     function Fpa = set_FPA_samples_FP(Fpa, Qrcbm, Qrcsm, qrcsFieldName)
       % PROPOSAL: Somehow support QRCS fields which are scalar logical.

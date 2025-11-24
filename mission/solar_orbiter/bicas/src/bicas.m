@@ -309,17 +309,18 @@ classdef bicas
 
 
 
-      % Log that BICAS (the MATLAB code) has started running.
-      % RATIONALE: This is useful when one manually looks through the log file and
-      % tries to identify the beginning of a particular run. The BICAS log is
-      % always amended to and may therefore contain log messages from multiple
-      % runs.
+      % Log that BICAS (the MATLAB code) has started running
+      % ----------------------------------------------------
+      % RATIONALE: This is useful when one manually looks through the log file
+      % and tries to identify the beginning of a particular run. The BICAS log
+      % is always amended to and may therefore contain log messages from
+      % multiple runs.
       L.logf('info', [...
-        '############################################\n', ...
-        '############################################\n', ...
+        '###########################################\n', ...
+        '###########################################\n', ...
         '#### BICAS'' MATLAB CODE STARTS RUNNING ####\n', ...
-        '############################################\n', ...
-        '############################################\n'])
+        '###########################################\n', ...
+        '###########################################\n'])
 
 
 
