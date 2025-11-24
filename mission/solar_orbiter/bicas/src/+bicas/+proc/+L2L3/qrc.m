@@ -180,6 +180,11 @@ classdef qrc
     %       indices (second dimension in Fpa).
     %
     function Fpa = set_FPA_samples_FP(Fpa, Qrcbm, Qrcsm, qrcsFieldName)
+      % PROPOSAL: Somehow support QRCS fields which are scalar logical.
+      %   PRO: Natural for describing removal of density, scpot.
+      %   CON-PROPOSAL: Can describe scalar values as having one channel. -- IMPLEMENTED
+      %     CON: Ugly.
+
       assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       assert(isa(Qrcsm, "bicas.proc.QrcSettingsMap"))
       assert(isequal(Qrcbm.qrcidAr, Qrcsm.qrcidAr))

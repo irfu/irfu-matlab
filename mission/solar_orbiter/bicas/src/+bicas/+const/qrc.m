@@ -344,14 +344,26 @@ classdef qrc
 
 
 
-      %===============
-      % REMOVE_EFIELD
-      %===============
-      % Intended for when there are arbitrary reasons to remove EFIELD data.
-      % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing
-      % input to solo.vdccal()).
-      Qrcs = bicas.proc.QrcSettingL3(efieldFvIndexAr = [1 2 3]');
+      %=============================
+      % REMOVE_EFIELD/DENSITY/SCPOT
+      %=============================
+      % Intended for when there are arbitrary reasons to remove L3 data.
+      %   Ex: Ensure that L3 data is never removed outside the time interval for
+      %   which there is data. (Should ideally be handled by solo.vdccal(),
+      %   solo.psp2ne() themselves, but might not.)
+      %   Ex: Some part of calibration has been found to be wrong. Has happened
+      %       for EFIELD and this was the quickfix.
+      % NOTE: Removes output from solo.vdccal()/solo.psp2ne() (i.e. not
+      % by removing input to those functions).
+      % NOTE: Does not cap QFL (yet).
+      Qrcs = bicas.proc.QrcSettingL3(efieldFvIndexAr  = [1 2 3]');
       L3Qrcsm.add("REMOVE_EFIELD", Qrcs);
+      %
+      Qrcs = bicas.proc.QrcSettingL3(densityFvIndexAr = [1]);
+      L3Qrcsm.add("REMOVE_DENSITY", Qrcs);
+      %
+      Qrcs = bicas.proc.QrcSettingL3(scpotFvIndexAr   = [1]');
+      L3Qrcsm.add("REMOVE_SCPOT", Qrcs);
 
 
 

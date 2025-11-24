@@ -230,13 +230,22 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         EDC_Fpa = EDC_Fpa, ...
         L       = L);
 
-      %------------------------------------
-      % Blank output EFIELD based on QRCBs
-      %------------------------------------
-      % IMPLEMENTATION NOTE: Can add blanking of other L3 variables too, if
-      % needed.
+      %----------------------------
+      % Blank output based on QRCBs
+      %----------------------------
+      % Blank EFIELD.
       R.EdcSrfMvpmFpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         R.EdcSrfMvpmFpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "efieldFvIndexAr");
+      % Blank DENSITY (but not density quality bit).
+      R.NeScpCm3Fpa   = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
+        R.NeScpCm3Fpa,   L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "densityFvIndexAr");
+      % Blank PSP and SCPOT.
+      R.PspVoltFpa    = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
+        R.PspVoltFpa,    L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "scpotFvIndexAr");
+      R.ScpotVoltFpa  = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
+        R.ScpotVoltFpa,  L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "scpotFvIndexAr");
+
+
 
       %----------------------------------------------------------------------
       % Set L3 density BAD_DENSITY QRCB using information from solo.psp2ne()

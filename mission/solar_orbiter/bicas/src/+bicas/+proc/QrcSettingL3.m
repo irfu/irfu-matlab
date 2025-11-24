@@ -26,8 +26,14 @@ classdef QrcSettingL3 < bicas.proc.QrcSetting
     vdcFvIndexAr
     edcFvIndexAr
 
-    % For blanking EFIELD data (after derivation; not intput).
+    % For blanking EFIELD, DENSITY, SCPOT data (after derivation; not input).
+    % --
+    % NOTE: All are treated as if they "channels", which is only really true for
+    % EFIELD. DENSITY and SCPOT are treated as if they have "one channel". SCPOT
+    % also really refers to two scalar ZVs for PSP+SCPOT.
     efieldFvIndexAr
+    densityFvIndexAr
+    scpotFvIndexAr
   end
 
 
@@ -43,23 +49,31 @@ classdef QrcSettingL3 < bicas.proc.QrcSetting
 
     function obj = QrcSettingL3(A)
       arguments
-        A.qfl             = bicas.const.qrc.QFL_MAX
-        A.vdcFvIndexAr    = zeros(0, 1);
-        A.edcFvIndexAr    = zeros(0, 1);
-        A.efieldFvIndexAr = zeros(0, 1);
-        A.gaCaveats       = string.empty(0, 1);
+        A.qfl              = bicas.const.qrc.QFL_MAX
+        A.vdcFvIndexAr     = zeros(0, 1);
+        A.edcFvIndexAr     = zeros(0, 1);
+        A.efieldFvIndexAr  = zeros(0, 1);
+        A.densityFvIndexAr = zeros(0, 1);
+        A.scpotFvIndexAr   = zeros(0, 1);
+        A.gaCaveats        = string.empty(0, 1);
       end
 
       obj@bicas.proc.QrcSetting(qfl=A.qfl, gaCaveats=A.gaCaveats);
 
-      obj.assert_fvIndexAr(A.vdcFvIndexAr, 3)
+      obj.assert_fvIndexAr( A.vdcFvIndexAr, 3)
       obj.vdcFvIndexAr    = A.vdcFvIndexAr;
 
-      obj.assert_fvIndexAr(A.edcFvIndexAr, 3)
+      obj.assert_fvIndexAr( A.edcFvIndexAr, 3)
       obj.edcFvIndexAr    = A.edcFvIndexAr;
 
-      obj.assert_fvIndexAr(A.efieldFvIndexAr, 3)
+      obj.assert_fvIndexAr( A.efieldFvIndexAr, 3)
       obj.efieldFvIndexAr = A.efieldFvIndexAr;
+
+      obj.assert_fvIndexAr(  A.densityFvIndexAr, 1)
+      obj.densityFvIndexAr = A.densityFvIndexAr;
+
+      obj.assert_fvIndexAr(A.scpotFvIndexAr, 1)
+      obj.scpotFvIndexAr = A.scpotFvIndexAr;
     end
 
 
