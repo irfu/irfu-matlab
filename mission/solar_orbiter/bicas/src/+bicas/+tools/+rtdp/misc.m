@@ -119,9 +119,9 @@ classdef misc
       %========================
       % ASSERT: MATLAB version
       %========================
-      actMatlabVersion = version('-release');
+      actMatlabVersion = string(version('-release'));
       expMatlabVersion = bicas.const.OFFICIAL_MATLAB_VERSION;
-      if ~strcmp(actMatlabVersion, expMatlabVersion) && ~automatedTestRun
+      if (actMatlabVersion ~= expMatlabVersion) && ~automatedTestRun
         error( ...
           ['The actual MATLAB version (%s) and the expected MATLAB version' ...
           ' (%s) are not the same.'], ...

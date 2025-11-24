@@ -51,8 +51,8 @@ classdef const
 
     % MATLAB version which shall be used when OFFICIALLY running BICAS, in
     % particular at LIRA which only suports one particular MATLAB version.
-    % NOTE: Not to be confused with bicas.const.PERMITTED_MATLAB_VERSIONS_CA.
-    OFFICIAL_MATLAB_VERSION      = '2024a';
+    % NOTE: Not to be confused with bicas.const.PERMITTED_MATLAB_VERSIONS_AR.
+    OFFICIAL_MATLAB_VERSION      = "2024a";
 
     % Permissible string values when running BICAS in general, both officially
     % and unofficially (value returned by version('-release')).
@@ -72,7 +72,7 @@ classdef const
     %       supports AI (in the GUI) which is useful for development, and (2) it
     %       is installed by primary BICAS author Erik P G Johansson
     %       (2025-11-24).
-    PERMITTED_MATLAB_VERSIONS_CA = {'2023b', bicas.const.OFFICIAL_MATLAB_VERSION, '2025b'};
+    PERMITTED_MATLAB_VERSIONS_AR = ["2023b"; bicas.const.OFFICIAL_MATLAB_VERSION; "2025b"];
 
     % Path to "source directory" (the directory under which all source code is
     % located) relative to BICAS's directory root.

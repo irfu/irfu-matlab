@@ -298,12 +298,12 @@ classdef bicas
       % ~ASSERTION: Check MATLAB version
       %==================================
       matlabVersionString = version('-release');
-      if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS_CA)
+      if ~ismember(matlabVersionString, bicas.const.PERMITTED_MATLAB_VERSIONS_AR)
         error('BICAS:BadMatlabVersion', ...
           ['Using unsupported MATLAB version. Found version "%s".', ...
           ' BICAS requires any of the following MATLAB versions: %s.\n'], ...
           matlabVersionString, ...
-          strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS_CA, ', '))
+          strjoin(bicas.const.PERMITTED_MATLAB_VERSIONS_AR, ', '))
       end
       L.logf('info', 'Using MATLAB, version %s.\n\n', matlabVersionString);
 
@@ -715,7 +715,7 @@ classdef bicas
     function s = sprint_constants()
       %
       % NOTE: Does not print error codes (bicas.const), but print_help() does.
-      % PROPOSAL: bicas.const.PERMITTED_MATLAB_VERSIONS_CA
+      % PROPOSAL: bicas.const.PERMITTED_MATLAB_VERSIONS_AR
 
       s = sprintf([...
         '\n', ...
