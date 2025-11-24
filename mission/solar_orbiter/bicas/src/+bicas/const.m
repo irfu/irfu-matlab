@@ -82,7 +82,7 @@ classdef const
     % located, if any) relative to BICAS's directory root.
     DEFAULT_CONFIG_DIR_RPATH     = "config";
 
-    DEFAULT_CONFIG_FILENAME      = 'bicas.conf';
+    DEFAULT_CONFIG_FILENAME      = "bicas.conf";
 
     % MATLAB stdout prefix to signal to bash wrapper that the log message
     % should be passed on to STDOUT (without the prefix).
