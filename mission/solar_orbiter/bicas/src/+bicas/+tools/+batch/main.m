@@ -302,7 +302,7 @@ bicasSettingsArgsCa = {};
 
 switch(modeStr)
   case 'V01'
-    fnVerAlgorithm = 'HIGHEST_USED';
+    outputVerAlgorithmId = 'HIGHEST_USED';
 
     % IMPLEMENTATION NOTE: The filename version algorithm is more
     % generic. This code only creates datasets for which there is no
@@ -310,7 +310,7 @@ switch(modeStr)
     % when using this filename version algorithm. ==> Name "V01".
 
   case 'NEW_VERSION'
-    fnVerAlgorithm = 'ABOVE_HIGHEST_USED';
+    outputVerAlgorithmId = 'ABOVE_HIGHEST_USED';
 
   otherwise
     error('Illegal argument modeStr="%s".', modeStr)
@@ -330,7 +330,7 @@ Bpa = bicas.tools.batch.BicasProcessingAccessImpl();
 BpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
   Bpa, bicasSettingsArgsCa, ...
   bicasConfigFile, outputDir, referenceDir, inputPathsCa, ...
-  fnVerAlgorithm, outputIsCdag, SwmArray, Settings);
+  outputVerAlgorithmId, outputIsCdag, SwmArray, Settings);
 
 %=======================
 % Log BICAS error codes

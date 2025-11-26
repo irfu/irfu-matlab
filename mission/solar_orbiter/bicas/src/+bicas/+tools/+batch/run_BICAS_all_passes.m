@@ -26,7 +26,7 @@
 function [BpcsAllArray] = run_BICAS_all_passes(...
   Bpa, bicasSettingsArgsCa, configFile, ...
   outputDir, referenceDir, ...
-  inputPathsCa, fnVerAlgorithm, outputIsCdag, ...
+  inputPathsCa, outputVerAlgorithmId, outputIsCdag, ...
   SwmArray, Settings)
 
 % NOTE: Algorithm documentation in bicas.tools.batch.main().
@@ -122,7 +122,7 @@ while true
     @(outputDsi, BpciInputDsmdArray) ( ...
     bicas.tools.batch.get_BPCI_output_path2(...
     BpciInputDsmdArray, PreexistingOutputLvDsmdArray, ...
-    outputDsi, fnVerAlgorithm, ...
+    outputDsi, outputVerAlgorithmId, ...
     outputDir, outputIsCdag));
 
   %====================================================
@@ -143,12 +143,12 @@ while true
   % Find out which subset of BPCIs that should actually be run
   % ----------------------------------------------------------
   % NOTE: Takes reference directory into account but behaviour depends on
-  %       fnVerAlgorithm in get_BPCI_output_path_fh.
-  %   fnVerAlgorithm = 'HIGHEST_USED':
+  %       outputVerAlgorithmId in get_BPCI_output_path_fh.
+  %   outputVerAlgorithmId = 'HIGHEST_USED':
   %       Output dataset filenames have same version as highest
   %       counterpart in ref. dir., if there is one. ==> Filename
   %       collision. ==> Excluded
-  %   fnVerAlgorithm = 'ABOVE_HIGHEST_USED':
+  %   outputVerAlgorithmId = 'ABOVE_HIGHEST_USED':
   %       Output dataset filenames have a higher version than highest
   %       version counterpart in ref. dir., if there is one.
   %       ==> Never filename collision. ==> Included/kept.

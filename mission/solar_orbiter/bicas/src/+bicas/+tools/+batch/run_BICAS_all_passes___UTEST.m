@@ -2,10 +2,10 @@
 % matlab.unittest automatic test code for
 % bicas.tools.batch.run_BICAS_all_passes().
 %
-% NOTE: Some tests use both possible values for FN_VER_ALGO since the result
-% should be the same meaning it is easy to implement both tests. This slows down
-% the testing while only adding little value. Could change this to speed up
-% tests.
+% NOTE: Some tests use both possible values for OUTPUT_VER_ALGORITHM_ID since
+% the result should be the same meaning it is easy to implement both tests. This
+% slows down the testing while only adding little value. Could change this to
+% speed up tests.
 %
 %
 % NLV = Not Latest (Dataset) Version
@@ -21,8 +21,8 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
   %       PRO: Makes it less convenient as manual command-line command.
   %
   % PROPOSAL: Qualitatively different cases:
-  %   fnVerAlgorithm = 'ABOVE_HIGHEST_USED';
-  %   fnVerAlgorithm = 'HIGHEST_USED';
+  %   outputVerAlgorithmId = 'ABOVE_HIGHEST_USED';
+  %   outputVerAlgorithmId = 'HIGHEST_USED';
   %   Match/non-match in reference directory.
   %       In the presence/absence of V01.
   %   BICAS reads latest version of input datasets.
@@ -56,7 +56,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
   %#################
   %#################
   properties(TestParameter)
-    FN_VER_ALGO = {'HIGHEST_USED', 'ABOVE_HIGHEST_USED'}
+    OUTPUT_VER_ALGORITHM_ID = {'HIGHEST_USED', 'ABOVE_HIGHEST_USED'}
   end
 
 
@@ -144,12 +144,12 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % No ref. dir.
     % (There is no V01 input file.)
     % --> 1 output file
-    function test1_1LV_1NLV_to_1(T, FN_VER_ALGO)
+    function test1_1LV_1NLV_to_1(T, OUTPUT_VER_ALGORITHM_ID)
       irf.fs.write_empty_file(          {T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
       INPUT_2 = irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V03.cdf'});
 
       ActBpcsArray = T.test1(...
-        {T.inDir}, '', T.outDir, FN_VER_ALGO);
+        {T.inDir}, '', T.outDir, OUTPUT_VER_ALGORITHM_ID);
 
       assert(numel(ActBpcsArray) == 1)
       % Assert used correct version of input file.
@@ -165,16 +165,16 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % ABOVE_HIGHEST_USED ==> Increment version number
     %
     % NOTE: Ref. dir. file. is not V01! Still blocks output.
-    function test1_1_to_01_ref_collision(T, FN_VER_ALGO)
+    function test1_1_to_01_ref_collision(T, OUTPUT_VER_ALGORITHM_ID)
       irf.fs.write_empty_file({T.inDir,  'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});
       irf.fs.write_empty_file({T.refDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V05.cdf' });    % Not V01.
 
       ActBpcsArray = T.test1(...
-        {T.inDir}, T.refDir, T.outDir, FN_VER_ALGO);
+        {T.inDir}, T.refDir, T.outDir, OUTPUT_VER_ALGORITHM_ID);
 
       % T.disp_dir_tree(testDir)    % DEBUG
 
-      switch(FN_VER_ALGO)
+      switch(OUTPUT_VER_ALGORITHM_ID)
         case 'HIGHEST_USED'
           % NOTE: No output file.
           assert(numel(ActBpcsArray) == 0)
@@ -193,7 +193,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % --> 1x L3
     %
     % NOTE: Output directory is also input directory.
-    function test1_1_to_1_to_1(T, FN_VER_ALGO)
+    function test1_1_to_1_to_1(T, OUTPUT_VER_ALGORITHM_ID)
       function assert_actual_result()
         assert(numel(ActBpcsArray) == 2)
         irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
@@ -206,7 +206,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       % Test specifying input directory
       % ===============================
       ActBpcsArray = T.test1(...
-        {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO);
+        {T.inDir, T.outDir}, '', T.outDir, OUTPUT_VER_ALGORITHM_ID);
       assert_actual_result()
 
       % =================================================
@@ -214,7 +214,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       % =================================================
       % NOTE: Overwrites old output datasets?
       ActBpcsArray = T.test1(...
-        {INPUT_1, T.outDir}, '', T.outDir, FN_VER_ALGO);
+        {INPUT_1, T.outDir}, '', T.outDir, OUTPUT_VER_ALGORITHM_ID);
       assert_actual_result()
     end
 
@@ -230,7 +230,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % is guaranteed to run one more pass after the pass where BICAS failed.
     % This a failsafe against the code executing BPCIs in any order (within
     % a given pass).
-    function test1_2_to_1_and_crash_to_1(T, FN_VER_ALGO)
+    function test1_2_to_1_and_crash_to_1(T, OUTPUT_VER_ALGORITHM_ID)
       INPUT_FILE_1 = irf.fs.write_empty_file(...
         {T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e_20240101_V02.cdf'});  % Crashes
       irf.fs.write_empty_file(...
@@ -238,7 +238,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
       % RUN TESTED CODE
       ActBpcsArray = T.test1(...
-        {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO, ...
+        {T.inDir, T.outDir}, '', T.outDir, OUTPUT_VER_ALGORITHM_ID, ...
         {{INPUT_FILE_1}});
 
       assert(numel(ActBpcsArray) == 3)
@@ -259,12 +259,12 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % Process
     % 2x L1 --> 1x L2 --> 2x L3
     % Empty ref. dir..
-    function test2_2_to_1_to_2(T, FN_VER_ALGO)
+    function test2_2_to_1_to_2(T, OUTPUT_VER_ALGORITHM_ID)
       irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V02.cdf'});
       irf.fs.write_empty_file({T.inDir, 'solo_L1_rpw-bia-current_20240101-20240131_V02.cdf'});
 
       ActBpcsArray = T.test2(...
-        {T.inDir, T.outDir}, '', T.outDir, FN_VER_ALGO);
+        {T.inDir, T.outDir}, '', T.outDir, OUTPUT_VER_ALGORITHM_ID);
 
       assert(numel(ActBpcsArray) == 2)
       irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'))
@@ -279,16 +279,16 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % 1x L3 ref. dir. collision.
     % ==> Ref. dir. does not block since there is still one output dataset
     % which is not in the ref. dir..
-    function test2_1_to_2_ref_collision(T, FN_VER_ALGO)
+    function test2_1_to_2_ref_collision(T, OUTPUT_VER_ALGORITHM_ID)
       irf.fs.write_empty_file({T.inDir,  'solo_L2_rpw-lfr-surv-cwf-e_20240101_V01.cdf'});
       irf.fs.write_empty_file({T.refDir, 'solo_L3_rpw-bia-density_20240101_V01.cdf'});
 
       ActBpcsArray = T.test2(...
-        {T.inDir, T.outDir}, T.refDir, T.outDir, FN_VER_ALGO);
+        {T.inDir, T.outDir}, T.refDir, T.outDir, OUTPUT_VER_ALGORITHM_ID);
 
       assert(numel(ActBpcsArray) == 1)
       irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density-10-seconds_20240101_V01.cdf'))
-      switch(FN_VER_ALGO)
+      switch(OUTPUT_VER_ALGORITHM_ID)
         case 'HIGHEST_USED'
           irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density_20240101_V01.cdf'))
 
@@ -329,7 +329,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % NOTE: Test functions which use this function should be prefixed "test1".
     %
     function ActBpcsArray = test1(T, ...
-        inputPathsCa, referenceDir, outputDir, fnVerAlgorithm, varargin)
+        inputPathsCa, referenceDir, outputDir, outputVerAlgorithmId, varargin)
 
       switch(numel(varargin))
         case 0
@@ -369,7 +369,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
         BPA, BICAS_SETTINGS_ARGS_CA, ...
         BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa(:), ...
-        fnVerAlgorithm, false, [SWM_1; SWM_2], SETTINGS);
+        outputVerAlgorithmId, false, [SWM_1; SWM_2], SETTINGS);
     end
 
 
@@ -382,7 +382,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     %
     % NOTE: Test functions which use this function should be prefixed "test2".
     %
-    function ActBpcsArray = test2(T, inputPathsCa, referenceDir, outputDir, fnVerAlgorithm)
+    function ActBpcsArray = test2(T, inputPathsCa, referenceDir, outputDir, outputVerAlgorithmId)
       BICAS_SETTINGS_ARGS_CA = {};
       BICAS_CONFIG_FILE      = 'NO_CONFIG_FILE.conf';
       SETTINGS = [];
@@ -419,7 +419,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       ActBpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
         BPA, BICAS_SETTINGS_ARGS_CA, ...
         BICAS_CONFIG_FILE, outputDir, referenceDir, inputPathsCa(:), ...
-        fnVerAlgorithm, false, [SWM_1; SWM_2], SETTINGS);
+        outputVerAlgorithmId, false, [SWM_1; SWM_2], SETTINGS);
     end
 
 

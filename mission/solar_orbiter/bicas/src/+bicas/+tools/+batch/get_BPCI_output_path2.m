@@ -12,8 +12,8 @@
 %       DSMD column array containing only the latest versions (LV)
 %       of preexisting datasets which shall be used for determining output
 %       dataset version number.
-% fnVerAlgorithm
-%       String constant. Represents selected filename (FN) version algorithm.
+% outputVerAlgorithmId
+%       String constant. Represents selected output dataset version algorithm.
 %
 %
 % RETURN VALUES
@@ -26,7 +26,7 @@
 %
 function filePath = get_BPCI_output_path2(...
   BpciInputDsmdArray, PreexistingOutputLvDsmdArray, ...
-  outputDsi, fnVerAlgorithm, outputDir, outputIsCdag)
+  outputDsi, outputVerAlgorithmId, outputDir, outputIsCdag)
 
 % PROPOSAL: Test for day with leap second.
 %
@@ -57,7 +57,7 @@ function filePath = get_BPCI_output_path2(...
 assert(isa(BpciInputDsmdArray,           'solo.adm.DSMD') && iscolumn(BpciInputDsmdArray))
 assert(isa(PreexistingOutputLvDsmdArray, 'solo.adm.DSMD') && iscolumn(PreexistingOutputLvDsmdArray))
 assert(ischar(outputDsi))
-assert(ischar(fnVerAlgorithm))
+assert(ischar(outputVerAlgorithmId))
 assert(islogical(outputIsCdag))
 
 INPUT_DSI_FOR_OUTPUT_TIME = { ...
@@ -91,7 +91,7 @@ Dt2 = InputRefDsmd.dt2;
 
 versionNbr = get_output_version(...
   Dt1, Dt2, ...
-  outputDsi, fnVerAlgorithm, PreexistingOutputLvDsmdArray);
+  outputDsi, outputVerAlgorithmId, PreexistingOutputLvDsmdArray);
 
 fileName = get_BPCI_output_filename2(...
   Dt1, Dt2, ...
@@ -103,7 +103,7 @@ end
 
 
 function versionNbr = get_output_version(...
-  Dt1, Dt2, outputDsi, fnVerAlgorithm, PreexistingOutputLvDsmdArray)
+  Dt1, Dt2, outputDsi, outputVerAlgorithmId, PreexistingOutputLvDsmdArray)
 
 %=================================================================
 % Identify highest version number of pre-existing output datasets
@@ -132,7 +132,7 @@ end
 %============================================
 % Determine version number of output dataset
 %============================================
-switch(fnVerAlgorithm)
+switch(outputVerAlgorithmId)
 
   case 'ABOVE_HIGHEST_USED'
     if isnan(versionNbr)
@@ -149,7 +149,7 @@ switch(fnVerAlgorithm)
     end
 
   otherwise
-    error('Illegal fnVerAlgorithm="%s".', fnVerAlgorithm)
+    error('Illegal outputVerAlgorithmId="%s".', outputVerAlgorithmId)
 end
 end
 

@@ -157,7 +157,7 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
         testCase, ...
         bpciInputPathCa, ...        % Converted to DSMD.
         preexistingOutputLvCa, ...  % Converted to DSMD.
-        outputDsi, fnVerAlgorithm, outputDir, outputIsCdag, expFilePath)
+        outputDsi, outputVerAlgorithmId, outputDir, outputIsCdag, expFilePath)
 
       BpciInputDsmdArray           = solo.adm.paths_to_DSMD_array(bpciInputPathCa(:));
       PreexistingOutputLvDsmdArray = solo.adm.paths_to_DSMD_array(preexistingOutputLvCa(:));
@@ -165,7 +165,7 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
       % CALL TESTED CODE
       actFilePath = bicas.tools.batch.get_BPCI_output_path2(...
         BpciInputDsmdArray, PreexistingOutputLvDsmdArray, ...
-        outputDsi, fnVerAlgorithm, outputDir, outputIsCdag ...
+        outputDsi, outputVerAlgorithmId, outputDir, outputIsCdag ...
         );
 
       testCase.assertEqual(actFilePath, expFilePath)
