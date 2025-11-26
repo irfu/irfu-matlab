@@ -1,6 +1,8 @@
 %
 % SWMP for processing L2 LFR CWF to L3 OSR+DSR density, E field, and ScPot.
 %
+% NOTE: Is currently also used for experimental L2-->L3 SBMx DENSITY processing.
+%
 %
 % CODE CONVENTIONS
 % ================
@@ -59,6 +61,21 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
+  %############################
+  %############################
+  % PRIVATE INSTANCE VARIABLES
+  %############################
+  %############################
+  properties(GetAccess=private)
+    % Whether to process
+    % (true)  L2 SBMx CWF --> L3 SBMx DENSITY, or
+    % (false) L2 SURF CWF --> L3 DENSITY+EFIELD+SCPOT
+    bSbmx
+    iSbm
+  end
+
+
+
   %#########################
   %#########################
   % PUBLIC INSTANCE METHODS
@@ -68,12 +85,39 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
+    function obj = L3OsrDsrSwmProcessing(bSbmx, iSbm)
+      % ASSERTIONS
+      assert(islogical(bSbmx) & isscalar(bSbmx))
+      if bSbmx
+        assert(ismember(iSbm, [1, 2]))
+      else
+        assert(isempty(iSbm))
+      end
+
+      obj.bSbmx = bSbmx;
+      obj.iSbm  = iSbm;
+    end
+
+
+
     % OVERRIDE
     %
     function OutputDatasetsMap = production_function(obj, ...
         InputDatasetsMap, rctDir, NsoTable, Bso, L)
 
-      InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
+      % IMPLEMENTATION NOTE: Currently executes all DENSITY+EFIELD+SCPOT OSR+DSR
+      % processing also for SBMx DENSITY processing, and rejects the parts which
+      % are not needed. This is technically inefficient but should be accurate
+      % and should probably be kept until there is a good reason to change it(?).
+      %   PROPOSAL: Make
+      %             bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3()
+      %             skip DSR.
+
+      if ~obj.bSbmx
+        InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
+      else
+        InputLfrCwfCdf = InputDatasetsMap('LFR-SBMx-CWF-E_cdf');
+      end
 
       Excd = bicas.proc.L2L3.ExternalCodeImplementation();
 
@@ -88,12 +132,17 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         InputLfrCwfCdf, NsoTable, Excd, Bso, L);
 
       OutputDatasetsMap = containers.Map();
-      OutputDatasetsMap('EFIELD_OSR_cdf')  = EfieldOsrCdf;
-      OutputDatasetsMap('EFIELD_DSR_cdf')  = EfieldDsrCdf;
-      OutputDatasetsMap('SCPOT_OSR_cdf')   = ScpotOsrCdf;
-      OutputDatasetsMap('SCPOT_DSR_cdf')   = ScpotDsrCdf;
-      OutputDatasetsMap('DENSITY_OSR_cdf') = DensityOsrCdf;
-      OutputDatasetsMap('DENSITY_DSR_cdf') = DensityDsrCdf;
+      if ~obj.bSbmx
+        OutputDatasetsMap('EFIELD_OSR_cdf')   = EfieldOsrCdf;
+        OutputDatasetsMap('EFIELD_DSR_cdf')   = EfieldDsrCdf;
+        OutputDatasetsMap('SCPOT_OSR_cdf')    = ScpotOsrCdf;
+        OutputDatasetsMap('SCPOT_DSR_cdf')    = ScpotDsrCdf;
+        OutputDatasetsMap('DENSITY_OSR_cdf')  = DensityOsrCdf;
+        OutputDatasetsMap('DENSITY_DSR_cdf')  = DensityDsrCdf;
+      else
+        % NOTE: Ignoring all other return data.
+        OutputDatasetsMap('SBMx_DENSITY_cdf') = DensityOsrCdf;
+      end
     end
 
 

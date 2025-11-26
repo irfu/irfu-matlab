@@ -21,10 +21,10 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
     % combinations of settings.
     function test_combinations_of_settings(testCase)
 
-      function test(l1l2Enabled, l2l2Enabled, l2l3Enabled)
+      function test(l1l2Enabled, l2l2Enabled, l2l3Enabled, l2l3SbmxEnabled)
         % Tests (1) non-crash, (2) class of return value.
         Bso = bicas.swm.get_SWML___UTEST.get_BSO(...
-          l1l2Enabled, l2l2Enabled, l2l3Enabled);
+          l1l2Enabled, l2l2Enabled, l2l3Enabled, l2l3SbmxEnabled);
 
         Swml = bicas.swm.get_SWML(Bso);
 
@@ -36,7 +36,9 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
       for l1l2Enabled = [false, true]
         for l2l2Enabled = [false, true]
           for l2l3Enabled = [false, true]
-            test(l1l2Enabled, l2l2Enabled, l2l3Enabled)
+            for l2l3SbmxEnabled = [false, true]
+              test(l1l2Enabled, l2l2Enabled, l2l3Enabled, l2l3SbmxEnabled)
+            end
           end
         end
       end
@@ -56,12 +58,15 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
   %########################
   methods(Static, Access=private)
 
-    function Bso = get_BSO(l1l2Enabled, l2l2Enabled, l2l3Enabled)
+
+
+    function Bso = get_BSO(l1l2Enabled, l2l2Enabled, l2l3Enabled, l2l3SbmxEnabled)
       Bso = bicas.create_default_BSO();
 
-      Bso.override_value('SWM.L1-L2_ENABLED',         l1l2Enabled, 'test')
-      Bso.override_value('SWM.L2-L2_CWF-DSR_ENABLED', l2l2Enabled, 'test')
-      Bso.override_value('SWM.L2-L3_ENABLED',         l2l3Enabled, 'test')
+      Bso.override_value('SWM.L1-L2_ENABLED',              l1l2Enabled,     'test')
+      Bso.override_value('SWM.L2-L2_CWF-DSR_ENABLED',      l2l2Enabled,     'test')
+      Bso.override_value('SWM.L2-L3_ENABLED',              l2l3Enabled,     'test')
+      Bso.override_value('SWM.L2-L3_SBMx_DENSITY_ENABLED', l2l3SbmxEnabled, 'test')
 
       Bso.make_read_only()
     end
