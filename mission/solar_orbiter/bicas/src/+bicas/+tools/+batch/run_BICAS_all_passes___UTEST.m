@@ -220,6 +220,29 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
 
 
+    % Test the usage of filenames specifying timeintervals on another format
+    % than DAY (in this case, SECOND_TO_SECOND).
+    function test1_filename_time_interval(T, OUTPUT_VER_ALGORITHM_ID)
+      function assert_actual_result()
+        T.assertEqual(numel(ActBpcsArray), 2)
+        T.assertEqual(ActBpcsArray(1).Bpci.inputsArray(1).path, INPUT_2)
+
+        irf.assert.file_exists(fullfile(T.outDir, 'solo_L2_rpw-lfr-surv-cwf-e_20240102T030405-20240908T070605_V01.cdf'))
+        irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density_20240102T030405-20240908T070605_V01.cdf'))
+      end
+
+      INPUT_1 = irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240102T030405-20240908T070605_V02.cdf'});
+      INPUT_2 = irf.fs.write_empty_file({T.inDir, 'solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240102T030405-20240908T070605_V03.cdf'});
+
+      % ===============================
+      % Test specifying input directory
+      % ===============================
+      ActBpcsArray = T.test1(...
+        {T.inDir, T.outDir}, '', T.outDir, OUTPUT_VER_ALGORITHM_ID);
+      assert_actual_result()
+    end
+
+
 
     % 2x L1
     % --> 1x L2 + 1 non-zero error
