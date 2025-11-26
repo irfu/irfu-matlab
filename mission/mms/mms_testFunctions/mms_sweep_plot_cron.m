@@ -154,10 +154,10 @@ for iSc = 1:4
   c_eval('ylim(h?,[-55 555]);', 1:6);
   if (plotDAC)
     c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
-    c_eval('legend(h?,''I_{ph}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC current'');', 1:6);
+    c_eval('legend(h?,''I_{ph}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC current'', ''location'', ''northeast'');', 1:6);
     c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
   else
-    c_eval('legend(h?,''I_{ph}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}, sweep p? (only eclipse and/or maneuvers)'');', 1:6);
+    c_eval('legend(h?,''I_{ph}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}, sweep p? (only eclipse and/or maneuvers)'', ''location'', ''northeast'');', 1:6);
   end
   c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhVsTime_mms'',scStr,''_p?.png'']);', 1:4);
@@ -172,10 +172,10 @@ for iSc = 1:4
   c_eval('ylim(h?,[-55 555]);', 1:6);
   if (plotDAC)
     c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
-    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}_{,}_{knee}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC currents'');', 1:6);
+    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}_{,}_{knee}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC currents'', ''location'', ''northeast'');', 1:6);
     c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
   else
-    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}_{,}_{knee}, sweep p? (only eclipse and/or maneuvers)'');', 1:6);
+    c_eval('legend(h?,''I_{ph}_{,}_{knee}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{ph}_{,}_{knee}, sweep p? (only eclipse and/or maneuvers)'', ''location'', ''northeast'');', 1:6);
   end
   c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iPhKneeVsTime_mms'',scStr,''_p?.png'']);', 1:4);
@@ -190,10 +190,10 @@ for iSc = 1:4
   c_eval('ylim(h?,[-55 555]);', 1:6);
   if (plotDAC)
     c_eval('hold(h?, ''on'');irf_plot(h?, p?_dac);', 1:6);
-    c_eval('legend(h?,''I_{optimal bias}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{optimal bias}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC currents'');', 1:6);
+    c_eval('legend(h?,''I_{optimal bias}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{optimal bias}, sweep p? (only eclipse and/or maneuvers)'', ''Commanded DAC currents'', ''location'', ''northeast'');', 1:6);
     c_eval('set(h?.Children(2), ''LineWidth'', 2);', 1:6);
   else
-    c_eval('legend(h?,''I_{optimal bias}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{optimal bias}, sweep p? (only eclipse and/or maneuvers)'');', 1:6);
+    c_eval('legend(h?,''I_{optimal bias}, sweep p? (excl. eclipse and/or maneuvers)'', ''15 days moving median (excl. eclipse and/or maneuvers)'', ''I_{optimal bias}, sweep p? (only eclipse and/or maneuvers)'', ''location'', ''northeast'');', 1:6);
   end
   c_eval('set(h?.Children(1), ''LineWidth'', 2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/iOptimalVsTime_mms'',scStr,''_p?.png'']);', 1:4);
@@ -205,7 +205,7 @@ for iSc = 1:4
   c_eval('figure(''units'', ''normalized'', ''outerposition'', [0 0 1 1]); h?=irf_plot({Sw.p?_impedance_ts(~indEclipse?), irf.ts_scalar(Sw.p?_iPh_ts.time(~indEclipse?), imp_movm?), Sw.p?_impedance_ts(indEclipse?)},''comp'',''linestyle'',{lineStyle{?},''-black'', ''O''});', 1:6);
   c_eval('ylabel(h?,{''Impedance'',''[MOhm]''});', 1:6);
   c_eval('title(h?,[''Plot created: '',nowStr,''. MMS'',scStr,'' impedance vs time from sweep on probe ?.'']);', 1:6);
-  c_eval('legend(h?,''impedance from P? Sweep (excl. eclipse and/or maneuvers)'',''15 days moving median (excl. eclipse and/or maneuvers)'',''impedance from P? Sweep (only eclipse and/or maneuvers)'');', 1:6);
+  c_eval('legend(h?,''impedance from P? Sweep (excl. eclipse and/or maneuvers)'',''15 days moving median (excl. eclipse and/or maneuvers)'',''impedance from P? Sweep (only eclipse and/or maneuvers)'', ''location'', ''northeast'');', 1:6);
   c_eval('ylim(h?,[-5 55]);', 1:6);
   c_eval('set(h?.Children(1),''LineWidth'',2);', 1:6);
   c_eval('print(h?.Parent, ''-dpng'', [sweepFolder,''summary_plots/SDP/ImpedanceVsTime_mms'',scStr,''_p?.png'']);', 1:4);
@@ -218,7 +218,7 @@ for iSc = 1:4
     'comp', 'linestyle', lineStyle(1:4));
   ylabel(h,{'Phase, computed from DefAtt','[deg]'});
   title(h, ['Plot created: ',nowStr,'. MMS',scStr,' phase vs time.']);
-  legend(h, 'p1', 'p2', 'p3', 'p4');
+  legend(h, 'p1', 'p2', 'p3', 'p4', 'location', 'northeast');
   print(h.Parent, '-dpng', [sweepFolder,'summary_plots/SDP/PhaseVsTime_mms',scStr,'_p1234.png']);
   close all % close plots
   figure('units','normalized','outerposition', [0 0 1 1]);
@@ -226,7 +226,7 @@ for iSc = 1:4
     'comp', 'linestyle', lineStyle(5:6));
   ylabel(h,{'Phase, computed from DefAtt','[deg]'});
   title(h, ['Plot created: ',nowStr,'. MMS',scStr,' phase vs time.']);
-  legend(h, 'p5', 'p6');
+  legend(h, 'p5', 'p6', 'location', 'northeast');
   print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/PhaseVsTime_mms',scStr,'_p56.png']);
   close all % close plots
   % phase of knee vs time
@@ -235,7 +235,7 @@ for iSc = 1:4
     'comp', 'linestyle', lineStyle(1:4));
   ylabel(h,{'Phase at knee, computed from DefAtt','[deg]'});
   title(h, ['Plot created: ',nowStr,'. MMS',scStr,' phase_{knee} vs time.']);
-  legend(h, 'p1', 'p2', 'p3', 'p4');
+  legend(h, 'p1', 'p2', 'p3', 'p4', 'location', 'northeast');
   print(h.Parent, '-dpng', [sweepFolder,'summary_plots/SDP/PhaseKneeVsTime_mms',scStr,'_p1234.png']);
   close all % close plots
   figure('units','normalized','outerposition', [0 0 1 1]);
@@ -243,7 +243,7 @@ for iSc = 1:4
     'comp', 'linestyle', lineStyle(5:6));
   ylabel(h,{'Phase at knee, computed from DefAtt','[deg]'});
   title(h, ['Plot created: ',nowStr,'. MMS',scStr,' phase_{knee} vs time.']);
-  legend(h, 'p5', 'p6');
+  legend(h, 'p5', 'p6', 'location', 'northeast');
   print(h.Parent, '-dpng', [sweepFolder,'summary_plots/ADP/PhaseKneeVsTime_mms',scStr,'_p56.png']);
   close all % close plots
 
@@ -313,7 +313,7 @@ for iSc = 1:4
   %      'comp','linestyle', lineStyle(1:4));
   %    xlabel(h,{'F10.7','[s.f.u.]'});
   %    ylabel(h,{'Iph','[nA]'});
-  %    legend(h,'p1','p2','p3','p4');
+  %    legend(h,'p1','p2','p3','p4', 'location', 'northeast');
   %    title(h,['Plot created: ',nowStr,'. MMS',scStr,' I_{ph} vs F10.7 flux.']);
   %    print(fig, '-dpng', [sweepFolder,'summary_plots/iPhVsF107_mms',scStr,'.png']);
   %    close all % close plots

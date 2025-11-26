@@ -44,7 +44,7 @@ VExB_l2pre = irf_e_vxb(E2d_dsl_edp_l2pre,B_dmpa_fgm_srvy_l2,-1);
 EVixB = irf_e_vxb(Vi_dbcs_fpi,B_dmpa_fgm_srvy_l2.resample(Vi_dbcs_fpi));
 if flagResampleEtoI
   EVexB = irf_e_vxb(Ve_dbcs_fpi.resample(Vi_dbcs_fpi),...
-      B_dmpa_fgm_srvy_l2.resample(Vi_dbcs_fpi));
+    B_dmpa_fgm_srvy_l2.resample(Vi_dbcs_fpi));
 else
   EVexB = irf_e_vxb(Ve_dbcs_fpi,B_dmpa_fgm_srvy_l2.resample(Ve_dbcs_fpi));
 end

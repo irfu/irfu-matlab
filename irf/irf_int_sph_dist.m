@@ -278,8 +278,34 @@ for i = 1:nV % velocity (energy)
       dPHI_MC = [0;(rand(nMCt-1,1)-.5)*dPhi(j)];
       dTH_MC = [0;(rand(nMCt-1,1)-.5)*dTh(k)];
 
+      % This is needed to distribute the points evenly in space (more
+      % points further 'equatorward' since the slice is wider there.
+      theta_1 = TH(i,j,k) - 0.5*dTh(k);
+      theta_2 = TH(i,j,k) + 0.5*dTh(k);
+      sin_theta_1 = sin(theta_1);
+      sin_theta_2 = sin(theta_2);
+      d_sin_theta_12 = sin_theta_2 - sin_theta_1;
+
+      sintheta = sin_theta_1 + d_sin_theta_12*rand(nMCt,1);
+      THETA_ = asin(sintheta);
+
+      if 0 % Compare old and new methods to initialize the elevation angle
+        %%
+        THETA = TH(i,j,k)+dTH_MC;
+
+        hca = subplot(1,1,1);
+        histogram(hca,THETA*180/pi,10)
+        hold(hca,'on')
+        histogram(hca,THETA_*180/pi,10)
+        hold(hca,'off')
+        legend(hca,{'Original','Weighted'})
+      end
+
+      PHI_ = PHI(i,j,k)+dPHI_MC;
+      VEL_ = VEL(i,j,k)+dV_MC; % This should perhaps also be modified to account for increasing bin volume with v.
+
       % convert instrument bin to cartesian velocity
-      [vx,vy,vz] = sph2cart(PHI(i,j,k)+dPHI_MC,TH(i,j,k)+dTH_MC,VEL(i,j,k)+dV_MC);
+      [vx,vy,vz] = sph2cart(PHI_,THETA_,VEL_);
 
       % Get velocities in primed coordinate system
       vxp = [vx,vy,vz]*xphat'; % all MC points
@@ -306,7 +332,7 @@ for i = 1:nV % velocity (energy)
 
       % different procedure for 1D or polar OR cartesian
       if strcmpi(base,'pol') || projDim == 1
-        % ------ 1D AND POLAR CASE ------
+        % ------ 1D OR POLAR CASE ------
         % get indicies for all MC points
         iVg = discretize(vp,vg_edges);
         % fixes bug that exists on some systems, may influence

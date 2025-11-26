@@ -40,14 +40,14 @@ end
 naz = 16;       % azimuthal angle #
 
 % 2. set tint and TLIM(dist & startaz)
-nstartaz = find(startaz.data == 0); nstartaz = nstartaz(1);
+nstartaz = find(startaz.data == 0,1,'first');
 start_time_match = aze.time(1).epochUnix + (-dist.time(nstartaz).epochUnix);
 if start_time_match < 0.001
   irf.log('warning','start times of aze and dist match.');
 else
   error('Error: start times of aze and dist don''t match!');
 end
-nstopaz = find(startaz.data == 15); nstopaz = nstopaz(end);
+nstopaz = find(startaz.data == 15,1,'last');
 stop_time_match = (nstopaz - nstartaz + 1) - length(aze.time) * naz;
 if stop_time_match == 0
   irf.log('warning','stop times of aze and dist match.');

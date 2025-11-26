@@ -7,7 +7,7 @@
 %
 %Written by Ahmad Lalti.
 %% Define time interval and sampling rate of interest (a shock crossing)
-clearvars
+% clearvars
 Tint = irf.tint('2023-04-24T03:49:00.000000000Z','2023-04-24T03:50:40.000000000Z');
 Tu = irf.tint('2023-04-24T03:50:26.43Z','2023-04-24T03:50:35.02Z');
 smplng = 'brst';
@@ -20,8 +20,7 @@ un = split(ePDist_ol.siConversion,'>');
 ePDist_ol = ePDist_ol*str2double(un{1});
 ePDist_ol.units = un{2};
 f1c_sdc = nanmean(ePDist_ol.data,1);
-%% Sometimes it is not available, so estimate it yourself: f_1c = G*1, where
-%G is the geometric factor.
+%% Sometimes it is not available, so estimate it yourself
 
 %Load F_e and dF_e
 ePDist = mms.get_data(['PDe_fpi_' smplng '_l2'],Tint,ic);
@@ -29,15 +28,15 @@ ePDistErr = mms.get_data(['PDERRe_fpi_' smplng '_l2'],Tint,ic);
 
 ePDist = ePDist.convertto('s^3/m^6');
 ePDistErr = ePDistErr.convertto('s^3/m^6');
-%convert to counts and calculate the geometric factor (f = G*C)
-C = ePDist;
-C.data = ((ePDist.data./ePDistErr.data).^2);%from PSD to counts
-G = ePDist.data./C.data;%Geometric factor of each instrument bin
+%convert to counts and calculate the one count level (f = f_1CL*C)
+C = ePDist; % dummy PDist w/ correct times
+C.data = ((ePDist.data./ePDistErr.data).^2); % from PSD to counts
+f_1CL = ePDist.data./C.data; % 1CL of each instrument bin
 
 
 %%my estimate for the 1 count level
 ePDist_olm = ePDist;
-ePDist_olm.data = ones(size(G)).*G;
+ePDist_olm.data = ones(size(f_1CL)).*f_1CL;
 fomni = ePDist_olm.omni;
 
 %%By comparing my calculation of the 1 count level to that from the SDC for

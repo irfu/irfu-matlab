@@ -84,7 +84,7 @@ end
       errS = 'Invalid time input (outside of range)';
       irf.log('critical',errS), error(errS)
     end
-    idx = find(idx); idx = idx(end);
+    idx = find(idx, 1, 'last');
   end
   function idx = find_idx_range(t)
     errS = 'Invalid time input (outside of range)';

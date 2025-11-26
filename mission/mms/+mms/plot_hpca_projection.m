@@ -125,14 +125,14 @@ else
 end
 
 % 4. set Tint and TLIM(dist & startaz)
-nstartaz = find(startaz.data == 0); nstartaz = nstartaz(1);
+nstartaz = find(startaz.data == 0, 1, 'first');
 start_time_match = aze.time(1).epochUnix + (-dist.time(nstartaz).epochUnix);
 if start_time_match < 0.001
   irf.log('warning','start times of aze and dist match.');
 else
   error('Error: start times of aze and dist don''t match!');
 end
-nstopaz = find(startaz.data == 15); nstopaz = nstopaz(end);
+nstopaz = find(startaz.data == 15, 1, 'last');
 stop_time_match = (nstopaz - nstartaz + 1) - length(aze.time) * naz;
 if stop_time_match == 0
   irf.log('warning','stop times of aze and dist match.');
@@ -161,9 +161,8 @@ yy = sind(Po) .* sind(Az);
 zz = cosd(Po);
 % 5.3. data within tint;
 dist = dist.tlim(tint);
-itstart = find(tt.epochUnix >= tint.start.epochUnix);
-itstop = find(tt.epochUnix <= tint.stop.epochUnix);
-itstart = itstart(1);       itstop = itstop(end);
+itstart = find(tt.epochUnix >= tint.start.epochUnix, 1, 'first');
+itstop = find(tt.epochUnix <= tint.stop.epochUnix, 1, 'last');
 if or(abs(tt(itstart).epochUnix - dist.time(1).epochUnix) > 0.0001, ...
     abs(tt(itstop).epochUnix - dist.time(end).epochUnix) > 0.0001)
   error('Error: time within tint don''t match!');

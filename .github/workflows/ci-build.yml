@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       # Check-out repository
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
@@ -47,7 +47,7 @@ jobs:
           command: tests_before_release;
 
       # upload artifact (pdf report with plots, etc.)
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: test_report.pdf
           path: ciPath/report.pdf
@@ -65,7 +65,7 @@ jobs:
     if: github.ref == 'refs/heads/SOdevel'
     steps:
       # Check-out repository
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
@@ -83,7 +83,7 @@ jobs:
           command: tests_before_release_BICAS;
 
       # Upload artifact (pdf report with plots, etc.)
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: test_report_BICAS.pdf
           path: ciPath/report_BICAS.pdf
