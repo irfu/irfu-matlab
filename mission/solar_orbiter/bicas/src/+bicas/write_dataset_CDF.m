@@ -194,10 +194,10 @@ end
 %==================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
 L.log('info', 'Converting PDV to dataobj (CDF data structure)')
-ZvsLog  = struct();   % ZVs for logging.
-pdFieldNameList = fieldnames(ZvsSubset);
-for iPdFieldName = 1:length(pdFieldNameList)
-  zvName    = pdFieldNameList{iPdFieldName};
+ZvsLog        = struct();   % ZVs for logging.
+pdFieldNameCa = fieldnames(ZvsSubset);
+for iPdFieldName = 1:length(pdFieldNameCa)
+  zvName    = pdFieldNameCa{iPdFieldName};
   zvValuePd = ZvsSubset.(zvName);
 
   % HACK: Normalize for the purpose of (old) ZV logging

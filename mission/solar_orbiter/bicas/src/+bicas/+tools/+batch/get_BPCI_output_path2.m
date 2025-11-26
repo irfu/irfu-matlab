@@ -86,15 +86,15 @@ assert(isscalar(iRefDsmd), ...
   'Can not determine exactly one input DSI to use for determining output filename time interval.')
 InputRefDsmd = BpciInputDsmdArray(iRefDsmd);
 
-dt1 = InputRefDsmd.dt1;
-dt2 = InputRefDsmd.dt2;
+Dt1 = InputRefDsmd.dt1;
+Dt2 = InputRefDsmd.dt2;
 
 versionNbr = get_output_version(...
-  dt1, dt2, ...
+  Dt1, Dt2, ...
   outputDsi, fnVerAlgorithm, PreexistingOutputLvDsmdArray);
 
 fileName = get_BPCI_output_filename2(...
-  dt1, dt2, ...
+  Dt1, Dt2, ...
   outputDsi, outputIsCdag, versionNbr);
 
 filePath = fullfile(outputDir, fileName);
@@ -103,7 +103,7 @@ end
 
 
 function versionNbr = get_output_version(...
-  dt1, dt2, outputDsi, fnVerAlgorithm, PreexistingOutputLvDsmdArray)
+  Dt1, Dt2, outputDsi, fnVerAlgorithm, PreexistingOutputLvDsmdArray)
 
 %=================================================================
 % Identify highest version number of pre-existing output datasets
@@ -113,8 +113,8 @@ PreexistingOutputLvDsmdArray = solo.adm.filter_DSMD_DATASET_ID(...
 
 if ~isempty(PreexistingOutputLvDsmdArray)
   % NOTE: Command only works for non-empty array.
-  bKeep1 = ([PreexistingOutputLvDsmdArray.dt1] == dt1);
-  bKeep2 = ([PreexistingOutputLvDsmdArray.dt2] == dt2);
+  bKeep1 = ([PreexistingOutputLvDsmdArray.dt1] == Dt1);
+  bKeep2 = ([PreexistingOutputLvDsmdArray.dt2] == Dt2);
   bKeep = bKeep1 & bKeep2;
 else
   bKeep = zeros(0, 1);

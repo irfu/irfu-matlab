@@ -32,11 +32,11 @@ swmL1L2Enabled = Bso.get_fv('SWM.L1-L2_ENABLED');
 SwmArray = get_SWMs_L1_L1R_to_L2(swmL1L2Enabled);
 
 if Bso.get_fv('SWM.L2-L2_CWF-DSR_ENABLED')
-  SwmArray = [SwmArray; get_SWMs_L2_to_L2()];
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L2();
 end
 
 if Bso.get_fv('SWM.L2-L3_ENABLED')
-  SwmArray = [SwmArray; get_SWMs_L2_to_l3()];
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L3();
 end
 
 
@@ -44,6 +44,10 @@ end
 Swml = bicas.swm.SoftwareModeList(SwmArray);
 
 end
+
+
+
+
 
 
 
@@ -84,9 +88,9 @@ L1_INPUT_DATA = struct( ...
   'optionalInputDashE', '', ...
   'swmNameSuffix',      '_L1', ...
   'swmPurposeAmendm',   ' UNOFFICIAL wrt. ROC.');
-INPUT_LEVEL_DATA = L1R_INPUT_DATA;
+INPUT_LEVEL_DATA_AR = L1R_INPUT_DATA;
 if swmL1L2Enabled
-  INPUT_LEVEL_DATA(end+1, :) = L1_INPUT_DATA;
+  INPUT_LEVEL_DATA_AR(end+1, 1) = L1_INPUT_DATA;
 end
 
 
@@ -94,10 +98,10 @@ end
 % Define function which replaces specified substrings depending on input level.
 % "strmod" = string modify, "g"=global (applies to all s/w modes).
 strmodg = @(s, iInputLevel) bicas.utils.strrep_many(s, ...
-  '<InLvl>',              INPUT_LEVEL_DATA(iInputLevel).level, ...
-  '<I-E>',                INPUT_LEVEL_DATA(iInputLevel).optionalInputDashE, ...
-  '<SWM name suffix>',    INPUT_LEVEL_DATA(iInputLevel).swmNameSuffix, ...
-  '<SWM purpose amendm>', INPUT_LEVEL_DATA(iInputLevel).swmPurposeAmendm);
+  '<InLvl>',              INPUT_LEVEL_DATA_AR(iInputLevel).level, ...
+  '<I-E>',                INPUT_LEVEL_DATA_AR(iInputLevel).optionalInputDashE, ...
+  '<SWM name suffix>',    INPUT_LEVEL_DATA_AR(iInputLevel).swmNameSuffix, ...
+  '<SWM purpose amendm>', INPUT_LEVEL_DATA_AR(iInputLevel).swmPurposeAmendm);
 
 
 
@@ -134,7 +138,7 @@ SwmArray = bicas.swm.SoftwareMode.empty(0, 1);
 %==================================================
 % Iterate over [L1R] (one component), or [L1, L1R]
 %==================================================
-for iInputLevel = 1:numel(INPUT_LEVEL_DATA)
+for iInputLevel = 1:numel(INPUT_LEVEL_DATA_AR)
 
   %==================================================
   % Iterate over the "fundamental" **LFR** s/w modes
@@ -187,7 +191,7 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA)
   for iSwm = 1:numel(TDS_SWM_DATA)
 
     if strcmp(TDS_SWM_DATA(iSwm).CWF_RSWF, 'RSWF') ...
-        && strcmp(INPUT_LEVEL_DATA(iInputLevel).level, 'L1')
+        && strcmp(INPUT_LEVEL_DATA_AR(iInputLevel).level, 'L1')
       % CASE: TDS RSWF
       % Exclude SWM since BICAS can not currently (2023-10-09) read
       % TDS RSWF L1 datasets!
@@ -217,9 +221,10 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA)
 
 
 
+    TdsSwmp = bicas.proc.L1L2.TdsSwmProcessing(...
+      SciInputDataset.dsi, SciOutputDataset.dsi);
     SwmArray(end+1, :) = bicas.swm.SoftwareMode(...
-      bicas.proc.L1L2.TdsSwmProcessing(...
-      SciInputDataset.dsi, SciOutputDataset.dsi), ...
+      TdsSwmp, ...
       strmod('TDS-LFM-<CWF/RSWF>-E<SWM name suffix>'), ...
       strmod(...
       ['Generate <CWF/RSWF> electric field L2 data', ...
@@ -231,6 +236,10 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA)
 end    % for iInputLevel = 1:numel(inputDatasetLevelCa)
 
 end    % get_SWMs_L1_L1R_to_L2
+
+
+
+
 
 
 
@@ -267,20 +276,26 @@ end    % get_SWMs_L2_to_L2
 
 
 
-function SwmArray = get_SWMs_L2_to_l3()
+
+
+
+
+function SwmArray = get_SWMs_L2_to_L3()
 
 L3_EFIELD_SCPOT_SKT_VERSION = '07';
 L3_DENSITY_SKT_VERSION      = '08';
 
-
-
+%=======
+% INPUT
+%=======
 SciInputDataset = bicas.swm.InputDataset(...
   'in_sci', ...
   'SOLO_L2_RPW-LFR-SURV-CWF-E', ...
   'LFR-SURV-CWF-E_cdf');
 
-
-
+%================
+% OUTPUT: 3x OSR
+%================
 EfieldOutputDataset = bicas.swm.OutputDataset(...
   'out_efield', ...
   'SOLO_L3_RPW-BIA-EFIELD', ...
@@ -305,6 +320,9 @@ DensityOutputDataset = bicas.swm.OutputDataset(...
   'RPW BIAS L3 science plasma density data, time-tagged', ...
   L3_DENSITY_SKT_VERSION);
 
+%================
+% OUTPUT: 3x DSR
+%================
 EfieldDsrOutputDataset = bicas.swm.OutputDataset(...
   'out_efield_dsr', ...
   'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS', ...
@@ -334,11 +352,12 @@ DensityDsrOutputDataset = bicas.swm.OutputDataset(...
 
 
 
-% NOTE: Only creates one SWM
-% NOTE: Function handle: Arguments rctDir, NsoTable are not
-% used, but are needed for the interface.
+%=====
+% SWM
+%=====
+% NOTE: Only creates one SWM for 1x L2 CDF --> 2x3 L3 CDFs.
 SwmArray = bicas.swm.SoftwareMode(...
-  bicas.proc.L2L3.L3OsrDsrSwmProcessing, ...
+  bicas.proc.L2L3.L3OsrDsrSwmProcessing(), ...
   'BIA-EFIELD-SCPOT-DENSITY', ...
   ['Generate L3 electric field vector, spacecraft', ...
   ' potential, and density data', ...
@@ -352,4 +371,4 @@ SwmArray = bicas.swm.SoftwareMode(...
   DensityOutputDataset, ...
   DensityDsrOutputDataset]);
 
-end    % get_SWMs_L2_to_l3
+end    % get_SWMs_L2_to_L3

@@ -27,8 +27,8 @@ BpciArray = bicas.tools.batch.BicasProcessingCallInfo.empty(0,1);
 for iSwm = 1:numel(SwmArray)
 
   Swm          = SwmArray(iSwm);
-  dsiList      = {Swm.inputsList.dsi};
-  dsmdGroupsCa = solo.adm.find_overlapping_DSMD_groups(DsmdArray, dsiList);
+  dsiCa        = {Swm.inputsList.dsi};
+  dsmdGroupsCa = solo.adm.find_overlapping_DSMD_groups(DsmdArray, dsiCa);
 
   nGroups = numel(dsmdGroupsCa);
   for iGrp = 1:nGroups

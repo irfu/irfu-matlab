@@ -189,7 +189,7 @@ while true
   tpdFilenamesCa = get_BPCSs_output_filenames(BpcsAllArray);
 
   iPass = iPass + 1;
-end
+end    % while true
 
 end    % run_BICAS_all_passes()
 

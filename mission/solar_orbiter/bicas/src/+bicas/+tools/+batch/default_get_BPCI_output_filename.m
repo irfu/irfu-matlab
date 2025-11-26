@@ -41,6 +41,10 @@ function outputFilename = default_get_BPCI_output_filename(...
 % PROPOSAL: INPUT_DSI_FOR_OUTPUT_TIME --> argument
 %   PROPOSAL: Only use first matching DSI in INPUT_DSI_FOR_OUTPUT_TIME.
 %       PRO: More general. Less constraint on SWMs.
+% PROPOSAL: Argument for which input DSI should be used for determining output
+%           dataset time interval.
+%   PRO: Can abolish hardcoded list.
+%   PROPOSAL: SWMs should contain DSI to use.
 %
 % PROPOSAL: Use shared constants for setting DSI lists.
 %

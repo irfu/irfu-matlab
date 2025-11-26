@@ -136,7 +136,9 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     end
 
 
-
+    % Test if it can figure out which is the latest version input file, and only
+    % use it and not the other input file.
+    %
     % 1 LV  input file
     % 1 NLV input file
     % No ref. dir.
@@ -210,6 +212,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       % =================================================
       % Test specifying explicit (relevant) input dataset
       % =================================================
+      % NOTE: Overwrites old output datasets?
       ActBpcsArray = T.test1(...
         {INPUT_1, T.outDir}, '', T.outDir, FN_VER_ALGO);
       assert_actual_result()
@@ -291,6 +294,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
 
         case 'ABOVE_HIGHEST_USED'
           irf.assert.file_exists(fullfile(T.outDir, 'solo_L3_rpw-bia-density_20240101_V02.cdf'))
+
         otherwise
           error('')
       end
@@ -322,8 +326,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     % NOTE: The function does not verify the result. The caller has to create
     %       input files and verify output files and BPCSs.
     %
-    % NOTE: Test functions which use this function should be prefixed
-    % "test1".
+    % NOTE: Test functions which use this function should be prefixed "test1".
     %
     function ActBpcsArray = test1(T, ...
         inputPathsCa, referenceDir, outputDir, fnVerAlgorithm, varargin)
@@ -377,8 +380,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
     %   2x L1 in --> 1x L2 out
     %   1x L2 in --> 2x L3 out
     %
-    % NOTE: Test functions which use this function should be prefixed
-    % "test2".
+    % NOTE: Test functions which use this function should be prefixed "test2".
     %
     function ActBpcsArray = test2(T, inputPathsCa, referenceDir, outputDir, fnVerAlgorithm)
       BICAS_SETTINGS_ARGS_CA = {};

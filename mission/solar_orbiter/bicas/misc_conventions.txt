@@ -503,6 +503,11 @@ SBDA
     Sweep BDM Detection Algorithm. BDM=4 is interpreted as equivalent to
     sweeping.
     See SCDA.
+SBM1, SBM2
+    Selective Burst Mode 1/2. Type of LFR CWF data (at least for the purpose of
+    BICAS).
+SBMx
+    SBM1/SBM2 combined.
 SCDA
     Sweep Current Detection Algorithm.
     A sliding window autodetection algorithm is used for detecting sweeps from

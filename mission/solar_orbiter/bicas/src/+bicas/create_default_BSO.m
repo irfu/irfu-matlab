@@ -184,9 +184,9 @@ S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
 % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
 % opposed to L1 current datasets.
 S.define_setting('SWM.L1-L2_ENABLED',         false);
-% Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
+% Enable s/w mode for processing L2-->L2: LFR-CWF-E-->LFR-CWF-E-1-SECONDS.
 S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED', false);
-% Enable s/w mode for processing L2-->L3 datasets.
+% Enable s/w mode for processing L2-->L3 datasets: DENSITY, EFIELD, SCPOT.
 S.define_setting('SWM.L2-L3_ENABLED',         false);
 
 
