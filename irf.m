@@ -130,6 +130,7 @@ switch lower(action)
       ['mission' filesep 'thor'],...
       ['mission' filesep 'mms'],...
       ['mission' filesep 'mms' filesep 'mms_testFunctions'],...
+      ['mission' filesep 'bepicolombo'],...
       };
     strPath = {contribDirectories{:},irfDirectories{:}}; %#ok<CCAT>
     if ~any(strfind(path, irf('path'))) % irfu-matlab root folder
@@ -342,17 +343,18 @@ switch lower(action)
     % NASA's SPDF cdf patch use compiled mex files. For irfu-matlab only
     % Linux, Mac and Windows (all of which 64 bit) OS are included.
     switch(computer)
-      case({'GLNXA64','PCWIN64','MACI64'})
+      case({'GLNXA64','PCWIN64','MACI64','MACA64'})
         % OK, system is supported.
         disp('Operating system is OK');
         if(nargout), out=true; end
         datastore('irfu_matlab','okCheckOS',true);
       case('PCWIN')
         % Untested, no guarantee it will work.
-        disp('Operating system, Windows 32 bit, is not fully tested with IRFU-MATLAB.');
-        disp('Recommended OS are: Linux, Mac and Windows (all 64 bit).');
-        if(nargout), out=true; end
-        datastore('irfu_matlab','okCheckOS',true);
+	% Note: From Windows 11 it's 64bit only, so if reaching here it is likely older EOL version of Windows
+        disp('Operating system, Windows 32 bit, is not tested nor supported by IRFU-MATLAB.');
+        disp('Recommended OS are: Linux, Mac and Windows (all 64 bit only).');
+        if(nargout), out=false; end
+        datastore('irfu_matlab','okCheckOS', false);
       otherwise
         disp('Currently only compiled SPDF* mex files for the Linux, Windows and Mac operating systems (all 64bit) are included.');
         disp('If running on other system, please contact IRFU for help.');
@@ -364,13 +366,25 @@ switch lower(action)
     % Issue warning if running too old Matlab. This should be incremented
     % when irfu-matlab relies on newer Matlab functions not found in older
     % versions of Matlab.
+    % As of 2025-10, also issue a warning if running "too new" Matlab as
+    % R2025a changed how it treats ":" when parsing non scalar values.
     if(verLessThan('matlab','8.4'))
       warning(['IRFU-Matlab relies on code introduced in Matlab R2014b, ',...
         'please look into upgrading your Matlab installation or contacting IRFU for help.']);
     else
-      disp('Matlab version is OK');
-      if(nargout), out=true; end
-      datastore('irfu_matlab','okMatlab',true);
+      if(verLessThan('matlab', '25.1')) %#ok<VERLESSMATLAB>
+        % ok, known good version
+        disp('Matlab version is OK');
+        if(nargout), out=true; end
+        datastore('irfu_matlab','okMatlab',true);
+      else
+        % very new (R2025a or later) may have problems,
+        % similar to https://github.com/irfu/irfu-matlab/issues/169
+        disp('Matlab version is probably OK, but may encounter some incompatibilty issues')
+        disp(' if encountering any problem please report them at https://github.com/irfu/irfu-matlab/issues')
+        if(nargout), out=true; end
+        datastore('irfu_matlab','okMatlab',true);
+      end
     end
 
   case 'path'

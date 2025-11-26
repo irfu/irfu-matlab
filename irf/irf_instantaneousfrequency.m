@@ -52,7 +52,7 @@ while haveoptions
       end
     case 'avmethod'
       if ischar(args{2})
-          avmethod = args{2};
+        avmethod = args{2};
       end
     otherwise
       irf.log('warning',['Unknown flag: ' args{1}]);

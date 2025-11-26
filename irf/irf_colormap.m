@@ -10,6 +10,13 @@ function cmap1=irf_colormap(varargin)
 %       'bluered'
 %       'waterfall' - fancy-schmancy
 %       'batlow' - scientific colour map, (v8.0.1, DOI: 10.5281/zenodo.8409685)
+%       'bluered2'
+%
+%       OTHERWISE: if colormap_name is not listed, irf_colormap will try to
+%                  use slanCM('colormap_name') from contrib/matlab_central/
+%                  e.g. irf_colormap('rainbow')
+%                  There are 200 colormaps to choose from, see:
+%                  https://se.mathworks.com/matlabcentral/fileexchange/120088-200-colormap
 %
 % IRF_COLORMAP(AX,colormap_name) - apply colormap to axis AX
 
@@ -33,6 +40,8 @@ colormap_name=args{1};
 load caa/cmap.mat % default map
 if nargs > 0
   switch lower(colormap_name)
+    case 'standard'
+      % use default cmap
     case 'poynting'
       it=0:.02:1;it=it(:);
       cmap=[ [0*it flipud(it) it];[it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
@@ -616,6 +625,22 @@ if nargs > 0
       % add 2 extra white rows to make '0' to make it more visible
       [C,IA,IB] = intersect(colors,[1 1 1],'rows');
       cmap = [colors(1:(IA-1),:); C; C; C; colors((IA+1):end,:)];
+    case 'bluered2'
+      rr2 = interp1([1 32 64 96 128 160 192 224 256], ...
+        [0.000 0.000 0.143 0.495 0.875 0.925 0.771 0.588 0.416],1:256);
+      gg2 = interp1([1 32 64 96 128 160 192 224 256], ...
+        [0.308 0.408 0.588 0.817 0.875 0.488 0.191 0.077 0.077],1:256);
+      bb2 = interp1([1 32 64 96 128 160 192 224 256], ...
+        [0.511 0.670 0.828 0.925 0.875 0.408 0.191 0.182 0.182],1:256);
+      cmap = [rr2' gg2' bb2'];
+    otherwise % Should stay at the end of cases, can't match wildcards in
+      % matlab? e.g. 'slancm*' case does not work.
+      try
+        cmap = slanCM(colormap_name);
+      catch
+        irf.log('warning',['Colormap "', colormap_name, '" not found. Using default cmap.']);
+      end
+
   end
 end
 

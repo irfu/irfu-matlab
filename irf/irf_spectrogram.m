@@ -47,7 +47,7 @@ if isempty(h)
   fig = get(groot,'CurrentFigure'); h = get(fig,'Children');
   ii_ok = false(1,length(h));
   for ii = 1:length(h)
-      if strcmp(get(h(ii),'type'),'axes'), ii_ok (ii) = true; end
+    if strcmp(get(h(ii),'type'),'axes'), ii_ok (ii) = true; end
   end
   h = h(ii_ok);
 end

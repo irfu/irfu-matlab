@@ -27,7 +27,7 @@ function out = mms_region_times(varargin)
 
 % Check the input
 if nargin == 0
-  help irf_region_intervals;
+  help mms_region_times;
   return;
 end
 
@@ -183,10 +183,10 @@ idxSW2 = Vifpi.x.data < SWVx;
 idxSW3 = B.abs.data < SWB;
 idxSW4 = Tifpi.data < SWTi;
 idxSW5 = Tefpi.data < SWTe;
-idxSW = idxSW1+idxSW2+idxSW3+idxSW4+idxSW5;
+idxSW = idxSW1+idxSW2+idxSW3+idxSW4+idxSW5; % Treat all "indicators" of SW eqally
 idxSWint = idxSW;
 idxSWint = irf.ts_scalar(EpochS,idxSWint);
-idxSW = idxSW > 3.5;
+idxSW = idxSW > 3.5; % When do 3.5 or more "indicators" of SW actually indicate SW
 idxSWf = idxSW;
 idxchange = diff(idxSW);
 idxcpos = find(abs(idxchange) > 0.5);

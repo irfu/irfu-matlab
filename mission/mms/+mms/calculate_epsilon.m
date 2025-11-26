@@ -79,10 +79,8 @@ while options
     case 'energyrange'
       if numel(args)>1 && isnumeric(args{2})
         Eminmax = args{2};
-        starte = find(energy(1,:) > Eminmax(1));
-        starte = starte(1);
-        ende = find(energy(1,:) < Eminmax(2));
-        ende = ende(end);
+        starte = find(energy(1,:) > Eminmax(1), 1, 'first');
+        ende = find(energy(1,:) < Eminmax(2), 1, 'last');
         intenergies = starte:ende;
         irf.log('notice','Using partial energy range');
       end

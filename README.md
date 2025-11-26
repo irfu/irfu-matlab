@@ -1,10 +1,12 @@
-# irfu-matlab [![ci-build](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml/badge.svg)](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14525047.svg)](https://doi.org/10.5281/zenodo.14525047)
+# irfu-matlab [![ci-build](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml/badge.svg)](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11550090.svg)](https://doi.org/10.5281/zenodo.11550090)
 
 ## Acknowledgment
 
 Please use the following to acknowledge use of IRFU-Matlab in your publications:
 
 > Data analysis was performed using the IRFU-Matlab analysis package available at https://github.com/irfu/irfu-matlab
+
+Our released versions of IRFU-Matlab are also preserved at Zenodo, where the latest version is found via DOI: [10.5281/zenodo.11550090](https://zenodo.org/doi/10.5281/zenodo.11550090).
 
 ## Examples
 
