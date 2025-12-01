@@ -1307,7 +1307,7 @@ end
             energy_suf_top = [dsetName(1:5), 'epd_feeps_' Vr.tmmode '_' Vr.lev '_', species, '_top_energy_centroid_sensorid_', num2str(sensors(iSen))];
             energy_top_tmp = mms.db_get_variable(dsetName, energy_suf_top, Tint);
             if iSen == 1
-              
+
               if any(any(energy_top_tmp.data<0))%ignore negative values
                   energies = zeros(size(energy_top_tmp.data));
               else
@@ -1380,7 +1380,7 @@ end
               bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
             end
           end
-          
+
           %Ignore negative values and fill values
           top.data(top.data<0) = nan;
           bot.data(bot.data<0) = nan;
