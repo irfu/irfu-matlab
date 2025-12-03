@@ -10,22 +10,22 @@
         Manually written Non-Standard Operations (NSO) table used by BICAS (SolO/RPW/BIAS calibration and data processing). Contains "NSO events", i.e. time intervals, each one labelled with a standardized string (<B>QRCID</B> in the source code; <B>rcsNsoId</B> in this file) that BICAS can interpret. BICAS uses this list to modify how datasets are processed, e.g. by setting zVariables QUALITY_FLAG and/or L2_QUALITY_BITMASK, replacing data with fill values, and/or omitting data from L3 etc.
     <H2>Notes</H2>
         <P>
-            2020-11-12, Erik P G Johansson: I have not managed to manually find any thruster firings for time period 2020-02-12 to 2020-03-29.
+            2020-11-12, Erik P G Johansson (IRF Uppsala): I have not managed to manually find any thruster firings for time period 2020-02-12 to 2020-03-29.
         </P>
         <P>
-            2024-09-12, Erik P G Johansson: Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06. After the creation of this form of labeling, functionality for automatically detecting saturation has been added to BICAS. This functionality does however not distinguish between full and partial saturation. One should therefore not need to manually add more saturated time intervals than the ones already labelled.
+            2024-09-12, Erik P G Johansson (IRF Uppsala): Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06. After the creation of this form of labeling, functionality for automatically detecting saturation has been added to BICAS. This functionality does however not distinguish between full and partial saturation. One should therefore not need to manually add more saturated time intervals than the ones already labelled.
         </P>
         <P>
-            2025-12-03, Erik P G Johansson: The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2025-12-01 (inclusive). It only contains manually identified thuster firings.
+            2025-12-03, Erik P G Johansson (IRF Uppsala): The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2025-12-01 (inclusive). It only contains manually identified thuster firings.
         </P>
         <P>
-            2024-01-31, Erik P G Johansson: BICAS detects saturation itself since v8.0.0 and labels it as "full saturation". One should therefore not need to add more FULL_SATURATION entries to this list. FULL_SATURATION entries in this table are additionally treated by BICAS as "full saturation".
+            2024-01-31, Erik P G Johansson (IRF Uppsala): BICAS detects saturation itself since v8.0.0 and labels it as "full saturation". One should therefore not need to add more FULL_SATURATION entries to this list. FULL_SATURATION entries in this table are additionally treated by BICAS as "full saturation".
         </P>
         <P>
-            2025-07-08, Erik P G Johansson: The saturation quality bits have been overhauled and string constants "FULL_SATURATION" and "PARTIAL_SATURATION" should no longer have any effect, unless BICAS is run a "backwards-compatibility mode". These strings constants are tolerated until they are phased out.
+            2025-07-08, Erik P G Johansson (IRF Uppsala): The saturation quality bits have been overhauled and string constants "FULL_SATURATION" and "PARTIAL_SATURATION" should no longer have any effect, unless BICAS is run a "backwards-compatibility mode". These strings constants are tolerated until they are phased out.
         </P>
         <P>
-            2025-10-02, Erik P G Johansson: Renaming rcsNsoId/QRCID "V3_UNINTENTIONALLY_FLOATING" to "ANT3_UNINTENTIONALLY_FLOATING" for consistency.
+            2025-10-02, Erik P G Johansson (IRF Uppsala): Renaming rcsNsoId/QRCID "V3_UNINTENTIONALLY_FLOATING" to "ANT3_UNINTENTIONALLY_FLOATING" for consistency.
         </P>
         <P>
             Note that since data gaps may be filled in after that a time interval has been manually searched for thruster firings etc., this list still might not label all such thruster firings (etc.) in the time period(s) that has/have been stated to be searched.
@@ -60,13 +60,13 @@
 <td>2020-04-01T21:59:34</td>
 <td> 2020-04-01T22:05:17</td>
 <td>THRUSTER_FIRING</td>
-<td>Only one spike so unsure, but seems plausible. Same time as day before. /EJ</td>
+<td>Only one spike so unsure, but seems plausible. Same time as day before. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2020-04-03T21:59:34</td>
 <td> 2020-04-03T22:05:14</td>
 <td>THRUSTER_FIRING</td>
-<td>Only one spike. /EJ</td>
+<td>Only one spike. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2020-04-08T21:59:30</td>
@@ -328,7 +328,7 @@
 <td>2020-07-05T09:10:00</td>
 <td> 2020-07-05T14:16:57</td>
 <td>PARTIAL_SATURATION</td>
-<td>Unsure of beginning of time interval. /EJ</td>
+<td>Unsure of beginning of time interval. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
 
 
@@ -358,13 +358,13 @@
 <td>2020-07-14T00:00:00.50</td>
 <td> 2020-07-20T07:39:41.54</td>
 <td>FULL_SATURATION</td>
-<td>Due to bad bias current commanding. /EJ</td>
+<td>Due to bad bias current commanding. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2020-07-24T09:35:20</td>
 <td> 2020-07-27T12:00:00</td>
 <td>FULL_SATURATION</td>
-<td>Due to bad bias current commanding. /EJ</td>
+<td>Due to bad bias current commanding. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
 
 
@@ -394,8 +394,7 @@
 <td>2020-08-06T00:00:00</td>
 <td> 2020-08-09T02:35:00</td>
 <td>PARTIAL_SATURATION</td>
-<td>Beginning of time period is set quite arbitrarily. /EJ
-                Is directly followed by FULL_SATURATION.</td>
+<td>Beginning of time period is set quite arbitrarily. Is directly followed by FULL_SATURATION. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
 
 
@@ -428,7 +427,7 @@
 <td>2020-08-23T22:55:13</td>
 <td> 2020-08-23T23:00:56</td>
 <td>THRUSTER_FIRING</td>
-<td>One spike. Not sure./EJ</td>
+<td>One spike. Not sure. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2020-08-29T13:04:18</td>
@@ -458,7 +457,7 @@
 <td>2020-09-19T13:04:17</td>
 <td> 2020-09-19T13:16:23</td>
 <td>THRUSTER_FIRING</td>
-<td>14 spikes. Therefore long time interval. /EJ</td>
+<td>14 spikes. Therefore long time interval. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2020-09-21T01:04:01</td>
@@ -603,7 +602,7 @@
 <td>2020-11-13T00:59:39</td>
 <td> 2020-11-13T01:08:09</td>
 <td>THRUSTER_FIRING</td>
-<td>Not as visually obvious that it is a thruster firing as other firings but it can be found in the SOLO HK. /EJ</td>
+<td>Not as visually obvious that it is a thruster firing as other firings but it can be found in the SOLO HK. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2020-11-16T01:04:20</td>
@@ -669,7 +668,7 @@
 <td>2021-01-02T05:58:28</td>
 <td> 2021-01-02T06:07:51</td>
 <td>THRUSTER_FIRING</td>
-<td>Unusually many thruster firings. /EJ</td>
+<td>Unusually many thruster firings. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-01-07T13:59:27</td>
@@ -693,13 +692,13 @@
 <td>2021-01-24T22:15:05</td>
 <td> 2021-01-24T22:35:34</td>
 <td>THRUSTER_FIRING</td>
-<td>Unusually many thruster firings. /EJ</td>
+<td>Unusually many thruster firings. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-01-28T21:56:32</td>
 <td> 2021-01-28T22:14:53</td>
 <td>THRUSTER_FIRING</td>
-<td>Unusually many thruster firings. /EJ</td>
+<td>Unusually many thruster firings. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-02-01T01:04:13</td>
@@ -735,7 +734,7 @@
 <td>2021-02-20T13:04:20</td>
 <td> 2021-02-20T13:19:23</td>
 <td>THRUSTER_FIRING</td>
-<td>Look a bit different than normally, but still unambiguous. /EJ</td>
+<td>Look a bit different than normally, but still unambiguous. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-02-22T01:04:30</td>
@@ -825,7 +824,7 @@
 <td>2021-05-03T01:04:32</td>
 <td> 2021-05-03T01:13:30</td>
 <td>THRUSTER_FIRING</td>
-<td>Different shape than normal (in PSP; bumps more distinctly negative instead of positive), but still unambiguous. /EJ</td>
+<td>Different shape than normal (in PSP; bumps more distinctly negative instead of positive), but still unambiguous. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-05-10T01:03:51</td>
@@ -873,7 +872,7 @@
 <td>2021-06-01T06:27:42</td>
 <td> 2021-06-01T07:03:23</td>
 <td>THRUSTER_FIRING</td>
-<td>Not entirely sure, but likely thruster firing during full saturation. /EJ</td>
+<td>Not entirely sure, but likely thruster firing during full saturation. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
 
 
@@ -933,13 +932,13 @@
 <td>2021-07-12T09:49:24</td>
 <td> 2021-07-12T09:58:17</td>
 <td>THRUSTER_FIRING</td>
-<td>Appears to be a single thruster firing. Therefore somewhat unclear if correct labelling. /EJ</td>
+<td>Appears to be a single thruster firing. Therefore somewhat unclear if correct labelling. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-07-12T15:39:13</td>
 <td> 2021-07-12T15:50:01</td>
 <td>THRUSTER_FIRING</td>
-<td>Second thruster firing on same day (unusual). /EJ</td>
+<td>Second thruster firing on same day (unusual). /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-07-18T23:04:31</td>
@@ -963,7 +962,7 @@
 <td>2021-08-02T06:59:13</td>
 <td> 2021-08-02T07:08:07</td>
 <td>THRUSTER_FIRING</td>
-<td>Only five s/c potential peaks. Looks irregular but still looks much like a thruster firing. /EJ</td>
+<td>Only five s/c potential peaks. Looks irregular but still looks much like a thruster firing. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-08-05T22:04:20</td>
@@ -975,13 +974,13 @@
 <td>2021-08-09T02:00:30</td>
 <td> 2021-08-09T02:12:00</td>
 <td>THRUSTER_FIRING</td>
-<td>Different looking. Only two s/c potential peaks, 0.8 V, and longer-than-usual return to normal. /EJ</td>
+<td>Different looking. Only two s/c potential peaks, 0.8 V, and longer-than-usual return to normal. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-08-09T06:50:27</td>
 <td> 2021-08-09T06:57:53</td>
 <td>THRUSTER_FIRING</td>
-<td>Unsure if thruster firing. Just one peak, 0.7 V. Also unusual to have second thruster firing on the same day. /EJ</td>
+<td>Unsure if thruster firing. Just one peak, 0.7 V. Also unusual to have second thruster firing on the same day. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-08-12T19:24:15</td>
@@ -999,7 +998,7 @@
 <td>2021-08-13T16:11:17</td>
 <td> 2021-08-13T16:24:56</td>
 <td>THRUSTER_FIRING</td>
-<td>Contains some kind of repetition with expected period, but with overlaps between cycles(!). Very different. Also second thruster firing this day. /EJ</td>
+<td>Contains some kind of repetition with expected period, but with overlaps between cycles(!). Very different. Also second thruster firing this day. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-08-19T22:04:26</td>
@@ -1119,7 +1118,7 @@
 <td>2021-11-27T11:29:33</td>
 <td> 2021-11-27T11:37:42</td>
 <td>THRUSTER_FIRING</td>
-<td>Only two spikes. Probable. /EJ</td>
+<td>Only two spikes. Probable. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2021-11-30T02:59:35</td>
@@ -1251,7 +1250,7 @@
 <td>2022-03-16T17:34:23</td>
 <td> 2022-03-16T17:55:49</td>
 <td>THRUSTER_FIRING</td>
-<td>Not sure. Repeats like thruster firing but more negative PSP spikes than positive. /EJ</td>
+<td>Not sure. Repeats like thruster firing but more negative PSP spikes than positive. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-03-18T17:34:31</td>
@@ -1287,7 +1286,7 @@
 <td>2022-03-28T17:34:29</td>
 <td> 2022-03-28T17:45:47</td>
 <td>THRUSTER_FIRING</td>
-<td>Unusually hard to spot manually without zooming in. /EJ</td>
+<td>Unusually hard to spot manually without zooming in. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-03-31T01:04:25</td>
@@ -1323,7 +1322,7 @@
 <td>2022-04-10T13:04:23</td>
 <td> 2022-04-10T13:19:47</td>
 <td>THRUSTER_FIRING</td>
-<td>Different signature but still unambiguous. Usual time scale, voltage scale, clear repetitions. /EJ</td>
+<td>Different signature but still unambiguous. Usual time scale, voltage scale, clear repetitions. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-04-11T01:04:30</td>
@@ -1377,13 +1376,13 @@
 <td>2022-05-10T04:11:02</td>
 <td> 2022-05-10T04:21:13</td>
 <td>THRUSTER_FIRING</td>
-<td>Very different from other thruster firings, but seems real. /EJ</td>
+<td>Very different from other thruster firings, but seems real. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-05-23T01:04:27</td>
 <td> 2022-05-23T01:14:32</td>
 <td>THRUSTER_FIRING</td>
-<td>Very different, but unamibguous. /EJ</td>
+<td>Very different, but unamibguous. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-05-30T01:04:29</td>
@@ -1455,7 +1454,7 @@
 <td>2022-07-04T16:34:21</td>
 <td> 2022-07-04T16:46:21</td>
 <td>THRUSTER_FIRING</td>
-<td>Second thruster firing on the same day. /EJ</td>
+<td>Second thruster firing on the same day. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-07-11T00:34:21</td>
@@ -1515,13 +1514,13 @@
 <td>2022-08-28T17:34:30</td>
 <td> 2022-08-28T17:44:21</td>
 <td>THRUSTER_FIRING</td>
-<td>Not entirely sure. Different signature but still similar time scale (longer?), voltage scale (higher) with clear repetitions. /EJ</td>
+<td>Not entirely sure. Different signature but still similar time scale (longer?), voltage scale (higher) with clear repetitions. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-09-01T13:34:23</td>
 <td> 2022-09-01T13:43:32</td>
 <td>THRUSTER_FIRING</td>
-<td>Not entirely sure. Different signature but still similar time scale (shorter?), voltage scale (higher) with clear repetitions. /EJ</td>
+<td>Not entirely sure. Different signature but still similar time scale (shorter?), voltage scale (higher) with clear repetitions. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-09-03T13:04:31</td>
@@ -1533,7 +1532,7 @@
 <td>2022-09-10T11:40:53</td>
 <td> 2022-09-10T11:54:10</td>
 <td>THRUSTER_FIRING</td>
-<td>Different signature but still similar time scale, voltage scale (higher) with clear repetitions. /EJ</td>
+<td>Different signature but still similar time scale, voltage scale (higher) with clear repetitions. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-09-12T01:04:26</td>
@@ -1557,31 +1556,31 @@
 <td>2022-09-23T01:04:28</td>
 <td> 2022-09-23T01:21:58</td>
 <td>THRUSTER_FIRING</td>
-<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /EJ</td>
+<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-09-25T13:15:03</td>
 <td> 2022-09-25T13:27:56</td>
 <td>THRUSTER_FIRING</td>
-<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /EJ</td>
+<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-09-26T01:04:27</td>
 <td> 2022-09-26T01:17:09</td>
 <td>THRUSTER_FIRING</td>
-<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /EJ</td>
+<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-09-28T01:04:13</td>
 <td> 2022-09-28T01:22:42</td>
 <td>THRUSTER_FIRING</td>
-<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /EJ</td>
+<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-09-30T01:04:27</td>
 <td> 2022-09-30T01:23:59</td>
 <td>THRUSTER_FIRING</td>
-<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /EJ</td>
+<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-10-02T01:04:22</td>
@@ -1593,7 +1592,7 @@
 <td>2022-10-03T01:04:25</td>
 <td> 2022-10-03T01:24:40</td>
 <td>THRUSTER_FIRING</td>
-<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /EJ</td>
+<td>Obvious case when looking at repetition, but the cycle shape is different. Due to high PSP? /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-10-05T01:04:26</td>
@@ -1617,13 +1616,13 @@
 <td>2022-10-10T01:04:08</td>
 <td> 2022-10-10T01:36:44</td>
 <td>THRUSTER_FIRING</td>
-<td>Very long thruster firing (~24 min+margins), but still unambiguous. /EJ</td>
+<td>Very long thruster firing (~24 min+margins), but still unambiguous. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-10-12T01:04:08</td>
 <td> 2022-10-12T01:35:57</td>
 <td>THRUSTER_FIRING</td>
-<td>Very long thruster firing (~24 min+margins), but still unambiguous. /EJ</td>
+<td>Very long thruster firing (~24 min+margins), but still unambiguous. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-10-14T01:04:24</td>
@@ -1659,7 +1658,7 @@
 <td>2022-10-24T01:04:23</td>
 <td> 2022-10-24T01:18:12</td>
 <td>THRUSTER_FIRING</td>
-<td>Obvious from the repetitions, and sharp spikes, but not otherwise. /EJ</td>
+<td>Obvious from the repetitions, and sharp spikes, but not otherwise. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-10-26T01:04:27</td>
@@ -1710,7 +1709,7 @@
 <td>2022-11-30T23:00:00</td>
 <td> 2022-12-01T00:10:00</td>
 <td>REMOVE_EFIELD</td>
-<td>This is a temporary measure done in agreement with Andrew Dimmock until updating the corresponding calibration. /Erik P G Johansson, 2025-06-26</td>
+<td>This is a temporary measure done in agreement with Andrew Dimmock (IRF Uppsala) until updating the corresponding calibration. /Erik P G Johansson (IRF Uppsala), 2025-06-26</td>
 </tr>
 
 
@@ -1749,7 +1748,7 @@
 <td>2022-12-19T01:04:10</td>
 <td> 2022-12-19T01:13:18</td>
 <td>THRUSTER_FIRING</td>
-<td>Very ambiguous. Three or four repeating deviations (25-30 s period) from a baseline SCPOT of 17 V. /EJ</td>
+<td>Very ambiguous. Three or four repeating deviations (25-30 s period) from a baseline SCPOT of 17 V. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2022-12-22T14:29:30</td>
@@ -1785,7 +1784,7 @@
 <td>2023-01-16T06:53:51</td>
 <td> 2023-01-16T07:05:09</td>
 <td>THRUSTER_FIRING</td>
-<td>Looks very artificial and resembles thruster firings, but not like the regular ones. Five (four) episodes of repeated spikes, but with periods 0.5 s (compared to the usual 20-40 s). Longest episode has circa 90 such cycles. Also second instance of thruster firings on the same day (unusual). /EJ</td>
+<td>Looks very artificial and resembles thruster firings, but not like the regular ones. Five (four) episodes of repeated spikes, but with periods 0.5 s (compared to the usual 20-40 s). Longest episode has circa 90 such cycles. Also second instance of thruster firings on the same day (unusual). /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2023-01-23T01:04:26</td>
@@ -2976,7 +2975,7 @@
 <td>2025-09-30T04:32:47</td>
 <td> 2025-09-30T04:57:42</td>
 <td>THRUSTER_FIRING</td>
-<td>Does not look like other thruster firings, but I strongly suspect it is one. QUALITY_BITMASK also indicates it, but over a much longer time period, 2+6 hours, covering the preceding identified thruster firing. /EJ</td>
+<td>Does not look like other thruster firings, but I strongly suspect it is one. QUALITY_BITMASK also indicates it, but over a much longer time period, 2+6 hours, covering the preceding identified thruster firing. /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2025-10-04T11:09:25</td>
@@ -3000,7 +2999,7 @@
 <td>2025-10-16T23:08:47</td>
 <td> 2025-10-16T23:19:35</td>
 <td>THRUSTER_FIRING</td>
-<td>Does not look like other thruster firings but should be thruster firing. QUALITY_BITMASK indicates possible thruster firing. Second thruster firing the same day! /EJ</td>
+<td>Does not look like other thruster firings but should be thruster firing. QUALITY_BITMASK indicates possible thruster firing. Second thruster firing the same day! /Erik P G Johansson (IRF Uppsala)</td>
 </tr>
         <tr>
 <td>2025-10-30T01:04:29</td>
