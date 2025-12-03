@@ -1301,19 +1301,33 @@ end
         %       load 'electron_energy' directly from v7 data; 20220702 [wenya];
         if isempty(energy)
           nSensors = length(sensors);
+          nSensors_top = 0;
+          nSensors_bottom = 0;
           for iSen = 1 : nSensors
             energy_suf_top = [dsetName(1:5), 'epd_feeps_' Vr.tmmode '_' Vr.lev '_', species, '_top_energy_centroid_sensorid_', num2str(sensors(iSen))];
             energy_top_tmp = mms.db_get_variable(dsetName, energy_suf_top, Tint);
             if iSen == 1
-              energies = energy_top_tmp.data;
+
+              if any(any(energy_top_tmp.data<0))%ignore negative values
+                  energies = zeros(size(energy_top_tmp.data));
+              else
+                  energies = energy_top_tmp.data;
+                  nSensors_top = nSensors_top+1;
+              end
             else
-              energies = energies + energy_top_tmp.data;
+                if ~any(any(energy_top_tmp.data<0))%ignore negative values
+                    energies = energies + energy_top_tmp.data;
+                    nSensors_top = nSensors_top+1;
+                end
             end
             energy_suf_bottom = [dsetName(1:5), 'epd_feeps_' Vr.tmmode '_' Vr.lev '_', species, '_bottom_energy_centroid_sensorid_', num2str(sensors(iSen))];
             energy_bottom_tmp = mms.db_get_variable(dsetName, energy_suf_bottom, Tint);
-            energies = energies + energy_bottom_tmp.data;
+            if ~any(any(energy_bottom_tmp.data<0))%ignore negative values
+                energies = energies + energy_bottom_tmp.data;
+                nSensors_bottom = nSensors_bottom+1;
+            end
           end
-          energies = energies / 2 / nSensors;
+          energies = energies / (nSensors_top+nSensors_bottom);
           data_version = 'new';
         else
           energies = energy.data;
@@ -1366,6 +1380,11 @@ end
               bot.data(logical(repmat(mask.data,1,length(energies)))) = NaN; % obsolete?
             end
           end
+
+          %Ignore negative values and fill values
+          top.data(top.data<0) = nan;
+          bot.data(bot.data<0) = nan;
+
           Tit{iSen} = top;
           Bit{iSen} = bot;
         end
