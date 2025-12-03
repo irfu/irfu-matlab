@@ -7,12 +7,12 @@
     "icd_version": "1.7"
   },
   "release": {
-    "version": "8.5.0",
-    "date": "2025-06-26T17:20:00Z",
+    "version": "9.0.0",
+    "date": "2025-12-03T16:47:00Z",
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "Non-Standard Operations (NSO) table for thruster firings updated for until 2025-05-27; Bugfix: Can now handle multi-valued GA \"OBS_ID\"; Bugfix: SOLO_L3_RPW-BIA-DENSITY-10-SECONDS ZV QUALITY_FLAG is now a downsampled version of SOLO_L3_RPW-BIA-DENSITY ZV QUALITY_FLAG.; No longer set L3 QUALITY_FLAG and L3_QUALITY_BITMASK to FV when there is no science data.",
+    "modification": "Non-Standard Operations (NSO) table for thruster firings updated for until 2025-12-01; Redefined L2 L2_QUALITY_BITMASK: Separate saturation quality bits for different channels (backward-incompatible change); Adjusts fill values & quality variables when ANT3 is failing or unintentionally floating.; Use new L2 master CDFs V18, L3 master CDFs V07/V08.",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {

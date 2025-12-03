@@ -314,7 +314,7 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 
 
 ----------------------------
- Version X.Y.Z (????-??-??)
+ Version 9.0.0 (2025-12-03)
 ----------------------------
 * Renamed setting:
      PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD
