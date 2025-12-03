@@ -328,11 +328,17 @@ classdef qrc
       % ANT3 is unintentionally floating after sweeps due to bad commanding.
       % https://github.com/irfu/irfu-matlab/issues/156
       % NOTE: Separate QRCSs for L1/L1R-->L2 and L2-->L3 processing.
+      % NOTE: 2025-12-03: ROC's SOLO_L1_RPW-BIA-CURRENT datasets contain
+      %       non-zero ANT3 bias currents for ANT3_UNINTENTIONALLY_FLOATING,
+      %       which is then copied to the BIAS L2 datasets. Therefore, the L2
+      %       bias currents are also non-zero.
+      % YK 2025-12-03: Keep samples, but blank bias current.
       ANT3_UNINTENTIONALLY_FLOATING_CAVEATS = ...
         "BIAS unintentionally sets zero bias current on ANT3 (see QUALITY_FLAG=1).";
       Qrcs = bicas.proc.QrcSettingL2(...
         qfl             = uint8(1), ...
-        gaCaveats       = ANT3_UNINTENTIONALLY_FLOATING_CAVEATS);
+        gaCaveats       = ANT3_UNINTENTIONALLY_FLOATING_CAVEATS, ...
+        currentFvIantAr = [3]);
       L2Qrcsm.add("ANT3_UNINTENTIONALLY_FLOATING", Qrcs);
       % --
       % NOTE: Removes EFIELD output from solo.vdccal() (i.e. not by removing

@@ -362,7 +362,7 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
   https://github.com/irfu/irfu-matlab/issues/143
 * Removes L2 data affected by failing ANT3.
   https://github.com/irfu/irfu-matlab/issues/142
-* Removes EFIELD data when ANT3 is unintentionally floating.
+* Removes L2 IBIAS3 and L3 EFIELD data when ANT3 is unintentionally floating.
   https://github.com/irfu/irfu-matlab/issues/156
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2025-11-11 (inclusive).

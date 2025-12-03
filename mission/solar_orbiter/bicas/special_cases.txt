@@ -209,7 +209,8 @@ https://github.com/irfu/irfu-matlab/issues/156
 Condition               | Action taken when condition applies
 -------------------------------------------------------------
 ANT3 is unintentionally | L2 CWF, SWF/RSWF
-floating.               |     Cap QUALITY_FLAG <= 1
+floating.               |     Cap QUALITY_FLAG <= 1.
+                        |     IBIAS3 is set to fill values.
                         | L3 EFIELD
                         |     E field is set to fill value.
 
