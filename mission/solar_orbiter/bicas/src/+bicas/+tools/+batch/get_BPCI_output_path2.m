@@ -53,6 +53,10 @@ function filePath = get_BPCI_output_path2(...
 %           dataset filename into output dataset filename. -- IMPLEMENTED
 %
 % PROPOSAL: Use shared constants for setting DSI lists.
+% PROPOSAL: Argument for which input DSI should be used for determining output
+%           dataset time interval.
+%   PRO: Can abolish hardcoded list.
+%   PROPOSAL: SWMs should contain the DSI to use.
 
 assert(isa(BpciInputDsmdArray,           'solo.adm.DSMD') && iscolumn(BpciInputDsmdArray))
 assert(isa(PreexistingOutputLvDsmdArray, 'solo.adm.DSMD') && iscolumn(PreexistingOutputLvDsmdArray))

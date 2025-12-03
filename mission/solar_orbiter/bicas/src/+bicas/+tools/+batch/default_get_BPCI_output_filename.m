@@ -12,7 +12,7 @@
 % =========
 % BpciInputDsmdArray
 %       Column array of solo.adm.DSMD. DSMDs for BPCI input datasets. These are
-%       used for setting the time the output dataset filename.
+%       used for setting the time interval of the output dataset filename.
 % varargin
 %       Arguments as interpreted by
 %       irf.utils.interpret_settings_args().
@@ -44,7 +44,7 @@ function outputFilename = default_get_BPCI_output_filename(...
 % PROPOSAL: Argument for which input DSI should be used for determining output
 %           dataset time interval.
 %   PRO: Can abolish hardcoded list.
-%   PROPOSAL: SWMs should contain DSI to use.
+%   PROPOSAL: SWMs should contain the DSI to use.
 %
 % PROPOSAL: Use shared constants for setting DSI lists.
 %
