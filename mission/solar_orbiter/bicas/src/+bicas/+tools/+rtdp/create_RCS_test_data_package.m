@@ -30,7 +30,7 @@
 %       RTDP for any given BICAS version must be "A", the second "B" and so on.
 %       NOTE: The BICAS version does not need to specified since it is
 %       automatically obtained from BICAS (bicas.const).
-% configFile
+% rtdpConfigFile
 %       JSON file with (1) paths to input CDFs, and (2) expected BICAS source
 %       directory. See bicas.tools.rtdp.misc___UTEST.create_config_file()
 %       for an "example".
@@ -44,7 +44,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 function [rtdpDir, rtdpZipFile] = create_RCS_test_data_package(...
-  outputParentDir, letterVersion, configFile)
+  outputParentDir, letterVersion, rtdpConfigFile)
 % bicas.tools.rtdp.create_RCS_test_data_package('/nonhome_data/SOLAR_ORBITER/bicas_test_packages/temp', 'A', '/nonhome_data/work_files/SOLAR_ORBITER/rtdp_config.json')
 %
 % PROPOSAL: Better name for function.
@@ -60,6 +60,6 @@ AUTOMATED_TEST_RUN         = false;
 
 tic
 [rtdpDir, rtdpZipFile] = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
-  outputParentDir, letterVersion, configFile, REQUIRE_BICAS_CODE_VERSION, AUTOMATED_TEST_RUN);
+  outputParentDir, letterVersion, rtdpConfigFile, REQUIRE_BICAS_CODE_VERSION, AUTOMATED_TEST_RUN);
 toc
 end

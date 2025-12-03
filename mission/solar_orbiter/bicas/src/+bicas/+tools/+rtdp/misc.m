@@ -52,7 +52,7 @@ classdef misc
     %       would be overkill for this application.
     %
     function [rtdpDir, rdtpZipFile] = create_RCS_test_data_package( ...
-        outputParentDir, letterVersion, configFile, requireBicasCodeVersion, automatedTestRun)
+        outputParentDir, letterVersion, rtdpConfigFile, requireBicasCodeVersion, automatedTestRun)
       %
       % PROPOSAL: Separate function file.
       %   CON: Name will likely be confusing compare to the actual top-level
@@ -86,7 +86,7 @@ classdef misc
 
       Swml = bicas.swm.get_SWML(Bso);
 
-      Config = bicas.tools.rtdp.Config(configFile, Swml);
+      Config = bicas.tools.rtdp.Config(rtdpConfigFile, Swml);
 
       %====================================
       % ASSERT: Expected BICAS source code

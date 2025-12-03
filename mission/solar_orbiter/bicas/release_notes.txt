@@ -282,7 +282,7 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 
 
 ----------------------------
- Version 8.5.0 (2026-06-26)
+ Version 8.5.0 (2025-06-26)
 ----------------------------
 * Bugfix: Can now handle multi-valued GA "OBS_ID".
 * Bugfix: SOLO_L3_RPW-BIA-DENSITY-10-SECONDS ZV QUALITY_FLAG is now a
@@ -351,7 +351,7 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * New default: PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC=240
   (instead of 180).
 * Support both setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK)
-  using old (almost) and new scheme for saturation:
+  using old (almost) and new scheme (default) for saturation:
   Old scheme: "global saturation" (FULL_SATURATION & PARTIAL_SATURATION)
   New scheme: "channel saturation" (six bits; one per single/diff, AC=DC)
   Controlled by new setting PROCESSING.SATURATION.QUALITY_SCHEME.

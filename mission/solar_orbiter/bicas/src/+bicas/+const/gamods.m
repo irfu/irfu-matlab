@@ -4,19 +4,12 @@
 % Class for defining one non-trivial constant data structure used for setting GA
 % "MODS".
 %
+% NOTE: Relies on custom classes bicas.ga.mods.* for building data structures.
+%
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef gamods
-  % PROPOSAL: Move classes
-  %             bicas.ga.mods.Database,
-  %             bicas.ga.mods.DsiEntry, and
-  %             bicas.ga.mods.VersionEntry
-  %           to
-  %             bicas.const.gamods.
-  %   PRO: Classes are only used by const.gamods.
-  %   CON: The classes are "code" which does not fit in under "const".
-  %     CON: The classes are only intended for defining constants.
 
 
 
