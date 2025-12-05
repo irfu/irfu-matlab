@@ -380,4 +380,8 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Add unofficial software modes for processing L2-L3 SBM1/SBM2.
   Controlled by new setting: SWM.L2-L3_SBMx_ENABLED.
   EXPERIMENTAL!
-* Rename L2-L3 software mode CLI options.
+* Rename L2-L2/L3 software mode CLI options.
+     BIA-EFIELD-SCPOT-DENSITY
+  -->L2-L3_SURV
+           LFR-SURV-CWF-E-DSR
+  -->L2-L3_LFR-SURV-CWF-E-DSR
