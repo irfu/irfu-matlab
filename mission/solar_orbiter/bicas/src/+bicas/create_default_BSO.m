@@ -225,9 +225,9 @@ S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 
 
 S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
-% Require input CDF Global Attribute "DSI" to match the expected
+% Require input CDF Global Attribute "DSID" to match the expected
 % value.
-S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',       'WARNING')    % ERROR, WARNING
+S.define_setting('INPUT_CDF.GA_DSID_MISMATCH_POLICY',      'WARNING')    % ERROR, WARNING
 S.define_setting('INPUT_CDF.GA_PARENTS_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
 % NOTE: This modification applies BEFORE

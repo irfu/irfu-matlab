@@ -1,5 +1,5 @@
 %
-% Class that represents the GA "MODS" information for one DSI.
+% Class that represents the GA "MODS" information for one DSID.
 % Contains list of instances of bicas.ga.mods.VersionEntry.
 %
 %
@@ -8,7 +8,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef DsiEntry < handle
+classdef DsidEntry < handle
   % PROPOSAL: Assert than all comment strings (separate ones in VersionEntry)
   %           are unique.
 
@@ -34,7 +34,7 @@ classdef DsiEntry < handle
 
 
 
-    function obj = DsiEntry()
+    function obj = DsidEntry()
       obj.GmveAr = bicas.ga.mods.VersionEntry.empty(0, 1);
     end
 
@@ -106,7 +106,7 @@ classdef DsiEntry < handle
 
 
     % Return cell array of strings to be used as value GA MODS for the
-    % specified DSI.
+    % specified DSID.
     function gaModsStrCa = get_MODS_strings_CA(obj)
       gaModsStrCa = arrayfun(...
         @(Gmve) (Gmve.get_str()), obj.GmveAr, ...

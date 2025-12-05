@@ -24,7 +24,7 @@ classdef InputDataset
   %#####################
   properties(SetAccess=immutable)
     cliOptionHeaderBody
-    dsi
+    dsid
     pfiid
   end
 
@@ -39,15 +39,15 @@ classdef InputDataset
 
 
 
-    function obj = InputDataset(cliOptionHeaderBody, dsi, pfiid)
+    function obj = InputDataset(cliOptionHeaderBody, dsid, pfiid)
 
       % NOTE: No dataset/skeleton version.
       obj.cliOptionHeaderBody = cliOptionHeaderBody;
-      obj.dsi                 = dsi;
+      obj.dsid                 = dsid;
       obj.pfiid               = pfiid;
 
       bicas.swm.utils.assert_SIP_CLI_option(obj.cliOptionHeaderBody)
-      bicas.swm.utils.assert_DSI(           obj.dsi)
+      bicas.swm.utils.assert_DSID(           obj.dsid)
     end
 
 

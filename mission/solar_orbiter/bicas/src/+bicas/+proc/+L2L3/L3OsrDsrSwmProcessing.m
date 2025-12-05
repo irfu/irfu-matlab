@@ -32,7 +32,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   %
   % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT
   %           into separate SWMs.
-  %   PRO: Faster processing when only processing subset of L3 DSIs.
+  %   PRO: Faster processing when only processing subset of L3 DSIDs.
   %       CON: Not very heavy operation.
   %   PRO: Leads to better organization of code.
   %       PRO: process_L2_to_L3() is too large and should be split up anyway.
@@ -221,7 +221,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %       PRO: Must read L3 SCPOT dataset to produce L3 DENSITY dataset.
       %   CON: There is much shared functionality for 3 quality ZVs.
       %       PRO: Same ~constants
-      %           Ex: INPUT_DSI, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
+      %           Ex: INPUT_DSID, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
       %       PRO: Read setting QUALITY_FLAG_MIN
       %       PRO: Normalizing CWF zVar names.
       %       PRO: Preparations for downsampled.

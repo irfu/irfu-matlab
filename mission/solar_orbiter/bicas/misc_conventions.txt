@@ -245,23 +245,23 @@ DRT
     Class bicas.tf.Deretrending.
 DSFN
     Class solo.adm.dsfn.DatasetFilename.
-DSI, "dataset ID"
+DSID, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
     NOTE: The concept of "dataset ID" is defined by RPW/ROC, but
-    the abbreviation "DSI" is defined by BICAS. DSI does not formally exist in
+    the abbreviation "DSID" is defined by BICAS. DSID does not formally exist in
     SolO outside RPW, though the SolO metadata standards define metadata and
     filenames with components ("source"+"level"+"descriptor") which together are
-    identical to DSI for RPW datasets and can be used to define DSI analogously
+    identical to DSID for RPW datasets and can be used to define DSID analogously
     for SolO datasets outside RPW.
     NOTE: Must be uppercase by definition (at least when used as string
-    constants by BICAS), though DSIs are represented in lowercase in the
-    official dataset file naming convention (except the "level"). Uppercase DSI
+    constants by BICAS), though DSIDs are represented in lowercase in the
+    official dataset file naming convention (except the "level"). Uppercase DSID
     has been used in file names for some old ground-test datasets.
-    NOTE: DSIs exclude the "-cdag" suffix. "-cdag" is defined by ROC
+    NOTE: DSIDs exclude the "-cdag" suffix. "-cdag" is defined by ROC
     for RPW-internal datasets only.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical
-    variants thereof) are not abbreviated "DSI", but to the GA name in
+    variants thereof) are not abbreviated "DSID", but to the GA name in
     analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Used in the context of downsampling.
@@ -307,7 +307,7 @@ Global saturation (quality variable scheme)
 GMDB
     "GA MODS DataBase", i.e. class bicas.ga.mods.Database.
 GMDE
-    "GA MODS DSI Entry", i.e. class bicas.ga.mods.DsiEntry.
+    "GA MODS DSID Entry", i.e. class bicas.ga.mods.DsidEntry.
 GMVE
     "GA MODS Version Entry", i.e. class bicas.ga.mods.VersionEntry.
 ICD
@@ -418,8 +418,8 @@ OSR
 PFIID
     Production Function Input ID. String constant which is used to distinguish
     between different input values (datasets) as seen from production functions.
-    In practice one PFIID represents one of multiple different DSIs (different
-    DSI for different SWMs). See PFOID.
+    In practice one PFIID represents one of multiple different DSIDs (different
+    DSID for different SWMs). See PFOID.
 PFOID
     Production Function Output ID. Analogous with PFIID, but for output (return
     values).
@@ -577,7 +577,7 @@ SSID
     (b) one of the special cases: GND, 2.5V Ref., or unknown signal.
     Implemented as unique uint8 values.
 SURV
-    "Survey mode/data". Abbreviation used in various DSIs. Defined by ROC
+    "Survey mode/data". Abbreviation used in various DSIDs. Defined by ROC
     (presumably).
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,

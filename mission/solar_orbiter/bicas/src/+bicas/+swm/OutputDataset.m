@@ -19,7 +19,7 @@ classdef OutputDataset
   %#####################
   properties(SetAccess=immutable)
     cliOptionHeaderBody
-    dsi
+    dsid
     datasetLevel
     pfoid
 
@@ -43,26 +43,26 @@ classdef OutputDataset
 
 
     function obj = OutputDataset(...
-        cliOptionHeaderBody, dsi, pfoid, ...
+        cliOptionHeaderBody, dsid, pfoid, ...
         swdName, swdDescription, skeletonVersion)
 
-      [~, datasetLevel, ~] = solo.adm.disassemble_DATASET_ID(dsi);
+      [~, datasetLevel, ~] = solo.adm.disassemble_DATASET_ID(dsid);
 
       obj.cliOptionHeaderBody = cliOptionHeaderBody;
-      obj.dsi                 = dsi;
+      obj.dsid                 = dsid;
 
       obj.pfoid               = pfoid;
       obj.swdName             = swdName;
       obj.swdDescription      = swdDescription;
       obj.skeletonVersion     = skeletonVersion;
 
-      % NOTE: Not argument. Extracted from DSI.
+      % NOTE: Not argument. Extracted from DSID.
       obj.datasetLevel        = datasetLevel;
 
       bicas.swm.utils.assert_SIP_CLI_option(obj.cliOptionHeaderBody)
       bicas.swm.utils.assert_text(          obj.swdName)
       bicas.swm.utils.assert_text(          obj.swdDescription)
-      bicas.swm.utils.assert_DSI(           obj.dsi)
+      bicas.swm.utils.assert_DSID(           obj.dsid)
       solo.adm.assert_dataset_level(        obj.datasetLevel)
       bicas.assert_skeleton_version(        obj.skeletonVersion)
     end

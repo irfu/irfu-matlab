@@ -161,7 +161,7 @@ classdef qrc
 
 
     % Function for initializing QRCSMs in three groups representing different
-    % output CDFs/DSIs. The three groups are:
+    % output CDFs/DSIDs. The three groups are:
     % (1) all (official) L2 CDFs,
     % (2) all L3 CDFs, and
     % (3) all L3 density CDFs.

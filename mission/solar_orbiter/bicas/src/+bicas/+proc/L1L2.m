@@ -18,7 +18,7 @@ classdef L1L2
   % PROPOSAL: Move normalize_CALIBRATION_TABLE_INDEX() to some collection of
   %           utils.
   %   PROPOSAL: bicas.proc.utils
-  %       CON: Function is too specific. Has inputDsi as argument.
+  %       CON: Function is too specific. Has inputDsid as argument.
   %           CON: Could be less bad than this file.
   %
   % PROPOSAL: Submit ZV attributes.
@@ -250,9 +250,9 @@ classdef L1L2
     % for L1R, but not L1, and the corresponding field may thus be or not be
     % present.
     function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
-        ZvStruct, nRecords, inputDsi)
+        ZvStruct, nRecords, inputDsid)
 
-      C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputDsi);
+      C = bicas.classify_BICAS_L1_L1R_to_L2_DSID(inputDsid);
 
       if C.isL1r
         CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
@@ -261,7 +261,7 @@ classdef L1L2
       else
         error(...
           ['Can not normalize CALIBRATION_TABLE_INDEX', ...
-          ' for this DSI classification.'])
+          ' for this DSID classification.'])
       end
 
       irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
@@ -280,7 +280,7 @@ classdef L1L2
     % L2 output datasets are very similar, despite that the input L1/L1R LFR
     % & TDS datasets are very dissimilar.
     %
-    function [OutSci] = process_DCOP_to_CDF(SciDcip, SciDcop, outputDsi)
+    function [OutSci] = process_DCOP_to_CDF(SciDcip, SciDcop, outputDsid)
       % PROPOSAL: Rename to something shared between LFR and TDS, then use
       %           two wrappers.
       %   PROPOSAL: process_DCOP_to_LFR_TDS_CDF_core
@@ -321,7 +321,7 @@ classdef L1L2
 
 
 
-      C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(outputDsi);
+      C = bicas.classify_BICAS_L1_L1R_to_L2_DSID(outputDsid);
 
       % NOTE: The two cases are different in the indexes they use for
       % OutSciZv.
@@ -374,7 +374,7 @@ classdef L1L2
         else
           error(...
             'BICAS:Assertion', ...
-            'Illegal DSI classification.')
+            'Illegal DSID classification.')
         end
 
         % ASSERTION
@@ -421,7 +421,7 @@ classdef L1L2
 
       else
         error('BICAS:Assertion:IllegalArgument', ...
-          'Function can not produce outputDsi=%s.', outputDsi)
+          'Function can not produce outputDsid=%s.', outputDsid)
       end
 
 

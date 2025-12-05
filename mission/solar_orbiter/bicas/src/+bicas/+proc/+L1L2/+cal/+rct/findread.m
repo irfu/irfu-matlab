@@ -241,9 +241,9 @@ classdef findread
       % Replace underscore-->period before file suffix.
       rctFilename(end-3) = '.';
       %
-      iDsiDash = strfind(bicas.const.RCT_DSI, '-');
-      assert(isscalar(iDsiDash), errorMsg)
-      rctFilename(iDsiDash) = '-';
+      iDsidDash = strfind(bicas.const.RCT_DSID, '-');
+      assert(isscalar(iDsidDash), errorMsg)
+      rctFilename(iDsidDash) = '-';
 
       if (length(rctFilename) >= 27) && strcmp(rctFilename(27), '_')
         % Replace underscore-->dash between dates.

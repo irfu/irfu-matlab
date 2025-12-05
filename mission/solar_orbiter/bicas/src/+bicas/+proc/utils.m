@@ -64,15 +64,15 @@ classdef utils
     %
     % ARGUMENTS
     % =========
-    % inSciDsi : Input SCI DSI which contains the zVariable.
+    % inSciDsid : Input SCI DSID which contains the zVariable.
     % varargin : Passed on to bicas.handle_struct_name_change as its
     %            varargin.
     %
-    function handle_ZV_name_change(fnChangeList, inSciDsi, Bso, L, varargin)
+    function handle_ZV_name_change(fnChangeList, inSciDsid, Bso, L, varargin)
       anomalyDescrMsgFunc = @(oldFieldname, newFieldname) (sprintf(...
-        ['Input dataset DSI=%s uses an alternative', ...
+        ['Input dataset DSID=%s uses an alternative', ...
         ' but illegal(?) zVariable name "%s" instead of "%s".'], ...
-        inSciDsi, oldFieldname, newFieldname));
+        inSciDsid, oldFieldname, newFieldname));
 
       bicas.handle_struct_name_change(...
         fnChangeList, ...

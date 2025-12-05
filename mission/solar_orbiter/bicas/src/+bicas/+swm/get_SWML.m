@@ -61,9 +61,9 @@ function SwmArray = get_SWMs_L1_L1R_to_L2(swmL1L2Enabled)
 %   multiple redundant 1D(?) vectors that covers every case. Then
 %   set various cases by assigning constants to many elements using
 %   MATLAB syntax. One index representing: Combination of
-%   DSI+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI),
+%   DSID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI),
 %   every element contains data for that dataset. Must use
-%   combination DSI+Skeleton_Version to potentially cover old
+%   combination DSID+Skeleton_Version to potentially cover old
 %   versions. Manipulate and set multiple elements smoothly by using
 %   vectors for indices.
 %   Ex: Vectors to set: skeletonVersionVector, SBMx_SURV_vector,
@@ -184,7 +184,7 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA_AR)
       ' L2 data (potential difference)', ...
       ' from LFR <InLvl> data.<SWM purpose amendm>']);
     LfrSwmp = bicas.proc.L1L2.LfrSwmProcessing(...
-      SciInputDataset.dsi, SciOutputDataset.dsi);
+      SciInputDataset.dsid, SciOutputDataset.dsid);
     SwmArray(end+1, :) = bicas.swm.SoftwareMode(...
       LfrSwmp, ...
       strmod('<InLvl>-L2_LFR-<SBMx/SURV>-<CWF/SWF>-E'), ...
@@ -229,7 +229,7 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA_AR)
 
 
     TdsSwmp = bicas.proc.L1L2.TdsSwmProcessing(...
-      SciInputDataset.dsi, SciOutputDataset.dsi);
+      SciInputDataset.dsid, SciOutputDataset.dsid);
     SwmArray(end+1, :) = bicas.swm.SoftwareMode(...
       TdsSwmp, ...
       strmod('<InLvl>-L2_TDS-LFM-<CWF/RSWF>-E'), ...
@@ -399,7 +399,7 @@ assert(ismember(iSbm, [1;2]))
 % NOTE: PFIID value is independent of SBM1/SBM2.
 SbmxInputDataset = bicas.swm.InputDataset(...
   'in_sci', ...
-  sprintf('SOLO_L2_RPW-LFR-SBM%i-CWF-E', iSbm), ...   % DSI
+  sprintf('SOLO_L2_RPW-LFR-SBM%i-CWF-E', iSbm), ...   % DSID
   'LFR-SBMx-CWF-E_cdf');                              % PFIID
 
 %========
@@ -407,7 +407,7 @@ SbmxInputDataset = bicas.swm.InputDataset(...
 %========
 SbmxDensityOutputDataset = bicas.swm.OutputDataset(...
   'out_density', ...
-  sprintf('SOLO_L3_RPW-BIA-SBM%i-DENSITY', iSbm), ...    % DSI
+  sprintf('SOLO_L3_RPW-BIA-SBM%i-DENSITY', iSbm), ...    % DSID
   'SBMx_DENSITY_cdf', ...    % PFOID
   sprintf('BIAS SBM%i1 L3 science plasma density data',                 iSbm), ...  % Name in SWD
   sprintf('RPW BIAS SBM%i L3 science plasma density data, time-tagged', iSbm), ...  % Description in SWD.

@@ -1,8 +1,8 @@
 %
 % Class that represents how to convert one particular QRC (QRCID) into
 % modifications of quality ZVs, blanking of data etc. for an implicit group of
-% DSIs. Implemented by subclasses which represent different groups of output
-% DSIs. This implicitly means that the same QRC might apply to multiple
+% DSIDs. Implemented by subclasses which represent different groups of output
+% DSIDs. This implicitly means that the same QRC might apply to multiple
 % instances (of different subclasses), e.g. for both L2 and L3 output.
 %
 % NOTE: The user of the subclasses should know their interface, and therefore
@@ -15,7 +15,7 @@
 %     processing (i.e. warrants separate variables)
 %
 % NOTE: This superclass is still referenced by QRCSM by for assertions.
-% NOTE: The class does not itself the QRCID or DSI themselves.
+% NOTE: The class does not itself the QRCID or DSID themselves.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

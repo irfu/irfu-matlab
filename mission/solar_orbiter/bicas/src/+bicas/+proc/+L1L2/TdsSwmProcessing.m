@@ -20,9 +20,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
   %#####################
   %#####################
   properties(SetAccess=immutable, GetAccess=private)
-    inputSciDsi
+    inputSciDsid
     inputSci    % Classification of type of processing (based on input dataset).
-    outputDsi
+    outputDsid
   end
 
 
@@ -38,20 +38,20 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
     % ARGUMENTS
     % =========
-    % inputSciDsi
+    % inputSciDsid
     %       The science input dataset will be interpreted as having this
-    %       DSI.
+    %       DSID.
     %       RATIONALE: InputDatasetsMap should contain the same as a CDF
     %       global attribute but
     %       (1) it could be missing, or
     %       (2) sometimes one may want to read an ROC-SGSE dataset as if it
     %           was an RODP dataset or the other way around.
     %
-    function obj = TdsSwmProcessing(inputSciDsi, outputDsi)
-      obj.inputSciDsi = inputSciDsi;
-      obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
+    function obj = TdsSwmProcessing(inputSciDsid, outputDsid)
+      obj.inputSciDsid = inputSciDsid;
+      obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSID(inputSciDsid);
 
-      obj.outputDsi   = outputDsi;
+      obj.outputDsid   = outputDsid;
     end
 
 
@@ -108,8 +108,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf,              Bso, L);
       SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd);
-      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, obj.outputDsi, Vcal, Ccal, NsoTable, Bso, L);
-      OutputSciCdf = bicas.proc.L1L2.process_DCOP_to_CDF(             SciDcip, SciDcop, obj.outputDsi);
+      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, obj.outputDsid, Vcal, Ccal, NsoTable, Bso, L);
+      OutputSciCdf = bicas.proc.L1L2.process_DCOP_to_CDF(             SciDcip, SciDcop, obj.outputDsid);
 
 
 
@@ -154,7 +154,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %===================================
       InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
         bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
-        InSci.Zv, nRecords, obj.inputSciDsi);
+        InSci.Zv, nRecords, obj.inputSciDsid);
 
 
 

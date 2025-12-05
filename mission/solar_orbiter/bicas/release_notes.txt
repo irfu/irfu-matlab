@@ -387,3 +387,6 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
   -->L2-L3_SURV
            LFR-SURV-CWF-E-DSR
   -->L2-L3_LFR-SURV-CWF-E-DSR
+* Rename settings:
+     INPUT_CDF.GA_DSI_MISMATCH_POLICY
+  -->INPUT_CDF.GA_DSID_MISMATCH_POLICY

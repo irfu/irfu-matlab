@@ -1,12 +1,12 @@
 %
-% Classify DSI for any BICAS L1/L1R-->L2 input/output dataset.
+% Classify DSID for any BICAS L1/L1R-->L2 input/output dataset.
 %
 %
 % ARGUMENTS
 % =========
-% dsi
-%       DSI for any BICAS processing L1/L1R-->L2 datasets.
-%       Assertion error if other DSI.
+% dsid
+%       DSID for any BICAS processing L1/L1R-->L2 datasets.
+%       Assertion error if other DSID.
 %       NOTE: Excludes CURRENT, SWEEP, HK, L3 datasets.
 %
 %
@@ -19,13 +19,13 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-09-29.
 %
-function C = classify_BICAS_L1_L1R_to_L2_DSI(dsi)
+function C = classify_BICAS_L1_L1R_to_L2_DSID(dsid)
 % PROPOSAL: Automatic test code.
 %
-% PROPOSAL: Replace DSIs with objects (constants).
+% PROPOSAL: Replace DSIDs with objects (constants).
 
 [~, datasetLevel, descriptor] = ...
-  solo.adm.disassemble_DATASET_ID(dsi);
+  solo.adm.disassemble_DATASET_ID(dsid);
 
 C.isL1  = false;
 C.isL1r = false;
@@ -55,8 +55,8 @@ switch(datasetLevel)
 
   otherwise
     error(...
-      'dsi="%s" is not a legal BICAS L1/L1R input DSI.', ...
-      dsi)
+      'dsid="%s" is not a legal BICAS L1/L1R input DSID.', ...
+      dsid)
 end
 
 switch(descriptorNormalized)
@@ -68,8 +68,8 @@ switch(descriptorNormalized)
   case 'RPW-TDS-LFM-RSWF' ; C.isTdsRswf    = true;
   otherwise
     error(...
-      'dsi="%s" is not a legal BICAS L1/L1R input DSI.', ...
-      dsi)
+      'dsid="%s" is not a legal BICAS L1/L1R input DSID.', ...
+      dsid)
 end
 
 %================================================

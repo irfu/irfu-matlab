@@ -218,7 +218,7 @@ classdef misc
         % NOTE: Uses bicas.tools.batch function.
         outputFile    = bicas.tools.batch.get_BPCI_output_path2(...
           BpciInputDsmdArray, solo.adm.DSMD.empty(0, 1), ...
-          OutputDataset.dsi, 'HIGHEST_USED', outputsDir, false);
+          OutputDataset.dsid, 'HIGHEST_USED', outputsDir, false);
 
         irf.assert.path_is_available(outputFile)
 

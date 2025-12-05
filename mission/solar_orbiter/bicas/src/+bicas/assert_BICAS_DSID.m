@@ -1,11 +1,11 @@
 %
-% Assert DSI associated with BICAS, i.e. not just any DSI.
+% Assert DSID associated with BICAS, i.e. not just any DSID.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-08-02
 %
-function assert_BICAS_DSI(dsi)
+function assert_BICAS_DSID(dsid)
 % PROPOSAL: Implement via list.
 % PROBLEM: Only handles L1/L2 datasets. Not L3. Function needs to be redefined? Abolish?!!
 
@@ -16,9 +16,9 @@ function assert_BICAS_DSI(dsi)
 
 % NOTE: solo.adm.disassemble_DATASET_ID does some assertions on
 % sourceName and level. /2020-09-29
-[~, ~, descriptor] = solo.adm.disassemble_DATASET_ID(dsi);
+[~, ~, descriptor] = solo.adm.disassemble_DATASET_ID(dsid);
 
-% NOTE: Constrain DSI to roughly BICAS-related datasets.
+% NOTE: Constrain DSID to roughly BICAS-related datasets.
 irf.assert.castring_regexp(descriptor, 'RPW-(BIA|LFR|TDS)[A-Z0-2-]*')
 
 end
