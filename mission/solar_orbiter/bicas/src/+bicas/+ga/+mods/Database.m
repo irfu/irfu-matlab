@@ -45,6 +45,8 @@ classdef Database < handle
     % Constructor. Creates database which is initialized with empty
     % bicas.ga.mods.DsiEntry for specified DSIs.
     function obj = Database(dsiCa)
+      assert(iscolumn(dsiCa))
+
       obj.DsiGmdeMap = containers.Map('KeyType', 'char', 'ValueType', 'Any');
 
       for i = 1:numel(dsiCa)
@@ -72,6 +74,7 @@ classdef Database < handle
 
     % Add one GMVE to multiple DSIs.
     function add_GMVE(obj, dsiCa, Gmve)
+      assert(iscolumn(dsiCa))
       irf.assert.castring_set(dsiCa)
       assert(isa(Gmve, 'bicas.ga.mods.VersionEntry'))
 

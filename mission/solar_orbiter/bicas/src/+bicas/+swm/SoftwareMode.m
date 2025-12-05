@@ -44,6 +44,9 @@ classdef SoftwareMode
         Swmp, cliOption, swdPurpose, ...
         inputsList, outputsList)
 
+      assert(iscolumn(inputsList))
+      assert(iscolumn(outputsList))
+
       obj.Swmp        = Swmp;
       % NOTE: s/w mode CLI _ARGUMENT_ is not intended to be prefixed by
       % e.g. "--". Variable is therefore NOT named *Body.

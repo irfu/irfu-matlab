@@ -43,6 +43,7 @@ classdef VersionEntry
         '20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]')
       % NOTE: Version string without initial "V".
       irf.assert.castring_regexp(bicasVersionStr, '[0-9]+.[0-9]+.[0-9]+')
+      assert(iscolumn(commentsCa))
       bicas.ga.mods.VersionEntry.assert_commentsCa(commentsCa)
 
       obj.dateStr         = dateStr;
@@ -54,6 +55,8 @@ classdef VersionEntry
 
     % NOTE: Does not modify the object, but returns a modified object(!).
     function obj = add_comments(obj, commentsCa)
+      assert(iscolumn(commentsCa))
+
       obj = bicas.ga.mods.VersionEntry(...
         obj.dateStr, obj.bicasVersionStr, ...
         [obj.commentsCa; commentsCa(:)]);

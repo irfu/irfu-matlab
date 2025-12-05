@@ -22,7 +22,7 @@ classdef Database___UTEST < matlab.unittest.TestCase
       % Constructor
       % ===========
 
-      Gmdb = bicas.ga.mods.Database({'DSI_1', 'DSI_2'});
+      Gmdb = bicas.ga.mods.Database({'DSI_1'; 'DSI_2'});
 
 
 
@@ -31,8 +31,9 @@ classdef Database___UTEST < matlab.unittest.TestCase
       % ==========
 
       % Add GMVE to zero DSIs.
-      Gmve0 = bicas.ga.mods.VersionEntry('2020-01-01', '1.0.0', {'Comment for zero DSIs.'});
-      Gmdb.add_GMVE({}, Gmve0)
+      Gmve0 = bicas.ga.mods.VersionEntry('2020-01-01', '1.0.0', {...
+        'Comment for zero DSIs.'});
+      Gmdb.add_GMVE(cell(0, 1), Gmve0)
 
       % Add to one DSI.
       Gmve1 = bicas.ga.mods.VersionEntry('2020-01-01', '3.0.0', {...
@@ -42,7 +43,7 @@ classdef Database___UTEST < matlab.unittest.TestCase
       % Add to two DSIs.
       Gmve2 = bicas.ga.mods.VersionEntry('2021-01-01', '4.0.0', {...
         'Comment2.'});
-      Gmdb.add_GMVE({'DSI_1', 'DSI_2'}, Gmve2)
+      Gmdb.add_GMVE({'DSI_1'; 'DSI_2'}, Gmve2)
 
 
 
