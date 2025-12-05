@@ -318,6 +318,22 @@ IVPAV
     ivolt/avolt = Interface volt Per Antenna volt (unit).
 IVPT
     ivolt/TM = Interface volt Per TM unit.
+L3 SURV
+    All L3 datasets which are derived from SOLO_L2_RPW-LFR-SURV-CWF-E, i.e.
+    SOLO_L3_RPW-BIA-DENSITY
+    SOLO_L3_RPW-BIA-DENSITY-10-SECONDS
+    SOLO_L3_RPW-BIA-EFIELD
+    SOLO_L3_RPW-BIA-EFIELD-10-SECONDS
+    SOLO_L3_RPW-BIA-SCPOT
+    SOLO_L3_RPW-BIA-SCPOT-10-SECONDS
+L3 SBMx
+    All L3 datasets which are derived from SOLO_L2_RPW-LFR-SURV-CWF-E, i.e.
+    SOLO_L3_RPW-SBM1-DENSITY
+    SOLO_L3_RPW-SBM2-DENSITY
+    SOLO_L3_RPW-SBM1-EFIELD
+    SOLO_L3_RPW-SBM2-EFIELD
+    SOLO_L3_RPW-SBM1-SCPOT
+    SOLO_L3_RPW-SBM2-SCPOT
 Lx_QUALITY_BITMASK
     L2_QUALITY_BITMASK or L3_QUALITY_BITMASK, or both at the same time.
 L2_QUALITY_BITMASK,
@@ -557,6 +573,9 @@ SSID
     (a) an ASR, or
     (b) one of the special cases: GND, 2.5V Ref., or unknown signal.
     Implemented as unique uint8 values.
+SURV
+    "Survey mode/data". Abbreviation used in various DSIs. Defined by ROC
+    (presumably).
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not

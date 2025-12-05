@@ -186,12 +186,11 @@ S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
 S.define_setting('SWM.L1-L2_ENABLED',              false);
 % Enable s/w mode for processing L2-->L2: LFR-CWF-E-->LFR-CWF-E-1-SECONDS.
 S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED',      false);
-% Enable s/w mode for processing L2-->L3 datasets: DENSITY, EFIELD, SCPOT.
-S.define_setting('SWM.L2-L3_ENABLED',              false);
-% Enable s/w mode for processing L2-->L3 datasets: SBMx DENSITY.
-% NOTE: This s/w mode is EXPERIMENTAL. /2025-11-26
-% PROPOSAL: Merged with SWM.L2-L3_ENABLED.
-S.define_setting('SWM.L2-L3_SBMx_DENSITY_ENABLED', false);
+% Enable s/w mode for processing L2-->L3 SURV datasets.
+S.define_setting('SWM.L2-L3_SURV_ENABLED',         false);
+% Enable s/w mode for processing L2-->L3 SBMx datasets.
+% NOTE: This s/w mode is EXPERIMENTAL. /2025-12-05
+S.define_setting('SWM.L2-L3_SBMx_ENABLED',         false);
 
 
 

@@ -35,13 +35,13 @@ if Bso.get_fv('SWM.L2-L2_CWF-DSR_ENABLED')
   SwmArray(end+1, 1) = get_SWMs_L2_to_L2();
 end
 
-if Bso.get_fv('SWM.L2-L3_ENABLED')
-  SwmArray(end+1, 1) = get_SWMs_L2_to_L3();
+if Bso.get_fv('SWM.L2-L3_SURV_ENABLED')
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L3_SURV();
 end
 
-if Bso.get_fv('SWM.L2-L3_SBMx_DENSITY_ENABLED')
-  SwmArray(end+1, 1) = get_SWMs_L2_to_L3_SBMx_DENSITY(1);
-  SwmArray(end+1, 1) = get_SWMs_L2_to_L3_SBMx_DENSITY(2);
+if Bso.get_fv('SWM.L2-L3_SBMx_ENABLED')
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L3_SBMx(1);
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L3_SBMx(2);
 end
 
 
@@ -285,7 +285,7 @@ end    % get_SWMs_L2_to_L2
 
 
 
-function SwmArray = get_SWMs_L2_to_L3()
+function SwmArray = get_SWMs_L2_to_L3_SURV()
 
 L3_EFIELD_SCPOT_SKT_VERSION = '07';
 L3_DENSITY_SKT_VERSION      = '08';
@@ -363,7 +363,7 @@ DensityDsrOutputDataset = bicas.swm.OutputDataset(...
 % NOTE: Only creates one SWM for 1x L2 CDF --> 2x3 L3 CDFs.
 SwmArray = bicas.swm.SoftwareMode(...
   bicas.proc.L2L3.L3OsrDsrSwmProcessing(false, []), ...
-  'BIA-EFIELD-SCPOT-DENSITY', ...
+  'L2-L3_SURV', ...
   ['Generate L3 electric field vector, spacecraft', ...
   ' potential, and density data', ...
   ' incl. additional downsampled versions.', ...
@@ -376,7 +376,7 @@ SwmArray = bicas.swm.SoftwareMode(...
   DensityOutputDataset, ...
   DensityDsrOutputDataset]);
 
-end    % get_SWMs_L2_to_L3
+end    % get_SWMs_L2_to_L3_SURV
 
 
 
@@ -385,16 +385,11 @@ end    % get_SWMs_L2_to_L3
 
 
 % EXPERIMENTAL. INCOMPLETE.
-function SwmArray = get_SWMs_L2_to_L3_SBMx_DENSITY(iSbm)
+% NOTE: Create one of TWO separate SBMx modes.
+function SwmArray = get_SWMs_L2_to_L3_SBMx(iSbm)
+
 assert(isscalar(iSbm) & isfloat(iSbm))
 assert(ismember(iSbm, [1;2]))
-
-L3_SBMx_DENSITY_SKT_VERSION_AR = ["01"; "01"];
-
-USE_OLD_DENSITY_AS_OUTPUT = true;     % TESTING
-%USE_OLD_DENSITY_AS_OUTPUT = false;    % NOMINAL FUTURE IMPLEMENTATION. INCOMPLETE!!!
-
-
 
 %=======
 % INPUT
@@ -408,35 +403,41 @@ SbmxInputDataset = bicas.swm.InputDataset(...
 %========
 % OUTPUT
 %========
-if USE_OLD_DENSITY_AS_OUTPUT
-  % FOR TESTING: Use pre-existing DSI and master CDF from other s/w mode!
-  outputDsi = 'SOLO_L3_RPW-BIA-DENSITY';
-  % NOTE: The skeleton version must be (sufficiently) consistent with
-  % SOLO_L3_RPW-BIA-DENSITY master CDF to be used.
-  % Ex: V01 lacks ZV L3_QUALITY_BITMASK.
-  L3_SBMx_DENSITY_SKT_VERSION_AR(iSbm) = "07";
-else
-  % Nominal future implementation, though DSI is currently (2025-11-26) unknown.
-  % TODO-NI: What is the future DSI?
-  outputDsi = sprintf('SOLO_L3_RPW-BIA-SBM%i-DENSITY', iSbm);
-end
 SbmxDensityOutputDataset = bicas.swm.OutputDataset(...
   'out_density', ...
-  outputDsi, ...
+  sprintf('SOLO_L3_RPW-BIA-SBM%i-DENSITY', iSbm), ...    % DSI
   'SBMx_DENSITY_cdf', ...    % PFOID
-  sprintf('BIAS SBM%i1 L3 science plasma density data',                 iSbm), ...
-  sprintf('RPW BIAS SBM%i L3 science plasma density data, time-tagged', iSbm), ...
-  char(L3_SBMx_DENSITY_SKT_VERSION_AR(iSbm)));
+  sprintf('BIAS SBM%i1 L3 science plasma density data',                 iSbm), ...  % Name in SWD
+  sprintf('RPW BIAS SBM%i L3 science plasma density data, time-tagged', iSbm), ...  % Description in SWD.
+  '01');
+
+SbmxEfieldOutputDataset = bicas.swm.OutputDataset(...
+  'out_efield', ...
+  sprintf('SOLO_L3_RPW-BIA-SBM%i-EFIELD',  iSbm), ...
+  'SBMx_EFIELD_cdf', ...
+  sprintf('BIAS SBM%i1 L3 science electric field  datas',         iSbm), ...
+  sprintf('RPW BIAS SBM%i L3 electric field in SRF, time-tagged', iSbm), ...
+  '01');
+
+SbmxScpotOutputDataset = bicas.swm.OutputDataset(...
+  'out_scpot', ...
+  sprintf('SOLO_L3_RPW-BIA-SBM%i-SCPOT',   iSbm), ...
+  'SBMx_SCPOT_cdf', ...    % PFOID
+  sprintf('BIAS SBM%i1 L3 s/c potential data',                        iSbm), ...
+  sprintf('RPW BIAS SBM%i L3 spacecraft potential data, time-tagged', iSbm), ...
+  '01');
 
 %=====
 % SWM
 %=====
 SwmArray = bicas.swm.SoftwareMode(...
   bicas.proc.L2L3.L3OsrDsrSwmProcessing(true, iSbm), ...
-  sprintf('BIA-SBM%i-DENSITY', iSbm), ...   % cliOption
+  sprintf('L2-L3_SBM%i', iSbm), ...   % cliOption
   sprintf( ...
-  'Generate L3 SBM%i density data. NOTE: This is an unofficial s/w mode.', ...
+  'Generate L3 SBM%i density, efield+s/c, potential data. NOTE: This is an unofficial s/w mode.', ...
   iSbm), ...
   [SbmxInputDataset], ...
-  [SbmxDensityOutputDataset]);
-end    % get_SWMs_L2_to_L3_SBM1_DENSITY
+  [SbmxDensityOutputDataset; ...
+  SbmxEfieldOutputDataset; ...
+  SbmxScpotOutputDataset]);
+end    % get_SWMs_L2_to_L3_SBMx

@@ -141,6 +141,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         OutputDatasetsMap('DENSITY_DSR_cdf')  = DensityDsrCdf;
       else
         % NOTE: Ignoring all other return data.
+        OutputDatasetsMap('SBMx_EFIELD_cdf')  = EfieldOsrCdf;
+        OutputDatasetsMap('SBMx_SCPOT_cdf')   = ScpotOsrCdf;
         OutputDatasetsMap('SBMx_DENSITY_cdf') = DensityOsrCdf;
       end
     end

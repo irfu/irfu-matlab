@@ -369,3 +369,15 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Requires new master CDF versions:
     L2: V18
     L3: EFIELD, SCPOT: V07; DENSITY: V08
+
+
+----------------------------
+ Version x.y.z (yyyy-mm-dd)
+----------------------------
+* Renamed setting
+     SWM.L2-L3_ENABLED
+  -->SWM.L2-L3_SURV_ENABLED
+* Add unofficial software modes for processing L2-L3 SBM1/SBM2.
+  Controlled by new setting: SWM.L2-L3_SBMx_ENABLED.
+  EXPERIMENTAL!
+* Rename L2-L3 software mode CLI options.
