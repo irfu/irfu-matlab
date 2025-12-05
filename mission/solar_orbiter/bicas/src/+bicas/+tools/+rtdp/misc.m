@@ -41,18 +41,15 @@ classdef misc
     % ARGUMENTS
     % =========
     % See bicas.tools.rtdp.create_RCS_test_data_package().
-    % requireBicasCodeVersion
-    %       Whether to require executing the specified BICAS code version.
+    % requireOfficialBicasCodeVersion
+    %       Whether to require executing the specified BICAS code version
+    %       (and MATLAB version).
     %       Ex: Disable for delivering new sample datasets (as an RTDP) based on
     %           updated skeletons.
-    % automatedTestRun
-    %       Whether the function is called by an automated test or not.
-    %       NOTE: This is substitute for submitting a class for calling BICAS
-    %       (or a function handle), which would then be mocked for tests, which
-    %       would be overkill for this application.
     %
     function [rtdpDir, rdtpZipFile] = create_RCS_test_data_package( ...
-        outputParentDir, letterVersion, rtdpConfigFile, requireBicasCodeVersion, automatedTestRun)
+        outputParentDir, letterVersion, rtdpConfigFile, ...
+        requireOfficialBicasCodeVersion, Bpa)
       %
       % PROPOSAL: Separate function file.
       %   CON: Name will likely be confusing compare to the actual top-level
@@ -78,8 +75,8 @@ classdef misc
       %
       % PROPOSAL: Should verify that the config file input datasets do exist.
 
-      assert(islogical(requireBicasCodeVersion))
-      assert(islogical(automatedTestRun))
+      assert(islogical(requireOfficialBicasCodeVersion))
+      assert(isa(Bpa, 'bicas.tools.batch.BicasProcessingAccessAbstract'))
 
       Bso = bicas.create_default_BSO();
       Bso.make_read_only();
@@ -104,7 +101,7 @@ classdef misc
           ' You might be using the wrong git repo.\n' ...
           'Actual:   "%s"\nExpected: "%s"'], ...
           actBicasRootDir, expBicasRootDir);
-        if requireBicasCodeVersion
+        if requireOfficialBicasCodeVersion
           error(msg)
         else
           warning(msg)
@@ -121,7 +118,7 @@ classdef misc
       %========================
       actMatlabVersion = string(version('-release'));
       expMatlabVersion = bicas.const.OFFICIAL_MATLAB_VERSION;
-      if (actMatlabVersion ~= expMatlabVersion) && ~automatedTestRun
+      if (actMatlabVersion ~= expMatlabVersion) && requireOfficialBicasCodeVersion
         error( ...
           ['The actual MATLAB version (%s) and the expected MATLAB version' ...
           ' (%s) are not the same.'], ...
@@ -152,7 +149,7 @@ classdef misc
       for iSwm = 1:numel(Swml.List)
         Swm = Swml.List(iSwm);
 
-        bicas.tools.rtdp.misc.create_SWM_directory(rtdpDir, Swm, Config, automatedTestRun)
+        bicas.tools.rtdp.misc.create_SWM_directory(rtdpDir, Swm, Config, Bpa)
       end
 
       rdtpZipFile = bicas.tools.rtdp.misc.zip_RTDP_directory(rtdpDir);
@@ -170,7 +167,10 @@ classdef misc
 
 
 
-    function create_SWM_directory(parentDir, Swm, Config, automatedTestRun)
+    function create_SWM_directory(parentDir, Swm, Config, Bpa)
+
+      assert(isa(Bpa, 'bicas.tools.batch.BicasProcessingAccessAbstract'))
+
       swmDir = bicas.tools.rtdp.misc.mkdir(parentDir, Swm.cliOption);
 
       inputsDir  = bicas.tools.rtdp.misc.mkdir(swmDir, 'inputs');
@@ -232,13 +232,11 @@ classdef misc
 
 
 
-      if ~automatedTestRun
-        %============
-        % CALL BICAS
-        %============
-        errorCode = bicas.main(bicasArgsCa{:});
-        assert(errorCode == 0)
-      end
+      %============
+      % CALL BICAS
+      %============
+      errorCode = Bpa.bicas_main(bicasArgsCa{:});
+      assert(errorCode == 0)
     end
 
 

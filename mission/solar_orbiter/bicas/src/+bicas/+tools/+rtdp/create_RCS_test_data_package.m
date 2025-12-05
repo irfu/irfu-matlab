@@ -56,10 +56,11 @@ function [rtdpDir, rtdpZipFile] = create_RCS_test_data_package(...
 
 REQUIRE_BICAS_CODE_VERSION = true;
 % REQUIRE_BICAS_CODE_VERSION = false;
-AUTOMATED_TEST_RUN         = false;
+
+Bpa = bicas.tools.batch.BicasProcessingAccessImpl();
 
 tic
 [rtdpDir, rtdpZipFile] = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
-  outputParentDir, letterVersion, rtdpConfigFile, REQUIRE_BICAS_CODE_VERSION, AUTOMATED_TEST_RUN);
+  outputParentDir, letterVersion, rtdpConfigFile, REQUIRE_BICAS_CODE_VERSION, Bpa);
 toc
 end

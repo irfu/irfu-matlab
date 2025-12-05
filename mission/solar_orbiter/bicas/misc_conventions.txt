@@ -155,6 +155,9 @@ BLTS = BIAS-LFR/TDS SIGNAL
     NOTE: This definition is partly created to avoid using term "BIAS_i" since
     it is easily confused with other things (the subsystem BIAS, bias currents),
     partly to have names for various signals at various stages of processing.
+BPA
+    Class bicas.tools.batch.BicasProcessingAccessAbstract and subclasses
+    thereof.
 BRVF
     BIAS RCT Validity File. File "bias_rct_validity.json" as specified by ROC.
     Is not a ROC term.

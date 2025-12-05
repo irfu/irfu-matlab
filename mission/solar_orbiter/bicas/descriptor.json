@@ -21,7 +21,7 @@
   },
   "modes": [
     {
-      "name": "LFR-SBM1-CWF-E",
+      "name": "L1R-L2_LFR-SBM1-CWF-E",
       "purpose": "Generate SBM1 CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -45,7 +45,7 @@
       }
     },
     {
-      "name": "LFR-SBM2-CWF-E",
+      "name": "L1R-L2_LFR-SBM2-CWF-E",
       "purpose": "Generate SBM2 CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -69,7 +69,7 @@
       }
     },
     {
-      "name": "LFR-SURV-CWF-E",
+      "name": "L1R-L2_LFR-SURV-CWF-E",
       "purpose": "Generate SURV CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -93,7 +93,7 @@
       }
     },
     {
-      "name": "LFR-SURV-SWF-E",
+      "name": "L1R-L2_LFR-SURV-SWF-E",
       "purpose": "Generate SURV SWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -117,7 +117,7 @@
       }
     },
     {
-      "name": "TDS-LFM-CWF-E",
+      "name": "L1R-L2_TDS-LFM-CWF-E",
       "purpose": "Generate CWF electric field L2 data (potential difference) from TDS LF mode L1R data.",
       "inputs": {
         "in_sci": {
@@ -141,7 +141,7 @@
       }
     },
     {
-      "name": "TDS-LFM-RSWF-E",
+      "name": "L1R-L2_TDS-LFM-RSWF-E",
       "purpose": "Generate RSWF electric field L2 data (potential difference) from TDS LF mode L1R data.",
       "inputs": {
         "in_sci": {
