@@ -65,18 +65,28 @@ classdef DsiEntry < handle
       else
         GmveLast = obj.GmveAr(end);
 
-        % Obtain list of all date strings, except the last one.
+        % ----------
+        % ASSERTIONS
+        % ----------
+        % Obtain list of all date strings, *EXCEPT* the last one.
         nonlastDateStrCa = arrayfun(@(ca) ca.dateStr, ...
           obj.GmveAr(1:end-1), 'UniformOutput', false);
-
         assert(~ismember(GmveNew.dateStr, nonlastDateStrCa), ...
-          'The date string Gmve.dateStr="%s" has already been used by a non-last GMVE in this GMDE.', ...
+          ['The date string Gmve.dateStr="%s" has already been used by a' ...
+          ' non-last GMVE in this GMDE.'], ...
           GmveNew.dateStr)
+
+        % -----------------------------
+        % Add information to obj.GmveAr
+        % -----------------------------
         if strcmp(GmveNew.dateStr, GmveLast.dateStr)
+          % CASE: Last GMVE and new GMVE have the SAME BICAS date.
           if strcmp(GmveNew.bicasVersionStr, GmveLast.bicasVersionStr)
-            % NOTE: Overwrite last GMVE in array
+            % CASE: Last GMVE and new GMVE have the SAME BICAS versions.
+            % NOTE: Append the last GMVE in array.
             obj.GmveAr(end, 1) = GmveLast + GmveNew;
           else
+            % CASE: Last GMVE and new GMVE have DIFFERENT BICAS versions.
             obj.GmveAr(end+1, 1) = GmveNew;
           end
 

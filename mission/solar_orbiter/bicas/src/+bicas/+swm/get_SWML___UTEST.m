@@ -8,6 +8,23 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
 
 
 
+  %#################
+  %#################
+  % TEST PARAMETERS
+  %#################
+  %#################
+  % Technically, additional properties of testCase objects with cell array
+  % default values. Test methods with arguments with the same name will be
+  % called once for every element in the cell arrays.
+  properties(TestParameter)
+    L1L2_ENABLED      = {false; true}
+    L2L2_ENABLED      = {false; true}
+    L2L3_SURV_ENABLED = {false; true}
+    L2L3_SBMx_ENABLED = {false; true}
+  end
+
+
+
   %##############
   %##############
   % TEST METHODS
@@ -19,7 +36,8 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
 
     % Only test that SWML can be generated (without crashing) for multiple
     % combinations of settings.
-    function test_combinations_of_settings(testCase)
+    function test_combinations_of_settings(T, ...
+        L1L2_ENABLED, L2L2_ENABLED, L2L3_SURV_ENABLED, L2L3_SBMx_ENABLED)
 
       function test(l1l2Enabled, l2l2Enabled, l2l3Enabled, l2l3SbmxEnabled)
         % Tests (1) non-crash, (2) class of return value.
@@ -28,21 +46,12 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
 
         Swml = bicas.swm.get_SWML(Bso);
 
-        testCase.verifyClass(Swml, 'bicas.swm.SoftwareModeList')
+        T.verifyClass(Swml, 'bicas.swm.SoftwareModeList')
       end
 
       %===================================================================
 
-      for l1l2Enabled = [false, true]
-        for l2l2Enabled = [false, true]
-          for l2l3SurvEnabled = [false, true]
-            for l2l3SbmxEnabled = [false, true]
-              test(l1l2Enabled, l2l2Enabled, l2l3SurvEnabled, l2l3SbmxEnabled)
-            end
-          end
-        end
-      end
-
+      test(L1L2_ENABLED, L2L2_ENABLED, L2L3_SURV_ENABLED, L2L3_SBMx_ENABLED)
     end
 
 

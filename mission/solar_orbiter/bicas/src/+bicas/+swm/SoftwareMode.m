@@ -16,6 +16,8 @@ classdef SoftwareMode
   %   NOTE: Likely influences BICAS testing code and pipeline.
   %         Should only be implemented at the right time.
 
+
+
   %#####################
   %#####################
   % INSTANCE PROPERTIES
@@ -27,7 +29,7 @@ classdef SoftwareMode
     swdPurpose
     inputsList
     outputsList
-  end    % properties(SetAccess=immutable)
+  end
 
 
 
@@ -70,12 +72,14 @@ classdef SoftwareMode
       assert(isa(obj.inputsList,  'bicas.swm.InputDataset'))
       assert(isa(obj.outputsList, 'bicas.swm.OutputDataset'))
 
-      irf.assert.castring_set( { obj.inputsList(:).pfiid   })
+      irf.assert.castring_set( { obj.inputsList(:).pfiid  })
       irf.assert.castring_set( { obj.outputsList(:).pfoid })
     end
 
 
 
   end    % methods(Access=public)
+
+
 
 end

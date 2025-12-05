@@ -50,12 +50,14 @@ classdef OutputDataset
 
       obj.cliOptionHeaderBody = cliOptionHeaderBody;
       obj.dsi                 = dsi;
-      obj.datasetLevel        = datasetLevel;
 
       obj.pfoid               = pfoid;
       obj.swdName             = swdName;
       obj.swdDescription      = swdDescription;
       obj.skeletonVersion     = skeletonVersion;
+
+      % NOTE: Not argument. Extracted from DSI.
+      obj.datasetLevel        = datasetLevel;
 
       bicas.swm.utils.assert_SIP_CLI_option(obj.cliOptionHeaderBody)
       bicas.swm.utils.assert_text(          obj.swdName)

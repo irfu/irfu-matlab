@@ -366,18 +366,6 @@ end    % main()
 function SwmArray = get_SWMs(bicasConfigFile)
 BSO = bicas.create_default_BSO();
 
-% ID string used to inform BICAS SETTINGS of who set the setting. Only
-% relevant for inspecting logs.
-% NOTE: Exact string not really important.
-% bicasSettingsSource = mfilename('fullpath');
-%
-%     BSO.override_value('SWM.L1-L2_ENABLED', ...
-%         Settings.bicasSetting_SWM_L1_L2_ENABLED, ...
-%         bicasSettingsSource)
-%     BSO.override_value('SWM.L2-L3_ENABLED', ...
-%         Settings.bicasSetting_SWM_L2_L3_ENABLED, ...
-%         bicasSettingsSource)
-
 bicas.override_settings_from_config_file(...
   bicasConfigFile, BSO, bicas.Logger('NO_STDOUT', false));
 

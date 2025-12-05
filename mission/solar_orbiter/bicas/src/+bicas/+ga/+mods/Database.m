@@ -43,7 +43,7 @@ classdef Database < handle
 
 
     % Constructor. Creates database which is initialized with empty
-    % bicas.ga.mods.DsiEntry for specified DSIs.
+    % bicas.ga.mods.DsiEntry objects for every specified DSI.
     function obj = Database(dsiCa)
       assert(iscolumn(dsiCa))
 
@@ -52,15 +52,15 @@ classdef Database < handle
       for i = 1:numel(dsiCa)
         dsi = dsiCa{i};
 
-        % ASSERTION: dsi is an unused key
-        % -------------------------------
+        % ASSERTION: "dsi" is an unused key
+        % ---------------------------------
         % IMPLEMENTATION NOTE: In principle overkill since later code
         % effectively contains the same assertion but without proper
         % error message), but it is actually useful when configuring
         % hardcoded values manually.
         if obj.DsiGmdeMap.isKey(dsi)
           error('BICAS:Assertion', ...
-            'Map already has a key dsi="%s".', dsi)
+            'Argument "dsiCa" contains key dsi="%s" at least twice.', dsi)
         end
 
         % NOTE: Effectively (additional) assertion on that "dsi" is a

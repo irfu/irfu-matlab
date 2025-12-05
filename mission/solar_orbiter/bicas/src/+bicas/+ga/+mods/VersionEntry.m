@@ -1,10 +1,12 @@
 %
 % Class that represents the data in one GA "MODS" entry for one unique
 % combination of (1) DSI and (2) dataset version. One such entry can then be
-% "applied" to multiple DSIs via bicas.ga.mods.Database. One entry contains a
-% date (of a BICAS version), a BICAS version number, and a list of comments. One
-% entry does NOT contain the DSI or dataset version. That is for the owner of
-% the object to store.
+% "applied" to multiple DSIs via bicas.ga.mods.Database. One entry contains
+% (1) a date (of a BICAS version),
+% (2) a BICAS version number, and
+% (3) a list of comments which apply to that BICAS version.
+% One entry does NOT contain the DSI or dataset version. That is for the owner
+% of the object to store.
 %
 % IMMUTABLE.
 %
@@ -12,6 +14,12 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef VersionEntry
+  % PROPOSAL: BICAS version date should be obtained from table which translates
+  %           BICAS version-->BICAS version date, and should therefore not be
+  %           stored in the class.
+  %   PROBLEM: Might conflict with possibility of having the multiple BICAS
+  %            versions with the same date.
+  %     Ex: Quick bugfixes. Has happened once(?).
 
 
 

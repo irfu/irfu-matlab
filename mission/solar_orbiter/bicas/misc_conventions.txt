@@ -416,7 +416,7 @@ PFIID
     Production Function Input ID. String constant which is used to distinguish
     between different input values (datasets) as seen from production functions.
     In practice one PFIID represents one of multiple different DSIs (different
-    DSI for different SWMs).
+    DSI for different SWMs). See PFOID.
 PFOID
     Production Function Output ID. Analogous with PFIID, but for output (return
     values).
@@ -584,7 +584,7 @@ SWD, S/W descriptor
     ICD).
 SWF
     Snapshot WaveForm. Snapshot data. Cf. CWF.
-SWM, S/W mode
+SWM, S/W mode, software mode
     (1) A "S/W mode" defines a set of required input CDF files and a set of
     output CDF files which can be derived from said input files. BICAS can
     execute only one such mode on each run. Executing such modes is the
