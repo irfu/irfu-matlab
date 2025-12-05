@@ -100,16 +100,6 @@ end
 
 
 
-% Define function which replaces specified substrings depending on input level.
-% "strmod" = string modify, "g"=global (applies to all s/w modes).
-strmodg = @(s, iInputLevel) bicas.utils.strrep_many(s, ...
-  '<InLvl>',              INPUT_LEVEL_DATA_AR(iInputLevel).level, ...
-  '<I-E>',                INPUT_LEVEL_DATA_AR(iInputLevel).optionalInputDashE, ...
-  '<SWM name suffix>',    INPUT_LEVEL_DATA_AR(iInputLevel).swmNameSuffix, ...
-  '<SWM purpose amendm>', INPUT_LEVEL_DATA_AR(iInputLevel).swmPurposeAmendm);
-
-
-
 %------------------------------------------------------------------------------
 % Constants to iterate over: one element per pair (L1/L1R) of SWMs L1/L1R-->L2
 %------------------------------------------------------------------------------
@@ -128,6 +118,27 @@ LFR_SWM_DATA = struct(...
 TDS_SWM_DATA = struct(...
   'CWF_RSWF',                 {'CWF', 'RSWF'}, ...
   'outputSkeletonVersion',    repmat({LFR_TDS_SKT_VERSION}, 1, 2));
+
+
+
+% Define function which replaces specified substrings depending on input level.
+% "strmod" = string modify, "g"=global (applies to all s/w modes).
+  function s = str_replace_global(s, iInputLevel)
+    s = strrep(s, '<InLvl>',              INPUT_LEVEL_DATA_AR(iInputLevel).level);
+    s = strrep(s, '<I-E>',                INPUT_LEVEL_DATA_AR(iInputLevel).optionalInputDashE);
+    s = strrep(s, '<SWM name suffix>',    INPUT_LEVEL_DATA_AR(iInputLevel).swmNameSuffix);
+    s = strrep(s, '<SWM purpose amendm>', INPUT_LEVEL_DATA_AR(iInputLevel).swmPurposeAmendm);
+  end
+  function s = str_replace_LFR(s, iSwm, iInputLevel)
+    s = str_replace_global(s, iInputLevel);
+    s = strrep(s, '<SBMx/SURV>',                LFR_SWM_DATA(iSwm).sbmxSurvStrAbbrev);
+    s = strrep(s, '<SBMx/SURV human readable>', LFR_SWM_DATA(iSwm).sbmxSurvStrHumanReadable);
+    s = strrep(s, '<CWF/SWF>',                  LFR_SWM_DATA(iSwm).cwfSwfStrAbbrev);
+  end
+  function s = str_replace_TDS(s, iSwm, iInputLevel)
+    s = str_replace_global(s, iInputLevel);
+    s = strrep(s, '<CWF/RSWF>',                 TDS_SWM_DATA(iSwm).CWF_RSWF);
+  end
 
 
 
@@ -150,13 +161,8 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA_AR)
   %==================================================
   for iSwm = 1:length(LFR_SWM_DATA)
 
-    % Define local string modification function.
-    strmod = @(s) bicas.utils.strrep_many(strmodg(s, iInputLevel), ...
-      '<SBMx/SURV>',                LFR_SWM_DATA(iSwm).sbmxSurvStrAbbrev, ...
-      '<SBMx/SURV human readable>', LFR_SWM_DATA(iSwm).sbmxSurvStrHumanReadable, ...
-      '<CWF/SWF>',                  LFR_SWM_DATA(iSwm).cwfSwfStrAbbrev);
-
-
+    % Define local string modification function with implicit arguments.
+    strmod = @(s) str_replace_LFR(s, iSwm, iInputLevel);
 
     SciInputDataset = bicas.swm.InputDataset(...
       'in_sci', ...
@@ -203,11 +209,8 @@ for iInputLevel = 1:numel(INPUT_LEVEL_DATA_AR)
       continue
     end
 
-    % Define local string modification function.
-    strmod = @(s) strrep(strmodg(s, iInputLevel), ...
-      '<CWF/RSWF>', TDS_SWM_DATA(iSwm).CWF_RSWF);
-
-
+    % Define local string modification function with implicit arguments.
+    strmod = @(s) str_replace_TDS(s, iSwm, iInputLevel);
 
     SciInputDataset = bicas.swm.InputDataset(...
       'in_sci', ...
