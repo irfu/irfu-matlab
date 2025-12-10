@@ -186,6 +186,30 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         ] ...
         = process_L2_to_L3(InLfrCwf, NsoTable, Excd, Bso, L)
 
+
+
+      saturationSchemeId = Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME');
+      if strcmp(saturationSchemeId, "CHANNEL_SATURATION")
+        % IMPLEMENTATION NOTE: Check that the input datasets use
+        % GLOBAL_SATURATION.
+        % ------------------------------------------------------
+        % Official SOLO_L2_RPW-LFR-SURV/SBM1/SBM2-CWF-E datasets use
+        % GLOBAL_SATURATION starting at Skeleton_version = 18.
+        % NOTE: Only requiring this when PROCESSING.SATURATION.QUALITY_SCHEME =
+        % CHANNEL_SATURATION, since any other case should only be used for very
+        % special occasions, and GLOBAL_SATURATION should be phased out over
+        % time anyway.
+        inputSkeletonVerNbr = str2double(InLfrCwf.Ga.Skeleton_version{1});
+        if inputSkeletonVerNbr < 18
+          error( ...
+            "The input CDF has Skeleton_version=%d indicating that it does not" + ...
+            " use CHANNEL_SATURATION and is therefore incompatible.", ...
+            inputSkeletonVerNbr)
+        end
+      end
+
+
+
       % PROPOSAL: Abolish struct "Ga".
       % PROPOSAL: Abolish struct "Zv".
       %   PRO: Not passed to any function etc.
