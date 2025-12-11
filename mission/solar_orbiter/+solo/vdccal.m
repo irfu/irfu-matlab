@@ -69,6 +69,16 @@ a = load(calFilename);
 
 
 
+% Assert that all calibration data arrays use the same timestamps.
+assert(all((a.d23.time == a.K123.time) & (a.d23.time == a.k23.time)))
+
+% Extract timestamps for beginning and end of calibration data, so that one can
+% implement special handling for time for which there is no calibration data.
+timeCalibrationDataBegin = a.d23.time(1);
+timeCalibrationDataEnd   = a.d23.time(end);
+
+
+
 %=============================================================
 % Set return values that represent the version of calibration
 %=============================================================
@@ -141,18 +151,28 @@ for iSub = 1:length(sub_int_times)-1
   % =======================
   VDC = VDC_inp.tlim(subTint);
 
-  % Indices/samples for which data should be treated as single probe.
-  bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
+  % Indices for which there is no calibration data.
+  bNoCalibrationData = ...
+    (VDC.time < timeCalibrationDataBegin) | ...
+    (VDC.time > timeCalibrationDataEnd);
 
   % Resample calibration parameters
   % -------------------------------
   % NOTE: Empirically, .resample() uses linear interpolation.
-  % NOTE: Somehow extrapolates data to outside of the time interval for which
-  %       there is data. ==> Generates "calibrated" values (not NaN) also
-  %       outside of time interval for which there is calibration data!
+  % IMPORTANT NOTE: .resample() somehow extrapolates data to outside of the time
+  % interval for which there is data. ==> Generates "calibrated" values (not
+  % NaN) also outside of time interval for which there is calibration data!
   d23R  = a.d23.tlim(subTint).resample(VDC);
   k23R  = a.k23.tlim(subTint).resample(VDC);
   K123R = a.K123.tlim(subTint).resample(VDC);
+  % Set calibration data to NaN for timestamps outside of calibration data
+  % interval. Must do this to prevent wildly extrapolating calibration data to
+  % far outside the time interval covered by actual calibration data.
+  d23R.data( bNoCalibrationData) = NaN;
+  k23R.data( bNoCalibrationData) = NaN;
+  K123R.data(bNoCalibrationData) = NaN;
+
+
 
   % =================
   % Begin calibration
@@ -167,18 +187,26 @@ for iSub = 1:length(sub_int_times)-1
 
   V23_scaled = (V23.*K123R.data(:,1) + K123R.data(:,2)); % Correcting V23 to V1.
 
+  % PSP
+  % ---
   % Assume all probe data available: Compute PSP from corrected quantities.
   PSP = irf.ts_scalar(VDC.time, (V23_scaled + V1)/2);
-  % Single-probe data: Use alternate, simpler "calculation" for some
-  %                    timestamps.
-  PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
+  % Use alternate "calculation" using only ANT1 for some timestamps.
+  % NOTE: This calculation is independent of calibration data. Should therefore
+  %       not use NaN or bNoCalibrationData.
+  bPspOnlyUsesAnt1 = isnan(VDC.y.data) | isnan(VDC.z.data);
+  bPspOnlyUsesAnt1 = bPspOnlyUsesAnt1 | bNoCalibrationData;
+  PSP.data(bPspOnlyUsesAnt1) = VDC.x.data(bPspOnlyUsesAnt1);
+  %
   PSP.units = 'V';
   PSP_out   = PSP_out.combine(PSP);
 
+  % ScPot: Function of PSP
+  % ----------------------
   % XXX: these are just ad hoc numbers.
   PLASMA_POT   = 1.5;
   SHORT_FACTOR = 2.5;
-
+  %
   ScPot = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
   ScPot.units = PSP.units;
   ScPot_out   = ScPot_out.combine(ScPot);
