@@ -258,8 +258,7 @@ classdef ext
       assert(all(PspTs.time == NeScpQualityBitTs.time))
 
       assert(isfloat(NeScpTs.data))
-      % if ~all( (NeScpTs.data > 0) | isnan(NeScpTs.data) )
-      %   errorMsg = 'solo.psp2ne() returned non-positive (non-NaN) plasma density.';
+      %if ~all( (NeScpTs.data >= 0) | isnan(NeScpTs.data) & ~isinf(NeScpTs.data))
       if ~all( (NeScpTs.data >= 0) | isnan(NeScpTs.data) )
         errorMsg = 'solo.psp2ne() returned negative (non-NaN) plasma density.';
         % IMPLEMENTATION NOTE: The real check should probably be to assert
@@ -280,7 +279,7 @@ classdef ext
       end
       assert(strcmp(NeScpTs.units, 'cm^-3'))
 
-      % NOTE: Not permitting NaN quality bit. Unsure if that is the
+      % NOTE: Not permitting NaN quality bit. Unsure if that is the best
       %       best behaviour.
       assert(...
         all(ismember(NeScpQualityBitTs.data, [0, 1])), ...

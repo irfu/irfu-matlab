@@ -273,10 +273,11 @@ NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
 NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%% Help function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
   function AddEntry(TintS, calData, PSPintersection)
+
     %Add new calibration entry
     % For two-fit calibration use three input arguments
-
     if ~isreal(calData(1)) && (nargin<3 || isempty(PSPintersection))
       errS = ['Invalid two-fit cal entry at: ' TintS];
       irf.log('critical',errS)
@@ -300,6 +301,8 @@ NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
     if isempty(Cal), Cal = CalEntry;
     else, Cal = Cal.combine(CalEntry);
     end
+
+
 
     function [C] = TwoFitCalibration(PSPint,y_eq,CalData)
       CalData = CalData.resample(PSPint);
@@ -339,8 +342,7 @@ NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
       if ~isempty(Cnan)
         C = C.combine(Cnan);
       end
+    end    % TwoFitCalibration
+  end    % AddEntry
 
-
-    end
-  end
 end

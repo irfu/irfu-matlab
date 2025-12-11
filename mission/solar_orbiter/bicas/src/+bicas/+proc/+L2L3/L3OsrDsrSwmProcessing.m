@@ -38,6 +38,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   %       PRO: process_L2_to_L3() is too large and should be split up anyway.
   %   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed
   %        after the latter.
+  %
+  % PROPOSAL: Abolish iSbm.
+  %   PRO: Seems unused and not needed.
 
 
 
@@ -71,6 +74,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % (true)  L2 SBMx CWF --> L3 SBMx DENSITY, or
     % (false) L2 SURF CWF --> L3 DENSITY+EFIELD+SCPOT
     bSbmx
+    % 1/2 = Whether processing SBM1 or SBM2.
     iSbm
   end
 
