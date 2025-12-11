@@ -52,25 +52,6 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(VDC_i
 %       must therefore have an interface that is compatible with BICAS.
 
 
-% Timestamp after which all data should be regarded as having only one probe of
-% data (VDC1) available.
-% -----------------------------------------------------------------------------
-% NOTE: This is to mitigate against a long period of bad data with a lot of
-% saturated DC diffs, beginning somewhere around Dec 2022 and that has not yet
-% ended as of 2023-08-17. There will hopefully eventually be an associated end
-% date to this time period of bad data. This special treatment may or may not be
-% a temporary measure.
-% PROPOSAL: Have BICAS exclude saturated VDC diffs being sent to this function
-% in the first place. BICAS could exclude VDC diffs based on
-% (not-yet-implemented) quality bits or NSO table.
-% --
-% UPDATE 2025-08-26: This measure should no longer be necessary. Saturation
-% should lead to the corresponding channels being set to NaN before being
-% passed on to this function, hence making the old functionality for
-% identifying "single-probe data" work also after this timestamp.
-% TIME_PSP_BEGIN_SINGLE_PROBE = EpochTT('2022-12-15T00:00:00.000000000Z');
-
-
 
 % Normalize "calFilename": Always contain filename.
 if isempty(calFilename)
@@ -162,7 +143,6 @@ for iSub = 1:length(sub_int_times)-1
 
   % Indices/samples for which data should be treated as single probe.
   bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
-  % bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
 
   % Resample calibration parameters
   % -------------------------------
