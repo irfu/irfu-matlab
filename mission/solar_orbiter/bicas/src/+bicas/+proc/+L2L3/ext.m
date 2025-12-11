@@ -258,8 +258,8 @@ classdef ext
       assert(all(PspTs.time == NeScpQualityBitTs.time))
 
       assert(isfloat(NeScpTs.data))
-      %if ~all( (NeScpTs.data >= 0) | isnan(NeScpTs.data) & ~isinf(NeScpTs.data))
-      if ~all( (NeScpTs.data >= 0) | isnan(NeScpTs.data) )
+      if ~all( (NeScpTs.data > 0) | isnan(NeScpTs.data) & ~isinf(NeScpTs.data))
+      %if ~all( (NeScpTs.data >= 0) | isnan(NeScpTs.data) )
         errorMsg = 'solo.psp2ne() returned negative (non-NaN) plasma density.';
         % IMPLEMENTATION NOTE: The real check should probably be to assert
         % positive density values, but this has been TEMPORARILY changed to
@@ -270,11 +270,13 @@ classdef ext
         nZero     = numel(find(      NeScpTs.data == 0));
         nNegative = numel(find(      NeScpTs.data <  0));
         nNan      = numel(find(isnan(NeScpTs.data)));
+        nInf      = numel(find(isinf(NeScpTs.data)));
         nAll      = numel(NeScpTs.data);
         L.log( 'error', errorMsg)
         L.logf('error', '    #Zeroes          = %i (%f%%)', nZero,     100*nZero    /nAll)
         L.logf('error', '    #Negative values = %i (%f%%)', nNegative, 100*nNegative/nAll)
         L.logf('error', '    #NaN             = %i (%f%%)', nNan,      100*nNan     /nAll)
+        L.logf('error', '    #Inf             = %i (%f%%)', nInf,      100*nInf     /nAll)
         error(errorMsg)
       end
       assert(strcmp(NeScpTs.units, 'cm^-3'))
