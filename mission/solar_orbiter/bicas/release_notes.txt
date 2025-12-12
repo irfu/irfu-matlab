@@ -372,7 +372,7 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 
 
 ----------------------------
- Version x.y.z (yyyy-mm-dd)
+ Version 9.1.0 (2025-12-12)
 ----------------------------
 * Renamed setting
      SWM.L2-L3_ENABLED
@@ -398,3 +398,4 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Bugfix: solo.vdccal() calculates PSP (and s/c potential; indirectly density)
   from ANT1 alone (without calibration data) when there is no (solo.vdccal)
   calibration data.
+* Bugfix: Incorrect solo.psp2ne() calibration time intervals fixed.

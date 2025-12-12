@@ -7,12 +7,12 @@
     "icd_version": "1.7"
   },
   "release": {
-    "version": "9.0.0",
-    "date": "2025-12-03T16:47:00Z",
+    "version": "9.1.0",
+    "date": "2025-12-12T18:22:00Z",
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "Non-Standard Operations (NSO) table for thruster firings updated for until 2025-12-01; Redefined L2 L2_QUALITY_BITMASK: Separate saturation quality bits for different channels (backward-incompatible change); Adjusts fill values & quality variables when ANT3 is failing or unintentionally floating.; Use new L2 master CDFs V18, L3 master CDFs V07/V08.",
+    "modification": "; Fix E-field/spacecraft pot./PSP calibration code, fix psp2ne() calibration data. L3 makes use of new L2_QUALITY_BITMASK.",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {
