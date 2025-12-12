@@ -272,6 +272,11 @@ NeScpQualityBit = TSeries(NeScp.time, ones(size(NeScp.data)));
 NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
 NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
 
+% ASSERTION: NeScp only contains legal values.
+assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(NeScp.data)) ))
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%% Help function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   function AddEntry(TintS, calData, PSPintersection)
     %Add new calibration entry
