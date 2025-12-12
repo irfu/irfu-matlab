@@ -262,8 +262,7 @@ classdef ext
       assert(all(PspTs.time == NeScpQualityBitTs.time))
 
       assert(isfloat(NeScpTs.data))
-      if ~all( (NeScpTs.data > 0) | isnan(NeScpTs.data) & ~isinf(NeScpTs.data) & isreal(NeScpTs.data))
-      %if ~all( (NeScpTs.data >= 0) | isnan(NeScpTs.data) )
+      if ~all( isreal(NeScpTs.data) & ~isinf(NeScpTs.data) & ((NeScpTs.data > 0) | isnan(NeScpTs.data)) )
         errorMsg = 'solo.psp2ne() returned illegal (non-NaN) plasma density value.';
         nZero     = numel(find(      NeScpTs.data == 0));
         nNegative = numel(find(      NeScpTs.data <  0));
