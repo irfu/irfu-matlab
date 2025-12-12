@@ -85,7 +85,7 @@ timeCalibrationDataEnd   = a.d23.time(end);
 % Version of the function (not .mat file).
 % NOTE: This value is meant to be be UPDATED BY HAND, not by an automatic
 % timestamp, so that a constant value represents the same function/algorithm.
-codeVerStr = '2025-08-26T13:05:00';
+codeVerStr = '2025-12-12T09:37:00';
 % Version of the .mat file. Using filename, or at least for now.
 % This string is used by BICAS to set a CDF global attribute in official
 % datasets for traceability.
