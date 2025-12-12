@@ -166,10 +166,10 @@ for iSub = 1:length(sub_int_times)-1
   k23R  = a.k23.tlim(subTint).resample(VDC);
   K123R = a.K123.tlim(subTint).resample(VDC);
   % Set (resampled) calibration data to NaN for timestamps outside of the time
-  % interval for which there is actual calibration data. Must do this to prevent
-  % wildly extrapolating calibration data to far outside the time interval
-  % covered by actual calibration data, which leads to calibrating data which
-  % can not (yet) be calibrated.
+  % interval for which there is actual calibration data. One must do this to
+  % prevent wildly extrapolating calibration data to far outside the time
+  % interval covered by actual calibration data, which leads to calibrating data
+  % which can not (yet) be calibrated.
   d23R.data( bNoCalibrationData) = NaN;
   k23R.data( bNoCalibrationData) = NaN;
   K123R.data(bNoCalibrationData) = NaN;
