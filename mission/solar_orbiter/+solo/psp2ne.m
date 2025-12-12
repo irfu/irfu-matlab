@@ -309,7 +309,7 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
       % after the previous one ends.
       % TEMPORARILY DISABLED since the check discovers errors in hardcoded data,
       % errors which have not yet been fixed.
-      %assert(CalEntry.time(1) - Cal.time(end) == 1)
+      assert(CalEntry.time(1) - Cal.time(end) == 1)
 
       Cal = Cal.combine(CalEntry);
     end
