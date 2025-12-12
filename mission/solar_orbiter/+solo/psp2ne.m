@@ -282,9 +282,9 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
 %%%%%%%%%%%%%%%%%%%%%%%% Help function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   function AddEntry(TintS, calData, PSPintersection)
-
     %Add new calibration entry
     % For two-fit calibration use three input arguments
+
     if ~isreal(calData(1)) && (nargin<3 || isempty(PSPintersection))
       errS = ['Invalid two-fit cal entry at: ' TintS];
       irf.log('critical',errS)
@@ -310,8 +310,6 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
     else
       % ASSERTION: Require that the new time interval begins exactly one second
       % after the previous one ends.
-      % TEMPORARILY DISABLED since the check discovers errors in hardcoded data,
-      % errors which have not yet been fixed.
       assert(CalEntry.time(1) - Cal.time(end) == 1)
 
       Cal = Cal.combine(CalEntry);
