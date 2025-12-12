@@ -72,6 +72,51 @@ classdef debug
 
 
 
+    function Fig = plot_TSeries(Ts, nanValue, figName)
+      assert(isa(Ts, "TSeries"))
+      assert(isscalar(nanValue) & isa(nanValue, class(Ts.data)))
+      assert(isstring(figName))
+
+      Fig = figure("WindowState", "maximized", "Name", figName);
+
+      dtAr = bicas.debug.TT2000_to_DT(Ts.time.ttns);
+      yAr = Ts.data;
+      yAr(isnan(yAr)) = nanValue;
+      plot(dtAr, yAr)
+
+      % IMPLEMENTATION NOTE: Setting x limits is needed if there are NaN values
+      % at the x min/max.
+      xlim(dtAr([1, end]))
+    end
+
+
+
+    function Fig = plot_FPA(tt2000Ar, Fpa, fv, figName)
+      assert(isa(tt2000Ar, "int64"))
+      assert(isa(Fpa, 'bicas.utils.FPArray'))
+      assert(isa(fv, Fpa.mc))
+      assert(isstring(figName))
+
+      dtAr = bicas.debug.TT2000_to_DT(tt2000Ar);
+      yAr  = Fpa.array(fv);
+
+      Fig = figure("WindowState", "maximized", "Name", figName);
+
+      plot(dtAr, yAr)
+
+      % IMPLEMENTATION NOTE: Setting x limits is needed if there are NaN values
+      % at the x min/max.
+      xlim(dtAr([1, end]))
+    end
+
+
+
+    function dtAr = TT2000_to_DT(tt2000Ar)
+      dtAr = datetime(tt2000Ar, 'ConvertFrom', 'tt2000', 'TimeZone', 'UTCLeapSeconds');
+    end
+
+
+
   end    % methods(Static)
 
 
