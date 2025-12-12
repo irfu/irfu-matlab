@@ -377,9 +377,8 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Renamed setting
      SWM.L2-L3_ENABLED
   -->SWM.L2-L3_SURV_ENABLED
-* Add unofficial software modes for processing L2-L3 SBM1/SBM2.
+* Add EXPERIMENTAL unofficial software modes for processing L2-L3 SBM1/SBM2.
   Controlled by new setting: SWM.L2-L3_SBMx_ENABLED.
-  EXPERIMENTAL!
 * Rename all software mode CLI option names to contain the input & output
   archiving levels.
   Ex:
@@ -390,3 +389,12 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Rename settings:
      INPUT_CDF.GA_DSI_MISMATCH_POLICY
   -->INPUT_CDF.GA_DSID_MISMATCH_POLICY
+* Bugfix: solo.vdccal() does not extrapolate calibration data (EFIELD, PSP s/c
+  potential) to outside of time interval for which there is (solo.vdccal)
+  calibration data.
+* Bugfix: solo.vdccal() calculates PSP (and s/c potential; indirectly density)
+  from ANT1 alone if either ANT2 or ANT3 is missing (rather then only if both
+  are missing).
+* Bugfix: solo.vdccal() calculates PSP (and s/c potential; indirectly density)
+  from ANT1 alone (without calibration data) when there is no (solo.vdccal)
+  calibration data.

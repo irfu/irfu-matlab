@@ -56,7 +56,7 @@ classdef debug
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       assert(isstring(figName))
 
-      Fig = figure("WindowState", "maximized", "Name", figName)
+      Fig = figure("WindowState", "maximized", "Name", figName);
       tiledlayout(2, 1, "TileSpacing", "compact", "Padding", "none");
 
       nexttile

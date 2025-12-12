@@ -400,7 +400,13 @@ classdef gamods
         %   Ex: ANT3_FAILING, ANT3_UNINTENTIONALLY_FLOATING
         %       ==> L2 QUALITY_FLAG<=1
         %       ==> Excluded from L3 due to QUALITY_FLAG threshold.
+
+        Gmdb.add_GMVE(...
+          bicas.const.L3_SURV_DENSITY_DSID_CA, ...
+          bicas.ga.mods.VersionEntry('yyyy-mm-dd', '9.x.y', ...
+          {['Set density using ANT1 when ANT2 *or* ANT3 is absent, or there is no (EFIELD/PSP) calibration data.']}))
       end
+
     end    % init_GA_MODS_DB
 
 

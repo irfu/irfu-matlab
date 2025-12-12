@@ -247,8 +247,8 @@ AddEntry('2025-04-23T15:36:00Z/2025-04-23T20:45:59Z',[0.9901  2.1066]);%106
 CalR = Cal.resample(PSP);
 NeScp = PSP;
 
-
 NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
+
 
 
 timeOutsideInterval = irf_time('2025-04-23T20:45:59Z','utc>ttns');
@@ -261,16 +261,18 @@ NeScp.units = 'cm^-3';
 NeScp.siConversion = 'cm^-3>1e6*m^-3';
 NeScp.userData = '';
 
-% NOTE: Setting temporary (but legal) return value for return variable that is
-% not yet used by BICAS (2023-08-10).
+% NOTE: Setting the return value for return variable that is used by BICAS for
+% setting quality bit in zVariable L3_QUALITY_BITMASK.
 % NOTE: Overwrite every value with zero in order to also overwrite Nan which
-% may otherwise inherited from NeScp.
+% may otherwise be inherited from NeScp.
 % NOTE: Density from TNR plasma line used to calibrate NeScp only measures up
 % to 122 cc, everything above that value is uncertain, therefore is flagged.
 % Low values of NeScp i.e <2 cc are also uncertain.
 NeScpQualityBit = TSeries(NeScp.time, ones(size(NeScp.data)));
 NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
-NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
+NeScpQualityBit.data(isnan(NeScpQualityBit.data))     = 0;
+
+
 
 % ASSERTION: NeScp only contains legal values.
 assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(NeScp.data)) ))
