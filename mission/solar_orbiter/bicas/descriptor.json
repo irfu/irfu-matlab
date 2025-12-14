@@ -12,7 +12,7 @@
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "; Fix E-field/spacecraft pot./PSP calibration code, fix psp2ne() calibration data. L3 makes use of new L2_QUALITY_BITMASK.",
+    "modification": "Fix E-field/spacecraft pot./PSP calibration code, fix psp2ne() calibration data. L3 makes use of new L2_QUALITY_BITMASK.",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {
