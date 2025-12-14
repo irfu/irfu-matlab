@@ -34,8 +34,6 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 % Calibration using plasma line
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
 
-Cal = [];
-
 %===============================================================================
 % codeVerStr = Timestamp string that represent the version of the function. This
 % string is used by BICAS to set a CDF global attribute in official datasets for
@@ -49,10 +47,12 @@ Cal = [];
 % * It should *NOT* be updated for unrelated code changes, e.g. comments or
 %   variable name changes.
 %===============================================================================
-codeVerStr = '2025-12-12T17:55:00';
+codeVerStr = '2025-12-14T19:41:00';
 
 
 
+Cal                 = [];
+AddEntryEndTimePrev = [];    % Previous AddEntry() time interval end timestamp.
 %======================================================================
 %                                 2020
 %======================================================================
@@ -285,6 +285,18 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
     %Add new calibration entry
     % For two-fit calibration use three input arguments
 
+    % ASSERTION: Require that the current time interval in the function argument
+    % begins exactly one second after the time interval of the previous call
+    % ended.
+    % NOTE: "CalEntry" does not aways contain this time interal and can
+    % therefore not be used to make this check.
+    Tint = irf.tint(TintS);
+    if ~isempty(AddEntryEndTimePrev)
+      timeDiffSec = Tint(1) - AddEntryEndTimePrev;
+      assert(timeDiffSec == 1)
+    end
+    AddEntryEndTimePrev = Tint(2);
+
     if ~isreal(calData(1)) && (nargin<3 || isempty(PSPintersection))
       errS = ['Invalid two-fit cal entry at: ' TintS];
       irf.log('critical',errS)
@@ -298,6 +310,11 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
       checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
 
       if ~isempty(checkInterval)
+        % NOTE: This function call changes the first and last timestamps of
+        % "CalEntry" to only cover the length of time in "PSP" (an argument to
+        % this function), i.e. it is not a deterministic update to "Cal", i.e.
+        % "Cal" is not an entirely hardcoded data structure, i.e. the final
+        % "Cal" value is not a constant!
         [CalEntry] = TwoFitCalibration(checkInterval,PSPintersection,CalEntry);
       else
         CalEntry.data(1:end,2) = imag(CalEntry.x.data);
@@ -308,10 +325,6 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
     if isempty(Cal)
       Cal = CalEntry;
     else
-      % ASSERTION: Require that the new time interval begins exactly one second
-      % after the previous one ends.
-      assert(CalEntry.time(1) - Cal.time(end) == 1)
-
       Cal = Cal.combine(CalEntry);
     end
 
