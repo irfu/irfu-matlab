@@ -154,13 +154,12 @@ while true
         res = combine_ts(res,varTmp);
 
       end
-    else
-      return
+
     end
-  end  
+  end
+  if epochFileStart>=epochFileEnd, return, end
   epochFileStart = epochFileStart + 3600*24;
   timeVecStart = fromepoch(epochFileStart);
-  if epochFileStart>=epochFileEnd, break, end
 end
 
 
@@ -235,6 +234,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %distribution
         load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
         dist = load_var.Data;
@@ -298,6 +301,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %distribution
         load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
         dist = load_var.Data;
@@ -386,6 +393,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %distribution
         load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
         dist = load_var.Data;
@@ -486,6 +497,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %data
         load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
         dat = load_var.Data;
@@ -532,6 +547,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %data
         if strcmpi(VAR,'mag')
           VAR = 'Mag';
