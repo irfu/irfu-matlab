@@ -47,7 +47,7 @@ jobs:
           command: tests_before_release;
 
       # upload artifact (pdf report with plots, etc.)
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: test_report.pdf
           path: ciPath/report.pdf
@@ -83,7 +83,7 @@ jobs:
           command: tests_before_release_BICAS;
 
       # Upload artifact (pdf report with plots, etc.)
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: test_report_BICAS.pdf
           path: ciPath/report_BICAS.pdf
