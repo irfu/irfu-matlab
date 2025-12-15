@@ -157,10 +157,10 @@ while true
     else
       return
     end
-  end
-  if epochFileStart>=epochFileEnd, break, end
+  end  
   epochFileStart = epochFileStart + 3600*24;
   timeVecStart = fromepoch(epochFileStart);
+  if epochFileStart>=epochFileEnd, break, end
 end
 
 
