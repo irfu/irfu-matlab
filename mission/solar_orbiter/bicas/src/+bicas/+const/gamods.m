@@ -90,12 +90,12 @@ classdef gamods
       % ACTUAL MODS ENTRIES, ADDED FOR ONLY THE RELEVANT DSIDs
       %#######################################################
 
-      %===================================================================
+      %=====================================================================
       % L2: At most one entry per BICAS version
       % ---------------------------------------
       % NOTE: L2 dates should be taken from ROC's BICAS git repo commits
       %       since those represent deliveries to ROC.
-      %===================================================================
+      %=====================================================================
       % L3 DENSITY+EFIELD+SCPOT (not VHT): At most one entry per delivery
       % -----------------------------------------------------------------
       % NOTE: L3 dates are effectively determined by when dataset
@@ -109,14 +109,13 @@ classdef gamods
       %     BICAS version, only the previous official version, and
       % (2) the dates may conflict with the combinations of BICAS version
       %     and date for other MODS entries.
-      %===================================================================
+      %=====================================================================
       % L3 VHT
       % ------
       % NOTE: L3 dates are effectively determined by deliveries to ROC.
       % NOTE: Including VHT, since VHT uses the same BICAS functions for
-      %       writing datasets (including
-      %       bicas.ga.get_output_dataset_GAs).
-      %===================================================================
+      %       writing datasets (including bicas.ga.get_output_dataset_GAs).
+      %=====================================================================
 
       % BICAS v1.0.0 : No MODS needed since there are no changes compared
       %                to an earlier version.

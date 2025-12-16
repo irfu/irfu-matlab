@@ -34,6 +34,8 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 % Calibration using plasma line
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
 
+
+
 %===============================================================================
 % codeVerStr = Timestamp string that represent the version of the function. This
 % string is used by BICAS to set a CDF global attribute in official datasets for
@@ -216,7 +218,7 @@ AddEntry('2023-08-18T18:15:41Z/2023-08-29T23:59:59Z',... %95
 AddEntry('2023-08-30T00:00:00Z/2023-09-05T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~7 days calibration data gap.
 AddEntry('2023-09-06T00:00:00Z/2023-09-07T23:59:59Z',... %64 Manual calibration
   [0.3003 + 2.6582i  0.1068 + 4.1297i],7.4938);
-AddEntry('2023-09-08T00:00:00Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~18 MONTHS calibration data gap!!
+AddEntry('2023-09-08T00:00:00Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~18 MONTHS calibration data gap!
 %======================================================================
 %                                 2025
 %======================================================================
@@ -261,13 +263,17 @@ NeScp.units = 'cm^-3';
 NeScp.siConversion = 'cm^-3>1e6*m^-3';
 NeScp.userData = '';
 
-% NOTE: Setting the return value for return variable that is used by BICAS for
-% setting quality bit in zVariable L3_QUALITY_BITMASK.
-% NOTE: Overwrite every value with zero in order to also overwrite Nan which
-% may otherwise be inherited from NeScp.
+% Setting the return value "NeScpQualityBit"
+% ------------------------------------------
+% Is used by BICAS for setting quality bit in zVariable L3_QUALITY_BITMASK.
+% --
+% NOTE: Overwrite every value with zero in order to also overwrite NaN which may
+% otherwise be inherited from NeScp.
 % NOTE: Density from TNR plasma line used to calibrate NeScp only measures up
 % to 122 cc, everything above that value is uncertain, therefore is flagged.
 % Low values of NeScp i.e <2 cc are also uncertain.
+% --
+% NOTE: Currently set to =1 when there is no data (density=NaN). Change?!
 NeScpQualityBit = TSeries(NeScp.time, ones(size(NeScp.data)));
 NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
 NeScpQualityBit.data(isnan(NeScpQualityBit.data))     = 0;
