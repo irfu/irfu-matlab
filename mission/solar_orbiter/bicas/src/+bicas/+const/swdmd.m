@@ -89,7 +89,7 @@ classdef swdmd
       % the S/W must lead to update the version number.
       % """"""""
       MAP('SWD.release.version')   = '9.1.0';
-      MAP('SWD.release.date')      = '2025-12-12T18:22:00Z';
+      MAP('SWD.release.date')      = '2025-12-16T11:28:00Z';
       MAP('SWD.release.author')    = 'Erik P G Johansson, BIAS team, IRF';
       MAP('SWD.release.contact')   = 'erik.johansson@irf.se';
       MAP('SWD.release.institute') = IRF_LONG_NAME;   % Full name or abbreviation?
