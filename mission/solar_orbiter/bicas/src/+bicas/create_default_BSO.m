@@ -94,6 +94,13 @@ function Bso = create_default_BSO()
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
 %
+% PROPOSAL: Convert some settings to constants.
+%   PRO: Many constants are never changed.
+%   PRO: Reduces locations which need BSO.
+%     PRO: Can potentially remove BSO as an argument.
+%   CON: Values will not show up in log.
+%   NOTE: Technically removes cases to test.
+%
 %
 % ====================================
 % BOGIQ: SETTING KEY NAMING CONVENTION
@@ -183,15 +190,14 @@ S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
 % Enable s/w modes for processing LFR & TDS datasets L1-->L2 in addition to
 % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
 % opposed to L1 current datasets.
-S.define_setting('SWM.L1-L2_ENABLED',              false);
+S.define_setting('SWM.L1-L2_ENABLED',         false);
 % Enable s/w mode for processing L2-->L2: LFR-CWF-E-->LFR-CWF-E-1-SECONDS.
-S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED',      false);
-% Enable s/w mode for processing L2-->L3 datasets: DENSITY, EFIELD, SCPOT.
-S.define_setting('SWM.L2-L3_ENABLED',              false);
-% Enable s/w mode for processing L2-->L3 datasets: SBMx DENSITY.
-% NOTE: This s/w mode is EXPERIMENTAL. /2025-11-26
-% PROPOSAL: Merged with SWM.L2-L3_ENABLED.
-S.define_setting('SWM.L2-L3_SBMx_DENSITY_ENABLED', false);
+S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED', false);
+% Enable s/w mode for processing L2-->L3 SURV datasets.
+S.define_setting('SWM.L2-L3_SURV_ENABLED',    false);
+% Enable s/w mode for processing L2-->L3 SBMx datasets.
+% NOTE: This s/w mode is EXPERIMENTAL. /2025-12-05
+S.define_setting('SWM.L2-L3_SBMx_ENABLED',    false);
 
 
 
@@ -226,9 +232,9 @@ S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 
 
 S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
-% Require input CDF Global Attribute "DSI" to match the expected
+% Require input CDF Global Attribute "DSID" to match the expected
 % value.
-S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',       'WARNING')    % ERROR, WARNING
+S.define_setting('INPUT_CDF.GA_DSID_MISMATCH_POLICY',      'WARNING')    % ERROR, WARNING
 S.define_setting('INPUT_CDF.GA_PARENTS_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
 % NOTE: This modification applies BEFORE
@@ -427,7 +433,7 @@ S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN
 % Determines scheme for how saturation modifies QUALITY_FLAG and
 % L2_QUALITY_BITMASK.
 %     Old scheme (to eventually be phased out): 'GLOBAL_SATURATION'
-%     New scheme (to eventually be phased in):  'CHANNEL_SATURATION'
+%     New scheme (currently used)             : 'CHANNEL_SATURATION'
 %
 % NOTE: The CDF skeleton metadata should ideally describe the quality bits in
 % L2_QUALITY_BITMASK. Selecting scheme here does affect the meaning of those

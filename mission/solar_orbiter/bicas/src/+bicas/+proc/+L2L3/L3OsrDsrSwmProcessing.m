@@ -32,12 +32,15 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   %
   % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT
   %           into separate SWMs.
-  %   PRO: Faster processing when only processing subset of L3 DSIs.
+  %   PRO: Faster processing when only processing subset of L3 DSIDs.
   %       CON: Not very heavy operation.
   %   PRO: Leads to better organization of code.
   %       PRO: process_L2_to_L3() is too large and should be split up anyway.
   %   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed
   %        after the latter.
+  %
+  % PROPOSAL: Abolish iSbm.
+  %   PRO: Seems unused and not needed.
 
 
 
@@ -71,6 +74,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % (true)  L2 SBMx CWF --> L3 SBMx DENSITY, or
     % (false) L2 SURF CWF --> L3 DENSITY+EFIELD+SCPOT
     bSbmx
+    % 1/2 = Whether processing SBM1 or SBM2.
     iSbm
   end
 
@@ -141,6 +145,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         OutputDatasetsMap('DENSITY_DSR_cdf')  = DensityDsrCdf;
       else
         % NOTE: Ignoring all other return data.
+        OutputDatasetsMap('SBMx_EFIELD_cdf')  = EfieldOsrCdf;
+        OutputDatasetsMap('SBMx_SCPOT_cdf')   = ScpotOsrCdf;
         OutputDatasetsMap('SBMx_DENSITY_cdf') = DensityOsrCdf;
       end
     end
@@ -184,6 +190,30 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         ] ...
         = process_L2_to_L3(InLfrCwf, NsoTable, Excd, Bso, L)
 
+
+
+      saturationSchemeId = Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME');
+      if strcmp(saturationSchemeId, "CHANNEL_SATURATION")
+        % IMPLEMENTATION NOTE: Check that the input datasets use
+        % GLOBAL_SATURATION.
+        % ------------------------------------------------------
+        % Official SOLO_L2_RPW-LFR-SURV/SBM1/SBM2-CWF-E datasets use
+        % GLOBAL_SATURATION starting at Skeleton_version = 18.
+        % NOTE: Only requiring this when PROCESSING.SATURATION.QUALITY_SCHEME =
+        % CHANNEL_SATURATION, since any other case should only be used for very
+        % special occasions, and GLOBAL_SATURATION should be phased out over
+        % time anyway.
+        inputSkeletonVerNbr = str2double(InLfrCwf.Ga.Skeleton_version{1});
+        if inputSkeletonVerNbr < 18
+          error( ...
+            "The input CDF has Skeleton_version=%d indicating that it does not" + ...
+            " use CHANNEL_SATURATION and is therefore incompatible.", ...
+            inputSkeletonVerNbr)
+        end
+      end
+
+
+
       % PROPOSAL: Abolish struct "Ga".
       % PROPOSAL: Abolish struct "Zv".
       %   PRO: Not passed to any function etc.
@@ -219,7 +249,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %       PRO: Must read L3 SCPOT dataset to produce L3 DENSITY dataset.
       %   CON: There is much shared functionality for 3 quality ZVs.
       %       PRO: Same ~constants
-      %           Ex: INPUT_DSI, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
+      %           Ex: INPUT_DSID, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
       %       PRO: Read setting QUALITY_FLAG_MIN
       %       PRO: Normalizing CWF zVar names.
       %       PRO: Preparations for downsampled.

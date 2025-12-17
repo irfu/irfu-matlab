@@ -7,12 +7,12 @@
     "icd_version": "1.7"
   },
   "release": {
-    "version": "9.0.0",
-    "date": "2025-12-03T16:47:00Z",
+    "version": "9.1.0",
+    "date": "2025-12-16T11:28:00Z",
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "Non-Standard Operations (NSO) table for thruster firings updated for until 2025-12-01; Redefined L2 L2_QUALITY_BITMASK: Separate saturation quality bits for different channels (backward-incompatible change); Adjusts fill values & quality variables when ANT3 is failing or unintentionally floating.; Use new L2 master CDFs V18, L3 master CDFs V07/V08.",
+    "modification": "Fix E-field/spacecraft pot./PSP calibration code, fix psp2ne() calibration data. L3 makes use of new L2_QUALITY_BITMASK.",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {
@@ -21,7 +21,7 @@
   },
   "modes": [
     {
-      "name": "LFR-SBM1-CWF-E",
+      "name": "L1R-L2_LFR-SBM1-CWF-E",
       "purpose": "Generate SBM1 CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -45,7 +45,7 @@
       }
     },
     {
-      "name": "LFR-SBM2-CWF-E",
+      "name": "L1R-L2_LFR-SBM2-CWF-E",
       "purpose": "Generate SBM2 CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -69,7 +69,7 @@
       }
     },
     {
-      "name": "LFR-SURV-CWF-E",
+      "name": "L1R-L2_LFR-SURV-CWF-E",
       "purpose": "Generate SURV CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -93,7 +93,7 @@
       }
     },
     {
-      "name": "LFR-SURV-SWF-E",
+      "name": "L1R-L2_LFR-SURV-SWF-E",
       "purpose": "Generate SURV SWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -117,7 +117,7 @@
       }
     },
     {
-      "name": "TDS-LFM-CWF-E",
+      "name": "L1R-L2_TDS-LFM-CWF-E",
       "purpose": "Generate CWF electric field L2 data (potential difference) from TDS LF mode L1R data.",
       "inputs": {
         "in_sci": {
@@ -141,7 +141,7 @@
       }
     },
     {
-      "name": "TDS-LFM-RSWF-E",
+      "name": "L1R-L2_TDS-LFM-RSWF-E",
       "purpose": "Generate RSWF electric field L2 data (potential difference) from TDS LF mode L1R data.",
       "inputs": {
         "in_sci": {

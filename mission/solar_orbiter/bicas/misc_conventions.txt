@@ -155,6 +155,9 @@ BLTS = BIAS-LFR/TDS SIGNAL
     NOTE: This definition is partly created to avoid using term "BIAS_i" since
     it is easily confused with other things (the subsystem BIAS, bias currents),
     partly to have names for various signals at various stages of processing.
+BPA
+    Class bicas.tools.batch.BicasProcessingAccessAbstract and subclasses
+    thereof.
 BRVF
     BIAS RCT Validity File. File "bias_rct_validity.json" as specified by ROC.
     Is not a ROC term.
@@ -242,23 +245,23 @@ DRT
     Class bicas.tf.Deretrending.
 DSFN
     Class solo.adm.dsfn.DatasetFilename.
-DSI, "dataset ID"
+DSID, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
     NOTE: The concept of "dataset ID" is defined by RPW/ROC, but
-    the abbreviation "DSI" is defined by BICAS. DSI does not formally exist in
+    the abbreviation "DSID" is defined by BICAS. DSID does not formally exist in
     SolO outside RPW, though the SolO metadata standards define metadata and
     filenames with components ("source"+"level"+"descriptor") which together are
-    identical to DSI for RPW datasets and can be used to define DSI analogously
+    identical to DSID for RPW datasets and can be used to define DSID analogously
     for SolO datasets outside RPW.
     NOTE: Must be uppercase by definition (at least when used as string
-    constants by BICAS), though DSIs are represented in lowercase in the
-    official dataset file naming convention (except the "level"). Uppercase DSI
+    constants by BICAS), though DSIDs are represented in lowercase in the
+    official dataset file naming convention (except the "level"). Uppercase DSID
     has been used in file names for some old ground-test datasets.
-    NOTE: DSIs exclude the "-cdag" suffix. "-cdag" is defined by ROC
+    NOTE: DSIDs exclude the "-cdag" suffix. "-cdag" is defined by ROC
     for RPW-internal datasets only.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical
-    variants thereof) are not abbreviated "DSI", but to the GA name in
+    variants thereof) are not abbreviated "DSID", but to the GA name in
     analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Used in the context of downsampling.
@@ -304,7 +307,7 @@ Global saturation (quality variable scheme)
 GMDB
     "GA MODS DataBase", i.e. class bicas.ga.mods.Database.
 GMDE
-    "GA MODS DSI Entry", i.e. class bicas.ga.mods.DsiEntry.
+    "GA MODS DSID Entry", i.e. class bicas.ga.mods.DsidEntry.
 GMVE
     "GA MODS Version Entry", i.e. class bicas.ga.mods.VersionEntry.
 ICD
@@ -318,6 +321,22 @@ IVPAV
     ivolt/avolt = Interface volt Per Antenna volt (unit).
 IVPT
     ivolt/TM = Interface volt Per TM unit.
+L3 SURV
+    All L3 datasets which are derived from SOLO_L2_RPW-LFR-SURV-CWF-E, i.e.
+    SOLO_L3_RPW-BIA-DENSITY
+    SOLO_L3_RPW-BIA-DENSITY-10-SECONDS
+    SOLO_L3_RPW-BIA-EFIELD
+    SOLO_L3_RPW-BIA-EFIELD-10-SECONDS
+    SOLO_L3_RPW-BIA-SCPOT
+    SOLO_L3_RPW-BIA-SCPOT-10-SECONDS
+L3 SBMx
+    All L3 datasets which are derived from SOLO_L2_RPW-LFR-SURV-CWF-E, i.e.
+    SOLO_L3_RPW-SBM1-DENSITY
+    SOLO_L3_RPW-SBM2-DENSITY
+    SOLO_L3_RPW-SBM1-EFIELD
+    SOLO_L3_RPW-SBM2-EFIELD
+    SOLO_L3_RPW-SBM1-SCPOT
+    SOLO_L3_RPW-SBM2-SCPOT
 Lx_QUALITY_BITMASK
     L2_QUALITY_BITMASK or L3_QUALITY_BITMASK, or both at the same time.
 L2_QUALITY_BITMASK,
@@ -399,8 +418,8 @@ OSR
 PFIID
     Production Function Input ID. String constant which is used to distinguish
     between different input values (datasets) as seen from production functions.
-    In practice one PFIID represents one of multiple different DSIs (different
-    DSI for different SWMs).
+    In practice one PFIID represents one of multiple different DSIDs (different
+    DSID for different SWMs). See PFOID.
 PFOID
     Production Function Output ID. Analogous with PFIID, but for output (return
     values).
@@ -557,6 +576,9 @@ SSID
     (a) an ASR, or
     (b) one of the special cases: GND, 2.5V Ref., or unknown signal.
     Implemented as unique uint8 values.
+SURV
+    "Survey mode/data". Abbreviation used in various DSIDs. Defined by ROC
+    (presumably).
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not
@@ -565,7 +587,7 @@ SWD, S/W descriptor
     ICD).
 SWF
     Snapshot WaveForm. Snapshot data. Cf. CWF.
-SWM, S/W mode
+SWM, S/W mode, software mode
     (1) A "S/W mode" defines a set of required input CDF files and a set of
     output CDF files which can be derived from said input files. BICAS can
     execute only one such mode on each run. Executing such modes is the

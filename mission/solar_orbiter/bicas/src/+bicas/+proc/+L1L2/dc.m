@@ -58,12 +58,12 @@ classdef dc
     % * Set quality variables.
     %
     function Dcop = process_calibrate_demux(...
-        Dcip, InCurPd, outputDsi, Vcal, Ccal, NsoTable, Bso, L)
+        Dcip, InCurPd, outputDsid, Vcal, Ccal, NsoTable, Bso, L)
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
       % ASSERTION
-      assert(ischar(outputDsi))
+      assert(ischar(outputDsid))
       assert(isa(Vcal, "bicas.proc.L1L2.cal.VoltageCalibration"))
       assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
       assert(isa(Dcip, "bicas.proc.L1L2.DemultiplexingCalibrationInput"));

@@ -4,7 +4,7 @@
 % (1) with a lot of overlap between dataset IDs and entries, and
 % (2) that conforms to certain format specified by the RCS ICD.
 %
-% Contains map DSI-->bicas.ga.mods.DsiEntry.
+% Contains map DSID-->bicas.ga.mods.DsidEntry.
 %
 % MUTABLE. HANDLE CLASS.
 %
@@ -12,9 +12,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef Database < handle
-  % PROPOSAL: Abolish specifying DSIs in constructor. Simply add DsiEntry when
+  % PROPOSAL: Abolish specifying DSIDs in constructor. Simply add DsidEntry when
   %           needed.
-  %   CON: Useful for asserting that only valid DSIs are specified later.
+  %   CON: Useful for asserting that only valid DSIDs are specified later.
   % PROPOSAL: Method for returning the latest BICAS version.
   %   PRO: Can use for asserting that it equals the current BICAS version.
   %   PROBLEM: Version string (x.y.z) is stored as string in code.
@@ -27,8 +27,8 @@ classdef Database < handle
   %#####################
   %#####################
   properties(SetAccess=private, GetAccess=private)
-    % Map DSI-->GMDE
-    DsiGmdeMap
+    % Map DSID-->GMDE
+    DsidGmdeMap
   end
 
 
@@ -43,41 +43,44 @@ classdef Database < handle
 
 
     % Constructor. Creates database which is initialized with empty
-    % bicas.ga.mods.DsiEntry for specified DSIs.
-    function obj = Database(dsiCa)
-      obj.DsiGmdeMap = containers.Map('KeyType', 'char', 'ValueType', 'Any');
+    % bicas.ga.mods.DsidEntry objects for every specified DSID.
+    function obj = Database(dsidCa)
+      assert(iscolumn(dsidCa))
 
-      for i = 1:numel(dsiCa)
-        dsi = dsiCa{i};
+      obj.DsidGmdeMap = containers.Map('KeyType', 'char', 'ValueType', 'Any');
 
-        % ASSERTION: dsi is an unused key
-        % -------------------------------
+      for i = 1:numel(dsidCa)
+        dsid = dsidCa{i};
+
+        % ASSERTION: "dsid" is an unused key
+        % ---------------------------------
         % IMPLEMENTATION NOTE: In principle overkill since later code
         % effectively contains the same assertion but without proper
         % error message), but it is actually useful when configuring
         % hardcoded values manually.
-        if obj.DsiGmdeMap.isKey(dsi)
+        if obj.DsidGmdeMap.isKey(dsid)
           error('BICAS:Assertion', ...
-            'Map already has a key dsi="%s".', dsi)
+            'Argument "dsidCa" contains key dsid="%s" at least twice.', dsid)
         end
 
-        % NOTE: Effectively (additional) assertion on that "dsi" is a
+        % NOTE: Effectively (additional) assertion on that "dsid" is a
         % valid key.
-        obj.DsiGmdeMap(dsi) = bicas.ga.mods.DsiEntry();
+        obj.DsidGmdeMap(dsid) = bicas.ga.mods.DsidEntry();
       end
 
     end
 
 
 
-    % Add one GMVE to multiple DSIs.
-    function add_GMVE(obj, dsiCa, Gmve)
-      irf.assert.castring_set(dsiCa)
+    % Add one GMVE to multiple DSIDs.
+    function add_GMVE(obj, dsidCa, Gmve)
+      assert(iscolumn(dsidCa))
+      irf.assert.castring_set(dsidCa)
       assert(isa(Gmve, 'bicas.ga.mods.VersionEntry'))
 
-      for i = 1:numel(dsiCa)
-        dsi = dsiCa{i};
-        Gmde = obj.DsiGmdeMap(dsi);
+      for i = 1:numel(dsidCa)
+        dsid = dsidCa{i};
+        Gmde = obj.DsidGmdeMap(dsid);
         Gmde.add_GMVE(Gmve)
       end
     end
@@ -85,9 +88,9 @@ classdef Database < handle
 
 
     % Return cell array of strings to be used as value GA MODS for the
-    % specified DSI.
-    function gaModsStrCa = get_MODS_strings_CA(obj, dsi)
-      Gmde        = obj.DsiGmdeMap(dsi);
+    % specified DSID.
+    function gaModsStrCa = get_MODS_strings_CA(obj, dsid)
+      Gmde        = obj.DsidGmdeMap(dsid);
       gaModsStrCa = Gmde.get_MODS_strings_CA();
     end
 

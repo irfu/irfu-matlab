@@ -1,5 +1,5 @@
 %
-% Class that represents the GA "MODS" information for one DSI.
+% Class that represents the GA "MODS" information for one DSID.
 % Contains list of instances of bicas.ga.mods.VersionEntry.
 %
 %
@@ -8,7 +8,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef DsiEntry < handle
+classdef DsidEntry < handle
   % PROPOSAL: Assert than all comment strings (separate ones in VersionEntry)
   %           are unique.
 
@@ -34,7 +34,7 @@ classdef DsiEntry < handle
 
 
 
-    function obj = DsiEntry()
+    function obj = DsidEntry()
       obj.GmveAr = bicas.ga.mods.VersionEntry.empty(0, 1);
     end
 
@@ -65,18 +65,28 @@ classdef DsiEntry < handle
       else
         GmveLast = obj.GmveAr(end);
 
-        % Obtain list of all date strings, except the last one.
+        % ----------
+        % ASSERTIONS
+        % ----------
+        % Obtain list of all date strings, *EXCEPT* the last one.
         nonlastDateStrCa = arrayfun(@(ca) ca.dateStr, ...
           obj.GmveAr(1:end-1), 'UniformOutput', false);
-
         assert(~ismember(GmveNew.dateStr, nonlastDateStrCa), ...
-          'The date string Gmve.dateStr="%s" has already been used by a non-last GMVE in this GMDE.', ...
+          ['The date string Gmve.dateStr="%s" has already been used by a' ...
+          ' non-last GMVE in this GMDE.'], ...
           GmveNew.dateStr)
+
+        % -----------------------------
+        % Add information to obj.GmveAr
+        % -----------------------------
         if strcmp(GmveNew.dateStr, GmveLast.dateStr)
+          % CASE: Last GMVE and new GMVE have the SAME BICAS date.
           if strcmp(GmveNew.bicasVersionStr, GmveLast.bicasVersionStr)
-            % NOTE: Overwrite last GMVE in array
+            % CASE: Last GMVE and new GMVE have the SAME BICAS versions.
+            % NOTE: Append the last GMVE in array.
             obj.GmveAr(end, 1) = GmveLast + GmveNew;
           else
+            % CASE: Last GMVE and new GMVE have DIFFERENT BICAS versions.
             obj.GmveAr(end+1, 1) = GmveNew;
           end
 
@@ -96,7 +106,7 @@ classdef DsiEntry < handle
 
 
     % Return cell array of strings to be used as value GA MODS for the
-    % specified DSI.
+    % specified DSID.
     function gaModsStrCa = get_MODS_strings_CA(obj)
       gaModsStrCa = arrayfun(...
         @(Gmve) (Gmve.get_str()), obj.GmveAr, ...

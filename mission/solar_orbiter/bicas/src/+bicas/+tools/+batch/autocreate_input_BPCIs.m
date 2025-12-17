@@ -9,7 +9,7 @@
 % =========
 % get_BPCI_output_path_fh
 %       Function handle.
-%       path = @(outputDsi, BpciInputDsmdArray, cohbCa).
+%       path = @(outputDsid, BpciInputDsmdArray, cohbCa).
 %       Determines file paths for BPCI output datasets.
 %
 %

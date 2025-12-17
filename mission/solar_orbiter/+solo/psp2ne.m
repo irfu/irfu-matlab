@@ -34,7 +34,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 % Calibration using plasma line
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
 
-Cal = [];
+
 
 %===============================================================================
 % codeVerStr = Timestamp string that represent the version of the function. This
@@ -49,10 +49,12 @@ Cal = [];
 % * It should *NOT* be updated for unrelated code changes, e.g. comments or
 %   variable name changes.
 %===============================================================================
-codeVerStr = '2025-12-12T17:55:00';
+codeVerStr = '2025-12-14T19:41:00';
 
 
 
+Cal                 = [];
+AddEntryEndTimePrev = [];    % Previous AddEntry() time interval end timestamp.
 %======================================================================
 %                                 2020
 %======================================================================
@@ -216,7 +218,7 @@ AddEntry('2023-08-18T18:15:41Z/2023-08-29T23:59:59Z',... %95
 AddEntry('2023-08-30T00:00:00Z/2023-09-05T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~7 days calibration data gap.
 AddEntry('2023-09-06T00:00:00Z/2023-09-07T23:59:59Z',... %64 Manual calibration
   [0.3003 + 2.6582i  0.1068 + 4.1297i],7.4938);
-AddEntry('2023-09-08T00:00:00Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~18 MONTHS calibration data gap!!
+AddEntry('2023-09-08T00:00:00Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~18 MONTHS calibration data gap!
 %======================================================================
 %                                 2025
 %======================================================================
@@ -261,13 +263,17 @@ NeScp.units = 'cm^-3';
 NeScp.siConversion = 'cm^-3>1e6*m^-3';
 NeScp.userData = '';
 
-% NOTE: Setting the return value for return variable that is used by BICAS for
-% setting quality bit in zVariable L3_QUALITY_BITMASK.
-% NOTE: Overwrite every value with zero in order to also overwrite Nan which
-% may otherwise be inherited from NeScp.
+% Setting the return value "NeScpQualityBit"
+% ------------------------------------------
+% Is used by BICAS for setting quality bit in zVariable L3_QUALITY_BITMASK.
+% --
+% NOTE: Overwrite every value with zero in order to also overwrite NaN which may
+% otherwise be inherited from NeScp.
 % NOTE: Density from TNR plasma line used to calibrate NeScp only measures up
 % to 122 cc, everything above that value is uncertain, therefore is flagged.
 % Low values of NeScp i.e <2 cc are also uncertain.
+% --
+% NOTE: Currently set to =1 when there is no data (density=NaN). Change?!
 NeScpQualityBit = TSeries(NeScp.time, ones(size(NeScp.data)));
 NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
 NeScpQualityBit.data(isnan(NeScpQualityBit.data))     = 0;
@@ -285,6 +291,18 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
     %Add new calibration entry
     % For two-fit calibration use three input arguments
 
+    % ASSERTION: Require that the current time interval in the function argument
+    % begins exactly one second after the time interval of the previous call
+    % ended.
+    % NOTE: "CalEntry" does not aways contain this time interal and can
+    % therefore not be used to make this check.
+    Tint = irf.tint(TintS);
+    if ~isempty(AddEntryEndTimePrev)
+      timeDiffSec = Tint(1) - AddEntryEndTimePrev;
+      assert(timeDiffSec == 1)
+    end
+    AddEntryEndTimePrev = Tint(2);
+
     if ~isreal(calData(1)) && (nargin<3 || isempty(PSPintersection))
       errS = ['Invalid two-fit cal entry at: ' TintS];
       irf.log('critical',errS)
@@ -298,6 +316,11 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
       checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
 
       if ~isempty(checkInterval)
+        % NOTE: This function call changes the first and last timestamps of
+        % "CalEntry" to only cover the length of time in "PSP" (an argument to
+        % this function), i.e. it is not a deterministic update to "Cal", i.e.
+        % "Cal" is not an entirely hardcoded data structure, i.e. the final
+        % "Cal" value is not a constant!
         [CalEntry] = TwoFitCalibration(checkInterval,PSPintersection,CalEntry);
       else
         CalEntry.data(1:end,2) = imag(CalEntry.x.data);
@@ -308,12 +331,6 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
     if isempty(Cal)
       Cal = CalEntry;
     else
-      % ASSERTION: Require that the new time interval begins exactly one second
-      % after the previous one ends.
-      % TEMPORARILY DISABLED since the check discovers errors in hardcoded data,
-      % errors which have not yet been fixed.
-      assert(CalEntry.time(1) - Cal.time(end) == 1)
-
       Cal = Cal.combine(CalEntry);
     end
 
@@ -357,7 +374,6 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
       if ~isempty(Cnan)
         C = C.combine(Cnan);
       end
-
     end    % TwoFitCalibration()
   end    % AddEntry()
 

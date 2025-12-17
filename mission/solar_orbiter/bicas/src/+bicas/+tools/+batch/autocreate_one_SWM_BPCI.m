@@ -16,11 +16,11 @@
 % Swm
 %       bicas.swm.SoftwareMode object.
 % DsmdArray
-%       DSMD array. Must contain exactly one DSI for each input DSI required by
+%       DSMD array. Must contain exactly one DSID for each input DSID required by
 %       the SWM.
 % createOutputPathFh
 %       Function for obtaining the path to one output dataset.
-%           path = func(outputDsi, InputDsmdArray)
+%           path = func(outputDsid, InputDsmdArray)
 %       Arguments describe the SWM inputs (all) & output (one).
 %       NOTE: bicas.tools.batch.default_get_BPCI_output_filename() is
 %       meant to be used for helping to construct such functions by default.
@@ -41,8 +41,8 @@ function Bpci = autocreate_one_SWM_BPCI(Swm, DsmdArray, createOutputPathFh)
 
 % ASSERTIONS
 assert(isa(Swm, 'bicas.swm.SoftwareMode') && isscalar(Swm))
-irf.assert.castring_set({Swm.inputsList.dsi })
-irf.assert.castring_set({Swm.outputsList.dsi})
+irf.assert.castring_set({Swm.inputsList.dsid })
+irf.assert.castring_set({Swm.outputsList.dsid})
 assert(isa(createOutputPathFh, 'function_handle'))
 assert(numel(Swm.inputsList) == numel(DsmdArray))
 
@@ -55,21 +55,21 @@ for i = 1:numel(Swm.inputsList)
   % ===================
   % NOTE: Better to iterate over SWM inputs than DSMDs, since
   % (1) Easier to permit irrelevant DSMDs (not implemented)
-  % (2) Check that there is exactly one matching DSMD (by DSI).
+  % (2) Check that there is exactly one matching DSMD (by DSID).
 
-  dsiToSearchFor = Swm.inputsList(i).dsi;
-  iDsmd          = find(strcmp(dsiToSearchFor, {DsmdArray.datasetId}));
+  dsidToSearchFor = Swm.inputsList(i).dsid;
+  iDsmd          = find(strcmp(dsidToSearchFor, {DsmdArray.datasetId}));
 
   % ASSERTIONS
   if numel(iDsmd) == 0
-    error('Can not find any dataset with DSI="%s".', dsiToSearchFor)
+    error('Can not find any dataset with DSID="%s".', dsidToSearchFor)
   elseif numel(iDsmd) >= 2
-    error('Found more than one dataset with DSI="%s".', dsiToSearchFor)
+    error('Found more than one dataset with DSID="%s".', dsidToSearchFor)
   end
 
   inputsArray(i, 1) = bicas.tools.batch.BpciInput(...
     Swm.inputsList(i).cliOptionHeaderBody, ...
-    Swm.inputsList(i).dsi, ...
+    Swm.inputsList(i).dsid, ...
     DsmdArray(iDsmd).path);
 
   % Prepare for calling output filenaming function.
@@ -84,10 +84,10 @@ end
 
 outputsArray = bicas.tools.batch.BpciOutput.empty(0, 1);
 for i = 1:numel(Swm.outputsList)
-  filePath = createOutputPathFh(Swm.outputsList(i).dsi, DsmdArray);
+  filePath = createOutputPathFh(Swm.outputsList(i).dsid, DsmdArray);
   outputsArray(i, 1) = bicas.tools.batch.BpciOutput(...
     Swm.outputsList(i).cliOptionHeaderBody, ...
-    Swm.outputsList(i).dsi, ...
+    Swm.outputsList(i).dsid, ...
     filePath...
     );
 end

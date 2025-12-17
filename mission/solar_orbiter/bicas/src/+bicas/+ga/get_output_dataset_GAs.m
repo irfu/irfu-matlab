@@ -36,7 +36,7 @@
 % outputFilename
 %       Output dataset filename. Could potentially be used for deriving
 %       Glob.attrs. Datetime (time interval string), Data_version,
-%       (DSI).
+%       (DSID).
 %
 %
 % RETURN VALUE
@@ -53,7 +53,7 @@
 % execute_SWM().
 %
 function OutGaSubset = get_output_dataset_GAs(...
-  InputDatasetsMap, OutputDataset, outputFilename, outputDsi, ...
+  InputDatasetsMap, OutputDataset, outputFilename, outputDsid, ...
   Bso, L)
 
 % PROPOSAL: Move inner functions to class.
@@ -67,7 +67,7 @@ irf.assert.struct(OutputDataset.Ga, ...
 % TODO-NI: Only checking these GAs to make sure that they are there, not
 % necessarily to use their values.
 
-[~, level, ~] = solo.adm.disassemble_DATASET_ID(outputDsi);
+[~, level, ~] = solo.adm.disassemble_DATASET_ID(outputDsid);
 
 
 
@@ -113,7 +113,7 @@ OutGaSubset.Logical_file_id  = logicalFileId;
 OutGaSubset.Logical_source   = logicalSource;   % Override skeleton.
 OutGaSubset.Data_version     = dataVersionStr;
 OutGaSubset.Datetime         = timeIntervalStr;
-% OutGaSubset.Dataset_ID       = outputDsi; % Override skeleton. Wise?
+% OutGaSubset.Dataset_ID       = outputDsid; % Override skeleton. Wise?
 
 % IMPLEMENTATION NOTE: Unclear if it is wise to overwrite GAs (1) Dataset_ID and
 % (2) Logical_source. In principle, the skeletons should contain the correct
@@ -174,7 +174,7 @@ OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end)
 
 
 
-OutGaSubset.MODS = bicas.const.gamods.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
+OutGaSubset.MODS = bicas.const.gamods.GA_MODS_DB.get_MODS_strings_CA(outputDsid);
 
 
 

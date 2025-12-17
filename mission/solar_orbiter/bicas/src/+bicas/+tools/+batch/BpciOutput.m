@@ -29,7 +29,7 @@ classdef BpciOutput
   %#####################
   properties(SetAccess=immutable)
     cohb
-    dsi
+    dsid
     path
   end
 
@@ -44,9 +44,9 @@ classdef BpciOutput
 
 
 
-    function obj = BpciOutput(cohb, dsi, path)
+    function obj = BpciOutput(cohb, dsid, path)
       obj.cohb = cohb;
-      obj.dsi  = dsi;
+      obj.dsid  = dsid;
       obj.path = path;
     end
 

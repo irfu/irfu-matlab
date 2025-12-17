@@ -14,7 +14,7 @@ classdef InputDataset
   % PROPOSAL: Use abbreviation for bicas.InputDataset and bicas.OutputDataset.
   %   NOTE: Be consistent with bicas.swm.InputDataset, bicas.swm.OutputDataset.
   %   PROPOSAL: DS=DataSet
-  %     PRO: Consistent with DSI=DataSet ID
+  %     PRO: Consistent with DSID=DataSet ID
   %   IDS, ODS
   %   IPDS, OPDS
   %   SIDS = SWM Input DataSet = bicas.swm.InputDataset

@@ -80,7 +80,7 @@ classdef BicasProcessingCallInfo
       for i = 1:numel(obj.outputsArray)
         o = obj.outputsArray(i);
         outputsArray(i, 1) = bicas.tools.batch.BpciOutput(...
-          o.cohb, o.dsi, fullfile(outputDir, o.path));
+          o.cohb, o.dsid, fullfile(outputDir, o.path));
       end
 
       obj = bicas.tools.batch.BicasProcessingCallInfo(...

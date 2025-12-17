@@ -57,16 +57,16 @@ function rctPath = create_RCT(rctMasterCdfFile, destDir, beginDt, endDt, version
 %        deriving the calibration values (e.g. curve fitting) can be independent
 %        of BICAS.
 
-GMDB = bicas.ga.mods.Database({bicas.const.RCT_DSI});
+GMDB = bicas.ga.mods.Database({bicas.const.RCT_DSID});
 % NOTE: Using BICAS version in MODS. Not obvious that one should, or how to make
 % sure it is consistent with BICAS.
-GMDB.add_GMVE({bicas.const.RCT_DSI}, ...
+GMDB.add_GMVE({bicas.const.RCT_DSID}, ...
   bicas.ga.mods.VersionEntry('2024-07-12', '8.1.0', ...
   {'Updated with compliant metadata and filename.'}))
-GMDB.add_GMVE({bicas.const.RCT_DSI}, ...
+GMDB.add_GMVE({bicas.const.RCT_DSID}, ...
   bicas.ga.mods.VersionEntry('2024-09-12', '8.3.0', ...
   {'Updated metadata.'}))
-GA_MODS = GMDB.get_MODS_strings_CA(bicas.const.RCT_DSI);
+GA_MODS = GMDB.get_MODS_strings_CA(bicas.const.RCT_DSID);
 
 
 

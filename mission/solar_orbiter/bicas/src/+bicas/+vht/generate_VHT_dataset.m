@@ -59,7 +59,7 @@ function generate_VHT_dataset(...
 %
 % PROPOSAL: Write code so that it can be transplanted/moved to BICAS proper.
 %   CON: Can not be done since it requires multiple input datasets of same
-%        DSI.
+%        DSID.
 %
 % TODO-DEC: How specify month?
 %   PROPOSAL: Year+month array, explicitly
@@ -121,7 +121,7 @@ function generate_VHT_dataset(...
 % bicas.vht.generate_VHT_dataset('/home/erjo/temp/L3/V_RPW.mat', '/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master', [2020,07], '/home/erjo/temp/L3', 2, 'ignore empty') -- OBSOLETE /2025-01-21
 % bicas.vht.generate_VHT_dataset('/nonhome_data/work_files/SOLAR_ORBITER/DataPool/SOLO/RPW/CDF/Master/SOLO_L3_RPW-BIA-VHT_V03.cdf', [2020,07], "/data/solo/data_yuri/V_RPW.mat", containers.Map, '/home/erjo/temp/vht/solo_L3_rpw-bia-vht-cdag_20200701-20200731_V01.cdf', 'ignore empty') - NEW AND INCOMPLETE /2025-01-21
 
-%     DSI                  = 'SOLO_L3_RPW-BIA-VHT';
+%     DSID                  = 'SOLO_L3_RPW-BIA-VHT';
 %     MASTER_CDF_VERSION_STR      = '01';
 EXPECTED_SAMPLE_INTERVAL_NS = int64(10*60*1e9);    % 10 minutes in ns. For assertion on correct .mat file.
 DELTA_PLUS_MINUS_NS         = int64(1800*1e9);     % 30 minutes in ns. Contradicts EXPECTED_SAMPLE_INTERVAL_NS?!!

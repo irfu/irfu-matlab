@@ -284,8 +284,9 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       BASE_TT2000 = spdfparsett2000('2020-03-14T00:00:00');
 
       % Input OSR
-      InLfrCwf.Ga.OBS_ID    = {' '};
-      InLfrCwf.Ga.SOOP_TYPE = {' '};
+      InLfrCwf.Ga.OBS_ID           = {' '};
+      InLfrCwf.Ga.SOOP_TYPE        = {' '};
+      InLfrCwf.Ga.Skeleton_version = {'18'};
       InLfrCwf.Zv.Epoch                 = int64(                     A.osrIn_Epoch_sec*1e9) + BASE_TT2000;
       InLfrCwf.ZvFpa.QUALITY_FLAG       = bicas.utils.FPArray(uint8( A.osrIn_qfl),   'FILL_VALUE', qflFv);
       InLfrCwf.ZvFpa.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(A.osrIn_l1qbm), 'FILL_VALUE', l1qbmFv);
