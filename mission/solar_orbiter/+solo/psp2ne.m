@@ -294,7 +294,7 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(
     % ASSERTION: Require that the current time interval in the function argument
     % begins exactly one second after the time interval of the previous call
     % ended.
-    % NOTE: "CalEntry" does not aways contain this time interal and can
+    % NOTE: "CalEntry" does not aways contain this time interval and can
     % therefore not be used to make this check.
     Tint = irf.tint(TintS);
     if ~isempty(AddEntryEndTimePrev)

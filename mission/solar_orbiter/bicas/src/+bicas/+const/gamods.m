@@ -397,6 +397,8 @@ classdef gamods
         {['Set density using ANT1 when ANT2 *or* ANT3 (not and) is absent or when' ...
         ' there is no (EFIELD/PSP) calibration data. Remove previously badly/mistakenly calibrated density.']}))
 
+
+
       if 0
         %=============================
         % Data for next BICAS version
