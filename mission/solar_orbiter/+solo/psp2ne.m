@@ -280,8 +280,15 @@ NeScpQualityBit.data(isnan(NeScpQualityBit.data))     = 0;
 
 
 
+% Check (some) return values
+% --------------------------
+% NOTE: BICAS does its own validation of the return value from this function,
+% and that validation should overlap or be identical to the validation
+% (assertions) here. Assertions here are meant to catch errors when this
+% function is used by non-BICAS users.
+% --
 % ASSERTION: NeScp only contains legal values.
-assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & ((NeScp.data > 0) | isnan(NeScp.data)) ))
+assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & (isnan(NeScp.data) | (NeScp.data > 0)) ))
 
 
 

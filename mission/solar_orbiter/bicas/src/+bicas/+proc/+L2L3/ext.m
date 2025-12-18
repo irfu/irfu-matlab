@@ -106,7 +106,7 @@ classdef ext
       assert(NeScpTs.units        == "cm^-3")
       assert(NeScpTs.siConversion == "cm^-3>1e6*m^-3")
 
-      if ~all( isreal(NeScpTs.data) & ~isinf(NeScpTs.data) & ((NeScpTs.data > 0) | isnan(NeScpTs.data)) )
+      if ~all( isreal(NeScpTs.data) & ~isinf(NeScpTs.data) & (isnan(NeScpTs.data) | (NeScpTs.data > 0)) )
         errorMsg = "solo.psp2ne() returned illegal (non-NaN) plasma density value.";
         nZero     = numel(find(      NeScpTs.data == 0));
         nNegative = numel(find(      NeScpTs.data <  0));
