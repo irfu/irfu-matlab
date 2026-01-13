@@ -49,7 +49,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 % * It should *NOT* be updated for unrelated code changes, e.g. comments or
 %   variable name changes.
 %===============================================================================
-codeVerStr = '2025-12-14T19:41:00';
+codeVerStr = '2026-01-13T11:15:00';
 
 
 
@@ -218,7 +218,11 @@ AddEntry('2023-08-18T18:15:41Z/2023-08-29T23:59:59Z',... %95
 AddEntry('2023-08-30T00:00:00Z/2023-09-05T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~7 days calibration data gap.
 AddEntry('2023-09-06T00:00:00Z/2023-09-07T23:59:59Z',... %64 Manual calibration
   [0.3003 + 2.6582i  0.1068 + 4.1297i],7.4938);
-AddEntry('2023-09-08T00:00:00Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~18 MONTHS calibration data gap!
+AddEntry('2023-09-08T00:00:00Z/2023-12-17T02:07:59Z',[NaN,    NaN   ]);    % NOTE: ~3 MONTHS calibration data gap!
+AddEntry('2023-12-17T02:08:00Z/2023-12-17T02:09:50Z',[0.5291,1.6448]);% MANUAL CALIBRATION
+AddEntry('2023-12-17T02:09:51Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);% NOTE: ~15 MONTHS calibration data gap!
+
+
 %======================================================================
 %                                 2025
 %======================================================================
