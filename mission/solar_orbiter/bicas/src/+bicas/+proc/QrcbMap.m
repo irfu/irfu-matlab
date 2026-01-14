@@ -16,7 +16,9 @@ classdef QrcbMap < handle
   %     QrcbMap
   %       QRCBM=
   %     QrcBitMap
+  %       PRO: More analogous to QrcSettingsMap
   %       CON: Sounds too much like bitmap (image).
+  %       CON: QRCB is an official BICAS abbreviation.
   %     QrcbArraysMap
   %       QAM=
   %

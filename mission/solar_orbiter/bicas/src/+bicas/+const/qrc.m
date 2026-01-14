@@ -213,7 +213,8 @@ classdef qrc
       %=============
       % BIAS_HW_OFF
       %=============
-      % This condition corresponds when LFR ZV "BW" states that BIAS h/w is off.
+      % This condition corresponds to when LFR ZV "BW" states that BIAS h/w is
+      % off.
       % --
       % IMPLEMENTATION NOTE: It could be argued that this condition is not
       % really an "error", or "quality problem" at all and that the
@@ -360,8 +361,8 @@ classdef qrc
       %=============================
       % Intended for when there are arbitrary reasons to remove L3 data.
       %   Ex: Ensure that L3 data is never removed outside the time interval for
-      %   which there is data. (Should ideally be handled by solo.vdccal(),
-      %   solo.psp2ne() themselves, but might not.)
+      %       which there is data. (Should ideally be handled by solo.vdccal(),
+      %       solo.psp2ne() themselves, but might not.)
       %   Ex: Some part of calibration has been found to be wrong. Has happened
       %       for EFIELD and this was the quickfix.
       % NOTE: Removes output from solo.vdccal()/solo.psp2ne() (i.e. not
@@ -381,15 +382,15 @@ classdef qrc
       Q.L2_QRCSM         = L2Qrcsm;
       Q.L3_QRCSM         = L3Qrcsm;
       Q.L3_DENSITY_QRCSM = L3DensityQrcsm;
-    end
+    end    % init_L2_L3_L3Density_QRCSM
 
 
 
     function Q = init_QRC_constants()
       Q = bicas.const.qrc.init_L2_L3_L3Density_QRCSM();
 
-      Q.CHANNEL_SATURATION_QRCID_AR = string(Q.L2_CHANNEL_SATURATION_QRCSM.qrcidAr);
-      Q.GLOBAL_SATURATION_QRCID_AR  = string(Q.L2_GLOBAL_SATURATION_QRCSM.qrcidAr);
+      Q.CHANNEL_SATURATION_QRCID_AR = Q.L2_CHANNEL_SATURATION_QRCSM.qrcidAr;
+      Q.GLOBAL_SATURATION_QRCID_AR  = Q.L2_GLOBAL_SATURATION_QRCSM.qrcidAr;
       Q.SATURATION_QRCID_AR = [...
         Q.CHANNEL_SATURATION_QRCID_AR; ...
         Q.GLOBAL_SATURATION_QRCID_AR];

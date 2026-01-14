@@ -207,7 +207,13 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
 
 
 
+  %################
+  %################
+  % STATIC METHODS
+  %################
+  %################
   methods(Static)
+
 
 
     % NOTE: Does not test (L3 DENSITY) L3_QUALITY_BITMASK.

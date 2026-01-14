@@ -235,11 +235,11 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
 
     % Support deep copies with copy() by overriding matlab.mixin.copyable
     % method.
-    function QrcbmCopy = copyElement(obj)
-      QrcbmCopy = bicas.proc.QrcSettingsMap();
+    function QrcsmCopy = copyElement(obj)
+      QrcsmCopy = bicas.proc.QrcSettingsMap();
 
       for qrcid = obj.qrcidAr'
-        QrcbmCopy.add(qrcid, obj.get(qrcid))
+        QrcsmCopy.add(qrcid, obj.get(qrcid))
       end
     end
 

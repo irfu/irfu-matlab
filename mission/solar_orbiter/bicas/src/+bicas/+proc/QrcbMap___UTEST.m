@@ -32,28 +32,28 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_add_set_get_has_QRCID(testCase)
+    function test_add_set_get_has_QRCID(T)
       QRCB_AR = logical([0; 1]);
       Qrcbm = bicas.proc.QrcbMap(2);
 
-      testCase.assertError(...
+      T.assertError(...
         @() Qrcbm.set("QRCID1", ~QRCB_AR), ...
         ?MException)
 
-      testCase.assertFalse(Qrcbm.has_QRCID("QRCID1"))
+      T.assertFalse(Qrcbm.has_QRCID("QRCID1"))
 
       Qrcbm.add("QRCID1", QRCB_AR)
 
-      testCase.assertTrue(Qrcbm.has_QRCID("QRCID1"))
+      T.assertTrue(Qrcbm.has_QRCID("QRCID1"))
 
-      testCase.assertError(...
+      T.assertError(...
         @() Qrcbm.add("QRCID1", ~QRCB_AR), ...
         ?MException)
 
       Qrcbm.set("QRCID1", ~QRCB_AR)
 
       actQrcbAr = Qrcbm.get("QRCID1");
-      testCase.assertEqual(actQrcbAr, ~QRCB_AR)
+      T.assertEqual(actQrcbAr, ~QRCB_AR)
     end
 
 

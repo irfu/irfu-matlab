@@ -399,3 +399,9 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
   from ANT1 alone (without calibration data) when there is no (solo.vdccal)
   calibration data.
 * Bugfix: Incorrect solo.psp2ne() calibration time intervals fixed.
+
+
+---------------
+ Version X.Y.Z
+---------------
+* Added density calibration for time period 2023-12-17T02:08:00Z to 02:09:50Z.

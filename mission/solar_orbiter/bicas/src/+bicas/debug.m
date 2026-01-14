@@ -102,7 +102,7 @@ classdef debug
 
       Fig = figure("WindowState", "maximized", "Name", figName);
 
-      plot(dtAr, yAr)
+      plot(dtAr, yAr, '.-')
 
       % IMPLEMENTATION NOTE: Setting x limits is needed if there are NaN values
       % at the x min/max.

@@ -219,8 +219,8 @@ AddEntry('2023-08-30T00:00:00Z/2023-09-05T23:59:59Z',[NaN,    NaN   ]);    % NOT
 AddEntry('2023-09-06T00:00:00Z/2023-09-07T23:59:59Z',... %64 Manual calibration
   [0.3003 + 2.6582i  0.1068 + 4.1297i],7.4938);
 AddEntry('2023-09-08T00:00:00Z/2023-12-17T02:07:59Z',[NaN,    NaN   ]);    % NOTE: ~3 MONTHS calibration data gap!
-AddEntry('2023-12-17T02:08:00Z/2023-12-17T02:09:50Z',[0.5291,1.6448]);% MANUAL CALIBRATION
-AddEntry('2023-12-17T02:09:51Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);% NOTE: ~15 MONTHS calibration data gap!
+AddEntry('2023-12-17T02:08:00Z/2023-12-17T02:09:50Z',[0.5291, 1.6448]);    % MANUAL CALIBRATION (1 min, 50 s!)
+AddEntry('2023-12-17T02:09:51Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~14 MONTHS calibration data gap!
 
 
 %======================================================================
@@ -258,14 +258,14 @@ NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
 
 
 timeOutsideInterval = irf_time('2025-04-23T20:45:59Z','utc>ttns');
-NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
+NeScp.data(NeScp.time.epoch > timeOutsideInterval) = NaN;
 
 
 
-NeScp.name = 'NeScp';
-NeScp.units = 'cm^-3';
+NeScp.name         = 'NeScp';
+NeScp.units        = 'cm^-3';
 NeScp.siConversion = 'cm^-3>1e6*m^-3';
-NeScp.userData = '';
+NeScp.userData     = '';
 
 % Setting the return value "NeScpQualityBit"
 % ------------------------------------------

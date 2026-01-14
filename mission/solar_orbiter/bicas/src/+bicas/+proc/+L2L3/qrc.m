@@ -87,14 +87,14 @@ classdef qrc
       SaturationQrcbm.add_false(bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR)
 
       switch saturationQualitySchemeId
-        case 'CHANNEL_SATURATION'
+        case "CHANNEL_SATURATION"
 
           % Update CHANNEL_SATURATION QRCBs.
           ChannelSaturationQrcbm = bicas.proc.L2L3.qrc.L2QBM_to_QRCBs(...
             l2qbmAr, bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM);
           SaturationQrcbm.union(ChannelSaturationQrcbm)
 
-        case 'GLOBAL_SATURATION'
+        case "GLOBAL_SATURATION"
 
           ;   % Do nothing. All saturation QRCBs are false.
 
@@ -122,50 +122,67 @@ classdef qrc
 
 
 
-    % Better "hack" for obtaining the L2 LFR CWF QUALITY_FLAG (the input to L3)
-    % as it had been in the absence of saturation (if on ignores the L1/L1R
-    % QUALITY_FLAG, i.e. the cap).
+    % Derive a "synthetic" L2 LFR CWF QUALITY_FLAG (the input to L3) equivalent
+    % to the L2 QUALITY_FLAG
+    % (1) in the absence of
+    %         QRC SATURATION_ZV_V*
+    %     (desired effect)
+    % (2) in the absence of QRCs which are not specified in NSO table
+    %         BIAS_HW_OFF  (from LFR)
+    %         SWEEP        (autodetected)
+    %     (undesired effect, but does not matter since data is blanked),
+    % (3) if L1R QUALITY_FLAG had not been lowered below max (undesired effect).
     %
     % NOTE: In practice, this should be the L2 QUALITY_FLAG derived from the
     % NSO table (minus saturation), i.e. also without autodetected sweeps.
     %
+    % NOTE/BUG: This function can set a maximum QUALITY_FLAG value which is
+    % higher than what L1R could possibly have (not the QUALITY_FLAG max=4, but
+    % the highest QUALITY_FLAG which ROC wants to produce). QUALITY_FLAG is
+    % eventually capped by setting "PROCESSING.ZV_QUALITY_FLAG_MAX" when writing
+    % the CDF anyway, but this setting then has to use the appropriate value.
+    %
+    % BUG: This function does not consider the L2 QUALITY_FLAG when there is no
+    % saturation. Therefore, when L2 QUALITY_FLAG is lowered only due to L1R
+    % QUALITY_FLAG being lowered (in the absence of saturation or any other
+    % BICAS mechanism), this function will still generate a higher QUALITY_FLAG
+    % value.
+    %
+    %
     % RATIONALE
     % =========
-    % This is needed for deriving the L3 QUALITY_FLAG which may be higher than
-    % the corresponding L2 QUALITY FLAG when L3 contains valid values derived
-    % from non-saturated L2 channels in the presence of other saturated L2
-    % channels.
+    % This synthetic L2 QUALITY FLAG is needed for
+    % (1) filtering data L2-->L3 (settting
+    % "PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN"), and
+    % (2) an input value that can be used for deriving the final L3 QUALITY_FLAG
+    % which may be higher than the corresponding actual L2 QUALITY FLAG when L3
+    % contains valid values derived from e.g. non-saturated L2 channels in the
+    % presence of other saturated L2 channels.
     %
     function SyntheticL2QflFpa = get_synthetic_L2_QFL( ...
         tt2000Ar, NsoTable, qflFpAr, L)
-      % PROPOSAL: Separate function for deriving QUALITY_FLAG.
-      %   PRO: Also "needed" for EFIELD+SCPOT which do not use QUALITY_BITMASK.
-      %   CON: Can ignore return value.
-      %     CON: bicas.proc.qrc.QRCB_arrays_to_quality_ZVs() still requires
-      %          lxqbmName and QRCSs which contain some LxQBM value.
-      %       CON-PROPOSAL: Special value to ignore retrieving a QRCS LxQBM value.
 
       assert(islogical(qflFpAr))
 
       % NOTE: One could consider also removing/excluding ANT3_FAILING, since
       % the unaffected channels should be OK. Has no instructions to do so yet
       % though. /2025-08-27
-      NonsaturationL2Qrcsm = copy(bicas.const.qrc.Q.L2_QRCSM);
-      NonsaturationL2Qrcsm.remove_many(bicas.const.qrc.Q.SATURATION_QRCID_AR);
+      SyntheticL2Qrcsm = copy(bicas.const.qrc.Q.L2_QRCSM);
+      SyntheticL2Qrcsm.remove_many(bicas.const.qrc.Q.SATURATION_QRCID_AR);
 
-      L2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
-        NonsaturationL2Qrcsm.qrcidAr, NsoTable, tt2000Ar, L);
+      SyntheticL2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
+        SyntheticL2Qrcsm.qrcidAr, NsoTable, tt2000Ar, L);
 
-      [NonsaturationL2Qfl, ~] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
-        L2Qrcbm, NonsaturationL2Qrcsm, "L2_QUALITY_BITMASK");
+      [SyntheticL2Qfl, ~] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
+        SyntheticL2Qrcbm, SyntheticL2Qrcsm, "L2_QUALITY_BITMASK");
 
       SyntheticL2QflFpa = bicas.utils.FPArray(...
-        NonsaturationL2Qfl, 'FILL_POSITIONS', qflFpAr);
+        SyntheticL2Qfl, 'FILL_POSITIONS', qflFpAr);
     end
 
 
 
-    % Selectively blank a 2D FPA based on QRCBs. Intended for blanking e.g. VDC
+    % Selectively blank one 2D FPA based on QRCBs. Intended for blanking e.g. VDC
     % and EDC before they are passed to solo.vdccal() and solo.psp2ne(), or
     % their return values.
     %
