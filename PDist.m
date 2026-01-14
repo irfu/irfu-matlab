@@ -3537,8 +3537,8 @@ classdef PDist < TSeries
       %   TS = PDist.noise_energy_limit(nMovMin); % nMovMin - integer
       %
       %   Algorithm:
-      %     1. Calculate omnidirectional distribution.      
-      %     2. Apply an N-point moving minimum. 
+      %     1. Calculate omnidirectional distribution.
+      %     2. Apply an N-point moving minimum.
       %     3. For each time, find the lowest zero-occurrence and
       %        corresponding energy.
       %
