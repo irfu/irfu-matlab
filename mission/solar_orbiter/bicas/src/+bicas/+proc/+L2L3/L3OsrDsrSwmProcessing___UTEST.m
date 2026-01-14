@@ -356,10 +356,11 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       %##################################################################
       % CALL CODE TO BE TESTED
       %##################################################################
+      Processing = bicas.proc.L2L3.L3OsrDsrSwmProcessing(false, []);
       [ActEfieldOsr,  ActEfieldDsr, ...
         ActScpotOsr,   ActScpotDsr, ...
         ActDensityOsr, ActDensityDsr] ...
-        = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(InLfrCwf, NsoTable, Excd, Bso, L);
+        = Processing.process_L2_to_L3(InLfrCwf, NsoTable, Excd, Bso, L);
       %##################################################################
 
       % OSR

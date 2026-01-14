@@ -132,8 +132,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         EfieldOsrCdf,  EfieldDsrCdf, ...
         ScpotOsrCdf,   ScpotDsrCdf, ...
         DensityOsrCdf, DensityDsrCdf ...
-        ] = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(...
-        InputLfrCwfCdf, NsoTable, Excd, Bso, L);
+        ] = obj.process_L2_to_L3(InputLfrCwfCdf, NsoTable, Excd, Bso, L);
 
       OutputDatasetsMap = containers.Map();
       if ~obj.bSbmx
@@ -150,19 +149,6 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         OutputDatasetsMap('SBMx_DENSITY_cdf') = DensityOsrCdf;
       end
     end
-
-
-
-  end    % methods(Access=public)
-
-
-
-  %#######################
-  %#######################
-  % PUBLIC STATIC METHODS
-  %#######################
-  %#######################
-  methods(Static)
 
 
 
@@ -188,29 +174,47 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         OutScpotOsr,   OutScpotDsr, ...
         OutDensityOsr, OutDensityDsr ...
         ] ...
-        = process_L2_to_L3(InLfrCwf, NsoTable, Excd, Bso, L)
+        = process_L2_to_L3(obj, InLfrCwf, NsoTable, Excd, Bso, L)
 
 
 
-      saturationSchemeId = Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME');
-      if strcmp(saturationSchemeId, "CHANNEL_SATURATION")
-        % IMPLEMENTATION NOTE: Check that the input datasets use
-        % GLOBAL_SATURATION.
-        % ------------------------------------------------------
-        % Official SOLO_L2_RPW-LFR-SURV/SBM1/SBM2-CWF-E datasets use
-        % GLOBAL_SATURATION starting at Skeleton_version = 18.
-        % NOTE: Only requiring this when PROCESSING.SATURATION.QUALITY_SCHEME =
-        % CHANNEL_SATURATION, since any other case should only be used for very
-        % special occasions, and GLOBAL_SATURATION should be phased out over
-        % time anyway.
-        inputSkeletonVerNbr = str2double(InLfrCwf.Ga.Skeleton_version{1});
-        if inputSkeletonVerNbr < 18
-          error( ...
-            "The input CDF has Skeleton_version=%d indicating that it does not" + ...
-            " use CHANNEL_SATURATION and is therefore incompatible.", ...
-            inputSkeletonVerNbr)
-        end
-      end
+      saturationSchemeId  = Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME');
+      inputSkeletonVerNbr = str2double(InLfrCwf.Ga.Skeleton_version{1});
+      % --------------------------------------------------------------------
+      % ASSERTION: Check that the input datasets use the correct quality bit
+      %            saturation scheme.
+      % --------------------------------------------------------------------
+      % Official SOLO_L2_RPW-LFR-SURV/SBM1/SBM2-CWF-E datasets use
+      % GLOBAL_SATURATION starting at Skeleton_version = 18.
+      %
+      % IMPLEMENTATION NOTE: ROC has not yet reprocessed SBMx to have
+      % inputSkeletonVerNbr>=18. This is due to a mistake in the EJ-ROC
+      % communication. Not yet checking for SBMx so that code can be tested at
+      % least. /2026-01-14
+      if ~obj.bSbmx
+        switch saturationSchemeId
+          case "CHANNEL_SATURATION"
+            if inputSkeletonVerNbr < 18
+              error( ...
+                "The input CDF has Skeleton_version=%d indicating that it" + ...
+                " does not use CHANNEL_SATURATION and is therefore" + ...
+                " incompatible.", ...
+                inputSkeletonVerNbr)
+            end
+
+          case "GLOBAL_SATURATION"
+            if inputSkeletonVerNbr >= 18
+              error( ...
+                "The input CDF has Skeleton_version=%d indicating that it" + ...
+                " does not use GLOBAL_SATURATION and is therefore" + ...
+                " incompatible.", ...
+                inputSkeletonVerNbr)
+            end
+
+          otherwise
+            error("Illegal value of saturationSchemeId=%s.", saturationSchemeId)
+        end    % switch
+      end    % if
 
 
 
@@ -391,6 +395,19 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
+  end    % methods(Access=public)
+
+
+
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
+  methods(Static)
+
+
+
   end    % methods(Static)
 
 
@@ -432,8 +449,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %-------------------------------
       % L2_QUALITY_BITMASK-->L3 QRCBs
       %-------------------------------
-      % Obtain channel saturation QRCBs by reading L2_QUALITY_BITMASK *AND*
-      % converting it to an QRCBM.
+      % Reconstruct L2 channel saturation QRCBs by reading L2_QUALITY_BITMASK
+      % *AND* converting it to an QRCBM.
       ChannelSaturationQrcbm = ...
         bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
         L2qbmFpa.array(uint16(0)), saturationQualityScheme);
