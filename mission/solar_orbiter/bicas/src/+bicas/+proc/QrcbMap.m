@@ -9,7 +9,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef QrcbMap < handle
+classdef QrcbMap < handle & matlab.mixin.Copyable
   % PROPOSAL: Better name? Abbreviation?
   %     ~QRCID, ~QRCB, ~map
   %     ~arrays
@@ -102,6 +102,24 @@ classdef QrcbMap < handle
 
 
 
+    function remove(obj, qrcid)
+      assert(isstring(qrcid) & isscalar(qrcid))
+      assert(obj.Map.isKey(qrcid))
+
+      obj.Map.remove(qrcid);
+    end
+
+
+
+    function remove_many(obj, qrcidAr)
+      assert(iscolumn(qrcidAr))
+      for qrcid = qrcidAr'
+        obj.remove(qrcid)
+      end
+    end
+
+
+
     % Overwrite existing key-value pair. Must pre-exist.
     function set(obj, qrcid, qrcbAr)
       assert(isstring(qrcid)   & isscalar(qrcid))
@@ -165,6 +183,31 @@ classdef QrcbMap < handle
 
 
   end    % methods(Access=public)
+
+
+
+  %############################
+  %############################
+  % PROTECTED INSTANCE METHODS
+  %############################
+  %############################
+  methods(Access = protected)
+
+
+
+    % Support deep copies with copy() by overriding matlab.mixin.copyable
+    % method.
+    function QrcbmCopy = copyElement(obj)
+      QrcbmCopy = bicas.proc.QrcbMap(obj.nRecords);
+
+      for qrcid = obj.qrcidAr'
+        QrcbmCopy.add(qrcid, obj.get(qrcid))
+      end
+    end
+
+
+
+  end
 
 
 

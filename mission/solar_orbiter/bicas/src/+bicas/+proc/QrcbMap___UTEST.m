@@ -70,6 +70,24 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_remove_remove_many(T)
+      Qrcbm = bicas.proc.QrcbMap(2);
+      Qrcbm.add("QRCID_1", logical([0; 0]))
+      Qrcbm.add("QRCID_2", logical([0; 1]))
+      Qrcbm.add("QRCID_3", logical([1; 0]))
+
+      Qrcbm.remove("QRCID_1")
+      T.assertEqual(Qrcbm.qrcidAr, ["QRCID_2"; "QRCID_3"])
+
+      Qrcbm.remove_many(string.empty(0, 1))
+      T.assertEqual(Qrcbm.qrcidAr, ["QRCID_2"; "QRCID_3"])
+
+      Qrcbm.remove_many(["QRCID_2"; "QRCID_3"])
+      T.assertEqual(Qrcbm.qrcidAr, string.empty(0, 1))
+    end
+
+
+
     function test_union___empty(testCase)
       Qrcbm      = bicas.proc.QrcbMap(3);
       AddedQrcbm = bicas.proc.QrcbMap(3);
@@ -174,6 +192,25 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
       Qrcbm2.add("QRCID1", logical([1; 1]))
 
       testCase.assert_not_equal(Qrcbm1, Qrcbm2)
+    end
+
+
+
+    function test_copy(T)
+      QRCB_1 = logical([0 1]');
+      QRCB_2 = logical([1 0]');
+
+      Qrcbm1 = bicas.proc.QrcbMap(2);
+      Qrcbm1.add("QRCID_1", QRCB_1);
+
+      Qrcbm2 = copy(Qrcbm1);
+      T.assertEqual(Qrcbm1, Qrcbm2);
+
+      Qrcbm2.add("QRCID_2", QRCB_2);
+      T.assertNotEqual(Qrcbm1, Qrcbm2);
+
+      Qrcbm1.add("QRCID_2", QRCB_2);
+      T.assertEqual(Qrcbm1, Qrcbm2);
     end
 
 
