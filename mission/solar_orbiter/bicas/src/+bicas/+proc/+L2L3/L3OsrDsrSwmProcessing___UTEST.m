@@ -27,16 +27,16 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_ASSUMPTION(testCase)
+    function test_ASSUMPTION(T)
       % Tests are designed for this value.
-      testCase.fatalAssertTrue(bicas.const.N_MIN_OSR_SAMPLES_PER_BIN == 3)
+      T.fatalAssertTrue(bicas.const.N_MIN_OSR_SAMPLES_PER_BIN == 3)
     end
 
 
 
     % Conceivable special cases for bins to test, including combinations
     % thereof.
-    function test_process_L2_to_L3___0(testCase)
+    function test_process_L2_to_L3___0(T)
       % NOTE: Unclear how much testing is meaningful. One could add more tests.
       %
       % PROPOSITION: The complexity of the test code implies that the
@@ -93,7 +93,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         40,    4,     0,     0, 0; ...
         50,    4,     0,     0, 0; ...
         ];
-      bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, ...
+      T.test(T, ...
         osrIn_Epoch_sec          =DATA_OSR(:, 1), ...
         osrIn_qfl                =DATA_OSR(:, 2), ...
         osrExp_qfl               =DATA_OSR(:, 3), ...
@@ -113,7 +113,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
 
     % Conceivable special cases for bins to test, including combinations
     % thereof.
-    function test_process_L2_to_L3___1(testCase)
+    function test_process_L2_to_L3___1(T)
       N = NaN;
 
       DATA_OSR = [...
@@ -150,7 +150,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         90,    4,     0,     0, 1; ...
         100,   4,     0,     0, 1; ...
         ];
-      bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, ...
+      T.test(T, ...
         osrIn_Epoch_sec          =DATA_OSR(:, 1), ...
         osrIn_qfl                =DATA_OSR(:, 2), ...
         osrExp_qfl               =DATA_OSR(:, 3), ...
@@ -170,7 +170,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
 
     % Normal bin
     % Test merging QUALITY_BITMASK bits.
-    function test_process_L2_to_L3___2(testCase)
+    function test_process_L2_to_L3___2(T)
       assert(bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V12").l2qbm == uint16( 8));
       assert(bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V13").l2qbm == uint16(16));
       assert(bicas.const.qrc.Q.L2_CHANNEL_SATURATION_QRCSM.get("SATURATION_ZV_V23").l2qbm == uint16(32));
@@ -185,7 +185,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
         0,   4,     7,    32+16+8, 0; ...
         ];
 
-      bicas.proc.L2L3.L3OsrDsrSwmProcessing___UTEST.test(testCase, ...
+      T.test(T, ...
         osrIn_Epoch_sec          =DATA_OSR(:, 1), ...
         osrIn_qfl                =DATA_OSR(:, 2), ...
         osrExp_qfl               =DATA_OSR(:, 3), ...
@@ -221,7 +221,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
     % NOTE: Relies on solo.vdccal() and solo.psp2ne() and that they process
     %       NaN-->NaN.
     %
-    function test(testCase, A)
+    function test(T, A)
       % PROPOSAL: Have tests explicitly specify the EXCD output and use
       %           bicas.proc.L2L3.ExternalCodeTest.
       %             DCE_SRF_out
@@ -256,7 +256,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       %       ==> Input:  3+3+1=7 columns OSR
       %           Output: 3+2  =5 columns OSR
       arguments
-        testCase
+        T
         A.osrIn_Epoch_sec
         A.osrIn_qfl
         A.osrExp_qfl
@@ -372,29 +372,29 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       % OSR
       for ActOsrCa = {ActEfieldOsr, ActScpotOsr, ActDensityOsr}'
         ActOsr = ActOsrCa{1}.Zv;
-        testCase.assertEqual(ActOsr.Epoch,              InLfrCwf.Zv.Epoch)
-        testCase.assertEqual(ActOsr.QUALITY_FLAG,       ExpOsr.Zv.QUALITY_FLAG)
-        testCase.assertEqual(ActOsr.QUALITY_BITMASK,    InLfrCwf.ZvFpa.QUALITY_BITMASK)
-        testCase.assertEqual(ActOsr.L2_QUALITY_BITMASK, InLfrCwf.ZvFpa.L2_QUALITY_BITMASK)
+        T.assertEqual(ActOsr.Epoch,              InLfrCwf.Zv.Epoch)
+        T.assertEqual(ActOsr.QUALITY_FLAG,       ExpOsr.Zv.QUALITY_FLAG)
+        T.assertEqual(ActOsr.QUALITY_BITMASK,    InLfrCwf.ZvFpa.QUALITY_BITMASK)
+        T.assertEqual(ActOsr.L2_QUALITY_BITMASK, InLfrCwf.ZvFpa.L2_QUALITY_BITMASK)
       end
 
       % DSR
       for ActDsrCa = {ActEfieldDsr, ActScpotDsr, ActDensityDsr}'
         ActDsr = ActDsrCa{1}.Zv;
-        testCase.assertEqual(ActDsr.Epoch,              ExpDsr.Zv.Epoch)
-        testCase.assertEqual(ActDsr.QUALITY_FLAG,       ExpDsr.Zv.QUALITY_FLAG)
-        testCase.assertEqual(ActDsr.QUALITY_BITMASK,    ExpDsr.Zv.QUALITY_BITMASK)
-        testCase.assertEqual(ActDsr.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
+        T.assertEqual(ActDsr.Epoch,              ExpDsr.Zv.Epoch)
+        T.assertEqual(ActDsr.QUALITY_FLAG,       ExpDsr.Zv.QUALITY_FLAG)
+        T.assertEqual(ActDsr.QUALITY_BITMASK,    ExpDsr.Zv.QUALITY_BITMASK)
+        T.assertEqual(ActDsr.L2_QUALITY_BITMASK, ExpDsr.Zv.L2_QUALITY_BITMASK)
       end
 
-      testCase.assertEqual(all(ActEfieldDsr.Zv.EDC_SRF.fpAr,    2), ExpDsr.nanData);
-      testCase.assertEqual(all(ActEfieldDsr.Zv.EDCSTD_SRF.fpAr, 2), ExpDsr.nanData);
-      testCase.assertEqual(    ActDensityDsr.Zv.DENSITY.fpAr      , ExpDsr.nanData);
-      testCase.assertEqual(    ActDensityDsr.Zv.DENSITYSTD.fpAr   , ExpDsr.nanData);
-      testCase.assertEqual(    ActScpotDsr.Zv.SCPOT.fpAr          , ExpDsr.nanData);
-      testCase.assertEqual(    ActScpotDsr.Zv.SCPOTSTD.fpAr       , ExpDsr.nanData);
-      testCase.assertEqual(    ActScpotDsr.Zv.PSP.fpAr            , ExpDsr.nanData);
-      testCase.assertEqual(    ActScpotDsr.Zv.PSPSTD.fpAr         , ExpDsr.nanData);
+      T.assertEqual(all(ActEfieldDsr.Zv.EDC_SRF.fpAr,    2), ExpDsr.nanData);
+      T.assertEqual(all(ActEfieldDsr.Zv.EDCSTD_SRF.fpAr, 2), ExpDsr.nanData);
+      T.assertEqual(    ActDensityDsr.Zv.DENSITY.fpAr      , ExpDsr.nanData);
+      T.assertEqual(    ActDensityDsr.Zv.DENSITYSTD.fpAr   , ExpDsr.nanData);
+      T.assertEqual(    ActScpotDsr.Zv.SCPOT.fpAr          , ExpDsr.nanData);
+      T.assertEqual(    ActScpotDsr.Zv.SCPOTSTD.fpAr       , ExpDsr.nanData);
+      T.assertEqual(    ActScpotDsr.Zv.PSP.fpAr            , ExpDsr.nanData);
+      T.assertEqual(    ActScpotDsr.Zv.PSPSTD.fpAr         , ExpDsr.nanData);
     end
 
 
