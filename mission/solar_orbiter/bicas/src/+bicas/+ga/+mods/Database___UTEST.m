@@ -31,17 +31,17 @@ classdef Database___UTEST < matlab.unittest.TestCase
       % ==========
 
       % Add GMVE to zero DSIDs.
-      Gmve0 = bicas.ga.mods.VersionEntry('2020-01-01', '1.0.0', {...
+      Gmve0 = bicas.ga.mods.VersionEntry("2020-01-01", '1.0.0', {...
         'Comment for zero DSIDs.'});
       Gmdb.add_GMVE(cell(0, 1), Gmve0)
 
       % Add to one DSID.
-      Gmve1 = bicas.ga.mods.VersionEntry('2020-01-01', '3.0.0', {...
+      Gmve1 = bicas.ga.mods.VersionEntry("2020-01-01", '3.0.0', {...
         'Comment1.'});
       Gmdb.add_GMVE({'DSID_1'}, Gmve1)
 
       % Add to two DSIDs.
-      Gmve2 = bicas.ga.mods.VersionEntry('2021-01-01', '4.0.0', {...
+      Gmve2 = bicas.ga.mods.VersionEntry("2021-01-01", '4.0.0', {...
         'Comment2.'});
       Gmdb.add_GMVE({'DSID_1'; 'DSID_2'}, Gmve2)
 

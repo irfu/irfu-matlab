@@ -69,17 +69,20 @@ classdef DsidEntry < handle
         % ASSERTIONS
         % ----------
         % Obtain list of all date strings, *EXCEPT* the last one.
-        nonlastDateStrCa = arrayfun(@(ca) ca.dateStr, ...
-          obj.GmveAr(1:end-1), 'UniformOutput', false);
-        assert(~ismember(GmveNew.dateStr, nonlastDateStrCa), ...
-          ['The date string Gmve.dateStr="%s" has already been used by a' ...
-          ' non-last GMVE in this GMDE.'], ...
-          GmveNew.dateStr)
+        nonlastDateStrAr = arrayfun(@(ca) ca.dateStr, obj.GmveAr(1:end-1));
+        if ~isempty(nonlastDateStrAr)
+          % IMPLEMENTATION NOTE: arrayfun() returns the wrong MATLAB class if
+          % the input array is empty. ==> Must have special case.
+          assert(~ismember(GmveNew.dateStr, nonlastDateStrAr), ...
+            ['The date string Gmve.dateStr="%s" has already been used by a' ...
+            ' non-last GMVE in this GMDE.'], ...
+            GmveNew.dateStr)
+        end
 
         % -----------------------------
         % Add information to obj.GmveAr
         % -----------------------------
-        if strcmp(GmveNew.dateStr, GmveLast.dateStr)
+        if GmveNew.dateStr == GmveLast.dateStr
           % CASE: Last GMVE and new GMVE have the SAME BICAS date.
           if strcmp(GmveNew.bicasVersionStr, GmveLast.bicasVersionStr)
             % CASE: Last GMVE and new GMVE have the SAME BICAS versions.
@@ -90,7 +93,7 @@ classdef DsidEntry < handle
             obj.GmveAr(end+1, 1) = GmveNew;
           end
 
-        elseif issorted({GmveLast.dateStr, GmveNew.dateStr})
+        elseif issorted([GmveLast.dateStr, GmveNew.dateStr])
           % NOTE: issorted() does not check for equality for strings,
           % but we know that the strings are not equal at this point.
           obj.GmveAr(end+1, 1) = GmveNew;
