@@ -122,31 +122,63 @@ classdef qrc
 
 
 
-    % Derive a "synthetic" L2 LFR CWF QUALITY_FLAG (the input to L3) equivalent
-    % to the L2 QUALITY_FLAG
-    % (1) in the absence of
-    %         QRC SATURATION_ZV_V*
-    %     (desired effect)
-    % (2) in the absence of QRCs which are not specified in NSO table
-    %         BIAS_HW_OFF  (from LFR)
-    %         SWEEP        (autodetected)
-    %     (undesired effect, but does not matter since data is blanked),
-    % (3) if L1R QUALITY_FLAG had not been lowered below max (undesired effect).
+    % Derive a (partly) "synthetic" L2 LFR CWF QUALITY_FLAG which is similar to
+    % the true L2 QUALITY_FLAG but which tries to emulate what the true L2
+    % QUALITY_FLAG would have been if it had not been lowered due to (1)
+    % SATURATION_ZV_V*, and (2) ANT3_FAILING.
     %
-    % NOTE: In practice, this should be the L2 QUALITY_FLAG derived from the
-    % NSO table (minus saturation), i.e. also without autodetected sweeps.
     %
-    % NOTE/BUG: This function can set a maximum QUALITY_FLAG value which is
-    % higher than what L1R could possibly have (not the QUALITY_FLAG max=4, but
-    % the highest QUALITY_FLAG which ROC wants to produce). QUALITY_FLAG is
-    % eventually capped by setting "PROCESSING.ZV_QUALITY_FLAG_MAX" when writing
-    % the CDF anyway, but this setting then has to use the appropriate value.
+    % RATIONALE
+    % =========
+    % The value is intended to be used as input to processing L2-->L3, both
+    % (a) for filtering data (treshold; settting
+    %     "PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN")), and
+    % (b) as starting point for deriving the L3 QFL which may be higher than the
+    %     corresponding actual L2 QUALITY FLAG when L3 contains valid values
+    %     derived from a subset of good data, but ignores a subset of bad data
+    %     which was the reason for lowering L2 QFL, but which is therefore not a
+    %     reason for lowering L3 QFL.
+    %     Ex: Using non-saturated L2 channels in the presence of other saturated
+    %         L2 channels.
     %
-    % BUG: This function does not consider the L2 QUALITY_FLAG when there is no
-    % saturation. Therefore, when L2 QUALITY_FLAG is lowered only due to L1R
-    % QUALITY_FLAG being lowered (in the absence of saturation or any other
-    % BICAS mechanism), this function will still generate a higher QUALITY_FLAG
-    % value.
+    % NOTE: This function is a "better hack" since it tries to solve a currently
+    % impossible task. It is to be used only while waiting for a better
+    % solution to become available.
+    %
+    %
+    % STRENGTHS, LIMITATIONS, RISKS
+    % =============================
+    % The actual ideal synthetic QFL value is impossible to derive, since not
+    % all the information used when deriving L1R-->L2 is available when
+    % processing L2-->L3.
+    %
+    % QRC events which *CAN* be accounted for are:
+    % (1) QRC events in the NSO table.
+    % (2) QRC events which are stored in the L2 CDF
+    %     Ex: SATURATION_ZV_*
+    %
+    % QRC events which can *NOT* be accounted for are:
+    % (1) QRC events which are autodetected during processing L1R-->L2 but which
+    %     are not stored in the L2 CDF.
+    %     Ex: SWEEP:
+    %       This is OK since the samples are blanked anyway, though the QFL
+    %       could be off.
+    % (2) QRC(B)s which are read from data sources which are available during
+    %     processing L1R-->L2, but not L2-->L3
+    %     Ex: BIAS_HW_OFF (QRCB read from LFR L1R CDF):
+    %           This is OK since the samples are blank anyway, though the QFL
+    %           could be off.
+    %
+    % NOTE/BUG: This function can potentially set a maximum QUALITY_FLAG value
+    % which is higher than what L1R could possibly have (not the QUALITY_FLAG
+    % max=4, but the highest QUALITY_FLAG which ROC wants to produce).
+    % QUALITY_FLAG is eventually capped by setting
+    % "PROCESSING.ZV_QUALITY_FLAG_MAX" when BICAS writes the CDF anyway, but
+    % this setting then has to use the appropriate value.
+    %
+    % NOTE: The main failure mode happens when L1R caps QFL at the same time as
+    % BICAS caps L2 QFL (to the same value). Then this function will still
+    % "uncap" the synthetic L2 QFL and raise the value.
     %
     %
     % RATIONALE
@@ -160,24 +192,124 @@ classdef qrc
     % presence of other saturated L2 channels.
     %
     function SyntheticL2QflFpa = get_synthetic_L2_QFL( ...
-        tt2000Ar, NsoTable, qflFpAr, L)
-
-      assert(islogical(qflFpAr))
+        tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, L)
 
       % NOTE: One could consider also removing/excluding ANT3_FAILING, since
       % the unaffected channels should be OK. Has no instructions to do so yet
       % though. /2025-08-27
-      SyntheticL2Qrcsm = copy(bicas.const.qrc.Q.L2_QRCSM);
-      SyntheticL2Qrcsm.remove_many(bicas.const.qrc.Q.SATURATION_QRCID_AR);
 
-      SyntheticL2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
-        SyntheticL2Qrcsm.qrcidAr, NsoTable, tt2000Ar, L);
+      % QRCs which, when they apply, imply that the (completely) synthetic QFL
+      % should be used.
+      EXCEPTIONS_QRCID_AR = [...
+        bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR; ...
+        "ANT3_FAILING"
+      ];
+      NONEXCEPTIONS_QRCID_AR = setdiff( ...
+        bicas.const.qrc.Q.L2_QRCSM.qrcidAr, EXCEPTIONS_QRCID_AR);
 
-      [SyntheticL2Qfl, ~] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
-        SyntheticL2Qrcbm, SyntheticL2Qrcsm, "L2_QUALITY_BITMASK");
 
-      SyntheticL2QflFpa = bicas.utils.FPArray(...
-        SyntheticL2Qfl, 'FILL_POSITIONS', qflFpAr);
+
+      % ASSERTIONS
+      assert(isa(L2QflFpa, "bicas.utils.FPArray"))
+      assert(isa(ChannelSaturationQrcbm, "bicas.proc.QrcbMap"))
+      assert(isequal( ...
+        ChannelSaturationQrcbm.qrcidAr, ...
+        bicas.const.qrc.Q.CHANNEL_SATURATION_QRCID_AR))
+
+
+
+      %--------------------------------------------------------------------
+      % Create synthetic L2 QRCBs, which includes as many QRCs as possible
+      %--------------------------------------------------------------------
+      % NOTE: QRCB values are not set for L2 QRCs (events) which can not be
+      % recreated because they are autodetected or read from unavailable CDFs
+      % (L1R). If they are specified in the NSO table, then they (QRC events)
+      % are included though.
+      AllSynthL2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
+        bicas.const.qrc.Q.L2_QRCSM.qrcidAr, NsoTable, tt2000Ar, L);
+      AllSynthL2Qrcbm.union(ChannelSaturationQrcbm)
+
+
+
+      %-------------------------------------------------------------------------
+      % Determine when L2 QRCs apply for which L2 QFL should (ideally) never be
+      % lowered
+      %-------------------------------------------------------------------------
+      bQrcExceptionAr = false(AllSynthL2Qrcbm.nRecords, 1);
+      for qrcid = EXCEPTIONS_QRCID_AR'
+        bQrcExceptionAr = bQrcExceptionAr | AllSynthL2Qrcbm.get(qrcid);
+      end
+
+
+
+      % Local utility function to remove repetition.
+      %
+      % NOTE: SynthQrcbm2 is only returned for debugging purposes.
+      function [SynthL2Qrcbm2, SynthL2QflFpa2] = get_synthetic_QFL(qrcidRemoveAr)
+        SynthQrcsm2 = copy(bicas.const.qrc.Q.L2_QRCSM);
+        SynthQrcsm2.remove_many(qrcidRemoveAr)
+
+        SynthL2Qrcbm2 = copy(AllSynthL2Qrcbm);
+        SynthL2Qrcbm2.remove_many(qrcidRemoveAr)
+
+        [SynthL2Qfl2, ~] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
+          SynthL2Qrcbm2, SynthQrcsm2, "L2_QUALITY_BITMASK");
+        SynthL2QflFpa2   = bicas.utils.FPArray(...
+          SynthL2Qfl2, 'FILL_POSITIONS', L2QflFpa.fpAr);
+      end
+
+
+
+      %--------------------------------------
+      % Create 2x "always synthetic" L2 QFLs
+      %--------------------------------------
+      % NOTE: These have synthetic values for all timestamps.
+
+      % Version which only includes the QRC exceptions.
+      [ExceptionsSynthL2Qrcbm, ExceptionsSynthL2QflFpa] = ...
+        get_synthetic_QFL(NONEXCEPTIONS_QRCID_AR);
+      %bicas.debug.plot_QRCBM(tt2000Ar, ExceptionsSynthL2Qrcbm,             "ExceptionsSynthL2Qrcbm");
+      %bicas.debug.plot_FPA(  tt2000Ar, ExceptionsSynthL2QflFpa, uint8(-1), "ExceptionsSynthL2QflFpa");
+      % --
+      % Version which includes as many QRCs as possible, except for the QRC
+      % exceptions.
+      [NonexceptionsSynthL2Qrcbm, NonexceptionsSynthL2QflFpa] = ...
+        get_synthetic_QFL(EXCEPTIONS_QRCID_AR);
+      %bicas.debug.plot_QRCBM(tt2000Ar, NonexceptionsSynthL2Qrcbm,             "NonexceptionsSynthL2Qrcbm");
+      %bicas.debug.plot_FPA(  tt2000Ar, NonexceptionsSynthL2QflFpa, uint8(-1), "NonexceptionsSynthL2QflFpa");
+
+
+
+      %======================================================================
+      % Determine when to use synthetic L2 QFL values instead of true L2 QFL
+      % values
+      % --------------------------------------------------------------------
+      % Tries to minimize the number of synthetic L2 QFL values used.
+      %======================================================================
+
+      % Determine when the L2 QFL is lower than L2 QFL should be if only
+      % considering exception QRCs. When this is true, the L2 QFL must have been
+      % lowered due to some reason other than the exception QRCs. ==> Must never
+      % use a synthetic QFL value.
+      % IMPLEMENTATION NOTE: This is a trick to further minimize the number of
+      % timestamps which use synthetic L2 QFL values (in the return value).
+      % Ex: ANT3_FAILING set L2 QFL=1, but L2 QFL=0 for unknown reason. ==> Use
+      %     the (true) L2 QFL=0 value.
+      BExceptionsSynthQflHigherFpa = ExceptionsSynthL2QflFpa > L2QflFpa;
+      bExceptionsSynthQflHigherAr  = BExceptionsSynthQflHigherFpa.array(false);
+
+      bUseSynthQfl = ~bExceptionsSynthQflHigherAr & bQrcExceptionAr;
+
+      %bicas.debug.plot(    tt2000Ar, bQrcExceptionAr,     "bQrcQflExceptionAr");
+      %bicas.debug.plot_FPA(tt2000Ar, L2QflFpa, uint8(-1), "L2QflFpa");
+
+      %========================
+      % Construct return value
+      %========================
+      SyntheticL2QflFpa               = L2QflFpa;
+      SyntheticL2QflFpa(bUseSynthQfl) = NonexceptionsSynthL2QflFpa(bUseSynthQfl);
+
+      %bicas.debug.plot_FPA(tt2000Ar, SyntheticL2QflFpa, uint8(-1), "SyntheticL2QflFpa");
     end
 
 

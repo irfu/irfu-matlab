@@ -22,21 +22,34 @@ classdef debug
 
 
 
+    function Fig = plot(tt2000Ar, y, figName)
+      bicas.utils.assert_ZV_Epoch(tt2000Ar)
+      assert(iscolumn(y))
+      assert(isstring(figName))
+
+      Fig = figure('WindowState', 'maximized', "Name", figName);
+
+      dtAr = bicas.debug.TT2000_to_DT(tt2000Ar);
+      plot(dtAr, y, '.-')
+    end
+
+
+
     % Method for creating a very simple plot of the content of the object in a
     % separate figure.
     %
-    function Fig = plot_QRCBM(Qrcsm, tt2000Ar, figName)
-      assert(isa(Qrcsm, "bicas.proc.QrcbMap"))
+    function Fig = plot_QRCBM(tt2000Ar, Qrcbm, figName)
+      assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       bicas.utils.assert_ZV_Epoch(tt2000Ar)
       assert(isstring(figName))
-      assert(numel(tt2000Ar) == Qrcsm.nRecords)
+      assert(numel(tt2000Ar) == Qrcbm.nRecords)
 
       Fig = figure('WindowState', 'maximized', "Name", figName);
-      tiledlayout(numel(Qrcsm.qrcidAr'), 1, "TileSpacing", "compact", "Padding", "none");
-      for i = 1:numel(Qrcsm.qrcidAr')
-        qrcid = Qrcsm.qrcidAr(i);
+      tiledlayout(numel(Qrcbm.qrcidAr'), 1, "TileSpacing", "compact", "Padding", "none");
+      for i = 1:numel(Qrcbm.qrcidAr')
+        qrcid = Qrcbm.qrcidAr(i);
         h = nexttile;
-        plot(tt2000Ar, Qrcsm.get(qrcid), '.-');
+        plot(tt2000Ar, Qrcbm.get(qrcid), '.-');
         h.YLim = [-0.05, 1.05];
         grid on
 

@@ -26,7 +26,7 @@ classdef debug___UTEST < matlab.unittest.TestCase
       Qrcbm.add("QRCID_2", logical([1; 1; 1; 1; 1]))
       Qrcbm.add("QRCID_3", logical([0; 0; 0; 0; 0]))
 
-      Fig = bicas.debug.plot_QRCBM(Qrcbm, int64([1:5]' * 1e9), "TEST FIGURE NAME");
+      Fig = bicas.debug.plot_QRCBM(int64([1:5]' * 1e9), Qrcbm, "TEST FIGURE NAME");
       close(Fig)
     end
 

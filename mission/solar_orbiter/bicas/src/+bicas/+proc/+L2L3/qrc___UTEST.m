@@ -5,6 +5,40 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef qrc___UTEST < matlab.unittest.TestCase
+  % PROPOSAL: Separate test class for tests of get_synthetic_L2_QFL().
+  %   NOTE: File total 371 rows.
+
+
+
+  %############
+  %############
+  % PROPERTIES
+  %############
+  %############
+  % Additional properties of testCase objects. Needed for setup and teardown
+  % methods which store/read their own data from the testCase object.
+  properties
+    L
+  end
+
+
+
+  %#######
+  %#######
+  % SETUP
+  %#######
+  %#######
+  methods(TestMethodSetup)
+
+
+
+    function setup(T)
+      T.L = bicas.Logger('HUMAN_READABLE', false);
+    end
+
+
+
+  end
 
 
 
@@ -54,6 +88,154 @@ classdef qrc___UTEST < matlab.unittest.TestCase
         Qrcsm, ...
         ExpQrcbm)
     end
+
+
+
+    %======================
+    %======================
+    % get_synthetic_L2_QFL
+    %======================
+    %======================
+    % ANT3_FAILING:     QFL<=1
+    % SATURATION_ZV_V*: QFL =0
+    % THRUSTER_FIRING:  QFL<=1
+    % ANT3_FAILING:     QFL<=1
+    % --
+    % NOTE: Not testing QFL fill positions.
+
+
+
+    function test_get_synthetic_L2_QFL___nonexception_QRC(T)
+      tt2000Ar = int64([11 12 13 14 15   31 32 33 34 35]');
+      nRec     = numel(tt2000Ar);
+      L2QflFpa = bicas.utils.FPArray( ...
+        uint8([4 3 2 1 0   4 3 2 1 0]'), 'FILL_VALUE', uint8(255));
+
+      ChannelSaturationQrcbm = T.get_channel_saturation_QRCBM_false(nRec);
+
+      NsoTable = bicas.NsoTable( ...
+        int64([10; 30]), ...
+        int64([20; 40]), ...
+        ["THRUSTER_FIRING" "SWEEP"]');
+
+      % CALL TESTED FUNCTION
+      SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL( ...
+        tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, T.L);
+
+      T.assertEqual(SyntheticL2QflFpa.array(uint8(0)), uint8(  [4 3 2 1 0   4 3 2 1 0]'))
+      T.assertEqual(SyntheticL2QflFpa.fpAr,            logical([0 0 0 0 0   0 0 0 0 0]'))
+    end
+
+
+
+    % NOTE: L2 QFL=1 and QFL=0 during ANT3_FAILING (QFL<=1) test whether
+    % QFL=0 is recognized as timestamp at which to not use synthetic value.
+    function test_get_synthetic_L2_QFL___exception_QRCs(T)
+      tt2000Ar = int64([11 12 13 14 15   31 32 33 34 35]');
+      nRec     = numel(tt2000Ar);
+      L2QflFpa = bicas.utils.FPArray( ...
+        uint8([4 3 2 1 0   4 3 2 1 0]'), 'FILL_VALUE', uint8(255));
+
+      ChannelSaturationQrcbm = T.get_channel_saturation_QRCBM_false(nRec);
+
+      NsoTable = bicas.NsoTable( ...
+        int64([10; 30]), ...
+        int64([20; 40]), ...
+        ["ANT3_FAILING", "SATURATION_ZV_V1"]');
+
+      % CALL TESTED FUNCTION
+      SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL( ...
+        tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, T.L);
+
+      T.assertEqual(SyntheticL2QflFpa.array(uint8(0)), uint8(  [4 4 4 4 0   4 4 4 4 4]'))
+      T.assertEqual(SyntheticL2QflFpa.fpAr,            logical([0 0 0 0 0   0 0 0 0 0]'))
+    end
+
+
+
+    % Test absence of QRCs.
+    % QFL=FP
+    function test_get_synthetic_L2_QFL___no_QRC_events(T)
+      tt2000Ar = int64([11 12 13 14 15   20]');
+      nRec     = numel(tt2000Ar);
+      L2QflFpa = bicas.utils.FPArray( ...
+        uint8([4 3 2 1 0   255]'), 'FILL_VALUE', uint8(255));
+
+      ChannelSaturationQrcbm = T.get_channel_saturation_QRCBM_false(nRec);
+
+      NsoTable = bicas.NsoTable( ...
+        int64.empty( 0, 1), ...
+        int64.empty( 0, 1), ...
+        string.empty(0, 1));
+
+      % CALL TESTED FUNCTION
+      SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL( ...
+        tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, T.L);
+
+      T.assertEqual(SyntheticL2QflFpa.array(uint8(0)), uint8(  [4 3 2 1 0   0]'))
+      T.assertEqual(SyntheticL2QflFpa.fpAr,            logical([0 0 0 0 0   1]'))
+    end
+
+
+
+    % Test every case (?) of one QRC at a time.
+    function test_get_synthetic_L2_QFL___every_QRCID_one_simultaneous(T)
+      tt2000Ar = int64([11 12   31 32   51 52   100 101]');
+      nRec     = numel(tt2000Ar);
+      L2QflFpa = bicas.utils.FPArray( ...
+        uint8([1 0   1 0   1 0   1 0]'), 'FILL_VALUE', uint8(255));
+      % NOTE: L2 QFL=1 and QFL=0 during ANT3_FAILING (QFL<=1) to test whether
+      % QFL=0 is recognized to not use synthetic values for.
+
+      ChannelSaturationQrcbm = T.get_channel_saturation_QRCBM_false(nRec);
+      ChannelSaturationQrcbm.set(...
+        "SATURATION_ZV_V1", logical([0 0   0 0   0 0   1 1])')
+
+      NsoTable = bicas.NsoTable( ...
+        int64([10; 30; 50]), ...
+        int64([20; 40; 60]), ...
+        ["THRUSTER_FIRING", "ANT3_FAILING", "SATURATION_ZV_V1"]');
+
+      % CALL TESTED FUNCTION
+      SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL( ...
+        tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, T.L);
+
+      T.assertEqual(SyntheticL2QflFpa.array(uint8(0)), uint8(  [1 0   4 0   4 4   4 4]'))
+      T.assertEqual(SyntheticL2QflFpa.fpAr,            logical([0 0   0 0   0 0   0 0]'))
+    end
+
+
+
+    % 1x non-exception + 2x exception QRC simultaneously.
+    function test_get_synthetic_L2_QFL___mult_simultaneous_QRC(T)
+      tt2000Ar = int64([11 12 13 14 15]');
+      nRec     = numel(tt2000Ar);
+      L2QflFpa = bicas.utils.FPArray( ...
+        uint8([4 3 2 1 0]'), 'FILL_VALUE', uint8(255));
+
+      ChannelSaturationQrcbm = T.get_channel_saturation_QRCBM_false(nRec);
+
+      NsoTable = bicas.NsoTable( ...
+        int64([10; 10; 10]), ...
+        int64([20; 20; 20]), ...
+        ["THRUSTER_FIRING", "ANT3_FAILING", "SATURATION_ZV_V1"]');
+
+      % CALL TESTED FUNCTION
+      SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL( ...
+        tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, T.L);
+
+      % THRUSTER_FIRING overrides.
+      T.assertEqual(SyntheticL2QflFpa.array(uint8(0)), uint8(  [1 1 1 1 1]'))
+      T.assertEqual(SyntheticL2QflFpa.fpAr,            logical([0 0 0 0 0]'))
+    end
+
+
+
+    %=======
+    %=======
+    % Other
+    %=======
+    %=======
 
 
 
@@ -175,6 +357,33 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
+
+
+
+  %########################
+  %########################
+  % PRIVATE STATIC METHODS
+  %########################
+  %########################
+  methods(Static, Access=private)
+
+
+
+    function ChannelSaturationQrcbm = get_channel_saturation_QRCBM_false(nRec)
+      qrcbFalseAr = false(nRec, 1);
+
+      ChannelSaturationQrcbm = bicas.proc.QrcbMap(nRec);
+      ChannelSaturationQrcbm.add("SATURATION_ZV_V1",  qrcbFalseAr)
+      ChannelSaturationQrcbm.add("SATURATION_ZV_V2",  qrcbFalseAr)
+      ChannelSaturationQrcbm.add("SATURATION_ZV_V3",  qrcbFalseAr)
+      ChannelSaturationQrcbm.add("SATURATION_ZV_V12", qrcbFalseAr)
+      ChannelSaturationQrcbm.add("SATURATION_ZV_V13", qrcbFalseAr)
+      ChannelSaturationQrcbm.add("SATURATION_ZV_V23", qrcbFalseAr)
+    end
+
+
+
+  end    % methods(Static, Access=private)
 
 
 

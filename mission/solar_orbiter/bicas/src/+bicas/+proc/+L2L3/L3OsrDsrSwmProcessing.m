@@ -481,7 +481,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       % Calculate a "synthetic L2 QUALITY_FLAG"
       %=========================================
       SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL(...
-        tt2000Ar, NsoTable, L2QflFpa.fpAr, L);
+        tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, L);
     end
 
 
