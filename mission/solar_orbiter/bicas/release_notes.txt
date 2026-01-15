@@ -402,7 +402,7 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 
 
 ---------------
- Version X.Y.Z
+ Version 9.2.0
 ---------------
 * Added density calibration for time period 2023-12-17T02:08:00Z to 02:09:50Z.
 * ~Bugfix: Improved algorithm for deriving synthetic L2 QUALITY_FLAG value to

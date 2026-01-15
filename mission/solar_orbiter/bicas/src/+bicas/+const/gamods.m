@@ -399,6 +399,15 @@ classdef gamods
 
 
 
+      % BICAS v9.2.0: L3 delivery ~2026-01-15
+      Gmdb.add_GMVE(...
+        bicas.const.L3_SURV_DSID_CA, ...
+        bicas.ga.mods.VersionEntry('2026-01-15', '9.2.0', ...
+        {'Improved QUALITY_FLAG.'; ...
+        'Potentially generate spacecraft potential and density when ANT3 fails.'}))
+
+
+
       if 0
         %=============================
         % Data for next BICAS version
