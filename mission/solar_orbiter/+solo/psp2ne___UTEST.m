@@ -75,7 +75,7 @@ classdef psp2ne___UTEST < matlab.unittest.TestCase
 
             % NOTE: Condition reflects actual behaviour. Not sure if this is
             % desirable behaviour though.
-            assert(all(ActNeScpQualityBitTs.data == 1))
+            assert(all(ActNeScpQualityBitTs.data == 0))
 
           case "VALUES"
             assert(all(~isnan(ActNeScpTs.data)))

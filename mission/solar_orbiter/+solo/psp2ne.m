@@ -277,10 +277,9 @@ NeScp.userData     = '';
 % to 122 cc, everything above that value is uncertain, therefore is flagged.
 % Low values of NeScp i.e <2 cc are also uncertain.
 % --
-% NOTE: Currently set to =1 when there is no data (density=NaN). Change?!
-NeScpQualityBit = TSeries(NeScp.time, ones(size(NeScp.data)));
-NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
-NeScpQualityBit.data(isnan(NeScpQualityBit.data))     = 0;
+% NOTE: Currently set to =0 when there is no data (density=NaN).
+NeScpQualityBit = TSeries(NeScp.time, zeros(size(NeScp.data)));
+NeScpQualityBit.data((NeScp.data<=2) | (122<=NeScp.data)) = 1;
 
 
 
