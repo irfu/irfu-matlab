@@ -405,3 +405,9 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
  Version X.Y.Z
 ---------------
 * Added density calibration for time period 2023-12-17T02:08:00Z to 02:09:50Z.
+* ~Bugfix: Improved algorithm for deriving synthetic L2 QUALITY_FLAG value to
+  use when processing L2-->L3.
+  * Uses the true L2 QUALITY_FLAG (previously did not), and as often as
+    possible.
+  * Ignores ANT3_FAILING (previously only SATURATION_ZV_V*) so that L3 data can
+    be generated also for that case (if relevant data is not blanked).
