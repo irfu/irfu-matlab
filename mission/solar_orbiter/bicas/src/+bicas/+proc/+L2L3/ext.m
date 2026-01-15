@@ -87,6 +87,8 @@ classdef ext
 
     % Validate the solo.psp2ne() return values.
     %
+    % DESIGN NOTES, RATIONALE
+    % =======================
     % This function is written to be used by both (1) BICAS proper, and (2) test
     % code. Any validation which can not be shared between BICAS proper and test
     % code should not be in this function.
@@ -95,6 +97,9 @@ classdef ext
         tt2000Ar, NeScpTs, NeScpQualityBitTs, codeVerStr, L)
 
       nTimestamps = numel(tt2000Ar);
+
+      assert(isa(NeScpTs,           "TSeries"))
+      assert(isa(NeScpQualityBitTs, "TSeries"))
 
       assert(isequal(size(NeScpTs.data),           [nTimestamps, 1]))
       assert(isequal(size(NeScpQualityBitTs.data), [nTimestamps, 1]))

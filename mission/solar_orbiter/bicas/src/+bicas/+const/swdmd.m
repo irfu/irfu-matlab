@@ -221,7 +221,7 @@ classdef swdmd
         ' calibration data. L3 makes use of new L2_QUALITY_BITMASK.'], ...
         ]; % v9.1.0
 
-      MAP('SWD.release.source')        = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
+      MAP('SWD.release.source')         = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
       % Appropriate branch? "master" instead?
       %
       % Relative path to BICAS executable. See RCS ICD.

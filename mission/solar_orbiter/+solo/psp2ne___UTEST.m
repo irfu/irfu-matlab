@@ -55,7 +55,7 @@ classdef psp2ne___UTEST < matlab.unittest.TestCase
         nTimestamps = numel(tt2000Ar);
         dataAr      = zeros(nTimestamps, 1);
 
-        PspTs = TSeries(EpochTT(tt2000Ar), dataAr);
+        PspTs       = TSeries(EpochTT(tt2000Ar), dataAr);
 
 
 

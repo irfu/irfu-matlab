@@ -32,8 +32,8 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
     function test_process_L2_to_L3___0(T)
       % NOTE: Unclear how much testing is meaningful. One could add more tests.
       %
-      % PROPOSITION: The complexity of the test code implies that the
-      %              underlying code needs to be refactored somehow.
+      % PROPOSITION: The complexity of the test code may imply that the
+      %              underlying code needs to be refactored somehow(?).
       %   NOTE: Test sets GAs!
       %   PRO: This test code really tests
       %       bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template() to a large extent.
@@ -49,6 +49,7 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       % PROPOSAL: Separate tests (function calls) for different special
       %           cases of bins.
       %   PRO: Easier to follow behaviour in tested code.
+      %   CON: Too much boilerplate/repeated code.
       %
       % PROPOSAL: Check OSR data for NaN (not just DSR).
 
@@ -292,8 +293,8 @@ classdef L3OsrDsrSwmProcessing___UTEST < matlab.unittest.TestCase
       InLfrCwf.ZvFpa.QUALITY_BITMASK    = bicas.utils.FPArray(uint16(A.osrIn_l1qbm), 'FILL_VALUE', l1qbmFv);
       InLfrCwf.ZvFpa.L2_QUALITY_BITMASK = bicas.utils.FPArray(uint16(A.osrIn_l2qbm), 'FILL_VALUE', l2qbmFv);
       InLfrCwf.ZvFpa.DELTA_PLUS_MINUS   = bicas.utils.FPArray(int64(ones(size(InLfrCwf.Zv.Epoch))) * mode(diff(InLfrCwf.Zv.Epoch)));
-      InLfrCwf.ZvFpa.VDC                = bicas.utils.FPArray(       A.osrIn_VDC, 'FILL_VALUE', NaN).cast('single');
-      InLfrCwf.ZvFpa.EDC                = bicas.utils.FPArray(       A.osrIn_EDC, 'FILL_VALUE', NaN).cast('single');
+      InLfrCwf.ZvFpa.VDC                = bicas.utils.FPArray(       A.osrIn_VDC,    'FILL_VALUE', NaN).cast('single');
+      InLfrCwf.ZvFpa.EDC                = bicas.utils.FPArray(       A.osrIn_EDC,    'FILL_VALUE', NaN).cast('single');
 
       % Expected OSR
       ExpOsr.Zv.QUALITY_FLAG       = bicas.utils.FPArray(uint8(A.osrExp_qfl),        'FILL_VALUE', qflFv);

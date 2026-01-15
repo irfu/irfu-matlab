@@ -15,7 +15,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 %       Should be NaN for timestamps for which there is no calibration data.
 % NeScpQualityBit
 %       Binary value that specifies whether the density value
-%       seems bad or not. 1=Bad, 0=Can not find any problem.
+%       seems bad or not. 0=Can not find any problem; 1=Bad.
 %       Must not be NaN. (Currently (2023-08-10) not sure if this
 %       is strictly in agreement with conventions, but that is
 %       what BICAS requires).
@@ -42,7 +42,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 % traceability.
 %
 % IMPORTANT NOTE: This value is meant to be be updated manually to
-% the approximate current date when the calibration data or algorithm is
+% the approximate current time when the calibration data or algorithm is
 % updated (or possibly when calibration data or algorithm risk being
 % unintentionally changed due to refactoring).
 % * It should *NOT* be an automatically set timestamp (e.g. current time).
@@ -271,11 +271,9 @@ NeScp.userData     = '';
 % ------------------------------------------
 % Is used by BICAS for setting quality bit in zVariable L3_QUALITY_BITMASK.
 % --
-% NOTE: Overwrite every value with zero in order to also overwrite NaN which may
-% otherwise be inherited from NeScp.
 % NOTE: Density from TNR plasma line used to calibrate NeScp only measures up
-% to 122 cc, everything above that value is uncertain, therefore is flagged.
-% Low values of NeScp i.e <2 cc are also uncertain.
+% to 122 cc, everything above that value is uncertain and is therefore flagged.
+% Low values of NeScp i.e <2 cc are also uncertain and similarly flagged.
 % --
 % NOTE: Currently set to =0 when there is no data (density=NaN).
 NeScpQualityBit = TSeries(NeScp.time, zeros(size(NeScp.data)));

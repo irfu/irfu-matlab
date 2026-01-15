@@ -297,9 +297,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %------------------------------------------
-      % Derive QRCBMs and synthetic QUALITY_FLAG
-      %------------------------------------------
+      %------------------------------------
+      % Derive QRCBMs and synthetic L2 QFL
+      %------------------------------------
       [L3Qrcbm, L3DensityQrcbm, SyntheticL2QflFpa] = ...
         bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_QRCBMs_synthetic_L2_QFL(...
         ...
@@ -554,6 +554,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Zv2.QUALITY_FLAG       = Zv.QflFpa;
       Zv2.QUALITY_BITMASK    = Zv.L1qbmFpa;
       Zv2.L2_QUALITY_BITMASK = Zv.L2qbmFpa;
+
+      %bicas.debug.plot_FPA(Zv.tt2000, Zv.QflFpa, uint8(-1), "QflFpa")
 
       TemplateOsr = struct('Ga', Ga, 'Zv', Zv2);
     end

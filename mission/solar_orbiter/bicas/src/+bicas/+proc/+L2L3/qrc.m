@@ -268,13 +268,13 @@ classdef qrc
       % Version which only includes the QRC exceptions.
       [ExceptionsSynthL2Qrcbm, ExceptionsSynthL2QflFpa] = ...
         get_synthetic_QFL(NONEXCEPTIONS_QRCID_AR);
-      %bicas.debug.plot_QRCBM(tt2000Ar, ExceptionsSynthL2Qrcbm,             "ExceptionsSynthL2Qrcbm");
-      %bicas.debug.plot_FPA(  tt2000Ar, ExceptionsSynthL2QflFpa, uint8(-1), "ExceptionsSynthL2QflFpa");
       % --
       % Version which includes as many QRCs as possible, except for the QRC
       % exceptions.
       [NonexceptionsSynthL2Qrcbm, NonexceptionsSynthL2QflFpa] = ...
         get_synthetic_QFL(EXCEPTIONS_QRCID_AR);
+      %bicas.debug.plot_QRCBM(tt2000Ar, ExceptionsSynthL2Qrcbm,                "ExceptionsSynthL2Qrcbm");
+      %bicas.debug.plot_FPA(  tt2000Ar, ExceptionsSynthL2QflFpa,    uint8(-1), "ExceptionsSynthL2QflFpa");
       %bicas.debug.plot_QRCBM(tt2000Ar, NonexceptionsSynthL2Qrcbm,             "NonexceptionsSynthL2Qrcbm");
       %bicas.debug.plot_FPA(  tt2000Ar, NonexceptionsSynthL2QflFpa, uint8(-1), "NonexceptionsSynthL2QflFpa");
 

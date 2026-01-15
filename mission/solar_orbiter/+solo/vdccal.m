@@ -115,8 +115,8 @@ sub_int_times = EpochTT(solo.split_tint(mainTint,discontTimes));
 
 % Predefine output variables:
 DCE_SRF_out = irf.ts_vec_xyz(EpochTT([]),double.empty(0,3));
-PSP_out     = irf.ts_scalar(EpochTT([]),[]);
-ScPot_out   = irf.ts_scalar(EpochTT([]),[]);
+PSP_out     = irf.ts_scalar( EpochTT([]),[]);
+ScPot_out   = irf.ts_scalar( EpochTT([]),[]);
 
 % Perform calibration on each subinterval separately (if any probe-to-spacecraft
 % potential discontinuities are present).
@@ -162,8 +162,8 @@ for iSub = 1:length(sub_int_times)-1
   % IMPORTANT NOTE: .resample() somehow extrapolates data to outside of the time
   % interval for which there is data. ==> Generates "calibrated" values (not
   % NaN) also outside of time interval for which there is calibration data!
-  d23R  = a.d23.tlim(subTint).resample(VDC);
-  k23R  = a.k23.tlim(subTint).resample(VDC);
+  d23R  = a.d23.tlim( subTint).resample(VDC);
+  k23R  = a.k23.tlim( subTint).resample(VDC);
   K123R = a.K123.tlim(subTint).resample(VDC);
   % Set (resampled) calibration data to NaN for timestamps outside of the time
   % interval for which there is actual calibration data. One must do this to
@@ -195,9 +195,9 @@ for iSub = 1:length(sub_int_times)-1
   PSP = irf.ts_scalar(VDC.time, (V23_scaled + V1)/2);
   % Use alternate "calculation" using only ANT1 for some timestamps.
   % NOTE: This calculation is independent of calibration data. Should therefore
-  %       not use NaN or bNoCalibrationData.
+  %       not use NaN when bNoCalibrationData==true.
   bPspOnlyUsesAnt1 = isnan(VDC.y.data) | isnan(VDC.z.data);
-  bPspOnlyUsesAnt1 = bPspOnlyUsesAnt1 | bNoCalibrationData;
+  bPspOnlyUsesAnt1 = bPspOnlyUsesAnt1  | bNoCalibrationData;
   PSP.data(bPspOnlyUsesAnt1) = VDC.x.data(bPspOnlyUsesAnt1);
   %
   PSP.units = 'V';
