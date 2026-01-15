@@ -51,8 +51,9 @@ classdef VersionEntry
       irf.assert.castring_regexp(char(dateStr), ...
         '20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]')
 
+      assert(isstring(bicasVersionStr))
       % NOTE: Version string without initial "V".
-      irf.assert.castring_regexp(bicasVersionStr, '[0-9]+.[0-9]+.[0-9]+')
+      irf.assert.castring_regexp(char(bicasVersionStr), '[0-9]+.[0-9]+.[0-9]+')
 
       assert(iscolumn(commentsCa))
       bicas.ga.mods.VersionEntry.assert_commentsCa(commentsCa)
