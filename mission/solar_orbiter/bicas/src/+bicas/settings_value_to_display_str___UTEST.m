@@ -19,11 +19,11 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test0(T)
       %=========
       % STRINGS
       %=========
-      bicas.settings_value_to_display_str___UTEST.test(testCase, {...
+      T.test({...
         '',   '""';
         'text', '"text"';
         })
@@ -32,12 +32,12 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
       % 1D VECTOR OF NUMBERS
       %======================
       % 0x0 array ==> ERROR
-      testCase.verifyError(...
+      T.verifyError(...
         @() bicas.settings_value_to_display_str(zeros(0, 0)), ...
         ?MException)
 
       % 0x1, 1x0 array ==> OK
-      bicas.settings_value_to_display_str___UTEST.test(testCase, {
+      T.test({
         zeros(0, 1), '[]';
         zeros(1, 0), '[]';
         1.0, '1';
@@ -46,7 +46,7 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
         })
 
       % Row and column vector.
-      bicas.settings_value_to_display_str___UTEST.test(testCase, {
+      T.test({
         [3.14, 29],  '[3.14, 29]';
         [3.14, 29]', '[3.14, 29]';
         })
@@ -54,7 +54,7 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
       %=================
       % LOGICAL/BOOLEAN
       %=================
-      bicas.settings_value_to_display_str___UTEST.test(testCase, {...
+      T.test({...
         false, 'false';
         true, 'true';
         })
@@ -63,21 +63,21 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
       % CELL ARRAY
       %============
       % 0x0 array ==> ERROR
-      testCase.verifyError(...
+      T.verifyError(...
         @() bicas.settings_value_to_display_str(zeros(0, 0)), ...
         ?MException)
       % 0x1, 1x0 ==> OK
-      bicas.settings_value_to_display_str___UTEST.test(testCase, {
+      T.test({
         cell(1,0), '{}';
         cell(0,1), '{}';
         })
 
-      bicas.settings_value_to_display_str___UTEST.test(testCase, {
+      T.test({
         {1}, '{1}'
         })
 
       % Row and column vector.
-      bicas.settings_value_to_display_str___UTEST.test(testCase, {
+      T.test({
         {3.14, 29, 'text'},  '{3.14, 29, "text"}';
         {3.14, 29}', '{3.14, 29}';
         })
@@ -89,23 +89,23 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
 
 
 
-    function test(testCase, table)
+    function test(T, table)
       assert(size(table, 2) == 2)
 
       for i = 1:size(table, 1)
         value     = table{i, 1};
         expOutput = table{i, 2};
 
-        testCase.verifyEqual(...
+        T.verifyEqual(...
           bicas.settings_value_to_display_str(value), ...
           expOutput)
       end
@@ -113,7 +113,7 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
 
 
 
-  end    % methods(Static, Access=private)
+  end    % methods(Access=private)
 
 
 
