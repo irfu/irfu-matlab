@@ -447,7 +447,7 @@ QRCBM
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.
-    NOTE: Not all QRCIDs can/should be specified in the NSO table.
+    NOTE: Nominally, not all QRCIDs are used in the NSO table.
         Ex: BAD_DENSITY
 QRCS
     Class bicas.proc.QrcSetting and subclasses thereof.

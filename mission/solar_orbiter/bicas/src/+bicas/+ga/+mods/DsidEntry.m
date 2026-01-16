@@ -2,6 +2,9 @@
 % Class that represents the GA "MODS" information for one DSID.
 % Contains list of instances of bicas.ga.mods.VersionEntry.
 %
+% NOTE: The class currently uses a mixture of char arrays and string objects
+% since it has been used as a test case for converting to string objects.
+%
 %
 % MUTABLE. HANDLE CLASS.
 %

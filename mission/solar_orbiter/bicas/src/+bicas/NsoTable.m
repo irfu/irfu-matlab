@@ -107,7 +107,7 @@ classdef NsoTable
     %       Column array of timestamps that represent the end of events.
     % evtQrcidAr
     %       Column array of QRCIDs for events.
-    %       NOTE: The same QRCID may occur multiple times. Not unique.
+    %       NOTE: The same QRCID may occur multiple times.
     %
     function obj = NsoTable(evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr)
 
@@ -246,8 +246,8 @@ classdef NsoTable
     % Read SolO non-standard operations (NSO) XML file for *BICAS* and
     % return the content as an instance of bicas.NsoTable.
     %
-    % NOTE: The caller must supply list of legal QRCIDs to make it possible to
-    % assert that the file is valid, without making this class less generic.
+    % NOTE: The caller must supply an array of legal QRCIDs to make it possible
+    % to assert that the file is valid, without making this class less generic.
     %
     function NsoTable = read_file_validated(filePath, legalQrcidAr)
       assert(iscolumn(legalQrcidAr) & isstring(legalQrcidAr))

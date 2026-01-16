@@ -31,9 +31,11 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
   %   ~Density+Efield+Scpot
   %   ~CWF
   %   ~OSR, DSR
-  %   DensityEfieldScpotProcessing
+  %   DensityEfieldScpotSwmProcessing
+  %   DensEfieldScpotSwmProcessing
   %     CON: Long
-  %   DesProcessing
+  %     CON: Not in order of processing
+  %   DesSwmProcessing
   %     CON: There is no abbreviation "DES".
   %   CwfDesProcessing
   %

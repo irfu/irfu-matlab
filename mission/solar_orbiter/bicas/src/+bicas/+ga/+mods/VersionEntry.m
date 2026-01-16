@@ -76,6 +76,7 @@ classdef VersionEntry
 
 
 
+    % NOTE: Returns char array (no string object).
     function s = get_str(obj)
       commentsStr = strjoin(obj.commentsAr, ' | ');
 
@@ -134,6 +135,11 @@ classdef VersionEntry
         % This may happen if code does not correctly merge hardcoded strings
         % over multiple rows.
         assert(~contains(str, "  "))
+
+        % Check that comment does not contain more than one minus in a row
+        % ----------------------------------------------------------------
+        % Double minus is used to separate different sections of a MODS entry.
+        assert(~contains(str, "--"))
 
         % Check that comment begins with permitted character
         % --------------------------------------------------

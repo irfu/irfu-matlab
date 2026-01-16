@@ -401,9 +401,9 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Bugfix: Incorrect solo.psp2ne() calibration time intervals fixed.
 
 
----------------
- Version 9.2.0
----------------
+----------------------------
+ Version 9.2.0 (2026-01-15)
+----------------------------
 * Added density calibration for time period 2023-12-17T02:08:00Z to 02:09:50Z.
 * ~Bugfix: Improved algorithm for deriving synthetic L2 QUALITY_FLAG value to
   use when processing L2-->L3.
