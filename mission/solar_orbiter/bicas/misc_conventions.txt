@@ -556,7 +556,7 @@ SIP
 SKT
     CDF skeleton file. Abbreviation comes from the standard file suffix ".skt".
 SKV
-    Class bicas.settings.SettingsKeyValue.
+    Class bicas.settings.KeyValue.
 SNF
     Split by Non-Finite.
     Split time series into multiple shorter time series, each one separated by

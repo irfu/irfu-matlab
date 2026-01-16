@@ -107,7 +107,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
           testCase.assertEqual(actValue, overrideValue)
 
           actSkv = S.get_SKV(KEY);
-          expSkv = bicas.settings.SettingsKeyValue(initialValue,  'default');
+          expSkv = bicas.settings.KeyValue(initialValue,  'default');
           expSkv = expSkv.override(       overrideValue, 'test');
           testCase.assertEqual(actSkv, expSkv)
         end
@@ -224,7 +224,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
       S1.make_read_only()
 
       actSkv = S1.get_SKV(KEY_1);
-      expSkv = bicas.settings.SettingsKeyValue(VALUE_1, 'default');
+      expSkv = bicas.settings.KeyValue(VALUE_1, 'default');
       testCase.assertEqual(actSkv, expSkv)
 
       % Two simultaneous keys
@@ -235,11 +235,11 @@ classdef Settings___UTEST < matlab.unittest.TestCase
       S2.make_read_only()
 
       actSkv = S2.get_SKV(KEY_2);
-      expSkv = bicas.settings.SettingsKeyValue(VALUE_2, 'default');
+      expSkv = bicas.settings.KeyValue(VALUE_2, 'default');
       testCase.assertEqual(actSkv, expSkv)
 
       actSkv = S2.get_SKV(KEY_1);
-      expSkv = bicas.settings.SettingsKeyValue(VALUE_1, 'default');
+      expSkv = bicas.settings.KeyValue(VALUE_1, 'default');
       testCase.assertEqual(actSkv, expSkv)
     end
 

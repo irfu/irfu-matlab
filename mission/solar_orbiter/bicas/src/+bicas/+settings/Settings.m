@@ -36,16 +36,17 @@ classdef Settings < handle
   % ------
   % PROPOSAL: Move settings-related files to its own package.
   %   Ex:
-  %       Settings         + UTEST
-  %       SettingsKeyValue + UTEST
+  %       Settings                             -- DONE
+  %       KeyValue                             -- DONE
   %       create_default_BSO
-  %       settings_value_to_display_str + UTEST
+  %       override_settings_from_config_file.m -- DONE
+  %       settings_value_to_display_str        -- DONE
   %       sprint_BSO
   %   CON: Mixes generic and non-generic code.
   %       PROPOSAL: Split.
   %           bicas.utils.*
-  %               Settings         + UTEST
-  %               SettingsKeyValue + UTEST
+  %               Settings
+  %               KeyValue
   %           bicas.settings.*
   %               create_default_BSO
   %               settings_value_to_display_str + UTEST
@@ -134,7 +135,7 @@ classdef Settings < handle
           'Trying to define pre-existing settings key.')
       end
 
-      Skv = bicas.settings.SettingsKeyValue(...
+      Skv = bicas.settings.KeyValue(...
         defaultValue, bicas.settings.Settings.VALUE_SOURCE_DEFAULT);
       obj.SkvMap(key) = Skv;
     end
