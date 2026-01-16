@@ -15,7 +15,7 @@ classdef(Abstract) SwmProcessing
   %         bicas.proc.L1L2.LfrSwmProcessing
   %         bicas.proc.L1L2.TdsSwmProcessing
   %         bicas.proc.L2L2.LfrDsrSwmProcessing
-  %         bicas.proc.L2L3.L3OsrDsrSwmProcessing
+  %         bicas.proc.L2L3.DesSwmProcessing
   %   CON: Bad for TestSwmProcessing, SwmProcessing
   %       CON: Does not have to apply convention to every class.
 
