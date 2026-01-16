@@ -58,7 +58,7 @@ classdef bicas___UTEST < matlab.unittest.TestCase
 
 
 
-    function setup_class(testCase)
+    function setup_class(T)
       defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
 
       %==============================================================
@@ -73,13 +73,13 @@ classdef bicas___UTEST < matlab.unittest.TestCase
           bicas.const.DEFAULT_CONFIG_FILENAME, ...
           mfilename(), timestampStr);
 
-        testCase.oldDefaultConfigFile = fullfile(...
+        T.oldDefaultConfigFile = fullfile(...
           bicas.utils.get_BICAS_config_dir(), filename);
 
-        [success, errorMessage, ~] = movefile(defaultConfigFile, testCase.oldDefaultConfigFile);
+        [success, errorMessage, ~] = movefile(defaultConfigFile, T.oldDefaultConfigFile);
         assert(success, errorMessage)
       else
-        testCase.oldDefaultConfigFile = [];
+        T.oldDefaultConfigFile = [];
       end
     end
 
@@ -90,9 +90,9 @@ classdef bicas___UTEST < matlab.unittest.TestCase
 
 
 
-    function setup_method(testCase)
-      Fixture = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-      testCase.testDir = Fixture.Folder;
+    function setup_method(T)
+      Fixture = T.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      T.testDir = Fixture.Folder;
     end
 
 
@@ -113,7 +113,7 @@ classdef bicas___UTEST < matlab.unittest.TestCase
     % NOTE: Empirically, this method is executed also if
     % (1) tests are manually interrupted (Ctrl-C), or
     % (2) tests raise exception.
-    function teardown_class(testCase)
+    function teardown_class(T)
       defaultConfigFile = bicas.utils.get_BICAS_default_config_file();
 
       if isfile(defaultConfigFile)
@@ -124,11 +124,11 @@ classdef bicas___UTEST < matlab.unittest.TestCase
       %===================================================
       % Restore old default config file, if there was one
       %===================================================
-      if ~isempty(testCase.oldDefaultConfigFile)
-        [success, errorMessage, ~] = movefile(testCase.oldDefaultConfigFile, defaultConfigFile);
+      if ~isempty(T.oldDefaultConfigFile)
+        [success, errorMessage, ~] = movefile(T.oldDefaultConfigFile, defaultConfigFile);
         assert(success, ...
           'Failed to restore old default config file from saved copy "%s".', ...
-          testCase.oldDefaultConfigFile, errorMessage)
+          T.oldDefaultConfigFile, errorMessage)
       end
     end
 
@@ -148,14 +148,14 @@ classdef bicas___UTEST < matlab.unittest.TestCase
 
 
     % Use default path config file (location).
-    function test_no_error_default_config_file(testCase)
+    function test_no_error_default_config_file(T)
 
       function test(varargin)
         errorCode = bicas.main(varargin{:});
-        testCase.assertEqual(errorCode, 0)
+        T.assertEqual(errorCode, 0)
       end
 
-      configFileAPath = testCase.write_default_config_file();
+      configFileAPath = T.write_default_config_file();
 
       test('--help')
       test('--version')
@@ -174,11 +174,11 @@ classdef bicas___UTEST < matlab.unittest.TestCase
       % ----------------------------------
       % --log-matlab : Log file is created
       % ----------------------------------
-      logFilePath     = fullfile(testCase.testDir, 'bicas.log');
-      testCase.assertFalse(isfile(logFilePath))
+      logFilePath     = fullfile(T.testDir, 'bicas.log');
+      T.assertFalse(isfile(logFilePath))
 
       test('--version', '--log-matlab', logFilePath)
-      testCase.assertTrue(isfile(logFilePath))
+      T.assertTrue(isfile(logFilePath))
 
       delete(configFileAPath)
     end
@@ -186,31 +186,31 @@ classdef bicas___UTEST < matlab.unittest.TestCase
 
 
     % Test specifying config file path.
-    function test_no_error_explicit_config_file(testCase)
+    function test_no_error_explicit_config_file(T)
 
       function test(varargin)
         errorCode = bicas.main(varargin{:});
-        testCase.assertEqual(errorCode, 0)
+        T.assertEqual(errorCode, 0)
       end
 
-      configFileAPath = testCase.write_specified_config_file(testCase, 'test.conf');
+      configFileAPath = T.write_specified_config_file(T, 'test.conf');
 
       test('--help', '--config', configFileAPath, '--set', 'SWM.L1-L2_ENABLED', 'true')
     end
 
 
 
-    function test_error(testCase)
+    function test_error(T)
 
       % Test unsuccessful call (non-zero error code)
       % NOTE: bicas.main() raises exception but catches it itself.
       function test_error(varargin)
         errorCode = bicas.main(varargin{:});
 
-        testCase.assertEqual(errorCode, 1)
+        T.assertEqual(errorCode, 1)
       end
 
-      configFileAPath = testCase.write_default_config_file();
+      configFileAPath = T.write_default_config_file();
       test_error()    % Zero CLI arguments.
       test_error('illegal_argument')
       test_error('--illegal_argument')
@@ -241,8 +241,8 @@ classdef bicas___UTEST < matlab.unittest.TestCase
 
 
 
-    function configFileAPath = write_specified_config_file(testCase, configFileRPath)
-      configFileAPath = irf.fs.write_empty_file({testCase.testDir, configFileRPath});
+    function configFileAPath = write_specified_config_file(T, configFileRPath)
+      configFileAPath = irf.fs.write_empty_file({T.testDir, configFileRPath});
     end
 
 

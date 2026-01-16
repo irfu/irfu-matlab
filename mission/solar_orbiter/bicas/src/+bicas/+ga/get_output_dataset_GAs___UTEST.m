@@ -45,10 +45,10 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
 
 
 
-    function setup(testCase)
-      testCase.L   = bicas.Logger('NO_STDOUT', false);
-      testCase.Bso = bicas.create_default_BSO();
-      testCase.Bso.make_read_only()
+    function setup(T)
+      T.L   = bicas.Logger('NO_STDOUT', false);
+      T.Bso = bicas.create_default_BSO();
+      T.Bso.make_read_only()
     end
 
 
@@ -66,7 +66,7 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_0(testCase)
+    function test_0(T)
 
       %=================
       % 3x InputDataset
@@ -114,7 +114,7 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
       %##################
       ActOutGaSubset = bicas.ga.get_output_dataset_GAs(...
         InputDatasetsMap, OutputDataset, outputFilename, outputDsid, ...
-        testCase.Bso, testCase.L);
+        T.Bso, T.L);
 
       %######################################################################
       % Examining return value
@@ -122,12 +122,12 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
       %######################################################################
 
       function test_cell_column(value)
-        testCase.assertTrue(iscolumn(value))
-        testCase.assertTrue(iscell(  value))
+        T.assertTrue(iscolumn(value))
+        T.assertTrue(iscell(  value))
       end
       function test_RctdCa_size(gaValue)
         test_cell_column(gaValue)
-        testCase.assertEqual(size(gaValue), size(RctdCa))
+        T.assertEqual(size(gaValue), size(RctdCa))
       end
 
       test_RctdCa_size(ActOutGaSubset.CAL_ENTITY_AFFILIATION)
@@ -137,11 +137,11 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
       test_RctdCa_size(ActOutGaSubset.CALIBRATION_VERSION)
 
       test_cell_column(ActOutGaSubset.Parents)
-      testCase.assertEqual(size(ActOutGaSubset.Parents), [3,1])
+      T.assertEqual(size(ActOutGaSubset.Parents), [3,1])
 
-      testCase.assertEqual(ActOutGaSubset.CALIBRATION_VERSION, {'01'; ' '})
+      T.assertEqual(ActOutGaSubset.CALIBRATION_VERSION, {'01'; ' '})
 
-      testCase.assertEqual(ActOutGaSubset.CAVEATS, {'CAVEATS 1'; 'CAVEATS 2'})
+      T.assertEqual(ActOutGaSubset.CAVEATS, {'CAVEATS 1'; 'CAVEATS 2'})
     end
 
 

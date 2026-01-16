@@ -17,7 +17,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_NSO_table_to_QRCBM___empty_NSO_table(testCase)
+    function test_NSO_table_to_QRCBM___empty_NSO_table(T)
       % Empty NSO table. Various Epoch ZVs, QRCIDs.
 
       EMPTY_NSO_TABLE = bicas.NsoTable(...
@@ -45,7 +45,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
             ExpQrcbm.add(qrcid, false(size(tt2000Ar)));
           end
 
-          testCase.test_NSO_table_to_QRCBM(...
+          T.test_NSO_table_to_QRCBM(...
             requestedQrcidAr, EMPTY_NSO_TABLE, ...
             tt2000Ar, ...
             ExpQrcbm ...
@@ -56,7 +56,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_NSO_table_to_QRCBM___nonoverlapping_events(testCase)
+    function test_NSO_table_to_QRCBM___nonoverlapping_events(T)
       % Two non-overlapping NSO events.
 
       % Nontrivial NSO table.
@@ -70,7 +70,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       ExpQrcbm = bicas.proc.QrcbMap(4);
       ExpQrcbm.add("QRCID1", logical([0 1 1 0]'));
       ExpQrcbm.add("QRCID2", logical([0 0 0 0]'));
-      testCase.test_NSO_table_to_QRCBM(...
+      T.test_NSO_table_to_QRCBM(...
         ALL_QRCID_AR, NSO_TABLE, ...
         [0:3]*1e9, ...
         ExpQrcbm ...
@@ -80,7 +80,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       ExpQrcbm = bicas.proc.QrcbMap(4);
       ExpQrcbm.add("QRCID1", logical([0 0 0 0]'));
       ExpQrcbm.add("QRCID2", logical([0 1 1 0]'));
-      testCase.test_NSO_table_to_QRCBM(...
+      T.test_NSO_table_to_QRCBM(...
         ALL_QRCID_AR, NSO_TABLE, ...
         [3:6]*1e9, ...
         ExpQrcbm ...
@@ -90,7 +90,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       ExpQrcbm = bicas.proc.QrcbMap(3);
       ExpQrcbm.add("QRCID1", logical([1 0 0]'));
       ExpQrcbm.add("QRCID2", logical([0 0 1]'));
-      testCase.test_NSO_table_to_QRCBM(...
+      T.test_NSO_table_to_QRCBM(...
         ALL_QRCID_AR, NSO_TABLE, ...
         [2:4]'*1e9, ...
         ExpQrcbm ...
@@ -99,7 +99,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_NSO_table_to_QRCBM___overlapping_events_nonexistent(testCase)
+    function test_NSO_table_to_QRCBM___overlapping_events_nonexistent(T)
       % Two overlapping NSOs, one requested non-existing QRCID.
 
       ALL_QRCID_AR = ["QRCID1", "QRCID2", "QRCID3"];
@@ -113,7 +113,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       ExpQrcbm.add("QRCID1", logical([0 1 1 0 0]'));
       ExpQrcbm.add("QRCID2", logical([0 0 1 1 0]'));
       ExpQrcbm.add("QRCID3", logical([0 0 0 0 0]'));
-      testCase.test_NSO_table_to_QRCBM(...
+      T.test_NSO_table_to_QRCBM(...
         ALL_QRCID_AR, NSO_TABLE, ...
         [0:4]*1e9, ...
         ExpQrcbm ...
@@ -124,7 +124,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       ExpQrcbm.add("QRCID1", logical([0 0]'));
       ExpQrcbm.add("QRCID2", logical([0 0]'));
       ExpQrcbm.add("QRCID3", logical([0 0]'));
-      testCase.test_NSO_table_to_QRCBM(...
+      T.test_NSO_table_to_QRCBM(...
         ALL_QRCID_AR, NSO_TABLE, ...
         [-1, 4]*1e9, ...
         ExpQrcbm ...
@@ -132,7 +132,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
     end
 
 
-    function test_NSO_table_to_QRCBM___QRCID_req_omitted_req_nonexist(testCase)
+    function test_NSO_table_to_QRCBM___QRCID_req_omitted_req_nonexist(T)
       % (1) Request QRCID which does not exist in NSO table.
       % (2) Omit to request QRCID in NSO table.
 
@@ -144,7 +144,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
       ExpQrcbm = bicas.proc.QrcbMap(6);
       ExpQrcbm.add("QRCID1", logical([0 1 1 0 0 0]'));
       ExpQrcbm.add("QRCID3", logical([0 0 0 0 0 0]'));
-      testCase.test_NSO_table_to_QRCBM(...
+      T.test_NSO_table_to_QRCBM(...
         string(ExpQrcbm.qrcidAr), NSO_TABLE, ...
         [0:5]*1e9, ...
         ExpQrcbm ...
@@ -153,7 +153,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_QRCB_arrays_to_quality_ZVs(testCase)
+    function test_QRCB_arrays_to_quality_ZVs(T)
 
       % Test function shared between tests.
       function test(Qrcbm, Qrcsm, lxqbmName, expQfl, expLxqbm)
@@ -164,8 +164,8 @@ classdef qrc___UTEST < matlab.unittest.TestCase
         [actQfl, actLxqbm] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs( ...
           Qrcbm, Qrcsm, lxqbmName);
 
-        testCase.assertEqual(actQfl,   expQfl)
-        testCase.assertEqual(actLxqbm, expLxqbm)
+        T.assertEqual(actQfl,   expQfl)
+        T.assertEqual(actLxqbm, expLxqbm)
       end
 
 
@@ -278,12 +278,12 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_LxQBM_to_bit_positions(testCase)
+    function test_LxQBM_to_bit_positions(T)
       function test(lxqbm, expBitPosAr)
         lxqbm       = uint16(lxqbm);
 
         actBitPosAr = bicas.proc.qrc.LxQBM_to_bit_positions(lxqbm);
-        testCase.assertEqual(actBitPosAr, expBitPosAr)
+        T.assertEqual(actBitPosAr, expBitPosAr)
       end
 
       % Zero set bits.
@@ -300,21 +300,21 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_filter_saturation_QRCBs___zero_QRCBs(testCase)
+    function test_filter_saturation_QRCBs___zero_QRCBs(T)
       Qrcbm = bicas.proc.QrcbMap(3);
 
       for saturationQualitySchemeId = ["GLOBAL_SATURATION", "CHANNEL_SATURATION"]
         ActQrcbm = bicas.proc.qrc.filter_saturation_QRCBs( ...
           Qrcbm, saturationQualitySchemeId);
 
-        testCase.assertEqual(ActQrcbm, Qrcbm)
-        testCase.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
+        T.assertEqual(ActQrcbm, Qrcbm)
+        T.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
       end
     end
 
 
 
-    function test_filter_saturation_QRCBs___some_QRCBs_global_saturation(testCase)
+    function test_filter_saturation_QRCBs___some_QRCBs_global_saturation(T)
       Qrcbm = bicas.proc.QrcbMap(3);
       Qrcbm.add("FULL_SATURATION",    true(3, 1));
       Qrcbm.add("PARTIAL_SATURATION", true(3, 1));
@@ -329,13 +329,13 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
       ActQrcbm = bicas.proc.qrc.filter_saturation_QRCBs(Qrcbm, "GLOBAL_SATURATION");
 
-      testCase.assertEqual(ActQrcbm, ExpQrcbm)
-      testCase.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
+      T.assertEqual(ActQrcbm, ExpQrcbm)
+      T.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
     end
 
 
 
-    function test_filter_saturation_QRCBs___some_QRCBs_channel_saturation(testCase)
+    function test_filter_saturation_QRCBs___some_QRCBs_channel_saturation(T)
       Qrcbm = bicas.proc.QrcbMap(3);
       Qrcbm.add("FULL_SATURATION",    true(3, 1));
       Qrcbm.add("PARTIAL_SATURATION", true(3, 1));
@@ -350,8 +350,8 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
       ActQrcbm = bicas.proc.qrc.filter_saturation_QRCBs(Qrcbm, "CHANNEL_SATURATION");
 
-      testCase.assertEqual(ActQrcbm, ExpQrcbm)
-      testCase.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
+      T.assertEqual(ActQrcbm, ExpQrcbm)
+      T.assertFalse(ActQrcbm == Qrcbm)   % Test reference inequality.
     end
 
 
@@ -370,7 +370,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
     function test_NSO_table_to_QRCBM(...
-        testCase, requestedQrcidAr, NsoTable, tt2000Ar, ExpQrcbm)
+        T, requestedQrcidAr, NsoTable, tt2000Ar, ExpQrcbm)
 
       assert(isa(ExpQrcbm, "bicas.proc.QrcbMap"))
 
@@ -386,16 +386,16 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
       % ASSERT EXPECTED RESULT
       % ----------------------
-      % IMPLEMENTATION NOTE: testCase.assertEqual() (and isequaln()) can
+      % IMPLEMENTATION NOTE: T.assertEqual() (and isequaln()) can
       % handle containers.Map, but that is not very helpful for debugging by
       % understanding any found difference between the two maps. Therefore
       % explicitly comparing the map subcomponents.
-      testCase.assertEqual(...
+      T.assertEqual(...
         sort(ActQrcbm.qrcidAr), ...
         sort(ExpQrcbm.qrcidAr))
 
       for qrcid = ActQrcbm.qrcidAr'
-        testCase.assertEqual(...
+        T.assertEqual(...
           ActQrcbm.get(qrcid), ...
           ExpQrcbm.get(qrcid))
       end

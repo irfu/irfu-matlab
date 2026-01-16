@@ -20,7 +20,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_empty(testCase)
+    function test_empty(T)
       S = bicas.settings.Settings();
       S.disable_define()
       S.make_read_only()
@@ -30,27 +30,27 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
     % Test that .get_fv() can not access values when it is not supposed
     % to (should raise error).
-    function test_get_fv_access(testCase)
+    function test_get_fv_access(T)
       KEY   = 'TEST_KEY';
       VALUE = 99;
 
       S = bicas.settings.Settings();
       S.define_setting(KEY, VALUE);
 
-      testCase.verifyError(...
+      T.verifyError(...
         @() S.get_fv(KEY), ...
         ?MException)
 
       S.disable_define()
 
-      testCase.verifyError(...
+      T.verifyError(...
         @() S.get_fv(KEY), ...
         ?MException)
 
       S.make_read_only()
 
       actValue = S.get_fv(KEY);
-      testCase.assertEqual(actValue, VALUE);
+      T.assertEqual(actValue, VALUE);
     end
 
 
@@ -63,7 +63,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
     %   .get_fv()
     %   .get_SKV()
     %   etc.
-    function test_value_types(testCase)
+    function test_value_types(T)
 
       % (1) set a key-value,
       % (not override value)
@@ -78,7 +78,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
         S.make_read_only()
 
         actValue = S.get_fv(KEY);
-        testCase.assertEqual(actValue, initialValue)
+        T.assertEqual(actValue, initialValue)
       end
 
       % (1) set a key-value,
@@ -104,12 +104,12 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
         function post_override(S)
           actValue = S.get_fv(KEY);
-          testCase.assertEqual(actValue, overrideValue)
+          T.assertEqual(actValue, overrideValue)
 
           actSkv = S.get_SKV(KEY);
           expSkv = bicas.settings.KeyValue(initialValue,  'default');
           expSkv = expSkv.override(       overrideValue, 'test');
-          testCase.assertEqual(actSkv, expSkv)
+          T.assertEqual(actSkv, expSkv)
         end
 
         %==================================
@@ -178,18 +178,18 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_keys(testCase)
+    function test_get_keys(T)
       %===========
       % Zero keys
       %===========
       S1 = bicas.settings.Settings();
-      testCase.assertEqual(S1.get_keys(), cell(1,0))
+      T.assertEqual(S1.get_keys(), cell(1,0))
 
       S1.disable_define()
-      testCase.assertEqual(S1.get_keys(), cell(1,0))
+      T.assertEqual(S1.get_keys(), cell(1,0))
 
       S1.make_read_only()
-      testCase.assertEqual(S1.get_keys(), cell(1,0))
+      T.assertEqual(S1.get_keys(), cell(1,0))
 
       %===============
       % Non-zero keys
@@ -198,13 +198,13 @@ classdef Settings___UTEST < matlab.unittest.TestCase
       S2 = bicas.settings.Settings();
       S2.define_setting(KEYS_SET{1}, 99)
       S2.define_setting(KEYS_SET{2}, 'Abc')
-      testCase.assertEqual(S2.get_keys(), KEYS_SET)
+      T.assertEqual(S2.get_keys(), KEYS_SET)
 
       S2.disable_define()
-      testCase.assertEqual(S2.get_keys(), KEYS_SET)
+      T.assertEqual(S2.get_keys(), KEYS_SET)
 
       S2.make_read_only()
-      testCase.assertEqual(S2.get_keys(), KEYS_SET)
+      T.assertEqual(S2.get_keys(), KEYS_SET)
     end
 
 
@@ -213,7 +213,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
     %
     % NOTE: test_value_types() also tests the same method but for overridden
     % values.
-    function test_get_SKV(testCase)
+    function test_get_SKV(T)
       KEY_1 = 'KEY_1';
       KEY_2 = 'KEY_2';
       VALUE_1 = 99;
@@ -225,7 +225,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
       actSkv = S1.get_SKV(KEY_1);
       expSkv = bicas.settings.KeyValue(VALUE_1, 'default');
-      testCase.assertEqual(actSkv, expSkv)
+      T.assertEqual(actSkv, expSkv)
 
       % Two simultaneous keys
 
@@ -236,11 +236,11 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
       actSkv = S2.get_SKV(KEY_2);
       expSkv = bicas.settings.KeyValue(VALUE_2, 'default');
-      testCase.assertEqual(actSkv, expSkv)
+      T.assertEqual(actSkv, expSkv)
 
       actSkv = S2.get_SKV(KEY_1);
       expSkv = bicas.settings.KeyValue(VALUE_1, 'default');
-      testCase.assertEqual(actSkv, expSkv)
+      T.assertEqual(actSkv, expSkv)
     end
 
 

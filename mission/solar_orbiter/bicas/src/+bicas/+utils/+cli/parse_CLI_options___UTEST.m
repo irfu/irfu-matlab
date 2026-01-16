@@ -18,7 +18,7 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test0(T)
 
       % NOTE: Arguments CopcArray, inputStr switch places to make
       %       the test code look better.
@@ -30,7 +30,7 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
         ActCopvMap = bicas.utils.cli.parse_CLI_options(...
           cliArgumentsCa, CopcArray);
 
-        testCase.assertEqual(ActCopvMap, ExpCopvMap)
+        T.assertEqual(ActCopvMap, ExpCopvMap)
       end
 
 
@@ -43,7 +43,7 @@ classdef parse_CLI_options___UTEST < matlab.unittest.TestCase
         assert(isa(CopcArray, 'bicas.utils.cli.OptionConfig'))
         assert(iscolumn(CopcArray))
 
-        testCase.assertError(...
+        T.assertError(...
           @() bicas.utils.cli.parse_CLI_options(...
           cliArgumentsCa, CopcArray), ...
           ?MException)

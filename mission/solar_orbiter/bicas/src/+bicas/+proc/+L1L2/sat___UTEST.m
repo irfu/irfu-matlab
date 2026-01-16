@@ -20,7 +20,7 @@ classdef sat___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_VSTB(testCase)
+    function test_get_VSTB(T)
       SatSettings.upperThresholdAvoltDcSingle = 2;
       SatSettings.upperThresholdAvoltDcDiff   = 3;
       SatSettings.upperThresholdAvoltAclg     = 12;
@@ -31,7 +31,7 @@ classdef sat___UTEST < matlab.unittest.TestCase
           SatSettings, samplesAvolt, ...
           bicas.proc.L1L2.const.C.SSID_DICT(ssidStrAr), isAchgFpa);
 
-        testCase.assertEqual(actVstbAr, logical(expVstbAr))
+        T.assertEqual(actVstbAr, logical(expVstbAr))
       end
 
       % 0x0
@@ -50,7 +50,7 @@ classdef sat___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_upper_thresholds(testCase)
+    function test_get_upper_thresholds(T)
       SatSettings.upperThresholdAvoltDcSingle = 2;
       SatSettings.upperThresholdAvoltDcDiff   = 3;
       SatSettings.upperThresholdAvoltAclg     = 12;
@@ -60,7 +60,7 @@ classdef sat___UTEST < matlab.unittest.TestCase
         actUpperThresholdAvoltAr = bicas.proc.L1L2.sat.get_upper_thresholds(...
           SatSettings, bicas.proc.L1L2.const.C.SSID_DICT(ssidStrAr), isAchgFpa);
 
-        testCase.assertEqual(actUpperThresholdAvoltAr, expUpperThresholdAvoltAr)
+        T.assertEqual(actUpperThresholdAvoltAr, expUpperThresholdAvoltAr)
       end
 
       % Empty arrays

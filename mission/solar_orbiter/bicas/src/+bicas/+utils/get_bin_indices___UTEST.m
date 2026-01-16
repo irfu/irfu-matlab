@@ -25,7 +25,7 @@ classdef get_bin_indices___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase, N_BB_THRESHOLD)
+    function test0(T, N_BB_THRESHOLD)
       % TODO: Data in zero-length bins.
       % TODO: Vary N_BB_MAX
 
@@ -43,11 +43,11 @@ classdef get_bin_indices___UTEST < matlab.unittest.TestCase
 
         actOutput = bicas.utils.get_bin_indices(...
           xRow', xBoundariesRow', N_BB_THRESHOLD);
-        testCase.verifyEqual(actOutput, iInBinCa)
+        T.verifyEqual(actOutput, iInBinCa)
       end
 
       function test_exc(varargin)
-        testCase.verifyError(...
+        T.verifyError(...
           @() bicas.utils.get_bin_indices(varargin{:}), ...
           ?MException)
       end

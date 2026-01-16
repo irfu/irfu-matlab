@@ -17,28 +17,28 @@ classdef KeyValue___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_constructor(testCase)
+    function test_constructor(T)
       Skv = bicas.settings.KeyValue(99, 'default');
 
-      testCase.assertEqual(Skv.valuesCa,       {99})
-      testCase.assertEqual(Skv.valueSourcesCa, {'default'})
+      T.assertEqual(Skv.valuesCa,       {99})
+      T.assertEqual(Skv.valueSourcesCa, {'default'})
     end
 
 
 
-    function test_override(testCase)
+    function test_override(T)
       Skv = bicas.settings.KeyValue(99,  'default');
       Skv = Skv.override(          123, 'override');
 
       % NOTE: Column arrays.
-      testCase.assertEqual(Skv.valuesCa,       {99;        123})
-      testCase.assertEqual(Skv.valueSourcesCa, {'default'; 'override'})
+      T.assertEqual(Skv.valuesCa,       {99;        123})
+      T.assertEqual(Skv.valueSourcesCa, {'default'; 'override'})
 
       % Test assertion agains reusing valueSource.
-      testCase.verifyError(...
+      T.verifyError(...
         @() Skv.override(111, 'default'), ...
         ?MException)
-      testCase.verifyError(...
+      T.verifyError(...
         @() Skv.override(222, 'override'), ...
         ?MException)
     end
@@ -46,18 +46,18 @@ classdef KeyValue___UTEST < matlab.unittest.TestCase
 
 
     % NOTE: Operators == and ~= are not defined.
-    function test_equality(testCase)
+    function test_equality(T)
       Skv1 = bicas.settings.KeyValue(NaN, 'default');
       Skv2 = bicas.settings.KeyValue(NaN, 'default');
       Skv3 = bicas.settings.KeyValue(1,   'default');
 
-      testCase.assertTrue( isequaln(Skv1, Skv2))
-      testCase.assertFalse(isequaln(Skv1, Skv3))
+      T.assertTrue( isequaln(Skv1, Skv2))
+      T.assertFalse(isequaln(Skv1, Skv3))
     end
 
 
 
-    function test0(testCase)
+    function test0(T)
 
       %             % Arbitrary number output variables.
       %             function test(inputsCa, expOutputsCa)
@@ -65,17 +65,17 @@ classdef KeyValue___UTEST < matlab.unittest.TestCase
       %                 actOutputs = cell(size(expOutputsCa));
       %
       %                 [actOutputs{:}] = FUNCTION_TO_TEST(inputsCa{:});
-      %                 testCase.verifyEqual(actOutputs, expOutputsCa)
+      %                 T.verifyEqual(actOutputs, expOutputsCa)
       %             end
 
       %             % One output variable.
       %             function test(inputsCa, expOutput)
       %                 actOutput = FUNCTION_TO_TEST(inputsCa{:});
-      %                 testCase.verifyEqual(actOutput, expOutput)
+      %                 T.verifyEqual(actOutput, expOutput)
       %             end
 
       %             function test_exc(varargin)
-      %                 testCase.verifyError(...
+      %                 T.verifyError(...
       %                     @() FUNCTION_TO_TEST(varargin{:}), ...
       %                     ?MException)
       %             end

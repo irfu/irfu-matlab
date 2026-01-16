@@ -44,12 +44,12 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_calibrate_voltage_TM_to_avolt___nominal(testCase, TF_METHOD)
+    function test_calibrate_voltage_TM_to_avolt___nominal(T, TF_METHOD)
       SAMPLES_TM_CA = {[1 2 3]'; [4 5 6 7]'; zeros(0, 1)};
       expSamplesAvoltCa = cellfun(@(x) (2*3*x+1), SAMPLES_TM_CA, ...
         'UniformOutput', false);
 
-      testCase.test_basic(...
+      T.test_basic(...
         bltsSamplesTmCa   = SAMPLES_TM_CA, ...
         expSamplesAvoltCa = expSamplesAvoltCa, ...
         tfMethod          = TF_METHOD)
@@ -60,7 +60,7 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
     % Checks behaviour w.r.t. sample=NaN.
     % NOTE: Basic check on the splitting of 1D arrays of samples which should
     %       be used under the hood.
-    function test_calibrate_voltage_TM_to_avolt___NaN(testCase, TF_METHOD)
+    function test_calibrate_voltage_TM_to_avolt___NaN(T, TF_METHOD)
       N = NaN;
 
       SAMPLES_TM_CA = {[N N N]'; [4 N 6 7 N N 10 11 12]'};
@@ -70,7 +70,7 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
       % set to NaN.
       expSamplesAvoltCa{2}(1) = NaN;    % NOTE: WORKS despite syntax!
 
-      testCase.test_basic(...
+      T.test_basic(...
         bltsSamplesTmCa   = SAMPLES_TM_CA, ...
         expSamplesAvoltCa = expSamplesAvoltCa, ...
         tfMethod          = TF_METHOD)
@@ -78,12 +78,12 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_calibrate_voltage_TM_to_avolt___scalar_BIAS(testCase, TF_METHOD)
+    function test_calibrate_voltage_TM_to_avolt___scalar_BIAS(T, TF_METHOD)
       SAMPLES_TM_CA     = {[1 2 3]'; [4 5 6 7]'};
       expSamplesAvoltCa = cellfun(@(x) (4*3*x+1), SAMPLES_TM_CA, ...
         'UniformOutput', false);
 
-      testCase.test_basic(...
+      T.test_basic(...
         bltsSamplesTmCa   = SAMPLES_TM_CA, ...
         expSamplesAvoltCa = expSamplesAvoltCa, ...
         useBiasTfScalar   = true, ...
@@ -92,12 +92,12 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_calibrate_voltage_TM_to_avolt___BIAS_offsets_disabled(testCase, TF_METHOD)
+    function test_calibrate_voltage_TM_to_avolt___BIAS_offsets_disabled(T, TF_METHOD)
       SAMPLES_TM_CA     = {[1 2 3]'; [4 5 6 7]'};
       expSamplesAvoltCa = cellfun(@(x) (2*3*x), SAMPLES_TM_CA, ...
         'UniformOutput', false);
 
-      testCase.test_basic(...
+      T.test_basic(...
         bltsSamplesTmCa     = SAMPLES_TM_CA, ...
         expSamplesAvoltCa   = expSamplesAvoltCa, ...
         biasOffsetsDisabled = true, ...
@@ -108,28 +108,28 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
 
     % (LFR) AC
     % Also tests that special case for AC does not crash.
-    function test_calibrate_voltage_TM_to_avolt___AC(testCase, TF_METHOD)
+    function test_calibrate_voltage_TM_to_avolt___AC(T, TF_METHOD)
       SAMPLES_TM_CA     = {[1 2 3]'; [4 5 6 7]'};
       expSamplesAvoltCa = cellfun(@(x) (2*3*x+1), SAMPLES_TM_CA, ...
         'UniformOutput', false);
 
-      testCase.test_basic(...
+      T.test_basic(...
         bltsSamplesTmCa   = SAMPLES_TM_CA, ...
         expSamplesAvoltCa = expSamplesAvoltCa, ...
-        ssid              = testCase.SSID("AC_V12"), ...
+        ssid              = T.SSID("AC_V12"), ...
         tfMethod          = TF_METHOD)
     end
 
 
 
     % Non-ASR SSIDs.
-    function test_calibrate_voltage_TM_to_avolt___Non_ASR(testCase, TF_METHOD)
+    function test_calibrate_voltage_TM_to_avolt___Non_ASR(T, TF_METHOD)
       SAMPLES_TM_CA = {[1 2 3]'; [4 5 6 7]'};
 
-      for ssid = testCase.SSID(["GND", "REF25V", "UNKNOWN"])
+      for ssid = T.SSID(["GND", "REF25V", "UNKNOWN"])
         expSamplesAvoltCa = cellfun(@(x) (1*x), SAMPLES_TM_CA, ...
           'UniformOutput', false);
-        testCase.test_basic(...
+        T.test_basic(...
           bltsSamplesTmCa   = SAMPLES_TM_CA, ...
           expSamplesAvoltCa = expSamplesAvoltCa, ...
           ssid              = ssid, ...
@@ -157,18 +157,18 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
     %
     % Concrete tests assume that the caller knows the hardcoded values.
     %
-    function test_basic(testCase, A)
+    function test_basic(T, A)
       arguments
-        testCase
+        T
         A.bltsSamplesTmCa
         A.expSamplesAvoltCa
-        A.ssid                = testCase.SSID("DC_V1");
+        A.ssid                = T.SSID("DC_V1");
         A.biasOffsetsDisabled = false
         A.useBiasTfScalar     = false
         A.tfMethod
       end
 
-      Bso = testCase.get_simple_TF_BSO(...
+      Bso = T.get_simple_TF_BSO(...
         biasOffsetsDisabled = A.biasOffsetsDisabled, ...
         useBiasTfScalar     = A.useBiasTfScalar, ...
         tfMethod            = A.tfMethod);
@@ -199,7 +199,7 @@ classdef VoltageCalibration___UTEST < matlab.unittest.TestCase
       actSamplesAvoltCa = Vcal.calibrate_voltage_TM_to_avolt( ...
         dtSec, A.bltsSamplesTmCa, isLfr, isTdsCwf, CalSettings, NbriFpa, NbciFpa);
 
-      testCase.assertEqual(actSamplesAvoltCa, A.expSamplesAvoltCa)
+      T.assertEqual(actSamplesAvoltCa, A.expSamplesAvoltCa)
     end
 
 

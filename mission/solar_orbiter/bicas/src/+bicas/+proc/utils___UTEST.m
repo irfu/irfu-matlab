@@ -18,7 +18,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_assert_increasing(testCase)
+    function test_assert_increasing(T)
       function test(array, isMonotonic)
         errorId = 'test:Error';
         msg = '<Error message>';
@@ -31,7 +31,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
       function test_exc(array, isMonotonic)
         errorId = 'test:Error';
         msg = '<Error message>';
-        testCase.verifyError(...
+        T.verifyError(...
           @() bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg), ...
           ?MException)
       end
@@ -50,11 +50,11 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_set_NaN_end_of_rows(testCase)
+    function test_set_NaN_end_of_rows(T)
 
       function test(zv, snapshotLengths, expZv)
         actZv = bicas.proc.utils.set_NaN_end_of_rows(zv, snapshotLengths);
-        testCase.verifyEqual(actZv, expZv)
+        T.verifyEqual(actZv, expZv)
       end
 
       test(ones(0,4),              ones(0,1), ones(0,4));
@@ -135,13 +135,13 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_convert_matrix_to_cell_array_of_vectors(testCase)
+    function test_convert_matrix_to_cell_array_of_vectors(T)
 
       function test(M, nCopyColsPerRowArray, expCa)
         actCa = bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
           M, nCopyColsPerRowArray);
 
-        testCase.verifyEqual(actCa, expCa)
+        T.verifyEqual(actCa, expCa)
       end
 
       test(zeros(0,1),  zeros(0,1), cell(0,1));
@@ -156,15 +156,15 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_convert_cell_array_of_vectors_to_matrix(testCase)
+    function test_convert_cell_array_of_vectors_to_matrix(T)
 
       function test(ca, nMatrixColumns, expM, expNCopyColsPerRowVec)
 
         [actM, actNCopyColsPerRowVec] = ...
           bicas.proc.utils.convert_cell_array_of_vectors_to_matrix(...
           ca, nMatrixColumns);
-        testCase.verifyEqual(expM,                  actM)
-        testCase.verifyEqual(expNCopyColsPerRowVec, actNCopyColsPerRowVec)
+        T.verifyEqual(expM,                  actM)
+        T.verifyEqual(expNCopyColsPerRowVec, actNCopyColsPerRowVec)
       end
 
       % Zero rows

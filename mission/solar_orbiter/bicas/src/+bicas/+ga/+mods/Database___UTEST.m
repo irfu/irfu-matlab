@@ -17,7 +17,7 @@ classdef Database___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test0(T)
       % ===========
       % Constructor
       % ===========
@@ -53,13 +53,13 @@ classdef Database___UTEST < matlab.unittest.TestCase
 
       actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSID_1');
       expGaModsStrCa = {Gmve1.get_str(); Gmve2.get_str()};
-      testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
+      T.assertEqual(actGaModsStrCa, expGaModsStrCa)
 
       actGaModsStrCa = Gmdb.get_MODS_strings_CA('DSID_2');
       expGaModsStrCa = {Gmve2.get_str()};
-      testCase.assertEqual(actGaModsStrCa, expGaModsStrCa)
+      T.assertEqual(actGaModsStrCa, expGaModsStrCa)
 
-      testCase.assertError(...
+      T.assertError(...
         @() Gmdb.get_MODS_strings_CA('DSID_UNKNOWN'), ...
         ?MException)
     end

@@ -31,22 +31,22 @@ classdef Deretrending___UTEST < matlab.unittest.TestCase
 
 
     % De- & retrending disabled.
-    function test_disabled(testCase)
+    function test_disabled(T)
       t = [0:0.01:1]';
 
       % Complex, arbitrary function.
       y1a = exp(t) .* cos(t) + t.^3;
 
-      [y12b, y2a] = testCase.run_DRT(y1a, {-2, false}, 29);
+      [y12b, y2a] = T.run_DRT(y1a, {-2, false}, 29);
 
-      testCase.verifyEqual(y1a, y12b)
-      testCase.verifyEqual(y12b, y2a)
+      T.verifyEqual(y1a, y12b)
+      T.verifyEqual(y12b, y2a)
     end
 
 
 
     % Restore arbitrary signal completely.
-    function test_unity(testCase, UNITY_DET_RET_SETTINGS)
+    function test_unity(T, UNITY_DET_RET_SETTINGS)
 
       t = [0:0.01:1]';
 
@@ -54,43 +54,43 @@ classdef Deretrending___UTEST < matlab.unittest.TestCase
       y1a = exp(t) .* cos(5*t) + t.^3;
 
       % NOTE: Must use scale=1 to obtain original function.
-      [y12b, y2a] = testCase.run_DRT(y1a, UNITY_DET_RET_SETTINGS, 1);
+      [y12b, y2a] = T.run_DRT(y1a, UNITY_DET_RET_SETTINGS, 1);
 
       % ASSERTIONS
-      testCase.verifyEqual(y1a, y2a, 'AbsTol', 1e-15)
+      T.verifyEqual(y1a, y2a, 'AbsTol', 1e-15)
       if UNITY_DET_RET_SETTINGS{1} >= 0    % DRT not disabled entirely.
-        testCase.assertTrue(max(abs(y1a-y12b)) > 0.1)
-        testCase.assertTrue(max(abs(y2a-y12b)) > 0.1)
+        T.assertTrue(max(abs(y1a-y12b)) > 0.1)
+        T.assertTrue(max(abs(y2a-y12b)) > 0.1)
       end
     end
 
 
 
-    function test0(testCase)
+    function test0(T)
       x = [-1:0.1:1]';    % "Normalized".
 
       y1a = 2 + 3*x;
 
-      [y12b, y2a] = testCase.run_DRT(y1a, {0, true}, 1);
+      [y12b, y2a] = T.run_DRT(y1a, {0, true}, 1);
 
-      testCase.verifyEqual(y12b, 3*x,   'AbsTol', 1e-15)
-      testCase.verifyEqual(y2a,  2+3*x, 'AbsTol', 1e-15)
+      T.verifyEqual(y12b, 3*x,   'AbsTol', 1e-15)
+      T.verifyEqual(y2a,  2+3*x, 'AbsTol', 1e-15)
 
 
 
       % NOTE: Test retrending scaling.
-      [y12b, y2a] = testCase.run_DRT(y1a, {1, true}, 2);
+      [y12b, y2a] = T.run_DRT(y1a, {1, true}, 2);
 
       % 1e-15 works on irony but fails in GitHub CI.
-      testCase.verifyEqual(y12b,   0*x, 'AbsTol', 1e-14)
-      testCase.verifyEqual(y2a,  4+6*x, 'AbsTol', 1e-14)
+      T.verifyEqual(y12b,   0*x, 'AbsTol', 1e-14)
+      T.verifyEqual(y2a,  4+6*x, 'AbsTol', 1e-14)
 
 
 
-      [y12b, y2a] = testCase.run_DRT(y1a, {0, false}, 1);
+      [y12b, y2a] = T.run_DRT(y1a, {0, false}, 1);
 
-      testCase.verifyEqual(y12b,   3*x, 'AbsTol', 1e-15)
-      testCase.verifyEqual(y2a,    3*x, 'AbsTol', 1e-15)
+      T.verifyEqual(y12b,   3*x, 'AbsTol', 1e-15)
+      T.verifyEqual(y2a,    3*x, 'AbsTol', 1e-15)
 
     end
 
