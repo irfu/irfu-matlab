@@ -21,11 +21,10 @@ classdef autocreate_input_BPCIs___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_zero_one_BPCIs(testCase)
+    function test_zero_one_BPCIs(T)
 
       function test(inputDatasetsPathsCa, SwmArray, ExpBpciArray)
-        bicas.tools.batch.autocreate_input_BPCIs___UTEST.test(...
-          testCase, inputDatasetsPathsCa, SwmArray, 0, ExpBpciArray)
+        T.test(inputDatasetsPathsCa, SwmArray, 0, ExpBpciArray)
       end
 
 
@@ -120,7 +119,7 @@ classdef autocreate_input_BPCIs___UTEST < matlab.unittest.TestCase
     % Test
     % (1) can find BPCIs only for datasets that overlap in time, and
     % (2) that currentDatasetExtensionDays works.
-    function test_time_overlap_currentDatasetExtensionDays(testCase)
+    function test_time_overlap_currentDatasetExtensionDays(T)
 
       % NOTE: Files DO NOT overlap in time.
       FILE_1       = 'L1R/solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V01.cdf';
@@ -158,15 +157,13 @@ classdef autocreate_input_BPCIs___UTEST < matlab.unittest.TestCase
         'SOLO_L2_RPW-LFR-SURV-CWF-E___output_dataset.cdf'));
 
       % No BPCI
-      bicas.tools.batch.autocreate_input_BPCIs___UTEST.test(...
-        testCase, ...
+      T.test(...
         {FILE_1; FILE_CURRENT}, ...
         [SWM_SCI_CURRENT], 0, ...
         ZERO_BPCI)
 
       % One BPCI
-      bicas.tools.batch.autocreate_input_BPCIs___UTEST.test(...
-        testCase, ...
+      T.test(...
         {FILE_1; FILE_CURRENT}, ...
         [SWM_SCI_CURRENT], 1, ...
         EXP_BPCI)
@@ -175,11 +172,10 @@ classdef autocreate_input_BPCIs___UTEST < matlab.unittest.TestCase
 
 
     % Check that function only uses latest version of input datasets.
-    function test_latest_version(testCase)
+    function test_latest_version(T)
 
       function test(inputDatasetsPathsCa, SwmArray, ExpBpciArray)
-        bicas.tools.batch.autocreate_input_BPCIs___UTEST.test(...
-          testCase, inputDatasetsPathsCa, SwmArray, 0, ExpBpciArray)
+        T.test(inputDatasetsPathsCa, SwmArray, 0, ExpBpciArray)
       end
 
       FILE_1_V1 = 'L1R/solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240101_V01.cdf';
@@ -221,7 +217,6 @@ classdef autocreate_input_BPCIs___UTEST < matlab.unittest.TestCase
         exp_BPCI(FILE_2_V1); ...
         exp_BPCI(FILE_3_V2)]...
         )
-
     end
 
 
@@ -230,16 +225,16 @@ classdef autocreate_input_BPCIs___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
 
 
 
-    function test(testCase, inputDatasetsPathsCa, SwmArray, currentDatasetExtensionDays, ExpBpciArray)
+    function test(T, inputDatasetsPathsCa, SwmArray, currentDatasetExtensionDays, ExpBpciArray)
 
       function filename = get_BPCI_output_path(...
           outputDsid, BpciInputDsmdArray)
@@ -261,12 +256,12 @@ classdef autocreate_input_BPCIs___UTEST < matlab.unittest.TestCase
         InputDsmdArray, @get_BPCI_output_path, ...
         SwmArray, currentDatasetExtensionDays);
 
-      testCase.assertEqual(ActBpciArray, ExpBpciArray)
+      T.assertEqual(ActBpciArray, ExpBpciArray)
     end
 
 
 
-  end    % methods(Static, Access=private)
+  end    % methods(Access=private)
 
 
 
