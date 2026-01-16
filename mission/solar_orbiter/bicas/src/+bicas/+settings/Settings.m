@@ -134,8 +134,8 @@ classdef Settings < handle
           'Trying to define pre-existing settings key.')
       end
 
-      Skv = bicas.SettingsKeyValue(...
-        defaultValue, bicas.Settings.VALUE_SOURCE_DEFAULT);
+      Skv = bicas.settings.SettingsKeyValue(...
+        defaultValue, bicas.settings.Settings.VALUE_SOURCE_DEFAULT);
       obj.SkvMap(key) = Skv;
     end
 
@@ -225,7 +225,7 @@ classdef Settings < handle
         % Convert string value to appropriate MATLAB class.
         %==================================================
         valueType = obj.get_setting_value_type(key);
-        newValue  = bicas.Settings.convert_str_to_value(...
+        newValue  = bicas.settings.Settings.convert_str_to_value(...
           valueType, newValueAsString);
 
         % Overwrite old setting.

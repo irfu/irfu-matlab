@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.SettingsKeyValue class.
+% matlab.unittest automatic test code for bicas.settings.SettingsKeyValue class.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -18,7 +18,7 @@ classdef SettingsKeyValue___UTEST < matlab.unittest.TestCase
 
 
     function test_constructor(testCase)
-      Skv = bicas.SettingsKeyValue(99, 'default');
+      Skv = bicas.settings.SettingsKeyValue(99, 'default');
 
       testCase.assertEqual(Skv.valuesCa,       {99})
       testCase.assertEqual(Skv.valueSourcesCa, {'default'})
@@ -27,7 +27,7 @@ classdef SettingsKeyValue___UTEST < matlab.unittest.TestCase
 
 
     function test_override(testCase)
-      Skv = bicas.SettingsKeyValue(99,  'default');
+      Skv = bicas.settings.SettingsKeyValue(99,  'default');
       Skv = Skv.override(          123, 'override');
 
       % NOTE: Column arrays.
@@ -47,9 +47,9 @@ classdef SettingsKeyValue___UTEST < matlab.unittest.TestCase
 
     % NOTE: Operators == and ~= are not defined.
     function test_equality(testCase)
-      Skv1 = bicas.SettingsKeyValue(NaN, 'default');
-      Skv2 = bicas.SettingsKeyValue(NaN, 'default');
-      Skv3 = bicas.SettingsKeyValue(1,   'default');
+      Skv1 = bicas.settings.SettingsKeyValue(NaN, 'default');
+      Skv2 = bicas.settings.SettingsKeyValue(NaN, 'default');
+      Skv3 = bicas.settings.SettingsKeyValue(1,   'default');
 
       testCase.assertTrue( isequaln(Skv1, Skv2))
       testCase.assertFalse(isequaln(Skv1, Skv3))

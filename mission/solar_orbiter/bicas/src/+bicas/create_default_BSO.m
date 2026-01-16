@@ -1,5 +1,5 @@
 %
-% Create a BSO by creating a bicas.Settings object and
+% Create a BSO by creating a bicas.settings.Settings object and
 % (1) define the set of permitted/existing settings keys, and
 % (2) set all settings keys to their initial default values.
 % Note: Does NOT make the object write-only.
@@ -50,7 +50,7 @@
 % RETURN VALUE
 % ============
 % Bso
-%       bicas.Settings object with all BICAS settings pre-defined with default
+%       bicas.settings.Settings object with all BICAS settings pre-defined with default
 %       values. One can not define more settings, but one can modify existing
 %       settings.
 %
@@ -161,7 +161,7 @@ function Bso = create_default_BSO()
 
 
 
-S = bicas.Settings();
+S = bicas.settings.Settings();
 
 % The MATLAB command (e.g. path) to use to launch MATLAB for BICAS.
 % NOTE: Only the value in the BICAS config file is actually used. The normal

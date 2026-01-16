@@ -162,7 +162,7 @@ BRVF
     BIAS RCT Validity File. File "bias_rct_validity.json" as specified by ROC.
     Is not a ROC term.
 BSO
-    BICAS Settings Object. Singleton instance of class bicas.Settings which
+    BICAS Settings Object. Singleton instance of class bicas.settings.Settings which
     stores the settings for BICAS as a whole.
 CA
     Cell Array. See "AR".
@@ -556,7 +556,7 @@ SIP
 SKT
     CDF skeleton file. Abbreviation comes from the standard file suffix ".skt".
 SKV
-    Class bicas.SettingsKeyValue.
+    Class bicas.settings.SettingsKeyValue.
 SNF
     Split by Non-Finite.
     Split time series into multiple shorter time series, each one separated by

@@ -414,7 +414,7 @@ classdef bicas
       end
       L.logf('info', 'configFile = "%s"', configFile)
       L.log('info', 'Overriding subset of in-memory settings using config file.')
-      bicas.override_settings_from_config_file(configFile, Bso, L)
+      bicas.settings.override_settings_from_config_file(configFile, Bso, L)
 
 
 

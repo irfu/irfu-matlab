@@ -1,6 +1,6 @@
 %
 % matlab.unittest automatic test code for
-% bicas.settings_value_to_display_str___UTEST().
+% bicas.settings.settings_value_to_display_str___UTEST().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -33,7 +33,7 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
       %======================
       % 0x0 array ==> ERROR
       T.verifyError(...
-        @() bicas.settings_value_to_display_str(zeros(0, 0)), ...
+        @() bicas.settings.settings_value_to_display_str(zeros(0, 0)), ...
         ?MException)
 
       % 0x1, 1x0 array ==> OK
@@ -64,7 +64,7 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
       %============
       % 0x0 array ==> ERROR
       T.verifyError(...
-        @() bicas.settings_value_to_display_str(zeros(0, 0)), ...
+        @() bicas.settings.settings_value_to_display_str(zeros(0, 0)), ...
         ?MException)
       % 0x1, 1x0 ==> OK
       T.test({
@@ -106,7 +106,7 @@ classdef settings_value_to_display_str___UTEST < matlab.unittest.TestCase
         expOutput = table{i, 2};
 
         T.verifyEqual(...
-          bicas.settings_value_to_display_str(value), ...
+          bicas.settings.settings_value_to_display_str(value), ...
           expOutput)
       end
     end
