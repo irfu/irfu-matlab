@@ -21,7 +21,7 @@
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-08-12, by breaking out code from bicas.sprint_BSO().
+% First created 2021-08-12, by breaking out code from bicas.settings.sprint_BSO().
 %
 function displayStr = settings_value_to_display_str(value)
 % PROPOSAL: Shorter name.

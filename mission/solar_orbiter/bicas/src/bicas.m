@@ -435,7 +435,7 @@ classdef bicas
 
 
       % Print/log the content of Bso.
-      L.log('info', bicas.sprint_BSO(Bso))
+      L.log('info', bicas.settings.sprint_BSO(Bso))
 
       % Print/log selected parts of bicas.const.
       L.log('info', bicas.sprint_constants())
@@ -585,7 +585,7 @@ classdef bicas
       end
 
       % Print settings
-      bicas.stdout_print(bicas.sprint_BSO(Bso))   % Includes title
+      bicas.stdout_print(bicas.settings.sprint_BSO(Bso))   % Includes title
 
       bicas.stdout_printf('See "readme.txt" and user manual for more help.\n')
     end
