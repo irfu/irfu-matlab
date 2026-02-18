@@ -67,10 +67,6 @@ START_META     =   PROCESSING_LEVEL
    ENTRY       =   "Derived"
 END_META       =   PROCESSING_LEVEL
 !
-START_META     =   DATASET_CAVEATS
-   ENTRY       =   "To be written"
-END_META       =   DATASET_CAVEATS
-!
 START_META     =   ACKNOWLEDGEMENT
    ENTRY       =   "The authors thank I.R. Mann, D.K. Milling and the rest of the CARISMA team for data."
    ENTRY       =   "CARISMA is operated by the University of Alberta, funded by the Canadian Space Agency."
