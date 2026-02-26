@@ -14,12 +14,16 @@ Tintlong = Tint+[-60 60];
 R  = mms.get_data('R_gse',Tintlong);
 c_eval('Rxyz? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
 
-c_eval('Bscmfac? = irf_convert_fac(Bscm?, Bxyz?, [1, 0, 0]);',ic);
+c_eval('Bxyz? = Bxyz?.resample(Bxyz1);',2:4);
+
+Bxyzav = irf.ts_vec_xyz(Bxyz1.time,(Bxyz1.data + Bxyz2.data + Bxyz3.data + Bxyz4.data)/4);
+
+c_eval('Bscmfac? = irf_convert_fac(Bscm?, Bxyzav, [1, 0, 0]);',ic);
 
 %% Compute dispersion relation
 Tints = irf.tint('2015-10-16T13:05:26.500Z/2015-10-16T13:05:27.000Z');
 
-[xvecs,yvecs,Power] = mms.fk_powerspec4SC('Bscmfac?.x','Rxyz?','Bxyz?',Tints,'linear',10,'numk',500,'cav',4,'wwidth',2);
+[xvecs,yvecs,Power] = mms.fk_powerspec4SC('Bscmfac?.x','Rxyz?','Bxyz?',Tints,'linear',10,'numk',500,'cav',4,'wwidth',2,'frange',[300 1000]);
 
 %% Plot figure all quantities
 
