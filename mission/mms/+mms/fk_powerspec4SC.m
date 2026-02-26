@@ -271,7 +271,6 @@ if numel(frange)==2
   freqind = yvec1 > min(frange) & yvec1 < max(frange);
   idxf = idxf(freqind);
 end
-idxf
 
 irf.log('notice','Computing power versus kperp,kpar')
 powerkperpkpar = zeros(numk,numk);
@@ -389,10 +388,65 @@ powerkzf = powerkzf/max(max(powerkzf));
 xvec8 = kvec;
 yvec8 = W1.f;
 
+% Compute mean and standard deviations of frequencies and wave numbers
+fkpower = powerkmagf;
+fkpowers = fkpower(idxf,:);
 
+fpowers = sum(fkpowers,2,'omitnan');
+kpowers = sum(fkpowers,1,'omitnan');
+
+meanf = sum(yvec1(idxf).*fpowers,'omitnan')/sum(fpowers,'omitnan');
+stdf = sum(fpowers.*(yvec1(idxf)-meanf).^2,'omitnan')/sum(fpowers,'omitnan');
+stdf = sqrt(stdf);
+
+meankmag = sum(kpowers.*xvec1,'omitnan')/sum(kpowers,'omitnan');
+stdkmag = sum(kpowers.*(xvec1-meankmag).^2,'omitnan')/sum(kpowers,'omitnan');
+stdkmag = sqrt(stdkmag);
+
+powerkk = powerkperpkpar;
+
+kparpowers = sum(powerkk,2,'omitnan')';
+kperppowers = sum(powerkk,1,'omitnan');
+
+meankpar = sum(kparpowers.*yvec2,'omitnan')/sum(kparpowers,'omitnan');
+stdkpar = sum(kparpowers.*(yvec2-meankpar).^2,'omitnan')/sum(kparpowers,'omitnan');
+stdkpar = sqrt(stdkpar);
+
+meankperpabs = sum(kperppowers.*xvec2,'omitnan')/sum(kperppowers,'omitnan');
+stdkperpabs = sum(kperppowers.*(xvec2-meankperpabs).^2,'omitnan')/sum(kperppowers,'omitnan');
+stdkperpabs = sqrt(stdkperpabs);
+
+kxpowers = sum(powerkxky,1,'omitnan');
+kypowers = sum(powerkxky,2,'omitnan')';
+
+meankx = sum(kxpowers.*xvec3,'omitnan')/sum(kxpowers,'omitnan');
+stdkx = sum(kxpowers.*(xvec3-meankx).^2,'omitnan')/sum(kxpowers,'omitnan');
+stdkx = sqrt(stdkx);
+
+meanky = sum(kypowers.*yvec3,'omitnan')/sum(kypowers,'omitnan');
+stdky = sum(kypowers.*(yvec3-meanky).^2,'omitnan')/sum(kypowers,'omitnan');
+stdky = sqrt(stdky);
+
+kzpowers = sum(powerkxkz,2,'omitnan')';
+
+meankz = sum(kzpowers.*yvec4,'omitnan')/sum(kzpowers,'omitnan');
+stdkz = sum(kzpowers.*(yvec4-meankz).^2,'omitnan')/sum(kzpowers,'omitnan');
+stdkz = sqrt(stdkz);
+
+fkvals = struct('meanf',meanf,'stdf',stdf,'meankmag',meankmag,'stdkmag',stdkmag,...
+  'meankpar',meankpar,'stdkpar',stdkpar,'meankperpabs',meankperpabs,'stdkperpabs',stdkperpabs,...
+  'meankx',meankx,'stdkx',stdkx,'meanky',meanky,'stdky',stdky,'meankz',meankz,'stdkz',stdkz);
+
+
+
+
+% Make output files
 xvariable = struct('kmag',xvec1,'kperp',xvec2,'kxkxky',xvec3,'kxkxkz',xvec4,'kykykz',xvec5,'kxf',xvec6,'kyf',xvec7,'kzf',xvec8);
 yvariable = struct('fkmag',yvec1,'kpar',yvec2,'kykxky',yvec3,'kzkxkz',yvec4,'kzkykz',yvec5,'fkxf',yvec6,'fkyf',yvec7,'fkzf',yvec8);
-powerxy = struct('Powerkmagf',powerkmagf,'Powerkperpkpar',powerkperpkpar,'Powerkxky',powerkxky,'Powerkxkz',powerkxkz,'Powerkykz',powerkykz,'Powerkxf',powerkxf,'Powerkyf',powerkyf,'Powerkzf',powerkzf);
+powerxy = struct('Powerkmagf',powerkmagf,'Powerkperpkpar',powerkperpkpar,'Powerkxky',powerkxky,'Powerkxkz',powerkxkz,'Powerkykz',powerkykz, ...
+  'Powerkxf',powerkxf,'Powerkyf',powerkyf,'Powerkzf',powerkzf,'fkvals',fkvals);
+
+
 
 end
 
