@@ -26,7 +26,7 @@
 %
 function filePath = get_BPCI_output_path2(...
   BpciInputDsmdArray, PreexistingOutputLvDsmdArray, ...
-  outputDsi, outputVerAlgorithmId, outputDir, outputIsCdag)
+  outputDsid, outputVerAlgorithmId, outputDir, outputIsCdag)
 
 % PROPOSAL: Test for day with leap second.
 %
@@ -46,25 +46,25 @@ function filePath = get_BPCI_output_path2(...
 %     solo_L2_rpw-lfr-sbm1-cwf-e_20240201_V01.cdf                         (incorrect)
 %     solo_L2_rpw-lfr-sbm1-cwf-e_20240201T025448-20240201T030848_V01.cdf  (correct)
 %   PROBLEM: DSMDs do not store the filenaming format.
-%   PROPOSAL: Separate list of input DSIs which should yield this format.
+%   PROPOSAL: Separate list of input DSIDs which should yield this format.
 %   PROPOSAL: Use length of time interval. -- IMPLEMENTED
 %
 % PROPOSAL: Separate function for converting a selected reference input
 %           dataset filename into output dataset filename. -- IMPLEMENTED
 %
-% PROPOSAL: Use shared constants for setting DSI lists.
-% PROPOSAL: Argument for which input DSI should be used for determining output
+% PROPOSAL: Use shared constants for setting DSID lists.
+% PROPOSAL: Argument for which input DSID should be used for determining output
 %           dataset time interval.
 %   PRO: Can abolish hardcoded list.
-%   PROPOSAL: SWMs should contain the DSI to use.
+%   PROPOSAL: SWMs should contain the DSID to use.
 
 assert(isa(BpciInputDsmdArray,           'solo.adm.DSMD') && iscolumn(BpciInputDsmdArray))
 assert(isa(PreexistingOutputLvDsmdArray, 'solo.adm.DSMD') && iscolumn(PreexistingOutputLvDsmdArray))
-assert(ischar(outputDsi))
+assert(ischar(outputDsid))
 assert(ischar(outputVerAlgorithmId))
 assert(islogical(outputIsCdag))
 
-INPUT_DSI_FOR_OUTPUT_TIME_CA = { ...
+INPUT_DSID_FOR_OUTPUT_TIME_CA = { ...
   'SOLO_L1_RPW-LFR-SBM1-CWF'; ...
   'SOLO_L1_RPW-LFR-SBM2-CWF'; ...
   'SOLO_L1_RPW-LFR-SURV-CWF'; ...
@@ -87,9 +87,9 @@ INPUT_DSI_FOR_OUTPUT_TIME_CA = { ...
 
 % Identify exactly one BPCI INPUT DSMD which shall be used for determining
 % time interval for OUTPUT dataset.
-[~, iRefDsmd] = intersect({BpciInputDsmdArray.datasetId}, INPUT_DSI_FOR_OUTPUT_TIME_CA);
+[~, iRefDsmd] = intersect({BpciInputDsmdArray.datasetId}, INPUT_DSID_FOR_OUTPUT_TIME_CA);
 assert(isscalar(iRefDsmd), ...
-  'Can not determine exactly one input DSI to use for determining output filename time interval.')
+  'Can not determine exactly one input DSID to use for determining output filename time interval.')
 InputRefDsmd = BpciInputDsmdArray(iRefDsmd);
 
 Dt1 = InputRefDsmd.dt1;
@@ -97,11 +97,11 @@ Dt2 = InputRefDsmd.dt2;
 
 versionNbr = get_output_version(...
   Dt1, Dt2, ...
-  outputDsi, outputVerAlgorithmId, PreexistingOutputLvDsmdArray);
+  outputDsid, outputVerAlgorithmId, PreexistingOutputLvDsmdArray);
 
 fileName = get_BPCI_output_filename2(...
   Dt1, Dt2, ...
-  outputDsi, outputIsCdag, versionNbr);
+  outputDsid, outputIsCdag, versionNbr);
 
 filePath = fullfile(outputDir, fileName);
 end
@@ -109,13 +109,13 @@ end
 
 
 function versionNbr = get_output_version(...
-  Dt1, Dt2, outputDsi, outputVerAlgorithmId, PreexistingOutputLvDsmdArray)
+  Dt1, Dt2, outputDsid, outputVerAlgorithmId, PreexistingOutputLvDsmdArray)
 
 %=================================================================
 % Identify highest version number of pre-existing output datasets
 %=================================================================
 PreexistingOutputLvDsmdArray = solo.adm.filter_DSMD_DATASET_ID(...
-  PreexistingOutputLvDsmdArray, {outputDsi});
+  PreexistingOutputLvDsmdArray, {outputDsid});
 
 if ~isempty(PreexistingOutputLvDsmdArray)
   % NOTE: Command only works for non-empty array.
@@ -162,13 +162,13 @@ end
 
 
 function outputFilename = get_BPCI_output_filename2(...
-  Dt1, Dt2, outputDsi, outputIsCdag, versionNbr)
+  Dt1, Dt2, outputDsid, outputIsCdag, versionNbr)
 
 %================================
 % Create output dataset filename
 %================================
 S = struct();
-S.datasetId  = outputDsi;
+S.datasetId  = outputDsid;
 S.versionNbr = versionNbr;
 S.isCdag     = outputIsCdag;
 S.Dt1        = Dt1;

@@ -1,7 +1,7 @@
 %
-% Class that represents how to convert particular combinations of QRCID and DSI
-% into modifications of quality ZVs, data blanking etc. for multiple DSIs.
-% Stores up to one QRCS per QRCID+DSI.
+% Class that represents how to convert particular combinations of QRCID and DSID
+% into modifications of quality ZVs, data blanking etc. for multiple DSIDs.
+% Stores up to one QRCS per QRCID+DSID.
 %
 % NOTE: Is handle class.
 %
@@ -235,11 +235,11 @@ classdef QrcSettingsMap < handle & matlab.mixin.Copyable
 
     % Support deep copies with copy() by overriding matlab.mixin.copyable
     % method.
-    function QrcbmCopy = copyElement(obj)
-      QrcbmCopy = bicas.proc.QrcSettingsMap();
+    function QrcsmCopy = copyElement(obj)
+      QrcsmCopy = bicas.proc.QrcSettingsMap();
 
       for qrcid = obj.qrcidAr'
-        QrcbmCopy.add(qrcid, obj.get(qrcid))
+        QrcsmCopy.add(qrcid, obj.get(qrcid))
       end
     end
 

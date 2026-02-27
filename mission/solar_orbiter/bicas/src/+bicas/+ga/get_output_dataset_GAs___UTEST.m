@@ -107,13 +107,13 @@ classdef get_output_dataset_GAs___UTEST < matlab.unittest.TestCase
       OutputDataset = bicas.OutputDataset(Zv, Ga, RctdCa);
 
       outputFilename = 'solo_L2_rpw-lfr-surv-cwf-e_20200213_V01.cdf';
-      outputDsi      = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
+      outputDsid      = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
 
       %##################
       % CALL TESTED CODE
       %##################
       ActOutGaSubset = bicas.ga.get_output_dataset_GAs(...
-        InputDatasetsMap, OutputDataset, outputFilename, outputDsi, ...
+        InputDatasetsMap, OutputDataset, outputFilename, outputDsid, ...
         testCase.Bso, testCase.L);
 
       %######################################################################

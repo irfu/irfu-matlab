@@ -47,6 +47,11 @@ classdef Config
           InputDataset = Swm.inputsList(i);
           cohb         = InputDataset.cliOptionHeaderBody;
 
+          if     ~isfield(obj.JsonStruct.inputDatasets, jsonSwmCliOption)
+            error('Can not find SWM entry "%s" (potentially modified for MATLAB).', jsonSwmCliOption)
+          elseif ~isfield(obj.JsonStruct.inputDatasets.(jsonSwmCliOption), cohb)
+            error('Can not find SWM COHB (CLI Option Header Body) "%s" (potentially modified for MATLAB).', cohb)
+          end
           inputDatasetPath = obj.JsonStruct.inputDatasets.(jsonSwmCliOption).(cohb);
           irf.assert.file_exists(inputDatasetPath)
         end

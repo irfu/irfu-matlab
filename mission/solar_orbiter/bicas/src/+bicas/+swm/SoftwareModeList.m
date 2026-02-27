@@ -78,10 +78,10 @@ classdef SoftwareModeList
   %           then filter out the undesired ones using internal metadata for
   %           every SWM.
   %
-  % PROPOSAL: Same input CDF can have multiple DSIs, but only one is
+  % PROPOSAL: Same input CDF can have multiple DSIDs, but only one is
   %           shown in the SWD.
-  %   PRO: Can handle old datasets with ROG-SGSE DSIs, and otherwise
-  %        only use RODP DSIs.
+  %   PRO: Can handle old datasets with ROG-SGSE DSIDs, and otherwise
+  %        only use RODP DSIDs.
 
 
 

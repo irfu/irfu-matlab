@@ -3534,12 +3534,12 @@ classdef PDist < TSeries
       %   Find an energy limit below which the data is dominated by random
       %   erroneous counts.
       %
+      %   TS = PDist.noise_energy_limit(nMovMin); % nMovMin - integer
+      %
       %   Algorithm:
       %     1. Calculate omnidirectional distribution.
-      %     2. Put all zeros to nan.
-      %     3. Apply an N-point moving average. If there is a nan, it will
-      %        propagate.
-      %     4. For each time, find the lowest nan-occurrence and
+      %     2. Apply an N-point moving minimum.
+      %     3. For each time, find the lowest zero-occurrence and
       %        corresponding energy.
       %
       %   Usage:
@@ -3554,16 +3554,14 @@ classdef PDist < TSeries
 
       PD = obj;
       PD = PD.omni;
-      PD.data(PD.data==0) = NaN;
-      PD = PD.movmean(nMovMean);
-      %omni_movmean.data = movmean(omni_counts_movmean.data,nMovMean,1);
+      data = PD.data;
+      data = movmin(data,nMovMean,1);
 
-      %if 1 % based on sum of counts
-      log_nan = isnan(PD.data);
+      % Loop through time and find the highest zero
       idx_nan = zeros(PD.length,1);
       elow_t = zeros(PD.length,1);
       for it = 1:PD.length
-         idx_nan_tmp = find(log_nan(it,:),1,'last');
+         idx_nan_tmp = find(data(it,:)==0,1,'last');
         if isempty(idx_nan_tmp)
           idx_nan(it) = NaN;
           elow_t(it) = NaN;
@@ -3573,7 +3571,6 @@ classdef PDist < TSeries
         end
       end
       TS = irf.ts_scalar(PD.time,elow_t);
-      %end
     end
     function PD = mask(obj,depint)
 
@@ -4848,7 +4845,8 @@ classdef PDist < TSeries
       djx = obj.djx(varargin{:}).data; % 1/cm^2s
       djy = obj.djy(varargin{:}).data;
       djz = obj.djz(varargin{:}).data;
-      [dvx,dvy,dvz] = obj.v; % not exactly partial, but I just want the velocity of the bin
+      % This might break due to the passing on of varargin.
+      [dvx,dvy,dvz] = obj.v(varargin{:}); % not exactly partial, but I just want the velocity of the bin
       %dvx = djx./dn; % not sure this is the right way to go
       %dvy = djy./dn;
       %dvz = djz./dn;

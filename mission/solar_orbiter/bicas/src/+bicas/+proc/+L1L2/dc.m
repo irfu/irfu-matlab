@@ -58,15 +58,15 @@ classdef dc
     % * Set quality variables.
     %
     function Dcop = process_calibrate_demux(...
-        Dcip, InCurPd, outputDsi, Vcal, Ccal, NsoTable, Bso, L)
+        Dcip, InCurPd, outputDsid, Vcal, Ccal, NsoTable, Bso, L)
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.L1L2.dc.process_calibrate_demux', L);
 
       % ASSERTION
-      assert(ischar(outputDsi))
+      assert(ischar(outputDsid))
       assert(isa(Vcal, "bicas.proc.L1L2.cal.VoltageCalibration"))
       assert(isa(Ccal, "bicas.proc.L1L2.cal.CurrentCalibrationAbstract"))
-      assert(isa(Dcip, "bicas.proc.L1L2.DemultiplexingCalibrationInput"));
+      assert(isa(Dcip, "bicas.proc.L1L2.DemultiplexingCalibrationInput"))
 
       bicas.proc.L1L2.dc.log_input_calibration_settings(Dcip, Vcal, L)
 
@@ -79,7 +79,6 @@ classdef dc
       % later.
       L2Qrcbm = bicas.proc.qrc.NSO_table_to_QRCBM(...
         bicas.const.qrc.Q.L2_QRCSM.qrcidAr, NsoTable, Dcip.Zv.tt2000, L);
-      % bicas.debug.plot_QRCBM(L2Qrcbm, Dcip.Zv.tt2000, "L2Qrcbm")
       clear NsoTable
       % Convert information about BIAS ON/OFF and sweeps into QRCBs.
       L2Qrcbm.set("BIAS_HW_OFF", Dcip.Zv.biasOffQrcb);
@@ -205,19 +204,11 @@ classdef dc
         SatSettings.vstbFractionThreshold, ...
         SatSettings.cwfSlidingWindowLengthSec);
       L2Qrcbm.union(VsibSaturationQrcbm)
-      L2Qrcbm = bicas.proc.qrc.filter_saturation_QRCBs(L2Qrcbm, string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')));
-      % if 0    % DEBUG: Plot selected QRCBs.
-      %   bicas.debug.plot_QRCBM(L2Qrcbm,             Dcip.Zv.tt2000, "L2Qrcbm")
-      %   bicas.debug.plot_QRCBM(VsibSaturationQrcbm, Dcip.Zv.tt2000, "VsibSaturationQrcbm")
-      % end
+      L2Qrcbm = bicas.proc.qrc.filter_saturation_QRCBs( ...
+        L2Qrcbm, string(Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME')));
       % --
       [qfl, l2qbm] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
         L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM, "L2_QUALITY_BITMASK");
-      % if 0    % DEBUG
-      %   figure('WindowState', 'maximized')
-      %   plot(Dcip.Zv.tt2000/1e9, l2qbm, '.')
-      %   legend(irf.graph.escape_str("L2_QUALITY_BITMASK")); grid on
-      % end
 
       gaCaveats = bicas.proc.qrc.QRCB_arrays_to_GA_CAVEATS( ...
         L2Qrcbm, bicas.const.qrc.Q.L2_QRCSM);

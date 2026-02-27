@@ -30,7 +30,7 @@
 % First created 2020-06-15.
 %
 function outputFilename = default_get_BPCI_output_filename(...
-  outputDsi, BpciInputDsmdArray, ...
+  outputDsid, BpciInputDsmdArray, ...
   versionStr, varargin)
 
 % PROPOSAL: Automatic test code.
@@ -38,15 +38,15 @@ function outputFilename = default_get_BPCI_output_filename(...
 % PROPOSAL: Convert argument "versionStr" to versionNbr"?
 %   TODO-NI: Changes interface for other function handles?
 %
-% PROPOSAL: INPUT_DSI_FOR_OUTPUT_TIME --> argument
-%   PROPOSAL: Only use first matching DSI in INPUT_DSI_FOR_OUTPUT_TIME.
+% PROPOSAL: INPUT_DSID_FOR_OUTPUT_TIME --> argument
+%   PROPOSAL: Only use first matching DSID in INPUT_DSID_FOR_OUTPUT_TIME.
 %       PRO: More general. Less constraint on SWMs.
-% PROPOSAL: Argument for which input DSI should be used for determining output
+% PROPOSAL: Argument for which input DSID should be used for determining output
 %           dataset time interval.
 %   PRO: Can abolish hardcoded list.
-%   PROPOSAL: SWMs should contain the DSI to use.
+%   PROPOSAL: SWMs should contain the DSID to use.
 %
-% PROPOSAL: Use shared constants for setting DSI lists.
+% PROPOSAL: Use shared constants for setting DSID lists.
 %
 % PROPOSAL: Add argument for parent directory.
 %   CON: Setting parent directory is a different task. Different from
@@ -55,11 +55,11 @@ function outputFilename = default_get_BPCI_output_filename(...
 
 
 
-% Only input datasets whose DSI is included are used for deriving the time range
-% in output filename. May contain unused DSIs.
+% Only input datasets whose DSID is included are used for deriving the time range
+% in output filename. May contain unused DSIDs.
 % NOTE: This is sort of a hack, and the list must be consistent with the
 % behaviour of BICAS.
-INPUT_DSI_FOR_OUTPUT_TIME_CA = { ...
+INPUT_DSID_FOR_OUTPUT_TIME_CA = { ...
   'SOLO_L1_RPW-LFR-SBM1-CWF'; ...
   'SOLO_L1_RPW-LFR-SBM2-CWF'; ...
   'SOLO_L1_RPW-LFR-SURV-CWF'; ...
@@ -86,7 +86,7 @@ irf.assert.struct(Settings, fieldnames(Settings), {})
 
 
 % ASSERTIONS
-assert(ischar(outputDsi))
+assert(ischar(outputDsid))
 assert(isa(BpciInputDsmdArray, 'solo.adm.DSMD'))
 %assert(iscell(cohbCa))
 assert(ischar(versionStr))
@@ -99,9 +99,9 @@ assert(islogical(Settings.isCdagPolicy) || isnumeric(Settings.isCdagPolicy), ...
 % Identify exactly one BPCI INPUT DSMD which shall be used for determining
 % time interval for OUTPUT dataset.
 [~, iDsmd] = intersect(...
-  {BpciInputDsmdArray.datasetId}, INPUT_DSI_FOR_OUTPUT_TIME_CA);
+  {BpciInputDsmdArray.datasetId}, INPUT_DSID_FOR_OUTPUT_TIME_CA);
 assert(isscalar(iDsmd), ...
-  'Can not determine exactly one input DSI to use for determining output filename time interval.')
+  'Can not determine exactly one input DSID to use for determining output filename time interval.')
 InputDsmd = BpciInputDsmdArray(iDsmd);
 
 
@@ -115,7 +115,7 @@ Dt2 = InputDsmd.dt2;
 
 S = struct();
 S.isCdag     = logical(Settings.isCdagPolicy);
-S.datasetId  = outputDsi;
+S.datasetId  = outputDsid;
 S.versionNbr = str2double(versionStr);
 S.Dt1        = Dt1;
 S.Dt2        = Dt2;

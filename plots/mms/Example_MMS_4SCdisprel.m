@@ -14,14 +14,34 @@ Tintlong = Tint+[-60 60];
 R  = mms.get_data('R_gse',Tintlong);
 c_eval('Rxyz? = irf.ts_vec_xyz(R.time,R.gseR?);',ic);
 
-c_eval('Bscmfac? = irf_convert_fac(Bscm?, Bxyz?, [1, 0, 0]);',ic);
+c_eval('Bxyz? = Bxyz?.resample(Bxyz1);',2:4);
+
+Bxyzav = irf.ts_vec_xyz(Bxyz1.time,(Bxyz1.data + Bxyz2.data + Bxyz3.data + Bxyz4.data)/4);
+
+c_eval('Bscmfac? = irf_convert_fac(Bscm?, Bxyzav, [1, 0, 0]);',ic);
 
 %% Compute dispersion relation
 Tints = irf.tint('2015-10-16T13:05:26.500Z/2015-10-16T13:05:27.000Z');
 
-[xvecs,yvecs,Power] = mms.fk_powerspec4SC('Bscmfac?.x','Rxyz?','Bxyz?',Tints,'linear',10,'numk',500,'cav',4,'wwidth',2);
+[xvecs,yvecs,Power] = mms.fk_powerspec4SC('Bscmfac?.x','Rxyz?','Bxyz?',Tints,'linear',10,'numk',400,'cav',4,'wwidth',2,'frange',[300 1000]);
 
 %% Plot figure all quantities
+
+meanf = Power.fkvals.meanf;
+stdf = Power.fkvals.stdf;
+meankmag = Power.fkvals.meankmag;
+stdkmag = Power.fkvals.stdkmag;
+meankpar = Power.fkvals.meankpar;
+stdkpar = Power.fkvals.stdkpar;
+meankperpabs = Power.fkvals.meankperpabs;
+stdkperpabs = Power.fkvals.stdkperpabs;
+meankx = Power.fkvals.meankx;
+stdkx = Power.fkvals.stdkx;
+meanky = Power.fkvals.meanky;
+stdky = Power.fkvals.stdky;
+meankz = Power.fkvals.meankz;
+stdkz = Power.fkvals.stdkz;
+
 
 fn=figure;
 xwidth = 0.20;
@@ -53,15 +73,23 @@ irf_legend(h(1),'(a)',[0.99 0.99],'color','k','fontsize',14)
 vph = mms.estimate_phase_speed(Power.Powerkmagf,yvecs.fkmag,xvecs.kmag,100);
 kfit = 2*pi*yvecs.fkmag/vph;
 hold(h(1),'on')
-plot(h(1),kfit,yvecs.fkmag*1e-3,'k','linewidth',1)
+plot(h(1),kfit,yvecs.fkmag*1e-3,'r','linewidth',1)
+plot(h(1),meankmag,meanf/1e3,'ko')
+plot(h(1),[meankmag meankmag],[meanf-stdf meanf+stdf]/1e3,'k','linewidth',1)
+plot(h(1),[meankmag-stdkmag meankmag+stdkmag],[meanf meanf]/1e3,'k','linewidth',1)
 hold(h(1),'off')
 axis(h(1),[0 3e-4 0 2])
 caxis(h(1),[-6 0]);
-irf_legend(h(1),strcat('v_{ph} = ',num2str(round(vph/1e3)),'km s^{-1}'),[0.9 0.05],'color','k','fontsize',14)
+irf_legend(h(1),strcat('v_{ph} = ',num2str(round(vph/1e3)),'km s^{-1}'),[0.9 0.05],'color','r','fontsize',14)
 set(gcf,'color','w')
 
 pcolor(h(2),xvecs.kperp,yvecs.kpar,log10(Power.Powerkperpkpar));
 shading(h(2),'flat');
+hold(h(2),'on')
+plot(h(2),meankperpabs,meankpar,'ko')
+plot(h(2),[meankperpabs meankperpabs],[meankpar-stdkpar meankpar+stdkpar],'k','linewidth',1)
+plot(h(2),[meankperpabs-stdkperpabs meankperpabs+stdkperpabs],[meankpar meankpar],'k','linewidth',1)
+hold(h(2),'off')
 xlabel(h(2),'|k_{\perp}| (m^{-1})');
 ylabel(h(2),'k_{||} (m^{-1})');
 c=colorbar('peer',h(2),'ver');
@@ -73,8 +101,11 @@ irf_legend(h(2),'(b)',[0.99 0.99],'color','k','fontsize',14)
 pcolor(h(3),xvecs.kxkxky,yvecs.kykxky,log10(Power.Powerkxky));
 shading(h(3),'flat');
 hold(h(3),'on')
-plot(h(3),[0 0],max(yvecs.kykxky)*[-1 1],'color','k','Linewidth',1)
-plot(h(3),max(xvecs.kxkxky)*[-1 1],[0 0],'color','k','Linewidth',1)
+plot(h(3),[0 0],max(yvecs.kykxky)*[-1 1],'color','k','Linewidth',0.5)
+plot(h(3),max(xvecs.kxkxky)*[-1 1],[0 0],'color','k','Linewidth',0.5)
+plot(h(3),meankx,meanky,'ko')
+plot(h(3),[meankx meankx],[meanky-stdky meanky+stdky],'k','linewidth',1)
+plot(h(3),[meankx-stdkx meankx+stdkx],[meanky meanky],'k','linewidth',1)
 hold(h(3),'off')
 xlabel(h(3),'k_{x} (m^{-1})');
 ylabel(h(3),'k_{y} (m^{-1})');
@@ -87,8 +118,11 @@ irf_legend(h(3),'(c)',[0.99 0.99],'color','k','fontsize',14)
 pcolor(h(4),xvecs.kxkxkz,yvecs.kzkxkz,log10(Power.Powerkxkz));
 shading(h(4),'flat');
 hold(h(4),'on')
-plot(h(4),[0 0],max(yvecs.kzkxkz)*[-1 1],'color','k','Linewidth',1)
-plot(h(4),max(xvecs.kxkxkz)*[-1 1],[0 0],'color','k','Linewidth',1)
+plot(h(4),[0 0],max(yvecs.kzkxkz)*[-1 1],'color','k','Linewidth',0.5)
+plot(h(4),max(xvecs.kxkxkz)*[-1 1],[0 0],'color','k','Linewidth',0.5)
+plot(h(4),meankx,meankz,'ko')
+plot(h(4),[meankx meankx],[meankz-stdkz meankz+stdkz],'k','linewidth',1)
+plot(h(4),[meankx-stdkx meankx+stdkx],[meankz meankz],'k','linewidth',1)
 hold(h(4),'off')
 xlabel(h(4),'k_{x} (m^{-1})');
 ylabel(h(4),'k_{z} (m^{-1})');
@@ -103,6 +137,9 @@ shading(h(5),'flat');
 hold(h(5),'on')
 plot(h(5),[0 0],max(yvecs.kzkykz)*[-1 1],'color','k','Linewidth',1)
 plot(h(5),max(xvecs.kykykz)*[-1 1],[0 0],'color','k','Linewidth',1)
+plot(h(5),meanky,meankz,'ko')
+plot(h(5),[meanky meanky],[meankz-stdkz meankz+stdkz],'k','linewidth',1)
+plot(h(5),[meanky-stdky meanky+stdky],[meankz meankz],'k','linewidth',1)
 hold(h(5),'off')
 xlabel(h(5),'k_{y} (m^{-1})');
 ylabel(h(5),'k_{z} (m^{-1})');
@@ -114,30 +151,48 @@ irf_legend(h(5),'(e)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(6),xvecs.kxf,yvecs.fkxf*1e-3,log10(Power.Powerkxf));
 shading(h(6),'flat');
+hold(h(6),'on')
+plot(h(6),meankx,meanf/1e3,'ko')
+plot(h(6),[meankx meankx],[meanf-stdf meanf+stdf]/1e3,'k','linewidth',1)
+plot(h(6),[meankx-stdkx meankx+stdkx],[meanf meanf]/1e3,'k','linewidth',1)
+hold(h(6),'off')
 xlabel(h(6),'k_{x} (m^{-1})');
 ylabel(h(6),'f (kHz)');
 c=colorbar('peer',h(6),'ver');
 ylabel(c,'log_{10} P(k_x,f)/P_{max}');
 colormap('jet');
 caxis(h(6),[-6 0]);
+axis(h(6),[-2.5e-4 2.5e-4 0 2])
 irf_legend(h(6),'(f)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(7),xvecs.kyf,yvecs.fkyf*1e-3,log10(Power.Powerkyf));
 shading(h(7),'flat');
+hold(h(7),'on')
+plot(h(7),meanky,meanf/1e3,'ko')
+plot(h(7),[meanky meanky],[meanf-stdf meanf+stdf]/1e3,'k','linewidth',1)
+plot(h(7),[meanky-stdky meanky+stdky],[meanf meanf]/1e3,'k','linewidth',1)
+hold(h(7),'off')
 xlabel(h(7),'k_{y} (m^{-1})');
 ylabel(h(7),'f (kHz)');
 c=colorbar('peer',h(7),'ver');
 ylabel(c,'log_{10} P(k_y,f)/P_{max}');
 colormap('jet');
 caxis(h(7),[-6 0]);
+axis(h(7),[-2.5e-4 2.5e-4 0 2])
 irf_legend(h(7),'(g)',[0.99 0.99],'color','k','fontsize',14)
 
 pcolor(h(8),xvecs.kzf,yvecs.fkzf*1e-3,log10(Power.Powerkzf));
 shading(h(8),'flat');
+hold(h(8),'on')
+plot(h(8),meankz,meanf/1e3,'ko')
+plot(h(8),[meankz meankz],[meanf-stdf meanf+stdf]/1e3,'k','linewidth',1)
+plot(h(8),[meankz-stdkz meankz+stdkz],[meanf meanf]/1e3,'k','linewidth',1)
+hold(h(8),'off')
 xlabel(h(8),'k_{z} (m^{-1})');
 ylabel(h(8),'f (kHz)');
 c=colorbar('peer',h(8),'ver');
 ylabel(c,'log_{10} P(k_z,f)/P_{max}');
 colormap('jet');
 caxis(h(8),[-6 0]);
+axis(h(8),[-2.5e-4 2.5e-4 0 2])
 irf_legend(h(8),'(h)',[0.99 0.99],'color','k','fontsize',14)

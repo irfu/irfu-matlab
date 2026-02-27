@@ -250,10 +250,10 @@ classdef qrc
 
 
     % Sets QRCBs to false for saturation QRCs which should not be used,
-    % depending on saturation quality scheme.
+    % depending on the current saturation quality scheme.
     %
     % NOTE: QRCBs for both saturation quality schemes are always present
-    % regardless of which one is selected.
+    % regardless of which one is selected (configured) in BICAS.
     %
     % ARGUMENTS
     % =========
@@ -265,9 +265,9 @@ classdef qrc
     % Modified copy of argument.
     %
     function Qrcbm = filter_saturation_QRCBs(Qrcbm, saturationQualitySchemeId)
-      assert(isstring(saturationQualitySchemeId))
       assert(isa(Qrcbm, "bicas.proc.QrcbMap"))
       assert(isa(Qrcbm, 'handle'))
+      assert(isstring(saturationQualitySchemeId))
 
       switch(saturationQualitySchemeId)
         case "GLOBAL_SATURATION"

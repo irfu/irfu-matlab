@@ -24,20 +24,33 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
-  % PROPOSAL: Class name without "L3".
-  %   PRO: "L3" is implicit from the package "L2L3".
+  % PROPOSAL: Better class name
+  %   PROPOSAL: Class name without "L3".
+  %     PRO: "L3" is implicit from the package "L2L3".
+  %   NOTE: Should cover both SURV and SBMx.
+  %   ~Density+Efield+Scpot
+  %   ~CWF
+  %   ~OSR, DSR
+  %   DensityEfieldScpotProcessing
+  %     CON: Long
+  %   DesProcessing
+  %     CON: There is no abbreviation "DES".
+  %   CwfDesProcessing
   %
   % PROPOSAL: Automatic test code.
   %   NOTE: There are limited tests.
   %
   % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT
   %           into separate SWMs.
-  %   PRO: Faster processing when only processing subset of L3 DSIs.
+  %   PRO: Faster processing when only processing subset of L3 DSIDs.
   %       CON: Not very heavy operation.
   %   PRO: Leads to better organization of code.
   %       PRO: process_L2_to_L3() is too large and should be split up anyway.
   %   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed
   %        after the latter.
+  %
+  % PROPOSAL: Abolish iSbm.
+  %   PRO: Seems unused and not needed.
 
 
 
@@ -71,6 +84,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     % (true)  L2 SBMx CWF --> L3 SBMx DENSITY, or
     % (false) L2 SURF CWF --> L3 DENSITY+EFIELD+SCPOT
     bSbmx
+    % 1/2 = Whether processing SBM1 or SBM2.
     iSbm
   end
 
@@ -106,18 +120,22 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         InputDatasetsMap, rctDir, NsoTable, Bso, L)
 
       % IMPLEMENTATION NOTE: Currently executes all DENSITY+EFIELD+SCPOT OSR+DSR
-      % processing also for SBMx DENSITY processing, and rejects the parts which
-      % are not needed. This is technically inefficient but should be accurate
-      % and should probably be kept until there is a good reason to change it(?).
+      % processing both for SURV-CWF (old) and SBMx (experimental) DENSITY
+      % processing, and rejects the parts which are not needed. This is
+      % technically inefficient, but simplifies the implementation and should be
+      % accurate and should probably be kept until there is a good reason to
+      % change it(?).
       %   PROPOSAL: Make
       %             bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3()
       %             skip DSR.
 
+      % PROPOSAL: Create instance variable obj.pfiid in constructor instead.
       if ~obj.bSbmx
-        InputLfrCwfCdf = InputDatasetsMap('LFR-SURV-CWF-E_cdf');
+        pfiid = 'LFR-SURV-CWF-E_cdf';
       else
-        InputLfrCwfCdf = InputDatasetsMap('LFR-SBMx-CWF-E_cdf');
+        pfiid = 'LFR-SBMx-CWF-E_cdf';
       end
+      InputLfrCwfCdf = InputDatasetsMap(pfiid);
 
       Excd = bicas.proc.L2L3.ExternalCodeImplementation();
 
@@ -128,8 +146,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         EfieldOsrCdf,  EfieldDsrCdf, ...
         ScpotOsrCdf,   ScpotDsrCdf, ...
         DensityOsrCdf, DensityDsrCdf ...
-        ] = bicas.proc.L2L3.L3OsrDsrSwmProcessing.process_L2_to_L3(...
-        InputLfrCwfCdf, NsoTable, Excd, Bso, L);
+        ] = obj.process_L2_to_L3(InputLfrCwfCdf, NsoTable, Excd, Bso, L);
 
       OutputDatasetsMap = containers.Map();
       if ~obj.bSbmx
@@ -141,22 +158,11 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         OutputDatasetsMap('DENSITY_DSR_cdf')  = DensityDsrCdf;
       else
         % NOTE: Ignoring all other return data.
+        OutputDatasetsMap('SBMx_EFIELD_cdf')  = EfieldOsrCdf;
+        OutputDatasetsMap('SBMx_SCPOT_cdf')   = ScpotOsrCdf;
         OutputDatasetsMap('SBMx_DENSITY_cdf') = DensityOsrCdf;
       end
     end
-
-
-
-  end    % methods(Access=public)
-
-
-
-  %#######################
-  %#######################
-  % PUBLIC STATIC METHODS
-  %#######################
-  %#######################
-  methods(Static)
 
 
 
@@ -182,7 +188,49 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         OutScpotOsr,   OutScpotDsr, ...
         OutDensityOsr, OutDensityDsr ...
         ] ...
-        = process_L2_to_L3(InLfrCwf, NsoTable, Excd, Bso, L)
+        = process_L2_to_L3(obj, InLfrCwf, NsoTable, Excd, Bso, L)
+
+
+
+      saturationSchemeId  = Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME');
+      inputSkeletonVerNbr = str2double(InLfrCwf.Ga.Skeleton_version{1});
+      % --------------------------------------------------------------------
+      % ASSERTION: Check that the input datasets use the correct quality bit
+      %            saturation scheme.
+      % --------------------------------------------------------------------
+      % Official SOLO_L2_RPW-LFR-SURV/SBM1/SBM2-CWF-E datasets use
+      % GLOBAL_SATURATION starting at Skeleton_version = 18.
+      %
+      % IMPLEMENTATION NOTE: ROC has not yet reprocessed SBMx to have
+      % inputSkeletonVerNbr>=18. This is due to a mistake in the EJ-ROC
+      % communication. Not yet checking for SBMx so that code can be tested at
+      % least. /2026-01-14
+      if ~obj.bSbmx
+        switch saturationSchemeId
+          case "CHANNEL_SATURATION"
+            if inputSkeletonVerNbr < 18
+              error( ...
+                "The input CDF has Skeleton_version=%d indicating that it" + ...
+                " does not use CHANNEL_SATURATION and is therefore" + ...
+                " incompatible.", ...
+                inputSkeletonVerNbr)
+            end
+
+          case "GLOBAL_SATURATION"
+            if inputSkeletonVerNbr >= 18
+              error( ...
+                "The input CDF has Skeleton_version=%d indicating that it" + ...
+                " does not use GLOBAL_SATURATION and is therefore" + ...
+                " incompatible.", ...
+                inputSkeletonVerNbr)
+            end
+
+          otherwise
+            error("Illegal value of saturationSchemeId=%s.", saturationSchemeId)
+        end    % switch
+      end    % if
+
+
 
       % PROPOSAL: Abolish struct "Ga".
       % PROPOSAL: Abolish struct "Zv".
@@ -196,16 +244,17 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %                 rename it in the code.
 
       Ga = struct();
-      Ga.SOOP_TYPE              = InLfrCwf.Ga.SOOP_TYPE;
-      Ga.OBS_ID                 = InLfrCwf.Ga.OBS_ID;
-      Zv = struct();            % ----------------------
-      Zv.tt2000                 = InLfrCwf.Zv.Epoch;
-      Zv.VDC_Fpa                = InLfrCwf.ZvFpa.VDC;
-      Zv.EDC_Fpa                = InLfrCwf.ZvFpa.EDC;
-      Zv.QflFpa                 = InLfrCwf.ZvFpa.QUALITY_FLAG;
-      Zv.L1qbmFpa               = InLfrCwf.ZvFpa.QUALITY_BITMASK;
-      Zv.L2qbmFpa               = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
-      Zv.DELTA_PLUS_MINUS_Fpa   = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
+      Ga.SOOP_TYPE            = InLfrCwf.Ga.SOOP_TYPE;
+      Ga.OBS_ID               = InLfrCwf.Ga.OBS_ID;
+      %
+      Zv = struct();
+      Zv.tt2000               = InLfrCwf.Zv.Epoch;
+      Zv.VDC_Fpa              = InLfrCwf.ZvFpa.VDC;
+      Zv.EDC_Fpa              = InLfrCwf.ZvFpa.EDC;
+      Zv.QflFpa               = InLfrCwf.ZvFpa.QUALITY_FLAG;
+      Zv.L1qbmFpa             = InLfrCwf.ZvFpa.QUALITY_BITMASK;
+      Zv.L2qbmFpa             = InLfrCwf.ZvFpa.L2_QUALITY_BITMASK;
+      Zv.DELTA_PLUS_MINUS_Fpa = InLfrCwf.ZvFpa.DELTA_PLUS_MINUS;
       clear InLfrCwf
 
       assert(isa(NsoTable, "bicas.NsoTable"))
@@ -219,7 +268,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %       PRO: Must read L3 SCPOT dataset to produce L3 DENSITY dataset.
       %   CON: There is much shared functionality for 3 quality ZVs.
       %       PRO: Same ~constants
-      %           Ex: INPUT_DSI, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
+      %           Ex: INPUT_DSID, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
       %       PRO: Read setting QUALITY_FLAG_MIN
       %       PRO: Normalizing CWF zVar names.
       %       PRO: Preparations for downsampled.
@@ -248,21 +297,22 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %------------------------------------------
-      % Derive QRCBMs and synthetic QUALITY_FLAG
-      %------------------------------------------
+      %------------------------------------
+      % Derive QRCBMs and synthetic L2 QFL
+      %------------------------------------
       [L3Qrcbm, L3DensityQrcbm, SyntheticL2QflFpa] = ...
         bicas.proc.L2L3.L3OsrDsrSwmProcessing.get_QRCBMs_synthetic_L2_QFL(...
+        ...
         Zv.L2qbmFpa, Zv.QflFpa, Zv.tt2000, NsoTable, ...
         Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME'), L);
 
       %---------------------------------
       % Blank selected VDC, EDC samples
       %---------------------------------
-      qflMinForUse = uint8(Bso.get_fv(...
-        'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
+      qflMinForUse = uint8(Bso.get_fv('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
       [VDC_Fpa, EDC_Fpa] = ...
         bicas.proc.L2L3.L3OsrDsrSwmProcessing.set_VDC_EDC_FPs_before_processing( ...
+        ...
         Zv.VDC_Fpa, Zv.EDC_Fpa, SyntheticL2QflFpa, ...
         L3Qrcbm, qflMinForUse);
 
@@ -279,9 +329,9 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
         EDC_Fpa = EDC_Fpa, ...
         L       = L);
 
-      %----------------------------
+      %-----------------------------
       % Blank output based on QRCBs
-      %----------------------------
+      %-----------------------------
       % Blank EFIELD.
       R.EdcSrfMvpmFpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         R.EdcSrfMvpmFpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "efieldFvIndexAr");
@@ -361,6 +411,19 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
+  end    % methods(Access=public)
+
+
+
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
+  methods(Static)
+
+
+
   end    % methods(Static)
 
 
@@ -383,6 +446,7 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
     %
     function [L3Qrcbm, L3DensityQrcbm, SyntheticL2QflFpa] = ...
         get_QRCBMs_synthetic_L2_QFL(...
+        ...
         L2qbmFpa, L2QflFpa, tt2000Ar, NsoTable, ...
         saturationQualityScheme, L)
       % PROPOSAL: Move to bicas.proc.L2L3.qrc.
@@ -402,36 +466,22 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       %-------------------------------
       % L2_QUALITY_BITMASK-->L3 QRCBs
       %-------------------------------
-      % Obtain channel saturation QRCBs by reading L2_QUALITY_BITMASK *AND*
-      % converting it to an QRCBM.
+      % Reconstruct L2 channel saturation QRCBs by reading L2_QUALITY_BITMASK
+      % *AND* converting it to an QRCBM.
       ChannelSaturationQrcbm = ...
         bicas.proc.L2L3.qrc.L2QBM_to_channel_saturation_QRCBs(...
-        L2qbmFpa.array(uint16(0)), saturationQualityScheme);
+        ...
+        L2qbmFpa.array(uint16(0)), ...
+        saturationQualityScheme);
       L3Qrcbm.union(ChannelSaturationQrcbm)
-      % if 0
-      % % DEBUG
-      %   L3Qrcbm.set("SATURATION_ZV_V2", true(size(Zv.tt2000)))
-      %   bicas.debug.plot_QRCBM(L3Qrcbm, Zv.tt2000, "L3Qrcbm")
-      % end
 
 
 
-      %========================================================================
-      % Calculate a synthetic QUALITY_FLAG, what L2 LFR CWF *SHOULD HAVE BEEN*,
-      % had it not been for saturation or sweeps (sic!).
-      % ----------------------------------------------------------------------
-      % NOTE/BUG: Above is only true if BICAS had entirely determined the L2
-      % QUALITY_FLAG value, i.e. that it had not been capped due to inherited
-      % values from the parent L1/L1R CDF.
-      %-----------------------------------------------------------------------
-      % NOTE: Sweeps are blanked (in L2), so their QUALITY_FLAG values do not
-      % matter.
-      % IMPLEMENTATION NOTE: Must distinguish between
-      % (1) the derived L2 non-saturation QUALITY_FLAG, and
-      % (2) the (true) L2 input QUALITY FLAG.
-      %========================================================================
-      SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL( ...
-        tt2000Ar, NsoTable, L2QflFpa.fpAr, L);
+      %=========================================
+      % Calculate a "synthetic L2 QUALITY_FLAG"
+      %=========================================
+      SyntheticL2QflFpa = bicas.proc.L2L3.qrc.get_synthetic_L2_QFL(...
+        tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, L);
     end
 
 
@@ -504,6 +554,8 @@ classdef L3OsrDsrSwmProcessing < bicas.proc.SwmProcessing
       Zv2.QUALITY_FLAG       = Zv.QflFpa;
       Zv2.QUALITY_BITMASK    = Zv.L1qbmFpa;
       Zv2.L2_QUALITY_BITMASK = Zv.L2qbmFpa;
+
+      %bicas.debug.plot_FPA(Zv.tt2000, Zv.QflFpa, uint8(-1), "QflFpa")
 
       TemplateOsr = struct('Ga', Ga, 'Zv', Zv2);
     end

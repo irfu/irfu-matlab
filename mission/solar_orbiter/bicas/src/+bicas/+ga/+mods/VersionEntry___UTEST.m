@@ -59,7 +59,7 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
       testCase.verifyEqual(actStr, expStr)
 
       Gmve = bicas.ga.mods.VersionEntry('2020-01-01', '1.2.3', {...
-        'A first comment.', 'A second comment.'});
+        'A first comment.'; 'A second comment.'});
       actStr = Gmve.get_str();
       expStr = '2020-01-01 -- V1.2.3 -- A first comment. | A second comment.';
       testCase.verifyEqual(actStr, expStr)
@@ -76,7 +76,7 @@ classdef VersionEntry___UTEST < matlab.unittest.TestCase
       GMVE_2 = bicas.ga.mods.VersionEntry('2020-01-01', '1.2.3', {...
         'Comment 2.'});
       GMVE_3 = bicas.ga.mods.VersionEntry('2020-01-01', '1.2.3', {...
-        'Comment 3a.', 'Comment 3b.'});
+        'Comment 3a.'; 'Comment 3b.'});
 
       GMVE_4 = GMVE_1 + GMVE_2;
       testCase.assertEqual(...

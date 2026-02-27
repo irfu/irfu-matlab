@@ -276,7 +276,9 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
       % IMPLEMENTATION NOTE: There are times when you want the FV to be
       % identical to non-FP elements. Must therefore not forbid it.
       %
-      % PROPOSAL: Optionally return second value: fpAr
+      % PROPOSAL: Abolish omitting "fv".
+      %   TODO-NI: When is default FV useful/safe to use? Should it not only be
+      %            dangerous?
 
       switch(nargin)
         case 1

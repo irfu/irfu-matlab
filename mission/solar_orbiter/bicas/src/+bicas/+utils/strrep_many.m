@@ -16,11 +16,11 @@
 %
 function s = strrep_many(s, varargin)
 % PROPOSAL: Change argument syntax (varargin) to something that is more suitable for data structures AND hardcoding.
-%   PROPOSAL: oldSsList, newSsList
+%   PROPOSAL: oldSsAr, newSsAr
 %       CON: Bad for hardcoding. Each string pair can not be on the same row.
 %   PROPOSAL: replacementTable: {i}{1} = old substring, {i}{2} = new substring
 %   PROPOSAL: replacementTable: {i, 1} = old substring, {i, 2} = new substring
-%       PRO: oldSsList, newSsList can easily be merged to such a 2D cell array.
+%       PRO: oldSsAr, newSsAr can easily be merged to such a 2D cell array.
 
 while true
   if numel(varargin) >= 2
