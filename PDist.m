@@ -3532,7 +3532,7 @@ classdef PDist < TSeries
         if isfield(PD.ancillary,'delta_energy_plus'), PD.ancillary.delta_energy_plus = PD.ancillary.delta_energy_plus(:,elevels); end
       end
     end
-    function TS = find_low_counts(obj,varargin)
+    function out = find_low_counts(obj,varargin)
       % PDIST.FIND_LOW_COUNTS Finds indices or energy limits of low counts.
       %   Based on the total counts for each energy level.
       %
@@ -3602,6 +3602,7 @@ classdef PDist < TSeries
           case 'mat'
             mask = zeros(size(counts));
             mask(find(counts<limCounts)) = 1;
+            out = mask;
           case 'energy'            
             mask = zeros(PD.length,1);
             for it = 1:PD.length
@@ -3612,11 +3613,12 @@ classdef PDist < TSeries
               else
                 idx_nan(it) = idx_nan_tmp;
                 mask(it) = PD.depend{1}(it,idx_nan(it));
-              end
-           end
+              end              
+            end    
+            out = irf.ts_scalar(PD.time,mask);
         end
 
-      TS = irf.ts_scalar(PD.time,mask);
+   
     end
     function PD = mask(obj,varargin)
       % PDIST.MASK Replaces data with NaN.
