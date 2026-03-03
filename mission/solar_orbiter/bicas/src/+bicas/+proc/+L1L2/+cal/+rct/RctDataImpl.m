@@ -62,6 +62,7 @@ classdef(Abstract) RctDataImpl < bicas.proc.L1L2.cal.rct.RctDataAbstract
       % scalarGaValue
       %       [], if GA can not be found in the RCT.
       %       Not cell array.
+      %
       function scalarGaValue = get_scalar_GA(gaName)
 
         if isfield(Do.GlobalAttributes, gaName)

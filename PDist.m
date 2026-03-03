@@ -4988,7 +4988,8 @@ classdef PDist < TSeries
       djx = obj.djx(varargin{:}).data; % 1/cm^2s
       djy = obj.djy(varargin{:}).data;
       djz = obj.djz(varargin{:}).data;
-      [dvx,dvy,dvz] = obj.v; % not exactly partial, but I just want the velocity of the bin
+      % This might break due to the passing on of varargin.
+      [dvx,dvy,dvz] = obj.v(varargin{:}); % not exactly partial, but I just want the velocity of the bin
       %dvx = djx./dn; % not sure this is the right way to go
       %dvy = djy./dn;
       %dvz = djz./dn;

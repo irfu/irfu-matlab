@@ -66,7 +66,7 @@
 % ===================================
 % See bicas.tools.batch.autocreate_many_BPCIs().
 % NOTE: Algorithm requires input datasets to not overlap in time for each
-% DSI separately. Can therefore not handle SOLO_L2_RPW-LFR-SBM1-CWF-E
+% DSID separately. Can therefore not handle SOLO_L2_RPW-LFR-SBM1-CWF-E
 %
 %
 % HOW TO PROCESS: EXAMPLES
@@ -161,7 +161,7 @@ function main(...
 %               CON: Can not write wrappers, aliases with permanent lists of
 %                    SWMs.
 %
-% PROPOSAL: Filter DSIs (only keep those needed for SWMs) before sorting
+% PROPOSAL: Filter DSIDs (only keep those needed for SWMs) before sorting
 %           by version and before searching for BPCIs.
 %   PRO: Likely faster.
 %
@@ -196,23 +196,23 @@ function main(...
 %       reference directory.
 %
 % NOTE/~BUG/~PROBLEM: Algorithm requires input datasets to not overlap in
-%       time for each unique DSI separately. Can therefore not handle
+%       time for each unique DSID separately. Can therefore not handle
 %       SOLO_L2_RPW-LFR-SBM1-CWF-E.
 %       NOTE: Implemented via
 %             bicas.tools.batch.autocreate_input_BPCIs()
 %             calling
 %             bicas.tools.batch.autocreate_many_BPCIs().
-%   PROPOSAL: Define (hardcoded) list of DSIs "main" input datasets.
-%       There is one main DSI in every SWM (one main input dataset in evey
+%   PROPOSAL: Define (hardcoded) list of DSIDs "main" input datasets.
+%       There is one main DSID in every SWM (one main input dataset in evey
 %       BPCI). Separately for every SWM, iterate over all main datasets. For
-%       every main dataset, find those other datasets (with input DSIs in
+%       every main dataset, find those other datasets (with input DSIDs in
 %       the SWM) which overlap with the main dataset in time.
 %       --
-%       PROPOSAL: Same list as INPUT_DSI_FOR_OUTPUT_TIME in functions
+%       PROPOSAL: Same list as INPUT_DSID_FOR_OUTPUT_TIME in functions
 %           bicas.tools.batch.get_BPCI_output_path2()
 %           bicas.tools.batch.default_get_BPCI_output_filename()
 %           (latter to be phased out).
-%   PROPOSAL: Given a set of input DSIs specified by a SWM, find any group
+%   PROPOSAL: Given a set of input DSIDs specified by a SWM, find any group
 %             of datasets with some shared overlap.
 %       NOTE: Datasets may be used in multiple BPCIs (for same SWM). This is
 %             legitimately expected for
@@ -222,18 +222,18 @@ function main(...
 %                 be L2 SBM1s overlapping in time.
 %       PRO: Symmetric w.r.t. datasets. Does not need to define any "main"
 %            dataset for every SWM.
-%       CON: Having two DSIs with time overlapping datasets in the same SWM
+%       CON: Having two DSIDs with time overlapping datasets in the same SWM
 %            leads to processing four different combinations of datasets for
 %            producing data for the same time interval.
 %           Ex: Extreme but clear case:
-%               Datasets 1a and 1b: Almost same time interval. Same DSI_1.
-%               Datasets 2a and 2b: Almost same time interval. Same DSI_2.
+%               Datasets 1a and 1b: Almost same time interval. Same DSID_1.
+%               Datasets 2a and 2b: Almost same time interval. Same DSID_2.
 %               ==> Output dataset(s)
 %                 1a+2a ==> 3a
 %                 1a+2b ==> 3b
 %                 1b+2a ==> 3c
 %                 1b+2b ==> 3d
-%                 If DSI_1 determines the output filename, then
+%                 If DSID_1 determines the output filename, then
 %                 3a and 3b will have the same filename (except version),
 %                 3c and 3d will have the same filename (except version).
 %           CON: This should never happen with real datasets. SBM1 is the
@@ -297,14 +297,12 @@ assert(iscell(inputPathsCa) & iscolumn(inputPathsCa))
 SwmArray = get_SWMs(bicasConfigFile);
 
 bicasSettingsArgsCa = {};
-%     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L1-L2_ENABLED', String(Settings.bicasSetting_SWM_L1_L2_ENABLED)};
-%     bicasSettingsArgsCa(end+1:end+3) = {'--set', 'SWM.L2-L3_ENABLED', Sprint(Settings.bicasSetting_SWM_L2_L3_ENABLED)};
 
 
 
 switch(modeStr)
   case 'V01'
-    fnVerAlgorithm = 'HIGHEST_USED';
+    outputVerAlgorithmId = 'HIGHEST_USED';
 
     % IMPLEMENTATION NOTE: The filename version algorithm is more
     % generic. This code only creates datasets for which there is no
@@ -312,7 +310,7 @@ switch(modeStr)
     % when using this filename version algorithm. ==> Name "V01".
 
   case 'NEW_VERSION'
-    fnVerAlgorithm = 'ABOVE_HIGHEST_USED';
+    outputVerAlgorithmId = 'ABOVE_HIGHEST_USED';
 
   otherwise
     error('Illegal argument modeStr="%s".', modeStr)
@@ -332,7 +330,7 @@ Bpa = bicas.tools.batch.BicasProcessingAccessImpl();
 BpcsArray = bicas.tools.batch.run_BICAS_all_passes(...
   Bpa, bicasSettingsArgsCa, ...
   bicasConfigFile, outputDir, referenceDir, inputPathsCa, ...
-  fnVerAlgorithm, outputIsCdag, SwmArray, Settings);
+  outputVerAlgorithmId, outputIsCdag, SwmArray, Settings);
 
 %=======================
 % Log BICAS error codes
@@ -358,7 +356,7 @@ if nError > 0
   error('%i of %i BICAS calls returned error.', ...
     nError, numel(becArray))
 end
-end
+end    % main()
 
 
 
@@ -368,18 +366,6 @@ end
 function SwmArray = get_SWMs(bicasConfigFile)
 BSO = bicas.create_default_BSO();
 
-% ID string used to inform BICAS SETTINGS of who set the setting. Only
-% relevant for inspecting logs.
-% NOTE: Exact string not really important.
-% bicasSettingsSource = mfilename('fullpath');
-%
-%     BSO.override_value('SWM.L1-L2_ENABLED', ...
-%         Settings.bicasSetting_SWM_L1_L2_ENABLED, ...
-%         bicasSettingsSource)
-%     BSO.override_value('SWM.L2-L3_ENABLED', ...
-%         Settings.bicasSetting_SWM_L2_L3_ENABLED, ...
-%         bicasSettingsSource)
-
 bicas.override_settings_from_config_file(...
   bicasConfigFile, BSO, bicas.Logger('NO_STDOUT', false));
 
@@ -387,4 +373,4 @@ BSO.make_read_only();
 
 % NOTE: Converting SWML to array of SWMs.
 SwmArray = bicas.swm.get_SWML(BSO).List;
-end
+end    % get_SWMs()

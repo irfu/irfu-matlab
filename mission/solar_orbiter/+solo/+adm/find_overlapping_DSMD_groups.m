@@ -13,7 +13,7 @@
 % ARGUMENTS
 % =========
 % DsmdArray
-% datasetIdList
+% dsiCa
 %       Cell array of unique DATASET_IDs.
 %
 %
@@ -27,7 +27,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-13.
 %
-function dsmdGroupsCa = find_overlapping_DSMD_groups(DsmdArray, datasetIdList)
+function dsmdGroupsCa = find_overlapping_DSMD_groups(DsmdArray, dsiCa)
 % PROPOSAL: Better name
 %   PROPOSAL: find_time_overlapping_groups, find_time_groups
 %   PROPOSAL: Name find_overlapping_DSMD_groups
@@ -47,8 +47,9 @@ function dsmdGroupsCa = find_overlapping_DSMD_groups(DsmdArray, datasetIdList)
 
 assert(isa(DsmdArray, 'solo.adm.DSMD'))
 solo.adm.assert_no_time_overlap(DsmdArray);
+% assert(iscolumn(dsiCa))
 
-DsmdArray = solo.adm.filter_DSMD_DATASET_ID(DsmdArray, datasetIdList);
+DsmdArray = solo.adm.filter_DSMD_DATASET_ID(DsmdArray, dsiCa);
 DsmdArray = DsmdArray(:);
 
 if isempty(DsmdArray)
@@ -66,7 +67,7 @@ else
 
   % Only keep overlaps with (1) the exact number of datasets, and (2) non-zero
   % length overlap.
-  bKeep = (nArray == numel(datasetIdList)) & (oiT1Array ~= oiT2Array);
+  bKeep = (nArray == numel(dsiCa)) & (oiT1Array ~= oiT2Array);
   setCa = setsCa(bKeep);
 
   nGroups = numel(setCa);

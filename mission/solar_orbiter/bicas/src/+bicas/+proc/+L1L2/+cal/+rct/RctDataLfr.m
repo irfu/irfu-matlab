@@ -27,6 +27,7 @@ classdef RctDataLfr < bicas.proc.L1L2.cal.rct.RctDataImpl
 
 
     function obj = RctDataLfr(filePath)
+      % Call superclass constructor.
       obj@bicas.proc.L1L2.cal.rct.RctDataImpl(filePath)
 
       RctRawData = bicas.proc.L1L2.cal.rct.RctDataLfr.read_RCT(filePath);

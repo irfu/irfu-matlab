@@ -20,6 +20,7 @@ classdef DemultiplexingCalibrationOutput
   %#####################
   %#####################
   properties(SetAccess=immutable)
+    Ga
     Zv
   end
 
@@ -32,14 +33,19 @@ classdef DemultiplexingCalibrationOutput
   %#########################
   methods(Access=public)
 
-    function obj = DemultiplexingCalibrationOutput(Zv)
+
+
+    function obj = DemultiplexingCalibrationOutput(Ga, Zv)
+      irf.assert.struct(Ga, {'CAVEATS'}, {});
       irf.assert.struct(Zv, ...
-        {'AsrSamplesAVoltSrm', 'currentAAmpere', 'QUALITY_FLAG', 'L2_QUALITY_BITMASK'}, {});
+        {'VoltageZvm', 'currentAampere', 'QflFpa', 'l2qbm'}, {});
       bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
 
+      obj.Ga = Ga;
       obj.Zv = Zv;
-
     end
+
+
 
   end    % methods(Access=public)
 

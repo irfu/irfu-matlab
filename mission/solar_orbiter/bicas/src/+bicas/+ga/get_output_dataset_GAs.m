@@ -36,7 +36,7 @@
 % outputFilename
 %       Output dataset filename. Could potentially be used for deriving
 %       Glob.attrs. Datetime (time interval string), Data_version,
-%       (DSI).
+%       (DSID).
 %
 %
 % RETURN VALUE
@@ -53,24 +53,31 @@
 % execute_SWM().
 %
 function OutGaSubset = get_output_dataset_GAs(...
-  InputDatasetsMap, OutputDataset, outputFilename, outputDsi, ...
+  InputDatasetsMap, OutputDataset, outputFilename, outputDsid, ...
   Bso, L)
 
+% PROPOSAL: Move inner functions to class.
 % PROPOSAL: Create class for storing GAs.
 %   PRO: Can detect accidental overwriting/reuse of keys.
 
 % ASSERTIONS
 assert(isa(OutputDataset, 'bicas.OutputDataset'))
 irf.assert.struct(OutputDataset.Ga, ...
-  {'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
+  {'CAVEATS', 'OBS_ID', 'SOOP_TYPE'}, {'Misc_calibration_versions'})
 % TODO-NI: Only checking these GAs to make sure that they are there, not
 % necessarily to use their values.
 
-[~, level, ~] = solo.adm.disassemble_DATASET_ID(outputDsi);
+[~, level, ~] = solo.adm.disassemble_DATASET_ID(outputDsid);
 
 
 
+% Copy GAs from the argument. The rest of the code adds to this.
 OutGaSubset = OutputDataset.Ga;
+% IMPLEMENTATION NOTE: Convert string array to cell array of strings, since
+%                      subsequent code require GA on that format.
+% IMPLEMENTATION NOTE: Sort entries to ensure consistent output.
+OutGaSubset.CAVEATS                = bicas.ga.normalize_empty_column_array(...
+  cellstr(sort(OutGaSubset.CAVEATS)), 'none');
 
 
 
@@ -85,8 +92,8 @@ OutGaSubset.CALIBRATION_VERSION    = get_RCTD_field_CA_GA(RctdCa, 'scalarGa_Data
 
 OutGaSubset.Parents          = get_GA_Parents(InputDatasetsMap);
 OutGaSubset.SPICE_KERNELS    = get_GA_SPICE_KERNELS(InputDatasetsMap);
-OutGaSubset.Software_name    = bicas.const.SWD_METADATA('SWD.identification.identifier');
-OutGaSubset.Software_version = bicas.const.SWD_METADATA('SWD.release.version');
+OutGaSubset.Software_name    = bicas.const.swdmd.SWD_METADATA('SWD.identification.identifier');
+OutGaSubset.Software_version = bicas.const.swdmd.SWD_METADATA('SWD.release.version');
 
 % BUG? Assigns local time, not UTC!!! ROC DFMD does not mention time zone.
 OutGaSubset.Generation_date  = char(datetime("now","Format","uuuu-MM-dd'T'HH:mm:ss"));
@@ -106,7 +113,7 @@ OutGaSubset.Logical_file_id  = logicalFileId;
 OutGaSubset.Logical_source   = logicalSource;   % Override skeleton.
 OutGaSubset.Data_version     = dataVersionStr;
 OutGaSubset.Datetime         = timeIntervalStr;
-% OutGaSubset.Dataset_ID       = outputDsi; % Override skeleton. Wise?
+% OutGaSubset.Dataset_ID       = outputDsid; % Override skeleton. Wise?
 
 % IMPLEMENTATION NOTE: Unclear if it is wise to overwrite GAs (1) Dataset_ID and
 % (2) Logical_source. In principle, the skeletons should contain the correct
@@ -167,7 +174,7 @@ OutGaSubset.TIME_MAX = bicas.utils.TT2000_to_UTC_str(OutputDataset.Zv.Epoch(end)
 
 
 
-OutGaSubset.MODS = bicas.const.GA_MODS_DB.get_MODS_strings_CA(outputDsi);
+OutGaSubset.MODS = bicas.const.gamods.GA_MODS_DB.get_MODS_strings_CA(outputDsid);
 
 
 
@@ -241,9 +248,9 @@ for i = 1:numel(keysCa)
   if isfield(InputDataset.Ga, 'SPICE_KERNELS')
     parentGa_SPICE_KERNELS = InputDataset.Ga.SPICE_KERNELS;
 
-    parentGa_SPICE_KERNELS = bicas.ga.normalize(...
+    parentGa_SPICE_KERNELS = bicas.ga.normalize_value(...
       parentGa_SPICE_KERNELS, ...
-      {{'none'}, {' '}}', ...
+      {{'none'}; {' '}}, ...
       cell(0, 1));
   else
     parentGa_SPICE_KERNELS = cell(0, 1);
@@ -253,10 +260,9 @@ for i = 1:numel(keysCa)
 end    % for
 
 % Normalize to the data format used in datasets.
-if isempty(ga_SPICE_KERNELS)
-  ga_SPICE_KERNELS = {'none'};
+ga_SPICE_KERNELS = ...
+  bicas.ga.normalize_empty_column_array(ga_SPICE_KERNELS, 'none');
 end
-end
 
 
 
@@ -264,13 +270,19 @@ end
 
 
 
-% (1) Given a set of RCTDs, obtain (column) cell array with elements equal to
-%     the field value of every RCTD.
+% (1) Given a set of RCTDs, obtain (column) cell array with elements equal to a
+%     specified field value in the RCTDs.
 % (2) Normalize empty, absent values.
 %
 % NOTE: Zero RCTDs ==> Zero GA enties (*NOT* one GA entry with one whitespace).
 %
 % RATIONALE: Exists to easily set RCT-related GAs.
+%
+% ARGUMENTS
+% =========
+% rctdFieldName
+%       String. Name of RCTD property.
+%
 function gaCa = get_RCTD_field_CA_GA(RctdCa, rctdFieldName)
 gaCa = cell(0, 1);
 
@@ -282,7 +294,7 @@ for i = 1:numel(RctdCa)
   assert(~iscell(rctdValue))
 
   % NOTE: Rctd.ga_* values use [] to represent absent GAs.
-  rctdValue = bicas.ga.normalize(rctdValue, {{'none'}, {' '}, []}', ' ');
+  rctdValue = bicas.ga.normalize_value(rctdValue, {{'none'}; {' '}; []}, ' ');
 
   gaCa{i, 1} = rctdValue;
 end
@@ -311,14 +323,14 @@ function [logicalFileId, logicalSource, dataVersionStr, timeIntervalStr] ...
 logicalFileId = basename;
 
 % Actually parse the dataset filename.
-Df = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
-assert(~isempty(Df), 'BICAS:Assertion', ...
+Dsfn = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
+assert(~isempty(Dsfn), 'BICAS:Assertion', ...
   ['Can not parse dataset filename "%s" and therefore not', ...
   ' derive values for global attributes', ...
   ' "Logical_source", "Data_version", and "Datetime".', ...
   ' The filename does not appear to follow filenaming conventions.'], filename)
 
-dataVersionStr  = Df.versionStr;
-logicalSource   = Df.filenameDsiCdag;
-timeIntervalStr = Df.timeIntervalStr;
+dataVersionStr  = Dsfn.versionStr;
+logicalSource   = Dsfn.filenameDsiCdag;
+timeIntervalStr = Dsfn.timeIntervalStr;
 end

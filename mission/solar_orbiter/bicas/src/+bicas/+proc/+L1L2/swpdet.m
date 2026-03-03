@@ -19,12 +19,16 @@ classdef swpdet
   %   PROPOSAL: For separate algorithm functions instead(?) of for consolidated
   %             functions which use multiple algorithms.
   %
-  % PROPOSAL: Separate function(s) for detecting sweeps using L1R
-  %           QUALITY_BITMASK. Return value in science time.
   % PROPOSAL: Separate time margins t_before, t_after.
-
+  %
   % PROPOSAL: SBDA_wo_margins() should not use BSO as argument.
   %   PRO: Only uses one setting.
+  %
+  % PROPOSAL: Sweep algorithm which looks for data gaps. Entire time period
+  %           bounded by data gaps is excluded.
+  %   PROPOSAL: Max length of sweep exclusion time interval.
+  %     TODO-DEC: What happens if exceeded?
+  % PROPOSAL: Sweep algorithm which uses QUALITY_BITMASK sweep bits.
 
 
 
@@ -62,7 +66,8 @@ classdef swpdet
     % BDN=4 <=> sweep
     %
     function isSweepingSbda = SBDA_wo_margins(tt2000, bdmFpa, Bso)
-      sbdaEndTt2000  = spdfcomputett2000(Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC'));
+      sbdaEndTt2000  = spdfcomputett2000(...
+        Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SBDA_SCDA_BOUNDARY_UTC'));
 
       irf.assert.sizes(...
         tt2000, [-1, 1], ...
@@ -170,7 +175,8 @@ classdef swpdet
     %       If greater than the number of CDF records/rows of data, then no
     %       record will be labelled as sweeping.
     %
-    function isSweepingFpa = SBDA_SCDA_with_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
+    function isSweepingFpa = SBDA_SCDA_with_margins(...
+        hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso)
       % TODO-DEC: Does having argument and return value FPAs make sense?
       %           Should caller convert?
       %
@@ -186,10 +192,12 @@ classdef swpdet
       windowMarginSec = Bso.get_fv('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC');
 
       % Detect sweeps using SBDA.
-      isSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(hkTt2000, hkBdmFpa, Bso);
+      isSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(...
+        hkTt2000, hkBdmFpa, Bso);
 
       % Detect sweeps using SCDA.
-      isSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso);
+      isSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(...
+        hkTt2000, hkBdmFpa, hkBiasCurrentFpa, Bso);
 
       % Merge results and add time margins to detected sweeps
       % -----------------------------------------------------

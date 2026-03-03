@@ -17,8 +17,8 @@ classdef misc
   %#####################
   %#####################
   properties(Constant)
-    % PROPOSAL: Copy from bicas.const.SWD_METADATA('SWD.release.author').
-    CONTACT_PERSON = bicas.const.SWD_METADATA('SWD.release.author');
+    % PROPOSAL: Copy from bicas.const.swdmd.SWD_METADATA('SWD.release.author').
+    CONTACT_PERSON = bicas.const.swdmd.SWD_METADATA('SWD.release.author');
   end
 
 
@@ -41,18 +41,15 @@ classdef misc
     % ARGUMENTS
     % =========
     % See bicas.tools.rtdp.create_RCS_test_data_package().
-    % requireBicasCodeVersion
-    %       Whether to require executing the specified BICAS code version.
+    % requireOfficialBicasCodeVersion
+    %       Whether to require executing the specified BICAS code version
+    %       (and MATLAB version).
     %       Ex: Disable for delivering new sample datasets (as an RTDP) based on
     %           updated skeletons.
-    % automatedTestRun
-    %       Whether the function is called by an automated test or not.
-    %       NOTE: This is substitute for submitting a class for calling BICAS
-    %       (or a function handle), which would then be mocked for tests, which
-    %       would be overkill for this application.
     %
     function [rtdpDir, rdtpZipFile] = create_RCS_test_data_package( ...
-        outputParentDir, letterVersion, configFile, requireBicasCodeVersion, automatedTestRun)
+        outputParentDir, letterVersion, rtdpConfigFile, ...
+        requireOfficialBicasCodeVersion, Bpa)
       %
       % PROPOSAL: Separate function file.
       %   CON: Name will likely be confusing compare to the actual top-level
@@ -78,15 +75,15 @@ classdef misc
       %
       % PROPOSAL: Should verify that the config file input datasets do exist.
 
-      assert(islogical(requireBicasCodeVersion))
-      assert(islogical(automatedTestRun))
+      assert(islogical(requireOfficialBicasCodeVersion))
+      assert(isa(Bpa, 'bicas.tools.batch.BicasProcessingAccessAbstract'))
 
       Bso = bicas.create_default_BSO();
       Bso.make_read_only();
 
       Swml = bicas.swm.get_SWML(Bso);
 
-      Config = bicas.tools.rtdp.Config(configFile, Swml);
+      Config = bicas.tools.rtdp.Config(rtdpConfigFile, Swml);
 
       %====================================
       % ASSERT: Expected BICAS source code
@@ -104,7 +101,7 @@ classdef misc
           ' You might be using the wrong git repo.\n' ...
           'Actual:   "%s"\nExpected: "%s"'], ...
           actBicasRootDir, expBicasRootDir);
-        if requireBicasCodeVersion
+        if requireOfficialBicasCodeVersion
           error(msg)
         else
           warning(msg)
@@ -119,9 +116,9 @@ classdef misc
       %========================
       % ASSERT: MATLAB version
       %========================
-      actMatlabVersion = version('-release');
+      actMatlabVersion = string(version('-release'));
       expMatlabVersion = bicas.const.OFFICIAL_MATLAB_VERSION;
-      if ~strcmp(actMatlabVersion, expMatlabVersion) && ~automatedTestRun
+      if (actMatlabVersion ~= expMatlabVersion) && requireOfficialBicasCodeVersion
         error( ...
           ['The actual MATLAB version (%s) and the expected MATLAB version' ...
           ' (%s) are not the same.'], ...
@@ -152,7 +149,7 @@ classdef misc
       for iSwm = 1:numel(Swml.List)
         Swm = Swml.List(iSwm);
 
-        bicas.tools.rtdp.misc.create_SWM_directory(rtdpDir, Swm, Config, automatedTestRun)
+        bicas.tools.rtdp.misc.create_SWM_directory(rtdpDir, Swm, Config, Bpa)
       end
 
       rdtpZipFile = bicas.tools.rtdp.misc.zip_RTDP_directory(rtdpDir);
@@ -170,7 +167,10 @@ classdef misc
 
 
 
-    function create_SWM_directory(parentDir, Swm, Config, automatedTestRun)
+    function create_SWM_directory(parentDir, Swm, Config, Bpa)
+
+      assert(isa(Bpa, 'bicas.tools.batch.BicasProcessingAccessAbstract'))
+
       swmDir = bicas.tools.rtdp.misc.mkdir(parentDir, Swm.cliOption);
 
       inputsDir  = bicas.tools.rtdp.misc.mkdir(swmDir, 'inputs');
@@ -218,7 +218,7 @@ classdef misc
         % NOTE: Uses bicas.tools.batch function.
         outputFile    = bicas.tools.batch.get_BPCI_output_path2(...
           BpciInputDsmdArray, solo.adm.DSMD.empty(0, 1), ...
-          OutputDataset.dsi, 'HIGHEST_USED', outputsDir, false);
+          OutputDataset.dsid, 'HIGHEST_USED', outputsDir, false);
 
         irf.assert.path_is_available(outputFile)
 
@@ -232,13 +232,11 @@ classdef misc
 
 
 
-      if ~automatedTestRun
-        %============
-        % CALL BICAS
-        %============
-        errorCode = bicas.main(bicasArgsCa{:});
-        assert(errorCode == 0)
-      end
+      %============
+      % CALL BICAS
+      %============
+      errorCode = Bpa.bicas_main(bicasArgsCa{:});
+      assert(errorCode == 0)
     end
 
 
@@ -247,7 +245,7 @@ classdef misc
       irf.assert.castring_regexp(letterVersion, '[A-Z]')
 
       % Ex: TESTDATA_RODP_BICAS_V8.2.1A
-      bicasVerStr = bicas.const.SWD_METADATA('SWD.release.version');
+      bicasVerStr = bicas.const.swdmd.SWD_METADATA('SWD.release.version');
 
       rtdpDirName = sprintf('TESTDATA_RODP_BICAS_V%s%s', bicasVerStr, letterVersion);
     end

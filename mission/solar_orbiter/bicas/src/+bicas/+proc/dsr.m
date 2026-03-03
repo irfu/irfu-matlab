@@ -73,13 +73,12 @@ classdef dsr
     %       Distribution of non-downsampled records in bins.
     %
     function [TemplateDsrZv, iRecordsInBinCa] = get_LFR_CWF_DSR_ZVs_template(...
-        Epoch, QUALITY_FLAG_Fpa, QUALITY_BITMASK_Fpa, L2_QUALITY_BITMASK_Fpa, ...
+        tt2000, QflFpa, L1qbmFpa, L2qbmFpa, ...
         binLengthWolsNs, binTimestampPosWolsNs, L)
 
       % NOTE: Function argument InLfrCwfOsr contains too much information!
       % PROPOSAL: Only take argument for the needed variables.
       %   PROPOSAL: Wait until only using FPAs.
-      %       PRO: Can abolish .ZvFv.
 
       Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template', L);
 
@@ -93,7 +92,7 @@ classdef dsr
       %================
       % Find bin boundary reference timestamp. This is used for
       % setting the bin boundaries together with the bin length.
-      v = spdfbreakdowntt2000(Epoch(1));
+      v = spdfbreakdowntt2000(tt2000(1));
       % UTC seconds. Not sure of the reason for value=5. Avoid leap seconds?
       v(6)   = 5;
       v(7:9) = 0;   % Milliseconds, microseconds, nanoseconds
@@ -103,14 +102,14 @@ classdef dsr
       %     and
       % (2) which (non-downsampled) records belong to which bins
       %     (=downsampled records).
-      [zvEpochDsr, iRecordsInBinCa, binSizeArrayNs] = ...
+      [tt2000Dsr, iRecordsInBinCa, binSizeArrayNs] = ...
         bicas.proc.dsr.get_downsampling_bins(...
-        Epoch, ...
+        tt2000, ...
         boundaryRefTt2000, ...
         binLengthWolsNs, ...
         binTimestampPosWolsNs, ...
         L);
-      nRecordsOsr = numel(Epoch);
+      nRecordsOsr = numel(tt2000);
       nRecordsDsr = numel(iRecordsInBinCa);
 
 
@@ -173,14 +172,14 @@ classdef dsr
       %   (SKELETON_MODS: V12=Feb 2021)
       % .
 
-      zv_QUALITY_FLAG_FpaDsr       = bicas.proc.dsr.downsample_ZV_minimum(...
-        QUALITY_FLAG_Fpa,       iRecordsInBinCa);
+      QflFpaDsr   = bicas.proc.dsr.downsample_ZV_minimum(...
+        QflFpa,       iRecordsInBinCa);
 
-      zv_QUALITY_BITMASK_FpaDsr    = bicas.proc.dsr.downsample_ZV_bitmask(...
-        QUALITY_BITMASK_Fpa,    iRecordsInBinCa);
+      L1qbmFpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
+        L1qbmFpa,    iRecordsInBinCa);
 
-      zv_L2_QUALITY_BITMASK_FpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
-        L2_QUALITY_BITMASK_Fpa, iRecordsInBinCa);
+      L2qbmFpaDsr = bicas.proc.dsr.downsample_ZV_bitmask(...
+        L2qbmFpa, iRecordsInBinCa);
 
       %============================================================
       % Shared zVariables between all DOWNSAMPLED datasets
@@ -188,10 +187,10 @@ classdef dsr
       % (Initial value for QUALITY_FLAG; might be modified later.)
       %============================================================
       Zv = struct();
-      Zv.Epoch              = zvEpochDsr;
-      Zv.QUALITY_FLAG       = zv_QUALITY_FLAG_FpaDsr;
-      Zv.QUALITY_BITMASK    = zv_QUALITY_BITMASK_FpaDsr;
-      Zv.L2_QUALITY_BITMASK = zv_L2_QUALITY_BITMASK_FpaDsr;
+      Zv.Epoch              = tt2000Dsr;
+      Zv.QUALITY_FLAG       = QflFpaDsr;
+      Zv.QUALITY_BITMASK    = L1qbmFpaDsr;
+      Zv.L2_QUALITY_BITMASK = L2qbmFpaDsr;
       %
       % NOTE: Takes leap seconds into account.
       % NOTE/BUG: DELTA_PLUS_MINUS not perfect since the bin timestamp is
@@ -280,7 +279,6 @@ classdef dsr
       %
       % PROPOSAL: Separate function for generating boundaries.
 
-      tTicToc = tic();
       Tmk = bicas.utils.Timekeeper('bicas.proc.dsr.get_downsampling_bins', L);
 
 
@@ -414,7 +412,7 @@ classdef dsr
       assert(isa(OsrFpa, 'bicas.utils.FPArray'))
       assert(strcmp(OsrFpa.mc, 'double'))
       assert(nMinNfpSamplesPerBin >= 0)
-      [nRecordsOsr, nBins, nSpr] = irf.assert.sizes(...
+      [nRecordsOsr, nBins, aspr] = irf.assert.sizes(...
         OsrFpa,          [-1, -3], ...
         iRecordsInBinCa, [-2]);
       nRecordsDsr = numel(iRecordsInBinCa);
@@ -429,8 +427,8 @@ classdef dsr
       fpOsr   = OsrFpa.fpAr();
 
       % Pre-allocate DSR arrays.
-      medianDsr = zeros(nBins, nSpr, OsrFpa.mc);
-      mstdDsr   = zeros(nBins, nSpr, OsrFpa.mc);
+      medianDsr = zeros(nBins, aspr, OsrFpa.mc);
+      mstdDsr   = zeros(nBins, aspr, OsrFpa.mc);
 
       % Pre-allocate DSR bin arrays.
       binDsrSize    = size(dataOsr);
@@ -444,7 +442,7 @@ classdef dsr
         binDataOsr = dataOsr(kBin, :);
         binFpOsr   = fpOsr  (kBin, :);
 
-        for iChannel = 1:nSpr
+        for iChannel = 1:aspr
 
           % Vector of NFP samples (for one channel/bin column).
           binChannelData    = binDataOsr              (:, iChannel);

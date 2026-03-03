@@ -267,21 +267,34 @@ classdef DatasetFilename___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_parse_filename(testCase, filename, ExpDfStruct)
-      ActDf = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
+    function test_parse_filename(testCase, filename, ExpS)
+      % NOTE: Excludes "dsicdagUppercase" which should be private (but is not).
+      EXP_DSFN_STRUCT_FIELDNAMES = [...
+        "datasetId"; "isCdag"; "Dt1"; "Dt2"; "timeIntervalFormat"; ...
+        "versionNbr"; "lesTestStr"; "cneTestStr"; ...
+        "filenameDsiCdag"; "timeIntervalStr"; "versionStr"; "filename" ...
+      ];
 
-      if isstruct(ExpDfStruct)
-        % Remove private property.
-        ActDfStruct = struct(ActDf);
-        ActDfStruct = rmfield(ActDfStruct, 'dsicdagUppercase');
 
-        ExpDfStruct.filename = filename;
+      ActDsfn = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
 
-        % NOTE: struct(object) also returns fields for private properties!
-        testCase.assertEqual(ActDfStruct, ExpDfStruct)
+      if isstruct(ExpS)
+        ExpS.filename = filename;
 
-      elseif isempty(ExpDfStruct)
-        testCase.assertEqual(ActDf, ExpDfStruct)
+        % Effectively assert argument fields (except absence of "filename").
+        testCase.assertEqual(...
+          sort(string(fieldnames(ExpS))), ...
+          sort(EXP_DSFN_STRUCT_FIELDNAMES))
+
+        for fn = EXP_DSFN_STRUCT_FIELDNAMES'
+          testCase.assertEqual(ActDsfn.(fn), ExpS.(fn))
+        end
+
+      elseif isempty(ExpS)
+        testCase.assertEqual(ActDsfn, ExpS)
+
+      else
+        error('Illegal argument.')
 
       end
     end
@@ -289,18 +302,18 @@ classdef DatasetFilename___UTEST < matlab.unittest.TestCase
 
 
     function test_filename(testCase, S, expFilename)
-      Df          = solo.adm.dsfn.DatasetFilename(S);
-      actFilename = Df.filename;
+      Dsfn        = solo.adm.dsfn.DatasetFilename(S);
+      actFilename = Dsfn.filename;
 
       testCase.assertEqual(actFilename, expFilename)
     end
 
 
 
-    function test_both(testCase, filename, DfStruct)
+    function test_both(testCase, filename, S)
       % NOTE: Tests pair of conversions: one in each direction.
-      test_parse_filename(testCase, filename, DfStruct)
-      test_filename(      testCase, DfStruct, filename)
+      test_parse_filename(testCase, filename, S)
+      test_filename(      testCase, S, filename)
     end
 
 

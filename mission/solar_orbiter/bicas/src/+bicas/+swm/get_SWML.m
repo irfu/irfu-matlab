@@ -19,6 +19,9 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function Swml = get_SWML(Bso)
+% PROPOSAL: Convert into class with static methods.
+%   PRO: Clarifies internal functions (three; plus the main one).
+%
 % PROPOSAL: Replace BSO with arguments for each used setting.
 %   CON: BSO (and L) is used by production functions. Can not
 %        at all eliminate easily.
@@ -29,11 +32,16 @@ swmL1L2Enabled = Bso.get_fv('SWM.L1-L2_ENABLED');
 SwmArray = get_SWMs_L1_L1R_to_L2(swmL1L2Enabled);
 
 if Bso.get_fv('SWM.L2-L2_CWF-DSR_ENABLED')
-  SwmArray = [SwmArray; get_SWMs_L2_to_L2()];
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L2();
 end
 
-if Bso.get_fv('SWM.L2-L3_ENABLED')
-  SwmArray = [SwmArray; get_SWMs_L2_to_l3()];
+if Bso.get_fv('SWM.L2-L3_SURV_ENABLED')
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L3_SURV();
+end
+
+if Bso.get_fv('SWM.L2-L3_SBMx_ENABLED')
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L3_SBMx(1);
+  SwmArray(end+1, 1) = get_SWMs_L2_to_L3_SBMx(2);
 end
 
 
@@ -44,14 +52,18 @@ end
 
 
 
+
+
+
+
 function SwmArray = get_SWMs_L1_L1R_to_L2(swmL1L2Enabled)
 % PROPOSAL: Re-implement (top-level) hard-coded constants by setting
 %   multiple redundant 1D(?) vectors that covers every case. Then
 %   set various cases by assigning constants to many elements using
 %   MATLAB syntax. One index representing: Combination of
-%   DSI+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI),
+%   DSID+Skeleton_Version (both pipelines, LFR+TDS, HK+SCI),
 %   every element contains data for that dataset. Must use
-%   combination DSI+Skeleton_Version to potentially cover old
+%   combination DSID+Skeleton_Version to potentially cover old
 %   versions. Manipulate and set multiple elements smoothly by using
 %   vectors for indices.
 %   Ex: Vectors to set: skeletonVersionVector, SBMx_SURV_vector,
@@ -66,44 +78,30 @@ function SwmArray = get_SWMs_L1_L1R_to_L2(swmL1L2Enabled)
 %
 % PROPOSAL: Merge LFR and TDS loops.
 
-% Arrays with constants.
+% --------------------------------------------------------------
+% Constants to iterate over: one element per input level L1/L1R
+% --------------------------------------------------------------
 % {1} = S/w modes (science) L1R-->L2
 % {2} = S/w modes (science) L1 -->L2 (optional)
-INPUT_DATASET_LEVEL_CA = {'L1R'};
-INPUT_DASH_E_CA        = {'-E'};
-SWM_NAME_SUFFIX_CA     = {''};
-SWM_PURPOSE_AMENDM_CA  = {''};
-
+L1R_INPUT_DATA = struct( ...
+  'level',              'L1R', ...
+  'optionalInputDashE', '-E', ...    % Added "-E" (or not).
+  'swmPurposeAmendm',   '');         % Amendment to SWM "purpose string".
+L1_INPUT_DATA = struct( ...
+  'level',              'L1', ...
+  'optionalInputDashE', '', ...
+  'swmPurposeAmendm',   ' UNOFFICIAL wrt. ROC.');
+INPUT_LEVEL_DATA_AR = L1R_INPUT_DATA;
 if swmL1L2Enabled
-  INPUT_DATASET_LEVEL_CA{end+1} = 'L1';
-  INPUT_DASH_E_CA{end+1}        = '';
-  SWM_NAME_SUFFIX_CA{end+1}     = '_L1';
-  SWM_PURPOSE_AMENDM_CA{end+1}  = ' UNOFFICIAL wrt. ROC.';
+  INPUT_LEVEL_DATA_AR(end+1, 1) = L1_INPUT_DATA;
 end
 
 
 
-% Define function which replaces specified substrings.
-% "strmod" = string modify, "g"=global
-strmodg = @(s, iInputLevel) bicas.utils.strrep_many(s, ...
-  '<InLvl>',              INPUT_DATASET_LEVEL_CA{iInputLevel}, ...
-  '<I-E>',                INPUT_DASH_E_CA{iInputLevel}, ...
-  '<SWM name suffix>',    SWM_NAME_SUFFIX_CA{iInputLevel}, ...
-  '<SWM purpose amendm>', SWM_PURPOSE_AMENDM_CA{iInputLevel});
-
-
-
-% Input definitions that are reused multiple times.
-HK_INPUT_DEF = bicas.swm.InputDataset(...
-  'in_hk', 'SOLO_HK_RPW-BIA', 'HK_cdf');
-CUR_INPUT_DEF = bicas.swm.InputDataset(...
-  'in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
-
-
-
-% Define arrays of data used for generating s/w modes definitions.
-% One component per pair of s/w modes L1/L1R-->L2.
-LFR_TDS_SKT_VERSION = '17';
+%------------------------------------------------------------------------------
+% Constants to iterate over: one element per pair (L1/L1R) of SWMs L1/L1R-->L2
+%------------------------------------------------------------------------------
+LFR_TDS_SKT_VERSION = '18';
 LFR_MODE_STR_CA = {...
   'selective burst mode 1', ...
   'selective burst mode 2', ...
@@ -121,22 +119,47 @@ TDS_SWM_DATA = struct(...
 
 
 
-SwmArray = bicas.swm.SoftwareMode.empty(0, 1);
-% Iterate over [L1R] (one component), or [L1, L1R]...
-for iInputLevel = 1:numel(INPUT_DATASET_LEVEL_CA)
+% Define function which replaces specified substrings depending on input level.
+% "strmod" = string modify, "g"=global (applies to all s/w modes).
+  function s = str_replace_global(s, iInputLevel)
+    s = strrep(s, '<InLvl>',              INPUT_LEVEL_DATA_AR(iInputLevel).level);
+    s = strrep(s, '<I-E>',                INPUT_LEVEL_DATA_AR(iInputLevel).optionalInputDashE);
+    s = strrep(s, '<SWM purpose amendm>', INPUT_LEVEL_DATA_AR(iInputLevel).swmPurposeAmendm);
+  end
+  function s = str_replace_LFR(s, iSwm, iInputLevel)
+    s = str_replace_global(s, iInputLevel);
+    s = strrep(s, '<SBMx/SURV>',                LFR_SWM_DATA(iSwm).sbmxSurvStrAbbrev);
+    s = strrep(s, '<SBMx/SURV human readable>', LFR_SWM_DATA(iSwm).sbmxSurvStrHumanReadable);
+    s = strrep(s, '<CWF/SWF>',                  LFR_SWM_DATA(iSwm).cwfSwfStrAbbrev);
+  end
+  function s = str_replace_TDS(s, iSwm, iInputLevel)
+    s = str_replace_global(s, iInputLevel);
+    s = strrep(s, '<CWF/RSWF>',                 TDS_SWM_DATA(iSwm).CWF_RSWF);
+  end
 
-  %==============================================
-  % Iterate over the "fundamental" LFR S/W modes
-  %==============================================
+
+
+% Input definitions that are reused multiple times.
+HK_INPUT_DEF = bicas.swm.InputDataset(...
+  'in_hk', 'SOLO_HK_RPW-BIA', 'HK_cdf');
+CUR_INPUT_DEF = bicas.swm.InputDataset(...
+  'in_cur', 'SOLO_L1_RPW-BIA-CURRENT', 'CUR_cdf');
+
+
+
+SwmArray = bicas.swm.SoftwareMode.empty(0, 1);
+%==================================================
+% Iterate over [L1R] (one component), or [L1, L1R]
+%==================================================
+for iInputLevel = 1:numel(INPUT_LEVEL_DATA_AR)
+
+  %==================================================
+  % Iterate over the "fundamental" **LFR** s/w modes
+  %==================================================
   for iSwm = 1:length(LFR_SWM_DATA)
 
-    % Define local string modification function.
-    strmod = @(s) bicas.utils.strrep_many(strmodg(s, iInputLevel), ...
-      '<SBMx/SURV>',                LFR_SWM_DATA(iSwm).sbmxSurvStrAbbrev, ...
-      '<SBMx/SURV human readable>', LFR_SWM_DATA(iSwm).sbmxSurvStrHumanReadable, ...
-      '<CWF/SWF>',                  LFR_SWM_DATA(iSwm).cwfSwfStrAbbrev);
-
-
+    % Define local string modification function with implicit arguments.
+    strmod = @(s) str_replace_LFR(s, iSwm, iInputLevel);
 
     SciInputDataset = bicas.swm.InputDataset(...
       'in_sci', ...
@@ -160,34 +183,33 @@ for iInputLevel = 1:numel(INPUT_DATASET_LEVEL_CA)
       ['Generate <SBMx/SURV> <CWF/SWF> electric field', ...
       ' L2 data (potential difference)', ...
       ' from LFR <InLvl> data.<SWM purpose amendm>']);
+    LfrSwmp = bicas.proc.L1L2.LfrSwmProcessing(...
+      SciInputDataset.dsid, SciOutputDataset.dsid);
     SwmArray(end+1, :) = bicas.swm.SoftwareMode(...
-      bicas.proc.L1L2.LfrSwmProcessing(SciInputDataset.dsi, SciOutputDataset.dsi), ...
-      strmod('LFR-<SBMx/SURV>-<CWF/SWF>-E<SWM name suffix>'), ...
+      LfrSwmp, ...
+      strmod('<InLvl>-L2_LFR-<SBMx/SURV>-<CWF/SWF>-E'), ...
       purposeStr, ...
-      [SciInputDataset, CUR_INPUT_DEF, HK_INPUT_DEF], ...
+      [SciInputDataset; CUR_INPUT_DEF; HK_INPUT_DEF], ...
       [SciOutputDataset]);
   end
 
 
 
-  %==============================================
-  % Iterate over the "fundamental" TDS S/W modes
-  %==============================================
+  %==================================================
+  % Iterate over the "fundamental" **TDS** s/w modes
+  %==================================================
   for iSwm = 1:numel(TDS_SWM_DATA)
 
     if strcmp(TDS_SWM_DATA(iSwm).CWF_RSWF, 'RSWF') ...
-        && strcmp(INPUT_DATASET_LEVEL_CA{iInputLevel}, 'L1')
+        && strcmp(INPUT_LEVEL_DATA_AR(iInputLevel).level, 'L1')
       % CASE: TDS RSWF
       % Exclude SWM since BICAS can not currently (2023-10-09) read
       % TDS RSWF L1 datasets!
       continue
     end
 
-    % Define local string modification function.
-    strmod = @(s) strrep(strmodg(s, iInputLevel), ...
-      '<CWF/RSWF>', TDS_SWM_DATA(iSwm).CWF_RSWF);
-
-
+    % Define local string modification function with implicit arguments.
+    strmod = @(s) str_replace_TDS(s, iSwm, iInputLevel);
 
     SciInputDataset = bicas.swm.InputDataset(...
       'in_sci', ...
@@ -198,7 +220,7 @@ for iInputLevel = 1:numel(INPUT_DATASET_LEVEL_CA)
       'out_sci', ...
       strmod('SOLO_L2_RPW-TDS-LFM-<CWF/RSWF>-E'), ...
       'SCI_cdf', ...
-      strmod('LFR L2 <CWF/RSWF> science electric LF mode data'), ...
+      strmod('TDS L2 <CWF/RSWF> science electric LF mode data'), ...
       strmod(...
       ['RPW TDS L2 <CWF/RSWF> science electric (potential', ...
       ' difference) data in LF mode, time-tagged']), ...
@@ -206,20 +228,25 @@ for iInputLevel = 1:numel(INPUT_DATASET_LEVEL_CA)
 
 
 
+    TdsSwmp = bicas.proc.L1L2.TdsSwmProcessing(...
+      SciInputDataset.dsid, SciOutputDataset.dsid);
     SwmArray(end+1, :) = bicas.swm.SoftwareMode(...
-      bicas.proc.L1L2.TdsSwmProcessing(...
-      SciInputDataset.dsi, SciOutputDataset.dsi), ...
-      strmod('TDS-LFM-<CWF/RSWF>-E<SWM name suffix>'), ...
+      TdsSwmp, ...
+      strmod('<InLvl>-L2_TDS-LFM-<CWF/RSWF>-E'), ...
       strmod(...
       ['Generate <CWF/RSWF> electric field L2 data', ...
       ' (potential difference)', ...
       ' from TDS LF mode <InLvl> data.<SWM purpose amendm>']), ...
-      [SciInputDataset, CUR_INPUT_DEF, HK_INPUT_DEF], ...
+      [SciInputDataset; CUR_INPUT_DEF; HK_INPUT_DEF], ...
       [SciOutputDataset]);
   end
 end    % for iInputLevel = 1:numel(inputDatasetLevelCa)
 
-end
+end    % get_SWMs_L1_L1R_to_L2
+
+
+
+
 
 
 
@@ -245,31 +272,37 @@ SciOutputDataset = bicas.swm.OutputDataset(...
 % needed for the interface.
 SwmArray = bicas.swm.SoftwareMode(...
   bicas.proc.L2L2.LfrDsrSwmProcessing(), ...
-  'LFR-SURV-CWF-E-DSR', ...
+  'L2-L2_LFR-SURV-CWF-E-DSR', ...
   ['Generate downsampled version of LFR L2 SURV CWF', ...
   ' science electric (potential difference) data.', ...
   ' NOTE: This is an unofficial s/w mode.'], ...
   [SciInputDataset], ...
   [SciOutputDataset]);
 
-end
+end    % get_SWMs_L2_to_L2
 
 
 
-function SwmArray = get_SWMs_L2_to_l3()
-
-L3_EFIELD_SCPOT_SKT_VERSION = '06';
-L3_DENSITY_SKT_VERSION      = '07';
 
 
 
+
+function SwmArray = get_SWMs_L2_to_L3_SURV()
+
+L3_EFIELD_SCPOT_SKT_VERSION = '07';
+L3_DENSITY_SKT_VERSION      = '08';
+
+%=======
+% INPUT
+%=======
 SciInputDataset = bicas.swm.InputDataset(...
   'in_sci', ...
   'SOLO_L2_RPW-LFR-SURV-CWF-E', ...
   'LFR-SURV-CWF-E_cdf');
 
-
-
+%================
+% OUTPUT: 3x OSR
+%================
 EfieldOutputDataset = bicas.swm.OutputDataset(...
   'out_efield', ...
   'SOLO_L3_RPW-BIA-EFIELD', ...
@@ -294,6 +327,9 @@ DensityOutputDataset = bicas.swm.OutputDataset(...
   'RPW BIAS L3 science plasma density data, time-tagged', ...
   L3_DENSITY_SKT_VERSION);
 
+%================
+% OUTPUT: 3x DSR
+%================
 EfieldDsrOutputDataset = bicas.swm.OutputDataset(...
   'out_efield_dsr', ...
   'SOLO_L3_RPW-BIA-EFIELD-10-SECONDS', ...
@@ -323,22 +359,87 @@ DensityDsrOutputDataset = bicas.swm.OutputDataset(...
 
 
 
-% NOTE: Only creates one SWM
-% NOTE: Function handle: Arguments rctDir, NsoTable are not
-% used, but are needed for the interface.
+%=====
+% SWM
+%=====
+% NOTE: Only creates one SWM for 1x L2 CDF --> 2x3 L3 CDFs.
 SwmArray = bicas.swm.SoftwareMode(...
-  bicas.proc.L2L3.L3OsrDsrSwmProcessing, ...
-  'BIA-EFIELD-SCPOT-DENSITY', ...
+  bicas.proc.L2L3.L3OsrDsrSwmProcessing(false, []), ...
+  'L2-L3_SURV', ...
   ['Generate L3 electric field vector, spacecraft', ...
   ' potential, and density data', ...
   ' incl. additional downsampled versions.', ...
   ' NOTE: This is an unofficial s/w mode.'], ...
   [SciInputDataset], ...
-  [EfieldOutputDataset, ...
-  EfieldDsrOutputDataset, ...
-  ScpotOutputDataset, ...
-  ScpotDsrOutputDataset, ...
-  DensityOutputDataset, ...
+  [EfieldOutputDataset; ...
+  EfieldDsrOutputDataset; ...
+  ScpotOutputDataset; ...
+  ScpotDsrOutputDataset; ...
+  DensityOutputDataset; ...
   DensityDsrOutputDataset]);
 
-end
+end    % get_SWMs_L2_to_L3_SURV
+
+
+
+
+
+
+
+% EXPERIMENTAL. INCOMPLETE.
+% NOTE: Create one of TWO separate SBMx modes.
+function SwmArray = get_SWMs_L2_to_L3_SBMx(iSbm)
+
+assert(isscalar(iSbm) & isfloat(iSbm))
+assert(ismember(iSbm, [1;2]))
+
+%=======
+% INPUT
+%=======
+% NOTE: PFIID value is independent of SBM1/SBM2.
+SbmxInputDataset = bicas.swm.InputDataset(...
+  'in_sci', ...
+  sprintf('SOLO_L2_RPW-LFR-SBM%i-CWF-E', iSbm), ...   % DSID
+  'LFR-SBMx-CWF-E_cdf');                              % PFIID
+
+%========
+% OUTPUT
+%========
+SbmxDensityOutputDataset = bicas.swm.OutputDataset(...
+  'out_density', ...
+  sprintf('SOLO_L3_RPW-BIA-SBM%i-DENSITY', iSbm), ...    % DSID
+  'SBMx_DENSITY_cdf', ...    % PFOID
+  sprintf('BIAS SBM%i1 L3 science plasma density data',                 iSbm), ...  % Name in SWD
+  sprintf('RPW BIAS SBM%i L3 science plasma density data, time-tagged', iSbm), ...  % Description in SWD.
+  '01');
+
+SbmxEfieldOutputDataset = bicas.swm.OutputDataset(...
+  'out_efield', ...
+  sprintf('SOLO_L3_RPW-BIA-SBM%i-EFIELD',  iSbm), ...
+  'SBMx_EFIELD_cdf', ...
+  sprintf('BIAS SBM%i1 L3 science electric field  datas',         iSbm), ...
+  sprintf('RPW BIAS SBM%i L3 electric field in SRF, time-tagged', iSbm), ...
+  '01');
+
+SbmxScpotOutputDataset = bicas.swm.OutputDataset(...
+  'out_scpot', ...
+  sprintf('SOLO_L3_RPW-BIA-SBM%i-SCPOT',   iSbm), ...
+  'SBMx_SCPOT_cdf', ...    % PFOID
+  sprintf('BIAS SBM%i1 L3 s/c potential data',                        iSbm), ...
+  sprintf('RPW BIAS SBM%i L3 spacecraft potential data, time-tagged', iSbm), ...
+  '01');
+
+%=====
+% SWM
+%=====
+SwmArray = bicas.swm.SoftwareMode(...
+  bicas.proc.L2L3.L3OsrDsrSwmProcessing(true, iSbm), ...
+  sprintf('L2-L3_SBM%i', iSbm), ...   % cliOption
+  sprintf( ...
+  'Generate L3 SBM%i density, efield+s/c, potential data. NOTE: This is an unofficial s/w mode.', ...
+  iSbm), ...
+  [SbmxInputDataset], ...
+  [SbmxDensityOutputDataset; ...
+  SbmxEfieldOutputDataset; ...
+  SbmxScpotOutputDataset]);
+end    % get_SWMs_L2_to_L3_SBMx

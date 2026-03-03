@@ -25,7 +25,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef FPArray < matlab.mixin.CustomDisplay
+classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
   %
   % PROPOSAL: Change name fpAr --> fp
   %                       dataAr --> data
@@ -62,11 +62,10 @@ classdef FPArray < matlab.mixin.CustomDisplay
   %   ~1D
   %   PROPOSAL: General terms: FP, non-FP data, FP + non-FP data.
   %
-  % TODO-DEC: Naming convention for FPA variables?
-  %   *Fpa, Fpa* Fpa_L3_QUALITY_BITMASK
-  %   Fpa_L3_QUALITY_BITMASK
+  % TODO-DEC: Naming convention for FPA variables combined with ZV names (which do not follow naming convention)?
+  %   Ex: L3_QUALITY_BITMASK_Fpa
+  %   *_Fpa, Fpa_*
   %   ZvFpa_L3_QUALITY_BITMASK
-  %   L3_QUALITY_BITMASK_Fpa
   %
   % PROPOSAL: Shorten "doubleNan" --> "dblNan"
   %
@@ -76,11 +75,6 @@ classdef FPArray < matlab.mixin.CustomDisplay
   %
   % TODO-DEC: Tolerate cell arrays?
   %   NOTE: Should not be needed for BICAS.
-  %
-  % PROPOSAL: Performance w.r.t. pre-allocation?
-  %   TODO-DEC:  Is it a relevant question? Would such code use FPA?
-  %   PROPOSAL: Use HandleWrapper internally.
-  %       NOTE: Class needs to become handle class.
   %
   % PROBLEM: Can not call e.g. isnumeric(Fpa), isfloat(Fpa), islogical().
   %   PROPOSAL: isnumeric(cast(0, Fpa.mc)) etc.
@@ -106,6 +100,9 @@ classdef FPArray < matlab.mixin.CustomDisplay
   % PROPOSAL: Replace constants for scalar FPs (FP_UINT8, FP_SINGLE etc.) with
   %           static method: scalar_FP(mc)
   %   NOTE: Public such function really already exists: get_scalar_FP(mc)
+  %
+  % PROPOSAL: Convert to using strings (instead of char arrays).
+  %   Ex: Constructor.
 
 
 
@@ -139,8 +136,14 @@ classdef FPArray < matlab.mixin.CustomDisplay
   %#####################
   properties(GetAccess=private, SetAccess=private)
     % NOTE: Should be completely private, but in practice it is possible to
-    % read "dataAr" under MATLAB R2019b. Unknown why. Property is
-    % write-protected though. Update test w.r.t. to this if fixed.
+    % read "dataAr" under MATLAB R2019b/R2024a. Unknown why. Property is
+    % write-protected though.
+    % https://se.mathworks.com/help/matlab/matlab_oop/property-attributes.html
+    % Gets the same (bad) result for
+    % properties(GetAccess=private, SetAccess=private)
+    % properties(SetAccess=private, GetAccess=private)
+    % properties(Access=private).
+    % NOTE: Need to update test w.r.t. to this if fixed.
     dataAr
   end
 
@@ -175,18 +178,21 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % =========
     % dataAr
     %       Array of actual data. Limited to some data types.
-    % varargin{1} == fpDescriptionType
-    %       String constant. 'NO_FILL_POSITIONS' if not specified.
-    % varargin{2} == fpDescription
-    %       Required or not depending on fpDescriptionType.
-    %       Interpretation  depending on fpDescriptionType.
-    %       'FILL_VALUE'
-    %           Fill value. Same type as dataAr. Scalar.
-    %           dataAr elements with this value will be identified as fill
-    %           positions.
-    %       'FILL_POSITIONS'
-    %           Fill positions array. Logical. Same size as dataAr.
-    %           True == Fill position.
+    % fv
+    %       Fill value. Scalar of the same MATLAB class as dataAr. Values equal
+    %       to this in dataAr are interpreted as fill positions.
+    % fpAr
+    %       Array of fill positions (logical). Must have size identical to size
+    %       of dataAr. True == Fill position.
+    % --
+    % SYNTAX 1: dataAr
+    %       Equivalent to syntax 2.
+    % SYNTAX 2: dataAr, "NO_FILL_POSITIONS"
+    % SYNTAX 3: dataAr, "ONLY_FILL_POSITIONS"
+    %       Note: Values in dataAr are effectively ignored. Only the size and
+    %       MATLAB class of dataAr are used.
+    % SYNTAX 4: dataAr, "FILL_POSITIONS",     fpAr
+    % SYNTAX 5: dataAr, "FILL_VALUE",         fv
     %
     function obj = FPArray(dataAr, varargin)
 
@@ -198,12 +204,12 @@ classdef FPArray < matlab.mixin.CustomDisplay
       assert(isnumeric(dataAr) || ischar(dataAr) || islogical(dataAr), ...
         'dataAr has disallowed MATLAB class="%s".', class(dataAr))
 
-
       if numel(varargin) == 0
         fpDescriptionType = 'NO_FILL_POSITIONS';
+        remainingOptionalArgsCa = varargin;
       elseif numel(varargin) >= 1
         fpDescriptionType = varargin{1};
-        varargin = varargin(2:end);
+        remainingOptionalArgsCa = varargin(2:end);
       end
 
       irf.assert.castring(fpDescriptionType)
@@ -213,29 +219,29 @@ classdef FPArray < matlab.mixin.CustomDisplay
       % ===========
       switch(fpDescriptionType)
         case 'FILL_VALUE'
-          assert(numel(varargin) == 1)
-          fv = varargin{1};
+          assert(numel(remainingOptionalArgsCa) == 1)
+          fv = remainingOptionalArgsCa{1};
           assert(isscalar(fv))
           assert(strcmp(class(fv), class(dataAr)), ...
             'Fill value and data have different MATLAB classes.')
 
-          % NOTE: Array operation. Can not use isequaln(). Needs
+          % NOTE: Array operation. Can therefore not use isequaln(). Needs
           % special case for NaN.
           fpAr = (dataAr == fv) | (isnan(dataAr) & isnan(fv));
           clear fv
 
         case 'FILL_POSITIONS'
-          assert(numel(varargin) == 1)
-          fpAr = varargin{1};
+          assert(numel(remainingOptionalArgsCa) == 1)
+          fpAr = remainingOptionalArgsCa{1};
           % NOTE: Assertions on variable come later.
 
         case 'NO_FILL_POSITIONS'
-          assert(numel(varargin) == 0)
+          assert(numel(remainingOptionalArgsCa) == 0)
           fpAr = false(size(dataAr));
           % NOTE: Assertions on variable come later.
 
         case 'ONLY_FILL_POSITIONS'
-          assert(numel(varargin) == 0)
+          assert(numel(remainingOptionalArgsCa) == 0)
           fpAr = true(size(dataAr));
           % NOTE: Assertions on variable come later.
 
@@ -263,13 +269,16 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % fv
     %       Fill value to use for fill positions. Is optional for MATLAB
     %       classes for which a value can be automatially derived.
-    %       NOTE: This is allowed to be identical to any non-FP element.
+    %       NOTE: This value (both specified value and default value) is
+    %       allowed to be identical to any non-FP element.
     %
     function dataAr = array(obj, fv)
       % IMPLEMENTATION NOTE: There are times when you want the FV to be
-      % identical non-FP elements. Must therefore not forbid it.
+      % identical to non-FP elements. Must therefore not forbid it.
       %
-      % PROPOSAL: Optionally return second value: fpAr
+      % PROPOSAL: Abolish omitting "fv".
+      %   TODO-NI: When is default FV useful/safe to use? Should it not only be
+      %            dangerous?
 
       switch(nargin)
         case 1
@@ -403,6 +412,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
     function Fpa = ensure_NFP(obj, fv)
       % PROPOSAL: Better name.
       %   PROBLEM: Unclear that new instance is created.
+      %     CON: Is not handle class. ==> Can not modify object in place.
       %   PROPOSAL: all_NFP, only_NFP
 
       Fpa = bicas.utils.FPArray(obj.array(fv));
@@ -503,7 +513,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
       switch S(1).type
         case '()'
           dataAr = subsref(obj.dataAr, S);
-          fpAr   = subsref(obj.fpAr, S);
+          fpAr   = subsref(obj.fpAr,   S);
 
           varargout = {bicas.utils.FPArray(...
             dataAr, 'FILL_POSITIONS', fpAr)};
@@ -525,7 +535,7 @@ classdef FPArray < matlab.mixin.CustomDisplay
           [varargout{1:nargout}] = builtin('subsref', obj, S);
 
         otherwise
-          error('BICAS:Assertion', 'Does not support operation.')
+          error('BICAS:Assertion', 'Unsupported operation.')
       end
     end
 
@@ -643,6 +653,10 @@ classdef FPArray < matlab.mixin.CustomDisplay
       Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 >= a2));
     end
 
+    function Fpa = plus(obj1, obj2)
+      Fpa = obj1.elementwise_binary_operation_to_FPA(obj2, @(a1, a2) (a1 + a2));
+    end
+
     % Overload operator .*  (not *).
     %
     % IMPLEMENTATION NOTE: Overloading operator for elementwise
@@ -691,6 +705,16 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % "Overload" horzcat() = [..., ...]
     function Fpa = horzcat(varargin)
       Fpa = cat(2, varargin{:});
+    end
+
+
+
+    % "Overload" repmat().
+    function Fpa = repmat(Fpa, varargin)
+      dataAr = repmat(Fpa.dataAr, varargin{:});
+      fpAr   = repmat(Fpa.fpAr,   varargin{:});
+
+      Fpa = bicas.utils.FPArray(dataAr, 'FILL_POSITIONS', fpAr);
     end
 
 
@@ -776,15 +800,17 @@ classdef FPArray < matlab.mixin.CustomDisplay
     % Fpa1
     %       Instance of FPA.
     % obj2
-    %       FPA, or some other object/array.
-    %       Must have same MATLAB class (obj2.mc if it is an FPA) as
-    %       "Fpa1.mc".
+    %       Either
+    %       (1) FPA: obj2.mc must match Fpa1.mc
+    %       or
+    %       (2) some other object/array: Matlab class must match Fpa1.mc
     % fhBinaryArrayOperation
     %       Function handle. Combines two non-FPA arrays to produce third
     %       non-FPA array. Input arrays have to have same MATLAB class, and
-    %       either (a) same size or (b) one of them has to be scalar. The
-    %       operation has to be element-wise. (Otherwise the handling of FPs
-    %       won't work.)
+    %       either (a) same size, or (b) one of them has to be scalar. The
+    %       operation has to be element-wise, i.e. every output element is only
+    %       a function of the corresponding elements in the input objects
+    %       (otherwise the handling of FPs won't work).
     %
     %
     % NOTE: Always outputs an FPA.
@@ -817,12 +843,16 @@ classdef FPArray < matlab.mixin.CustomDisplay
       %   CON: Has proven true for all cases so far.
 
       if isa(obj2, 'bicas.utils.FPArray')
-        assert(strcmp(Fpa1.mc, obj2.mc), 'FPA (%s) and FPA obj2 (%s) have different MATLAB classes.', Fpa1.mc, obj2.mc)
+        assert(strcmp(Fpa1.mc, obj2.mc), ...
+          'FPA (%s) and FPA obj2 (%s) have different MATLAB classes.', ...
+          Fpa1.mc, obj2.mc)
 
         dataAr2 = obj2.dataAr;
         fpAr2   = obj2.fpAr;
       else
-        assert(strcmp(Fpa1.mc, class(obj2)), 'FPA (%s) and obj2 (%s) have different MATLAB classes.', Fpa1.mc, class(obj2))
+        assert(strcmp(Fpa1.mc, class(obj2)), ...
+          'FPA (%s) and obj2 (%s) have different MATLAB classes.', ...
+          Fpa1.mc, class(obj2))
 
         dataAr2 = obj2;
         fpAr2  = false(size(obj2));

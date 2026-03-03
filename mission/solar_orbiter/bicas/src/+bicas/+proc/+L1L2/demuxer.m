@@ -1,10 +1,5 @@
 %
 % "Encode" the demultiplexer part of the BIAS subsystem.
-% See
-%   bicas.proc.L1L2.demuxer.calibrated_BLTSs_to_all_ASRs()
-%   bicas.proc.L1L2.AntennaSignalId
-%   bicas.proc.L1L2.SignalSourceId
-%   bicas.proc.L1L2.SignalDestinationId
 %
 %
 % NOTE
@@ -17,41 +12,67 @@
 % principle, one could represent unknown signals (unknown mux mode) as antenna
 % signals too.
 % --
-% Demultiplexer is designed to not be aware of that TDS only digitizes BLTS 1-3
-% (not 4-5) and does not need to be.
+% The demultiplexer code is designed to not be aware of that TDS only digitizes
+% BLTS 1-3 (not 4-5) and does not need to be.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2019-11-18
 %
 classdef demuxer
+  % PROPOSAL: Better name.
+  %   ~demultiplexing, demuxing
+  %   ~reconstruction
+  %   ~relabel
+  %   demux
+  %   PRO: The module code really implements "relabel BLTS to ASR" and
+  %        "reconstructing ASRs".
+  %
+  % PROPOSAL: Separate file for reconstruction of voltage channel samples.
 
 
 
+  %#######################
+  %#######################
+  % PUBLIC STATIC METHODS
+  %#######################
+  %#######################
   methods(Static, Access=public)
 
 
 
-    % Function that "encodes" the demultiplexer part of the BIAS subsystem.
-    % For a specified BDM and DLR setting, for every BLTS, it determines
-    % (1) the (physical) input signal (Antennas, GND, "2.5V Ref",
-    %     unknown), and
-    % (2) as what ASR (SDID) (if any) should the BLTS be represented in
-    %     the datasets.
+    % Function which returns information on how to route signals. Not
+    % vectorized.
+    %
+    %
+    % For a specified combination of BDM and DLR setting (including possibly
+    % unknown values), for every BLTS, determine the corrsponding
+    % (1) SSID, i.e. where the data comes from (incl. whether it is unknown),
+    %     and
+    % (2) SDID, i.e. where the data should be stored in datasets (incl. whether
+    %     the data should be stored at all).
+    %     NOTE: Output datasets only contain dedicated zVariables for ASRs, not
+    %     e.g. "2.5V REF". Such non-ASR samples must still be routed to one of
+    %     those same zVariables and how that is done is determined here.
     %
     %
     % RATIONALE
     % =========
-    % Meant to collect all hard-coded information about the demultiplexer
-    % ROUTING of signals in the BIAS specification, Table 4.
+    % Collects all hard-coded information about the demultiplexer ROUTING of
+    % signals. Implementation of Table 4 in RPW-SYS-MEB-BIA-SPC-00001-IRF, "RPW
+    % Instrument -- BIAS Specification".
     %
     %
     % EDGE CASES
     % ==========
     % Function must be able to handle:
     % ** bdm = fill position
-    %    Ex: Unknown BDM, e.g. due to insufficient HK time coverage.
+    %    Ex: Unknown BDM, e.g. due to insufficient HK time coverage (must use HK
+    %    for TDS).
+    % ** dlr = fill position
+    %    Ex: Unknown DLR, e.g. due to insufficient HK time coverage.
     % ** BLTS 1-3 labelled as "GND" or "2.5V Ref" in BDMs 5-7.
+    % ** Data which will not be stored in datasets at all.
     %
     %
     % ARGUMENTS
@@ -68,22 +89,23 @@ classdef demuxer
     % RoutingArray
     %       Array of bicas.proc.L1L2.Routing objects, one per BLTS.
     %       (iBlts).
+    %
     function RoutingArray = get_routings(bdmFpa, dlrFpa)
       assert(isscalar(bdmFpa) && isa(bdmFpa, 'bicas.utils.FPArray') && strcmp(bdmFpa.mc, 'uint8'))
       assert(isscalar(dlrFpa) && isa(dlrFpa, 'bicas.utils.FPArray') && strcmp(dlrFpa.mc, 'logical'))
 
-      R = bicas.sconst.C.S_ROUTING_DICT;
+      R = bicas.proc.L1L2.const.C.ROUTING_DICT;
 
       dlrFloat = dlrFpa.logical2doubleNan();
       if isnan(dlrFloat)
-        DC_V1x = R("UNKNOWN_TO_NOWHERE");
-        AC_V1x = R("UNKNOWN_TO_NOWHERE");
+        DC_V1x_DLR = R("UNKNOWN_TO_NOWHERE");
+        AC_V1x_DLR = R("UNKNOWN_TO_NOWHERE");
       elseif dlrFloat
-        DC_V1x = R("DC_V13");
-        AC_V1x = R("AC_V13");
+        DC_V1x_DLR = R("DC_V13");
+        AC_V1x_DLR = R("AC_V13");
       else
-        DC_V1x = R("DC_V12");
-        AC_V1x = R("AC_V12");
+        DC_V1x_DLR = R("DC_V12");
+        AC_V1x_DLR = R("AC_V12");
       end
 
       % IMPLEMENTATION NOTE: switch-case statement does not work for NaN.
@@ -96,7 +118,7 @@ classdef demuxer
 
           % Summarize the routing.
           RoutingArray(1) = R("DC_V1");
-          RoutingArray(2) =    DC_V1x;
+          RoutingArray(2) =    DC_V1x_DLR;
           RoutingArray(3) = R("DC_V23");
 
         case 1   % Probe 1 fails
@@ -112,13 +134,13 @@ classdef demuxer
 
           RoutingArray(1) = R("DC_V1");
           RoutingArray(2) = R("DC_V3");
-          RoutingArray(3) =   DC_V1x;
+          RoutingArray(3) =    DC_V1x_DLR;
 
         case 3   % Probe 3 fails
 
           RoutingArray(1) = R("DC_V1");
           RoutingArray(2) = R("DC_V2");
-          RoutingArray(3) =    DC_V1x;
+          RoutingArray(3) =    DC_V1x_DLR;
 
         case 4   % Calibration mode 0
 
@@ -159,262 +181,200 @@ classdef demuxer
             'Illegal argument value bdm=%g.', bdm)
       end    % switch
 
-      RoutingArray(4) = AC_V1x;
+      RoutingArray(4) =    AC_V1x_DLR;
       RoutingArray(5) = R("AC_V23");
     end
 
 
 
-    % (1) Given demultiplexer routings, convert the (already calibrated)
-    %     BLTSs to (subset of) ASRs.
-    % (2) Derive the remaining ASRs (samples) from those ASRs which have
-    %     already been set.
-    %       NOTE: This derivation from fully calibrated ASR samples only
-    %       requires addition/subtraction of ASRs. It does not require any
-    %       sophisticated/non-trivial calibration since the relationships
-    %       between the ASRs are so simple. The only consideration is that
-    %       DC diffs have higher accurracy than DC singles, and should have
-    %       precedence when deriving ASRs in the event of redundant
-    %       information.
+    % Generic function for complementing/deriving redundant data in three
+    % same-sized arrays., where missing array elements can be set using three
+    % functions.
     %
-    % NOTE: This code does NOT handle the equivalent of demultiplexer
-    % multiplication of the BLTS signal (alpha, beta, gamma in the BIAS
-    % specification). It is assumed that the supplied BLTS samples have been
-    % calibrated to account for this already.
+    % If one element is missing (labelled as a fill position) while the
+    % corresponding elements in the two other arrays are not, then the missing
+    % element is derived from the other two using the appropriate X=f_YZ(Y,Z)
+    % function (one of three).
+    %
+    % The function does not verify that pre-existing data is consistent with
+    % the specified functions which define the relationship between the
+    % functions.
     %
     %
     % ARGUMENTS
     % =========
-    % SdidArray
-    %       Length-5 array of SSIDs. One SDID per BLTS.
-    % bltsSamplesAVolt
-    %       Cell array of vectors/matrices, length 5.
-    %       {iBlts} = Vector/matrix with sample values
-    %                 for that BLTS channel, calibrated as for ASR.
+    % A1, A2, A3
+    %       Data arrays of the same MATLAB class and size.
+    % bFp1, bFp2, bFp3
+    %       Logical arrays of the same size as A1.
+    %       True <=> Fill position in corresponding A* array.
+    % fh23to1, fh13to2, fh12to3
+    %       Function handles z=f(x,y) for how to derive missing elements. Must
+    %       be vectorized.
     %
-    %
-    % RETURN VALUES
-    % =============
-    % AsrSamplesAVoltSrm
-    %       Samples for all ASRs (singles, diffs) which can
-    %       possibly be derived from the BLTS (BIAS_i). Those
-    %       which can not be derived are correctly sized
-    %       containing only NaN. Struct with fields.
-    % --
-    % NOTE: Separate names bltsSamplesAVolt & AsrSamplesAVoltSrm to denote
-    % that they are organized by BLTS and ASRs respectively.
-    %
-    function AsrSamplesAVoltSrm = calibrated_BLTSs_to_all_ASRs(...
-        SdidArray, bltsSamplesAVolt)
-      % PROPOSAL: Log message for BDM=NaN.
+    function [A1,A2,A3] = reconstruct_missing_data(...
+        A1,A2,A3, bFp1,bFp2,bFp3, fh23to1, fh13to2, fh12to3)
+      % TODO-NI: Will lead to memory problems for large arrays?
+      %   TODO: Test.
+      %   NOTE: Using cell array for return value may cause more in-memory data
+      %         copying.
+      % PROPOSAL: Move to ~utils.
+      %   PRO: Too generic for this class.
+      % PROPOSAL: Abolish use of function handles. Always use
+      %           addition/subtraction.
+      %   PRO: ~Difficult to test properly.
+      %   PRO: Probably not needed.
+      %   PRO: Easy to reverse if needed.
+      %   PRO: Generally ugly to use function handles.
+      %   CON: Less generic.
+      %   CON: Function handles should not have performance impact.
+      %   CON/NOTE: Requires underlying arrays to define addition and
+      %             subtraction.
+      %     CON: That is what the intended nominal implementation will use
+      %          anyway.
 
-      % ASSERTIONS
-      assert(isa(SdidArray, 'bicas.proc.L1L2.SignalDestinationId'))
-      assert(isnumeric(bltsSamplesAVolt))
-      irf.assert.sizes(...
-        bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
-        SdidArray,        [ 1,     bicas.const.N_BLTS])
+      assert(strcmp(class(A1), class(A2)))
+      assert(strcmp(class(A1), class(A3)))
 
-      % Assign arrays only for those ASIDs for which there is data.
-      AsrSamplesAVoltSrm = bicas.proc.L1L2.demuxer.assign_ASR_samples_from_BLTS(...
-        bltsSamplesAVolt, SdidArray);
+      assert(islogical(bFp1))
+      assert(islogical(bFp2))
+      assert(islogical(bFp3))
 
-      % Assign arrays for the remaining ASIDs. Reconstruct data when possible.
-      % NOTE: The function modifies the ARGUMENT (handle object).
-      bicas.proc.L1L2.demuxer.reconstruct_missing_ASR_samples(AsrSamplesAVoltSrm);
+      assert(isequal(size(A1), size(A2)))
+      assert(isequal(size(A1), size(A3)))
+      assert(isequal(size(A1), size(bFp1)))
+      assert(isequal(size(A1), size(bFp2)))
+      assert(isequal(size(A1), size(bFp3)))
+
+      bDerive1 =  bFp1 & ~bFp2 & ~bFp3;
+      bDerive2 = ~bFp1 &  bFp2 & ~bFp3;
+      bDerive3 = ~bFp1 & ~bFp2 &  bFp3;
+
+      % NOTE: If using actual arrays for samples, then need at least one more
+      % dimension for SWF (1 record=1 snapshot): Ax(b, :) = func(Ay(b, :),
+      % Az(b, :).
+      A3(bDerive3) = fh12to3(A1(bDerive3), A2(bDerive3));
+      A2(bDerive2) = fh13to2(A1(bDerive2), A3(bDerive2));
+      A1(bDerive1) = fh23to1(A2(bDerive1), A3(bDerive1));
     end
 
 
 
-    % Given an incomplete SRM of ASID-labelled samples, derive the missing
-    % ASRs.
-    %
-    % NOTE: In the event of redundant FIELDS, but not redundant DATA
-    % (non-fill value), the code can NOT make intelligent choice of only
-    % using available data to replace fill values.
-    %   Ex: BDM=1: Fields (V1, V2, V12) but V1 does not contain any data
-    %   (fill values). Could in principle derive V1=V2-V12 but code does
-    %   not know this.
-    %   NOTE: Unlikely that this will ever happen, or that the
-    %   instrument RPW is even able to return data for this situation.
-    %   PROBLEM: Can happen if blanking data in future implementations due to
-    %   NSOs.
-    %
-    % NOTE: Only public for the purpose of automatic testing.
-    %
-    %
     % ARGUMENTS
     % =========
-    % AsrSamplesAVoltSrm
-    %       NOTE: Function modifies the argument (handle class)!
+    % VoltageZvm
+    %       ZVM for ASR SDID-->SCHD
+    %       NOTE: Is modified in-place.
     %
-    function reconstruct_missing_ASR_samples(AsrSamplesAVoltSrm)
-      % PROPOSAL: Better name
-      %   NOTE: Can not always reconstruct all signals.
-      %   --
-      %   ASR
-      %   ASID
-      %   complete
-      %   complement
-      %   reconstruct
-      %   signals
-      %   missing (antenna) signals
-      %   singles, diffs
-      %   --
-      %   reconstruct_missing_signals
-      %   reconstruct_missing_antenna_signals
-      %   reconstruct_missing_ASRs
-      %   add_missing_ASRs
-      %   add_missing_ASIDs
-      %   add_reconstruct_missing_ASRs
-      %   --
-      %   If using SDID keys (in the future), then
-      %     add_missing_SDIDs
+    % IMPORTANT: SCHD emulating column vector makes it important and non-trivial
+    % what should be considered a row fill position. Can *NOT* use [fill
+    % position <=> at least one NaN on row] since there can be both NaN and
+    % non-NaN values (TDS-RWF varying-length snapshots with NaN for non-snapshot
+    % elements) which causes data to be not used for reconstructing other
+    % channels.
+    %
+    function reconstruct_ASR_voltage_channels(VoltageZvm)
 
-      assert(isa(AsrSamplesAVoltSrm, 'bicas.utils.SameRowsMap'))
+      assert(isa(VoltageZvm, 'bicas.utils.ZvMap'))
+      assert(isa(VoltageZvm, "handle"))
+      assert(VoltageZvm.nEntries == 9)
 
-      % Shorten variable names.
-      A     = bicas.sconst.C.S_ASID_DICT;
-      AsSrm = AsrSamplesAVoltSrm;
+      % Shorten variable name.
+      SDID_DICT = bicas.proc.L1L2.const.C.SDID_DICT;
+
+
+
+      % Reconstruct values using relationship
+      % samples(SDID_1) = samples(SDID_2) + samples(SDID_3)
+      % iteratively until as many samples have been reconstructed as possible.
+      function reconstruct_missing_data_helper(...
+          sumSdidStr1, termSdidStr2, termSdidStr3)
+
+        % NOTE: Below printout is very useful for being able to follow how
+        % values are being reconstructed, e.g. when debugging and verifying
+        % automated tests.
+        % fprintf("%-6s = %-6s + %-6s\n", sumSdidStr1, termSdidStr2, termSdidStr3)
+
+        Schd1 = VoltageZvm.get(SDID_DICT( sumSdidStr1));
+        Schd2 = VoltageZvm.get(SDID_DICT(termSdidStr2));
+        Schd3 = VoltageZvm.get(SDID_DICT(termSdidStr3));
+
+        [...
+          Schd1, ...
+          Schd2, ...
+          Schd3 ...
+          ] = ...
+          bicas.proc.L1L2.demuxer.reconstruct_missing_data(...
+          Schd1, ...
+          Schd2, ...
+          Schd3, ...
+          Schd1.bWholeRowIsNan, ...
+          Schd2.bWholeRowIsNan, ...
+          Schd3.bWholeRowIsNan, ...
+          @(x,y) (x+y), ...
+          @(x,y) (x-y), ...
+          @(x,y) (x-y) ...
+          );
+
+        VoltageZvm.set(SDID_DICT( sumSdidStr1), Schd1);
+        VoltageZvm.set(SDID_DICT(termSdidStr2), Schd2);
+        VoltageZvm.set(SDID_DICT(termSdidStr3), Schd3);
+      end
+
+
 
       %================
       % Derive AC ASRs
       %================
-      % AC ASRs are separate from DC. Does not have to be in loop.
-      % IMPLEMENTATION NOTE: Must be executed before DC loop. Otherwise
-      % nFnAfter == 9 condition does not work.
-      AsSrm = bicas.proc.L1L2.demuxer.complete_relation(...
-        AsSrm, A("AC_V13"), A("AC_V12"), A("AC_V23"));
+      % AC ASRs are separate from DC ASRs and only satisfy one relationship
+      % since there are only three of them. Therefore does not have to be in
+      % the loop.
+      reconstruct_missing_data_helper("AC_V13", "AC_V12", "AC_V23")
 
       %================
       % Derive DC ASRs
       %================
-      nAsidBefore = AsSrm.numEntries;
+      nWholeRowIsNan0 = ...
+        bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(VoltageZvm);
       while true
-        % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for
-        % deriving diffs since it is better to derive a diff from
-        % (initially available) diffs rather than singles, directly or
+        % NOTE: Relation DC_V13 = DC_V12 + DC_V23 has precedence for deriving
+        % diffs (i.e. it should come first) since it is better to derive a diff
+        % from (initially available) diffs rather than singles, directly or
         % indirectly, if possible.
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V13"), A("DC_V12"), A("DC_V23"));
+        % Ex: The is only information on V1, V12, V23 (BDM=0, DLR=0).
+        % ==> Derive V13 first, then use V1 to derive V2, V3.
+        % ==> If V1 is lower-accuracy, then it will not affect V13.
+        %     If V1 is saturated,      then it will not affect V13.
+        % Note that this is due to that sets of three diffs are always
+        % redundant (contain redundant information), as opposed to sets of
+        % three singles which are not.
 
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V1"),  A("DC_V12"), A("DC_V2"));
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V1"),  A("DC_V13"), A("DC_V3"));
-        AsSrm = bicas.proc.L1L2.demuxer.complete_relation(AsSrm, A("DC_V2"),  A("DC_V23"), A("DC_V3"));
-        nAsidAfter = AsSrm.numEntries;
+        reconstruct_missing_data_helper("DC_V13",  "DC_V12", "DC_V23");
 
-        if (nAsidBefore == nAsidAfter) || (nAsidAfter == 9)
+        reconstruct_missing_data_helper("DC_V1",   "DC_V12", "DC_V2");
+        reconstruct_missing_data_helper("DC_V1",   "DC_V13", "DC_V3");
+        reconstruct_missing_data_helper("DC_V2",   "DC_V23", "DC_V3");
+
+        % NOTE: Impossible to get Dcd.nWholeRowIsNan == 0...
+        nWholeRowIsNan = ...
+          bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(VoltageZvm);
+        if (nWholeRowIsNan == nWholeRowIsNan0) || (nWholeRowIsNan == 0)
           break
         end
-        nAsidBefore = nAsidAfter;
-      end
-
-      %===================================================================
-      % Add all ASIDs which have not yet been assigned
-      % ----------------------------------------------
-      % IMPLEMENTATION NOTE: This is needed to handle for situations when
-      % the supplied fields can not be used to determine all nine fields.
-      %   Ex: bdm=1,2,3
-      %===================================================================
-
-      keyArray = AsSrm.keys;
-
-      % IMPLEMENTATION NOTE: Can not use bicas.utils.SameRowsMap methods
-      % for deriving the entire size (samples per record), until possibly
-      % using a future bicas.utils.SameSizeTypeMap instead.
-      tempNaN = nan(size(AsrSamplesAVoltSrm(keyArray)));
-
-      for Asid = bicas.sconst.C.S_ASID_DICT.values'
-        if ~AsSrm.isKey(Asid)
-          AsSrm.add(Asid, tempNaN);
-        end
-      end
-
-    end
-
-
-
-  end    % methods(Static, Access=public)
-
-
-
-  %###########################################################################
-
-
-
-  methods(Static, Access=private)
-
-
-
-    % Given FIVE BLTS sample arrays, copy those which correspond to ASRs (five
-    % or fewer!) into an SRM with correct ASID keys for the corresponding
-    % arrays.
-    function AsrSamplesSrm = assign_ASR_samples_from_BLTS(...
-        bltsSamplesAVolt, SdidArray)
-
-      % ASSERTIONS
-      assert(isnumeric(bltsSamplesAVolt))
-      nRows = irf.assert.sizes( ...
-        bltsSamplesAVolt, [-1, -2, bicas.const.N_BLTS], ...
-        SdidArray,        [ 1,     bicas.const.N_BLTS]);
-
-      AsrSamplesSrm = bicas.utils.SameRowsMap( ...
-        "bicas.proc.L1L2.AntennaSignalId", nRows, 'EMPTY');
-      for iBlts = 1:bicas.const.N_BLTS
-        if ~SdidArray(iBlts).isNowhere
-          % NOTE: Converting from SDID to ASID and using ASID as key. Not sure
-          % if conceptually sensible.
-          Asid = SdidArray(iBlts).Asid;
-          AsrSamplesSrm.add(Asid, bltsSamplesAVolt(:, :, iBlts));
-        end
+        nWholeRowIsNan0 = nWholeRowIsNan;
       end
     end
 
 
 
-    % Utility function. Derive missing ASR fields/channels from other
-    % fields/channels. If exactly two of the SRM keys exist in AsrSrm, then
-    % derive the third one using the relationship
-    % AsSrm(Asid1) == AsSrm(Asid2) + AsSrm(Asid3).
-    %
-    % ARGUMENTS
-    % =========
-    % Asid1, Asid2, Asid3
-    %       ASIDs whose ID strings may or may not be keys in AsSrm. If
-    %       exactly one of them is missing in "As", then the key+value is
-    %       created with values assuming that the field contents are related
-    %       through the relationship value1 = value2 + value3. In other
-    %       cases, "AsSrm" is returned unmodified.
-    %
-    function AsSrm = complete_relation(AsSrm, Asid1, Asid2, Asid3)
-      % PROPOSAL: Handle propagating quality bits derived from BLTSs.
-      %   NOTE: BLTS saturation bits should propagate.
-      %   This is thus a qualitatively different behaviour from samples which
-      %   are reconstructed.
-      % PROPOSAL: More generic implementation independent of SRMs and ASIDs.
-      %   PROBLEM: Needs way to detect missing data (channels) and a way to add
-      %            the reconstructed data.
-      %     PROPOSAL: Input is FPAs for all ASRs/SDIDs.
-      % PROPOSAL: Handle both samples and quality bits.
-      %
-      % NOTE: Truly generic vectorized algorithm. FP = Fill Position as in FPAs.
-      %   NOTE: Can handle both
-      %     (1) reconstructing data (e.g. diffs from singles), and
-      %     (2) "spread" of data (e.g. saturation bits).
-      %   bSet1 =  bFp1 & ~bFp2 & ~bFp3
-      %   bSet2 = ~bFp1 &  bFp2 & ~bFp3
-      %   bSet3 = ~bFp1 & ~bFp2 &  bFp3
-      %   A1(bSet1) = func_1_from_23(A2(bSet1), A3(bSet1))
-      %   A2(bSet2) = func_2_from_13(A1(bSet2), A3(bSet2))
-      %   A3(bSet3) = func_3_from_12(A1(bSet3), A2(bSet3))
-      assert(isa(AsSrm, 'bicas.utils.SameRowsMap'))
+    function nWholeRowIsNan = get_ASR_ZVM_nWholeRowIsNan(AsrZvm)
+      assert(isa(AsrZvm, "bicas.utils.ZvMap"))
 
-      e1 = AsSrm.isKey(Asid1);
-      e2 = AsSrm.isKey(Asid2);
-      e3 = AsSrm.isKey(Asid3);
+      nWholeRowIsNan = 0;
 
-      if     ~e1 &&  e2 &&  e3,   AsSrm.add(Asid1, AsSrm(Asid2) + AsSrm(Asid3));
-      elseif  e1 && ~e2 &&  e3,   AsSrm.add(Asid2, AsSrm(Asid1) - AsSrm(Asid3));
-      elseif  e1 &&  e2 && ~e3,   AsSrm.add(Asid3, AsSrm(Asid1) - AsSrm(Asid2));
+      for keyCa = AsrZvm.keyCa'
+        Schd           = AsrZvm.get(keyCa{1});
+        nWholeRowIsNan = nWholeRowIsNan + sum(Schd.bWholeRowIsNan);
       end
     end
 

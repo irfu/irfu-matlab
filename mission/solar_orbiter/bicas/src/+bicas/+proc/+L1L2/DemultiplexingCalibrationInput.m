@@ -3,15 +3,15 @@
 % L1/L1R-->L2 LFR+TDS processing (i.e. demultiplexing and calibration).
 %
 %
-% IMPLEMENTATION NOTE: bltsSamplesTm and lrx
+% IMPLEMENTATION NOTE: bltsVoltageTm and lrx
 % ==========================================
-% DCIP always represents (has variables/elements for) all five BLTS's,
-% despite that only three are used at any given time. The channels not used
-% are set to NaN. Which ones are actually used can be switched at any given
-% time due to lrx changing.
+% DCIP always represents (has variables/elements for) all five BLTS's, despite
+% that only three are used at any given time (due to how BIAS h/w works). The
+% channels not used are set to NaN. Which ones are actually used can be
+% switched at any given time due to lrx changing.
 %
 % This handling does in principle differ from the handling of other "data
-% parameters" (BW, LSF, isTdsCwf, freqHz, hasSwfFormat, etc.). LRX
+% parameters" (BW, LSF, isTdsCwf, samplRateHz, hasSwfFormat, etc.). LRX
 % determines which channels contain actual data. The BLTS index into the
 % array is used to determine whether one has DC diff or AC diff data.
 %
@@ -91,21 +91,23 @@ classdef DemultiplexingCalibrationInput
   %#########################
   methods(Access=public)
 
+
+
     function obj = DemultiplexingCalibrationInput(Zv, Ga, hasSwfFormat, isLfr, isTdsCwf)
 
       irf.assert.struct(Zv, ...
-        {'Epoch', 'bltsSamplesTm', 'freqHz', 'nValidSamplesPerRecord', ...
+        {'tt2000', 'bltsVoltageTm', 'samplRateHz', 'uspr', ...
         'bdmFpa', 'isAchgFpa', 'dlrFpa', ...
         'iLsf', ...
-        'QUALITY_BITMASK', 'QUALITY_FLAG', 'SYNCHRO_FLAG', ...
-        'DELTA_PLUS_MINUS', 'CALIBRATION_TABLE_INDEX', ...
-        'ufv', 'lrx', 'BW'}, {});
+        'L1qbmFpa', 'QflFpa', 'SYNCHRO_FLAG', ...
+        'DELTA_PLUS_MINUS', 'NbriFpa', 'NbciFpa', ...
+        'biasOffQrcb', 'sweepQrcb', 'lrx', 'BW'}, {});
       bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(Zv);
-      assert(size(Zv.bltsSamplesTm, 3) == 5)
-      assert(isa(Zv.freqHz,    'double' ))
-      assert(isa(hasSwfFormat, 'logical'))
-      assert(isa(isLfr,        'logical'))
-      assert(isa(isTdsCwf,     'logical'))
+      assert(size(Zv.bltsVoltageTm, 3) == 5)
+      assert(isa(Zv.samplRateHz, 'double' ))
+      assert(isa(hasSwfFormat,   'logical'))
+      assert(isa(isLfr,          'logical'))
+      assert(isa(isTdsCwf,       'logical'))
 
       obj.Zv           = Zv;
       obj.Ga           = Ga;
@@ -114,6 +116,10 @@ classdef DemultiplexingCalibrationInput
       obj.isTdsCwf     = isTdsCwf;
     end
 
+
+
   end    % methods(Access=public)
+
+
 
 end

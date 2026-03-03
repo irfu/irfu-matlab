@@ -36,7 +36,7 @@
 % (6) It is easier to add automatic checks on the S/W descriptor in the code
 %     that derives it.
 %
-function JsonSwd = get_SWD(SwmList)
+function JsonSwd = get_SWD(SwmAr)
 %
 % PROPOSAL: Have this function add the prefix "input_" to all modes[].inputs[].input (in SWD)
 % and only store the "CLI_PARAMETER_suffix" in the BICAS constants structure instead.
@@ -57,8 +57,8 @@ function JsonSwd = get_SWD(SwmList)
 %   NOTE: Checks on the main constants structure will (can) only happen if this file is executed, not if
 %         the S/W as a whole is (by default).
 
-assert(isvector(SwmList))
-assert(isa(SwmList, 'bicas.swm.SoftwareMode'))
+assert(iscolumn(SwmAr))
+assert(isa(SwmAr, 'bicas.swm.SoftwareMode'))
 
 % Variable naming convention:
 % ---------------------------
@@ -67,7 +67,7 @@ assert(isa(SwmList, 'bicas.swm.SoftwareMode'))
 %   (SWD) JSON object string. Its fields (field names) should NOT follow
 %   variable naming conventions since they determine the JSON object string
 %   which must follow the RCS ICD.
-SwdMetadataMap = bicas.const.SWD_METADATA;
+SwdMetadataMap = bicas.const.swdmd.SWD_METADATA;
 
 JsonSwd = [];
 JsonSwd.identification.project     = SwdMetadataMap('SWD.identification.project');
@@ -92,8 +92,8 @@ JsonSwd.environment.configuration  = fullfile(...
   bicas.const.DEFAULT_CONFIG_FILENAME);
 
 JsonSwd.modes = {};
-for i = 1:length(SwmList)
-  JsonSwd.modes{end+1} = generate_SWD_mode(SwmList(i));
+for i = 1:length(SwmAr)
+  JsonSwd.modes{end+1} = generate_SWD_mode(SwmAr(i));
 end
 
 end
@@ -111,7 +111,7 @@ for i = 1:length(Swm.inputsList)
   InputDataset = Swm.inputsList(i);
 
   JsonInput = [];
-  JsonInput.identifier = InputDataset.dsi;
+  JsonInput.identifier = InputDataset.dsid;
   JsonSwdMode.inputs.(InputDataset.cliOptionHeaderBody) = JsonInput;
 end
 
@@ -120,12 +120,12 @@ for i = 1:length(Swm.outputsList)
   OutputDataset = Swm.outputsList(i);
 
   JsonOutput = [];
-  JsonOutput.identifier  = OutputDataset.dsi;
+  JsonOutput.identifier  = OutputDataset.dsid;
   JsonOutput.name        = OutputDataset.swdName;
   JsonOutput.description = OutputDataset.swdDescription;
   JsonOutput.level       = OutputDataset.datasetLevel;
   JsonOutput.template    = bicas.get_master_CDF_filename(...
-    OutputDataset.dsi, ...
+    OutputDataset.dsid, ...
     OutputDataset.skeletonVersion);    % RCS ICD 00037 iss1/rev2, draft 2019-07-11: Optional.
   JsonSwdMode.outputs.(OutputDataset.cliOptionHeaderBody) = JsonOutput;
 end

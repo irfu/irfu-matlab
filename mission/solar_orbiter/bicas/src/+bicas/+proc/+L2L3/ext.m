@@ -36,21 +36,24 @@ classdef ext
     % Indirectly call BICAS-external code to calculate
     % (1) EFIELD, SCPOT (solo.vdccal), and from that
     % (2) DENSITY       (solo.psp2ne).
-    function R = calc_EFIELD_SCPOT_DENSITY(LfrCwfZv, Ec, Bso)
-      assert(isa(Ec, 'bicas.proc.L2L3.ExternalCodeAbstract'))
-
-      % Minimum L2 data QUALITY_FLAG value to use for deriving L3 data
-      % --------------------------------------------------------------
-      % NOTE: bicas.proc.L2L3.ext.calc_EFIELD_SCPOT() uses this value
-      % explicitly, but bicas.proc.L2L3.ext.calc_DENSITY() uses it implicitly
-      % since it uses the return value from the former.
-      QUALITY_FLAG_minForUse = uint8(Bso.get_fv(...
-        'PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN'));
+    function R = calc_EFIELD_SCPOT_DENSITY(Excd, Zv, A)
+      arguments
+        Excd
+        Zv.tt2000
+        Zv.VDC_Fpa
+        Zv.EDC_Fpa
+        A.L
+      end
+      assert(isa(Excd, 'bicas.proc.L2L3.ExternalCodeAbstract'))
 
       % =================================
       % Call wrapper around solo.vdccal()
       % =================================
-      R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(LfrCwfZv, QUALITY_FLAG_minForUse, Ec);
+      R1 = bicas.proc.L2L3.ext.calc_EFIELD_SCPOT(...
+        Excd, ...
+        tt2000 =Zv.tt2000, ...
+        VDC_Fpa=Zv.VDC_Fpa, ...
+        EDC_Fpa=Zv.EDC_Fpa);
 
       % =================================
       % Call wrapper around solo.psp2ne()
@@ -60,11 +63,11 @@ classdef ext
       % to the data the density is based on, but the quality bit only
       % refers to density (and not to SCPOT).
       [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
-        bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Ec);
+        bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Excd, A.L);
 
       assert(strcmp(R1.PspTs.units,   'V'))
       assert(strcmp(R1.ScpotTs.units, 'V'))
-      assert(strcmp(NeScpTs.units,    'cm^-3'))
+      % NOTE: NeScpTs.units is tested elsewhere.
 
       %==============================
       % Package function return data
@@ -75,12 +78,63 @@ classdef ext
       R.EdcSrfMvpmFpa      = bicas.utils.FPArray(R1.EdcSrfTs.data, 'FILL_VALUE', NaN);
       R.vdccalCodeVerStr   = R1.vdccalCodeVerStr;
       R.vdccalMatVerStr    = R1.vdccalMatVerStr;
-      R.bNotUsed           = R1.bNotUsed;
-      R.NeScpCm3Fpa        = bicas.utils.FPArray(NeScpTs.data, 'FILL_VALUE', NaN);
-      % NOTE: Ignoring return value NeScpQualityBit(Ts) for now. Value is
-      %       expected to be used by BICAS later.
+      R.NeScpCm3Fpa        = bicas.utils.FPArray(NeScpTs.data,     'FILL_VALUE', NaN);
       R.NeScpQualityBitFpa = NeScpQualityBitFpa;
       R.psp2neCodeVerStr   = psp2neCodeVerStr;
+    end
+
+
+
+    % Validate the solo.psp2ne() return values.
+    %
+    % DESIGN NOTES, RATIONALE
+    % =======================
+    % This function is written to be used by both (1) BICAS proper, and (2) test
+    % code. Any validation which can not be shared between BICAS proper and test
+    % code should not be in this function.
+    %
+    function validate_psp2ne_return_values( ...
+        tt2000Ar, NeScpTs, NeScpQualityBitTs, codeVerStr, L)
+
+      nTimestamps = numel(tt2000Ar);
+
+      assert(isa(NeScpTs,           "TSeries"))
+      assert(isa(NeScpQualityBitTs, "TSeries"))
+
+      assert(isequal(size(NeScpTs.data),           [nTimestamps, 1]))
+      assert(isequal(size(NeScpQualityBitTs.data), [nTimestamps, 1]))
+
+      assert(isequal(NeScpTs.time.ttns,            tt2000Ar))
+      assert(isequal(NeScpQualityBitTs.time.ttns,  tt2000Ar))
+
+      assert(isfloat(NeScpTs.data))
+      assert(NeScpTs.units        == "cm^-3")
+      assert(NeScpTs.siConversion == "cm^-3>1e6*m^-3")
+
+      if ~all( isreal(NeScpTs.data) & ~isinf(NeScpTs.data) & (isnan(NeScpTs.data) | (NeScpTs.data > 0)) )
+        errorMsg = "solo.psp2ne() returned illegal (non-NaN) plasma density value.";
+        nZero     = numel(find(      NeScpTs.data == 0));
+        nNegative = numel(find(      NeScpTs.data <  0));
+        nNan      = numel(find(isnan(NeScpTs.data)    ));
+        nInf      = numel(find(isinf(NeScpTs.data)    ));
+        nAll      = numel(NeScpTs.data);
+
+        L.log( 'error', errorMsg)
+        L.logf('error', '    #Zeroes          = %i (%f%%)', nZero,     100*nZero    /nAll)
+        L.logf('error', '    #Negative values = %i (%f%%)', nNegative, 100*nNegative/nAll)
+        L.logf('error', '    #NaN             = %i (%f%%)', nNan,      100*nNan     /nAll)
+        L.logf('error', '    #Inf             = %i (%f%%)', nInf,      100*nInf     /nAll)
+        error(errorMsg)
+      end
+
+      % NOTE: Excludes NaN.
+      assert(...
+        all(ismember(NeScpQualityBitTs.data, [0, 1])), ...
+        "solo.psp2ne() returned illegal NeScpTsQualityBitTs." + ...
+        " Contains values which are not 0 or 1.")
+
+      assert(ischar(codeVerStr))
+      irf.assert.castring_regexp(codeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
     end
 
 
@@ -118,38 +172,29 @@ classdef ext
     %       return values and avoid confusing similar return results with
     %       each other.
     %
-    function R = calc_EFIELD_SCPOT(Zv, QUALITY_FLAG_minForUse, Ec)
-      % PROPOSAL: Take bNotUsed as an argument.
-      %   PRO: Can be used also for bicas.proc.L2L3.ext.calc_DENSITY()
-      %        (which it currently does not).
+    function R = calc_EFIELD_SCPOT(Excd, Zv)
+      arguments
+        Excd
+        Zv.tt2000
+        Zv.VDC_Fpa
+        Zv.EDC_Fpa
+      end
 
-      irf.assert.struct(Zv, {'Epoch', 'VDC_Fpa', 'EDC_Fpa', 'QUALITY_FLAG_Fpa'}, {})
 
 
-
-      %======================================================
+      %==========================================
       % Create input variables for solo.vdccal()
-      % ----------------------------------------
-      % Set records to NaN for QUALITY_FLAG below threshold.
-      %======================================================
-      % NOTE: Unclear how to treat QUALITY_FLAG=FV.
-      % NOTE: Treatment of this special case is documented in readme.txt.
-      bNotUsedFpa             = Zv.QUALITY_FLAG_Fpa < QUALITY_FLAG_minForUse;
-      bNotUsed                = bNotUsedFpa.array(false);   % Is [FP==>false] wise?
-      % --
-      Zv.VDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
-      Zv.EDC_Fpa(bNotUsed, :) = bicas.utils.FPArray.FP_SINGLE;
-      %
+      %==========================================
       % NOTE: Should TSeries objects really use TensorOrder=1 and
       % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
       % of three scalars. Probably does not matter. solo.vdccal() does
       % indeed use VDC.x, EDC.x etc.
       VdcTs = TSeries(...
-        EpochTT(Zv.Epoch), Zv.VDC_Fpa.array(single(NaN)), ...
+        EpochTT(Zv.tt2000), Zv.VDC_Fpa.array(single(NaN)), ...
         'TensorOrder', 1, ...
         'repres',      {'x', 'y', 'z'});
       EdcTs = TSeries(...
-        EpochTT(Zv.Epoch), Zv.EDC_Fpa.array(single(NaN)), ...
+        EpochTT(Zv.tt2000), Zv.EDC_Fpa.array(single(NaN)), ...
         'TensorOrder', 1, ...
         'repres',      {'x', 'y', 'z'});
 
@@ -162,7 +207,7 @@ classdef ext
       % ==> Use current official calibration file, hardcoded in
       %     solo.vdccal(), that should be used for official datasets.
       [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] = ...
-        Ec.vdccal(VdcTs, EdcTs, []);
+        Excd.vdccal(VdcTs, EdcTs, []);
       clear VdcTs EdcTs
       %#################################################################
 
@@ -170,7 +215,7 @@ classdef ext
 
       % ASSERTIONS: Check solo.vdccal() return values.
       irf.assert.sizes(...
-        Zv.Epoch,      [-1, 1], ...
+        Zv.tt2000,     [-1, 1], ...
         EdcSrfTs.data, [-1, 3], ...
         PspTs.data,    [-1, 1], ...
         ScpotTs.data,  [-1, 1]);
@@ -178,9 +223,9 @@ classdef ext
       assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF' ))
       assert(strcmp(PspTs.units,               'V'))
       assert(strcmp(ScpotTs.units,             'V'))
-      assert(all(Zv.Epoch == EdcSrfTs.time.ttns))
-      assert(all(Zv.Epoch ==    PspTs.time.ttns))
-      assert(all(Zv.Epoch ==  ScpotTs.time.ttns))
+      assert(all(Zv.tt2000 == EdcSrfTs.time.ttns))
+      assert(all(Zv.tt2000 ==    PspTs.time.ttns))
+      assert(all(Zv.tt2000 ==  ScpotTs.time.ttns))
       irf.assert.castring(vdccalMatVerStr)
       assert(~isempty(vdccalMatVerStr), ...
         ['solo.vdccal() returns an empty vdccalMatVerStr', ...
@@ -226,7 +271,6 @@ classdef ext
       R.EdcSrfTs         = EdcSrfTs;
       R.vdccalCodeVerStr = vdccalCodeVerStr;
       R.vdccalMatVerStr  = vdccalMatVerStr;
-      R.bNotUsed         = bNotUsed;
     end
 
 
@@ -247,37 +291,20 @@ classdef ext
     % IMPLEMENTATION NOTE: Does not need to check QUALITY_FLAG limit since
     % relies on PSP values for which this has already been done.
     %
-    function [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = calc_DENSITY(PspTs, Ec)
+    function [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
+        calc_DENSITY(PspTs, Excd, L)
+      % TODO-DEC: Should all TSeries return values be converted to FPAs in this
+      %           function, or in the caller?
 
-      %##################################################################
+      %###################################################################
       % CALL BICAS-EXTERNAL CODE
-      %##################################################################
-      [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = Ec.psp2ne(PspTs);
-      %##################################################################
+      %###################################################################
+      [NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr] = Excd.psp2ne(PspTs);
 
-      %===============================================
-      % ASSERTIONS: Check solo.psp2ne() return values
-      %===============================================
-      irf.assert.sizes(...
-        PspTs.data,             [-1, 1], ...   % Implicitly checks Epoch's size.
-        NeScpTs.data,           [-1, 1], ...
-        NeScpQualityBitTs.data, [-1, 1] ...
-        );
-      assert(all(PspTs.time == NeScpTs.time          ))
-      assert(all(PspTs.time == NeScpQualityBitTs.time))
 
-      assert(isfloat(NeScpTs.data))
-      assert(all( (NeScpTs.data > 0) | isnan(NeScpTs.data) ), ...
-        'solo.psp2ne() returned non-positive (non-NaN) plasma density.')
-      assert(strcmp(NeScpTs.units, 'cm^-3'))
 
-      % NOTE: Not permitting NaN quality bit. Unsure if that is the
-      %       best behaviour.
-      assert(...
-        all(ismember(NeScpQualityBitTs.data, [0, 1])), ...
-        'solo.psp2ne() returned illegal NeScpTsQualityBitTs. Contains values which are not 0 or 1.')
-
-      irf.assert.castring_regexp(psp2neCodeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
+      bicas.proc.L2L3.ext.validate_psp2ne_return_values( ...
+        PspTs.time.ttns, NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr, L)
 
       % ==================================
       % Convert NeScpQualityBitTs --> FPA

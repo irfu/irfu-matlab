@@ -1,6 +1,6 @@
 %
 % Abstract class of which instances of subclasses represent the (massaged,
-% prepared) content of one RCT FILE. The *static* components of the subclasses
+% prepared) content of *ONE* RCT FILE. The *static* components of the subclasses
 % also effectively represent one RCTTID each (not instances of subclasses).
 %
 % NOTE: Subclassing is indirect for testing purposes.

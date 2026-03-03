@@ -64,15 +64,15 @@ classdef utils
     %
     % ARGUMENTS
     % =========
-    % inSciDsi : Input SCI DSI which contains the zVariable.
+    % inSciDsid : Input SCI DSID which contains the zVariable.
     % varargin : Passed on to bicas.handle_struct_name_change as its
     %            varargin.
     %
-    function handle_ZV_name_change(fnChangeList, inSciDsi, Bso, L, varargin)
+    function handle_ZV_name_change(fnChangeList, inSciDsid, Bso, L, varargin)
       anomalyDescrMsgFunc = @(oldFieldname, newFieldname) (sprintf(...
-        ['Input dataset DSI=%s uses an alternative', ...
+        ['Input dataset DSID=%s uses an alternative', ...
         ' but illegal(?) zVariable name "%s" instead of "%s".'], ...
-        inSciDsi, oldFieldname, newFieldname));
+        inSciDsid, oldFieldname, newFieldname));
 
       bicas.handle_struct_name_change(...
         fnChangeList, ...
@@ -122,7 +122,7 @@ classdef utils
 
 
     % Function intended for filtering out data from a zVariable by setting
-    % parts of it to NaN. Also useful for constructing aonymous functions.
+    % parts of it to NaN. Also useful for constructing anonymous functions.
     %
     %
     % ARGUMENTS
@@ -196,74 +196,26 @@ classdef utils
 
 
 
-    % Interpret LRX flag as available BLTS's.
+    % Convert time in from ACQUISITION_TIME to tt2000 which is used for
+    % Epoch in CDF files.
     %
-    % IMPLEMENTATION NOTE: Function partly exists so that it can be extended
-    % to do the authoritative interpretation of LRX for all of BICAS, e.g.
-    % for converting input ZVs (in particular LFR) into BLTS-sorted ZVs.
     %
     % ARGUMENTS
     % =========
-    % lrx
-    %       Scalar float. May be NaN=Unknown.
+    % ACQUSITION_TIME            : NOTE: Can be negative since it is uint32.
+    % ACQUISITION_TIME_EPOCH_UTC :
+    %               Numeric row vector. The time in UTC at
+    %               which ACQUISITION_TIME == [0,0], expressed as
+    %               [year, month, day, hour, minute, second,
+    %                millisecond, microsecond(0-999), nanoseconds(0-999)].
     %
-    % function [iBltsAr] = interpret_LRX(lrx)
-    %   % NEED: Handle LRX=unknown
     %
-    %   % PRO: One interpretation of values for all of BICAS.
-    %   % PROBLEM: How fit with possible future implementation that stores
-    %   %          all data in 3 channels with nominally always data
-    %   %          (instead of 5 BLTS's, with some missing data)?
-    %   %     PROPOSAL: Always return 3x1 array, with one value per such
-    %   %               channel.
-    %   % PROPOSAL: LRX (Nx1) --> iBltsArray (Nx3)
-    %   %     PRO: Can possibly be used for copying CDF ZV elements
-    %   %          into internal variables (split by BLTS).
-    %   %     NOTE: Unnecessary if BICAS internally stores samples in
-    %   %           3 data channels instead, since that is what both LFR and
-    %   %           TDS L1R datasets effecitvely do.
-    %   % PROPOSAL: Return variables describing conversion in "both
-    %   %           directions" between 3 data channels and 5 BLTS's.
-    %   %           LRX (1xN) -->
-    %   %               iBltsArray=[iBltsA, iBltsB, iBltsC]
-    %   %                   iBltsX = 1,2,3,4,5,NaN/FP
-    %   %               hasBltsData=[blts1HasData, ..., blts5HasData]
-    %   %                   bltsXhasData = true,false,NaN/FP
+    % RETURN VALUE
+    % ============
+    % tt2000 : NOTE: int64
     %
-    %   assert(isscalar(lrx) && isfloat(lrx) && ismember(lrx, [0, 1, NaN]))
-    %
-    %   if lrx == 0
-    %     iBltsAr = [1,4,5];
-    %   elseif lrx == 1
-    %     iBltsAr = [1,2,3];
-    %   else
-    %     iBltsAr = [1];
-    %   end
-    % end
-
-
-
     function tt2000 = ACQUISITION_TIME_to_TT2000(...
         ACQUISITION_TIME, ACQUISITION_TIME_EPOCH_UTC)
-      %
-      % Convert time in from ACQUISITION_TIME to tt2000 which is used for
-      % Epoch in CDF files.
-      %
-      %
-      % ARGUMENTS
-      % =========
-      % ACQUSITION_TIME            : NOTE: Can be negative since it is uint32.
-      % ACQUISITION_TIME_EPOCH_UTC :
-      %               Numeric row vector. The time in UTC at
-      %               which ACQUISITION_TIME == [0,0], expressed as
-      %               [year, month, day, hour, minute, second,
-      %                millisecond, microsecond(0-999), nanoseconds(0-999)].
-      %
-      %
-      % RETURN VALUE
-      % ============
-      % tt2000 : NOTE: int64
-      %
 
       bicas.utils.assert_ZV_ACQUISITION_TIME(ACQUISITION_TIME)
 
@@ -277,21 +229,20 @@ classdef utils
 
 
 
+    % Convert from tt2000 to ACQUISITION_TIME.
+    %
+    % ARGUMENTS
+    % =========
+    % t_tt2000
+    %       Nx1 vector. Required to be int64 like the real zVar Epoch.
+    %
+    % RETURN VALUE
+    % ============
+    % ACQUISITION_TIME : Nx2 vector. uint32.
+    %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
+    %
     function ACQUISITION_TIME = TT2000_to_ACQUISITION_TIME(...
         tt2000, ACQUISITION_TIME_EPOCH_UTC)
-      %
-      % Convert from tt2000 to ACQUISITION_TIME.
-      %
-      % ARGUMENTS
-      % =========
-      % t_tt2000
-      %       Nx1 vector. Required to be int64 like the real zVar Epoch.
-      %
-      % RETURN VALUE
-      % ============
-      % ACQUISITION_TIME : Nx2 vector. uint32.
-      %       NOTE: ACQUSITION_TIME can not be negative since it is uint32.
-      %
 
       % ASSERTIONS
       bicas.utils.assert_ZV_Epoch(tt2000)
@@ -321,55 +272,107 @@ classdef utils
 
 
 
-    function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(freqHz, nSpr)
-      %
-      % Derive value for zVar DELTA_PLUS_MINUS.
-      %
-      % NOTE: All values on any given row (CDF record) of DELTA_PLUS_MINUS are
-      % identical. Not sure why multiple values per row are needed but it is
-      % probably intentional, as per YK's instruction.
-      %
-      %
-      % ARGUMENTS
-      % =========
-      % freqHz
-      %       Frequency column vector in s^-1.
-      %       Can not handle freqHz=NaN since the output is an integer
-      %       (assertion).
-      % nSpr
-      %       Number of samples/record.
-      %
-      %
-      % RETURN VALUE
-      % ============
-      % DELTA_PLUS_MINUS
-      %       Analogous to BIAS zVariable. CDF_INT8=int64.
-      %       NOTE: Unit ns.
+    % Derive value for zVar DELTA_PLUS_MINUS.
+    %
+    % NOTE: All values on any given row (CDF record) of DELTA_PLUS_MINUS are
+    % identical. Not sure why multiple values per row are needed but it is
+    % probably intentional, as per YK's instruction.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % samplRateHz
+    %       Frequency column vector in s^-1.
+    %       Can not handle samplRateHz=NaN since the output is an integer
+    %       (assertion).
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % DELTA_PLUS_MINUS
+    %       Analogous to BIAS zVariable. CDF_INT8=int64.
+    %       NOTE: Unit ns.
+    %
+    function zv_DELTA_PLUS_MINUS = derive_DELTA_PLUS_MINUS(samplRateHz, aspr)
 
-      ZV_DELTA_PLUS_MINUS_DATA_TYPE = 'CDF_INT8';
+      ZV_DELTA_PLUS_MINUS_CDF_DATA_TYPE = 'CDF_INT8';
 
       % ASSERTIONS
-      nRecords = irf.assert.sizes(freqHz, [-1]);
-      assert(isfloat(freqHz) && all(isfinite(freqHz)), ...
+      nRecords = irf.assert.sizes(samplRateHz, [-1]);
+      assert(isfloat(samplRateHz) && all(isfinite(samplRateHz)), ...
         'BICAS:Assertion:IllegalArgument', ...
-        'Argument "freqHz" does not consist of non-NaN floats.')
-      assert(isscalar(nSpr), ...
+        'Argument "samplRateHz" does not consist of non-NaN floats.')
+      assert(isscalar(aspr), ...
         'BICAS:Assertion:IllegalArgument', ...
-        'Argument "nSpr" is not a scalar.')
+        'Argument "aspr" is not a scalar.')
 
 
 
-      zv_DELTA_PLUS_MINUS = zeros([nRecords, nSpr]);
+      zv_DELTA_PLUS_MINUS = zeros([nRecords, aspr]);
       for i = 1:nRecords
-        % NOTE: Converts [s] (1/freqHz) --> [ns] (DELTA_PLUS_MINUS) so
+        % NOTE: Converts [s] (1/samplRateHz) --> [ns] (DELTA_PLUS_MINUS) so
         % that the unit is the same as for Epoch.
         % NOTE: Seems to work for more than 2D.
         % Unit: nanoseconds
-        zv_DELTA_PLUS_MINUS(i, :) = 1./freqHz(i) * 1e9 * 0.5;
+        zv_DELTA_PLUS_MINUS(i, :) = 1./samplRateHz(i) * 1e9 * 0.5;
       end
       zv_DELTA_PLUS_MINUS = cast(zv_DELTA_PLUS_MINUS, ...
         irf.cdf.convert_CDF_type_to_MATLAB_class(...
-        ZV_DELTA_PLUS_MINUS_DATA_TYPE, 'Only CDF data types'));
+        ZV_DELTA_PLUS_MINUS_CDF_DATA_TYPE, 'Only CDF data types'));
+    end
+
+
+
+    % Find segments of data separated by data gaps. Data gaps are defined as
+    % intervals between two successive timestamps where the ratio of (1) the
+    % actual time difference and (2) the sum of half the integration time
+    % (inverse sampling rate) of the sample before and after excedes a
+    % specified ratio.
+    %
+    % NOTE: The return format is designed to fit with using
+    % bicas.utils.group_by_change() and bicas.utils.group_unique_rows().
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % samplRateHz
+    %       Sampling rate. Approximately the inverse of the difference between
+    %       successive tt2000Ar values, except when the sampling rate changes
+    %       or there are data gaps.
+    % maxSampleGapRatio
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % iSegmentAr
+    %       Column array of integer values (double), one per sample. The value
+    %       increments iff there is a data gap.
+    %
+    function iSegmentAr = find_data_gaps(tt2000Ar, samplRateHz, maxSampleGapRatio)
+      bicas.utils.assert_ZV_Epoch(tt2000Ar)
+      nRecords = irf.assert.sizes( ...
+        tt2000Ar, [-1], ...
+        samplRateHz,   [-1]);
+      assert(isscalar(maxSampleGapRatio) & (maxSampleGapRatio > 0))
+      assert(all(samplRateHz > 0))
+
+      if nRecords == 0
+        iSegmentAr = zeros(0, 1);
+      else
+        % Length = n
+        integrationTimeSecAr = 1 ./ samplRateHz;
+
+        % Length = n-1
+        expectedSampleGapSecAr  =  ...
+          0.5 * (integrationTimeSecAr(1:end-1) + integrationTimeSecAr(2:end));
+        actualSampleGapSecAr    = double(diff(tt2000Ar)) / 1e9;
+        sampleGapFractionAr     = actualSampleGapSecAr ./ expectedSampleGapSecAr;
+
+        bDataGap = sampleGapFractionAr > maxSampleGapRatio;
+
+        % Length = n
+        iSegmentAr = [0; cumsum(bDataGap)];
+      end
     end
 
 
@@ -382,46 +385,50 @@ classdef utils
 
 
 
-    % Convert 2D array --> 1D cell array of 1D arrays, one per source row.
+    % Convert 2D array --> Column cell array of varying-length column arrays,
+    % one per 2D array row.
     %
     %
     % ARGUMENTS
     % =========
     % M
     %       2D matrix
-    % nCopyColsPerRowArray
+    % usprAr
     %       1D column vector. Numeric.
     %       (i) = Number of elements to copy from M(i,:).
     %
     % RETURN VALUE
     % ============
     % ca
-    %       Column cell array of 1D vectors.
-    %       ca{i}(j). j = 1:nCopyColsPerRowArray(i)
+    %       Column cell array of column vectors.
+    %       ca{i}(j). j = 1:usprAr(i)
     %
-    function ca = convert_matrix_to_cell_array_of_vectors(M, nCopyColsPerRowArray)
+    function ca = convert_matrix_to_cell_array_of_vectors(M, usprAr)
 
       % ASSERTIONS
       assert(isnumeric(M))
-      irf.assert.vector(nCopyColsPerRowArray)
       nRows = irf.assert.sizes(...
-        M,                    [-1, NaN], ...
-        nCopyColsPerRowArray, [-1, 1]);
+        M,      [-1, NaN], ...
+        usprAr, [-1]);
 
       % Create "ca".
       ca = cell(nRows, 1);
       for iRow = 1:nRows
-        ca{iRow} = M(iRow, 1:nCopyColsPerRowArray(iRow));
+        ca{iRow} = M(iRow, 1:usprAr(iRow))';   % Column array.
       end
     end
 
 
 
+    % Convert column cell array of varying-length column arrays --> 2D array,
+    % with one row per cell array element.
+    %
+    %
     % ARGUMENTS
     % =========
     % ca
     %       Column cell array of 1D vectors.
-    % nMatrixColumns
+    % aspr
     %       Scalar. Number of columns in M.
     %
     %
@@ -430,24 +437,22 @@ classdef utils
     % M
     %       Numeric 2D matrix.
     %       NOTE: Sets unset elements to NaN.
-    % nCopyColsPerRowVec
+    % usprAr
     %       1D vector.
     %       {i}=Length of ca{i}=Number of elements copied to M{i,:}.
-    function [M, nCopyColsPerRowVec] = ...
-        convert_cell_array_of_vectors_to_matrix(ca, nMatrixColumns)
+    %
+    function [M, usprAr] = convert_cell_array_of_vectors_to_matrix(ca, aspr)
 
-      assert(iscell(ca))
-      assert(iscolumn(ca))
-      assert(isscalar(nMatrixColumns))
+      assert(iscell(ca) & iscolumn(ca))
+      assert(isscalar(aspr))
 
-      nRows              = numel(ca);
-      nCopyColsPerRowVec = zeros(nRows, 1);   % Always column vector.
-      M                  = nan(  nRows, nMatrixColumns);
-      for iRow = 1:numel(nCopyColsPerRowVec)
-        nCopyColsPerRowVec(iRow)            = numel(ca{iRow});
-        M(iRow, 1:nCopyColsPerRowVec(iRow)) = ca{iRow};
+      nRows   = numel(ca);
+      usprAr  = zeros(nRows, 1);
+      M       = nan(  nRows, aspr);
+      for iRow = 1:numel(usprAr)
+        usprAr(iRow)            = numel(ca{iRow});
+        M(iRow, 1:usprAr(iRow)) = ca{iRow};
       end
-
     end
 
 
@@ -461,7 +466,6 @@ classdef utils
     % Assert that struct consisting of
     %   logical arrays
     %   numeric arrays
-    %   bicas.utils.SameRowsMap
     % has the same number rows in all its arrays.
     %
     % Useful for structs where all fields represent CDF zVariables and/or
@@ -484,26 +488,19 @@ classdef utils
     %
     % ACTUAL USAGE OF SPECIAL CASES FOR FIELDS (non-array fields)
     % ===========================================================
-    % Dcop.Zv.AsrSamplesAVolt
-    %       bicas.utils.SameRowsMap.
+    % Dcop.Zv.VoltageZvm: bicas.utils.ZvMap.
     %
     function nRows = assert_struct_num_fields_have_same_N_rows(S)
-      % NOTE: Function name somewhat bad.
-      % PROPOSAL: Make recursive?!
-      % PROPOSAL: Implement using new features in irf.assert.sizes().
+      % NOTE: Function name is somewhat bad.
       % TODO-NI: Function only used for cases where ALL fields should have
       %          same number of rows? (Due to previous refactoring.)
       % PROBLEM: Function is an obstacle to converting variable(s) to a class.
-      %   NOTE: An AsrSamplesAVoltSrm class should ensure INTERNALLY consistent array
+      %   NOTE: Class bicas.utils.ZvMap should ensure INTERNALLY consistent array
       %         sizes, but not consistent with a parent struct.
-      %   PROPOSAL: Special case for the specific class.
+      %   PROPOSAL: Special case for the specific class. -- IMPLEMENTED
       %   PROPOSAL: Convert all "Zv" data structs into class that enforces what
       %             this function tests.
-      %   PROPOSAL: Redefine as  ~assert_ZV_struct().
-      %       PRO: Special case for future class AsrSamplesAVoltSrm is more
-      %            natural.
-      %   PROPOSAL: Create class for collections of variables for which this is
-      %             a method.
+      %     PROPOSAL: Extend bicas.utils.ZvMap to work recursively.
 
       fieldNamesList1 = fieldnames(S);
       nRowsArray = [];
@@ -515,26 +512,8 @@ classdef utils
 
           nRowsArray(end+1) = size(fieldValue, 1);
 
-          %                 elseif iscell(fieldValue)
-          %                     % CASE: Cell array
-          %
-          %                     for iCc = 1:numel(fieldValue)
-          %                         nRowsArray(end+1) = size(fieldValue{iCc}, 1);
-          %                     end
-
-          %                 elseif isstruct(fieldValue)
-          %                     % CASE: Struct
-          %                     % Check number of rows in every field (regardless of type).
-          %
-          %                     fieldNamesList2 = fieldnames(fieldValue);
-          %                     for iFn2 = 1:length(fieldNamesList2)
-          %                         nRowsArray(end+1) = size(...
-          %                             fieldValue.(fieldNamesList2{iFn2}), ...
-          %                             1);
-          %                     end
-
-        elseif isa(fieldValue, 'bicas.utils.SameRowsMap')
-          nRowsArray(end+1) = fieldValue.nRows();
+        elseif isa(fieldValue, 'bicas.utils.ZvMap')
+          nRowsArray(end+1) = fieldValue.nRecords;
 
         else
           % CASE: Other field value type.

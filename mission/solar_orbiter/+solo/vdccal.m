@@ -9,7 +9,7 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(VDC_i
 % VDC_inp, EDC_inp
 %       TSeries objects with data from L2 CWF file(s).
 %       NOTE: 2023-10-04: BICAS calls this function but sets samples to NaN for
-%       timestamps for which QUALITY_FLAG are (strictly) lower than BICAS
+%       timestamps for which QUALITY_FLAG is (strictly) lower than BICAS
 %       setting PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN which is set to "2" by
 %       default.
 %       VDC_inp: x, y, z = V1,  V2,  V3
@@ -52,20 +52,6 @@ function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(VDC_i
 %       must therefore have an interface that is compatible with BICAS.
 
 
-% Timestamp after which all data should be regarded as having only one probe of
-% data (VDC1) available.
-% -----------------------------------------------------------------------------
-% NOTE: This is to mitigate against a long period of bad data with a lot of
-% saturated DC diffs, beginning somewhere around Dec 2022 and that has not yet
-% ended as of 2023-08-17. There will hopefully eventually be an associated end
-% date to this time period of bad data. This special treatment may or may not be
-% a temporary measure.
-% PROPOSAL: Have BICAS exclude saturated VDC diffs being sent to this function
-% in the first place. BICAS could exclude VDC diffs based on
-% (not-yet-implemented) quality bits or NSO table.
-TIME_PSP_BEGIN_SINGLE_PROBE = EpochTT('2022-12-15T00:00:00.000000000Z');
-
-
 
 % Normalize "calFilename": Always contain filename.
 if isempty(calFilename)
@@ -83,13 +69,23 @@ a = load(calFilename);
 
 
 
+% Assert that all calibration data arrays use the same timestamps.
+assert(all((a.d23.time == a.K123.time) & (a.d23.time == a.k23.time)))
+
+% Extract timestamps for beginning and end of calibration data, so that one can
+% implement special handling for time for which there is no calibration data.
+timeCalibrationDataBegin = a.d23.time(1);
+timeCalibrationDataEnd   = a.d23.time(end);
+
+
+
 %=============================================================
 % Set return values that represent the version of calibration
 %=============================================================
 % Version of the function (not .mat file).
 % NOTE: This value is meant to be be UPDATED BY HAND, not by an automatic
 % timestamp, so that a constant value represents the same function/algorithm.
-codeVerStr = '2025-06-26T17:48:00';
+codeVerStr = '2025-12-12T09:37:00';
 % Version of the .mat file. Using filename, or at least for now.
 % This string is used by BICAS to set a CDF global attribute in official
 % datasets for traceability.
@@ -119,8 +115,8 @@ sub_int_times = EpochTT(solo.split_tint(mainTint,discontTimes));
 
 % Predefine output variables:
 DCE_SRF_out = irf.ts_vec_xyz(EpochTT([]),double.empty(0,3));
-PSP_out     = irf.ts_scalar(EpochTT([]),[]);
-ScPot_out   = irf.ts_scalar(EpochTT([]),[]);
+PSP_out     = irf.ts_scalar( EpochTT([]),[]);
+ScPot_out   = irf.ts_scalar( EpochTT([]),[]);
 
 % Perform calibration on each subinterval separately (if any probe-to-spacecraft
 % potential discontinuities are present).
@@ -155,14 +151,30 @@ for iSub = 1:length(sub_int_times)-1
   % =======================
   VDC = VDC_inp.tlim(subTint);
 
-  % Indices/samples for which data should be treated as single probe.
-  bSingleProbe = isnan(VDC.y.data) & isnan(VDC.z.data);
-  bSingleProbe = bSingleProbe | (VDC.time > TIME_PSP_BEGIN_SINGLE_PROBE);
+  % Indices for which there is no calibration data.
+  bNoCalibrationData = ...
+    (VDC.time < timeCalibrationDataBegin) | ...
+    (VDC.time > timeCalibrationDataEnd);
 
   % Resample calibration parameters
-  d23R  = a.d23.tlim(subTint).resample(VDC);
-  k23R  = a.k23.tlim(subTint).resample(VDC);
+  % -------------------------------
+  % NOTE: Empirically, .resample() uses linear interpolation.
+  % IMPORTANT NOTE: .resample() somehow extrapolates data to outside of the time
+  % interval for which there is data. ==> Generates "calibrated" values (not
+  % NaN) also outside of time interval for which there is calibration data!
+  d23R  = a.d23.tlim( subTint).resample(VDC);
+  k23R  = a.k23.tlim( subTint).resample(VDC);
   K123R = a.K123.tlim(subTint).resample(VDC);
+  % Set (resampled) calibration data to NaN for timestamps outside of the time
+  % interval for which there is actual calibration data. One must do this to
+  % prevent wildly extrapolating calibration data to far outside the time
+  % interval covered by actual calibration data, which leads to calibrating data
+  % which can not (yet) be calibrated.
+  d23R.data( bNoCalibrationData) = NaN;
+  k23R.data( bNoCalibrationData) = NaN;
+  K123R.data(bNoCalibrationData) = NaN;
+
+
 
   % =================
   % Begin calibration
@@ -177,18 +189,26 @@ for iSub = 1:length(sub_int_times)-1
 
   V23_scaled = (V23.*K123R.data(:,1) + K123R.data(:,2)); % Correcting V23 to V1.
 
+  % PSP
+  % ---
   % Assume all probe data available: Compute PSP from corrected quantities.
   PSP = irf.ts_scalar(VDC.time, (V23_scaled + V1)/2);
-  % Single-probe data: Use alternate, simpler "calculation" for some
-  %                    timestamps.
-  PSP.data(bSingleProbe) = VDC.x.data(bSingleProbe);
+  % Use alternate "calculation" using only ANT1 for some timestamps.
+  % NOTE: This calculation is independent of calibration data. Should therefore
+  %       not use NaN when bNoCalibrationData==true.
+  bPspOnlyUsesAnt1 = isnan(VDC.y.data) | isnan(VDC.z.data);
+  bPspOnlyUsesAnt1 = bPspOnlyUsesAnt1  | bNoCalibrationData;
+  PSP.data(bPspOnlyUsesAnt1) = VDC.x.data(bPspOnlyUsesAnt1);
+  %
   PSP.units = 'V';
   PSP_out   = PSP_out.combine(PSP);
 
+  % ScPot: Function of PSP
+  % ----------------------
   % XXX: these are just ad hoc numbers.
   PLASMA_POT   = 1.5;
   SHORT_FACTOR = 2.5;
-
+  %
   ScPot = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
   ScPot.units = PSP.units;
   ScPot_out   = ScPot_out.combine(ScPot);
@@ -215,6 +235,8 @@ for iSub = 1:length(sub_int_times)-1
 
 end % for
 
+
+
 % Specify units and coordinate system for the variables that are actually
 % returned from the function.
 % -----------------------------------------------------------------------
@@ -228,14 +250,4 @@ DCE_SRF_out.coordinateSystem = 'SRF';
 PSP_out.units                = 'V';
 ScPot_out.units              = 'V';
 
-% TEMPORARY: Blank (set to NaN) DCE_SRF for a hardcoded time interval
-% -------------------------------------------------------------------
-% This is a temporary measure done in agreement with Andrew Dimmock until
-% updating the corresponding calibration. /Erik P G Johansson, 2025-06-26
-TINT_BLANK = irf.tint('2022-11-30T23:00:00Z/2022-12-01T00:10:00Z');
-bNaN = (DCE_SRF_out.time >= TINT_BLANK(1)) & (DCE_SRF_out.time <= TINT_BLANK(2));
-DCE_SRF_out.data(bNaN, :) = NaN;
-
-
-
-end %function
+end % function

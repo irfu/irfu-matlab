@@ -66,6 +66,11 @@ classdef Deretrending < handle
 
 
 
+    % ARGUMENTS
+    % =========
+    % detDegreeOf
+    %       Polynomial degree of detrending.
+    %       Negative <=> disabled.
     function obj = Deretrending(detDegreeOf, retEnabled)
       % ASSERTIONS
       assert(obj.state == 0)

@@ -79,7 +79,7 @@ function value = translate(table, key, varargin)
 % PROPOSAL: Return value as multiple return values (varying number).
 %   NOTE: Requires values to be same sized 1D cell arrays.
 %
-% NOTE: Compare bicas.ga.normalize().
+% NOTE: Compare bicas.ga.normalize_value().
 
 [keySetsTable, valuesTable] = convert_table(table);
 

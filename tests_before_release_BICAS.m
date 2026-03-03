@@ -6,7 +6,7 @@ function tests_before_release_BICAS
 % ---------------------------------------------
 % (1) BICAS (SolO/RPW/BIAS Calibration Software) is required to support a
 %     specific MATLAB version per agreement with LIRA/ROC which runs it. As of
-%     2025-02-19, this MATLAB version is MATLAB R2024a, and therefore tests
+%     2025-07-31, this MATLAB version is MATLAB R2024a, and therefore tests
 %     should run on that version specifically.
 % (2) This code can also be run more seldomly (e.g. only for branch SOdevel) to
 %     save on limited server resources for CI.

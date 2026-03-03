@@ -72,7 +72,6 @@ DataObj = dataobj(filePath);
 L.log('info', 'Converting dataobj (CDF data structure) to PDV.')
 ZvFpa  = struct();
 Zvs    = struct();
-ZvFv   = struct();
 ZvsLog = struct();   % zVariables (name+value) for logging.
 
 zVariableNameList = fieldnames(DataObj.data);
@@ -128,11 +127,7 @@ for iZv = 1:length(zVariableNameList)
   else
     Zvs.(zvName)   = zvValueTypedNan;
   end
-  % IMPLEMENTATION NOTE: Should not really need to store explicit FV for
-  % ZVs converted to FPAs, but temporary conversions FPA-->array require
-  % this any way.
-  ZvFv.(zvName) = fv;
-end
+end    % for
 
 
 
@@ -228,7 +223,7 @@ if ~issorted(Zvs.Epoch)
         'ERROR_WARNING_ILLEGAL_SETTING', ...
         anomalyDescrMsg, 'BICAS:DatasetFormat')
   end
-end
+end    % if
 
 
 
@@ -240,7 +235,7 @@ L.logf('info', 'File''s Global attribute: Skeleton_version = "%s"', ...
 
 
 % Create return value.
-Dataset = bicas.InputDataset(ZvFpa, Zvs, ZvFv, GlobalAttributes, filePath);
+Dataset = bicas.InputDataset(ZvFpa, Zvs, GlobalAttributes, filePath);
 
 
 

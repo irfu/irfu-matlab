@@ -1,0 +1,85 @@
+%
+% Dumb container for some calibration settings. Effectively a replacement for a
+% recurring set of function arguments.
+%
+% NOTE: Not all fields have valid values for all types of data.
+%       Ex: isAchg, iLsf.
+%
+%
+% Author: Erik P G Johansson, IRF, Uppsala, Sweden
+%
+classdef CalibrationSettings
+  % PROPOSAL: Abolish and replace with separate variables/arguments instead.
+  %   PRO: Really only used in one location (bicas.proc.L1L2.dc and passed on to
+  %        VCAL).
+  %   CON: Loses assertions in constructor.
+  %   PROPOSAL: Use keyword arguments instead.
+  %
+  % PROPOSAL: Move to bicas.proc.L1L2.cal.*.
+
+
+
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
+  properties(SetAccess=private, GetAccess=public)
+    iBlts
+    ssid
+    isAchg
+    iCalibTimeL
+    iCalibTimeH
+    iLsf
+  end
+
+
+
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
+  methods(Access=public)
+
+
+
+    function obj = CalibrationSettings(...
+        iBlts, ssid, isAchg, iCalibTimeL, iCalibTimeH, iLsf)
+
+      % ==========
+      % ASSERTIONS
+      % ==========
+      assert(isscalar(iBlts))
+      bicas.proc.L1L2.cal.utils.assert_iBlts(iBlts)
+
+      assert(bicas.proc.L1L2.const.is_SSID(ssid) & isscalar(ssid))
+
+      assert(isscalar(isAchg))
+      assert(isnan(isAchg) || ismember(isAchg, [0, 1]))
+
+      assert(isscalar(iCalibTimeL))
+      assert(isscalar(iCalibTimeH))
+
+      if ~isnan(iLsf)
+        % CASE: LFR data (not TDS)
+        bicas.proc.L1L2.cal.utils.assert_iLsf(iLsf)
+      end
+
+
+
+      obj.iBlts       = iBlts;
+      obj.ssid        = ssid;
+      obj.isAchg      = isAchg;
+      obj.iCalibTimeL = iCalibTimeL;
+      obj.iCalibTimeH = iCalibTimeH;
+      obj.iLsf        = iLsf;
+    end
+
+
+
+  end
+
+
+
+end

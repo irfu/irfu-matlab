@@ -10,9 +10,17 @@
 classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
   % PROPOSAL: Automatic test code for class itself.
   % PROPOSAL: How set data to be returned from functions?
-  %   PROPOSAL: Specify cell arrays of return data.
+  %   PROPOSAL: Specify return data.
   %       CON: Difficult to distinguish which RV is which.
-  %   PROPOSAL: Struct argument.
+  %   PROPOSAL: Function handles for calculating output from input.
+  %     CON: Too complicated for non-trivial functions.
+  %
+  % PROPOSAL: Assert input data.
+  %   CON: Adds too much hardcoded test data.
+  %     Excd.psp2ne(PspTs);
+  %     Excd.vdccal(VdcTs, EdcTs, []);
+
+
 
   %#####################
   %#####################
@@ -43,10 +51,13 @@ classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
   %##########################################################
   methods(Access=public)
 
+
+
     function varargout = vdccal(obj, varargin)
       % function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(VDC_inp, EDC_inp, calFilename)
-      assert(nargin  == 3)
+      assert(nargin  == 1+3)   % nargin includes "obj".
       assert(nargout == 5)
+
       varargout = {...
         obj.VdccalRv.DCE_SRF_out, ...
         obj.VdccalRv.PSP_out, ...
@@ -56,9 +67,11 @@ classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
         };
     end
 
+
+
     function varargout = psp2ne(obj, varargin)
       % function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
-      assert(nargin  == 1)
+      assert(nargin  == 1+1)   % nargin includes "obj".
       assert(nargout == 3)
       varargout = { ...
         obj.Psp2neRv.NeScp, ...
@@ -66,6 +79,8 @@ classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
         obj.Psp2neRv.codeVerStr, ...
         };
     end
+
+
 
   end    % methods(Access=public)
 

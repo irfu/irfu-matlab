@@ -1,7 +1,7 @@
 %
 % Derive official filename for one VHT dataset file.
 %
-% NOTE: Technically uses hardcoded DSI.
+% NOTE: Technically uses hardcoded DSID.
 % NOTE: Always generates CDAG filename.
 %
 %

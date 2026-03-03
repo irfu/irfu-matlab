@@ -12,20 +12,20 @@
 %       Numeric array. Arbitrary size. The LSF index, i.e. 1=LFR freq. F0, and
 %       so on.
 %       NOTE: Allows values 1,2,3,4 (not 0).
-% freqHz
+% samplRateHz
 %       Sampling frequency in Hz.
 %
 %
 % RETURN VALUES
 % =============
-% freqHz
+% samplRateHz
 %       Same size as iLsf.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-06-26, when broken out from other code.
 %
-function freqHz = get_LSF(iLsf)
+function samplRateHz = get_LSF(iLsf)
 % PROPOSAL: Change name:
 %   get_LSF()
 %       CON: Too BICAS-specific abbreviation.
@@ -53,9 +53,9 @@ if ~all(ismember(uniqueValues, [1:4]))
 end
 
 % NOTE: Implementation that works for arrays of any size.
-freqHz = nan(size(iLsf));        % Allocate array and set default values.
-freqHz(iLsf==1) = LSF_HZ(1);
-freqHz(iLsf==2) = LSF_HZ(2);
-freqHz(iLsf==3) = LSF_HZ(3);
-freqHz(iLsf==4) = LSF_HZ(4);
+samplRateHz = nan(size(iLsf));        % Allocate array and set default values.
+samplRateHz(iLsf==1) = LSF_HZ(1);
+samplRateHz(iLsf==2) = LSF_HZ(2);
+samplRateHz(iLsf==3) = LSF_HZ(3);
+samplRateHz(iLsf==4) = LSF_HZ(4);
 end

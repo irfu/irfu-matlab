@@ -16,7 +16,7 @@
 %
 % RETURN VALUES
 % =============
-% DfCa
+% DsfnCa
 %       Nx1 cell array of solo.adm.dsfn.DatasetFilename.
 % bIsDatasetArray
 %       Logical column array. Same size as argument. True iff the corresponding
@@ -26,7 +26,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-04-25.
 %
-function [DfCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
+function [DsfnCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
 % PROPOSAL: Change name
 %   PROPOSAL: parse_dataset_filenames_many  ("FILENAMES" in plural)
 %   PROPOSAL: parse_dataset_filename_many_paths
@@ -38,7 +38,7 @@ function [DfCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
 %   CON: Not generalizable to having multiple filenaming conventions in separate
 %        classes.
 %
-% PROPOSAL: Convert return value DfCa into non-cell array.
+% PROPOSAL: Convert return value DsfnCa into non-cell array.
 %
 % NOTE: Has no separate test code. Is indirectly tested by
 %       solo.adm.paths_to_DSMD_array___UTEST.
@@ -46,23 +46,23 @@ function [DfCa, bIsDatasetArray] = parse_dataset_filename_many(filePathCa)
 assert(iscell(filePathCa),   'filePathCa is not a cell array.')
 assert(iscolumn(filePathCa), 'filePathCa is not a column array.')
 
-DfCa            = cell(0, 1);
+DsfnCa          = cell(0, 1);
 bIsDatasetArray = false(numel(filePathCa), 1);
 for iFile = 1:numel(filePathCa)
 
   filename = irf.fs.get_name(filePathCa{iFile});
 
   try
-    Df = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
+    Dsfn = solo.adm.dsfn.DatasetFilename.parse_filename(filename);
   catch Exc
     % IMPLEMENTATION NOTE: try-catch is useful for reproducing errors.
     error('Can not parse filename "%s".', filename)
   end
 
-  if ~isempty(Df)
+  if ~isempty(Dsfn)
     % CASE: File can be identified as a dataset.
 
-    DfCa{           end+1, 1} = Df;
+    DsfnCa{         end+1, 1} = Dsfn;
     bIsDatasetArray(iFile, 1) = true;
   else
     % CASE: File can *NOT* be identified as dataset.

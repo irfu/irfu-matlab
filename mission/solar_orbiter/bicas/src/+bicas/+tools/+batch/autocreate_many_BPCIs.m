@@ -2,7 +2,7 @@
 % Find all possible BPCIs for a given set of DSMDs and SWMs.
 %
 % NOTE: One can limit the number of SWMs by trimming SwmArray.
-% NOTE: Requires DSMDs to not overlap in time for each DSI separately.
+% NOTE: Requires DSMDs to not overlap in time for each DSID separately.
 %       Therefore typically wants to only supply the latest versions of
 %       datasets.
 %       Can therefore not handle SOLO_L2_RPW-LFR-SBM1-CWF-E.
@@ -27,8 +27,8 @@ BpciArray = bicas.tools.batch.BicasProcessingCallInfo.empty(0,1);
 for iSwm = 1:numel(SwmArray)
 
   Swm          = SwmArray(iSwm);
-  dsiList      = {Swm.inputsList.dsi};
-  dsmdGroupsCa = solo.adm.find_overlapping_DSMD_groups(DsmdArray, dsiList);
+  dsidCa        = {Swm.inputsList.dsid};
+  dsmdGroupsCa = solo.adm.find_overlapping_DSMD_groups(DsmdArray, dsidCa);
 
   nGroups = numel(dsmdGroupsCa);
   for iGrp = 1:nGroups

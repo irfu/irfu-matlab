@@ -15,9 +15,9 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
   %#####################
   %#####################
   properties(SetAccess=immutable, GetAccess=private)
-    inputSciDsi
+    inputSciDsid
     inputSci    % Classification of type of processing (based on input dataset).
-    outputDsi
+    outputDsid
   end
 
 
@@ -33,20 +33,20 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
     % ARGUMENTS
     % =========
-    % inputSciDsi
+    % inputSciDsid
     %       The science input dataset will be interpreted as having this
-    %       DSI.
+    %       DSID.
     %       RATIONALE: InputDatasetsMap should contain the same as a CDF
     %       global attribute but
     %       (1) it could be missing, or
     %       (2) sometimes one may want to read an ROC-SGSE dataset as if it
     %           was an RODP dataset or the other way around.
     %
-    function obj = LfrSwmProcessing(inputSciDsi, outputDsi)
-      obj.inputSciDsi = inputSciDsi;
-      obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
+    function obj = LfrSwmProcessing(inputSciDsid, outputDsid)
+      obj.inputSciDsid = inputSciDsid;
+      obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSID(inputSciDsid);
 
-      obj.outputDsi   = outputDsi;
+      obj.outputDsid   = outputDsid;
     end
 
 
@@ -61,22 +61,25 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %==========================================
-      % Configure bicas.proc.L1L2.cal.Cal object
-      %==========================================
-      useGactRct = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS');
-      useZvcti2  = obj.inputSci.isL1r && Bso.get_fv('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2');
+      %======================
+      % Create VCAL and CCAL
+      %======================
+      useGactRct = obj.inputSci.isL1r;
+      useNbci    = obj.inputSci.isL1r;
 
       Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
         useGactRct, 'LFR', rctDir, ...
         InputSciCdf.Ga.CALIBRATION_TABLE, ...
-        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX(:, 1) + 1, ...
         InputSciCdf.Zv.BW, ...
         min(InputSciCdf.Zv.Epoch), ...
         max(InputSciCdf.Zv.Epoch), ...
         L);
+      BiasRctdCa = Rctdc.get_RCTD_CA('BIAS');
 
-      Cal = bicas.proc.L1L2.cal.Cal(Rctdc, useGactRct, useZvcti2, Bso);
+      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl(Rctdc, useNbci, Bso);
+      Vcal = bicas.proc.L1L2.cal.VoltageCalibration(Vcds, useGactRct, Bso);
+      Ccal = bicas.proc.L1L2.cal.CurrentCalibrationImpl(BiasRctdCa{1}, Bso);
 
 
 
@@ -86,14 +89,15 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf, Bso, L);
       SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd, Bso, L);
-      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
+      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, obj.outputDsid, Vcal, Ccal, NsoTable, Bso, L);
       OutputSciCdf = obj.process_DCOP_to_CDF(                         SciDcip, SciDcop);
 
 
 
-      OutputDatasetsMap = containers.Map();
-      RctdCa = Rctdc.get_global_RCTD_CA();
-      OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCa);
+      OutputDatasetsMap            = containers.Map();
+      RctdCa                       = Rctdc.get_global_RCTD_CA();
+      OutputDatasetsMap('SCI_cdf') = bicas.OutputDataset(...
+        OutputSciCdf.Zv, OutputSciCdf.Ga, RctdCa);
     end
 
 
@@ -137,7 +141,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       % Ex: QUALITY_BITMASK uses CDF_UINT1/uint8 in
       %
       if ~strcmp(InSciNorm.ZvFpa.QUALITY_BITMASK.mc, 'uint16')
-        error('BICAS:DatasetFormat', 'zVariable QUALITY_BITMASK is not uint16 (MATLAB class).')
+        error('BICAS:DatasetFormat', ...
+          'zVariable QUALITY_BITMASK is not uint16 (MATLAB class).')
       end
 
 
@@ -146,8 +151,8 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       % Normalize CALIBRATION_TABLE_INDEX
       %===================================
       InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
-        bicas.proc.L1L2.normalize_ZVCTI(...
-        InSci.Zv, nRecords, obj.inputSciDsi);
+        bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
+        InSci.Zv, nRecords, obj.inputSciDsid);
 
 
 
@@ -225,15 +230,15 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
         zvILsf = ones(nRecords, 1) * 3;   % Always value "3" (F2, "FREQ = 2").
       else
         zvILsf = InSci.Zv.FREQ + 1;
-        % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF
-        % index values (1=F0) used in loaded RCT data structs.
+        % NOTE: Translates from LFR's FREQ values (0=F0 etc) to LSF index
+        % values (1=F0) used in loaded RCT data structs.
       end
       irf.assert.sizes(zvILsf, [nRecords])
 
 
 
       % NOTE: Needed also for 1 SPR.
-      zvFreqHz = solo.hwzv.get_LSF( zvILsf );
+      samplRateHz = solo.hwzv.get_LSF( zvILsf );
 
       % Obtain the relevant values (one per record) from zVariables R0,
       % R1, R2, and the virtual "R3".
@@ -259,47 +264,63 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       E = single(permute(InSci.Zv.E, [1,3,2]));
 
       % ASSERTIONS
-      nCdfSamplesPerRecord = irf.assert.sizes(...
+      aspr = irf.assert.sizes(...
         InSci.Zv.V, [nRecords, -1], ...
         E,          [nRecords, -1, 2]);
-      if obj.inputSci.isLfrSurvSwf,   assert(nCdfSamplesPerRecord == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
-      else,                           assert(nCdfSamplesPerRecord == 1)
+      if obj.inputSci.isLfrSurvSwf,   assert(aspr == solo.hwzv.const.LFR_SWF_SNAPSHOT_LENGTH)
+      else,                           assert(aspr == 1)
       end
 
 
 
       Zv = [];
 
-      Zv.bltsSamplesTm(:, :, 1) = single(InSci.Zv.V);
-      % Copy values when there is actual data for that BLTS as determined
-      % by zvLrx. Otherwise NaN.
+      %======================
+      % Set Zv.bltsVoltageTm
+      %======================
+      Zv.bltsVoltageTm(:, :, 1) = single(InSci.Zv.V);
+      % Copy values when there is actual data for that BLTS as determined by
+      % zvLrx. Otherwise NaN.
       % zvLrx == 0: BLTS 4/5 contain data.
       % zvLrx == 1: BLTS 2/3 contain data.
-      Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
-      Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==0 );
-      Zv.bltsSamplesTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
-      Zv.bltsSamplesTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
+      Zv.bltsVoltageTm(:, :, 2) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==0 );
+      Zv.bltsVoltageTm(:, :, 3) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==0 );
+      Zv.bltsVoltageTm(:, :, 4) = bicas.proc.utils.set_NaN_rows( E(:,:,1), zvLrx==1 );
+      Zv.bltsVoltageTm(:, :, 5) = bicas.proc.utils.set_NaN_rows( E(:,:,2), zvLrx==1 );
 
-      Zv.Epoch                   = InSci.Zv.Epoch;
-      % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
+      Zv.tt2000                  = InSci.Zv.Epoch;
+      % NOTE: DELTA_PLUS_MINUS only applies to Epoch, and must therefore have
       % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
-        zvFreqHz, 1);
-      Zv.freqHz                  = zvFreqHz;
-      Zv.nValidSamplesPerRecord  = ones(nRecords, 1) * nCdfSamplesPerRecord;
+        samplRateHz, 1);
+      Zv.samplRateHz             = samplRateHz;
+      Zv.uspr                    = ones(nRecords, 1) * aspr;
+      % BW needed because it is copied to the output CDF.
       Zv.BW                      = InSci.Zv.BW;
-      Zv.ufv                     = ~logical(InSci.Zv.BW) | HkSciTime.isSweepingFpa.array(false);
+
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;
       Zv.dlrFpa                  = HkSciTime.dlrFpa;
       Zv.iLsf                    = zvILsf;
-
-      Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
-      Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
-
-      Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
-      Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
-
       Zv.lrx                     = zvLrx;
+      Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
+      Zv.L1qbmFpa                = InSci.ZvFpa.QUALITY_BITMASK;
+      Zv.QflFpa                  = InSci.ZvFpa.QUALITY_FLAG;
+
+      % QRCB arrayss for
+      % (1) when LFR ZV BW says BIAS is OFF, and
+      % (2) BIAS is sweeping.
+      % so that "quality actions" can be taken later based on these.
+      Zv.biasOffQrcb             = ~logical(InSci.Zv.BW);
+      Zv.sweepQrcb               = HkSciTime.isSweepingFpa.array(false);
+
+
+
+      % Replace CALIBRATION_TABLE_INDEX-->NbriFpa + NbciFpa
+      bBlank                     = ~logical(InSci.Zv.BW);
+      Zv.NbriFpa                 = bicas.utils.FPArray(...
+        InSci.Zv.CALIBRATION_TABLE_INDEX(:, 1), 'FILL_POSITIONS', bBlank) + uint8(1);
+      Zv.NbciFpa                 = bicas.utils.FPArray(...
+        InSci.Zv.CALIBRATION_TABLE_INDEX(:, 2), 'FILL_POSITIONS', bBlank);
 
 
 
@@ -337,17 +358,18 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       Ga.OBS_ID    = InSci.Ga.OBS_ID;
       Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
 
-      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
-
+      Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(...
+        Zv, Ga, obj.inputSci.isLfrSurvSwf, true, false);
     end    % process_CDF_to_DCIP
 
 
 
     function [OutSci] = process_DCOP_to_CDF(obj, SciDcip, SciDcop)
-      % NOTE: Most processing is done in function shared between LFR and
-      %       TDS.
+      % NOTE: Most processing is done in a function which is shared between LFR
+      %       and TDS. This wrapper is needed to handle the small difference
+      %       between LFR and TDS.
       OutSci = bicas.proc.L1L2.process_DCOP_to_CDF(...
-        SciDcip, SciDcop, obj.outputDsi);
+        SciDcip, SciDcop, obj.outputDsid);
 
       OutSci.Zv.BW = SciDcip.Zv.BW;
     end
@@ -375,7 +397,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
     %       ZV-like FPA. Column vector (Nx1) or empty.
     %
     function ZvFpa2 = normalize_ZV_empty(...
-        L, settingValue, settingKey, nRecords, ZvFpa1, zvName)
+        L, policySettingValue, policySettingKey, nRecords, ZvFpa1, zvName)
 
       if ~isempty(ZvFpa1)
         % Do nothing (except assertion later).
@@ -385,10 +407,10 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
           'zVar "%s" from the LFR SCI source dataset is empty.', ...
           zvName);
 
-        switch(settingValue)
+        switch(policySettingValue)
           case 'USE_FILL_VALUE'
             bicas.default_anomaly_handling(L, ...
-              settingValue, settingKey, 'OTHER', ...
+              policySettingValue, policySettingKey, 'OTHER', ...
               anomalyDescrMsg, ...
               'BICAS:DatasetFormat:SWMProcessing')
 
@@ -398,7 +420,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
 
           otherwise
             bicas.default_anomaly_handling(L, ...
-              settingValue, settingKey, 'ERROR_ILLEGAL_SETTING', ...
+              policySettingValue, policySettingKey, 'ERROR_ILLEGAL_SETTING', ...
               anomalyDescrMsg, ...
               'BICAS:DatasetFormat:SWMProcessing')
         end

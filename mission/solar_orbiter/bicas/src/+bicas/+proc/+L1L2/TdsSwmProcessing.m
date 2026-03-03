@@ -6,6 +6,11 @@
 %
 classdef TdsSwmProcessing < bicas.proc.SwmProcessing
   % PROPOSAL: Automatic test code.
+  %
+  % PROPOSAL: Normalize TDS data to be double (not single) to make it the same
+  %           as for LFR.
+  %   PRO: Eliminates at least one special case LFR/TDS w.r.t. double/single
+  %        (assertion).
 
 
 
@@ -15,9 +20,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
   %#####################
   %#####################
   properties(SetAccess=immutable, GetAccess=private)
-    inputSciDsi
+    inputSciDsid
     inputSci    % Classification of type of processing (based on input dataset).
-    outputDsi
+    outputDsid
   end
 
 
@@ -33,20 +38,20 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
     % ARGUMENTS
     % =========
-    % inputSciDsi
+    % inputSciDsid
     %       The science input dataset will be interpreted as having this
-    %       DSI.
+    %       DSID.
     %       RATIONALE: InputDatasetsMap should contain the same as a CDF
     %       global attribute but
     %       (1) it could be missing, or
     %       (2) sometimes one may want to read an ROC-SGSE dataset as if it
     %           was an RODP dataset or the other way around.
     %
-    function obj = TdsSwmProcessing(inputSciDsi, outputDsi)
-      obj.inputSciDsi = inputSciDsi;
-      obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputSciDsi);
+    function obj = TdsSwmProcessing(inputSciDsid, outputDsid)
+      obj.inputSciDsid = inputSciDsid;
+      obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSID(inputSciDsid);
 
-      obj.outputDsi   = outputDsi;
+      obj.outputDsid   = outputDsid;
     end
 
 
@@ -61,19 +66,17 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      %==========================================
-      % Configure bicas.proc.L1L2.cal.Cal object
-      %==========================================
-      % NOTE: TDS L1R never uses ZVCTI2.
+      %======================
+      % Create VCAL and CCAL
+      %======================
+      % NOTE: TDS L1R never uses NBCI.
       if obj.inputSci.isTdsCwf
-        settingUseGactRct = 'PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid         = 'TDS-CWF';
+        tdsRcttid = 'TDS-CWF';
       else
-        settingUseGactRct = 'PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS';
-        tdsRcttid         = 'TDS-RSWF';
+        tdsRcttid = 'TDS-RSWF';
       end
-      useGactRct = obj.inputSci.isL1r && Bso.get_fv(settingUseGactRct);
-      useZvcti2  = false;    % Always false for TDS.
+      useGactRct = obj.inputSci.isL1r;
+      useNbci    = false;    % Always false for TDS.
 
       % Create a synthetic zv_BW since it does not exist for TDS (only LFR).
       % --
@@ -86,13 +89,16 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       Rctdc = bicas.proc.L1L2.cal.rct.findread.get_nominal_RCTDC(...
         useGactRct, tdsRcttid, rctDir, ...
         InputSciCdf.Ga.CALIBRATION_TABLE, ...
-        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX, ...
+        InputSciCdf.Zv.CALIBRATION_TABLE_INDEX(:, 1) + 1, ...
         zv_BW, ...
         min(InputSciCdf.Zv.Epoch), ...
         max(InputSciCdf.Zv.Epoch), ...
         L);
+      BiasRctdCa = Rctdc.get_RCTD_CA('BIAS');
 
-      Cal = bicas.proc.L1L2.cal.Cal(Rctdc, useGactRct, useZvcti2, Bso);
+      Vcds = bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierImpl(Rctdc, useNbci, Bso);
+      Vcal = bicas.proc.L1L2.cal.VoltageCalibration(Vcds, useGactRct, Bso);
+      Ccal = bicas.proc.L1L2.cal.CurrentCalibrationImpl(BiasRctdCa{1}, Bso);
 
 
 
@@ -102,8 +108,8 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       HkSciTimePd  = bicas.proc.L1L2.process_HK_CDF_to_HK_on_SCI_TIME(InputSciCdf, InputHkCdf,  Bso, L);
       InputSciCdf  = obj.process_normalize_CDF(                       InputSciCdf,              Bso, L);
       SciDcip      = obj.process_CDF_to_DCIP(                         InputSciCdf, HkSciTimePd);
-      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, Cal, NsoTable, Bso, L);
-      OutputSciCdf = bicas.proc.L1L2.process_DCOP_to_CDF(             SciDcip, SciDcop, obj.outputDsi);
+      SciDcop      = bicas.proc.L1L2.dc.process_calibrate_demux(      SciDcip, InputCurCdf, obj.outputDsid, Vcal, Ccal, NsoTable, Bso, L);
+      OutputSciCdf = bicas.proc.L1L2.process_DCOP_to_CDF(             SciDcip, SciDcop, obj.outputDsid);
 
 
 
@@ -146,8 +152,9 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %===================================
       % Normalize CALIBRATION_TABLE_INDEX
       %===================================
-      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = bicas.proc.L1L2.normalize_ZVCTI(...
-        InSci.Zv, nRecords, obj.inputSciDsi);
+      InSciNorm.Zv.CALIBRATION_TABLE_INDEX = ...
+        bicas.proc.L1L2.normalize_CALIBRATION_TABLE_INDEX(...
+        InSci.Zv, nRecords, obj.inputSciDsid);
 
 
 
@@ -309,7 +316,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         ['Voltage (science) dataset timestamps Epoch do not', ...
         ' increase monotonously.']...
         )
-      [nRecords, WAVEFORM_DATA_nChannels, nCdfSamplesPerRecord] = irf.assert.sizes(...
+      [nRecords, WAVEFORM_DATA_nChannels, aspr] = irf.assert.sizes(...
         InSci.Zv.Epoch,         [-1], ...
         InSci.Zv.WAVEFORM_DATA, [-1, -2, -3]);
       if     obj.inputSci.isL1r,   WAVEFORM_DATA_nChannels_expected = 3;
@@ -333,43 +340,56 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
       %     solo_L1_rpw-tds-lfm-rswf-cdag_20200409_V09.cdf   : 16384 samples/record
       if obj.inputSci.isTdsRswf
         assert(...
-          nCdfSamplesPerRecord == solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD, ...
+          aspr == solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD, ...
           'Unexpected number of samples per CDF record (%i). Expected %i.', ...
-          nCdfSamplesPerRecord, solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD)
+          aspr, solo.hwzv.const.TDS_RSWF_L1R_SAMPLES_PER_RECORD)
       else
-        assert(nCdfSamplesPerRecord == 1)
+        assert(aspr == 1)
       end
 
 
 
-      % TODO-NI: Why convert to double? To avoid precision problems when
-      % doing math with other variables?
-      zvFreqHz = double(InSci.Zv.SAMPLING_RATE);
+      % TODO-NI: Why convert to double? To avoid precision problems when doing
+      % math with other variables?
+      samplRateHz = double(InSci.Zv.SAMPLING_RATE);
 
 
 
       Zv    = [];
 
-      Zv.Epoch                   = InSci.Zv.Epoch;
+      Zv.tt2000                  = InSci.Zv.Epoch;
       % NOTE: DELTA_PLUS_MINUS is only applies to Epoch, and must therefore have
       % consistent number of dimensions, regardless of CWF/SWF.
       Zv.DELTA_PLUS_MINUS        = bicas.proc.utils.derive_DELTA_PLUS_MINUS(...
-        zvFreqHz, 1);
-      Zv.freqHz                  = zvFreqHz;
-      Zv.QUALITY_BITMASK         = InSci.ZvFpa.QUALITY_BITMASK;
-      Zv.QUALITY_FLAG            = InSci.ZvFpa.QUALITY_FLAG;
+        samplRateHz, 1);
+      Zv.samplRateHz             = samplRateHz;
       Zv.SYNCHRO_FLAG            = InSci.Zv.SYNCHRO_FLAG;
       Zv.bdmFpa                  = HkSciTime.bdmFpa;
       Zv.isAchgFpa               = HkSciTime.isAchgFpa;
       Zv.dlrFpa                  = HkSciTime.dlrFpa;
-      Zv.ufv                     = HkSciTime.isSweepingFpa.array(false);
-      Zv.CALIBRATION_TABLE_INDEX = InSci.Zv.CALIBRATION_TABLE_INDEX;
+      Zv.L1qbmFpa                = InSci.ZvFpa.QUALITY_BITMASK;
+      Zv.QflFpa                  = InSci.ZvFpa.QUALITY_FLAG;
+
+      % QRCB arrayss for
+      % (1) if LFR ZV BW says BIAS is OFF (which is unknown for TDS processing),
+      %     and
+      % (2) BIAS is sweeping.
+      % so that "quality actions" can be taken later based on these.
+      Zv.biasOffQrcb             = false(size(InSci.Zv.Epoch));   % Real value is unknown.
+      Zv.sweepQrcb               = HkSciTime.isSweepingFpa.array(false);
+
+      % Replace CALIBRATION_TABLE_INDEX-->NbriFpa + NbciFpa
+      Zv.NbriFpa          = bicas.utils.FPArray(...
+        InSci.Zv.CALIBRATION_TABLE_INDEX(:, 1), 'NO_FILL_POSITIONS') + uint8(1);
+      Zv.NbciFpa  = bicas.utils.FPArray(...
+        InSci.Zv.CALIBRATION_TABLE_INDEX(:, 2), 'NO_FILL_POSITIONS');
 
 
 
-      %=====================================
-      % Set Zv.nValidSamplesPerRecord
-      %=====================================
+
+      %=============
+      % Set Zv.uspr
+      %=============
       if obj.inputSci.isTdsRswf
         %================================================================
         % NOTE: This might only be appropriate for TDS's "COMMON_MODE"
@@ -386,42 +406,46 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
         % Converting to double because code did so before code
         % reorganization. Reason unknown. Needed to avoid precision
         % problems when doing math with other variables?
-        Zv.nValidSamplesPerRecord = double(InSci.Zv.SAMPS_PER_CH);
+        Zv.uspr = double(InSci.Zv.SAMPS_PER_CH);
       else
-        Zv.nValidSamplesPerRecord = ones(nRecords, 1) * 1;
+        Zv.uspr = ones(nRecords, 1) * 1;
       end
-      assert(all(Zv.nValidSamplesPerRecord <= nCdfSamplesPerRecord), ...
+      assert(all(Zv.uspr <= aspr), ...
         'BICAS:Assertion:DatasetFormat', ...
         ['Dataset indicates that the number of valid samples per CDF', ...
-        ' record (max(Zv.nValidSamplesPerRecord)=%i) is', ...
+        ' record (max(Zv.uspr)=%i) is', ...
         ' NOT fewer than the number of indices per CDF record', ...
         ' (nCdfMaxSamplesPerSnapshot=%i).'], ...
-        max(Zv.nValidSamplesPerRecord), ...
-        nCdfSamplesPerRecord)
+        max(Zv.uspr), ...
+        aspr)
 
 
 
       %======================
-      % Set Zv.bltsSamplesTm
+      % Set Zv.bltsVoltageTm
       %======================
       zv_WAVEFORM_DATA_modif = double(permute(InSci.Zv.WAVEFORM_DATA, [1,3,2]));
+      %
+      Zv.bltsVoltageTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.uspr );
+      Zv.bltsVoltageTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.uspr );
+      Zv.bltsVoltageTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.uspr );
+      Zv.bltsVoltageTm(:, :, 4) = nan(nRecords, aspr);
+      Zv.bltsVoltageTm(:, :, 5) = nan(nRecords, aspr);
 
-      Zv.bltsSamplesTm(:, :, 1) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,1), Zv.nValidSamplesPerRecord );
-      Zv.bltsSamplesTm(:, :, 2) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,2), Zv.nValidSamplesPerRecord );
-      Zv.bltsSamplesTm(:, :, 3) = bicas.proc.utils.set_NaN_end_of_rows( zv_WAVEFORM_DATA_modif(:,:,3), Zv.nValidSamplesPerRecord );
-      Zv.bltsSamplesTm(:, :, 4) = nan(nRecords, nCdfSamplesPerRecord);
-      Zv.bltsSamplesTm(:, :, 5) = nan(nRecords, nCdfSamplesPerRecord);
+
+
+      % Only set because the code shared with LFR requires it.
+      Zv.iLsf      = nan( nRecords, 1);
+      Zv.lrx       = ones(nRecords, 1);
+      % BW only needed for LFR/TDS normalization of output data. Should be
+      % unused.
+      Zv.BW        = true(nRecords, 1);
 
 
 
       Ga = [];
       Ga.OBS_ID    = InSci.Ga.OBS_ID;
       Ga.SOOP_TYPE = InSci.Ga.SOOP_TYPE;
-
-      % Only set because the code shared with LFR requires it.
-      Zv.iLsf      = nan( nRecords, 1);
-      Zv.lrx       = ones(nRecords, 1);
-      Zv.BW        = true(nRecords, 1);
 
       Dcip = bicas.proc.L1L2.DemultiplexingCalibrationInput(...
         Zv, Ga, obj.inputSci.isTdsRswf, false, obj.inputSci.isTdsCwf);

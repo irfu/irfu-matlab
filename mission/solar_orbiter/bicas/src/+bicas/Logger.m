@@ -25,8 +25,9 @@
 %     (1b) stdout, or
 %     (2) don't log at all.
 % Ex: Switch between log prefixes or not.
-% Ex: Non-BICAS code that uses BICAS code (e.g. bicas.proc.L1L2.cal.Cal) can
-%     have other logging, or none.
+% Ex: Non-BICAS code that uses BICAS code (e.g.
+%     bicas.proc.L1L2.cal.VoltageCalibration) can have configure other logging,
+%     or no logging.
 % Ex: Can implement accepting log messages before specifying the log file, by
 %     temporarily storing the messages.
 %
@@ -63,6 +64,11 @@ classdef Logger < handle
 
 
 
+  %#####################
+  %#####################
+  % INSTANCE PROPERTIES
+  %#####################
+  %#####################
   properties(Access=private)
     % IMPLEMENTATION NOTE: Constant defined here and not centrally (e.g.
     % BSO) to make sure that it is error-safe and always initialized.
@@ -80,7 +86,14 @@ classdef Logger < handle
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods(Access=public)
+
+
 
     % Constructor
     %
@@ -241,7 +254,7 @@ classdef Logger < handle
           % as stdout.
           bashWrapperRecipientStr = irf.str.add_prefix_on_every_row(...
             rcsIcdLogMsg, ...
-            bicas.const.LOG_FILE_PREFIX_TBW);
+            char(bicas.const.LOG_FILE_PREFIX_TBW));
 
           obj.write_to_stdout(bashWrapperRecipientStr)
 
@@ -316,6 +329,11 @@ classdef Logger < handle
 
 
 
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
   methods(Access=private)
 
 

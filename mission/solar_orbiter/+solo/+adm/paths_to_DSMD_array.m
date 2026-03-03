@@ -51,16 +51,17 @@ function [DsmdArray, bIsDatasetArray] = paths_to_DSMD_array(filePathCa)
 %   NOTE: Needs support in parse_dataset_filename(_many).
 
 % FI = File Info
-[DfCa, bIsDatasetArray] = solo.adm.dsfn.parse_dataset_filename_many(filePathCa);
-datasetPathCa           = filePathCa(bIsDatasetArray);
+[DsfnCa, bIsDatasetArray] = solo.adm.dsfn.parse_dataset_filename_many(filePathCa);
+datasetPathCa             = filePathCa(bIsDatasetArray);
 
 DsmdArray = solo.adm.DSMD.empty(0, 1);
 
-for i = 1:numel(DfCa)
-  Df = DfCa{i};
+for i = 1:numel(DsfnCa)
+  Dsfn = DsfnCa{i};
 
   Dsmd = solo.adm.DSMD(...
-    datasetPathCa{i}, Df.datasetId, Df.versionNbr, Df.isCdag, Df.Dt1, Df.Dt2);
+    datasetPathCa{i}, Dsfn.datasetId, Dsfn.versionNbr, Dsfn.isCdag, ...
+    Dsfn.Dt1, Dsfn.Dt2);
 
   DsmdArray(end+1, 1) = Dsmd;
 end

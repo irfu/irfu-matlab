@@ -14,7 +14,7 @@ classdef InputDataset
   % PROPOSAL: Use abbreviation for bicas.InputDataset and bicas.OutputDataset.
   %   NOTE: Be consistent with bicas.swm.InputDataset, bicas.swm.OutputDataset.
   %   PROPOSAL: DS=DataSet
-  %     PRO: Consistent with DSI=DataSet ID
+  %     PRO: Consistent with DSID=DataSet ID
   %   IDS, ODS
   %   IPDS, OPDS
   %   SIDS = SWM Input DataSet = bicas.swm.InputDataset
@@ -46,9 +46,6 @@ classdef InputDataset
   %======================
   properties(SetAccess=immutable)
 
-    % Struct with zVariable fill values.
-    ZvFv
-
     % Struct with global attributes.
     Ga
 
@@ -67,10 +64,9 @@ classdef InputDataset
 
 
 
-    function obj = InputDataset(ZvFpa, Zv, ZvFv, Ga, filePath)
+    function obj = InputDataset(ZvFpa, Zv, Ga, filePath)
       obj.ZvFpa    = ZvFpa;
       obj.Zv       = Zv;
-      obj.ZvFv     = ZvFv;
       obj.Ga       = Ga;
       obj.filePath = filePath;
     end

@@ -39,10 +39,15 @@ function write_dataset_CDF(...
 %           dataset
 %           --
 %           cdfout.write_dataset()
-%   PROPOSAL: Convert bicas.write_dataset_CDF and bicas.read_dataset_CDF into
+%   PROPOSAL: Convert bicas.write_dataset_CDF() and bicas.read_dataset_CDF() into
 %             combined package (class?!).
 %       CON: Read & write make up two distinct categories.
+%       CON: Too big file?
 %       TODO-NI: Is there any overlap in functionality?
+%
+% PROPOSAL: Convert to class.
+%   PRO: Can test subfunctions.
+%   PRO: Can indent subfunctions.
 %===========================================================================
 % This function needs GlobalAttributes values from the input files:
 %    Data_version ??!!
@@ -176,7 +181,7 @@ DataObj = dataobj(masterCdfPath);
 % IMPLEMENTATION NOTE: VHT datasets do not have a zVar QUALITY_FLAG.
 % /2023-08-10
 if isfield(ZvsSubset, 'QUALITY_FLAG')
-  ZvsSubset.QUALITY_FLAG = modify_QUALITY_FLAG(ZvsSubset.QUALITY_FLAG, Bso, L);
+  ZvsSubset.QUALITY_FLAG = modify_QFL(ZvsSubset.QUALITY_FLAG, Bso, L);
 end
 
 
@@ -189,10 +194,10 @@ end
 %==================================================================
 % NOTE: Only sets a SUBSET of the zVariables in master CDF.
 L.log('info', 'Converting PDV to dataobj (CDF data structure)')
-ZvsLog  = struct();   % ZVs for logging.
-pdFieldNameList = fieldnames(ZvsSubset);
-for iPdFieldName = 1:length(pdFieldNameList)
-  zvName    = pdFieldNameList{iPdFieldName};
+ZvsLog        = struct();   % ZVs for logging.
+pdFieldNameCa = fieldnames(ZvsSubset);
+for iPdFieldName = 1:length(pdFieldNameCa)
+  zvName    = pdFieldNameCa{iPdFieldName};
   zvValuePd = ZvsSubset.(zvName);
 
   % HACK: Normalize for the purpose of (old) ZV logging
@@ -266,35 +271,33 @@ end    % init_modify_dataobj
 %
 % NOTE: Ignore fill positions/values.
 % NOTE: Applies to both L2 and L3.
-% NOTE: Using shortened zVariable name QF = QUALITY_FLAG to make algorithm
-%       clearer.
-function QfFpa = modify_QUALITY_FLAG(QfFpa, Bso, L)
+function QflFpa = modify_QFL(QflFpa, Bso, L)
 
-assert(isa(QfFpa, 'bicas.utils.FPArray'))
+assert(isa(QflFpa, 'bicas.utils.FPArray'))
 
 % ============================================
 % Obtain global QUALITY_FLAG cap from settings
 % ============================================
-[qfMax, key] = Bso.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
+[qflMax, key] = Bso.get_fv('PROCESSING.ZV_QUALITY_FLAG_MAX');
 % ASSERT: Valid setting (requirement before converting to uint8)
-assert(isfinite(qfMax))
-qfMax = uint8(qfMax);
-assert(bicas.utils.validate_ZV_QUALITY_FLAG(qfMax), ...
+assert(isfinite(qflMax))
+qflMax = uint8(qflMax);
+assert(bicas.utils.validate_QFL(qflMax), ...
   'BICAS:Assertion:ConfigurationBug', ...
-  'Illegal BICAS setting "%s"=%i.', key, qfMax)
+  'Illegal BICAS setting "%s"=%i.', key, qflMax)
 
 % Log if setting is lower than allowed ZV maximum.
-if qfMax < bicas.const.QUALITY_FLAG_MAX
+if qflMax < bicas.const.qrc.QFL_MAX
   L.logf('warning', ...
     'Using setting %s = %i to set global max value for zVariable QUALITY_FLAG.', ...
-    key, qfMax);
+    key, qflMax);
 end
 
 % Enforce QUALITY_FLAG cap.
-bTooHighQfFpa                     = (QfFpa >= qfMax);
-QfFpa(bTooHighQfFpa.array(false)) = bicas.utils.FPArray(qfMax);
+bTooHighQflFpa                      = (QflFpa >= qflMax);
+QflFpa(bTooHighQflFpa.array(false)) = bicas.utils.FPArray(qflMax);
 
-end    % modify_QUALITY_FLAG
+end    % modify_QFL
 
 
 

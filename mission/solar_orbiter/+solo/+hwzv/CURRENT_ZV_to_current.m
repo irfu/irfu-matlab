@@ -7,11 +7,11 @@
 % bias anomaly" (see Section below). Therefore has some extra features to handle
 % the quirks of the SOLO_L1_RPW-BIA-CURRENT dataset format.
 %
-% NOTE: "CURRENT" in the function name refers to SOLO_L1_RPW-BIA-CURRENT datasets.
-% NOTE: Does not try to calibrate or convert units. The output bias is of the
-% same type as the bias input.
+% NOTE: "CURRENT" in the function name refers to SOLO_L1_RPW-BIA-CURRENT CDFs.
+% NOTE: Does not try to calibrate or convert bias current units. The output bias
+%       current has the same unit as the input bias current.
 % NOTE: Does not interpolate values to new timestamps.
-% NOTE: See CURRENT_ZV_to_current_interpolate.
+% NOTE: See CURRENT_ZV_to_current_interpolate().
 %
 %
 % DUPLICATE BIAS ANOMALY
@@ -31,10 +31,10 @@
 % (2) Removes duplicate bias settings (successive non-NaN data points with the
 %     same timestamp and bias setting). Returns a flag value for whether this
 %     has happened or not. This kind of data can be found due to the "duplicate
-%     bias anomaly" (see Section) SOLO_L1_RPW-BIA-CURRENT and is therefore
-%     flagged rather than asserted not to happen so that the caller can select
-%     whether to give error/warn/accept, whether to use this as mitigation or
-%     not.
+%     bias anomaly" (see dedicated Section) SOLO_L1_RPW-BIA-CURRENT and is
+%     therefore flagged rather than asserted not to happen so that the caller
+%     can select whether to give error/warn/accept, whether to use this as
+%     mitigation or not.
 % --
 % NOTE: Does NOT remove bias settings that set the bias to the preceding value
 % at a later timestamp ("unnecessary later bias settings").
@@ -48,22 +48,22 @@
 %       increases with time. Can be e.g. TT2000.
 % zvIBIASx1
 %       Nx1 vector. Floating-point. Same length as t1. Bias values.
-%       NOTE: NaN is fill value (not e.g. -1e31).
+%       NOTE: Fill value is represents fill value (i.e. not e.g. -1e31).
 %
 %
 % RETURN VALUES
 % =============
 % t2
-%       1D vector. Time. Same type of time as t1.
+%       Column array. Time. Same type of time as t1.
 %       Subset of timestamps t1. See algorithm.
 % zvIBIASx2
-%       1D vector. Current values at t2. Double.
+%       Column array. Current values at t2. Double.
 % duplicatesAnomaly
-%       Whether has detected known anomaly mentioned above in
-%       SOLO_L1_RPW-BIA-CURRENT datasets. Iff 1/true, then found duplicate
+%       Scalar logical. Whether has detected known anomaly mentioned above in
+%       SOLO_L1_RPW-BIA-CURRENT datasets. Iff true, then found duplicate
 %       timestamps, with the SAME bias current.
-%       NOTE: Bias current is still unambiguous in this case and the
-%       function is designed to handle this case.
+%       NOTE: Bias current is still unambiguous in this case and the function
+%       is designed to handle this case.
 %       RATIONALE: Caller (e.g. BICAS) can give error, warning.
 %
 %
@@ -71,6 +71,12 @@
 % First created 2020-06-23.
 %
 function [t2, zvIBIASx2, duplicatesAnomaly] = CURRENT_ZV_to_current(t1, zvIBIASx1)
+% PROPOSAL: Better name.
+%   NOTE: Cf. solo.hwzv.CURRENT_ZV_to_current_interpolate() which calls this
+%         function. Function name should probably be similar.
+%   ~current, CDF/dataset, ZV
+%   ~clean data
+%   clean_ZV_bias_current
 
 % ASSERTIONS
 irf.assert.sizes(...
@@ -79,13 +85,11 @@ irf.assert.sizes(...
 % Require current datatype that can store NaN.
 assert(isfloat(zvIBIASx1))
 % IMPLEMENTATION NOTE: Do not check for STRICT increase (yet) since it might
-% not be so because of duplicate bias settings anomaly. Checking for
+% not be so because of duplicate bias settings anomaly. Checking for a
 % NON-STRICT incrementation is still a useful check since it is global.
 assert(issorted(t1), 'Argument t1 does not increase, is not sorted.')
 
-% NOTE: return value has to be float to store NaN anyway.
-%     t1        = double(t1);
-%     zvIBIASx1 = double(zvIBIASx1);
+
 
 % Remove indices at which CURRENTS (not Epoch) are NOT NaN, i.e. which
 % provide actual bias values on this antenna.
@@ -108,26 +112,26 @@ zvIBIASx1 = zvIBIASx1(bKeep, 1);
 if ~issorted(t1, 'strictascend')
   % CASE: Timestamps do NOT increase strictly.
 
-  % Set bDupl = whether component (timestamp) is followed by identical
-  % value (duplicate).
+  % Set bDupl = whether timestamp is followed by identical (duplicate)
+  % timestamp.
   bDupl = (diff(t1) == 0);
   % Add last component to maintain same vector length.
   bDupl = [bDupl(:); false];
   iDupl = find(bDupl);
 
-  % ASSERTION: Successive duplicate timestamps correspond to identical
-  % bias settings.
+  % ASSERTION: Successive duplicate timestamps correspond to successive identical
+  % bias currents.
   assert(all(zvIBIASx1(iDupl) == zvIBIASx1(iDupl+1)), ...
     'TC_to_current:Assertion', ...
-    ['Bias currents contain non-equal current values on equal', ...
+    ['Bias currents contain non-equal current values on successive equal', ...
     ' timestamps on the same antenna.']);
 
   %=============================
   % Mitigate: Remove duplicates
   %=============================
-  t1        = t1(~bDupl);
-  zvIBIASx1 = zvIBIASx1(~bDupl);
-  duplicatesAnomaly = 1;
+  t1                = t1(       ~bDupl);
+  zvIBIASx1         = zvIBIASx1(~bDupl);
+  duplicatesAnomaly = true;
 
   % ASSERTION: Epoch strictly increases (after mitigation)
   assert(issorted(t1, 'strictascend'), ...
@@ -136,7 +140,7 @@ if ~issorted(t1, 'strictascend')
     ' removing duplicate bias settings.'])
 else
   % CASE: Timestamps do increase strictly.
-  duplicatesAnomaly = 0;
+  duplicatesAnomaly = false;
 end
 
 t2        = t1;

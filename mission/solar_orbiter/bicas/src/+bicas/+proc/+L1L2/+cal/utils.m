@@ -1,8 +1,6 @@
 %
-% Collection of utility functions used by bicas.proc.L1L2.cal.Cal to reduce its
-% size. Only meant to contain static methods.
-%
-% Selected functions in bicas.proc.L1L2.cal.Cal are meant to be moved here.
+% Collection of utility functions to reduce the sizes of other
+% bicas.proc.L1L2.cal files.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -30,31 +28,32 @@ classdef utils
     %
     % ARGUMENTS AND RETURN VALUES
     % ===========================
-    % Epoch
-    %       Column vector with Epoch values.
-    % CalibEpochList
-    %       Column vector of monotonically increasing timestamps ("Epoch
-    %       format"). In practice intended to be Bias.epochL or Bias.epochH.
+    % tt2000
+    %       Column vector with TT2000 values.
+    % calibTt2000Ar
+    %       Column vector of monotonically increasing TT2000 timestamps.
+    %       In practice intended to be Bias.tt2000L or Bias.tt2000H.
     % iCalib
     %       Array. iCalibList(i) = calibration time index for Epoch(i).
     %
-    function [iCalib] = get_calibration_time(Epoch, CalibEpochList)
+    function [iCalib] = get_calibration_time_index(tt2000, calibTt2000Ar)
 
       % ASSERTIONS
-      bicas.utils.assert_ZV_Epoch(Epoch)
-      bicas.utils.assert_ZV_Epoch(CalibEpochList)
-      % IMPLEMENTATION NOTE: Does not work if CalibEpochList is empty,
+      bicas.utils.assert_ZV_Epoch(tt2000)
+      bicas.utils.assert_ZV_Epoch(calibTt2000Ar)
+
+      % IMPLEMENTATION NOTE: Function does not work if calibTt2000Ar is empty,
       % since discretize behaves differently for scalar second argument.
-      assert(~isempty(CalibEpochList))
+      assert(~isempty(calibTt2000Ar))
 
       % IMPLEMENTATION NOTE: "discretize" by itself returns NaN for Epoch
-      % values outside the outermost edges. Therefore (1) must add upper
-      % edge "Inf", (2) asserts non-Nan afterwards.
-      % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar
-      % second argument. Adding edges at infinity hides this problem. If
-      % one does not add infinities and uses a scalar edge list, then one
-      % has to treat those cases manually.
-      iCalib = discretize(Epoch, [CalibEpochList; Inf], 'IncludedEdge', 'left');
+      % values outside the outermost edges. Therefore (1) must add upper edge
+      % "Inf", (2) asserts non-Nan afterwards.
+      % IMPLEMENTATION NOTE: "discretize" behaves differently for scalar second
+      % argument. Adding edges at infinity hides this problem. If one does not
+      % add infinities and uses a scalar edge list, then one has to treat those
+      % cases manually.
+      iCalib = discretize(tt2000, [calibTt2000Ar; Inf], 'IncludedEdge', 'left');
       assert(all(~isnan(iCalib(:))), ...
         'BICAS:SWMProcessing', ...
         ['Can not derive which calibration data to', ...
@@ -111,11 +110,11 @@ classdef utils
     %       omegaLimitRps. Primarily intended to be equal to be equal to
     %       tf(omegaLimitRps), but does not have to be.
     %       NOTE: Allowed to be NaN.
-    %       NOTE: Function could determine this value but asks the caller to
-    %       evaluate it. Since this function is meant to be used in
-    %       anonymous functions/function handles (e.g. as a wrapper around a
-    %       tf), this avoids calling argument tf every time this function is
-    %       called.
+    %       NOTE: This function could determine this value itself but instead
+    %       asks the caller to evaluate it. Since this function is meant to be
+    %       used in anonymous functions/function handles (e.g. as a wrapper
+    %       around a tf), this avoids calling argument "tf" every time this
+    %       function is called.
     %
     function Z = TF_LF_constant_abs_Z(tf, omegaRps, omegaLimitRps, zLimit)
 
@@ -131,21 +130,21 @@ classdef utils
       % NOTE: May evaluate 1/0 at 0 Hz (for e.g. BIAS AC TF), but that
       % should be overwritten afterwards.
       Z = tf(omegaRps);
-      b = omegaRps < (omegaLimitRps);
+      bBelowLimit = omegaRps < (omegaLimitRps);
 
       % Handling of special case
       % ========================
       % Z(0 Hz) non-finite (e.g. for BIAS AC ITF).
       % ==> Phase is undetermined.
       % ==> Can not set to non-zero gain with same phase as before.
-      % IMPLEMENTATION NOTE: Identifies indices before normalizing, just
-      % to be sure that condition stems from input data, not normalization
-      % bugs.
-      b2 = ~isfinite(Z(b)) & omegaRps(b)==0;
+      % IMPLEMENTATION NOTE: Identifies indices before normalizing, just to be
+      % sure that condition stems from input data, not normalization bugs.
+      b2       = ~isfinite(Z(bBelowLimit)) & omegaRps(bBelowLimit)==0;
+      bSetZero = bBelowLimit(b2);
 
-      Z(b) = Z(b) ./ abs(Z(b)) * abs(zLimit);
+      Z(bBelowLimit) = Z(bBelowLimit) ./ abs(Z(bBelowLimit)) * abs(zLimit);
 
-      Z(b(b2)) = 0;
+      Z(bSetZero) = 0;
     end
 
 
@@ -339,39 +338,6 @@ classdef utils
 
 
 
-    function itf = create_LFR_BIAS_ITF(...
-        itfLfr, itfBias, isAc, acConstGainLowFreqRps)
-      % PROPOSAL: Re-purpose into function only for combining BIAS and
-      % non-BIAS TFs.
-
-      assert(isscalar(isAc), islogical(isAc))
-
-      itf = @(omegaRps) (TF_product(omegaRps));
-
-      if isAc()
-        % NOTE: Modifies combined LFR+BIAS TF.
-
-        zLimit = itf(acConstGainLowFreqRps);
-
-        itf = @(omegaRps) (bicas.proc.L1L2.cal.utils.TF_LF_constant_abs_Z(...
-          itf, omegaRps, acConstGainLowFreqRps, zLimit));
-      end
-
-
-      %###################################################################
-      % IMPLEMENTATION NOTE: In principle, this function is quite
-      % unnecessary for multiplying TFs, but it is useful for putting
-      % breakpoints in when debugging TFs which are built from layers of
-      % anonymous functions and function handles.
-      function Z = TF_product(omegaRps)
-        Z = itfLfr(omegaRps) ...
-          .* ...
-          itfBias(omegaRps);
-      end
-    end
-
-
-
     function log_TF_tabulated(logLevel, tfName, Tf, L)
       % PROPOSAL: Somehow prevent printing unnecessary trailing zeros.
 
@@ -390,19 +356,20 @@ classdef utils
 
     % ARGUMENTS
     % =========
-    % freqHzArray  : Array of frequencies for which the TF Z value should be
-    %                logged.
-    % TfFunchandle : Z(omegaRps).
-    %                NOTE: rad/s (omegaRps) as opposed to Hz (freqHzArray).
+    % samplRateHzAr
+    %       Array of frequencies for which the TF Z value should be logged.
+    % tfFh
+    %       Function handle, Z(omegaRps).
+    %       NOTE: rad/s (omegaRps) as opposed to Hz (samplRateHzAr).
     %
     function log_TF_function_handle(...
-        logLevel, tfName, tfUnit, freqHzArray, tfFuncHandle, L)
-      assert(isa(tfFuncHandle, 'function_handle'))
+        logLevel, tfName, tfUnit, samplRateHzAr, tfFh, L)
+      assert(isa(tfFh, 'function_handle'))
 
-      zArray = tfFuncHandle(freqHzArray * 2*pi);
-      for i=1:numel(freqHzArray)
-        freqHz = freqHzArray(i);
-        Z      = zArray(i);
+      zAr = tfFh(samplRateHzAr * 2*pi);
+      for i=1:numel(samplRateHzAr)
+        samplRateHz = samplRateHzAr(i);
+        Z           = zAr(i);
 
         inverseZValueStr = sprintf('1/%10.5f', 1/abs(Z));
 
@@ -446,14 +413,15 @@ classdef utils
         % ~"wrapped"?
         L.logf(logLevel, ...
           '%-46s %7.2f [Hz]: abs(Z)=%8.5f=%12s [%s], phase(Z)=% 6.1f [deg]', ...
-          tfName, freqHz, abs(Z), inverseZValueStr, ...
+          tfName, samplRateHz, abs(Z), inverseZValueStr, ...
           tfUnit, rad2deg(angle(Z)))
       end    % for
     end
 
 
 
-    % Utility function for creating string representing 1D vector.
+    % Utility function for creating a human-readable string representing a 1D
+    % vector.
     % Ex: '(3.1416, 2.7183, 1.6180)'
     function s = vector_string(pattern, v)
       assert(~isempty(v))
@@ -474,7 +442,7 @@ classdef utils
 
 
     function assert_iLsf(iLsf)
-      assert(ismember(iLsf,  [1:4]), ...
+      assert(ismember(iLsf, [1:4]), ...
         'BICAS:IllegalArgument:Assertion', ...
         'Illegal value iLsf=%g.', iLsf)
     end

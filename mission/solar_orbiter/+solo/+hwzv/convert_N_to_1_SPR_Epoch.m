@@ -34,7 +34,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2020-05-28, based on older code.
 %
-function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, freqHzWithinRecords )
+function newTt2000 = convert_N_to_1_SPR_Epoch( oldTt2000, nSpr, samplRateHzWithinRecords )
 
 % PROPOSAL: Turn into more generic function, working on number sequences in general.
 %   CON: Much TT2000-special code.
@@ -61,19 +61,19 @@ if numel(nSpr) ~= 1
   error(...
     'convert_N_to_1_SPR_Epoch:Assertion:IllegalArgument', ...
     'nSpr not scalar.')
-elseif size(freqHzWithinRecords, 1) ~= size(oldTt2000, 1)
+elseif size(samplRateHzWithinRecords, 1) ~= size(oldTt2000, 1)
   error(...
     'convert_N_to_1_SPR_Epoch:Assertion:IllegalArgument', ...
     'freqWithinRecords and oldTt2000 do not have the same number of rows.')
 end
-assert(iscolumn(freqHzWithinRecords))
+assert(iscolumn(samplRateHzWithinRecords))
 
 nRecords = numel(oldTt2000);
 
 % Express frequency as period length in ns (since tt2000 uses ns as a unit).
 % Use the same MATLAB class as tt.
 % Unique frequency per record.
-periodNsColVec = int64(1e9 ./ freqHzWithinRecords);
+periodNsColVec = int64(1e9 ./ samplRateHzWithinRecords);
 periodNsMatrix = repmat(periodNsColVec, [1, nSpr]);
 
 % Conventions:

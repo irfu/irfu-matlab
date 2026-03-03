@@ -35,7 +35,6 @@ classdef utils___UTEST < matlab.unittest.TestCase
           @() bicas.proc.utils.assert_increasing(array, isMonotonic, errorId, msg), ...
           ?MException)
       end
-      %===================================================================
 
       for isMonotonic = [false, true]
         test(zeros(0, 1), isMonotonic)
@@ -53,34 +52,106 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
     function test_set_NaN_end_of_rows(testCase)
 
-      function test(inputsCa, expOutputsCa)
-        % Pre-allocate correct size for later assignment via function
-        actOutputs = cell(size(expOutputsCa));
-
-        [actOutputs{:}] = bicas.proc.utils.set_NaN_end_of_rows(inputsCa{:});
-        testCase.verifyEqual(actOutputs, expOutputsCa)
+      function test(zv, snapshotLengths, expZv)
+        actZv = bicas.proc.utils.set_NaN_end_of_rows(zv, snapshotLengths);
+        testCase.verifyEqual(actZv, expZv)
       end
-      %===================================================================
-      test({ones(0,4),              ones(0,1)},   {ones(0,4)});
-      test({[0,1,2],                [3]},   {[0,1,2]});
-      test({[0,1,2,3,4; 5,6,7,8,9], [2;4]}, {[0,1,NaN,NaN,NaN; 5,6,7,8,NaN]});
+
+      test(ones(0,4),              ones(0,1), ones(0,4));
+      test([0,1,2],                [3],       [0,1,2]);
+      test([0,1,2,3,4; 5,6,7,8,9], [2;4],     [0,1,NaN,NaN,NaN; 5,6,7,8,NaN]);
+    end
+
+
+
+    function test_find_data_gaps(T)
+      function test(tt2000Ar, samplRateHz, maxSampleGapFraction, expISegmentAr)
+        tt2000Ar = int64(tt2000Ar);
+
+        actISegmentAr = bicas.proc.utils.find_data_gaps(...
+          tt2000Ar, samplRateHz, maxSampleGapFraction);
+
+        T.assertEqual(actISegmentAr, expISegmentAr)
+      end
+
+      % Zero data points
+      test(zeros(0, 1), zeros(0, 1), 2.01, zeros(0, 1))
+
+      % One data point
+      test([10] * 1e9, [3  ], 2.01, [0])
+      test([10] * 1e9, [0.1], 0.01, [0])
+
+      % Several data points
+      % One sampling rate.
+      % No data gap.
+      test(...
+        [0   10   20   30  ]' * 1e9, ...
+        [0.1  0.1  0.1  0.1]', 1.01, ...
+        [0    0    0    0  ]')
+      test(...
+        [0   10   20   30  ]' * 1e9, ...
+        [0.1  0.1  0.1  0.1]', 0.99, ...
+        [0    1    2    3  ]')
+
+      % One sampling rate, one data gap.
+      test(...
+        [0 1 2   4 5 6 7]' * 1e9, ...
+        [1 1 1   1 1 1 1]', 2.01, ...
+        [0 0 0   0 0 0 0]')
+      test(...
+        [0 1 2   4 5 6 7]' * 1e9, ...
+        [1 1 1   1 1 1 1]', 1.99, ...
+        [0 0 0   1 1 1 1]')
+
+      % Two sampling rates.
+      % No data gap.
+      test(...
+        [2   4     7    11   ]' * 1e9, ...
+        [0.5 0.5   0.25  0.25]', 1.01, ...
+        [0   0     0     0   ]')
+      test(...
+        [2   4     7    11   ]' * 1e9, ...
+        [0.5 0.5   0.25  0.25]', 0.99, ...
+        [0   1     2     3   ]')
+
+      % Two sampling rates
+      % One data gap (small).
+      test(...
+        [0 1 2   4   6   8  ]' * 1e9, ...
+        [1 1 1   0.5 0.5 0.5]', 2/(0.5+1) * 1.01, ...
+        [0 0 0   0   0   0]')
+      test(...
+        [0 1 2   4   6   8  ]' * 1e9, ...
+        [1 1 1   0.5 0.5 0.5]', 2/(0.5+1) * 0.99, ...
+        [0 0 0   1   1   1]')
+
+      % Complex, "realistic" test
+      % Fluctuating sampling rate in timestamps.
+      test(...
+        [0.0 2.1 4.0 6.0  10.0 11.1 12.0 13.1   20   30   40  ]' * 1e9, ...
+        [0.5 0.5 0.5 0.5   1    1    1    1      0.1  0.1  0.1]', 1.1, ...
+        [0   0   0   0     1    1    1    1      2    2    2  ]')
     end
 
 
 
     function test_convert_matrix_to_cell_array_of_vectors(testCase)
 
-      function test(inputsCa, expOutputsCa)
-        % Pre-allocate correct size for later assignment via function.
-        actOutputs = cell(size(expOutputsCa));
+      function test(M, nCopyColsPerRowArray, expCa)
+        actCa = bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(...
+          M, nCopyColsPerRowArray);
 
-        [actOutputs{:}] = bicas.proc.utils.convert_matrix_to_cell_array_of_vectors(inputsCa{:});
-        testCase.verifyEqual(actOutputs, expOutputsCa)
+        testCase.verifyEqual(actCa, expCa)
       end
-      %===================================================================
-      test({zeros(0,1), zeros(0,1)}, {cell(0,1)});
-      test({[1,2,3,4,5], [3]}, {{[1,2,3]}});
-      test({[1,2,3,4,5; 6,7,8,9,0], [3; 2]}, {{[1,2,3]; [6,7]}});
+
+      test(zeros(0,1),  zeros(0,1), cell(0,1));
+
+      test([1,2,3,4,5], [0],        {zeros(0, 1)});
+      test([1,2,3,4,5], [3],        {[1 2 3]'});
+      test([1,2,3,4,5], [5],        {[1 2 3 4 5]'});
+
+      test([1,2,3,4,5; 6,7,8,9,0], [3; 2], {[1 2 3]'; [6 7]'});
+      test([1,2,3,4,5; 6,7,8,9,0], [0; 5], {zeros(0, 1); [6 7 8 9 0]'});
     end
 
 
@@ -95,8 +166,8 @@ classdef utils___UTEST < matlab.unittest.TestCase
         testCase.verifyEqual(expM,                  actM)
         testCase.verifyEqual(expNCopyColsPerRowVec, actNCopyColsPerRowVec)
       end
-      %===================================================================
-      % zero rows
+
+      % Zero rows
       for nCols = [0, 10]
         test(...
           cell(0, 1), nCols, ...

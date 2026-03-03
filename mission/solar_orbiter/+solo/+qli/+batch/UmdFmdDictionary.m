@@ -220,20 +220,20 @@ classdef UmdFmdDictionary
     function Ufd = merge_max(UfdCa)
       assert(iscell(UfdCa))
 
-      OutputDfmmd = solo.qli.batch.UmdFmdDictionary();
+      OutputUfd = solo.qli.batch.UmdFmdDictionary();
 
       for iUfd = 1:numel(UfdCa)
-        InputUfd  = UfdCa{iUfd};
+        InputUfd   = UfdCa{iUfd};
 
         UmdDtArray = InputUfd.UmdDtArray();
         FmdDtArray = InputUfd.FmdDtArray();
 
         for iKey = 1:numel(UmdDtArray)
-          OutputDfmmd = OutputDfmmd.set_if_greater(UmdDtArray(iKey), FmdDtArray(iKey));
+          OutputUfd = OutputUfd.set_if_greater(UmdDtArray(iKey), FmdDtArray(iKey));
         end
       end
 
-      Ufd = OutputDfmmd;
+      Ufd = OutputUfd;
     end
 
 

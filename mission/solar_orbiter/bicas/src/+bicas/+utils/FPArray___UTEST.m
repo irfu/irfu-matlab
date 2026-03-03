@@ -65,8 +65,8 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
       end
       testCase.verifyError(@() dataAr_assign_fail(), ?MException)
       if 0
-        % Read dataAr (should fail).
-        % NOTE: Does not work, since class does not work.
+        % Read dataAr (private property ==> should fail).
+        % NOTE: Does not work for unknown reason!
         testCase.verifyError(@() (Fpa.dataAr), ?MException)
       end
 
@@ -604,6 +604,31 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_plus(testCase)
+      import bicas.utils.FPArray___UTEST.Fpa
+
+      function test(Fpa1, Fpa2, ExpFpa)
+        ActFpa12  = Fpa1 + Fpa2;
+        ActFpa21  = Fpa2 + Fpa1;
+        ActFpa12b = Fpa1 + Fpa2.array();
+        ActFpa21b = Fpa2 + Fpa1.array();
+
+        testCase.assertEqual(ActFpa12,  ExpFpa)
+        testCase.assertEqual(ActFpa21,  ExpFpa)
+        testCase.assertEqual(ActFpa12b, ExpFpa)
+        testCase.assertEqual(ActFpa21b, ExpFpa)
+      end
+
+      % Non-scalar + non-scalar
+      test(Fpa([2, 3], NaN), Fpa([4, 5], NaN), Fpa([6, 8], NaN))
+      % Scalar + non-scalar
+      test(Fpa([2],    NaN), Fpa([4; 5], NaN), Fpa([6; 7], NaN))
+      % Scalar + scalar
+      test(Fpa([2],    NaN), Fpa([4],    NaN), Fpa([6],    NaN))
+    end
+
+
+
     function test_times(testCase)
       import bicas.utils.FPArray___UTEST.Fpa
 
@@ -738,6 +763,34 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_repmat(testCase)
+      import bicas.utils.FPArray___UTEST.Fpa
+
+      EMPTY_FPA = Fpa([], NaN);
+
+      ActFpa      = repmat(EMPTY_FPA, [2,3]);
+      testCase.assertEqual(ActFpa, EMPTY_FPA)
+      ActFpa      = repmat(EMPTY_FPA, 2, 3);
+      testCase.assertEqual(ActFpa, EMPTY_FPA)
+
+      DATA_AR = [1 2 3; 4 5 NaN];
+
+      FPA_0    = Fpa(DATA_AR, NaN);
+      ActFpa = repmat(FPA_0, 1);
+      testCase.assertEqual(ActFpa, FPA_0)
+
+      for ca = {{1}, {2}, {[2,3]}, {2,3}, {[2,3,4]}}
+        repmatArgsCa = ca{1};
+
+        testCase.assertEqual(...
+          repmat(FPA_0, repmatArgsCa{:}), ...
+          Fpa(repmat(DATA_AR, repmatArgsCa{:}), NaN) ...
+          )
+      end
+    end
+
+
+
     function test_min(testCase)
       import bicas.utils.FPArray___UTEST.Fpa
 
@@ -760,16 +813,15 @@ classdef FPArray___UTEST < matlab.unittest.TestCase
     % NOTE: Only tests the method indirectly, and only by checking if code
     % does not crash.
     function test_getPropertyGroups(testCase)
-      % runtests('bicas.utils.FPArray___UTEST/test_getPropertyGroups')
 
       import bicas.utils.FPArray___UTEST.Fpa
 
-      Fpa(ones(0,0), NaN)
-      Fpa(ones(0,1), NaN)
-      Fpa(ones(1,0), NaN)
-      Fpa(ones(2,3,4), NaN)
-      Fpa([NaN,inf,-inf], -1)
-      Fpa([0,1,2; 3,4,5], NaN)
+      Fpa(ones(0,0), NaN);
+      Fpa(ones(0,1), NaN);
+      Fpa(ones(1,0), NaN);
+      Fpa(ones(2,3,4), NaN);
+      Fpa([NaN,inf,-inf], -1);
+      Fpa([0,1,2; 3,4,5], NaN);
     end
 
 

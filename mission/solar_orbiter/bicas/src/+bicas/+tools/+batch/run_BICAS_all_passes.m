@@ -26,7 +26,7 @@
 function [BpcsAllArray] = run_BICAS_all_passes(...
   Bpa, bicasSettingsArgsCa, configFile, ...
   outputDir, referenceDir, ...
-  inputPathsCa, fnVerAlgorithm, outputIsCdag, ...
+  inputPathsCa, outputVerAlgorithmId, outputIsCdag, ...
   SwmArray, Settings)
 
 % NOTE: Algorithm documentation in bicas.tools.batch.main().
@@ -77,7 +77,9 @@ iPass = 1;
 while true
 
   fprintf('########################\n')
+  fprintf('########################\n')
   fprintf('BEGIN BICAS BATCH PASS %i\n', iPass)
+  fprintf('########################\n')
   fprintf('########################\n')
 
   %=====================
@@ -117,20 +119,15 @@ while true
     'latest', 'sortWrtFormerVersionsDir', false);
 
   get_BPCI_output_path_fh = ...
-    @(outputDsi, BpciInputDsmdArray) ( ...
+    @(outputDsid, BpciInputDsmdArray) ( ...
     bicas.tools.batch.get_BPCI_output_path2(...
     BpciInputDsmdArray, PreexistingOutputLvDsmdArray, ...
-    outputDsi, fnVerAlgorithm, ...
+    outputDsid, outputVerAlgorithmId, ...
     outputDir, outputIsCdag));
 
   %====================================================
   % Autocreate all possible BPCIs based on input paths
   %====================================================
-  if isempty(referenceDir)
-    referenceDirCa = cell(0, 1);
-  else
-    referenceDirCa = {referenceDir};
-  end
   [filePathsCa,    ~] = irf.fs.get_file_paths(inputPathsCa);
   [InputDsmdArray, ~] = solo.adm.paths_to_DSMD_array(filePathsCa);
   if DEBUG_ENABLED
@@ -146,12 +143,12 @@ while true
   % Find out which subset of BPCIs that should actually be run
   % ----------------------------------------------------------
   % NOTE: Takes reference directory into account but behaviour depends on
-  %       fnVerAlgorithm in get_BPCI_output_path_fh.
-  %   fnVerAlgorithm = 'HIGHEST_USED':
+  %       outputVerAlgorithmId in get_BPCI_output_path_fh.
+  %   outputVerAlgorithmId = 'HIGHEST_USED':
   %       Output dataset filenames have same version as highest
   %       counterpart in ref. dir., if there is one. ==> Filename
   %       collision. ==> Excluded
-  %   fnVerAlgorithm = 'ABOVE_HIGHEST_USED':
+  %   outputVerAlgorithmId = 'ABOVE_HIGHEST_USED':
   %       Output dataset filenames have a higher version than highest
   %       version counterpart in ref. dir., if there is one.
   %       ==> Never filename collision. ==> Included/kept.
@@ -160,7 +157,7 @@ while true
     bicas.tools.batch.DSMDs_to_filenames(RefDsmdArray), ...
     tpdFilenamesCa);
   BpciRunArray = bicas.tools.batch.filter_BPCIs_to_run(...
-    BpciInputArray, doNotNeedToGenerateFilenamesCa);
+    BpciInputArray, doNotNeedToGenerateFilenamesCa(:));
   fprintf('Number of BPCIs that will be run: %4i\n', numel(BpciRunArray))
 
   if isempty(BpciRunArray)
@@ -192,14 +189,9 @@ while true
   tpdFilenamesCa = get_BPCSs_output_filenames(BpcsAllArray);
 
   iPass = iPass + 1;
-end
+end    % while true
 
-
-
-% Assign return values.
-becArray = [BpcsAllArray.errorCode];
-nTpd     = numel(tpdFilenamesCa);
-end
+end    % run_BICAS_all_passes()
 
 
 
@@ -211,7 +203,7 @@ filenamesCaCa = arrayfun(...
   'UniformOutput', false);
 
 filenamesCa = cat(1, filenamesCaCa{:});
-end
+end    % run_BICAS_all_passes()
 
 
 
@@ -235,4 +227,4 @@ end
 fprintf('Total: %i\n', nDsmd)
 
 fprintf('\n')
-end
+end    % log_DSMD_array()

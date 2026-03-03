@@ -13,14 +13,14 @@ classdef OutputDataset
   % PROPOSAL: Use abbrevatiation.
   %   See bicas.InputDataset comments.
   %
-  % PROPOSAL: Argument and field for DSI. Replace OutputDatasetsMap with array.
+  % PROPOSAL: Argument and field for DSID. Replace OutputDatasetsMap with array.
   %   PRO: Should not need OutputDatasetsMap keys like "DSR_cdf",
   %        "EFIELD_DSR_cdf", "SCI_cdf" which make up its own namespace.
   %     NOTE: LfrSwmProcessing, TdsSwmProcessing are used for multiple SWMs with
-  %           different output DSIs for the same OutputDatasetsMap key
+  %           different output DSIDs for the same OutputDatasetsMap key
   %           "SCI_cdf".
   %     NOTE: This is identical to bicas.swm.OutputDataset.pfoid.
-  %   NOTE: Must match DSI in corresponding SWM.
+  %   NOTE: Must match DSID in corresponding SWM.
   %
   % TODO-DEC: How handle modifications before writing dataset? How handle
   %           modifications to GAs? Should this class represent output dataset
@@ -32,7 +32,7 @@ classdef OutputDataset
   %   CON: May contain unimportant information for actual file-writing.
   %     Ex: RctdCa
   %     Ex: BICAS-internal metadata
-  %       Ex: DSI (not currently)
+  %       Ex: DSID (not currently)
   %       Ex: File path (not currently)
 
 
@@ -65,8 +65,8 @@ classdef OutputDataset
       assert(isstruct(Ga)   & isscalar(Ga))
       assert(iscell(RctdCa) & iscolumn(RctdCa))
 
-      obj.Zv = Zv;
-      obj.Ga = Ga;
+      obj.Zv     = Zv;
+      obj.Ga     = Ga;
       obj.RctdCa = RctdCa;
     end
 

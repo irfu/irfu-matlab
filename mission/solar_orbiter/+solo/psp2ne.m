@@ -15,7 +15,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 %       Should be NaN for timestamps for which there is no calibration data.
 % NeScpQualityBit
 %       Binary value that specifies whether the density value
-%       seems bad or not. 1=Bad, 0=Can not find any problem.
+%       seems bad or not. 0=Can not find any problem; 1=Bad.
 %       Must not be NaN. (Currently (2023-08-10) not sure if this
 %       is strictly in agreement with conventions, but that is
 %       what BICAS requires).
@@ -34,7 +34,7 @@ function [NeScp, NeScpQualityBit, codeVerStr] = psp2ne(PSP)
 % Calibration using plasma line
 % see Dropbox/Solar_Orbiter/Science data/InFlight Cal/Ncalpsp2ne_calibrate.m
 
-Cal = [];
+
 
 %===============================================================================
 % codeVerStr = Timestamp string that represent the version of the function. This
@@ -42,17 +42,19 @@ Cal = [];
 % traceability.
 %
 % IMPORTANT NOTE: This value is meant to be be updated manually to
-% the approximate current date when the calibration data or algorithm is
+% the approximate current time when the calibration data or algorithm is
 % updated (or possibly when calibration data or algorithm risk being
 % unintentionally changed due to refactoring).
 % * It should *NOT* be an automatically set timestamp (e.g. current time).
 % * It should *NOT* be updated for unrelated code changes, e.g. comments or
 %   variable name changes.
 %===============================================================================
-codeVerStr = '2025-11-26T10:48:00';
+codeVerStr = '2026-01-13T11:15:00';
 
 
 
+Cal                 = [];
+AddEntryEndTimePrev = [];    % Previous AddEntry() time interval end timestamp.
 %======================================================================
 %                                 2020
 %======================================================================
@@ -85,7 +87,7 @@ AddEntry('2021-08-05T08:00:00Z/2021-08-08T23:59:59Z',[0.6615  3.1782]); %11
 AddEntry('2021-08-09T00:00:00Z/2021-08-11T23:59:59Z',[0.6802  3.2830]); %12
 AddEntry('2021-08-12T00:00:00Z/2021-08-29T19:59:59Z',... %13
   [0.7572 + 3.3979i  0.4088 + 3.6251i],0.6522);
-AddEntry('2021-08-29T18:00:00Z/2021-08-31T23:59:59Z',... %14
+AddEntry('2021-08-29T20:00:00Z/2021-08-31T23:59:59Z',... %14
   [0.6898 + 3.7050i  0.4299 + 3.6844i],-0.0793);
 AddEntry('2021-09-01T00:00:00Z/2021-09-04T00:59:59Z',... %15
   [0.6245 + 3.5472i  0.2589 + 3.8734i],0.8925);
@@ -163,26 +165,26 @@ AddEntry('2022-12-20T15:04:40Z/2022-12-31T23:59:59Z',[0.7194 1.5239]); %63
 %                             2023-2024
 % =====================================================================
 AddEntry('2023-01-01T00:00:00Z/2023-01-09T12:09:59',[1.00 0.9243]);%64
-AddEntry('2023-01-09T12:09:59Z/2023-01-25T19:59:59Z',[0.8696 0.9439]);%65
-AddEntry('2023-01-25T19:59:59Z/2023-01-31T11:59:59Z',... %66
+AddEntry('2023-01-09T12:10:00Z/2023-01-25T19:59:59Z',[0.8696 0.9439]);%65
+AddEntry('2023-01-25T20:00:00Z/2023-01-31T11:59:59Z',... %66
   [1.0101 + 0.4886i  0.3650 + 2.1005i],2.4972);
 AddEntry('2023-01-31T12:00:00Z/2023-02-07T23:29:59Z',[0.9091 0.8109]);%67
 AddEntry('2023-02-07T23:30:00Z/2023-02-15T23:32:50Z',... %68
   [0.6757 + 1.2090i  0.2817 + 2.3066i],2.7791);
 AddEntry('2023-02-15T23:32:51Z/2023-02-22T23:59:59Z',... %69
   [0.5917 + 1.4816i  0.2967 + 2.4087i],3.1581);
-AddEntry('2023-02-22T23:59:59Z/2023-02-27T03:45:44Z',... %70
+AddEntry('2023-02-23T00:00:00Z/2023-02-27T03:45:44Z',... %70
   [0.6579 + 2.1199i  0.4082 + 2.5885i],1.8628);
 AddEntry('2023-02-27T03:45:45Z/2023-02-27T09:26:30Z',[0.6452 1.8764]);%71
 AddEntry('2023-02-27T09:26:31Z/2023-03-04T23:59:59Z',... %72
   [0.5155 + 1.9699i  0.1017 + 3.5121i],3.7243);
 AddEntry('2023-03-05T00:00:00Z/2023-03-08T20:35:40Z',[0.6369 2.0906]);%73
-AddEntry('2023-03-08T20:35:41Z/2023-03-10T15:50:29Z',... %74
+AddEntry('2023-03-08T20:35:41Z/2023-03-11T06:57:29Z',... %74
   [0.4717 + 2.4292i  0.2857 + 2.9226i],2.9153);
 AddEntry('2023-03-11T06:57:30Z/2023-03-19T23:59:59Z',[0.3968 2.6369]);%75
-AddEntry('2023-03-19T23:59:59Z/2023-03-20T15:29:59Z',... %76
+AddEntry('2023-03-20T00:00:00Z/2023-03-20T15:29:59Z',... %76
   [0.8065 + 2.5233i  0.2571 + 3.5101i],1.7934);
-AddEntry('2023-03-20T15:00:00Z/2023-03-21T23:39:59Z',... %77
+AddEntry('2023-03-20T15:30:00Z/2023-03-21T23:39:59Z',... %77
   [0.4065 + 3.1485i  0.2519 + 3.4815i],2.1711);
 AddEntry('2023-03-21T23:40:00Z/2023-03-22T06:29:59Z',[0.7246 2.8040]);%78
 AddEntry('2023-03-22T06:30:00Z/2023-03-26T23:59:59Z',[0.5051 3.6712]);%79
@@ -206,7 +208,7 @@ AddEntry('2023-07-18T21:40:00Z/2023-07-23T09:04:59Z',[0.5714 1.3987]);%90
 AddEntry('2023-07-23T09:05:00Z/2023-07-24T11:59:59Z',[0.7519 0.8416]);%91
 AddEntry('2023-07-24T12:00:00Z/2023-08-13T08:45:59Z',... %92
   [0.9009 + 0.3577i  0.3534 + 2.2523i],3.4473);
-AddEntry('2023-08-13T08:45:59Z/2023-08-17T02:27:59Z',[0.7692 0.9243]);%93
+AddEntry('2023-08-13T08:46:00Z/2023-08-17T02:27:59Z',[0.7692 0.9243]);%93
 AddEntry('2023-08-17T02:28:00Z/2023-08-18T18:15:40Z',... %94
   [0.6579 + 1.3737i  0.3226 + 2.3533i],2.9181);
 AddEntry('2023-08-18T18:15:41Z/2023-08-29T23:59:59Z',... %95
@@ -216,25 +218,29 @@ AddEntry('2023-08-18T18:15:41Z/2023-08-29T23:59:59Z',... %95
 AddEntry('2023-08-30T00:00:00Z/2023-09-05T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~7 days calibration data gap.
 AddEntry('2023-09-06T00:00:00Z/2023-09-07T23:59:59Z',... %64 Manual calibration
   [0.3003 + 2.6582i  0.1068 + 4.1297i],7.4938);
-AddEntry('2023-09-08T00:00:00Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~18 MONTHS calibration data gap!!
+AddEntry('2023-09-08T00:00:00Z/2023-12-17T02:07:59Z',[NaN,    NaN   ]);    % NOTE: ~3 MONTHS calibration data gap!
+AddEntry('2023-12-17T02:08:00Z/2023-12-17T02:09:50Z',[0.5291, 1.6448]);    % MANUAL CALIBRATION (1 min, 50 s!)
+AddEntry('2023-12-17T02:09:51Z/2025-02-28T23:59:59Z',[NaN,    NaN   ]);    % NOTE: ~14 MONTHS calibration data gap!
+
+
 %======================================================================
 %                                 2025
 %======================================================================
 AddEntry('2025-03-01T00:00:00Z/2025-03-02T23:59:59Z',[0.7143  1.9782]); %96
-AddEntry('2025-03-03T00:00:00Z/2025-03-10T23:59:59Z',...%97
-  [0.0105 + 2.6651i 0.2564 + 3.4128i],2.9842);
-AddEntry('2025-03-11T00:00:00Z/2025-03-14T23:59:59Z',[0.6757  2.8028]); %98
-AddEntry('2025-03-15T00:00:00Z/2025-03-15T09:59:59Z',[1.2658  2.2159]); %99
-AddEntry('2025-03-15T10:00:00Z/2025-04-06T16:31:00Z',...%100
+AddEntry('2025-03-03T00:00:00Z/2025-03-06T00:06:29Z',...%97
+  [0.3891 + 3.0082i 0.2564 + 3.4128i],3.1311);
+AddEntry('2025-03-06T00:06:30Z/2025-03-10T23:59:59Z',[0.4525  2.6980]); %98
+AddEntry('2025-03-11T00:00:00Z/2025-03-14T23:59:59Z',[0.6757  2.8028]); %99
+AddEntry('2025-03-15T00:00:00Z/2025-03-15T09:59:59Z',[1.2658  2.2159]); %100
+AddEntry('2025-03-15T10:00:00Z/2025-04-06T16:31:00Z',...%101
   [0.4115 + 3.5661i 0.1433 + 4.2072i],2.3954);
-AddEntry('2025-04-06T16:31:01Z/2025-04-06T18:37:50',[NaN,    NaN   ]);%101
-AddEntry('2025-04-06T18:37:50Z/2025-04-07T23:40:59',[2.1277  2.7600]);%102
-AddEntry('2025-04-07T23:41:00Z/2025-04-09T18:58:00',[0.5464  3.5593]);%103
-AddEntry('2025-04-09T18:58:01/2025-04-13T10:09:59Z',[NaN,    NaN   ]);%103   NOTE: ~5 days calibration data gap.
-AddEntry('2025-04-13T10:10:00Z/2025-04-21T12:00:00',[0.7874  3.1268]);%104
-AddEntry('2025-04-21T12:00:01Z/2025-04-23T15:35:59',[0.7937  2.1506]);%105
-AddEntry('2025-04-23T15:36:00Z/2025-04-23T20:45:59',[0.9901  2.1066]);%106
-
+AddEntry('2025-04-06T16:31:01Z/2025-04-06T18:37:50Z',[NaN,    NaN   ]);%102
+AddEntry('2025-04-06T18:37:51Z/2025-04-07T23:40:59Z',[2.1277  2.7600]);%103
+AddEntry('2025-04-07T23:41:00Z/2025-04-09T18:58:00Z',[0.5464  3.5593]);%104
+AddEntry('2025-04-09T18:58:01Z/2025-04-13T10:09:59Z',[NaN,    NaN   ]);%105   NOTE: ~5 days calibration data gap.
+AddEntry('2025-04-13T10:10:00Z/2025-04-21T12:00:00Z',[0.7874  3.1268]);%106
+AddEntry('2025-04-21T12:00:01Z/2025-04-23T15:35:59Z',[0.7937  2.1506]);%107
+AddEntry('2025-04-23T15:36:00Z/2025-04-23T20:45:59Z',[0.9901  2.1066]);%108
 
 
 
@@ -247,35 +253,63 @@ AddEntry('2025-04-23T15:36:00Z/2025-04-23T20:45:59',[0.9901  2.1066]);%106
 CalR = Cal.resample(PSP);
 NeScp = PSP;
 
-
 NeScp.data = exp(CalR.x.data.*NeScp.data + CalR.y.data);
 
 
+
 timeOutsideInterval = irf_time('2025-04-23T20:45:59Z','utc>ttns');
-NeScp.data(NeScp.time.epoch > timeOutsideInterval)= NaN;
+NeScp.data(NeScp.time.epoch > timeOutsideInterval) = NaN;
 
 
 
-NeScp.name = 'NeScp';
-NeScp.units = 'cm^-3';
+NeScp.name         = 'NeScp';
+NeScp.units        = 'cm^-3';
 NeScp.siConversion = 'cm^-3>1e6*m^-3';
-NeScp.userData = '';
+NeScp.userData     = '';
 
-% NOTE: Setting temporary (but legal) return value for return variable that is
-% not yet used by BICAS (2023-08-10).
-% NOTE: Overwrite every value with zero in order to also overwrite Nan which
-% may otherwise inherited from NeScp.
+% Setting the return value "NeScpQualityBit"
+% ------------------------------------------
+% Is used by BICAS for setting quality bit in zVariable L3_QUALITY_BITMASK.
+% --
 % NOTE: Density from TNR plasma line used to calibrate NeScp only measures up
-% to 122 cc, everything above that value is uncertain, therefore is flagged.
-% Low values of NeScp i.e <2 cc are also uncertain.
-NeScpQualityBit = TSeries(NeScp.time, ones(size(NeScp.data)));
-NeScpQualityBit.data(NeScp.data<=122 & NeScp.data>=2) = 0;
-NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
+% to 122 cc, everything above that value is uncertain and is therefore flagged.
+% Low values of NeScp i.e <2 cc are also uncertain and similarly flagged.
+% --
+% NOTE: Currently set to =0 when there is no data (density=NaN).
+NeScpQualityBit = TSeries(NeScp.time, zeros(size(NeScp.data)));
+NeScpQualityBit.data((NeScp.data<=2) | (122<=NeScp.data)) = 1;
+
+
+
+% Check (some) return values
+% --------------------------
+% NOTE: BICAS does its own validation of the return value from this function,
+% and that validation should overlap or be identical to the validation
+% (assertions) here. Assertions here are meant to catch errors when this
+% function is used by non-BICAS users.
+% --
+% ASSERTION: NeScp only contains legal values.
+assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & (isnan(NeScp.data) | (NeScp.data > 0)) ))
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%% Help function %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
   function AddEntry(TintS, calData, PSPintersection)
     %Add new calibration entry
     % For two-fit calibration use three input arguments
+
+    % ASSERTION: Require that the current time interval in the function argument
+    % begins exactly one second after the time interval of the previous call
+    % ended.
+    % NOTE: "CalEntry" does not aways contain this time interval and can
+    % therefore not be used to make this check.
+    Tint = irf.tint(TintS);
+    if ~isempty(AddEntryEndTimePrev)
+      timeDiffSec = Tint(1) - AddEntryEndTimePrev;
+      assert(timeDiffSec == 1)
+    end
+    AddEntryEndTimePrev = Tint(2);
 
     if ~isreal(calData(1)) && (nargin<3 || isempty(PSPintersection))
       errS = ['Invalid two-fit cal entry at: ' TintS];
@@ -290,6 +324,11 @@ NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
       checkInterval = PSP.tlim(CalEntry.time); %PSP data inside cal. interval
 
       if ~isempty(checkInterval)
+        % NOTE: This function call changes the first and last timestamps of
+        % "CalEntry" to only cover the length of time in "PSP" (an argument to
+        % this function), i.e. it is not a deterministic update to "Cal", i.e.
+        % "Cal" is not an entirely hardcoded data structure, i.e. the final
+        % "Cal" value is not a constant!
         [CalEntry] = TwoFitCalibration(checkInterval,PSPintersection,CalEntry);
       else
         CalEntry.data(1:end,2) = imag(CalEntry.x.data);
@@ -297,9 +336,13 @@ NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
       end
     end
 
-    if isempty(Cal), Cal = CalEntry;
-    else, Cal = Cal.combine(CalEntry);
+    if isempty(Cal)
+      Cal = CalEntry;
+    else
+      Cal = Cal.combine(CalEntry);
     end
+
+
 
     function [C] = TwoFitCalibration(PSPint,y_eq,CalData)
       CalData = CalData.resample(PSPint);
@@ -339,8 +382,7 @@ NeScpQualityBit.data(isnan(NeScpQualityBit.data)) = 0;
       if ~isempty(Cnan)
         C = C.combine(Cnan);
       end
+    end    % TwoFitCalibration()
+  end    % AddEntry()
 
-
-    end
-  end
-end
+end    % psp2ne()

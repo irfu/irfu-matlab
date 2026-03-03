@@ -3,16 +3,16 @@
     "project": "ROC",
     "name": "BIAS Calibration Software (BICAS)",
     "identifier": "BICAS",
-    "description": "Calibration software meant to be run at LIRA/ROC to (1) calibrate electric field L2 data from electric L1R LFR and TDS-LFM data, and (2) calibrate bias currents from L1 data. Also has additional unofficial support for (1) processing L1 (instead of L1R; partial support) to L2, (2) L2 LFR CWF to L2 LFR CWF downsampled (unofficial dataset), and (3) BIAS L2 to L3 data (all disabled by default).",
+    "description": "Calibration software meant to be run at LIRA/ROC to (1) calibrate electric field L2 data from electric L1R LFR and TDS-LFM data, and (2) calibrate bias currents from L1 data. It also has additional unofficial support for (1) processing L1 (instead of L1R; partial support) to L2, (2) L2 LFR CWF to L2 LFR CWF downsampled (unofficial dataset), and (3) BIAS L2 to L3 data (all disabled by default).",
     "icd_version": "1.7"
   },
   "release": {
-    "version": "8.5.0",
-    "date": "2025-06-26T17:20:00Z",
+    "version": "9.2.0",
+    "date": "2026-01-15T15:35:00Z",
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "Non-Standard Operations (NSO) table for thruster firings updated for until 2025-05-27; Bugfix: Can now handle multi-valued GA \"OBS_ID\"; Bugfix: SOLO_L3_RPW-BIA-DENSITY-10-SECONDS ZV QUALITY_FLAG is now a downsampled version of SOLO_L3_RPW-BIA-DENSITY ZV QUALITY_FLAG.; No longer set L3 QUALITY_FLAG and L3_QUALITY_BITMASK to FV when there is no science data.",
+    "modification": "Fix E-field/spacecraft pot./PSP calibration code, fix psp2ne() calibration data. L3 makes use of new L2_QUALITY_BITMASK.",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {
@@ -21,7 +21,7 @@
   },
   "modes": [
     {
-      "name": "LFR-SBM1-CWF-E",
+      "name": "L1R-L2_LFR-SBM1-CWF-E",
       "purpose": "Generate SBM1 CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -40,12 +40,12 @@
           "name": "LFR L2 CWF science electric selective burst mode 1 data",
           "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 1, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-LFR-SBM1-CWF-E_V17.cdf"
+          "template": "SOLO_L2_RPW-LFR-SBM1-CWF-E_V18.cdf"
         }
       }
     },
     {
-      "name": "LFR-SBM2-CWF-E",
+      "name": "L1R-L2_LFR-SBM2-CWF-E",
       "purpose": "Generate SBM2 CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -64,12 +64,12 @@
           "name": "LFR L2 CWF science electric selective burst mode 2 data",
           "description": "RPW LFR L2 CWF science electric (potential difference) data in selective burst mode 2, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-LFR-SBM2-CWF-E_V17.cdf"
+          "template": "SOLO_L2_RPW-LFR-SBM2-CWF-E_V18.cdf"
         }
       }
     },
     {
-      "name": "LFR-SURV-CWF-E",
+      "name": "L1R-L2_LFR-SURV-CWF-E",
       "purpose": "Generate SURV CWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -88,12 +88,12 @@
           "name": "LFR L2 CWF science electric survey mode data",
           "description": "RPW LFR L2 CWF science electric (potential difference) data in survey mode, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-LFR-SURV-CWF-E_V17.cdf"
+          "template": "SOLO_L2_RPW-LFR-SURV-CWF-E_V18.cdf"
         }
       }
     },
     {
-      "name": "LFR-SURV-SWF-E",
+      "name": "L1R-L2_LFR-SURV-SWF-E",
       "purpose": "Generate SURV SWF electric field L2 data (potential difference) from LFR L1R data.",
       "inputs": {
         "in_sci": {
@@ -112,12 +112,12 @@
           "name": "LFR L2 SWF science electric survey mode data",
           "description": "RPW LFR L2 SWF science electric (potential difference) data in survey mode, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-LFR-SURV-SWF-E_V17.cdf"
+          "template": "SOLO_L2_RPW-LFR-SURV-SWF-E_V18.cdf"
         }
       }
     },
     {
-      "name": "TDS-LFM-CWF-E",
+      "name": "L1R-L2_TDS-LFM-CWF-E",
       "purpose": "Generate CWF electric field L2 data (potential difference) from TDS LF mode L1R data.",
       "inputs": {
         "in_sci": {
@@ -133,15 +133,15 @@
       "outputs": {
         "out_sci": {
           "identifier": "SOLO_L2_RPW-TDS-LFM-CWF-E",
-          "name": "LFR L2 CWF science electric LF mode data",
+          "name": "TDS L2 CWF science electric LF mode data",
           "description": "RPW TDS L2 CWF science electric (potential difference) data in LF mode, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-TDS-LFM-CWF-E_V17.cdf"
+          "template": "SOLO_L2_RPW-TDS-LFM-CWF-E_V18.cdf"
         }
       }
     },
     {
-      "name": "TDS-LFM-RSWF-E",
+      "name": "L1R-L2_TDS-LFM-RSWF-E",
       "purpose": "Generate RSWF electric field L2 data (potential difference) from TDS LF mode L1R data.",
       "inputs": {
         "in_sci": {
@@ -157,10 +157,10 @@
       "outputs": {
         "out_sci": {
           "identifier": "SOLO_L2_RPW-TDS-LFM-RSWF-E",
-          "name": "LFR L2 RSWF science electric LF mode data",
+          "name": "TDS L2 RSWF science electric LF mode data",
           "description": "RPW TDS L2 RSWF science electric (potential difference) data in LF mode, time-tagged",
           "level": "L2",
-          "template": "SOLO_L2_RPW-TDS-LFM-RSWF-E_V17.cdf"
+          "template": "SOLO_L2_RPW-TDS-LFM-RSWF-E_V18.cdf"
         }
       }
     }

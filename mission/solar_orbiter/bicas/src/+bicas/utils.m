@@ -32,8 +32,9 @@ classdef utils
       % ASSUMES: The current file is in the <BICAS>/src/+bicas/ directory.
       % Use path of the current MATLAB file.
       [matlabSrcDir, ~, ~] = fileparts(mfilename('fullpath'));
-      bicasRootDir         = fullfile(matlabSrcDir, '..', '..');
+      bicasRootDir         = fullfile(matlabSrcDir, "..", "..");
       bicasRootDir         = irf.fs.get_abs_path(bicasRootDir);
+      bicasRootDir         = string(bicasRootDir);
     end
 
 
@@ -42,6 +43,14 @@ classdef utils
       swdFile = fullfile(...
         bicas.utils.get_BICAS_root_dir(), ...
         bicas.const.SWD_FILENAME);
+    end
+
+
+
+    function bicasSourceDir = get_BICAS_source_dir()
+      bicasSourceDir = fullfile(...
+        bicas.utils.get_BICAS_root_dir(), ...
+        bicas.const.SOURCE_DIR_RPATH);
     end
 
 
@@ -78,9 +87,12 @@ classdef utils
 
 
 
-    function utcStr = TT2000_to_UTC_str(zvTt2000, nSecondDecimals)
-      bicas.utils.assert_ZV_Epoch(zvTt2000)
-      utcStr = irf.cdf.TT2000_to_UTC_str(zvTt2000, nSecondDecimals);
+    function utcStr = TT2000_to_UTC_str(tt2000, nSecondDecimals)
+      % BUG: bicas.utils.TT2000_to_UTC_str(int64(0+4e9), 0)
+      %      ==> '2000-01-01T11:58:60Z'
+
+      bicas.utils.assert_ZV_Epoch(tt2000)
+      utcStr = irf.cdf.TT2000_to_UTC_str(tt2000, nSecondDecimals);
     end
 
 
@@ -175,6 +187,86 @@ classdef utils
 
 
 
+    % Do vectorized lookup in MATLAB dictionary.
+    %
+    % The function is more general than what is really needed for BICAS (accepts
+    % more MATLAB classes).
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % dict
+    %       Non-empty dictionary.
+    % keyAr
+    %       Array. Every element must be equal to a key in "dict". Elements must
+    %       not be NaN.
+    %
+    %
+    % RATIONALE
+    % =========
+    % MATLAB dictionaries do support the functionality implemented by this
+    % function (sic!). However, MATLAB's implementation (MATLAB R2024a) has been
+    % found to be slow for the particular way BICAS uses vectorized dictionary
+    % lookup: large integer arrays (with few dictionary entries). This function
+    % is faster than MATLAB's dictionary implementation for at least that use
+    % case and speeds up BICAS considerably.
+    % --
+    % BICAS uses this function for doing lookups into SSID/SDID/ASID
+    % dictionaries using large arrays.
+    %
+    function valueAr = dict_lookup(dict, keyAr)
+      % NOTE: Algorithm (equality) does not support NaN. Function could be made
+      % to support it, but that has not been needed yet.
+      if isfloat(keyAr)
+        assert(~any(isnan(keyAr), "all"))
+      end
+
+      if numel(keyAr) <= 1
+        % IMPLEMENTATION NOTE: Special case for small "keyAr". BICAS sometimes
+        % calls this function many times with small arrays. This special case
+        % speeds up that special case. (The speedup has been observed in
+        % practice.)
+        %
+        % IMPLEMENTATION NOTE: This case implements support for (1) empty
+        % "keyAr", combined with (2) zero-entry dictionary with only key/value
+        % MATLAB classes defined. It is not clear how to produce an empty output
+        % array of an arbitrary MATLAB class (both numbers and strings) without
+        % special cases.
+        %
+        % IMPLEMENTATION NOTE: This special case presents a problem for
+        % automated tests which do not know whether this special case is tested
+        % or not, and which should not know what the threshold is.
+        valueAr = dict(keyAr);
+      else
+        [mcKeys, ~] = dict.types;
+
+        assert(mcKeys == class(keyAr), '"keyAr" does not have the same MATLAB class as the "dict" values.')
+        assert(dict.numEntries >= 1,   '"dict" does not have at least one entry for non-empty "keyAr".')
+
+        uniqueKeysAr   = dict.keys;
+        uniqueValuesAr = dict.values;
+        valueAr        = repmat(uniqueValuesAr(1), size(keyAr));
+
+        % Flags for which the output elements have been set (or the initial value
+        % has been overwritten).
+        bSet = false(size(keyAr));
+
+        for i = 1:dict.numEntries
+          bKey          = keyAr == uniqueKeysAr(i);
+
+          valueAr(bKey) = uniqueValuesAr(i);
+
+          bSet          = bSet | bKey;
+        end
+
+        assert(all(bSet, "all"), ...
+          """keyAr"" contained at least one value which is not equal to a dictionary key.")
+        assert(isequaln(size(keyAr), size(valueAr)))
+      end
+    end
+
+
+
     %############
     % ASSERTIONS
     %############
@@ -222,12 +314,17 @@ classdef utils
 
     % NOTE: Not implemented as assertion function in order to make it
     % possible to return proper error message on fail.
-    function success = validate_ZV_QUALITY_FLAG(QUALITY_FLAG)
-      if ~isa(QUALITY_FLAG, 'uint8')
+    % NOTE: Can not handle fill values.
+    %
+    function success = validate_QFL(qflAr)
+
+      if ~isa(qflAr, 'uint8')
+        success = false;
+      elseif ~iscolumn(qflAr)
         success = false;
       elseif ~all(...
-          bicas.const.QUALITY_FLAG_MIN <= QUALITY_FLAG & ...
-          bicas.const.QUALITY_FLAG_MAX >= QUALITY_FLAG ...
+          bicas.const.qrc.QFL_MIN <= qflAr & ...
+          bicas.const.qrc.QFL_MAX >= qflAr ...
           )
         success = false;
       else
@@ -282,37 +379,36 @@ classdef utils
 
 
 
+    % Derive statistics on the contents of a numeric variable (any
+    % dimensionality) and return it so that it can easily be logged, e.g. in
+    % a table:
+    %   ** Array size
+    %   ** Number of and percentage NaN,
+    %   ** unique values, min-max.
+    % Primarily intended for zVariables and derivatives thereof. Can be
+    % useful for knowing which settings are used (e.g. HK_BIA_DIFF_GAIN),
+    % constant/varying bias current, suspect input datasets.
+    %
+    % Effectively a utility function for bicas.utils.log_zVar().
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % varName
+    % varValue
+    % varType
+    %       String constant. 'NUMERIC_ZV' or 'Epoch_LIKE_ZV'.
+    %       Determines how varValue is interpreted.
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % ColumnStrs
+    %       Struct with fields corresponding to different column values for
+    %       one row in a table.
+    %
     function ColumnStrs = get_array_statistics_strings(...
         varName, varValue, varType, Bso)
-      %
-      % Derive statistics on the contents of a numeric variable (any
-      % dimensionality) and return it so that it can easily be logged, e.g. in
-      % a table:
-      %   ** Array size
-      %   ** Number of and percentage NaN,
-      %   ** unique values, min-max.
-      % Primarily intended for zVariables and derivatives thereof. Can be
-      % useful for knowing which settings are used (e.g. HK_BIA_DIFF_GAIN),
-      % constant/varying bias current, suspect input datasets.
-      %
-      % Effectively a utility function for bicas.utils.log_zVar().
-      %
-      %
-      % ARGUMENTS
-      % =========
-      % varName
-      % varValue
-      % varType
-      %       String constant. 'NUMERIC_ZV' or 'Epoch_LIKE_ZV'.
-      %       Determines how varValue is interpreted.
-      %
-      %
-      % RETURN VALUE
-      % ============
-      % ColumnStrs
-      %       Struct with fields corresponding to different column values for
-      %       one row in a table.
-      %
 
       % PROPOSAL: Test code.
       % PROPOSAL: Move to +utils.

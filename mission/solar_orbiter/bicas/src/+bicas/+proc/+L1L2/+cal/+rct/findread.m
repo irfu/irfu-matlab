@@ -1,22 +1,13 @@
 %
-% Functions (static methods) associated with bicas.proc.L1L2.cal.Cal finding,
-% reading, and logging RCTs so that bicas.proc.L1L2.cal.Cal does not need to.
+% Functions (static methods) associated with
+% bicas.proc.L1L2.cal.VoltageCalibration finding, reading, and logging RCTs so
+% that that class itself does not need to.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-08-16.
 %
 classdef findread
-  % PROPOSAL: Abbreviation for "bias_rct_validity.json".
-  %   BIAS, RCT, validity
-  %   JSON
-  %     CON: Implementation detail.
-  %   file
-  %   --
-  %   BRJ  = BIAS RCT JSON
-  %   BRJF = BIAS RCT JSON File
-  %   BRVF = BIAS RCT Validity File -- IMPLEMENTED
-  %   BRVJ = BIAS RCT Validity JSON (also the words in the filename)
 
 
 
@@ -42,27 +33,34 @@ classdef findread
 
 
     % Get an instance of RCTDC needed for a nominal instantiation of
-    % bicas.proc.L1L2.cal.Cal.
+    % bicas.proc.L1L2.cal.VoltageCalibration.
     function Rctdc = get_nominal_RCTDC(...
         useGactRct, nonBiasRcttid, rctDir, ...
-        gact, zvcti, zv_BW, tt2000Begin, tt2000End, L)
+        gact, nbri, zv_BW, tt2000Begin, tt2000End, L)
+
       % PROPOSAL: Better name.
-      %   nominal
-      % PROPOSAL: Make function instantiate bicas.proc.L1L2.cal.Cal.
-      %   CON: Bad for testing.
-      %     CON: Testing this function is impossible anyway.
-      %   CON: Conceptually bad. Makes function "less generic".
+      % PROPOSAL: Abolish BW argument.
+      %   PRO: VoltageCalibrationDataSupplierImpl.get_LFR_ITF() returns NAN ITF
+      %        when CALIBRATION_TABLE_INDEX(i, 1) does not point to an RCTD,
+      %        e.g. for LFR BW=0.
+      %   CON: Is less rigorous.
+      %   CON: findread.find_read_RCTs_by_NBRI_GACT() still needs to be able
+      %        to tell which RCTs it can read and not.
+      %        CALIBRATION_TABLE_INDEX(i, 1) can point to a non-existing file
+      %        (or one which BICAS can not read?).
+      %   PROPOSAL: Replace with BIAS_HW_OFF QRCB.
+      %     CON: Is not yet defined when this function is called.
 
       assert(islogical(useGactRct))
 
       DtDataBegin = datetime(irf.cdf.TT2000_to_datevec(tt2000Begin), 'TimeZone', 'UTCLeapSeconds');
       DtDataEnd   = datetime(irf.cdf.TT2000_to_datevec(tt2000End),   'TimeZone', 'UTCLeapSeconds');
 
-      Rctdc = bicas.proc.L1L2.cal.RctdCollection();
+      Rctdc       = bicas.proc.L1L2.cal.RctdCollection();
 
-      %==========
-      % BIAS RCT
-      %==========
+      %==================
+      % Add 1x BIAS RCTD
+      %==================
       [biasRctPath, brvfPath] = bicas.proc.L1L2.cal.rct.findread.get_BRVF_RCT_path(...
         rctDir, DtDataBegin, DtDataEnd);
       L.logf('info', 'Read "%s".', brvfPath)
@@ -70,14 +68,12 @@ classdef findread
         'BIAS', biasRctPath, L);
       Rctdc.add_RCTD('BIAS', {BiasRctd});
 
-      %===============
-      % Non-BIAS RCTs
-      %===============
+      %=======================
+      % Add Nx non-BIAS RCTDs
+      %=======================
       if useGactRct
-        NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_ZVCTI_GACT(...
-          nonBiasRcttid, rctDir, ...
-          gact, zvcti, ...
-          zv_BW, L);
+        NonBiasRctdCa = bicas.proc.L1L2.cal.rct.findread.find_read_RCTs_by_NBRI_GACT(...
+          nonBiasRcttid, rctDir, gact, nbri, zv_BW, L);
 
         Rctdc.add_RCTD(nonBiasRcttid, NonBiasRctdCa);
       else
@@ -99,10 +95,10 @@ classdef findread
     % NOTE: Can be useful for manual experimentation with calibration of L1R
     %       (and L1) data.
     % NOTE: Necessary when processing L1-->L2 (unofficially) since L1 does
-    %       not have ZVCTI+GACT.
+    %       not have NBRI+GACT.
     % NOTE: Will only load ONE RCT per RCTTID (since there is no potential RCT
-    %       time dependence as there would be if using ZVCTI+GACT) and
-    %       requires the caller to not use ZVCTI.
+    %       time dependence as there would be if using NBRI+GACT) and
+    %       requires the caller to not use NBRI.
     %
     %
     % RETURN VALUE
@@ -125,6 +121,39 @@ classdef findread
       % Read RCT file.
       NonBiasRctd    = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
         nonBiasRcttid, filePath, L);
+    end
+
+
+
+    % For a given RCTTID+RCT file, do the following operations, customized for
+    % the type of RCT:
+    %   (1) read RCT file,
+    %   (2) modify the content when required (e.g. extrapolate TFs), and
+    %   (3) log the modified RCT content.
+    % Effectively wraps the different RCT-reading functions/methods.
+    %
+    %
+    % IMPLEMENTATION NOTES
+    % ====================
+    % This method exists to
+    % (1) run shared code that should be run when reading any RCT (logging,
+    %     modifying data),
+    % (2) separate the logging from the RCT-reading code, so that external
+    %     code can read RCTs without BICAS.
+    % (3) make it possible to load an RCTD manually (by specifying an explicit
+    %     RCT path) and using it to manually create an RCTDC.
+    %
+    function Rctd = read_RCT_modify_log(rcttid, filePath, L)
+
+      L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
+        'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
+
+      RctdMetadata = bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP(rcttid);
+
+      % Call constructor(!) of the specified class.
+      Rctd = feval(RctdMetadata.className, filePath);
+
+      Rctd.log_RCT(L);
     end
 
 
@@ -212,9 +241,9 @@ classdef findread
       % Replace underscore-->period before file suffix.
       rctFilename(end-3) = '.';
       %
-      iDsiDash = strfind(bicas.const.RCT_DSI, '-');
-      assert(isscalar(iDsiDash), errorMsg)
-      rctFilename(iDsiDash) = '-';
+      iDsidDash = strfind(bicas.const.RCT_DSID, '-');
+      assert(isscalar(iDsidDash), errorMsg)
+      rctFilename(iDsidDash) = '-';
 
       if (length(rctFilename) >= 27) && strcmp(rctFilename(27), '_')
         % Replace underscore-->dash between dates.
@@ -306,12 +335,12 @@ classdef findread
 
 
     % Load RCTs from filenames indirectly specified by arguments "gact" and
-    % "zvcti".
+    % "nbri".
     %
     % IMPLEMENTATION NOTE
     % ===================
     % May load MULTIPLE RCTs with the same RCTTID, but will only load those
-    % RCTs which are actually needed, as indicated byGACT, ZVCTI and ZV "BW".
+    % RCTs which are actually needed, as indicated by GACT, NBRI and ZV "BW".
     % This is necessary since GACT may reference unnecessary RCTs of types not
     % recognized by BICAS (LFR's ROC-SGSE_CAL_RCT-LFR-VHF_V01.cdf /2019-12-16),
     % and which are therefore unreadable by BICAS (BICAS will crash).
@@ -324,8 +353,8 @@ classdef findread
     %       L1/L1R), then the caller should (!) create a fake one and submit
     %       it (normalize input).
     %
-    function RctdCa = find_read_RCTs_by_ZVCTI_GACT(...
-        nonBiasRcttid, rctDir, gact, zvcti, zv_BW, L)
+    function RctdCa = find_read_RCTs_by_NBRI_GACT(...
+        nonBiasRcttid, rctDir, gact, nbri, zv_BW, L)
       % PROPOSAL: Separate function for extracting filenames from ZVs.
       %   PRO: Easier to test.
 
@@ -333,16 +362,16 @@ classdef findread
       assert(iscell(gact))
       nGactEntries = irf.assert.sizes(...
         gact,  [-1, 1], ...
-        zvcti, [-2, 2], ...
+        nbri,  [-2, 1], ...
         zv_BW, [-2, 1]);
       assert(all(ismember(zv_BW, [0,1])))
+      % NOTE: NBRI >= 1 but CALIBRATION_TABLE_INDEX(:, 1) >= 0.
+      assert(all(nbri >=1))
 
       % Obtain indices into GACT
       % ------------------------
-      % NOTE: May exclude some values in "zvcti" due to zv_BW.
-      % NOTE: GACT entry index (in MATLAB) is one greater than the value stored
-      % in ZVCTI.
-      iGactEntryArray = unique(zvcti(logical(zv_BW), 1)) + 1;
+      % NOTE: May exclude some values in "nbri" due to zv_BW.
+      uniqueNbriAr = unique(nbri(logical(zv_BW), 1));
 
 
 
@@ -352,43 +381,12 @@ classdef findread
       % IMPLEMENTATION NOTE: Iterate over those entries in GACT that should be
       % CONSIDERED, i.e. NOT all GACT entries. May therefore legitimately leave
       % some cells in cell array empty.
-      for i = 1:numel(iGactEntryArray)
-        iGactEntry         = iGactEntryArray(i);
+      for i = 1:numel(uniqueNbriAr)
+        iGactEntry         = uniqueNbriAr(i);
         filePath           = fullfile(rctDir, gact{iGactEntry});
         RctdCa{iGactEntry} = bicas.proc.L1L2.cal.rct.findread.read_RCT_modify_log(...
           nonBiasRcttid, filePath, L);
       end
-    end
-
-
-
-    % For a given RCTTID+RCT file, do the following operations, customized for
-    % the type of RCT:
-    %   (1) read RCT file,
-    %   (2) modify the content when required (e.g. extrapolate TFs), and
-    %   (3) log the modified RCT content.
-    % Effectively wraps the different RCT-reading functions/methods.
-    %
-    %
-    % IMPLEMENTATION NOTES
-    % ====================
-    % This method exists to
-    % (1) run shared code that should be run when reading any RCT (logging,
-    %     modifying data),
-    % (2) separate the logging from the RCT-reading code, so that external
-    %     code can read RCTs without BICAS.
-    %
-    function Rctd = read_RCT_modify_log(rcttid, filePath, L)
-
-      L.logf(bicas.proc.L1L2.cal.rct.findread.READING_RCT_PATH_LL, ...
-        'Reading RCT (rcttid=%s): "%s"', rcttid, filePath)
-
-      RctdMetadata = bicas.proc.L1L2.cal.rct.RctDataImpl.RCTD_METADATA_MAP(rcttid);
-
-      % Call constructor(!) of specified class.
-      Rctd = feval(RctdMetadata.className, filePath);
-
-      Rctd.log_RCT(L);
     end
 
 

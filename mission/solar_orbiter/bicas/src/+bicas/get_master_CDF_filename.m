@@ -7,8 +7,8 @@
 %
 % ARGUMENTS
 % =========
-% dsi
-%       DSI
+% dsid
+%       DSID
 % skeletonVersionStr
 %       Two-character two-digit string specifying version of the master CDF
 %       file.
@@ -17,10 +17,10 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2016-07-28
 %
-function masterCdfFilename = get_master_CDF_filename(dsi, skeletonVersionStr)
+function masterCdfFilename = get_master_CDF_filename(dsid, skeletonVersionStr)
 
-bicas.assert_BICAS_DSI(dsi)
+bicas.assert_BICAS_DSID(dsid)
 bicas.assert_skeleton_version(skeletonVersionStr)
 
-masterCdfFilename = [dsi, '_V', skeletonVersionStr, '.cdf'];
+masterCdfFilename = [dsid, '_V', skeletonVersionStr, '.cdf'];
 end

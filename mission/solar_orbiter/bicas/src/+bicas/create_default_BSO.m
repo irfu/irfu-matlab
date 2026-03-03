@@ -83,14 +83,23 @@ function Bso = create_default_BSO()
 %       config file values, CLI argument values.
 %
 % PROPOSAL: Abolish settings/functionality:
+%   PROCESSING.LFR.MUX_MODE_SOURCE
 %   PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY
 %   PROCESSING.TDS.RSWF.ILLEGAL_ZV_SAMPS_PER_CH_POLICY
-%   PROCESSING.L2.REMOVE_DATA.MUX_MODES
 %   PROCESSING.HK.USE_ZV_ACQUISITION_TIME
+%       Related to INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC.
+%   INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC
 %   OUTPUT_CDF.write_dataobj.*
 %   --
 %   PRO: Functionality appears to be obsolete.
 %   PRO: Default ERROR has been used for a long time without raising exception.
+%
+% PROPOSAL: Convert some settings to constants.
+%   PRO: Many constants are never changed.
+%   PRO: Reduces locations which need BSO.
+%     PRO: Can potentially remove BSO as an argument.
+%   CON: Values will not show up in log.
+%   NOTE: Technically removes cases to test.
 %
 %
 % ====================================
@@ -134,7 +143,6 @@ function Bso = create_default_BSO()
 %           Ex: L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS
 %           Ex: L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2
 %   Ex: For now, "L2" refers to algorithms to use when processing L2 as output.
-%       Ex: PROCESSING.L2.REMOVE_DATA.MUX_MODES
 %   --
 %   NEED: Specify whether refers to input or output data (not necessarily datasets).
 %       Ex: Distinguish processing L1/L1R-->L2, L2-->L3.
@@ -183,10 +191,13 @@ S.define_setting('LOGGING.MAX_TT2000_UNIQUES_PRINTED', 2);
 % the official support for L1R. LFR_TDS refers to LFR/TDS input datasets, as
 % opposed to L1 current datasets.
 S.define_setting('SWM.L1-L2_ENABLED',         false);
-% Enable s/w mode for processing L2 LFR-CWF-E to L2 LFR-CWF-E-1-SECONDS.
+% Enable s/w mode for processing L2-->L2: LFR-CWF-E-->LFR-CWF-E-1-SECONDS.
 S.define_setting('SWM.L2-L2_CWF-DSR_ENABLED', false);
-% Enable s/w mode for processing L2-->L3 datasets.
-S.define_setting('SWM.L2-L3_ENABLED',         false);
+% Enable s/w mode for processing L2-->L3 SURV datasets.
+S.define_setting('SWM.L2-L3_SURV_ENABLED',    false);
+% Enable s/w mode for processing L2-->L3 SBMx datasets.
+% NOTE: This s/w mode is EXPERIMENTAL. /2025-12-05
+S.define_setting('SWM.L2-L3_SBMx_ENABLED',    false);
 
 
 
@@ -221,9 +232,9 @@ S.define_setting('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC', [2000,01,01, 12,00,00, 
 
 S.define_setting('INPUT_CDF.USING_GA_NAME_VARIANT_POLICY', 'WARNING')    % WARNING, ERROR
 
-% Require input CDF Global Attribute "DSI" to match the expected
+% Require input CDF Global Attribute "DSID" to match the expected
 % value.
-S.define_setting('INPUT_CDF.GA_DSI_MISMATCH_POLICY',       'WARNING')    % ERROR, WARNING
+S.define_setting('INPUT_CDF.GA_DSID_MISMATCH_POLICY',      'WARNING')    % ERROR, WARNING
 S.define_setting('INPUT_CDF.GA_PARENTS_MISMATCH_POLICY',   'WARNING')    % ERROR, WARNING
 
 % NOTE: This modification applies BEFORE
@@ -363,6 +374,12 @@ S.define_setting('PROCESSING.LFR.MUX_MODE_SOURCE', 'LFR_SCI')    % BIAS_HK, LFR_
 %===============
 % Lowest zVar QUALITY_FLAG value that may be used for deriving L3 DENSITY,
 % EFIELD, and SCPOT data. Affects both OSR and DSR.
+% --
+% NOTE: The value used is compared against the "reconstructed non-saturation
+% non-sweep" QUALITY_FLAG which is derived in the code, not the QUALITY_FLAG
+% that is actually read from the input L2 LFR CWF file. This is due to wanting
+% to ignore the effects of saturation on QUALITY_FLAG. /Erik P G Johansson
+% 2025-07-29
 S.define_setting('PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN',    2)
 
 % Lowest zVar QUALITY_FLAG value that may be used for deriving downsampled
@@ -385,7 +402,7 @@ S.define_setting('PROCESSING.L2-CWF-DSR.ZV_QUALITY_FLAG_MIN',  0)
 S.define_setting('PROCESSING.ZV_QUALITY_FLAG_MAX', 3)
 
 % Path to NSO table file. Relative to BICAS root.
-S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', bicas.const.DEFAULT_NSO_TABLE_RPATH)
+S.define_setting('PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH', char(bicas.const.DEFAULT_NSO_TABLE_RPATH))
 % Path to NSO table file for debugging purposes.
 % If non-empty, then it overrides PROCESSING.NSO_TABLE.FILE.RELATIVE_PATH.
 % Can be set to absolute path. Intended for testing.
@@ -407,29 +424,22 @@ S.define_setting('PROCESSING.NSO_TABLE.FILE.OVERRIDE_PATH', '')
 %-------------------------------------------------------------------------------
 % TODO-DEC: Too high AC diff thresholds?
 S.define_setting('PROCESSING.SATURATION.CWF_SLIDING_WINDOW_LENGTH_SEC',            60.0);
-S.define_setting('PROCESSING.SATURATION.TSF_FRACTION_THRESHOLD',                    0.5);
+S.define_setting('PROCESSING.SATURATION.SAMPLE_FRACTION_THRESHOLD',                 0.5);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.SINGLE',         40.0);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.DC.DIFF',            2.0);
 S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.LOW_GAIN',   0.3);
-S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);
+S.define_setting('PROCESSING.SATURATION.HIGHER_THRESHOLD_AVOLT.AC.DIFF.HIGH_GAIN',  0.3/20);   % 0.3/20=0.015
 
-%============================================================================
-% Settings for when to remove data by setting it to fill value
-% ------------------------------------------------------------
-% "L2" refers to output datasets. Both voltage and current data. In practice,
-% this functionality was intended as a temporary solution for removing sweeps.
-% It has not been used since the introduction of automatic sweep detection.
-%============================================================================
-S.define_setting('PROCESSING.L2.REMOVE_DATA.MUX_MODES', zeros(0, 1))
-
-% Lower number since using LFR BDM (mux mode; unless configured not to),
-% which has same cadence as science data.
-% See PROCESSING.LFR.MUX_MODE_SOURCE.
-S.define_setting('PROCESSING.L2.LFR.REMOVE_DATA.MUX_MODE.MARGIN_SEC',  0)
-
-% Higher number since using BIAS HK for TDS, which means that the BDM is
-% known with a lower time resolution.
-S.define_setting('PROCESSING.L2.TDS.REMOVE_DATA.MUX_MODE.MARGIN_SEC', 30)
+% Determines scheme for how saturation modifies QUALITY_FLAG and
+% L2_QUALITY_BITMASK.
+%     Old scheme (to eventually be phased out): 'GLOBAL_SATURATION'
+%     New scheme (currently used)             : 'CHANNEL_SATURATION'
+%
+% NOTE: The CDF skeleton metadata should ideally describe the quality bits in
+% L2_QUALITY_BITMASK. Selecting scheme here does affect the meaning of those
+% bits but does not change the skeletons.
+S.define_setting('PROCESSING.SATURATION.QUALITY_SCHEME', 'CHANNEL_SATURATION')
+%S.define_setting('PROCESSING.SATURATION.QUALITY_SCHEME', 'GLOBAL_SATURATION')
 
 
 
@@ -477,7 +487,22 @@ S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MINMAX_DIFF_MINIMUM_
 % Amount of margin to add around regions labelled as sweeps by the SCDA. The
 % sweeps autodetection works on BIAS HK which has a lower time resolution, and
 % may therefore be incorrect at the beginning and end of a labelled region.
-S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC', 120)
+%
+% NOTE: The region labelled as sweep, including this margin, is defined in HK
+%       timestamps which are much less frequent than science data timestamps.
+%       The sweep region is therefore effectively "rounded" to HK timestamps
+%       meaning that small adjustments to this value might not have any
+%       noticeable effect.
+% NOTE: Sweep that justifies that the value (assuming SCDA) should be at least
+%       180 s: solo_HK_rpw-bia_20240621_V05.cdf
+%              solo_L1R_rpw-lfr-surv-cwf-e-cdag_20240621_V02.cdf
+%       NOTE: This sweep is also the beginning of a period with a mistakenly
+%             floating ANT3. Probably irrelevant.
+%             https://github.com/irfu/irfu-matlab/issues/156
+%       Sweep that justifies that the value (assuming SCDA) should be at least
+%       240 s: solo_L2_rpw-lfr-surv-cwf-e_20250701_V01.cdf
+%              solo_HK_rpw-bia_20250701_V06.cdf.
+S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC', 240)
 
 
 
@@ -493,7 +518,7 @@ S.define_setting('PROCESSING.L2.SWEEP_DETECTION.SCDA.WINDOW_MARGIN_SEC', 120)
 %    IMPORTANT: This is not needed for (nominal) processing of *L1R* (voltage)
 %               datasets.
 % ** BIAS & TDS have previously not followed the correct filenaming
-%    convention but does now (2020-11-20).
+%    convention but do now (2020-11-20).
 % ** LFR do not seem to follow the filenaming covention (2020-11-20)
 %    NOTE: LFR RCTs use 2+6+6 digits in the timestamps (they add
 %    seconds=2_digits).
@@ -541,16 +566,6 @@ S.define_setting('PROCESSING.RCT_REGEXP.TDS-LFM-RSWF', ['SOLO_CAL_RPW-TDS-LFM-RS
 
 
 
-% CALIBRATION_TABLE_INDEX2 = ZVCTI2
-% NOTE: ZVCTI2 is not set (used) for TDS. Therefore no such settings for TDS.
-% "L1R" refers to when using L1R datasets as input, as opposed to L1.
-S.define_setting('PROCESSING.L1R.LFR.USE_GA_CALIBRATION_TABLE_RCTS',      true)
-S.define_setting('PROCESSING.L1R.LFR.USE_ZV_CALIBRATION_TABLE_INDEX2',    true)
-S.define_setting('PROCESSING.L1R.TDS.CWF.USE_GA_CALIBRATION_TABLE_RCTS',  true)
-S.define_setting('PROCESSING.L1R.TDS.RSWF.USE_GA_CALIBRATION_TABLE_RCTS', true)
-
-
-
 %============================================================================
 % Calibration constants for the "scalar" calibration mode
 % -------------------------------------------------------
@@ -588,10 +603,6 @@ S.define_setting('PROCESSING.CALIBRATION.CURRENT.HK.GAIN_AAPT', -0.008198754    
 %===============================================================
 % Disable/simplify different parts of the calibration algorithm
 %===============================================================
-% Disable all voltage calibration. Output dataset data contain TM units.
-% BIAS demultiplexer addition/subtraction of BLTS necessary to derive
-% antenna signals is still done though.
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.DISABLED',              false);
 % Whether to disable BIAS offsets.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', false);
 % Whether to use transfer functions or scalar multiplication for calibration
@@ -599,11 +610,24 @@ S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.OFFSETS_DISABLED', false);
 % the LFR/TDS transfer functions.
 S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.BIAS.TF',              'FULL');    % SCALAR, FULL
 
+% Which algorithm/method to use for applying transfer function to samples.
+% FFT
+%       Apply TF in the frequency domain.
+% KERNEL
+%       Apply TF in the time domain, using kernel+convolution and edge handling.
 S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'FFT')   % FFT, KERNEL
 %S.define_setting('PROCESSING.CALIBRATION.TF.METHOD',             'KERNEL')   % FFT, KERNEL
-%S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'ZEROS')   % ZEROS, CYCLIC, MIRROR
 S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.EDGE_POLICY', 'MIRROR')   % ZEROS, CYCLIC, MIRROR
-S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', false)
+S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.HANN_WINDOW_ENABLED', true)
+% Max length of kernel in number of "kernel samples".
+% The kernel length equals the sample sequence length, but is capped at this
+% value. Higher value ==> Better calibration, slower execution.
+% NOTE: Unsure if an explicit number of "samples" is the best way to specify
+%       the kernel size. There could be some way to derive it from sampling
+%       rate, frequency range etc.
+% NOTE: The number of kernel samples includes equally many samples before &
+%       after "t=0" (sic!).
+S.define_setting('PROCESSING.CALIBRATION.TF.KERNEL.MAX_LENGTH_SAMPLES', 1024*10)
 
 
 
@@ -659,14 +683,10 @@ S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.ENABLED',     true)
 % Minimum number of samples within a time series (after splitting).
 % NOTE: Limit does not apply if there was no splitting (for "backward
 % compatibility").
+% NOTE: LFR-SBM2-CWF can have many data gaps with data gap free sequences of
+% only 335 samples(!).
+% Ex: solo_L1R_rpw-lfr-sbm2-cwf-e-cdag_20220922T134335-20220922T154536_V01.cdf"
 S.define_setting('PROCESSING.CALIBRATION.TF.FV_SPLITTING.MIN_SAMPLES', 128)
-
-% Whether to disable LFR/TDS transfer functions (but still potentially use
-% the BIAS transfer functions). This effectively means that TM voltage
-% corresponds to interface volt.
-% NOTE: This useful for separately using bicas.proc.L1L2.cal.Cal for analyzing
-% BIAS standalone calibration tables (BSACT).
-S.define_setting('PROCESSING.CALIBRATION.VOLTAGE.LFR_TDS.TF_DISABLED', false);
 
 
 

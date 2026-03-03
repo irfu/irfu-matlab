@@ -12,8 +12,8 @@
 %       DSMD column array containing only the latest versions (LV)
 %       of preexisting datasets which shall be used for determining output
 %       dataset version number.
-% fnVerAlgorithm
-%       String constant. Represents selected filename (FN) version algorithm.
+% outputVerAlgorithmId
+%       String constant. Represents selected output dataset version algorithm.
 %
 %
 % RETURN VALUES
@@ -26,7 +26,7 @@
 %
 function filePath = get_BPCI_output_path2(...
   BpciInputDsmdArray, PreexistingOutputLvDsmdArray, ...
-  outputDsi, fnVerAlgorithm, outputDir, outputIsCdag)
+  outputDsid, outputVerAlgorithmId, outputDir, outputIsCdag)
 
 % PROPOSAL: Test for day with leap second.
 %
@@ -46,56 +46,62 @@ function filePath = get_BPCI_output_path2(...
 %     solo_L2_rpw-lfr-sbm1-cwf-e_20240201_V01.cdf                         (incorrect)
 %     solo_L2_rpw-lfr-sbm1-cwf-e_20240201T025448-20240201T030848_V01.cdf  (correct)
 %   PROBLEM: DSMDs do not store the filenaming format.
-%   PROPOSAL: Separate list of input DSIs which should yield this format.
+%   PROPOSAL: Separate list of input DSIDs which should yield this format.
 %   PROPOSAL: Use length of time interval. -- IMPLEMENTED
 %
 % PROPOSAL: Separate function for converting a selected reference input
 %           dataset filename into output dataset filename. -- IMPLEMENTED
 %
-% PROPOSAL: Use shared constants for setting DSI lists.
+% PROPOSAL: Use shared constants for setting DSID lists.
+% PROPOSAL: Argument for which input DSID should be used for determining output
+%           dataset time interval.
+%   PRO: Can abolish hardcoded list.
+%   PROPOSAL: SWMs should contain the DSID to use.
 
 assert(isa(BpciInputDsmdArray,           'solo.adm.DSMD') && iscolumn(BpciInputDsmdArray))
 assert(isa(PreexistingOutputLvDsmdArray, 'solo.adm.DSMD') && iscolumn(PreexistingOutputLvDsmdArray))
-assert(ischar(outputDsi))
-assert(ischar(fnVerAlgorithm))
+assert(ischar(outputDsid))
+assert(ischar(outputVerAlgorithmId))
 assert(islogical(outputIsCdag))
 
-INPUT_DSI_FOR_OUTPUT_TIME = { ...
-  'SOLO_L1_RPW-LFR-SBM1-CWF', ...
-  'SOLO_L1_RPW-LFR-SBM2-CWF', ...
-  'SOLO_L1_RPW-LFR-SURV-CWF', ...
-  'SOLO_L1_RPW-LFR-SURV-SWF', ...
-  'SOLO_L1_RPW-TDS-LFM-CWF', ...
-  'SOLO_L1_RPW-TDS-LFM-RSWF', ...
+INPUT_DSID_FOR_OUTPUT_TIME_CA = { ...
+  'SOLO_L1_RPW-LFR-SBM1-CWF'; ...
+  'SOLO_L1_RPW-LFR-SBM2-CWF'; ...
+  'SOLO_L1_RPW-LFR-SURV-CWF'; ...
+  'SOLO_L1_RPW-LFR-SURV-SWF'; ...
+  'SOLO_L1_RPW-TDS-LFM-CWF'; ...
+  'SOLO_L1_RPW-TDS-LFM-RSWF'; ...
   ...
-  'SOLO_L1R_RPW-LFR-SBM1-CWF-E', ...
-  'SOLO_L1R_RPW-LFR-SBM2-CWF-E', ...
-  'SOLO_L1R_RPW-LFR-SURV-CWF-E', ...
-  'SOLO_L1R_RPW-LFR-SURV-SWF-E', ...
-  'SOLO_L1R_RPW-TDS-LFM-CWF-E', ...
-  'SOLO_L1R_RPW-TDS-LFM-RSWF-E', ...
+  'SOLO_L1R_RPW-LFR-SBM1-CWF-E'; ...
+  'SOLO_L1R_RPW-LFR-SBM2-CWF-E'; ...
+  'SOLO_L1R_RPW-LFR-SURV-CWF-E'; ...
+  'SOLO_L1R_RPW-LFR-SURV-SWF-E'; ...
+  'SOLO_L1R_RPW-TDS-LFM-CWF-E'; ...
+  'SOLO_L1R_RPW-TDS-LFM-RSWF-E'; ...
   ...
-  'SOLO_L2_RPW-LFR-SURV-CWF-E'};
+  'SOLO_L2_RPW-LFR-SURV-CWF-E'; ...
+  'SOLO_L2_RPW-LFR-SBM1-CWF-E'; ...
+  'SOLO_L2_RPW-LFR-SBM2-CWF-E'};
 
 
 
 % Identify exactly one BPCI INPUT DSMD which shall be used for determining
 % time interval for OUTPUT dataset.
-[~, iRefDsmd] = intersect({BpciInputDsmdArray.datasetId}, INPUT_DSI_FOR_OUTPUT_TIME);
+[~, iRefDsmd] = intersect({BpciInputDsmdArray.datasetId}, INPUT_DSID_FOR_OUTPUT_TIME_CA);
 assert(isscalar(iRefDsmd), ...
-  'Can not determine exactly one input DSI to use for determining output filename time interval.')
+  'Can not determine exactly one input DSID to use for determining output filename time interval.')
 InputRefDsmd = BpciInputDsmdArray(iRefDsmd);
 
-dt1 = InputRefDsmd.dt1;
-dt2 = InputRefDsmd.dt2;
+Dt1 = InputRefDsmd.dt1;
+Dt2 = InputRefDsmd.dt2;
 
 versionNbr = get_output_version(...
-  dt1, dt2, ...
-  outputDsi, fnVerAlgorithm, PreexistingOutputLvDsmdArray);
+  Dt1, Dt2, ...
+  outputDsid, outputVerAlgorithmId, PreexistingOutputLvDsmdArray);
 
 fileName = get_BPCI_output_filename2(...
-  dt1, dt2, ...
-  outputDsi, outputIsCdag, versionNbr);
+  Dt1, Dt2, ...
+  outputDsid, outputIsCdag, versionNbr);
 
 filePath = fullfile(outputDir, fileName);
 end
@@ -103,18 +109,18 @@ end
 
 
 function versionNbr = get_output_version(...
-  dt1, dt2, outputDsi, fnVerAlgorithm, PreexistingOutputLvDsmdArray)
+  Dt1, Dt2, outputDsid, outputVerAlgorithmId, PreexistingOutputLvDsmdArray)
 
 %=================================================================
 % Identify highest version number of pre-existing output datasets
 %=================================================================
 PreexistingOutputLvDsmdArray = solo.adm.filter_DSMD_DATASET_ID(...
-  PreexistingOutputLvDsmdArray, {outputDsi});
+  PreexistingOutputLvDsmdArray, {outputDsid});
 
 if ~isempty(PreexistingOutputLvDsmdArray)
   % NOTE: Command only works for non-empty array.
-  bKeep1 = ([PreexistingOutputLvDsmdArray.dt1] == dt1);
-  bKeep2 = ([PreexistingOutputLvDsmdArray.dt2] == dt2);
+  bKeep1 = ([PreexistingOutputLvDsmdArray.dt1] == Dt1);
+  bKeep2 = ([PreexistingOutputLvDsmdArray.dt2] == Dt2);
   bKeep = bKeep1 & bKeep2;
 else
   bKeep = zeros(0, 1);
@@ -132,7 +138,7 @@ end
 %============================================
 % Determine version number of output dataset
 %============================================
-switch(fnVerAlgorithm)
+switch(outputVerAlgorithmId)
 
   case 'ABOVE_HIGHEST_USED'
     if isnan(versionNbr)
@@ -149,20 +155,20 @@ switch(fnVerAlgorithm)
     end
 
   otherwise
-    error('Illegal fnVerAlgorithm="%s".', fnVerAlgorithm)
+    error('Illegal outputVerAlgorithmId="%s".', outputVerAlgorithmId)
 end
 end
 
 
 
 function outputFilename = get_BPCI_output_filename2(...
-  Dt1, Dt2, outputDsi, outputIsCdag, versionNbr)
+  Dt1, Dt2, outputDsid, outputIsCdag, versionNbr)
 
 %================================
 % Create output dataset filename
 %================================
 S = struct();
-S.datasetId  = outputDsi;
+S.datasetId  = outputDsid;
 S.versionNbr = versionNbr;
 S.isCdag     = outputIsCdag;
 S.Dt1        = Dt1;

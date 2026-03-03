@@ -1,3 +1,11 @@
+##############################
+ Purpose & scope of this file
+##############################
+This file documents various conventions used internally by the BICAS source
+code.
+
+
+
 ####################
  Naming conventions
 ####################
@@ -6,15 +14,24 @@ The code should however converge on the following:
 - Use the defined abbreviations in identifiers.
 - Variables names: Should use camelCase/CamelCase.
     - Structs, instances of classes: Uppercase initial.
-    - All other variables: Lowercase initial.
-    - Exception: Variables which are direct analogues to zVariables are named
-      as the corresponding zVariables, i.e. SCREAMING_SNAKE_CASE most of
-      the time.
+    - All other variables:           Lowercase initial.
+    - Exception: Variables which are direct analogues to zVariables are
+      named as the corresponding zVariables, except when there is no alternate
+      abbreviation and when it is not required that the exact ZV name is used
+      (such as in many struct field names where ZVs are passed on to CDF
+      writing). Such variables use the exact ZV name (i.e. SCREAMING_SNAKE_CASE
+      most of the time).
 - Classes (not instances of classes):
-  - Classes which are actually instantiated (which are not merely a collection
-    of static methods): Should be CamelCase. Initial in uppercase.
-  - Classes which are not instantiated: Should have short names and use
-    lowercase without underscore.
+    - Class which are actually instantiated (which are not merely a collection
+      of static methods): Should be CamelCase. Initial in uppercase.
+    - Classes which are not instantiated: Should have short names and use
+      lowercase without underscore.
+    - Abstract superclasses which exist for the purpose of making mocking in
+      automated tests possible should be named *Abstract.
+    - Subclasses which implement abstract superclasses, where the superclass is
+      created for the purpose of mocking in automated tests, should be named
+      *Impl.
+    - Subclasses for mocking in automated tests should be named *Test.
 - Functions should be named using snake_case but with abbreviations in
   uppercase.
 - Special types of variables:
@@ -22,8 +39,16 @@ The code should however converge on the following:
            indexing.
     i, j = Indices into arrays (linear indexing).
     L    = Singleton instance of class bicas.Logger.
+    T    = Instance of matlab.unittest.TestCase
+           NOTE: This is not followed universally yet.
 --
-Unit tests (classes) have suffix "___UTEST".
+String constants should be SCREAMING_SNAKE_CASE.
+Unit tests (classes) are named in accordance with one of two naming conventions:
+(1) <filename>___UTEST
+    Potentially contains tests of all public members in the file.
+(2) <filename>_<sub>___UTEST
+    Contains tests for public member <sub> (e.g. .a function) in the specified
+    file.
 
 
 
@@ -32,33 +57,50 @@ Unit tests (classes) have suffix "___UTEST".
 ###########################
 NOTE: This list primarily applies to comments and identifiers in the source
 code, including package names, but it may also be relevant for understanding
-log messages and the names of settings. Most of the abbreviations are not
+log messages and the names of settings. They are not necessarily used for naming
+BICAS settings keys. Most of the abbreviations are not
 "official" and have been created specifically for BICAS. The list exists to
 centralize all definitions in one place. This list is therefore very important
-for understanding BICAS.
+for understanding BICAS and keeping consistent if updating it.
 --
 AA, aampere
     Antenna Ampere. Calibrated ampere at the antenna.
 AAPT
     Antenna Ampere/TM (unit).
 ACHG
-    (BIAS diff) AC High Gain.
+    (BIAS diff) AC High Gain. Corresponds to (BIAS HK ZV) HK_BIA_DIFF_GAIN=1.
 ACLG
-    (BIAS diff) AC Low Gain.
+    (BIAS diff) AC Low Gain. Corresponds to (BIAS HK ZV) HK_BIA_DIFF_GAIN=0.
 APATH
     Absolute Path
 AR
-    (Non-cell) Array. Experimental notation found in small number of places. See
-    "CA".
+    (Non-cell) Array. Not used universally but probably should be in the future.
+    See "CA".
 ASID
-    Class bicas.proc.L1L2.AntennaSignalId. See ASR.
+    Antenna Signal ID. Constant which identifies any one of the nine antenna
+    signals:
+        3x DC single
+        3x DC diff
+        3x AC diff
+    Implemented as a constant in the form of either
+    (1) uint8 value, or
+    (2) class bicas.proc.L1L2.AntennaSignalId.
+    Compare ASR.
+ASPR
+    Allocated/Array Samples Per Record (per channel).
+    Number of samples/elements in an array per CDF record and channel. This
+    includes padding to account for varying-length snapshots. Should be equal to
+    one for CWF data. This value does not vary between CDF records.
+    See USPR.
 ASR, Antenna Signal Representation.
     Either of:
     (1) A reference to a particular type of "physical antenna signal channel"
         which BIAS-LFR/TDS is trying to measure.
-        NOTE: Class ASID represents a reference to such a channel, but not
-              the samples.
-    (2) the sample values in a measurement of such, whether indirect or not.
+        NOTE: ASID always represents a reference to such a channel (but not
+              the samples themselves). SSID and SDID may reference such
+              a channel (but not the samples), but do not always (e.g. ground).
+    (2) The sample values in a measurement of such a channel as referenced in
+        (1), whether indirect or not.
     In reality, the terminology is:
     ASR         : Pointer to a specific physical antenna signal, e.g. V12_LF
                   (DC diff, antenna 1-2)
@@ -66,19 +108,23 @@ ASR, Antenna Signal Representation.
     NOTE: There are 9 ASRs (DC: 3 singles, 3 diffs; AC: 3 diffs), i.e. they
     can refer also to signals not represented by any single BLTS, given a
     chosen mux mode (BDM) and demultiplexer latching relay (DLR) setting.
-    Cf. ASID.
-AV, avolt, Antenna Volt
+    Compare ASID.
+avolt, Antenna Volt
     Calibrated volt at the antennas, i.e. the final calibrated (measured)
     value, including for reconstructed signals (e.g. diffs calculated from
     singles). May also refer to offsets and values without offsets.
 AVPIV
-    AV/IV = Antenna Volt Per Interface Volt (unit).
+    avolt/ivolt = Antenna Volt Per Interface Volt (unit).
+AVPT
+    avolt/TM = Antenna Volt Per TM unit
 BDM, "mux mode"
     BIAS Demultiplexer Mode. Corresponds to BIAS HK ZV "HK_BIA_MODE_MUX_SET".
     Abbreviation partly just to have one consistent name (replacing "mux",
     "mux mode", "demux mode", "demultiplexer mode", "bias mux mode", etc.)
     and to distinguish it from "muxing" as a verb. Mostly used internally,
     not in the interface.
+    Demultiplexing is expressed as one pair of SSID and SDID per BLTS as
+    a function of BDM and DLR (including cases where BDM and/or DLR is unknown).
 BFM
     BICAS Functionality Mode. One of the basic modes of BICAS operations:
     Print version, print identifiction, print help, or process
@@ -96,10 +142,11 @@ BIAS_1, ..., BIAS_5 (BIAS_i, i=1..5)
 BICAS
     BIAS Calibration Software
 BLTS = BIAS-LFR/TDS SIGNAL
-    Signals somewhere between the LFR/TDS ADCs and the non-antenna side of the
-    BIAS demuxer including the BIAS transfer functions. Like BIAS_i, i=1..5,
-    but includes various stages of calibration/non-calibration, including in
-    particular
+    One of the five possible signals between the LFR/TDS ADCs and
+    the non-antenna side of the BIAS demuxer including the h/w BIAS transfer
+    functions. Like "BIAS_i", i=1..5, in the official BIAS documentation except
+    that it can refer to a signal which has been processed by various stages of
+    calibration/non-calibration, including in particular
       - TM units (inside LFR/TDS),
       - Interface volt (at the physical boundary BIAS-LFR/TDS (BIAS_i)), and
       - Calibrated values inside BIAS but without demuxer addition and
@@ -107,15 +154,32 @@ BLTS = BIAS-LFR/TDS SIGNAL
         transfer functions; volt).
     NOTE: This definition is partly created to avoid using term "BIAS_i" since
     it is easily confused with other things (the subsystem BIAS, bias currents),
-    partly to include various stages of calibration.
+    partly to have names for various signals at various stages of processing.
+BPA
+    Class bicas.tools.batch.BicasProcessingAccessAbstract and subclasses
+    thereof.
 BRVF
-    BIAS RCT Validity File. Not ROC term. File "bias_rct_validity.json" as
-    specified by ROC.
+    BIAS RCT Validity File. File "bias_rct_validity.json" as specified by ROC.
+    Is not a ROC term.
 BSO
-    Singleton instance of class bicas.Settings which stores the settings for
-    BICAS as a whole.
+    BICAS Settings Object. Singleton instance of class bicas.Settings which
+    stores the settings for BICAS as a whole.
 CA
     Cell Array. See "AR".
+CCAL
+    Class bicas.proc.L1L2.cal.CurrentCalibrationAbstract and subclasses thereof.
+Channel saturation (quality variable scheme)
+    Scheme for setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK).
+    Set 6x quality bits, one per single/diff channel (DC and AC diffs share
+    bits).
+    NOTE: This term was created to separate new code from the previous scheme
+    for setting saturation quality bits ("global saturation").
+    NOTE: The corresponding QRCIDs technically represent saturation on
+    the corresponding ZVs, regardless of whether they represent ASRs or not,
+    though in practice saturation is only detected when they represent
+    the corresponding ASR SSIDs.
+    --
+    See "global saturation".
 CLI
     Command-Line Interface. In particular, "CLI arguments" refers to an array of
     string arguments submitted to BICAS via the OS.
@@ -157,17 +221,19 @@ Dataset (data set)
     A CDF file on any one of a number standardized formats specified by the
     various RPW teams. All CDF files in the context of BICAS are datasets,
     except for RCTs, where it is ambiguous.
-Deg
-    Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
 DCIP
     Class bicas.proc.L1L2.DemultiplexingCalibrationInput.
 DCOP
     Class bicas.proc.L1L2.DemultiplexingCalibrationOutput.
+Deg
+    Degrees (angle). 1 revolution = 360 degrees = 2*pi radians.
+DFT
+    Discrete Fourier Transform
 Dict
     MATLAB dictionary.
 DLR
     Demultiplexer Latching Relay. Relay (true/false) that is part of the state
-    of the demultiplexer.  See BIAS specification, section "3.4.4.14 MODE",
+    of the demultiplexer. See BIAS specification, section "3.4.4.14 MODE",
     "Data D3 = Diff probe 1&2(0), Diff probe 1&3(1)".
     Corresponds to BIAS HK zVariable "HK_BIA_MODE_DIFF_PROBE". The convention
     used for representing the value in BICAS is the same as in the BIAS HK ZV:
@@ -177,23 +243,25 @@ DLR
     flips from zero to one at about 2023-08-21T12:04Z.
 DRT
     Class bicas.tf.Deretrending.
-DSI, "dataset ID"
+DSFN
+    Class solo.adm.dsfn.DatasetFilename.
+DSID, "dataset ID"
     DATASET_ID or "dataset ID". String constant which uniquely identifies a
     type of dataset.
     NOTE: The concept of "dataset ID" is defined by RPW/ROC, but
-    the abbreviation "DSI" is defined by BICAS. DSI does not formally exist in
+    the abbreviation "DSID" is defined by BICAS. DSID does not formally exist in
     SolO outside RPW, though the SolO metadata standards define metadata and
     filenames with components ("source"+"level"+"descriptor") which together are
-    identical to DSI for RPW datasets and can be used to define DSI analogously
+    identical to DSID for RPW datasets and can be used to define DSID analogously
     for SolO datasets outside RPW.
     NOTE: Must be uppercase by definition (at least when used as string
-    constants by BICAS), though DSIs are represented in lowercase in the
-    official dataset file naming convention (except the "level"). Uppercase DSI
+    constants by BICAS), though DSIDs are represented in lowercase in the
+    official dataset file naming convention (except the "level"). Uppercase DSID
     has been used in file names for some old ground-test datasets.
-    NOTE: DSIs exclude the "-cdag" suffix. "-cdag" is defined by ROC
+    NOTE: DSIDs exclude the "-cdag" suffix. "-cdag" is defined by ROC
     for RPW-internal datasets only.
     NOTE: Variable names which refer to the GA "Dataset_ID" (and historical
-    variants thereof) are not abbreviated "DSI", but to the GA name in
+    variants thereof) are not abbreviated "DSID", but to the GA name in
     analogy with other variables named after GAs.
 DSR
     Downsampled/Decreased Sampling Rate. Used in the context of downsampling.
@@ -201,12 +269,15 @@ DSR
 DT
     MATLAB datetime object.
 EJ
-    Erik P G Johansson, the author and maintainer of BICAS.
+    Erik P G Johansson (IRF Uppsala, Sweden), the author and maintainer of
+    BICAS.
 EMIDP
     (MATLAB) Error Message Identifier Part. One of the colon-separated
     parts of the MException .identifier string field (error message ID).
     NOTE: "Component" has a special meaning in the context of error
     message IDs. Therefore uses the term "part" instead.
+EXCD
+    Class bicas.proc.L2L3.ExternalCodeAbstract and subclasses thereof.
 FH
     Function Handle (Pointer).
 FP
@@ -222,10 +293,21 @@ GA
     (CDF) Global Attribute(s).
 GACT
     L1R GA CALIBRATION_TABLE or synthetic versions thereof, e.g. for L1.
+Global saturation (quality variable scheme)
+    Scheme for setting L2 quality variables (QUALITY_FLAG, L2_QUALITY_BITMASK).
+    Sets two quality bits:
+    Bit A: Set iff there is "partial saturation" or "full saturation" on any
+    channel,
+    Bit B: Set iff there is "full saturation".
+    NOTE: This is the old scheme (2025-07-03) and is meant to be phased out and
+    replaced by "channel saturation". It is only meant to be (partially)
+    supported for a transitional period.
+    --
+    See "channel saturation".
 GMDB
     "GA MODS DataBase", i.e. class bicas.ga.mods.Database.
 GMDE
-    "GA MODS DSI Entry", i.e. class bicas.ga.mods.DsiEntry.
+    "GA MODS DSID Entry", i.e. class bicas.ga.mods.DsidEntry.
 GMVE
     "GA MODS Version Entry", i.e. class bicas.ga.mods.VersionEntry.
 ICD
@@ -233,12 +315,46 @@ ICD
 ITF
     Inverse Transfer Function = TF that describes the conversion of physical
     OUTPUT to INPUT (not the reverse). Cf. FTF.
-IV, ivolt, Interface Volt
-    Calibrated volt at the interface between BIAS and LFR/TDS.
+ivolt, Interface Volt
+    Calibrated signal in volts at the interface between BIAS and LFR/TDS.
 IVPAV
-    IV/AV = Interface volt Per Antenna volt (unit).
+    ivolt/avolt = Interface volt Per Antenna volt (unit).
 IVPT
-    IV/TM = Interface volt Per TM unit.
+    ivolt/TM = Interface volt Per TM unit.
+L3 SURV
+    All L3 datasets which are derived from SOLO_L2_RPW-LFR-SURV-CWF-E, i.e.
+    SOLO_L3_RPW-BIA-DENSITY
+    SOLO_L3_RPW-BIA-DENSITY-10-SECONDS
+    SOLO_L3_RPW-BIA-EFIELD
+    SOLO_L3_RPW-BIA-EFIELD-10-SECONDS
+    SOLO_L3_RPW-BIA-SCPOT
+    SOLO_L3_RPW-BIA-SCPOT-10-SECONDS
+L3 SBMx
+    All L3 datasets which are derived from SOLO_L2_RPW-LFR-SURV-CWF-E, i.e.
+    SOLO_L3_RPW-SBM1-DENSITY
+    SOLO_L3_RPW-SBM2-DENSITY
+    SOLO_L3_RPW-SBM1-EFIELD
+    SOLO_L3_RPW-SBM2-EFIELD
+    SOLO_L3_RPW-SBM1-SCPOT
+    SOLO_L3_RPW-SBM2-SCPOT
+Lx_QUALITY_BITMASK
+    L2_QUALITY_BITMASK or L3_QUALITY_BITMASK, or both at the same time.
+L2_QUALITY_BITMASK,
+L3_QUALITY_BITMASK
+    Quality ZV defined by ROC which is set in L2 and L3 CDFs respectively.
+    Different bits are set when different QRCs apply.
+    NOTE: One quality bit does not automatically correspond to one QRC.
+    NOTE: Among BICAS data products, L3_QUALITY_BITMASK is currently only set
+    for L3 DENSITY (2025-07-02).
+    In the implementation L2/L3/Lx_QUALITY_BITMASK may refer to
+    (1) a L*_QUALITY_BITMASK value wrt. to some subset of QRCs
+    (2) the final L*_QUALITY_BITMASK value, which is obtained by
+        OR:ing multiple L*_QUALITY_BITMASK values for subsets of QRCs.
+    See QUALITY_FLAG.
+LxQBM
+    L1QBM, L2QBM or L3QBM, or all/any of them.
+L1QBM
+    zVariable QUALITY_BITMASK. Set in L1 CDFs.
 L2QBM
     zVariable L2_QUALITY_BITMASK.
 L3QBM
@@ -248,22 +364,37 @@ LL
 LRX
     LFR Rx. Internal ZV-like variable (one boolean per CDF record) that
     determines whether there is data on BLTS 2-3 (LRX=1) or BLTS 4-5 (LRX=0).
-    "Rx" is named after the similar L1R LFR ZVs R0, R1 and R2 (one per LFR
-    frequency, except F3). The value is constant LRX=1 for TDS, since L1R TDS
-    does not have any analogous ZVs.
+    "Rx" is named after the analogous L1R LFR ZVs R0, R1 and R2 (one per LFR
+    sampling frequency, except F3). The value is constant LRX=1 for TDS-LFM,
+    since L1R TDS does not have any analogous ZVs and only sends signals on
+    BLTS 1-3.
+LSB
+    Least Significant Bit
 LSF
     LFR Sampling Frequency (F0...F3).
-    NOTE: When used as a variable (array index), 1=F0, ..., 4=F3.
+    NOTE: When specified as an index value, 1=F0, ..., 4=F3.
 LV
     Latest (Dataset) Version.
 MC
-    MATLAB Class. MATLAB data type represented as a string constant.
-    Return value from "class()".
+    MATLAB Class. MATLAB data type represented as a string constant. Return
+    value from "class()".
 MSTD
     Modified STandard Deviation. Like standard deviation but using an
     arbitrary reference (e.g. median) instead of the conventional mean.
 MVPM
     Milli-Volt Per Meter (mV/m).
+NBCI
+    Non-BIAS Calibration Index.
+    Same as L1R LFR ZV CALIBRATION_INDEX_TABLE(i, 2) *INCREMENTED BY ONE*,
+    except for some handling of unused values, and synthetic versions thereof,
+    e.g. for L1. Index that could in principle be needed for/used by LFR/TDS
+    calibration, with different meaning for different types of calibration. In
+    practice it is not needed by BICAS. ROC specifies that it should be used.
+NBRI
+    Non-BIAS RCT/RCTD Index.
+    Same as LFR ZV CALIBRATION_INDEX_TABLE(i, 1), except for some handling of
+    illegal values. Index into GACT.
+    See NBCI.
 NFP
     Non-Fill Position, in the context of FPAs.
 NS
@@ -275,40 +406,61 @@ NSO (Event)
 NSO table
     Separate XML file that contains a list of time intervals which have been
     manually labeled as NSOs. BICAS uses this list for potentially modifying
-    processed data. Every NSO in the table is categorized using exactly one
-    QRCID.
+    processed data. Every NSO event in the table is categorized using exactly
+    one QRCID.
     Located at irfu-matlab/mission/solar_orbiter/bicas/data/solo_ns_ops.xml .
     See readme.txt.
 Offset
     Value (constant) that is ADDED to (not subtracted from) a measured
     value during the calibration process.
 OSR
-    Original Sampling Rate. Used in the context of downsampling. Cf DSR.
+    Original Sampling Rate. Used in the context of downsampling. Cf. DSR.
 PFIID
     Production Function Input ID. String constant which is used to distinguish
-    between different input values (datasets) to production functions.
-    In practice one PFIID represents one of multiple different DSIs (different
-    DSI for different SWMs).
+    between different input values (datasets) as seen from production functions.
+    In practice one PFIID represents one of multiple different DSIDs (different
+    DSID for different SWMs). See PFOID.
 PFOID
     Production Function Output ID. Analogous with PFIID, but for output (return
     values).
 Production Function
     Abstract method bicas.proc.SwmProcessing.production_function() and its
     implementations in subclasses which do the core of data processing.
-QF
-    zVariable QUALITY_FLAG.
+QFL
+    ZV QUALITY_FLAG.
 QRC
     Quality-Related Condition. Condition that, when it applies, can be used to
-    set/modify quality ZVs and/or blanking of data.
+    set/modify quality ZVs and/or blanking of data. QRCs are uniquely identified
+    using QRCIDs.
     Ex: Thruster firing, saturation, bad density.
-    QRCs are uniquely identified using QRCIDs.
     NOTE: QRCs are distinct from quality bits themselves. Any particular QRC may
-    correspond to setting zero, one, or multiple quality bits.
+          correspond to setting zero, one, or multiple quality bits.
+          Ex: QRCID="FULL_SATURATION" ==> Set quality bits "full saturation" AND
+              "partial saturation".
+          Ex: QRCID="THRUSTER_FIRING" ==> Cap QUALITY_FLAG, but does not set any
+              quality bit.
+QRCB
+    Quality-Related Condition Bit.
+    Bit (or array of bits) which is set iff the corresponding QRC applies.
+    This is distinct from a QRC which represents a "concept".
+QRCBM
+    Class bicas.proc.QrcbMap.
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.
-    Not all QRCIDs are meant to be used in the NSO table.
+    NOTE: Not all QRCIDs can/should be specified in the NSO table.
         Ex: BAD_DENSITY
+QRCS
+    Class bicas.proc.QrcSetting and subclasses thereof.
+QRCSM
+    Class bicas.proc.QrcSettingsMap.
+QUALITY_FLAG
+    Quality ZV defined by ROC. Higher value is better.
+    In the implementation, QUALITY_FLAG may refer to
+    (1) a QUALITY_FLAG value wrt. some QRC (a QUALITY_FLAG cap), or
+    (2) the final value, which is obtained by taking the minimum of multiple
+        QUALITY_FLAG values derived for different QRCs.
+    See Lx_QUALITY_BITMASK.
 RCS
     RPW Calibration Software. BICAS is an example of an RCS.
 RCS ICD
@@ -327,8 +479,15 @@ RCTD
 RCTDC
     Class bicas.proc.L1L2.cal.RctdCollection.
 RCTTID
-    RCT Type ID. String constant that represents a *type* of RCT, not a
-    particular RTC file. Permitted values: "BIAS", "LFR", "TDS-CWF", "TDS-RSWF".
+    RCT Type ID. String constant that represents a *type* of RCT (not a
+    particular RTC file). Permitted values: "BIAS", "LFR", "TDS-CWF",
+    "TDS-RSWF".
+Reconstruction
+    Deriving samples for channels which are not present in TM for that time.
+    Ex: If V1_DC, V12_DC, and V23_DC are present in TM, then V2_DC, V3_DC, and
+    V13_DC can be "reconstructed" (derived) from calibrated versions of
+    the former. V12_AC, V13_AC, and V23_AC can however not be reconstructed in
+    this case.
 ROC
     RPW Operations Center.
 ROC DFMD
@@ -353,7 +512,7 @@ RTDP
     directory structure containing BICAS example (official) input and output
     datasets for ROC to compare with their own (official) processing.
 RUM
-    Document ROC-PRO-SFT-SUM-00080, "RCS User Manual"
+    Document ROC-PRO-SFT-SUM-00080, "RCS User Manual".
 RV
     Return Value.
 sampere
@@ -362,14 +521,32 @@ sampere
 SBDA
     Sweep BDM Detection Algorithm. BDM=4 is interpreted as equivalent to
     sweeping.
+    See SCDA.
+SBM1, SBM2
+    Selective Burst Mode 1/2. Type of LFR CWF data (at least for the purpose of
+    BICAS).
+SBMx
+    SBM1/SBM2 combined.
 SCDA
     Sweep Current Detection Algorithm.
     A sliding window autodetection algorithm is used for detecting sweeps from
     measured HK currents. If the max-min current difference within that window
     exceeds a specified threshold, then the entire window is labeled as being
     part of a sweep.
+    See SBDA.
+SCHD
+    Class bicas.proc.L1L2.SingleChannelData.
 SDID
-    Class bicas.proc.L1L2.SignalDestinationId.
+    Signal Destination ID. Every unique value represents the destination of a
+    signal, i.e. where the samples should ultimately be stored in the output
+    datasets (if at all), i.e. either:
+    (a) "nowhere" (due to BDM or DLR being unknown), or
+    (b) an ASR (to determine which zVariable to store it in in the output
+        dataset).
+        NOTE: Since output datasets ALWAYS store output data organized as if
+        they were always physical signals, non-ASR signals have to be stored as
+        ASRs too in datasets. E.g. GND, 2.5V Ref., or unknown signals.
+    Implemented as unique uint8 values.
 Sec
     Seconds
 SIP
@@ -381,18 +558,27 @@ SKT
 SKV
     Class bicas.SettingsKeyValue.
 SNF
-    Split By Non-finite.
-    Split time series by non-finite sample values when processing time series
-    through transfer functions.
+    Split by Non-Finite.
+    Split time series into multiple shorter time series, each one separated by
+    non-finite sample values. In the context of processing time series using
+    transfer functions.
 SPR
     Samples (per channel) Per (CDF-like) Record. Only refers to actual data
     (currents, voltages), not metadata.
+    Can both include and exclude padded samples/elements at the end of a record
+    (for a given channel) to achieve non-jagged arrays.
+    Ex: Varying-length snapshots for TDS-LFM-RSWF data.
 SRF
     Name of a particular s/c coordinate system. "Spacecraft Reference Frame"?
-SRM
-    Class bicas.utils.SameRowsMap.
 SSID
-    Class bicas.proc.L1L2.SignalSourceId.
+    Signal Source ID. Constant representing the signal source of samples in a
+    BLTS. This source may be either
+    (a) an ASR, or
+    (b) one of the special cases: GND, 2.5V Ref., or unknown signal.
+    Implemented as unique uint8 values.
+SURV
+    "Survey mode/data". Abbreviation used in various DSIDs. Defined by ROC
+    (presumably).
 SWD, S/W descriptor
     Text on JSON format which describes among other things the S/W modes,
     including the required CLI parameters that every mode requires albeit not
@@ -401,7 +587,7 @@ SWD, S/W descriptor
     ICD).
 SWF
     Snapshot WaveForm. Snapshot data. Cf. CWF.
-SWM, S/W mode
+SWM, S/W mode, software mode
     (1) A "S/W mode" defines a set of required input CDF files and a set of
     output CDF files which can be derived from said input files. BICAS can
     execute only one such mode on each run. Executing such modes is the
@@ -415,8 +601,11 @@ TBW
     To Bash Wrapper.
 TF
     Transfer Function. Transfer function Z=Z(omega) in the frequency domain.
-    Conventionally here on the form of a complex number (Z) as a function of
-    radians/s (omega).
+    The internal convention is to specify any TF on the form of a complex number
+    (Z) as a function of radians/s (omega).
+Threshold saturation
+    Notion of saturation for a sample, equivalent to the sample value exceeding
+    the relevant threshold.
 TM
     Telemetry units (in LFR/TDS ADC), or telecommand (TC) units. Using this term
     instead of the term "count".
@@ -426,43 +615,71 @@ TPIV
     TM/interface volt. TM per interface volt.
 TS
     irfu-matlab's TSeries object/class.
-TSF
-    Threshold Saturation Flag. Internal bit used by the implementation. The bit
-    is set/unset for an individual sample iff the sample value exceeds specified
-    thresholds, i.e. it does not take any context into account, except for
-    determining which thresholds to use. This is in contrast with
-    (1) saturation flags for snapshots, which may summarize the saturation of
-        the entire snapshot, or
-    (2) saturation flags for CWF data which may take saturation before or after
-        into account.
-    Not to be confused with actual saturation bit(s) set in quality zVariables.
+TT2000
+    (1) Time format defined by the CDF file format. Nanoseconds since epoch. Should
+    always be stored as int64 in the MATLAB code.
+    (2) (when used for as a variable name) ZV "Epoch" (which uses time format
+    TT2000 in this application).
 TTW
     TT2000 WOLS. Time format analogous to TT2000 but without leap seconds.
 UFV
     Use Fill Values. Refers to CDF records for which science data should be
-    overwritten with fill values. This refers to both bias currents and
-    measured voltages.
+    overwritten with fill values.
+USPR
+    Used Samples Per (CDF) Record (and channel).
+    Number of samples/elements in an array which are actually intended for
+    storing sample values (per CDF record and channel) as opposed to additional
+    elements which may exist as padding. This includes fill values which "could
+    have been" actual samples values. This value can thus vary between CDF
+    records.
+    See ASPR.
 VBMC
-    Validate BICAS Master CDFs.
+    Validate BICAS Master CDFs. Standalone tool.
+VCAL
+    Class bicas.proc.L1L2.cal.VoltageCalibration.
+VCDS
+    Class bicas.proc.L1L2.cal.VoltageCalibrationDataSupplierAbstract and
+    subclasses thereof.
+VSIB
+    Voltage Saturation Intermediate Bit. Internal bit used by the implementation
+    when deriving VSQB. The exact meaning varies by context. The abbreviation
+    exists to distinguish intermediate "saturation quality bits" from
+    "the (more) final product" (VSQB). Cf. VSQB.
+VSQB
+    Voltage Saturation Quality Bit.
+    (1) Bit which is set in datasets, or
+    (2) bit which is set if some algorithm/logic wants to set the quality bit in
+        datasets (i.e. can be OR:ed with some other VSQB).
+    Only one bit per CWF sample or snapshot.
+    VSQB is "close to" the value actually stored in datasets, as opposed to VSIB
+    which is an intermediate value (which may be a VSQB, but also not). Cf. VSIB.
+VSTB
+    Voltage Saturation Threshold Bit.
+    Bit which represents whether threshold saturation occurs for a given sample.
+    NOTE: The order of words in the phrase is somewhat illogical but is formed
+    to be similar/analogous to VSIB and VSQB.
 WOLS
     WithOut Leap Seconds
 ZV
-    CDF zVariable, or MATLAB variable that is analogous to one. First dimension
-    corresponds to CDF record.
-ZVCTI
-    (L1R) ZV CALIBRATION_TABLE_INDEX, and synthetic versions thereof, e.g. for
-    L1.
-ZVCTI2
-    Element within the second column of ZVCTI for a given CDF record, i.e. any
-    value ZVCTI(iCdfRecord, 2).
+    (1) CDF zVariable, or MATLAB variable that is analogous to one. First
+    dimension corresponds to CDF record.
+    (2) When used as a variable prefix, means that the MATLAB variable is
+    analogous to a zVariable, where the first dimension corresponds to CDF
+    record, even if no analogous zVariable exists in any CDF file.
+ZVM
+    Class bicas.utils.ZvMap.
 ZVS
     zVariable Struct. Struct where each field emulates the data content of a
     zVariable (either as an array or an FPA).
 
 
 
-#################
-Other conventions
-#################
-1D arrays shall be column arrays. This has not been the case but new code should
-do this and old code should converge to this when appropriate.
+###################
+ Other conventions
+##################
+1D arrays shall be column arrays. This has not always been the case but new code
+should conform to this and old code should converge to this when appropriate.
+
+Diffs are sorted in the order V12, V13, V23.
+ASRs are sorted in the order
+DC_V1, DC_V2, DC_V3, DC_V12, DC_V13, DC_V23, AC_V12, AC_V13, AC_V23.

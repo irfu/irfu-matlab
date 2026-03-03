@@ -1,7 +1,7 @@
 %
 % Class which represents a parsable dataset filename on an ~official filenaming
-% convention. Contains code for converting between (a) filename and (b)
-% separate filename fields.
+% convention. Contains code for converting between (a) filename, and
+% (b) separate filename fields.
 %
 %
 % RATIONALE
@@ -53,7 +53,7 @@ classdef DatasetFilename
   % PROPOSAL: datasetId --> dsi
   % PROPOSAL: Require NaT when there is no time interval string.
   % PROPOSAL: Order the filenaming conventions.
-  % PROPOSAL: Official abbreviation: DSFN = solo.adm.dsfn.DatasetFilename.
+  %
   % PROPOSAL: Rename parse_filename() --> parse().
   %   PRO: Shorter.
   %   PRO: Analogous with solo.adm.dsfn.time_interval_str.parse().
@@ -147,11 +147,13 @@ classdef DatasetFilename
   end
 
   properties(GetAccess=private, SetAccess=immutable)
+    % NOTE: Is in practice public for unknown reasons, but should be
+    % private.
     dsicdagUppercase
   end
 
   properties(Dependent)
-    % The combination of DSI and optionally "-cdag" as found in
+    % The combination of (1) DSI, and (2) optionally "-cdag", as found in
     % the filename, including case.
     % In practice meant to be interpreted as dataset glob.attr.
     % "Logical_source", which should include -CDAG when present (for
@@ -183,6 +185,7 @@ classdef DatasetFilename
     % S
     %       Struct which de facto serves as a way to supply named arguments.
     function obj = DatasetFilename(S)
+      % PROPOSAL: Replace struct argument with keyword arguments.
       assert(isstruct(S))
 
       %================================
@@ -366,11 +369,11 @@ classdef DatasetFilename
 
     % RETURN VALUES
     % =============
-    % Df
+    % Dsfn
     %       Instance of solo.adm.dsfn.DatasetFilename if the string can be
     %       parsed as a filename on official dataset filenaming convention.
     %       Empty [] if it can not.
-    function Df = parse_filename(filename)
+    function Dsfn = parse_filename(filename)
 
       function versionStr = version_RE_match_to_versionNbr(s)
         versionStr = str2double(s(2:end));
@@ -381,7 +384,7 @@ classdef DatasetFilename
 
 
 
-      Df = NO_MATCH_RETURN_VALUE;
+      Dsfn = NO_MATCH_RETURN_VALUE;
 
       % NOTE: Parse from the END.
       [~, trueBasename, n] = irf.str.read_token(filename, -1, '\.cdf');
@@ -412,7 +415,7 @@ classdef DatasetFilename
           dsicdagUppercase = false;
           S.isCdag         = strcmp(filenameDsicdag(end-4:end), '-cdag');
         otherwise
-          Df = NO_MATCH_RETURN_VALUE;
+          Dsfn = NO_MATCH_RETURN_VALUE;
           return
       end
       if S.isCdag
@@ -459,7 +462,7 @@ classdef DatasetFilename
         S.lesTestStr = [];
         S.cneTestStr = [];
 
-        Df = solo.adm.dsfn.DatasetFilename(S);
+        Dsfn = solo.adm.dsfn.DatasetFilename(S);
         return
       end
 
@@ -481,7 +484,7 @@ classdef DatasetFilename
         S.lesTestStr = subStrCa{6};
         S.cneTestStr = [];
 
-        Df = solo.adm.dsfn.DatasetFilename(S);
+        Dsfn = solo.adm.dsfn.DatasetFilename(S);
         return
       end
 
@@ -501,7 +504,7 @@ classdef DatasetFilename
         S.cneTestStr         = subStrCa{2};
         S.versionNbr         = version_RE_match_to_versionNbr(subStrCa{4});
 
-        Df = solo.adm.dsfn.DatasetFilename(S);
+        Dsfn = solo.adm.dsfn.DatasetFilename(S);
         return
       end
 

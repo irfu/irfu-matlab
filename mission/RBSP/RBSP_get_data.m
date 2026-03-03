@@ -154,11 +154,10 @@ while true
         res = combine_ts(res,varTmp);
 
       end
-    else
-      return
+
     end
   end
-  if epochFileStart>=epochFileEnd, break, end
+  if epochFileStart>=epochFileEnd, return, end
   epochFileStart = epochFileStart + 3600*24;
   timeVecStart = fromepoch(epochFileStart);
 end
@@ -235,6 +234,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %distribution
         load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
         dist = load_var.Data;
@@ -298,6 +301,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %distribution
         load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
         dist = load_var.Data;
@@ -386,6 +393,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %distribution
         load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
         dist = load_var.Data;
@@ -486,6 +497,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %data
         load_var = spdfcdfread(fileToRead,'Structure',true,'variable',VAR);
         dat = load_var.Data;
@@ -532,6 +547,10 @@ end
         time = load_cdf{ixt};
         time = EpochUnix(toepoch(datevec(time)));%convert from matlab datenum to EpochUnix
         ix_tlim = epochUnix(time)>=(tint(1)) & epochUnix(time)<=(tint(2));
+        if ~any(ix_tlim)
+            res = [];
+            return
+        end
         %data
         if strcmpi(VAR,'mag')
           VAR = 'Mag';
@@ -644,13 +663,14 @@ end
       datn = [dat1; dat2];
       Datn = datn(itn,:,:);
 
+      %combine ancillary
       anc1 = struct2cell(inp1.ancillary);
       anc2 = struct2cell(inp2.ancillary);
       ancn = struct;
 
       flds = fields(inp1.ancillary);
       for i = 1:length(flds)
-        if i<4
+        if length(anc1{i}) ~= length(t1)
           ancn.(flds{i}) = anc1{i};
         else
           tmp1 = anc1{i};
@@ -661,7 +681,28 @@ end
         end
       end
 
-      res = PDist(EpochUnix(Tn),Datn,'pitchangle',inp1.depend{1}',inp1.depend{2}');
+      %combine depend
+      E1 = inp1.depend{1};
+      E2 = inp2.depend{1};
+
+      if length(E1)==length(t1)
+          En = [E1;E2];
+      else
+          En = E1;
+      end
+
+      th1 = inp1.depend{2};
+      th2 = inp2.depend{2};
+
+      if length(th1)==length(t1)
+          thn = [th1;th2];
+      else
+          thn = th1;
+      end
+
+
+
+      res = PDist(EpochUnix(Tn),Datn,'pitchangle',En,thn);
       res.species = inp1.species;
       res.ancillary = ancn;
       res.name = inp1.name;

@@ -14,11 +14,11 @@
 % First created 2017-02-10, with source code from data_manager_old.m.
 %
 classdef L1L2
-  %############################################################################
   %
-  % PROPOSAL: Move normalize_ZVCTI() to some collection of utils.
+  % PROPOSAL: Move normalize_CALIBRATION_TABLE_INDEX() to some collection of
+  %           utils.
   %   PROPOSAL: bicas.proc.utils
-  %       CON: Function is too specific. Has inputDsi as argument.
+  %       CON: Function is too specific. Has inputDsid as argument.
   %           CON: Could be less bad than this file.
   %
   % PROPOSAL: Submit ZV attributes.
@@ -27,8 +27,6 @@ classdef L1L2
   %           compare with zVar SAMPS_PER_CH (which seems to be bad).
   %
   % PROPOSAL: Class for HkSciTime.
-  %
-  %############################################################################
 
 
 
@@ -71,13 +69,13 @@ classdef L1L2
       ACQUISITION_TIME_EPOCH_UTC = Bso.get_fv('INPUT_CDF.ACQUISITION_TIME_EPOCH_UTC');
       USE_ZV_ACQUISITION_TIME_HK = Bso.get_fv('PROCESSING.HK.USE_ZV_ACQUISITION_TIME');
       if USE_ZV_ACQUISITION_TIME_HK
-        hkEpoch = bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
+        hkTt2000 = bicas.proc.utils.ACQUISITION_TIME_to_TT2000(...
           InHk.Zv.ACQUISITION_TIME, ...
           ACQUISITION_TIME_EPOCH_UTC);
 
         L.logf('warning', 'Using HK zVar ACQUISITION_TIME instead of Epoch.')
       else
-        hkEpoch = InHk.Zv.Epoch;
+        hkTt2000 = InHk.Zv.Epoch;
       end
 
 
@@ -105,7 +103,7 @@ classdef L1L2
       %===================
       % WARNINGS / ERRORS
       %===================
-      if ~issorted(hkEpoch, 'strictascend')
+      if ~issorted(hkTt2000, 'strictascend')
         % Ex: zVar ACQUISITION_TIME in test file
         % TDS___TESTDATA_RGTS_TDS_CALBA_V0.8.6/
         % solo_HK_rpw-bia_20190523T080316-20190523T134337_V02_les-7ae6b5e.cdf
@@ -117,7 +115,7 @@ classdef L1L2
           string(USE_ZV_ACQUISITION_TIME_HK))
 
       end
-      if ~irf.utils.ranges_intersect(InSci.Zv.Epoch, hkEpoch)
+      if ~irf.utils.ranges_intersect(InSci.Zv.Epoch, hkTt2000)
         %---------------------------------------
         % CASE: SCI does not overlap HK in time
         %---------------------------------------
@@ -131,15 +129,15 @@ classdef L1L2
           'SCI and HK time ranges do not overlap in time.', ...
           'BICAS:SWMProcessing')
 
-      elseif ~irf.utils.is_range_subset(InSci.Zv.Epoch, hkEpoch)
+      elseif ~irf.utils.is_range_subset(InSci.Zv.Epoch, hkTt2000)
         %-------------------------------------------------
         % CASE: SCI does not cover a subset of HK in time
         %-------------------------------------------------
         % NOTE: This anomaly is obviously implied by the anomaly above
         % (SCI, HK do not overlap). It is therefore only meaningful to
         % detect it if the above anomaly is not detected.
-        hk1RelativeSec = 1e-9 * (min(hkEpoch) - min(InSci.Zv.Epoch));
-        hk2RelativeSec = 1e-9 * (max(hkEpoch) - max(InSci.Zv.Epoch));
+        hk1RelativeSec = 1e-9 * (min(hkTt2000) - min(InSci.Zv.Epoch));
+        hk2RelativeSec = 1e-9 * (max(hkTt2000) - max(InSci.Zv.Epoch));
 
         anomalyDescrMsg = sprintf(...
           ['HK time range is not a superset of SCI time range.', ...
@@ -169,7 +167,7 @@ classdef L1L2
       %   NOTE: Time difference between HK samples varies, which means
       %         that mode() will not necessarily identify the de facto
       %         most common time difference.
-      hkEpochExtrapMargin = mode(diff(hkEpoch)) / 2;
+      hkTt2000ExtrapMargin = mode(diff(hkTt2000)) / 2;
 
 
 
@@ -183,8 +181,8 @@ classdef L1L2
       %       See bicas.proc.L1L2.lfr.process_CDF_to_DCIP().
       %=============================================================
       bdmDoubleNan = bicas.utils.interpolate_nearest(...
-        hkEpochExtrapMargin, ...
-        hkEpoch, ...
+        hkTt2000ExtrapMargin, ...
+        hkTt2000, ...
         InHk.ZvFpa.HK_BIA_MODE_MUX_SET.int2doubleNan(), ...
         InSci.Zv.Epoch);
       HkSciTime.bdmFpa = bicas.utils.FPArray(bdmDoubleNan, 'FILL_VALUE', NaN).cast('uint8');
@@ -199,8 +197,8 @@ classdef L1L2
       %==================================================================
       HkSciTime.isAchgFpa = bicas.utils.FPArray.floatNan2logical(...
         bicas.utils.interpolate_nearest(...
-        hkEpochExtrapMargin, ...
-        hkEpoch, ...
+        hkTt2000ExtrapMargin, ...
+        hkTt2000, ...
         InHk.ZvFpa.HK_BIA_DIFF_GAIN.int2doubleNan(), ...
         InSci.Zv.Epoch));
 
@@ -212,8 +210,8 @@ classdef L1L2
       % NOTE: FPA uint8 --> float-NaN --> FPA logical
       HkSciTime.dlrFpa = bicas.utils.FPArray.floatNan2logical(...
         bicas.utils.interpolate_nearest(...
-        hkEpochExtrapMargin, ...
-        hkEpoch, ...
+        hkTt2000ExtrapMargin, ...
+        hkTt2000, ...
         InHk.ZvFpa.HK_BIA_MODE_DIFF_PROBE.int2doubleNan(), ...
         InSci.Zv.Epoch));
 
@@ -223,7 +221,7 @@ classdef L1L2
       % Derive isSweepingFpa
       %======================
       isSweepingFpa = bicas.proc.L1L2.swpdet.SBDA_SCDA_with_margins(...
-        hkEpoch, ...
+        hkTt2000, ...
         InHk.ZvFpa.HK_BIA_MODE_MUX_SET, ...
         [...
         InHk.ZvFpa.HK_BIA_BIAS1, ...
@@ -233,8 +231,8 @@ classdef L1L2
         Bso);
       HkSciTime.isSweepingFpa = bicas.utils.FPArray.floatNan2logical(...
         bicas.utils.interpolate_nearest(...
-        hkEpochExtrapMargin, ...
-        hkEpoch, ...
+        hkTt2000ExtrapMargin, ...
+        hkTt2000, ...
         isSweepingFpa.logical2doubleNan, ...
         InSci.Zv.Epoch));
 
@@ -248,24 +246,25 @@ classdef L1L2
 
     % Utility function to shorten code.
     %
-    % NOTE: Operates on entire ZvStruct since CALIBRATION_TABLE_INDEX=ZVCTI
-    % exists for L1R, but not L1, and the corresponding field may thus be or not
-    % be present.
-    function zvcti = normalize_ZVCTI(ZvStruct, nRecords, inputDsi)
+    % NOTE: Operates on entire ZvStruct since CALIBRATION_TABLE_INDEX exists
+    % for L1R, but not L1, and the corresponding field may thus be or not be
+    % present.
+    function CALIBRATION_TABLE_INDEX = normalize_CALIBRATION_TABLE_INDEX(...
+        ZvStruct, nRecords, inputDsid)
 
-      C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(inputDsi);
+      C = bicas.classify_BICAS_L1_L1R_to_L2_DSID(inputDsid);
 
       if C.isL1r
-        zvcti = ZvStruct.CALIBRATION_TABLE_INDEX;
+        CALIBRATION_TABLE_INDEX = ZvStruct.CALIBRATION_TABLE_INDEX;
       elseif C.isL1
-        zvcti = nan(nRecords, 2);
+        CALIBRATION_TABLE_INDEX = nan(nRecords, 2);
       else
         error(...
           ['Can not normalize CALIBRATION_TABLE_INDEX', ...
-          ' for this DSI classification.'])
+          ' for this DSID classification.'])
       end
 
-      irf.assert.sizes(zvcti, [nRecords, 2])
+      irf.assert.sizes(CALIBRATION_TABLE_INDEX, [nRecords, 2])
     end
 
 
@@ -281,7 +280,7 @@ classdef L1L2
     % L2 output datasets are very similar, despite that the input L1/L1R LFR
     % & TDS datasets are very dissimilar.
     %
-    function [OutSci] = process_DCOP_to_CDF(SciDcip, SciDcop, outputDsi)
+    function [OutSci] = process_DCOP_to_CDF(SciDcip, SciDcop, outputDsid)
       % PROPOSAL: Rename to something shared between LFR and TDS, then use
       %           two wrappers.
       %   PROPOSAL: process_DCOP_to_LFR_TDS_CDF_core
@@ -293,35 +292,36 @@ classdef L1L2
 
 
 
-      A = bicas.sconst.C.S_ASID_DICT;
+      S = bicas.proc.L1L2.const.C.SDID_DICT;
 
 
 
-      nRecords                 = size(SciDcip.Zv.Epoch, 1);
-      nSamplesPerRecordChannel = size(SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V1")), 2);
+      nRecords = size(SciDcip.Zv.tt2000, 1);
+      aspr     = size(SciDcop.Zv.VoltageZvm.get(S("DC_V1")), 2);
 
       OutSci = [];
 
-      OutSci.Zv.Epoch              = SciDcip.Zv.Epoch;
-      OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.QUALITY_BITMASK;
-      OutSci.Zv.L2_QUALITY_BITMASK = SciDcop.Zv.L2_QUALITY_BITMASK;
-      OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QUALITY_FLAG;
+      OutSci.Zv.Epoch              = SciDcip.Zv.tt2000;
+      OutSci.Zv.QUALITY_BITMASK    = SciDcip.Zv.L1qbmFpa;
+      OutSci.Zv.L2_QUALITY_BITMASK = SciDcop.Zv.l2qbm;
+      OutSci.Zv.QUALITY_FLAG       = SciDcop.Zv.QflFpa;
       OutSci.Zv.DELTA_PLUS_MINUS   = SciDcip.Zv.DELTA_PLUS_MINUS;
       OutSci.Zv.SYNCHRO_FLAG       = SciDcip.Zv.SYNCHRO_FLAG;
-      OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.freqHz;
+      OutSci.Zv.SAMPLING_RATE      = SciDcip.Zv.samplRateHz;
 
       % NOTE: Convert aampere --> nano-aampere
-      OutSci.Zv.IBIAS1 = SciDcop.Zv.currentAAmpere(:, 1) * 1e9;
-      OutSci.Zv.IBIAS2 = SciDcop.Zv.currentAAmpere(:, 2) * 1e9;
-      OutSci.Zv.IBIAS3 = SciDcop.Zv.currentAAmpere(:, 3) * 1e9;
+      OutSci.Zv.IBIAS1 = SciDcop.Zv.currentAampere(:, 1) * 1e9;
+      OutSci.Zv.IBIAS2 = SciDcop.Zv.currentAampere(:, 2) * 1e9;
+      OutSci.Zv.IBIAS3 = SciDcop.Zv.currentAampere(:, 3) * 1e9;
 
-      % Shall be copied according to RCS ICD, 1.7.
+      OutSci.Ga.CAVEATS   = SciDcop.Ga.CAVEATS;
+      % Below GAs shall be copied from input CDF according to RCS ICD, 1.7.
       OutSci.Ga.OBS_ID    = SciDcip.Ga.OBS_ID;
       OutSci.Ga.SOOP_TYPE = SciDcip.Ga.SOOP_TYPE;
 
 
 
-      C = bicas.classify_BICAS_L1_L1R_to_L2_DSI(outputDsi);
+      C = bicas.classify_BICAS_L1_L1R_to_L2_DSID(outputDsid);
 
       % NOTE: The two cases are different in the indexes they use for
       % OutSciZv.
@@ -331,7 +331,7 @@ classdef L1L2
         %===========
 
         % ASSERTIONS
-        assert(nSamplesPerRecordChannel == 1, ...
+        assert(aspr == 1, ...
           'BICAS:Assertion:IllegalArgument', ...
           ['Number of samples per CDF record is not 1, as expected.', ...
           ' Bad input CDF?'])
@@ -340,22 +340,22 @@ classdef L1L2
           OutSci.Zv.QUALITY_FLAG,    [nRecords, 1])
 
         % Try to pre-allocate to save RAM/speed up.
-        tempNaN = nan(nRecords, 3);
-        OutSci.Zv.VDC = tempNaN;
-        OutSci.Zv.EDC = tempNaN;
-        OutSci.Zv.EAC = tempNaN;
+        tempNan            = nan(nRecords, 3);
+        OutSci.Zv.VDC      = tempNan;
+        OutSci.Zv.EDC      = tempNan;
+        OutSci.Zv.EAC      = tempNan;
 
-        OutSci.Zv.VDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V1"));
-        OutSci.Zv.VDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V2"));
-        OutSci.Zv.VDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V3"));
+        OutSci.Zv.VDC(:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V1"));
+        OutSci.Zv.VDC(:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V2"));
+        OutSci.Zv.VDC(:,3) = SciDcop.Zv.VoltageZvm.get(S("DC_V3"));
 
-        OutSci.Zv.EDC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V12"));
-        OutSci.Zv.EDC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V13"));
-        OutSci.Zv.EDC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V23"));
+        OutSci.Zv.EDC(:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V12"));
+        OutSci.Zv.EDC(:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V13"));
+        OutSci.Zv.EDC(:,3) = SciDcop.Zv.VoltageZvm.get(S("DC_V23"));
 
-        OutSci.Zv.EAC(:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A("AC_V12"));
-        OutSci.Zv.EAC(:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A("AC_V13"));
-        OutSci.Zv.EAC(:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A("AC_V23"));
+        OutSci.Zv.EAC(:,1) = SciDcop.Zv.VoltageZvm.get(S("AC_V12"));
+        OutSci.Zv.EAC(:,2) = SciDcop.Zv.VoltageZvm.get(S("AC_V13"));
+        OutSci.Zv.EAC(:,3) = SciDcop.Zv.VoltageZvm.get(S("AC_V23"));
 
         % ASSERTION
         bicas.proc.utils.assert_struct_num_fields_have_same_N_rows(OutSci.Zv);
@@ -374,34 +374,34 @@ classdef L1L2
         else
           error(...
             'BICAS:Assertion', ...
-            'Illegal DSI classification.')
+            'Illegal DSID classification.')
         end
 
         % ASSERTION
-        assert(nSamplesPerRecordChannel == SAMPLES_PER_RECORD_CHANNEL, ...
+        assert(aspr == SAMPLES_PER_RECORD_CHANNEL, ...
           'BICAS:Assertion:IllegalArgument', ...
           ['Number of samples per CDF record (%i) is not', ...
           ' %i, as expected. Bad Input CDF?'], ...
-          nSamplesPerRecordChannel, ...
+          aspr, ...
           SAMPLES_PER_RECORD_CHANNEL)
 
         % Try to pre-allocate to save RAM/speed up.
-        tempNaN = nan(nRecords, nSamplesPerRecordChannel, 3);
-        OutSci.Zv.VDC = tempNaN;
-        OutSci.Zv.EDC = tempNaN;
-        OutSci.Zv.EAC = tempNaN;
+        tempNan = nan(nRecords, aspr, 3);
+        OutSci.Zv.VDC        = tempNan;
+        OutSci.Zv.EDC        = tempNan;
+        OutSci.Zv.EAC        = tempNan;
 
-        OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V1"));
-        OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V2"));
-        OutSci.Zv.VDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V3"));
+        OutSci.Zv.VDC(:,:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V1"));
+        OutSci.Zv.VDC(:,:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V2"));
+        OutSci.Zv.VDC(:,:,3) = SciDcop.Zv.VoltageZvm.get(S("DC_V3"));
 
-        OutSci.Zv.EDC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V12"));
-        OutSci.Zv.EDC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V13"));
-        OutSci.Zv.EDC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A("DC_V23"));
+        OutSci.Zv.EDC(:,:,1) = SciDcop.Zv.VoltageZvm.get(S("DC_V12"));
+        OutSci.Zv.EDC(:,:,2) = SciDcop.Zv.VoltageZvm.get(S("DC_V13"));
+        OutSci.Zv.EDC(:,:,3) = SciDcop.Zv.VoltageZvm.get(S("DC_V23"));
 
-        OutSci.Zv.EAC(:,:,1) = SciDcop.Zv.AsrSamplesAVoltSrm(A("AC_V12"));
-        OutSci.Zv.EAC(:,:,2) = SciDcop.Zv.AsrSamplesAVoltSrm(A("AC_V13"));
-        OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.AsrSamplesAVoltSrm(A("AC_V23"));
+        OutSci.Zv.EAC(:,:,1) = SciDcop.Zv.VoltageZvm.get(S("AC_V12"));
+        OutSci.Zv.EAC(:,:,2) = SciDcop.Zv.VoltageZvm.get(S("AC_V13"));
+        OutSci.Zv.EAC(:,:,3) = SciDcop.Zv.VoltageZvm.get(S("AC_V23"));
 
         % ASSERTION
         % NOTE: Must exclude ZVs "SAMPLE_IDX", "SAMPLE_LABEL".
@@ -421,21 +421,24 @@ classdef L1L2
 
       else
         error('BICAS:Assertion:IllegalArgument', ...
-          'Function can not produce outputDsi=%s.', outputDsi)
+          'Function can not produce outputDsid=%s.', outputDsid)
       end
 
 
 
-      % NOTE: Not really necessary since the list of ZVs will be checked
-      % against the master CDF?
-      % ZV "SAMPLE_IDX" only exists for SWF (not CWF).
+      if C.isSwf
+        optionalZvFnSet = {'SAMPLE_IDX', 'SAMPLE_LABEL'};
+      else
+        optionalZvFnSet = {};
+      end
+      irf.assert.struct(OutSci.Ga, {'CAVEATS', 'OBS_ID', 'SOOP_TYPE'}, {})
       irf.assert.struct(OutSci.Zv, {...
         'IBIAS1', 'IBIAS2', 'IBIAS3', 'VDC', 'EDC', 'EAC', 'Epoch', ...
         'QUALITY_BITMASK', 'L2_QUALITY_BITMASK', 'QUALITY_FLAG', ...
         'DELTA_PLUS_MINUS', 'SYNCHRO_FLAG', 'SAMPLING_RATE'}, ...
-        {'SAMPLE_IDX', 'SAMPLE_LABEL'})
+        optionalZvFnSet)
 
-    end    % process_DCOP_to_CDF
+    end    % process_DCOP_to_CDF()
 
 
 

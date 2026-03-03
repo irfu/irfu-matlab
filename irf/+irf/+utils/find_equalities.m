@@ -2,6 +2,10 @@
 % Given a set of same-sized arrays in one dimension, find all sets of indices
 % for which the array components are all equal.
 %
+% Given a set of arrays with the same number of rows, find all combinations of
+% row elements in all arrays combined, which are unique within a specified
+% search distance.
+%
 % NOTE: Counts NaN as equal to itself.
 % NOTE: Is faster the more nearby indices (within searchDistance) are equal.
 % NOTE: Implementation uses "isequaln", i.e.
@@ -17,7 +21,7 @@
 % (1) which rows are equal or not,
 % (2) the number of input variables,
 % (3) the data types of input variables,
-% (4) the order if arguments,
+% (4) the order of arguments,
 % (5) argument "searchDistance".
 % --
 % Empirically, the speed varies widely depending on data type:
@@ -111,9 +115,9 @@ for i = 1:nRows
   % the first occurrence. Not the only choice.
   fauxHashArray(i) = i;
 
-  %=======================================================
+  %======================================================
   % Iterate over all preceding data indices within range
-  %=======================================================
+  %======================================================
   jEarliest = max(1, i-searchDistance);
   for j = (i-1):-1:jEarliest
 
@@ -122,7 +126,9 @@ for i = 1:nRows
     %==========================================
     ijEqual = true;   % Assume equality until proven otherwise.
     for iArg = 1:nVariableArgs
-      % IMPLEMENTATION NOTE: Uses "isequaln", not isequal".
+      % IMPLEMENTATION NOTE: Uses "isequaln" (not isequal").
+      % IMPLEMENTATION NOTE: All dimensions 2 and higher are converted into one
+      % dimension, which works fine for comparisons.
       if ~isequaln(varargin{iArg}(i, :), varargin{iArg}(j, :))
         ijEqual = false;
         break

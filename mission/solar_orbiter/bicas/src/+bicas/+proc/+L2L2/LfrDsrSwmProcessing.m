@@ -1,6 +1,6 @@
 %
-% SWMP for downsampling SOLO_L2_RPW-LFR-SURV-CWF-E L2-->L2 (unofficial
-% output datasets).
+% SWMP for downsampling SOLO_L2_RPW-LFR-SURV-CWF-E -->
+% SOLO_L2_RPW-LFR-SURV-CWF-E-1-SECOND (unofficial output datasets).
 %
 % NOTE: Exclude EAC, IBIAS1/2/3. /YK 2021-05-11
 %
@@ -27,7 +27,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       InLfrCwf = InputDatasetsMap('OSR_cdf');
 
-      OutLfrCwfDsr = bicas.proc.L2L2.LfrDsrSwmProcessing.process_LFRCWF_to_DSR(InLfrCwf, Bso, L);
+      OutLfrCwfDsr = bicas.proc.L2L2.LfrDsrSwmProcessing.process_LFR_CWF_to_DSR(InLfrCwf, Bso, L);
 
       OutputDatasetsMap = containers.Map();
       OutputDatasetsMap('DSR_cdf') = bicas.OutputDataset(...
@@ -50,31 +50,31 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
     % IMPLEMENTATION NOTE: It is not obvious whether this processing should
-    % be run as a part of a separate s/w mode
+    % be run as a part of a separate SWM
     %   SOLO_L2_LFR-RPW-CWF-E --> DSR,
-    % or as part of the s/w mode
+    % or as part of the SWM
     %   SOLO_L1/L1R_LFR-RPW-CWF --> SOLO_L2_LFR-RPW-CWF-E (+DSR).
     % The code is therefore designed so that it is easy to switch between
     % the two.
     %
     % IMPLEMENTATION NOTE: It is tempting to merge this function with
-    % process_L2_to_L3() and have the same S/W MODE use it, since it
+    % process_L2_to_L3() and have the same SWM use it, since it
     % (1) has the same one input dataset, and
     % (2) produces a similarily downsampled dataset.
-    % However, that might be a bad idea since it also
+    % However, that might be a bad idea since this function also
     % (1) uses another sampling rate (less shared processing), and
-    % (2) should remain unofficial (both s/w mode and the output dataset),
+    % (2) should remain unofficial (both SWM and the output dataset),
     %     as opposed to process_L2_to_L3() which produces official datasets
     %     and might one day be "officially" run at ROC.
     %
-    function OutLfrCwfDsr = process_LFRCWF_to_DSR(InLfrCwfOsr, Bso, L)
+    function OutLfrCwfDsr = process_LFR_CWF_to_DSR(InLfrCwfOsr, Bso, L)
       %
       % PROBLEM: How handle leap seconds if bin size <= 1 s?
       %   NOTE: Positive leap seconds are not a problem.
       %   PROPOSAL: Split bins WITH leap seconds? Then there is no
       %             problem(?).
 
-      Tmk = bicas.utils.Timekeeper('bicas.proc.L2L2.process_LFRCWF_to_DSR', L);
+      Tmk = bicas.utils.Timekeeper('bicas.proc.L2L2.process_LFR_CWF_to_DSR', L);
 
 
 
@@ -94,9 +94,12 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
       %=========================
       % ~Generic initialization
       %=========================
+      % NOTE: Always empty GA CAVEATS. Is not derived from QRCs, since there
+      % are currently (2025-09-02) no QRCSs for L2 DSR CDFs.
       Ga = struct(...
         'OBS_ID',    {InLfrCwfOsr.Ga.OBS_ID}, ...
-        'SOOP_TYPE', {InLfrCwfOsr.Ga.SOOP_TYPE});
+        'SOOP_TYPE', {InLfrCwfOsr.Ga.SOOP_TYPE}, ...
+        'CAVEATS',   {cell(0, 1)});
       %
       [Zv, iRecordsInBinCa] = bicas.proc.dsr.get_LFR_CWF_DSR_ZVs_template(...
         InLfrCwfOsr.Zv.Epoch, ...
@@ -161,7 +164,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
 
       Tmk.stop_log(nRecordsOsr, 'OSR record', nRecordsDsr, 'DSR record')
-    end    % process_LFRCWF_to_DSR
+    end    % process_LFR_CWF_to_DSR()
 
 
 
