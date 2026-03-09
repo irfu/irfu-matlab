@@ -78,3 +78,82 @@ do
 	done
 	CLI=$(($CLI+1))
 done
+
+#fix dataset end date
+flist="CX_CH_EFW_L1_E.ceh \
+CX_CH_EFW_L2_E.ceh \
+CX_CH_EFW_L3_E.ceh \
+CX_CH_EFW_L3_SFIT.ceh \
+CX_CH_EFW_L3_DER.ceh \
+CX_CH_EFW_L2_EB.ceh"
+CLI=1
+ENDDATE="2018-12-10"
+for f in $flist
+do
+	fout=`echo $f| sed -e "s=X=${CLI}="`
+   echo "Processing $fout"
+   sed -i.bak "s/MMM/${ENDDATE}/g" $fout
+done
+CLI=2
+ENDDATE="2022-08-23"
+for f in $flist
+do
+	fout=`echo $f| sed -e "s=X=${CLI}="`
+   echo "Processing $fout"
+   sed -i.bak "s/MMM/${ENDDATE}/g" $fout
+done
+
+CLI=3
+ENDDATE="2011-03-05"
+flist="CX_CH_EFW_L1_E.ceh \
+CX_CH_EFW_L2_E.ceh"
+for f in $flist
+do
+	fout=`echo $f| sed -e "s=X=${CLI}="`
+   echo "Processing $fout"
+   sed -i.bak "s/MMM/${ENDDATE}/g" $fout
+done
+ENDDATE="2014-11-03"
+flist="CX_CH_EFW_L3_E.ceh \
+CX_CH_EFW_L3_SFIT.ceh \
+CX_CH_EFW_L3_DER.ceh \
+CX_CH_EFW_L2_EB.ceh"
+for f in $flist
+do
+	fout=`echo $f| sed -e "s=X=${CLI}="`
+   echo "Processing $fout"
+   sed -i.bak "s/MMM/${ENDDATE}/g" $fout
+done
+ENDDATE="2024-04-28"
+flist="CX_CH_EFW_L1_P.ceh \
+CX_CH_EFW_L2_P.ceh \
+CX_CH_EFW_L3_P.ceh" 
+for f in $flist
+do
+	fout=`echo $f| sed -e "s=X=${CLI}="`
+   echo "Processing $fout"
+   sed -i.bak "s/MMM/${ENDDATE}/g" $fout
+done
+
+#default end of mission
+ENDDATE="2026-12-31" 
+flist="CX_CH_EFW_L1_P.ceh \
+CX_CH_EFW_L2_P.ceh \
+CX_CH_EFW_L3_P.ceh \
+CX_CH_EFW_L1_E.ceh \
+CX_CH_EFW_L2_E.ceh \
+CX_CH_EFW_L3_E.ceh \
+CX_CH_EFW_L3_SFIT.ceh \
+CX_CH_EFW_L3_DER.ceh \
+CX_CH_EFW_L2_EB.ceh"
+CLI=1
+while test $CLI -le 4
+do
+	for f in $flist
+	do
+		fout=`echo $f| sed -e "s=X=${CLI}="`
+   	echo "Processing $fout"
+   	sed -i.bak "s/MMM/${ENDDATE}/g" $fout
+	done
+	CLI=$(($CLI+1))
+done
