@@ -125,7 +125,8 @@ do
    sed -i.bak "s/MMM/${ENDDATE}/g" $fout
 done
 ENDDATE="2024-04-28"
-flist="CX_CH_EFW_L1_P.ceh \
+flist="CX_CH_EFW_L2_PB.ceh \
+CX_CH_EFW_L1_P.ceh \
 CX_CH_EFW_L2_P.ceh \
 CX_CH_EFW_L3_P.ceh" 
 for f in $flist
@@ -145,6 +146,7 @@ CX_CH_EFW_L2_E.ceh \
 CX_CH_EFW_L3_E.ceh \
 CX_CH_EFW_L3_SFIT.ceh \
 CX_CH_EFW_L3_DER.ceh \
+CX_CH_EFW_L2_PB.ceh \
 CX_CH_EFW_L2_EB.ceh"
 CLI=1
 while test $CLI -le 4
