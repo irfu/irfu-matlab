@@ -22,6 +22,7 @@ CX_CH_EFW_L3_P.ceh \
 CX_CH_EFW_L2_E.ceh \
 CX_CH_EFW_L3_E.ceh \
 CX_CH_EFW_L3_SFIT.ceh \
+CX_CH_EFW_L3_OFIT.ceh \
 CX_CH_EFW_L3_DER.ceh \
 CX_CH_EFW_L2_HK.ceh \
 CX_CQ_EFW_INST.ceh \
@@ -128,7 +129,7 @@ ENDDATE="2024-04-28"
 flist="CX_CH_EFW_L2_PB.ceh \
 CX_CH_EFW_L1_P.ceh \
 CX_CH_EFW_L2_P.ceh \
-CX_CH_EFW_L3_P.ceh" 
+CX_CH_EFW_L3_P.ceh"
 for f in $flist
 do
 	fout=`echo $f| sed -e "s=X=${CLI}="`
@@ -137,7 +138,7 @@ do
 done
 
 #default end of mission
-ENDDATE="2026-12-31" 
+ENDDATE="2026-12-31"
 flist="CX_CH_EFW_L1_P.ceh \
 CX_CH_EFW_L2_P.ceh \
 CX_CH_EFW_L3_P.ceh \
