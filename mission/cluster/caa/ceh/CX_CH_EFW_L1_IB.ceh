@@ -38,7 +38,7 @@ START_META     =   CONTACT_COORDINATES
 END_META       =   CONTACT_COORDINATES
 !
 START_META     =   ACKNOWLEDGEMENT
-   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Active Archive in any"
+   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Science Archive in any"
    ENTRY       =   "publication based upon use of these data"
 END_META       =   ACKNOWLEDGEMENT
 
