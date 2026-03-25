@@ -411,3 +411,10 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
     possible.
   * Ignores ANT3_FAILING (previously only SATURATION_ZV_V*) so that L3 data can
     be generated also for that case (if relevant data is not blanked).
+
+
+----------------------------
+ Version ?.?.? (????-??-??)
+----------------------------
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2026-03-02 (inclusive).

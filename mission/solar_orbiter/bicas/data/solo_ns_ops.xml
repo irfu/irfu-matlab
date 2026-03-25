@@ -23,7 +23,7 @@
             2024-09-12, Erik P G Johansson (IRF Uppsala): Data has not been systematically searched for saturation, but should cover most cases (or at least the most egregious ones) up until 2021-03-06. After the creation of this form of labeling, functionality for automatically detecting saturation has been added to BICAS. This functionality does however not distinguish between full and partial saturation. One should therefore not need to manually add more saturated time intervals than the ones already labelled.
         </note>
         <note>
-            2025-12-03, Erik P G Johansson (IRF Uppsala): The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2025-12-01 (inclusive). It only contains manually identified thuster firings.
+            2025-12-03, Erik P G Johansson (IRF Uppsala): The table should contain all thruster firings for the time period 2020-02-12 (launch+2 days) to 2026-03-02 (inclusive). It only contains manually identified thuster firings.
         </note>
         <note>
             2024-01-31, Erik P G Johansson (IRF Uppsala): BICAS detects saturation itself since v8.0.0 and labels it as "full saturation". One should therefore not need to add more FULL_SATURATION entries to this list. FULL_SATURATION entries in this table are additionally treated by BICAS as "full saturation".
@@ -3034,8 +3034,116 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2025-11-16T18:04:28</startTimeUtc>
+            <stopTimeUtc> 2025-11-16T18:18:04</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
             <startTimeUtc>2025-11-23T19:04:27</startTimeUtc>
             <stopTimeUtc> 2025-11-23T19:17:54</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-12-08T19:04:25</startTimeUtc>
+            <stopTimeUtc> 2025-12-08T19:17:49</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-12-09T00:54:10</startTimeUtc>
+            <stopTimeUtc> 2025-12-09T01:02:12</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Pulses of length ~0.5 s! QUALITY_BITMASK indicates possible thruster firing. Second thruster firing in a short time! /Erik P G Johansson (IRF Uppsala)</description>
+        </event>
+        <event>
+            <startTimeUtc>2025-12-15T04:04:31</startTimeUtc>
+            <stopTimeUtc> 2025-12-15T04:17:07</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-12-22T01:04:20</startTimeUtc>
+            <stopTimeUtc> 2025-12-22T01:16:41</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2025-12-29T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2025-12-29T01:16:28</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-01-05T01:04:28</startTimeUtc>
+            <stopTimeUtc> 2026-01-05T01:15:29</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-01-12T01:04:29</startTimeUtc>
+            <stopTimeUtc> 2026-01-12T01:15:05</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-01-15T04:24:28</startTimeUtc>
+            <stopTimeUtc> 2026-01-15T04:32:54</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-01-15T21:59:32</startTimeUtc>
+            <stopTimeUtc> 2026-01-15T22:07:17</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Second thruster firing the same day.</description>
+        </event>
+        <event>
+            <startTimeUtc>2026-01-19T05:04:32</startTimeUtc>
+            <stopTimeUtc> 2026-01-19T05:13:57</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-01-26T05:04:29</startTimeUtc>
+            <stopTimeUtc> 2026-01-26T05:18:01</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-02-02T05:04:29</startTimeUtc>
+            <stopTimeUtc> 2026-02-02T05:19:59</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-02-10T01:04:30</startTimeUtc>
+            <stopTimeUtc> 2026-02-10T01:25:38</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-02-16T11:04:28</startTimeUtc>
+            <stopTimeUtc> 2026-02-16T11:25:25</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-02-19T17:59:17</startTimeUtc>
+            <stopTimeUtc> 2026-02-19T18:24:55</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-02-26T18:04:28</startTimeUtc>
+            <stopTimeUtc> 2026-02-26T18:30:18</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-02-27T18:47:25</startTimeUtc>
+            <stopTimeUtc> 2026-02-27T19:09:43</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
