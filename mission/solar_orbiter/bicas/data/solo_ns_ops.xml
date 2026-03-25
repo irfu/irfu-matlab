@@ -2746,6 +2746,12 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2025-01-18T14:34:23</startTimeUtc>
+            <stopTimeUtc> 2025-01-18T14:42:13</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
             <startTimeUtc>2025-01-20T01:04:27</startTimeUtc>
             <stopTimeUtc> 2025-01-20T01:15:15</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
@@ -2775,6 +2781,12 @@
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
             <description></description>
         </event>
+        <!--<event>
+            <startTimeUtc>2025-02-18T09:19:33</startTimeUtc>
+            <stopTimeUtc> 2025-02-18T09:27:22</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unclear if it is a thruster firing. QUALITY_BITMASK thruster firing quality bit is set.</description>
+        </event>-->
         <event>
             <startTimeUtc>2025-02-23T20:44:30</startTimeUtc>
             <stopTimeUtc> 2025-02-23T20:57:02</stopTimeUtc>
