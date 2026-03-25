@@ -26,12 +26,12 @@
 %
 classdef DesSwmProcessing < bicas.proc.SwmProcessing
   % PROPOSAL: Better class name
-  %   PROPOSAL: Class name without "L3".
-  %     PRO: "L3" is implicit from the package "L2L3".
-  %   NOTE: Should cover both SURV and SBMx.
-  %   ~Density+Efield+Scpot
-  %   ~CWF
-  %   ~OSR, DSR
+  %   NOTE: The SWM should cover both
+  %     L2 SURV-->L3 SURV DES, and
+  %     L2 SBMx-->L3 SBMx DES.
+  %   ~Density+Efield+Scpot, ~DES
+  %   ~CWF (includes SBMx)
+  %   ~OSR, DSR (only DSR for non-SBMx?)
   %   DensityEfieldScpotSwmProcessing
   %   DensEfieldScpotSwmProcessing
   %     CON: Long
@@ -43,7 +43,7 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
   % PROPOSAL: Automatic test code.
   %   NOTE: There are limited tests.
   %
-  % PROPOSAL: Split up processing between (a) density, and (b) E-field & SCPOT
+  % PROPOSAL: Split up processing between (a) density, and (b) E field & SCPOT
   %           into separate SWMs.
   %   PRO: Faster processing when only processing subset of L3 DSIDs.
   %       CON: Not very heavy operation.
@@ -193,6 +193,30 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
         ] ...
         = process_L2_to_L3(obj, InLfrCwf, NsoTable, Excd, Bso, L)
 
+      % ~BUG: The current implementation always uses synthetic L2 QFL for
+      %   evaluating QFL>=PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
+      %   We want to use
+      %   (1) synthetic L2 QFL for DENSITY, and
+      %   (2) actual    L2 QFL for EFIELD,
+      %   when evaluating criterion QFL>=PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN.
+      %   NOTE: DENSITY is derived from PSP, which is derived together with
+      %         EFIELD & SCPOT.
+      %   --
+      %   PROPOSAL: Submit both synthetic & actual L2 QFL to
+      %             bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY() and have it
+      %             set fill positions based on it.
+      %     CON: Does not set all input FPs based on quality in one location.
+      %   PROPOSAL: Submit both actual L2 QFL to
+      %             bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY() and have it
+      %             set additional fill positions based on it for EFIELD.
+      %     CON: Does not set all input FPs based on quality in one location.
+      %   PROPOSAL: Do nothing.
+      %     PRO: Channels affected by saturation or ANT3_FAILING are set to FP
+      %          anyway. ==> E field becomes FP.
+      %       NOTE: Only if checks that E field must always be two components or
+      %             none.
+      %     PRO: Easy.
+
 
 
       saturationSchemeId  = Bso.get_fv('PROCESSING.SATURATION.QUALITY_SCHEME');
@@ -286,8 +310,6 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
       %         fix the entire issue.
       %   PROPOSAL: Use double also for CDF integer variables so NaN can
       %             represent fill value also for these.
-      %   PROPOSAL: Implement MATLAB equivalent of the JUICE pipeline's
-      %             FPA class.
       %
       % NOTE: L2 LFR-CWF-E skt previously had zVar
       %   QUALITY_BITMASK=CDF_UINT1, fill value=255 (wrong)
