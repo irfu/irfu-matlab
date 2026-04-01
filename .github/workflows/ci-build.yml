@@ -42,7 +42,7 @@ jobs:
 
       # Run MATLAB code
       - name: Run commands
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         with:
           command: tests_before_release;
 
@@ -78,7 +78,7 @@ jobs:
 
       # Run MATLAB code
       - name: Run commands
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         with:
           command: tests_before_release_BICAS;
 
