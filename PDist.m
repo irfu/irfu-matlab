@@ -754,12 +754,15 @@ classdef PDist < TSeries
 
       mass = obj.mass;
 
+      nPol = numel(obj.depend{3}(1,:));
+      nAz = numel(obj.depend{2}(1,:));
+
       % Calculate velocity volume of FPI bin
       % int(sin(th)dth) -> x = -cos(th), dx = sin(th)dth -> int(dx) -> x = [-cos(th2) + cos(th1)] = [cos(th1) - cos(th1)]
       bin_edge_polar = [obj.depend{3} - 0.5*mean(diff(obj.depend{3})) obj.depend{3}(end) + 0.5*mean(diff(obj.depend{3}))];
       d_polar = cosd(bin_edge_polar(1:(end-1))) - cosd(bin_edge_polar(2:end));
       d_polar_mat = zeros(size(obj.data));
-      c_eval('d_polar_mat(:,:,:,?) = d_polar(?);',1:16)
+      c_eval('d_polar_mat(:,:,:,?) = d_polar(?);',1:nPol)
 
       % int(dphi) -> phi
       bin_azim = obj.depend{2}(1,2) - obj.depend{2}(1,1);
@@ -778,7 +781,7 @@ classdef PDist < TSeries
       v_minus = sqrt(2*units.e*E_minus/mass); % m/s
       v_plus = sqrt(2*units.e*E_plus/mass); % m/s
       d_vel = (v_plus.^3 - v_minus.^3)/3; % (m/s)^3
-      d_vel_mat = repmat(d_vel,1,1,32,16);
+      d_vel_mat = repmat(d_vel,1,1,nAz,nPol);
 
       d3v = d_vel_mat.*d_azim.*d_polar_mat; % (m/s)^3
 
@@ -3529,51 +3532,191 @@ classdef PDist < TSeries
         if isfield(PD.ancillary,'delta_energy_plus'), PD.ancillary.delta_energy_plus = PD.ancillary.delta_energy_plus(:,elevels); end
       end
     end
-    function TS = find_noise_energy_limit(obj,nMovMean)
-      % PDIST.FIND_NOISE_ENERGY_LIMIT
-      %   Find an energy limit below which the data is dominated by random
-      %   erroneous counts.
+    function out = find_low_counts(obj,varargin)
+      % PDIST.FIND_LOW_COUNTS Finds indices or energy limits of low counts.
+      %   Based on the total counts for each energy level.
       %
-      %   TS = PDist.noise_energy_limit(nMovMin); % nMovMin - integer
-      %
-      %   Algorithm:
-      %     1. Calculate omnidirectional distribution.
-      %     2. Apply an N-point moving minimum.
-      %     3. For each time, find the lowest zero-occurrence and
-      %        corresponding energy.
+      %   Use in combination with PDist.mask to replace energy levels with
+      %   low counts with nans.
       %
       %   Usage:
-      %     tsElow = iPDist3.noise_energy_limit(5);
+      %     en  = iPDist_counts.find_low_counts('counts',5,'nMovMean',[5 5],'output','energy');
+      %     mat = iPDist_counts.find_low_counts('counts',5,'nMovMean',[3 3],'output','mat');
       %
-      %   Example
+      %     Remove noise with PDist.mask:
+      %     pd_mat = iPDist.mask('energy','mat',mat);
+      %     pd_en = iPDist.mask('energy','max',en);
       %
+      %   Input:
+      %     'count': integer value, used as: remove find(counts<value)
+      %     'nMovMean': Apply a moving window average to smooth data. Can
+      %         be a single value to mean over time, or a 2 value array to
+      %         mean over times and energies.
+      %     'output': 'energy' - 1 energy for each time, when the sum of
+      %                          counts for each energy level is below the
+      %                          limit
+      %               'mat' - 2D array [nt x nE] of ones or zeros, ones
+      %                       when the sum of counts for that energy and
+      %                       time is below the limit
 
-      if ~exist('nMovMean','var')
-        nMovMean = 5;
+
+
+
+      % Default
+      limCounts = 5;
+      output = 'energy'; % one energy for each time
+      nMovMean = 1; % no mean
+
+      % Collect input
+      nargs = numel(varargin);
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end
+      while have_options
+        l = 0;
+        switch(lower(args{1}))
+          case 'counts'
+            limCounts = args{2};
+            l = 2;
+            args = args(l+1:end);
+          case 'output'
+            output = args{2};
+            l = 2;
+            args = args(l+1:end);
+          case 'nmovmean'
+            nMovMean = args{2};
+            l = 2;
+            args = args(l+1:end);
+          otherwise
+            l = 1;
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
+        end
+        if isempty(args), break, end
       end
 
       PD = obj;
-      PD = PD.omni;
-      data = PD.data;
-      data = movmin(data,nMovMean,1);
+      counts = nansum(PD.data(:,:,:),3); % Sum over all angles
+      counts = movmean(counts,nMovMean,1); % Smooths the results a bit
 
-      % Loop through time and find the highest zero
-      idx_nan = zeros(PD.length,1);
-      elow_t = zeros(PD.length,1);
-      for it = 1:PD.length
-         idx_nan_tmp = find(data(it,:)==0,1,'last');
-        if isempty(idx_nan_tmp)
-          idx_nan(it) = NaN;
-          elow_t(it) = NaN;
-        else
-          idx_nan(it) = idx_nan_tmp;
-          elow_t(it) = PD.depend{1}(it,idx_nan(it));
+       switch output
+          case 'mat'
+            mask = zeros(size(counts));
+            mask(find(counts<limCounts)) = 1;
+            out = mask;
+          case 'energy'
+            mask = zeros(PD.length,1);
+            for it = 1:PD.length
+              idx_nan_tmp = find(counts(it,:)>limCounts,1,'first'); % Find first instance when value is above the given limit.
+              if isempty(idx_nan_tmp)
+                idx_nan(it) = NaN;
+                mask(it) = NaN;
+              else
+                idx_nan(it) = idx_nan_tmp;
+                mask(it) = PD.depend{1}(it,idx_nan(it));
+              end
+            end
+            out = irf.ts_scalar(PD.time,mask);
+        end
+
+
+    end
+    function PD = mask(obj,varargin)
+      % PDIST.MASK Replaces data with NaN.
+      %   PD = PD.mask('energy','mat',matEind); % masks 1's
+      %   PD = PD.mask('energy','max',maxE); % masks energies below maxE
+      %   PD = PD.mask('energy','min',minE); % masks energies above minE
+      %
+      %   matEind - nT x nE matrix of zeros (0) or ones (1)
+      %   maxE - nT x 1 array or TSeries with energies
+      %   minE - nT x 1 array or TSeries with energies
+      %
+      %   Example:
+      %   % Mask all data points that has less than 5 counts per energy
+      %   level. First apply a movmean to the data for smoothing.
+      %   data = nansum(PD_counts.data(:,:,:),3);
+      %   data = movmean(data,[5 5],1);
+      %   mask = zeros(size(data));
+      %   mask(find(data<5)) = 1;
+      %   pd = iPDist.mask('energy','mat',mask);
+      %
+      %   % Mask all energies below the energy in tsElow
+      %   tsElow = iPDist_counts.find_noise_energy_limit_counts(5,nMovMean);
+      %   pd = iPDist.mask('energy','max',tsElow);
+      %   pd = iPDist.mask('energy','max',tsElow.data);
+
+
+      % Collect input
+      nargs = numel(varargin);
+      have_options = 0;
+      if nargs > 0, have_options = 1; args = varargin(:); end
+      while have_options
+        l = 0;
+        switch(lower(args{1}))
+          case 'energy'
+            doE = 1;
+            doMat = 1;
+            l = 3;
+            rep = lower(args{1});
+            meth = args{2};
+            limit = args{3};
+            args = args(l+1:end);
+          otherwise
+            l = 1;
+            irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+            args = args(l+1:end);
+        end
+        if isempty(args), break, end
+      end
+
+
+      if isa(limit,'TSeries')
+        limit = limit.data;
+      end
+
+      % Mask
+      data = obj.data;
+      datasize = obj.datasize;
+
+      iDep = find(cellfun(@(s) strcmp(s,rep),obj.representation));
+
+      for it = 1:obj.length
+        switch meth
+          case {'mat','idx','ind','index'}
+            switch iDep
+              case 1
+                data(it,find(limit(it,:)),:) = NaN;
+              case 2
+                data(it,:,find(limit(it,:)),:) = NaN;
+              case 3
+                data(it,:,:,find(limit(it,:)),:) = NaN;
+            end
+          case 'max'
+            rem = find(obj.depend{iDep}(1,:)<limit(it,:));
+            switch iDep
+              case 1
+                data(it,rem,:) = NaN;
+              case 2
+                data(it,:,rem,:) = NaN;
+              case 3
+                data(it,:,:,rem) = NaN;
+            end
+          case 'min'
+            rem = find(obj.depend{iDep}(1,:)>limit(it,:));
+            switch iDep
+              case 1
+                data(it,rem,:) = NaN;
+              case 2
+                data(it,:,rem,:) = NaN;
+              case 3
+                data(it,:,:,rem) = NaN;
+            end
         end
       end
-      TS = irf.ts_scalar(PD.time,elow_t);
+      PD = obj;
+      PD.data = data;
     end
-    function PD = mask(obj,depint)
-
+    function PD = mask_(obj,depint)
+      % Mask
       data = obj.data;
       datasize = obj.datasize;
 
@@ -4420,7 +4563,7 @@ classdef PDist < TSeries
 
       % Partial density for each macroparticle
       dn_part = dn./Ntmp_round;
-      df_part = f;%./Ntmp_round; % this should be the same as the bin value, butthe dv should be divided by N
+      df_part = f;%./Ntmp_round; % this should be the same as the bin value, but the dv should be divided by N
       dv_part = vol./Ntmp_round;
 
       % n_frac = 0 divided by Ntmp_roundup = 0 gives NaN
@@ -4470,8 +4613,6 @@ classdef PDist < TSeries
         azim_center = obj.depend{2}(it,:);
         dazim = azim_center(2) - azim_center(1);
         azim_minus = azim_center-0.5*dazim;
-
-
 
         % Create N particles within each bin that each recieve 1/N of
         % the phase space density. These are then rotated into the new
@@ -4553,9 +4694,13 @@ classdef PDist < TSeries
         p(it).vx = vx_all(1:i_part_count-1);
         p(it).vy = vy_all(1:i_part_count-1);
         p(it).vz = vz_all(1:i_part_count-1);
-        %p(it).dn = dn_all(1:i_part_count-1);
-        p(it).df = df_all(1:i_part_count-1);
-        p(it).dv = dv_all(1:i_part_count-1);
+        %switch Ntot_division
+        %  case 'counts'
+        %    p(it).dc = df_all(1:i_part_count-1);
+        %  otherwise
+            p(it).df = df_all(1:i_part_count-1);
+            p(it).dv = dv_all(1:i_part_count-1);
+        %end
       end % end time loop
       particles = p;
     end

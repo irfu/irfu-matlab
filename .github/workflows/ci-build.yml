@@ -30,7 +30,7 @@ jobs:
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab@v2
+        uses: matlab-actions/setup-matlab@v3
         with:
           products: MATLAB Parallel_Computing_Toolbox Image_Processing_Toolbox Financial_Toolbox Signal_Processing_Toolbox
 
@@ -42,7 +42,7 @@ jobs:
 
       # Run MATLAB code
       - name: Run commands
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         with:
           command: tests_before_release;
 
@@ -69,7 +69,7 @@ jobs:
 
       # Install MATLAB (GitHub action provided by MathWorks)
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab@v2
+        uses: matlab-actions/setup-matlab@v3
         with:
           # NOTE: The MATLAB version must be consistent with version supported
           # by BICAS!
@@ -78,7 +78,7 @@ jobs:
 
       # Run MATLAB code
       - name: Run commands
-        uses: matlab-actions/run-command@v2
+        uses: matlab-actions/run-command@v3
         with:
           command: tests_before_release_BICAS;
 

@@ -2,7 +2,7 @@
 clean:
 	rm -f *~ C[1-4]_CH_EFW_L2_HK.ceh C[1-4]_CH_EFW_INST.ceh \
 	C[1-4]_CH_EFW_L[1-3]_P.ceh C[1-4]_CH_EFW_L[1-3]_E.ceh \
-	C[1-4]_CH_EFW_L3_SFIT.ceh C[1-4]_CH_EFW_L3_DER.ceh \
+	C[1-4]_CH_EFW_L3_[O,S]FIT.ceh C[1-4]_CH_EFW_L3_DER.ceh \
 	C[1-4]_CH_EFW_L1_P[1-4].ceh C[1-4]_CH_EFW_L1_P[1,3][2,4].ceh \
 	C[1-4]_CQ_EFW_INST.ceh C[1-4]_CH_EFW_L1_IB.ceh C[1-4]_CH_EFW_L2_PB.ceh \
 	C[1-4]_CH_EFW_L2_EB.ceh C[1-4]_CH_EFW_L2_BB.ceh \
@@ -16,7 +16,8 @@ clean:
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_PC12.ceh \
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_PC35.ceh \
         CC_CH_AUX_MAARBLE_G1[1-2]_ULF_FACMATR.ceh \
-	C[1-4]_CP_EFW_*_V00.cef
+	C[1-4]_CP_EFW_*_V00.cef \
+	C[1-4]_CH_EFW_*.bak
 
 upload-maarble-irf:
 	ls *.ceh| grep -v CX | grep -v THZ | grep -v GZZ | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
