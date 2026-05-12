@@ -417,6 +417,11 @@ classdef gamods
         %       ==> L2 QUALITY_FLAG<=1
         %       ==> Excluded from L3 due to QUALITY_FLAG threshold.
 
+        % BICAS vX.X.X: L3 delivery ~2026-01-15
+        Gmdb.add_GMVE(...
+          bicas.const.L3_SURV_DSID_CA, ...
+          bicas.ga.mods.VersionEntry("2026-05-19", "9.2.0", ...
+          ["Updated E field calibration data."]))
       end
 
     end    % init_GA_MODS_DB

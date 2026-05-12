@@ -60,7 +60,10 @@ if isempty(calFilename)
   % Caller did not specify calibration file.
   % IMPORTANT: USES CALIBRATION FILE THAT IS USED BY BICAS FOR PRODUCING
   % OFFICIAL DATASETS.
-  calFilename = 'd23K123_20230707.mat'; % parameters up to end of 2023-05-27
+  % Originally "new_cali.mat", received from Andrew Dimmock 2025-11-14 on Slack,
+  % #solar_orbiter_bias.
+  % https://irf-se.slack.com/archives/C01034D119T/p1763118882763329
+  calFilename = 'd23K123_20251114.mat';
 else
   % Caller specified calibration file. Useful for debugging/testing new
   % calibrations.
