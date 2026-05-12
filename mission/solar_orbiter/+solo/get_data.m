@@ -303,28 +303,32 @@ if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
           % added here
           pad_files = solo.db_list_files(['solo_',varStr],Tint);
 
-          energy = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_ENERGY')); % energy bins
-          pa = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_PA')); % angle bins
-          for k=1:length(pad_files)
-            pad{k} = double(spdfcdfread([pad_files(k).path '/' pad_files(k).name],'variables','SWA_EAS_NMPAD_PSD_DATA'));
-            pad{k}(pad{k}<-1e28)=nan;
-            tt{k} = spdfcdfread([pad_files(k).path '/' pad_files(k).name], 'Variable',{'EPOCH'});
-            for e_val = 1:length(energy)
-              if k==1
-                epad{e_val} = irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))');
-              else
-                epad{e_val} = epad{e_val}.combine(irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))'));
+          if ~isempty(pad_files)
+            energy = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_ENERGY')); % energy bins
+            pa = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_PA')); % angle bins
+            for k=1:length(pad_files)
+              pad{k} = double(spdfcdfread([pad_files(k).path '/' pad_files(k).name],'variables','SWA_EAS_NMPAD_PSD_DATA'));
+              pad{k}(pad{k}<-1e28)=nan;
+              tt{k} = spdfcdfread([pad_files(k).path '/' pad_files(k).name], 'Variable',{'EPOCH'});
+              for e_val = 1:length(energy)
+                if k==1
+                  epad{e_val} = irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))');
+                else
+                  epad{e_val} = epad{e_val}.combine(irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))'));
+                end
               end
             end
-          end
 
-          for e_val = 1:length(energy)
-            res.(['ebin_' num2str(e_val)]).p = epad{e_val}.tlim(Tint).data;
-            res.(['ebin_' num2str(e_val)]).t = epad{e_val}.tlim(Tint).time.epochUnix;
-            res.(['ebin_' num2str(e_val)]).p_label='dEF';
-            res.(['ebin_' num2str(e_val)]).f = repmat(pa,1,numel(res.(['ebin_' num2str(e_val)]).t))';
+            for e_val = 1:length(energy)
+              res.(['ebin_' num2str(e_val)]).p = epad{e_val}.tlim(Tint).data;
+              res.(['ebin_' num2str(e_val)]).t = epad{e_val}.tlim(Tint).time.epochUnix;
+              res.(['ebin_' num2str(e_val)]).p_label='dEF';
+              res.(['ebin_' num2str(e_val)]).f = repmat(pa,1,numel(res.(['ebin_' num2str(e_val)]).t))';
+            end
+            res.energies = energy;
+          else
+            res = [];
           end
-          res.energies = energy;
 
         otherwise
           errStr = 'Not yet defined';

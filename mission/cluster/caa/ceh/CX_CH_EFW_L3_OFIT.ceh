@@ -1,0 +1,166 @@
+!
+! Source : CX_CH_EFW_L3_OFIT.ceh
+! Generated: DDD
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP"
+END_META       =   DATA_TYPE
+START_META     =   DATASET_ID
+   ENTRY       =   "CXXX_CP_EFW_L3_OFIT"
+END_META       =   DATASET_ID
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Onboard spinfits transmitted in housekeeping data (5.15 sec resolution)"
+END_META       =   DATASET_TITLE
+START_META     =   DATASET_TIME_SPAN
+   VALUE_TYPE  =   ISO_TIME_RANGE
+   ENTRY       =   2000-12-21T00:00:00Z/2010-01-10T00:00:00Z
+END_META       =   DATASET_TIME_SPAN
+START_META     =   DATASET_TYPE
+   ENTRY       =   "Support_Data"
+END_META       =   DATASET_TYPE
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains spinfits of the electric field done"
+   ENTRY       =   "onboard from either probe pair p12 or p34 and transmitted"
+   ENTRY       =   "in the housekeeping telemetry (5.15 sec resolution,"
+   ENTRY       =   "every point corresponds to a fit of 4 sec long interval)"
+   ENTRY       =   "from the EFW experiment on the Cluster CXXX spacecraft"
+   ENTRY       =   "The probe pair used for the onboard fit is indicated by"
+   ENTRY       =   "the variable Probe_pair. The individual probe potential"
+   ENTRY       =   "of one single probe (1 or 3) is also given as P13."
+END_META       =   DATASET_DESCRIPTION
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "The electric field is not corrected for the ISR2 offsets"
+   ENTRY       =   "and not validated. Please use CXXX_CP_EFW_L3_E if you"
+   ENTRY       =   "need data of scientific quality"
+END_META       =   DATASET_CAVEATS
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   5.15
+END_META       =   TIME_RESOLUTION
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   5.15
+END_META       =   MIN_TIME_RESOLUTION
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   5.15
+END_META       =   MAX_TIME_RESOLUTION
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Calibrated"
+END_META       =   PROCESSING_LEVEL
+
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Yuri Khotyaintsev>PI>Yuri.Khotyaintsev@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Active Archive in any"
+   ENTRY       =   "publication based upon use of these data"
+END_META       =   ACKNOWLEDGEMENT
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                   Variables                         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+START_VARIABLE    = time_tags__CXXX_CP_EFW_L3_OFIT
+  PARAMETER_TYPE    = "Support_Data"
+  VALUE_TYPE      = ISO_TIME
+  DELTA_PLUS      = 2
+  DELTA_MINUS     = 2
+  FILLVAL         = 9999-12-31T23:59:59Z
+  UNITS           = "s"
+  SI_CONVERSION   = "1.0>s"
+  LABLAXIS        = "UT"
+  FIELDNAM        = "Universal Time"
+END_VARIABLE      = time_tags__CXXX_CP_EFW_L3_OFIT
+!
+START_VARIABLE      = E_Vec_xy_ISR2__CXXX_CP_EFW_L3_OFIT
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 2
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Electric_Field"
+  PROPERTY          = "Vector"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Electric field (onboard fit)"
+  FIELDNAM          = "Electric field (onboard fit)"
+  SI_CONVERSION     = "1.0e-3>V m^-1"
+  UNITS             = "mV/m"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3 
+  SIGNIFICANT_DIGITS= 6
+  COORDINATE_SYSTEM = "ISR2"
+  FRAME_VELOCITY    = "Observatory"
+  TENSOR_ORDER      = 1
+  REPRESENTATION_1  = "x", "y"
+  LABEL_1           = "Ex", "Ey"
+  LABLAXIS          = "E (onboard fit)"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L3_OFIT
+END_VARIABLE        = E_Vec_xy_ISR2__CXXX_CP_EFW_L3_OFIT
+!
+START_VARIABLE      = E_sigma__CXXX_CP_EFW_L3_OFIT
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Electric_Field"
+  PROPERTY          = "Magnitude"
+  FLUCTUATIONS      = "Fluctuation_Level"
+  CATDESC           = "Electric field standard deviation (onboard fit)"
+  FIELDNAM          = "Electric field standard deviation (onboard fit)"
+  SI_CONVERSION     = "1.0e-3>V m^-1"
+  UNITS             = "mV/m"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "St dev (onboard fit)"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L3_OFIT
+END_VARIABLE        = E_sigma__CXXX_CP_EFW_L3_OFIT
+!
+START_VARIABLE      = P13__CXXX_CP_EFW_L3_OFIT
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Probe_Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Probe 1/3 potential (5.15 sec resolution)"
+  FIELDNAM          = "Probe 1/3 potential (5.15 sec resolution)"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  PARAMETER_CAVEATS = ""
+  LABLAXIS          = "Probe 1/3 potential"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L3_OFIT
+END_VARIABLE        = P13__CXXX_CP_EFW_L3_OFIT
+!
+START_VARIABLE      = Spacecraft_potential__CXXX_CP_EFW_L3_OFIT
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Probe_Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Spacecraft potential (5.15 sec resolution)"
+  FIELDNAM          = "Spacecraft potential (5.15 sec resolution)"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  PARAMETER_CAVEATS = ""
+  LABLAXIS          = "-Sc pot"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L3_OFIT
+END_VARIABLE        = Spacecraft_potential__CXXX_CP_EFW_L3_OFIT
+!
+START_VARIABLE      = Probe_pair__CXXX_CP_EFW_L3_OFIT
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "Probe pair (12 or 34)"
+  FIELDNAM          = "Probe pair (12 or 34)"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 1
+  LABLAXIS          = "Probe pair"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L3_OFIT
+END_VARIABLE        = Probe_pair__CXXX_CP_EFW_L3_OFIT
