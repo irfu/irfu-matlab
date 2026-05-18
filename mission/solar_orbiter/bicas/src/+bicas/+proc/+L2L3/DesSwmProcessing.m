@@ -153,12 +153,12 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
 
       OutputDatasetsMap = containers.Map();
       if ~obj.bSbmx
-        OutputDatasetsMap('EFIELD_OSR_cdf')   = EfieldOsrCdf;
-        OutputDatasetsMap('EFIELD_DSR_cdf')   = EfieldDsrCdf;
-        OutputDatasetsMap('SCPOT_OSR_cdf')    = ScpotOsrCdf;
-        OutputDatasetsMap('SCPOT_DSR_cdf')    = ScpotDsrCdf;
-        OutputDatasetsMap('DENSITY_OSR_cdf')  = DensityOsrCdf;
-        OutputDatasetsMap('DENSITY_DSR_cdf')  = DensityDsrCdf;
+        OutputDatasetsMap('SURV_EFIELD_OSR_cdf')  = EfieldOsrCdf;
+        OutputDatasetsMap('SURV_EFIELD_DSR_cdf')  = EfieldDsrCdf;
+        OutputDatasetsMap('SURV_SCPOT_OSR_cdf')   = ScpotOsrCdf;
+        OutputDatasetsMap('SURV_SCPOT_DSR_cdf')   = ScpotDsrCdf;
+        OutputDatasetsMap('SURV_DENSITY_OSR_cdf') = DensityOsrCdf;
+        OutputDatasetsMap('SURV_DENSITY_DSR_cdf') = DensityDsrCdf;
       else
         % NOTE: Ignoring all other return data.
         OutputDatasetsMap('SBMx_EFIELD_cdf')  = EfieldOsrCdf;
