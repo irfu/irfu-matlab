@@ -251,7 +251,7 @@ for iSub = 1:length(sub_int_times)-1
   % in Steinvall et al., 2021.
   Ez_SRF = (V23_scaled - V1)*1e3/11.2;
 
-  % NOTE: Setting X component to zero (except when NaN).
+  % NOTE: Setting X component to zero (except when Ey_SRF is NaN).
   % NOTE: Ey_SRF may contain NaN. Therefore Ey_SRF*0 != zeros(size(Ey_SRF)).
   %       (Bug?!)
   DCE_SRF = irf.ts_vec_xyz(VDC.time, [Ey_SRF*0, Ey_SRF, Ez_SRF]);

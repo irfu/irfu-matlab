@@ -213,7 +213,9 @@ classdef ext
 
 
 
-      % ASSERTIONS: Check solo.vdccal() return values.
+      % =============================================
+      % ASSERTIONS: Check solo.vdccal() return values
+      % =============================================
       irf.assert.sizes(...
         Zv.tt2000,     [-1, 1], ...
         EdcSrfTs.data, [-1, 3], ...
@@ -236,7 +238,7 @@ classdef ext
       % -------------------------
       % ASSERTIONS: EFIELD values
       % -------------------------
-      % EFIELD can never have just one Y/Z component.
+      % EFIELD can never have exactly one Y/Z component.
       assert(all(isnan(EdcSrfTs.y.data) == isnan(EdcSrfTs.z.data)))
       % EFIELD X component is either zero or NaN.
       % --

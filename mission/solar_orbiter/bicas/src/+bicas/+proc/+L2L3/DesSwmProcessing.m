@@ -29,6 +29,8 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
   %   NOTE: The SWM should cover both
   %     L2 SURV-->L3 SURV DES, and
   %     L2 SBMx-->L3 SBMx DES.
+  %   PROPOSAL: New naming convention for SWMP subclasses: Class names end with
+  %             "Swmp" (not SwmProcessing).
   %   ~Density+Efield+Scpot, ~DES
   %   ~CWF (includes SBMx)
   %   ~OSR, DSR (only DSR for non-SBMx?)
@@ -43,14 +45,27 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
   % PROPOSAL: Automatic test code.
   %   NOTE: There are limited tests.
   %
-  % PROPOSAL: Split up processing between (a) density, and (b) E field & SCPOT
-  %           into separate SWMs.
+  % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
+  %           (still combine non-downsampled and downsampled).
   %   PRO: Faster processing when only processing subset of L3 DSIDs.
   %       CON: Not very heavy operation.
   %   PRO: Leads to better organization of code.
   %       PRO: process_L2_to_L3() is too large and should be split up anyway.
+  %   CON: Slows down overall processing (when producing all L3) due to
+  %        overlapping processing.
+  %       PRO: Must read same L2 dataset multiple times.
   %   CON: DENSITY is a function EFIELD+SCPOT, and thus has to be processed
   %        after the latter.
+  %   CON: There is much shared functionality for 3 quality ZVs.
+  %       PRO: Same ~constants
+  %           Ex: INPUT_DSID, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
+  %       PRO: Read setting QUALITY_FLAG_MIN
+  %       PRO: Normalizing CWF zVar names.
+  %       PRO: Preparations for downsampled.
+  %           Bin locations, bundling of records,
+  %           Downsampling of quality variables
+  %               (QUALITY_FLAG, QUALITY_BITMASK, L2_QUALITY_BITMASK).
+  %           DELTA_PLUS_MINUS_dsr
   %
   % PROPOSAL: Abolish iSbm.
   %   PRO: Seems unused and not needed.
@@ -119,6 +134,8 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
 
     % OVERRIDE
     %
+    % Main processing function.
+    %
     function OutputDatasetsMap = production_function(obj, ...
         InputDatasetsMap, rctDir, NsoTable, Bso, L)
 
@@ -127,10 +144,7 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
       % processing, and rejects the parts which are not needed. This is
       % technically inefficient, but simplifies the implementation and should be
       % accurate and should probably be kept until there is a good reason to
-      % change it(?).
-      %   PROPOSAL: Make
-      %             bicas.proc.L2L3.DesSwmProcessing.process_L2_to_L3()
-      %             skip DSR.
+      % change it.
 
       % PROPOSAL: Create instance variable obj.pfiid in constructor instead.
       if ~obj.bSbmx
@@ -151,6 +165,9 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
         DensityOsrCdf, DensityDsrCdf ...
         ] = obj.process_L2_to_L3(InputLfrCwfCdf, NsoTable, Excd, Bso, L);
 
+      %====================================
+      % Create return value data structure
+      %====================================
       OutputDatasetsMap = containers.Map();
       if ~obj.bSbmx
         OutputDatasetsMap('SURV_EFIELD_OSR_cdf')  = EfieldOsrCdf;
@@ -202,6 +219,13 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
       %   NOTE: DENSITY is derived from PSP, which is derived together with
       %         EFIELD & SCPOT.
       %   --
+      %   TODO-NI: I wrote the "bug description", but I can not recall why this
+      %            is a problem. Why is this a bug? Why is the proposal an
+      %            improvement? If saturated data is set to NaN when sent to
+      %            solo.psp2ne() and solo.vdccal(), and these functions can
+      %            handle this (i.e. NaN propagates), then there should be no
+      %            problem/bug. /Erik P G Johansson, 2026-05-18
+      %   --
       %   PROPOSAL: Submit both synthetic & actual L2 QFL to
       %             bicas.proc.L2L3.ext.calc_EFIELD_SCPOT_DENSITY() and have it
       %             set fill positions based on it.
@@ -227,15 +251,15 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
       % --------------------------------------------------------------------
       % Official SOLO_L2_RPW-LFR-SURV/SBM1/SBM2-CWF-E datasets use
       % GLOBAL_SATURATION starting at Skeleton_version = 18.
-      %
+      FIRST_CHANNEL_SATURATION_SKELETON_VERSION = 18;
       % IMPLEMENTATION NOTE: ROC has not yet reprocessed SBMx to have
       % inputSkeletonVerNbr>=18. This is due to a mistake in the EJ-ROC
-      % communication. Not yet checking for SBMx so that code can be tested at
-      % least. /2026-01-14
+      % communication. Therefore not yet checking skeleton version number for
+      % SBMx. /2026-01-14
       if ~obj.bSbmx
         switch saturationSchemeId
           case "CHANNEL_SATURATION"
-            if inputSkeletonVerNbr < 18
+            if inputSkeletonVerNbr < FIRST_CHANNEL_SATURATION_SKELETON_VERSION
               error( ...
                 "The input CDF has Skeleton_version=%d indicating that it" + ...
                 " does not use CHANNEL_SATURATION and is therefore" + ...
@@ -244,7 +268,7 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
             end
 
           case "GLOBAL_SATURATION"
-            if inputSkeletonVerNbr >= 18
+            if inputSkeletonVerNbr >= FIRST_CHANNEL_SATURATION_SKELETON_VERSION
               error( ...
                 "The input CDF has Skeleton_version=%d indicating that it" + ...
                 " does not use GLOBAL_SATURATION and is therefore" + ...
@@ -263,13 +287,12 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
       % PROPOSAL: Abolish struct "Zv".
       %   PRO: Not passed to any function etc.
       %   PRO: Shorter.
-      %   CON: Makes it less clear which variables are ZV-like and not. Prefix
-      %        "Zv." effectively constitutes an alternative prefix stating
-      %        this.
+      %   CON: Makes it less clear which variables are ZV-like and which are
+      %        not. Prefix "Zv." effectively constitutes an alternative prefix
+      %        stating this.
       %     CON: This convention is not followed anywhere else.
       %   CON-PROPOSAL: Rename argument InLfrCwf to something short and never
       %                 rename it in the code.
-
       Ga = struct();
       Ga.SOOP_TYPE            = InLfrCwf.Ga.SOOP_TYPE;
       Ga.OBS_ID               = InLfrCwf.Ga.OBS_ID;
@@ -288,22 +311,6 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
 
 
 
-      % PROPOSAL: Split up into different parts for EFIELD, SCPOT, DENSITY
-      %           (still combine non-downsampled and downsampled).
-      %   CON: Slows down overall processing.
-      %       PRO: Must read same L2 dataset multiple times.
-      %       PRO: Must read L3 SCPOT dataset to produce L3 DENSITY dataset.
-      %   CON: There is much shared functionality for 3 quality ZVs.
-      %       PRO: Same ~constants
-      %           Ex: INPUT_DSID, BIN_LENGTH_WOLS_NS, BIN_TIMESTAMP_POS_WOLS_NS
-      %       PRO: Read setting QUALITY_FLAG_MIN
-      %       PRO: Normalizing CWF zVar names.
-      %       PRO: Preparations for downsampled.
-      %           Bin locations, bundling of records,
-      %           Downsampling of quality variables
-      %               (QUALITY_FLAG, QUALITY_BITMASK, L2_QUALITY_BITMASK).
-      %           DELTA_PLUS_MINUS_dsr
-      %
       % NOTE: ROC BUG: https://gitlab.obspm.fr/ROC/RCS/BICAS/-/issues/48
       %         L1 QUALITY_BITMASK seems to use the wrong value (255) as
       %         fill value (FILLVAL=65535). ==> A BICAS bug fix would not
@@ -357,13 +364,13 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
       %-----------------------------
       % Blank output based on QRCBs
       %-----------------------------
-      % Blank EFIELD.
+      % EFIELD.
       R.EdcSrfMvpmFpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         R.EdcSrfMvpmFpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "efieldFvIndexAr");
-      % Blank DENSITY (but not density quality bit).
+      % DENSITY (but not density quality bit).
       R.NeScpCm3Fpa   = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         R.NeScpCm3Fpa,   L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "densityFvIndexAr");
-      % Blank PSP and SCPOT.
+      % PSP and SCPOT.
       R.PspVoltFpa    = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         R.PspVoltFpa,    L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "scpotFvIndexAr");
       R.ScpotVoltFpa  = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
