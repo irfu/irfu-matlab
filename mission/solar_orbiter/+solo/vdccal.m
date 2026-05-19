@@ -91,7 +91,7 @@ timeCalibrationDataEnd   = a.d23.time(end);
 % NOTE: This value is meant to be be UPDATED BY HAND, not by an automatic
 %       timestamp, so that a constant value represents the same
 %       function/algorithm.
-codeVerStr = '2025-12-12T09:37:00';
+codeVerStr = '2026-05-19T14:15:00';
 % Version of the .mat file
 % ------------------------
 % This string is used by BICAS to set a CDF global attribute in official
@@ -125,12 +125,12 @@ discontTimes = EpochTT( ...
 mainTint      = irf.tint(VDC_inp.time(1), VDC_inp.time(end));
 sub_int_times = EpochTT(solo.split_tint(mainTint, discontTimes));
 
+% Predefine empty output variables:
+DCE_SRF_out = irf.ts_vec_xyz(EpochTT([]), double.empty(0, 3));
+PSP_out     = irf.ts_scalar( EpochTT([]), double.empty(0, 1));
+ScPot_out   = irf.ts_scalar( EpochTT([]), double.empty(0, 1));
 
 
-% Predefine output variables:
-DCE_SRF_out = irf.ts_vec_xyz(EpochTT([]),double.empty(0,3));
-PSP_out     = irf.ts_scalar( EpochTT([]),[]);
-ScPot_out   = irf.ts_scalar( EpochTT([]),[]);
 
 % Perform calibration on each subinterval separately (if any probe-to-spacecraft
 % potential discontinuities are present).
