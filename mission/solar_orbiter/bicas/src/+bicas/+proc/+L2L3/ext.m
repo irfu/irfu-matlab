@@ -233,33 +233,38 @@ classdef ext
         ' .mat file). BICAS therefore needs to be updated.'])
       irf.assert.castring_regexp(vdccalCodeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
 
-
-
-      %===================================================================
-      % Normalize the representation of E-field X-component
-      % ---------------------------------------------------
-      % Set E_x = NaN, but ONLY if assertion deems that the corresponding
-      % information is missing.
-      %
+      % -------------------------
+      % ASSERTIONS: EFIELD values
+      % -------------------------
+      % EFIELD can never have just one Y/Z component.
+      assert(all(isnan(EdcSrfTs.y.data) == isnan(EdcSrfTs.z.data)))
+      % EFIELD X component is either zero or NaN.
+      % --
       % IMPLEMENTATION NOTE: solo.vdccal() sets EdcSrfTs X component to ZERO,
       % if its input data is non-fill value/non-NaN, and NaN if fill value/NaN.
       % Must therefore check for both zero and NaN.
       %     Ex: Dataset 2020-08-01
-      % --
-      % NOTE: The X component can never be a measurement value since RPW can
-      % not measure E field in the X direction.
-      % --
-      % TODO-DEC: Is solo.vdccal() returning zero for the X component a
-      % solo.vdccal() bug? The value is unknown, rather than assumed to be
-      % zero(?).
-      %===================================================================
-      % IMPLEMENTATION NOTE: ismember() does not work for NaN.
       assert(all(EdcSrfTs.data(:, 1) == 0 | isnan(EdcSrfTs.data(:, 1))), ...
         ['EDC for antenna 1 returned from', ...
         ' solo.vdccal() is neither zero nor NaN and can therefore', ...
         ' not be assumed to be unknown anymore.', ...
         ' Verify that this is correct solo.vdccal() behaviour and', ...
         ' (if correct) then update BICAS to handle this.'])
+
+      %=========================================================================
+      % Normalize the representation of E-field X-component
+      % ---------------------------------------------------
+      % Set E_x = NaN, but ONLY if assertion deems that the corresponding
+      % information is missing.
+      %
+      % NOTE: The X component can never be a measurement value since RPW can
+      % not measure E field in the X direction.
+      % --
+      % TODO-DEC: Is solo.vdccal() returning zero for the X component a
+      % solo.vdccal() bug? The real value is unknown, rather than assumed to be
+      % zero(?).
+      %=========================================================================
+      % IMPLEMENTATION NOTE: ismember() does not work for NaN.
       EdcSrfTs.data(:, 1) = NaN;
 
 
