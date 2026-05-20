@@ -16,7 +16,7 @@ classdef(Abstract) SwmProcessing
   %         bicas.proc.L1L2.TdsSwmProcessing
   %         bicas.proc.L2L2.LfrDsrSwmProcessing
   %         bicas.proc.L2L3.DesSwmProcessing
-  %         bicas.tools.batch.TestSwmProcessing
+  %         bicas.tools.batch.SwmProcessingTest
   %   CON: Bad for SwmProcessing (superclass).
   %       CON: Does not have to apply convention to every class.
   %
