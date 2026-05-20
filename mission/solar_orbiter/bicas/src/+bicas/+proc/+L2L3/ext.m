@@ -85,12 +85,77 @@ classdef ext
 
 
 
-    % Validate the solo.psp2ne() return values.
+    % Assert that the solo.vdccal() return values are valid w.r.t. format.
     %
     % DESIGN NOTES, RATIONALE
     % =======================
-    % This function is written to be used by both (1) BICAS proper, and (2) test
-    % code. Any validation which can not be shared between BICAS proper and test
+    % This function is written to be used by
+    % (1) BICAS proper,
+    % (2) potential test code for the function itself, and
+    % (3) potential test code for solo.vdccal().
+    % Any validation which can not be shared between BICAS proper and test
+    % code should not be in this function.
+    %
+    function assert_vdccal_return_values(A)
+      arguments
+        A.tt2000
+        A.EdcSrfTs
+        A.PspTs
+        A.ScpotTs
+        A.vdccalMatVerStr
+        A.vdccalCodeVerStr
+      end
+
+      irf.assert.sizes(...
+        A.tt2000,        [-1, 1], ...
+        A.EdcSrfTs.data, [-1, 3], ...
+        A.PspTs.data,    [-1, 1], ...
+        A.ScpotTs.data,  [-1, 1]);
+      assert(strcmp(A.EdcSrfTs.units,            'mV/m'))
+      assert(strcmp(A.EdcSrfTs.coordinateSystem, 'SRF' ))
+      assert(strcmp(A.PspTs.units,               'V'))
+      assert(strcmp(A.ScpotTs.units,             'V'))
+      assert(all(A.tt2000 == A.EdcSrfTs.time.ttns))
+      assert(all(A.tt2000 ==    A.PspTs.time.ttns))
+      assert(all(A.tt2000 ==  A.ScpotTs.time.ttns))
+      irf.assert.castring(A.vdccalMatVerStr)
+      assert(~isempty(A.vdccalMatVerStr), ...
+        ['solo.vdccal() returns an empty vdccalMatVerStr', ...
+        ' (string representing the version of the corresponding', ...
+        ' .mat file). BICAS therefore needs to be updated.'])
+      irf.assert.castring_regexp(...
+        A.vdccalCodeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
+
+      % -------------------------
+      % ASSERTIONS: EFIELD values
+      % -------------------------
+      % EFIELD can never have exactly one Y/Z component.
+      assert(all(isnan(A.EdcSrfTs.y.data) == isnan(A.EdcSrfTs.z.data)))
+      % EFIELD X component is either zero or NaN.
+      % --
+      % IMPLEMENTATION NOTE: solo.vdccal() sets EdcSrfTs X component to ZERO,
+      % if its input data is non-fill value/non-NaN, and NaN if fill value/NaN.
+      % Must therefore check for both zero and NaN.
+      %     Ex: Dataset 2020-08-01
+      assert(all(A.EdcSrfTs.data(:, 1) == 0 | isnan(A.EdcSrfTs.data(:, 1))), ...
+        ['EDC for antenna 1 returned from', ...
+        ' solo.vdccal() is neither zero nor NaN and can therefore', ...
+        ' not be assumed to be unknown anymore.', ...
+        ' Verify that this is correct solo.vdccal() behaviour and', ...
+        ' (if correct) then update BICAS to handle this.'])
+    end
+
+
+
+    % Assert that the solo.psp2ne() return values are valid w.r.t. format.
+    %
+    % DESIGN NOTES, RATIONALE
+    % =======================
+    % This function is written to be used by
+    % (1) BICAS proper,
+    % (2) potential test code for the function itself, and
+    % (3) test code for solo.psp2ne().
+    % Any validation which can not be shared between BICAS proper and test
     % code should not be in this function.
     %
     function assert_psp2ne_return_values( ...
@@ -198,8 +263,6 @@ classdef ext
         'TensorOrder', 1, ...
         'repres',      {'x', 'y', 'z'});
 
-
-
       %#################################################################
       % CALL BICAS-EXTERNAL CODE
       %#################################################################
@@ -211,47 +274,14 @@ classdef ext
       clear VdcTs EdcTs
       %#################################################################
 
-
-
       % =============================================
       % ASSERTIONS: Check solo.vdccal() return values
       % =============================================
-      irf.assert.sizes(...
-        Zv.tt2000,     [-1, 1], ...
-        EdcSrfTs.data, [-1, 3], ...
-        PspTs.data,    [-1, 1], ...
-        ScpotTs.data,  [-1, 1]);
-      assert(strcmp(EdcSrfTs.units,            'mV/m'))
-      assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF' ))
-      assert(strcmp(PspTs.units,               'V'))
-      assert(strcmp(ScpotTs.units,             'V'))
-      assert(all(Zv.tt2000 == EdcSrfTs.time.ttns))
-      assert(all(Zv.tt2000 ==    PspTs.time.ttns))
-      assert(all(Zv.tt2000 ==  ScpotTs.time.ttns))
-      irf.assert.castring(vdccalMatVerStr)
-      assert(~isempty(vdccalMatVerStr), ...
-        ['solo.vdccal() returns an empty vdccalMatVerStr', ...
-        ' (string representing the version of the corresponding', ...
-        ' .mat file). BICAS therefore needs to be updated.'])
-      irf.assert.castring_regexp(vdccalCodeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
-
-      % -------------------------
-      % ASSERTIONS: EFIELD values
-      % -------------------------
-      % EFIELD can never have exactly one Y/Z component.
-      assert(all(isnan(EdcSrfTs.y.data) == isnan(EdcSrfTs.z.data)))
-      % EFIELD X component is either zero or NaN.
-      % --
-      % IMPLEMENTATION NOTE: solo.vdccal() sets EdcSrfTs X component to ZERO,
-      % if its input data is non-fill value/non-NaN, and NaN if fill value/NaN.
-      % Must therefore check for both zero and NaN.
-      %     Ex: Dataset 2020-08-01
-      assert(all(EdcSrfTs.data(:, 1) == 0 | isnan(EdcSrfTs.data(:, 1))), ...
-        ['EDC for antenna 1 returned from', ...
-        ' solo.vdccal() is neither zero nor NaN and can therefore', ...
-        ' not be assumed to be unknown anymore.', ...
-        ' Verify that this is correct solo.vdccal() behaviour and', ...
-        ' (if correct) then update BICAS to handle this.'])
+      bicas.proc.L2L3.ext.assert_vdccal_return_values(...
+        tt2000=Zv.tt2000, ...
+        EdcSrfTs=EdcSrfTs, PspTs=PspTs, ScpotTs=ScpotTs, ...
+        vdccalCodeVerStr=vdccalCodeVerStr, ...
+        vdccalMatVerStr =vdccalMatVerStr)
 
       %=========================================================================
       % Normalize the representation of E-field X-component
