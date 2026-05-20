@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.proc.L2L3.DesSwmProcessing.
+% matlab.unittest automatic test code for bicas.proc.L2L3.DesSwmp.
 %
 % NOTE: Very low code coverage.
 %
@@ -7,7 +7,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 % First created 2021-09-08, from older test code.
 %
-classdef DesSwmProcessing___UTEST < matlab.unittest.TestCase
+classdef DesSwmp___UTEST < matlab.unittest.TestCase
 
 
 
@@ -240,7 +240,7 @@ classdef DesSwmProcessing___UTEST < matlab.unittest.TestCase
       %         OutEfieldOsr,  OutEfieldDsr, ...
       %         OutScpotOsr,   OutScpotDsr, ...
       %         OutDensityOsr, OutDensityDsr ...
-      %       ] = bicas.proc.L2L3.DesSwmProcessing.process_L2_to_L3(...
+      %       ] = bicas.proc.L2L3.DesSwmp.process_L2_to_L3(...
       %             InLfrCwf, NsoTable, Excd, Bso, L);
       %       ==> Input: 9 columns OSR
       %           Output 2 columns OSR, 4+14=18 columns DSR
@@ -357,7 +357,7 @@ classdef DesSwmProcessing___UTEST < matlab.unittest.TestCase
       %##################################################################
       % CALL CODE TO BE TESTED
       %##################################################################
-      Processing = bicas.proc.L2L3.DesSwmProcessing(false, []);
+      Processing = bicas.proc.L2L3.DesSwmp(false, []);
       [ActEfieldOsr,  ActEfieldDsr, ...
         ActScpotOsr,   ActScpotDsr, ...
         ActDensityOsr, ActDensityDsr] ...

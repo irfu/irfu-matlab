@@ -4,7 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef LfrSwmProcessing < bicas.proc.SwmProcessing
+classdef LfrSwmp < bicas.proc.SwmProcessing
   % PROPOSAL: Automatic test code.
 
 
@@ -42,7 +42,7 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
     %       (2) sometimes one may want to read an ROC-SGSE dataset as if it
     %           was an RODP dataset or the other way around.
     %
-    function obj = LfrSwmProcessing(inputSciDsid, outputDsid)
+    function obj = LfrSwmp(inputSciDsid, outputDsid)
       obj.inputSciDsid = inputSciDsid;
       obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSID(inputSciDsid);
 
@@ -178,11 +178,11 @@ classdef LfrSwmProcessing < bicas.proc.SwmProcessing
       [settingValue, settingKey] = Bso.get_fv(...
         'PROCESSING.L1R.LFR.ZV_QUALITY_FLAG_BITMASK_EMPTY_POLICY');
 
-      InSciNorm.ZvFpa.QUALITY_BITMASK = bicas.proc.L1L2.LfrSwmProcessing.normalize_ZV_empty(...
+      InSciNorm.ZvFpa.QUALITY_BITMASK = bicas.proc.L1L2.LfrSwmp.normalize_ZV_empty(...
         L, settingValue, settingKey, nRecords, ...
         InSci.ZvFpa.QUALITY_BITMASK, 'QUALITY_BITMASK');
 
-      InSciNorm.ZvFpa.QUALITY_FLAG    = bicas.proc.L1L2.LfrSwmProcessing.normalize_ZV_empty(...
+      InSciNorm.ZvFpa.QUALITY_FLAG    = bicas.proc.L1L2.LfrSwmp.normalize_ZV_empty(...
         L, settingValue, settingKey, nRecords, ...
         InSci.ZvFpa.QUALITY_FLAG,    'QUALITY_FLAG');
 

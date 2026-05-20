@@ -40,7 +40,7 @@ function wallTimeSec = test(n)
 DSID_1 = 'SOLO_L1R_RPW-LFR-SURV-CWF-E';
 DSID_2 = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
 
-SWMP = bicas.tools.batch.SwmProcessingTest();
+SWMP = bicas.tools.batch.SwmpTest();
 
 SWM_1 = bicas.swm.SoftwareMode(...
   SWMP, 'CLI_SWM_1', 'SWD purpose', ...

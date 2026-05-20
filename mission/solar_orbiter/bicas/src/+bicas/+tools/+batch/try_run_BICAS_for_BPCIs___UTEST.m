@@ -164,7 +164,7 @@ classdef try_run_BICAS_for_BPCIs___UTEST < matlab.unittest.TestCase
 
 
     function C = init_constants()
-      SWMP = bicas.tools.batch.SwmProcessingTest();
+      SWMP = bicas.tools.batch.SwmpTest();
 
       C.SWM_2TO1 = bicas.swm.SoftwareMode(...
         SWMP, 'CLI_SWM_2TO1', 'SWD purpose', ...

@@ -4,7 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef SwmProcessingTest < bicas.proc.SwmProcessing
+classdef SwmpTest < bicas.proc.SwmProcessing
 
 
 

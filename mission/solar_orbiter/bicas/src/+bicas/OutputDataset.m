@@ -16,7 +16,7 @@ classdef OutputDataset
   % PROPOSAL: Argument and field for DSID. Replace OutputDatasetsMap with array.
   %   PRO: Should not need OutputDatasetsMap keys like "DSR_cdf",
   %        "SURV_EFIELD_DSR_cdf", "SCI_cdf" which make up its own namespace.
-  %     NOTE: LfrSwmProcessing, TdsSwmProcessing are used for multiple SWMs with
+  %     NOTE: LfrSwmp, TdsSwmp are used for multiple SWMs with
   %           different output DSIDs for the same OutputDatasetsMap key
   %           "SCI_cdf".
   %     NOTE: This is identical to bicas.swm.OutputDataset.pfoid.
