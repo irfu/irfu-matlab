@@ -64,9 +64,9 @@ classdef psp2ne___UTEST < matlab.unittest.TestCase
 
 
 
-        % NOTE: Using validation function from BICAS proper to avoid dulicating
+        % NOTE: Using assertion function from BICAS proper to avoid dulicating
         % code.
-        bicas.proc.L2L3.ext.validate_psp2ne_return_values( ...
+        bicas.proc.L2L3.ext.assert_psp2ne_return_values( ...
           PspTs.time.ttns, ActNeScpTs, ActNeScpQualityBitTs, actCodeVerStr, L)
 
         switch(ExpId)

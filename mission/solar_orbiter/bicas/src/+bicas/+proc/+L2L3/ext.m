@@ -93,7 +93,7 @@ classdef ext
     % code. Any validation which can not be shared between BICAS proper and test
     % code should not be in this function.
     %
-    function validate_psp2ne_return_values( ...
+    function assert_psp2ne_return_values( ...
         tt2000Ar, NeScpTs, NeScpQualityBitTs, codeVerStr, L)
 
       nTimestamps = numel(tt2000Ar);
@@ -310,7 +310,7 @@ classdef ext
 
 
 
-      bicas.proc.L2L3.ext.validate_psp2ne_return_values( ...
+      bicas.proc.L2L3.ext.assert_psp2ne_return_values( ...
         PspTs.time.ttns, NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr, L)
 
       % ==================================
