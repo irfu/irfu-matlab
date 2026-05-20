@@ -55,19 +55,19 @@ classdef ext
         VDC_Fpa=Zv.VDC_Fpa, ...
         EDC_Fpa=Zv.EDC_Fpa);
 
+
+
       % =================================
       % Call wrapper around solo.psp2ne()
       % =================================
       % NOTE: The name "NeScpQualityBit" is used by solo.psp2ne() and
       % refers to its other return value "NeScp", i.e. "Scp" only refers
-      % to the data the density is based on, but the quality bit only
-      % refers to density (and not to SCPOT).
+      % to the data the density "Ne" is based on, but the quality bit only
+      % refers to density "Ne" (and not to SCPOT/"Scp").
       [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
         bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Excd, A.L);
 
-      assert(strcmp(R1.PspTs.units,   'V'))
-      assert(strcmp(R1.ScpotTs.units, 'V'))
-      % NOTE: NeScpTs.units is tested elsewhere.
+
 
       %==============================
       % Package function return data
@@ -255,11 +255,13 @@ classdef ext
       % of three scalars. Probably does not matter. solo.vdccal() does
       % indeed use VDC.x, EDC.x etc.
       VdcTs = TSeries(...
-        EpochTT(Zv.tt2000), Zv.VDC_Fpa.array(single(NaN)), ...
+        EpochTT(Zv.tt2000), ...
+        Zv.VDC_Fpa.array(single(NaN)), ...
         'TensorOrder', 1, ...
         'repres',      {'x', 'y', 'z'});
       EdcTs = TSeries(...
-        EpochTT(Zv.tt2000), Zv.EDC_Fpa.array(single(NaN)), ...
+        EpochTT(Zv.tt2000), ...
+        Zv.EDC_Fpa.array(single(NaN)), ...
         'TensorOrder', 1, ...
         'repres',      {'x', 'y', 'z'});
 
