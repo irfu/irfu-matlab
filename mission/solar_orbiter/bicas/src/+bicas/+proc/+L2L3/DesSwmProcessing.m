@@ -154,7 +154,7 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
       end
       InputLfrCwfCdf = InputDatasetsMap(pfiid);
 
-      Excd = bicas.proc.L2L3.ExternalCodeImplementation();
+      Excd = bicas.proc.L2L3.ExternalCodeImpl();
 
       %==============
       % Process data
@@ -201,7 +201,7 @@ classdef DesSwmProcessing < bicas.proc.SwmProcessing
     % IMPLEMENTATION NOTE: This function is separate from
     % bicas.proc.L2L3.DesSwmProcessing.production_function() to facilitate
     % automated tests, in particular by adding an explicit dependence on
-    % bicas.proc.L2L3.ExternalCodeImplementation.
+    % bicas.proc.L2L3.ExternalCodeImpl.
     %
     function [...
         OutEfieldOsr,  OutEfieldDsr, ...
