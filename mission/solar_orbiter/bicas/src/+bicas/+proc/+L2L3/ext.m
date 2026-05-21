@@ -85,6 +85,102 @@ classdef ext
 
 
 
+    % Calculate both
+    %   (1) ELECTRIC FIELD, and
+    %   (2) SPACECRAFT POTENTIALS
+    % via the same BICAS-external code solo.vdccal() (still inside
+    % irfu-matlab).
+    %
+    % Largely a wrapper around solo.vdccal().
+    %
+    % NOTE: Needs to be careful with the units, and incompatible updates to
+    % solo.vdccal() without the knowledge of the BICAS author. Therefore
+    % uses extra assertions to detect such changes.
+    %
+    % RETURN VALUE
+    % ============
+    % R
+    %       Struct with multiple variables.
+    %       NOTE: Return values are packaged as a struct to provide named
+    %       return values and avoid confusing similar return results with
+    %       each other.
+    %
+    function R = calc_EFIELD_SCPOT(Excd, Zv)
+      arguments
+        Excd
+        Zv.tt2000
+        Zv.VDC_Fpa
+        Zv.EDC_Fpa
+      end
+
+      %==========================================
+      % Create input variables for solo.vdccal()
+      %==========================================
+      % NOTE: Should TSeries objects really use TensorOrder=1 and
+      % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
+      % of three scalars. Probably does not matter. solo.vdccal() does
+      % indeed use VDC.x, EDC.x etc.
+      VdcTs = TSeries(...
+        EpochTT(Zv.tt2000), ...
+        Zv.VDC_Fpa.array(single(NaN)), ...
+        'TensorOrder', 1, ...
+        'repres',      {'x', 'y', 'z'});
+      EdcTs = TSeries(...
+        EpochTT(Zv.tt2000), ...
+        Zv.EDC_Fpa.array(single(NaN)), ...
+        'TensorOrder', 1, ...
+        'repres',      {'x', 'y', 'z'});
+
+      %#################################################################
+      % CALL BICAS-EXTERNAL CODE
+      %#################################################################
+      % NOTE: Not specifying calibration file.
+      % ==> Use current official calibration file, hardcoded in
+      %     solo.vdccal(), that should be used for official datasets.
+      [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] = ...
+        Excd.vdccal(VdcTs, EdcTs, []);
+      clear VdcTs EdcTs
+      %#################################################################
+
+      % =============================================
+      % ASSERTIONS: Check solo.vdccal() return values
+      % =============================================
+      bicas.proc.L2L3.ext.assert_vdccal_return_values(...
+        tt2000=Zv.tt2000, ...
+        EdcSrfTs=EdcSrfTs, PspTs=PspTs, ScpotTs=ScpotTs, ...
+        vdccalCodeVerStr=vdccalCodeVerStr, ...
+        vdccalMatVerStr =vdccalMatVerStr)
+
+      %=========================================================================
+      % Normalize the representation of E-field X-component
+      % ---------------------------------------------------
+      % Set E_x = NaN, but ONLY if assertion deems that the corresponding
+      % information is missing.
+      %
+      % NOTE: The X component can never be a measurement value since RPW can
+      % not measure E field in the X direction.
+      % --
+      % TODO-DEC: Is solo.vdccal() returning zero for the X component a
+      % solo.vdccal() bug? The real value is unknown, rather than assumed to be
+      % zero(?).
+      %=========================================================================
+      EdcSrfTs.data(:, 1) = NaN;
+      % Normalize: If at least one (Y,Z) EFIELD component is NaN, then both
+      % should be NaN.
+      bNan = logical(sum(isnan(EdcSrfTs.data(:, 2:3)), 2));
+      EdcSrfTs.data(bNan, 2:3) = NaN;
+
+      % Build return struct.
+      R = [];
+      R.PspTs            = PspTs;
+      R.ScpotTs          = ScpotTs;
+      R.EdcSrfTs         = EdcSrfTs;
+      R.vdccalCodeVerStr = vdccalCodeVerStr;
+      R.vdccalMatVerStr  = vdccalMatVerStr;
+    end
+
+
+
     % Assert that the solo.vdccal() return values are valid w.r.t. format.
     %
     % DESIGN NOTES, RATIONALE
@@ -129,14 +225,13 @@ classdef ext
       % -------------------------
       % ASSERTIONS: EFIELD values
       % -------------------------
-      % EFIELD can never have exactly one Y/Z component.
-      assert(all(isnan(A.EdcSrfTs.y.data) == isnan(A.EdcSrfTs.z.data)))
       % EFIELD X component is either zero or NaN.
       % --
       % IMPLEMENTATION NOTE: solo.vdccal() sets EdcSrfTs X component to ZERO,
       % if its input data is non-fill value/non-NaN, and NaN if fill value/NaN.
       % Must therefore check for both zero and NaN.
       %     Ex: Dataset 2020-08-01
+      % IMPLEMENTATION NOTE: ismember() does not work for NaN.
       assert(all(A.EdcSrfTs.data(:, 1) == 0 | isnan(A.EdcSrfTs.data(:, 1))), ...
         ['EDC for antenna 1 returned from', ...
         ' solo.vdccal() is neither zero nor NaN and can therefore', ...
@@ -214,103 +309,6 @@ classdef ext
   %########################
   %########################
   methods(Static, Access=private)
-
-
-
-    % Calculate both
-    %   (1) ELECTRIC FIELD, and
-    %   (2) SPACECRAFT POTENTIALS
-    % via the same BICAS-external code solo.vdccal() (still inside
-    % irfu-matlab).
-    %
-    % Largely a wrapper around solo.vdccal().
-    %
-    % NOTE: Needs to be careful with the units, and incompatible updates to
-    % solo.vdccal() without the knowledge of the BICAS author. Therefore
-    % uses extra assertions to detect such changes.
-    %
-    % RETURN VALUE
-    % ============
-    % R
-    %       Struct with multiple variables.
-    %       NOTE: Return values are packaged as a struct to provide named
-    %       return values and avoid confusing similar return results with
-    %       each other.
-    %
-    function R = calc_EFIELD_SCPOT(Excd, Zv)
-      arguments
-        Excd
-        Zv.tt2000
-        Zv.VDC_Fpa
-        Zv.EDC_Fpa
-      end
-
-
-
-      %==========================================
-      % Create input variables for solo.vdccal()
-      %==========================================
-      % NOTE: Should TSeries objects really use TensorOrder=1 and
-      % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
-      % of three scalars. Probably does not matter. solo.vdccal() does
-      % indeed use VDC.x, EDC.x etc.
-      VdcTs = TSeries(...
-        EpochTT(Zv.tt2000), ...
-        Zv.VDC_Fpa.array(single(NaN)), ...
-        'TensorOrder', 1, ...
-        'repres',      {'x', 'y', 'z'});
-      EdcTs = TSeries(...
-        EpochTT(Zv.tt2000), ...
-        Zv.EDC_Fpa.array(single(NaN)), ...
-        'TensorOrder', 1, ...
-        'repres',      {'x', 'y', 'z'});
-
-      %#################################################################
-      % CALL BICAS-EXTERNAL CODE
-      %#################################################################
-      % NOTE: Not specifying calibration file.
-      % ==> Use current official calibration file, hardcoded in
-      %     solo.vdccal(), that should be used for official datasets.
-      [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] = ...
-        Excd.vdccal(VdcTs, EdcTs, []);
-      clear VdcTs EdcTs
-      %#################################################################
-
-      % =============================================
-      % ASSERTIONS: Check solo.vdccal() return values
-      % =============================================
-      bicas.proc.L2L3.ext.assert_vdccal_return_values(...
-        tt2000=Zv.tt2000, ...
-        EdcSrfTs=EdcSrfTs, PspTs=PspTs, ScpotTs=ScpotTs, ...
-        vdccalCodeVerStr=vdccalCodeVerStr, ...
-        vdccalMatVerStr =vdccalMatVerStr)
-
-      %=========================================================================
-      % Normalize the representation of E-field X-component
-      % ---------------------------------------------------
-      % Set E_x = NaN, but ONLY if assertion deems that the corresponding
-      % information is missing.
-      %
-      % NOTE: The X component can never be a measurement value since RPW can
-      % not measure E field in the X direction.
-      % --
-      % TODO-DEC: Is solo.vdccal() returning zero for the X component a
-      % solo.vdccal() bug? The real value is unknown, rather than assumed to be
-      % zero(?).
-      %=========================================================================
-      % IMPLEMENTATION NOTE: ismember() does not work for NaN.
-      EdcSrfTs.data(:, 1) = NaN;
-
-
-
-      % Build return struct.
-      R = [];
-      R.PspTs            = PspTs;
-      R.ScpotTs          = ScpotTs;
-      R.EdcSrfTs         = EdcSrfTs;
-      R.vdccalCodeVerStr = vdccalCodeVerStr;
-      R.vdccalMatVerStr  = vdccalMatVerStr;
-    end
 
 
 
