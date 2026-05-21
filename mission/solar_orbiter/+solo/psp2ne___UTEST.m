@@ -1,5 +1,7 @@
 %
-% matlab.unittest automatic test code for solo.psp2ne().
+% matlab.unittest automatic test code for solo.psp2ne(), i.e. without any kind
+% of mocking of calibration data. The tests can therefore not be too
+% sophisticated without assuming things about the exact calibration data.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -31,13 +33,17 @@ classdef psp2ne___UTEST < matlab.unittest.TestCase
     % in bicas.proc.L2L3.ext where BICAS nominally calls solo.psp2ne().
     %
     function test_0(T)
+      % PROPOSAL: Convert test() to static method.
 
       L = bicas.Logger('NO_STDOUT', false);
 
       function test(DtBegin, DtEnd, ExpId, varargin)
+
         % NOTE: Execution time depends a lot on the default sampling rate.
         DEFAULT_SAMPLING_RATE_HZ = 2;
 
+        % NOTE: Optional "keyword argument" "samplingRateHz" does not seem to be
+        %       used.
         p = inputParser;
         p.addOptional("samplingRateHz", DEFAULT_SAMPLING_RATE_HZ)
         p.parse(varargin{:})
@@ -88,13 +94,13 @@ classdef psp2ne___UTEST < matlab.unittest.TestCase
         end
       end
       %=========================================================================
-      function test_begin_dur(dateStrBegin, Duration, ExpId)
+      function test_begin_dur(dateStrBegin, Duration, varargin)
         assert(isa(Duration, "duration"))
 
         DtBegin = datetime(dateStrBegin, "TimeZone", "UTCLeapSeconds");
         DtEnd   = DtBegin + Duration;
 
-        test(DtBegin, DtEnd, ExpId)
+        test(DtBegin, DtEnd, varargin{:})
       end
       %=========================================================================
 

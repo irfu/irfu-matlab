@@ -69,15 +69,15 @@ classdef ext
 
 
 
-      %==============================
+      % ============================
       % Package function return data
-      %==============================
+      % ============================
       R = [];
       R.PspVoltFpa         = bicas.utils.FPArray(R1.PspTs.data,    'FILL_VALUE', NaN);
       R.ScpotVoltFpa       = bicas.utils.FPArray(R1.ScpotTs.data,  'FILL_VALUE', NaN);
       R.EdcSrfMvpmFpa      = bicas.utils.FPArray(R1.EdcSrfTs.data, 'FILL_VALUE', NaN);
-      R.vdccalCodeVerStr   = R1.vdccalCodeVerStr;
-      R.vdccalMatVerStr    = R1.vdccalMatVerStr;
+      R.vdccalCodeVerStr   = R1.codeVerStr;
+      R.vdccalMatVerStr    = R1.matVerStr;
       R.NeScpCm3Fpa        = bicas.utils.FPArray(NeScpTs.data,     'FILL_VALUE', NaN);
       R.NeScpQualityBitFpa = NeScpQualityBitFpa;
       R.psp2neCodeVerStr   = psp2neCodeVerStr;
@@ -113,9 +113,9 @@ classdef ext
         Zv.EDC_Fpa
       end
 
-      %==========================================
+      % ========================================
       % Create input variables for solo.vdccal()
-      %==========================================
+      % ========================================
       % NOTE: Should TSeries objects really use TensorOrder=1 and
       % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
       % of three scalars. Probably does not matter. solo.vdccal() does
@@ -137,7 +137,7 @@ classdef ext
       % NOTE: Not specifying calibration file.
       % ==> Use current official calibration file, hardcoded in
       %     solo.vdccal(), that should be used for official datasets.
-      [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] = ...
+      [EdcSrfTs, PspTs, ScpotTs, codeVerStr, matVerStr] = ...
         Excd.vdccal(VdcTs, EdcTs, []);
       clear VdcTs EdcTs
       %#################################################################
@@ -148,8 +148,8 @@ classdef ext
       bicas.proc.L2L3.ext.assert_vdccal_return_values(...
         tt2000=Zv.tt2000, ...
         EdcSrfTs=EdcSrfTs, PspTs=PspTs, ScpotTs=ScpotTs, ...
-        vdccalCodeVerStr=vdccalCodeVerStr, ...
-        vdccalMatVerStr =vdccalMatVerStr)
+        codeVerStr=codeVerStr, ...
+        matVerStr =matVerStr)
 
       %=========================================================================
       % Normalize the representation of E-field X-component
@@ -166,17 +166,21 @@ classdef ext
       %=========================================================================
       EdcSrfTs.data(:, 1) = NaN;
       % Normalize: If at least one (Y,Z) EFIELD component is NaN, then both
-      % should be NaN.
+      % should be NaN. This behaviour is by agreement with Andrew Dimmock.
+      % /Erik  G Johansson, 2026
+      % NOTE: If solo.vdccal() should ever legitimately return exactly one Y or Z
+      % component in the future, then this normalization is a potential future
+      % bug if not removed.
       bNan = logical(sum(isnan(EdcSrfTs.data(:, 2:3)), 2));
       EdcSrfTs.data(bNan, 2:3) = NaN;
 
       % Build return struct.
       R = [];
-      R.PspTs            = PspTs;
-      R.ScpotTs          = ScpotTs;
-      R.EdcSrfTs         = EdcSrfTs;
-      R.vdccalCodeVerStr = vdccalCodeVerStr;
-      R.vdccalMatVerStr  = vdccalMatVerStr;
+      R.PspTs      = PspTs;
+      R.ScpotTs    = ScpotTs;
+      R.EdcSrfTs   = EdcSrfTs;
+      R.codeVerStr = codeVerStr;
+      R.matVerStr  = matVerStr;
     end
 
 
@@ -198,8 +202,8 @@ classdef ext
         A.EdcSrfTs
         A.PspTs
         A.ScpotTs
-        A.vdccalMatVerStr
-        A.vdccalCodeVerStr
+        A.matVerStr
+        A.codeVerStr
       end
 
       irf.assert.sizes(...
@@ -214,13 +218,13 @@ classdef ext
       assert(all(A.tt2000 == A.EdcSrfTs.time.ttns))
       assert(all(A.tt2000 ==    A.PspTs.time.ttns))
       assert(all(A.tt2000 ==  A.ScpotTs.time.ttns))
-      irf.assert.castring(A.vdccalMatVerStr)
-      assert(~isempty(A.vdccalMatVerStr), ...
-        ['solo.vdccal() returns an empty vdccalMatVerStr', ...
+      irf.assert.castring(A.matVerStr)
+      assert(~isempty(A.matVerStr), ...
+        ['solo.vdccal() returns an empty matVerStr', ...
         ' (string representing the version of the corresponding', ...
         ' .mat file). BICAS therefore needs to be updated.'])
       irf.assert.castring_regexp(...
-        A.vdccalCodeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
+        A.codeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
 
       % -------------------------
       % ASSERTIONS: EFIELD values
@@ -271,6 +275,9 @@ classdef ext
       assert(NeScpTs.units        == "cm^-3")
       assert(NeScpTs.siConversion == "cm^-3>1e6*m^-3")
 
+      % IMPLEMENTATION NOTE: Non-trivial logging for finding illegal
+      % NeScpTs.data values, to simplify the debugging of calibration data with
+      % the corresponding scientist.
       if ~all( isreal(NeScpTs.data) & ~isinf(NeScpTs.data) & (isnan(NeScpTs.data) | (NeScpTs.data > 0)) )
         errorMsg = "solo.psp2ne() returned illegal (non-NaN) plasma density value.";
         nZero     = numel(find(      NeScpTs.data == 0));
@@ -340,6 +347,9 @@ classdef ext
 
 
 
+      % =============================================
+      % ASSERTIONS: Check solo.psp2ne() return values
+      % =============================================
       bicas.proc.L2L3.ext.assert_psp2ne_return_values( ...
         PspTs.time.ttns, NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr, L)
 

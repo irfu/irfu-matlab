@@ -5,6 +5,21 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef ext___UTEST < matlab.unittest.TestCase
+  % PROPOSAL: Test calc_EFIELD_SCPOT_DENSITY() instead of calc_EFIELD_SCPOT()
+  %           and calc_DENSITY() separately.
+  %   PRO: The interface does not use TSeries (but does use FPA instead).
+  %   PRO: Sub-functions do not need to be public.
+  %   CON: More input & output variables to test.
+  %   CON: There is very little interaction between calc_EFIELD_SCPOT()
+  %        and calc_DENSITY().
+  %   CON-PROPOSAL: One complementary test of calc_EFIELD_SCPOT_DENSITY(), just
+  %                 to have one test.
+  %
+  % PROPOSAL: Test calc_EFIELD_SCPOT() and calc_DENSITY() separately at the
+  %           expense of calc_EFIELD_SCPOT_DENSITY().
+  % PROPOSAL: Test return value assertion functions:
+  %             assert_vdccal_return_values()
+  %             assert_psp2ne_return_values()
 
 
 
