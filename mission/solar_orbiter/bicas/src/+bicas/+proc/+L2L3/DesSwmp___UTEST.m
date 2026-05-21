@@ -346,6 +346,7 @@ classdef DesSwmp___UTEST < matlab.unittest.TestCase
       %   'TensorOrder', 0);
       % Psp2neRv.codeVerStr      = '2023-08-11T10:11:00';
 
+      % NOTE: Using the nominal EXCD IMPLEMENTATION!!!!
       Excd = bicas.proc.L2L3.ExternalCodeImpl();
       % Excd = bicas.proc.L2L3.ExternalCodeTest(VdccalRv, Psp2neRv);
       % IMPLEMENTATION NOTE: Does not yet use bicas.proc.L2L3.ExternalCodeTest
