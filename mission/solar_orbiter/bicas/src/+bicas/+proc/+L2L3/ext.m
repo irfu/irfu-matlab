@@ -168,8 +168,8 @@ classdef ext
       % Normalize: If at least one (Y,Z) EFIELD component is NaN, then both
       % should be NaN. This behaviour is by agreement with Andrew Dimmock.
       % /Erik  G Johansson, 2026
-      % NOTE: If solo.vdccal() should ever legitimately return exactly one Y or Z
-      % component in the future, then this normalization is a potential future
+      % NOTE: If solo.vdccal() should ever legitimately return exactly one Y or
+      % Z component in the future, then this normalization is a potential future
       % bug if not removed.
       bNan = logical(sum(isnan(EdcSrfTs.data(:, 2:3)), 2));
       EdcSrfTs.data(bNan, 2:3) = NaN;

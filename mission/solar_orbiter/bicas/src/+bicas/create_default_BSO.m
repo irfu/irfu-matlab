@@ -21,8 +21,8 @@
 %   checked for this.
 %
 %
-% KEY NAMING CONVENTIONS
-% ======================
+% SETTINGS KEY NAMING CONVENTIONS
+% ===============================
 % Keys should by default be uppercase were different parts are separated by
 % period (large parts) and underscore (smaller parts, e.g. words,
 % abbreviations). The period-separated substrings run from large categories

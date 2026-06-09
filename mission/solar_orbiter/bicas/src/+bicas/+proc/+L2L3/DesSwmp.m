@@ -364,6 +364,8 @@ classdef DesSwmp < bicas.proc.SwmProcessing
       %-----------------------------
       % Blank output based on QRCBs
       %-----------------------------
+      % NOTE: Overwrites older variables.
+      % --
       % EFIELD.
       R.EdcSrfMvpmFpa = bicas.proc.L2L3.qrc.set_FPA_samples_FP(...
         R.EdcSrfMvpmFpa, L3Qrcbm, bicas.const.qrc.Q.L3_QRCSM, "efieldFvIndexAr");
