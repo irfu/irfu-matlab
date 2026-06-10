@@ -414,8 +414,8 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 
 
 ----------------------------
- Version ?.?.? (????-??-??)
+ Version 9.3.0 (2026-06-10)
 ----------------------------
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2026-03-02 (inclusive).
-* Updated EFIELD calibration data (d23K123_20251114.mat).
+* Updated EFIELD calibration data (d23K123_20260507.mat).
