@@ -1,4 +1,5 @@
-function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(VDC_inp, EDC_inp, calFilename)
+function [DCE_SRF_out, PSP_out, ScPot_out, codeVerStr, matVerStr] = vdccal(...
+  VDC_inp, EDC_inp, calFilename)
 %SOLO.VDCCAL  Calibrate VDC to get DC E and PSP
 %
 %    [DCE_SRF,PSP,ScPot,codeVerStr,matVerStr] = solo.vdccal(VDC,EDC,calfilename)

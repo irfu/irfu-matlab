@@ -398,7 +398,8 @@ classdef gamods
 
 
 
-      % BICAS v9.2.0: L3 delivery ~2026-01-15
+      % BICAS v9.2.0: L3 delivery ~2026-01-15: One day of DENSITY for
+      % 2023-12-27.
       Gmdb.add_GMVE(...
         bicas.const.L3_SURV_DSID_CA, ...
         bicas.ga.mods.VersionEntry("2026-01-15", "9.2.0", ...
