@@ -1725,14 +1725,12 @@
 
 
 
-<!--
         <event>
             <startTimeUtc>2022-11-30T23:00:00</startTimeUtc>
             <stopTimeUtc> 2022-12-01T00:10:00</stopTimeUtc>
             <rcsNsoId>REMOVE_EFIELD</rcsNsoId>
             <description>This is a temporary measure done in agreement with Andrew Dimmock (IRF Uppsala) until updating the corresponding calibration. /Erik P G Johansson (IRF Uppsala), 2025-06-26</description>
         </event>
--->
 
 
 
