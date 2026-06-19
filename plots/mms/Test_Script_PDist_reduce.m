@@ -3,7 +3,7 @@
 %% Load data
 mms.db_init('local_file_db','/Volumes/mms');
 
-tint = irf.tint('2017-07-11T22:33:00.00Z/2017-07-11T22:34:30.00Z'); 
+tint = irf.tint('2017-07-11T22:33:00.00Z/2017-07-11T22:34:30.00Z');
 
 ic = 3;
 c_eval('dmpaB = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_dmpa_brst_l2'',tint);',ic);
@@ -24,14 +24,14 @@ n = 1; % cc
 Ti = 5000; % eV
 Te = 1000; % eV
 vd = [1 0 0]; % km/s, breaks for exactly zero
-B = [1 0.01 0]; 
+B = [1 0.01 0];
 m = units.mp;
 debug_mult_factor = 1;%pi*1e12;
 
 w = @(T,m) sqrt(2*units.eV*T/(m)); % m/s
 f1D_max = @(v_kms, T_eV, n_cc, vd_kms, m) n_cc*1e6/((pi)^(1/2)*w(T_eV,m).^1)*exp(-(v_kms*1e3-vd_kms*1e3).^2./w(T_eV,m)./w(T_eV,m));
-f2D_max = @(v_kms, T_eV, n_cc, vd_kms, m) n_cc*1e6/((pi)^(2/2)*w(T_eV,m).^2)*exp(-(v_kms*1e3-vd_kms*1e3).^2./w(T_eV,m)./w(T_eV,m)); 
-f3D_max = @(v_kms, T_eV, n_cc, vd_kms, m) n_cc*1e6/((pi)^(3/2)*w(T_eV,m).^3)*exp(-(v_kms*1e3-vd_kms*1e3).^2./w(T_eV,m)./w(T_eV,m)); 
+f2D_max = @(v_kms, T_eV, n_cc, vd_kms, m) n_cc*1e6/((pi)^(2/2)*w(T_eV,m).^2)*exp(-(v_kms*1e3-vd_kms*1e3).^2./w(T_eV,m)./w(T_eV,m));
+f3D_max = @(v_kms, T_eV, n_cc, vd_kms, m) n_cc*1e6/((pi)^(3/2)*w(T_eV,m).^3)*exp(-(v_kms*1e3-vd_kms*1e3).^2./w(T_eV,m)./w(T_eV,m));
 
 
 nMC = 1000;
@@ -73,7 +73,7 @@ hold(hca,'off')
 hca.XLabel.String = 'v';
 hca.YLabel.String = 'f (s/m^4)';
 legend(hca,{'Reduced PDist','Maxwellian'})
-  
+
 
 hca = h(isub); isub = isub + 1;
 plotyy(hca, f1D.depend{1}, f1D_max(f1D.depend{1},Ti,n,vd(1),units.mp)*debug_mult_factor, f1D.depend{1}, f1D.data)
@@ -167,14 +167,14 @@ E_from_v_mean = zeros(nE,1);
 for iE = 1:nE
   E1 = energy(iE) - de_minus(iE); % eV
   E2 = energy(iE) + de_plus(iE); % eV
-  
+
   v1 = f_v(E1,units.mp);
   v2 = f_v(E2,units.mp);
-  
+
   % Randomize particle in either v or E
   v_from_v = v1 + (v2-v1)*rand(nMP,1);
   E_from_E = E1 + (E2-E1)*rand(nMP,1);
-  
+
   % Convert v to E and vice versa
   v_from_E = f_v(E_from_E,mass);
   E_from_v = f_E(v_from_v,mass);

@@ -1,24 +1,24 @@
 function hermitestruct = irf_hermitedecomp_1d(varargin)
 % IRF_HERMITEDECOMP_1D - decompose a series of 1D distributions in the
 % hermite basis of functions
-% 
+%
 %   Detailed explanation goes here
 %
 % Input:
-%       PDist1d - Structure or TSeries of PDist of 1D particle distributions. 
+%       PDist1d - Structure or TSeries of PDist of 1D particle distributions.
 % Must contain the distributions and speeds. TSeries should be 1D reduced
-% distributions. 
+% distributions.
 %       numhermites - number of hermite functions used in the decomposition.
-% 
-% Options: 
+%
+% Options:
 %       species - set particle species. 'e', 'p', or 'a' for electrons,
-%       protons, or alpha particles. 
-% 
-% Output: 
+%       protons, or alpha particles.
+%
+% Output:
 %       hermitestruct - structure containing hermite function weights
-% 
+%
 % Notes: Velocities in the structure are converted to km s^{-1}
-% 
+%
 % Example:
 %   hermitestruct = irf_hermitedecomp_1d(PDist1D,64,'species','e');
 %
@@ -85,11 +85,11 @@ if isTSeries == false
   if timesformat(1) < timesformat(2)
     times = times';
   end
-  
+
   vvec = PDist1d.v*1e3; % convert from km s^-1 to m s^-1
   lengthv = length(vvec);
   dv = median(diff(vvec));
-  
+
   if min(size(vvec)) == 1
     vmat = ones(size(times))*vvec;
   end
