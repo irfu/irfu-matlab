@@ -19,16 +19,16 @@ classdef group_by_change___UTEST < matlab.unittest.TestCase
 
     % NOTE: Not real thorough testing. Mostly to see that the correct
     % information passes through the wrapper.
-    function test_0(testCase)
-      testCase.test_exc({})
+    function test_0(T)
+      T.test_exc({})
 
       % Unequal number of rows.
-      testCase.test_exc({zeros(0, 1), [1]})
-      testCase.test_exc({[2;3],       [1]})
-      testCase.test_exc({[2,3],       [1;2]})
+      T.test_exc({zeros(0, 1), [1]})
+      T.test_exc({[2;3],       [1]})
+      T.test_exc({[2,3],       [1;2]})
 
-      testCase.test({zeros(0, 1), zeros(0,2,3)}, cell(0, 1))
-      testCase.test({ ...
+      T.test({zeros(0, 1), zeros(0,2,3)}, cell(0, 1))
+      T.test({ ...
         [1;1;1; 1; 2;2;2], ...
         [3;3;3; 4; 4;4;4], ...
         }, ...
@@ -50,15 +50,15 @@ classdef group_by_change___UTEST < matlab.unittest.TestCase
 
 
 
-    function test(testCase, arraysCa, expIGroupCa)
+    function test(T, arraysCa, expIGroupCa)
       assert(iscell(arraysCa))
       expIGroupCa = expIGroupCa(:);
 
       % CALL TESTED FUNCTION
       actIGroupCa = bicas.utils.group_by_change(arraysCa{:});
 
-      testCase.assertTrue(iscolumn(actIGroupCa))
-      testCase.assertEqual(actIGroupCa, expIGroupCa)
+      T.assertTrue(iscolumn(actIGroupCa))
+      T.assertEqual(actIGroupCa, expIGroupCa)
 
       % Further assertions on the order of cells and array elements
       % -----------------------------------------------------------
@@ -70,28 +70,28 @@ classdef group_by_change___UTEST < matlab.unittest.TestCase
       %            once.
       actAllIndices = sort(cat(1, actIGroupCa{:}));
       if isempty(arraysCa)
-        testCase.assertTrue(isempty(actAllIndices))
+        T.assertTrue(isempty(actAllIndices))
       else
         nRows = size(arraysCa{1}, 1);
         % NOTE: nRows==0 is possible.
-        testCase.assertEqual(actAllIndices(:), [1:nRows]')
+        T.assertEqual(actAllIndices(:), [1:nRows]')
       end
 
       % ASSERTION: All groups are sorted by the first index within each group.
       actIFirstInGroup = cellfun(@(x) (x(1)), actIGroupCa);
-      testCase.assertTrue(issorted(actIFirstInGroup))
+      T.assertTrue(issorted(actIFirstInGroup))
 
       % ASSERTION: Indices are sorted within each group.
       for i = 1:numel(actIGroupCa)
         groupAr = actIGroupCa{i};
-        testCase.assertTrue(issorted(groupAr));
+        T.assertTrue(issorted(groupAr));
       end
     end
 
 
 
-    function test_exc(testCase, arraysCa)
-      testCase.assertError(...
+    function test_exc(T, arraysCa)
+      T.assertError(...
         @() bicas.utils.group_by_change(arraysCa{:}), ...
         ?MException)
     end

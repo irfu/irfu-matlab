@@ -7,7 +7,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
+classdef LfrDsrSwmp < bicas.proc.SwmProcessing
   % PROPOSAL: Automatic test code.
 
 
@@ -27,7 +27,7 @@ classdef LfrDsrSwmProcessing < bicas.proc.SwmProcessing
 
       InLfrCwf = InputDatasetsMap('OSR_cdf');
 
-      OutLfrCwfDsr = bicas.proc.L2L2.LfrDsrSwmProcessing.process_LFR_CWF_to_DSR(InLfrCwf, Bso, L);
+      OutLfrCwfDsr = bicas.proc.L2L2.LfrDsrSwmp.process_LFR_CWF_to_DSR(InLfrCwf, Bso, L);
 
       OutputDatasetsMap = containers.Map();
       OutputDatasetsMap('DSR_cdf') = bicas.OutputDataset(...

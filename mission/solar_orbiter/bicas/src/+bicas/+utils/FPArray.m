@@ -751,7 +751,7 @@ classdef FPArray < matlab.mixin.CustomDisplay    % NOTE: Not handle class.
 
     % Override method inherited from matlab.mixin.CustomDisplay to modify
     % the human-readable string representation of the object. This is useful
-    % for debugging. testCase.assertEqual() etc. use this.
+    % for debugging. T.assertEqual() etc. use this.
     %
     % NOTE: Not perfect implementation since using strings to represent
     % non-strings for dataAr and fpAr (can be seen in the presence of single

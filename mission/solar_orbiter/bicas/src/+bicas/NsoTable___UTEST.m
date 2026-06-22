@@ -22,14 +22,14 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
     % % Test constructor.
     % % NOTE: test_get_NSO_event_matches() indirectly tests the constructor.
-    % function test_NsoTable(testCase)
+    % function test_NsoTable(T)
     % end
 
 
 
     % Test method bicas.NsoTable.get_NSO_event_matches(). Also indirectly
     % uses/tests bicas.NsoTable() constructor by its nature.
-    function test_get_NSO_event_matches(testCase)
+    function test_get_NSO_event_matches(T)
       % PROBLEM: How handle that return value may change the order of
       %          events depending on implementation?
 
@@ -53,7 +53,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
           evtStartTt2000Ar, evtStopTt2000Ar, evtQrcidAr);
         ActNsoEventMatchAr = NsoTable.get_NSO_event_matches(tt2000Ar);
 
-        testCase.assertEqual(ActNsoEventMatchAr, ExpNsoEventMatchAr)
+        T.assertEqual(ActNsoEventMatchAr, ExpNsoEventMatchAr)
       end
 
       %===================================================================
@@ -124,7 +124,7 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_read_file_validated(testCase)
+    function test_read_file_validated(T)
       % NOTE: Only read BICAS's own default file (in BICAS's git repo).
 
       bicasRootPath = bicas.utils.get_BICAS_root_dir();
@@ -142,14 +142,14 @@ classdef NsoTable___UTEST < matlab.unittest.TestCase
         bicas.const.qrc.Q.L3_DENSITY_QRCSM.qrcidAr];
       NsoTable = bicas.NsoTable.read_file_validated(nsoFilePath, qrcidAr);
 
-      testCase.verifyTrue(isa(NsoTable, 'bicas.NsoTable'))
-      testCase.assertTrue(isstring(NsoTable.evtQrcidAr))
+      T.verifyTrue(isa(NsoTable, 'bicas.NsoTable'))
+      T.assertTrue(isstring(NsoTable.evtQrcidAr))
 
       nEvents = irf.assert.sizes( ...
-        NsoTable.evtStartTt2000Array, [-1, 1], ...
-        NsoTable.evtStopTt2000Array,  [-1, 1], ...
+        NsoTable.evtStartTt2000Ar, [-1, 1], ...
+        NsoTable.evtStopTt2000Ar,  [-1, 1], ...
         NsoTable.evtQrcidAr,          [-1, 1]);
-      testCase.verifyTrue(nEvents > 300)
+      T.verifyTrue(nEvents > 300)
     end
 
 

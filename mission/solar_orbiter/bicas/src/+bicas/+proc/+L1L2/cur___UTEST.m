@@ -17,7 +17,7 @@ classdef cur___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_calibrate_bias_currents(testCase)
+    function test_calibrate_bias_currents(T)
       % NOTE: Could also check
       %       INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY but does not.
 
@@ -46,7 +46,7 @@ classdef cur___UTEST < matlab.unittest.TestCase
         actCurrentAampere = ...
           bicas.proc.L1L2.cur.calibrate_bias_currents(argsCa{:});
 
-        testCase.assertEqual(actCurrentAampere, expCurrentAampere)
+        T.assertEqual(actCurrentAampere, expCurrentAampere)
       end
 
 
@@ -80,7 +80,7 @@ classdef cur___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_convert_CUR_to_CUR_on_SCI_TIME(testCase)
+    function test_convert_CUR_to_CUR_on_SCI_TIME(T)
       % NOTE: Could also check
       %       INPUT_CDF.CUR.DUPLICATE_BIAS_CURRENT_SETTINGS_POLICY but does not.
 
@@ -110,14 +110,14 @@ classdef cur___UTEST < matlab.unittest.TestCase
         actCurrentSampere = bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME(...
           argsCa{:});
 
-        testCase.assertEqual(actCurrentSampere, expCurrentSampere, "RelTol", 1e-15)
+        T.assertEqual(actCurrentSampere, expCurrentSampere, "RelTol", 1e-15)
       end
 
       function test_exc(varargin)
         argsCa = convert_test_arguments(varargin{:});
 
         % CALL TESTED CODE
-        testCase.assertError(...
+        T.assertError(...
           @() bicas.proc.L1L2.cur.convert_CUR_to_CUR_on_SCI_TIME(argsCa{:}), ...
           ?MException)
       end

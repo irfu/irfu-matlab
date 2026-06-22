@@ -20,7 +20,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_reconstruct_missing_data(testCase)
+    function test_reconstruct_missing_data(T)
 
       % Test data with relationship a1 + a2 == a3 for non-NaN.
       function test_sum(ACa, expACa)
@@ -31,9 +31,9 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
           @(a1, a3) (a3-a1), ...
           @(a1, a2) (a1+a2));
 
-        testCase.assertEqual(actA1, expACa{1})
-        testCase.assertEqual(actA2, expACa{2})
-        testCase.assertEqual(actA3, expACa{3})
+        T.assertEqual(actA1, expACa{1})
+        T.assertEqual(actA2, expACa{2})
+        T.assertEqual(actA3, expACa{3})
       end
 
       %==============
@@ -78,7 +78,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_reconstruct_ASR_voltage_channels(testCase)
+    function test_reconstruct_ASR_voltage_channels(T)
       N = NaN;
 
       SAMPLES_AR_DATA = [...
@@ -91,7 +91,7 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,0,0,    0, 0, 0,   1, 0,0;
         0,0,0,    0, 0, 1,   1, 0,0;
         ]);
-      Zvm = testCase.create_ASR_SCDH_ZVM(SAMPLES_AR_DATA, VSIB_AR_DATA);
+      Zvm = T.create_ASR_SCDH_ZVM(SAMPLES_AR_DATA, VSIB_AR_DATA);
 
 
 
@@ -105,14 +105,14 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         1,1,1,    0, 0, 0,   1, 0,1;
         0,0,1,    0, 1, 1,   1, 0,0;
         ]);
-      ExpZvm = testCase.create_ASR_SCDH_ZVM(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
+      ExpZvm = T.create_ASR_SCDH_ZVM(EXP_SAMPLES_AR_DATA, EXP_VSIB_AR_DATA);
 
 
 
       bicas.proc.L1L2.demuxer.reconstruct_ASR_voltage_channels(Zvm);
       ActZvm = Zvm;
 
-      testCase.assertEqual(ActZvm.nEntries, 9)
+      T.assertEqual(ActZvm.nEntries, 9)
 
       % IMPLEMENTATION NOTE: Not only comparing entire ZVM objects since it
       % helps to compare object components separately when debugging tests.
@@ -133,14 +133,14 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         end
 
         % Check everything (partially overlapping with above).
-        testCase.assertEqual(ActSchd, ExpSchd)
+        T.assertEqual(ActSchd, ExpSchd)
       end
-      testCase.assertEqual(ActZvm, ExpZvm)
+      T.assertEqual(ActZvm, ExpZvm)
     end
 
 
 
-    function test_get_ASR_ZVM_nWholeRowIsNan(testCase)
+    function test_get_ASR_ZVM_nWholeRowIsNan(T)
       SDID_ASR_AR = bicas.proc.L1L2.const.C.SDID_ASR_AR;
 
       % 3x2
@@ -156,17 +156,17 @@ classdef demuxer___UTEST < matlab.unittest.TestCase
         Zvm.add(sdid, Schd);
 
         actNWholeRowIsNan = bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(Zvm);
-        testCase.assertEqual(actNWholeRowIsNan, 1*i)
+        T.assertEqual(actNWholeRowIsNan, 1*i)
       end
 
       % Double checks. Not needed for the test.
-      testCase.assertEqual(Zvm.nRecords, 3)
+      T.assertEqual(Zvm.nRecords, 3)
       ExpSchd = bicas.proc.L1L2.SingleChannelData(SAMPLES_AR_0+3, VSIB_AR);
       ActSchd = Zvm.get(SDID_ASR_AR(3));
-      testCase.assertEqual(ActSchd, ExpSchd)
+      T.assertEqual(ActSchd, ExpSchd)
 
       actNWholeRowIsNan = bicas.proc.L1L2.demuxer.get_ASR_ZVM_nWholeRowIsNan(Zvm);
-      testCase.assertEqual(actNWholeRowIsNan, numel(SDID_ASR_AR)*1)
+      T.assertEqual(actNWholeRowIsNan, numel(SDID_ASR_AR)*1)
     end
 
 

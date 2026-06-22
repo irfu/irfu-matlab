@@ -49,7 +49,7 @@ classdef OutputDataset
       [~, datasetLevel, ~] = solo.adm.disassemble_DATASET_ID(dsid);
 
       obj.cliOptionHeaderBody = cliOptionHeaderBody;
-      obj.dsid                 = dsid;
+      obj.dsid                = dsid;
 
       obj.pfoid               = pfoid;
       obj.swdName             = swdName;
@@ -62,7 +62,7 @@ classdef OutputDataset
       bicas.swm.utils.assert_SIP_CLI_option(obj.cliOptionHeaderBody)
       bicas.swm.utils.assert_text(          obj.swdName)
       bicas.swm.utils.assert_text(          obj.swdDescription)
-      bicas.swm.utils.assert_DSID(           obj.dsid)
+      bicas.swm.utils.assert_DSID(          obj.dsid)
       solo.adm.assert_dataset_level(        obj.datasetLevel)
       bicas.assert_skeleton_version(        obj.skeletonVersion)
     end

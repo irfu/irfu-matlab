@@ -55,29 +55,29 @@ classdef ext
         VDC_Fpa=Zv.VDC_Fpa, ...
         EDC_Fpa=Zv.EDC_Fpa);
 
+
+
       % =================================
       % Call wrapper around solo.psp2ne()
       % =================================
       % NOTE: The name "NeScpQualityBit" is used by solo.psp2ne() and
       % refers to its other return value "NeScp", i.e. "Scp" only refers
-      % to the data the density is based on, but the quality bit only
-      % refers to density (and not to SCPOT).
+      % to the data the density "Ne" is based on, but the quality bit only
+      % refers to density "Ne" (and not to SCPOT/"Scp").
       [NeScpTs, NeScpQualityBitFpa, psp2neCodeVerStr] = ...
         bicas.proc.L2L3.ext.calc_DENSITY(R1.PspTs, Excd, A.L);
 
-      assert(strcmp(R1.PspTs.units,   'V'))
-      assert(strcmp(R1.ScpotTs.units, 'V'))
-      % NOTE: NeScpTs.units is tested elsewhere.
 
-      %==============================
+
+      % ============================
       % Package function return data
-      %==============================
+      % ============================
       R = [];
       R.PspVoltFpa         = bicas.utils.FPArray(R1.PspTs.data,    'FILL_VALUE', NaN);
       R.ScpotVoltFpa       = bicas.utils.FPArray(R1.ScpotTs.data,  'FILL_VALUE', NaN);
       R.EdcSrfMvpmFpa      = bicas.utils.FPArray(R1.EdcSrfTs.data, 'FILL_VALUE', NaN);
-      R.vdccalCodeVerStr   = R1.vdccalCodeVerStr;
-      R.vdccalMatVerStr    = R1.vdccalMatVerStr;
+      R.vdccalCodeVerStr   = R1.codeVerStr;
+      R.vdccalMatVerStr    = R1.matVerStr;
       R.NeScpCm3Fpa        = bicas.utils.FPArray(NeScpTs.data,     'FILL_VALUE', NaN);
       R.NeScpQualityBitFpa = NeScpQualityBitFpa;
       R.psp2neCodeVerStr   = psp2neCodeVerStr;
@@ -85,15 +85,179 @@ classdef ext
 
 
 
-    % Validate the solo.psp2ne() return values.
+    % Calculate both
+    %   (1) ELECTRIC FIELD, and
+    %   (2) SPACECRAFT POTENTIALS
+    % via the same BICAS-external code solo.vdccal() (still inside
+    % irfu-matlab).
+    %
+    % Largely a wrapper around solo.vdccal().
+    %
+    % NOTE: Needs to be careful with the units, and incompatible updates to
+    % solo.vdccal() without the knowledge of the BICAS author. Therefore
+    % uses extra assertions to detect such changes.
+    %
+    % RETURN VALUE
+    % ============
+    % R
+    %       Struct with multiple variables.
+    %       NOTE: Return values are packaged as a struct to provide named
+    %       return values and avoid confusing similar return results with
+    %       each other.
+    %
+    function R = calc_EFIELD_SCPOT(Excd, Zv)
+      arguments
+        Excd
+        Zv.tt2000
+        Zv.VDC_Fpa
+        Zv.EDC_Fpa
+      end
+
+      % ========================================
+      % Create input variables for solo.vdccal()
+      % ========================================
+      % NOTE: Should TSeries objects really use TensorOrder=1 and
+      % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
+      % of three scalars. Probably does not matter. solo.vdccal() does
+      % indeed use VDC.x, EDC.x etc.
+      VdcTs = TSeries(...
+        EpochTT(Zv.tt2000), ...
+        Zv.VDC_Fpa.array(single(NaN)), ...
+        'TensorOrder', 1, ...
+        'repres',      {'x', 'y', 'z'});
+      EdcTs = TSeries(...
+        EpochTT(Zv.tt2000), ...
+        Zv.EDC_Fpa.array(single(NaN)), ...
+        'TensorOrder', 1, ...
+        'repres',      {'x', 'y', 'z'});
+
+      %#################################################################
+      % CALL BICAS-EXTERNAL CODE
+      %#################################################################
+      % NOTE: Not specifying calibration file.
+      % ==> Use current official calibration file, hardcoded in
+      %     solo.vdccal(), that should be used for official datasets.
+      [EdcSrfTs, PspTs, ScpotTs, codeVerStr, matVerStr] = ...
+        Excd.vdccal(VdcTs, EdcTs, []);
+      clear VdcTs EdcTs
+      %#################################################################
+
+      % =============================================
+      % ASSERTIONS: Check solo.vdccal() return values
+      % =============================================
+      bicas.proc.L2L3.ext.assert_vdccal_return_values(...
+        tt2000=Zv.tt2000, ...
+        EdcSrfTs=EdcSrfTs, PspTs=PspTs, ScpotTs=ScpotTs, ...
+        codeVerStr=codeVerStr, ...
+        matVerStr =matVerStr)
+
+      %=========================================================================
+      % Normalize the representation of E-field X-component
+      % ---------------------------------------------------
+      % Set E_x = NaN, but ONLY if assertion deems that the corresponding
+      % information is missing.
+      %
+      % NOTE: The X component can never be a measurement value since RPW can
+      % not measure E field in the X direction.
+      % --
+      % TODO-DEC: Is solo.vdccal() returning zero for the X component a
+      % solo.vdccal() bug? The real value is unknown, rather than assumed to be
+      % zero(?).
+      %=========================================================================
+      EdcSrfTs.data(:, 1) = NaN;
+      % Normalize: If at least one (Y,Z) EFIELD component is NaN, then both
+      % should be NaN. This behaviour is by agreement with Andrew Dimmock.
+      % /Erik  G Johansson, 2026
+      % NOTE: If solo.vdccal() should ever legitimately return exactly one Y or
+      % Z component in the future, then this normalization is a potential future
+      % bug if not removed.
+      bNan = logical(sum(isnan(EdcSrfTs.data(:, 2:3)), 2));
+      EdcSrfTs.data(bNan, 2:3) = NaN;
+
+      % Build return struct.
+      R = [];
+      R.PspTs      = PspTs;
+      R.ScpotTs    = ScpotTs;
+      R.EdcSrfTs   = EdcSrfTs;
+      R.codeVerStr = codeVerStr;
+      R.matVerStr  = matVerStr;
+    end
+
+
+
+    % Assert that the solo.vdccal() return values are valid w.r.t. format.
     %
     % DESIGN NOTES, RATIONALE
     % =======================
-    % This function is written to be used by both (1) BICAS proper, and (2) test
-    % code. Any validation which can not be shared between BICAS proper and test
+    % This function is written to be used by
+    % (1) BICAS proper,
+    % (2) potential test code for the function itself, and
+    % (3) potential test code for solo.vdccal().
+    % Any validation which can not be shared between BICAS proper and test
     % code should not be in this function.
     %
-    function validate_psp2ne_return_values( ...
+    function assert_vdccal_return_values(A)
+      arguments
+        A.tt2000
+        A.EdcSrfTs
+        A.PspTs
+        A.ScpotTs
+        A.matVerStr
+        A.codeVerStr
+      end
+
+      irf.assert.sizes(...
+        A.tt2000,        [-1, 1], ...
+        A.EdcSrfTs.data, [-1, 3], ...
+        A.PspTs.data,    [-1, 1], ...
+        A.ScpotTs.data,  [-1, 1]);
+      assert(strcmp(A.EdcSrfTs.units,            'mV/m'))
+      assert(strcmp(A.EdcSrfTs.coordinateSystem, 'SRF' ))
+      assert(strcmp(A.PspTs.units,               'V'))
+      assert(strcmp(A.ScpotTs.units,             'V'))
+      assert(all(A.tt2000 == A.EdcSrfTs.time.ttns))
+      assert(all(A.tt2000 ==    A.PspTs.time.ttns))
+      assert(all(A.tt2000 ==  A.ScpotTs.time.ttns))
+      irf.assert.castring(A.matVerStr)
+      assert(~isempty(A.matVerStr), ...
+        ['solo.vdccal() returns an empty matVerStr', ...
+        ' (string representing the version of the corresponding', ...
+        ' .mat file). BICAS therefore needs to be updated.'])
+      irf.assert.castring_regexp(...
+        A.codeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
+
+      % -------------------------
+      % ASSERTIONS: EFIELD values
+      % -------------------------
+      % EFIELD X component is either zero or NaN.
+      % --
+      % IMPLEMENTATION NOTE: solo.vdccal() sets EdcSrfTs X component to ZERO,
+      % if its input data is non-fill value/non-NaN, and NaN if fill value/NaN.
+      % Must therefore check for both zero and NaN.
+      %     Ex: Dataset 2020-08-01
+      % IMPLEMENTATION NOTE: ismember() does not work for NaN.
+      assert(all(A.EdcSrfTs.data(:, 1) == 0 | isnan(A.EdcSrfTs.data(:, 1))), ...
+        ['EDC for antenna 1 returned from', ...
+        ' solo.vdccal() is neither zero nor NaN and can therefore', ...
+        ' not be assumed to be unknown anymore.', ...
+        ' Verify that this is correct solo.vdccal() behaviour and', ...
+        ' (if correct) then update BICAS to handle this.'])
+    end
+
+
+
+    % Assert that the solo.psp2ne() return values are valid w.r.t. format.
+    %
+    % DESIGN NOTES, RATIONALE
+    % =======================
+    % This function is written to be used by
+    % (1) BICAS proper,
+    % (2) potential test code for the function itself, and
+    % (3) test code for solo.psp2ne().
+    % Any validation which can not be shared between BICAS proper and test
+    % code should not be in this function.
+    %
+    function assert_psp2ne_return_values( ...
         tt2000Ar, NeScpTs, NeScpQualityBitTs, codeVerStr, L)
 
       nTimestamps = numel(tt2000Ar);
@@ -111,6 +275,9 @@ classdef ext
       assert(NeScpTs.units        == "cm^-3")
       assert(NeScpTs.siConversion == "cm^-3>1e6*m^-3")
 
+      % IMPLEMENTATION NOTE: Non-trivial logging for finding illegal
+      % NeScpTs.data values, to simplify the debugging of calibration data with
+      % the corresponding scientist.
       if ~all( isreal(NeScpTs.data) & ~isinf(NeScpTs.data) & (isnan(NeScpTs.data) | (NeScpTs.data > 0)) )
         errorMsg = "solo.psp2ne() returned illegal (non-NaN) plasma density value.";
         nZero     = numel(find(      NeScpTs.data == 0));
@@ -152,129 +319,6 @@ classdef ext
 
 
 
-    % Calculate both
-    %   (1) ELECTRIC FIELD, and
-    %   (2) SPACECRAFT POTENTIALS
-    % via the same BICAS-external code solo.vdccal() (still inside
-    % irfu-matlab).
-    %
-    % Largely a wrapper around solo.vdccal().
-    %
-    % NOTE: Needs to be careful with the units, and incompatible updates to
-    % solo.vdccal() without the knowledge of the BICAS author. Therefore
-    % uses extra assertions to detect such changes.
-    %
-    % RETURN VALUE
-    % ============
-    % R
-    %       Struct with multiple variables.
-    %       NOTE: Return values are packaged as a struct to provide named
-    %       return values and avoid confusing similar return results with
-    %       each other.
-    %
-    function R = calc_EFIELD_SCPOT(Excd, Zv)
-      arguments
-        Excd
-        Zv.tt2000
-        Zv.VDC_Fpa
-        Zv.EDC_Fpa
-      end
-
-
-
-      %==========================================
-      % Create input variables for solo.vdccal()
-      %==========================================
-      % NOTE: Should TSeries objects really use TensorOrder=1 and
-      % repres={x,y,z}?!! VDC and EDC are not time series of vectors, but
-      % of three scalars. Probably does not matter. solo.vdccal() does
-      % indeed use VDC.x, EDC.x etc.
-      VdcTs = TSeries(...
-        EpochTT(Zv.tt2000), Zv.VDC_Fpa.array(single(NaN)), ...
-        'TensorOrder', 1, ...
-        'repres',      {'x', 'y', 'z'});
-      EdcTs = TSeries(...
-        EpochTT(Zv.tt2000), Zv.EDC_Fpa.array(single(NaN)), ...
-        'TensorOrder', 1, ...
-        'repres',      {'x', 'y', 'z'});
-
-
-
-      %#################################################################
-      % CALL BICAS-EXTERNAL CODE
-      %#################################################################
-      % NOTE: Not specifying calibration file.
-      % ==> Use current official calibration file, hardcoded in
-      %     solo.vdccal(), that should be used for official datasets.
-      [EdcSrfTs, PspTs, ScpotTs, vdccalCodeVerStr, vdccalMatVerStr] = ...
-        Excd.vdccal(VdcTs, EdcTs, []);
-      clear VdcTs EdcTs
-      %#################################################################
-
-
-
-      % ASSERTIONS: Check solo.vdccal() return values.
-      irf.assert.sizes(...
-        Zv.tt2000,     [-1, 1], ...
-        EdcSrfTs.data, [-1, 3], ...
-        PspTs.data,    [-1, 1], ...
-        ScpotTs.data,  [-1, 1]);
-      assert(strcmp(EdcSrfTs.units,            'mV/m'))
-      assert(strcmp(EdcSrfTs.coordinateSystem, 'SRF' ))
-      assert(strcmp(PspTs.units,               'V'))
-      assert(strcmp(ScpotTs.units,             'V'))
-      assert(all(Zv.tt2000 == EdcSrfTs.time.ttns))
-      assert(all(Zv.tt2000 ==    PspTs.time.ttns))
-      assert(all(Zv.tt2000 ==  ScpotTs.time.ttns))
-      irf.assert.castring(vdccalMatVerStr)
-      assert(~isempty(vdccalMatVerStr), ...
-        ['solo.vdccal() returns an empty vdccalMatVerStr', ...
-        ' (string representing the version of the corresponding', ...
-        ' .mat file). BICAS therefore needs to be updated.'])
-      irf.assert.castring_regexp(vdccalCodeVerStr, bicas.proc.L2L3.ext.CODE_VER_STR_REGEXP)
-
-
-
-      %===================================================================
-      % Normalize the representation of E-field X-component
-      % ---------------------------------------------------
-      % Set E_x = NaN, but ONLY if assertion deems that the corresponding
-      % information is missing.
-      %
-      % IMPLEMENTATION NOTE: solo.vdccal() sets EdcSrfTs X component to ZERO,
-      % if its input data is non-fill value/non-NaN, and NaN if fill value/NaN.
-      % Must therefore check for both zero and NaN.
-      %     Ex: Dataset 2020-08-01
-      % --
-      % NOTE: The X component can never be a measurement value since RPW can
-      % not measure E field in the X direction.
-      % --
-      % TODO-DEC: Is solo.vdccal() returning zero for the X component a
-      % solo.vdccal() bug? The value is unknown, rather than assumed to be
-      % zero(?).
-      %===================================================================
-      % IMPLEMENTATION NOTE: ismember() does not work for NaN.
-      assert(all(EdcSrfTs.data(:, 1) == 0 | isnan(EdcSrfTs.data(:, 1))), ...
-        ['EDC for antenna 1 returned from', ...
-        ' solo.vdccal() is neither zero nor NaN and can therefore', ...
-        ' not be assumed to be unknown anymore.', ...
-        ' Verify that this is correct solo.vdccal() behaviour and', ...
-        ' (if correct) then update BICAS to handle this.'])
-      EdcSrfTs.data(:, 1) = NaN;
-
-
-
-      % Build return struct.
-      R = [];
-      R.PspTs            = PspTs;
-      R.ScpotTs          = ScpotTs;
-      R.EdcSrfTs         = EdcSrfTs;
-      R.vdccalCodeVerStr = vdccalCodeVerStr;
-      R.vdccalMatVerStr  = vdccalMatVerStr;
-    end
-
-
-
     % Calculate DENSITY via a BICAS-external code solo.psp2ne() (still
     % inside irfu-matlab).
     %
@@ -303,7 +347,10 @@ classdef ext
 
 
 
-      bicas.proc.L2L3.ext.validate_psp2ne_return_values( ...
+      % =============================================
+      % ASSERTIONS: Check solo.psp2ne() return values
+      % =============================================
+      bicas.proc.L2L3.ext.assert_psp2ne_return_values( ...
         PspTs.time.ttns, NeScpTs, NeScpQualityBitTs, psp2neCodeVerStr, L)
 
       % ==================================

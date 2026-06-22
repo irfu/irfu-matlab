@@ -401,9 +401,9 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 * Bugfix: Incorrect solo.psp2ne() calibration time intervals fixed.
 
 
----------------
- Version 9.2.0
----------------
+----------------------------
+ Version 9.2.0 (2026-01-15)
+----------------------------
 * Added density calibration for time period 2023-12-17T02:08:00Z to 02:09:50Z.
 * ~Bugfix: Improved algorithm for deriving synthetic L2 QUALITY_FLAG value to
   use when processing L2-->L3.
@@ -411,3 +411,11 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
     possible.
   * Ignores ANT3_FAILING (previously only SATURATION_ZV_V*) so that L3 data can
     be generated also for that case (if relevant data is not blanked).
+
+
+----------------------------
+ Version 9.3.0 (2026-06-10)
+----------------------------
+* Non-Standard Operations (NSO) table thruster firings updated for until
+  2026-03-02 (inclusive).
+* Updated EFIELD calibration data (d23K123_20260507.mat).

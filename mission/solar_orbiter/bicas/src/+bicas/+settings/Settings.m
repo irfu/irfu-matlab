@@ -36,16 +36,17 @@ classdef Settings < handle
   % ------
   % PROPOSAL: Move settings-related files to its own package.
   %   Ex:
-  %       Settings         + UTEST
-  %       SettingsKeyValue + UTEST
+  %       Settings                             -- DONE
+  %       KeyValue                             -- DONE
   %       create_default_BSO
-  %       settings_value_to_display_str + UTEST
+  %       override_settings_from_config_file.m -- DONE
+  %       settings_value_to_display_str        -- DONE
   %       sprint_BSO
   %   CON: Mixes generic and non-generic code.
   %       PROPOSAL: Split.
   %           bicas.utils.*
-  %               Settings         + UTEST
-  %               SettingsKeyValue + UTEST
+  %               Settings
+  %               KeyValue
   %           bicas.settings.*
   %               create_default_BSO
   %               settings_value_to_display_str + UTEST
@@ -134,8 +135,8 @@ classdef Settings < handle
           'Trying to define pre-existing settings key.')
       end
 
-      Skv = bicas.SettingsKeyValue(...
-        defaultValue, bicas.Settings.VALUE_SOURCE_DEFAULT);
+      Skv = bicas.settings.KeyValue(...
+        defaultValue, bicas.settings.Settings.VALUE_SOURCE_DEFAULT);
       obj.SkvMap(key) = Skv;
     end
 
@@ -225,7 +226,7 @@ classdef Settings < handle
         % Convert string value to appropriate MATLAB class.
         %==================================================
         valueType = obj.get_setting_value_type(key);
-        newValue  = bicas.Settings.convert_str_to_value(...
+        newValue  = bicas.settings.Settings.convert_str_to_value(...
           valueType, newValueAsString);
 
         % Overwrite old setting.

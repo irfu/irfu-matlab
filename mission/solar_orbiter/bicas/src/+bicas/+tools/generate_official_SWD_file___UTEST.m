@@ -30,11 +30,11 @@ classdef generate_official_SWD_file___UTEST < matlab.unittest.TestCase
 
 
 
-    function setup(testCase)
-      Fixture = testCase.applyFixture(...
+    function setup(T)
+      Fixture = T.applyFixture(...
         matlab.unittest.fixtures.TemporaryFolderFixture);
       % NOTE: The same fixture should always return the same directory.
-      testCase.testDir = Fixture.Folder;
+      T.testDir = Fixture.Folder;
     end
 
 
@@ -52,19 +52,19 @@ classdef generate_official_SWD_file___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_write_compare(testCase)
+    function test_write_compare(T)
 
       %==========================
       % Test generating SWF file
       %==========================
       officialSwdFile  = bicas.utils.get_SWD_file();
-      generatedSwdFile = fullfile(testCase.testDir, bicas.const.SWD_FILENAME);
+      generatedSwdFile = fullfile(T.testDir, bicas.const.SWD_FILENAME);
 
       bicas.tools.generate_official_SWD_file(generatedSwdFile)
 
       % ASSERT: File exists and is non-empty.
       irf.assert.file_exists(generatedSwdFile)
-      testCase.assertTrue(dir(generatedSwdFile).bytes > 0)
+      T.assertTrue(dir(generatedSwdFile).bytes > 0)
 
 
 

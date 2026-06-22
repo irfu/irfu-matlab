@@ -51,7 +51,7 @@ for iKey = 1:length(keyCa)
   for iVs = 1:Skv.N_values()    % Iterate over versions of the same setting.
     value = Skv.valuesCa{iVs};
     try
-      displayStr = bicas.settings_value_to_display_str(value);
+      displayStr = bicas.settings.settings_value_to_display_str(value);
     catch Exc
       error(...
         'BICAS:Assertion', ...

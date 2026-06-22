@@ -32,16 +32,16 @@ classdef misc___UTEST < matlab.unittest.TestCase
 
 
 
-    function setup(testCase)
-      Fixture = testCase.applyFixture(...
+    function setup(T)
+      Fixture = T.applyFixture(...
         matlab.unittest.fixtures.TemporaryFolderFixture);
       % NOTE: The same fixture should always return the same directory.
-      testCase.dir = Fixture.Folder;
+      T.dir = Fixture.Folder;
 
-      testCase.configFile = fullfile(testCase.dir, 'config.json');
-      testCase.create_config_file(testCase.configFile)
+      T.configFile = fullfile(T.dir, 'config.json');
+      T.create_config_file(T.configFile)
 
-      testCase.create_empty_config_file_datasets(testCase.configFile)
+      T.create_empty_config_file_datasets(T.configFile)
     end
 
 
@@ -59,9 +59,9 @@ classdef misc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_0(testCase)
+    function test_0(T)
       % TEMP_CONFIG_FILE = '/home/erjo/temp/temp/roctestpkg.json';
-      TEMP_CONFIG_FILE = testCase.configFile;
+      TEMP_CONFIG_FILE = T.configFile;
 
       Bso = bicas.create_default_BSO();
       Bso.make_read_only();
@@ -72,7 +72,7 @@ classdef misc___UTEST < matlab.unittest.TestCase
       % NOTE: Sets requireOfficialBicasCodeVersion=false ==> Permits using the
       % wrong MATLAB version, since often works in that.
       [actRtpdDir, actZippedRtdp] = bicas.tools.rtdp.misc.create_RCS_test_data_package(...
-        testCase.dir, 'A', TEMP_CONFIG_FILE, false, Bpa);
+        T.dir, 'A', TEMP_CONFIG_FILE, false, Bpa);
 
       irf.assert.dir_exists(actRtpdDir)
       irf.assert.file_exists(actZippedRtdp)
@@ -93,7 +93,7 @@ classdef misc___UTEST < matlab.unittest.TestCase
 
 
 
-    function create_config_file(testCase, configFile)
+    function create_config_file(T, configFile)
       % PROPOSAL: Put files in subdirectories.
       %   PRO: Avoids filenaming collisions.
       %   PRO: Better test.
@@ -139,7 +139,7 @@ classdef misc___UTEST < matlab.unittest.TestCase
         };
 
       s = strjoin(ROWS_CA, '\n');
-      s = replace(s, '<PARENT_DIR>',     testCase.dir);
+      s = replace(s, '<PARENT_DIR>',     T.dir);
       s = replace(s, '<BICAS_ROOT_DIR>', bicas.utils.get_BICAS_root_dir());
 
       irf.fs.write_file(configFile, uint8(s)')
@@ -148,7 +148,7 @@ classdef misc___UTEST < matlab.unittest.TestCase
 
 
     % Read config file and create empty files for the specified datasets.
-    function create_empty_config_file_datasets(testCase, configFile)
+    function create_empty_config_file_datasets(T, configFile)
       uint8Array       = irf.fs.read_file(configFile);
       FileJson         = jsondecode(char(uint8Array)');
       InputDatasetJson = FileJson.inputDatasets;
