@@ -4538,7 +4538,7 @@ classdef PDist < TSeries
 
       % Phase space volume of each cell, same base length and time units as f
       if doScpot
-        ts_vol = obj.d3v('scpot',scpot); 
+        ts_vol = obj.d3v('scpot',scpot);
       else
         ts_vol = obj.d3v;
       end
@@ -5067,7 +5067,7 @@ classdef PDist < TSeries
       T_si = P*1e-9/(n*1e6);
       T_eV = T_si/units.eV;
       T_eV.units = 'eV';
-      TS = T_eV;      
+      TS = T_eV;
 
     end
     function varargout = remove_noise(obj,nMean,nThresh,PD_counts)
