@@ -6,13 +6,15 @@
 % surrounding the details of the spin fit, e.g. the time windows used for spin
 % fitting, and which exact timestamps should represent spin fit time windows.
 %
-% This function is essentially a wrapper around mms.mms_spinfit_m. In the long
+% The implementation uses mms_spinfit_m for the core processing. In the long
 % term, this function should probably be replaced by a copy dedicated to
 % BepiColombo processing (in case it needs to be modified).
 %
 %
-%
-% UNFINISHED / EXPERIMENTAL
+% TECHNICALITIES WHICH ARE BEYOND THE SCOPE OF THIS CLASS
+% =======================================================
+% * Rotating the coordinate system.
+% * Converting first-order sin/cos fit coefficients to an E field vector.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -21,6 +23,7 @@ classdef spinfit
   % PROPOSAL: Better class name
   %   ~spin fit
   %   MEFISTO, Mio
+  %   ~spin fit "engine", "core"
   %
   % PROPOSAL: Convert class to package dedicated to official processing.
   %   CON: Can not put constants in class.
@@ -55,6 +58,10 @@ classdef spinfit
   %###########
   %###########
   properties(Constant)
+    % Constants for when using constant-length time windows.
+    TIME_WINDOW_PERIOD_NS              = int64(4e9);
+    TIME_WINDOW_LENGTH_NS              = int64(4e9);
+    TIME_WINDOW_BEGIN_REFERENCE_TT2000 = int64(0);
   end
 
 
@@ -68,31 +75,209 @@ classdef spinfit
 
 
 
-    % Spin fit diffs. Constant-length fit time windows
+    % Internal helper function. Convert spin phase (0 to 2*pi) to cumulative
+    % spin phase.
     %
-    % TECHNICALITIES WHICH ARE BEYOND THE SCOPE OF THIS FUNCTION
-    % ==========================================================
-    % * Rotating the coordinate system.
-    % * Converting first-order sin/cos fit coefficients to a vector.
+    % NOTE: Assumes that every decrement implies that 2*pi should be added.
+    % NOTE: The function assumes that there are no data gaps.
     %
-    function R = diff_constant_length(A)
+    function cumulSpinPhaseRadAr = spin_phase_to_cumulative_spin_phase(...
+        spinPhaseRadAr)
+
+      assert(iscolumn(spinPhaseRadAr) & isa(spinPhaseRadAr, "double"))
+      assert(all((0 <= spinPhaseRadAr) & (spinPhaseRadAr <= 2*pi)))
+      n = numel(spinPhaseRadAr);
+
+      % IMPLEMENTATION NOTE: unwrap() decrements cumulative spin phase if the
+      % spin phase jumps are longer than pi. Therefore not using unwrap().
+      cumulSpinPhaseRadAr = NaN(n, 1);
+      if n >= 1
+        nRevol = 0;
+        cumulSpinPhaseRadAr(1) = spinPhaseRadAr(1);
+        for i = 2:n
+
+          if spinPhaseRadAr(i-1) > spinPhaseRadAr(i)
+            nRevol = nRevol + 1;
+          end
+
+          cumulSpinPhaseRadAr(i) = spinPhaseRadAr(i) + 2*pi*nRevol;
+        end
+      end
+
+      assert(issorted(cumulSpinPhaseRadAr))
+    end
+
+
+
+    % Internal helper function. Convert cumulative spin phase to spin phase (0
+    % to 2*pi radians).
     %
-    % PROPOSAL: Expose constants as arguments?
-    %   Ex: Length of time windows.
-    %   CON: Need to write more tests.
-    %     PRO: Might need to test for behaviour which is not used.
-    %   PRO: Easier to change constants (update implementation)
+    function outTt2000Ar = cumulative_spin_phase_to_TT2000( ...
+        dataTt2000Ar, dataCumulSpinPhaseRadAr, inCumulSpinPhaseRadAr)
+
+      assert(iscolumn(dataTt2000Ar)            & isa(dataTt2000Ar,            "int64" ))
+      assert(iscolumn(dataCumulSpinPhaseRadAr) & isa(dataCumulSpinPhaseRadAr, "double"))
+      assert(iscolumn(inCumulSpinPhaseRadAr)   & isa(inCumulSpinPhaseRadAr,   "double"))
+
+      assert(numel(dataTt2000Ar) == numel(dataCumulSpinPhaseRadAr))
+      n = numel(dataTt2000Ar);
+
+      % NOTE: Technically, arrays do not need to be sorted (ascending), but the
+      % data must still describe a monotonic function for interpolation to work,
+      % i.e. if one permutes the elements the same way for both arrays, and so
+      % that one of the arrays is sorted, then the other must also become sorted.
+      % Otherwise interpolation does not work.
+      assert(issorted(dataTt2000Ar,            "strictascend"))
+      assert(issorted(dataCumulSpinPhaseRadAr, "strictascend"))
+
+      if n >= 2
+        % --------------------------------------------------------------
+        % CASE: There is enough data for interpolation and extrapolation
+        % --------------------------------------------------------------
+        % NOTE: interp1() returns double. It returns and NaN if it can not
+        % interpolate.
+        y = interp1(...
+          dataCumulSpinPhaseRadAr, double(dataTt2000Ar), inCumulSpinPhaseRadAr, ...
+          "linear", "extrap");
+        assert(all(~isnan(y)))
+        outTt2000Ar = int64(y);
+      else
+        % ----------------------------------------------------------
+        % CASE: There is NO data for interpolation and extrapolation
+        % ----------------------------------------------------------
+        % Only permit execution if no actual interpolation/extrapolation is
+        % requested.
+        assert(...
+          isempty(inCumulSpinPhaseRadAr), ...
+          "Trying to interpolate/extrapolate when there are fewer than two data points.")
+        outTt2000Ar = int64.empty(0, 1);
+      end
+    end
+
+
+
+    % Wrapper around bepic.spinfit.mms_spinfit_wrapper() which
+    % (1) adds functionality for splitting processing into smaller time segments
+    %     based on time increments exceeding a threshold.
+    % (2) works with spin-aligned time windows.
+    %
+    %
+    % IMPLEMENTATION NOTE
+    % ===================
+    % Implements spin-aligned time windows using mms_spin_fit() by using fake
+    % TT2000 timestamps based on cumulative spin phase. This in causes problems
+    % with handling data gaps when converting from spin phase (0 to 2*pi) to
+    % cumulative spin phase, and when constructing the output timestamps in the
+    % presence of data gaps. It therefore makes sense for the implementation to
+    % split by data gap before using this approach.
+    %
+    % POTENTIAL PROBLEM / BUG
+    % =======================
+    % Function should be able to generate the same timestamps twice if choosing
+    % a dataGapMinNs which is smaller than the time window (in time). It is
+    % unclear what is the best way to handle such a situation.
+    %
+    function R = spin_aligned(A)
+      % PROPOSAL: Better name
+      %
+      % TODO: Automated tests.
+      %
+      % PROPOSAL: Remove data when the same output timestamp is generate twice.
+      %   PROBLEM: The timestamps might only be approximately equal?
 
       arguments
         A.tt2000Ar
-        A.spinPhaseRadiansAr
+        A.spinPhaseRadAr
         A.samplesAr
+        A.timeWindowPeriodRad
+        A.timeWindowLengthRad
+        A.timeWindowReferenceRad
+        A.dataGapMinNs
       end
 
-      R = bepic.spinfit.spin_fit_wrapper( ...
-        tt2000Ar=A.tt2000Ar, ...
-        spinPhaseRadiansAr=A.spinPhaseRadiansAr, ...
-        samplesAr=A.samplesAr);
+      % ==========
+      % ASSERTIONS
+      % ==========
+      assert(iscolumn(A.tt2000Ar)        & isa(A.tt2000Ar,       "int64")  & issorted(A.tt2000Ar, 'strictascend'))
+      assert(iscolumn(A.spinPhaseRadAr)  & isa(A.spinPhaseRadAr, "double") & all(isfinite(A.spinPhaseRadAr)))
+      % IMPLEMENTATION NOTE: Requiring spin phase on interval 0 to 2*pi. This is
+      % not required by mms_spin_fit(), but (1) is (analogous to) the spin phase
+      % values in L1p CDF files which are also bounded (0 to 360 deg), and (2)
+      % is an indirect check on the units used.
+      assert(all((0 <= A.spinPhaseRadAr) & (A.spinPhaseRadAr <= 2*pi)))
+      %
+      assert(iscolumn(A.samplesAr)       & isa(A.samplesAr,  "double"))
+      nIn = numel(A.tt2000Ar);
+      assert(nIn == numel(A.spinPhaseRadAr))
+      assert(nIn == numel(A.samplesAr))
+      %
+      assert(isscalar(A.timeWindowPeriodRad) & (A.timeWindowPeriodRad > 0) & isa(A.timeWindowPeriodRad,    "double"))
+      assert(isscalar(A.timeWindowLengthRad) & (A.timeWindowLengthRad > 0) & isa(A.timeWindowLengthRad,    "double"))
+      assert(isscalar(A.timeWindowReferenceRad)                            & isa(A.timeWindowReferenceRad, "double"))
+      %
+      assert(isscalar(A.dataGapMinNs) & (A.dataGapMinNs > 0) & isa(A.dataGapMinNs, 'int64'))
+
+      % Fake nanoseconds per radian when converting to/from fake TT2000.
+      N = 4e9 / 2*pi;
+
+
+      % ========================================================================
+      % Convert from "spin phase radians" to fake TT2000/duration so that values
+      % can be fed to bepic.spinfit.mms_spinfit_wrapper()
+      % ========================================================================
+      % IMPLEMENTATION NOTE: Cumulative spin phase values will not increment
+      % correctly for time jumps (error n*2*pi) but that does not matter, since
+      % the processing will be split by data gaps anyway.
+      cumulSpinPhaseRadAr = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
+        A.spinPhaseRadAr);
+      fakeTt2000Ar              = int64(cumulSpinPhaseRadAr      * N);
+      timeWindowPeriodNs        = int64(A.timeWindowPeriodRad    * N);
+      timeWindowLengthNs        = int64(A.timeWindowLengthRad    * N);
+      timeWindowReferenceTt2000 = int64(A.timeWindowReferenceRad * N);
+
+      nSamples = numel(A.tt2000Ar);
+      if nSamples == 0
+        % IMPLEMENTATION NOTE: Call bepic.spinfit.mms_spinfit_wrapper() with empty
+        % data, just to create a consistent return value.
+        R = bepic.spinfit.mms_spinfit_wrapper( ...
+          tt2000Ar                  = fakeTt2000Ar, ...
+          spinPhaseRadAr            = A.spinPhaseRadAr, ...
+          samplesAr                 = A.samplesAr, ...
+          timeWindowPeriodNs        = timeWindowPeriodNs, ...
+          timeWindowLengthNs        = timeWindowLengthNs, ...
+          timeWindowReferenceTt2000 = timeWindowReferenceTt2000);
+      else
+        % =========================================================
+        % Identify indices defining the beginning and end of a time
+        % jump-separated segment.
+        % =========================================================
+        boundaryAr = diff(A.tt2000Ar);
+        iBeginAr   = [1; boundaryAr];
+        iEndAr     = [boundaryAr+1; nSamples];
+        nSegments  = numel(iBeginAr);
+
+        rCa = cell(nSegments, 1);
+        for i = 1:nSegments
+          iAr = iBeginAr(i):iEndAr(i);
+
+          rCa{i, 1} = bepic.spinfit.mms_spinfit_wrapper( ...
+            tt2000Ar                  = A.tt2000Ar                 (iAr), ...
+            spinPhaseRadAr            = A.spinPhaseRadAr           (iAr), ...
+            samplesAr                 = A.samplesAr                (iAr), ...
+            timeWindowPeriodNs        = A.timeWindowPeriodNs       (iAr), ...
+            timeWindowLengthNs        = A.timeWindowLengthNs       (iAr), ...
+            timeWindowReferenceTt2000 = A.timeWindowReferenceTt2000(iAr));
+        end
+
+        R = vertcat(rCa{:});
+      end
+
+      % ======================================================
+      % Modify the timestamps, from fake TT2000 to true TT2000
+      % ======================================================
+      outCumulSpinPhaseRadAr = double(R.tt2000Ar) / N;
+      R.tt2000Ar = bepic.spinfit.cumulative_spin_phase_to_TT2000(...
+        A.tt2000Ar, cumulSpinPhaseRadAr, outCumulSpinPhaseRadAr);
     end
 
 
@@ -108,7 +293,7 @@ classdef spinfit
     % =========
     % tt2000Ar
     %       TT2000 timestamps for samples.
-    % spinPhaseRadiansAr
+    % spinPhaseRadAr
     %       Spin phase values
     % samplesAr
     %       Sample values.
@@ -123,9 +308,9 @@ classdef spinfit
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     %
-    function R = spin_fit_wrapper(A)
+    function R = mms_spinfit_wrapper(A)
       % PROPOSAL: Expose constants as arguments?
-      %   Ex: Length of time windows.
+      %   Ex: N_MIN_REQUIRED_FIT_SAMPLES.
       %   CON: Need to write more tests.
       %     PRO: Might need to test for behaviour which is not used.
       %   PRO: Easier to change constants (update implementation)
@@ -139,31 +324,47 @@ classdef spinfit
 
       arguments
         A.tt2000Ar
-        A.spinPhaseRadiansAr
+        A.spinPhaseRadAr
         A.samplesAr
+        A.timeWindowPeriodNs
+        A.timeWindowLengthNs
+        A.timeWindowReferenceTt2000
       end
 
-      N_FIT_TERMS                        = 3+2;
-      N_MAX_FIT_ITERATIONS               = 5;              % TODO: Determine proper value.
-      N_MIN_REQUIRED_FIT_SAMPLES         = N_FIT_TERMS+3;  % TODO: Determine proper value.
-      NS_BETWEEN_TIME_WINDOWS_BEGINS     = 4e9;            % Nanoseconds
-      TIME_WINDOW_LENGTH_NS              = NS_BETWEEN_TIME_WINDOWS_BEGINS;
-      TIME_WINDOW_BEGIN_REFERENCE_TT2000 = int64(0);
+      N_FIT_TERMS                = 3+2;
+      N_MAX_FIT_ITERATIONS       = 5;              % TODO: Determine proper value.
+      N_MIN_REQUIRED_FIT_SAMPLES = N_FIT_TERMS+3;  % TODO: Determine proper value.
 
-      tt2000Ar           = A.tt2000Ar;
-      spinPhaseRadiansAr = A.spinPhaseRadiansAr;
-      samplesAr          = A.samplesAr;
+      tt2000Ar                  = A.tt2000Ar;
+      spinPhaseRadAr            = A.spinPhaseRadAr;
+      samplesAr                 = A.samplesAr;
+      timeWindowPeriodNs        = A.timeWindowPeriodNs;
+      timeWindowLengthNs        = A.timeWindowLengthNs;
+      timeWindowReferenceTt2000 = A.timeWindowReferenceTt2000;
 
-      assert(iscolumn(tt2000Ar)           & isa(tt2000Ar,           'int64'))
-      assert(iscolumn(spinPhaseRadiansAr) & isa(spinPhaseRadiansAr, 'double') & all(isfinite(spinPhaseRadiansAr)))
-      assert(iscolumn(samplesAr)          & isa(samplesAr,          'double'))
+      % ==========
+      % ASSERTIONS
+      % ==========
+      assert(iscolumn(tt2000Ar)        & isa(tt2000Ar,       "int64")  & issorted(tt2000Ar, 'strictascend'))
+      assert(iscolumn(spinPhaseRadAr)  & isa(spinPhaseRadAr, "double") & all(isfinite(spinPhaseRadAr)))
+      % IMPLEMENTATION NOTE: Requiring spin phase on interval 0 to 2*pi. This is
+      % not required by mms_spin_fit(), but (1) is (analogous to) the spin phase
+      % values in L1p CDF files which are also bounded (0 to 360 deg), and (2)
+      % is an indirect check on the units used.
+      assert(all((0 <= spinPhaseRadAr) & (spinPhaseRadAr <= 2*pi)))
+      %
+      assert(iscolumn(samplesAr)       & isa(samplesAr,  "double"))
       nIn = numel(tt2000Ar);
-      assert(nIn == numel(spinPhaseRadiansAr))
+      assert(nIn == numel(spinPhaseRadAr))
       assert(nIn == numel(samplesAr))
+      %
+      assert(isscalar(timeWindowPeriodNs) & (timeWindowPeriodNs > 0) & isa(timeWindowPeriodNs,        "int64"))
+      assert(isscalar(timeWindowLengthNs) & (timeWindowLengthNs > 0) & isa(timeWindowLengthNs,        "int64"))
+      assert(isscalar(timeWindowReferenceTt2000)                     & isa(timeWindowReferenceTt2000, "int64"))
 
-      % ===============================================
-      % COPIED FROM THE mms.mms_spinfit_m DOCUMENTATION
-      % ===============================================
+      % -------------------------------------------
+      % COPIED FROM THE mms_spinfit_m DOCUMENTATION
+      % -------------------------------------------
       % function [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(maxIt, minPts, nTerms, timeData, data, phase, fitEvery, fitInterv, t0)
       %  Compute spinfit coefficients to spinning data. Data is fitted to
       %  function y = A + Bcos(phase) + Csin(phase) + (Dcos(2*phase) +
@@ -196,7 +397,7 @@ classdef spinfit
       %
       % This is an interface function used by Matlab to display help and/or
       % hints, the real processing occurs in mms_spinfit_mx (mex file).
-      % ==============================================================================
+      % ------------------------------------------------------------------------
       if nIn == 0
         % ========================
         % CASE: Empty input arrays
@@ -217,17 +418,18 @@ classdef spinfit
         % ============================
         [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(...
           N_MAX_FIT_ITERATIONS, N_MIN_REQUIRED_FIT_SAMPLES, N_FIT_TERMS, ...
-          tt2000Ar, samplesAr, spinPhaseRadiansAr, ...
-          NS_BETWEEN_TIME_WINDOWS_BEGINS, TIME_WINDOW_LENGTH_NS, ...
-          TIME_WINDOW_BEGIN_REFERENCE_TT2000);
+          tt2000Ar, samplesAr, spinPhaseRadAr, ...
+          timeWindowPeriodNs, timeWindowLengthNs, ...
+          timeWindowReferenceTt2000);
       end
 
       % =========================================
       % Assertions on mms_spinfit_m return values
       % =========================================
-      % IMPLEMENTATION NOTE: Useful for (1) testing the understanding/behaviour of
-      % mms_spinfit_m(), and (2) ensuring that emulated mms_spinfit_m() return values
-      % are consistent with the non-emulated ones.
+      % IMPLEMENTATION NOTE: Useful for (1) testing the understanding/behaviour
+      % of mms_spinfit_m(), and (2) ensuring that emulated mms_spinfit_m()
+      % return values are consistent with the non-emulated ones.
+      assert(isa(timeFit, "int64"))
       nOut = numel(timeFit);
       assert(iscolumn(timeFit) & (numel(timeFit) == nOut))
       assert(isequal(size(sfit), [nOut, N_FIT_TERMS]))
@@ -239,6 +441,7 @@ classdef spinfit
       % Construct return value(s)
       % =========================
       R = struct();
+      R.tt2000Ar          = timeFit;
       R.offsetAr          = sfit(:, 1);
       R.coefficientCos1Ar = sfit(:, 2);
       R.coefficientSin1Ar = sfit(:, 3);
