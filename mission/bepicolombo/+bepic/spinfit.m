@@ -150,18 +150,36 @@ classdef spinfit
     %
     % IMPLEMENTATION NOTE
     % ===================
-    % Implements spin-aligned time windows using mms_spin_fit() by using fake
-    % TT2000 timestamps based on cumulative spin phase. This in causes problems
-    % with handling data gaps when converting from spin phase (0 to 2*pi) to
-    % cumulative spin phase, and when constructing the output timestamps in the
-    % presence of data gaps. It therefore makes sense for the implementation to
-    % split by data gap before using this approach.
+    % Implements spin-aligned time windows using mms_spin_fit() by internally
+    % using fake TT2000 timestamps derived from cumulative spin phase. This in
+    % turn causes problems with handling data gaps when converting from spin
+    % phase (0 to 2*pi) to cumulative spin phase, and when then constructing the
+    % output timestamps in the presence of data gaps. It therefore makes sense
+    % for the implementation to split by data gap before using this approach.
+    %
     %
     % POTENTIAL PROBLEM / BUG
     % =======================
-    % Function should be able to generate the same timestamps twice if choosing
-    % a dataGapMinNs which is smaller than the time window (in time). It is
-    % unclear what is the best way to handle such a situation.
+    % The function could (theoretically) generate the same timestamps twice if
+    % choosing a dataGapMinNs which is smaller than the time window (in time).
+    % It is unclear what is the best way to handle such a situation.
+    %
+    %
+    % NAME-VALUE ARGUMENTS
+    % ====================
+    % tt2000Ar
+    % spinPhaseRadAr
+    % samplesAr
+    % timeWindowPeriodRad
+    % timeWindowLengthRad
+    % timeWindowCenterRad
+    %       Center of time windows, expressed using a cumulative spin phase of
+    %       any time window.
+    %       Only the value of "timeWindowCenterRad mod timeWindowPeriodRad"
+    %       matters.
+    % dataGapMinNs
+    %       Threshold for when a jump in tt2000Ar should count as a data gap.
+    %
     %
     function R = spin_aligned(A)
       % PROPOSAL: Better name
@@ -203,23 +221,22 @@ classdef spinfit
       %
       assert(isscalar(A.dataGapMinNs) & (A.dataGapMinNs > 0) & isa(A.dataGapMinNs, 'int64'))
 
-      % Fake nanoseconds per radian when converting to/from fake TT2000.
-      N = 4e9 / 2*pi;
-
-
       % ========================================================================
       % Convert from "spin phase radians" to fake TT2000/duration so that values
       % can be fed to bepic.spinfit.mms_spinfit_wrapper()
       % ========================================================================
+      % Fake nanoseconds per radian when converting to/from fake TT2000.
+      N = 4e9 / (2*pi);
+
       % IMPLEMENTATION NOTE: Cumulative spin phase values will not increment
       % correctly for time jumps (error n*2*pi) but that does not matter, since
       % the processing will be split by data gaps anyway.
-      cumulSpinPhaseRadAr    = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
+      cumulSpinPhaseRadAr = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
         A.spinPhaseRadAr);
-      fakeTt2000Ar           = int64(cumulSpinPhaseRadAr   * N);
-      timeWindowPeriodNs     = int64(A.timeWindowPeriodRad * N);
-      timeWindowLengthNs     = int64(A.timeWindowLengthRad * N);
-      timeWindowCenterTt2000 = int64(A.timeWindowCenterRad * N);
+      fakeTt2000Ar               = int64(cumulSpinPhaseRadAr   * N);
+      fakeTimeWindowPeriodNs     = int64(A.timeWindowPeriodRad * N);
+      fakeTimeWindowLengthNs     = int64(A.timeWindowLengthRad * N);
+      fakeTimeWindowCenterTt2000 = int64(A.timeWindowCenterRad * N);
 
       nSamples = numel(A.tt2000Ar);
       if nSamples == 0
@@ -229,15 +246,15 @@ classdef spinfit
           tt2000Ar               = fakeTt2000Ar, ...
           spinPhaseRadAr         = A.spinPhaseRadAr, ...
           samplesAr              = A.samplesAr, ...
-          timeWindowPeriodNs     = timeWindowPeriodNs, ...
-          timeWindowLengthNs     = timeWindowLengthNs, ...
-          timeWindowCenterTt2000 = timeWindowCenterTt2000);
+          timeWindowPeriodNs     = fakeTimeWindowPeriodNs, ...
+          timeWindowLengthNs     = fakeTimeWindowLengthNs, ...
+          timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000);
       else
         % =========================================================
         % Identify indices defining the beginning and end of a time
         % jump-separated segment.
         % =========================================================
-        boundaryAr = diff(A.tt2000Ar);
+        boundaryAr = find(diff(A.tt2000Ar) > A.dataGapMinNs);
         iBeginAr   = [1; boundaryAr];
         iEndAr     = [boundaryAr+1; nSamples];
         nSegments  = numel(iBeginAr);
@@ -247,12 +264,12 @@ classdef spinfit
           iAr = iBeginAr(i):iEndAr(i);
 
           rCa{i, 1} = bepic.spinfit.mms_spinfit_wrapper( ...
-            tt2000Ar               = A.tt2000Ar              (iAr), ...
-            spinPhaseRadAr         = A.spinPhaseRadAr        (iAr), ...
-            samplesAr              = A.samplesAr             (iAr), ...
-            timeWindowPeriodNs     = A.timeWindowPeriodNs    (iAr), ...
-            timeWindowLengthNs     = A.timeWindowLengthNs    (iAr), ...
-            timeWindowCenterTt2000 = A.timeWindowCenterTt2000(iAr));
+            tt2000Ar               = fakeTt2000Ar    (iAr), ...
+            spinPhaseRadAr         = A.spinPhaseRadAr(iAr), ...
+            samplesAr              = A.samplesAr     (iAr), ...
+            timeWindowPeriodNs     = fakeTimeWindowPeriodNs, ...
+            timeWindowLengthNs     = fakeTimeWindowLengthNs, ...
+            timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000);
         end
 
         R = vertcat(rCa{:});
