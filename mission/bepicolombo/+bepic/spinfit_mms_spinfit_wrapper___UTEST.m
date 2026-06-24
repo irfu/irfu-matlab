@@ -8,6 +8,23 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
+  % PROPOSAL: Test for one sample, two samples, extrapolation of center
+  % timestamps.
+
+
+
+  %#####################
+  %#####################
+  % CONSTANT PROPERTIES
+  %#####################
+  %#####################
+  properties(Constant)
+    % Constants for when using constant-length time windows. These values may or
+    % may not be the ones used outside the test code.
+    TIME_WINDOW_PERIOD_NS     = int64(4e9);
+    TIME_WINDOW_LENGTH_NS     = int64(4e9);
+    TIME_WINDOW_CENTER_TT2000 = int64(2e9);
+  end
 
 
 
@@ -25,15 +42,16 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         tt2000Ar       = int64.empty( 0, 1), ...
         spinPhaseRadAr = double.empty(0, 1), ...
         samplesAr      = double.empty(0, 1), ...
-        timeWindowPeriodNs        = bepic.spinfit.TIME_WINDOW_PERIOD_NS, ...
-        timeWindowLengthNs        = bepic.spinfit.TIME_WINDOW_LENGTH_NS, ...
-        timeWindowReferenceTt2000 = bepic.spinfit.TIME_WINDOW_BEGIN_REFERENCE_TT2000);
+        timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
+        timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
+        timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000);
 
-      T.assertSize(actR.offsetAr,          [0, 1])
-      T.assertSize(actR.coefficientCos1Ar, [0, 1])
-      T.assertSize(actR.coefficientSin1Ar, [0, 1])
-      T.assertSize(actR.coefficientCos2Ar, [0, 1])
-      T.assertSize(actR.coefficientSin2Ar, [0, 1])
+      T.verifyEqual(actR.tt2000Ar,         int64.empty(0, 1))
+      T.verifySize(actR.offsetAr,          [0, 1])
+      T.verifySize(actR.coefficientCos1Ar, [0, 1])
+      T.verifySize(actR.coefficientSin1Ar, [0, 1])
+      T.verifySize(actR.coefficientCos2Ar, [0, 1])
+      T.verifySize(actR.coefficientSin2Ar, [0, 1])
     end
 
 
@@ -48,15 +66,16 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         tt2000Ar       = int64(linspace(1, 7e9, N_IN))', ...
         spinPhaseRadAr = wrapTo2Pi(linspace(pi, 3*pi, N_IN))', ...
         samplesAr      = NaN(N_IN, 1), ...
-        timeWindowPeriodNs        = bepic.spinfit.TIME_WINDOW_PERIOD_NS, ...
-        timeWindowLengthNs        = bepic.spinfit.TIME_WINDOW_LENGTH_NS, ...
-        timeWindowReferenceTt2000 = bepic.spinfit.TIME_WINDOW_BEGIN_REFERENCE_TT2000);
+        timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
+        timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
+        timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000);
 
-      T.assertEqual(actR.offsetAr,          [nan; nan])
-      T.assertEqual(actR.coefficientCos1Ar, [nan; nan])
-      T.assertEqual(actR.coefficientSin1Ar, [nan; nan])
-      T.assertEqual(actR.coefficientCos2Ar, [nan; nan])
-      T.assertEqual(actR.coefficientSin2Ar, [nan; nan])
+      T.verifyEqual(actR.tt2000Ar,          int64([2e9; 6e9]))
+      T.verifyEqual(actR.offsetAr,          [nan; nan])
+      T.verifyEqual(actR.coefficientCos1Ar, [nan; nan])
+      T.verifyEqual(actR.coefficientSin1Ar, [nan; nan])
+      T.verifyEqual(actR.coefficientCos2Ar, [nan; nan])
+      T.verifyEqual(actR.coefficientSin2Ar, [nan; nan])
     end
 
 
@@ -70,11 +89,12 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         tt2000Ar       = int64(linspace(1e9, 7e9, N_IN))', ...
         spinPhaseRadAr = wrapTo2Pi(linspace(pi, 3*pi, N_IN))', ...
         samplesAr      = 3*ones(N_IN, 1), ...
-        timeWindowPeriodNs        = bepic.spinfit.TIME_WINDOW_PERIOD_NS, ...
-        timeWindowLengthNs        = bepic.spinfit.TIME_WINDOW_LENGTH_NS, ...
-        timeWindowReferenceTt2000 = bepic.spinfit.TIME_WINDOW_BEGIN_REFERENCE_TT2000);
+        timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
+        timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
+        timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000);
 
       % NOTE: Testing the offset return value.
+      T.verifyEqual(actR.tt2000Ar,          int64([2e9; 6e9]))
       T.verifyEqual(actR.offsetAr,          [3; 3], RelTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [0; 0], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [0; 0], AbsTol=1e-13)
@@ -99,10 +119,11 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         tt2000Ar       = tt2000Ar, ...
         spinPhaseRadAr = spinPhaseRadAr, ...
         samplesAr      = samplesAr, ...
-        timeWindowPeriodNs        = bepic.spinfit.TIME_WINDOW_PERIOD_NS, ...
-        timeWindowLengthNs        = bepic.spinfit.TIME_WINDOW_LENGTH_NS, ...
-        timeWindowReferenceTt2000 = bepic.spinfit.TIME_WINDOW_BEGIN_REFERENCE_TT2000);
+        timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
+        timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
+        timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000);
 
+      T.verifyEqual(actR.tt2000Ar,          int64([2e9; 6e9]))
       T.verifyEqual(actR.offsetAr,          [2; 2], AbsTol=1e-15)
       T.verifyEqual(actR.coefficientCos1Ar, [3; 3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4; 4], AbsTol=1e-13)

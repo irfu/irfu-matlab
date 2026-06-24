@@ -52,20 +52,6 @@ classdef spinfit
 
 
 
-  %###########
-  %###########
-  % CONSTANTS
-  %###########
-  %###########
-  properties(Constant)
-    % Constants for when using constant-length time windows.
-    TIME_WINDOW_PERIOD_NS     = int64(4e9);
-    TIME_WINDOW_LENGTH_NS     = int64(4e9);
-    TIME_WINDOW_BEGIN_REFERENCE_TT2000 = int64(0e9);
-  end
-
-
-
   %#######################
   %#######################
   % PUBLIC STATIC METHODS
@@ -191,7 +177,7 @@ classdef spinfit
         A.samplesAr
         A.timeWindowPeriodRad
         A.timeWindowLengthRad
-        A.timeWindowReferenceRad
+        A.timeWindowCenterRad
         A.dataGapMinNs
       end
 
@@ -211,9 +197,9 @@ classdef spinfit
       assert(nIn == numel(A.spinPhaseRadAr))
       assert(nIn == numel(A.samplesAr))
       %
-      assert(isscalar(A.timeWindowPeriodRad) & (A.timeWindowPeriodRad > 0) & isa(A.timeWindowPeriodRad,    "double"))
-      assert(isscalar(A.timeWindowLengthRad) & (A.timeWindowLengthRad > 0) & isa(A.timeWindowLengthRad,    "double"))
-      assert(isscalar(A.timeWindowReferenceRad)                            & isa(A.timeWindowReferenceRad, "double"))
+      assert(isscalar(A.timeWindowPeriodRad) & (A.timeWindowPeriodRad > 0) & isa(A.timeWindowPeriodRad, "double"))
+      assert(isscalar(A.timeWindowLengthRad) & (A.timeWindowLengthRad > 0) & isa(A.timeWindowLengthRad, "double"))
+      assert(isscalar(A.timeWindowCenterRad)                               & isa(A.timeWindowCenterRad, "double"))
       %
       assert(isscalar(A.dataGapMinNs) & (A.dataGapMinNs > 0) & isa(A.dataGapMinNs, 'int64'))
 
@@ -228,24 +214,24 @@ classdef spinfit
       % IMPLEMENTATION NOTE: Cumulative spin phase values will not increment
       % correctly for time jumps (error n*2*pi) but that does not matter, since
       % the processing will be split by data gaps anyway.
-      cumulSpinPhaseRadAr = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
+      cumulSpinPhaseRadAr    = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
         A.spinPhaseRadAr);
-      fakeTt2000Ar              = int64(cumulSpinPhaseRadAr      * N);
-      timeWindowPeriodNs        = int64(A.timeWindowPeriodRad    * N);
-      timeWindowLengthNs        = int64(A.timeWindowLengthRad    * N);
-      timeWindowReferenceTt2000 = int64(A.timeWindowReferenceRad * N);
+      fakeTt2000Ar           = int64(cumulSpinPhaseRadAr   * N);
+      timeWindowPeriodNs     = int64(A.timeWindowPeriodRad * N);
+      timeWindowLengthNs     = int64(A.timeWindowLengthRad * N);
+      timeWindowCenterTt2000 = int64(A.timeWindowCenterRad * N);
 
       nSamples = numel(A.tt2000Ar);
       if nSamples == 0
         % IMPLEMENTATION NOTE: Call bepic.spinfit.mms_spinfit_wrapper() with empty
         % data, just to create a consistent return value.
         R = bepic.spinfit.mms_spinfit_wrapper( ...
-          tt2000Ar                  = fakeTt2000Ar, ...
-          spinPhaseRadAr            = A.spinPhaseRadAr, ...
-          samplesAr                 = A.samplesAr, ...
-          timeWindowPeriodNs        = timeWindowPeriodNs, ...
-          timeWindowLengthNs        = timeWindowLengthNs, ...
-          timeWindowReferenceTt2000 = timeWindowReferenceTt2000);
+          tt2000Ar               = fakeTt2000Ar, ...
+          spinPhaseRadAr         = A.spinPhaseRadAr, ...
+          samplesAr              = A.samplesAr, ...
+          timeWindowPeriodNs     = timeWindowPeriodNs, ...
+          timeWindowLengthNs     = timeWindowLengthNs, ...
+          timeWindowCenterTt2000 = timeWindowCenterTt2000);
       else
         % =========================================================
         % Identify indices defining the beginning and end of a time
@@ -261,12 +247,12 @@ classdef spinfit
           iAr = iBeginAr(i):iEndAr(i);
 
           rCa{i, 1} = bepic.spinfit.mms_spinfit_wrapper( ...
-            tt2000Ar                  = A.tt2000Ar                 (iAr), ...
-            spinPhaseRadAr            = A.spinPhaseRadAr           (iAr), ...
-            samplesAr                 = A.samplesAr                (iAr), ...
-            timeWindowPeriodNs        = A.timeWindowPeriodNs       (iAr), ...
-            timeWindowLengthNs        = A.timeWindowLengthNs       (iAr), ...
-            timeWindowReferenceTt2000 = A.timeWindowReferenceTt2000(iAr));
+            tt2000Ar               = A.tt2000Ar              (iAr), ...
+            spinPhaseRadAr         = A.spinPhaseRadAr        (iAr), ...
+            samplesAr              = A.samplesAr             (iAr), ...
+            timeWindowPeriodNs     = A.timeWindowPeriodNs    (iAr), ...
+            timeWindowLengthNs     = A.timeWindowLengthNs    (iAr), ...
+            timeWindowCenterTt2000 = A.timeWindowCenterTt2000(iAr));
         end
 
         R = vertcat(rCa{:});
@@ -297,6 +283,8 @@ classdef spinfit
     %       Spin phase values
     % samplesAr
     %       Sample values.
+    % timeWindowCenterTt2000
+    %       Center of any one of the time windows.
     % --
     % All arguments are same-length column arrays.
     %
@@ -328,19 +316,19 @@ classdef spinfit
         A.samplesAr
         A.timeWindowPeriodNs
         A.timeWindowLengthNs
-        A.timeWindowReferenceTt2000
+        A.timeWindowCenterTt2000
       end
 
       N_FIT_TERMS                = 3+2;
       N_MAX_FIT_ITERATIONS       = 5;              % TODO: Determine proper value.
       N_MIN_REQUIRED_FIT_SAMPLES = N_FIT_TERMS+3;  % TODO: Determine proper value.
 
-      tt2000Ar                  = A.tt2000Ar;
-      spinPhaseRadAr            = A.spinPhaseRadAr;
-      samplesAr                 = A.samplesAr;
-      timeWindowPeriodNs        = A.timeWindowPeriodNs;
-      timeWindowLengthNs        = A.timeWindowLengthNs;
-      timeWindowReferenceTt2000 = A.timeWindowReferenceTt2000;
+      tt2000Ar               = A.tt2000Ar;
+      spinPhaseRadAr         = A.spinPhaseRadAr;
+      samplesAr              = A.samplesAr;
+      timeWindowPeriodNs     = A.timeWindowPeriodNs;
+      timeWindowLengthNs     = A.timeWindowLengthNs;
+      timeWindowCenterTt2000 = A.timeWindowCenterTt2000;
 
       % ==========
       % ASSERTIONS
@@ -358,9 +346,9 @@ classdef spinfit
       assert(nIn == numel(spinPhaseRadAr))
       assert(nIn == numel(samplesAr))
       %
-      assert(isscalar(timeWindowPeriodNs) & (timeWindowPeriodNs > 0) & isa(timeWindowPeriodNs,        "int64"))
-      assert(isscalar(timeWindowLengthNs) & (timeWindowLengthNs > 0) & isa(timeWindowLengthNs,        "int64"))
-      assert(isscalar(timeWindowReferenceTt2000)                     & isa(timeWindowReferenceTt2000, "int64"))
+      assert(isscalar(timeWindowPeriodNs) & (timeWindowPeriodNs > 0) & isa(timeWindowPeriodNs,     "int64"))
+      assert(isscalar(timeWindowLengthNs) & (timeWindowLengthNs > 0) & isa(timeWindowLengthNs,     "int64"))
+      assert(isscalar(timeWindowCenterTt2000)                        & isa(timeWindowCenterTt2000, "int64"))
 
       % -----------------------------------------
       % DOCUMENTATION COPIED FROM mms_spinfit_m()
@@ -416,11 +404,27 @@ classdef spinfit
         % ============================
         % CASE: Non-empty input arrays
         % ============================
+
+        % ----------------------------------------------------------
+        % Modify timeWindowCenterTt2000 to work with mms_spinfit_m()
+        % ----------------------------------------------------------
+        % IMPLEMENTATION NOTE: mms_spinfit_m() requires "t0" to be within or
+        % close to the submitted timestamps but is unclear what this exactly
+        % means. If it is not, it might crash or add (not NaN) or omit return
+        % values for timestamps for time windows which there are no samples.
+        m = idivide(...
+          tt2000Ar(1) - timeWindowCenterTt2000, ...
+          timeWindowPeriodNs, "FLOOR");
+        timeWindowCenterTt2000 = timeWindowCenterTt2000 + m * timeWindowPeriodNs;
+
+        % --------------------
+        % CALL mms_spinfit_m()
+        % --------------------
         [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(...
           N_MAX_FIT_ITERATIONS, N_MIN_REQUIRED_FIT_SAMPLES, N_FIT_TERMS, ...
           tt2000Ar, samplesAr, spinPhaseRadAr, ...
           timeWindowPeriodNs, timeWindowLengthNs, ...
-          timeWindowReferenceTt2000);
+          timeWindowCenterTt2000);
       end
 
       % =========================================
