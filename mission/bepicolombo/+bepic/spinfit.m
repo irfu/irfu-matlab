@@ -292,6 +292,8 @@ classdef spinfit
     % RETURN VALUES
     % =============
     % Struct with self-explanatory fieldnames. One spin fit per row.
+    % NOTE: Will never return timestamps outside the interval of input
+    %       timestamps.
     %
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -441,16 +443,30 @@ classdef spinfit
       assert(iscolumn(iter)    & (numel(iter)    == nOut))
       assert(iscolumn(nBad)    & (numel(nBad)    == nOut))
 
+      % ==========================================
+      % Determine which output timestamps too keep
+      % ==========================================
+      % IMPLEMENTATION NOTE: It is unclear exactly which output timestamps
+      % mms_spinfit_m() will return. It can vary depending on the choice of
+      % "t0", and timestamps can be both added and removed. This code tries to
+      % handle this problem by removing timestamps outside of input data and
+      % hopefully make the function more "deterministic".
+      if nOut >= 1
+        bKeep = (tt2000Ar(1) <= timeFit) & (timeFit <= tt2000Ar(end));
+      else
+        bKeep = logical.empty(0, 1);
+      end
+
       % =========================
       % Construct return value(s)
       % =========================
       R = struct();
-      R.tt2000Ar          = timeFit;
-      R.offsetAr          = sfit(:, 1);
-      R.coefficientCos1Ar = sfit(:, 2);
-      R.coefficientSin1Ar = sfit(:, 3);
-      R.coefficientCos2Ar = sfit(:, 4);
-      R.coefficientSin2Ar = sfit(:, 5);
+      R.tt2000Ar          = timeFit(bKeep, 1);
+      R.offsetAr          = sfit(   bKeep, 1);
+      R.coefficientCos1Ar = sfit(   bKeep, 2);
+      R.coefficientSin1Ar = sfit(   bKeep, 3);
+      R.coefficientCos2Ar = sfit(   bKeep, 4);
+      R.coefficientSin2Ar = sfit(   bKeep, 5);
     end
 
 
