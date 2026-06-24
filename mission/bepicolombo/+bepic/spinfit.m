@@ -59,9 +59,9 @@ classdef spinfit
   %###########
   properties(Constant)
     % Constants for when using constant-length time windows.
-    TIME_WINDOW_PERIOD_NS              = int64(4e9);
-    TIME_WINDOW_LENGTH_NS              = int64(4e9);
-    TIME_WINDOW_BEGIN_REFERENCE_TT2000 = int64(0);
+    TIME_WINDOW_PERIOD_NS     = int64(4e9);
+    TIME_WINDOW_LENGTH_NS     = int64(4e9);
+    TIME_WINDOW_BEGIN_REFERENCE_TT2000 = int64(0e9);
   end
 
 
@@ -353,7 +353,7 @@ classdef spinfit
       % is an indirect check on the units used.
       assert(all((0 <= spinPhaseRadAr) & (spinPhaseRadAr <= 2*pi)))
       %
-      assert(iscolumn(samplesAr)       & isa(samplesAr,  "double"))
+      assert(iscolumn(samplesAr)       & isa(samplesAr,      "double"))
       nIn = numel(tt2000Ar);
       assert(nIn == numel(spinPhaseRadAr))
       assert(nIn == numel(samplesAr))
@@ -362,9 +362,9 @@ classdef spinfit
       assert(isscalar(timeWindowLengthNs) & (timeWindowLengthNs > 0) & isa(timeWindowLengthNs,        "int64"))
       assert(isscalar(timeWindowReferenceTt2000)                     & isa(timeWindowReferenceTt2000, "int64"))
 
-      % -------------------------------------------
-      % COPIED FROM THE mms_spinfit_m DOCUMENTATION
-      % -------------------------------------------
+      % -----------------------------------------
+      % DOCUMENTATION COPIED FROM mms_spinfit_m()
+      % -----------------------------------------
       % function [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(maxIt, minPts, nTerms, timeData, data, phase, fitEvery, fitInterv, t0)
       %  Compute spinfit coefficients to spinning data. Data is fitted to
       %  function y = A + Bcos(phase) + Csin(phase) + (Dcos(2*phase) +

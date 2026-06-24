@@ -10,16 +10,6 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
 
 
 
-  %#####################
-  %#####################
-  % CONSTANT PROPERTIES
-  %#####################
-  %#####################
-  properties(Constant)
-  end
-
-
-
   %##############
   %##############
   % TEST METHODS
@@ -67,26 +57,6 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
 
 
   end    % methods(Test)
-
-
-
-  %##########################
-  %##########################
-  % PRIVATE INSTANCE METHODS
-  %##########################
-  %##########################
-  methods(Access=private)
-  end    % methods(Access=private)
-
-
-
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
-  end    % methods(Static, Access=private)
 
 
 
