@@ -180,6 +180,9 @@ classdef spinfit
     % dataGapMinNs
     %       Threshold for when a jump in tt2000Ar should count as a data gap.
     %
+    % RETURN VALUES
+    % =============
+    % Table with self-explanatory column names. One row per fit.
     %
     function R = spin_aligned(A)
       % PROPOSAL: Better name
@@ -308,7 +311,7 @@ classdef spinfit
     %
     % RETURN VALUES
     % =============
-    % Struct with self-explanatory fieldnames. One spin fit per row.
+    % Table with self-explanatory column names. One spin fit per row.
     % NOTE: Will never return timestamps outside the interval of input
     %       timestamps.
     %
@@ -477,7 +480,7 @@ classdef spinfit
       % =========================
       % Construct return value(s)
       % =========================
-      R = struct();
+      R = table();
       R.tt2000Ar          = timeFit(bKeep, 1);
       R.offsetAr          = sfit(   bKeep, 1);
       R.coefficientCos1Ar = sfit(   bKeep, 2);
