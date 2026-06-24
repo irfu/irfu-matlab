@@ -258,32 +258,41 @@ classdef spinfit
         % jump-separated segment.
         % =========================================================
         boundaryAr = find(diff(A.tt2000Ar) > A.dataGapMinNs);
-        iBeginAr   = [1; boundaryAr];
-        iEndAr     = [boundaryAr+1; nSamples];
+        iBeginAr   = [1; boundaryAr+1];
+        iEndAr     = [boundaryAr; nSamples];
         nSegments  = numel(iBeginAr);
 
         rCa = cell(nSegments, 1);
         for i = 1:nSegments
           iAr = iBeginAr(i):iEndAr(i);
 
-          rCa{i, 1} = bepic.spinfit.mms_spinfit_wrapper( ...
+          rSegment = bepic.spinfit.mms_spinfit_wrapper( ...
             tt2000Ar               = fakeTt2000Ar    (iAr), ...
             spinPhaseRadAr         = A.spinPhaseRadAr(iAr), ...
             samplesAr              = A.samplesAr     (iAr), ...
             timeWindowPeriodNs     = fakeTimeWindowPeriodNs, ...
             timeWindowLengthNs     = fakeTimeWindowLengthNs, ...
             timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000);
+
+          % ======================================================
+          % Modify the timestamps, from fake TT2000 to true TT2000
+          % ======================================================
+          % IMPLEMENTATION NOTE: Must do this separately for every call to
+          % bepic.spinfit.mms_spinfit_wrapper() in to correctly handle spin
+          % phase values which are (legitimately) identical just before and
+          % after a data gap.
+          outCumulSpinPhaseRadAr = double(rSegment.tt2000Ar) / N;
+          rSegment.tt2000Ar = bepic.spinfit.cumulative_spin_phase_to_TT2000(...
+            A.tt2000Ar         (iAr), ...
+            cumulSpinPhaseRadAr(iAr), ...
+            outCumulSpinPhaseRadAr);
+
+          rCa{i, 1} = rSegment;
         end
 
         R = vertcat(rCa{:});
       end
 
-      % ======================================================
-      % Modify the timestamps, from fake TT2000 to true TT2000
-      % ======================================================
-      outCumulSpinPhaseRadAr = double(R.tt2000Ar) / N;
-      R.tt2000Ar = bepic.spinfit.cumulative_spin_phase_to_TT2000(...
-        A.tt2000Ar, cumulSpinPhaseRadAr, outCumulSpinPhaseRadAr);
     end
 
 
