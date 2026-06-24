@@ -1,6 +1,4 @@
 %
-% UNFINISHED
-%
 % matlab.unittest automatic test code for bepic.spinfit.spin_aligned().
 %
 %
@@ -19,7 +17,7 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_empty(T)
+    function test_all_empty(T)
       actR = bepic.spinfit.spin_aligned( ...
         tt2000Ar            = int64.empty( 0, 1), ...
         spinPhaseRadAr      = double.empty(0, 1), ...
@@ -34,10 +32,12 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
 
 
 
+    % No data gap.
+    % One time window.
     function test_0(T)
       N_IN = 32;
 
-      tt2000Ar       = int64(100e9 + linspace(1.5e9, 3.5e9, N_IN))';
+      tt2000Ar       = int64(linspace(101.5e9, 103.5e9, N_IN))';
       spinPhaseRadAr = wrapTo2Pi(    linspace(  -pi,    pi, N_IN))';
       samplesAr      = 2 ...
         + 3*cos(  spinPhaseRadAr) + 4*sin(  spinPhaseRadAr) ...
