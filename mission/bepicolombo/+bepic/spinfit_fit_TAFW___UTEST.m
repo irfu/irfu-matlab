@@ -57,18 +57,18 @@ classdef spinfit_fit_TAFW___UTEST < matlab.unittest.TestCase
         tt2000Ar       = int64.empty( 0, 1), ...
         spinPhaseRadAr = double.empty(0, 1), ...
         samplesAr      = double.empty(0, 1), ...
-        timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
-        timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
-        timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
+        fitWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
+        fitWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
+        fitWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
         nMinFitSamples         = T.N_MIN_FIT_SAMPLES, ...
         nFitCoefficients       = N_FIT_COEFF);
 
-      T.verifySize(actR.timeWindowCenterTt2000Ar, [0, 1])
-      T.verifySize(actR.stdDeviationAr,           [0, 1])
-      T.verifySize(actR.nBadPoints,               [0, 1])
-      T.verifySize(actR.offsetAr,                 [0, 1])
-      T.verifySize(actR.coefficientCos1Ar,        [0, 1])
-      T.verifySize(actR.coefficientSin1Ar,        [0, 1])
+      T.verifySize(actR.fitWindowCenterTt2000Ar, [0, 1])
+      T.verifySize(actR.stdDeviationAr,          [0, 1])
+      T.verifySize(actR.nBadPoints,              [0, 1])
+      T.verifySize(actR.offsetAr,                [0, 1])
+      T.verifySize(actR.coefficientCos1Ar,       [0, 1])
+      T.verifySize(actR.coefficientSin1Ar,       [0, 1])
 
       switch(N_FIT_COEFF)
         case 3
@@ -83,7 +83,7 @@ classdef spinfit_fit_TAFW___UTEST < matlab.unittest.TestCase
 
 
     % All samples = NaN
-    % Samples in two time windows.
+    % Samples in two fit windows.
     function test_NaN_samples(T, N_FIT_COEFF)
       % PROPOSAL: Vary N_IN.
       N_IN = 30;
@@ -92,14 +92,14 @@ classdef spinfit_fit_TAFW___UTEST < matlab.unittest.TestCase
         tt2000Ar       = int64(linspace(101e9, 107e9, N_IN))', ...
         spinPhaseRadAr = wrapTo2Pi(linspace(pi, 3*pi, N_IN))', ...
         samplesAr      = NaN(N_IN, 1), ...
-        timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
-        timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
-        timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
+        fitWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
+        fitWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
+        fitWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
         nMinFitSamples         = T.N_MIN_FIT_SAMPLES, ...
         nFitCoefficients       = N_FIT_COEFF);
 
       NAN_AR = NaN(2, 1);
-      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([102e9; 106e9]))
+      T.verifyEqual(actR.fitWindowCenterTt2000Ar, int64([102e9; 106e9]))
       T.verifyEqual(actR.stdDeviationAr,           NAN_AR)
       T.verifyEqual(actR.nBadPoints,               [0; 0])
       T.verifyEqual(actR.offsetAr,                 NAN_AR)
@@ -119,7 +119,7 @@ classdef spinfit_fit_TAFW___UTEST < matlab.unittest.TestCase
 
 
     % Samples can be fit perfectly with nonzero values for all coefficients.
-    % Samples in two time windows.
+    % Samples in two fit windows.
     function test_spin_samples_perfect_fit(T)
       % PROPOSAL: Split in three separate test functions.
       %   PROPOSAL: Shared function for calling
@@ -139,37 +139,37 @@ classdef spinfit_fit_TAFW___UTEST < matlab.unittest.TestCase
           tt2000Ar       = tt2000Ar, ...
           spinPhaseRadAr = spinPhaseRadAr, ...
           samplesAr      = samplesAr, ...
-          timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
-          timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
-          timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
+          fitWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
+          fitWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
+          fitWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
           nMinFitSamples         = T.N_MIN_FIT_SAMPLES, ...
           nFitCoefficients       = 5);
       end
 
-      % Timestamps to return two time windows.
+      % Timestamps to return two fit windows.
       actR = test(101e9, 107e9);
 
-      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([102e9; 106e9]))
+      T.verifyEqual(actR.fitWindowCenterTt2000Ar, int64([102e9; 106e9]))
       T.verifyEqual(actR.offsetAr,          [2; 2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3; 3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4; 4], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos2Ar, [5; 5], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin2Ar, [6; 6], AbsTol=1e-13)
 
-      % Timestamps to return only the second time window.
+      % Timestamps to return only the second fit window.
       actR = test(103e9, 107e9);
 
-      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([106e9]))
+      T.verifyEqual(actR.fitWindowCenterTt2000Ar, int64([106e9]))
       T.verifyEqual(actR.offsetAr,          [2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos2Ar, [5], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin2Ar, [6], AbsTol=1e-13)
 
-      % Timestamps to return only the first time window.
+      % Timestamps to return only the first fit window.
       actR = test(101e9, 105e9);
 
-      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([102e9]))
+      T.verifyEqual(actR.fitWindowCenterTt2000Ar, int64([102e9]))
       T.verifyEqual(actR.offsetAr,          [2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4], AbsTol=1e-13)
@@ -180,7 +180,7 @@ classdef spinfit_fit_TAFW___UTEST < matlab.unittest.TestCase
 
 
     % Samples can be fit perfectly with nonzero values for all coefficients.
-    % Samples in two time windows.
+    % Samples in two fit windows.
     function test_spin_samples_too_few(T, N_FIT_COEFF)
       N_IN = 6+6;
 
@@ -192,9 +192,9 @@ classdef spinfit_fit_TAFW___UTEST < matlab.unittest.TestCase
         tt2000Ar       = tt2000Ar, ...
         spinPhaseRadAr = spinPhaseRadAr, ...
         samplesAr      = samplesAr, ...
-        timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
-        timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
-        timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
+        fitWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
+        fitWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
+        fitWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
         nMinFitSamples         = 5+3, ...    % Required for this test.
         nFitCoefficients       = N_FIT_COEFF);
 
