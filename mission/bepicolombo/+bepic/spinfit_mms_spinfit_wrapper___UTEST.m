@@ -23,7 +23,21 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
     TIME_WINDOW_PERIOD_NS     = int64(4e9);
     TIME_WINDOW_LENGTH_NS     = int64(4e9);
     TIME_WINDOW_CENTER_TT2000 = int64(2e9);
-    N_MIN_FIT_SAMPLES         = 5+3;
+    N_MIN_FIT_SAMPLES         = 5+1;
+  end
+
+
+
+  %#################
+  %#################
+  % TEST PARAMETERS
+  %#################
+  %#################
+  % Technically, additional properties of testCase objects with cell array
+  % default values. Test methods with arguments with the same name will be
+  % called once for every element in the cell arrays.
+  properties(TestParameter)
+    N_FIT_COEFF = {3, 5}
   end
 
 
@@ -37,7 +51,8 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_empty_arrays(T)
+    function test_empty_arrays(T, N_FIT_COEFF)
+
       actR = bepic.spinfit.mms_spinfit_wrapper( ...
         tt2000Ar       = int64.empty( 0, 1), ...
         spinPhaseRadAr = double.empty(0, 1), ...
@@ -45,7 +60,8 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
         timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
         timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
-        nMinFitSamples         = T.N_MIN_FIT_SAMPLES);
+        nMinFitSamples         = T.N_MIN_FIT_SAMPLES, ...
+        nFitCoefficients       = N_FIT_COEFF);
 
       T.verifySize(actR.timeWindowCenterTt2000Ar, [0, 1])
       T.verifySize(actR.stdDeviationAr,           [0, 1])
@@ -53,15 +69,22 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
       T.verifySize(actR.offsetAr,                 [0, 1])
       T.verifySize(actR.coefficientCos1Ar,        [0, 1])
       T.verifySize(actR.coefficientSin1Ar,        [0, 1])
-      T.verifySize(actR.coefficientCos2Ar,        [0, 1])
-      T.verifySize(actR.coefficientSin2Ar,        [0, 1])
+
+      switch(N_FIT_COEFF)
+        case 3
+          T.verifyTrue(~ismember("coefficientCos2Ar", actR.Properties.VariableNames))
+          T.verifyTrue(~ismember("coefficientSin2Ar", actR.Properties.VariableNames))
+        case 5
+          T.verifySize(actR.coefficientCos2Ar,    [0, 1])
+          T.verifySize(actR.coefficientSin2Ar,    [0, 1])
+      end
     end
 
 
 
     % All samples = NaN
     % Samples in two time windows.
-    function test_NaN_samples(T)
+    function test_NaN_samples(T, N_FIT_COEFF)
       % PROPOSAL: Vary N_IN.
       N_IN = 30;
 
@@ -72,7 +95,8 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
         timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
         timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
-        nMinFitSamples         = T.N_MIN_FIT_SAMPLES);
+        nMinFitSamples         = T.N_MIN_FIT_SAMPLES, ...
+        nFitCoefficients       = N_FIT_COEFF);
 
       NAN_AR = NaN(2, 1);
       T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([102e9; 106e9]))
@@ -81,8 +105,15 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
       T.verifyEqual(actR.offsetAr,                 NAN_AR)
       T.verifyEqual(actR.coefficientCos1Ar,        NAN_AR)
       T.verifyEqual(actR.coefficientSin1Ar,        NAN_AR)
-      T.verifyEqual(actR.coefficientCos2Ar,        NAN_AR)
-      T.verifyEqual(actR.coefficientSin2Ar,        NAN_AR)
+
+      switch(N_FIT_COEFF)
+        case 3
+          T.verifyTrue(~ismember("coefficientCos2Ar", actR.Properties.VariableNames))
+          T.verifyTrue(~ismember("coefficientSin2Ar", actR.Properties.VariableNames))
+        case 5
+          T.verifyEqual(actR.coefficientCos2Ar,    NAN_AR)
+          T.verifyEqual(actR.coefficientSin2Ar,    NAN_AR)
+      end
     end
 
 
@@ -111,7 +142,8 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
           timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
           timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
           timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
-          nMinFitSamples         = T.N_MIN_FIT_SAMPLES);
+          nMinFitSamples         = T.N_MIN_FIT_SAMPLES, ...
+          nFitCoefficients       = 5);
       end
 
       % Timestamps to return two time windows.
@@ -149,7 +181,7 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
 
     % Samples can be fit perfectly with nonzero values for all coefficients.
     % Samples in two time windows.
-    function test_spin_samples_too_few(T)
+    function test_spin_samples_too_few(T, N_FIT_COEFF)
       N_IN = 6+6;
 
       tt2000Ar       = int64(linspace(1e9, 7e9, N_IN))';
@@ -163,14 +195,22 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         timeWindowPeriodNs     = T.TIME_WINDOW_PERIOD_NS, ...
         timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
         timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000, ...
-        nMinFitSamples         = T.N_MIN_FIT_SAMPLES);
+        nMinFitSamples         = 5+3, ...    % Required for this test.
+        nFitCoefficients       = N_FIT_COEFF);
 
       NAN_AR = NaN(2, 1);
       T.verifyEqual(actR.offsetAr,          NAN_AR, AbsTol=1e-15)
       T.verifyEqual(actR.coefficientCos1Ar, NAN_AR, AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, NAN_AR, AbsTol=1e-13)
-      T.verifyEqual(actR.coefficientCos2Ar, NAN_AR, AbsTol=1e-13)
-      T.verifyEqual(actR.coefficientSin2Ar, NAN_AR, AbsTol=1e-13)
+      switch(N_FIT_COEFF)
+        case 3
+          T.verifyTrue(~ismember("coefficientCos2Ar", actR.Properties.VariableNames))
+          T.verifyTrue(~ismember("coefficientSin2Ar", actR.Properties.VariableNames))
+        case 5
+          T.verifyEqual(actR.coefficientCos2Ar, NAN_AR, AbsTol=1e-13)
+          T.verifyEqual(actR.coefficientSin2Ar, NAN_AR, AbsTol=1e-13)
+      end
+
     end
 
 

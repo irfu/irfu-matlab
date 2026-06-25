@@ -225,6 +225,8 @@ classdef spinfit
     %       timeWindowCenterRad + n * timeWindowPeriodRad, n=integer.
     % nMinFitSamples
     %       Minimum number of samples required for a fit.
+    % nFitCoefficients
+    %       Number of fit coefficients to use: 3 or 5.
     % dataGapMinNs
     %       Threshold for when a jump in tt2000Ar should count as a data gap.
     %
@@ -251,6 +253,7 @@ classdef spinfit
         A.timeWindowLengthRad
         A.timeWindowCenterRad
         A.nMinFitSamples
+        A.nFitCoefficients
         A.dataGapMinNs
       end
 
@@ -308,8 +311,9 @@ classdef spinfit
           samplesAr              = A.samplesAr, ...
           timeWindowPeriodNs     = fakeTimeWindowPeriodNs, ...
           timeWindowLengthNs     = fakeTimeWindowLengthNs, ...
+          timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000, ...
           nMinFitSamples         = A.nMinFitSamples, ...
-          timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000);
+          nFitCoefficients       = A.nFitCoefficients);
       else
         % =========================================================
         % Identify indices defining the beginning and end of a time
@@ -330,8 +334,9 @@ classdef spinfit
             samplesAr              = A.samplesAr     (iAr), ...
             timeWindowPeriodNs     = fakeTimeWindowPeriodNs, ...
             timeWindowLengthNs     = fakeTimeWindowLengthNs, ...
+            timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000, ...
             nMinFitSamples         = A.nMinFitSamples, ...
-            timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000);
+            nFitCoefficients       = A.nFitCoefficients);
 
           % ======================================================
           % Modify the timestamps, from fake TT2000 to true TT2000
@@ -389,6 +394,8 @@ classdef spinfit
     %       timeWindowCenterTt2000 + n * timeWindowPeriodNs, n=integer.
     % nMinFitSamples
     %       Minimum number of samples required for a fit.
+    % nFitCoefficients
+    %       Number of fit coefficients to use: 3 or 5.
     %
     %
     % RETURN VALUES
@@ -416,9 +423,9 @@ classdef spinfit
         A.timeWindowLengthNs
         A.timeWindowCenterTt2000
         A.nMinFitSamples
+        A.nFitCoefficients
       end
 
-      N_FIT_TERMS          = 3+2;
       N_MAX_FIT_ITERATIONS = 5;              % TODO: Determine proper value.
 
       % ==========
@@ -431,6 +438,7 @@ classdef spinfit
       assert(isscalar(A.timeWindowLengthNs)     & isa(A.timeWindowLengthNs,     "int64"))
       assert(isscalar(A.timeWindowCenterTt2000) & isa(A.timeWindowCenterTt2000, "int64"))
       assert(isscalar(A.nMinFitSamples))
+      assert(isscalar(A.nFitCoefficients))
       %
       nIn = numel(A.tt2000Ar);
       assert(nIn == numel(A.spinPhaseRadAr))
@@ -446,6 +454,7 @@ classdef spinfit
       %
       assert(A.timeWindowPeriodNs > 0)
       assert(A.timeWindowLengthNs > 0)
+      assert(ismember(A.nFitCoefficients, [3, 5]))   % NOTE: Does not support 7!
 
       % -----------------------------------------
       % DOCUMENTATION COPIED FROM mms_spinfit_m()
@@ -492,8 +501,10 @@ classdef spinfit
         % not call it for this case.
         % Ex: [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(5, 5+1, 5, int64.empty(0, 1), double.empty(0, 1), double.empty(0, 1), 4e9, 4e9, 0)
 
+        % Create the equivalent of return values from mms_spinfit_m(), but
+        % empty.
         timeFit = int64.empty( 0, 1);
-        sfit    = double.empty(0, 5);
+        sfit    = double.empty(0, A.nFitCoefficients);
         sdev    = double.empty(0, 1);
         iter    = double.empty(0, 1);
         nBad    = double.empty(0, 1);
@@ -527,7 +538,7 @@ classdef spinfit
         % coefficients.
         % Ex: n=25*4+24; i=1:n; tt2000Ar=int64(linspace(0.1e9, 99.8e9, n)); spinRad=double(tt2000Ar)/4e9; ; samplesAr=3+4*cos(spinRad)+5*sin(spinRad); [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(5, 3+1, 3, tt2000Ar(i), samplesAr(i), spinRad(i), 4e9, 4e9, 2e9)
         [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(...
-          N_MAX_FIT_ITERATIONS, A.nMinFitSamples, N_FIT_TERMS, ...
+          N_MAX_FIT_ITERATIONS, A.nMinFitSamples, A.nFitCoefficients, ...
           A.tt2000Ar, A.samplesAr, A.spinPhaseRadAr, ...
           A.timeWindowPeriodNs, A.timeWindowLengthNs, ...
           modifTimeWindowCenterTt2000);
@@ -541,11 +552,11 @@ classdef spinfit
       % return values are consistent with the non-emulated ones.
       assert(isa(timeFit, "int64"))
       nOut = numel(timeFit);
-      assert(iscolumn(timeFit) & (numel(timeFit) == nOut))
-      assert(isequal(size(sfit), [nOut, N_FIT_TERMS]))
-      assert(iscolumn(sdev)    & (numel(sdev)    == nOut))
-      assert(iscolumn(iter)    & (numel(iter)    == nOut))
-      assert(iscolumn(nBad)    & (numel(nBad)    == nOut))
+      assert(isequal(size(timeFit), [nOut, 1]))
+      assert(isequal(size(sfit), [nOut, A.nFitCoefficients]))
+      assert(isequal(size(sdev), [nOut, 1]))
+      assert(isequal(size(iter), [nOut, 1]))
+      assert(isequal(size(nBad), [nOut, 1]))
 
       % ==========================================
       % Determine which output timestamps too keep
@@ -571,8 +582,10 @@ classdef spinfit
       R.offsetAr                 = sfit(   bKeep, 1);
       R.coefficientCos1Ar        = sfit(   bKeep, 2);
       R.coefficientSin1Ar        = sfit(   bKeep, 3);
-      R.coefficientCos2Ar        = sfit(   bKeep, 4);
-      R.coefficientSin2Ar        = sfit(   bKeep, 5);
+      if A.nFitCoefficients >= 5
+        R.coefficientCos2Ar      = sfit(   bKeep, 4);
+        R.coefficientSin2Ar      = sfit(   bKeep, 5);
+      end
     end
 
 
