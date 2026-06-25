@@ -46,12 +46,12 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         timeWindowLengthNs     = T.TIME_WINDOW_LENGTH_NS, ...
         timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000);
 
-      T.verifySize(actR.tt2000Ar,          [0, 1])
-      T.verifySize(actR.offsetAr,          [0, 1])
-      T.verifySize(actR.coefficientCos1Ar, [0, 1])
-      T.verifySize(actR.coefficientSin1Ar, [0, 1])
-      T.verifySize(actR.coefficientCos2Ar, [0, 1])
-      T.verifySize(actR.coefficientSin2Ar, [0, 1])
+      T.verifySize(actR.timeWindowCenterTt2000Ar, [0, 1])
+      T.verifySize(actR.offsetAr,                 [0, 1])
+      T.verifySize(actR.coefficientCos1Ar,        [0, 1])
+      T.verifySize(actR.coefficientSin1Ar,        [0, 1])
+      T.verifySize(actR.coefficientCos2Ar,        [0, 1])
+      T.verifySize(actR.coefficientSin2Ar,        [0, 1])
     end
 
 
@@ -71,12 +71,12 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000);
 
       NAN_AR = NaN(2, 1);
-      T.verifyEqual(actR.tt2000Ar,          int64([102e9; 106e9]))
-      T.verifyEqual(actR.offsetAr,          NAN_AR)
-      T.verifyEqual(actR.coefficientCos1Ar, NAN_AR)
-      T.verifyEqual(actR.coefficientSin1Ar, NAN_AR)
-      T.verifyEqual(actR.coefficientCos2Ar, NAN_AR)
-      T.verifyEqual(actR.coefficientSin2Ar, NAN_AR)
+      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([102e9; 106e9]))
+      T.verifyEqual(actR.offsetAr,                 NAN_AR)
+      T.verifyEqual(actR.coefficientCos1Ar,        NAN_AR)
+      T.verifyEqual(actR.coefficientSin1Ar,        NAN_AR)
+      T.verifyEqual(actR.coefficientCos2Ar,        NAN_AR)
+      T.verifyEqual(actR.coefficientSin2Ar,        NAN_AR)
     end
 
 
@@ -110,7 +110,7 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
       % Timestamps to return two time windows.
       actR = test(101e9, 107e9);
 
-      T.verifyEqual(actR.tt2000Ar,          int64([102e9; 106e9]))
+      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([102e9; 106e9]))
       T.verifyEqual(actR.offsetAr,          [2; 2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3; 3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4; 4], AbsTol=1e-13)
@@ -120,7 +120,7 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
       % Timestamps to return only the second time window.
       actR = test(103e9, 107e9);
 
-      T.verifyEqual(actR.tt2000Ar,          int64([106e9]))
+      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([106e9]))
       T.verifyEqual(actR.offsetAr,          [2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4], AbsTol=1e-13)
@@ -130,7 +130,7 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
       % Timestamps to return only the first time window.
       actR = test(101e9, 105e9);
 
-      T.verifyEqual(actR.tt2000Ar,          int64([102e9]))
+      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([102e9]))
       T.verifyEqual(actR.offsetAr,          [2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4], AbsTol=1e-13)

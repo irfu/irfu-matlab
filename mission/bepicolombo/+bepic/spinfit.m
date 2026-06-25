@@ -288,8 +288,8 @@ classdef spinfit
           % bepic.spinfit.mms_spinfit_wrapper() in to correctly handle spin
           % phase values which are (legitimately) identical just before and
           % after a data gap.
-          outCumulSpinPhaseRadAr = double(rSegment.tt2000Ar) / N;
-          rSegment.tt2000Ar = bepic.spinfit.cumulative_spin_phase_to_TT2000(...
+          outCumulSpinPhaseRadAr = double(rSegment.timeWindowCenterTt2000Ar) / N;
+          rSegment.timeWindowCenterTt2000Ar = bepic.spinfit.cumulative_spin_phase_to_TT2000(...
             A.tt2000Ar         (iAr), ...
             cumulSpinPhaseRadAr(iAr), ...
             outCumulSpinPhaseRadAr);
@@ -499,12 +499,12 @@ classdef spinfit
       % Construct return value(s)
       % =========================
       R = table();
-      R.tt2000Ar          = timeFit(bKeep, 1);
-      R.offsetAr          = sfit(   bKeep, 1);
-      R.coefficientCos1Ar = sfit(   bKeep, 2);
-      R.coefficientSin1Ar = sfit(   bKeep, 3);
-      R.coefficientCos2Ar = sfit(   bKeep, 4);
-      R.coefficientSin2Ar = sfit(   bKeep, 5);
+      R.timeWindowCenterTt2000Ar = timeFit(bKeep, 1);
+      R.offsetAr                 = sfit(   bKeep, 1);
+      R.coefficientCos1Ar        = sfit(   bKeep, 2);
+      R.coefficientSin1Ar        = sfit(   bKeep, 3);
+      R.coefficientCos2Ar        = sfit(   bKeep, 4);
+      R.coefficientSin2Ar        = sfit(   bKeep, 5);
     end
 
 

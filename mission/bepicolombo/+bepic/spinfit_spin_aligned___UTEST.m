@@ -27,7 +27,7 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
         timeWindowCenterRad = pi, ...
         dataGapMinNs        = int64(1));
 
-      T.assertEqual(actR.tt2000Ar, int64.empty(0, 1))
+      T.assertEqual(actR.timeWindowCenterTt2000Ar, int64.empty(0, 1))
     end
 
 
@@ -52,7 +52,7 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
         timeWindowCenterRad = pi, ...
         dataGapMinNs        = int64(10e9));
 
-      T.assertEqual(actR.tt2000Ar,          int64([102.5e9]))
+      T.assertEqual(actR.timeWindowCenterTt2000Ar, int64([102.5e9]))
       T.verifyEqual(actR.offsetAr,          [2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4], AbsTol=1e-13)
@@ -82,7 +82,7 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
         timeWindowCenterRad = pi, ...
         dataGapMinNs        = int64(10e9));
 
-      T.assertEqual(actR.tt2000Ar,          int64([101e9; 103e9]))
+      T.assertEqual(actR.timeWindowCenterTt2000Ar, int64([101e9; 103e9]))
       T.verifyEqual(actR.offsetAr,          [2; 2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3; 3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4; 4], AbsTol=1e-13)
@@ -112,7 +112,7 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
         timeWindowCenterRad = pi, ...
         dataGapMinNs        = int64(10e9));
 
-      T.assertEqual(actR.tt2000Ar,          int64([101e9; 109e9]))
+      T.assertEqual(actR.timeWindowCenterTt2000Ar, int64([101e9; 109e9]))
       T.verifyEqual(actR.offsetAr,          [2; 2], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, [3; 3], AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, [4; 4], AbsTol=1e-13)
@@ -154,7 +154,7 @@ classdef spinfit_spin_aligned___UTEST < matlab.unittest.TestCase
         dataGapMinNs        = int64(1e9));
 
       N = ones(4, 1);
-      T.verifyEqual(actR.tt2000Ar,          int64([101e9; 105e9; 203e9; 207e9]))
+      T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([101e9; 105e9; 203e9; 207e9]))
       T.verifyEqual(actR.offsetAr,          2*N, AbsTol=1e-13)
       T.verifyEqual(actR.coefficientCos1Ar, 3*N, AbsTol=1e-13)
       T.verifyEqual(actR.coefficientSin1Ar, 4*N, AbsTol=1e-13)
