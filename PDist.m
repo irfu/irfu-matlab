@@ -701,6 +701,8 @@ classdef PDist < TSeries
       % Calculate phase space volume of FPI bins.
       %
       % Get partial density by doing: dn = pdist*pdist.d3v;
+      % Units are the same as the units of the underlying PDist. E.g.,. if
+      % PDist.units = 's^3/cm^6', then the units of d3v is cm^3/s^3.
       %
       %   Options:
       %     'scpot',scpot - Corrects for spacecraft potential. For better
@@ -758,7 +760,7 @@ classdef PDist < TSeries
       nAz = numel(obj.depend{2}(1,:));
 
       % Calculate velocity volume of FPI bin
-      % int(sin(th)dth) -> x = -cos(th), dx = sin(th)dth -> int(dx) -> x = [-cos(th2) + cos(th1)] = [cos(th1) - cos(th1)]      
+      % int(sin(th)dth) -> x = -cos(th), dx = sin(th)dth -> int(dx) -> x = [-cos(th2) + cos(th1)] = [cos(th1) - cos(th1)]
       bin_edge_polar = [obj.depend{3} - 0.5*mean(diff(obj.depend{3})) obj.depend{3}(end) + 0.5*mean(diff(obj.depend{3}))];
       d_polar = cosd(bin_edge_polar(1:(end-1))) - cosd(bin_edge_polar(2:end));
       d_polar_mat = zeros(size(obj.data));
@@ -3536,7 +3538,7 @@ classdef PDist < TSeries
       % PDIST.FIND_LOW_COUNTS Finds indices or energy limits of low counts.
       %   Based on the total counts for each energy level.
       %
-      %   Use in combination with PDist.mask to replace energy levels with 
+      %   Use in combination with PDist.mask to replace energy levels with
       %   low counts with nans.
       %
       %   Usage:
@@ -3546,11 +3548,11 @@ classdef PDist < TSeries
       %     Remove noise with PDist.mask:
       %     pd_mat = iPDist.mask('energy','mat',mat);
       %     pd_en = iPDist.mask('energy','max',en);
-      %   
+      %
       %   Input:
       %     'count': integer value, used as: remove find(counts<value)
       %     'nMovMean': Apply a moving window average to smooth data. Can
-      %         be a single value to mean over time, or a 2 value array to 
+      %         be a single value to mean over time, or a 2 value array to
       %         mean over times and energies.
       %     'output': 'energy' - 1 energy for each time, when the sum of
       %                          counts for each energy level is below the
@@ -3558,8 +3560,8 @@ classdef PDist < TSeries
       %               'mat' - 2D array [nt x nE] of ones or zeros, ones
       %                       when the sum of counts for that energy and
       %                       time is below the limit
-     
-                  
+
+
 
 
       % Default
@@ -3596,29 +3598,29 @@ classdef PDist < TSeries
 
       PD = obj;
       counts = nansum(PD.data(:,:,:),3); % Sum over all angles
-      counts = movmean(counts,nMovMean,1); % Smooths the results a bit      
-      
+      counts = movmean(counts,nMovMean,1); % Smooths the results a bit
+
        switch output
           case 'mat'
             mask = zeros(size(counts));
             mask(find(counts<limCounts)) = 1;
             out = mask;
-          case 'energy'            
+          case 'energy'
             mask = zeros(PD.length,1);
             for it = 1:PD.length
-              idx_nan_tmp = find(counts(it,:)>limCounts,1,'first'); % Find first instance when value is above the given limit.              
+              idx_nan_tmp = find(counts(it,:)>limCounts,1,'first'); % Find first instance when value is above the given limit.
               if isempty(idx_nan_tmp)
                 idx_nan(it) = NaN;
                 mask(it) = NaN;
               else
                 idx_nan(it) = idx_nan_tmp;
                 mask(it) = PD.depend{1}(it,idx_nan(it));
-              end              
-            end    
+              end
+            end
             out = irf.ts_scalar(PD.time,mask);
         end
 
-   
+
     end
     function PD = mask(obj,varargin)
       % PDIST.MASK Replaces data with NaN.
@@ -3636,9 +3638,9 @@ classdef PDist < TSeries
       %   data = nansum(PD_counts.data(:,:,:),3);
       %   data = movmean(data,[5 5],1);
       %   mask = zeros(size(data));
-      %   mask(find(data<5)) = 1;      
+      %   mask(find(data<5)) = 1;
       %   pd = iPDist.mask('energy','mat',mask);
-      %   
+      %
       %   % Mask all energies below the energy in tsElow
       %   tsElow = iPDist_counts.find_noise_energy_limit_counts(5,nMovMean);
       %   pd = iPDist.mask('energy','max',tsElow);
@@ -3679,7 +3681,7 @@ classdef PDist < TSeries
 
       iDep = find(cellfun(@(s) strcmp(s,rep),obj.representation));
 
-      for it = 1:obj.length        
+      for it = 1:obj.length
         switch meth
           case {'mat','idx','ind','index'}
             switch iDep
@@ -3693,7 +3695,7 @@ classdef PDist < TSeries
           case 'max'
             rem = find(obj.depend{iDep}(1,:)<limit(it,:));
             switch iDep
-              case 1                
+              case 1
                 data(it,rem,:) = NaN;
               case 2
                 data(it,:,rem,:) = NaN;
@@ -3703,7 +3705,7 @@ classdef PDist < TSeries
           case 'min'
             rem = find(obj.depend{iDep}(1,:)>limit(it,:));
             switch iDep
-              case 1                
+              case 1
                 data(it,rem,:) = NaN;
               case 2
                 data(it,:,rem,:) = NaN;
@@ -4145,6 +4147,23 @@ classdef PDist < TSeries
           error('Units not supported.');
       end
     end
+    function TS = SI(obj)
+      % PDIST.SI Convert to SI units using property PDist.siConversion
+      % Implemented: 's^3/cm^6'
+      TS = obj;
+      switch TS.units
+        case 's^3/cm^6'
+          if isscalar(TS.siConversion)
+            TS.data = TS.data*TS.siConversion;
+          elseif ischar(TS.siConversion) || isstring(TS.siConversion)
+            TS.data = TS.data*str2num(TS.siConversion);
+          end
+          TS.units = 's^3/m^6';
+          TS.siConversion = '1';
+        otherwise
+          disp('SI conversion not implemented.')
+      end
+    end
     function PD = pitchangles(obj,obj1,obj2,varargin) %,method
       %PITCHANGLES Calculate pitchangle distribution
       % PitchangleDistribution = Distribution.pitchangles(B,[nangles])
@@ -4516,12 +4535,15 @@ classdef PDist < TSeries
       % Phase space density of each cell, can be different units depending
       % on original PDist
       f = obj.data;
+
       % Phase space volume of each cell, same base length and time units as f
       if doScpot
-        vol = obj.d3v('scpot',scpot).data;
+        ts_vol = obj.d3v('scpot',scpot);
       else
-        vol = obj.d3v.data;
+        ts_vol = obj.d3v;
       end
+      vol = ts_vol.data;
+      dv_units = ts_vol.units;
 
       % Assign a method of how the particles should be
       % divided/partitioned amongst the cells.
@@ -4529,7 +4551,7 @@ classdef PDist < TSeries
         case {'dn','fdv','f*dv'} % Proportional to the partial density of each cell.
           % The sum of out.dn should give the particle density
           % rounds up
-          dn = f.*vol;
+          dn = f.*vol; % units of input * (km/s)^2
           f_round = @(x) ceil(x);
         case {'f'} % Proportional to f, rounds up
           dn = f;
@@ -4564,7 +4586,7 @@ classdef PDist < TSeries
       % Partial density for each macroparticle
       dn_part = dn./Ntmp_round;
       df_part = f;%./Ntmp_round; % this should be the same as the bin value, but the dv should be divided by N
-      dv_part = vol./Ntmp_round;     
+      dv_part = vol./Ntmp_round;
 
       % n_frac = 0 divided by Ntmp_roundup = 0 gives NaN
       dn_part(isnan(dn_part)) = 0;
@@ -4632,7 +4654,7 @@ classdef PDist < TSeries
                 case 'random'
                   tmp_energy = energy_minus(it,iEnergy) + denergy(it,iEnergy)*rand(N_bin,1); % eV
                   tmp_azim   = azim_minus(iAzim)        + dazim*rand(N_bin,1);   % deg
-                  tmp_polar  = polar_minus(iPolar)      + dpolar*rand(N_bin,1);  % deg
+                  tmp_polar  = polar_minus(iPolar)      + dpolar*rand(N_bin,1);  % deg, need to change to the proper initialization here, like in reduce
                   tmp_v = sqrt(tmp_energy*units.eV*2/mass)/1000; % km/s
 
 
@@ -4697,11 +4719,14 @@ classdef PDist < TSeries
         %switch Ntot_division
         %  case 'counts'
         %    p(it).dc = df_all(1:i_part_count-1);
-        %  otherwise        
+        %  otherwise
             p(it).df = df_all(1:i_part_count-1);
             p(it).dv = dv_all(1:i_part_count-1);
         %end
       end % end time loop
+      p(it).df_units = obj.units;
+      p(it).dv_units = dv_units;
+      p(it).v_units = 'km/s';
       particles = p;
     end
     %     function e = energy(obj)
@@ -5034,6 +5059,16 @@ classdef PDist < TSeries
       pmat(:,3,2) = pmat(:,2,3);
 
       TS = irf.ts_tensor_xyz(obj.time,pmat);
+    end
+    function TS = T(obj,varargin)
+      units = irf_units;
+      P = obj.p;
+      n = obj.n;
+      T_si = P*1e-9/(n*1e6);
+      T_eV = T_si/units.eV;
+      T_eV.units = 'eV';
+      TS = T_eV;
+
     end
     function varargout = remove_noise(obj,nMean,nThresh,PD_counts)
       % PDIST.REMOVE_NOISE

@@ -27,8 +27,8 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SBDA_wo_margins___empty(testCase)
-      testCase.test_SBDA_wo_margins(struct(...
+    function test_SBDA_wo_margins___empty(T)
+      T.test_SBDA_wo_margins(struct(...
         'Data',          ones(0, 3), ...
         'sbdaEndTt2000', 10000 ...
         ));
@@ -36,8 +36,8 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SBDA_wo_margins___simple_detection(testCase)
-      testCase.test_SBDA_wo_margins(struct(...
+    function test_SBDA_wo_margins___simple_detection(T)
+      T.test_SBDA_wo_margins(struct(...
         'Data', [...
         10, 0,   0; ...
         11, 0,   0; ...
@@ -56,8 +56,8 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SBDA_wo_margins___SBDA_end_nondetection(testCase)
-      testCase.test_SBDA_wo_margins(struct(...
+    function test_SBDA_wo_margins___SBDA_end_nondetection(T)
+      T.test_SBDA_wo_margins(struct(...
         'Data', [...
         10, 0,   0; ...
         11, 0,   0; ...
@@ -76,8 +76,8 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SBDA_wo_margins___SBDA_end_detection_nondetection(testCase)
-      testCase.test_SBDA_wo_margins(struct(...
+    function test_SBDA_wo_margins___SBDA_end_detection_nondetection(T)
+      T.test_SBDA_wo_margins(struct(...
         'Data', [...
         10, 0,   0; ...
         11, 0,   0; ...
@@ -102,8 +102,8 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SCDA_wo_margins___empty(testCase)
-      testCase.test_SCDA_wo_margins(struct( ...
+    function test_SCDA_wo_margins___empty(T)
+      T.test_SCDA_wo_margins(struct( ...
         'Data',                     zeros(0, 6), ...
         'sbdaEndTt2000',            11, ...
         'windowLengthHkCdfRecords',  2, ...
@@ -113,10 +113,10 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SCDA_wo_margins___BDM0_nondetection(testCase)
+    function test_SCDA_wo_margins___BDM0_nondetection(T)
       % BDM=0 ==> No sweeps.
       % After SBDA/SCDA boundary.
-      testCase.test_SCDA_wo_margins(struct( ...
+      T.test_SCDA_wo_margins(struct( ...
         'Data', [...
         10, 0,   1, 2, 3,   0; ...
         11, 0,   1, 2, 3,   0; ...
@@ -133,7 +133,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SCDA_wo_margins___detection(testCase)
+    function test_SCDA_wo_margins___detection(T)
       % Test detection on different channels.
 
       S1 = struct( ...
@@ -154,17 +154,17 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
       S3 = S1;
       S3.Data = S1.Data(:, [1,2,   5,3,4,   6]);
 
-      testCase.test_SCDA_wo_margins(S1)
-      testCase.test_SCDA_wo_margins(S2)
-      testCase.test_SCDA_wo_margins(S3)
+      T.test_SCDA_wo_margins(S1)
+      T.test_SCDA_wo_margins(S2)
+      T.test_SCDA_wo_margins(S3)
     end
 
 
 
-    function test_SCDA_wo_margins___SBDA_SCDA_boundary_nondetection(testCase)
+    function test_SCDA_wo_margins___SBDA_SCDA_boundary_nondetection(T)
       % BDM=4            ==> Can have sweeps.
       % Before boundary. ==> No sweeps.
-      testCase.test_SCDA_wo_margins(struct( ...
+      T.test_SCDA_wo_margins(struct( ...
         'Data', [...
         16, 4,   1, 2, 3,   0; ...
         17, 4,   1, 2, 3,   0; ...
@@ -181,9 +181,9 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SCDA_wo_margins___on_BDM_boundary_detection(testCase)
+    function test_SCDA_wo_margins___on_BDM_boundary_detection(T)
       % Sweep candidate on BDM boundary ==> Some data removed.
-      testCase.test_SCDA_wo_margins(struct( ...
+      T.test_SCDA_wo_margins(struct( ...
         'Data', [...
         17, 0,   1, 2, 3,   0; ...
         18, 0,   1, 2, 3,   0; ...
@@ -200,9 +200,9 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SCDA_wo_margins___on_SBDA_SCDA_boundary_detection(testCase)
+    function test_SCDA_wo_margins___on_SBDA_SCDA_boundary_detection(T)
       % Sweep candidate on SBDM/SCDA boundary ==> Some (window) data removed.
-      testCase.test_SCDA_wo_margins(struct( ...
+      T.test_SCDA_wo_margins(struct( ...
         'Data', [...
         16, 4,   1, 2, 3,   0; ...
         17, 4,   1, 2, 3,   0; ...
@@ -221,9 +221,9 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SCDA_wo_margins___too_long_window_nondetection(testCase)
+    function test_SCDA_wo_margins___too_long_window_nondetection(T)
       % Sweep windows longer than data. ==> No sweep.
-      testCase.test_SCDA_wo_margins(struct( ...
+      T.test_SCDA_wo_margins(struct( ...
         'Data', [...
         16, 4,   1, 2, 3,   0; ...
         17, 4,   1, 2, 3,   0; ...
@@ -247,7 +247,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
     % SCDA. BDM=0 (non-sweep). Exceed threshold. ==> Still no sweep
-    function test_SBDA_SCDA_with_margins___SCDA_BDM0_exceed_MM_diff(testCase)
+    function test_SBDA_SCDA_with_margins___SCDA_BDM0_exceed_MM_diff(T)
       DATA = [ ...
         10, 4,   2, 3, 1,   0; ...
         11, 0,   2, 3, 5,   0; ...
@@ -261,14 +261,14 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
       S.currentMmDiffMinTm       = 3;
       S.windowMarginSec          = 0;
       S.expIsSweeping            =       DATA(:, 6);
-      testCase.test_SBDA_SCDA_with_margins(S)
+      T.test_SBDA_SCDA_with_margins(S)
     end
 
 
 
     % SCDA, BDM=4.
     % Test window margin.
-    function test_SBDA_SCDA_with_margins___SCDA_BDM4_window_margin(testCase)
+    function test_SBDA_SCDA_with_margins___SCDA_BDM4_window_margin(T)
       DATA = [ ...
         1, 4,   1, 4, 7,   0; ...
         2, 4,   1, 4, 7,   1; ...   % Set due to margin
@@ -288,12 +288,12 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
       S.currentMmDiffMinTm       = 2;
       S.windowMarginSec          = 1.1e-9;
       S.expIsSweeping            =       DATA(:, 6);
-      testCase.test_SBDA_SCDA_with_margins(S)
+      T.test_SBDA_SCDA_with_margins(S)
     end
 
 
 
-    function test_SBDA_SCDA_with_margins___complex(testCase)
+    function test_SBDA_SCDA_with_margins___complex(T)
       DATA = [ ...
         1,  0,   1, 2, 3,   0; ...
         2,  4,   3, 0, 5,   1; ...   % BDM=4
@@ -316,7 +316,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
       S.currentMmDiffMinTm       = 3;
       S.windowMarginSec          = 0;
       S.expIsSweeping            =       DATA(:, 6);
-      testCase.test_SBDA_SCDA_with_margins(S)
+      T.test_SBDA_SCDA_with_margins(S)
     end
 
 
@@ -334,7 +334,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_SBDA_wo_margins(testCase, S)
+    function test_SBDA_wo_margins(T, S)
       assert(size(S.Data, 2) == 3)
       tt2000            =         S.Data(:, 1);
       bdm               =         S.Data(:, 2);
@@ -347,12 +347,12 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
       Bso.make_read_only()
 
       actIsSweepingSbda = bicas.proc.L1L2.swpdet.SBDA_wo_margins(tt2000, bdmFpa, Bso);
-      testCase.assertEqual(actIsSweepingSbda, expIsSweepingSbda)
+      T.assertEqual(actIsSweepingSbda, expIsSweepingSbda)
     end
 
 
 
-    function test_SCDA_wo_margins(testCase, S)
+    function test_SCDA_wo_margins(T, S)
       assert(size(S.Data, 2) == 6)
       tt2000            =         S.Data(:, 1);
       bdm               =         S.Data(:, 2);
@@ -371,7 +371,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
       % CALL TESTED FUNCTION
       actIsSweepingScda = bicas.proc.L1L2.swpdet.SCDA_wo_margins(tt2000, bdmFpa, hkBiasCurrentFpa, Bso);
 
-      testCase.assertEqual(actIsSweepingScda, expIsSweepingScda)
+      T.assertEqual(actIsSweepingScda, expIsSweepingScda)
     end
 
 
@@ -382,7 +382,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
     % force the caller to explicitly name the separate arguments. ==> Saves
     % confusion and comments.
     %
-    function test_SBDA_SCDA_with_margins(testCase, S)
+    function test_SBDA_SCDA_with_margins(T, S)
       assert(issorted(S.tt2000), 'ascend')
       assert(isa(S.expIsSweeping, 'double'))
 
@@ -401,7 +401,7 @@ classdef swpdet___UTEST < matlab.unittest.TestCase
 
       actIsSweeping = actIsSweepingFpa.logical2doubleNan();
       %[actIsSweeping, expIsSweeping]
-      testCase.assertEqual(actIsSweeping, S.expIsSweeping)
+      T.assertEqual(actIsSweeping, S.expIsSweeping)
     end
 
 

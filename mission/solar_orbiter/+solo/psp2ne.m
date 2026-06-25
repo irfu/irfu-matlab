@@ -357,9 +357,9 @@ assert(all( isreal(NeScp.data) & ~isinf(NeScp.data) & (isnan(NeScp.data) | (NeSc
       C1 = irf.ts_vec_xy(CalR1.time,[real(CalR1.data) imag(CalR1.data)]);
       C2 = irf.ts_vec_xy(CalR2.time,[real(CalR2.data) imag(CalR2.data)]);
       if length(CalRnan.time) == 1
-          Cnan = irf.ts_vec_xy(CalRnan.time,[ones(length(CalRnan.data(1)),1) ones(length(CalRnan.data(1)),1)]);
+        Cnan = irf.ts_vec_xy(CalRnan.time,[ones(length(CalRnan.data(1)),1) ones(length(CalRnan.data(1)),1)]);
       else
-          Cnan = irf.ts_vec_xy(CalRnan.time,[ones(length(CalRnan.data),1) ones(length(CalRnan.data),1)]);
+        Cnan = irf.ts_vec_xy(CalRnan.time,[ones(length(CalRnan.data),1) ones(length(CalRnan.data),1)]);
       end
 
 

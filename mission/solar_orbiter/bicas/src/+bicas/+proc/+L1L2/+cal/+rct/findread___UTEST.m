@@ -41,12 +41,12 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
 
-    function setup(testCase)
-      Fixture = testCase.applyFixture(...
+    function setup(T)
+      Fixture = T.applyFixture(...
         matlab.unittest.fixtures.TemporaryFolderFixture);
       % NOTE: The same fixture should always return the same directory.
-      testCase.dir = Fixture.Folder;
-      testCase.L   = bicas.Logger('NO_STDOUT', false);
+      T.dir = Fixture.Folder;
+      T.L   = bicas.Logger('NO_STDOUT', false);
     end
 
 
@@ -64,24 +64,24 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_BRVF_RCT_path(testCase)
+    function test_get_BRVF_RCT_path(T)
       % Create BRVF.
       ExpDtBegin = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
       ExpDtEnd   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
       expBiasRctFilename = bicas.tools.rct.create_RCT_filename(ExpDtBegin, ExpDtEnd, 1);
-      bicas.tools.rct.create_BRVF(testCase.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
+      bicas.tools.rct.create_BRVF(T.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
 
-      expBiasRctPath = fullfile(testCase.dir, expBiasRctFilename);
-      expBrvfPath    = fullfile(testCase.dir, bicas.const.BRVF_FILENAME);
+      expBiasRctPath = fullfile(T.dir, expBiasRctFilename);
+      expBrvfPath    = fullfile(T.dir, bicas.const.BRVF_FILENAME);
 
       %========
       % TEST 1
       %========
       [actBiasRctPath, actBrvfPath] = ...
-        bicas.proc.L1L2.cal.rct.findread.get_BRVF_RCT_path(testCase.dir, ExpDtBegin, ExpDtEnd);
+        bicas.proc.L1L2.cal.rct.findread.get_BRVF_RCT_path(T.dir, ExpDtBegin, ExpDtEnd);
 
-      testCase.assertEqual(actBiasRctPath, expBiasRctPath)
-      testCase.assertEqual(actBrvfPath,    expBrvfPath)
+      T.assertEqual(actBiasRctPath, expBiasRctPath)
+      T.assertEqual(actBrvfPath,    expBrvfPath)
 
 
 
@@ -92,114 +92,114 @@ classdef findread___UTEST < matlab.unittest.TestCase
       % NOTE: Only checks for non-error time interval case.
       [actBiasRctPath, actBrvfPath] = ...
         bicas.proc.L1L2.cal.rct.findread.get_BRVF_RCT_path(...
-        testCase.dir, ...
+        T.dir, ...
         ExpDtBegin + Duration, ...
         ExpDtEnd   - Duration);
     end
 
 
 
-    function test_read_BRVF___compliant_RCT_filename(testCase)
+    function test_read_BRVF___compliant_RCT_filename(T)
       % Create BRVF.
       ExpDtBegin = datetime('2020-02-10T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
       ExpDtEnd   = datetime('2100-01-01T00:00:00Z', 'TimeZone', 'UTCLeapSeconds');
       expBiasRctFilename = bicas.tools.rct.create_RCT_filename(ExpDtBegin, ExpDtEnd, 1);
-      bicas.tools.rct.create_BRVF(testCase.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
+      bicas.tools.rct.create_BRVF(T.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
 
       [actRctFilename, ActDtValidityBegin, ActDtValidityEnd, actBrvfPath] = ...
-        bicas.proc.L1L2.cal.rct.findread.read_BRVF(testCase.dir);
+        bicas.proc.L1L2.cal.rct.findread.read_BRVF(T.dir);
 
-      testCase.assertEqual(actRctFilename,     expBiasRctFilename)
-      testCase.assertEqual(ActDtValidityBegin, ExpDtBegin)
-      testCase.assertEqual(ActDtValidityEnd,   ExpDtEnd)
-      testCase.assertEqual(actBrvfPath,        fullfile(testCase.dir, bicas.const.BRVF_FILENAME))
+      T.assertEqual(actRctFilename,     expBiasRctFilename)
+      T.assertEqual(ActDtValidityBegin, ExpDtBegin)
+      T.assertEqual(ActDtValidityEnd,   ExpDtEnd)
+      T.assertEqual(actBrvfPath,        fullfile(T.dir, bicas.const.BRVF_FILENAME))
     end
 
 
 
-    function test_read_BRVF___noncompliant_RCT_filename(testCase)
+    function test_read_BRVF___noncompliant_RCT_filename(T)
       % Create BRVF.
       ExpDtBegin = datetime('2023-04-05T06:07:08Z', 'TimeZone', 'UTCLeapSeconds');
       ExpDtEnd   = datetime('2100-02-03T04:05:06Z', 'TimeZone', 'UTCLeapSeconds');
       expBiasRctFilename = 'SOLO_CAL_RPW-BIAS_V202011191204.cdf';   % Non-compliant RCT filename.
-      bicas.tools.rct.create_BRVF(testCase.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
+      bicas.tools.rct.create_BRVF(T.dir, expBiasRctFilename, ExpDtBegin, ExpDtEnd);
 
       [actRctFilename, ActDtValidityBegin, ActDtValidityEnd, actBrvfPath] = ...
-        bicas.proc.L1L2.cal.rct.findread.read_BRVF(testCase.dir);
+        bicas.proc.L1L2.cal.rct.findread.read_BRVF(T.dir);
 
-      testCase.assertEqual(actRctFilename,     expBiasRctFilename)
-      testCase.assertEqual(ActDtValidityBegin, ExpDtBegin)
-      testCase.assertEqual(ActDtValidityEnd,   ExpDtEnd)
-      testCase.assertEqual(actBrvfPath,        fullfile(testCase.dir, bicas.const.BRVF_FILENAME))
+      T.assertEqual(actRctFilename,     expBiasRctFilename)
+      T.assertEqual(ActDtValidityBegin, ExpDtBegin)
+      T.assertEqual(ActDtValidityEnd,   ExpDtEnd)
+      T.assertEqual(actBrvfPath,        fullfile(T.dir, bicas.const.BRVF_FILENAME))
     end
 
 
 
-    function test_get_RCT_path_by_regexp_empty(testCase)
-      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(testCase, {});
+    function test_get_RCT_path_by_regexp_empty(T)
+      T.setup_files({});
 
-      testCase.verifyError(...
+      T.verifyError(...
         @() bicas.proc.L1L2.cal.rct.findread.get_RCT_path_by_regexp(...
-        testCase.dir, '20[0-9][0-9]\.cdf', testCase.L), ...
+        T.dir, '20[0-9][0-9]\.cdf', T.L), ...
         'BICAS:CannotFindRegexMatchingRCT')
 
     end
 
 
 
-    function test_get_RCT_path_by_regexp_no_match(testCase)
-      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
-        testCase, {'20201.cdf', '2020.CDF'});
+    function test_get_RCT_path_by_regexp_no_match(T)
+      T.setup_files(...
+        {'20201.cdf', '2020.CDF'});
 
-      testCase.verifyError(...
+      T.verifyError(...
         @() bicas.proc.L1L2.cal.rct.findread.get_RCT_path_by_regexp(...
-        testCase.dir, '20[0-9][0-9]\.cdf', testCase.L), ...
+        T.dir, '20[0-9][0-9]\.cdf', T.L), ...
         'BICAS:CannotFindRegexMatchingRCT')
     end
 
 
 
-    function test_get_RCT_path_by_regexp_1_match(testCase)
-      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
-        testCase, {'2020.cdf', 'asdsf'});
+    function test_get_RCT_path_by_regexp_1_match(T)
+      T.setup_files(...
+        {'2020.cdf', 'asdsf'});
 
       path = bicas.proc.L1L2.cal.rct.findread.get_RCT_path_by_regexp(...
-        testCase.dir, '20[0-9][0-9]\.cdf', testCase.L);
+        T.dir, '20[0-9][0-9]\.cdf', T.L);
 
-      testCase.verifyEqual(...
+      T.verifyEqual(...
         path, ...
-        fullfile(testCase.dir, '2020.cdf'))
+        fullfile(T.dir, '2020.cdf'))
     end
 
 
 
-    function test_get_RCT_path_by_regexp_2_match(testCase)
-      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
-        testCase, {'2020.cdf', '2021.cdf'});
+    function test_get_RCT_path_by_regexp_2_match(T)
+      T.setup_files(...
+        {'2020.cdf', '2021.cdf'});
 
       path = bicas.proc.L1L2.cal.rct.findread.get_RCT_path_by_regexp(...
-        testCase.dir, '20[0-9][0-9]\.cdf', testCase.L);
+        T.dir, '20[0-9][0-9]\.cdf', T.L);
 
-      testCase.verifyEqual(...
+      T.verifyEqual(...
         path, ...
-        fullfile(testCase.dir, '2021.cdf'))
+        fullfile(T.dir, '2021.cdf'))
     end
 
 
 
-    function test_get_RCT_path_by_regexp_realistic(testCase)
+    function test_get_RCT_path_by_regexp_realistic(T)
       FN_1 = 'SOLO_CAL_RPW-BIAS_V202111191204.cdf';
       FN_2 = 'SOLO_CAL_RPW-BIAS_V202011191204.cdf';
 
-      bicas.proc.L1L2.cal.rct.findread___UTEST.setup_files(...
-        testCase, {FN_1, FN_2});
+      T.setup_files(...
+        {FN_1, FN_2});
 
       path = bicas.proc.L1L2.cal.rct.findread.get_RCT_path_by_regexp(...
-        testCase.dir, 'SOLO_CAL_RPW-BIAS_V20[0-9]{10,10}.cdf', testCase.L);
+        T.dir, 'SOLO_CAL_RPW-BIAS_V20[0-9]{10,10}.cdf', T.L);
 
-      testCase.verifyEqual(...
+      T.verifyEqual(...
         path, ...
-        fullfile(testCase.dir, FN_1))
+        fullfile(T.dir, FN_1))
     end
 
 
@@ -208,24 +208,24 @@ classdef findread___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
 
 
 
-    function setup_files(testCase, filenamesCa)
+    function setup_files(T, filenamesCa)
       for fileCa = filenamesCa(:)'
-        irf.fs.write_empty_file({testCase.dir, fileCa{1}});
+        irf.fs.write_empty_file({T.dir, fileCa{1}});
       end
     end
 
 
 
-  end    % methods(Static, Access=private)
+  end    % methods(Access=private)
 
 
 

@@ -17,7 +17,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_paths(testCase)
+    function test_get_paths(T)
       path = bicas.utils.get_BICAS_root_dir();
       irf.assert.dir_exists(path)
 
@@ -36,12 +36,12 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_object_sets_isequaln(testCase)
+    function test_object_sets_isequaln(T)
 
       % One output variable.
       function test(keysCa1, keysCa2, expEqual)
         actEqual = bicas.utils.object_sets_isequaln(keysCa1, keysCa2);
-        testCase.assertEqual(actEqual, expEqual)
+        T.assertEqual(actEqual, expEqual)
       end
 
       test({}, {}, true)
@@ -57,7 +57,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_dict_lookup___no_error(testCase)
+    function test_dict_lookup___no_error(T)
       % TODO: NaN key
 
       % Test values meant to be type cast later.
@@ -129,13 +129,13 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
         actValueAr = bicas.utils.dict_lookup(dict, keyAr);
 
-        testCase.assertEqual(actValueAr, expValueAr)
+        T.assertEqual(actValueAr, expValueAr)
       end
     end
 
 
 
-    function test_dict_lookup___error(testCase)
+    function test_dict_lookup___error(T)
       % Undefined key/value MATLAB classes. Zero entries.
       % Non-zero keys.
       dict = dictionary;
@@ -151,7 +151,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
       test_exc(dict, uint8([99]))
 
       function test_exc(dict, keyAr)
-        testCase.assertError(...
+        T.assertError(...
           @() bicas.utils.dict_lookup(dict, keyAr), ...
           ?MException)
       end

@@ -21,7 +21,7 @@
 % IMPLEMENTATION NOTE
 % ===================
 % Does not read the config file itself in order to make the code more easily
-% testable. Does not modify a bicas.Settings object in order to be able to use
+% testable. Does not modify a bicas.settings.Settings object in order to be able to use
 % one common code for interpreting numeric string values (reading settings from
 % CLI arguments also requires converting string arguments to numeric values.
 %

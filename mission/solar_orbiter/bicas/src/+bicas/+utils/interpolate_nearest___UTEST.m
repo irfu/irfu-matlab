@@ -18,14 +18,14 @@ classdef interpolate_nearest___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test0(T)
 
       function test(inputsCa, expOutputsCa)
         % Pre-allocate correct size for later assignment via function
         actOutputs = cell(size(expOutputsCa));
 
         [actOutputs{:}] = bicas.utils.interpolate_nearest(inputsCa{:});
-        testCase.verifyEqual(actOutputs, expOutputsCa)
+        T.verifyEqual(actOutputs, expOutputsCa)
       end
       %===================================================================
 

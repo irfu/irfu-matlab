@@ -5,7 +5,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef ExternalCodeImplementation < bicas.proc.L2L3.ExternalCodeAbstract
+classdef ExternalCodeImpl < bicas.proc.L2L3.ExternalCodeAbstract
   % PROPOSAL: Automatic test code.
   %   PROPOSAL: Code that just calls the external functions to make sure that
   %             the interfaces seems to be consistent.

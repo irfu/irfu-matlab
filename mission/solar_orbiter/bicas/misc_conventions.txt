@@ -26,12 +26,11 @@ The code should however converge on the following:
       of static methods): Should be CamelCase. Initial in uppercase.
     - Classes which are not instantiated: Should have short names and use
       lowercase without underscore.
-    - Abstract superclasses which exist for the purpose of making mocking in
-      automated tests possible should be named *Abstract.
-    - Subclasses which implement abstract superclasses, where the superclass is
-      created for the purpose of mocking in automated tests, should be named
-      *Impl.
-    - Subclasses for mocking in automated tests should be named *Test.
+    - Mocking in automated tests:
+      - Abstract superclasses should be named *Abstract.
+      - A nominal implementation of the abstract superclass (a subclass)
+        should be named *Impl.
+      - An imlementation for tests (a subclass) should be named *Test.
 - Functions should be named using snake_case but with abbreviations in
   uppercase.
 - Special types of variables:
@@ -40,7 +39,6 @@ The code should however converge on the following:
     i, j = Indices into arrays (linear indexing).
     L    = Singleton instance of class bicas.Logger.
     T    = Instance of matlab.unittest.TestCase
-           NOTE: This is not followed universally yet.
 --
 String constants should be SCREAMING_SNAKE_CASE.
 Unit tests (classes) are named in accordance with one of two naming conventions:
@@ -162,7 +160,7 @@ BRVF
     BIAS RCT Validity File. File "bias_rct_validity.json" as specified by ROC.
     Is not a ROC term.
 BSO
-    BICAS Settings Object. Singleton instance of class bicas.Settings which
+    BICAS Settings Object. Singleton instance of class bicas.settings.Settings which
     stores the settings for BICAS as a whole.
 CA
     Cell Array. See "AR".
@@ -448,7 +446,7 @@ QRCBM
 QRCID
     QRC ID. String constant that represents a specific type of QRC.
     The NSO table uses QRCIDs to label NSO events.
-    NOTE: Not all QRCIDs can/should be specified in the NSO table.
+    NOTE: Nominally, not all QRCIDs are used in the NSO table.
         Ex: BAD_DENSITY
 QRCS
     Class bicas.proc.QrcSetting and subclasses thereof.
@@ -556,7 +554,7 @@ SIP
 SKT
     CDF skeleton file. Abbreviation comes from the standard file suffix ".skt".
 SKV
-    Class bicas.SettingsKeyValue.
+    Class bicas.settings.KeyValue.
 SNF
     Split by Non-Finite.
     Split time series into multiple shorter time series, each one separated by

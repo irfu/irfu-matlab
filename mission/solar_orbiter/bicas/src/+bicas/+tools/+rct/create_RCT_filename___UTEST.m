@@ -17,14 +17,14 @@ classdef create_RCT_filename___UTEST < matlab.unittest.TestCase
 
 
 
-    function test(testCase)
+    function test(T)
       Dt1 = irf.dt.UTC('2020-01-01T00:00:00Z');
       Dt2   = irf.dt.UTC('2099-12-31T00:00:00Z');
 
       actDestFilename = bicas.tools.rct.create_RCT_filename(Dt1, Dt2, 3);
 
       irf.assert.castring(actDestFilename)
-      testCase.assertTrue(numel(actDestFilename) > 4)
+      T.assertTrue(numel(actDestFilename) > 4)
     end
 
 

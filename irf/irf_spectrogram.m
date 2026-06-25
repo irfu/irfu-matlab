@@ -308,6 +308,14 @@ for comp=1:min(length(h),ncomp)
   end
   ylabel(h(comp),specrec.f_label)
 
+  if isfield(specrec,'f_label') && ~isempty(specrec.f_label)
+    if isa(specrec.f_label,'string') && strfind(specrec.f_label,'eV')
+      h(comp).YScale = 'log';
+    elseif isa(specrec.f_label,'cell') && ~isempty(strfind(specrec.f_label{1},'eV'))
+      h(comp).YScale = 'log';
+    end
+  end
+
   if showColorbar
     if isfield(specrec,'p_label')
       if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2

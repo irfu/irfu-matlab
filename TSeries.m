@@ -1595,6 +1595,16 @@ classdef TSeries
       end
     end
 
+    function specrec = specrec(obj)
+      specrec.t = obj.time.epochUnix;
+      specrec.p = obj.data;
+      specrec.p_label = '';
+      if isfield(obj.userData,'specrec_f')
+        specrec.f = obj.userData.specrec_f;
+      else
+        specrec.f = 1:size(obj.data,2);
+      end
+    end
     function Ts = movmean(obj,nMean,varargin)
       % TSeries.movmean - applies a time-moving-average to data
       %
@@ -1613,6 +1623,7 @@ classdef TSeries
       Ts = obj;
       Ts.data = new_data;
     end
+
     function obj = tlim(obj,tint, mode)
       %TLIM  Returns data within specified time interval
       %

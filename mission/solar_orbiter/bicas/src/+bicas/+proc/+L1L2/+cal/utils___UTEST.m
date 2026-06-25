@@ -18,7 +18,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_calibration_time_index(testCase)
+    function test_get_calibration_time_index(T)
 
       function test(tt2000, calibTt2000Ar, expOutput)
         % NOTE: Converting arguments to int64, transposing.
@@ -26,7 +26,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
           int64(tt2000)', ...
           int64(calibTt2000Ar)');
 
-        testCase.verifyEqual(...
+        T.verifyEqual(...
           actOutput, ...
           expOutput')
       end
@@ -35,7 +35,7 @@ classdef utils___UTEST < matlab.unittest.TestCase
         f = @() bicas.proc.L1L2.cal.utils.get_calibration_time_index(...
           int64(Epoch)', int64(calibTt2000Ar)');
 
-        testCase.verifyError(...
+        T.verifyError(...
           f, ?MException);
       end
 

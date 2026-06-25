@@ -17,17 +17,17 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_qrcidAr(testCase)
+    function test_qrcidAr(T)
       Qrcbm = bicas.proc.QrcbMap(2);
-      testCase.assertEqual(Qrcbm.qrcidAr, string.empty(0, 1))
+      T.assertEqual(Qrcbm.qrcidAr, string.empty(0, 1))
 
       % IMPLEMENTATION NOTE: Deliberately add QRCIDs in non-alphanumeric order.
       Qrcbm.add("QRCID2", logical([0; 1]))
-      testCase.assertEqual(Qrcbm.qrcidAr, ["QRCID2"])
+      T.assertEqual(Qrcbm.qrcidAr, ["QRCID2"])
 
       % Deliberately assert alphanumeric order for return value.
       Qrcbm.add("QRCID1", logical([1; 0]))
-      testCase.assertEqual(Qrcbm.qrcidAr, ["QRCID1"; "QRCID2"])
+      T.assertEqual(Qrcbm.qrcidAr, ["QRCID1"; "QRCID2"])
     end
 
 
@@ -88,19 +88,19 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_union___empty(testCase)
+    function test_union___empty(T)
       Qrcbm      = bicas.proc.QrcbMap(3);
       AddedQrcbm = bicas.proc.QrcbMap(3);
       ExpQrcbm   = bicas.proc.QrcbMap(3);
 
       Qrcbm.union(AddedQrcbm);
 
-      testCase.assertEqual(Qrcbm, ExpQrcbm)
+      T.assertEqual(Qrcbm, ExpQrcbm)
     end
 
 
 
-    function test_union___one_empty_1(testCase)
+    function test_union___one_empty_1(T)
       Qrcbm      = bicas.proc.QrcbMap(3);
       Qrcbm.add(   "QRCID1", logical([0; 1; 0]));
       Qrcbm.add(   "QRCID2", logical([1; 0; 1]));
@@ -113,12 +113,12 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
       Qrcbm.union(AddedQrcbm);
 
-      testCase.assertEqual(Qrcbm, ExpQrcbm)
+      T.assertEqual(Qrcbm, ExpQrcbm)
     end
 
 
 
-    function test_union___one_empty_2(testCase)
+    function test_union___one_empty_2(T)
       Qrcbm      = bicas.proc.QrcbMap(3);
 
       AddedQrcbm = bicas.proc.QrcbMap(3);
@@ -131,12 +131,12 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
       Qrcbm.union(AddedQrcbm);
 
-      testCase.assertEqual(Qrcbm, ExpQrcbm)
+      T.assertEqual(Qrcbm, ExpQrcbm)
     end
 
 
 
-    function test_union___overlap(testCase)
+    function test_union___overlap(T)
       Qrcbm      = bicas.proc.QrcbMap(4);
       Qrcbm.add("QRCID1",              logical([0; 0; 0; 0]));
       Qrcbm.add("QRCID2_overlap",      logical([0; 0; 1; 1]));
@@ -152,46 +152,46 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
       Qrcbm.union(AddedQrcbm);
 
-      testCase.assertEqual(Qrcbm, ExpQrcbm)
+      T.assertEqual(Qrcbm, ExpQrcbm)
     end
 
 
 
-    function test_equality___empty(testCase)
+    function test_equality___empty(T)
       Qrcbm1a = bicas.proc.QrcbMap(1);
       Qrcbm1b = bicas.proc.QrcbMap(1);
       Qrcbm2  = bicas.proc.QrcbMap(2);
 
-      testCase.assert_equal(    Qrcbm1a, Qrcbm1b)
-      testCase.assert_not_equal(Qrcbm1a, Qrcbm2)
+      T.assert_equal(    Qrcbm1a, Qrcbm1b)
+      T.assert_not_equal(Qrcbm1a, Qrcbm2)
     end
 
 
 
-    function test_equality___QRCB(testCase)
+    function test_equality___QRCB(T)
       Qrcbm1 = bicas.proc.QrcbMap(1);
       Qrcbm2 = bicas.proc.QrcbMap(1);
 
       Qrcbm1.add("QRCID1", logical([1]))
-      testCase.assert_not_equal(Qrcbm1, Qrcbm2)
+      T.assert_not_equal(Qrcbm1, Qrcbm2)
 
       Qrcbm2.add("QRCID1", logical([1]))
-      testCase.assert_equal(    Qrcbm1, Qrcbm2)
+      T.assert_equal(    Qrcbm1, Qrcbm2)
 
       Qrcbm1.add("QRCID2", logical([2]))
-      testCase.assert_not_equal(Qrcbm1, Qrcbm2)
+      T.assert_not_equal(Qrcbm1, Qrcbm2)
     end
 
 
 
-    function test_equality___unequal_QRCB(testCase)
+    function test_equality___unequal_QRCB(T)
       Qrcbm1 = bicas.proc.QrcbMap(2);
       Qrcbm2 = bicas.proc.QrcbMap(2);
 
       Qrcbm1.add("QRCID1", logical([0; 1]))
       Qrcbm2.add("QRCID1", logical([1; 1]))
 
-      testCase.assert_not_equal(Qrcbm1, Qrcbm2)
+      T.assert_not_equal(Qrcbm1, Qrcbm2)
     end
 
 
@@ -228,20 +228,20 @@ classdef QrcbMap___UTEST < matlab.unittest.TestCase
 
 
 
-    function assert_equal(testCase, Qrcbm1, Qrcbm2)
-      testCase.assertTrue(isequal(Qrcbm1, Qrcbm2))
-      testCase.assertEqual(       Qrcbm1, Qrcbm2)
-      testCase.assertTrue(isequal(Qrcbm2, Qrcbm1))
-      testCase.assertEqual(       Qrcbm2, Qrcbm1)
+    function assert_equal(T, Qrcbm1, Qrcbm2)
+      T.assertTrue(isequal(Qrcbm1, Qrcbm2))
+      T.assertEqual(       Qrcbm1, Qrcbm2)
+      T.assertTrue(isequal(Qrcbm2, Qrcbm1))
+      T.assertEqual(       Qrcbm2, Qrcbm1)
     end
 
 
 
-    function assert_not_equal(testCase, Qrcbm1, Qrcbm2)
-      testCase.assertFalse(isequal(Qrcbm1, Qrcbm2))
-      testCase.assertNotEqual(     Qrcbm1, Qrcbm2)
-      testCase.assertFalse(isequal(Qrcbm2, Qrcbm1))
-      testCase.assertNotEqual(     Qrcbm2, Qrcbm1)
+    function assert_not_equal(T, Qrcbm1, Qrcbm2)
+      T.assertFalse(isequal(Qrcbm1, Qrcbm2))
+      T.assertNotEqual(     Qrcbm1, Qrcbm2)
+      T.assertFalse(isequal(Qrcbm2, Qrcbm1))
+      T.assertNotEqual(     Qrcbm2, Qrcbm1)
     end
 
 

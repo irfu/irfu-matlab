@@ -51,12 +51,12 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_L2QBM_to_QRCBs(testCase)
+    function test_L2QBM_to_QRCBs(T)
 
       function test(l2QbmAr, Qrcsm, ExpQrcbm)
         ActQrcbm = bicas.proc.L2L3.qrc.L2QBM_to_QRCBs(l2QbmAr, Qrcsm);
 
-        testCase.assertEqual(ActQrcbm, ExpQrcbm);
+        T.assertEqual(ActQrcbm, ExpQrcbm);
       end
 
       % Zero QRCSs, zero-length L2QBM

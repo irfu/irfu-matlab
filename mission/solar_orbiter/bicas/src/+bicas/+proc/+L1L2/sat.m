@@ -11,7 +11,7 @@ classdef sat
   % PROPOSAL: Reorder methods to make easier to follow calls recursively within
   %           class.
   %
-  % PROPOSAL: Better terminology than "upperTreshold".
+  % PROPOSAL: Better terminology than "upperThreshold".
   %   NOTE: Applies to variables and settings keys.
   %   ~abs, absolute, magnitude
   %   ~positive

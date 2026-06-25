@@ -131,7 +131,7 @@ classdef qrc
     % RATIONALE
     % =========
     % The value is intended to be used as input to processing L2-->L3, both
-    % (a) for filtering data (treshold; settting
+    % (a) for filtering data (threshold; setting
     %     "PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN")), and
     % (b) as starting point for deriving the L3 QFL which may be higher than the
     %     corresponding actual L2 QUALITY FLAG when L3 contains valid values
@@ -184,12 +184,12 @@ classdef qrc
     % RATIONALE
     % =========
     % This synthetic L2 QUALITY FLAG is needed for
-    % (1) filtering data L2-->L3 (settting
-    % "PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN"), and
+    % (1) filtering data L2-->L3 (setting
+    %     "PROCESSING.L2_TO_L3.ZV_QUALITY_FLAG_MIN"), and
     % (2) an input value that can be used for deriving the final L3 QUALITY_FLAG
-    % which may be higher than the corresponding actual L2 QUALITY FLAG when L3
-    % contains valid values derived from e.g. non-saturated L2 channels in the
-    % presence of other saturated L2 channels.
+    %     which may be higher than the corresponding actual L2 QUALITY FLAG when
+    %     L3 contains valid values derived from e.g. non-saturated L2 channels
+    %     in the presence of other saturated L2 channels.
     %
     function SyntheticL2QflFpa = get_synthetic_L2_QFL( ...
         tt2000Ar, NsoTable, ChannelSaturationQrcbm, L2QflFpa, L)
@@ -231,10 +231,10 @@ classdef qrc
 
 
 
-      %-------------------------------------------------------------------------
-      % Determine when L2 QRCs apply for which L2 QFL should (ideally) never be
-      % lowered
-      %-------------------------------------------------------------------------
+      %-------------------------------------------------------------------
+      % Determine when L2 QRCs for which L2 QFL should (ideally) never be
+      % lowered, apply
+      %-------------------------------------------------------------------
       bQrcExceptionAr = false(AllSynthL2Qrcbm.nRecords, 1);
       for qrcid = EXCEPTIONS_QRCID_AR'
         bQrcExceptionAr = bQrcExceptionAr | AllSynthL2Qrcbm.get(qrcid);
@@ -244,17 +244,20 @@ classdef qrc
 
       % Local utility function to remove repetition.
       %
-      % NOTE: SynthQrcbm2 is only returned for debugging purposes.
+      % NOTE: Return value "SynthQrcbm2" is only returned for debugging
+      %       purposes.
       function [SynthL2Qrcbm2, SynthL2QflFpa2] = get_synthetic_QFL(qrcidRemoveAr)
         SynthQrcsm2 = copy(bicas.const.qrc.Q.L2_QRCSM);
         SynthQrcsm2.remove_many(qrcidRemoveAr)
 
+        % NOTE: Read variable which is not an argument.
         SynthL2Qrcbm2 = copy(AllSynthL2Qrcbm);
-        SynthL2Qrcbm2.remove_many(qrcidRemoveAr)
+        SynthL2Qrcbm2.remove_many(qrcidRemoveAr)      % Set return value
 
         [SynthL2Qfl2, ~] = bicas.proc.qrc.QRCB_arrays_to_quality_ZVs(...
           SynthL2Qrcbm2, SynthQrcsm2, "L2_QUALITY_BITMASK");
-        SynthL2QflFpa2   = bicas.utils.FPArray(...
+        % NOTE: Read variable which is not an argument.
+        SynthL2QflFpa2   = bicas.utils.FPArray(...    % Set return value
           SynthL2Qfl2, 'FILL_POSITIONS', L2QflFpa.fpAr);
       end
 
@@ -269,8 +272,7 @@ classdef qrc
       [ExceptionsSynthL2Qrcbm, ExceptionsSynthL2QflFpa] = ...
         get_synthetic_QFL(NONEXCEPTIONS_QRCID_AR);
       % --
-      % Version which includes as many QRCs as possible, except for the QRC
-      % exceptions.
+      % Version which only includes the QRC non-exceptions.
       [NonexceptionsSynthL2Qrcbm, NonexceptionsSynthL2QflFpa] = ...
         get_synthetic_QFL(EXCEPTIONS_QRCID_AR);
       %bicas.debug.plot_QRCBM(tt2000Ar, ExceptionsSynthL2Qrcbm,                "ExceptionsSynthL2Qrcbm");
