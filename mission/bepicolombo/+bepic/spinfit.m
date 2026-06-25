@@ -28,6 +28,11 @@ classdef spinfit
   %   fit
   %   process
   %
+  % PROPOSAL: Convert class to package of functions dedicated to official
+  %           processing.
+  %   CON: Can not put constants in class.
+  %     CON: Can create dedicated class for constants.
+  %
   % TODO-DEC: Naming convention for spin fitting functions?
   %   Type of time windows: constant-length, spin phase-aligned
   %   PROBLEM: "mms_spinfit_wrapper" refers to mms_spinfit_m(), not
@@ -44,8 +49,8 @@ classdef spinfit
   %       are inconsistent:
   %       (1) "constant length" refers to constant length in *time*.
   %       (2) "sin-aligned"     refers to spin "instead of" time
-  %       PROPOSAL: "Time/Spin-Aligned Time Window"
-  %       PROPOSAL: "Time/Spin-Aligned Fit Window"
+  %       PROPOSAL: TATW, TSTW = "Time/Spin-Aligned Time Window"
+  %       PROPOSAL: TAFW, TSFW = "Time/Spin-Aligned Fit Window"
   %         NOTE: "Time Window" is used in other locations. Change all to "Fit
   %         Window"?
   %     PRO: Becomes good reason to formally define the terms.
@@ -56,11 +61,6 @@ classdef spinfit
   %   PRO: Clearer that it can be defined by both time and spin.
   %   PRO: Shorter...
   %   CON: Less standard term.
-  %
-  % PROPOSAL: Convert class to package of functions dedicated to official
-  %           processing.
-  %   CON: Can not put constants in class.
-  %     CON: Can create dedicated class for constants.
   %
   % PROBLEM: How handle spin phase if values are unknown during eclipse, or if
   %          spin phase values jump when exiting eclipse?
