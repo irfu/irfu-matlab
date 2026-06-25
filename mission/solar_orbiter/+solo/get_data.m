@@ -74,6 +74,7 @@ vars = {'L2_mag-srf-normal','L2_mag-srf-normal-1-minute','L2_mag-rtn-normal','L2
   'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N','L2_rpw-tds-surv-stat','L2_rpw-lfr-sbm1-cwf-b-cdag','L3_swa-eas-nmpad-psd'};
 
 %% check if alias is used and change to full variable name
+varStrOld = varStr;
 if ~ismember(varStr, vars)
   switch lower(varStr) % effectivly ignore letter case
     % short alias and full variable names
@@ -121,7 +122,6 @@ if ~ismember(varStr, vars)
   % Print what alias has been changed to
   irf.log('debug', ['Alias used: ', varStr, ' changed to ', varStrNew]);
   %For data variables found in the same cdf file (e.g vdc and edc)
-  varStrOld = varStr;
   % replace alias with the full variable name
   varStr = varStrNew;
 end
