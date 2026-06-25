@@ -34,14 +34,7 @@ classdef spinfit
   %     CON: Can create dedicated class for constants.
   %
   % TODO-DEC: Naming convention for spin fitting functions?
-  %   Type of time windows: constant-length, spin phase-aligned
-  %   PROBLEM: "mms_spinfit_wrapper" refers to mms_spinfit_m(), not
-  %            bepic_spinfit_m() which it should be changed to later.
-  %   PROBLEM: "mms_spinfit_wrapper" refers to the implementation (the function
-  %            it wraps) and not the functionality: spin fitting for
-  %            constant-length time windows.
-  %   ~constant-length
-  %   time window/interval
+  %   Type of fit windows, time window/interval
   %   spin_fit, fit
   %   PROPOSAL: Use abbreviations for "spin-aligned time window" (SATW?) and
   %             "constant length time window" (CLTW?).
@@ -178,7 +171,7 @@ classdef spinfit
 
 
 
-    % Wrapper around bepic.spinfit.mms_spinfit_wrapper() which
+    % Wrapper around bepic.spinfit.fit_TAFW() which
     % (1) adds functionality for splitting processing into smaller time segments
     %     based on time increments exceeding a threshold.
     % (2) works with spin-aligned time windows.
@@ -199,7 +192,7 @@ classdef spinfit
     % The function could possibly (theoretically) generate the same timestamps
     % twice if identifying a data gap within a time window. It is unclear what
     % is the best way to handle such a situation. However,
-    % mms_spinfit_wrapper()'s functionality for removing output timestamps
+    % fit_TAFW()'s functionality for removing output timestamps
     % outside the range of the input timestamps should eliminate this
     % possibility().
     %
@@ -238,10 +231,7 @@ classdef spinfit
     %       NOTE: Will never return timestamps outside the interval of input
     %             timestamps.
     %
-    function R = spin_aligned(A)
-      % PROPOSAL: Better name.
-      %   See BOGIQ at top of file.
-      %
+    function R = fit_SAFW(A)
       % PROPOSAL: Remove data if the same output timestamp is generate twice.
       %   PROBLEM: The timestamps might only be approximately equal?
 
@@ -286,7 +276,7 @@ classdef spinfit
 
       % ========================================================================
       % Convert from "spin phase radians" to fake TT2000/duration so that values
-      % can be fed to bepic.spinfit.mms_spinfit_wrapper()
+      % can be fed to bepic.spinfit.fit_TAFW()
       % ========================================================================
       % Fake nanoseconds per radian when converting to/from fake TT2000.
       N = 4e9 / (2*pi);
@@ -303,9 +293,9 @@ classdef spinfit
 
       nSamples = numel(A.tt2000Ar);
       if nSamples == 0
-        % IMPLEMENTATION NOTE: Call bepic.spinfit.mms_spinfit_wrapper() with
+        % IMPLEMENTATION NOTE: Call bepic.spinfit.fit_TAFW() with
         % empty data, just to create a consistent return value.
-        R = bepic.spinfit.mms_spinfit_wrapper( ...
+        R = bepic.spinfit.fit_TAFW( ...
           tt2000Ar               = fakeTt2000Ar, ...
           spinPhaseRadAr         = A.spinPhaseRadAr, ...
           samplesAr              = A.samplesAr, ...
@@ -328,7 +318,7 @@ classdef spinfit
         for i = 1:nSegments
           iAr = iBeginAr(i):iEndAr(i);
 
-          rSegment = bepic.spinfit.mms_spinfit_wrapper( ...
+          rSegment = bepic.spinfit.fit_TAFW( ...
             tt2000Ar               = fakeTt2000Ar    (iAr), ...
             spinPhaseRadAr         = A.spinPhaseRadAr(iAr), ...
             samplesAr              = A.samplesAr     (iAr), ...
@@ -342,7 +332,7 @@ classdef spinfit
           % Modify the timestamps, from fake TT2000 to true TT2000
           % ======================================================
           % IMPLEMENTATION NOTE: Must do this separately for every call to
-          % bepic.spinfit.mms_spinfit_wrapper() in to correctly handle spin
+          % bepic.spinfit.fit_TAFW() in to correctly handle spin
           % phase values which are (legitimately) identical just before and
           % after a data gap.
           outCumulSpinPhaseRadAr = double(rSegment.timeWindowCenterTt2000Ar) / N;
@@ -405,10 +395,7 @@ classdef spinfit
     %       NOTE: Will never return timestamps outside the interval of input
     %             timestamps.
     %
-    function R = mms_spinfit_wrapper(A)
-      % PROPOSAL: Better name than "mms_spinfit_wrapper".
-      %   NOTE: See BOGIQ at top of file.
-      %
+    function R = fit_TAFW(A)
       % PROPOSAL: Expose constants as arguments?
       %   Ex: N_MIN_REQUIRED_FIT_SAMPLES.
       %   CON: Need to write more tests.

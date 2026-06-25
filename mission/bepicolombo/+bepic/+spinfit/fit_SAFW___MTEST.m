@@ -1,12 +1,12 @@
 %
 % Quick-and-dirty script for manually experimenting with
-% bepic.spinfit.spin_aligned() by specifying input values and then plotting them
+% bepic.spinfit.fit_SAFW() by specifying input values and then plotting them
 % and the output after processing (by editing this code).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function spin_aligned___MTEST
+function fit_SAFW___MTEST
 
 if 0
   % =============
@@ -64,7 +64,7 @@ function display_result(A)
     A.dataGapMinNs
   end
 
-R = bepic.spinfit.spin_aligned(...
+R = bepic.spinfit.fit_SAFW(...
   tt2000Ar            = A.tt2000Ar, ...
   spinPhaseRadAr      = A.spinPhaseRadAr, ...
   samplesAr           = A.samplesAr, ...
