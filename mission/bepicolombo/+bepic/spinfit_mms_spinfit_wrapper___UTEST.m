@@ -19,8 +19,7 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
   %#####################
   %#####################
   properties(Constant)
-    % Constants for when using constant-length time windows. These values may or
-    % may not be the ones used outside the test code.
+    % These values may or may not be the ones used outside the test code.
     TIME_WINDOW_PERIOD_NS     = int64(4e9);
     TIME_WINDOW_LENGTH_NS     = int64(4e9);
     TIME_WINDOW_CENTER_TT2000 = int64(2e9);

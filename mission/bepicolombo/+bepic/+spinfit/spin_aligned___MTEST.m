@@ -92,7 +92,7 @@ ax7 = add_tile("coefficientSin2Ar", R.tt2000Ar, R.coefficientSin2Ar);
 % NOTE: Important to link X axes, since they are not identical otherwise, and
 % could be decieving.
 linkaxes([ax1 ax2 ax3 ax4 ax5 ax6 ax7], 'x');
-end    
+end
 
 
 
