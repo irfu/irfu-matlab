@@ -34,6 +34,10 @@ classdef spinfit
   %   CON: Can not put constants in class.
   %     CON: Can create dedicated class for constants.
   %
+  % PROPOSAL: Move utility functions to separate class bepic.spinfit.utils.
+  %   PRO: File is getting long.
+  %   PRO: Isolates "private" functions from "public" ones.
+  %
   % PROBLEM: How handle spin phase if values are unknown during eclipse, or if
   %          spin phase values jump when exiting eclipse?
   %     """"
@@ -65,6 +69,7 @@ classdef spinfit
         spinPhaseRadAr)
 
       assert(iscolumn(spinPhaseRadAr) & isa(spinPhaseRadAr, "double"))
+      assert(all(isfinite(spinPhaseRadAr)))
       assert(all((0 <= spinPhaseRadAr) & (spinPhaseRadAr <= 2*pi)))
       n = numel(spinPhaseRadAr);
 
@@ -89,7 +94,7 @@ classdef spinfit
 
 
 
-    % Internal helper function.  NOT INTENDED TO BE USED OUTSIDE THIS CLASS.
+    % Internal helper function. NOT INTENDED TO BE USED OUTSIDE THIS CLASS.
     %
     % Convert cumulative spin phase to (true) TT2000 using interpolation from
     % tabulated known conversions of cumulative spin phase to/from TT2000.
@@ -166,7 +171,7 @@ classdef spinfit
       % PROPOSAL: Return table.
 
       assert(iscolumn(tt2000Ar)     & isa(tt2000Ar, 'int64') & issorted(tt2000Ar, "STRICTASCEND"))
-      assert(isscalar(dataGapMinNs) & isa(tt2000Ar, 'int64') & dataGapMinNs >= 0)
+      assert(isscalar(dataGapMinNs) & isa(tt2000Ar, 'int64') & (dataGapMinNs >= 0))
 
       if isempty(tt2000Ar)
         iBeginAr   = double.empty(0, 1);
@@ -422,7 +427,7 @@ classdef spinfit
         A.nFitCoefficients
       end
 
-      N_MAX_FIT_ITERATIONS = 5;              % TODO: Determine proper value.
+      N_MAX_FIT_ITERATIONS = 5;    % TODO: Determine proper value.
 
       % ==========
       % ASSERTIONS
@@ -549,10 +554,10 @@ classdef spinfit
       assert(isa(timeFit, "int64"))
       nOut = numel(timeFit);
       assert(isequal(size(timeFit), [nOut, 1]))
-      assert(isequal(size(sfit), [nOut, A.nFitCoefficients]))
-      assert(isequal(size(sdev), [nOut, 1]))
-      assert(isequal(size(iter), [nOut, 1]))
-      assert(isequal(size(nBad), [nOut, 1]))
+      assert(isequal(size(sfit),    [nOut, A.nFitCoefficients]))
+      assert(isequal(size(sdev),    [nOut, 1]))
+      assert(isequal(size(iter),    [nOut, 1]))
+      assert(isequal(size(nBad),    [nOut, 1]))
 
       % ==========================================
       % Determine which output timestamps too keep
