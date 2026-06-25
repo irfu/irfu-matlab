@@ -47,6 +47,8 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
         timeWindowCenterTt2000 = T.TIME_WINDOW_CENTER_TT2000);
 
       T.verifySize(actR.timeWindowCenterTt2000Ar, [0, 1])
+      T.verifySize(actR.stdDeviationAr,           [0, 1])
+      T.verifySize(actR.nBadPoints,               [0, 1])
       T.verifySize(actR.offsetAr,                 [0, 1])
       T.verifySize(actR.coefficientCos1Ar,        [0, 1])
       T.verifySize(actR.coefficientSin1Ar,        [0, 1])
@@ -72,6 +74,8 @@ classdef spinfit_mms_spinfit_wrapper___UTEST < matlab.unittest.TestCase
 
       NAN_AR = NaN(2, 1);
       T.verifyEqual(actR.timeWindowCenterTt2000Ar, int64([102e9; 106e9]))
+      T.verifyEqual(actR.stdDeviationAr,           NAN_AR)
+      T.verifyEqual(actR.nBadPoints,               [0; 0])
       T.verifyEqual(actR.offsetAr,                 NAN_AR)
       T.verifyEqual(actR.coefficientCos1Ar,        NAN_AR)
       T.verifyEqual(actR.coefficientSin1Ar,        NAN_AR)

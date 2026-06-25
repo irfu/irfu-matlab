@@ -500,6 +500,8 @@ classdef spinfit
       % =========================
       R = table();
       R.timeWindowCenterTt2000Ar = timeFit(bKeep, 1);
+      R.stdDeviationAr           = sdev(   bKeep);
+      R.nBadPoints               = nBad(   bKeep);
       R.offsetAr                 = sfit(   bKeep, 1);
       R.coefficientCos1Ar        = sfit(   bKeep, 2);
       R.coefficientSin1Ar        = sfit(   bKeep, 3);
