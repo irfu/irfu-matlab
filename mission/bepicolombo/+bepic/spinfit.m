@@ -223,6 +223,8 @@ classdef spinfit
     %       timestamps) should be, described in cumulative spin phase. Any time
     %       window center will be located at
     %       timeWindowCenterRad + n * timeWindowPeriodRad, n=integer.
+    % nMinFitSamples
+    %       Minimum number of samples required for a fit.
     % dataGapMinNs
     %       Threshold for when a jump in tt2000Ar should count as a data gap.
     %
@@ -248,6 +250,7 @@ classdef spinfit
         A.timeWindowPeriodRad
         A.timeWindowLengthRad
         A.timeWindowCenterRad
+        A.nMinFitSamples
         A.dataGapMinNs
       end
 
@@ -305,6 +308,7 @@ classdef spinfit
           samplesAr              = A.samplesAr, ...
           timeWindowPeriodNs     = fakeTimeWindowPeriodNs, ...
           timeWindowLengthNs     = fakeTimeWindowLengthNs, ...
+          nMinFitSamples         = A.nMinFitSamples, ...
           timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000);
       else
         % =========================================================
@@ -326,6 +330,7 @@ classdef spinfit
             samplesAr              = A.samplesAr     (iAr), ...
             timeWindowPeriodNs     = fakeTimeWindowPeriodNs, ...
             timeWindowLengthNs     = fakeTimeWindowLengthNs, ...
+            nMinFitSamples         = A.nMinFitSamples, ...
             timeWindowCenterTt2000 = fakeTimeWindowCenterTt2000);
 
           % ======================================================
@@ -382,6 +387,8 @@ classdef spinfit
     %       Scalar value. Describes where the center of time windows (output
     %       timestamps) should be. Any time window center will be located at
     %       timeWindowCenterTt2000 + n * timeWindowPeriodNs, n=integer.
+    % nMinFitSamples
+    %       Minimum number of samples required for a fit.
     %
     %
     % RETURN VALUES
@@ -408,11 +415,11 @@ classdef spinfit
         A.timeWindowPeriodNs
         A.timeWindowLengthNs
         A.timeWindowCenterTt2000
+        A.nMinFitSamples
       end
 
-      N_FIT_TERMS                = 3+2;
-      N_MAX_FIT_ITERATIONS       = 5;              % TODO: Determine proper value.
-      N_MIN_REQUIRED_FIT_SAMPLES = N_FIT_TERMS+3;  % TODO: Determine proper value.
+      N_FIT_TERMS          = 3+2;
+      N_MAX_FIT_ITERATIONS = 5;              % TODO: Determine proper value.
 
       % ==========
       % ASSERTIONS
@@ -423,6 +430,7 @@ classdef spinfit
       assert(isscalar(A.timeWindowPeriodNs)     & isa(A.timeWindowPeriodNs,     "int64"))
       assert(isscalar(A.timeWindowLengthNs)     & isa(A.timeWindowLengthNs,     "int64"))
       assert(isscalar(A.timeWindowCenterTt2000) & isa(A.timeWindowCenterTt2000, "int64"))
+      assert(isscalar(A.nMinFitSamples))
       %
       nIn = numel(A.tt2000Ar);
       assert(nIn == numel(A.spinPhaseRadAr))
@@ -519,7 +527,7 @@ classdef spinfit
         % coefficients.
         % Ex: n=25*4+24; i=1:n; tt2000Ar=int64(linspace(0.1e9, 99.8e9, n)); spinRad=double(tt2000Ar)/4e9; ; samplesAr=3+4*cos(spinRad)+5*sin(spinRad); [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(5, 3+1, 3, tt2000Ar(i), samplesAr(i), spinRad(i), 4e9, 4e9, 2e9)
         [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(...
-          N_MAX_FIT_ITERATIONS, N_MIN_REQUIRED_FIT_SAMPLES, N_FIT_TERMS, ...
+          N_MAX_FIT_ITERATIONS, A.nMinFitSamples, N_FIT_TERMS, ...
           A.tt2000Ar, A.samplesAr, A.spinPhaseRadAr, ...
           A.timeWindowPeriodNs, A.timeWindowLengthNs, ...
           modifTimeWindowCenterTt2000);
