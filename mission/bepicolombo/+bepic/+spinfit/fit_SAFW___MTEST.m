@@ -48,7 +48,9 @@ display_result( ...
   fitWindowPeriodRad = 2*pi, ...
   fitWindowLengthRad = 2*pi, ...
   fitWindowCenterRad = 1*pi, ...
-  dataGapMinNs       = int64(2e9));
+  nMinFitSamples     = 6, ...
+  dataGapMinNs       = int64(2e9), ...
+  nFitCoefficients   = 5);
 end
 
 
@@ -61,7 +63,9 @@ function display_result(A)
     A.fitWindowPeriodRad
     A.fitWindowLengthRad
     A.fitWindowCenterRad
+    A.nMinFitSamples
     A.dataGapMinNs
+    A.nFitCoefficients
   end
 
 R = bepic.spinfit.fit_SAFW(...
@@ -71,7 +75,10 @@ R = bepic.spinfit.fit_SAFW(...
   fitWindowPeriodRad = A.fitWindowPeriodRad, ...
   fitWindowLengthRad = A.fitWindowLengthRad, ...
   fitWindowCenterRad = A.fitWindowCenterRad, ...
-  dataGapMinNs       = A.dataGapMinNs);
+  nMinFitSamples     = A.nMinFitSamples, ...
+  dataGapMinNs       = A.dataGapMinNs, ...
+  nFitCoefficients   = A.nFitCoefficients);
+
 
 % R.tt2000Ar
 % R.offsetAr
@@ -83,11 +90,11 @@ figure
 t = tiledlayout(7, 1, "Padding", "compact", "TileSpacing", "compact");
 ax1 = add_tile("samplesAr",         A.tt2000Ar, A.samplesAr);
 ax2 = add_tile("spinPhaseRadAr",    A.tt2000Ar, A.spinPhaseRadAr);
-ax3 = add_tile("offsetAr",          R.tt2000Ar, R.offsetAr);
-ax4 = add_tile("coefficientCos1Ar", R.tt2000Ar, R.coefficientCos1Ar);
-ax5 = add_tile("coefficientSin1Ar", R.tt2000Ar, R.coefficientSin1Ar);
-ax6 = add_tile("coefficientCos2Ar", R.tt2000Ar, R.coefficientCos2Ar);
-ax7 = add_tile("coefficientSin2Ar", R.tt2000Ar, R.coefficientSin2Ar);
+ax3 = add_tile("offsetAr",          R.fitWindowCenterTt2000Ar, R.offsetAr);
+ax4 = add_tile("coefficientCos1Ar", R.fitWindowCenterTt2000Ar, R.coefficientCos1Ar);
+ax5 = add_tile("coefficientSin1Ar", R.fitWindowCenterTt2000Ar, R.coefficientSin1Ar);
+ax6 = add_tile("coefficientCos2Ar", R.fitWindowCenterTt2000Ar, R.coefficientCos2Ar);
+ax7 = add_tile("coefficientSin2Ar", R.fitWindowCenterTt2000Ar, R.coefficientSin2Ar);
 
 % NOTE: Important to link X axes, since they are not identical otherwise, and
 % could be decieving.
