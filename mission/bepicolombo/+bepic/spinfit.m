@@ -150,6 +150,37 @@ classdef spinfit
 
 
 
+    % Internal helper function.  NOT INTENDED TO BE USED OUTSIDE THIS CLASS.
+    %
+    % Given timestamps, identify segments of timestamps which do not increase
+    % more than a specified threshold.
+    %
+    function [iBeginAr, iEndAr, nSegments] = split_by_data_gap(...
+        tt2000Ar, dataGapMinNs)
+
+      % PROPOSAL: Move to some "utils" package.
+      % PROPOSAL: Relax argument assertions which are not really needed.
+      %   Ex: int64
+      %     NOTE: Must then relax units/variable types in variable names.
+      %       Ex: TT2000, nanoseconds
+      % PROPOSAL: Return table.
+
+      assert(iscolumn(tt2000Ar)     & isa(tt2000Ar, 'int64') & issorted(tt2000Ar, "STRICTASCEND"))
+      assert(isscalar(dataGapMinNs) & isa(tt2000Ar, 'int64') & dataGapMinNs >= 0)
+
+      if isempty(tt2000Ar)
+        iBeginAr   = double.empty(0, 1);
+        iEndAr     = double.empty(0, 1);
+      else
+        boundaryAr = find(diff(tt2000Ar) >= dataGapMinNs);
+        iBeginAr   = [1; boundaryAr+1];
+        iEndAr     = [boundaryAr; numel(tt2000Ar)];
+      end
+      nSegments  = numel(iBeginAr);
+    end
+
+
+
     % Do spin fit assuming that fit windows used should have constant length and
     % period in spin phase (SAFW).
     %
@@ -289,10 +320,8 @@ classdef spinfit
         % Identify indices defining the beginning and end of a time
         % jump-separated segment.
         % =========================================================
-        boundaryAr = find(diff(A.tt2000Ar) > A.dataGapMinNs);
-        iBeginAr   = [1; boundaryAr+1];
-        iEndAr     = [boundaryAr; nSamples];
-        nSegments  = numel(iBeginAr);
+        [iBeginAr, iEndAr, nSegments] = bepic.spinfit.split_by_data_gap(...
+          A.tt2000Ar, A.dataGapMinNs);
 
         rCa = cell(nSegments, 1);
         for i = 1:nSegments
