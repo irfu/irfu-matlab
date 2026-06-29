@@ -344,8 +344,8 @@ classdef spinfit
           % bepic.spinfit.fit_TAFW() in to correctly handle spin
           % phase values which are (legitimately) identical just before and
           % after a data gap.
-          outCspRadAr = double(rSegment.fitWindowCenterTt2000Ar) / N;
-          rSegment.fitWindowCenterTt2000Ar = bepic.spinfit.cumulative_spin_phase_to_TT2000(...
+          outCspRadAr = double(rSegment.fitWindowCenterTt2000) / N;
+          rSegment.fitWindowCenterTt2000 = bepic.spinfit.cumulative_spin_phase_to_TT2000(...
             A.tt2000Ar(iAr), ...
             cspRadAr  (iAr), ...
             outCspRadAr);
@@ -572,15 +572,15 @@ classdef spinfit
       % Construct return value(s)
       % =========================
       R = table();
-      R.fitWindowCenterTt2000Ar = timeFit(bKeep, 1);
-      R.stdDeviationAr          = sdev(   bKeep);
-      R.nBadPoints              = nBad(   bKeep);
-      R.offsetAr                = sfit(   bKeep, 1);
-      R.coefficientCos1Ar       = sfit(   bKeep, 2);
-      R.coefficientSin1Ar       = sfit(   bKeep, 3);
+      R.fitWindowCenterTt2000 = timeFit(bKeep, 1);
+      R.stdDeviation          = sdev(   bKeep);
+      R.nBadPoints            = nBad(   bKeep);
+      R.offset                = sfit(   bKeep, 1);
+      R.coefficientCos1       = sfit(   bKeep, 2);
+      R.coefficientSin1       = sfit(   bKeep, 3);
       if A.nFitCoefficients >= 5
-        R.coefficientCos2Ar     = sfit(   bKeep, 4);
-        R.coefficientSin2Ar     = sfit(   bKeep, 5);
+        R.coefficientCos2     = sfit(   bKeep, 4);
+        R.coefficientSin2     = sfit(   bKeep, 5);
       end
     end
 
