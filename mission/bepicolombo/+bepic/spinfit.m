@@ -586,6 +586,106 @@ classdef spinfit
 
 
 
+    % Given plasma potential samples, derive averages for fit windows (time
+    % windows).
+    %
+    %
+    % DESIGN NOTE: CHANGE THE FIT WINDOWING ALGORITHM
+    % ===============================================
+    % The algorithm for determining the fit windows is isolated to a function
+    % which can easily be replaced.
+    %
+    %
+    % DESIGN NOTE: CHANGE THE "FIT" ALGORITHM
+    % =======================================
+    % This function is designed to maybe eventually be converted into a function
+    % for processing also E field data since it (depending on implementation)
+    % should be easy to modify the algorithm for converting a fit window into a
+    % scalar value (plus quality data; other fit terms). The complicated part is
+    % determining the fit windows which is has been delegated to a reusable and
+    % replaceble function.
+    %
+    function T = fit_SAFW_mean(A)
+      arguments
+        A.tt2000Ar
+        A.spinPhaseRadAr
+        A.samplesAr
+        A.fitWindowPeriodRad
+        A.fitWindowLengthRad
+        A.fitWindowCenterRefRad
+        A.dataGapMinNs
+      end
+      % PROPOSAL: for-->parfor (iteration over fit windows).
+      % PROPOSAL: Generalize to handling multiple forms of fits.
+      %   PROPOSAL: Argument for function handle for fit. Wrappers for different
+      %             fits.
+      %     PROBLEM: Function handle must return different variables for
+      %              different fits. ==> Can not generate return value for zero
+      %              fit windows.
+      %       PROPOSAL: Call function handle for made-up samples and remove
+      %                 elements from arrays.
+
+      % ==========
+      % ASSERTIONS
+      % ==========
+      assert(iscolumn(A.tt2000Ar)              & isa(A.tt2000Ar,              "int64"))
+      assert(iscolumn(A.spinPhaseRadAr)        & isa(A.spinPhaseRadAr,        "double"))
+      assert(isscalar(A.fitWindowPeriodRad)    & isa(A.fitWindowPeriodRad,    "double"))
+      assert(isscalar(A.fitWindowLengthRad)    & isa(A.fitWindowLengthRad,    "double"))
+      assert(isscalar(A.fitWindowCenterRefRad) & isa(A.fitWindowCenterRefRad, "double"))
+      assert(isscalar(A.dataGapMinNs)          & isa(A.dataGapMinNs,          "int64"))
+      %
+      assert(issorted(A.tt2000Ar, "STRICTASCEND"))
+      assert(all(isfinite(A.spinPhaseRadAr)))
+      % IMPLEMENTATION NOTE: Requiring spin phase on interval 0 to 2*pi. This is
+      % not required by mms_spin_fit(), but (1) is (analogous to) the spin phase
+      % values in L1p CDF files which are also bounded (0 to 360 deg), and (2)
+      % is an indirect check on the units used.
+      assert(all((0 <= A.spinPhaseRadAr) & (A.spinPhaseRadAr <= 2*pi)))
+      %
+      assert(A.fitWindowPeriodRad > 0)
+      assert(A.fitWindowLengthRad > 0)
+      assert(A.dataGapMinNs       > 0)
+
+      % =========
+      % ALGORITHM
+      % =========
+      FitWindowsTable = bepic.spinfit.utils.get_SAFWs( ...
+        tt2000Ar             = A.tt2000Ar, ...
+        spinPhaseRadAr       = A.spinPhaseRadAr, ...
+        fitWindowPeriodRad   = A.fitWindowPeriodRad, ...
+        fitWindowLengthRad   = A.fitWindowLengthRad, ...
+        fitWindowBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
+        dataGapMinNs         = A.dataGapMinNs);
+
+      nSamples    = numel(A.tt2000Ar);
+      nFitWindows = height(FitWindowsTable);
+
+      T = table();
+
+      if nSamples <= 0
+        T.fitWindowCenterTt2000 = int64.empty( 0, 1);
+        T.mean                  = double.empty(0, 1);
+      else
+        [iBeginAr, iEndAr] = bepic.spinfit.utils.fit_window_time_to_indices(...
+          A.tt2000Ar, ...
+          FitWindowsTable.beginTt2000, ...
+          FitWindowsTable.endTt2000);
+
+        T.fitWindowCenterTt2000 = ...
+          (FitWindowsTable.beginTt2000 + FitWindowsTable.endTt2000) / 2;
+
+        T.mean = NaN(nFitWindows, 1);
+        for i = 1:nFitWindows
+          fitWindowSamplesAr = A.samplesAr(iBeginAr(i) : iEndAr(i));
+
+          T.mean(i) = mean(fitWindowSamplesAr);
+        end
+      end
+    end
+
+
+
   end    % methods(Static)
 
 
