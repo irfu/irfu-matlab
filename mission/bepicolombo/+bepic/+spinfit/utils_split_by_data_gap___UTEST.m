@@ -1,10 +1,10 @@
 %
-% matlab.unittest automatic test code for bepic.spinfit.split_by_data_gap().
+% matlab.unittest automatic test code for bepic.spinfit.utils.split_by_data_gap().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef spinfit_split_by_data_gap___UTEST < matlab.unittest.TestCase
+classdef utils_split_by_data_gap___UTEST < matlab.unittest.TestCase
 
 
 
@@ -86,7 +86,7 @@ classdef spinfit_split_by_data_gap___UTEST < matlab.unittest.TestCase
       function test(...
           T, tt2000Ar, dataGapNs, expIBeginAr, expIEndAr)
         [actIBeginAr, actIEndAr, actNSegments] = ...
-          bepic.spinfit.split_by_data_gap(tt2000Ar, dataGapNs);
+          bepic.spinfit.utils.split_by_data_gap(tt2000Ar, dataGapNs);
 
         T.assertEqual(actIBeginAr,  expIBeginAr)
         T.assertEqual(actIEndAr,    expIEndAr)

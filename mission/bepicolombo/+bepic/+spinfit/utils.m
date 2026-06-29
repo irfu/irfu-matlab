@@ -39,7 +39,6 @@ classdef utils
 
 
 
-
   %#######################
   %#######################
   % PUBLIC STATIC METHODS
@@ -118,7 +117,7 @@ classdef utils
       % =========
       % ALGORITHM
       % =========
-      [iBeginAr, iEndAr, nSegments] = bepic.spinfit.split_by_data_gap(...
+      [iBeginAr, iEndAr, nSegments] = bepic.spinfit.utils.split_by_data_gap(...
         A.tt2000Ar, A.dataGapMinNs);
 
       % Create empty return variable.
@@ -190,7 +189,7 @@ classdef utils
       assert(numel(A.spinPhaseRadAr) == nSamples)
 
       % IMPORTANT NOTE: Can not calculate CSP if there are data gaps.
-      cspRadAr = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
+      cspRadAr = bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase(...
         A.spinPhaseRadAr);
 
       if nSamples <= 1
@@ -223,6 +222,129 @@ classdef utils
       FitWindowTable = table();
       FitWindowTable.beginTt2000 = fitWindowBeginTt2000Ar;
       FitWindowTable.endTt2000   = fitWindowEndTt2000Ar;
+    end
+
+
+
+    % Convert spin phase (0 to 2*pi) to cumulative spin phase (which always
+    % increases).
+    %
+    % NOTE: Assumes that every decrement implies that 2*pi should be added.
+    % NOTE: The function assumes that there are no data gaps.
+    %
+    function cspRadAr = spin_phase_to_cumulative_spin_phase(...
+        spinPhaseRadAr)
+
+      assert(iscolumn(spinPhaseRadAr) & isa(spinPhaseRadAr, "double"))
+      assert(all(isfinite(spinPhaseRadAr)))
+      assert(all((0 <= spinPhaseRadAr) & (spinPhaseRadAr <= 2*pi)))
+      n = numel(spinPhaseRadAr);
+
+      % IMPLEMENTATION NOTE: unwrap() decrements cumulative spin phase if the
+      % spin phase jumps are longer than pi. Therefore not using unwrap().
+      cspRadAr = NaN(n, 1);
+      if n >= 1
+        nRevol = 0;
+        cspRadAr(1) = spinPhaseRadAr(1);
+        for i = 2:n
+
+          if spinPhaseRadAr(i-1) > spinPhaseRadAr(i)
+            nRevol = nRevol + 1;
+          end
+
+          cspRadAr(i) = spinPhaseRadAr(i) + 2*pi*nRevol;
+        end
+      end
+
+      assert(issorted(cspRadAr))
+    end
+
+
+
+    % Convert cumulative spin phase to (true) TT2000 using interpolation from
+    % tabulated known conversions of cumulative spin phase to/from TT2000.
+    %
+    %
+    % ARGUMENTS
+    % =========
+    % dataTt2000Ar
+    %       Column array of TT2000 values
+    % dataCspRadAr
+    %       Column array of known cumulative spin phase values for the
+    %       dataTt2000Ar values.
+    % inCspRadAr
+    %       Column array of cumulative spin phase values for which TT2000 shall
+    %       be derived.
+    %
+    function outTt2000Ar = CMP_to_TT2000( ...
+        dataTt2000Ar, dataCspRadAr, inCspRadAr)
+
+      assert(iscolumn(dataTt2000Ar) & isa(dataTt2000Ar, "int64" ))
+      assert(iscolumn(dataCspRadAr) & isa(dataCspRadAr, "double"))
+      assert(iscolumn(inCspRadAr)   & isa(inCspRadAr,   "double"))
+
+      assert(numel(dataTt2000Ar) == numel(dataCspRadAr))
+      n = numel(dataTt2000Ar);
+
+      % NOTE: Technically, arrays do not need to be sorted (ascending), but the
+      % data must still describe a monotonic function for interpolation to work,
+      % i.e. if one permutes the elements the same way for both arrays, and so
+      % that one of the arrays is sorted, then the other must also become
+      % sorted. Otherwise interpolation does not work.
+      assert(issorted(dataTt2000Ar, "STRICTASCEND"))
+      assert(issorted(dataCspRadAr, "STRICTASCEND"))
+
+      if n >= 2
+        % --------------------------------------------------------------
+        % CASE: There is enough data for interpolation and extrapolation
+        % --------------------------------------------------------------
+        % NOTE: interp1() returns double. It returns and NaN if it can not
+        % interpolate.
+        y = interp1(...
+          dataCspRadAr, double(dataTt2000Ar), inCspRadAr, ...
+          "LINEAR", "extrap");
+        assert(all(~isnan(y)))
+        outTt2000Ar = int64(y);
+      else
+        % ----------------------------------------------------------
+        % CASE: There is NO data for interpolation and extrapolation
+        % ----------------------------------------------------------
+        % Only permit execution if no actual interpolation/extrapolation is
+        % requested.
+        assert(...
+          isempty(inCspRadAr), ...
+          "Trying to interpolate/extrapolate when there are fewer than two data points.")
+        outTt2000Ar = int64.empty(0, 1);
+      end
+    end
+
+
+
+    % Given timestamps, identify segments of timestamps which do not increase
+    % more than a specified threshold.
+    %
+    function [iBeginAr, iEndAr, nSegments] = split_by_data_gap(...
+        tt2000Ar, dataGapMinNs)
+
+      % PROPOSAL: Move to some "utils" package.
+      % PROPOSAL: Relax argument assertions which are not really needed.
+      %   Ex: int64
+      %     NOTE: Must then relax units/variable types in variable names.
+      %       Ex: TT2000, nanoseconds
+      % PROPOSAL: Return table.
+
+      assert(iscolumn(tt2000Ar)     & isa(tt2000Ar, 'int64') & issorted(tt2000Ar, "STRICTASCEND"))
+      assert(isscalar(dataGapMinNs) & isa(tt2000Ar, 'int64') & (dataGapMinNs >= 0))
+
+      if isempty(tt2000Ar)
+        iBeginAr   = double.empty(0, 1);
+        iEndAr     = double.empty(0, 1);
+      else
+        boundaryAr = find(diff(tt2000Ar) >= dataGapMinNs);
+        iBeginAr   = [1; boundaryAr+1];
+        iEndAr     = [boundaryAr; numel(tt2000Ar)];
+      end
+      nSegments  = numel(iBeginAr);
     end
 
 

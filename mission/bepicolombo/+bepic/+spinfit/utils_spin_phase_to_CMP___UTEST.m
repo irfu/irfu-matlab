@@ -1,11 +1,11 @@
 %
 % matlab.unittest automatic test code for
-% bepic.spinfit.spin_phase_to_cumulative_spin_phase().
+% bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef spinfit_spin_phase_to_cumulative_spin_phase___UTEST < matlab.unittest.TestCase
+classdef utils_spin_phase_to_CMP___UTEST < matlab.unittest.TestCase
 
 
 
@@ -18,50 +18,50 @@ classdef spinfit_spin_phase_to_cumulative_spin_phase___UTEST < matlab.unittest.T
 
 
 
-    function test_spin_phase_to_cumulative_spin_phase_empty(T)
-      T.test_spin_phase_to_cumulative_spin_phase(...
+    function test_empty(T)
+      T.test(...
         double.empty(0, 1), ...
         double.empty(0, 1))
     end
 
 
 
-    function test_spin_phase_to_cumulative_spin_phase_one_value(T)
-      T.test_spin_phase_to_cumulative_spin_phase(...
+    function test_one_value(T)
+      T.test(...
         [3], ...
         [3])
     end
 
 
 
-    function test_spin_phase_to_cumulative_spin_phase_0(T)
-      T.test_spin_phase_to_cumulative_spin_phase(...
+    function test_0(T)
+      T.test(...
         [0.2; 0.3] * 2*pi, ...
         [0.2; 0.3] * 2*pi)
     end
 
 
 
-    function test_spin_phase_to_cumulative_spin_phase_1(T)
+    function test_1(T)
       % Long jump (<~2*pi) but not wrapping.
-      T.test_spin_phase_to_cumulative_spin_phase(...
+      T.test(...
         [0.1; 0.9] * 2*pi, ...
         [0.1; 0.9] * 2*pi)
     end
 
 
 
-    function test_spin_phase_to_cumulative_spin_phase_2(T)
+    function test_2(T)
       % Long jump (<~2*pi) but wrapping.
-      T.test_spin_phase_to_cumulative_spin_phase(...
+      T.test(...
         [0.5; 0.4] * 2*pi, ...
         [0.5; 1.4] * 2*pi)
     end
 
 
 
-    function test_spin_phase_to_cumulative_spin_phase_3(T)
-      actCumulSpinPhaseRadAr = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
+    function test_3(T)
+      actCumulSpinPhaseRadAr = bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase(...
         [0.2, 0.3, 0.7, 0.1, 0.5, 0.4]' * 2*pi);
 
       T.assertEqual(...
@@ -89,10 +89,9 @@ classdef spinfit_spin_phase_to_cumulative_spin_phase___UTEST < matlab.unittest.T
     %
     % NOTE: Can not set T.assertEqual() arguments AbsTol or RelTol.
     %
-    function test_spin_phase_to_cumulative_spin_phase( ...
-        T, spinPhaseRadAr, expCumulSpinPhaseRadAr)
+    function test(T, spinPhaseRadAr, expCumulSpinPhaseRadAr)
 
-      actCumulSpinPhaseRadAr = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
+      actCumulSpinPhaseRadAr = bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase(...
         spinPhaseRadAr);
 
       T.assertEqual(actCumulSpinPhaseRadAr, expCumulSpinPhaseRadAr)
