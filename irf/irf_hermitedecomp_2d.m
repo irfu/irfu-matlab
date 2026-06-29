@@ -1,24 +1,24 @@
 function hermitestruct = irf_hermitedecomp_2d(varargin)
 % IRF_HERMITEDECOMP_2D - decompose a series of 2D distributions in the
 % hermite basis of functions
-% 
+%
 %   Detailed explanation goes here
 %
 % Input:
-%       PDist2d - Structure or TSeries of PDist of 2D particle distributions. 
+%       PDist2d - Structure or TSeries of PDist of 2D particle distributions.
 % Must contain the distributions and speeds. TSeries should be 2D reduced
-% distributions (Cartesian coordinates). 
+% distributions (Cartesian coordinates).
 %       numhermites - number of hermite functions used in the decomposition.
-% 
-% Options: 
+%
+% Options:
 %       species - set particle species. 'e', 'p', or 'a' for electrons,
-%       protons, or alpha particles. 
-% 
-% Output: 
+%       protons, or alpha particles.
+%
+% Output:
 %       hermitestruct - structure containing hermite function weights
-% 
+%
 % Notes: Velocities in the structure are converted to km s^{-1}
-% 
+%
 % Example:
 %   hermitestruct = irf_hermitedecomp_2d(PDist2D,64,'species','e');
 %
@@ -92,7 +92,7 @@ if isTSeries == false
   if timesformat(1) < timesformat(2)
     times = times';
   end
-  
+
   vxvec = PDist2d.vx*1e3; % convert from km s^-1 to m s^-1
   lengthvx = length(vxvec);
   dvx = median(diff(vxvec));
@@ -100,7 +100,7 @@ if isTSeries == false
   vyvec = PDist2d.vy*1e3; % convert from km s^-1 to m s^-1
   lengthvy = length(vyvec);
   dvy = median(diff(vyvec));
-  
+
   if min(size(vxvec)) == 1
     vxmat = ones(size(times))*vxvec;
   end

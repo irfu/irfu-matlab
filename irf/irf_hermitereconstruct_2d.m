@@ -1,16 +1,16 @@
 function reconstruct = irf_hermitereconstruct_2d(hermitestruct,order)
 % IRF_HERMITERECONSTRUCT_2D Reconstruct 2D distributions from hermite
 % function coefficients
-% 
+%
 % Input:
 %       hermitestruct - structure of Hermite function coefficients from
 %       irf_hermitedecomp_2d
 %       order - the highest or Hermite function used in the reconstruction
-% 
-% Output: 
+%
+% Output:
 %       reconstruct - stucture containing distributions constructed from
-%       Hermite functions and coefficients 
-% 
+%       Hermite functions and coefficients
+%
 % Written by D. B. Graham
 tic
 
