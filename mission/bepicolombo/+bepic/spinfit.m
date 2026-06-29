@@ -61,7 +61,7 @@ classdef spinfit
     % NOTE: Assumes that every decrement implies that 2*pi should be added.
     % NOTE: The function assumes that there are no data gaps.
     %
-    function cumulSpinPhaseRadAr = spin_phase_to_cumulative_spin_phase(...
+    function cspRadAr = spin_phase_to_cumulative_spin_phase(...
         spinPhaseRadAr)
 
       assert(iscolumn(spinPhaseRadAr) & isa(spinPhaseRadAr, "double"))
@@ -70,21 +70,21 @@ classdef spinfit
 
       % IMPLEMENTATION NOTE: unwrap() decrements cumulative spin phase if the
       % spin phase jumps are longer than pi. Therefore not using unwrap().
-      cumulSpinPhaseRadAr = NaN(n, 1);
+      cspRadAr = NaN(n, 1);
       if n >= 1
         nRevol = 0;
-        cumulSpinPhaseRadAr(1) = spinPhaseRadAr(1);
+        cspRadAr(1) = spinPhaseRadAr(1);
         for i = 2:n
 
           if spinPhaseRadAr(i-1) > spinPhaseRadAr(i)
             nRevol = nRevol + 1;
           end
 
-          cumulSpinPhaseRadAr(i) = spinPhaseRadAr(i) + 2*pi*nRevol;
+          cspRadAr(i) = spinPhaseRadAr(i) + 2*pi*nRevol;
         end
       end
 
-      assert(issorted(cumulSpinPhaseRadAr))
+      assert(issorted(cspRadAr))
     end
 
 
@@ -99,21 +99,21 @@ classdef spinfit
     % =========
     % dataTt2000Ar
     %       Column array of TT2000 values
-    % dataCumulSpinPhaseRadAr
+    % dataCspRadAr
     %       Column array of known cumulative spin phase values for the
     %       dataTt2000Ar values.
-    % inCumulSpinPhaseRadAr
+    % inCspRadAr
     %       Column array of cumulative spin phase values for which TT2000 shall
     %       be derived.
     %
     function outTt2000Ar = cumulative_spin_phase_to_TT2000( ...
-        dataTt2000Ar, dataCumulSpinPhaseRadAr, inCumulSpinPhaseRadAr)
+        dataTt2000Ar, dataCspRadAr, inCspRadAr)
 
-      assert(iscolumn(dataTt2000Ar)            & isa(dataTt2000Ar,            "int64" ))
-      assert(iscolumn(dataCumulSpinPhaseRadAr) & isa(dataCumulSpinPhaseRadAr, "double"))
-      assert(iscolumn(inCumulSpinPhaseRadAr)   & isa(inCumulSpinPhaseRadAr,   "double"))
+      assert(iscolumn(dataTt2000Ar) & isa(dataTt2000Ar, "int64" ))
+      assert(iscolumn(dataCspRadAr) & isa(dataCspRadAr, "double"))
+      assert(iscolumn(inCspRadAr)   & isa(inCspRadAr,   "double"))
 
-      assert(numel(dataTt2000Ar) == numel(dataCumulSpinPhaseRadAr))
+      assert(numel(dataTt2000Ar) == numel(dataCspRadAr))
       n = numel(dataTt2000Ar);
 
       % NOTE: Technically, arrays do not need to be sorted (ascending), but the
@@ -121,8 +121,8 @@ classdef spinfit
       % i.e. if one permutes the elements the same way for both arrays, and so
       % that one of the arrays is sorted, then the other must also become
       % sorted. Otherwise interpolation does not work.
-      assert(issorted(dataTt2000Ar,            "STRICTASCEND"))
-      assert(issorted(dataCumulSpinPhaseRadAr, "STRICTASCEND"))
+      assert(issorted(dataTt2000Ar, "STRICTASCEND"))
+      assert(issorted(dataCspRadAr, "STRICTASCEND"))
 
       if n >= 2
         % --------------------------------------------------------------
@@ -131,7 +131,7 @@ classdef spinfit
         % NOTE: interp1() returns double. It returns and NaN if it can not
         % interpolate.
         y = interp1(...
-          dataCumulSpinPhaseRadAr, double(dataTt2000Ar), inCumulSpinPhaseRadAr, ...
+          dataCspRadAr, double(dataTt2000Ar), inCspRadAr, ...
           "LINEAR", "extrap");
         assert(all(~isnan(y)))
         outTt2000Ar = int64(y);
@@ -142,7 +142,7 @@ classdef spinfit
         % Only permit execution if no actual interpolation/extrapolation is
         % requested.
         assert(...
-          isempty(inCumulSpinPhaseRadAr), ...
+          isempty(inCspRadAr), ...
           "Trying to interpolate/extrapolate when there are fewer than two data points.")
         outTt2000Ar = int64.empty(0, 1);
       end
@@ -295,9 +295,9 @@ classdef spinfit
       % IMPLEMENTATION NOTE: Cumulative spin phase values will not increment
       % correctly for time jumps (error n*2*pi) but that does not matter, since
       % the processing will be split by data gaps anyway.
-      cumulSpinPhaseRadAr = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
+      cspRadAr = bepic.spinfit.spin_phase_to_cumulative_spin_phase(...
         A.spinPhaseRadAr);
-      fakeTt2000Ar              = int64(cumulSpinPhaseRadAr  * N);
+      fakeTt2000Ar              = int64(cspRadAr             * N);
       fakeFitWindowPeriodNs     = int64(A.fitWindowPeriodRad * N);
       fakeFitWindowLengthNs     = int64(A.fitWindowLengthRad * N);
       fakeFitWindowCenterTt2000 = int64(A.fitWindowCenterRad * N);
@@ -344,11 +344,11 @@ classdef spinfit
           % bepic.spinfit.fit_TAFW() in to correctly handle spin
           % phase values which are (legitimately) identical just before and
           % after a data gap.
-          outCumulSpinPhaseRadAr = double(rSegment.fitWindowCenterTt2000Ar) / N;
+          outCspRadAr = double(rSegment.fitWindowCenterTt2000Ar) / N;
           rSegment.fitWindowCenterTt2000Ar = bepic.spinfit.cumulative_spin_phase_to_TT2000(...
-            A.tt2000Ar         (iAr), ...
-            cumulSpinPhaseRadAr(iAr), ...
-            outCumulSpinPhaseRadAr);
+            A.tt2000Ar(iAr), ...
+            cspRadAr  (iAr), ...
+            outCspRadAr);
 
           rCa{i, 1} = rSegment;
         end
