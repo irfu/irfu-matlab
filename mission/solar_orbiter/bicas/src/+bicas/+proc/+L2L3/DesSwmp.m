@@ -26,21 +26,18 @@
 %
 classdef DesSwmp < bicas.proc.SwmProcessing
   % PROPOSAL: Better class name
-  %   NOTE: The SWM should cover both
+  %   NOTE: The SWMP should cover both
   %     L2 SURV-->L3 SURV DES, and
-  %     L2 SBMx-->L3 SBMx DES.
-  %   PROPOSAL: New naming convention for SWMP subclasses: Class names end with
-  %             "Swmp" (not SwmProcessing).
+  %     L2 SBMx-->L3 SBMx DES (future).
   %   ~Density+Efield+Scpot, ~DES
   %   ~CWF (includes SBMx)
   %   ~OSR, DSR (only DSR for non-SBMx?)
-  %   DensityEfieldScpotSwmProcessing
-  %   DensEfieldScpotSwmProcessing
+  %   DensityEfieldScpotSwmp
+  %   DensEfieldScpotSwmp
   %     CON: Long
   %     CON: Not in order of processing
   %   DesSwmp -- DONE
   %     CON: There is no abbreviation "DES".
-  %   CwfDesProcessing
   %
   % PROPOSAL: Automatic test code.
   %   NOTE: There are limited tests.
@@ -102,7 +99,7 @@ classdef DesSwmp < bicas.proc.SwmProcessing
     % (true)  L2 SBMx CWF --> L3 SBMx DENSITY, or
     % (false) L2 SURF CWF --> L3 DENSITY+EFIELD+SCPOT
     bSbmx
-    % 1/2 = Whether processing SBM1 or SBM2.
+    % 1/2/empty = Whether processing SBM1 or SBM2.
     iSbm
   end
 

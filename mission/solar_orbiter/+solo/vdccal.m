@@ -190,8 +190,7 @@ for iSub = 1:length(sub_int_times)-1
   % Set (resampled) calibration data to NaN for timestamps outside of the time
   % interval for which there is actual calibration data. One must do this to
   % prevent wildly extrapolating calibration data to far outside the time
-  % interval covered by actual calibration data, which leads to calibrating data
-  % which can not (yet) be calibrated.
+  % interval covered by actual calibration data.
   d23R.data( bNoCalibrationData) = NaN;
   k23R.data( bNoCalibrationData) = NaN;
   K123R.data(bNoCalibrationData) = NaN;
@@ -226,14 +225,14 @@ for iSub = 1:length(sub_int_times)-1
   PSP.units = 'V';
   PSP_out   = PSP_out.combine(PSP);
 
-  % -----------------------------
-  % Derive ScPot: Function of PSP
-  % -----------------------------
+  % --------------------------------------
+  % Derive ScPot: ScPot is function of PSP
+  % --------------------------------------
   % XXX: these are just ad hoc numbers.
   PLASMA_POT   = 1.5;
   SHORT_FACTOR = 2.5;
   %
-  ScPot = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
+  ScPot       = irf.ts_scalar(VDC.time, -(PSP.data-PLASMA_POT)*SHORT_FACTOR);
   ScPot.units = PSP.units;
   ScPot_out   = ScPot_out.combine(ScPot);
 
