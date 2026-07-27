@@ -191,9 +191,9 @@ for iSub = 1:length(sub_int_times)-1
   % interval for which there is actual calibration data. One must do this to
   % prevent wildly extrapolating calibration data to far outside the time
   % interval covered by actual calibration data.
-  d23R.data( bNoCalibrationData) = NaN;
-  k23R.data( bNoCalibrationData) = NaN;
-  K123R.data(bNoCalibrationData) = NaN;
+  d23R.data( bNoCalibrationData)    = NaN;
+  k23R.data( bNoCalibrationData)    = NaN;
+  K123R.data(bNoCalibrationData, :) = NaN;
 
 
 
