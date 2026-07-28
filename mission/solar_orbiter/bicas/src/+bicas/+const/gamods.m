@@ -422,6 +422,15 @@ classdef gamods
 
 
 
+      % BICAS v9.4.0: SCPOT delivery ~2026-07-3x.
+      Gmdb.add_GMVE(...
+        bicas.const.L2_LFR_TDS_DSID_CA, ...
+        bicas.ga.mods.VersionEntry("2026-07-28", "9.4.0", ...
+        ["Cap QUALITY_FLAG<=1 for tabulated thruster firings up" + ...
+        " until 2026-07-28."]))
+
+
+
       if 0
         %=============================
         % Data for next BICAS version

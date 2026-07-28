@@ -7,12 +7,12 @@
     "icd_version": "1.7"
   },
   "release": {
-    "version": "9.3.0",
-    "date": "2026-06-10T09:55:00Z",
+    "version": "9.4.0",
+    "date": "2026-07-28T17:15:00Z",
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "New SCPOT+EFIELD calibration data",
+    "modification": "Non-Standard Operations (NSO) table for thruster firings updated for until 2026-07-26",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {

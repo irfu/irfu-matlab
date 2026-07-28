@@ -88,8 +88,8 @@ classdef swdmd
       % for the 0.Y.Z beta version for instance). In all cases, any change in
       % the S/W must lead to update the version number.
       % """"""""
-      MAP('SWD.release.version')   = '9.3.0';
-      MAP('SWD.release.date')      = '2026-06-10T09:55:00Z';
+      MAP('SWD.release.version')   = '9.4.0';
+      MAP('SWD.release.date')      = '2026-07-28T17:15:00Z';
       MAP('SWD.release.author')    = 'Erik P G Johansson, BIAS team, IRF';
       MAP('SWD.release.contact')   = 'erik.johansson@irf.se';
       MAP('SWD.release.institute') = IRF_LONG_NAME;
@@ -225,9 +225,13 @@ classdef swdmd
       %   ['Fix E-field/spacecraft pot./PSP calibration code, fix psp2ne()' ...
       %   ' calibration data. L3 makes use of new L2_QUALITY_BITMASK.'], ...
       %   ]; % v9.2.0
+      % MAP('SWD.release.modification')   = [...
+      %   ['New SCPOT+EFIELD calibration data'], ...
+      %   ]; % v9.3.0
       MAP('SWD.release.modification')   = [...
-        ['New SCPOT+EFIELD calibration data'], ...
-        ]; % v9.3.0
+        ['Non-Standard Operations (NSO) table for thruster firings updated', ...
+        ' for until 2026-07-26'], ...
+        ]; % v9.4.0
 
       MAP('SWD.release.source')         = 'https://github.com/irfu/irfu-matlab/commits/SOdevel';
       % Appropriate branch? "master" instead?
