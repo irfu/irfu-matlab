@@ -51,7 +51,7 @@ START_META     =   CONTACT_COORDINATES
 END_META       =   CONTACT_COORDINATES
 !
 START_META     =   ACKNOWLEDGEMENT
-   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Active Archive in any"
+   ENTRY       =   "Please acknowledge the EFW team and the ESA Cluster Science Archive in any"
    ENTRY       =   "publication based upon use of these data"
 END_META       =   ACKNOWLEDGEMENT
 
@@ -61,8 +61,8 @@ END_META       =   ACKNOWLEDGEMENT
 START_VARIABLE    = time_tags__CXXX_CP_EFW_L3_OFIT
   PARAMETER_TYPE    = "Support_Data"
   VALUE_TYPE      = ISO_TIME
-  DELTA_PLUS      = 2
-  DELTA_MINUS     = 2
+  DELTA_PLUS      = 0
+  DELTA_MINUS     = 5.15
   FILLVAL         = 9999-12-31T23:59:59Z
   UNITS           = "s"
   SI_CONVERSION   = "1.0>s"

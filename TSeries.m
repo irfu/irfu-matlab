@@ -1595,7 +1595,7 @@ classdef TSeries
       end
     end
 
-    function specrec = specrec(obj)      
+    function specrec = specrec(obj)
       specrec.t = obj.time.epochUnix;
       specrec.p = obj.data;
       specrec.p_label = '';
@@ -1623,7 +1623,7 @@ classdef TSeries
       Ts = obj;
       Ts.data = new_data;
     end
-    
+
     function obj = tlim(obj,tint, mode)
       %TLIM  Returns data within specified time interval
       %
