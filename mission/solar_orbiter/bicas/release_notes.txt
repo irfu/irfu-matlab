@@ -426,3 +426,10 @@ NOTE: Generates datasets using CDF 3.7.1 as before. This file previously falsely
 ----------------------------
 * Non-Standard Operations (NSO) table thruster firings updated for until
   2026-07-26 (inclusive).
+
+
+----------------------------
+ Version x.y.z (xxxx-xx-xx)
+----------------------------
+* Added Non-Standard Operations (NSO) table thruster firings updated for
+  2026-06-22 and 2026-06-25.

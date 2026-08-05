@@ -3250,6 +3250,18 @@
             <description></description>
         </event>
         <event>
+            <startTimeUtc>2026-06-22T19:59:32</startTimeUtc>
+            <stopTimeUtc> 2026-06-22T20:08:31</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description></description>
+        </event>
+        <event>
+            <startTimeUtc>2026-06-25T10:29:32</startTimeUtc>
+            <stopTimeUtc> 2026-06-25T10:37:36</stopTimeUtc>
+            <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
+            <description>Unclear but QUALITY_BITMASK indicates thruster firing. One cycle.</description>
+        </event>
+        <event>
             <startTimeUtc>2026-06-29T01:04:27</startTimeUtc>
             <stopTimeUtc> 2026-06-29T01:14:14</stopTimeUtc>
             <rcsNsoId>THRUSTER_FIRING</rcsNsoId>
