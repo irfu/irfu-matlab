@@ -82,11 +82,11 @@ end
 if isTSeries == false
   times = PDist2d.t;
   distributions = PDist2d.dist;
-   if isfield(PDist2d,'species') && massnotset
-     if ischar(PDist2d.species)
-        species = PDist2d.species(1);
-     end
-   end
+  if isfield(PDist2d,'species') && massnotset
+    if ischar(PDist2d.species)
+      species = PDist2d.species(1);
+    end
+  end
 
   timesformat = size(times);
   if timesformat(1) < timesformat(2)

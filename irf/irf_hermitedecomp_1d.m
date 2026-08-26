@@ -75,11 +75,11 @@ end
 if isTSeries == false
   times = PDist1d.t;
   distributions = PDist1d.dist;
-   if isfield(PDist1d,'species') && massnotset
-     if ischar(PDist1d.species)
-        species = PDist1d.species(1);
-     end
-   end
+  if isfield(PDist1d,'species') && massnotset
+    if ischar(PDist1d.species)
+      species = PDist1d.species(1);
+    end
+  end
 
   timesformat = size(times);
   if timesformat(1) < timesformat(2)

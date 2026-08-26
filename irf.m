@@ -350,7 +350,7 @@ switch lower(action)
         datastore('irfu_matlab','okCheckOS',true);
       case('PCWIN')
         % Untested, no guarantee it will work.
-	% Note: From Windows 11 it's 64bit only, so if reaching here it is likely older EOL version of Windows
+      	% Note: From Windows 11 it's 64bit only, so if reaching here it is likely older EOL version of Windows
         disp('Operating system, Windows 32 bit, is not tested nor supported by IRFU-MATLAB.');
         disp('Recommended OS are: Linux, Mac and Windows (all 64 bit only).');
         if(nargout), out=false; end
