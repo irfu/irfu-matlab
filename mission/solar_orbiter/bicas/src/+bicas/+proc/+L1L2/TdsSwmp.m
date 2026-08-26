@@ -4,7 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef TdsSwmProcessing < bicas.proc.SwmProcessing
+classdef TdsSwmp < bicas.proc.SwmProcessing
   % PROPOSAL: Automatic test code.
   %
   % PROPOSAL: Normalize TDS data to be double (not single) to make it the same
@@ -47,7 +47,7 @@ classdef TdsSwmProcessing < bicas.proc.SwmProcessing
     %       (2) sometimes one may want to read an ROC-SGSE dataset as if it
     %           was an RODP dataset or the other way around.
     %
-    function obj = TdsSwmProcessing(inputSciDsid, outputDsid)
+    function obj = TdsSwmp(inputSciDsid, outputDsid)
       obj.inputSciDsid = inputSciDsid;
       obj.inputSci    = bicas.classify_BICAS_L1_L1R_to_L2_DSID(inputSciDsid);
 

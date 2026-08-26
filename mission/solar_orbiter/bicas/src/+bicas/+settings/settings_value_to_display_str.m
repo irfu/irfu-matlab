@@ -1,5 +1,5 @@
 %
-% Convert a settings value (from bicas.Settings) to  one-row string that can be
+% Convert a settings value (from bicas.settings.Settings) to  one-row string that can be
 % displayed, e.g. in a log message.
 %
 % NOTE: This function should ideally be able to handle all settings values, but
@@ -11,7 +11,7 @@
 % ARGUMENTS
 % =========
 % value
-%       A settings value from an instance of bicas.Settings, i.e. the value in a
+%       A settings value from an instance of bicas.settings.Settings, i.e. the value in a
 %       key-value pair (one of the versions of the value).
 %
 %
@@ -21,7 +21,7 @@
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
-% First created 2021-08-12, by breaking out code from bicas.sprint_BSO().
+% First created 2021-08-12, by breaking out code from bicas.settings.sprint_BSO().
 %
 function displayStr = settings_value_to_display_str(value)
 % PROPOSAL: Shorter name.
@@ -75,7 +75,7 @@ displayStrCa = cell(numel(ca), 1);
 for i = 1:numel(ca)
 
   % RECURSIVE CALL
-  displayStrCa{i} = bicas.settings_value_to_display_str(ca{i});
+  displayStrCa{i} = bicas.settings.settings_value_to_display_str(ca{i});
 end
 
 displayStr = strjoin(displayStrCa, ', ');

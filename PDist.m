@@ -3600,25 +3600,25 @@ classdef PDist < TSeries
       counts = nansum(PD.data(:,:,:),3); % Sum over all angles
       counts = movmean(counts,nMovMean,1); % Smooths the results a bit
 
-       switch output
-          case 'mat'
-            mask = zeros(size(counts));
-            mask(find(counts<limCounts)) = 1;
-            out = mask;
-          case 'energy'
-            mask = zeros(PD.length,1);
-            for it = 1:PD.length
-              idx_nan_tmp = find(counts(it,:)>limCounts,1,'first'); % Find first instance when value is above the given limit.
-              if isempty(idx_nan_tmp)
-                idx_nan(it) = NaN;
-                mask(it) = NaN;
-              else
-                idx_nan(it) = idx_nan_tmp;
-                mask(it) = PD.depend{1}(it,idx_nan(it));
-              end
+      switch output
+        case 'mat'
+          mask = zeros(size(counts));
+          mask(find(counts<limCounts)) = 1;
+          out = mask;
+        case 'energy'
+          mask = zeros(PD.length,1);
+          for it = 1:PD.length
+            idx_nan_tmp = find(counts(it,:)>limCounts,1,'first'); % Find first instance when value is above the given limit.
+            if isempty(idx_nan_tmp)
+              idx_nan(it) = NaN;
+              mask(it) = NaN;
+            else
+              idx_nan(it) = idx_nan_tmp;
+              mask(it) = PD.depend{1}(it,idx_nan(it));
             end
-            out = irf.ts_scalar(PD.time,mask);
-        end
+          end
+          out = irf.ts_scalar(PD.time,mask);
+      end
 
 
     end
@@ -3730,18 +3730,18 @@ classdef PDist < TSeries
       nDep = numel(depint);
 
       for it = 1:obj.length
-      for iDep = 1:nDep
-        deplim1 = repmat(depint{iDep}(it,1),[1 datasize(2)]);
-        deplim2 = repmat(depint{iDep}(it,2),[1 datasize(2)]);
-        iMask = intersect(find(obj.depend{iDep}(it,:)>=deplim1), find(obj.depend{iDep}(it,:)<deplim2));
-        data(it,iMask,:,:) = NaN;
-        %[it,iE] = ind2sub(datasize(1:2),iMask);
-        %for it_ = it
-        %  for iE_ = iE
-        %    data(it_,iE_,:,:) = NaN;
-        %  end
-        %end
-      end
+        for iDep = 1:nDep
+          deplim1 = repmat(depint{iDep}(it,1),[1 datasize(2)]);
+          deplim2 = repmat(depint{iDep}(it,2),[1 datasize(2)]);
+          iMask = intersect(find(obj.depend{iDep}(it,:)>=deplim1), find(obj.depend{iDep}(it,:)<deplim2));
+          data(it,iMask,:,:) = NaN;
+          %[it,iE] = ind2sub(datasize(1:2),iMask);
+          %for it_ = it
+          %  for iE_ = iE
+          %    data(it_,iE_,:,:) = NaN;
+          %  end
+          %end
+        end
       end
       PD = obj;
       PD.data = data;
@@ -4538,7 +4538,7 @@ classdef PDist < TSeries
 
       % Phase space volume of each cell, same base length and time units as f
       if doScpot
-        ts_vol = obj.d3v('scpot',scpot); 
+        ts_vol = obj.d3v('scpot',scpot);
       else
         ts_vol = obj.d3v;
       end
@@ -4720,8 +4720,8 @@ classdef PDist < TSeries
         %  case 'counts'
         %    p(it).dc = df_all(1:i_part_count-1);
         %  otherwise
-            p(it).df = df_all(1:i_part_count-1);
-            p(it).dv = dv_all(1:i_part_count-1);
+        p(it).df = df_all(1:i_part_count-1);
+        p(it).dv = dv_all(1:i_part_count-1);
         %end
       end % end time loop
       p(it).df_units = obj.units;
@@ -5067,7 +5067,7 @@ classdef PDist < TSeries
       T_si = P*1e-9/(n*1e6);
       T_eV = T_si/units.eV;
       T_eV.units = 'eV';
-      TS = T_eV;      
+      TS = T_eV;
 
     end
     function varargout = remove_noise(obj,nMean,nThresh,PD_counts)

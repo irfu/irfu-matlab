@@ -21,6 +21,7 @@
 % First created 2020-05-26.
 %
 function [i1Array, i2Array] = split_by_false(bArray)
+% PROBLEM: Name bad. Current function finds sub-intervals.
 % PROPOSAL: Function name?
 %   NOTE: Compare strsplit, irf.utils.split_by_jumps()
 

@@ -414,7 +414,7 @@ classdef bicas
       end
       L.logf('info', 'configFile = "%s"', configFile)
       L.log('info', 'Overriding subset of in-memory settings using config file.')
-      bicas.override_settings_from_config_file(configFile, Bso, L)
+      bicas.settings.override_settings_from_config_file(configFile, Bso, L)
 
 
 
@@ -435,7 +435,7 @@ classdef bicas
 
 
       % Print/log the content of Bso.
-      L.log('info', bicas.sprint_BSO(Bso))
+      L.log('info', bicas.settings.sprint_BSO(Bso))
 
       % Print/log selected parts of bicas.const.
       L.log('info', bicas.sprint_constants())
@@ -585,7 +585,7 @@ classdef bicas
       end
 
       % Print settings
-      bicas.stdout_print(bicas.sprint_BSO(Bso))   % Includes title
+      bicas.stdout_print(bicas.settings.sprint_BSO(Bso))   % Includes title
 
       bicas.stdout_printf('See "readme.txt" and user manual for more help.\n')
     end

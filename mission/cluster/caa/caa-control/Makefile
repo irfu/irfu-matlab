@@ -13,7 +13,7 @@ txt: ns_ops_epo.xml
 
 cef: ns_ops_epo.xml
 	for cln in 1 2 3 4 ; do \
-		${XSLTPROC} --param clusterno $$cln caveatscef.xsl ns_ops_epo.xml > C$${cln}_CQ_EFW_INST__20010128_V02.cef ; \
+		${XSLTPROC} --param clusterno $$cln caveatscef.xsl ns_ops_epo.xml > C$${cln}_CQ_EFW_INST__20010128_V03.cef ; \
 	done
 
 ns_ops_epo.xml: ns_ops.xml

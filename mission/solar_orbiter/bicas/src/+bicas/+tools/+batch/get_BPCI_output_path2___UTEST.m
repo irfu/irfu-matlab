@@ -57,12 +57,11 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_YMD_CDAG_output_dir_no_preexisting(testCase, FILENAME_VERSION_ALGORITHM, BPCI_INPUT_YMD_FILES)
+    function test_YMD_CDAG_output_dir_no_preexisting(T, FILENAME_VERSION_ALGORITHM, BPCI_INPUT_YMD_FILES)
       % CDAG output filename
       % Non-empty-string output directory.
       % No pre-existing datasets.
-      bicas.tools.batch.get_BPCI_output_path2___UTEST.test(...
-        testCase, ...
+      T.test(...
         BPCI_INPUT_YMD_FILES, ...
         {...
         }, ...
@@ -73,7 +72,7 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_YMD_preexisting_output(testCase, BPCI_INPUT_YMD_FILES, FILENAME_VERSION_ALGORITHM)
+    function test_YMD_preexisting_output(T, BPCI_INPUT_YMD_FILES, FILENAME_VERSION_ALGORITHM)
 
       switch(FILENAME_VERSION_ALGORITHM)
         case 'HIGHEST_USED'
@@ -82,8 +81,7 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
           expOutputFilename = 'solo_L2_rpw-lfr-surv-cwf-e_20220101_V05.cdf';
       end
 
-      bicas.tools.batch.get_BPCI_output_path2___UTEST.test(...
-        testCase, ...
+      T.test(...
         BPCI_INPUT_YMD_FILES, ...
         {...
         fullfile('ref', 'solo_L2_rpw-lfr-surv-cwf-e-cdag_20211231_V01.cdf'), ...  % Irrelevant adjacent date.
@@ -97,12 +95,11 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_YMDHMS_output_dir_no_preexisting(testCase, FILENAME_VERSION_ALGORITHM, BPCI_INPUT_YMDHMS_FILES)
+    function test_YMDHMS_output_dir_no_preexisting(T, FILENAME_VERSION_ALGORITHM, BPCI_INPUT_YMDHMS_FILES)
       % CDAG output filename
       % Non-empty-string output directory.
       % No pre-existing datasets.
-      bicas.tools.batch.get_BPCI_output_path2___UTEST.test(...
-        testCase, ...
+      T.test(...
         BPCI_INPUT_YMDHMS_FILES, ...
         {...
         }, ...
@@ -114,7 +111,7 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_YMDHMS_preexisting_output(testCase, BPCI_INPUT_YMDHMS_FILES, FILENAME_VERSION_ALGORITHM)
+    function test_YMDHMS_preexisting_output(T, BPCI_INPUT_YMDHMS_FILES, FILENAME_VERSION_ALGORITHM)
 
       switch(FILENAME_VERSION_ALGORITHM)
         case 'HIGHEST_USED'
@@ -123,8 +120,7 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
           expOutputFilename = 'solo_L2_rpw-lfr-sbm1-cwf-e_20220101T012345-20220101T123456_V05.cdf';
       end
 
-      bicas.tools.batch.get_BPCI_output_path2___UTEST.test(...
-        testCase, ...
+      T.test(...
         BPCI_INPUT_YMDHMS_FILES, ...
         {...
         'solo_L2_rpw-lfr-sbm1-cwf-e_20220101_V01.cdf', ...  % Irrelevant time interval. Unexpected time format.
@@ -144,17 +140,17 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
 
 
 
-  %########################
-  %########################
-  % PRIVATE STATIC METHODS
-  %########################
-  %########################
-  methods(Static, Access=private)
+  %##########################
+  %##########################
+  % PRIVATE INSTANCE METHODS
+  %##########################
+  %##########################
+  methods(Access=private)
 
 
 
     function test(...
-        testCase, ...
+        T, ...
         bpciInputPathCa, ...        % Converted to DSMD.
         preexistingOutputLvCa, ...  % Converted to DSMD.
         outputDsid, outputVerAlgorithmId, outputDir, outputIsCdag, expFilePath)
@@ -168,12 +164,12 @@ classdef get_BPCI_output_path2___UTEST < matlab.unittest.TestCase
         outputDsid, outputVerAlgorithmId, outputDir, outputIsCdag ...
         );
 
-      testCase.assertEqual(actFilePath, expFilePath)
+      T.assertEqual(actFilePath, expFilePath)
     end
 
 
 
-  end    % methods(Static, Access=private)
+  end    % methods(Access=private)
 
 
 

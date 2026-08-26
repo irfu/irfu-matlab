@@ -66,7 +66,7 @@ function value = translate(table, key, varargin)
 % PROPOSITION: Function is unnecessary.
 %   PRO: Does not shorten the code enough to warrant a function.
 %       PRO: Can write case statements on one row.
-%   PRO: Function is only used by bicas.sprint_BSO().  /2024-07-23
+%   PRO: Function is only used by bicas.settings.sprint_BSO().  /2024-07-23
 %
 % PROPOSAL: Be able to use non-string key.
 %   PRO: Can not always do with switch-case. ==> Can avoid if-elseif-elseif-...-else statements

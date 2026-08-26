@@ -366,7 +366,7 @@ end    % main()
 function SwmArray = get_SWMs(bicasConfigFile)
 BSO = bicas.create_default_BSO();
 
-bicas.override_settings_from_config_file(...
+bicas.settings.override_settings_from_config_file(...
   bicasConfigFile, BSO, bicas.Logger('NO_STDOUT', false));
 
 BSO.make_read_only();

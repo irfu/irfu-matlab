@@ -19,9 +19,9 @@ classdef get_LRX___UTEST < matlab.unittest.TestCase
 
     function test_exception(testCase)
       function test_exc(zvR0, zvR1, zvR2, iLsf)
-          testCase.assertError(...
-              @() solo.hwzv.get_LRX(zvR0, zvR1, zvR2, iLsf), ...
-              ?MException)
+        testCase.assertError(...
+          @() solo.hwzv.get_LRX(zvR0, zvR1, zvR2, iLsf), ...
+          ?MException)
       end
 
       % ==================
@@ -64,13 +64,13 @@ classdef get_LRX___UTEST < matlab.unittest.TestCase
     function test0(testCase)
 
       function test(zvR0, zvR1, zvR2, iLsf, expZvLrx)
-          actZvLrx = solo.hwzv.get_LRX(zvR0, zvR1, zvR2, iLsf);
+        actZvLrx = solo.hwzv.get_LRX(zvR0, zvR1, zvR2, iLsf);
 
-          % NOTE: The function return value class depends on the input
-          %       arguments. It is NOT guaranteed to be logical.
-          % testCase.assertTrue(islogical(actZvLrx))
+        % NOTE: The function return value class depends on the input
+        %       arguments. It is NOT guaranteed to be logical.
+        % testCase.assertTrue(islogical(actZvLrx))
 
-          testCase.assertEqual(actZvLrx, expZvLrx)
+        testCase.assertEqual(actZvLrx, expZvLrx)
       end
 
       test(zeros(0, 1), zeros(0, 1), zeros(0,1), zeros(0,1), zeros(0, 1))

@@ -34,9 +34,9 @@ classdef create_BRVF___UTEST < matlab.unittest.TestCase
 
 
 
-    function setup(testCase)
-      Fixture          = testCase.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
-      testCase.testDir = Fixture.Folder;
+    function setup(T)
+      Fixture          = T.applyFixture(matlab.unittest.fixtures.TemporaryFolderFixture);
+      T.testDir = Fixture.Folder;
     end
 
 
@@ -54,11 +54,11 @@ classdef create_BRVF___UTEST < matlab.unittest.TestCase
 
 
 
-    function test(testCase)
+    function test(T)
       BEGIN_DT = datetime('2020-01-02T03:04:05Z', 'TimeZone', 'UTCLeapSeconds');
       END_DT   = datetime('2099-12-31T23:59:59Z', 'TimeZone', 'UTCLeapSeconds');
 
-      actRctJsonPath = bicas.tools.rct.create_BRVF(testCase.testDir, 'biasRctFilename.cdf', BEGIN_DT, END_DT);
+      actRctJsonPath = bicas.tools.rct.create_BRVF(T.testDir, 'biasRctFilename.cdf', BEGIN_DT, END_DT);
 
       irf.assert.file_exists(actRctJsonPath)
     end
