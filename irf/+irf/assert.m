@@ -214,13 +214,14 @@ classdef assert
     %
     % ARGUMENTS
     % =========
-    % s      : String
+    % s      : Char string
     % regexp : (1) String. Regular expressions.
     %          (2) Cell array of strings. List of regular expressions.
     %              NOTE: Must be non-empty array.
     %
     function castring_regexp(s, regexp)
       assert(ischar(s))
+
       if ~any(irf.str.regexpf(s, regexp))
         error(irf.assert.ASSERTION_EMID, ...
           ['String "%s" (in its entirety) does not match any of', ...

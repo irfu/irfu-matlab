@@ -63,8 +63,8 @@ classdef NsoTable
   properties(SetAccess=immutable, GetAccess=public)
     % See constructor.
     % NOTE: All fields are Nx1 vectors.
-    evtStartTt2000Array
-    evtStopTt2000Array
+    evtStartTt2000Ar
+    evtStopTt2000Ar
     evtQrcidAr
   end
   properties(Dependent)
@@ -83,7 +83,7 @@ classdef NsoTable
 
 
     function nRows = get.nEvents(obj)
-      nRows = numel(obj.evtStartTt2000Array);
+      nRows = numel(obj.evtStartTt2000Ar);
     end
 
 
@@ -99,17 +99,17 @@ classdef NsoTable
     %
     % ARGUMENTS
     % =========
-    % evtStartTt2000Array
+    % evtStartTt2000Ar
     %       Column array of timestamps that represent the beginning of
     %       events.
     %       NOTE: Must increment.
-    % evtStopTt2000Array
+    % evtStopTt2000Ar
     %       Column array of timestamps that represent the end of events.
     % evtQrcidAr
     %       Column array of QRCIDs for events.
-    %       NOTE: The same QRCID may occur multiple times. Not unique.
+    %       NOTE: The same QRCID may occur multiple times.
     %
-    function obj = NsoTable(evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr)
+    function obj = NsoTable(evtStartTt2000Ar, evtStopTt2000Ar, evtQrcidAr)
 
       %============
       % ASSERTIONS
@@ -119,16 +119,16 @@ classdef NsoTable
       % PROPOSAL: Move ~all file format assertions to
       %           bicas.NsoTable.read_file_validated()?
       irf.assert.sizes(...
-        evtStartTt2000Array, [-1], ...
-        evtStopTt2000Array,  [-1], ...
-        evtQrcidAr,          [-1]);
+        evtStartTt2000Ar, [-1], ...
+        evtStopTt2000Ar,  [-1], ...
+        evtQrcidAr,       [-1]);
 
-      assert(isa(evtStartTt2000Array, 'int64'))
-      assert(isa(evtStopTt2000Array,  'int64'))
-      assert(isa(evtQrcidAr,          'string'))
+      assert(isa(evtStartTt2000Ar, 'int64'))
+      assert(isa(evtStopTt2000Ar,  'int64'))
+      assert(isa(evtQrcidAr,       'string'))
 
       % ASSERTION: All events have non-negative length.
-      assert(all(evtStartTt2000Array <= evtStopTt2000Array), ...
+      assert(all(evtStartTt2000Ar <= evtStopTt2000Ar), ...
         'Not all events have non-negative length.')
 
       %--------------------------------------------------
@@ -141,21 +141,21 @@ classdef NsoTable
       % IMPLEMENTATION NOTE: One can not assume "strictly ascending" values,
       % since events with separate QRCIDs may begin at the exact same
       % instant.
-      if ~issorted(evtStartTt2000Array)
+      if ~issorted(evtStartTt2000Ar)
         % IMPLEMENTATION NOTE: Locating and printing the illegal entries in a
         % proper human-readable error message, since they could otherwise be
         % hard to manually locate and fix.
-        iEvt = find(diff(evtStartTt2000Array) < 0) + 1;
+        iEvt = find(diff(evtStartTt2000Ar) < 0) + 1;
         assert(~isempty(iEvt));
 
         utcCa = irf.cdf.TT2000_to_UTC_str_many(...
-          evtStartTt2000Array(iEvt), 9);
+          evtStartTt2000Ar(iEvt), 9);
 
         sCa = irf.str.sprintf_many('    %s\n', utcCa);
         timestampsListStr = strjoin(sCa);
 
         error('BICAS:FailedToReadInterpretNsoTable', ...
-          ['NsoTable.evtStartTt2000Array is not sorted. Events', ...
+          ['NsoTable.evtStartTt2000Ar is not sorted. Events', ...
           ' beginning at the following timestamps begin earlier', ...
           ' than the preceding events:\n%s'], ...
           timestampsListStr);
@@ -175,8 +175,8 @@ classdef NsoTable
         % NOTE: Transposing before 2D-->1D vector.
         % NOTE: 'strictascend' excludes ~adjacent events.
         tt2000Array = [...
-          evtStartTt2000Array(b), ...
-          evtStopTt2000Array(b)]';
+          evtStartTt2000Ar(b), ...
+          evtStopTt2000Ar(b)]';
         tt2000Array = tt2000Array(:);
         assert(issorted(tt2000Array, 'strictascend'), ...
           ['At least two events for qrcid="%s"', ...
@@ -188,9 +188,9 @@ classdef NsoTable
       %=====================
       % Store data in class
       %=====================
-      obj.evtStartTt2000Array = evtStartTt2000Array;
-      obj.evtStopTt2000Array  = evtStopTt2000Array;
-      obj.evtQrcidAr          = evtQrcidAr;
+      obj.evtStartTt2000Ar = evtStartTt2000Ar;
+      obj.evtStopTt2000Ar  = evtStopTt2000Ar;
+      obj.evtQrcidAr       = evtQrcidAr;
     end
 
 
@@ -218,8 +218,8 @@ classdef NsoTable
 
       NsoEventMatchAr = bicas.NsoEventMatch.empty(0, 1);
       for iEvent = 1:obj.nEvents
-        tt2000start = obj.evtStartTt2000Array(iEvent);
-        tt2000stop  = obj.evtStopTt2000Array(iEvent);
+        tt2000start = obj.evtStartTt2000Ar(iEvent);
+        tt2000stop  = obj.evtStopTt2000Ar(iEvent);
 
         qrbcAr = (tt2000start <= tt2000Ar) & (tt2000Ar <= tt2000stop);
         if any(qrbcAr)
@@ -246,13 +246,13 @@ classdef NsoTable
     % Read SolO non-standard operations (NSO) XML file for *BICAS* and
     % return the content as an instance of bicas.NsoTable.
     %
-    % NOTE: The caller must supply list of legal QRCIDs to make it possible to
-    % assert that the file is valid, without making this class less generic.
+    % NOTE: The caller must supply an array of legal QRCIDs to make it possible
+    % to assert that the file is valid, without making this class less generic.
     %
     function NsoTable = read_file_validated(filePath, legalQrcidAr)
       assert(iscolumn(legalQrcidAr) & isstring(legalQrcidAr))
 
-      [evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr] = ...
+      [evtStartTt2000Ar, evtStopTt2000Ar, evtQrcidAr] = ...
         bicas.NsoTable.read_file_raw(filePath);
 
       % ASSERTION: No illegal QRCIDs (as specified in argument)
@@ -266,7 +266,7 @@ classdef NsoTable
       end
 
       NsoTable = bicas.NsoTable(...
-        evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr);
+        evtStartTt2000Ar, evtStopTt2000Ar, evtQrcidAr);
     end
 
 
@@ -285,15 +285,15 @@ classdef NsoTable
     % RETURN VALUES
     % =============
     % Same fields as in class bicas.NsoTable.
-    % evtStartTt2000Array
-    % evtStopTt2000Array
+    % evtStartTt2000Ar
+    % evtStopTt2000Ar
     % evtQrcidAr
     %
     %
     % Author: Erik P G Johansson, IRF, Uppsala, Sweden
     % First created 2020-09-21.
     %
-    function [evtStartTt2000Array, evtStopTt2000Array, evtQrcidAr] = ...
+    function [evtStartTt2000Ar, evtStopTt2000Ar, evtQrcidAr] = ...
         read_file_raw(filePath)
 
       RootXmlElem      = xmlread(filePath);
@@ -303,8 +303,8 @@ classdef NsoTable
 
       nEvents = EventXmlElemList.getLength;
 
-      evtStartTt2000Array = int64(zeros(nEvents, 1));
-      evtStopTt2000Array  = int64(zeros(nEvents, 1));
+      evtStartTt2000Ar = int64(zeros(nEvents, 1));
+      evtStopTt2000Ar  = int64(zeros(nEvents, 1));
       evtQrcidAr          = strings(nEvents, 1);
 
       for i = 1:nEvents
@@ -322,8 +322,8 @@ classdef NsoTable
         startTt2000 = spdfparsett2000(startUtc);
         stopTt2000  = spdfparsett2000(stopUtc);
 
-        evtStartTt2000Array(i, 1) = startTt2000;
-        evtStopTt2000Array(i, 1)  = stopTt2000;
+        evtStartTt2000Ar(i, 1) = startTt2000;
+        evtStopTt2000Ar(i, 1)  = stopTt2000;
         evtQrcidAr{i, 1}          = qrcid;
       end
     end

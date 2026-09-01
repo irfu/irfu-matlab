@@ -1309,22 +1309,22 @@ end
             if iSen == 1
 
               if any(any(energy_top_tmp.data<0))%ignore negative values
-                  energies = zeros(size(energy_top_tmp.data));
+                energies = zeros(size(energy_top_tmp.data));
               else
-                  energies = energy_top_tmp.data;
-                  nSensors_top = nSensors_top+1;
+                energies = energy_top_tmp.data;
+                nSensors_top = nSensors_top+1;
               end
             else
-                if ~any(any(energy_top_tmp.data<0))%ignore negative values
-                    energies = energies + energy_top_tmp.data;
-                    nSensors_top = nSensors_top+1;
-                end
+              if ~any(any(energy_top_tmp.data<0))%ignore negative values
+                energies = energies + energy_top_tmp.data;
+                nSensors_top = nSensors_top+1;
+              end
             end
             energy_suf_bottom = [dsetName(1:5), 'epd_feeps_' Vr.tmmode '_' Vr.lev '_', species, '_bottom_energy_centroid_sensorid_', num2str(sensors(iSen))];
             energy_bottom_tmp = mms.db_get_variable(dsetName, energy_suf_bottom, Tint);
             if ~any(any(energy_bottom_tmp.data<0))%ignore negative values
-                energies = energies + energy_bottom_tmp.data;
-                nSensors_bottom = nSensors_bottom+1;
+              energies = energies + energy_bottom_tmp.data;
+              nSensors_bottom = nSensors_bottom+1;
             end
           end
           energies = energies / (nSensors_top+nSensors_bottom);

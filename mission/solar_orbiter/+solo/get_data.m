@@ -74,6 +74,7 @@ vars = {'L2_mag-srf-normal','L2_mag-srf-normal-1-minute','L2_mag-rtn-normal','L2
   'pos_rtn','L2_swa-pas-quality_factor', 'LL_B_RTN', 'LL_B_SRF', 'LL_V_RTN', 'LL_V_SRF', 'LL_N','L2_rpw-tds-surv-stat','L2_rpw-lfr-sbm1-cwf-b-cdag','L3_swa-eas-nmpad-psd'};
 
 %% check if alias is used and change to full variable name
+varStrOld = varStr;
 if ~ismember(varStr, vars)
   switch lower(varStr) % effectivly ignore letter case
     % short alias and full variable names
@@ -121,7 +122,6 @@ if ~ismember(varStr, vars)
   % Print what alias has been changed to
   irf.log('debug', ['Alias used: ', varStr, ' changed to ', varStrNew]);
   %For data variables found in the same cdf file (e.g vdc and edc)
-  varStrOld = varStr;
   % replace alias with the full variable name
   varStr = varStrNew;
 end
@@ -303,28 +303,32 @@ if strcmp(varStr(1),'L') && ~strcmp(varStr(2),'L') % check if request L2/3 data
           % added here
           pad_files = solo.db_list_files(['solo_',varStr],Tint);
 
-          energy = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_ENERGY')); % energy bins
-          pa = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_PA')); % angle bins
-          for k=1:length(pad_files)
-            pad{k} = double(spdfcdfread([pad_files(k).path '/' pad_files(k).name],'variables','SWA_EAS_NMPAD_PSD_DATA'));
-            pad{k}(pad{k}<-1e28)=nan;
-            tt{k} = spdfcdfread([pad_files(k).path '/' pad_files(k).name], 'Variable',{'EPOCH'});
-            for e_val = 1:length(energy)
-              if k==1
-                epad{e_val} = irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))');
-              else
-                epad{e_val} = epad{e_val}.combine(irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))'));
+          if ~isempty(pad_files)
+            energy = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_ENERGY')); % energy bins
+            pa = double(spdfcdfread([pad_files(1).path '/' pad_files(1).name],'variables','SWA_EAS_PA')); % angle bins
+            for k=1:length(pad_files)
+              pad{k} = double(spdfcdfread([pad_files(k).path '/' pad_files(k).name],'variables','SWA_EAS_NMPAD_PSD_DATA'));
+              pad{k}(pad{k}<-1e28)=nan;
+              tt{k} = spdfcdfread([pad_files(k).path '/' pad_files(k).name], 'Variable',{'EPOCH'});
+              for e_val = 1:length(energy)
+                if k==1
+                  epad{e_val} = irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))');
+                else
+                  epad{e_val} = epad{e_val}.combine(irf.ts_scalar(irf_time(tt{k},'date>epochtt'),squeeze(pad{k}(:,e_val,:))'));
+                end
               end
             end
-          end
 
-          for e_val = 1:length(energy)
-            res.(['ebin_' num2str(e_val)]).p = epad{e_val}.tlim(Tint).data;
-            res.(['ebin_' num2str(e_val)]).t = epad{e_val}.tlim(Tint).time.epochUnix;
-            res.(['ebin_' num2str(e_val)]).p_label='dEF';
-            res.(['ebin_' num2str(e_val)]).f = repmat(pa,1,numel(res.(['ebin_' num2str(e_val)]).t))';
+            for e_val = 1:length(energy)
+              res.(['ebin_' num2str(e_val)]).p = epad{e_val}.tlim(Tint).data;
+              res.(['ebin_' num2str(e_val)]).t = epad{e_val}.tlim(Tint).time.epochUnix;
+              res.(['ebin_' num2str(e_val)]).p_label='dEF';
+              res.(['ebin_' num2str(e_val)]).f = repmat(pa,1,numel(res.(['ebin_' num2str(e_val)]).t))';
+            end
+            res.energies = energy;
+          else
+            res = [];
           end
-          res.energies = energy;
 
         otherwise
           errStr = 'Not yet defined';

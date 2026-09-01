@@ -18,7 +18,7 @@ classdef filter_BPCIs_to_run___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test0(T)
 
       function test(BpciArray, doNotNeedToGenerateFilenamesCa, ExpBpciArray)
         doNotNeedToGenerateFilenamesCa = doNotNeedToGenerateFilenamesCa(:);
@@ -27,7 +27,7 @@ classdef filter_BPCIs_to_run___UTEST < matlab.unittest.TestCase
         ActBpciArray = bicas.tools.batch.filter_BPCIs_to_run(...
           BpciArray, doNotNeedToGenerateFilenamesCa);
 
-        testCase.assertEqual(...
+        T.assertEqual(...
           ActBpciArray, ...
           ExpBpciArray)
       end

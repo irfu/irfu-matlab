@@ -9,6 +9,7 @@
 %
 classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
   % PROPOSAL: Automatic test code for class itself.
+  %
   % PROPOSAL: How set data to be returned from functions?
   %   PROPOSAL: Specify return data.
   %       CON: Difficult to distinguish which RV is which.
@@ -34,12 +35,23 @@ classdef ExternalCodeTest < bicas.proc.L2L3.ExternalCodeAbstract
 
 
 
+  %#########################
+  %#########################
+  % PUBLIC INSTANCE METHODS
+  %#########################
+  %#########################
   methods
+
+
+
     %function obj = ExternalCodeTest(vdccalOutputCa, psp2neOuotputCa)
     function obj = ExternalCodeTest(VdccalRv, Psp2neRv)
       obj.VdccalRv = VdccalRv;
       obj.Psp2neRv = Psp2neRv;
     end
+
+
+
   end
 
 

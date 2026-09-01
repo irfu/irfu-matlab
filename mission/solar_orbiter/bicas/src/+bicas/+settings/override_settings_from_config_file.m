@@ -1,10 +1,10 @@
 %
-% Override values in bicas.Settings object with values from config file.
+% Override values in bicas.settings.Settings object with values from config file.
 %
 % NOTE: This function exists mostly so that it can be used by BICAS-external
 % code that constructs BSOs.
 %
-% NOTE: No return value since bicas.Settings is a handle object.
+% NOTE: No return value since bicas.settings.Settings is a handle object.
 %
 % NOTE: Hardcoded settings value source string.
 %

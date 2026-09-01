@@ -1,5 +1,5 @@
 %
-% matlab.unittest automatic test code for bicas.Settings class.
+% matlab.unittest automatic test code for bicas.settings.Settings class.
 %
 % NOTE: Does not test cell-valued settings since they seem not to be fully
 %       supported. To be investigated. /2023-12-12
@@ -20,8 +20,8 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_empty(testCase)
-      S = bicas.Settings();
+    function test_empty(T)
+      S = bicas.settings.Settings();
       S.disable_define()
       S.make_read_only()
     end
@@ -30,27 +30,27 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
     % Test that .get_fv() can not access values when it is not supposed
     % to (should raise error).
-    function test_get_fv_access(testCase)
+    function test_get_fv_access(T)
       KEY   = 'TEST_KEY';
       VALUE = 99;
 
-      S = bicas.Settings();
+      S = bicas.settings.Settings();
       S.define_setting(KEY, VALUE);
 
-      testCase.verifyError(...
+      T.verifyError(...
         @() S.get_fv(KEY), ...
         ?MException)
 
       S.disable_define()
 
-      testCase.verifyError(...
+      T.verifyError(...
         @() S.get_fv(KEY), ...
         ?MException)
 
       S.make_read_only()
 
       actValue = S.get_fv(KEY);
-      testCase.assertEqual(actValue, VALUE);
+      T.assertEqual(actValue, VALUE);
     end
 
 
@@ -63,7 +63,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
     %   .get_fv()
     %   .get_SKV()
     %   etc.
-    function test_value_types(testCase)
+    function test_value_types(T)
 
       % (1) set a key-value,
       % (not override value)
@@ -71,14 +71,14 @@ classdef Settings___UTEST < matlab.unittest.TestCase
       function test_initial(initialValue)
         KEY = 'TEST_KEY';
 
-        S = bicas.Settings();
+        S = bicas.settings.Settings();
 
         S.define_setting(KEY, initialValue)
         S.disable_define()
         S.make_read_only()
 
         actValue = S.get_fv(KEY);
-        testCase.assertEqual(actValue, initialValue)
+        T.assertEqual(actValue, initialValue)
       end
 
       % (1) set a key-value,
@@ -96,7 +96,7 @@ classdef Settings___UTEST < matlab.unittest.TestCase
         KEY = 'TEST_KEY';
 
         function S = pre_override()
-          S = bicas.Settings();
+          S = bicas.settings.Settings();
 
           S.define_setting(KEY, initialValue)
           S.disable_define()
@@ -104,12 +104,12 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
         function post_override(S)
           actValue = S.get_fv(KEY);
-          testCase.assertEqual(actValue, overrideValue)
+          T.assertEqual(actValue, overrideValue)
 
           actSkv = S.get_SKV(KEY);
-          expSkv = bicas.SettingsKeyValue(initialValue,  'default');
+          expSkv = bicas.settings.KeyValue(initialValue,  'default');
           expSkv = expSkv.override(       overrideValue, 'test');
-          testCase.assertEqual(actSkv, expSkv)
+          T.assertEqual(actSkv, expSkv)
         end
 
         %==================================
@@ -178,33 +178,33 @@ classdef Settings___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_get_keys(testCase)
+    function test_get_keys(T)
       %===========
       % Zero keys
       %===========
-      S1 = bicas.Settings();
-      testCase.assertEqual(S1.get_keys(), cell(1,0))
+      S1 = bicas.settings.Settings();
+      T.assertEqual(S1.get_keys(), cell(1,0))
 
       S1.disable_define()
-      testCase.assertEqual(S1.get_keys(), cell(1,0))
+      T.assertEqual(S1.get_keys(), cell(1,0))
 
       S1.make_read_only()
-      testCase.assertEqual(S1.get_keys(), cell(1,0))
+      T.assertEqual(S1.get_keys(), cell(1,0))
 
       %===============
       % Non-zero keys
       %===============
       KEYS_SET = {'KEY_1', 'KEY_2'};
-      S2 = bicas.Settings();
+      S2 = bicas.settings.Settings();
       S2.define_setting(KEYS_SET{1}, 99)
       S2.define_setting(KEYS_SET{2}, 'Abc')
-      testCase.assertEqual(S2.get_keys(), KEYS_SET)
+      T.assertEqual(S2.get_keys(), KEYS_SET)
 
       S2.disable_define()
-      testCase.assertEqual(S2.get_keys(), KEYS_SET)
+      T.assertEqual(S2.get_keys(), KEYS_SET)
 
       S2.make_read_only()
-      testCase.assertEqual(S2.get_keys(), KEYS_SET)
+      T.assertEqual(S2.get_keys(), KEYS_SET)
     end
 
 
@@ -213,34 +213,34 @@ classdef Settings___UTEST < matlab.unittest.TestCase
     %
     % NOTE: test_value_types() also tests the same method but for overridden
     % values.
-    function test_get_SKV(testCase)
+    function test_get_SKV(T)
       KEY_1 = 'KEY_1';
       KEY_2 = 'KEY_2';
       VALUE_1 = 99;
       VALUE_2 = 'Abc';
 
-      S1 = bicas.Settings();
+      S1 = bicas.settings.Settings();
       S1.define_setting(KEY_1, VALUE_1);
       S1.make_read_only()
 
       actSkv = S1.get_SKV(KEY_1);
-      expSkv = bicas.SettingsKeyValue(VALUE_1, 'default');
-      testCase.assertEqual(actSkv, expSkv)
+      expSkv = bicas.settings.KeyValue(VALUE_1, 'default');
+      T.assertEqual(actSkv, expSkv)
 
       % Two simultaneous keys
 
-      S2 = bicas.Settings();
+      S2 = bicas.settings.Settings();
       S2.define_setting(KEY_1, VALUE_1);
       S2.define_setting(KEY_2, VALUE_2);
       S2.make_read_only()
 
       actSkv = S2.get_SKV(KEY_2);
-      expSkv = bicas.SettingsKeyValue(VALUE_2, 'default');
-      testCase.assertEqual(actSkv, expSkv)
+      expSkv = bicas.settings.KeyValue(VALUE_2, 'default');
+      T.assertEqual(actSkv, expSkv)
 
       actSkv = S2.get_SKV(KEY_1);
-      expSkv = bicas.SettingsKeyValue(VALUE_1, 'default');
-      testCase.assertEqual(actSkv, expSkv)
+      expSkv = bicas.settings.KeyValue(VALUE_1, 'default');
+      T.assertEqual(actSkv, expSkv)
     end
 
 

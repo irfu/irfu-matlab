@@ -9,15 +9,11 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef(Abstract) SwmProcessing
-  % PROPOSAL: Naming convention for subclasses: *Swmp
-  %   PRO: Shortens names of implementations.
-  %       Ex:
-  %         bicas.proc.L1L2.LfrSwmProcessing
-  %         bicas.proc.L1L2.TdsSwmProcessing
-  %         bicas.proc.L2L2.LfrDsrSwmProcessing
-  %         bicas.proc.L2L3.L3OsrDsrSwmProcessing
-  %   CON: Bad for TestSwmProcessing, SwmProcessing
-  %       CON: Does not have to apply convention to every class.
+  % PROPOSAL: Remove production_function() arguments rctDir, NsoTable, Bso.
+  %           Subclasses which need them should require them in the constructor
+  %           and store them as instance variables instead.
+  %   PRO: Fewer arguments.
+  %   PRO: No arguments which are not used by some subclasses.
 
 
 

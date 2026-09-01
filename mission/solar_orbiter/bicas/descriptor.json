@@ -7,12 +7,12 @@
     "icd_version": "1.7"
   },
   "release": {
-    "version": "9.2.0",
-    "date": "2026-01-15T15:35:00Z",
+    "version": "9.4.0",
+    "date": "2026-07-28T17:15:00Z",
     "author": "Erik P G Johansson, BIAS team, IRF",
     "contact": "erik.johansson@irf.se",
     "institute": "Swedish Institute of Space Physics (IRF)",
-    "modification": "Fix E-field/spacecraft pot./PSP calibration code, fix psp2ne() calibration data. L3 makes use of new L2_QUALITY_BITMASK.",
+    "modification": "Non-Standard Operations (NSO) table for thruster firings updated for until 2026-07-26",
     "source": "https://github.com/irfu/irfu-matlab/commits/SOdevel"
   },
   "environment": {

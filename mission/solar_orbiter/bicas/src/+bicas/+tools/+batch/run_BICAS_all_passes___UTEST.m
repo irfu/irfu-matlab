@@ -372,7 +372,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       DSID_2 = 'SOLO_L2_RPW-LFR-SURV-CWF-E';
       DSID_3 = 'SOLO_L3_RPW-BIA-DENSITY';
 
-      SWMP = bicas.tools.batch.TestSwmProcessing();
+      SWMP = bicas.tools.batch.SwmpTest();
 
       SWM_1 = bicas.swm.SoftwareMode(...
         SWMP, 'CLI_SWM_1', 'SWD purpose', ...
@@ -417,7 +417,7 @@ classdef run_BICAS_all_passes___UTEST < matlab.unittest.TestCase
       DSID_3a = 'SOLO_L3_RPW-BIA-DENSITY';
       DSID_3b = 'SOLO_L3_RPW-BIA-DENSITY-10-SECONDS';
 
-      SWMP = bicas.tools.batch.TestSwmProcessing();
+      SWMP = bicas.tools.batch.SwmpTest();
 
       SWM_1 = bicas.swm.SoftwareMode(...
         SWMP, 'CLI_SWM_1', 'SWD purpose', ...

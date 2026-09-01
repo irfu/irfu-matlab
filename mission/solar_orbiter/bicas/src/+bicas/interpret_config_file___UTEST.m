@@ -25,12 +25,12 @@ classdef interpret_config_file___UTEST < matlab.unittest.TestCase
 
 
 
-    function test0(testCase)
+    function test0(T)
 
       % One output variable.
       function test(configFileRowsCa, expOutput)
-        actOutput = bicas.interpret_config_file(configFileRowsCa, testCase.L);
-        testCase.verifyEqual(actOutput, expOutput)
+        actOutput = bicas.interpret_config_file(configFileRowsCa, T.L);
+        T.verifyEqual(actOutput, expOutput)
       end
       %===================================================================
 

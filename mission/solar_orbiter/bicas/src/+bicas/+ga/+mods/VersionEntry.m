@@ -31,7 +31,7 @@ classdef VersionEntry
   properties(SetAccess=private, GetAccess=public)
     dateStr
     bicasVersionStr
-    commentsCa
+    commentsAr
   end
 
 
@@ -45,35 +45,41 @@ classdef VersionEntry
 
 
 
-    function obj = VersionEntry(dateStr, bicasVersionStr, commentsCa)
+    function obj = VersionEntry(dateStr, bicasVersionStr, commentsAr)
       % ASSERTIONS
-      irf.assert.castring_regexp(dateStr, ...
+      assert(isstring(dateStr))
+      irf.assert.castring_regexp(char(dateStr), ...
         '20[1-9][0-9]-[0-1][0-9]-[0-3][0-9]')
+
+      assert(isstring(bicasVersionStr))
       % NOTE: Version string without initial "V".
-      irf.assert.castring_regexp(bicasVersionStr, '[0-9]+.[0-9]+.[0-9]+')
-      assert(iscolumn(commentsCa))
-      bicas.ga.mods.VersionEntry.assert_commentsCa(commentsCa)
+      irf.assert.castring_regexp(char(bicasVersionStr), '[0-9]+.[0-9]+.[0-9]+')
+
+      bicas.ga.mods.VersionEntry.assert_commentsAr(commentsAr)
 
       obj.dateStr         = dateStr;
       obj.bicasVersionStr = bicasVersionStr;
-      obj.commentsCa      = commentsCa(:);
+      obj.commentsAr      = commentsAr(:);
     end
 
 
 
     % NOTE: Does not modify the object, but returns a modified object(!).
-    function obj = add_comments(obj, commentsCa)
-      assert(iscolumn(commentsCa))
+    function obj = add_comments(obj, commentsAr)
+      assert(isstring(commentsAr))
+      assert(iscolumn(commentsAr))
 
       obj = bicas.ga.mods.VersionEntry(...
         obj.dateStr, obj.bicasVersionStr, ...
-        [obj.commentsCa; commentsCa(:)]);
+        [obj.commentsAr; commentsAr]);
     end
 
 
 
+    % NOTE: Returns char array (no string object).
     function s = get_str(obj)
-      commentsStr = strjoin(obj.commentsCa, ' | ');
+      commentsStr = strjoin(obj.commentsAr, ' | ');
+
       % NOTE: Add "V" before/to BICAS version string.
       s = sprintf('%s -- V%s -- %s', ...
         obj.dateStr, obj.bicasVersionStr, commentsStr);
@@ -90,7 +96,7 @@ classdef VersionEntry
       assert(strcmp(obj1.bicasVersionStr, obj2.bicasVersionStr))
 
       obj = bicas.ga.mods.VersionEntry(obj1.dateStr, obj1.bicasVersionStr, ...
-        [obj1.commentsCa; obj2.commentsCa]);
+        [obj1.commentsAr; obj2.commentsAr]);
     end
 
 
@@ -108,20 +114,51 @@ classdef VersionEntry
 
 
 
-    function assert_commentsCa(commentsCa)
-      irf.assert.castring_set(commentsCa)
-      assert(~isempty(commentsCa))
+    function assert_commentsAr(commentsAr)
+      assert(isstring(commentsAr))
+      assert(iscolumn(commentsAr))
+      assert(numel(unique(commentsAr)) == numel(commentsAr))
+      assert(~isempty(commentsAr))
 
-      for i = 1:numel(commentsCa)
-        s = commentsCa{i};
-        irf.assert.castring_regexp(s, '[-<=_.,()&*:''/ a-zA-Z0-9]+')
+      for i = 1:numel(commentsAr)
+        str = commentsAr{i};
 
-        % Check that comments ends with period.
+        % Check that comment only use expected characters
+        % -----------------------------------------------
+        % NOTE: No "|" since it is used to separate comments within the same
+        %       string.
+        % PROPOSAL: Check against more than one whitespace in a row.
+        irf.assert.castring_regexp(char(str), '[-<=_.,()&*:''/ a-zA-Z0-9]+')
+
+        % Check that comment does not contain more than one whitespace in a row
+        % ---------------------------------------------------------------------
+        % This may happen if code does not correctly merge hardcoded strings
+        % over multiple rows.
+        assert(~contains(str, "  "))
+
+        % Check that comment does not contain more than one minus in a row
+        % ----------------------------------------------------------------
+        % Double minus is used to separate different sections of a MODS entry.
+        assert(~contains(str, "--"))
+
+        % Check that comment begins with permitted character
+        % --------------------------------------------------
+        % NOTE: Excludes special characters and whitespace.
         % NOTE: Besides for consistency, this is useful for checking
         % that comment strings hardcoded over multiple rows (inside a
         % cell array) are not accidentally split up into multiple
         % strings (one per row).
-        assert(s(end) == '.', 'Comment %i does not end with period.', i)
+        firstCharStr = extract(str, 1);
+        irf.assert.castring_regexp(char(firstCharStr), '[a-zA-Z0-9]')
+
+        % Check that comments ends with period
+        % ------------------------------------
+        % NOTE: Besides for consistency, this is useful for checking
+        % that comment strings hardcoded over multiple rows (inside a
+        % cell array) are not accidentally split up into multiple
+        % strings (one per row).
+        lastCharStr = extract(str, strlength(str));
+        assert(lastCharStr == ".", 'Comment %i does not end with period.', i)
       end
     end
 

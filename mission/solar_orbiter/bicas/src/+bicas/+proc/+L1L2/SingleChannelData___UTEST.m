@@ -17,18 +17,18 @@ classdef SingleChannelData___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_constructor_size_bWholeRowIsNan(testCase)
+    function test_constructor_size_bWholeRowIsNan(T)
       Schd = bicas.proc.L1L2.SingleChannelData(zeros(0, 0), false(0, 1));
-      testCase.assertEqual(size(Schd),  [0, 1])
-      testCase.assertEqual(Schd.bWholeRowIsNan, false(0, 1))
+      T.assertEqual(size(Schd),  [0, 1])
+      T.assertEqual(Schd.bWholeRowIsNan, false(0, 1))
 
       Schd = bicas.proc.L1L2.SingleChannelData(zeros(0, 3), false(0, 1));
-      testCase.assertEqual(size(Schd),  [0, 1])
-      testCase.assertEqual(Schd.bWholeRowIsNan, false(0, 1))
+      T.assertEqual(size(Schd),  [0, 1])
+      T.assertEqual(Schd.bWholeRowIsNan, false(0, 1))
 
       Schd = bicas.proc.L1L2.SingleChannelData(zeros(1, 3), false(1, 1));
-      testCase.assertEqual(size(Schd),  [1, 1])
-      testCase.assertEqual(Schd.bWholeRowIsNan, false(1, 1))
+      T.assertEqual(size(Schd),  [1, 1])
+      T.assertEqual(Schd.bWholeRowIsNan, false(1, 1))
 
 
 
@@ -36,55 +36,55 @@ classdef SingleChannelData___UTEST < matlab.unittest.TestCase
       VSIB_AR    = logical([0; 1; 0; 1; 0]);
 
       Schd = bicas.proc.L1L2.SingleChannelData(SAMPLES_AR, VSIB_AR);
-      testCase.assertEqual(Schd.samplesAr,      SAMPLES_AR)
-      testCase.assertEqual(Schd.vsibAr,         VSIB_AR)
-      testCase.assertEqual(size(Schd),          [5, 1])
-      testCase.assertEqual(Schd.bWholeRowIsNan, logical([0; 0; 0; 0; 1]))
+      T.assertEqual(Schd.samplesAr,      SAMPLES_AR)
+      T.assertEqual(Schd.vsibAr,         VSIB_AR)
+      T.assertEqual(size(Schd),          [5, 1])
+      T.assertEqual(Schd.bWholeRowIsNan, logical([0; 0; 0; 0; 1]))
     end
 
 
 
-    function test_subsref(testCase)
-      SCHD_123 = testCase.get_SCHD([1,2,3]);
-      SCHD_13  = testCase.get_SCHD([1,3]);
-      SCHD_31  = testCase.get_SCHD([3,1]);
-      SCHD_2   = testCase.get_SCHD([2]);
-      SCHD_    = testCase.get_SCHD([]);
+    function test_subsref(T)
+      SCHD_123 = T.get_SCHD([1,2,3]);
+      SCHD_13  = T.get_SCHD([1,3]);
+      SCHD_31  = T.get_SCHD([3,1]);
+      SCHD_2   = T.get_SCHD([2]);
+      SCHD_    = T.get_SCHD([]);
 
-      testCase.assertEqual(SCHD_123, SCHD_123(1:3))
-      testCase.assertEqual(SCHD_123, SCHD_123(logical([1,1,1])))
+      T.assertEqual(SCHD_123, SCHD_123(1:3))
+      T.assertEqual(SCHD_123, SCHD_123(logical([1,1,1])))
 
-      testCase.assertEqual(SCHD_,   SCHD_([]))
-      testCase.assertEqual(SCHD_,   SCHD_(logical([])))
+      T.assertEqual(SCHD_,   SCHD_([]))
+      T.assertEqual(SCHD_,   SCHD_(logical([])))
 
-      testCase.assertEqual(SCHD_13, SCHD_123(logical([1,0,1])))
-      testCase.assertEqual(SCHD_13, SCHD_123([1,3]))
+      T.assertEqual(SCHD_13, SCHD_123(logical([1,0,1])))
+      T.assertEqual(SCHD_13, SCHD_123([1,3]))
 
-      testCase.assertEqual(SCHD_31, SCHD_123([3,1]))
+      T.assertEqual(SCHD_31, SCHD_123([3,1]))
 
-      testCase.assertEqual(SCHD_2,  SCHD_123(logical([0,1,0])))
-      testCase.assertEqual(SCHD_2,  SCHD_123([2]))
+      T.assertEqual(SCHD_2,  SCHD_123(logical([0,1,0])))
+      T.assertEqual(SCHD_2,  SCHD_123([2]))
 
-      testCase.assertEqual(SCHD_,   SCHD_123(logical([0,0,0])))
-      testCase.assertEqual(SCHD_,   SCHD_123([]))
+      T.assertEqual(SCHD_,   SCHD_123(logical([0,0,0])))
+      T.assertEqual(SCHD_,   SCHD_123([]))
     end
 
 
 
-    function test_subsasgn(testCase)
+    function test_subsasgn(T)
       function test()
         % R = Receiver?!
         % S = Sender?!
-        SCHD_R            = testCase.get_SCHD(ib_r);
-        SCHD_S            = testCase.get_SCHD(ib_s);
-        SCHD_EXP          = testCase.get_SCHD(ib_exp);
+        SCHD_R            = T.get_SCHD(ib_r);
+        SCHD_S            = T.get_SCHD(ib_s);
+        SCHD_EXP          = T.get_SCHD(ib_exp);
 
         % Test subsasgn().
         % NOTE: SCHD is a value class, but subsasgn() still modifies the object
         %       in-place.
         SCHD_R(ib_r_asgn) = SCHD_S;
 
-        testCase.assertEqual(SCHD_R, SCHD_EXP)
+        T.assertEqual(SCHD_R, SCHD_EXP)
       end
 
       % Size 0-->1
@@ -121,32 +121,32 @@ classdef SingleChannelData___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_plus(testCase)
+    function test_plus(T)
       SCHD_1     = bicas.proc.L1L2.SingleChannelData(zeros(0, 2), false(0, 1));
       SCHD_2     = bicas.proc.L1L2.SingleChannelData(zeros(0, 2), false(0, 1));
-      testCase.assertEqual(...
+      T.assertEqual(...
         SCHD_1 + SCHD_2, ...
         bicas.proc.L1L2.SingleChannelData(zeros(0, 2), false(0, 1)))
 
       SCHD_1     = bicas.proc.L1L2.SingleChannelData([1,2; 3,4; 5,6  ], logical([1; 0; 0]));
       SCHD_2     = bicas.proc.L1L2.SingleChannelData([1,3; 5,7; 9,NaN], logical([0; 1; 0]));
-      testCase.assertEqual(...
+      T.assertEqual(...
         SCHD_1 + SCHD_2, ...
         bicas.proc.L1L2.SingleChannelData([2,5; 8,11; 14,NaN], logical([1; 1; 0])))
     end
 
 
 
-    function test_minus(testCase)
+    function test_minus(T)
       SCHD_1     = bicas.proc.L1L2.SingleChannelData(zeros(0, 2), false(0, 1));
       SCHD_2     = bicas.proc.L1L2.SingleChannelData(zeros(0, 2), false(0, 1));
-      testCase.assertEqual(...
+      T.assertEqual(...
         SCHD_1 - SCHD_2, ...
         bicas.proc.L1L2.SingleChannelData(zeros(0, 2), false(0, 1)))
 
       SCHD_1     = bicas.proc.L1L2.SingleChannelData([1,3; 5,7; 9,NaN], logical([0; 1; 0]));
       SCHD_2     = bicas.proc.L1L2.SingleChannelData([1,2; 3,4; 5,6  ], logical([1; 0; 0]));
-      testCase.assertEqual(...
+      T.assertEqual(...
         SCHD_1 - SCHD_2, ...
         bicas.proc.L1L2.SingleChannelData([0,1; 2,3; 4,NaN], logical([1; 1; 0])))
     end
@@ -168,7 +168,7 @@ classdef SingleChannelData___UTEST < matlab.unittest.TestCase
 
     % Get test SCHD with test data which is indexed before being used to create
     % SCHD.
-    function Schd = get_SCHD(testCase, ib)
+    function Schd = get_SCHD(T, ib)
       SAMPLES_AR = [1,2; 3,4; 5,6; 7,8; 9,10];
       VSIB_AR    = logical([0;1;0;1;0]);
 

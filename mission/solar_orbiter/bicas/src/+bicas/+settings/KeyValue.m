@@ -1,6 +1,6 @@
 %
 % Class which encapsulates the information stored for one settings key in
-% bicas.Settings.
+% bicas.settings.Settings.
 %
 %
 % IMPLEMENTATION NOTE
@@ -13,7 +13,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef SettingsKeyValue
+classdef KeyValue
   % PROPOSAL: Better name
   %   ~Settings
   %       CON: Want to avoid if moving class to package for settings.
@@ -28,7 +28,7 @@ classdef SettingsKeyValue
   %       CON: Two-letter abbreviation.
   %   SettingsKeyEntry = SKE
   %       CON: SKE is bad abbreviation. Foud in too many works, variables.
-  %   SettingsKeyValueEntry = SKVE
+  %   KeyValueEntry = SKVE
   %       NOTE: Can drop "Settings" if moving class to settings package.
   %
   % PROPOSAL: Field for valueType.
@@ -101,8 +101,8 @@ classdef SettingsKeyValue
 
 
 
-    function obj = SettingsKeyValue(initialValue, valueSource)
-      [~] = bicas.SettingsKeyValue.assert_legal_value_get_type(initialValue);
+    function obj = KeyValue(initialValue, valueSource)
+      [~] = bicas.settings.KeyValue.assert_legal_value_get_type(initialValue);
       assert(ischar(valueSource))
 
       obj.valuesCa       = {initialValue};
@@ -116,7 +116,7 @@ classdef SettingsKeyValue
       assert(~ismember(valueSource, obj.valueSourcesCa))
 
       oldValueType = obj.get_value_type();
-      newValueType = bicas.SettingsKeyValue.assert_legal_value_get_type(newValue);
+      newValueType = bicas.settings.KeyValue.assert_legal_value_get_type(newValue);
       if ~strcmp(oldValueType, newValueType)
         error('BICAS:IllegalOverridingSettingValueType', ...
           'Overriding setting will illegal value type.')
@@ -136,11 +136,11 @@ classdef SettingsKeyValue
 
 
     % NOTE: Is a public function so that
-    % bicas.Settings.override_values_from_strings() can use value type to
+    % bicas.settings.Settings.override_values_from_strings() can use value type to
     % convert strings to MATLAB values.
     function valueType = get_value_type(obj)
       value     = obj.valuesCa{1};
-      valueType = bicas.SettingsKeyValue.assert_legal_value_get_type(value);
+      valueType = bicas.settings.KeyValue.assert_legal_value_get_type(value);
     end
 
 

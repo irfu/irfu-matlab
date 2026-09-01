@@ -17,7 +17,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_VSIBs_to_saturation_QRCBs(testCase)
+    function test_VSIBs_to_saturation_QRCBs(T)
       % NOTE: Does not (truly) test the call to
       % bicas.utils.sliding_window_over_fraction().
 
@@ -97,12 +97,12 @@ classdef qrc___UTEST < matlab.unittest.TestCase
         TT2000_AR, VsibZvm, isSwf, ...
         vstbFractionThreshold, cwfSlidingWindowLengthSec);
 
-      testCase.assertEqual(ActQrcbm, ExpQrcbm)
+      T.assertEqual(ActQrcbm, ExpQrcbm)
     end
 
 
 
-    function test_set_5xBLTS_voltage_samples_FV(testCase)
+    function test_set_5xBLTS_voltage_samples_FV(T)
 
       function test(samplesAvoltAr, ssidAr, Qrcbm, Qrcsm, bExpNan)
         expSamplesAvoltAr          = samplesAvoltAr;
@@ -111,7 +111,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
         actSamplesAvoltAr = bicas.proc.L1L2.qrc.set_5xBLTS_voltage_samples_FV(...
           samplesAvoltAr, ssidAr, Qrcbm, Qrcsm);
 
-        testCase.assertEqual(actSamplesAvoltAr, expSamplesAvoltAr)
+        T.assertEqual(actSamplesAvoltAr, expSamplesAvoltAr)
       end
 
       S = bicas.proc.L1L2.const.C.SSID_DICT;
@@ -178,7 +178,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_set_current_samples_FV(testCase)
+    function test_set_current_samples_FV(T)
 
       function test(Qrcbm, Qrcsm, currentAr, expCurrentAr)
         irf.assert.sizes(currentAr, [Qrcbm.nRecords, 3]);
@@ -186,7 +186,7 @@ classdef qrc___UTEST < matlab.unittest.TestCase
         actCurrentAr = bicas.proc.L1L2.qrc.set_current_samples_FV(...
           currentAr, Qrcbm, Qrcsm);
 
-        testCase.verifyEqual(actCurrentAr, expCurrentAr)
+        T.verifyEqual(actCurrentAr, expCurrentAr)
       end
 
       %===================================================================

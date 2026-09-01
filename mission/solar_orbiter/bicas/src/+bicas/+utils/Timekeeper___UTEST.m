@@ -32,28 +32,28 @@ classdef Timekeeper___UTEST < matlab.unittest.TestCase
 
 
     % Zero quantities
-    function test_stop_log_0(testCase)
+    function test_stop_log_0(T)
       L = bicas.Logger('HUMAN_READABLE', false);
 
       Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
-      pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
+      pause(T.DELAY_SEC)
       Tmk.stop_log()
     end
 
 
 
     % One quantity
-    function test_stop_log_1(testCase)
+    function test_stop_log_1(T)
       L = bicas.Logger('HUMAN_READABLE', false);
 
       Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
-      pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
+      pause(T.DELAY_SEC)
       Tmk.stop_log(10, 'gadget')
 
-      testCase.verifyError(...
+      T.verifyError(...
         @() Tmk.stop_log(), ...
         ?MException)
-      testCase.verifyError(...
+      T.verifyError(...
         @() Tmk.stop_log(10, 'gadget'), ...
         ?MException)
     end
@@ -61,11 +61,11 @@ classdef Timekeeper___UTEST < matlab.unittest.TestCase
 
 
     % Multiple quantities
-    function test_stop_log_N(testCase)
+    function test_stop_log_N(T)
       L = bicas.Logger('HUMAN_READABLE', false);
 
       Tmk = bicas.utils.Timekeeper('CODE_NAME', L);
-      pause(bicas.utils.Timekeeper___UTEST.DELAY_SEC)
+      pause(T.DELAY_SEC)
       Tmk.stop_log(10, 'gadget', 20, 'bin', 1000, 'byte')
     end
 

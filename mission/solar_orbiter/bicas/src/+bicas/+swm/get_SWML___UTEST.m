@@ -41,7 +41,7 @@ classdef get_SWML___UTEST < matlab.unittest.TestCase
 
       function test(l1l2Enabled, l2l2Enabled, l2l3Enabled, l2l3SbmxEnabled)
         % Tests (1) non-crash, (2) class of return value.
-        Bso = bicas.swm.get_SWML___UTEST.get_BSO(...
+        Bso = T.get_BSO(...
           l1l2Enabled, l2l2Enabled, l2l3Enabled, l2l3SbmxEnabled);
 
         Swml = bicas.swm.get_SWML(Bso);
