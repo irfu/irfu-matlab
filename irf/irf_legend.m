@@ -165,7 +165,7 @@ for i=label_order % start with first label first
     elseif strcmpi(textprop,'color') && strcmp(textvalue,'mms') && i<=4
       set(ht(i),'color',mms_colors(i,:));
     else
-      set(ht(i),textprop,textvalue);
+      set(ht(i),textprop,textvalue(i, :));
     end
   end
   % Get position and extent of label just printed
