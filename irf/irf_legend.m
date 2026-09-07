@@ -153,19 +153,27 @@ for i=label_order % start with first label first
   % loop through options ('color','FontSize','Interpreter',...)
   for j=1:size(pvpairs,2)/2
     textprop=pvpairs{2*j-1};
-    textvalue=pvpairs{2*j};
+    textvalue=pvpairs{2*j};     textvalue_size = size(textvalue);
     if strcmpi(textprop,'verticalalignment')
       value_vertical_alignment=textvalue; % value has been reset manually by input parameter
     end
     if strcmpi(textprop,'horizontalalignment')
       value_horizontal_alignment=textvalue; % value has been reset manually by input parameter
     end
-    if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4
-      set(ht(i),'color',cluster_colors(i,:));
-    elseif strcmpi(textprop,'color') && strcmp(textvalue,'mms') && i<=4
-      set(ht(i),'color',mms_colors(i,:));
+    if strcmpi(textprop,'color')            % [wy20260907] may be too complicated, need to be simplified? 
+        if any(strcmp(textvalue,'cluster')) && i<=4
+            set(ht(i),'color',cluster_colors(i,:));
+        elseif any(strcmp(textvalue,'mms')) && i<=4
+            set(ht(i),'color',mms_colors(i,:));
+        else
+            if iscell(textvalue(1, :))
+                set(ht(i),textprop,textvalue{i});
+            else
+                set(ht(i),textprop,textvalue(i,:));
+            end
+        end
     else
-      set(ht(i),textprop,textvalue(i, :));
+        set(ht(i),textprop,textvalue);  
     end
   end
   % Get position and extent of label just printed
