@@ -1,12 +1,13 @@
 %
-% Quick-and-dirty script for manually experimenting with
-% bepic.spinfit.fit_SAFW() by specifying input values and then plotting them
-% and the output after processing (by editing this code).
+% Script for manually experimenting with bepic.spinfit.fit_SAFW() by specifying
+% input values and then plotting them and the output after processing (by
+% editing this code).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function fit_SAFW___MTEST
+% PROPOSAL: See as usable for multiple forms of fitting?
 
 if 0
   % =============
@@ -54,6 +55,12 @@ end
 
 
 
+% ##########
+% FIT & PLOT
+% ##########
+
+
+
 % Function for calculating the spin fit and plotting some of the spin fit input
 % and output.
 function display_result(A)
@@ -68,8 +75,6 @@ function display_result(A)
     A.dataGapMinNs
   end
 
-
-
 R = bepic.spinfit.fit_SAFW(...
   tt2000Ar           = A.tt2000Ar, ...
   spinPhaseRadAr     = A.spinPhaseRadAr, ...
@@ -81,7 +86,6 @@ R = bepic.spinfit.fit_SAFW(...
   dataGapMinNs       = A.dataGapMinNs, ...
   nFitCoefficients   = 5);
 
-
 % R.tt2000Ar
 % R.offsetAr
 
@@ -90,16 +94,16 @@ R = bepic.spinfit.fit_SAFW(...
 % ====
 figure
 t = tiledlayout(7, 1, "Padding", "compact", "TileSpacing", "compact");
-ax1 = add_tile("samplesAr",         A.tt2000Ar, A.samplesAr);
-ax2 = add_tile("spinPhaseRadAr",    A.tt2000Ar, A.spinPhaseRadAr);
-ax3 = add_tile("offsetAr",          R.fitWindowCenterTt2000Ar, R.offsetAr);
-ax4 = add_tile("coefficientCos1Ar", R.fitWindowCenterTt2000Ar, R.coefficientCos1Ar);
-ax5 = add_tile("coefficientSin1Ar", R.fitWindowCenterTt2000Ar, R.coefficientSin1Ar);
-ax6 = add_tile("coefficientCos2Ar", R.fitWindowCenterTt2000Ar, R.coefficientCos2Ar);
-ax7 = add_tile("coefficientSin2Ar", R.fitWindowCenterTt2000Ar, R.coefficientSin2Ar);
+ax1 = add_tile("INPUT: samplesAr",          A.tt2000Ar, A.samplesAr);
+ax2 = add_tile("INPUT: spinPhaseRadAr",     A.tt2000Ar, A.spinPhaseRadAr);
+ax3 = add_tile("OUTPUT: offsetAr",          R.fitWindowCenterTt2000, R.offset);
+ax4 = add_tile("OUTPUT: coefficientCos1Ar", R.fitWindowCenterTt2000, R.coefficientCos1);
+ax5 = add_tile("OUTPUT: coefficientSin1Ar", R.fitWindowCenterTt2000, R.coefficientSin1);
+ax6 = add_tile("OUTPUT: coefficientCos2Ar", R.fitWindowCenterTt2000, R.coefficientCos2);
+ax7 = add_tile("OUTPUT: coefficientSin2Ar", R.fitWindowCenterTt2000, R.coefficientSin2);
 
 % NOTE: Important to link X axes, since they are not identical otherwise, and
-% could be decieving.
+% could be deceiving.
 linkaxes([ax1 ax2 ax3 ax4 ax5 ax6 ax7], 'x');
 end
 

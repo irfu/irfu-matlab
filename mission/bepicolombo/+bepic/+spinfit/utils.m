@@ -15,13 +15,15 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef utils
+  % PROPOSAL: Separate class for fit windows: "fw"
+  %
   % PROPOSAL: Handle absence of spin phase.
   %     Ex: In eclipse?
   %   PROPOSAL: Use default spin.
   %   PROPOSAL: Extrapolate spin.
   %     NOTE: Only works if spin phase data ceases (or returns)
   %             within the time interval currently be processed.
-  %     CON/PROBLEM: Spin rate may change in eclipse.
+  %     CON/PROBLEM: Spin rate may change during eclipses.
   %   PROPOSAL: Remove samples without spin phase.
   % PROPOSAL: Generera fit windows mha algorithm which expliticly steps over
   %           samples/time. Avoid working with arrays and CSP.
@@ -48,13 +50,30 @@ classdef utils
 
 
 
-    % Convert fit windows specified as pairs of timestamps (boundaries) to
+    % ###########
+    % ###########
+    % FIT WINDOWS
+    % ###########
+    % ###########
+
+
+
+    % Convert fit windows, specified as pairs of timestamps (boundaries), to
     % ranges of sample indices.
+    %
     %
     % DESIGN NOTE
     % ===========
     % This exists as a separate reusable function since it could be applied to
     % any algorithm for identifying fit windows.
+    %
+    %
+    % RETURN VALUES
+    % =============
+    % iBeginAr, iEndAr
+    %       Same-sized column arrays containing the first and last index into
+    %       each fit window.
+    %       tt2000Ar(iBeginAr(i):iEndAr(i)) are the timestamps for fit window i.
     %
     function [iBeginAr, iEndAr] = fit_window_time_to_indices(...
         tt2000Ar, beginTt2000Ar, endTt2000Ar)
@@ -125,6 +144,7 @@ classdef utils
       FitWindowTable.beginTt2000 = int64.empty( 0, 1);
       FitWindowTable.endTt2000   = int64.empty( 0, 1);
 
+      % Iterate over data gap-separated samples.
       for iSegment = 1:nSegments
         i = iBeginAr(iSegment) : iEndAr(iSegment);
 
@@ -167,7 +187,7 @@ classdef utils
     % Table
     %       NOTE: Zero fit windows if there are <= 1 samples, since the
     %       algorithm can then not extrapolate spin phase (CMP) values and can
-    %       hence not find the beginning and end of the window even in
+    %       hence not find the beginning and end of the fit window even in
     %       principle.
     %
     function [FitWindowTable] = get_segment_SAFWs(A)
@@ -179,13 +199,15 @@ classdef utils
         A.fitWindowBeginRad
       end
       % PROPOSAL: Better name.
-      %   ~(no) data gap
+      %   ~(no) data gapget_SAFWs
       %   get_SAFWs_no_data_gap
+      %   get_SAFWs_wo_data_gaps
+      %   get_SAFWs_when_no_data_gaps
 
       nSamples = numel(A.tt2000Ar);
 
       assert(issorted(A.tt2000Ar))
-      assert(all(isfinite(A.spinPhaseRadAr)))
+      assert(all(isfinite(A.spinPhaseRadAr)))    % NOTE: No NaN.
       assert(numel(A.spinPhaseRadAr) == nSamples)
 
       % IMPORTANT NOTE: Can not calculate CSP if there are data gaps.
@@ -226,14 +248,23 @@ classdef utils
 
 
 
-    % Convert spin phase (0 to 2*pi) to cumulative spin phase (which always
-    % increases).
+    % ###############
+    % ###############
+    % OTHER FUNCTIONS
+    % ###############
+    % ###############
+
+
+
+    % Convert array of spin phase values (0 to 2*pi) to array of cumulative spin
+    % phase values (which always increase).
     %
     % NOTE: Assumes that every decrement implies that 2*pi should be added.
-    % NOTE: The function assumes that there are no data gaps.
+    % NOTE: The function implicitly assumes that there are no data gaps. The
+    %       caller must handle data gaps. (Note that the function has no
+    %       argument for timestamps.)
     %
-    function cspRadAr = spin_phase_to_cumulative_spin_phase(...
-        spinPhaseRadAr)
+    function cspRadAr = spin_phase_to_cumulative_spin_phase(spinPhaseRadAr)
 
       assert(iscolumn(spinPhaseRadAr) & isa(spinPhaseRadAr, "double"))
       assert(all(isfinite(spinPhaseRadAr)))
@@ -241,18 +272,23 @@ classdef utils
       n = numel(spinPhaseRadAr);
 
       % IMPLEMENTATION NOTE: unwrap() decrements cumulative spin phase if the
-      % spin phase jumps are longer than pi. Therefore not using unwrap().
+      % spin phase jumps are longer than pi. Can therefore not use unwrap().
       cspRadAr = NaN(n, 1);
       if n >= 1
         nRevol = 0;
+
+        % Sample 1: Copy value
         cspRadAr(1) = spinPhaseRadAr(1);
+
+        % Samples 2-n: Decremented spin phase implies adding 2*pi.
         for i = 2:n
 
           if spinPhaseRadAr(i-1) > spinPhaseRadAr(i)
+            % CASE: Spin phase decrements.
             nRevol = nRevol + 1;
           end
 
-          cspRadAr(i) = spinPhaseRadAr(i) + 2*pi*nRevol;
+          cspRadAr(i, 1) = spinPhaseRadAr(i) + 2*pi*nRevol;
         end
       end
 
@@ -321,16 +357,11 @@ classdef utils
 
 
     % Given timestamps, identify segments of timestamps which do not increase
-    % more than a specified threshold.
+    % by more than a specified threshold.
     %
     function [iBeginAr, iEndAr, nSegments] = split_by_data_gap(...
         tt2000Ar, dataGapMinNs)
 
-      % PROPOSAL: Move to some "utils" package.
-      % PROPOSAL: Relax argument assertions which are not really needed.
-      %   Ex: int64
-      %     NOTE: Must then relax units/variable types in variable names.
-      %       Ex: TT2000, nanoseconds
       % PROPOSAL: Return table.
 
       assert(iscolumn(tt2000Ar)     & isa(tt2000Ar, 'int64') & issorted(tt2000Ar, "STRICTASCEND"))
@@ -372,31 +403,35 @@ classdef utils
     % xArray
     %       Column array of all values x = xRef + n * xPeriod (n=integer) such
     %       that
-    %       (1) the lowest value is the highest possible value which satisfies
-    %       x <= xBegin, and
-    %       (2) the highest value is the highest possible value which satisfies
-    %       x <= xEnd.
+    %       (1) the lowest x value is the highest possible x value which
+    %           satisfies x <= xBegin, and
+    %       (2) the highest x value is the highest possible x value which
+    %           satisfies x <= xEnd.
     %
     function xAr = get_incrementing_array(xBegin, xEnd, xPeriod, xRef)
+      % NOTE: The definition of the output is a bit odd for a generic function
+      % and is not obvious from the function name. It is however what the caller
+      % needs.
+
       % ==========
       % ASSERTIONS
       % ==========
       mc = class(xPeriod);
-      assert(isa(xRef,   mc))
       assert(isa(xBegin, mc))
       assert(isa(xEnd,   mc))
+      assert(isa(xRef,   mc))
 
-      assert(isscalar(xPeriod) & (xPeriod > 0))
-      assert(isscalar(xRef   ))
       assert(isscalar(xBegin ))
       assert(isscalar(xEnd   ) & (xBegin <= xEnd))
+      assert(isscalar(xPeriod) & (xPeriod > 0))
+      assert(isscalar(xRef   ))
 
       % =========
       % ALGORITHM
       % =========
       % Derive the highest x such that
       % (1) x = xRef + m*xPeriod, and
-      % (2) x<=xBegin.
+      % (2) x <= xBegin.
       % NOTE: mod() works for both floats and integers.
       xFirst = xBegin - mod(xBegin-xRef, xPeriod);
 

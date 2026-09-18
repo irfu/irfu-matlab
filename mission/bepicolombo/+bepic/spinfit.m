@@ -24,7 +24,8 @@ classdef spinfit
   % PROPOSAL: Better class name
   %   ~spin fit
   %   MEFISTO, Mio
-  %     CON: Mission is already implied by the parent package "bepic".
+  %     CON: The mission is already implied by the parent package "bepic".
+  %       CON: The instrument is not implied.
   %   ~spin fit "engine", "core"
   %   fit
   %   process
@@ -48,8 +49,8 @@ classdef spinfit
 
 
 
-    % Do spin fit assuming that fit windows used should have constant length and
-    % period in spin phase (SAFW).
+    % Do spin fit assuming that fit windows used should have both constant
+    % length and constant period in units of spin phase (SAFW).
     %
     % Implemented as a wrapper around bepic.spinfit.fit_TAFW() which adds
     % functionality for splitting processing into smaller time segments based on
@@ -59,8 +60,8 @@ classdef spinfit
     % IMPLEMENTATION NOTE
     % ===================
     % Implements spin-aligned fit windows using mms_spin_fit() by internally
-    % using fake TT2000 timestamps derived from cumulative spin phase. This in
-    % turn causes problems with handling data gaps when converting from spin
+    % generating fake TT2000 timestamps derived from cumulative spin phase. This
+    % in turn causes problems with handling data gaps when converting from spin
     % phase (0 to 2*pi) to cumulative spin phase, and when then constructing the
     % output timestamps in the presence of data gaps. It therefore makes sense
     % for the implementation to split by data gap before using this approach.
@@ -69,11 +70,10 @@ classdef spinfit
     % POTENTIAL PROBLEM / BUG
     % =======================
     % The function could possibly (theoretically) generate the same timestamps
-    % twice if identifying a data gap within a fit window. It is unclear what
-    % is the best way to handle such a situation. However,
-    % fit_TAFW()'s functionality for removing output timestamps
-    % outside the range of the input timestamps should eliminate this
-    % possibility().
+    % twice if identifying a data gap within a fit window. It is unclear what is
+    % the best way to handle such a situation. However, fit_TAFW()'s
+    % functionality for removing output timestamps outside the range of the
+    % input timestamps should eliminate this possibility().
     %
     %
     % NAME-VALUE ARGUMENTS
@@ -92,8 +92,9 @@ classdef spinfit
     % fitWindowCenterRad
     %       Scalar value. Describes where the center of fit windows (output
     %       timestamps) should be in cumulative spin phase. Any time
-    %       window center will be located at
-    %       fitWindowCenterRad + n * fitWindowPeriodRad, n=integer.
+    %       window center will be located at a phase
+    %       (fitWindowCenterRad + n * fitWindowPeriodRad) mod 2*pi,
+    %       where n=integer.
     % nMinFitSamples
     %       Minimum number of samples required for a fit.
     % nFitCoefficients
@@ -110,7 +111,9 @@ classdef spinfit
     %             timestamps.
     %
     function R = fit_SAFW(A)
-      % PROPOSAL: Remove data if the same output timestamp is generate twice.
+      % PROPOSAL: Function name should imply that it is based on mms_spinfit_m().
+      %
+      % PROPOSAL: Remove data if the same output timestamp is generated twice.
       %   PROBLEM: The timestamps might only be approximately equal?
 
       arguments
@@ -157,17 +160,16 @@ classdef spinfit
       % can be fed to bepic.spinfit.fit_TAFW()
       % ========================================================================
       % Fake nanoseconds per radian when converting to/from fake TT2000.
-      N = 4e9 / (2*pi);
-
+      fakeNsPerRad = 4e9 / (2*pi);
       % IMPLEMENTATION NOTE: Cumulative spin phase values will not increment
       % correctly for time jumps (error n*2*pi) but that does not matter, since
       % the processing will be split by data gaps anyway.
       cspRadAr = bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase(...
         A.spinPhaseRadAr);
-      fakeTt2000Ar              = int64(cspRadAr             * N);
-      fakeFitWindowPeriodNs     = int64(A.fitWindowPeriodRad * N);
-      fakeFitWindowLengthNs     = int64(A.fitWindowLengthRad * N);
-      fakeFitWindowCenterTt2000 = int64(A.fitWindowCenterRad * N);
+      fakeTt2000Ar              = int64(cspRadAr             * fakeNsPerRad);
+      fakeFitWindowPeriodNs     = int64(A.fitWindowPeriodRad * fakeNsPerRad);
+      fakeFitWindowLengthNs     = int64(A.fitWindowLengthRad * fakeNsPerRad);
+      fakeFitWindowCenterTt2000 = int64(A.fitWindowCenterRad * fakeNsPerRad);
 
       nSamples = numel(A.tt2000Ar);
       if nSamples == 0
@@ -190,6 +192,9 @@ classdef spinfit
         [iBeginAr, iEndAr, nSegments] = bepic.spinfit.utils.split_by_data_gap(...
           A.tt2000Ar, A.dataGapMinNs);
 
+        % ====================================
+        % Iterate over jump-separated segments
+        % ====================================
         rCa = cell(nSegments, 1);
         for i = 1:nSegments
           iAr = iBeginAr(i):iEndAr(i);
@@ -211,7 +216,7 @@ classdef spinfit
           % bepic.spinfit.fit_TAFW() in to correctly handle spin
           % phase values which are (legitimately) identical just before and
           % after a data gap.
-          outCspRadAr = double(rSegment.fitWindowCenterTt2000) / N;
+          outCspRadAr = double(rSegment.fitWindowCenterTt2000) / fakeNsPerRad;
           rSegment.fitWindowCenterTt2000 = bepic.spinfit.utils.CMP_to_TT2000(...
             A.tt2000Ar(iAr), ...
             cspRadAr  (iAr), ...
@@ -228,10 +233,11 @@ classdef spinfit
 
 
     % Do spin fit assuming that fit windows should have constant length and
-    % period in time (TAFW).
+    % period in units of time (TAFW).
     %
-    % Imlemented as reusable wrapper around mms_spinfit_m() for
-    % (1) enforcing strict input arguments and return values:
+    % Implemented as a reusable wrapper around mms_spinfit_m() which adds
+    % functionality for:
+    % (1) enforcing (asserting) strict input arguments and return values:
     %   (1a) MATLAB classes (data types),
     %   (1b) array sizes
     % (2) automatically deriving "t0" so that a constant argument can be used
@@ -257,7 +263,9 @@ classdef spinfit
     % fitWindowCenterTt2000
     %       Scalar value. Describes where the center of fit windows (output
     %       timestamps) should be in time. Any fit window center will be
-    %       located at fitWindowCenterTt2000 + n * fitWindowPeriodNs, n=integer.
+    %       located at a time
+    %       fitWindowCenterTt2000 + n * fitWindowPeriodNs,
+    %       where n=integer.
     % nMinFitSamples
     %       Minimum number of samples required for a fit.
     % nFitCoefficients
@@ -272,7 +280,9 @@ classdef spinfit
     %             timestamps.
     %
     function R = fit_TAFW(A)
-      % PROPOSAL: Expose constants as arguments?
+      % PROPOSAL: Function name should imply that it is based on mms_spinfit_m().
+      %
+      % PROPOSAL: Expose constant as argument?
       %   Ex: N_MIN_REQUIRED_FIT_SAMPLES.
       %   CON: Need to write more tests.
       %     PRO: Might need to test for behaviour which is not used.
@@ -322,7 +332,8 @@ classdef spinfit
       % -----------------------------------------
       % DOCUMENTATION COPIED FROM mms_spinfit_m()
       % -----------------------------------------
-      % function [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(maxIt, minPts, nTerms, timeData, data, phase, fitEvery, fitInterv, t0)
+      % function [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(
+      %     maxIt, minPts, nTerms, timeData, data, phase, fitEvery, fitInterv, t0)
       %  Compute spinfit coefficients to spinning data. Data is fitted to
       %  function y = A + Bcos(phase) + Csin(phase) + (Dcos(2*phase) +
       %  Esin(2*phase) + Fcos(3*phase) + Gsin(3*phase)). According to the number
@@ -359,9 +370,9 @@ classdef spinfit
         % ========================
         % CASE: Empty input arrays
         % ========================
-        % IMPLEMENTATION NOTE: Using empty arrays when calling mms_spinfit_m() can
-        % crash MATLAB!!! ("25.2.0.3042426 (R2025b) Update 1", Linux). Can therefore
-        % not call it for this case.
+        % IMPLEMENTATION NOTE: Using empty arrays when calling mms_spinfit_m()
+        % can crash MATLAB!!! ("25.2.0.3042426 (R2025b) Update 1", Linux). Can
+        % therefore not call it for this case.
         % Ex: [timeFit, sfit, sdev, iter, nBad] = mms_spinfit_m(5, 5+1, 5, int64.empty(0, 1), double.empty(0, 1), double.empty(0, 1), 4e9, 4e9, 0)
 
         % Create the equivalent of return values from mms_spinfit_m(), but
@@ -381,8 +392,9 @@ classdef spinfit
         % ------------------------------------------------------------
         % IMPLEMENTATION NOTE: mms_spinfit_m() requires "t0" to be within or
         % close to the submitted timestamps but is unclear what this exactly
-        % means. If it is not, it might crash or add (not NaN) or omit return
-        % values for timestamps for fit windows which there are no samples.
+        % means. If it is not, it might (a) crash, or (b) add (not NaN) or omit
+        % return values for timestamps for fit windows which there are no
+        % samples.
         m = idivide(...
           A.tt2000Ar(1) - A.fitWindowCenterTt2000, ...
           A.fitWindowPeriodNs, "FLOOR");
@@ -457,14 +469,14 @@ classdef spinfit
     % windows).
     %
     %
-    % DESIGN NOTE: CHANGE THE FIT WINDOWING ALGORITHM
-    % ===============================================
+    % IMPLEMENTATION NOTE: THE FIT WINDOWING ALGORITHM
+    % ================================================
     % The algorithm for determining the fit windows is isolated to a function
     % which can easily be replaced.
     %
     %
-    % DESIGN NOTE: CHANGE THE "FIT" ALGORITHM
-    % =======================================
+    % IMPLEMENTATION NOTE: CHANGE THE "FIT" ALGORITHM
+    % ===============================================
     % This function is designed to maybe eventually be converted into a function
     % for processing also E field data since it (depending on implementation)
     % should be easy to modify the algorithm for converting a fit window into a
@@ -546,6 +558,7 @@ classdef spinfit
         for i = 1:nFitWindows
           fitWindowSamplesAr = A.samplesAr(iBeginAr(i) : iEndAr(i));
 
+          % Calculate the mean value for the fit window ("do the fit").
           T.mean(i) = mean(fitWindowSamplesAr);
         end
       end
