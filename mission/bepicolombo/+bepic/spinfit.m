@@ -462,8 +462,11 @@ classdef spinfit
 
 
 
-    % Given plasma potential samples, derive averages for fit windows (time
-    % windows).
+    % Given plasma potential samples for MEF1 and MEF2 (from a "potential" CDF),
+    % derive averages for fit windows (time windows).
+    %
+    % NOTE: Derives both in one function call since the same timestamps and fit
+    %       windows are used.
     %
     %
     % IMPLEMENTATION NOTE: THE FIT WINDOWING ALGORITHM
@@ -472,16 +475,28 @@ classdef spinfit
     % which can easily be replaced.
     %
     %
-    % IMPLEMENTATION NOTE: CHANGE THE "FIT" ALGORITHM
-    % ===============================================
+    % IMPLEMENTATION NOTE: THE "FIT" ALGORITHM
+    % ========================================
     % This function is designed to maybe eventually be converted into a function
     % for processing also E field data since it (depending on implementation)
     % should be easy to modify the algorithm for converting a fit window into a
     % scalar value (plus quality data; other fit terms). The complicated part is
-    % determining the fit windows which is have been delegated to a reusable and
+    % determining the fit windows which has been delegated to a reusable and
     % replaceble function.
     %
-    function T = fit_SAFW_mean(A)
+    %
+    % ARGUMENTS
+    % =========
+    % samplesAr
+    %       Nx2 array for MEF1 and MEF2 sample values.
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % T
+    %       Table with ~self-explanatory column names. One spin fit per row.
+    %
+    function T = fit_SAFW_pot(A)
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
@@ -500,16 +515,21 @@ classdef spinfit
       %              fit windows.
       %       PROPOSAL: Call function handle for made-up samples and remove
       %                 elements from arrays.
+      %
+      % PROPOSAL: Define as the function to use for "potential" CDFs, which just
+      %           happens to be SAFW in the current implementation.
 
       % ==========
       % ASSERTIONS
       % ==========
-      assert(iscolumn(A.tt2000Ar)              & isa(A.tt2000Ar,              "int64"))
-      assert(iscolumn(A.spinPhaseRadAr)        & isa(A.spinPhaseRadAr,        "double"))
-      assert(isscalar(A.fitWindowPeriodRad)    & isa(A.fitWindowPeriodRad,    "double"))
-      assert(isscalar(A.fitWindowLengthRad)    & isa(A.fitWindowLengthRad,    "double"))
-      assert(isscalar(A.fitWindowCenterRefRad) & isa(A.fitWindowCenterRefRad, "double"))
-      assert(isscalar(A.dataGapMinNs)          & isa(A.dataGapMinNs,          "int64"))
+      nSamples = numel(A.tt2000Ar);
+      assert(iscolumn(A.tt2000Ar)                      & isa(A.tt2000Ar,              "int64"))
+      assert(iscolumn(A.spinPhaseRadAr)                & isa(A.spinPhaseRadAr,        "double"))
+      assert(isscalar(A.fitWindowPeriodRad)            & isa(A.fitWindowPeriodRad,    "double"))
+      assert(isscalar(A.fitWindowLengthRad)            & isa(A.fitWindowLengthRad,    "double"))
+      assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
+      assert(isscalar(A.dataGapMinNs)                  & isa(A.dataGapMinNs,          "int64"))
+      assert(isequal(size(A.samplesAr), [nSamples, 2]) & isa(A.samplesAr,             "double"))
       %
       assert(issorted(A.tt2000Ar, "STRICTASCEND"))
       assert(all(isfinite(A.spinPhaseRadAr)))
@@ -534,29 +554,29 @@ classdef spinfit
         fitWindowBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
         dataGapMinNs         = A.dataGapMinNs);
 
-      nSamples    = numel(A.tt2000Ar);
       nFitWindows = height(FitWindowsTable);
 
       T = table();
 
       if nSamples <= 0
         T.fitWindowCenterTt2000 = int64.empty( 0, 1);
-        T.mean                  = double.empty(0, 1);
+        T.mean                  = double.empty(0, 2);
       else
         [iBeginAr, iEndAr] = bepic.spinfit.fw.fit_window_time_to_indices(...
           A.tt2000Ar, ...
           FitWindowsTable.beginTt2000, ...
           FitWindowsTable.endTt2000);
 
+        % Calculate fit window center: Cheat by averaging in time (not CMP).
         T.fitWindowCenterTt2000 = ...
           (FitWindowsTable.beginTt2000 + FitWindowsTable.endTt2000) / 2;
 
-        T.mean = NaN(nFitWindows, 1);
+        % Calculate the mean value for the fit window without any fitting (no extra terms).
+        T.mean = NaN(nFitWindows, 2);
         for i = 1:nFitWindows
-          fitWindowSamplesAr = A.samplesAr(iBeginAr(i) : iEndAr(i));
-
-          % Calculate the mean value for the fit window ("do the fit").
-          T.mean(i) = mean(fitWindowSamplesAr);
+          j = iBeginAr(i) : iEndAr(i);
+          T.mean(i, 1) = mean(A.samplesAr(j, 1));
+          T.mean(i, 2) = mean(A.samplesAr(j, 2));
         end
       end
     end
