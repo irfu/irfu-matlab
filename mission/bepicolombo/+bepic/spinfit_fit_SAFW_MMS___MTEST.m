@@ -6,7 +6,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function fit_SAFW_MMS___MTEST
+function spinfit_fit_SAFW_MMS___MTEST
 % PROPOSAL: See as usable for multiple forms of fitting?
 
 %R = generate_signal_step_function();
