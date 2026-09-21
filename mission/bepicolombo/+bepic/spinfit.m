@@ -52,7 +52,7 @@ classdef spinfit
     % Do spin fit assuming that fit windows used should have both constant
     % length and constant period in units of spin phase (SAFW).
     %
-    % Implemented as a wrapper around bepic.spinfit.fit_TAFW() which adds
+    % Implemented as a wrapper around bepic.spinfit.fit_TAFW_MMS() which adds
     % functionality for splitting processing into smaller time segments based on
     % time increments exceeding a threshold.
     %
@@ -71,7 +71,7 @@ classdef spinfit
     % =======================
     % The function could possibly (theoretically) generate the same timestamps
     % twice if identifying a data gap within a fit window. It is unclear what is
-    % the best way to handle such a situation. However, fit_TAFW()'s
+    % the best way to handle such a situation. However, fit_TAFW_MMS()'s
     % functionality for removing output timestamps outside the range of the
     % input timestamps should eliminate this possibility().
     %
@@ -110,10 +110,7 @@ classdef spinfit
     %       NOTE: Will never return timestamps outside the interval of input
     %             timestamps.
     %
-    function R = fit_SAFW(A)
-      % PROPOSAL: Function name should imply that it is based on mms_spinfit_m().
-      %   fit_SAFW_MMS()
-      %
+    function R = fit_SAFW_MMS(A)
       % PROPOSAL: Remove data if the same output timestamp is generated twice.
       %   PROBLEM: The timestamps might only be approximately equal?
 
@@ -158,7 +155,7 @@ classdef spinfit
 
       % ========================================================================
       % Convert from "spin phase radians" to fake TT2000/duration so that values
-      % can be fed to bepic.spinfit.fit_TAFW()
+      % can be fed to bepic.spinfit.fit_TAFW_MMS()
       % ========================================================================
       % Fake nanoseconds per radian when converting to/from fake TT2000. The
       % exact value should not matter.
@@ -175,9 +172,9 @@ classdef spinfit
 
       nSamples = numel(A.tt2000Ar);
       if nSamples == 0
-        % IMPLEMENTATION NOTE: Call bepic.spinfit.fit_TAFW() with
+        % IMPLEMENTATION NOTE: Call bepic.spinfit.fit_TAFW_MMS() with
         % empty data, just to create a consistent return value.
-        R = bepic.spinfit.fit_TAFW( ...
+        R = bepic.spinfit.fit_TAFW_MMS( ...
           tt2000Ar                 = fakeTt2000Ar, ...
           spinPhaseRadAr           = A.spinPhaseRadAr, ...
           samplesAr                = A.samplesAr, ...
@@ -201,7 +198,7 @@ classdef spinfit
         for i = 1:nSegments
           iAr = iBeginAr(i):iEndAr(i);
 
-          rSegment = bepic.spinfit.fit_TAFW( ...
+          rSegment = bepic.spinfit.fit_TAFW_MMS( ...
             tt2000Ar                 = fakeTt2000Ar    (iAr), ...
             spinPhaseRadAr           = A.spinPhaseRadAr(iAr), ...
             samplesAr                = A.samplesAr     (iAr), ...
@@ -215,7 +212,7 @@ classdef spinfit
           % Modify the timestamps, from fake TT2000 to true TT2000
           % ======================================================
           % IMPLEMENTATION NOTE: Must do this separately for every call to
-          % bepic.spinfit.fit_TAFW() in order to correctly handle spin
+          % bepic.spinfit.fit_TAFW_MMS() in order to correctly handle spin
           % phase values which are (legitimately) identical just before and
           % after a data gap.
           outCspRadAr = double(rSegment.fitWindowCenterTt2000) / FAKE_NS_PER_RAD;
@@ -281,10 +278,7 @@ classdef spinfit
     %       NOTE: Will never return timestamps outside the interval of input
     %             timestamps.
     %
-    function R = fit_TAFW(A)
-      % PROPOSAL: Function name should imply that it is based on mms_spinfit_m().
-      %   PROPOSAL: Name should be consistent with new fit_SAFW() name.
-      %
+    function R = fit_TAFW_MMS(A)
       % PROPOSAL: Expose constant as argument?
       %   Ex: N_MIN_REQUIRED_FIT_SAMPLES.
       %   CON: Need to write more tests.

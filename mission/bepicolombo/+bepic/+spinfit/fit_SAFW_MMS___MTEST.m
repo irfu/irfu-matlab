@@ -1,12 +1,12 @@
 %
-% Script for manually experimenting with bepic.spinfit.fit_SAFW() by specifying
+% Script for manually experimenting with bepic.spinfit.fit_SAFW_MMS() by specifying
 % input values and then plotting them and the output after processing (by
 % editing this code).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function fit_SAFW___MTEST
+function fit_SAFW_MMS___MTEST
 % PROPOSAL: See as usable for multiple forms of fitting?
 
 %R = generate_signal_step_function();
@@ -113,7 +113,7 @@ function fit_display_result(A)
     A.dataGapMinNs
   end
 
-R = bepic.spinfit.fit_SAFW(...
+R = bepic.spinfit.fit_SAFW_MMS(...
   tt2000Ar              = A.tt2000Ar, ...
   spinPhaseRadAr        = A.spinPhaseRadAr, ...
   samplesAr             = A.samplesAr, ...
