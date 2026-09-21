@@ -132,17 +132,21 @@ R = bepic.spinfit.fit_SAFW(...
 % ====
 figure
 t = tiledlayout(7, 1, "Padding", "compact", "TileSpacing", "compact");
-ax1 = add_tile("INPUT: samplesAr",          A.tt2000Ar, A.samplesAr);
-ax2 = add_tile("INPUT: spinPhaseRadAr",     A.tt2000Ar, A.spinPhaseRadAr);
-ax3 = add_tile("OUTPUT: offsetAr",          R.fitWindowCenterTt2000, R.offset);
-ax4 = add_tile("OUTPUT: coefficientCos1Ar", R.fitWindowCenterTt2000, R.coefficientCos1);
-ax5 = add_tile("OUTPUT: coefficientSin1Ar", R.fitWindowCenterTt2000, R.coefficientSin1);
-ax6 = add_tile("OUTPUT: coefficientCos2Ar", R.fitWindowCenterTt2000, R.coefficientCos2);
-ax7 = add_tile("OUTPUT: coefficientSin2Ar", R.fitWindowCenterTt2000, R.coefficientSin2);
+
+axAr = matlab.graphics.axis.Axes.empty(0, 1);
+%axAr(end+1) = add_tile("INPUT: tt2000Ar",               A.tt2000Ar, A.tt2000Ar);
+axAr(end+1) = add_tile("INPUT: samplesAr",              A.tt2000Ar, A.samplesAr);
+axAr(end+1) = add_tile("INPUT: spinPhaseRadAr",         A.tt2000Ar, A.spinPhaseRadAr);
+%axAr(end+1) = add_tile("OUTPUT: fitWindowCenterTt2000", R.fitWindowCenterTt2000, R.fitWindowCenterTt2000);
+axAr(end+1) = add_tile("OUTPUT: offsetAr",          R.fitWindowCenterTt2000, R.offset);
+axAr(end+1) = add_tile("OUTPUT: coefficientCos1Ar", R.fitWindowCenterTt2000, R.coefficientCos1);
+axAr(end+1) = add_tile("OUTPUT: coefficientSin1Ar", R.fitWindowCenterTt2000, R.coefficientSin1);
+axAr(end+1) = add_tile("OUTPUT: coefficientCos2Ar", R.fitWindowCenterTt2000, R.coefficientCos2);
+axAr(end+1) = add_tile("OUTPUT: coefficientSin2Ar", R.fitWindowCenterTt2000, R.coefficientSin2);
 
 % NOTE: Important to link X axes, since they are not identical otherwise, and
 % could be deceiving.
-linkaxes([ax1 ax2 ax3 ax4 ax5 ax6 ax7], 'x');
+linkaxes(axAr(:)', 'x');
 end
 
 

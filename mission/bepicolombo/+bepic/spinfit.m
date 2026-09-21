@@ -112,6 +112,7 @@ classdef spinfit
     %
     function R = fit_SAFW(A)
       % PROPOSAL: Function name should imply that it is based on mms_spinfit_m().
+      %   fit_SAFW_MMS()
       %
       % PROPOSAL: Remove data if the same output timestamp is generated twice.
       %   PROBLEM: The timestamps might only be approximately equal?
@@ -159,17 +160,18 @@ classdef spinfit
       % Convert from "spin phase radians" to fake TT2000/duration so that values
       % can be fed to bepic.spinfit.fit_TAFW()
       % ========================================================================
-      % Fake nanoseconds per radian when converting to/from fake TT2000.
-      fakeNsPerRad = 4e9 / (2*pi);
+      % Fake nanoseconds per radian when converting to/from fake TT2000. The
+      % exact value should not matter.
+      FAKE_NS_PER_RAD = 4e9 / (2*pi);
       % IMPLEMENTATION NOTE: Cumulative spin phase values will not increment
       % correctly for time jumps (error n*2*pi) but that does not matter, since
       % the processing will be split by data gaps anyway.
       cspRadAr = bepic.spinfit.utils.spin_phase_to_CMP(...
         A.spinPhaseRadAr);
-      fakeTt2000Ar              = int64(cspRadAr             * fakeNsPerRad);
-      fakeFitWindowPeriodNs     = int64(A.fitWindowPeriodRad * fakeNsPerRad);
-      fakeFitWindowLengthNs     = int64(A.fitWindowLengthRad * fakeNsPerRad);
-      fakeFitWindowCenterTt2000 = int64(A.fitWindowCenterRad * fakeNsPerRad);
+      fakeTt2000Ar              = int64(cspRadAr             * FAKE_NS_PER_RAD);
+      fakeFitWindowPeriodNs     = int64(A.fitWindowPeriodRad * FAKE_NS_PER_RAD);
+      fakeFitWindowLengthNs     = int64(A.fitWindowLengthRad * FAKE_NS_PER_RAD);
+      fakeFitWindowCenterTt2000 = int64(A.fitWindowCenterRad * FAKE_NS_PER_RAD);
 
       nSamples = numel(A.tt2000Ar);
       if nSamples == 0
@@ -213,10 +215,10 @@ classdef spinfit
           % Modify the timestamps, from fake TT2000 to true TT2000
           % ======================================================
           % IMPLEMENTATION NOTE: Must do this separately for every call to
-          % bepic.spinfit.fit_TAFW() in to correctly handle spin
+          % bepic.spinfit.fit_TAFW() in order to correctly handle spin
           % phase values which are (legitimately) identical just before and
           % after a data gap.
-          outCspRadAr = double(rSegment.fitWindowCenterTt2000) / fakeNsPerRad;
+          outCspRadAr = double(rSegment.fitWindowCenterTt2000) / FAKE_NS_PER_RAD;
           rSegment.fitWindowCenterTt2000 = bepic.spinfit.utils.CMP_to_TT2000(...
             A.tt2000Ar(iAr), ...
             cspRadAr  (iAr), ...
@@ -281,6 +283,7 @@ classdef spinfit
     %
     function R = fit_TAFW(A)
       % PROPOSAL: Function name should imply that it is based on mms_spinfit_m().
+      %   PROPOSAL: Name should be consistent with new fit_SAFW() name.
       %
       % PROPOSAL: Expose constant as argument?
       %   Ex: N_MIN_REQUIRED_FIT_SAMPLES.
@@ -481,7 +484,7 @@ classdef spinfit
     % for processing also E field data since it (depending on implementation)
     % should be easy to modify the algorithm for converting a fit window into a
     % scalar value (plus quality data; other fit terms). The complicated part is
-    % determining the fit windows which is has been delegated to a reusable and
+    % determining the fit windows which is have been delegated to a reusable and
     % replaceble function.
     %
     function T = fit_SAFW_mean(A)
