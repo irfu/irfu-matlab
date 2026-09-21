@@ -9,48 +9,86 @@
 function fit_SAFW___MTEST
 % PROPOSAL: See as usable for multiple forms of fitting?
 
-if 0
-  % =============
-  % Step function
-  % =============
-  tt2000Ar       = int64(20:119)';
-  samplesAr      = [3*ones(1, 50)  4*ones(1, 50)]';
-  spinPhaseRadAr = wrapTo2Pi(linspace(0, 20*pi, numel(tt2000Ar)))';
-end
+%R = generate_signal_step_function();
+%R = generate_signal_sine_wave();
+R = generate_signal_from_file();
 
-if 1
-  % =========
-  % Sine wave
-  % =========
-  SPIN_PERIOD_NS   = 4e9;
-  SIGNAL_PERIOD_NS = 4e9;
-
-  tt2000Ar         = int64(0e9 : 0.25e9 : 300e9)';
-  spinPhaseRadAr   = wrapTo2Pi( double(tt2000Ar)/SPIN_PERIOD_NS * 2*pi );
-
-  signalPhaseRadAr = double(tt2000Ar) / SIGNAL_PERIOD_NS * 2*pi;
-  samplesAr        = 3 + 4*sin(signalPhaseRadAr) + 5*sin(2*signalPhaseRadAr);
-
-  % Insert data gap on the form of NaN samples.
-  %samplesAr(1000:2:1100) = NaN;
-end
-
-
-assert(numel(tt2000Ar) == numel(samplesAr))
-assert(numel(tt2000Ar) == numel(spinPhaseRadAr))
-
-
+assert(numel(R.tt2000Ar) == numel(R.samplesAr))
+assert(numel(R.tt2000Ar) == numel(R.spinPhaseRadAr))
 
 close all
-display_result( ...
-  tt2000Ar           = tt2000Ar, ...
-  spinPhaseRadAr     = spinPhaseRadAr, ...
-  samplesAr          = samplesAr, ...
+fit_display_result( ...
+  tt2000Ar           = R.tt2000Ar, ...
+  spinPhaseRadAr     = R.spinPhaseRadAr, ...
+  samplesAr          = R.samplesAr, ...
   fitWindowPeriodRad = 2*pi, ...
   fitWindowLengthRad = 2*pi, ...
   fitWindowCenterRad = 1*pi, ...
   nMinFitSamples     = 6, ...
   dataGapMinNs       = int64(2e9));
+end
+
+
+
+% ###############
+% EXAMPLE SIGNALS
+% ###############
+
+
+
+% Generate example input signal.
+function R = generate_signal_step_function()
+R.tt2000Ar       = int64(20:119)';
+R.samplesAr      = [3*ones(1, 50)  4*ones(1, 50)]';
+R.spinPhaseRadAr = wrapTo2Pi(linspace(0, 20*pi, numel(tt2000Ar)))';
+end
+
+
+
+% Generate example input signal.
+function R = generate_signal_sine_wave()
+SPIN_PERIOD_NS   = 4e9;
+SIGNAL_PERIOD_NS = 4e9;
+
+tt2000Ar         = int64([0 : 0.25 : 100] * 1e9)';
+
+% Create data gap on the form of missing values (remove indices; not NaN).
+b = (20e9 < tt2000Ar) & (tt2000Ar < 30e9);
+tt2000Ar = tt2000Ar(~b);
+
+spinPhaseRadAr   = wrapTo2Pi( double(tt2000Ar)/SPIN_PERIOD_NS * 2*pi );
+
+signalPhaseRadAr = double(tt2000Ar) / SIGNAL_PERIOD_NS * 2*pi;
+samplesAr        = 3 + 4*sin(signalPhaseRadAr) + 2*cos(2*signalPhaseRadAr);
+
+% Create data gap on the form of NaN samples.
+b = (70e9 < tt2000Ar) & (tt2000Ar < 80e9);
+samplesAr(b) = NaN;
+
+R = struct();
+R.tt2000Ar       = tt2000Ar;
+R.samplesAr      = samplesAr;
+R.spinPhaseRadAr = spinPhaseRadAr;
+end
+
+
+
+% Generate example input signal.
+function R = generate_signal_from_file()
+FILE = '/media/erjo/bepicolombo/reformatter_mirror/pwi/cdf/EFD/L1_prime/2025/bc_mmo_pwi-efd_l1p_l-e_20251016_r01-v00-00.cdf';
+Do = dataobj(FILE);
+
+tt2000Ar       = bepic.spinfit.utils.E_ZV_epoch_to_linear(...
+  Do.data.epoch.data, ...
+  Do.data.t_offset_4hz.data);
+spinPhaseRadAr = bepic.spinfit.utils.E_ZV_spinphase_to_linear(...
+  Do.data.spinphase_4hz.data);
+samplesAr      = bepic.spinfit.utils.E_ZV_Ev_to_linear(...
+  Do.data.Ev_4hz.data);
+
+R.tt2000Ar       = tt2000Ar;
+R.samplesAr      = samplesAr;
+R.spinPhaseRadAr = spinPhaseRadAr;
 end
 
 
@@ -63,7 +101,7 @@ end
 
 % Function for calculating the spin fit and plotting some of the spin fit input
 % and output.
-function display_result(A)
+function fit_display_result(A)
   arguments
     A.tt2000Ar
     A.spinPhaseRadAr
