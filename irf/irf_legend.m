@@ -160,7 +160,7 @@ for i=label_order % start with first label first
     if strcmpi(textprop,'horizontalalignment')
       value_horizontal_alignment=textvalue; % value has been reset manually by input parameter
     end
-    if strcmpi(textprop,'color')            % [wy20260907] may be too complicated, need to be simplified? 
+    if strcmpi(textprop,'color')            % [wy20260907] may be too complicated, need to be simplified?
         if any(strcmp(textvalue,'cluster')) && i<=4
             set(ht(i),'color',cluster_colors(i,:));
         elseif any(strcmp(textvalue,'mms')) && i<=4
@@ -173,7 +173,7 @@ for i=label_order % start with first label first
             end
         end
     else
-        set(ht(i),textprop,textvalue);  
+        set(ht(i),textprop,textvalue);
     end
   end
   % Get position and extent of label just printed
