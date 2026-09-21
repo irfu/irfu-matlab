@@ -89,11 +89,11 @@ classdef spinfit
     %       Length of time between the beginning of each fit window. Radians.
     % fitWindowLengthRad
     %       Length of fit window. Radians.
-    % fitWindowCenterRad
+    % fitWindowCenterRefRad
     %       Scalar value. Describes where the center of fit windows (output
     %       timestamps) should be in cumulative spin phase. Any time
     %       window center will be located at a phase
-    %       (fitWindowCenterRad + n * fitWindowPeriodRad) mod 2*pi,
+    %       fitWindowCenterRefRad + n * fitWindowPeriodRad,
     %       where n=integer.
     % nMinFitSamples
     %       Minimum number of samples required for a fit.
@@ -123,7 +123,7 @@ classdef spinfit
         A.samplesAr
         A.fitWindowPeriodRad
         A.fitWindowLengthRad
-        A.fitWindowCenterRad
+        A.fitWindowCenterRefRad
         A.nMinFitSamples
         A.nFitCoefficients
         A.dataGapMinNs
@@ -132,13 +132,13 @@ classdef spinfit
       % ==========
       % ASSERTIONS
       % ==========
-      assert(iscolumn(A.tt2000Ar)           & isa(A.tt2000Ar,           "int64"))
-      assert(iscolumn(A.spinPhaseRadAr)     & isa(A.spinPhaseRadAr,     "double"))
-      assert(iscolumn(A.samplesAr)          & isa(A.samplesAr,          "double"))
-      assert(isscalar(A.fitWindowPeriodRad) & isa(A.fitWindowPeriodRad, "double"))
-      assert(isscalar(A.fitWindowLengthRad) & isa(A.fitWindowLengthRad, "double"))
-      assert(isscalar(A.fitWindowCenterRad) & isa(A.fitWindowCenterRad, "double"))
-      assert(isscalar(A.dataGapMinNs)       & isa(A.dataGapMinNs,       "int64"))
+      assert(iscolumn(A.tt2000Ar)              & isa(A.tt2000Ar,              "int64"))
+      assert(iscolumn(A.spinPhaseRadAr)        & isa(A.spinPhaseRadAr,        "double"))
+      assert(iscolumn(A.samplesAr)             & isa(A.samplesAr,             "double"))
+      assert(isscalar(A.fitWindowPeriodRad)    & isa(A.fitWindowPeriodRad,    "double"))
+      assert(isscalar(A.fitWindowLengthRad)    & isa(A.fitWindowLengthRad,    "double"))
+      assert(isscalar(A.fitWindowCenterRefRad) & isa(A.fitWindowCenterRefRad, "double"))
+      assert(isscalar(A.dataGapMinNs)          & isa(A.dataGapMinNs,          "int64"))
       %
       nIn = numel(A.tt2000Ar);
       assert(nIn == numel(A.spinPhaseRadAr))
@@ -168,24 +168,24 @@ classdef spinfit
       % the processing will be split by data gaps anyway.
       cspRadAr = bepic.spinfit.utils.spin_phase_to_CMP(...
         A.spinPhaseRadAr);
-      fakeTt2000Ar              = int64(cspRadAr             * FAKE_NS_PER_RAD);
-      fakeFitWindowPeriodNs     = int64(A.fitWindowPeriodRad * FAKE_NS_PER_RAD);
-      fakeFitWindowLengthNs     = int64(A.fitWindowLengthRad * FAKE_NS_PER_RAD);
-      fakeFitWindowCenterTt2000 = int64(A.fitWindowCenterRad * FAKE_NS_PER_RAD);
+      fakeTt2000Ar                 = int64(cspRadAr                * FAKE_NS_PER_RAD);
+      fakeFitWindowPeriodNs        = int64(A.fitWindowPeriodRad    * FAKE_NS_PER_RAD);
+      fakeFitWindowLengthNs        = int64(A.fitWindowLengthRad    * FAKE_NS_PER_RAD);
+      fakeFitWindowCenterRefTt2000 = int64(A.fitWindowCenterRefRad * FAKE_NS_PER_RAD);
 
       nSamples = numel(A.tt2000Ar);
       if nSamples == 0
         % IMPLEMENTATION NOTE: Call bepic.spinfit.fit_TAFW() with
         % empty data, just to create a consistent return value.
         R = bepic.spinfit.fit_TAFW( ...
-          tt2000Ar              = fakeTt2000Ar, ...
-          spinPhaseRadAr        = A.spinPhaseRadAr, ...
-          samplesAr             = A.samplesAr, ...
-          fitWindowPeriodNs     = fakeFitWindowPeriodNs, ...
-          fitWindowLengthNs     = fakeFitWindowLengthNs, ...
-          fitWindowCenterTt2000 = fakeFitWindowCenterTt2000, ...
-          nMinFitSamples        = A.nMinFitSamples, ...
-          nFitCoefficients      = A.nFitCoefficients);
+          tt2000Ar                 = fakeTt2000Ar, ...
+          spinPhaseRadAr           = A.spinPhaseRadAr, ...
+          samplesAr                = A.samplesAr, ...
+          fitWindowPeriodNs        = fakeFitWindowPeriodNs, ...
+          fitWindowLengthNs        = fakeFitWindowLengthNs, ...
+          fitWindowCenterRefTt2000 = fakeFitWindowCenterRefTt2000, ...
+          nMinFitSamples           = A.nMinFitSamples, ...
+          nFitCoefficients         = A.nFitCoefficients);
       else
         % =========================================================
         % Identify indices defining the beginning and end of a time
@@ -202,14 +202,14 @@ classdef spinfit
           iAr = iBeginAr(i):iEndAr(i);
 
           rSegment = bepic.spinfit.fit_TAFW( ...
-            tt2000Ar              = fakeTt2000Ar    (iAr), ...
-            spinPhaseRadAr        = A.spinPhaseRadAr(iAr), ...
-            samplesAr             = A.samplesAr     (iAr), ...
-            fitWindowPeriodNs     = fakeFitWindowPeriodNs, ...
-            fitWindowLengthNs     = fakeFitWindowLengthNs, ...
-            fitWindowCenterTt2000 = fakeFitWindowCenterTt2000, ...
-            nMinFitSamples        = A.nMinFitSamples, ...
-            nFitCoefficients      = A.nFitCoefficients);
+            tt2000Ar                 = fakeTt2000Ar    (iAr), ...
+            spinPhaseRadAr           = A.spinPhaseRadAr(iAr), ...
+            samplesAr                = A.samplesAr     (iAr), ...
+            fitWindowPeriodNs        = fakeFitWindowPeriodNs, ...
+            fitWindowLengthNs        = fakeFitWindowLengthNs, ...
+            fitWindowCenterRefTt2000 = fakeFitWindowCenterRefTt2000, ...
+            nMinFitSamples           = A.nMinFitSamples, ...
+            nFitCoefficients         = A.nFitCoefficients);
 
           % ======================================================
           % Modify the timestamps, from fake TT2000 to true TT2000
@@ -262,11 +262,11 @@ classdef spinfit
     %       Nanoseconds.
     % fitWindowLengthNs.
     %       Length of fit window. Nanoseconds.
-    % fitWindowCenterTt2000
+    % fitWindowCenterRefTt2000
     %       Scalar value. Describes where the center of fit windows (output
     %       timestamps) should be in time. Any fit window center will be
     %       located at a time
-    %       fitWindowCenterTt2000 + n * fitWindowPeriodNs,
+    %       fitWindowCenterRefTt2000 + n * fitWindowPeriodNs,
     %       where n=integer.
     % nMinFitSamples
     %       Minimum number of samples required for a fit.
@@ -297,7 +297,7 @@ classdef spinfit
         A.samplesAr
         A.fitWindowPeriodNs
         A.fitWindowLengthNs
-        A.fitWindowCenterTt2000
+        A.fitWindowCenterRefTt2000
         A.nMinFitSamples
         A.nFitCoefficients
       end
@@ -307,12 +307,12 @@ classdef spinfit
       % ==========
       % ASSERTIONS
       % ==========
-      assert(iscolumn(A.tt2000Ar)              & isa(A.tt2000Ar,              "int64"))
-      assert(iscolumn(A.spinPhaseRadAr)        & isa(A.spinPhaseRadAr,        "double"))
-      assert(iscolumn(A.samplesAr)             & isa(A.samplesAr,             "double"))
-      assert(isscalar(A.fitWindowPeriodNs)     & isa(A.fitWindowPeriodNs,     "int64"))
-      assert(isscalar(A.fitWindowLengthNs)     & isa(A.fitWindowLengthNs,     "int64"))
-      assert(isscalar(A.fitWindowCenterTt2000) & isa(A.fitWindowCenterTt2000, "int64"))
+      assert(iscolumn(A.tt2000Ar)                 & isa(A.tt2000Ar,                 "int64"))
+      assert(iscolumn(A.spinPhaseRadAr)           & isa(A.spinPhaseRadAr,           "double"))
+      assert(iscolumn(A.samplesAr)                & isa(A.samplesAr,                "double"))
+      assert(isscalar(A.fitWindowPeriodNs)        & isa(A.fitWindowPeriodNs,        "int64"))
+      assert(isscalar(A.fitWindowLengthNs)        & isa(A.fitWindowLengthNs,        "int64"))
+      assert(isscalar(A.fitWindowCenterRefTt2000) & isa(A.fitWindowCenterRefTt2000, "int64"))
       assert(isscalar(A.nMinFitSamples))
       assert(isscalar(A.nFitCoefficients))
       %
@@ -390,18 +390,18 @@ classdef spinfit
         % CASE: Non-empty input arrays
         % ============================
 
-        % ------------------------------------------------------------
-        % Modify A.fitWindowCenterTt2000 to work with mms_spinfit_m()
-        % ------------------------------------------------------------
+        % --------------------------------------------------------------
+        % Modify A.fitWindowCenterRefTt2000 to work with mms_spinfit_m()
+        % --------------------------------------------------------------
         % IMPLEMENTATION NOTE: mms_spinfit_m() requires "t0" to be within or
         % close to the submitted timestamps but is unclear what this exactly
         % means. If it is not, it might (a) crash, or (b) add (not NaN) or omit
         % return values for timestamps for fit windows which there are no
         % samples.
         m = idivide(...
-          A.tt2000Ar(1) - A.fitWindowCenterTt2000, ...
+          A.tt2000Ar(1) - A.fitWindowCenterRefTt2000, ...
           A.fitWindowPeriodNs, "FLOOR");
-        modifFitWindowCenterTt2000 = A.fitWindowCenterTt2000 + m * A.fitWindowPeriodNs;
+        modifFitWindowCenterTt2000 = A.fitWindowCenterRefTt2000 + m * A.fitWindowPeriodNs;
 
         % --------------------
         % CALL mms_spinfit_m()
