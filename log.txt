@@ -1,3 +1,4 @@
+2026-09-21 v1.18.0 New NASA CDF patch 3.9.2, drop 32bit Windows, Matlab R2025a+ incompatibility fix, SolO updates, and a lot more changes.
 2024-12-19 v1.17.0 New NASA CDF patch, IGRF-14, Mac Apple silicon suffix support, PSP support, and a lot more changes.
 2022-10-17 v1.16.3 MMS correct bitmask and add DOI to cdf, updated SolarOrbiter code base, a lot more minor fixes.
 2022-07-06 v1.16.2 MMS fix for MMS3 sdp2 failure (2022-05-08), updated SolarOrbiter code base, a lot more minor fixes.
