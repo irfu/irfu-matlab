@@ -33,3 +33,5 @@ t_1+n*delta.
 
 TT2000 : CDF time format "TT2000". Nanoseconds since epoch, including leap
 seconds.
+
+ZV : zVariable.

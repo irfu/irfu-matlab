@@ -441,6 +441,41 @@ classdef utils
 
 
 
+    % Convert E ZVs "epoch" (Nx4) and "t_offset" (1x4) to convenient 1D TT2000
+    % array.
+    function tt2000Ar = E_ZV_epoch_to_linear(zvEpochAr, zvOffsetSecAr)
+      assert(isa(zvEpochAr,     'int64')  & iscolumn(zvEpochAr))
+      assert(isa(zvOffsetSecAr, 'single') & isequal(size(zvOffsetSecAr), [1, 4]))
+
+      % NOTE: Convert seconds to ns.
+      tt2000Ar = (zvEpochAr + int64(zvOffsetSecAr*1e9))';   % NOTE: Transpose
+      tt2000Ar = tt2000Ar(:);
+    end
+
+
+
+    % Convert E ZV "spinphase_*" (Nx4) to convenient 1D array.
+    function zvSpinphaseRad = E_ZV_spinphase_to_linear(zvSpinphaseDeg)
+      assert(isa(zvSpinphaseDeg, 'single') & (size(zvSpinphaseDeg, 2) == 4))
+
+      % NOTE: Change unit AND transpose.
+      zvSpinphaseRad = deg2rad(zvSpinphaseDeg)';
+      % NOTE: Change dimensions AND MATLAB class.
+      zvSpinphaseRad = double(zvSpinphaseRad(:));
+    end
+
+
+
+    % Convert E ZV "Ev_*" (Nx4; samples) to convenient 1D array.
+    function samplesAr = E_ZV_Ev_to_linear(zvEv)
+      assert(isa(zvEv, 'single') & (size(zvEv, 2) == 4))
+
+      samplesAr = zvEv';
+      samplesAr = double(samplesAr(:));
+    end
+
+
+
   end    % methods(Static)
 
 
