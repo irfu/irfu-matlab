@@ -129,7 +129,7 @@ classdef fw
       for iSegment = 1:nSegments
         i = iBeginAr(iSegment) : iEndAr(iSegment);
 
-        SegmentFitWindowTable = bepic.spinfit.fw.get_segment_SAFWs( ...
+        SegmentFitWindowTable = bepic.spinfit.fw.get_SAFWs_when_no_data_gaps( ...
           tt2000Ar           = A.tt2000Ar(      i), ...
           spinPhaseRadAr     = A.spinPhaseRadAr(i), ...
           fitWindowPeriodRad = A.fitWindowPeriodRad, ...
@@ -146,7 +146,7 @@ classdef fw
       % (1) are recognized by A.dataGapMinNs, and
       % (2) which are smaller than one revolution, and
       % (3) fit inside the time boundaries of one fit window,
-      % lead to bepic.spinfit.fw.get_segment_SAFWs() identifying the same fit
+      % lead to bepic.spinfit.fw.get_SAFWs_when_no_data_gaps() identifying the same fit
       % window twice. They therefore need to be removed.
       % --
       % PROBLEM: Rounding errors could lead to de facto duplicated fit windows
@@ -157,8 +157,7 @@ classdef fw
 
 
     % Find beginning and end of SAFWs on time interval *without data gaps*
-    % (jumps in time equal or greater than one revolution). (This is what
-    % "segment" in the function name refers to.).
+    % (jumps in time, equal or greater than one revolution).
     %
     % IMPORTANT NOTE: Assumes that there are no data gaps.
     %
@@ -171,7 +170,7 @@ classdef fw
     %       hence not find the beginning and end of the fit window even in
     %       principle.
     %
-    function [FitWindowTable] = get_segment_SAFWs(A)
+    function [FitWindowTable] = get_SAFWs_when_no_data_gaps(A)
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
