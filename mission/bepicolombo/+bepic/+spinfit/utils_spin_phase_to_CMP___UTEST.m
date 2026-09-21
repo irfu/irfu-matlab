@@ -1,6 +1,6 @@
 %
 % matlab.unittest automatic test code for
-% bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase().
+% bepic.spinfit.utils.spin_phase_to_CMP().
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
@@ -61,7 +61,7 @@ classdef utils_spin_phase_to_CMP___UTEST < matlab.unittest.TestCase
 
 
     function test_3(T)
-      actCumulSpinPhaseRadAr = bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase(...
+      actCumulSpinPhaseRadAr = bepic.spinfit.utils.spin_phase_to_CMP(...
         [0.2, 0.3, 0.7, 0.1, 0.5, 0.4]' * 2*pi);
 
       T.assertEqual(...
@@ -91,7 +91,7 @@ classdef utils_spin_phase_to_CMP___UTEST < matlab.unittest.TestCase
     %
     function test(T, spinPhaseRadAr, expCumulSpinPhaseRadAr)
 
-      actCumulSpinPhaseRadAr = bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase(...
+      actCumulSpinPhaseRadAr = bepic.spinfit.utils.spin_phase_to_CMP(...
         spinPhaseRadAr);
 
       T.assertEqual(actCumulSpinPhaseRadAr, expCumulSpinPhaseRadAr)

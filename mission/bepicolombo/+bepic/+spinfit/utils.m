@@ -211,7 +211,7 @@ classdef utils
       assert(numel(A.spinPhaseRadAr) == nSamples)
 
       % IMPORTANT NOTE: Can not calculate CSP if there are data gaps.
-      cspRadAr = bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase(...
+      cspRadAr = bepic.spinfit.utils.spin_phase_to_CMP(...
         A.spinPhaseRadAr);
 
       if nSamples <= 1
@@ -264,7 +264,7 @@ classdef utils
     %       caller must handle data gaps. (Note that the function has no
     %       argument for timestamps.)
     %
-    function cspRadAr = spin_phase_to_cumulative_spin_phase(spinPhaseRadAr)
+    function cspRadAr = spin_phase_to_CMP(spinPhaseRadAr)
 
       assert(iscolumn(spinPhaseRadAr) & isa(spinPhaseRadAr, "double"))
       assert(all(isfinite(spinPhaseRadAr)))

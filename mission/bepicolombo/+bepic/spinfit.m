@@ -164,7 +164,7 @@ classdef spinfit
       % IMPLEMENTATION NOTE: Cumulative spin phase values will not increment
       % correctly for time jumps (error n*2*pi) but that does not matter, since
       % the processing will be split by data gaps anyway.
-      cspRadAr = bepic.spinfit.utils.spin_phase_to_cumulative_spin_phase(...
+      cspRadAr = bepic.spinfit.utils.spin_phase_to_CMP(...
         A.spinPhaseRadAr);
       fakeTt2000Ar              = int64(cspRadAr             * fakeNsPerRad);
       fakeFitWindowPeriodNs     = int64(A.fitWindowPeriodRad * fakeNsPerRad);
