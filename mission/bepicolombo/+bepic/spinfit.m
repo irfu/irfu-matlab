@@ -755,6 +755,8 @@ classdef spinfit
         FitWindowsTable.beginTt2000, ...
         FitWindowsTable.endTt2000);
 
+      %N_MAX_ITERATIONS = 10;
+      %OPTS = optimoptions("lsqcurvefit", "Display", "off", "MaxIterations", N_MAX_ITERATIONS);
       OPTS = optimoptions("lsqcurvefit", "Display", "off");
 
       for i = 1:nFitWindows

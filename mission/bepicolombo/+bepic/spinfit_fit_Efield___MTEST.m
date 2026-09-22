@@ -12,14 +12,14 @@ function spinfit_fit_Efield___MTEST
 % PROPOSAL: See as usable for multiple forms of fitting?
 
 %R = generate_signal_step_function();
-%R = generate_signal_sine_wave();
-R = generate_signal_from_file();
+R = generate_signal_sine_wave();
+%R = generate_signal_from_file();
 
 assert(numel(R.tt2000Ar) == numel(R.samplesAr))
 assert(numel(R.tt2000Ar) == numel(R.spinPhaseRadAr))
 
 close all
-if 1
+if 0
   fit_display_result___fit_SAFW_MMS( ...
     tt2000Ar              = R.tt2000Ar, ...
     spinPhaseRadAr        = R.spinPhaseRadAr, ...
@@ -30,7 +30,7 @@ if 1
     nMinFitSamples        = 6, ...
     dataGapMinNs          = int64(2e9));
 end
-if 0
+if 1
   fit_display_result___fit_SAFW_E( ...
     tt2000Ar              = R.tt2000Ar, ...
     spinPhaseRadAr        = R.spinPhaseRadAr, ...
@@ -45,7 +45,9 @@ end
 
 
 % ###############
+% ###############
 % EXAMPLE SIGNALS
+% ###############
 % ###############
 
 
@@ -59,23 +61,29 @@ end
 
 
 
-% Generate example input signal.
+% Generate example input signal
 function R = generate_signal_sine_wave()
 SPIN_PERIOD_NS   = 4e9;
 SIGNAL_PERIOD_NS = 4e9;
 
 tt2000Ar         = int64([0 : 0.25 : 100] * 1e9)';
 
-% Create data gap on the form of MISSING INDICES (not NaN).
+% --------------------------------------------------------
+% Create data gap on the form of MISSING INDICES (not NaN)
+% --------------------------------------------------------
 b = (20e9 < tt2000Ar) & (tt2000Ar < 30e9);
 tt2000Ar = tt2000Ar(~b);
 
+% =============
+% Create signal
+% =============
 spinPhaseRadAr   = wrapTo2Pi( double(tt2000Ar) / SPIN_PERIOD_NS * 2*pi );
-
 signalPhaseRadAr = double(tt2000Ar) / SIGNAL_PERIOD_NS * 2*pi;
 samplesAr        = 3 + 4*sin(signalPhaseRadAr) + 2*cos(2*signalPhaseRadAr);
 
-% Create data gap on the form of NaN SAMPLES.
+% ------------------------------------------
+% Create data gap on the form of NaN SAMPLES
+% ------------------------------------------
 b = (70e9 < tt2000Ar) & (tt2000Ar < 80e9);
 samplesAr(b) = NaN;
 
@@ -108,7 +116,9 @@ end
 
 
 % ##########
+% ##########
 % FIT & PLOT
+% ##########
 % ##########
 
 
@@ -213,7 +223,9 @@ end
 
 
 % ##################
+% ##################
 % REUSABLE PLOT CODE
+% ##################
 % ##################
 
 

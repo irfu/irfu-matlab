@@ -61,7 +61,7 @@ end
 function S = generate_signal_sine_wave(lengthSec)
 SPIN_PERIOD_NS   = 4e9;
 SIGNAL_PERIOD_NS = 4e9;
-SAMPLING_RATE_HZ = 128;    % Highest sampling rate.
+SAMPLING_RATE_HZ = 128;    % Highest sampling rate: E field H mode.
 
 %tt2000Ar         = int64([0 : 1/SAMPLING_RATE_HZ : 24*60*60] * 1e9)';    % 24 h
 tt2000Ar         = int64([0 : 1/SAMPLING_RATE_HZ : lengthSec] * 1e9)';    % TEMP
