@@ -519,6 +519,8 @@ classdef spinfit
       % PROPOSAL: Define as the function to use for "potential" CDFs, which just
       %           happens to be SAFW in the current implementation.
 
+      N_MIN_FINITE_SAMPLES = 1;
+
       % ==========
       % ASSERTIONS
       % ==========
@@ -530,6 +532,135 @@ classdef spinfit
       assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
       assert(isscalar(A.dataGapMinNs)                  & isa(A.dataGapMinNs,          "int64"))
       assert(isequal(size(A.samplesAr), [nSamples, 2]) & isa(A.samplesAr,             "double"))
+      %
+      assert(issorted(A.tt2000Ar, "STRICTASCEND"))
+      assert(all(isfinite(A.samplesAr) | isnan(A.samplesAr), "all"))
+      assert(all(isfinite(A.spinPhaseRadAr)))
+      % IMPLEMENTATION NOTE: Requiring spin phase on interval 0 to 2*pi. This is
+      % not required by mms_spin_fit(), but (1) is (analogous to) the spin phase
+      % values in L1p CDF files which are also bounded (0 to 360 deg), and (2)
+      % is an indirect check on the units used.
+      assert(all((0 <= A.spinPhaseRadAr) & (A.spinPhaseRadAr <= 2*pi)))
+      %
+      assert(A.fitWindowPeriodRad > 0)
+      assert(A.fitWindowLengthRad > 0)
+      assert(A.dataGapMinNs       > 0)
+
+      % =========
+      % ALGORITHM
+      % =========
+      FitWindowsTable = bepic.spinfit.fw.get_SAFWs( ...
+        tt2000Ar             = A.tt2000Ar, ...
+        spinPhaseRadAr       = A.spinPhaseRadAr, ...
+        fitWindowPeriodRad   = A.fitWindowPeriodRad, ...
+        fitWindowLengthRad   = A.fitWindowLengthRad, ...
+        fitWindowBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
+        dataGapMinNs         = A.dataGapMinNs);
+
+      nFitWindows = height(FitWindowsTable);
+
+      T = table();
+      T.mean = NaN(nFitWindows, 2);    % Preallocate
+      % Calculate fit window center: Cheat by averaging in time (not CMP).
+      T.fitWindowCenterTt2000 = ...
+        (FitWindowsTable.beginTt2000 + FitWindowsTable.endTt2000) / 2;
+
+      iArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
+        A.tt2000Ar, ...
+        FitWindowsTable.beginTt2000, ...
+        FitWindowsTable.endTt2000);
+
+      % ===================================================================
+      % Calculate the mean value for the fit window without any fitting (no
+      % extra terms).
+      % ===================================================================
+      for i = 1:nFitWindows
+        j = iArCa{i};
+
+        T.mean(i, 1) = mean2(A.samplesAr(j, 1));
+        T.mean(i, 2) = mean2(A.samplesAr(j, 2));
+      end
+
+      % ------------------------------------------------------------------------
+      % Custom mean function.
+      function m = mean2(v)
+        % Remove NaN from data.
+        % NOTE: Done in this function, so that it is done separately for MEF1
+        %       and MEF2.
+        v = v(isfinite(v));
+
+        if numel(v) >= N_MIN_FINITE_SAMPLES
+          m = mean(v);
+        else
+          m = NaN;
+        end
+      end
+    end
+
+
+
+    % Given E field samples (from an "E field" CDF), derive spin fit for fit
+    % windows (time windows).
+    %
+    %
+    % NAME-VALUE ARGUMENTS
+    % ====================
+    % tt2000Ar
+    %       Column array of incrementing TT2000 timestamps for every sample.
+    % spinPhaseRadAr
+    %       Column array of spin phase values. Radians (0 to 2*pi). Must be
+    %       finite.
+    % samplesAr
+    %       Nx2 array for MEF1 and MEF2 sample values.
+    % fitWindowPeriodRad
+    %       Length of time between the beginning of each fit window. Radians.
+    % fitWindowLengthRad
+    %       Length of fit window. Radians.
+    % fitWindowCenterRefRad
+    %       Scalar value. Describes where the center of fit windows (output
+    %       timestamps) should be in cumulative spin phase. Any time
+    %       window center will be located at a phase
+    %       fitWindowCenterRefRad + n * fitWindowPeriodRad,
+    %       where n=integer.
+    % dataGapMinNs
+    %       Threshold for when a jump in tt2000Ar should count as a data gap.
+    %
+    %
+    % RETURN VALUE
+    % ============
+    % T
+    %       Table with ~self-explanatory column names. One spin fit per row.
+    %
+    function T = fit_SAFW_E(A)
+      arguments
+        A.tt2000Ar
+        A.spinPhaseRadAr
+        A.samplesAr
+        A.fitWindowPeriodRad
+        A.fitWindowLengthRad
+        A.fitWindowCenterRefRad
+        A.dataGapMinNs
+      end
+      % PROPOSAL: Define as the function to use for "E field" CDFs, which just
+      %           happens to be SAFW in the current implementation.
+      % PROPOSAL: "E" too short. "Efield"
+      % PROPOSAL: Argument for minimum number of samples.
+      % PROPOSAL: for-->parfor (iteration over fit windows).
+      %
+      % Code for manually experimenting with lsqcurvefit():
+      % clear; f=@(A,x) (A(1)+A(2)*x+A(3)*x.^2); xdata=[-10:10]; ydata=[sin(xdata/5)]; [A,resnorm] = lsqcurvefit(f,[0,0,0],xdata,ydata); close all; plot(xdata,ydata,'o'); hold on; x=linspace(-12,12); plot(x,f(A,x))
+
+      % ==========
+      % ASSERTIONS
+      % ==========
+      nSamples = numel(A.tt2000Ar);
+      assert(iscolumn(A.tt2000Ar)                      & isa(A.tt2000Ar,              "int64"))
+      assert(iscolumn(A.spinPhaseRadAr)                & isa(A.spinPhaseRadAr,        "double"))
+      assert(isscalar(A.fitWindowPeriodRad)            & isa(A.fitWindowPeriodRad,    "double"))
+      assert(isscalar(A.fitWindowLengthRad)            & isa(A.fitWindowLengthRad,    "double"))
+      assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
+      assert(isscalar(A.dataGapMinNs)                  & isa(A.dataGapMinNs,          "int64"))
+      assert(isequal(size(A.samplesAr), [nSamples, 1]) & isa(A.samplesAr,             "double"))
       %
       assert(issorted(A.tt2000Ar, "STRICTASCEND"))
       assert(all(isfinite(A.spinPhaseRadAr)))
@@ -556,28 +687,67 @@ classdef spinfit
 
       nFitWindows = height(FitWindowsTable);
 
+      % =======================================
+      % Function to fit the spinning E field to
+      % =======================================
+      if 1
+        % According to mms_spinfit_m().
+        f = @(C, x) (C(1) + C(2)*cos(x) + C(3)*sin(x) + C(4)*cos(2*x) + C(5)*sin(2*x));
+        C_0 = [0, 0, 0, 0, 0];
+      end
+      if 0
+        % According to "Japan" in "BepiColombo Ground Segment (GS) Development
+        % and Planning".
+        % NOTE: Originally found on wiki, but is no longer there. Obsolete?!!
+        f = @(C, x) (C(1)*cos(x-C(2)) + C(3)*x + C(4));
+        C_0 = [0, 0, 0, 0];    % Start value for iterations.
+      end
+      if 0
+        % According to "Japan" on wiki 2026-09-22.
+        % Y = A[0] * cos(X - A[1]) + A[2] * sin(2*X) + A[3] * cos(2*X) + A[4] * X + A[5]
+        % NOTE: Resembles MMS spinfit, but is not the same!!!
+        f = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4) * cos(2*x) + C(5) * x + C(6));
+        C_0 = [0, 0, 0, 0, 0, 0];    % Start value for iterations.
+      end
+      nCoeff = numel(C_0);
+
       T = table();
+      T.A = NaN(nFitWindows, nCoeff);     % Pre-allocate
+      % Calculate fit window center: Cheat by averaging in time (not CMP).
+      T.fitWindowCenterTt2000 = ...
+        (FitWindowsTable.beginTt2000 + FitWindowsTable.endTt2000) / 2;
 
-      if nSamples <= 0
-        T.fitWindowCenterTt2000 = int64.empty( 0, 1);
-        T.mean                  = double.empty(0, 2);
-      else
-        iArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
-          A.tt2000Ar, ...
-          FitWindowsTable.beginTt2000, ...
-          FitWindowsTable.endTt2000);
+      iArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
+        A.tt2000Ar, ...
+        FitWindowsTable.beginTt2000, ...
+        FitWindowsTable.endTt2000);
 
-        % Calculate fit window center: Cheat by averaging in time (not CMP).
-        T.fitWindowCenterTt2000 = ...
-          (FitWindowsTable.beginTt2000 + FitWindowsTable.endTt2000) / 2;
+      OPTS = optimoptions("lsqcurvefit", "Display", "off");
 
-        % Calculate the mean value for the fit window without any fitting (no extra terms).
-        T.mean = NaN(nFitWindows, 2);
-        for i = 1:nFitWindows
-          j = iArCa{i};
-          T.mean(i, 1) = mean(A.samplesAr(j, 1));
-          T.mean(i, 2) = mean(A.samplesAr(j, 2));
+      for i = 1:nFitWindows
+        j = iArCa{i};
+
+        fitWindowSpinPhaseRadAr = A.spinPhaseRadAr(j);
+        fitWindowSamplesAr      = A.samplesAr(j);
+        % Remove NaN from fit window.
+        bFinite                 = isfinite(fitWindowSamplesAr);
+        fitWindowSpinPhaseRadAr = fitWindowSpinPhaseRadAr(bFinite);
+        fitWindowSamplesAr      = fitWindowSamplesAr(     bFinite);
+        nFitWindowSamples       = numel(fitWindowSamplesAr);
+
+        if nCoeff <= nFitWindowSamples
+          % =============
+          % Calculate fit
+          % =============
+          % PROPOSAL: Use previous fit as start value to speed up+help
+          %           convergence?!
+          [C, ~] = lsqcurvefit(...
+            f, C_0, fitWindowSpinPhaseRadAr, fitWindowSamplesAr, [], [], OPTS);
+        else
+          C = NaN(nCoeff, 1);
         end
+
+        T.A(i, :) = C;
       end
     end
 
