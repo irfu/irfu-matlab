@@ -79,40 +79,40 @@ classdef fw
       % assert(issorted(endTt2000Ar,   "STRICTASCEND"))
       % assert(all(beginTt2000Ar <= endTt2000Ar))
       assert(numel(beginTt2000Ar) == numel(endTt2000Ar))
-      %nSamples = numel(tt2000Ar);
+      nSamples = numel(tt2000Ar);
       nFitWindows = numel(beginTt2000Ar);
 
       % ----------------------------------------------------------------
       % Given timestamps of beginning and end of fit windows, derive the
       % ranges of samples indices for each fit window.
       % ----------------------------------------------------------------
-      % IMPLEMENTATION NOTE: Could have been implemented by iterating over fit
-      % windows and comparing time variables with each other, e.g.
-      %     b = (tt2000Begin <= tt2000Ar) & (tt2000Ar <= tt2000End))
-      % . This might however scale badly with the size of the data. Using
-      % interp1() instead should hopefully avoid bad performance.
-      %xMin = double(intmin("int64")) - 1;   % Float can not represent!!!
-      %xMax = double(intmax("int64")) + 1;   % Float can not represent!!!
-      %xAr = [xMin; double(tt2000Ar); xMax];
-      %yAr = 0:(nSamples+1);
-      % iBeginEnd = interp1(...
-      %   xAr, yAr, ...
-      %   double([beginTt2000Ar, endTt2000Ar]), ...
-      %   "linear", "extrap");
-      % iBeginAr = ceil(iBeginEnd(:, 1));
-      % iEndAr   = floor(iBeginEnd(:, 2));   % Not exactly correct.
+      % IMPLEMENTATION NOTE: THIS CODE IS PERFORMANCE SENSITIVE FOR LARGE DATA!
+      iArCa = cell(nFitWindows, 1);
+      % IMPLEMENTATION NOTE: Add extra "data points" to makes sure that there
+      % are always at least two data points, which is required by interp1().
+      % This eliminates the need for explicitly handling special cases.
+      xAr = double([int64(-inf); tt2000Ar; int64(inf)]);
+      yAr = 0 : (nSamples+1);
+      iBeginAr = interp1(xAr, yAr, double(beginTt2000Ar), "next");
+      iEndAr   = interp1(xAr, yAr, double(endTt2000Ar  ), "next") - 1;
+
+      % Convert the result to the expected return value format.
+      for iFitWindow = 1:nFitWindows
+        iArCa{iFitWindow} = [iBeginAr(iFitWindow) : iEndAr(iFitWindow)]';
+      end
 
       % Possibly not the most efficient implementation, but it should be safe
       % and handle special cases well.
-      iArCa = cell(nFitWindows, 1);
-      for iFitWindow = 1:nFitWindows
-        b = (beginTt2000Ar(iFitWindow) <= tt2000Ar) & (tt2000Ar < endTt2000Ar(iFitWindow));
-
-        % NOTE: Normalize to column array. Only seems encessary for empty
-        %       ranges.
-        jAr = find(b);
-        iArCa{iFitWindow} = jAr(:);
-      end
+      % IMPLEMENTATION NOTE: SEEMS TO SCALE BADLY WITH SIZE!
+      % iArCa = cell(nFitWindows, 1);
+      % for iFitWindow = 1:nFitWindows
+      %   b = (beginTt2000Ar(iFitWindow) <= tt2000Ar) & (tt2000Ar < endTt2000Ar(iFitWindow));
+      %
+      %   % NOTE: Normalize to column array. Only seems necessary for empty
+      %   %       ranges.
+      %   jAr = find(b);
+      %   iArCa{iFitWindow} = jAr(:);
+      % end
     end
 
 
