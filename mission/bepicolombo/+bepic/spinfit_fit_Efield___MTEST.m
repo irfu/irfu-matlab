@@ -1,12 +1,14 @@
 %
-% Script for manually experimenting with bepic.spinfit.fit_SAFW_MMS() by
-% specifying input values and then plotting them and the output after processing
-% (by editing this code).
+% Script for manually experimenting with fitting E field by specifying input
+% values and then plotting them and the output after processing (by editing this
+% code).
+%
+% This code is intended for testing multiple such E field functions.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function spinfit_fit_SAFW_MMS___MTEST
+function spinfit_fit_Efield___MTEST
 % PROPOSAL: See as usable for multiple forms of fitting?
 
 %R = generate_signal_step_function();
@@ -17,15 +19,27 @@ assert(numel(R.tt2000Ar) == numel(R.samplesAr))
 assert(numel(R.tt2000Ar) == numel(R.spinPhaseRadAr))
 
 close all
-fit_display_result( ...
-  tt2000Ar              = R.tt2000Ar, ...
-  spinPhaseRadAr        = R.spinPhaseRadAr, ...
-  samplesAr             = R.samplesAr, ...
-  fitWindowPeriodRad    = 2*pi, ...
-  fitWindowLengthRad    = 2*pi, ...
-  fitWindowCenterRefRad = 1*pi, ...
-  nMinFitSamples        = 6, ...
-  dataGapMinNs          = int64(2e9));
+if 1
+  fit_display_result___fit_SAFW_MMS( ...
+    tt2000Ar              = R.tt2000Ar, ...
+    spinPhaseRadAr        = R.spinPhaseRadAr, ...
+    samplesAr             = R.samplesAr, ...
+    fitWindowPeriodRad    = 2*pi*1, ...
+    fitWindowLengthRad    = 2*pi*1, ...
+    fitWindowCenterRefRad = 2*pi*0.5, ...
+    nMinFitSamples        = 6, ...
+    dataGapMinNs          = int64(2e9));
+end
+if 0
+  fit_display_result___fit_SAFW_E( ...
+    tt2000Ar              = R.tt2000Ar, ...
+    spinPhaseRadAr        = R.spinPhaseRadAr, ...
+    samplesAr             = R.samplesAr, ...
+    fitWindowPeriodRad    = 2*pi*1, ...
+    fitWindowLengthRad    = 2*pi*1, ...
+    fitWindowCenterRefRad = 2*pi*0.5, ...
+    dataGapMinNs          = int64(2e9));
+end
 end
 
 
@@ -52,16 +66,16 @@ SIGNAL_PERIOD_NS = 4e9;
 
 tt2000Ar         = int64([0 : 0.25 : 100] * 1e9)';
 
-% Create data gap on the form of missing values (remove indices; not NaN).
+% Create data gap on the form of MISSING INDICES (not NaN).
 b = (20e9 < tt2000Ar) & (tt2000Ar < 30e9);
 tt2000Ar = tt2000Ar(~b);
 
-spinPhaseRadAr   = wrapTo2Pi( double(tt2000Ar)/SPIN_PERIOD_NS * 2*pi );
+spinPhaseRadAr   = wrapTo2Pi( double(tt2000Ar) / SPIN_PERIOD_NS * 2*pi );
 
 signalPhaseRadAr = double(tt2000Ar) / SIGNAL_PERIOD_NS * 2*pi;
 samplesAr        = 3 + 4*sin(signalPhaseRadAr) + 2*cos(2*signalPhaseRadAr);
 
-% Create data gap on the form of NaN samples.
+% Create data gap on the form of NaN SAMPLES.
 b = (70e9 < tt2000Ar) & (tt2000Ar < 80e9);
 samplesAr(b) = NaN;
 
@@ -101,7 +115,7 @@ end
 
 % Function for calculating the spin fit and plotting some of the spin fit input
 % and output.
-function fit_display_result(A)
+function fit_display_result___fit_SAFW_MMS(A)
   arguments
     A.tt2000Ar
     A.spinPhaseRadAr
@@ -113,6 +127,7 @@ function fit_display_result(A)
     A.dataGapMinNs
   end
 
+tic
 R = bepic.spinfit.fit_SAFW_MMS(...
   tt2000Ar              = A.tt2000Ar, ...
   spinPhaseRadAr        = A.spinPhaseRadAr, ...
@@ -123,9 +138,7 @@ R = bepic.spinfit.fit_SAFW_MMS(...
   nMinFitSamples        = A.nMinFitSamples, ...
   dataGapMinNs          = A.dataGapMinNs, ...
   nFitCoefficients      = 5);
-
-% R.tt2000Ar
-% R.offsetAr
+toc
 
 % ====
 % PLOT
@@ -148,6 +161,60 @@ axAr(end+1) = add_tile("OUTPUT: coefficientSin2Ar", R.fitWindowCenterTt2000, R.c
 % could be deceiving.
 linkaxes(axAr(:)', 'x');
 end
+
+
+
+% Function for calculating the spin fit and plotting some of the spin fit input
+% and output.
+function fit_display_result___fit_SAFW_E(A)
+  arguments
+    A.tt2000Ar
+    A.spinPhaseRadAr
+    A.samplesAr
+    A.fitWindowPeriodRad
+    A.fitWindowLengthRad
+    A.fitWindowCenterRefRad
+    A.dataGapMinNs
+  end
+
+tic
+R = bepic.spinfit.fit_SAFW_E(...
+  tt2000Ar              = A.tt2000Ar, ...
+  spinPhaseRadAr        = A.spinPhaseRadAr, ...
+  samplesAr             = A.samplesAr, ...
+  fitWindowPeriodRad    = A.fitWindowPeriodRad, ...
+  fitWindowLengthRad    = A.fitWindowLengthRad, ...
+  fitWindowCenterRefRad = A.fitWindowCenterRefRad, ...
+  dataGapMinNs          = A.dataGapMinNs);
+toc
+
+% ====
+% PLOT
+% ====
+figure
+t = tiledlayout(7, 1, "Padding", "compact", "TileSpacing", "compact");
+
+axAr = matlab.graphics.axis.Axes.empty(0, 1);
+%axAr(end+1) = add_tile("INPUT: tt2000Ar",               A.tt2000Ar, A.tt2000Ar);
+axAr(end+1) = add_tile("INPUT: samplesAr",              A.tt2000Ar, A.samplesAr);
+axAr(end+1) = add_tile("INPUT: spinPhaseRadAr",         A.tt2000Ar, A.spinPhaseRadAr);
+%axAr(end+1) = add_tile("OUTPUT: fitWindowCenterTt2000", R.fitWindowCenterTt2000, R.fitWindowCenterTt2000);
+axAr(end+1) = add_tile("OUTPUT: A(1)=offsetAr",          R.fitWindowCenterTt2000, R.A(:, 1));
+axAr(end+1) = add_tile("OUTPUT: A(2)=coefficientCos1Ar", R.fitWindowCenterTt2000, R.A(:, 2));
+axAr(end+1) = add_tile("OUTPUT: A(3)=coefficientSin1Ar", R.fitWindowCenterTt2000, R.A(:, 3));
+axAr(end+1) = add_tile("OUTPUT: A(4)=coefficientCos2Ar", R.fitWindowCenterTt2000, R.A(:, 4));
+axAr(end+1) = add_tile("OUTPUT: A(5)=coefficientSin2Ar", R.fitWindowCenterTt2000, R.A(:, 5));
+
+% NOTE: Important to link X axes, since they are not identical otherwise, and
+% could be deceiving.
+linkaxes(axAr(:)', 'x');
+end
+
+
+
+% ##################
+% REUSABLE PLOT CODE
+% ##################
 
 
 
