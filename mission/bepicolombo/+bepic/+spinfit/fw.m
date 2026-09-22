@@ -51,20 +51,34 @@ classdef fw
     %
     % RETURN VALUES
     % =============
-    % iBeginAr, iEndAr
-    %       Same-sized column arrays containing the first and last index into
-    %       each fit window.
-    %       tt2000Ar(iBeginAr(i):iEndAr(i)) are the timestamps for fit window i.
+    % iArCa
+    %       Column cell array of column arrays of indices.
+    %       iCa{i} = Indices into tt2000Ar, for fit window i.
     %
-    function [iBeginAr, iEndAr] = fit_window_time_to_indices(...
+    function [iArCa] = fit_window_time_to_indices(...
         tt2000Ar, beginTt2000Ar, endTt2000Ar)
+      % PROBLEM: If there are no samples (indices) for a fit window, then
+      %          the function must still return begin and end indices (two
+      %          scalar values) since it can not properly represent an empty
+      %          range.
+      %   PROPOSAL: Return cell array of index arrays. -- IMPLEMENTED
+      %     CON: Inefficient?!
+      %       PRO: Cell arrays are inefficient?!
+      %       CON: Caller will create the corresponding arrays anyway.
+      %   PROBLEM: Happens for the special case of zero samples, and non-zero
+      %            fit windows.
 
       assert(iscolumn(tt2000Ar)      & isa(tt2000Ar,      "int64"))
       assert(iscolumn(beginTt2000Ar) & isa(beginTt2000Ar, "int64"))
       assert(iscolumn(endTt2000Ar)   & isa(endTt2000Ar,   "int64"))
 
-      assert(issorted(tt2000Ar, "STRICTASCEND"))    % Required by algorithm.
-      nSamples = numel(tt2000Ar);
+      assert(issorted(tt2000Ar,      "STRICTASCEND"))    % Required by algorithm.
+      % assert(issorted(beginTt2000Ar, "STRICTASCEND"))
+      % assert(issorted(endTt2000Ar,   "STRICTASCEND"))
+      % assert(all(beginTt2000Ar <= endTt2000Ar))
+      assert(numel(beginTt2000Ar) == numel(endTt2000Ar))
+      %nSamples = numel(tt2000Ar);
+      nFitWindows = numel(beginTt2000Ar);
 
       % ----------------------------------------------------------------
       % Given timestamps of beginning and end of fit windows, derive the
@@ -75,13 +89,28 @@ classdef fw
       %     b = (tt2000Begin <= tt2000Ar) & (tt2000Ar <= tt2000End))
       % . This might however scale badly with the size of the data. Using
       % interp1() instead should hopefully avoid bad performance.
-      iBeginEnd = interp1(...
-        double(tt2000Ar), 1:nSamples, ...
-        double([beginTt2000Ar, endTt2000Ar]), ...
-        "linear", "extrap");
+      %xMin = double(intmin("int64")) - 1;   % Float can not represent!!!
+      %xMax = double(intmax("int64")) + 1;   % Float can not represent!!!
+      %xAr = [xMin; double(tt2000Ar); xMax];
+      %yAr = 0:(nSamples+1);
+      % iBeginEnd = interp1(...
+      %   xAr, yAr, ...
+      %   double([beginTt2000Ar, endTt2000Ar]), ...
+      %   "linear", "extrap");
+      % iBeginAr = ceil(iBeginEnd(:, 1));
+      % iEndAr   = floor(iBeginEnd(:, 2));   % Not exactly correct.
 
-      iBeginAr = max(ceil( iBeginEnd(:, 1)), 1);
-      iEndAr   = min(floor(iBeginEnd(:, 2)), nSamples);
+      % Possibly not the most efficient implementation, but it should be safe
+      % and handle special cases well.
+      iArCa = cell(nFitWindows, 1);
+      for iFitWindow = 1:nFitWindows
+        b = (beginTt2000Ar(iFitWindow) <= tt2000Ar) & (tt2000Ar < endTt2000Ar(iFitWindow));
+
+        % NOTE: Normalize to column array. Only seems encessary for empty
+        %       ranges.
+        jAr = find(b);
+        iArCa{iFitWindow} = jAr(:);
+      end
     end
 
 

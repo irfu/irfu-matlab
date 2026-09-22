@@ -562,7 +562,7 @@ classdef spinfit
         T.fitWindowCenterTt2000 = int64.empty( 0, 1);
         T.mean                  = double.empty(0, 2);
       else
-        [iBeginAr, iEndAr] = bepic.spinfit.fw.fit_window_time_to_indices(...
+        iArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
           A.tt2000Ar, ...
           FitWindowsTable.beginTt2000, ...
           FitWindowsTable.endTt2000);
@@ -574,7 +574,7 @@ classdef spinfit
         % Calculate the mean value for the fit window without any fitting (no extra terms).
         T.mean = NaN(nFitWindows, 2);
         for i = 1:nFitWindows
-          j = iBeginAr(i) : iEndAr(i);
+          j = iArCa{i};
           T.mean(i, 1) = mean(A.samplesAr(j, 1));
           T.mean(i, 2) = mean(A.samplesAr(j, 2));
         end
