@@ -1,11 +1,11 @@
 %
-% Speed test code for bepic.spinfit.fit_SAFW_E(). To estimate the speed of
+% Speed test code for bepic.spinfit.fit_Efield_SAFW(). To estimate the speed of
 % execution and how it scales.
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-function spinfit_fit_SAFW_E___speedTest
+function spinfit_fit_Efield_SAFW___speedTest
 
 if 0
   get_time_consumption(10*60*60)
@@ -30,7 +30,7 @@ plot(lengthSecAr, wallTimeSecAr, "-o")
 grid on
 xlabel("Length of data[s]")
 ylabel("Wall time [s]")
-title("bepic.spinfit.fit_SAFW_E()", "interpreter", "none")
+title("bepic.spinfit.fit_Efield_SAFW()", "interpreter", "none")
 end
 
 
@@ -41,7 +41,7 @@ S = generate_signal_sine_wave(lengthSec);
 %profile on
 
 tic
-R = bepic.spinfit.fit_SAFW_E(...
+R = bepic.spinfit.fit_Efield_SAFW(...
   tt2000Ar              = S.tt2000Ar, ...
   spinPhaseRadAr        = S.spinPhaseRadAr, ...
   samplesAr             = S.samplesAr, ...

@@ -522,7 +522,7 @@ classdef spinfit
     % T
     %       Table with ~self-explanatory column names. One spin fit per row.
     %
-    function T = fit_SAFW_pot(A)
+    function T = fit_pot_SAFW(A)
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
@@ -532,10 +532,6 @@ classdef spinfit
         A.fitWindowCenterRefRad
         A.dataGapMinNs
       end
-      % PROPOSAL: "SAFW" is an algorithmic detail. ==> Should be at end of name.
-      %           fit_pot_SAFW().
-      %   NOTE: Name should be consistent with fit_SAFW_E().
-      %
       % PROPOSAL: Define as the function to use for "potential" CDFs, which just
       %           happens to be SAFW in the current implementation.
       %
@@ -662,7 +658,7 @@ classdef spinfit
     % T
     %       Table with ~self-explanatory column names. One spin fit per row.
     %
-    function T = fit_SAFW_E(A)
+    function T = fit_Efield_SAFW(A)
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
@@ -674,7 +670,6 @@ classdef spinfit
       end
       % PROPOSAL: Define as the function to use for "E field" CDFs, which just
       %           happens to be SAFW in the current implementation.
-      % PROPOSAL: "E" too short. "Efield"
       % PROPOSAL: Argument for minimum number of samples.
       % PROPOSAL: for-->parfor (iteration over fit windows).
       %
