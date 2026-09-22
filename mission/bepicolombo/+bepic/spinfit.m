@@ -30,6 +30,9 @@ classdef spinfit
   %   fit
   %   process
   %
+  % PROPOSAL: Separate classes for functions (1) based on, and (2) not based on
+  %           mms_spinfit_m().
+  %
   % PROBLEM: How handle spin phase if values are unknown during eclipse, or if
   %          spin phase values jump when exiting eclipse?
   %     """"
@@ -46,6 +49,14 @@ classdef spinfit
   %#######################
   %#######################
   methods(Static)
+
+
+
+    %###################################
+    %###################################
+    % FUNCTIONS BASED ON mms_spinfit_m()
+    %###################################
+    %###################################
 
 
 
@@ -248,7 +259,7 @@ classdef spinfit
     % NAME-VALUE ARGUMENTS
     % ====================
     % tt2000Ar
-    %       Column array of TT2000 timestamps for every sample.
+    %       Column array of incrementing TT2000 timestamps for every sample.
     % spinPhaseRadAr
     %       Column array of spin phase values. Radians (0 to 2*pi). Must be
     %       finite.
@@ -462,6 +473,20 @@ classdef spinfit
 
 
 
+    %#######################################
+    %#######################################
+    % FUNCTIONS NOT BASED ON mms_spinfit_m()
+    %#######################################
+    %#######################################
+    %
+    % IMPLEMENTATION NOTE: THE FIT WINDOWING ALGORITHM
+    % ================================================
+    % Much of the complexity lies in the algorithm for determining the fit
+    % windows. This is therefore isolated to a function which can easily be
+    % replaced and reused.
+
+
+
     % Given plasma potential samples for MEF1 and MEF2 (from a "potential" CDF),
     % derive averages for fit windows (time windows).
     %
@@ -469,26 +494,27 @@ classdef spinfit
     %       windows are used.
     %
     %
-    % IMPLEMENTATION NOTE: THE FIT WINDOWING ALGORITHM
-    % ================================================
-    % The algorithm for determining the fit windows is isolated to a function
-    % which can easily be replaced.
-    %
-    %
-    % IMPLEMENTATION NOTE: THE "FIT" ALGORITHM
-    % ========================================
-    % This function is designed to maybe eventually be converted into a function
-    % for processing also E field data since it (depending on implementation)
-    % should be easy to modify the algorithm for converting a fit window into a
-    % scalar value (plus quality data; other fit terms). The complicated part is
-    % determining the fit windows which has been delegated to a reusable and
-    % replaceble function.
-    %
-    %
-    % ARGUMENTS
-    % =========
+    % NAME-VALUE ARGUMENTS
+    % ====================
+    % tt2000Ar
+    %       Column array of incrementing TT2000 timestamps for every sample.
+    % spinPhaseRadAr
+    %       Column array of spin phase values. Radians (0 to 2*pi). Must be
+    %       finite.
     % samplesAr
-    %       Nx2 array for MEF1 and MEF2 sample values.
+    %       Nx2 array for MEF1 and MEF2 sample values. Finite or NaN.
+    % fitWindowPeriodRad
+    %       Length of time between the beginning of each fit window. Radians.
+    % fitWindowLengthRad
+    %       Length of fit window. Radians.
+    % fitWindowCenterRefRad
+    %       Scalar value. Describes where the center of fit windows (output
+    %       timestamps) should be in cumulative spin phase. Any time
+    %       window center will be located at a phase
+    %       fitWindowCenterRefRad + n * fitWindowPeriodRad,
+    %       where n=integer.
+    % dataGapMinNs
+    %       Threshold for when a jump in tt2000Ar should count as a data gap.
     %
     %
     % RETURN VALUE
@@ -506,6 +532,14 @@ classdef spinfit
         A.fitWindowCenterRefRad
         A.dataGapMinNs
       end
+      % PROPOSAL: "SAFW" is an algorithmic detail. ==> Should be at end of name.
+      %           fit_pot_SAFW().
+      %   NOTE: Name should be consistent with fit_SAFW_E().
+      %
+      % PROPOSAL: Define as the function to use for "potential" CDFs, which just
+      %           happens to be SAFW in the current implementation.
+      %
+      % PROPOSAL: Argument for minimum number of samples.
       % PROPOSAL: for-->parfor (iteration over fit windows).
       % PROPOSAL: Generalize to handling multiple forms of fits.
       %   PROPOSAL: Argument for function handle for fit. Wrappers for different
@@ -515,9 +549,6 @@ classdef spinfit
       %              fit windows.
       %       PROPOSAL: Call function handle for made-up samples and remove
       %                 elements from arrays.
-      %
-      % PROPOSAL: Define as the function to use for "potential" CDFs, which just
-      %           happens to be SAFW in the current implementation.
 
       N_MIN_FINITE_SAMPLES = 1;
 
@@ -677,6 +708,8 @@ classdef spinfit
       % =========
       % ALGORITHM
       % =========
+      % NOTE: Converts fitWindowCenterRefRad --> fitWindowBeginRefRad because of
+      %       difference in interface.
       FitWindowsTable = bepic.spinfit.fw.get_SAFWs( ...
         tt2000Ar             = A.tt2000Ar, ...
         spinPhaseRadAr       = A.spinPhaseRadAr, ...

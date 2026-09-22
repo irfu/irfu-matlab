@@ -1,7 +1,7 @@
 %
-% Script for manually experimenting with bepic.spinfit.fit_SAFW_MMS() by specifying
-% input values and then plotting them and the output after processing (by
-% editing this code).
+% Script for manually experimenting with bepic.spinfit.fit_SAFW_MMS() by
+% specifying input values and then plotting them and the output after processing
+% (by editing this code).
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden

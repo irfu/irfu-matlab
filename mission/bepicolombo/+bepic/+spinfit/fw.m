@@ -39,7 +39,7 @@ classdef fw
 
 
 
-    % Convert fit windows, specified as pairs of timestamps (boundaries), to
+    % Convert fit windows, specified as pairs of timestamps (begin+end), to
     % ranges of sample indices.
     %
     %
@@ -67,6 +67,8 @@ classdef fw
       %       CON: Caller will create the corresponding arrays anyway.
       %   PROBLEM: Happens for the special case of zero samples, and non-zero
       %            fit windows.
+      % PROPOSAL: Change terminology "fit windows" --> "bins".
+      %   CON: "Fit windows" can overlap.
 
       assert(iscolumn(tt2000Ar)      & isa(tt2000Ar,      "int64"))
       assert(iscolumn(beginTt2000Ar) & isa(beginTt2000Ar, "int64"))
