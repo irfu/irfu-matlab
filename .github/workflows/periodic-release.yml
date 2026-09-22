@@ -1,0 +1,57 @@
+name: Periodic Release
+
+on:
+  schedule:
+    # Runs at 00:00 on day 1st of March and 1st of September (every 6 months)
+    - cron: '0 0 1 3,9 *'
+  workflow_dispatch:  # <-- Allow manually triggering this workflow (for now)
+
+jobs:
+  merge-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # <-- Fetch all history (tags and commits)
+
+      - name: Merge devel into master but abort if conflict
+        run: |
+          git config --local user.email "github-actions[bot]@://github.com"
+          git config --local user.name "github-actions[bot]"
+          git checkout master
+          git pull origin master
+          echo "Attempting to merge devel branch into master..."
+          if ! git merge origin/devel --no-ff -m "Automated release merge: devel -> master"; then
+            echo "::error::Merge conflict detected between 'devel' and 'master'! Aborting release workflow."
+            git merge --abort
+            exit 1
+          fi
+          git push origin master
+
+# ThoNi 2026-09-22: having the following as a comment for now, not yet sure of how to best make "releases" sematic versioned increased.
+      #- name: Generate Tag and Release
+      #  uses: softprops/action-gh-release@v2
+      #  with:
+      #    tag_name: v-${{ github.run_id }}
+      #    name: Scheduled Release
+      #    body: "This automated semi-annual release was successfully built after verifying no conflicts exist."
+      #    target_commitish: master
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge master back into devel
+        run: |
+          echo "Switching to devel branch..."
+          git checkout devel
+          git pull origin devel
+          echo "Merging master changes back into devel..."
+          # Uses '--no-ff' to create a distinct merge commit tracking production parity
+          if ! git merge master --no-ff -m "Automated sync: master -> devel [skip ci]"; then
+            echo "::error::Unexpected merge conflict syncing master back to devel!"
+            git merge --abort
+            exit 1
+          fi
+          git push origin devel
