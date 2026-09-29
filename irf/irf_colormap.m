@@ -1,4 +1,4 @@
-function cmap1=irf_colormap(varargin)
+function varargout = irf_colormap(varargin)
 % IRF_COLORMAP return colormap by name or apply and freeze the colormap
 %
 % CMAP = IRF_COLORMAP(colormap_name)
@@ -19,7 +19,9 @@ function cmap1=irf_colormap(varargin)
 %                  https://se.mathworks.com/matlabcentral/fileexchange/120088-200-colormap
 %
 % IRF_COLORMAP(AX,colormap_name) - apply colormap to axis AX
+% IRF_COLORMAP(colormap_name,'interp',N) - linearly interpolate colormap to N points
 
+doInterp = 0;
 
 [ax,args,nargs] = axescheck(varargin{:});
 
@@ -29,13 +31,34 @@ if nargs == 0 % show only help
 end
 
 % check which axis to apply
-if isempty(ax)
-  axes(gca);
-else
-  axes(ax(1));
+if nargout == 0 % only make active axis if no output (otherwise isempty(ax) generates a new figure if there is none open)
+  if isempty(ax)
+    axes(gca);
+  else
+    axes(ax(1));
+  end
 end
 
 colormap_name=args{1};
+
+args = args(2:end);
+
+have_options = 0;
+if nargs > 1, have_options = 1; end
+
+while have_options
+  switch lower(args{1})
+    case 'interp'
+      l = 2;
+      doInterp = 1;
+      nInterp = args{2};
+    otherwise
+      l = 1;
+      irf.log('warning',sprintf('Input ''%s'' not recognized.',args{1}))
+    end
+    args = args(l+1:end);
+    if isempty(args), break, end
+end
 
 load caa/cmap.mat % default map
 if nargs > 0
@@ -644,6 +667,15 @@ if nargs > 0
   end
 end
 
+if doInterp      
+  nOrig = size(cmap,1);
+  cmap_new = zeros(nInterp,3);
+  cmap_new(:,1) = interp1(1:nOrig,cmap(:,1),linspace(1,size(cmap,1),nInterp));
+  cmap_new(:,2) = interp1(1:nOrig,cmap(:,2),linspace(1,size(cmap,1),nInterp));
+  cmap_new(:,3) = interp1(1:nOrig,cmap(:,3),linspace(1,size(cmap,1),nInterp));
+  cmap = cmap_new;
+end
+
 if nargout == 0 % apply the colormap and freeze
   colormap(cmap);
   freezeColors;
@@ -658,5 +690,5 @@ if nargout == 0 % apply the colormap and freeze
   end
   %    cbfreeze;
 elseif nargout == 1 % only return colormap
-  cmap1=cmap;
+  varargout{1} = cmap;  
 end
