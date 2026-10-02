@@ -1323,6 +1323,20 @@ classdef TSeries
       if ~isempty(obj.name), Ts.name = sprintf('trace(%s)',obj.name); end
     end
 
+    function Ts = diag(obj)
+      % TRACE TSeries.diag
+      %   Returns the diagonal of tensor as a [nTimes,3] scalar.
+      if obj.tensorOrder ~= 2
+        error('diag only applicable to order 2 tensors')
+      end
+
+      newData = [obj.data(:,1,1) obj.data(:,2,2) obj.data(:,3,3)];
+      
+      obj.data_ = newData; Ts = obj;
+      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      if ~isempty(obj.name), Ts.name = sprintf('diag(%s)',obj.name); end
+    end
+
     function Ts = combine(obj,obj1)
       % Combine two time series, with different times but same data type &
       % representation into a single timeseries sorted by unique timestamps
