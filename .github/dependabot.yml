@@ -9,6 +9,8 @@ updates:
       timezone: "Europe/Stockholm"
     open-pull-requests-limit: 10
     target-branch: "devel"
+    commit-message:
+      prefix: "build(dep)"
     assignees:
       - thomas-nilsson-irfu
 
@@ -21,5 +23,7 @@ updates:
       timezone: "Europe/Stockholm"
     open-pull-requests-limit: 10
     target-branch: "devel"
+    commit-message:
+      prefix: "build(dep)"
     assignees:
       - thomas-nilsson-irfu
