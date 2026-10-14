@@ -638,7 +638,9 @@ classdef spinfit
     %       Column array of spin phase values. Radians (0 to 2*pi). Must be
     %       finite.
     % samplesAr
-    %       Nx2 array for MEF1 and MEF2 sample values.
+    %       Nx1 array of electric field samples (in rotating frame).
+    %       This should be the difference between MEF1 and MEF2 (or MEF2 and
+    %       MEF1).
     % fitWindowPeriodRad
     %       Length of time between the beginning of each fit window. Radians.
     % fitWindowLengthRad
