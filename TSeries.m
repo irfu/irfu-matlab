@@ -1610,13 +1610,30 @@ classdef TSeries
     end
 
     function specrec = specrec(obj)
+      % TSERIES.SPECREC creates a specrec structure to plot data as colormaps.
+      %
+      %   specrec.p = TS.data
+      %   specrec.others - gathered from TS.userData.specrec if it exists
+      %
+      %   Example:
+      %     TS = irf.ts_scalar(EpochTT(1:10),rand(5,10));
+      %     irf_spectrogram(TS.specrec,'lin')
+
+      % Minimal input
       specrec.t = obj.time.epochUnix;
       specrec.p = obj.data;
+
+      % Default
       specrec.p_label = '';
-      if isfield(obj.userData,'specrec_f')
-        specrec.f = obj.userData.specrec_f;
-      else
-        specrec.f = 1:size(obj.data,2);
+      specrec.f = 1:size(obj.data,2);
+      specrec.f_label = '';
+
+      % Optional input: check TSeries.userData if any specrec structure is specified
+      if isfield(obj.userData,'specrec')
+        varstrs = fields(obj.userData.specrec);
+        for ivar = 1:numel(varstrs)
+          specrec.(varstrs{ivar}) = obj.userData.specrec.(varstrs{ivar});
+        end
       end
     end
     function Ts = movmean(obj,nMean,varargin)
