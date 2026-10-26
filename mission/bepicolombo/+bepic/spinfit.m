@@ -28,7 +28,7 @@ classdef spinfit
   %       CON: The instrument is not implied.
   %   ~spin fit "engine", "core"
   %   fit
-  %   process
+  %   processing
   %
   % PROPOSAL: Separate classes for functions (1) based on, and (2) not based on
   %           mms_spinfit_m().
@@ -487,8 +487,8 @@ classdef spinfit
 
 
 
-    % Given plasma potential samples for MEF1 and MEF2 (from a "potential" CDF),
-    % derive averages for fit windows (time windows).
+    % Given plasma potential samples for MEF1 and MEF2 (from e.g. an L1pre
+    % "potential" CDF), derive averages for fit windows (time windows).
     %
     % NOTE: Derives both in one function call since the same timestamps and fit
     %       windows are used.
@@ -532,8 +532,6 @@ classdef spinfit
         A.fitWindowCenterRefRad
         A.dataGapMinNs
       end
-      % PROPOSAL: Define as the function to use for "potential" CDFs, which just
-      %           happens to be SAFW in the current implementation.
 
       % ==========
       % ASSERTIONS
@@ -571,7 +569,7 @@ classdef spinfit
         fitWindowBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
         dataGapMinNs         = A.dataGapMinNs);
 
-      % Fit according to "Japan"
+      % Fit according to "Japan" wiki 2026-10-27.
       % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
       % Y = A[0]*sin(X + A[1]) + A[2]
       f   = @(C, x) (C(1)*sin(x + C(2)) + C(3));
@@ -600,8 +598,8 @@ classdef spinfit
 
 
 
-    % Given E field samples (from an "E field" CDF), derive spin fit for fit
-    % windows (time windows).
+    % Given E field samples (from e.g. an L1pre "E field" CDF), derive spin fit
+    % for fit windows (time windows) and return the coefficients of the fits.
     %
     %
     % NAME-VALUE ARGUMENTS
@@ -644,9 +642,20 @@ classdef spinfit
         A.fitWindowCenterRefRad
         A.dataGapMinNs
       end
-      % PROPOSAL: Define as the function to use for "E field" CDFs, which just
-      %           happens to be SAFW in the current implementation.
-      % PROPOSAL: Argument for minimum number of samples.
+      % PROPOSAL: Argument for the minimum number of non-NaN samples.
+      %   NOTE: Must handle windows on the edges of data gaps.
+      %   PROPOSAL: Explicit minimum number of samples.
+      %     PRO: Easy to implement.
+      %     PRO: The caller can convert the sampling rate and nominal spin rate
+      %          into a percentage of samples per fit window.
+      %   PROPOSAL: Some kind of measure of how much non-Nan samples in
+      %             the current fit window cover compare to a typical fit
+      %             window.
+      %     PROPOSAL: Percent of normal number of samples.
+      %       CON: Ambiguous how to know the normal number of samples.
+      %         CON-PROPOSAL: Specify explicit number of non-NaN samples. The
+      %           caller knowns the nominal spin rate and sampling rate and
+      %           convert this into a percentage.
       % PROPOSAL: for-->parfor (iteration over fit windows).
       %
       % Code for manually experimenting with lsqcurvefit():
@@ -676,11 +685,9 @@ classdef spinfit
       assert(A.fitWindowLengthRad > 0)
       assert(A.dataGapMinNs       > 0)
 
-      % =========
+      % %%%%%%%%%
       % ALGORITHM
-      % =========
-      % NOTE: Converts fitWindowCenterRefRad --> fitWindowBeginRefRad because of
-      %       difference in interface.
+      % %%%%%%%%%
       FitWindowsTable = bepic.spinfit.fw.get_SAFWs( ...
         tt2000Ar             = A.tt2000Ar, ...
         spinPhaseRadAr       = A.spinPhaseRadAr, ...
@@ -692,20 +699,21 @@ classdef spinfit
       % =======================================
       % Function to fit the spinning E field to
       % =======================================
-      if 0
-        % According to mms_spinfit_m().
-        f = @(C, x) (C(1) + C(2)*cos(x) + C(3)*sin(x) + C(4)*cos(2*x) + C(5)*sin(2*x));
-        C_0 = [0, 0, 0, 0, 0];
-      end
-      if 0
-        % According to "Japan" in "BepiColombo Ground Segment (GS) Development
-        % and Planning".
-        % NOTE: Originally found on wiki, but is no longer there. Obsolete?!!
-        f = @(C, x) (C(1)*cos(x-C(2)) + C(3)*x + C(4));
-        C_0 = [0, 0, 0, 0];    % Start value for iterations.
-      end
+      % if 0
+      %   % According to mms_spinfit_m().
+      %   f = @(C, x) (C(1) + C(2)*cos(x) + C(3)*sin(x) + C(4)*cos(2*x) + C(5)*sin(2*x));
+      %   C_0 = [0, 0, 0, 0, 0];
+      % end
+      % if 0
+      %   % According to "Japan" in "BepiColombo Ground Segment (GS) Development
+      %   % and Planning".
+      %   % NOTE: Originally found on wiki, but is no longer there. Obsolete?!!
+      %   f = @(C, x) (C(1)*cos(x-C(2)) + C(3)*x + C(4));
+      %   C_0 = [0, 0, 0, 0];    % Start value for iterations.
+      % end
       if 1
-        % According to "Japan" on wiki 2026-09-22.
+        % Fit according to "Japan" on wiki 2026-10-27.
+        % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
         % Y = A[0] * cos(X - A[1]) + A[2] * sin(2*X) + A[3] * cos(2*X) + A[4] * X + A[5]
         % NOTE: Resembles MMS spinfit, but is not the same!!!
         f = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4) * cos(2*x) + C(5) * x + C(6));
@@ -726,11 +734,13 @@ classdef spinfit
 
 
 
-    % Given fit windows, do fit on 1D array of samples, sample=f(spinPhase).
+    % Given fit windows and a fitting function, do fit on 1D array of samples,
+    % sample=f(spinPhase).
     %
     % DESIGN INTENT
     % =============
-    % Function is intended for sharing the implementation of other functions.
+    % This function is intended for sharing the implementation between other
+    % functions and for simplifying testing.
     %
     function T = fit_array(A)
       arguments
@@ -754,7 +764,7 @@ classdef spinfit
       % ==========
       % ASSERTIONS
       % ==========
-      assert(iscolumn(A.tt2000Ar))
+      assert(iscolumn(A.tt2000Ar)                & isa(A.tt2000Ar, "int64"))
       assert(iscolumn(A.spinPhaseRadAr))
       assert(iscolumn(A.samplesAr))
       assert(isa(A.fittingFunction, "function_handle"))
@@ -782,11 +792,12 @@ classdef spinfit
         j = iArCa{i};
 
         fitWindowSpinPhaseRadAr = A.spinPhaseRadAr(j);
-        fitWindowSamplesAr      = A.samplesAr(j);
+        fitWindowSamplesAr      = A.samplesAr     (j);
         % Remove NaN from fit window.
         bFinite                 = isfinite(fitWindowSamplesAr);
         fitWindowSpinPhaseRadAr = fitWindowSpinPhaseRadAr(bFinite);
         fitWindowSamplesAr      = fitWindowSamplesAr(     bFinite);
+
         nFitWindowSamples       = numel(fitWindowSamplesAr);
 
         if nCoeff <= nFitWindowSamples
@@ -803,9 +814,8 @@ classdef spinfit
         end
 
         T.coefficients(i, :) = coefficientAr;
-      end
-
-    end
+      end    % fit windows
+    end    % function
 
 
 

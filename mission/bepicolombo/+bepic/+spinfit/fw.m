@@ -57,16 +57,6 @@ classdef fw
     %
     function [iArCa] = fit_window_time_to_indices(...
         tt2000Ar, beginTt2000Ar, endTt2000Ar)
-      % PROBLEM: If there are no samples (indices) for a fit window, then
-      %          the function must still return begin and end indices (two
-      %          scalar values) since it can not properly represent an empty
-      %          range.
-      %   PROPOSAL: Return cell array of index arrays. -- IMPLEMENTED
-      %     CON: Inefficient?!
-      %       PRO: Cell arrays are inefficient?!
-      %       CON: Caller will create the corresponding arrays anyway.
-      %   PROBLEM: Happens for the special case of zero samples, and non-zero
-      %            fit windows.
       % PROPOSAL: Change terminology "fit windows" --> "bins".
       %   CON: "Fit windows" can overlap.
 
@@ -79,40 +69,27 @@ classdef fw
       % assert(issorted(endTt2000Ar,   "STRICTASCEND"))
       % assert(all(beginTt2000Ar <= endTt2000Ar))
       assert(numel(beginTt2000Ar) == numel(endTt2000Ar))
-      nSamples = numel(tt2000Ar);
+      nSamples    = numel(tt2000Ar);
       nFitWindows = numel(beginTt2000Ar);
 
-      % ----------------------------------------------------------------
-      % Given timestamps of beginning and end of fit windows, derive the
-      % ranges of samples indices for each fit window.
-      % ----------------------------------------------------------------
+      % -----------------------------------------------------------------------
+      % Given timestamps of beginning and end of fit windows, derive the ranges
+      % of samples indices for each fit window.
+      % -----------------------------------------------------------------------
       % IMPLEMENTATION NOTE: THIS CODE IS PERFORMANCE SENSITIVE FOR LARGE DATA!
       iArCa = cell(nFitWindows, 1);
       % IMPLEMENTATION NOTE: Add extra "data points" to makes sure that there
       % are always at least two data points, which is required by interp1().
       % This eliminates the need for explicitly handling special cases.
-      xAr = double([int64(-inf); tt2000Ar; int64(inf)]);
-      yAr = 0 : (nSamples+1);
+      xAr      = double([int64(-inf); tt2000Ar; int64(inf)]);
+      yAr      = 0 : (nSamples+1);
       iBeginAr = interp1(xAr, yAr, double(beginTt2000Ar), "next");
       iEndAr   = interp1(xAr, yAr, double(endTt2000Ar  ), "next") - 1;
 
       % Convert the result to the expected return value format.
       for iFitWindow = 1:nFitWindows
-        iArCa{iFitWindow} = [iBeginAr(iFitWindow) : iEndAr(iFitWindow)]';
+        iArCa{iFitWindow} = (iBeginAr(iFitWindow) : iEndAr(iFitWindow))';
       end
-
-      % Possibly not the most efficient implementation, but it should be safe
-      % and handle special cases well.
-      % IMPLEMENTATION NOTE: SEEMS TO SCALE BADLY WITH SIZE!
-      % iArCa = cell(nFitWindows, 1);
-      % for iFitWindow = 1:nFitWindows
-      %   b = (beginTt2000Ar(iFitWindow) <= tt2000Ar) & (tt2000Ar < endTt2000Ar(iFitWindow));
-      %
-      %   % NOTE: Normalize to column array. Only seems necessary for empty
-      %   %       ranges.
-      %   jAr = find(b);
-      %   iArCa{iFitWindow} = jAr(:);
-      % end
     end
 
 
@@ -155,9 +132,9 @@ classdef fw
 
       % Create empty return variable.
       FitWindowTable = table();
-      FitWindowTable.beginTt2000  = int64.empty( 0, 1);
-      FitWindowTable.endTt2000    = int64.empty( 0, 1);
-      FitWindowTable.centerTt2000 = int64.empty( 0, 1);
+      FitWindowTable.beginTt2000  = int64.empty(0, 1);
+      FitWindowTable.endTt2000    = int64.empty(0, 1);
+      FitWindowTable.centerTt2000 = int64.empty(0, 1);
 
       % Iterate over data gap-separated samples.
       for iSegment = 1:nSegments
@@ -198,13 +175,13 @@ classdef fw
     %
     % RETURN VALUE
     % ============
-    % Table
-    %       NOTE: Zero fit windows if there are <= 1 samples, since the
-    %       algorithm can then not extrapolate spin phase (CMP) values and can
-    %       hence not find the beginning and end of the fit window even in
-    %       principle.
+    % FitWindowTable
+    %       NOTE: There will be zero fit windows if there are <= 1 samples,
+    %       since the algorithm can then not extrapolate spin phase (CMP) values
+    %       and can hence not find the beginning and end of the fit window even
+    %       in principle.
     %
-    function [FitWindowTable] = get_SAFWs_when_no_data_gaps(A)
+    function FitWindowTable = get_SAFWs_when_no_data_gaps(A)
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
@@ -212,11 +189,6 @@ classdef fw
         A.fitWindowLengthRad
         A.fitWindowBeginRad
       end
-      % PROPOSAL: Better name.
-      %   ~(no) data gapget_SAFWs
-      %   get_SAFWs_no_data_gap
-      %   get_SAFWs_wo_data_gaps
-      %   get_SAFWs_when_no_data_gaps
 
       nSamples = numel(A.tt2000Ar);
 
@@ -229,7 +201,7 @@ classdef fw
         A.spinPhaseRadAr);
 
       if nSamples <= 1
-        % IMPLEMENTATION NOTE: Can not extrapolate CSP-->TT2000 even in
+        % IMPLEMENTATION NOTE: One can not extrapolate CSP-->TT2000 even in
         % principle when there is zero or one sample. Therefore not returning
         % any fit window at all.
 
