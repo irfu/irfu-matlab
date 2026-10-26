@@ -32,7 +32,7 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
 
 
     function test_zero_samples(T)
-      actT = bepic.spinfit.fit_Efield_SAFW( ...
+      ActT = bepic.spinfit.fit_Efield_SAFW( ...
         tt2000Ar              = int64.empty(0, 1), ...
         spinPhaseRadAr        = double.empty(0, 1), ...
         samplesAr             = double.empty(0, 1), ...
@@ -41,15 +41,18 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
         fitWindowCenterRefRad = 2*pi*0.5, ...
         dataGapMinNs          = int64(1000));
 
-      T.verifyEqual(actT.fitWindowCenterTt2000, int64.empty( 0, 1))
-      T.verifyEqual(actT.A,                     double.empty(0, T.N_COEFF))
+      ExpT = table();
+      ExpT.A                     = double.empty(0, T.N_COEFF);
+      ExpT.fitWindowCenterTt2000 = int64.empty( 0, 1);
+
+      T.verifyEqual(ActT, ExpT)
     end
 
 
 
     function test_one_sample(T)
       % No output
-      actT = bepic.spinfit.fit_Efield_SAFW( ...
+      ActT = bepic.spinfit.fit_Efield_SAFW( ...
         tt2000Ar              = int64([10]'), ...
         spinPhaseRadAr        = [0.5]' * 2*pi, ...
         samplesAr             = [3], ...
@@ -58,8 +61,11 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
         fitWindowCenterRefRad = 2*pi*0.5, ...
         dataGapMinNs          = int64(1000));
 
-      T.verifyEqual(actT.fitWindowCenterTt2000, int64.empty( 0, 1))
-      T.verifyEqual(actT.A,                     double.empty(0, T.N_COEFF))
+      ExpT = table();
+      ExpT.A                     = double.empty(0, T.N_COEFF);
+      ExpT.fitWindowCenterTt2000 = int64.empty( 0, 1);
+
+      T.verifyEqual(ActT, ExpT)
     end
 
 

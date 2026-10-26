@@ -27,8 +27,9 @@ classdef fw_get_SAFWs___UTEST < matlab.unittest.TestCase
         dataGapMinNs         = int64(100));
 
       ExpFitWindowTable = table();
-      ExpFitWindowTable.beginTt2000 = int64.empty(0, 1);
-      ExpFitWindowTable.endTt2000   = int64.empty(0, 1);
+      ExpFitWindowTable.beginTt2000  = int64.empty(0, 1);
+      ExpFitWindowTable.endTt2000    = int64.empty(0, 1);
+      ExpFitWindowTable.centerTt2000 = int64.empty(0, 1);
 
       T.verifyEqual(ActFitWindowTable, ExpFitWindowTable)
     end
@@ -45,8 +46,9 @@ classdef fw_get_SAFWs___UTEST < matlab.unittest.TestCase
         dataGapMinNs         = int64(100));
 
       ExpFitWindowTable = table();
-      ExpFitWindowTable.beginTt2000 = int64.empty(0, 1);
-      ExpFitWindowTable.endTt2000   = int64.empty(0, 1);
+      ExpFitWindowTable.beginTt2000  = int64.empty(0, 1);
+      ExpFitWindowTable.endTt2000    = int64.empty(0, 1);
+      ExpFitWindowTable.centerTt2000 = int64.empty(0, 1);
 
       T.verifyEqual(ActFitWindowTable, ExpFitWindowTable)
     end
@@ -63,8 +65,12 @@ classdef fw_get_SAFWs___UTEST < matlab.unittest.TestCase
         fitWindowBeginRefRad = 0.0*2*pi, ...
         dataGapMinNs         = int64(7));
 
-      T.verifyEqual(ActFitWindowTable.beginTt2000, int64([120, 130, 140]'));
-      T.verifyEqual(ActFitWindowTable.endTt2000,   int64([130, 140, 150]'));
+      ExpFitWindowTable = table();
+      ExpFitWindowTable.beginTt2000  = int64([120, 130, 140]');
+      ExpFitWindowTable.endTt2000    = int64([130, 140, 150]');
+      ExpFitWindowTable.centerTt2000 = int64([125, 135, 145]');
+
+      T.verifyEqual(ActFitWindowTable, ExpFitWindowTable)
     end
 
 
@@ -80,10 +86,12 @@ classdef fw_get_SAFWs___UTEST < matlab.unittest.TestCase
         fitWindowBeginRefRad = 0.5*2*pi, ...
         dataGapMinNs         = int64(100));
 
-      %                                                    [0.5, 1.5, 2.5]' * 2*pi
-      %                                                    [2.5, 2.5, 3.5]' * 2*pi
-      T.verifyEqual(ActFitWindowTable.beginTt2000, int64([ 10, 190, 210]'));
-      T.verifyEqual(ActFitWindowTable.endTt2000,   int64([ 90, 230, 250]'));
+      ExpFitWindowTable = table();
+      ExpFitWindowTable.beginTt2000  = int64([ 10, 190, 210]');
+      ExpFitWindowTable.endTt2000    = int64([ 90, 230, 250]');
+      ExpFitWindowTable.centerTt2000 = int64([ 50, 210, 230]');
+
+      T.verifyEqual(ActFitWindowTable, ExpFitWindowTable)
     end
 
 

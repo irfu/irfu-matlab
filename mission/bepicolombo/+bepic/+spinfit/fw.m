@@ -131,9 +131,11 @@ classdef fw
     %
     % RETURN VALUES
     % =============
-    % Table of fit window boundaries (TT2000; not CSP (ill-defined) or indices).
-    % Fit windows can only begin at
-    % fitWindowBeginRefRad + m * fitWindowPeriodRad, where m=integer.
+    % FitWindowTable
+    %       Table of (1) fit window boundaries (TT2000; not CSP (ill-defined) or
+    %       indices) and (2) fit window centers (TT2000).
+    %       Fit windows can only begin at
+    %       fitWindowBeginRefRad + m * fitWindowPeriodRad, where m=integer.
     %
     function FitWindowTable = get_SAFWs(A)
       arguments
@@ -153,8 +155,9 @@ classdef fw
 
       % Create empty return variable.
       FitWindowTable = table();
-      FitWindowTable.beginTt2000 = int64.empty( 0, 1);
-      FitWindowTable.endTt2000   = int64.empty( 0, 1);
+      FitWindowTable.beginTt2000  = int64.empty( 0, 1);
+      FitWindowTable.endTt2000    = int64.empty( 0, 1);
+      FitWindowTable.centerTt2000 = int64.empty( 0, 1);
 
       % Iterate over data gap-separated samples.
       for iSegment = 1:nSegments
@@ -230,8 +233,9 @@ classdef fw
         % principle when there is zero or one sample. Therefore not returning
         % any fit window at all.
 
-        fitWindowBeginTt2000Ar = int64.empty( 0, 1);
-        fitWindowEndTt2000Ar   = int64.empty( 0, 1);
+        fitWindowBeginTt2000Ar  = int64.empty(0, 1);
+        fitWindowEndTt2000Ar    = int64.empty(0, 1);
+        fitWindowCenterTt2000Ar = int64.empty(0, 1);
       else
         fitWindowBeginCspRadAr = bepic.spinfit.utils.get_incrementing_array(...
           cspRadAr(1), ...
@@ -239,10 +243,12 @@ classdef fw
           A.fitWindowPeriodRad, ...
           A.fitWindowBeginRad);
 
-        fitWindowEndCspRadAr   = fitWindowBeginCspRadAr + A.fitWindowLengthRad;
+        fitWindowEndCspRadAr    = fitWindowBeginCspRadAr + A.fitWindowLengthRad;
+        fitWindowCenterCspRadAr = (fitWindowBeginCspRadAr + fitWindowEndCspRadAr) / 2;
 
-        fitWindowBeginTt2000Ar = int64(interp1(cspRadAr, double(A.tt2000Ar), fitWindowBeginCspRadAr, "LINEAR", "extrap"));
-        fitWindowEndTt2000Ar   = int64(interp1(cspRadAr, double(A.tt2000Ar), fitWindowEndCspRadAr,   "LINEAR", "extrap"));
+        fitWindowBeginTt2000Ar  = int64(interp1(cspRadAr, double(A.tt2000Ar), fitWindowBeginCspRadAr,  "LINEAR", "extrap"));
+        fitWindowEndTt2000Ar    = int64(interp1(cspRadAr, double(A.tt2000Ar), fitWindowEndCspRadAr,    "LINEAR", "extrap"));
+        fitWindowCenterTt2000Ar = int64(interp1(cspRadAr, double(A.tt2000Ar), fitWindowCenterCspRadAr, "LINEAR", "extrap"));
       end
 
       % ----------------------
@@ -253,8 +259,9 @@ classdef fw
       % large jumps in time (i.e. globally). The CSP arrays in this function can
       % therefore not be meaningfully combined to longer CSP arrays.
       FitWindowTable = table();
-      FitWindowTable.beginTt2000 = fitWindowBeginTt2000Ar;
-      FitWindowTable.endTt2000   = fitWindowEndTt2000Ar;
+      FitWindowTable.beginTt2000  = fitWindowBeginTt2000Ar;
+      FitWindowTable.endTt2000    = fitWindowEndTt2000Ar;
+      FitWindowTable.centerTt2000 = fitWindowCenterTt2000Ar;
     end
 
 

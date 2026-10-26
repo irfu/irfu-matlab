@@ -594,7 +594,7 @@ classdef spinfit
         fittingStartValue=C_0);
 
       T = table();
-      T.fitWindowCenterTt2000 = Tp1.fitWindowCenterTt2000;
+      T.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
       T.A                     = cat(3, Tp1.coefficients, Tp2.coefficients);
     end
 
@@ -719,7 +719,9 @@ classdef spinfit
         FitWindowsTable  =FitWindowsTable, ...
         fittingFunction  =f, ...
         fittingStartValue=C_0);
+
       T = renamevars(T, "coefficients", "A");
+      T.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
     end
 
 
@@ -739,15 +741,12 @@ classdef spinfit
         A.fittingFunction
         A.fittingStartValue
       end
-      % NOTE: One could potentially move out calculation of fit window center,
-      %       if it is different for different cases.
-      %   PROPOSAL: Calculate in bepic.spinfit.fw.get_SAFWs().
-      %     PRO: Has access to CMP(?).
-      %     PRO: Calculated once (not twice) for potential data.
-      %     CON: Is technically an ~unrelated calculation.
-      % IMPLEMENTATION NOTE: Can (should) not calculate FitWindowsTable since
-      % it needs to be shared for potential data (same timestamps for two 1D
-      % arrays of samples).
+      % IMPLEMENTATION NOTE: This function should not calculate FitWindowsTable
+      % since it needs to be shared for potential data (same timestamps for two
+      % 1D arrays of samples).
+      % NOTE: FitWindow as produced by bepic.spinfit.fw.get_SAFWs() also
+      %       generates the fit window center, which is unnecessary for this
+      %       function.
       %
       % PROPOSAL: for-->parfor (iteration over fit windows).
       % PROPOSAL: Argument for minimum number of samples.
@@ -769,11 +768,6 @@ classdef spinfit
 
       T = table();
       T.coefficients = NaN(nFitWindows, nCoeff);     % Pre-allocate
-
-      % Calculate fit window center: Cheat by averaging in time
-      % NOTE: Not using CMP, which is also not available here.
-      T.fitWindowCenterTt2000 = ...
-        (A.FitWindowsTable.beginTt2000 + A.FitWindowsTable.endTt2000) / 2;
 
       iArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
         A.tt2000Ar, ...

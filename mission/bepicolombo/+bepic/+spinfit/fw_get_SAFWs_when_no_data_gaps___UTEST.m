@@ -28,8 +28,9 @@ classdef fw_get_SAFWs_when_no_data_gaps___UTEST < matlab.unittest.TestCase
         fitWindowBeginRad  = 0*pi);
 
       ExpFitWindowTable = table();
-      ExpFitWindowTable.beginTt2000 = int64.empty( 0, 1);
-      ExpFitWindowTable.endTt2000   = int64.empty( 0, 1);
+      ExpFitWindowTable.beginTt2000  = int64.empty( 0, 1);
+      ExpFitWindowTable.endTt2000    = int64.empty( 0, 1);
+      ExpFitWindowTable.centerTt2000 = int64.empty( 0, 1);
 
       T.verifyEqual(ActFitWindowTable, ExpFitWindowTable)
     end
@@ -45,8 +46,9 @@ classdef fw_get_SAFWs_when_no_data_gaps___UTEST < matlab.unittest.TestCase
         fitWindowBeginRad  = 0*pi);
 
       ExpFitWindowTable = table();
-      ExpFitWindowTable.beginTt2000 = int64.empty( 0, 1);
-      ExpFitWindowTable.endTt2000   = int64.empty( 0, 1);
+      ExpFitWindowTable.beginTt2000  = int64.empty( 0, 1);
+      ExpFitWindowTable.endTt2000    = int64.empty( 0, 1);
+      ExpFitWindowTable.centerTt2000 = int64.empty( 0, 1);
 
       T.verifyEqual(ActFitWindowTable, ExpFitWindowTable)
     end

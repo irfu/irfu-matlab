@@ -32,8 +32,10 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
         fittingFunction  =@(C, x) (C(1)*x + C(2)), ...
         fittingStartValue=[0, 0]);
 
-      T.verifyEqual(ActT.coefficients,          double.empty(0, 2))
-      T.verifyEqual(ActT.fitWindowCenterTt2000, int64.empty( 0, 1))
+      ExpT = table();
+      ExpT.coefficients = double.empty(0, 2);
+
+      T.verifyEqual(ActT, ExpT)
     end
 
 
@@ -51,8 +53,10 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
         fittingFunction  =@(C, x) (C(1)*x + C(2)), ...
         fittingStartValue=[0, 0]);
 
-      T.verifyEqual(ActT.coefficients,          [NaN, NaN])
-      T.verifyEqual(ActT.fitWindowCenterTt2000, int64([15]))
+      ExpT = table();
+      ExpT.coefficients = [NaN, NaN];
+
+      T.verifyEqual(ActT, ExpT)
     end
 
 
@@ -71,8 +75,10 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
         fittingFunction  =@(C, x) (C(1)*x + C(2)), ...
         fittingStartValue=[0, 0]);
 
-      T.verifyEqual(ActT.coefficients,          [NaN, NaN])
-      T.verifyEqual(ActT.fitWindowCenterTt2000, int64([15]))
+      ExpT = table();
+      ExpT.coefficients = [NaN, NaN];
+
+      T.verifyEqual(ActT, ExpT)
     end
 
 
@@ -91,8 +97,10 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
         fittingFunction  =@(C, x) (C(1)*x + C(2)), ...
         fittingStartValue=[0, 0]);
 
-      T.verifyEqual(ActT.coefficients,          [10, 30], "AbsTol", 1e-5)
-      T.verifyEqual(ActT.fitWindowCenterTt2000, int64([15]))
+      ExpT = table();
+      ExpT.coefficients = [10, 30];
+
+      T.verifyEqual(ActT, ExpT, "AbsTol", 1e-5)
     end
 
 
@@ -110,8 +118,10 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
         fittingFunction  =@(C, x) (C(1)*x + C(2)), ...
         fittingStartValue=[0, 0]);
 
-      T.verifyEqual(ActT.coefficients,          [10, 30], "AbsTol", 1e-5)
-      T.verifyEqual(ActT.fitWindowCenterTt2000, int64([15]))
+      ExpT = table();
+      ExpT.coefficients = [10, 30];
+
+      T.verifyEqual(ActT, ExpT, "AbsTol", 1e-5)
     end
 
 
@@ -129,8 +139,10 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
         fittingFunction  =@(C, x) (C(1)*x + C(2)), ...
         fittingStartValue=[0, 0]);
 
-      T.verifyEqual(ActT.coefficients,          [10, 30; 10, 50], "AbsTol", 1e-5)
-      T.verifyEqual(ActT.fitWindowCenterTt2000, int64([10 20]'))
+      ExpT = table();
+      ExpT.coefficients = [10, 30; 10, 50];
+
+      T.verifyEqual(ActT, ExpT, "AbsTol", 1e-5)
     end
 
 
