@@ -720,7 +720,7 @@ classdef spinfit
       % =======================================
       % Function to fit the spinning E field to
       % =======================================
-      if 1
+      if 0
         % According to mms_spinfit_m().
         f = @(C, x) (C(1) + C(2)*cos(x) + C(3)*sin(x) + C(4)*cos(2*x) + C(5)*sin(2*x));
         C_0 = [0, 0, 0, 0, 0];
@@ -732,7 +732,7 @@ classdef spinfit
         f = @(C, x) (C(1)*cos(x-C(2)) + C(3)*x + C(4));
         C_0 = [0, 0, 0, 0];    % Start value for iterations.
       end
-      if 0
+      if 1
         % According to "Japan" on wiki 2026-09-22.
         % Y = A[0] * cos(X - A[1]) + A[2] * sin(2*X) + A[3] * cos(2*X) + A[4] * X + A[5]
         % NOTE: Resembles MMS spinfit, but is not the same!!!
