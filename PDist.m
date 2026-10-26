@@ -500,9 +500,9 @@ classdef PDist < TSeries
       end
     end
     function [vx,vy,vz] = v(obj,varargin)
-      % PDIST.V Get velocity corresponding to the energy of each detector 
-      % bin. DSL coordinates. 
-      % 
+      % PDIST.V Get velocity corresponding to the energy of each detector
+      % bin. DSL coordinates.
+      %
       % Note that this speed does not correspond to the median nor mean
       % speed of points evenly distributed in velocity space.
       %
@@ -1507,7 +1507,7 @@ classdef PDist < TSeries
     end % end of reduce function
     function PD = interpn(obj,N,method)
       % PDIST.INTERP Interpolates PDist to new grid.
-      
+
       if nargin<3
         method = 'linear';
       end
@@ -1528,14 +1528,14 @@ classdef PDist < TSeries
           if islog % assumes energy
             dminus = depend{iDep}(it,1)-obj.ancillary.delta_energy_minus;
             dplus = depend{iDep}(it,end)+obj.ancillary.delta_energy_plus;
-            new_depend_edges{iDep}(it,:) = logspace(log10(dminus(1)),log10(dplus(end)),N(iDep)+1); 
+            new_depend_edges{iDep}(it,:) = logspace(log10(dminus(1)),log10(dplus(end)),N(iDep)+1);
             dd = diff(new_depend_edges{iDep}(it,:));
             dc = new_depend_edges{iDep}(it,1:end-1) + 0.5*dd;
             new_depend{iDep}(it,:) = dc;
             %new_depend{iDep}(it,:) = logspace(log10(depend{iDep}(it,1)),log10(depend{iDep}(it,end)),N(iDep));
           else
             new_depend{iDep}(it,:) = linspace(depend{iDep}(it,1),depend{iDep}(it,end),N(iDep));
-          end        
+          end
         end
         %aa = cellfun(@(x) PDist.depend
         [D1,D2,D3] = ndgrid(depend{1}(it,:),depend{2}(it,:),depend{3}(1,:));
@@ -1545,19 +1545,19 @@ classdef PDist < TSeries
         %new_f(it,:,:,:) = interpn(log10(D1),D2,D3,data_tmp,log10(newD1),newD2,newD3,'linear');
         %new_f(it,:,:,:) = interpn((D1),D2,D3,data_tmp,(newD1),newD2,newD3,'linear');
         %data_tmp = squeeze(obj.d3v.data(it,:,:,:).*obj.data(it,:,:,:)); % dn
-        
+
         switch method
           case 'cubic'
             f_tmp = interp3_manual(depend{1}(it,:),depend{2}(it,:),depend{3}(1,:),(data_tmp),new_depend{1}(it,:),new_depend{2}(it,:),new_depend{3}(it,:));
-          otherwise  
+          otherwise
             f_tmp = interpn((D1).^(1/1),D2,D3,(data_tmp),(newD1).^(1/1),newD2,newD3,method);
         end
 
         %f_tmp = 10.^f_tmp;
         new_f(it,:,:,:) = f_tmp;
-        
+
       end
-      
+
       new_depend{3} = new_depend{3}(1,:);
       %dE = diff(new_depend{1},1,1);
       %dEm = [new_depend{1}(:,1:end-1) - 0.5*dE ];
@@ -4622,7 +4622,7 @@ classdef PDist < TSeries
           case 'v_init'
             v_gen = args{2};
             l = 2;
-            args = args(l+1:end);    
+            args = args(l+1:end);
           case 'counts'
             l = 2;
             passCounts = 1;
@@ -4708,7 +4708,7 @@ classdef PDist < TSeries
         %Ntmp_round(PD.data==0) = 0;
       end
 
-      % Partial density for each macroparticle      
+      % Partial density for each macroparticle
       dn_part = dn./Ntmp_round;
       df_part = f;%./Ntmp_round; % this should be the same as the bin value, but the dv should be divided by N
       dv_part = vol./Ntmp_round;
@@ -4745,8 +4745,8 @@ classdef PDist < TSeries
       end
 
       for it = 1:PD.length
-        N_tmp = sum(Ntmp_round(it,:),2,'omitnan');                
-        
+        N_tmp = sum(Ntmp_round(it,:),2,'omitnan');
+
         % Initialize arrays for particles
         iDep1_all = zeros(N_tmp,1);
         iDep2_all = zeros(N_tmp,1);
@@ -4791,15 +4791,15 @@ classdef PDist < TSeries
               % and get corresponding v's
               switch method
                 case 'random'
-                  tmp_azim   = azim_minus(iAzim)        + dazim*rand(N_bin,1);   % deg                  
+                  tmp_azim   = azim_minus(iAzim)        + dazim*rand(N_bin,1);   % deg
                   tmp_cospolar = tmp_cospolar_minus  + tmp_dcospolar*rand(N_bin,1);
                   tmp_polar  = acosd(tmp_cospolar);  % deg
-                                    
-                  tmp_r = rand(N_bin,1);                  
+
+                  tmp_r = rand(N_bin,1);
                   pdf_v = @(v1,v2,p,U01) (v1.^p + U01.*(v2.^p - v1.^p)).^(1/p);
                   switch v_gen
-                    case {'v','v1',1}      
-                      pow = 1;                      
+                    case {'v','v1',1}
+                      pow = 1;
                     case {'E','v2',2}
                       pow = 2;
                     case {'v3',3}
@@ -4863,7 +4863,7 @@ classdef PDist < TSeries
               i_part_count = i_part_count + N_bin;
             end % end polar angle loop
           end % end azimuthal angle loop
-        end % end energy loop      
+        end % end energy loop
 
         p(it).iDep1 = iDep1_all(1:i_part_count-1);
         p(it).iDep2 = iDep2_all(1:i_part_count-1);
@@ -4891,7 +4891,7 @@ classdef PDist < TSeries
         p(it).mom.vx = sum(p(it).df*1e0.*p(it).dv.*p(it).vx)/p(it).mom.n*1e0; % v is km/s
         p(it).mom.vy = sum(p(it).df*1e0.*p(it).dv.*p(it).vy)/p(it).mom.n*1e0;
         p(it).mom.vz = sum(p(it).df*1e0.*p(it).dv.*p(it).vz)/p(it).mom.n*1e0;
-      
+
         p(it).mom.Txx = sum(p(it).df*1e0.*p(it).dv.*(p(it).vx-p(it).mom.vx).^2)*mass/units.eV/p(it).mom.n*1e6; % from (km^2)->(m^2)
         p(it).mom.Tyy = sum(p(it).df*1e0.*p(it).dv.*(p(it).vy-p(it).mom.vy).^2)*mass/units.eV/p(it).mom.n*1e6;
         p(it).mom.Tzz = sum(p(it).df*1e0.*p(it).dv.*(p(it).vz-p(it).mom.vz).^2)*mass/units.eV/p(it).mom.n*1e6;
@@ -4900,7 +4900,7 @@ classdef PDist < TSeries
         p(it).mom.Tyz = sum(p(it).df*1e0.*p(it).dv.*(p(it).vy-p(it).mom.vy).*(p(it).vz-p(it).mom.vz))*mass/units.eV/p(it).mom.n*1e6;
 
         p(it).mom.n = p(it).mom.n*1e6; % m^-3 -> cm^-3
-      end % end time loop      
+      end % end time loop
 
       particles = p;
 
@@ -4914,7 +4914,7 @@ classdef PDist < TSeries
         idep1arr = arrayfun(@(x){x.iDep1},p);
         idep2arr = arrayfun(@(x){x.iDep2},p);
         idep3arr = arrayfun(@(x){x.iDep3},p);
-        
+
        % MP = MParts(PD.time,farr,'','3D-cart',vxarr,vyarr,vzarr,'dv',dvarr,'dc',carr,'idepparent',{idep1arr,idep2arr,idep3arr});
         MP = MParts(PD.time,'3D-cart',vxarr,vyarr,vzarr,...
           'species',PD.species, ...

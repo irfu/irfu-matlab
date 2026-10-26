@@ -1331,7 +1331,7 @@ classdef TSeries
       end
 
       newData = [obj.data(:,1,1) obj.data(:,2,2) obj.data(:,3,3)];
-      
+
       obj.data_ = newData; Ts = obj;
       Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       if ~isempty(obj.name), Ts.name = sprintf('diag(%s)',obj.name); end

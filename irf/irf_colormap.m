@@ -667,7 +667,7 @@ if nargs > 0
   end
 end
 
-if doInterp      
+if doInterp
   nOrig = size(cmap,1);
   cmap_new = zeros(nInterp,3);
   cmap_new(:,1) = interp1(1:nOrig,cmap(:,1),linspace(1,size(cmap,1),nInterp));
@@ -690,5 +690,5 @@ if nargout == 0 % apply the colormap and freeze
   end
   %    cbfreeze;
 elseif nargout == 1 % only return colormap
-  varargout{1} = cmap;  
+  varargout{1} = cmap;
 end
