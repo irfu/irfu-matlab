@@ -715,8 +715,6 @@ classdef spinfit
         fitWindowBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
         dataGapMinNs         = A.dataGapMinNs);
 
-      nFitWindows = height(FitWindowsTable);
-
       % =======================================
       % Function to fit the spinning E field to
       % =======================================
@@ -739,18 +737,66 @@ classdef spinfit
         f = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4) * cos(2*x) + C(5) * x + C(6));
         C_0 = [0, 0, 0, 0, 0, 0];    % Start value for iterations.
       end
-      nCoeff = numel(C_0);
+
+      T = bepic.spinfit.fit_array( ...
+        tt2000Ar         =A.tt2000Ar, ...
+        samplesAr        =A.samplesAr, ...
+        spinPhaseRadAr   =A.spinPhaseRadAr, ...
+        FitWindowsTable  =FitWindowsTable, ...
+        fittingFunction  =f, ...
+        fittingStartValue=C_0);
+      T = renamevars(T, "coefficients", "A");
+    end
+
+
+
+    % Given fit windows, do fit on 1D array of samples, sample=f(spinPhase).
+    %
+    % DESIGN INTENT
+    % =============
+    % Function is intended for sharing the implementation of other functions.
+    %
+    function T = fit_array(A)
+      arguments
+        A.tt2000Ar
+        A.samplesAr
+        A.spinPhaseRadAr
+        A.FitWindowsTable
+        A.fittingFunction
+        A.fittingStartValue
+      end
+      % NOTE: Could potentially move out calculation of fit window center, if it
+      %       is different for different cases.
+      % IMPLEMENTATION NOTE: Can (should) not calculate FitWindowsTable since
+      % it needs to be shared for potential data (same timestamps for two 1D
+      % arrays of samples).
+      %
+      % TODO: Tests
+
+      % ==========
+      % ASSERTIONS
+      % ==========
+      assert(isa(A.fittingFunction, "function_handle"))
+      assert(isrow(A.fittingStartValue))
+
+      % %%%%%%%%%
+      % ALGORITHM
+      % %%%%%%%%%
+      nCoeff      = numel(A.fittingStartValue);
+      nFitWindows = height(A.FitWindowsTable);
 
       T = table();
-      T.A = NaN(nFitWindows, nCoeff);     % Pre-allocate
-      % Calculate fit window center: Cheat by averaging in time (not CMP).
+      T.coefficients = NaN(nFitWindows, nCoeff);     % Pre-allocate
+
+      % Calculate fit window center: Cheat by averaging in time
+      % NOTE: Not using CMP, which is also not available here.
       T.fitWindowCenterTt2000 = ...
-        (FitWindowsTable.beginTt2000 + FitWindowsTable.endTt2000) / 2;
+        (A.FitWindowsTable.beginTt2000 + A.FitWindowsTable.endTt2000) / 2;
 
       iArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
         A.tt2000Ar, ...
-        FitWindowsTable.beginTt2000, ...
-        FitWindowsTable.endTt2000);
+        A.FitWindowsTable.beginTt2000, ...
+        A.FitWindowsTable.endTt2000);
 
       %N_MAX_ITERATIONS = 10;
       %OPTS = optimoptions("lsqcurvefit", "Display", "off", "MaxIterations", N_MAX_ITERATIONS);
@@ -773,14 +819,16 @@ classdef spinfit
           % =============
           % PROPOSAL: Use previous fit as start value to speed up+help
           %           convergence?!
-          [C, ~] = lsqcurvefit(...
-            f, C_0, fitWindowSpinPhaseRadAr, fitWindowSamplesAr, [], [], OPTS);
+          [coefficientAr, ~] = lsqcurvefit(...
+            A.fittingFunction, A.fittingStartValue, ...
+            fitWindowSpinPhaseRadAr, fitWindowSamplesAr, [], [], OPTS);
         else
-          C = NaN(nCoeff, 1);
+          coefficientAr = NaN(nCoeff, 1);
         end
 
-        T.A(i, :) = C;
+        T.coefficients(i, :) = coefficientAr;
       end
+
     end
 
 
