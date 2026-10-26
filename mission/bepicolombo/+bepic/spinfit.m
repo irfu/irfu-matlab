@@ -534,19 +534,6 @@ classdef spinfit
       end
       % PROPOSAL: Define as the function to use for "potential" CDFs, which just
       %           happens to be SAFW in the current implementation.
-      %
-      % PROPOSAL: Argument for minimum number of samples.
-      % PROPOSAL: for-->parfor (iteration over fit windows).
-      % PROPOSAL: Generalize to handling multiple forms of fits.
-      %   PROPOSAL: Argument for function handle for fit. Wrappers for different
-      %             fits.
-      %     PROBLEM: Function handle must return different variables for
-      %              different fits. ==> Can not generate return value for zero
-      %              fit windows.
-      %       PROPOSAL: Call function handle for made-up samples and remove
-      %                 elements from arrays.
-
-      N_MIN_FINITE_SAMPLES = 1;
 
       % ==========
       % ASSERTIONS
@@ -584,44 +571,31 @@ classdef spinfit
         fitWindowBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
         dataGapMinNs         = A.dataGapMinNs);
 
-      nFitWindows = height(FitWindowsTable);
+      % Fit according to "Japan"
+      % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
+      % Y = A[0]*sin(X + A[1]) + A[2]
+      f   = @(C, x) (C(1)*sin(x + C(2)) + C(3));
+      C_0 = [0, 0, 0];
+
+      Tp1 = bepic.spinfit.fit_array( ...
+        tt2000Ar         =A.tt2000Ar, ...
+        samplesAr        =A.samplesAr(:, 1), ...
+        spinPhaseRadAr   =A.spinPhaseRadAr, ...
+        FitWindowsTable  =FitWindowsTable, ...
+        fittingFunction  =f, ...
+        fittingStartValue=C_0);
+
+      Tp2 = bepic.spinfit.fit_array( ...
+        tt2000Ar         =A.tt2000Ar, ...
+        samplesAr        =A.samplesAr(:, 2), ...
+        spinPhaseRadAr   =A.spinPhaseRadAr, ...
+        FitWindowsTable  =FitWindowsTable, ...
+        fittingFunction  =f, ...
+        fittingStartValue=C_0);
 
       T = table();
-      T.mean = NaN(nFitWindows, 2);    % Preallocate
-      % Calculate fit window center: Cheat by averaging in time (not CMP).
-      T.fitWindowCenterTt2000 = ...
-        (FitWindowsTable.beginTt2000 + FitWindowsTable.endTt2000) / 2;
-
-      iArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
-        A.tt2000Ar, ...
-        FitWindowsTable.beginTt2000, ...
-        FitWindowsTable.endTt2000);
-
-      % ===================================================================
-      % Calculate the mean value for the fit window without any fitting (no
-      % extra terms).
-      % ===================================================================
-      for i = 1:nFitWindows
-        j = iArCa{i};
-
-        T.mean(i, 1) = mean2(A.samplesAr(j, 1));
-        T.mean(i, 2) = mean2(A.samplesAr(j, 2));
-      end
-
-      % ------------------------------------------------------------------------
-      % Custom mean function.
-      function m = mean2(v)
-        % Remove NaN from data.
-        % NOTE: Done in this function, so that it is done separately for MEF1
-        %       and MEF2.
-        v = v(isfinite(v));
-
-        if numel(v) >= N_MIN_FINITE_SAMPLES
-          m = mean(v);
-        else
-          m = NaN;
-        end
-      end
+      T.fitWindowCenterTt2000 = Tp1.fitWindowCenterTt2000;
+      T.A                     = cat(3, Tp1.coefficients, Tp2.coefficients);
     end
 
 
@@ -765,19 +739,27 @@ classdef spinfit
         A.fittingFunction
         A.fittingStartValue
       end
-      % NOTE: Could potentially move out calculation of fit window center, if it
-      %       is different for different cases.
+      % NOTE: One could potentially move out calculation of fit window center,
+      %       if it is different for different cases.
+      %   PROPOSAL: Calculate in bepic.spinfit.fw.get_SAFWs().
+      %     PRO: Has access to CMP(?).
+      %     PRO: Calculated once (not twice) for potential data.
+      %     CON: Is technically an ~unrelated calculation.
       % IMPLEMENTATION NOTE: Can (should) not calculate FitWindowsTable since
       % it needs to be shared for potential data (same timestamps for two 1D
       % arrays of samples).
       %
-      % TODO: Tests
+      % PROPOSAL: for-->parfor (iteration over fit windows).
+      % PROPOSAL: Argument for minimum number of samples.
 
       % ==========
       % ASSERTIONS
       % ==========
+      assert(iscolumn(A.tt2000Ar))
+      assert(iscolumn(A.spinPhaseRadAr))
+      assert(iscolumn(A.samplesAr))
       assert(isa(A.fittingFunction, "function_handle"))
-      assert(isrow(A.fittingStartValue))
+      assert(isrow(A.fittingStartValue) & isfloat(A.fittingStartValue))
 
       % %%%%%%%%%
       % ALGORITHM

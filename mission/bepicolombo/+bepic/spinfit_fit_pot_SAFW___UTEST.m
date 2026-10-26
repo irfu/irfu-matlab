@@ -6,7 +6,6 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef spinfit_fit_pot_SAFW___UTEST < matlab.unittest.TestCase
-  % PROPOSAL: More tests.
 
 
 
@@ -30,7 +29,7 @@ classdef spinfit_fit_pot_SAFW___UTEST < matlab.unittest.TestCase
         dataGapMinNs          = int64(1000));
 
       T.verifyEqual(actT.fitWindowCenterTt2000, int64.empty( 0, 1))
-      T.verifyEqual(actT.mean,                  double.empty(0, 2))
+      T.verifyEqual(actT.A,                     double.empty(0, 3, 2))
     end
 
 
@@ -46,57 +45,28 @@ classdef spinfit_fit_pot_SAFW___UTEST < matlab.unittest.TestCase
         dataGapMinNs          = int64(1000));
 
       T.verifyEqual(actT.fitWindowCenterTt2000, int64.empty( 0, 1))
-      T.verifyEqual(actT.mean,                  double.empty(0, 2))
+      T.verifyEqual(actT.A,                     double.empty(0, 3, 2))
     end
 
 
 
+    % Exists for historical reasons. Is maybe overkill now.
     function test_2_fit_windows(T)
+      samples1Ar = [1 2 1 2 3 4 3 4]';
+      samples2Ar = [6 7 6 7 8 9 8 9]';
       actT = bepic.spinfit.fit_pot_SAFW( ...
-        tt2000Ar              = int64(    [ 01   06   11   16]'), ...
-        spinPhaseRadAr        = wrapTo2Pi([0.1, 0.6, 0.1, 0.6]' * 2*pi), ...
-        samplesAr             =           [  1, 6; 2, 7; 3, 8; 4, 9], ...
+        tt2000Ar              = int64(    [ 01  02  06  07    11  12  16  17]'), ...
+        spinPhaseRadAr        = wrapTo2Pi([0.1 0.2 0.6 0.7   1.1 1.2 1.6 1.7]' * 2*pi), ...
+        samplesAr             =           [samples1Ar, samples2Ar], ...
         fitWindowPeriodRad    = 2*pi*1, ...
         fitWindowLengthRad    = 2*pi*1, ...
         fitWindowCenterRefRad = 2*pi*0.5, ...
         dataGapMinNs          = int64(1000));
 
       T.verifyEqual(actT.fitWindowCenterTt2000, int64([  5;  15]))
-      T.verifyEqual(actT.mean,                        [  1.5, 6.5; 3.5, 8.5])
-    end
-
-
-
-    % One NaN sample in each fit window.
-    function test_NaN_sample_2_fit_windows(T)
-      actT = bepic.spinfit.fit_pot_SAFW( ...
-        tt2000Ar              = int64(    [ 01   06   11   16]'), ...
-        spinPhaseRadAr        = wrapTo2Pi([0.1, 0.6, 0.1, 0.6]' * 2*pi), ...
-        samplesAr             =           [  1, 6; NaN, 7; 3, NaN; 4, 9], ...
-        fitWindowPeriodRad    = 2*pi*1, ...
-        fitWindowLengthRad    = 2*pi*1, ...
-        fitWindowCenterRefRad = 2*pi*0.5, ...
-        dataGapMinNs          = int64(1000));
-
-      T.verifyEqual(actT.fitWindowCenterTt2000, int64([  5;  15]))
-      T.verifyEqual(actT.mean,                        [  1, 6.5; 3.5, 9])
-    end
-
-
-
-    % One data gap between fit windows.
-    function test_2_fit_windows_data_gap(T)
-      actT = bepic.spinfit.fit_pot_SAFW( ...
-        tt2000Ar              = int64(    [ 01   06   1011   1016]'), ...
-        spinPhaseRadAr        = wrapTo2Pi([0.1, 0.6, 0.1, 0.6]' * 2*pi), ...
-        samplesAr             =           [  1, 6; 2, 7; 3, 8; 4, 9], ...
-        fitWindowPeriodRad    = 2*pi*1, ...
-        fitWindowLengthRad    = 2*pi*1, ...
-        fitWindowCenterRefRad = 2*pi*0.5, ...
-        dataGapMinNs          = int64(1000));
-
-      T.verifyEqual(actT.fitWindowCenterTt2000, int64([  5;  1015]))
-      T.verifyEqual(actT.mean,                        [  1.5, 6.5; 3.5, 8.5])
+      T.verifySize( actT.A,                     [2, 3, 2])
+      T.verifyEqual(actT.A(:, 3, 1),            [1.5; 3.5], "RelTol", 1e-15)
+      T.verifyEqual(actT.A(:, 3, 2),            [6.5; 8.5])
     end
 
 
