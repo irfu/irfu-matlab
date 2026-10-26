@@ -17,7 +17,7 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
   %#####################
   %#####################
   properties(Constant)
-    N_COEFF = 5
+    N_COEFF = 6
   end
 
 
