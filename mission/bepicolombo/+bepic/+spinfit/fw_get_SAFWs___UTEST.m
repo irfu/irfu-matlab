@@ -4,7 +4,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef utils_get_SAFWs___UTEST < matlab.unittest.TestCase
+classdef fw_get_SAFWs___UTEST < matlab.unittest.TestCase
 
 
 

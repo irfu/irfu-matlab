@@ -5,7 +5,7 @@
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
-classdef utils_get_SAFWs_when_no_data_gaps___UTEST < matlab.unittest.TestCase
+classdef fw_get_SAFWs_when_no_data_gaps___UTEST < matlab.unittest.TestCase
   % PROBLEM: Difficult to manually derive the return value timestamps.
 
 
