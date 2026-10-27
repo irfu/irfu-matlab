@@ -547,13 +547,13 @@ classdef spinfit
       % =========
       % ALGORITHM
       % =========
-      FitWindowsTable = bepic.spinfit.fw.get_SAFWs( ...
-        tt2000Ar             = A.tt2000Ar, ...
-        spinPhaseRadAr       = A.spinPhaseRadAr, ...
-        fitWindowPeriodRad   = A.fitWindowPeriodRad, ...
-        fitWindowLengthRad   = A.fitWindowLengthRad, ...
-        fitWindowBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
-        dataGapMinNs         = A.dataGapMinNs);
+      FtwnTable = bepic.spinfit.ftwn.get_SAFWs( ...
+        tt2000Ar        = A.tt2000Ar, ...
+        spinPhaseRadAr  = A.spinPhaseRadAr, ...
+        ftwnPeriodRad   = A.fitWindowPeriodRad, ...
+        ftwnLengthRad   = A.fitWindowLengthRad, ...
+        ftwnBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
+        dataGapMinNs    = A.dataGapMinNs);
 
       % Fit according to "Japan" wiki 2026-10-27.
       % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
@@ -565,22 +565,22 @@ classdef spinfit
         tt2000Ar                = A.tt2000Ar, ...
         samplesAr               = A.samplesAr(:, 1), ...
         spinPhaseRadAr          = A.spinPhaseRadAr, ...
-        FitWindowsTable         = FitWindowsTable, ...
+        FtwnTable               = FtwnTable, ...
         fittingFunction         = f, ...
         fittingStartValue       = C_0, ...
-        nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
+        nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
 
       [FitTable2, fitAr2] = bepic.spinfit.fit_array( ...
         tt2000Ar                = A.tt2000Ar, ...
         samplesAr               = A.samplesAr(:, 2), ...
         spinPhaseRadAr          = A.spinPhaseRadAr, ...
-        FitWindowsTable         = FitWindowsTable, ...
+        FtwnTable               = FtwnTable, ...
         fittingFunction         = f, ...
         fittingStartValue       = C_0, ...
-        nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
+        nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
 
       FitTable = table();
-      FitTable.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
+      FitTable.fitWindowCenterTt2000 = FtwnTable.centerTt2000;
       FitTable.A                     = cat(3, ...
         FitTable1.coefficients, ...
         FitTable2.coefficients);
@@ -625,7 +625,7 @@ classdef spinfit
     %       Table with ~self-explanatory column names. One spin fit per row.
     %
     function [FitTable] = fit_Efield_SAFW(A)
-    %function [T, fitAr] = fit_Efield_SAFW(A)    % DEBUG
+    %function [FitTable, fitAr] = fit_Efield_SAFW(A)    % DEBUG
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
@@ -652,13 +652,13 @@ classdef spinfit
       % %%%%%%%%%
       % ALGORITHM
       % %%%%%%%%%
-      FitWindowsTable = bepic.spinfit.fw.get_SAFWs( ...
-        tt2000Ar             = A.tt2000Ar, ...
-        spinPhaseRadAr       = A.spinPhaseRadAr, ...
-        fitWindowPeriodRad   = A.fitWindowPeriodRad, ...
-        fitWindowLengthRad   = A.fitWindowLengthRad, ...
-        fitWindowBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
-        dataGapMinNs         = A.dataGapMinNs);
+      FtwnTable = bepic.spinfit.ftwn.get_SAFWs( ...
+        tt2000Ar        = A.tt2000Ar, ...
+        spinPhaseRadAr  = A.spinPhaseRadAr, ...
+        ftwnPeriodRad   = A.fitWindowPeriodRad, ...
+        ftwnLengthRad   = A.fitWindowLengthRad, ...
+        ftwnBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
+        dataGapMinNs    = A.dataGapMinNs);
 
       % =======================================
       % Function to fit the spinning E field to
@@ -685,19 +685,19 @@ classdef spinfit
       end
 
       [FitTable, fitAr] = bepic.spinfit.fit_array( ...
-        tt2000Ar                = A.tt2000Ar, ...
-        samplesAr               = A.samplesAr, ...
-        spinPhaseRadAr          = A.spinPhaseRadAr, ...
-        FitWindowsTable         = FitWindowsTable, ...
-        fittingFunction         = f, ...
-        fittingStartValue       = C_0, ...
-        nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
+        tt2000Ar           = A.tt2000Ar, ...
+        samplesAr          = A.samplesAr, ...
+        spinPhaseRadAr     = A.spinPhaseRadAr, ...
+        FtwnTable          = FtwnTable, ...
+        fittingFunction    = f, ...
+        fittingStartValue  = C_0, ...
+        nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
 
       FitTable = renamevars(FitTable, "coefficients", "A");
-      FitTable.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
+      FitTable.fitWindowCenterTt2000 = FtwnTable.centerTt2000;
 
-      %FitTable.fitWindowBeginTt2000  = FitWindowsTable.beginTt2000;   % DEBUG
-      %FitTable.fitWindowEndTt2000    = FitWindowsTable.endTt2000;     % DEBUG
+      %FitTable.fitWindowBeginTt2000  = FtwnTable.beginTt2000;   % DEBUG
+      %FitTable.fitWindowEndTt2000    = FtwnTable.endTt2000;     % DEBUG
     end
 
 
@@ -707,7 +707,7 @@ classdef spinfit
     %
     % RETURN VALUES
     % =============
-    % T
+    % FitTable
     %       Table of fitting coefficients.
     % fitAr
     %       Sample values corresponding to a perfect fit (associated with
@@ -719,29 +719,26 @@ classdef spinfit
     % This function is intended for sharing the implementation between other
     % functions and for simplifying testing.
     %
-    function [T, fitAr] = fit_array(A)
+    function [FitTable, fitAr] = fit_array(A)
       arguments
         A.tt2000Ar
         A.samplesAr
         A.spinPhaseRadAr
-        A.FitWindowsTable
+        A.FtwnTable
         A.fittingFunction
         A.fittingStartValue
-        A.nMinSamplesPerFitWindow
+        A.nMinSamplesPerFtwn
       end
-      % IMPLEMENTATION NOTE: This function should not calculate FitWindowsTable
-      % since it needs to be shared for potential data (same timestamps for two
-      % 1D arrays of samples).
-      % NOTE: FitWindow as produced by bepic.spinfit.fw.get_SAFWs() also
-      %       generates the fit window center, which is unnecessary for this
+      % IMPLEMENTATION NOTE: This function should not calculate FtwnTable since
+      % it needs to be shared for potential data (same timestamps for two 1D
+      % arrays of samples).
+      % NOTE: FtwnTable as produced by bepic.spinfit.ftwn.get_SAFWs() also
+      %       generates the FTWN centers, which is unnecessary for this
       %       function.
       %
       % PROPOSAL: Use previous fit as start value to speed up+help
       %           convergence?!
       % PROPOSAL: for-->parfor (iteration over fit windows).
-      % PROPOSAL: Abbrevation for "fit window" that can be used as prefix for
-      %           for variables referring to the current iteration.
-      %   FTWN -- IMPLEMENTED LOCALLY
       % PROPOSAL: Better name for "fitAr". Should be disting from fit
       %           coefficients.
       %   fittedSamplesAr
@@ -749,49 +746,49 @@ classdef spinfit
       % ==========
       % ASSERTIONS
       % ==========
-      assert(iscolumn(A.tt2000Ar)                & isa(A.tt2000Ar,       "int64"))
+      assert(iscolumn(A.tt2000Ar)           & isa(A.tt2000Ar,       "int64"))
       assert(issorted(A.tt2000Ar, "STRICTASCEND"))
-      assert(iscolumn(A.spinPhaseRadAr)          & isa(A.spinPhaseRadAr, "double"))
+      assert(iscolumn(A.spinPhaseRadAr)     & isa(A.spinPhaseRadAr, "double"))
       assert(iscolumn(A.samplesAr))
       assert(isa(     A.fittingFunction, "function_handle"))
-      assert(isrow(   A.fittingStartValue)       & isfloat(  A.fittingStartValue))
-      assert(isscalar(A.nMinSamplesPerFitWindow) & isnumeric(A.nMinSamplesPerFitWindow))
+      assert(isrow(   A.fittingStartValue)  & isfloat(  A.fittingStartValue))
+      assert(isscalar(A.nMinSamplesPerFtwn) & isnumeric(A.nMinSamplesPerFtwn))
       %
-      assert(A.nMinSamplesPerFitWindow >= 0)
+      assert(A.nMinSamplesPerFtwn >= 0)
 
       % %%%%%%%%%
       % ALGORITHM
       % %%%%%%%%%
-      nCoeff      = numel(A.fittingStartValue);
-      nFitWindows = height(A.FitWindowsTable);
+      nCoeff = numel( A.fittingStartValue);
+      nFtwn  = height(A.FtwnTable);
 
-      T = table();
-      T.coefficients = NaN(nFitWindows, nCoeff);     % Pre-allocate
+      FitTable = table();
+      FitTable.coefficients = NaN(nFtwn, nCoeff);     % Pre-allocate
       fitAr          = NaN(size(A.samplesAr));
 
-      iFitWindowArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
+      iFtwnArCa = bepic.spinfit.ftwn.FTWN_time_to_indices(...
         A.tt2000Ar, ...
-        A.FitWindowsTable.beginTt2000, ...
-        A.FitWindowsTable.endTt2000);
+        A.FtwnTable.beginTt2000, ...
+        A.FtwnTable.endTt2000);
 
       %N_MAX_ITERATIONS = 10;
       %OPTS = optimoptions("lsqcurvefit", "Display", "off", "MaxIterations", N_MAX_ITERATIONS);
       OPTS = optimoptions("lsqcurvefit", "Display", "off");
 
-      for i = 1:nFitWindows
-        jAr = iFitWindowArCa{i};
+      for i = 1:nFtwn
+        jAr = iFtwnArCa{i};
 
         ftwnSpinPhaseRadAr1 = A.spinPhaseRadAr(jAr);
         ftwnSamplesAr1      = A.samplesAr     (jAr);
 
-        % Remove NaN from fit window.
+        % Remove NaN from FTWN.
         bFinite             = isfinite(ftwnSamplesAr1);
         ftwnSpinPhaseRadAr2 = ftwnSpinPhaseRadAr1(bFinite);
         ftwnSamplesAr2      = ftwnSamplesAr1(     bFinite);
 
         nFtwnSamples2       = numel(ftwnSamplesAr2);
 
-        if max(A.nMinSamplesPerFitWindow, nCoeff) <= nFtwnSamples2
+        if max(A.nMinSamplesPerFtwn, nCoeff) <= nFtwnSamples2
           % =============
           % Calculate fit
           % =============
@@ -805,15 +802,15 @@ classdef spinfit
         % NOTE: Must use spin phase from before removing fill value samples.
         ftwnFitAr = A.fittingFunction(ftwnCoefficientAr, ftwnSpinPhaseRadAr1);
 
-        T.coefficients(i, :) = ftwnCoefficientAr;
-        fitAr         (jAr)    = ftwnFitAr;
+        FitTable.coefficients(i, :) = ftwnCoefficientAr;
+        fitAr         (jAr)  = ftwnFitAr;
 
         % Interpretation of "Averaged residual of sine fit of Ev".
         % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
         % NOTE: Not the expression I would expect, mathematically.
         %       /Erik P G Johansson 2026-10-26.
-        % T.residualAbsDiff(i, :) = mean(abs(fitWindowFitAr-fitWindowSamplesAr));
-      end    % fit windows
+        % FitTable.residualAbsDiff(i, :) = mean(abs(ftwnFitAr-ftwnSamplesAr));
+      end    % for
     end    % function
 
 
