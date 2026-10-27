@@ -521,10 +521,10 @@ classdef spinfit
     %
     % RETURN VALUE
     % ============
-    % T
+    % FitTable
     %       Table with ~self-explanatory column names. One spin fit per row.
     %
-    function T = fit_pot_SAFW(A)
+    function FitTable = fit_pot_SAFW(A)
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
@@ -540,26 +540,9 @@ classdef spinfit
       % ASSERTIONS
       % ==========
       nSamples = numel(A.tt2000Ar);
-      assert(iscolumn(A.tt2000Ar)                      & isa(A.tt2000Ar,              "int64"))
-      assert(iscolumn(A.spinPhaseRadAr)                & isa(A.spinPhaseRadAr,        "double"))
-      assert(isscalar(A.fitWindowPeriodRad)            & isa(A.fitWindowPeriodRad,    "double"))
-      assert(isscalar(A.fitWindowLengthRad)            & isa(A.fitWindowLengthRad,    "double"))
-      assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
-      assert(isscalar(A.dataGapMinNs)                  & isa(A.dataGapMinNs,          "int64"))
       assert(isequal(size(A.samplesAr), [nSamples, 2]) & isa(A.samplesAr,             "double"))
-      %
-      assert(issorted(A.tt2000Ar, "STRICTASCEND"))
       assert(all(isfinite(A.samplesAr) | isnan(A.samplesAr), "all"))
-      assert(all(isfinite(A.spinPhaseRadAr)))
-      % IMPLEMENTATION NOTE: Requiring spin phase on interval 0 to 2*pi. This is
-      % not required by mms_spin_fit(), but (1) is (analogous to) the spin phase
-      % values in L1p CDF files which are also bounded (0 to 360 deg), and (2)
-      % is an indirect check on the units used.
-      assert(all((0 <= A.spinPhaseRadAr) & (A.spinPhaseRadAr <= 2*pi)))
-      %
-      assert(A.fitWindowPeriodRad > 0)
-      assert(A.fitWindowLengthRad > 0)
-      assert(A.dataGapMinNs       > 0)
+      assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
 
       % =========
       % ALGORITHM
@@ -578,7 +561,7 @@ classdef spinfit
       f   = @(C, x) (C(1)*sin(x + C(2)) + C(3));
       C_0 = [0, 0, 0];
 
-      [Tp1, fitAr1] = bepic.spinfit.fit_array( ...
+      [FitTable1, fitAr1] = bepic.spinfit.fit_array( ...
         tt2000Ar                = A.tt2000Ar, ...
         samplesAr               = A.samplesAr(:, 1), ...
         spinPhaseRadAr          = A.spinPhaseRadAr, ...
@@ -587,7 +570,7 @@ classdef spinfit
         fittingStartValue       = C_0, ...
         nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
 
-      [Tp2, fitAr2] = bepic.spinfit.fit_array( ...
+      [FitTable2, fitAr2] = bepic.spinfit.fit_array( ...
         tt2000Ar                = A.tt2000Ar, ...
         samplesAr               = A.samplesAr(:, 2), ...
         spinPhaseRadAr          = A.spinPhaseRadAr, ...
@@ -596,9 +579,11 @@ classdef spinfit
         fittingStartValue       = C_0, ...
         nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
 
-      T = table();
-      T.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
-      T.A                     = cat(3, Tp1.coefficients, Tp2.coefficients);
+      FitTable = table();
+      FitTable.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
+      FitTable.A                     = cat(3, ...
+        FitTable1.coefficients, ...
+        FitTable2.coefficients);
     end
 
 
@@ -639,7 +624,7 @@ classdef spinfit
     % T
     %       Table with ~self-explanatory column names. One spin fit per row.
     %
-    function [T] = fit_Efield_SAFW(A)
+    function [FitTable] = fit_Efield_SAFW(A)
     %function [T, fitAr] = fit_Efield_SAFW(A)    % DEBUG
       arguments
         A.tt2000Ar
@@ -660,25 +645,9 @@ classdef spinfit
       % ASSERTIONS
       % ==========
       nSamples = numel(A.tt2000Ar);
-      assert(iscolumn(A.tt2000Ar)                      & isa(A.tt2000Ar,              "int64"))
-      assert(iscolumn(A.spinPhaseRadAr)                & isa(A.spinPhaseRadAr,        "double"))
-      assert(isscalar(A.fitWindowPeriodRad)            & isa(A.fitWindowPeriodRad,    "double"))
-      assert(isscalar(A.fitWindowLengthRad)            & isa(A.fitWindowLengthRad,    "double"))
-      assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
       assert(isscalar(A.dataGapMinNs)                  & isa(A.dataGapMinNs,          "int64"))
       assert(isequal(size(A.samplesAr), [nSamples, 1]) & isa(A.samplesAr,             "double"))
-      %
-      assert(issorted(A.tt2000Ar, "STRICTASCEND"))
-      assert(all(isfinite(A.spinPhaseRadAr)))
-      % IMPLEMENTATION NOTE: Requiring spin phase on interval 0 to 2*pi. This is
-      % not required by mms_spin_fit(), but (1) is (analogous to) the spin phase
-      % values in L1p CDF files which are also bounded (0 to 360 deg), and (2)
-      % is an indirect check on the units used.
-      assert(all((0 <= A.spinPhaseRadAr) & (A.spinPhaseRadAr <= 2*pi)))
-      %
-      assert(A.fitWindowPeriodRad > 0)
-      assert(A.fitWindowLengthRad > 0)
-      assert(A.dataGapMinNs       > 0)
+      assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
 
       % %%%%%%%%%
       % ALGORITHM
@@ -715,7 +684,7 @@ classdef spinfit
         C_0 = [0, 0, 0, 0, 0, 0];    % Start value for iterations.
       end
 
-      [T, fitAr] = bepic.spinfit.fit_array( ...
+      [FitTable, fitAr] = bepic.spinfit.fit_array( ...
         tt2000Ar                = A.tt2000Ar, ...
         samplesAr               = A.samplesAr, ...
         spinPhaseRadAr          = A.spinPhaseRadAr, ...
@@ -724,11 +693,11 @@ classdef spinfit
         fittingStartValue       = C_0, ...
         nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
 
-      T = renamevars(T, "coefficients", "A");
-      T.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
+      FitTable = renamevars(FitTable, "coefficients", "A");
+      FitTable.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
 
-      %T.fitWindowBeginTt2000  = FitWindowsTable.beginTt2000;   % DEBUG
-      %T.fitWindowEndTt2000    = FitWindowsTable.endTt2000;     % DEBUG
+      %FitTable.fitWindowBeginTt2000  = FitWindowsTable.beginTt2000;   % DEBUG
+      %FitTable.fitWindowEndTt2000    = FitWindowsTable.endTt2000;     % DEBUG
     end
 
 
@@ -780,8 +749,9 @@ classdef spinfit
       % ==========
       % ASSERTIONS
       % ==========
-      assert(iscolumn(A.tt2000Ar)                & isa(A.tt2000Ar, "int64"))
-      assert(iscolumn(A.spinPhaseRadAr))
+      assert(iscolumn(A.tt2000Ar)                & isa(A.tt2000Ar,       "int64"))
+      assert(issorted(A.tt2000Ar, "STRICTASCEND"))
+      assert(iscolumn(A.spinPhaseRadAr)          & isa(A.spinPhaseRadAr, "double"))
       assert(iscolumn(A.samplesAr))
       assert(isa(     A.fittingFunction, "function_handle"))
       assert(isrow(   A.fittingStartValue)       & isfloat(  A.fittingStartValue))

@@ -123,6 +123,25 @@ classdef fw
         A.fitWindowBeginRefRad
         A.dataGapMinNs
       end
+      assert(iscolumn(A.tt2000Ar)              & isa(A.tt2000Ar,              "int64"))
+      assert(issorted(A.tt2000Ar, "STRICTASCEND"))
+      assert(iscolumn(    A.spinPhaseRadAr)    & isa(A.spinPhaseRadAr,        "double"))
+      assert(all(isfinite(A.spinPhaseRadAr)))
+      % IMPLEMENTATION NOTE: Requiring spin phase on interval 0 to 2*pi. This
+      % (1) is (analogous to) the spin phase values in L1pre CDF files which are
+      % also bounded (0 to 360 deg), and (2) is an indirect check on the units
+      % used, and (3) is required by the algorithm.
+      assert(all((0 <= A.spinPhaseRadAr) & (A.spinPhaseRadAr <= 2*pi)))
+
+      assert(isscalar(A.fitWindowPeriodRad)    & isa(A.fitWindowPeriodRad,    "double"))
+      assert(         A.fitWindowPeriodRad > 0)
+      assert(isscalar(A.fitWindowLengthRad)    & isa(A.fitWindowLengthRad,    "double"))
+      assert(         A.fitWindowLengthRad > 0)
+      assert(isscalar(A.fitWindowBeginRefRad)  & isa(A.fitWindowBeginRefRad,  "double"))
+      assert(         A.fitWindowBeginRefRad >= 0)
+
+      assert(isscalar(A.dataGapMinNs)          & isa(A.dataGapMinNs,          "int64"))
+      assert(         A.dataGapMinNs > 0)
 
       % =========
       % ALGORITHM
