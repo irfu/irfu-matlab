@@ -24,6 +24,10 @@
 # subdirectories.
 /mission/cluster @JanKarlsson
 
+# @ErikPGJ and @JanKarlsson owns any files in the mission/bepicolombo/
+# directory at the root of the repository and any of its subdirectories
+/mission/bepicolombo @ErikPGJ @JanKarlsson
+
 # @thomas-nilsson-irfu and @danbgraham owns any files in
 # the mission/mms/ directory at the root of the repository
 # and any of its subdirectories.
