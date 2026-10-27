@@ -515,6 +515,8 @@ classdef spinfit
     %       where n=integer.
     % dataGapMinNs
     %       Threshold for when a jump in tt2000Ar should count as a data gap.
+    % nMinSamplesPerFitWindow
+    %       Minimum number of finite sample values per fit window.
     %
     %
     % RETURN VALUE
@@ -531,6 +533,7 @@ classdef spinfit
         A.fitWindowLengthRad
         A.fitWindowCenterRefRad
         A.dataGapMinNs
+        A.nMinSamplesPerFitWindow
       end
 
       % ==========
@@ -575,21 +578,23 @@ classdef spinfit
       f   = @(C, x) (C(1)*sin(x + C(2)) + C(3));
       C_0 = [0, 0, 0];
 
-      Tp1 = bepic.spinfit.fit_array( ...
-        tt2000Ar         =A.tt2000Ar, ...
-        samplesAr        =A.samplesAr(:, 1), ...
-        spinPhaseRadAr   =A.spinPhaseRadAr, ...
-        FitWindowsTable  =FitWindowsTable, ...
-        fittingFunction  =f, ...
-        fittingStartValue=C_0);
+      [Tp1, fitAr1] = bepic.spinfit.fit_array( ...
+        tt2000Ar                = A.tt2000Ar, ...
+        samplesAr               = A.samplesAr(:, 1), ...
+        spinPhaseRadAr          = A.spinPhaseRadAr, ...
+        FitWindowsTable         = FitWindowsTable, ...
+        fittingFunction         = f, ...
+        fittingStartValue       = C_0, ...
+        nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
 
-      Tp2 = bepic.spinfit.fit_array( ...
-        tt2000Ar         =A.tt2000Ar, ...
-        samplesAr        =A.samplesAr(:, 2), ...
-        spinPhaseRadAr   =A.spinPhaseRadAr, ...
-        FitWindowsTable  =FitWindowsTable, ...
-        fittingFunction  =f, ...
-        fittingStartValue=C_0);
+      [Tp2, fitAr2] = bepic.spinfit.fit_array( ...
+        tt2000Ar                = A.tt2000Ar, ...
+        samplesAr               = A.samplesAr(:, 2), ...
+        spinPhaseRadAr          = A.spinPhaseRadAr, ...
+        FitWindowsTable         = FitWindowsTable, ...
+        fittingFunction         = f, ...
+        fittingStartValue       = C_0, ...
+        nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
 
       T = table();
       T.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
@@ -625,6 +630,8 @@ classdef spinfit
     %       where n=integer.
     % dataGapMinNs
     %       Threshold for when a jump in tt2000Ar should count as a data gap.
+    % nMinSamplesPerFitWindow
+    %       Minimum number of finite sample values per fit window.
     %
     %
     % RETURN VALUE
@@ -632,7 +639,8 @@ classdef spinfit
     % T
     %       Table with ~self-explanatory column names. One spin fit per row.
     %
-    function T = fit_Efield_SAFW(A)
+    function [T] = fit_Efield_SAFW(A)
+    %function [T, fitAr] = fit_Efield_SAFW(A)    % DEBUG
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
@@ -641,21 +649,8 @@ classdef spinfit
         A.fitWindowLengthRad
         A.fitWindowCenterRefRad
         A.dataGapMinNs
+        A.nMinSamplesPerFitWindow
       end
-      % PROPOSAL: Argument for the minimum number of non-NaN samples.
-      %   NOTE: Must handle windows on the edges of data gaps.
-      %   PROPOSAL: Explicit minimum number of samples.
-      %     PRO: Easy to implement.
-      %     PRO: The caller can convert the sampling rate and nominal spin rate
-      %          into a percentage of samples per fit window.
-      %   PROPOSAL: Some kind of measure of how much non-Nan samples in
-      %             the current fit window cover compare to a typical fit
-      %             window.
-      %     PROPOSAL: Percent of normal number of samples.
-      %       CON: Ambiguous how to know the normal number of samples.
-      %         CON-PROPOSAL: Specify explicit number of non-NaN samples. The
-      %           caller knowns the nominal spin rate and sampling rate and
-      %           convert this into a percentage.
       % PROPOSAL: for-->parfor (iteration over fit windows).
       %
       % Code for manually experimenting with lsqcurvefit():
@@ -720,16 +715,20 @@ classdef spinfit
         C_0 = [0, 0, 0, 0, 0, 0];    % Start value for iterations.
       end
 
-      T = bepic.spinfit.fit_array( ...
-        tt2000Ar         =A.tt2000Ar, ...
-        samplesAr        =A.samplesAr, ...
-        spinPhaseRadAr   =A.spinPhaseRadAr, ...
-        FitWindowsTable  =FitWindowsTable, ...
-        fittingFunction  =f, ...
-        fittingStartValue=C_0);
+      [T, fitAr] = bepic.spinfit.fit_array( ...
+        tt2000Ar                = A.tt2000Ar, ...
+        samplesAr               = A.samplesAr, ...
+        spinPhaseRadAr          = A.spinPhaseRadAr, ...
+        FitWindowsTable         = FitWindowsTable, ...
+        fittingFunction         = f, ...
+        fittingStartValue       = C_0, ...
+        nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
 
       T = renamevars(T, "coefficients", "A");
       T.fitWindowCenterTt2000 = FitWindowsTable.centerTt2000;
+
+      %T.fitWindowBeginTt2000  = FitWindowsTable.beginTt2000;   % DEBUG
+      %T.fitWindowEndTt2000    = FitWindowsTable.endTt2000;     % DEBUG
     end
 
 
@@ -737,12 +736,21 @@ classdef spinfit
     % Given fit windows and a fitting function, do fit on 1D array of samples,
     % sample=f(spinPhase).
     %
+    % RETURN VALUES
+    % =============
+    % T
+    %       Table of fitting coefficients.
+    % fitAr
+    %       Sample values corresponding to a perfect fit (associated with
+    %       the input timestamps).
+    %
+    %
     % DESIGN INTENT
     % =============
     % This function is intended for sharing the implementation between other
     % functions and for simplifying testing.
     %
-    function T = fit_array(A)
+    function [T, fitAr] = fit_array(A)
       arguments
         A.tt2000Ar
         A.samplesAr
@@ -750,6 +758,7 @@ classdef spinfit
         A.FitWindowsTable
         A.fittingFunction
         A.fittingStartValue
+        A.nMinSamplesPerFitWindow
       end
       % IMPLEMENTATION NOTE: This function should not calculate FitWindowsTable
       % since it needs to be shared for potential data (same timestamps for two
@@ -758,8 +767,15 @@ classdef spinfit
       %       generates the fit window center, which is unnecessary for this
       %       function.
       %
+      % PROPOSAL: Use previous fit as start value to speed up+help
+      %           convergence?!
       % PROPOSAL: for-->parfor (iteration over fit windows).
-      % PROPOSAL: Argument for minimum number of samples.
+      % PROPOSAL: Abbrevation for "fit window" that can be used as prefix for
+      %           for variables referring to the current iteration.
+      %   FTWN -- IMPLEMENTED LOCALLY
+      % PROPOSAL: Better name for "fitAr". Should be disting from fit
+      %           coefficients.
+      %   fittedSamplesAr
 
       % ==========
       % ASSERTIONS
@@ -767,8 +783,11 @@ classdef spinfit
       assert(iscolumn(A.tt2000Ar)                & isa(A.tt2000Ar, "int64"))
       assert(iscolumn(A.spinPhaseRadAr))
       assert(iscolumn(A.samplesAr))
-      assert(isa(A.fittingFunction, "function_handle"))
-      assert(isrow(A.fittingStartValue) & isfloat(A.fittingStartValue))
+      assert(isa(     A.fittingFunction, "function_handle"))
+      assert(isrow(   A.fittingStartValue)       & isfloat(  A.fittingStartValue))
+      assert(isscalar(A.nMinSamplesPerFitWindow) & isnumeric(A.nMinSamplesPerFitWindow))
+      %
+      assert(A.nMinSamplesPerFitWindow >= 0)
 
       % %%%%%%%%%
       % ALGORITHM
@@ -778,8 +797,9 @@ classdef spinfit
 
       T = table();
       T.coefficients = NaN(nFitWindows, nCoeff);     % Pre-allocate
+      fitAr          = NaN(size(A.samplesAr));
 
-      iArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
+      iFitWindowArCa = bepic.spinfit.fw.fit_window_time_to_indices(...
         A.tt2000Ar, ...
         A.FitWindowsTable.beginTt2000, ...
         A.FitWindowsTable.endTt2000);
@@ -789,31 +809,40 @@ classdef spinfit
       OPTS = optimoptions("lsqcurvefit", "Display", "off");
 
       for i = 1:nFitWindows
-        j = iArCa{i};
+        jAr = iFitWindowArCa{i};
 
-        fitWindowSpinPhaseRadAr = A.spinPhaseRadAr(j);
-        fitWindowSamplesAr      = A.samplesAr     (j);
+        ftwnSpinPhaseRadAr1 = A.spinPhaseRadAr(jAr);
+        ftwnSamplesAr1      = A.samplesAr     (jAr);
+
         % Remove NaN from fit window.
-        bFinite                 = isfinite(fitWindowSamplesAr);
-        fitWindowSpinPhaseRadAr = fitWindowSpinPhaseRadAr(bFinite);
-        fitWindowSamplesAr      = fitWindowSamplesAr(     bFinite);
+        bFinite             = isfinite(ftwnSamplesAr1);
+        ftwnSpinPhaseRadAr2 = ftwnSpinPhaseRadAr1(bFinite);
+        ftwnSamplesAr2      = ftwnSamplesAr1(     bFinite);
 
-        nFitWindowSamples       = numel(fitWindowSamplesAr);
+        nFtwnSamples2       = numel(ftwnSamplesAr2);
 
-        if nCoeff <= nFitWindowSamples
+        if max(A.nMinSamplesPerFitWindow, nCoeff) <= nFtwnSamples2
           % =============
           % Calculate fit
           % =============
-          % PROPOSAL: Use previous fit as start value to speed up+help
-          %           convergence?!
-          [coefficientAr, ~] = lsqcurvefit(...
+          [ftwnCoefficientAr, ~] = lsqcurvefit(...
             A.fittingFunction, A.fittingStartValue, ...
-            fitWindowSpinPhaseRadAr, fitWindowSamplesAr, [], [], OPTS);
+            ftwnSpinPhaseRadAr2, ftwnSamplesAr2, [], [], OPTS);
         else
-          coefficientAr = NaN(nCoeff, 1);
+          ftwnCoefficientAr = NaN(nCoeff, 1);
         end
 
-        T.coefficients(i, :) = coefficientAr;
+        % NOTE: Must use spin phase from before removing fill value samples.
+        ftwnFitAr = A.fittingFunction(ftwnCoefficientAr, ftwnSpinPhaseRadAr1);
+
+        T.coefficients(i, :) = ftwnCoefficientAr;
+        fitAr         (jAr)    = ftwnFitAr;
+
+        % Interpretation of "Averaged residual of sine fit of Ev".
+        % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
+        % NOTE: Not the expression I would expect, mathematically.
+        %       /Erik P G Johansson 2026-10-26.
+        % T.residualAbsDiff(i, :) = mean(abs(fitWindowFitAr-fitWindowSamplesAr));
       end    % fit windows
     end    % function
 
