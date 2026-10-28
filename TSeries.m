@@ -1331,7 +1331,7 @@ classdef TSeries
       end
 
       newData = [obj.data(:,1,1) obj.data(:,2,2) obj.data(:,3,3)];
-
+      
       obj.data_ = newData; Ts = obj;
       Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       if ~isempty(obj.name), Ts.name = sprintf('diag(%s)',obj.name); end
@@ -1609,7 +1609,7 @@ classdef TSeries
       end
     end
 
-    function specrec = specrec(obj)
+    function specrec = specrec(obj,varargin)
       % TSERIES.SPECREC creates a specrec structure to plot data as colormaps.
       %
       %   specrec.p = TS.data
@@ -1619,20 +1619,33 @@ classdef TSeries
       %     TS = irf.ts_scalar(EpochTT(1:10),rand(5,10));
       %     irf_spectrogram(TS.specrec,'lin')
 
-      % Minimal input
+      p = inputParser;
+      addParameter(p,'p_label',[],@(x)isstring(x) || ischar(x) || and(iscell(x), all(cellfun(@(x) isstring(x) || ischar(x), x))))
+      addParameter(p,'f_label',[])
+      addParameter(p,'f',[], @(x) isnumeric(x) && length(x) == size(obj.data,2))
+      parse(p,varargin{:});
+
+      % Required fields
       specrec.t = obj.time.epochUnix;
       specrec.p = obj.data;
-
-      % Default
-      specrec.p_label = '';
       specrec.f = 1:size(obj.data,2);
-      specrec.f_label = '';
 
-      % Optional input: check TSeries.userData if any specrec structure is specified
+      % Optional fields
+      specrec.p_label = '';
+      specrec.f_label = '';
+      
+      % Optional fields: check TSeries.userData if any specrec structure is specified
       if isfield(obj.userData,'specrec')
         varstrs = fields(obj.userData.specrec);
         for ivar = 1:numel(varstrs)
           specrec.(varstrs{ivar}) = obj.userData.specrec.(varstrs{ivar});
+        end
+      end
+      
+      % Passed input overrides the userData.specrec
+      for ivar = 1:numel(p.Parameters)
+        if ~isempty(p.Results.(p.Parameters{ivar}))
+          specrec.(p.Parameters{ivar}) = p.Results.(p.Parameters{ivar});
         end
       end
     end
