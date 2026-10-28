@@ -40,6 +40,10 @@ classdef spinfit
   %     * Spin rate is jumped & changed after the eclipse, but do not take care.
   %     """"
   %     /Yasumasa Kasaba, e-mail 2026-06-16, 23:16
+  %
+  % PROPOSAL: Optional key-value argument in "official functions" specifies
+  %           whether debugging data should be returned in additional return
+  %           values (default=false).
 
 
 
@@ -171,9 +175,9 @@ classdef spinfit
       % Fake nanoseconds per radian when converting to/from fake TT2000. The
       % exact value should not matter.
       FAKE_NS_PER_RAD = 4e9 / (2*pi);
-      % IMPLEMENTATION NOTE: Cumulative spin phase values will not increment
-      % correctly for time jumps (error n*2*pi) but that does not matter, since
-      % the processing will be split by data gaps anyway.
+      % IMPLEMENTATION NOTE: CPS values will not increment correctly for time
+      % jumps (error n*2*pi) but that does not matter, since the processing will
+      % be split by data gaps anyway.
       cspRadAr = bepic.spinfit.utils.spin_phase_to_CMP(...
         A.spinPhaseRadAr);
       fakeTt2000Ar                 = int64(cspRadAr                * FAKE_NS_PER_RAD);
@@ -748,10 +752,10 @@ classdef spinfit
       % ==========
       % ASSERTIONS
       % ==========
-      assert(iscolumn(A.tt2000Ar)           & isa(A.tt2000Ar,       "int64"))
+      assert(iscolumn(A.tt2000Ar)           & isa(     A.tt2000Ar,       "int64"))
       assert(issorted(A.tt2000Ar, "STRICTASCEND"))
-      assert(iscolumn(A.spinPhaseRadAr)     & isa(A.spinPhaseRadAr, "double"))
-      assert(iscolumn(A.samplesAr))
+      assert(iscolumn(A.spinPhaseRadAr)     & isa(     A.spinPhaseRadAr, "double"))
+      assert(iscolumn(A.samplesAr)          & isdouble(A.samplesAr))
       assert(isa(     A.fittingFunction, "function_handle"))
       assert(isrow(   A.fittingStartValue)  & isfloat(  A.fittingStartValue))
       assert(isscalar(A.nMinSamplesPerFtwn) & isnumeric(A.nMinSamplesPerFtwn))
