@@ -755,7 +755,7 @@ classdef spinfit
       assert(iscolumn(A.tt2000Ar)           & isa(     A.tt2000Ar,       "int64"))
       assert(issorted(A.tt2000Ar, "STRICTASCEND"))
       assert(iscolumn(A.spinPhaseRadAr)     & isa(     A.spinPhaseRadAr, "double"))
-      assert(iscolumn(A.samplesAr)          & isdouble(A.samplesAr))
+      assert(iscolumn(A.samplesAr)          & isa(     A.samplesAr,      "double"))
       assert(isa(     A.fittingFunction, "function_handle"))
       assert(isrow(   A.fittingStartValue)  & isfloat(  A.fittingStartValue))
       assert(isscalar(A.nMinSamplesPerFtwn) & isnumeric(A.nMinSamplesPerFtwn))
