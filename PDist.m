@@ -4580,6 +4580,7 @@ classdef PDist < TSeries
       v_gen = 'v3';
       passCounts = 0;
       outputMParts = 0;
+      
 
       % Check input
       nargs = numel(varargin);
@@ -4717,6 +4718,7 @@ classdef PDist < TSeries
       % n_frac = 0 divided by Ntmp_roundup = 0 gives NaN
       dn_part(isnan(dn_part)) = 0;
       df_part(isnan(df_part)) = 0;
+      if passCounts, dc_part(isnan(dc_part)) = 0; end
 
       % Edges of energy bins, same for each time step
       energy_minus = obj.depend{1}(1,:) - obj.ancillary.delta_energy_minus;
@@ -4789,6 +4791,8 @@ classdef PDist < TSeries
 
               % Assign N_bin positions within energy and angle ranges,
               % and get corresponding v's
+              pdf_v = @(v1,v2,p,U01) (v1.^p + U01.*(v2.^p - v1.^p)).^(1/p);
+
               switch method
                 case 'random'
                   tmp_azim   = azim_minus(iAzim)        + dazim*rand(N_bin,1);   % deg
@@ -4796,7 +4800,6 @@ classdef PDist < TSeries
                   tmp_polar  = acosd(tmp_cospolar);  % deg
 
                   tmp_r = rand(N_bin,1);
-                  pdf_v = @(v1,v2,p,U01) (v1.^p + U01.*(v2.^p - v1.^p)).^(1/p);
                   switch v_gen
                     case {'v','v1',1}
                       pow = 1;
@@ -4923,6 +4926,7 @@ classdef PDist < TSeries
           'dV',struct('data',{dvarr},'units',dv_units), ...
           'dc',struct('data',{carr}), ...
           'idepparent',{idep1arr,idep2arr,idep3arr});
+        MP.userdata.doScpot = doScpot;
         if ~isempty(pdf_v), MP.generation.sampling.v = struct('pdf',pdf_v,'p',pow); end
         particles = MP;
       end
