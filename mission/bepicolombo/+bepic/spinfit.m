@@ -3,13 +3,9 @@
 % processing L1p CDFs --> L2pre CDFs.
 %
 % The purpose of this file is to isolate many of the technical details
-% surrounding the details of the spin fit, e.g. selecting the fit windows (time
-% windows) used for spin fitting, and which exact timestamps should represent
-% fit windows.
-%
-% The implementation uses mms_spinfit_m() for the core processing. In the long
-% term, this function should probably be replaced by a copy dedicated to
-% BepiColombo processing (in case it needs to be modified).
+% surrounding the details of the spin fit, e.g. selecting the fit windows
+% (time windows) used for spin fitting, and which exact timestamps should
+% represent fit windows.
 %
 %
 % TECHNICALITIES WHICH ARE BEYOND THE SCOPE OF THIS CLASS
@@ -67,28 +63,30 @@ classdef spinfit
     % Do spin fit assuming that fit windows used should have both constant
     % length and constant period in units of spin phase (SAFW).
     %
-    % Implemented as a wrapper around bepic.spinfit.fit_TAFW_MMS() which adds
-    % functionality for splitting processing into smaller time segments based on
-    % time increments exceeding a threshold.
+    % Implemented as a wrapper around bepic.spinfit.fit_TAFW_MMS() which
+    % adds functionality for splitting processing into smaller time
+    % segments based on time increments exceeding a threshold.
     %
     %
     % IMPLEMENTATION NOTE
     % ===================
-    % Implements spin-aligned fit windows using mms_spin_fit() by internally
-    % generating fake TT2000 timestamps derived from cumulative spin phase. This
-    % in turn causes problems with handling data gaps when converting from spin
-    % phase (0 to 2*pi) to cumulative spin phase, and when then constructing the
-    % output timestamps in the presence of data gaps. It therefore makes sense
-    % for the implementation to split by data gap before using this approach.
+    % Implements spin-aligned fit windows using mms_spin_fit() by
+    % internally generating fake TT2000 timestamps derived from cumulative
+    % spin phase. This in turn causes problems with handling data gaps when
+    % converting from spin phase (0 to 2*pi) to cumulative spin phase, and
+    % when then constructing the output timestamps in the presence of data
+    % gaps. It therefore makes sense for the implementation to split by
+    % data gap before using this approach.
     %
     %
     % POTENTIAL PROBLEM / BUG
     % =======================
-    % The function could possibly (theoretically) generate the same timestamps
-    % twice if identifying a data gap within a fit window. It is unclear what is
-    % the best way to handle such a situation. However, fit_TAFW_MMS()'s
-    % functionality for removing output timestamps outside the range of the
-    % input timestamps should eliminate this possibility().
+    % The function could possibly (theoretically) generate the same
+    % timestamps twice if identifying a data gap within a fit window. It is
+    % unclear what is the best way to handle such a situation. However,
+    % fit_TAFW_MMS()'s functionality for removing output timestamps outside
+    % the range of the input timestamps should eliminate this
+    % possibility().
     %
     %
     % NAME-VALUE ARGUMENTS
@@ -168,16 +166,16 @@ classdef spinfit
       %
       assert(A.dataGapMinNs > 0)
 
-      % ========================================================================
-      % Convert from "spin phase radians" to fake TT2000/duration so that values
-      % can be fed to bepic.spinfit.fit_TAFW_MMS()
-      % ========================================================================
-      % Fake nanoseconds per radian when converting to/from fake TT2000. The
-      % exact value should not matter.
+      % =================================================================
+      % Convert from "spin phase radians" to fake TT2000/duration so that
+      % values can be fed to bepic.spinfit.fit_TAFW_MMS()
+      % =================================================================
+      % Fake nanoseconds per radian when converting to/from fake TT2000.
+      % The exact value should not matter.
       FAKE_NS_PER_RAD = 4e9 / (2*pi);
-      % IMPLEMENTATION NOTE: CPS values will not increment correctly for time
-      % jumps (error n*2*pi) but that does not matter, since the processing will
-      % be split by data gaps anyway.
+      % IMPLEMENTATION NOTE: CPS values will not increment correctly for
+      % time jumps (error n*2*pi) but that does not matter, since the
+      % processing will be split by data gaps anyway.
       cspRadAr = bepic.spinfit.utils.spin_phase_to_CMP(...
         A.spinPhaseRadAr);
       fakeTt2000Ar                 = int64(cspRadAr                * FAKE_NS_PER_RAD);
@@ -258,6 +256,14 @@ classdef spinfit
     %     for this function.
     % (3) better naming of input arguments and return values.
     % (4) hardcoding certain argument(s).
+    %
+    %
+    % NOTE
+    % ====
+    % The implementation uses mms_spinfit_m() for the core processing. In
+    % the long term, this function should probably be replaced by a copy
+    % dedicated to BepiColombo processing (in case it needs to be modified)
+    % if it is used long term.
     %
     %
     % NAME-VALUE ARGUMENTS
@@ -402,11 +408,11 @@ classdef spinfit
         % --------------------------------------------------------------
         % Modify A.fitWindowCenterRefTt2000 to work with mms_spinfit_m()
         % --------------------------------------------------------------
-        % IMPLEMENTATION NOTE: mms_spinfit_m() requires "t0" to be within or
-        % close to the submitted timestamps but is unclear what this exactly
-        % means. If it is not, it might (a) crash, or (b) add (not NaN) or omit
-        % return values for timestamps for fit windows which there are no
-        % samples.
+        % IMPLEMENTATION NOTE: mms_spinfit_m() requires "t0" to be within
+        % or close to the submitted timestamps but is unclear what this
+        % exactly means. If it is not, it might (a) crash, or (b) add (not
+        % NaN) or omit return values for timestamps for fit windows which
+        % there are no samples.
         m = idivide(...
           A.tt2000Ar(1) - A.fitWindowCenterRefTt2000, ...
           A.fitWindowPeriodNs, "FLOOR");
@@ -450,9 +456,9 @@ classdef spinfit
       % ==========================================
       % IMPLEMENTATION NOTE: It is unclear exactly which output timestamps
       % mms_spinfit_m() will return. It can vary depending on the choice of
-      % "t0", and timestamps can be both added and removed. This code tries to
-      % handle this problem by removing timestamps outside of input data and
-      % hopefully make the function more "deterministic".
+      % "t0", and timestamps can be both added and removed. This code tries
+      % to handle this problem by removing timestamps outside of input data
+      % and hopefully make the function more "deterministic".
       if nOut >= 1
         bKeep = (A.tt2000Ar(1) <= timeFit) & (timeFit <= A.tt2000Ar(end));
       else
