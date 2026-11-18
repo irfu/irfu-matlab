@@ -37,9 +37,23 @@ classdef spinfit
   %     """"
   %     /Yasumasa Kasaba, e-mail 2026-06-16, 23:16
   %
-  % PROPOSAL: Optional key-value argument in "official functions" specifies
-  %           whether debugging data should be returned in additional return
-  %           values (default=false).
+  % PROBLEM: How return extra debugging information, which JK/GS does not see?
+  %   PROPOSAL: Have (1) function with interface for JK/GS to use which wraps
+  %     (2) the function actually used. (2) can then have extra functionality
+  %     for debugging etc.
+  %     TODO-DEC: Naming convention to distinguish between functions?
+  %       PROPOSAL: Non-public function has suffix.
+  %         implementation, debug, main
+  %       PROPOSAL: Public function has suffix.
+  %         interface, public, GS, GSP=GS Processing
+  %       PROPOSAL: Public funcion is in specific module/class.
+  %   PROBLEM: Might do extra debugging processing in the implementation
+  %            functions.
+  %     CON: Premature optimization.
+  %
+  %   PROPOSAL: Optional key-value argument in "official functions" specifies
+  %             whether debugging data should be returned in additional return
+  %             values (default=false).
 
 
 
@@ -491,7 +505,7 @@ classdef spinfit
 
 
 
-    % Given plasma potential samples for MEF1 and MEF2 (from e.g. an L1pre
+    % Given plasma potential samples for MEF1 and MEF2 (from e.g. an L1p
     % "potential" CDF), derive averages for fit windows (time windows).
     %
     % NOTE: Derives fits for both MEFISTO probes in one function call since
@@ -530,7 +544,7 @@ classdef spinfit
     %       FitTable.A
     %         Contains the fit coefficients. See implementation for the exact
     %         meaning. Meaning of indices:
-    %         FitTable.A(i_timestamp, i_coefficient).
+    %         FitTable.A(iTimestamp, iProbe, iCoefficient).
     %
     function FitTable = fit_pot_SAFW(A)
       arguments
@@ -566,24 +580,26 @@ classdef spinfit
       % Fit according to "Japan" wiki 2026-10-27.
       % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
       % Y = A[0]*sin(X + A[1]) + A[2]
-      f   = @(C, x) (C(1)*sin(x + C(2)) + C(3));
+      fh  = @(C, x) (C(1)*sin(x + C(2)) + C(3));
       C_0 = [0, 0, 0];
 
+      % MEFISTO probe 1
       [FitTable1, ~] = bepic.spinfit.fit_array( ...
         tt2000Ar           = A.tt2000Ar, ...
         samplesAr          = A.samplesAr(:, 1), ...
         spinPhaseRadAr     = A.spinPhaseRadAr, ...
         FtwnTable          = FtwnTable, ...
-        fittingFunction    = f, ...
+        fittingFunction    = fh, ...
         fittingStartValue  = C_0, ...
         nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
 
+      % MEFISTO probe 2
       [FitTable2, ~] = bepic.spinfit.fit_array( ...
         tt2000Ar           = A.tt2000Ar, ...
         samplesAr          = A.samplesAr(:, 2), ...
         spinPhaseRadAr     = A.spinPhaseRadAr, ...
         FtwnTable          = FtwnTable, ...
-        fittingFunction    = f, ...
+        fittingFunction    = fh, ...
         fittingStartValue  = C_0, ...
         nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
 
@@ -596,7 +612,7 @@ classdef spinfit
 
 
 
-    % Given E field samples (from e.g. an L1pre "E field" CDF), derive spin fit
+    % Given E field samples (from e.g. an L1p "E field" CDF), derive spin fit
     % for fit windows (time windows) and return the coefficients of the fits.
     %
     %
@@ -692,7 +708,7 @@ classdef spinfit
         % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
         % Y = A[0] * cos(X - A[1]) + A[2] * sin(2*X) + A[3] * cos(2*X) + A[4] * X + A[5]
         % NOTE: Resembles MMS spinfit, but is not the same!!!
-        f = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4) * cos(2*x) + C(5) * x + C(6));
+        fh = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4) * cos(2*x) + C(5) * x + C(6));
         C_0 = [0, 0, 0, 0, 0, 0];    % Start value for iterations.
       end
 
@@ -701,7 +717,7 @@ classdef spinfit
         samplesAr          = A.samplesAr, ...
         spinPhaseRadAr     = A.spinPhaseRadAr, ...
         FtwnTable          = FtwnTable, ...
-        fittingFunction    = f, ...
+        fittingFunction    = fh, ...
         fittingStartValue  = C_0, ...
         nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
 
@@ -765,7 +781,6 @@ classdef spinfit
       assert(isa(     A.fittingFunction, "function_handle"))
       assert(isrow(   A.fittingStartValue)  & isfloat(  A.fittingStartValue))
       assert(isscalar(A.nMinSamplesPerFtwn) & isnumeric(A.nMinSamplesPerFtwn))
-      %
       assert(A.nMinSamplesPerFtwn >= 0)
 
       % %%%%%%%%%
@@ -775,8 +790,8 @@ classdef spinfit
       nFtwn  = height(A.FtwnTable);
 
       FitTable = table();
-      FitTable.coefficients = NaN(nFtwn, nCoeff);     % Pre-allocate
-      fitAr          = NaN(size(A.samplesAr));
+      FitTable.coefficients = NaN(nFtwn, nCoeff);    % Pre-allocate
+      fitAr                 = NaN(size(A.samplesAr));
 
       iFtwnArCa = bepic.spinfit.ftwn.FTWN_time_to_indices(...
         A.tt2000Ar, ...

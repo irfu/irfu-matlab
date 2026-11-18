@@ -20,7 +20,7 @@ classdef ftwn
   %   PRO: Could be more flexible w.r.t. to handling not yet known edge cases.
   %     Ex: Spin phase. Unknown.
   %     Ex: Ignore spin phase if behaving strangely?
-  %       PROPOSAL: Detect and then treat as if spin hase unknown.
+  %       PROPOSAL: Detect and then treat as if spin phase unknown.
   %     CON/PROBLEM: Can not extrapolate CSP to timestamps without CSP arrays.
   %     CON: Harder to determine overlapping fit windows?
   %     CON: Still makes sense to split processing into simple intervals where
@@ -28,6 +28,28 @@ classdef ftwn
   %     NOTE: Any such hacks will (likely) be different from any counterparts
   %           for WPT. ==> Different handling of edge cases, timestamps, data
   %           gaps.
+  %
+  % PROPOSAL: Generate SAFWs by iterating over time. Not vectorized.
+  % PROPOSAL: Generate SAFWs in a way which is more analogous to the
+  %           Japanese way/find_spin_zero_time.
+  %   PRO: Easier to get agreement with Japan code, initially, and with
+  %        future updates/changes.
+  %     Ex: Timestamps, removal of FTWNs based on spin phase, number of
+  %         samples (in FTWN), (input) timestamps(?!), but not sample values
+  %         themselves.
+  %   PROPOSAL: Only identify being+end indices (not timestamps). Identity
+  %             center timestamp with fit.
+  %     NOTE: Currently, bepic.spinfit.fit_array() uses
+  %           bepic.spinfit.ftwn.FTWN_time_to_indices() to convert
+  %           FTWN timestamps-->indices which all that is truly used anyway.
+  %     PRO: Can abolish bepic.spinfit.FTWN_time_to_indices().
+  %     PRO: Can still generalize to overlapping FTWNs.
+  %     CON: Can not use fit to return (true) non-center timestamp instead.
+  %       NOTE: Arguably, using a fit to return a center timestamp does not
+  %             truly work (if one is rigorous).
+  %       Ex: FTWN boundary timestamps can be inconsistent. The end timestamps
+  %           of one FTWN is not automatically the begin timestamp of
+  %           the FTWN after.
 
 
 
@@ -129,7 +151,7 @@ classdef ftwn
       assert(iscolumn(    A.spinPhaseRadAr)   & isa(A.spinPhaseRadAr, "double"))
       assert(all(isfinite(A.spinPhaseRadAr)))
       % IMPLEMENTATION NOTE: Requiring spin phase on interval 0 to 2*pi. This
-      % (1) is (analogous to) the spin phase values in L1pre CDF files which are
+      % (1) is (analogous to) the spin phase values in L1p CDF files which are
       % also bounded (0 to 360 deg), and (2) is an indirect check on the units
       % used, and (3) is required by the algorithm.
       assert(all((0 <= A.spinPhaseRadAr) & (A.spinPhaseRadAr <= 2*pi)))
@@ -177,11 +199,11 @@ classdef ftwn
       % (1) are recognized by A.dataGapMinNs, and
       % (2) which are smaller than one revolution, and
       % (3) fit inside the time boundaries of one fit window,
-      % lead to bepic.spinfit.ftwn.get_SAFWs_when_no_data_gaps() identifying the same fit
-      % window twice. They therefore need to be removed.
+      % lead to bepic.spinfit.ftwn.get_SAFWs_when_no_data_gaps() identifying
+      % the same fit window twice. They therefore need to be removed.
       % --
       % PROBLEM: Rounding errors could lead to de facto duplicated fit windows
-      % still being kept?
+      %          still being kept?
       FtwnTable = unique(FtwnTable, "STABLE");
     end
 
@@ -197,9 +219,9 @@ classdef ftwn
     % ============
     % FtwnTable
     %       NOTE: There will be zero fit windows if there are <= 1 samples,
-    %       since the algorithm can then not extrapolate spin phase (CMP) values
-    %       and can hence not find the beginning and end of the fit window even
-    %       in principle.
+    %       since the algorithm can then not extrapolate spin phase (CMP)
+    %       values and can hence not find the beginning and end of the fit
+    %       window even in principle.
     %
     function FtwnTable = get_SAFWs_when_no_data_gaps(A)
       arguments
@@ -229,6 +251,7 @@ classdef ftwn
         ftwnEndTt2000Ar    = int64.empty(0, 1);
         ftwnCenterTt2000Ar = int64.empty(0, 1);
       else
+        % CASE: There are at least TWO samples.
         ftwnBeginCspRadAr = bepic.spinfit.utils.get_incrementing_array(...
           cspRadAr(1), ...
           cspRadAr(end), ...
@@ -242,6 +265,8 @@ classdef ftwn
         ftwnEndTt2000Ar    = int64(interp1(cspRadAr, double(A.tt2000Ar), ftwnEndCspRadAr,    "LINEAR", "extrap"));
         ftwnCenterTt2000Ar = int64(interp1(cspRadAr, double(A.tt2000Ar), ftwnCenterCspRadAr, "LINEAR", "extrap"));
       end
+
+
 
       % ----------------------
       % Construct return value
