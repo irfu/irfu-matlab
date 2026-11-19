@@ -43,7 +43,7 @@ classdef spinfit
   %     for debugging etc.
   %     TODO-DEC: Naming convention to distinguish between functions?
   %       PROPOSAL: Non-public function has suffix.
-  %         implementation, debug, main
+  %         impl/implementation, debug, main -- IMPLEMENTED
   %       PROPOSAL: Public function has suffix.
   %         interface, public, GS, GSP=GS Processing
   %       PROPOSAL: Public funcion is in specific module/class.
@@ -653,7 +653,40 @@ classdef spinfit
     %         FitTable.A(i_timestamp, i_coefficient, i_mefisto_probe).
     %
     function [FitTable] = fit_Efield_SAFW(A)
-    %function [FitTable, fitAr] = fit_Efield_SAFW(A)    % DEBUG
+      arguments
+        A.tt2000Ar
+        A.spinPhaseRadAr
+        A.samplesAr
+        A.fitWindowPeriodRad
+        A.fitWindowLengthRad
+        A.fitWindowCenterRefRad
+        A.dataGapMinNs
+        A.nMinSamplesPerFitWindow
+      end
+
+      [FitTable, ~] = bepic.spinfit.fit_Efield_SAFW_impl( ...
+        tt2000Ar                = A.tt2000Ar, ...
+        spinPhaseRadAr          = A.spinPhaseRadAr, ...
+        samplesAr               = A.samplesAr, ...
+        fitWindowPeriodRad      = A.fitWindowPeriodRad, ...
+        fitWindowLengthRad      = A.fitWindowLengthRad, ...
+        fitWindowCenterRefRad   = A.fitWindowCenterRefRad, ...
+        dataGapMinNs            = A.dataGapMinNs, ...
+        nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
+
+      % Only copy specific columns (omit debugging information).
+      FitTable = FitTable(:, ["A", "fitWindowCenterTt2000"]);
+    end
+
+
+
+    % More powerful implementation of fit_Efield_SAFW(). Is a separate
+    % function for debugging reasons. See fit_Efield_SAFW().
+    %
+    % NOTE: THE MEFISTO GS s/w SHOULD NOT USE THIS FUNCTION SINCE
+    %       THE INTERFACE MAY VARY.
+    %
+    function [FitTable, fitAr] = fit_Efield_SAFW_impl(A)
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
@@ -724,8 +757,8 @@ classdef spinfit
       FitTable = renamevars(FitTable, "coefficients", "A");
       FitTable.fitWindowCenterTt2000 = FtwnTable.centerTt2000;
 
-      %FitTable.fitWindowBeginTt2000  = FtwnTable.beginTt2000;   % DEBUG
-      %FitTable.fitWindowEndTt2000    = FtwnTable.endTt2000;     % DEBUG
+      FitTable.fitWindowBeginTt2000  = FtwnTable.beginTt2000;
+      FitTable.fitWindowEndTt2000    = FtwnTable.endTt2000;
     end
 
 
