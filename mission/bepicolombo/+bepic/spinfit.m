@@ -29,6 +29,16 @@ classdef spinfit
   % PROPOSAL: Separate classes for functions (1) based on, and (2) not based on
   %           mms_spinfit_m().
   %
+  % PROPOSAL: Delete unused functions.
+  %   Ex: fit_SAFW_MMS()
+  %   Ex: fit_TAFW_MMS()
+  %   Ex: Functions in bepic.spinfit.ftwn.
+  %   PRO: The code will still exist in the git history.
+  %   CON-PROPOSAL: Comment out.
+  %     PROBLEM: What to do with the test code? It will not work if the tested
+  %              code is commented out.
+  %   CON-PROPOSAL: Archive somehow.
+  %
   % PROBLEM: How handle spin phase if values are unknown during eclipse, or if
   %          spin phase values jump when exiting eclipse?
   %     """"
@@ -681,7 +691,7 @@ classdef spinfit
     % More powerful implementation of fit_Efield_SAFW(). Is a separate
     % function for debugging reasons. See fit_Efield_SAFW().
     %
-    % NOTE: THE MEFISTO GS s/w SHOULD NOT USE THIS FUNCTION SINCE
+    % NOTE: THE MEFISTO GS S/W SHOULD *NOT* USE THIS FUNCTION SINCE
     %       THE INTERFACE MAY VARY.
     %
     function [FitTable, officialFittedSamplesAr] = fit_Efield_SAFW_impl(A)
@@ -692,11 +702,6 @@ classdef spinfit
         A.dataGapMinNs
         A.nMinSamplesPerFtwn
       end
-      % PROPOSAL: for-->parfor (iteration over fit windows).
-      %
-      % Code for manually experimenting with lsqcurvefit():
-      % clear; f=@(A,x) (A(1)+A(2)*x+A(3)*x.^2); xdata=[-10:10]; ydata=[sin(xdata/5)]; [A,resnorm] = lsqcurvefit(f,[0,0,0],xdata,ydata); close all; plot(xdata,ydata,'o'); hold on; x=linspace(-12,12); plot(x,f(A,x))
-
       % ==========
       % ASSERTIONS
       % ==========
@@ -774,19 +779,22 @@ classdef spinfit
         A.fittingStartValue
         A.nMinSamplesPerFtwn
       end
-      % IMPLEMENTATION NOTE: This function should not calculate FtwnTable since
-      % it needs to be shared for potential data (same timestamps for two 1D
-      % arrays of samples).
+      % IMPLEMENTATION NOTE: This function should not calculate FtwnTable
+      % since FtwnTable needs to be shared for potential data (same timestamps
+      % and FTWNs for two 1D arrays of samples).
       % NOTE: FtwnTable as produced by bepic.spinfit.ftwn.get_SAFWs() also
-      %       generates the FTWN centers, which is unnecessary for this
-      %       function.
+      %       generates the FTWN centers, which is unnecessary information for
+      %       this function.
       %
       % PROPOSAL: Use previous fit as start value to speed up+help
       %           convergence?!
       % PROPOSAL: for-->parfor (iteration over fit windows).
-      % PROPOSAL: Better name for "fitAr". Should be disting from fit
+      % PROPOSAL: Better name for "fitAr". Should be distinct from fit
       %           coefficients.
       %   fittedSamplesAr
+      %
+      % Code for manually experimenting with lsqcurvefit():
+      % clear; f=@(A,x) (A(1)+A(2)*x+A(3)*x.^2); xdata=[-10:10]; ydata=[sin(xdata/5)]; [A,resnorm] = lsqcurvefit(f,[0,0,0],xdata,ydata); close all; plot(xdata,ydata,'o'); hold on; x=linspace(-12,12); plot(x,f(A,x))
 
       % ==========
       % ASSERTIONS
@@ -811,7 +819,8 @@ classdef spinfit
       nFtwn  = height(A.FtwnTable);
 
       FitTable = table();
-      FitTable.coefficients = NaN(nFtwn, nCoeff);    % Pre-allocate
+      % Pre-allocate
+      FitTable.coefficients = NaN(nFtwn, nCoeff);
       fitAr                 = NaN(size(A.samplesAr));
 
       %N_MAX_ITERATIONS = 10;

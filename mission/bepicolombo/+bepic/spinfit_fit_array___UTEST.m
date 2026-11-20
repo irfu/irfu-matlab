@@ -99,6 +99,7 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
           nMinSamplesPerFtwn = nMinSamplesPerFtwn);
       end
 
+      % TEST 1
       ActT = test(2);
       ExpT = table();
       ExpT.coefficients = [10, 30];
@@ -107,6 +108,7 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
 
 
 
+      % TEST 2
       ActT = test(3);
       ExpT = table();
       ExpT.coefficients = [NaN, NaN];

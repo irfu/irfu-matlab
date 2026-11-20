@@ -34,7 +34,7 @@ end
 function S = generate_signal_sine_wave()
 SPIN_PERIOD_NS   = 4e9;
 SIGNAL_PERIOD_NS = 4e9;
-SAMPLING_RATE_HZ = 32;    % Highest sampling rate?!
+SAMPLING_RATE_HZ = 32;    % Highest sampling rate for potential data?!
 
 tt2000Ar         = int64([0 : 1/SAMPLING_RATE_HZ : 24*60*60] * 1e9)';    % 24 h
 spinPhaseRadAr   = wrapTo2Pi( double(tt2000Ar)/SPIN_PERIOD_NS * 2*pi );

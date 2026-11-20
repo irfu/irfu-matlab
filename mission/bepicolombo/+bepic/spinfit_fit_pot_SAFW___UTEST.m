@@ -6,6 +6,7 @@
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 classdef spinfit_fit_pot_SAFW___UTEST < matlab.unittest.TestCase
+  % PROPOSAL: One test for testing the fit. Keep it simple: One FTWN etc.
 
 
 
