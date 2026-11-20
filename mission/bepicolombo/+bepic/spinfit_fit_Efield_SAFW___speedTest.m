@@ -1,23 +1,29 @@
 %
-% Speed test code for bepic.spinfit.fit_Efield_SAFW(). To estimate the speed of
-% execution and how it scales.
+% Speed test code for bepic.spinfit.fit_Efield_SAFW(). To estimate the speed
+% of execution and how it scales.
+%
+% CONCLUSIONS
+% ===========
+% 2026-11-20, EJ:
+%   Time consumption is linearly dependent on number of samples.
+%   sarcasm: 24h, 128 Hz ==> Execution takes 102 s
 %
 %
 % Author: Erik P G Johansson, IRF, Uppsala, Sweden
 %
 function spinfit_fit_Efield_SAFW___speedTest
+format compact
 
-if 0
-  get_time_consumption(10*60*60)
-  return
-end
-
+% ===============
+% Run speed tests
+% ===============
 lengthSecAr = logspace(log10(0.1*60*60), log10(24*60*60), 10);
 wallTimeSecAr = [];
 for lengthSec = lengthSecAr
   lengthSec
   wallTimeSecAr(end+1) = get_time_consumption(lengthSec)
 end
+% Log the combined results
 lengthSecAr
 wallTimeSecAr
 wallTimeSecAr ./ lengthSecAr
@@ -42,13 +48,14 @@ S = generate_signal_sine_wave(lengthSec);
 
 tic
 R = bepic.spinfit.fit_Efield_SAFW(...
-  tt2000Ar              = S.tt2000Ar, ...
-  spinPhaseRadAr        = S.spinPhaseRadAr, ...
-  samplesAr             = S.samplesAr, ...
-  fitWindowPeriodRad    = 2*pi*1, ...
-  fitWindowLengthRad    = 2*pi*1, ...
-  fitWindowCenterRefRad = 2*pi*0.5, ...
-  dataGapMinNs          = int64(2e9));
+  tt2000Ar                = S.tt2000Ar, ...
+  spinPhaseRadAr          = S.spinPhaseRadAr, ...
+  samplesAr               = S.samplesAr, ...
+  fitWindowPeriodRad      = 2*pi*1, ...
+  fitWindowLengthRad      = 2*pi*1, ...
+  fitWindowCenterRefRad   = 2*pi*0.5, ...
+  dataGapMinNs            = int64(2e9), ...
+  nMinSamplesPerFitWindow = 1);
 wallTimeSec = toc;
 
 %profile off
