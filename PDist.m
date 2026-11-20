@@ -1261,6 +1261,8 @@ classdef PDist < TSeries
       ancillary_data{end+1} = 'vint_units';
       ancillary_data{end+1} = 'km/s';
 
+      charge = obj.charge;
+
       %% Get angles and velocities for spherical instrument grid, set projection
       %  grid and perform projection
       units = irf_units;
@@ -1324,7 +1326,7 @@ classdef PDist < TSeries
         end
         if correct4scpot
           if isfield(dist.ancillary,'delta_energy_minus') % remove all that satisfies E-Eminus<Vsc
-            ie_below_scpot = find(emat(it(i),:)-dist.ancillary.delta_energy_minus(it(i),:)-scpot_mat(it(i),1)<0,1,'last');
+            ie_below_scpot = find(emat(it(i),:)-dist.ancillary.delta_energy_minus(it(i),:)+sign(charge)*scpot_mat(it(i),1)<0,1,'last');
             if 0 % disp energy channel that is removed, interferes with it = ... display
               disp(sprintf('Spacecraft potential = %g, Energy channel removed [E-Eminus,E,E+Eplus] = [%g,%g,%g]',...
                 scpot_mat(it(i),1),...
@@ -1333,12 +1335,12 @@ classdef PDist < TSeries
                 emat(it(i),ie_below_scpot)+dist.ancillary.delta_energy_plus(it(i),ie_below_scpot))) %#ok<UNRCH>
             end
           else
-            ie_below_scpot = find(abs(emat(it(i),:)-scpot_mat(it(i),:)) == min(abs(emat(it(i),:)-scpot_mat(it(i),:)))); % closest energy channel
+            ie_below_scpot = find(abs(emat(it(i),:)+sign(charge)*scpot_mat(it(i),:)) == min(abs(emat(it(i),:)+sign(charge)*scpot_mat(it(i),:)))); % closest energy channel
           end
           remove_extra_ind = 0; % for margin, remove extra energy channels
           F3d(1:(max(ie_below_scpot) + remove_extra_ind),:,:) = 0;
           %disp(sprintf('%8.1g ',energy))
-          energy = energy-scpot_mat(it(i),:);
+          energy = energy+sign(charge)*scpot_mat(it(i),:);
           %disp(sprintf('%8.1g ',energy))
           energy(energy<0) = 0;
           %disp(sprintf('%8.1g ',energy))
@@ -4931,16 +4933,36 @@ classdef PDist < TSeries
         particles = MP;
       end
     end
-    %     function e = energy(obj)
-    %       % Get energy of object when not knowing its index
-    %       isEnergy = cellfun(@(s) strcmp(s,'energy'),obj.representation);
-    %       iEnergy = find(isEnergy);
-    %       if isempty(iEnergy) % no energy dependence, return
-    %         e = [];
-    %       else
-    %         e = obj.depend{iEnergy};
-    %       end
-    %     end
+    function e = energy(obj,varargin)
+      % Get energy of object when not knowing its index
+      p = inputParser;
+      addParameter(p,'edge','center');
+      parse(p,varargin{:});
+
+      isEnergy = cellfun(@(s) strcmp(s,'energy'),obj.representation);
+      iEnergy = find(isEnergy);
+      if isempty(iEnergy) % no energy dependence, return
+        e = [];
+      else
+        e = obj.depend{iEnergy};
+        switch p.Results.edge
+          case 'center'
+            ...
+          case {'lower','minus'}
+            if isfield(obj.ancillary,'delta_energy_minus')
+              e = e - obj.ancillary.delta_energy_minus;
+            else
+              error('ancillary.delta_energy_lower does not exists, can not return lower energy edge.')
+            end
+          case {'upper','plus'}
+            if isfield(obj.ancillary,'delta_energy_plus')
+              e = e + obj.ancillary.delta_energy_plus;
+            else
+              error('ancillary.delta_energy_upper does not exists, can not return upper energy edge.')
+            end
+        end
+      end
+    end
     function moms = moments(obj,varargin)
       % PRELIMINARY VERSION
       % Currently does not include spacecraft potential and has no
