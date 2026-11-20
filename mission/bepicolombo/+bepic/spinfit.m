@@ -571,7 +571,7 @@ classdef spinfit
       % ASSERTIONS
       % ==========
       nSamples = numel(A.tt2000Ar);
-      assert(isequal(size(A.samplesAr), [nSamples, 2]) & isa(A.samplesAr,             "double"))
+      assert(isequal(size(A.samplesAr), [nSamples, 2]) & isa(A.samplesAr, "double"))
       assert(all(isfinite(A.samplesAr) | isnan(A.samplesAr), "all"))
 
       % =========
@@ -676,11 +676,11 @@ classdef spinfit
       end
 
       [FitTable, ~] = bepic.spinfit.fit_Efield_SAFW_impl( ...
-        tt2000Ar                = A.tt2000Ar, ...
-        spinPhaseRadAr          = A.spinPhaseRadAr, ...
-        samplesAr               = A.samplesAr, ...
-        dataGapMinNs            = A.dataGapMinNs, ...
-        nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
+        tt2000Ar           = A.tt2000Ar, ...
+        spinPhaseRadAr     = A.spinPhaseRadAr, ...
+        samplesAr          = A.samplesAr, ...
+        dataGapMinNs       = A.dataGapMinNs, ...
+        nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
 
       % Only copy specific columns (omit debugging information).
       FitTable = FitTable(:, ["a", "aIrfu",  "fitWindowCenterTt2000"]);
@@ -706,8 +706,8 @@ classdef spinfit
       % ASSERTIONS
       % ==========
       nSamples = numel(A.tt2000Ar);
-      assert(isscalar(A.dataGapMinNs)                  & isa(A.dataGapMinNs,          "int64"))
-      assert(isequal(size(A.samplesAr), [nSamples, 1]) & isa(A.samplesAr,             "double"))
+      assert(isscalar(A.dataGapMinNs)                  & isa(A.dataGapMinNs, "int64"))
+      assert(isequal(size(A.samplesAr), [nSamples, 1]) & isa(A.samplesAr,    "double"))
 
       % %%%%%%%%%
       % ALGORITHM
@@ -840,7 +840,7 @@ classdef spinfit
 
         nFtwnSamples2       = numel(ftwnSamplesAr2);
 
-        if max(A.nMinSamplesPerFtwn, nCoeff) <= nFtwnSamples2
+        if nFtwnSamples2 >= max(A.nMinSamplesPerFtwn, nCoeff)
           % =============
           % Calculate fit
           % =============
@@ -855,7 +855,7 @@ classdef spinfit
         ftwnFitAr = A.fittingFunction(ftwnCoefficientAr, ftwnSpinPhaseRadAr1);
 
         FitTable.coefficients(i, :) = ftwnCoefficientAr;
-        fitAr         (jAr)  = ftwnFitAr;
+        fitAr                (jAr)  = ftwnFitAr;
 
         % Interpretation of "Averaged residual of sine fit of Ev".
         % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
@@ -916,7 +916,7 @@ classdef spinfit
       % Y = A[0] * cos(X - A[1]) + A[2] * sin(2*X) + A[3] * cos(2*X) + A[4] * X + A[5]
       % NOTE: Resembles MMS spinfit, but is not the same!!!
 
-      OFFICIAL_EFIELD_FIT_FH = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4) * cos(2*x) + C(5) * x + C(6));
+      OFFICIAL_EFIELD_FIT_FH = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4)*cos(2*x) + C(5) * x + C(6));
       OFFICIAL_EFIELD_FIT_C0 = [0, 0, 0, 0, 0, 0];    % Start value for iterations.
       N_COEFF_OFFICIAL_EFIELD_FIT = numel(bepic.spinfit.OFFICIAL_EFIELD_FIT_C0)
 
