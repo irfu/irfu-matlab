@@ -1331,7 +1331,7 @@ classdef TSeries
       end
 
       newData = [obj.data(:,1,1) obj.data(:,2,2) obj.data(:,3,3)];
-      
+
       obj.data_ = newData; Ts = obj;
       Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       if ~isempty(obj.name), Ts.name = sprintf('diag(%s)',obj.name); end
@@ -1633,7 +1633,7 @@ classdef TSeries
       % Optional fields
       specrec.p_label = '';
       specrec.f_label = '';
-      
+
       % Optional fields: check TSeries.userData if any specrec structure is specified
       if isfield(obj.userData,'specrec')
         varstrs = fields(obj.userData.specrec);
@@ -1641,7 +1641,7 @@ classdef TSeries
           specrec.(varstrs{ivar}) = obj.userData.specrec.(varstrs{ivar});
         end
       end
-      
+
       % Passed input overrides the userData.specrec
       for ivar = 1:numel(p.Parameters)
         if ~isempty(p.Results.(p.Parameters{ivar}))

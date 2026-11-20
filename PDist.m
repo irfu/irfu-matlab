@@ -4582,7 +4582,7 @@ classdef PDist < TSeries
       v_gen = 'v3';
       passCounts = 0;
       outputMParts = 0;
-      
+
 
       % Check input
       nargs = numel(varargin);
