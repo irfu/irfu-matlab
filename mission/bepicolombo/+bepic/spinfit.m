@@ -551,9 +551,6 @@ classdef spinfit
         A.tt2000Ar
         A.spinPhaseRadAr
         A.samplesAr
-        A.fitWindowPeriodRad
-        A.fitWindowLengthRad
-        A.fitWindowCenterRefRad
         A.dataGapMinNs
         A.nMinSamplesPerFitWindow
       end
@@ -564,18 +561,14 @@ classdef spinfit
       nSamples = numel(A.tt2000Ar);
       assert(isequal(size(A.samplesAr), [nSamples, 2]) & isa(A.samplesAr,             "double"))
       assert(all(isfinite(A.samplesAr) | isnan(A.samplesAr), "all"))
-      assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
 
       % =========
       % ALGORITHM
       % =========
-      FtwnTable = bepic.spinfit.ftwn.get_SAFWs( ...
-        tt2000Ar        = A.tt2000Ar, ...
-        spinPhaseRadAr  = A.spinPhaseRadAr, ...
-        ftwnPeriodRad   = A.fitWindowPeriodRad, ...
-        ftwnLengthRad   = A.fitWindowLengthRad, ...
-        ftwnBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
-        dataGapMinNs    = A.dataGapMinNs);
+      FtwnTable = bepic.spinfit.ftwn.get_SAFWs_limited( ...
+        tt2000Ar       = A.tt2000Ar, ...
+        spinPhaseRadAr = A.spinPhaseRadAr, ...
+        dataGapMinNs   = A.dataGapMinNs);
 
       % Fit according to "Japan" wiki 2026-10-27.
       % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
@@ -657,9 +650,6 @@ classdef spinfit
         A.tt2000Ar
         A.spinPhaseRadAr
         A.samplesAr
-        A.fitWindowPeriodRad
-        A.fitWindowLengthRad
-        A.fitWindowCenterRefRad
         A.dataGapMinNs
         A.nMinSamplesPerFitWindow
       end
@@ -668,9 +658,6 @@ classdef spinfit
         tt2000Ar                = A.tt2000Ar, ...
         spinPhaseRadAr          = A.spinPhaseRadAr, ...
         samplesAr               = A.samplesAr, ...
-        fitWindowPeriodRad      = A.fitWindowPeriodRad, ...
-        fitWindowLengthRad      = A.fitWindowLengthRad, ...
-        fitWindowCenterRefRad   = A.fitWindowCenterRefRad, ...
         dataGapMinNs            = A.dataGapMinNs, ...
         nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
 
@@ -691,9 +678,6 @@ classdef spinfit
         A.tt2000Ar
         A.spinPhaseRadAr
         A.samplesAr
-        A.fitWindowPeriodRad
-        A.fitWindowLengthRad
-        A.fitWindowCenterRefRad
         A.dataGapMinNs
         A.nMinSamplesPerFitWindow
       end
@@ -708,18 +692,14 @@ classdef spinfit
       nSamples = numel(A.tt2000Ar);
       assert(isscalar(A.dataGapMinNs)                  & isa(A.dataGapMinNs,          "int64"))
       assert(isequal(size(A.samplesAr), [nSamples, 1]) & isa(A.samplesAr,             "double"))
-      assert(isscalar(A.fitWindowCenterRefRad)         & isa(A.fitWindowCenterRefRad, "double"))
 
       % %%%%%%%%%
       % ALGORITHM
       % %%%%%%%%%
-      FtwnTable = bepic.spinfit.ftwn.get_SAFWs( ...
-        tt2000Ar        = A.tt2000Ar, ...
-        spinPhaseRadAr  = A.spinPhaseRadAr, ...
-        ftwnPeriodRad   = A.fitWindowPeriodRad, ...
-        ftwnLengthRad   = A.fitWindowLengthRad, ...
-        ftwnBeginRefRad = A.fitWindowCenterRefRad - A.fitWindowLengthRad/2, ...
-        dataGapMinNs    = A.dataGapMinNs);
+      FtwnTable = bepic.spinfit.ftwn.get_SAFWs_limited( ...
+        tt2000Ar       = A.tt2000Ar, ...
+        spinPhaseRadAr = A.spinPhaseRadAr, ...
+        dataGapMinNs   = A.dataGapMinNs);
 
       % =======================================
       % Function to fit the spinning E field to
@@ -757,8 +737,8 @@ classdef spinfit
       FitTable = renamevars(FitTable, "coefficients", "A");
       FitTable.fitWindowCenterTt2000 = FtwnTable.centerTt2000;
 
-      FitTable.fitWindowBeginTt2000  = FtwnTable.beginTt2000;
-      FitTable.fitWindowEndTt2000    = FtwnTable.endTt2000;
+      FitTable.iBegin  = FtwnTable.iBegin;
+      FitTable.iEnd    = FtwnTable.iEnd;
     end
 
 
@@ -815,6 +795,10 @@ classdef spinfit
       assert(isrow(   A.fittingStartValue)  & isfloat(  A.fittingStartValue))
       assert(isscalar(A.nMinSamplesPerFtwn) & isnumeric(A.nMinSamplesPerFtwn))
       assert(A.nMinSamplesPerFtwn >= 0)
+      assert(isempty(setdiff(["iBegin", "iEnd"], ...
+        A.FtwnTable.Properties.VariableNames)))
+
+
 
       % %%%%%%%%%
       % ALGORITHM
@@ -826,17 +810,12 @@ classdef spinfit
       FitTable.coefficients = NaN(nFtwn, nCoeff);    % Pre-allocate
       fitAr                 = NaN(size(A.samplesAr));
 
-      iFtwnArCa = bepic.spinfit.ftwn.FTWN_time_to_indices(...
-        A.tt2000Ar, ...
-        A.FtwnTable.beginTt2000, ...
-        A.FtwnTable.endTt2000);
-
       %N_MAX_ITERATIONS = 10;
       %OPTS = optimoptions("lsqcurvefit", "Display", "off", "MaxIterations", N_MAX_ITERATIONS);
       OPTS = optimoptions("lsqcurvefit", "Display", "off");
 
       for i = 1:nFtwn
-        jAr = iFtwnArCa{i};
+        jAr = A.FtwnTable.iBegin(i) : A.FtwnTable.iEnd(i);
 
         ftwnSpinPhaseRadAr1 = A.spinPhaseRadAr(jAr);
         ftwnSamplesAr1      = A.samplesAr     (jAr);

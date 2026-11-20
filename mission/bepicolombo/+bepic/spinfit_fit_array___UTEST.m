@@ -34,10 +34,10 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_zero_fit_windows_zero_samples(T, N_MIN_SAMPLES_PER_FTWN)
+    function test_0xFTWN_0xSamples(T, N_MIN_SAMPLES_PER_FTWN)
       FtwnTable = table();
-      FtwnTable.beginTt2000 = int64.empty(0, 1);
-      FtwnTable.endTt2000   = int64.empty(0, 1);
+      FtwnTable.iBegin     = double.empty(0, 1);
+      FtwnTable.iEnd       = double.empty(0, 1);
 
       ActT = bepic.spinfit.fit_array( ...
         tt2000Ar           = int64.empty(0, 1), ...
@@ -56,34 +56,12 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_fit_window_zero_samples(T, N_MIN_SAMPLES_PER_FTWN)
-      FtwnTable = table();
-      FtwnTable.beginTt2000 = int64(10);
-      FtwnTable.endTt2000   = int64(20);
-
-      ActT = bepic.spinfit.fit_array( ...
-        tt2000Ar           = int64.empty( 0, 1), ...
-        spinPhaseRadAr     = double.empty(0, 1), ...
-        samplesAr          = double.empty(0, 1), ...
-        FtwnTable          = FtwnTable, ...
-        fittingFunction    = @(C, x) (C(1)*x + C(2)), ...
-        fittingStartValue  = [0, 0], ...
-        nMinSamplesPerFtwn = N_MIN_SAMPLES_PER_FTWN);
-
-      ExpT = table();
-      ExpT.coefficients = [NaN, NaN];
-
-      T.verifyEqual(ActT, ExpT)
-    end
-
-
-
     % More than zero samples, but they are too few.
-    function test_one_fit_window_too_few_samples(T, N_MIN_SAMPLES_PER_FTWN)
+    function test_1xFTWN_too_few_samples(T, N_MIN_SAMPLES_PER_FTWN)
       FtwnTable = table();
-      FtwnTable.beginTt2000 = int64(14);
-      FtwnTable.endTt2000   = int64(16);
-      % ==> One sample in one fit window.
+      FtwnTable.iBegin = 3;
+      FtwnTable.iEnd   = 3;
+      % ==> One sample in one FTWN.
 
       ActT = bepic.spinfit.fit_array( ...
         tt2000Ar           = int64([5 10 15 20 25])', ...
@@ -104,12 +82,12 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
 
     % Some samples are NaN, but the remaining ones are enough.
     % Test whether nMinSamplesPerFtwn makes a difference.
-    function test_one_fit_window_NaN_samples(T)
+    function test_1xFTWN_NaN_samples(T)
 
       function ActT = test(nMinSamplesPerFtwn)
         FtwnTable = table();
-        FtwnTable.beginTt2000 = int64(5);
-        FtwnTable.endTt2000   = int64(25);
+        FtwnTable.iBegin = 1;
+        FtwnTable.iEnd   = 4;
 
         ActT = bepic.spinfit.fit_array( ...
           tt2000Ar           = int64([5 10 15 20 25])', ...
@@ -138,10 +116,10 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_one_fit_window_enough_samples(T)
+    function test_1xFTWN_enough_samples(T)
       FtwnTable = table();
-      FtwnTable.beginTt2000 = int64(10);
-      FtwnTable.endTt2000   = int64(20);
+      FtwnTable.iBegin = 2;
+      FtwnTable.iEnd   = 3;
 
       ActT = bepic.spinfit.fit_array( ...
         tt2000Ar           = int64([5 10 15 20 25])', ...
@@ -160,13 +138,13 @@ classdef spinfit_fit_array___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_two_fit_windows_enough_samples(T)
+    function test_2xFTWN_enough_samples(T)
       FtwnTable = table();
-      FtwnTable.beginTt2000 = int64([5  15]');
-      FtwnTable.endTt2000   = int64([15 25]');
+      FtwnTable.iBegin = [1; 3];
+      FtwnTable.iEnd   = [2; 4];
 
       ActT = bepic.spinfit.fit_array( ...
-        tt2000Ar                = int64([5 10 15 20 25])', ...
+        tt2000Ar           = int64([5 10 15 20 25])', ...
         spinPhaseRadAr     = [0.1 0.2 0.3 0.4 0.5]', ...
         samplesAr          = [ 31  32  53  54  75]', ...
         FtwnTable          = FtwnTable, ...
