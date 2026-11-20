@@ -283,6 +283,154 @@ classdef ftwn
 
 
 
+    % Get indices to the begin and end of FTWNs, assuming that
+    % (1) spin phase is always 0 to 2pi radians,
+    % (2) FTWNs are defined as spanning from 0 to 2pi radians (and being 2pi
+    %     long).
+    % (3) FTWN center timestamps are obtained using a fit.
+    %
+    % The algorithm is deliberately similar to the Japanese WPT function
+    % find_spin_zero_time() (see Shinbori's e-mail 2026-11-02) so
+    %
+    %
+    % DESIGN NOTES
+    % ============
+    % The design is deliberately similar to Atsuki Shinbori's
+    % find_spin_zero_time.m, which should be a translation from IDL(?) to
+    % MATLAB of his WPT code. See Shinbori's e-mail 2026-11-02. The advantages
+    % are that it can then return similar results, and be updated to return
+    % even more similar results if necessary. For this reason, it can not be
+    % configured to use arbitrary FTWNs (w.r.t. length, location, overlap) or
+    % generate arbitrary FTWN output timestamps (has to be center).
+    % It is however not identical, and does not have all the same features.
+    %
+    % IMPLEMENTATION NOTE: This is not implemented as a separate argument
+    % (~nMinSamplesPerFtwn) since such a feature is better implemented
+    % elsewhere (when doing fits; also better for testing).
+    %
+    % IMPLEMENTATION NOTE: The code deliberately does not implement features
+    % which are better implemented in other locations, e.g. min number of
+    % samples per FTWN (which also is unaware of NaN samples).
+    %
+    % NOTE: The code can (probably) be generalized to support arbitrary
+    % position+length FTWNs, overlapping FTWNs, and arbitrary position output
+    % timestamps by using CMPs.
+    function FtwnTable = get_SAFWs_limited(A)
+      %{
+      PROPOSAL: Better name wrt. specifying that it is not configurable wrt.
+                FTWN length+positions, output timestamp position.
+
+      PROPOSAL: Exclude FTWNs adjacent to data gaps (similar to Shinbori's
+                code).
+        PRO: Can not be done outside of this function.
+
+      PROPOSAL: Implement using CMP.
+        NOTE: The (current) CMP derivation assumes that all decrements imply
+        adding one rev. to CMP. Therefore, the (potential) implementation of
+        permitting small decrements affects also the CMP derivation code.
+      %}
+      arguments
+        A.tt2000Ar
+        A.spinPhaseRadAr
+        A.dataGapMinNs
+      end
+
+      assert(iscolumn(A.tt2000Ar)        & isa(     A.tt2000Ar,       "int64"))
+      assert(issorted(A.tt2000Ar, "STRICTASCEND"))
+      assert(iscolumn(A.spinPhaseRadAr)  & isa(     A.spinPhaseRadAr, "double"))
+      assert(all((0 <= A.spinPhaseRadAr) & (A.spinPhaseRadAr <= 2*pi)))
+      assert(isscalar(A.dataGapMinNs)    & isa(A.dataGapMinNs,        "int64"))
+      assert(         A.dataGapMinNs > 0)
+
+
+
+      % Normalize 2*pi to 0
+      % -------------------
+      % IMPLEMENTATION NOTE: Assertion permits both spin phase = 0 and 2*pi,
+      % which represent the same information, but influence the algorithm.
+      % This normalization
+      % (1) permits L1p data with spin phase=360 deg (which might happen; not
+      %     sure)
+      % (2) simplifies(?) automated tests, since wrapTo2Pi(2*pi)==2*pi (not
+      %     zero). The alternative is to use mod(spinPhaseRad, 2*pi) in tests.
+      % A.spinPhaseRadAr(A.spinPhaseRadAr == 2*pi) = 0;
+
+      % Minimum number of required samples per FTWN
+      % -------------------------------------------
+      % NOTE: The linear fit required for obtaining the center timestamp of
+      % the FTWN requires at least two samples.
+      N_SAMPLES_PER_FTWN_MIN = 2;
+
+
+
+      nSamples = numel(A.tt2000Ar);
+
+      % Indices before a data gap.
+      bDataGapAr       = diff(A.tt2000Ar) > A.dataGapMinNs;
+      % Indices before the spin phase wraps (decreases).
+      bSpinPhaseWrapAr = diff(A.spinPhaseRadAr) < 0;
+
+      % Indices before boundary between preliminary FTWNs.
+      % NOTE: "boundary" is defined as either
+      % (1) spin phase wrapping, or
+      % (2) data gap
+      bBoundaryAr      = bDataGapAr | bSpinPhaseWrapAr;
+      iBoundaryAr      = find(bBoundaryAr);
+
+      % Define preliminary FTWNs: "FTWN1"
+      % ---------------------------------
+      % NOTE: Some of these may later be rejected and thus excluded from the
+      %       return value. Hence the separate name.
+      iFtwn1BeginAr = [1; iBoundaryAr+1];
+      iFtwn1EndAr   = [iBoundaryAr; nSamples];
+      nFtwn1        = numel(iFtwn1BeginAr);
+
+      % Preallocate
+      ftwn1CenterTt2000Ar = int64(zeros(nFtwn1, 1));
+      bKeep               = true(nFtwn1, 1);
+
+      % Disable warning.
+      % Used in find_spin_zero_time.m (Japan).
+      bPolyfitWarning = warning('query','MATLAB:polyfit:RepeatedPointsOrRescale').state;
+      warning('off', 'MATLAB:polyfit:RepeatedPointsOrRescale');
+
+      for iFtwn1 = 1:nFtwn1
+        iFtwnAr       = iFtwn1BeginAr(iFtwn1) : iFtwn1EndAr(iFtwn1);
+        nSamplesFtwn1 = length(iFtwnAr);
+
+        % Eliminate FTWNs with too few samples.
+        if nSamplesFtwn1 < N_SAMPLES_PER_FTWN_MIN
+          bKeep(iFtwn1) = false;
+          continue
+        end
+
+        ftwnTt2000Ar       = A.tt2000Ar(      iFtwnAr);
+        ftwnSpinPhaseRadAr = A.spinPhaseRadAr(iFtwnAr);
+
+        % ==============================================
+        % Derive the timestamp of the center of the FTWN
+        % ==============================================
+        % Linear fit on data points (timestamp, spin phase).
+        % NOTE: May trigger warning "MATLAB:polyfit:RepeatedPointsOrRescale"
+        %       though the data seems legit.
+        [cAr, ~] = polyfit(double(ftwnTt2000Ar), ftwnSpinPhaseRadAr, 1);
+        radPerNs  = cAr(1);
+        offsetRad = cAr(2);
+
+        % pi = offsetRad + radPerNs*centerTt2000
+        % ==> centerTt2000 = (pi - offsetRad) / radPerNs
+        ftwn1CenterTt2000Ar(iFtwn1) = int64((pi - offsetRad) / radPerNs);
+      end
+      warning(bPolyfitWarning, 'MATLAB:polyfit:RepeatedPointsOrRescale');
+
+      FtwnTable = table();
+      FtwnTable.iBegin       = iFtwn1BeginAr(      bKeep, 1);
+      FtwnTable.iEnd         = iFtwn1EndAr(        bKeep, 1);
+      FtwnTable.centerTt2000 = ftwn1CenterTt2000Ar(bKeep, 1);
+    end
+
+
+
   end    % methods(Static)
 
 
