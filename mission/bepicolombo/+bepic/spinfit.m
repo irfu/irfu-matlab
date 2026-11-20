@@ -641,9 +641,11 @@ classdef spinfit
     % FitTable
     %       Table with partly self-explanatory column names. One fit per row.
     %       FitTable.A
-    %         Contains the fit coefficients. See implementation for the exact
-    %         meaning. Meaning of indices:
+    %         Contains the coefficients for the official fit.
+    %         See implementation for the exact meaning. Meaning of indices:
     %         FitTable.A(i_timestamp, i_coefficient, i_mefisto_probe).
+    %       FitTable.AIrfu
+    %         Contains the coefficients for the additional IRFU fit.
     %
     function [FitTable] = fit_Efield_SAFW(A)
       arguments
@@ -662,7 +664,7 @@ classdef spinfit
         nMinSamplesPerFitWindow = A.nMinSamplesPerFitWindow);
 
       % Only copy specific columns (omit debugging information).
-      FitTable = FitTable(:, ["A", "fitWindowCenterTt2000"]);
+      FitTable = FitTable(:, ["A", "AIrfu",  "fitWindowCenterTt2000"]);
     end
 
 
@@ -673,13 +675,13 @@ classdef spinfit
     % NOTE: THE MEFISTO GS s/w SHOULD NOT USE THIS FUNCTION SINCE
     %       THE INTERFACE MAY VARY.
     %
-    function [FitTable, fitAr] = fit_Efield_SAFW_impl(A)
+    function [FitTable, officialFittedSamplesAr] = fit_Efield_SAFW_impl(A)
       arguments
         A.tt2000Ar
         A.spinPhaseRadAr
         A.samplesAr
         A.dataGapMinNs
-        A.nMinSamplesPerFitWindow
+        A.nMinSamplesPerFtwn
       end
       % PROPOSAL: for-->parfor (iteration over fit windows).
       %
@@ -701,44 +703,37 @@ classdef spinfit
         spinPhaseRadAr = A.spinPhaseRadAr, ...
         dataGapMinNs   = A.dataGapMinNs);
 
-      % =======================================
-      % Function to fit the spinning E field to
-      % =======================================
-      % if 0
-      %   % According to mms_spinfit_m().
-      %   f = @(C, x) (C(1) + C(2)*cos(x) + C(3)*sin(x) + C(4)*cos(2*x) + C(5)*sin(2*x));
-      %   C_0 = [0, 0, 0, 0, 0];
-      % end
-      % if 0
-      %   % According to "Japan" in "BepiColombo Ground Segment (GS) Development
-      %   % and Planning".
-      %   % NOTE: Originally found on wiki, but is no longer there. Obsolete?!!
-      %   f = @(C, x) (C(1)*cos(x-C(2)) + C(3)*x + C(4));
-      %   C_0 = [0, 0, 0, 0];    % Start value for iterations.
-      % end
-      if 1
-        % Fit according to "Japan" on wiki 2026-10-27.
-        % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
-        % Y = A[0] * cos(X - A[1]) + A[2] * sin(2*X) + A[3] * cos(2*X) + A[4] * X + A[5]
-        % NOTE: Resembles MMS spinfit, but is not the same!!!
-        fh = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4) * cos(2*x) + C(5) * x + C(6));
-        C_0 = [0, 0, 0, 0, 0, 0];    % Start value for iterations.
-      end
-
-      [FitTable, fitAr] = bepic.spinfit.fit_array( ...
+      [OfficialFitTable, officialFittedSamplesAr] = bepic.spinfit.fit_array( ...
         tt2000Ar           = A.tt2000Ar, ...
         samplesAr          = A.samplesAr, ...
         spinPhaseRadAr     = A.spinPhaseRadAr, ...
         FtwnTable          = FtwnTable, ...
-        fittingFunction    = fh, ...
-        fittingStartValue  = C_0, ...
-        nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
+        fittingFunction    = bepic.spinfit.OFFICIAL_EFIELD_FIT_FH, ...
+        fittingStartValue  = bepic.spinfit.OFFICIAL_EFIELD_FIT_C0, ...
+        nMinSamplesPerFtwn = A.nMinSamplesPerFtwn);
 
-      FitTable = renamevars(FitTable, "coefficients", "A");
+      [IrfuFitTable, irfuFittedSamplesAr] = bepic.spinfit.fit_array( ...
+        tt2000Ar           = A.tt2000Ar, ...
+        samplesAr          = A.samplesAr, ...
+        spinPhaseRadAr     = A.spinPhaseRadAr, ...
+        FtwnTable          = FtwnTable, ...
+        fittingFunction    = bepic.spinfit.IRFU_EFIELD_FIT_FH, ...
+        fittingStartValue  = bepic.spinfit.IRFU_EFIELD_FIT_C0, ...
+        nMinSamplesPerFtwn = A.nMinSamplesPerFtwn);
+
+      % IMPLEMENTATION NOTE: If bepic.spinfit.fit_array() removes FTWNs (i.e.
+      % instead of setting output to NaN), then the two fit tables may refer
+      % to different sets of FTWNs, and therefore timestamps, making it
+      % difficult to merge the tables e.g. as ZVs in the same CDF.
+      assert(height(OfficialFitTable) == height(IrfuFitTable))
+      assert(isequal(size(officialFittedSamplesAr), size(irfuFittedSamplesAr)))
+
+      FitTable = renamevars(OfficialFitTable, "coefficients", "A");
       FitTable.fitWindowCenterTt2000 = FtwnTable.centerTt2000;
+      FitTable.iBegin                = FtwnTable.iBegin;
+      FitTable.iEnd                  = FtwnTable.iEnd;
 
-      FitTable.iBegin  = FtwnTable.iBegin;
-      FitTable.iEnd    = FtwnTable.iEnd;
+      FitTable.AIrfu = IrfuFitTable.coefficients;
     end
 
 
@@ -855,6 +850,53 @@ classdef spinfit
 
 
   end    % methods(Static)
+
+
+
+  %###########
+  %###########
+  % CONSTANTS
+  %###########
+  %###########
+  properties(Constant)
+      % ==========================================
+      % Functions to fit the spinning potential to
+      % ==========================================
+
+
+
+
+      % ========================================
+      % Functions to fit the spinning E field to
+      % ========================================
+      % % Fit used by mms_spinfit_m().
+      % f = @(C, x) (C(1) + C(2)*cos(x) + C(3)*sin(x) + C(4)*cos(2*x) + C(5)*sin(2*x));
+      % C_0 = [0, 0, 0, 0, 0];
+      % ----------------------------------------------------------------------
+      % % Fit to use according to "Japan" in "BepiColombo Ground Segment
+      % % (GS) Development and Planning".
+      % % NOTE: Originally found on wiki, but is no longer there. Obsolete?!!
+      % f = @(C, x) (C(1)*cos(x-C(2)) + C(3)*x + C(4));
+      % C_0 = [0, 0, 0, 0];    % Start value for iterations.
+      % ----------------------------------------------------------------------
+      % Fit according to "Japan" on wiki 2026-10-27.
+      % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
+      % Y = A[0] * cos(X - A[1]) + A[2] * sin(2*X) + A[3] * cos(2*X) + A[4] * X + A[5]
+      % NOTE: Resembles MMS spinfit, but is not the same!!!
+
+      OFFICIAL_EFIELD_FIT_FH = @(C, x) (C(1)*cos(x - C(2)) + C(3)*sin(2*x) + C(4) * cos(2*x) + C(5) * x + C(6));
+      OFFICIAL_EFIELD_FIT_C0 = [0, 0, 0, 0, 0, 0];    % Start value for iterations.
+      N_COEFF_OFFICIAL_EFIELD_FIT = numel(bepic.spinfit.OFFICIAL_EFIELD_FIT_C0)
+
+      % Alternative fit which IRF scientists (Anders Eriksson) want made in
+      % parallel.
+      IRFU_EFIELD_FIT_FH = @(C, x) (C(1) + C(2)*cos(x) + C(3)*sin(x) + C(4)*cos(2*x) + C(5)*sin(2*x))
+      IRFU_EFIELD_FIT_C0 = [0, 0, 0, 0, 0]
+      N_COEFF_IRFU_EFIELD_FIT = numel(bepic.spinfit.IRFU_EFIELD_FIT_C0)
+
+
+
+  end
 
 
 
