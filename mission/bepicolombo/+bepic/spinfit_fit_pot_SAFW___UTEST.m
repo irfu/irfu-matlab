@@ -39,8 +39,8 @@ classdef spinfit_fit_pot_SAFW___UTEST < matlab.unittest.TestCase
         nMinSamplesPerFitWindow = T.N_COEFF_OFFICIAL);
 
       T.verifyEqual(actT.fitWindowCenterTt2000, int64.empty( 0, 1))
-      T.verifyEqual(actT.A,                     double.empty(0, T.N_COEFF_OFFICIAL, 2))
-      T.verifyEqual(actT.AIrfu,                 double.empty(0, T.N_COEFF_IRFU,     2))
+      T.verifyEqual(actT.a,                     double.empty(0, T.N_COEFF_OFFICIAL, 2))
+      T.verifyEqual(actT.aIrfu,                 double.empty(0, T.N_COEFF_IRFU,     2))
     end
 
 
@@ -54,8 +54,8 @@ classdef spinfit_fit_pot_SAFW___UTEST < matlab.unittest.TestCase
         nMinSamplesPerFitWindow = T.N_COEFF_OFFICIAL);
 
       T.verifyEqual(actT.fitWindowCenterTt2000, int64.empty( 0, 1))
-      T.verifyEqual(actT.A,                     double.empty(0, T.N_COEFF_OFFICIAL, 2))
-      T.verifyEqual(actT.AIrfu,                 double.empty(0, T.N_COEFF_IRFU,     2))
+      T.verifyEqual(actT.a,                     double.empty(0, T.N_COEFF_OFFICIAL, 2))
+      T.verifyEqual(actT.aIrfu,                 double.empty(0, T.N_COEFF_IRFU,     2))
     end
 
 
