@@ -892,8 +892,8 @@ classdef spinfit
 
       % Alternative fit which IRF scientists (Anders Eriksson) want made in
       % parallel.
-      IRFU_POT_FIT_FH = @(C, x) (C(1)*sin(x) + C(2)*cos(x) + C(3)*sin(2*x) + C(4)*cos(2*x)) + C(5);
-      IRFU_POT_FIT_C0 = [0, 0, 0, 0, 5];
+      IRFU_POT_FIT_FH = @(C, x) (C(1)*sin(x) + C(2)*cos(x) + C(3));
+      IRFU_POT_FIT_C0 = [0, 0, 0, 0, 0];
       N_COEFF_IRFU_POT_FIT = numel(bepic.spinfit.IRFU_POT_FIT_C0);
 
 
