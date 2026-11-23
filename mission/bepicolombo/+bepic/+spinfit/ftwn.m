@@ -295,7 +295,7 @@ classdef ftwn
     %
     % DESIGN NOTES
     % ============
-    % The design is deliberately similar to Atsuki Shinbori's
+    % The design is deliberately similar (sort of?) to Atsuki Shinbori's
     % find_spin_zero_time.m, which should be a translation from IDL(?) to
     % MATLAB of his WPT code. See Shinbori's e-mail 2026-11-02. The advantages
     % are that it can then return similar results, and be updated to return
@@ -304,10 +304,6 @@ classdef ftwn
     % generate arbitrary FTWN output timestamps (has to be center).
     % It is however not identical, and does not have all the same features.
     %
-    % IMPLEMENTATION NOTE: This is not implemented as a separate argument
-    % (~nMinSamplesPerFtwn) since such a feature is better implemented
-    % elsewhere (when doing fits; also better for testing).
-    %
     % IMPLEMENTATION NOTE: The code deliberately does not implement features
     % which are better implemented in other locations, e.g. min number of
     % samples per FTWN (which also is unaware of NaN samples).
@@ -315,6 +311,7 @@ classdef ftwn
     % NOTE: The code can (probably) be generalized to support arbitrary
     % position+length FTWNs, overlapping FTWNs, and arbitrary position output
     % timestamps by using CMPs.
+    %
     function FtwnTable = get_SAFWs_limited(A)
       %{
       PROPOSAL: Better name wrt. specifying that it is not configurable wrt.
@@ -328,6 +325,18 @@ classdef ftwn
         NOTE: The (current) CMP derivation assumes that all decrements imply
         adding one rev. to CMP. Therefore, the (potential) implementation of
         permitting small decrements affects also the CMP derivation code.
+
+      PROPOSAL: Separate the calculation of the center timestamp from the
+                function.
+        PRO: Simplifies testing.
+        PRO: No lower limit on samples per FTWN (when identifying FTWNs).
+        CON: The calculation of center timestamps still requires two
+             samples/FTWN, and must therefore remove FTWNs when that condition
+             is not met.
+          CON-PROPOSAL: (1) FTWN function artificially requires two
+                        samples/FTWN (removes FTWN when not satisified), and
+                        (2) center timestamp function asserts two
+                        samples/FTWN.
       %}
       arguments
         A.tt2000Ar
@@ -342,8 +351,6 @@ classdef ftwn
       assert(isscalar(A.dataGapMinNs)    & isa(A.dataGapMinNs,        "int64"))
       assert(         A.dataGapMinNs > 0)
 
-
-
       % Normalize 2*pi to 0
       % -------------------
       % IMPLEMENTATION NOTE: Assertion permits both spin phase = 0 and 2*pi,
@@ -354,6 +361,8 @@ classdef ftwn
       % (2) simplifies(?) automated tests, since wrapTo2Pi(2*pi)==2*pi (not
       %     zero). The alternative is to use mod(spinPhaseRad, 2*pi) in tests.
       % A.spinPhaseRadAr(A.spinPhaseRadAr == 2*pi) = 0;
+
+
 
       % Minimum number of required samples per FTWN
       % -------------------------------------------

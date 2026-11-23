@@ -18,7 +18,7 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
 
 
 
-    function test_0xFTWN(T)
+    function test_0xSamples(T)
       ActFtwnTable = bepic.spinfit.ftwn.get_SAFWs_limited( ...
         tt2000Ar           = int64.empty(0, 1), ...
         spinPhaseRadAr     = double.empty(0, 1), ...
@@ -107,22 +107,26 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end
+
+
+
   end
-
-
-
   properties(Constant)
-    % The spin phase increments but the data gap should (not) split the samples
-    % into separate FTWNs anyway.
+    % The spin phase increments but the data gap should (not) split the
+    % samples into separate FTWNs anyway.
     TT2000_AR         = int64([3.10; 3.20;   5.80; 5.90;   6.00; 6.20; 6.40; ] * 1e9), ...
     SPIN_PHASE_RAD_AR =       [0.10; 0.20;   0.80; 0.90;   0.00; 0.20; 0.40; ] * 2*pi, ...
   end
   methods(Test)
+
+
+
+    % Lower dataGapMinNs. ==> One identified data gap
     function test_3xFTWN__dataGap_0(T)
       ActFtwnTable = bepic.spinfit.ftwn.get_SAFWs_limited( ...
         tt2000Ar           = T.TT2000_AR, ...
         spinPhaseRadAr     = T.SPIN_PHASE_RAD_AR, ...
-        dataGapMinNs       = int64(2e9));
+        dataGapMinNs       = int64(2e9));    % Lower data gap threshold.
 
       ExpFtwnTable = table();
       ExpFtwnTable.iBegin       = [1;  3;  5];
@@ -133,6 +137,9 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end
 
+
+
+    % Higher dataGapMinNs. ==> No identified data gap.
     function test_3xFTWN__dataGap_1(T)
       ActFtwnTable = bepic.spinfit.ftwn.get_SAFWs_limited( ...
         tt2000Ar           = T.TT2000_AR, ...
