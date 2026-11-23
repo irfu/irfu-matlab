@@ -27,7 +27,6 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       ExpFtwnTable = table();
       ExpFtwnTable.iBegin       = double.empty(0, 1);
       ExpFtwnTable.iEnd         = double.empty(0, 1);
-      ExpFtwnTable.centerTt2000 = int64.empty(0, 1);
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end
@@ -43,7 +42,6 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       ExpFtwnTable = table();
       ExpFtwnTable.iBegin       = 1;
       ExpFtwnTable.iEnd         = 4;
-      ExpFtwnTable.centerTt2000 = int64(3.5 * 1e9);
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end
@@ -59,7 +57,6 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       ExpFtwnTable = table();
       ExpFtwnTable.iBegin       = [1; 4];
       ExpFtwnTable.iEnd         = [3; 5];
-      ExpFtwnTable.centerTt2000 = int64([3.5; 4.5] * 1e9);
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end
@@ -81,7 +78,6 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       ExpFtwnTable = table();
       ExpFtwnTable.iBegin       = double.empty(0, 1);
       ExpFtwnTable.iEnd         = double.empty(0, 1);
-      ExpFtwnTable.centerTt2000 = int64.empty( 0, 1);
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end
@@ -103,7 +99,6 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       ExpFtwnTable = table();
       ExpFtwnTable.iBegin       = [1;  5;  7];
       ExpFtwnTable.iEnd         = [3;  6; 10];
-      ExpFtwnTable.centerTt2000 = int64([3.5; 5.5; 6.5] * 1e9);
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end
@@ -131,7 +126,6 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       ExpFtwnTable = table();
       ExpFtwnTable.iBegin       = [1;  3;  5];
       ExpFtwnTable.iEnd         = [2;  4;  7];
-      ExpFtwnTable.centerTt2000 = int64([3.5; 5.5; 6.5] * 1e9);
       ExpFtwnTable = ExpFtwnTable(3, :);    % Remove old test data.
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
@@ -149,7 +143,6 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       ExpFtwnTable = table();
       ExpFtwnTable.iBegin       = [1;  5];
       ExpFtwnTable.iEnd         = [4;  7];
-      ExpFtwnTable.centerTt2000 = int64([4.5; 6.5] * 1e9);
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end

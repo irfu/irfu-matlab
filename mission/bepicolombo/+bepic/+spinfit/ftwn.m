@@ -287,23 +287,15 @@ classdef ftwn
     % (1) spin phase is always 0 to 2pi radians,
     % (2) FTWNs are defined as spanning from 0 to 2pi radians (and being 2pi
     %     long).
-    % (3) FTWN center timestamps are obtained using a fit.
     %
-    % The algorithm is deliberately similar to the Japanese WPT function
-    % find_spin_zero_time() (see Shinbori's e-mail 2026-11-02) so
+    % Compare with Japanese WPT function find_spin_zero_time() (see Shinbori's
+    % e-mail 2026-11-02).
+    %
+    % Removes FTWNs adjacent to data gaps.
     %
     %
     % DESIGN NOTES
     % ============
-    % The design is deliberately similar (sort of?) to Atsuki Shinbori's
-    % find_spin_zero_time.m, which should be a translation from IDL(?) to
-    % MATLAB of his WPT code. See Shinbori's e-mail 2026-11-02. The advantages
-    % are that it can then return similar results, and be updated to return
-    % even more similar results if necessary. For this reason, it can not be
-    % configured to use arbitrary FTWNs (w.r.t. length, location, overlap) or
-    % generate arbitrary FTWN output timestamps (has to be center).
-    % It is however not identical, and does not have all the same features.
-    %
     % IMPLEMENTATION NOTE: The code deliberately does not implement features
     % which are better implemented in other locations, e.g. min number of
     % samples per FTWN (which also is unaware of NaN samples).
@@ -327,7 +319,7 @@ classdef ftwn
         permitting small decrements affects also the CMP derivation code.
 
       PROPOSAL: Separate the calculation of the center timestamp from the
-                function.
+                function. -- IMPLEMENTED
         PRO: Simplifies testing.
         PRO: No lower limit on samples per FTWN (when identifying FTWNs).
         CON: The calculation of center timestamps still requires two
@@ -367,7 +359,7 @@ classdef ftwn
       % Minimum number of required samples per FTWN
       % -------------------------------------------
       % NOTE: The linear fit required for obtaining the center timestamp of
-      % the FTWN requires at least two samples.
+      % the FTWN (other function) requires at least two samples.
       N_SAMPLES_PER_FTWN_MIN = 2;
 
 
@@ -419,14 +411,7 @@ classdef ftwn
       end
 
       % Preallocate
-      ftwn1CenterTt2000Ar = int64(zeros(nFtwn1, 1));
-      bbKeepAr            = true(nFtwn1, 1);
-
-      % Disable warning.
-      % Used in find_spin_zero_time.m (Japan).
-      statePolyfitWarning = ...
-        warning('query','MATLAB:polyfit:RepeatedPointsOrRescale').state;
-      warning('off', 'MATLAB:polyfit:RepeatedPointsOrRescale');
+      bbKeepAr = true(nFtwn1, 1);
 
       % ==================
       % Iterate over FTWN1
@@ -441,11 +426,55 @@ classdef ftwn
           continue
         end
 
-        % Eliminate FTWNs with too few samples (as required by algorithm; not
-        % configurable).
+        % Eliminate FTWNs with too few samples (hardcoded; not configurable).
         if nSamplesFtwn1 < N_SAMPLES_PER_FTWN_MIN
           bbKeepAr(jFtwn1) = false;
           continue
+        end
+      end
+
+      FtwnTable = table();
+      FtwnTable.iBegin = iFtwn1BeginAr(bbKeepAr, 1);
+      FtwnTable.iEnd   = iFtwn1EndAr(  bbKeepAr, 1);
+    end
+
+
+
+    % Derive the FTWN center timestamps using a fit.
+    function ftwnCenterTt2000Ar = get_FTWN_fitted_center_timestamps(A)
+      % PROBLEM: Naming of variables: (1) Arrays indexed by FTWN and (2)
+      % array indexed by samples in the current FTWN.
+      % Both could logically be called ftwnTt2000Ar.
+      arguments
+        A.FtwnTable
+        A.tt2000Ar
+        A.spinPhaseRadAr
+      end
+      assert(istable(A.FtwnTable))
+
+
+
+      nFtwn = height(A.FtwnTable);
+
+      % Disable warning.
+      % Used in find_spin_zero_time.m (Japan).
+      statePolyfitWarning = ...
+        warning('query','MATLAB:polyfit:RepeatedPointsOrRescale').state;
+      warning('off', 'MATLAB:polyfit:RepeatedPointsOrRescale');
+
+      % Pre-allocate
+      ftwnCenterTt2000Ar = int64(zeros(nFtwn, 1));
+
+      % i = Sample index
+      % j = FTWN index
+      for jFtwn = 1:nFtwn
+        iFtwnAr       = A.FtwnTable.iBegin(jFtwn) : A.FtwnTable.iEnd(jFtwn);
+        nSamplesFtwn1 = length(iFtwnAr);
+
+        % Assert sufficient number of FTWNs (as required by algorithm; not
+        % configurable).
+        if nSamplesFtwn1 < 2
+          error("Encountered FTWN with less than %i samples.", N_SAMPLES_PER_FTWN_MIN)
         end
 
         ftwnTt2000Ar       = A.tt2000Ar(      iFtwnAr);
@@ -463,14 +492,9 @@ classdef ftwn
 
         % pi = offsetRad + radPerNs*centerTt2000
         % ==> centerTt2000 = (pi - offsetRad) / radPerNs
-        ftwn1CenterTt2000Ar(jFtwn1) = int64((pi - offsetRad) / radPerNs);
+        ftwnCenterTt2000Ar(jFtwn) = int64((pi - offsetRad) / radPerNs);
       end
       warning(statePolyfitWarning, 'MATLAB:polyfit:RepeatedPointsOrRescale');
-
-      FtwnTable = table();
-      FtwnTable.iBegin       = iFtwn1BeginAr(      bbKeepAr, 1);
-      FtwnTable.iEnd         = iFtwn1EndAr(        bbKeepAr, 1);
-      FtwnTable.centerTt2000 = ftwn1CenterTt2000Ar(bbKeepAr, 1);
     end
 
 
