@@ -363,44 +363,79 @@ classdef ftwn
 
 
 
+      % Naming conventions
+      % ------------------
+      % b  = Logical index(es) into array of samples.
+      % bb = Logical index(es) into array of FTWNs.
+      % i  = Linear index(es) into array of samples
+      % j  = Linear index(es) into array of FTWNs.
+
       nSamples = numel(A.tt2000Ar);
 
-      % Indices before a data gap.
-      bDataGapAr       = diff(A.tt2000Ar) > A.dataGapMinNs;
-      % Indices before the spin phase wraps (decreases).
-      bSpinPhaseWrapAr = diff(A.spinPhaseRadAr) < 0;
+      if nSamples == 0
+        nFtwn1 = 0;
 
-      % Indices before boundary between preliminary FTWNs.
-      % NOTE: "boundary" is defined as either
-      % (1) spin phase wrapping, or
-      % (2) data gap
-      bBoundaryAr      = bDataGapAr | bSpinPhaseWrapAr;
-      iBoundaryAr      = find(bBoundaryAr);
+        iFtwn1BeginAr = double.empty(0, 1);
+        iFtwn1EndAr   = double.empty(0, 1);
+      else
+        % Sample indices before a data gap.
+        bDataGapAfterAr       = [diff(A.tt2000Ar) > A.dataGapMinNs; false];
+        % Sample indices before the spin phase wraps (decreases).
+        bSpinPhaseWrapAfterAr = [diff(A.spinPhaseRadAr) < 0; false];
 
-      % Define preliminary FTWNs: "FTWN1"
-      % ---------------------------------
-      % NOTE: Some of these may later be rejected and thus excluded from the
-      %       return value. Hence the separate name.
-      iFtwn1BeginAr = [1; iBoundaryAr+1];
-      iFtwn1EndAr   = [iBoundaryAr; nSamples];
-      nFtwn1        = numel(iFtwn1BeginAr);
+        % Indices before boundaries *between* preliminary FTWNs.
+        % NOTE: (inner) "boundary" is defined as either
+        % (1) spin phase wrapping, or
+        % (2) data gap
+        bInnerBoundaryAfterAr = bDataGapAfterAr | bSpinPhaseWrapAfterAr;
+        iInnerBoundaryAfterAr = find(bInnerBoundaryAfterAr);
+
+        % Define preliminary FTWNs: "FTWN1"
+        % ---------------------------------
+        % NOTE: Some of these may later be rejected and thus excluded from the
+        %       return value. Hence the separate name.
+        iFtwn1BeginAr = [1; iInnerBoundaryAfterAr+1];
+        iFtwn1EndAr   = [iInnerBoundaryAfterAr; nSamples];
+        nFtwn1        = numel(iFtwn1BeginAr);
+
+        % Create arrays over FWTNs for whether they are adjacent to (1) data
+        % gaps, or (2) spin phase wraps.
+        bbDataGapAfterAr    = bDataGapAfterAr(iFtwn1EndAr);
+        bbDataGapBeforeAr   = [false; bbDataGapAfterAr(1:end-1)];
+        bbDataGapAdjacentAr = bbDataGapBeforeAr | bbDataGapAfterAr;
+
+        % bbSpinPhaseWrapAfterAr    = bSpinPhaseWrapAfterAr(iFtwn1EndAr);
+        % bbSpinPhaseWrapBeforeAr   = [false; bbSpinPhaseWrapAfterAr(1:end-1)];
+        % bbSpinPhaseWrapAdjacentAr = bbSpinPhaseWrapBeforeAr | bbSpinPhaseWrapAfterAr;
+      end
 
       % Preallocate
       ftwn1CenterTt2000Ar = int64(zeros(nFtwn1, 1));
-      bKeep               = true(nFtwn1, 1);
+      bbKeepAr            = true(nFtwn1, 1);
 
       % Disable warning.
       % Used in find_spin_zero_time.m (Japan).
-      bPolyfitWarning = warning('query','MATLAB:polyfit:RepeatedPointsOrRescale').state;
+      statePolyfitWarning = ...
+        warning('query','MATLAB:polyfit:RepeatedPointsOrRescale').state;
       warning('off', 'MATLAB:polyfit:RepeatedPointsOrRescale');
 
-      for iFtwn1 = 1:nFtwn1
-        iFtwnAr       = iFtwn1BeginAr(iFtwn1) : iFtwn1EndAr(iFtwn1);
+      % ==================
+      % Iterate over FTWN1
+      % ==================
+      for jFtwn1 = 1:nFtwn1
+        iFtwnAr       = iFtwn1BeginAr(jFtwn1) : iFtwn1EndAr(jFtwn1);
         nSamplesFtwn1 = length(iFtwnAr);
 
-        % Eliminate FTWNs with too few samples.
+        % Eliminate FTWNs adjacent to data gaps.
+        if bbDataGapAdjacentAr(jFtwn1)
+          bbKeepAr(jFtwn1) = false;
+          continue
+        end
+
+        % Eliminate FTWNs with too few samples (as required by algorithm; not
+        % configurable).
         if nSamplesFtwn1 < N_SAMPLES_PER_FTWN_MIN
-          bKeep(iFtwn1) = false;
+          bbKeepAr(jFtwn1) = false;
           continue
         end
 
@@ -419,14 +454,14 @@ classdef ftwn
 
         % pi = offsetRad + radPerNs*centerTt2000
         % ==> centerTt2000 = (pi - offsetRad) / radPerNs
-        ftwn1CenterTt2000Ar(iFtwn1) = int64((pi - offsetRad) / radPerNs);
+        ftwn1CenterTt2000Ar(jFtwn1) = int64((pi - offsetRad) / radPerNs);
       end
-      warning(bPolyfitWarning, 'MATLAB:polyfit:RepeatedPointsOrRescale');
+      warning(statePolyfitWarning, 'MATLAB:polyfit:RepeatedPointsOrRescale');
 
       FtwnTable = table();
-      FtwnTable.iBegin       = iFtwn1BeginAr(      bKeep, 1);
-      FtwnTable.iEnd         = iFtwn1EndAr(        bKeep, 1);
-      FtwnTable.centerTt2000 = ftwn1CenterTt2000Ar(bKeep, 1);
+      FtwnTable.iBegin       = iFtwn1BeginAr(      bbKeepAr, 1);
+      FtwnTable.iEnd         = iFtwn1EndAr(        bbKeepAr, 1);
+      FtwnTable.centerTt2000 = ftwn1CenterTt2000Ar(bbKeepAr, 1);
     end
 
 

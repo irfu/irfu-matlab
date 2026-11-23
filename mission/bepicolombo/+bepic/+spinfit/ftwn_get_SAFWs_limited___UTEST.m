@@ -66,6 +66,28 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
 
 
 
+    function test_1xSample__minSamplesPerFtwn(T)
+      % NOTE: Having spins/(rejected) FTWNs with one and two samples
+      % respectively in the test data. Must still have spin wraps (decreasing
+      % spin) so that the algorithm could even in principle (by mistake)
+      % detect one sample as an FTWN, which is somewhat artificial but needed
+      % for the test to be meaningful.
+
+      ActFtwnTable = bepic.spinfit.ftwn.get_SAFWs_limited( ...
+        tt2000Ar           = int64([4.20] * 1e9), ...
+        spinPhaseRadAr     =       [0.20] * 2*pi, ...
+        dataGapMinNs       = int64(2e9));
+
+      ExpFtwnTable = table();
+      ExpFtwnTable.iBegin       = double.empty(0, 1);
+      ExpFtwnTable.iEnd         = double.empty(0, 1);
+      ExpFtwnTable.centerTt2000 = int64.empty( 0, 1);
+
+      T.assertEqual(ActFtwnTable, ExpFtwnTable)
+    end
+
+
+
     function test_3xFTWN__minSamplesPerFtwn(T)
       % NOTE: Having spins/(rejected) FTWNs with one and two samples
       % respectively in the test data. Must still have spin wraps (decreasing
@@ -106,6 +128,7 @@ classdef ftwn_get_SAFWs_limited___UTEST < matlab.unittest.TestCase
       ExpFtwnTable.iBegin       = [1;  3;  5];
       ExpFtwnTable.iEnd         = [2;  4;  7];
       ExpFtwnTable.centerTt2000 = int64([3.5; 5.5; 6.5] * 1e9);
+      ExpFtwnTable = ExpFtwnTable(3, :);    % Remove old test data.
 
       T.assertEqual(ActFtwnTable, ExpFtwnTable)
     end
