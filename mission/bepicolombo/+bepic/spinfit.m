@@ -769,6 +769,11 @@ classdef spinfit
     % This function is intended for sharing the implementation between other
     % functions and for simplifying testing.
     %
+    %
+    % PERFORMANCE
+    % ===========
+    % This function is processing intensive and therefore uses parfor.
+    %
     function [FitTable, fitAr] = fit_array(A)
       arguments
         A.tt2000Ar
@@ -818,16 +823,19 @@ classdef spinfit
       nCoeff = numel( A.fittingStartValue);
       nFtwn  = height(A.FtwnTable);
 
-      FitTable = table();
-      % Pre-allocate
-      FitTable.coefficients = NaN(nFtwn, nCoeff);
-      fitAr                 = NaN(size(A.samplesAr));
-
       %N_MAX_ITERATIONS = 10;
       %OPTS = optimoptions("lsqcurvefit", "Display", "off", "MaxIterations", N_MAX_ITERATIONS);
       OPTS = optimoptions("lsqcurvefit", "Display", "off");
 
-      for i = 1:nFtwn
+      % Pre-allocate
+      coefficientsAr = NaN(nFtwn, nCoeff);
+      fitAr          = NaN(size(A.samplesAr));
+      fitCaAr        = cell(nFtwn, 1);
+
+      % ========================
+      % Loop over FTWNs and fits
+      % ========================
+      parfor i = 1:nFtwn
         jAr = A.FtwnTable.iBegin(i) : A.FtwnTable.iEnd(i);
 
         ftwnSpinPhaseRadAr1 = A.spinPhaseRadAr(jAr);
@@ -854,15 +862,33 @@ classdef spinfit
         % NOTE: Must use spin phase from before removing fill value samples.
         ftwnFitAr = A.fittingFunction(ftwnCoefficientAr, ftwnSpinPhaseRadAr1);
 
-        FitTable.coefficients(i, :) = ftwnCoefficientAr;
-        fitAr                (jAr)  = ftwnFitAr;
+        coefficientsAr(i, :) = ftwnCoefficientAr;
+        fitCaAr{i, 1}        = ftwnFitAr;
 
         % Interpretation of "Averaged residual of sine fit of Ev".
         % https://chs.isee.nagoya-u.ac.jp/scwiki/doku.php?id=miosc:scteam:instrument:efd:ifdefinitiontomefisto:start
         % NOTE: Not the expression I would expect, mathematically.
         %       /Erik P G Johansson 2026-10-26.
         % FitTable.residualAbsDiff(i, :) = mean(abs(ftwnFitAr-ftwnSamplesAr));
-      end    % for
+      end    % (par)for
+
+      % =============================
+      % Separate loop to assign fitAr
+      % =============================
+      % IMPLEMENTATION NOTE: fitAr can not be assigned in the parfor lopp,
+      % presumably since it assigns multiple elements, and MATLAB can not
+      % figure out that that different iterations always assign separate sets
+      % of elements.
+      for i = 1:nFtwn
+        jAr        = A.FtwnTable.iBegin(i) : A.FtwnTable.iEnd(i);
+        fitAr(jAr) = fitCaAr{i};
+      end
+
+      % IMPLEMENTATION NOTE: Can not assign FitTable.coefficients in parfor
+      % loop for unknown reasons.
+      FitTable = table();
+      FitTable.coefficients = coefficientsAr;
+
     end    % function
 
 
