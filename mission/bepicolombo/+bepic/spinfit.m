@@ -32,7 +32,7 @@ classdef spinfit
   % PROPOSAL: Delete unused functions.
   %   Ex: fit_SAFW_MMS()
   %   Ex: fit_TAFW_MMS()
-  %   Ex: Functions in bepic.spinfit.ftwn.
+  %   Ex: Some functions in bepic.spinfit.ftwn.
   %   PRO: The code will still exist in the git history.
   %   CON-PROPOSAL: Comment out.
   %     PROBLEM: What to do with the test code? It will not work if the tested
@@ -643,16 +643,6 @@ classdef spinfit
     %       Nx1 array of electric field samples (in rotating frame).
     %       This should be the difference between MEF1 and MEF2 (or MEF2 and
     %       MEF1).
-    % fitWindowPeriodRad
-    %       Length of time between the beginning of each fit window. Radians.
-    % fitWindowLengthRad
-    %       Length of fit window. Radians.
-    % fitWindowCenterRefRad
-    %       Scalar value. Describes where the center of fit windows (output
-    %       timestamps) should be in cumulative spin phase. Any time
-    %       window center will be located at a phase
-    %       fitWindowCenterRefRad + n * fitWindowPeriodRad,
-    %       where n=integer.
     % dataGapMinNs
     %       Threshold for when a jump in tt2000Ar should count as a data gap.
     % nMinSamplesPerFitWindow
