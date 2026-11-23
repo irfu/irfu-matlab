@@ -551,11 +551,11 @@ classdef spinfit
     % ============
     % FitTable
     %       Table with partly self-explanatory column names. One fit per row.
-    %       FitTable.a
+    %       FitTable.c
     %         Contains the coefficients for the official fit.
     %         See implementation for the exact meaning. Meaning of indices:
     %         FitTable.A(iTimestamp, iProbe, iCoefficient).
-    %       FitTable.aIrfu
+    %       FitTable.cIrfu
     %         Contains the coefficients for the additional IRFU fit.
     %
     function FitTable = fit_pot_SAFW(A)
@@ -595,7 +595,7 @@ classdef spinfit
         bepic.spinfit.IRFU_POT_FIT_C0);
 
       FitTable       = OfficialFitTable;
-      FitTable.aIrfu = IrfuFitTable.a;
+      FitTable.cIrfu = IrfuFitTable.c;
 
       function FitTable = fit_array(fh, C_0)
         % MEFISTO probe 1
@@ -620,7 +620,7 @@ classdef spinfit
 
         FitTable = table();
         FitTable.fitWindowCenterTt2000 = FtwnTable.centerTt2000;
-        FitTable.a                     = cat(3, ...
+        FitTable.c                     = cat(3, ...
           FitTable1.coefficients, ...
           FitTable2.coefficients);
       end
@@ -663,11 +663,11 @@ classdef spinfit
     % ============
     % FitTable
     %       Table with partly self-explanatory column names. One fit per row.
-    %       FitTable.a
+    %       FitTable.c
     %         Contains the coefficients for the official fit.
     %         See implementation for the exact meaning. Meaning of indices:
     %         FitTable.A(i_timestamp, i_coefficient, i_mefisto_probe).
-    %       FitTable.aIrfu
+    %       FitTable.cIrfu
     %         Contains the coefficients for the additional IRFU fit.
     %
     function [FitTable] = fit_Efield_SAFW(A)
@@ -687,7 +687,7 @@ classdef spinfit
         nMinSamplesPerFtwn = A.nMinSamplesPerFitWindow);
 
       % Only copy specific columns (omit debugging information).
-      FitTable = FitTable(:, ["a", "aIrfu",  "fitWindowCenterTt2000"]);
+      FitTable = FitTable(:, ["c", "cIrfu",  "fitWindowCenterTt2000"]);
     end
 
 
@@ -750,12 +750,12 @@ classdef spinfit
       assert(height(OfficialFitTable) == height(IrfuFitTable))
       assert(isequal(size(officialFittedSamplesAr), size(irfuFittedSamplesAr)))
 
-      FitTable = renamevars(OfficialFitTable, "coefficients", "a");
+      FitTable = renamevars(OfficialFitTable, "coefficients", "c");
       FitTable.fitWindowCenterTt2000 = FtwnTable.centerTt2000;
       FitTable.iBegin                = FtwnTable.iBegin;
       FitTable.iEnd                  = FtwnTable.iEnd;
 
-      FitTable.aIrfu = IrfuFitTable.coefficients;
+      FitTable.cIrfu = IrfuFitTable.coefficients;
     end
 
 

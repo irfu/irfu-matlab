@@ -41,8 +41,8 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
         nMinSamplesPerFitWindow = T.N_COEFF_OFFICIAL);
 
       ExpT = table();
-      ExpT.a                     = double.empty(0, T.N_COEFF_OFFICIAL);
-      ExpT.aIrfu                 = double.empty(0, T.N_COEFF_IRFU);
+      ExpT.c                     = double.empty(0, T.N_COEFF_OFFICIAL);
+      ExpT.cIrfu                 = double.empty(0, T.N_COEFF_IRFU);
       ExpT.fitWindowCenterTt2000 = int64.empty( 0, 1);
 
       T.verifyEqual(ActT, ExpT)
@@ -60,8 +60,8 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
         nMinSamplesPerFitWindow = T.N_COEFF_OFFICIAL);
 
       ExpT = table();
-      ExpT.a                     = double.empty(0, T.N_COEFF_OFFICIAL);
-      ExpT.aIrfu                 = double.empty(0, T.N_COEFF_IRFU);
+      ExpT.c                     = double.empty(0, T.N_COEFF_OFFICIAL);
+      ExpT.cIrfu                 = double.empty(0, T.N_COEFF_IRFU);
       ExpT.fitWindowCenterTt2000 = int64.empty( 0, 1);
 
       T.verifyEqual(ActT, ExpT)
@@ -79,8 +79,8 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
         nMinSamplesPerFitWindow = T.N_COEFF_OFFICIAL);
 
       T.verifyEqual(actT.fitWindowCenterTt2000, int64([5; 15]))
-      T.verifyEqual(actT.a,                     NaN(2, T.N_COEFF_OFFICIAL))
-      T.verifyEqual(actT.aIrfu,                 NaN(2, T.N_COEFF_IRFU))
+      T.verifyEqual(actT.c,                     NaN(2, T.N_COEFF_OFFICIAL))
+      T.verifyEqual(actT.cIrfu,                 NaN(2, T.N_COEFF_IRFU))
     end
 
 
@@ -95,8 +95,8 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
         nMinSamplesPerFitWindow = max(T.N_COEFF_OFFICIAL, T.N_COEFF_IRFU));
 
       T.verifyEqual(actT.fitWindowCenterTt2000, int64([5; 15; 25]))
-      T.verifyEqual(isfinite(actT.a),           [true(2, T.N_COEFF_OFFICIAL); false(1, T.N_COEFF_OFFICIAL)])
-      T.verifyEqual(isfinite(actT.aIrfu),       [true(2, T.N_COEFF_IRFU);     false(1, T.N_COEFF_IRFU    )])
+      T.verifyEqual(isfinite(actT.c),           [true(2, T.N_COEFF_OFFICIAL); false(1, T.N_COEFF_OFFICIAL)])
+      T.verifyEqual(isfinite(actT.cIrfu),       [true(2, T.N_COEFF_IRFU);     false(1, T.N_COEFF_IRFU    )])
     end
 
 
@@ -111,8 +111,8 @@ classdef spinfit_fit_Efield_SAFW___UTEST < matlab.unittest.TestCase
         nMinSamplesPerFitWindow = max(T.N_COEFF_OFFICIAL, T.N_COEFF_IRFU));
 
       T.verifyEqual(actT.fitWindowCenterTt2000, int64([5; 1035; 1045]))
-      T.verifyEqual(isfinite(actT.a),           [true(2, T.N_COEFF_OFFICIAL); false(1, T.N_COEFF_OFFICIAL)])
-      T.verifyEqual(isfinite(actT.aIrfu),       [true(2, T.N_COEFF_IRFU);     false(1, T.N_COEFF_IRFU    )])
+      T.verifyEqual(isfinite(actT.c),           [true(2, T.N_COEFF_OFFICIAL); false(1, T.N_COEFF_OFFICIAL)])
+      T.verifyEqual(isfinite(actT.cIrfu),       [true(2, T.N_COEFF_IRFU);     false(1, T.N_COEFF_IRFU    )])
     end
 
 
