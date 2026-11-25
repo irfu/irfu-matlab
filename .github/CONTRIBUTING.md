@@ -24,6 +24,7 @@ If working on a special development branch (e.g. [MMSdevel](https://github.com/i
 4. Semantic release numbering https://semver.org/
 5. Try to make use of the [pre-commit](https://pre-commit.com/) tool to help check code before it is committed.
 6. Write clear and useful git commit messages https://chris.beams.io/posts/git-commit/
+7. Follow the [Convensional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard in your commit messages.
 
 
 ## pre-commit hooks

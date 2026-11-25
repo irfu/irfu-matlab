@@ -1,4 +1,4 @@
-# irfu-matlab [![ci-build](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml/badge.svg)](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11550090.svg)](https://doi.org/10.5281/zenodo.11550090)
+# irfu-matlab [![ci-build](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml/badge.svg)](https://github.com/irfu/irfu-matlab/actions/workflows/ci-build.yml) [![Convensional-Commits](https://github.com/irfu/irfu-matlab/actions/workflows/ci-conventional-commits.yml/badge.svg)](https://github.com/irfu/irfu-matlab/actions/workflows/ci-conventional-commits.yml) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11550090.svg)](https://doi.org/10.5281/zenodo.11550090)
 
 ## Acknowledgment
 
