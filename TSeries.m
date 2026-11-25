@@ -1667,9 +1667,15 @@ classdef TSeries
       %       fun   - function to apply on data within each bin, for
       %               example @mean, see examples below, default is @sum
       %
-      %   The output is a TSeries, but the time is a mock time: EpochTT(1:numel(bins))
+      %   The output is a TSeries, but the time is a mock time: EpochTT(1:numel(bins))      
       %
-      %   Example: Bin E by values of B
+      %   Examples:
+      %
+      %     % Reproduce input data (but with the time wrong of course)
+      %     bE = tsE.accumBy(1:tsE.length,tsE.length+1,@mean); 
+      %     plot(bE.userData.accumBy.mid,bE.data)
+      %
+      %     % Bin E by values of B
       %     bE = tsE.accumBy(tsB.x);
       %     bE = tsE.accumBy(tsB.x,linspace(-10,10,11));
       %     bE = tsE.accumBy(tsB.x,linspace(-10,10,11));
@@ -1680,6 +1686,7 @@ classdef TSeries
       %     bE = tsE.accumBy(tsB.x,20,@(x)prctile(x,25));
       %
       %     plot(bE.userData.accumBy.mid,bE.data)
+      %     plotyy(bE.userData.accumBy.mid,bE.z.data,bE.userData.accumBy.mid,bE.userData.accumBy.NinBin)
       %
       %     % Plot as mock time series
       %     % See if there is some Hall structure?
@@ -1714,6 +1721,7 @@ classdef TSeries
         varTS = varTS.resample(obj);
         var = varTS.data;
       else
+        varTS.name = []; % for output not to error
         var = var(:); % make into a column
       end
       if nargin>2, edges = args{2}; end
@@ -1739,6 +1747,7 @@ classdef TSeries
       Ts.userData.accumBy.edges = edges;
       Ts.userData.accumBy.mid = mid;
       Ts.userData.accumBy.fun = fun;
+      Ts.userData.accumBy.NinBin = N(:);
     end
 
     function Ts = movmean(obj,nMean,varargin)
