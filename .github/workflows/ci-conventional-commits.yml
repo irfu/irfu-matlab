@@ -15,14 +15,14 @@ jobs:
   commitlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-          cache: npm
+      #- name: Setup node
+      #  uses: actions/setup-node@v4
+      #  with:
+      #    node-version: lts/*
+      #    cache: npm
       - name: Install commitlint
         run: npm install -D @commitlint/cli @commitlint/config-conventional
       - name: Print versions
