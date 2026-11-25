@@ -1649,6 +1649,98 @@ classdef TSeries
         end
       end
     end
+
+    function Ts = accumBy(obj,varargin)
+      % TSERIES.ACCUMBY Accumulate data based on reference data.
+      %
+      %   TS.accumBy(var)
+      %   TS.accumBy(var,edges)
+      %   TS.accumBy(var,edges,fun)
+      %
+      %     Input:
+      %       var   - Variable to bin by, for example magnetic field
+      %               amplitude or wave phase, array or TSeries:
+      %               if TSeries, it will resample to TS, and then take TS.data
+      %               if var, it will bin directly on var, and it will
+      %               throw an error if the size is not correct
+      %       edges - edges to bin by, array or integer, default is 10
+      %       fun   - function to apply on data within each bin, for
+      %               example @mean, see examples below, default is @sum
+      %
+      %   The output is a TSeries, but the time is a mock time: EpochTT(1:numel(bins))
+      %
+      %   Example: Bin E by values of B
+      %     bE = tsE.accumBy(tsB.x);
+      %     bE = tsE.accumBy(tsB.x,linspace(-10,10,11));
+      %     bE = tsE.accumBy(tsB.x,linspace(-10,10,11));
+      %     bE = tsE.accumBy(tsB.x,20,@sum);
+      %     bE = tsE.accumBy(tsB.x,20,@mean);
+      %     bE = tsE.accumBy(tsB.x,20,@median);
+      %     bE = tsE.accumBy(tsB.x,20,@std);
+      %     bE = tsE.accumBy(tsB.x,20,@(x)prctile(x,25));
+      %
+      %     plot(bE.userData.accumBy.mid,bE.data)
+      %
+      %     % Plot as mock time series
+      %     % See if there is some Hall structure?
+      %
+      %     meanE = tsE.accumBy(tsB.x,20,@mean);
+      %     stdE = tsE.accumBy(tsB.x,20,@std);
+      %     medianE = tsE.accumBy(tsB.x,20,@median);
+      %     p25E = tsE.accumBy(tsB.x,20,@(x)prctile(x,25));
+      %     p75E = tsE.accumBy(tsB.x,20,@(x)prctile(x,75));
+      %
+      %     h = irf_plot(2);
+      %     hca = irf_panel('mean');
+      %     irf_plot(hca,meanE.z)
+      %     hold(hca,'on')
+      %     irf_patch(hca,{meanE.z+stdE.z,meanE.z-stdE.z});
+      %     hold(hca,'off')
+      %     hca = irf_panel('median');
+      %     irf_plot(hca,medianE.z)
+      %     hold(hca,'on')
+      %     irf_patch(hca,{p25E.z,p75E.z});
+      %     hold(hca,'off')
+
+      % Default values
+      fun = @sum;
+      edges = 10;
+      args = varargin;
+
+      % Parse input
+      var = args{1};
+      if isa(var,'TSeries')
+        varTS = var;
+        varTS = varTS.resample(obj);
+        var = varTS.data;
+      else
+        var = var(:); % make into a column
+      end
+      if nargin>2, edges = args{2}; end
+      if nargin>3, fun = args{3}; end
+
+      % Allocate data to bins
+      [N,edges,bin] = histcounts(var(:,1),edges);
+      mid = edges(1:end-1) + 0.5*diff(edges);
+
+      % Collect data into the bins
+      data = obj.data;
+      datasize = obj.datasize('time=1');
+      binnedData = zeros([numel(N),datasize(2:end)]);
+
+      for iComp = 1:prod(datasize)
+        binnedData(:,iComp) = accumarray(bin,squeeze(data(:,iComp)),[size(binnedData,1), 1],fun,NaN(class(data)));
+      end
+
+      % Prepare output
+      mockT = EpochTT(1:numel(N));
+      Ts = obj.clone(mockT,squeeze(binnedData));
+      Ts.userData.accumBy.name = varTS.name;
+      Ts.userData.accumBy.edges = edges;
+      Ts.userData.accumBy.mid = mid;
+      Ts.userData.accumBy.fun = fun;
+    end
+
     function Ts = movmean(obj,nMean,varargin)
       % TSeries.movmean - applies a time-moving-average to data
       %
