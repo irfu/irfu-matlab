@@ -1650,12 +1650,15 @@ classdef TSeries
       end
     end
 
-    function Ts = accumBy(obj,varargin)
+    function Ts = accumBy(obj,var,varargin)
       % TSERIES.ACCUMBY Accumulate data based on reference data.
       %
       %   TS.accumBy(var)
       %   TS.accumBy(var,edges)
       %   TS.accumBy(var,edges,fun)
+      %   TS.accumBy(var,[],fun)
+      %   TS.accumBy(var,[],[])
+      %   TS.accumBy(...,'output',output)
       %
       %     Input:
       %       var   - Variable to bin by, for example magnetic field
@@ -1665,15 +1668,16 @@ classdef TSeries
       %               throw an error if the size is not correct
       %       edges - edges to bin by, array or integer, default is 10
       %       fun   - function to apply on data within each bin, for
-      %               example @mean, see examples below, default is @sum
-      %
-      %   The output is a TSeries, but the time is a mock time: EpochTT(1:numel(bins))      
+      %               example @mean, see examples below, default is @mean
+      %       output - ['structure','TSeries'] - default is structure,
+      %                for TSeries, the time is a mock time: EpochTT(1:nBins),
+      %                 and the metadata is in userData.accumBy
       %
       %   Examples:
       %
       %     % Reproduce input data (but with the time wrong of course)
-      %     bE = tsE.accumBy(1:tsE.length,tsE.length+1,@mean); 
-      %     plot(bE.userData.accumBy.mid,bE.data)
+      %     bE = tsE.accumBy(1:tsE.length,0.5:1:tsE.length+0.5);
+      %     plot(bE.mid,bE.data)
       %
       %     % Bin E by values of B
       %     bE = tsE.accumBy(tsB.x);
@@ -1685,69 +1689,120 @@ classdef TSeries
       %     bE = tsE.accumBy(tsB.x,20,@std);
       %     bE = tsE.accumBy(tsB.x,20,@(x)prctile(x,25));
       %
+      %     plot(bE.mid,bE.data)
+      %     plotyy(bE.mid,bE.data,bE.mid,bE.numInBin)
+      %     plotyy(bE.mid,bE.data(:,3),bE.mid,bE.numInBin)
+      %
+      %     bE = tsE.accumBy(tsB.x,[],@mean,'output','TSeries');
       %     plot(bE.userData.accumBy.mid,bE.data)
-      %     plotyy(bE.userData.accumBy.mid,bE.z.data,bE.userData.accumBy.mid,bE.userData.accumBy.NinBin)
+      %     plotyy(bE.userData.accumBy.mid,bE.z.data,bE.userData.accumBy.mid,bE.userData.accumBy.numInBin)
       %
       %     % Plot as mock time series
-      %     % See if there is some Hall structure?
       %
-      %     meanE = tsE.accumBy(tsB.x,20,@mean);
-      %     stdE = tsE.accumBy(tsB.x,20,@std);
-      %     medianE = tsE.accumBy(tsB.x,20,@median);
-      %     p25E = tsE.accumBy(tsB.x,20,@(x)prctile(x,25));
-      %     p75E = tsE.accumBy(tsB.x,20,@(x)prctile(x,75));
+      %     meanE = tsE.accumBy(tsB.x,20,@mean,'output','TSeries');
+      %     stdE = tsE.accumBy(tsB.x,20,@std,'output','TSeries');
+      %     medianE = tsE.accumBy(tsB.x,20,@median,'output','TSeries');
+      %     p25E = tsE.accumBy(tsB.x,20,@(x)prctile(x,25),'output','TSeries');
+      %     p75E = tsE.accumBy(tsB.x,20,@(x)prctile(x,75),'output','TSeries');
       %
       %     h = irf_plot(2);
+      %     comp = 'x';
       %     hca = irf_panel('mean');
-      %     irf_plot(hca,meanE.z)
+      %     irf_plot(hca,meanE.(comp))
       %     hold(hca,'on')
-      %     irf_patch(hca,{meanE.z+stdE.z,meanE.z-stdE.z});
+      %     irf_patch(hca,{meanE.(comp)+stdE.z,meanE.(comp)-stdE.(comp)});
       %     hold(hca,'off')
       %     hca = irf_panel('median');
-      %     irf_plot(hca,medianE.z)
+      %     irf_plot(hca,medianE.(comp))
       %     hold(hca,'on')
-      %     irf_patch(hca,{p25E.z,p75E.z});
+      %     irf_patch(hca,{p25E.(comp),p75E.(comp)});
       %     hold(hca,'off')
 
-      % Default values
-      fun = @sum;
-      edges = 10;
-      args = varargin;
-
       % Parse input
-      var = args{1};
+      p = inputParser;
+      p.FunctionName = 'TSeries.accumBy';
+      addRequired(p,'var',@(x) isnumeric(x) || isa(x,'TSeries'));
+      %addOptional(p,'edges',10,@(x) isnumeric(x) && ~isempty(x));
+      addOptional(p,'edges',[],@(x) isnumeric(x));
+      addOptional(p,'fun',@sum,@(x) isempty(x) || isa(x,'function_handle'));
+      addParameter(p,'output','structure',@(x) any(validatestring(x,{'tseries','structure'})));
+      parse(p,var,varargin{:});
+
+      var    = p.Results.var;
+      edges  = p.Results.edges;
+      fun    = p.Results.fun;
+      output = validatestring(p.Results.output,{'tseries','structure'});
+
+       % Apply defaults for empty placeholders
+      if isempty(edges), edges = 10;   end
+      if isempty(fun),   fun   = @mean; end
+
+      % Handle reference variable
       if isa(var,'TSeries')
+        outOfTimeRange = obj.time.lt(var.time(1)) + obj.time.gt(var.time(var.length));
+        inTimeRange = ~outOfTimeRange;
+        if any(outOfTimeRange)
+          warning("Atleast one time of DATA is out of time range of VAR. These points will be exluded. Consider increasing time interval of VAR.")
+        end
         varTS = var;
         varTS = varTS.resample(obj);
         var = varTS.data;
+        varName = varTS.name;
       else
-        varTS.name = []; % for output not to error
+        if numel(var)~=obj.length; error("The length of VAR must equal the length of DATA."); end
+        varName = []; % for output not to error
         var = var(:); % make into a column
+        inTimeRange = ones(numel(var),1);
       end
-      if nargin>2, edges = args{2}; end
-      if nargin>3, fun = args{3}; end
 
       % Allocate data to bins
       [N,edges,bin] = histcounts(var(:,1),edges);
+      nBins = numel(edges)-1;
+      inBinRange = bin ~= 0; % Due to mismatching time intervals and
+                             % cadences, the var data can sometimes be
+                             % 'extrapolated', which returns nan, this
+                             % throws an error below because the bin index
+                             % becomes 0. This also occurs if the var is
+                             % outside the range of edges.
       mid = edges(1:end-1) + 0.5*diff(edges);
+
+      inRange = all([inTimeRange inBinRange],2);
 
       % Collect data into the bins
       data = obj.data;
       datasize = obj.datasize('time=1');
-      binnedData = zeros([numel(N),datasize(2:end)]);
+      binnedData = zeros([nBins,datasize(2:end)]);
 
       for iComp = 1:prod(datasize)
-        binnedData(:,iComp) = accumarray(bin,squeeze(data(:,iComp)),[size(binnedData,1), 1],fun,NaN(class(data)));
+        binnedData(:,iComp) = accumarray(bin(inRange),squeeze(data(inRange,iComp)),[nBins, 1],fun,NaN(class(data)));
       end
 
       % Prepare output
-      mockT = EpochTT(1:numel(N));
-      Ts = obj.clone(mockT,squeeze(binnedData));
-      Ts.userData.accumBy.name = varTS.name;
-      Ts.userData.accumBy.edges = edges;
-      Ts.userData.accumBy.mid = mid;
-      Ts.userData.accumBy.fun = fun;
-      Ts.userData.accumBy.NinBin = N(:);
+      switch output
+        case 'tseries'
+          mockT = EpochTT(1:nBins);
+          Ts = obj.clone(mockT,squeeze(binnedData));
+          Ts.userData.accumBy.nameData = obj.name;
+          Ts.userData.accumBy.nameBinVar = varName;
+          Ts.userData.accumBy.edges = edges;
+          Ts.userData.accumBy.mid = mid;
+          Ts.userData.accumBy.fun = fun;
+          Ts.userData.accumBy.numInBin = N(:);
+          Ts.userData.accumBy.inRange.time = inTimeRange;
+          Ts.userData.accumBy.inRange.bin = inBinRange;
+          Ts.userData.accumBy.inRange.all = inRange;
+        case 'structure'
+          Ts.data = squeeze(binnedData);
+          Ts.nameData = obj.name;
+          Ts.nameBinVar = varName;
+          Ts.edges = edges;
+          Ts.mid = mid;
+          Ts.fun = fun;
+          Ts.numInBin = N(:);
+          Ts.inRange.time = inTimeRange;
+          Ts.inRange.bin = inBinRange;
+          Ts.inRange.all = inRange;
+        end
     end
 
     function Ts = movmean(obj,nMean,varargin)
